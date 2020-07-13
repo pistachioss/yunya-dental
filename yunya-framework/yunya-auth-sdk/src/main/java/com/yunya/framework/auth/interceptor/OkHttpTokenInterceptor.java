@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * feign请求连接拦截器
+ * feign请求拦截器
  *
  * @author ace
  */
@@ -23,13 +23,6 @@ public class OkHttpTokenInterceptor implements Interceptor {
 
   @Autowired @Lazy private UserAuthConfig userAuthConfig;
 
-  /**
-   * 拦截请求
-   *
-   * @param chain 执行链
-   * @return
-   * @throws IOException
-   */
   @Override
   public Response intercept(Chain chain) throws IOException {
     Request newRequest =

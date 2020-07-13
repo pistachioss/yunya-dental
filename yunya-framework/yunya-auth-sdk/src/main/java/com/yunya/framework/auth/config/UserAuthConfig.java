@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 用户权限配置
+ * 用户鉴权配置
  *
  * @author ace
  * @date 2017/9/15

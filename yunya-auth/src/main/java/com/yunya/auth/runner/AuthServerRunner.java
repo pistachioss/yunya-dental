@@ -2,7 +2,7 @@ package com.yunya.auth.runner;
 
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.auth.configuration.KeyConfiguration;
-import com.yunya.framework.common.utils.RsaKeyHelper;
+import com.yunya.framework.auth.utils.RsaKeyHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;

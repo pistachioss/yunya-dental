@@ -7,13 +7,13 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 权限自动配置类
+ * 自动配置用户、服务鉴权配置信息
  *
  * @author ace
  * @date 2017/9/15
  */
 @Configuration
-@ComponentScan({"com.yunya.framework.auth.configuration"})
+@ComponentScan({"com.yunya.framework.auth"})
 public class AutoConfiguration {
 
   /**

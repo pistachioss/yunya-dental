@@ -11,6 +11,9 @@ package com.yunya.framework.common.constant;
 public class BusinessConstants {
 
   /** ---------------------菜单权限相关常量--------------------------------- */
+
+  /** 系统管理员默认账号 */
+  public static final String ADMIN_ACCOUNT = "admin";
   /** 默认顶级父ID */
   public static final Integer DEFAULT_PARENT_ID = 0;
   /** 目录 */
@@ -24,8 +27,9 @@ public class BusinessConstants {
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
   /** 用户离职状态 */
-  public static final Byte USER_RESIGNATION_STATUS = 2;
+  public static final Byte USER_RESIGNATION_STATUS = 3;
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
+
   /** -------------------------用户、员工信息相关常量--------------------------- */
 }

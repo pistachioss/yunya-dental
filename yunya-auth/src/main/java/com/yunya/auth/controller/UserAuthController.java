@@ -6,6 +6,7 @@ import com.yunya.auth.service.UserAuthService;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,14 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 @Slf4j
 public class UserAuthController {
 
+  /** 注入对象 */
   @Value("${jwt.token-header}")
   private String tokenHeader;
 
-  private final UserAuthService userAuthService;
-
-  public UserAuthController(UserAuthService userAuthService) {
-    this.userAuthService = userAuthService;
-  }
+  @Autowired private UserAuthService userAuthService;
 
   /**
    * 用户登陆

@@ -2,9 +2,8 @@ package com.yunya.framework.auth.config;
 
 import org.springframework.beans.factory.annotation.Value;
 
-
 /**
- * 服务权限配置类
+ * 服务权限配置
  *
  * @author ace
  * @date 2017/9/15

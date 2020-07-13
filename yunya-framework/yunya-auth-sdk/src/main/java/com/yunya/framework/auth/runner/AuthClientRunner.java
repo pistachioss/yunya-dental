@@ -1,8 +1,8 @@
 package com.yunya.framework.auth.runner;
 
-import com.yunya.feign.auth.RemoteServiceAuthFeign;
 import com.yunya.framework.auth.config.ServiceAuthConfig;
 import com.yunya.framework.auth.config.UserAuthConfig;
+import com.yunya.framework.auth.feign.ServiceAuthFeign;
 import com.yunya.framework.common.model.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,12 +19,16 @@ import org.springframework.scheduling.annotation.Scheduled;
 @Slf4j
 @Configuration
 public class AuthClientRunner implements CommandLineRunner {
+
   /** 注入对象 */
   @Autowired private ServiceAuthConfig serviceAuthConfig;
 
   @Autowired private UserAuthConfig userAuthConfig;
 
-  @Autowired private RemoteServiceAuthFeign serviceAuthFeign;
+ // @Autowired private RemoteServiceAuthFeign serviceAuthFeign;
+
+  @Autowired
+  private ServiceAuthFeign serviceAuthFeign;
 
   @Override
   public void run(String... args) {
@@ -40,7 +44,7 @@ public class AuthClientRunner implements CommandLineRunner {
   @Scheduled(cron = "0 0/1 * * * ?")
   public void refreshUserPubKey() {
     ResponseResult responseResult =
-        serviceAuthFeign.getUserPublicKey(
+            serviceAuthFeign.getUserPublicKey(
             serviceAuthConfig.getClientId(), serviceAuthConfig.getClientSecret());
     if (responseResult.getStatus().equals(0)) {
       this.userAuthConfig.setPubKeyByte((byte[]) responseResult.getData());

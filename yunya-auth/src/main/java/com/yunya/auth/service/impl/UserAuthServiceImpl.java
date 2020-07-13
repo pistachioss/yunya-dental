@@ -4,8 +4,10 @@ import com.yunya.auth.domain.UserAuthResponse;
 import com.yunya.auth.form.JwtRequestFrom;
 import com.yunya.auth.service.UserAuthService;
 import com.yunya.auth.utils.JwtTokenUtil;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.domain.UserInfo;
 import com.yunya.framework.auth.jwt.JWTInfo;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -32,7 +34,7 @@ public class UserAuthServiceImpl implements UserAuthService {
   /** 注入对象 */
   @Autowired private JwtTokenUtil jwtTokenUtil;
 
-  //@Autowired private RemoteSystemServiceFeign systemService;
+  @Autowired private RemoteSystemServiceFeign systemService;
 
   @Autowired private RedisUtils redisUtils;
 
@@ -51,7 +53,8 @@ public class UserAuthServiceImpl implements UserAuthService {
     Map<String, Object> map = new HashMap<>(16);
     map.put("username", authenticationRequest.getUsername());
     map.put("password", authenticationRequest.getPassword());
-    UserInfo userInfo = new UserInfo();
+    // 调用远程服务获取用户信息
+    UserInfo userInfo = systemService.validate(map);
     checkUserInfo(userInfo);
     String userId = userInfo.getId();
     if (!StringUtils.isEmpty(userId)) {
@@ -70,12 +73,18 @@ public class UserAuthServiceImpl implements UserAuthService {
   }
 
   /**
-   * 校验用户信息是否合法
+   * 校验用户信息是否合法(管理员不用校验)
    *
    * @param userInfo 用户信息
    */
   private void checkUserInfo(UserInfo userInfo) {
-    // todo 校验用户状态是否离职，离职无法登陆
+    /** 管理员账号 */
+    if (null != userInfo.getId()
+        && !BusinessConstants.ADMIN_ACCOUNT.equals(userInfo.getUsername())) {
+      if (BusinessConstants.USER_RESIGNATION_STATUS.equals(userInfo.getWorkStatus())) {
+        throw new UserAuthException("当前员工已离职，账号无法登陆！");
+      }
+    }
   }
 
   /**
@@ -87,9 +96,14 @@ public class UserAuthServiceImpl implements UserAuthService {
    */
   @Override
   public UserAuthResponse refresh(String oldToken) throws Exception {
+    // 获取缓存中的用户信息
     UserInfo userInfo = redisUtils.get(USER_TOKEN + oldToken, UserInfo.class);
+    if (null == userInfo) {
+      throw new UserAuthException("当前token已失效，请重新登陆！");
+    }
     // 解析token获取JWT声明信息，重生成token
     String refreshToken = jwtTokenUtil.refreshToken(oldToken);
+    // 获取token过期时间
     long expireTime = jwtTokenUtil.getExpireTime(refreshToken);
     redisUtils.set(USER_TOKEN + refreshToken, userInfo, expireTime);
     redisUtils.set(USER_ID + userInfo.getId(), refreshToken, expireTime);

@@ -100,8 +100,7 @@ auth:
   user:
     token-header: Authorization
   client:
-    #不填则默认读取spring.application.name
-    id: yunya-gate
+    id: yunya-gate  #不填则默认读取spring.application.name
     secret: 123456
 
 # 负载均衡

@@ -1,6 +1,7 @@
 package com.yunya.auth.mapper;
 
 import com.yunya.auth.domain.entity.ClientService;
+import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 public interface ClientServiceMapper extends Mapper<ClientService> {
@@ -10,5 +11,5 @@ public interface ClientServiceMapper extends Mapper<ClientService> {
    *
    * @param id
    */
-  void deleteByServiceId(int id);
+  void deleteByServiceId(@Param("id") int id);
 }

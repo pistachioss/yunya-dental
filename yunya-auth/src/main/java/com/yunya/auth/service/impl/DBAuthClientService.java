@@ -40,14 +40,14 @@ public class DBAuthClientService implements AuthClientService {
   /**
    * 客户端信息校验
    *
-   * @param clientCode 客户端ID
+   * @param clientId 客户端ID
    * @param secret 密钥
    * @throws Exception
    */
   @Override
-  public void validate(String clientCode, String secret) throws Exception {
+  public void validate(String clientId, String secret) throws Exception {
     Client client = new Client();
-    client.setCode(clientCode);
+    client.setCode(clientId);
     client = clientMapper.selectOne(client);
     if (client == null || !client.getSecret().equals(secret)) {
       throw new ClientInvalidException("Client not found or Client secret is error!");
