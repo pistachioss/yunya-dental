@@ -2,6 +2,9 @@ package com.yunya.modules.system.rpc.service;
 
 import com.yunya.feign.system.domain.UserInfo;
 import com.yunya.modules.system.biz.SysUserBiz;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +21,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class PermissionService {
 
   /** 注入对象 */
-  private final SysUserBiz sysUserBiz;
+  @Autowired
+  private SysUserBiz sysUserBiz;
 
-  public PermissionService(SysUserBiz sysUserBiz) {
-    this.sysUserBiz = sysUserBiz;
-  }
+  private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
   /**
    * 根据用户名、密码查询用户信息
@@ -32,6 +34,14 @@ public class PermissionService {
    * @return
    */
   public UserInfo validate(String username, String password) {
-    return null;
+    UserInfo userInfo = new UserInfo();
+    UserInfo info = sysUserBiz.findUserInfoByUserName(username);
+    if (null != info) {
+      if (encoder.matches(password, info.getPassword())) {
+        BeanUtils.copyProperties(info, userInfo);
+        userInfo.setId(info.getId());
+      }
+    }
+    return userInfo;
   }
 }

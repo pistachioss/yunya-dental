@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
+import com.yunya.feign.system.domain.UserInfo;
 import com.yunya.modules.system.entity.SysUser;
-import com.yunya.modules.system.form.query.SysElementQueryForm;
 import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
 import com.yunya.modules.system.vo.SysEmployeeVO;
 import org.apache.ibatis.annotations.Param;
@@ -52,8 +52,17 @@ public interface SysUserMapper extends Mapper<SysUser> {
 
   /**
    * 根据条件查询员工
-   * @param form  用户封装
-   * @return  SysUser
+   *
+   * @param form 用户封装
+   * @return SysUser
    */
   List<SysEmployeeVO> selectSysEmployeeByCondition(@Param("form") SysEmployeeQueryForm form);
+
+  /**
+   * 根据用户名查询用户信息
+   *
+   * @param username 用户名
+   * @return
+   */
+  UserInfo selectUserInfoByUserName(@Param("username") String username);
 }

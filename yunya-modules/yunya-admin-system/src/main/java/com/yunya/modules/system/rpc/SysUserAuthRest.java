@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 /**
- * 简介:
+ * 简介: 用户鉴权控制器
  *
  * @author: chow
  * @date: 2020/7/12 21:49
@@ -38,4 +38,7 @@ public class SysUserAuthRest {
   public UserInfo validate(@RequestBody Map<String, String> body) {
     return permissionService.validate(body.get("username"), body.get("password"));
   }
+
+
+
 }

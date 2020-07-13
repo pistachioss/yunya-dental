@@ -53,7 +53,6 @@
         <result column="entry_date" property="entryDate" jdbcType="DATE"/>
         <result column="graduated_school" property="graduatedSchool" jdbcType="VARCHAR"/>
         <result column="education" property="education" jdbcType="VARCHAR"/>
-        <result column="discount" property="discount" jdbcType="INTEGER"/>
         <result column="discount" property="discount" jdbcType="BIT"/>
         <result column="leave_time" property="leaveTime" jdbcType="DATE"/>
         <result column="title" property="title" jdbcType="VARCHAR"/>
@@ -190,6 +189,24 @@
                 and e.work_status = #{form.workStatus}
             </if>
         </where>
+    </select>
+    <!-- 根据用户名查询用户信息 -->
+    <select id="selectUserInfoByUserName" resultType="com.yunya.feign.system.domain.UserInfo">
+        select
+            su.id,
+            su.username,
+            su.password,
+            su.`name`,
+            su.birthday,
+            su.mobile_phone as mobilePhone,
+            su.gender,
+            su.description,
+            se.id as employeeId,
+            se.identity,
+            se.work_status as workStatus
+        from sys_user su
+        left join sys_employee se on su.id = se.user_id
+        where su.username = #{username}
     </select>
 
 </mapper>

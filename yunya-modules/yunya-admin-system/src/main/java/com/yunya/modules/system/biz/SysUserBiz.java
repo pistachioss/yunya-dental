@@ -2,12 +2,15 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.domain.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.system.entity.SysEmployee;
 import com.yunya.modules.system.entity.SysUser;
 import com.yunya.modules.system.entity.SysUserPost;
@@ -17,6 +20,7 @@ import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
 import com.yunya.modules.system.mapper.SysEmployeeMapper;
 import com.yunya.modules.system.mapper.SysUserMapper;
 import com.yunya.modules.system.vo.SysEmployeeVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -42,6 +46,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
   /** 用户可登陆组织 */
   @Autowired private SysUserPostBiz sysUserPostBiz;
+
+  @Autowired private RedisUtils redisUtils;
 
   /**
    * 新增用户
@@ -158,9 +164,16 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setId(employeeResult.getId());
       sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
     }
-    if (!sysUser.getUsername().equals(form.getMobilePhone())) {
-      // 获取当前登陆用户与数据库数据进行对比，判断是否为自己修改
-
+    // 用户名被修改或就职状态改为离职
+    if (!sysUser.getUsername().equals(form.getMobilePhone())
+        || BusinessConstants.USER_RESIGNATION_STATUS.equals(form.getWorkStatus())) {
+      // 获取被修改用户的token
+      String token = redisUtils.get(RedisConstants.REDIS_KEY_USER_ID + userId);
+      if (StringUtils.isNotBlank(token)) {
+        // 移除缓存中被修改用户的信息
+        redisUtils.delete(RedisConstants.REDIS_KEY_USER_TOKEN + token);
+        redisUtils.delete(RedisConstants.REDIS_KEY_USER_ID + userId);
+      }
     }
   }
 
@@ -204,5 +217,15 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     List<SysEmployeeVO> sysEmployeeVOs = mapper.selectSysEmployeeByCondition(form);
 
     return new PageInfo<>(sysEmployeeVOs);
+  }
+
+  /**
+   * 根据用户名查询用户信息
+   *
+   * @param username 用户名
+   * @return
+   */
+  public UserInfo findUserInfoByUserName(String username) {
+    return mapper.selectUserInfoByUserName(username);
   }
 }
