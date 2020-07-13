@@ -13,8 +13,9 @@ com.yunya
 ├── yunya-gateway         // 网关模块 [8765]
 ├── yunya-auth            // 认证中心 [8777]
 ├── yunya-api             // 接口模块
-│       └── ruoyi-api-system    
-                      // 系统接口                      // 系统接口
+│       └── auth
+│       └── system 
+│                       // 系统接口                      // 系统接口
 ├── yunya-common          // 通用模块
 │       └── yunya-common-core                         // 核心模块
 │       └── yunya-common-redis                        // 缓存服务
