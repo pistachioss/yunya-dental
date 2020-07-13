@@ -1,0 +1,131 @@
+server:
+  port: 8765
+
+#请求和响应GZIP压缩支持
+feign:
+  httpclient:
+    enabled: false
+  okhttp:
+    enabled: true
+  compression:
+    request:
+      enabled: true
+      mime-types: text/xml,application/xml,application/json
+      min-request-size: 2048
+    response:
+      enabled: true
+
+spring:
+  application:
+    name: yunya-gateway
+  redis:
+    database: 2
+    host: 127.0.0.1
+    jedis:
+      pool:
+        max-active: 20
+
+  #  rabbitmq:
+  #    host: ${RABBIT_MQ_HOST:localhost}
+  #    port:  ${RABBIT_MQ_PORT:5672}
+  #    username: guest
+  #    password: guest
+  #  sleuth:
+  #    enabled: true
+  #    http:
+  #      legacy:
+  #        enabled: true
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          lowerCaseServiceId: true
+          enabled: true
+      routes:
+        # ==================网关路由配置（新增服务按照样例配置路由即可）===================
+        - id: yunya-auth
+          uri: lb://yunya-auth
+          order: 8000
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - StripPrefix=2
+        - id: yunya-system
+          uri: lb://yunya-system
+          order: 8001
+          predicates:
+            - Path=/api/system/**
+          filters:
+            - StripPrefix=2
+        - id: yunya-tools
+          uri: lb://yunya-tools
+          order: 8002
+          predicates:
+            - Path=/api/tool/**
+          filters:
+            - StripPrefix=2
+        - id: yunya-clinic
+          uri: lb://yunya-clinic
+          order: 8003
+          predicates:
+            - Path=/api/clinic/**
+          filters:
+            - StripPrefix=2
+    nacos:
+      discovery:
+        server-addr: 47.99.146.90:8849
+    sentinel:
+      transport:
+        dashboard: localhost:8080
+logging:
+  level:
+    com.yunya.gate: info
+
+# 暴露所有端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+  security:
+    enabled: false
+
+# 忽略网关鉴权的请求路径
+gate:
+  ignore:
+    startWith: /auth/jwt
+
+auth:
+  serviceId: yunya-auth
+  user:
+    token-header: Authorization
+  client:
+    #不填则默认读取spring.application.name
+    id: yunya-gate
+    secret: 123456
+
+# 负载均衡
+ribbon:
+  eureka:
+    enabled: true
+  ReadTimeout: 60000
+  ConnectTimeout: 60000
+  MaxAutoRetries: 0
+  MaxAutoRetriesNextServer: 1
+  OkToRetryOnAllOperations: false
+
+hystrix:
+  threadpool:
+    default:
+      #并发执行的最大线程数，默认10
+      coreSize: 1000
+      #BlockingQueue的最大队列数
+      maxQueueSize: 1000
+      #即使maxQueueSize没有达到，达到queueSizeRejectionThreshold该值后，请求也会被拒绝
+      queueSizeRejectionThreshold: 500
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 10000

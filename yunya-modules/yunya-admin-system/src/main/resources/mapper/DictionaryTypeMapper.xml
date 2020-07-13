@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.DictionaryTypeMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.modules.system.entity.DictionaryType" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <!--根据条件查询字典类型列表-->
+    <select id="selectBrandByExample" resultType="com.yunya.modules.system.vo.DictionaryTypeVO">
+      select
+      dt.id as id,
+      dt.name as `name`,
+      dt.inservice as inservice
+      from dictionary_type dt
+      <where>
+        <if test="queryForm.id != null">
+          and dt.id = #{queryForm.id}
+        </if>
+        <if test="queryForm.name != null and queryForm.name != ''">
+          and dt.name LIKE CONCAT(CONCAT('%',#{queryForm.name}),'%')
+        </if>
+        <if test="queryForm.inservice != null">
+          and dt.inservice = #{queryForm.inservice}
+        </if>
+      </where>
+    </select>
+</mapper>

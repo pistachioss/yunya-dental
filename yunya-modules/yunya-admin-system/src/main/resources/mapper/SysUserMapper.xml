@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.SysUserMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.modules.system.entity.SysUser">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="password" property="password" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="birthday" property="birthday" jdbcType="DATE"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="mobile_phone" property="mobilePhone" jdbcType="VARCHAR"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="TINYINT"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="province" property="province" jdbcType="VARCHAR"/>
+        <result column="city" property="city" jdbcType="VARCHAR"/>
+        <result column="country" property="country" jdbcType="VARCHAR"/>
+        <result column="origin" property="origin" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="EmployeeInfoResultMap" type="com.yunya.modules.system.vo.SysEmployeeVO">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="username" property="username" jdbcType="VARCHAR"/>
+        <result column="birthday" property="birthday" jdbcType="DATE"/>
+        <result column="address" property="address" jdbcType="DATE"/>
+        <result column="email" property="email" jdbcType="VARCHAR"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="province" property="province" jdbcType="VARCHAR"/>
+        <result column="city" property="city" jdbcType="VARCHAR"/>
+        <result column="country" property="country" jdbcType="VARCHAR"/>
+        <result column="origin" property="origin" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="INTEGER"/>
+        <result column="mobile_phone" property="mobilePhone" jdbcType="VARCHAR"/>
+        <result column="tele_phone" property="telePhone" jdbcType="VARCHAR"/>
+        <result column="identity" property="identity" jdbcType="VARCHAR"/>
+        <result column="work_status" property="workStatus" jdbcType="INTEGER"/>
+        <result column="contract_signing_date" property="contractSigningDate" jdbcType="DATE"/>
+        <result column="entry_date" property="entryDate" jdbcType="DATE"/>
+        <result column="graduated_school" property="graduatedSchool" jdbcType="VARCHAR"/>
+        <result column="education" property="education" jdbcType="VARCHAR"/>
+        <result column="discount" property="discount" jdbcType="INTEGER"/>
+        <result column="discount" property="discount" jdbcType="BIT"/>
+        <result column="leave_time" property="leaveTime" jdbcType="DATE"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="post_level" property="postLevel" jdbcType="VARCHAR"/>
+        <result column="photo" property="photo" jdbcType="VARCHAR"/>
+        <result column="diploma_photo" property="diplomaPhoto" jdbcType="VARCHAR"/>
+        <result column="crt_id" property="crtId" jdbcType="VARCHAR"/>
+        <result column="company_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="department_id" property="orgDeptId" jdbcType="INTEGER"/>
+        <result column="post_id" property="postId" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 插入用户 -->
+    <insert id="insertUser" parameterType="com.yunya.modules.system.entity.SysUser"
+            useGeneratedKeys="true" keyProperty="id">
+      INSERT INTO sys_user (
+        username,
+        password,
+        name,
+        birthday,
+        address,
+        mobile_phone,
+        email,
+        gender,
+        description,
+        province,
+        city,
+        country,
+        origin,
+        crt_id,
+        crt_name,
+        crt_time,
+        upd_id,
+        upd_time,
+        upd_name
+      ) VALUES (
+        #{username},
+        #{password},
+        #{name},
+        #{birthday},
+        #{address},
+        #{mobilePhone},
+        #{email},
+        #{gender},
+        #{description},
+        #{province},
+        #{city},
+        #{country},
+        #{origin},
+        #{crtId},
+        #{crtName},
+        #{crtTime},
+        #{updId},
+        #{updTime},
+        #{updName}
+      )
+    </insert>
+    <!-- 检查用户名是否存在 -->
+    <select id="checkUserNameUnique" resultType="java.lang.Integer">
+      select count(1) from sys_user where `name` = #{name}
+    </select>
+    <!-- 检查身份证号是否存在 -->
+    <select id="checkIdentityUnique" resultType="java.lang.Integer">
+      select count(1) from sys_employee where `identity` = #{identity}
+    </select>
+    <!-- 检查手机号是否存在 -->
+    <select id="checkMobileUnique" resultType="java.lang.Integer">
+      select count(1) from sys_user where mobile_phone = #{mobile}
+    </select>
+    <!-- 根据用户名查询用户信息 -->
+    <select id="selectSysUserByUsername" resultType="com.yunya.modules.system.entity.SysUser">
+      select
+        id,
+        username,
+        password,
+        `name`,
+        birthday,
+        address,
+        mobile_phone,
+        email,
+        gender,
+        description
+      from sys_user
+      where username = #{username}
+    </select>
+
+    <select id="selectSysEmployeeByCondition" resultMap="EmployeeInfoResultMap">
+        select
+            e.user_id as userId,
+            u.username,
+            u.birthday,
+            u.address,
+            u.email,
+            u.description,
+            u.province,
+            u.city,
+            u.country,
+            u.origin,
+            u.inservice,
+            e.`name`,
+            e.gender,
+            e.mobile_phone as mobiePhone,
+            e.telephone,
+            e.identity,
+            e.work_status as workStatus,
+            e.work_type as workType,
+            e.contract_signing_date as contractSigningDate,
+            e.entry_date as entryDate,
+            e.graduated_school as graduatedSchool,
+            e.education,
+            e.discount,
+            e.leave_time as leaveTime,
+            e.title,
+            e.post_level as postLevel,
+            e.emergency_contact as emergencyContact,
+            e.emergency_contact_phone as emergencyContactPhone,
+            e.photo,
+            e.diploma_photo as diplmaPhone,
+            e.crt_id as crtId,
+            upst.company_id as orgId,
+            upst.department_id as orgDeptId,
+            upst.post_id as postId
+        from sys_employee e
+        LEFT JOIN sys_user u on u.id = e.user_id
+        left join sys_user_post upst on upst.user_id = e.user_id
+        <where>
+            <if test="form.name != null and form.name != ''">
+                and e.`name` LIKE CONCAT(CONCAT('%',#{form.name}),'%')
+            </if>
+            <if test="form.postId != null">
+                and upst.post_id = #{form.postId}
+            </if>
+            <if test="form.workStatus != null">
+                and e.work_status = #{form.workStatus}
+            </if>
+        </where>
+    </select>
+
+</mapper>

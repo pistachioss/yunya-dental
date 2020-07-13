@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.SysMenuMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.modules.system.entity.SysMenu">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="system_id" property="systemId" jdbcType="INTEGER"/>
+        <result column="menu_type" property="menuType" jdbcType="TINYINT"/>
+        <result column="code" property="code" jdbcType="VARCHAR"/>
+        <result column="title" property="title" jdbcType="VARCHAR"/>
+        <result column="parent_id" property="parentId" jdbcType="INTEGER"/>
+        <result column="href" property="href" jdbcType="VARCHAR"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="CHAR"/>
+        <result column="order_num" property="orderNum" jdbcType="INTEGER"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="path" property="path" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 菜单及菜单包含功能结果封装集 -->
+    <resultMap id="SysMenuElementMap" type="com.yunya.modules.system.vo.tree.SysMenuElementTreeVO">
+        <id column="id" property="id" javaType="Integer"/>
+        <result column="system_id" property="systemId" javaType="Integer"/>
+        <result column="menu_type" property="menuType" javaType="Byte"/>
+        <result column="parent_id" property="parentId" javaType="Integer"/>
+        <result column="code" property="code" javaType="String"/>
+        <result column="title" property="title" javaType="String"/>
+        <result column="href" property="href" javaType="String"/>
+        <result column="icon" property="icon" javaType="String"/>
+        <result column="type" property="type" javaType="String"/>
+        <result column="order_num" property="orderNum" javaType="Integer"/>
+        <result column="description" property="description" javaType="String"/>
+        <result column="path" property="path" javaType="String"/>
+        <result column="inservice" property="inservice" javaType="Boolean"/>
+        <collection property="elements" ofType="com.yunya.modules.system.vo.SysElementVO">
+            <result column="ele_id" property="id" javaType="String"/>
+            <result column="ele_code" property="code" javaType="String"/>
+            <result column="ele_type" property="type" javaType="String"/>
+            <result column="ele_name" property="name" javaType="String"/>
+            <result column="ele_uri" property="uri" javaType="String"/>
+            <result column="ele_menu_id" property="menuId" javaType="Integer"/>
+            <result column="ele_parent_id" property="parentId" javaType="Integer"/>
+            <result column="ele_parent_name" property="parentName" javaType="String"/>
+            <result column="ele_path" property="path" javaType="String"/>
+            <result column="ele_method" property="method" javaType="String"/>
+            <result column="ele_description" property="description" javaType="String"/>
+            <result column="ele_inservice" property="inservice" javaType="Boolean"/>
+        </collection>
+    </resultMap>
+
+    <!-- 根据条件查询系统菜单列表 -->
+    <select id="selectSysMenuListByExample" resultType="com.yunya.modules.system.vo.SysMenuVO">
+        select
+            sm.id,
+            sm.system_id as systemId,
+            sm.menu_type as menuType,
+            sm.code,
+            sm.title,
+            sm.parent_id as parentId,
+            sm.href,
+            sm.icon,
+            sm.`type`,
+            sm.order_num as orderNum,
+            sm.description,
+            sm.path,
+            sm.inservice
+        from sys_menu sm
+        <where>
+            <if test="queryForm.id != null">
+                and sm.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.title != null and queryForm.title != ''">
+                and sm.title LIKE CONCAT(CONCAT('%',#{queryForm.title}),'%')
+            </if>
+            <if test="queryForm.systemId != null">
+                and sm.system_id = #{queryForm.systemId}
+            </if>
+            <if test="queryForm.menuType != null">
+                and sm.menu_type = #{queryForm.menuType}
+            </if>
+            <if test="queryForm.inservice != null">
+                and sm.inservice = #{queryForm.inservice}
+            </if>
+            <if test="queryForm.type != null and queryForm.type != ''">
+                and sm.type = #{queryForm.type}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询系统菜单及功能列表 -->
+    <select id="selectMenuElementTreeByExample" resultMap="SysMenuElementMap">
+        select
+            sm.id,
+            sm.system_id,
+            sm.menu_type,
+            sm.code,
+            sm.title,
+            sm.parent_id,
+            sm.href,
+            sm.icon,
+            sm.`type`,
+            sm.order_num,
+            sm.description,
+            sm.path,
+            sm.inservice,
+            se.id as ele_id,
+            se.`code` as ele_code,
+            se.`type` as ele_type,
+            se.`name` as ele_name,
+            se.uri as ele_uri,
+            se.menu_id as ele_menu_id,
+            se.parent_id as ele_parent_id,
+            se.path as ele_path,
+            se.method as ele_method,
+            se.description as ele_description,
+            se.inservice as ele_inservice
+        from sys_menu sm
+        left join sys_element se on sm.id = se.menu_id
+        <where>
+            <if test="queryForm.systemId != null">
+                and sm.system_id = #{queryForm.systemId}
+            </if>
+            <if test="queryForm.menuType != null">
+                and sm.menu_type = #{queryForm.menuType}
+            </if>
+            <if test="queryForm.title != null and queryForm.title != ''">
+                and sm.title LIKE CONCAT(CONCAT('%',#{queryForm.title}),'%')
+            </if>
+        </where>
+    </select>
+</mapper>

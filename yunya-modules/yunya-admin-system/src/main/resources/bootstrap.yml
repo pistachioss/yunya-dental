@@ -1,0 +1,12 @@
+spring:
+  application:
+    name: yunya-system
+  cloud:
+    nacos:
+      config:
+        server-addr: 47.99.146.90:8849
+        file-extension: yaml
+  profiles:
+    active: dev
+  main:
+    allow-bean-definition-overriding: true
