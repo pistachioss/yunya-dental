@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.ComponentScan;
 
 /**
  * 云牙系统网关启动器
@@ -17,6 +18,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 @EnableYunyaAuthClient
 @EnableYunyaFeignClients
+@ComponentScan(basePackages = {"com.yunya.gate", "com.yunya.framework.*"})
 public class YunyaGatewayBootstrap {
   public static void main(String[] args) {
     // DBLog.getInstance().start();
