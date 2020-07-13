@@ -7,6 +7,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.auth.jwt.IJWTInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author ace
  * @date 2017/9/10
  */
+@Component
 public class UserAuthRestInterceptor extends HandlerInterceptorAdapter {
 
   /** 注入对象 */
