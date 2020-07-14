@@ -1,6 +1,6 @@
 package com.yunya.auth.configuration;
 
-import com.yunya.framework.auth.interceptor.UserAuthRestInterceptor;
+import com.yunya.auth.interceptor.UserAuthRestInterceptor;
 import com.yunya.framework.common.handler.GlobalExceptionHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,8 +1,9 @@
 package com.yunya.framework.auth.utils;
 
 import com.yunya.framework.auth.config.UserAuthConfig;
-import com.yunya.framework.auth.jwt.IJWTInfo;
 import com.yunya.framework.common.exception.auth.UserTokenException;
+import com.yunya.framework.common.utils.jwt.IJWTInfo;
+import com.yunya.framework.common.utils.jwt.JWTHelper;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;

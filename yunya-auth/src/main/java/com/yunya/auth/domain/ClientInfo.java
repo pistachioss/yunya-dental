@@ -1,6 +1,6 @@
 package com.yunya.auth.domain;
 
-import com.yunya.framework.auth.jwt.IJWTInfo;
+import com.yunya.framework.common.utils.jwt.IJWTInfo;
 
 /**
  * 客户端信息

@@ -1,8 +1,8 @@
 package com.yunya.auth.utils;
 
 import com.yunya.auth.configuration.KeyConfiguration;
-import com.yunya.framework.auth.jwt.IJWTInfo;
-import com.yunya.framework.auth.utils.JWTHelper;
+import com.yunya.framework.common.utils.jwt.IJWTInfo;
+import com.yunya.framework.common.utils.jwt.JWTHelper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.springframework.beans.factory.annotation.Value;

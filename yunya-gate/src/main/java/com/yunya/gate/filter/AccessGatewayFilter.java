@@ -5,7 +5,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.domain.LogInfo;
 import com.yunya.feign.system.domain.PermissionInfo;
 import com.yunya.framework.auth.config.UserAuthConfig;
-import com.yunya.framework.auth.jwt.IJWTInfo;
+import com.yunya.framework.common.utils.jwt.IJWTInfo;
 import com.yunya.framework.auth.utils.UserAuthUtil;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;

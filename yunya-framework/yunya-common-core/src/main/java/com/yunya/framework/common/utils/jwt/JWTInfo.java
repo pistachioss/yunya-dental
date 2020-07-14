@@ -1,4 +1,4 @@
-package com.yunya.framework.auth.jwt;
+package com.yunya.framework.common.utils.jwt;
 
 import java.io.Serializable;
 import java.util.Objects;

@@ -6,7 +6,7 @@ import com.yunya.auth.service.UserAuthService;
 import com.yunya.auth.utils.JwtTokenUtil;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.domain.UserInfo;
-import com.yunya.framework.auth.jwt.JWTInfo;
+import com.yunya.framework.common.utils.jwt.JWTInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.auth.UserAuthException;

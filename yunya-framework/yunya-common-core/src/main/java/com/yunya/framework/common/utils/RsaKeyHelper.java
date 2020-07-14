@@ -1,4 +1,4 @@
-package com.yunya.framework.auth.utils;
+package com.yunya.framework.common.utils;
 
 import org.apache.commons.codec.binary.Base64;
 

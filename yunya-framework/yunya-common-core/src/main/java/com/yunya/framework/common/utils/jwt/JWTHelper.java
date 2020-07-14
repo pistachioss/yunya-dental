@@ -1,10 +1,12 @@
-package com.yunya.framework.auth.utils;
+package com.yunya.framework.common.utils.jwt;
 
-import com.yunya.framework.auth.jwt.IJWTInfo;
-import com.yunya.framework.auth.jwt.JWTInfo;
 import com.yunya.framework.common.constant.CommonConstants;
+import com.yunya.framework.common.utils.RsaKeyHelper;
 import com.yunya.framework.common.utils.StringHelper;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import org.joda.time.DateTime;
 
 import java.util.Date;
@@ -145,6 +147,7 @@ public class JWTHelper {
    * @throws Exception
    */
   public static IJWTInfo getInfoFromToken(String token, byte[] pubKey) throws Exception {
+    // 解析token
     Jws<Claims> claimsJws = parserToken(token, pubKey);
     Claims body = claimsJws.getBody();
     return new JWTInfo(
