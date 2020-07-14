@@ -24,3 +24,35 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
+.idea/codeStyles/
+.idea/compiler.xml
+.idea/encodings.xml
+.idea/google-java-format.xml
+.idea/inspectionProfiles/
+.idea/jarRepositories.xml
+.idea/libraries/
+.idea/modules.xml
+.idea/vcs.xml
+yunya-auth/src/main/test/java/com/yunya/auth/mapper/
+yunya-auth/target/classes/application.yml
+yunya-auth/target/classes/bootstrap.yml
+yunya-auth/target/classes/mapper/
+yunya-auth/target/generated-sources/
+yunya-auth/target/generated-test-sources/
+yunya-auth/yunya-auth.iml
+yunya-dental.iml
+yunya-framework/yunya-auth-sdk/src/main/java/com/yunya/framework/auth/jwt/
+yunya-framework/yunya-auth-sdk/yunya-auth-sdk.iml
+yunya-framework/yunya-common-core/target/generated-sources/
+yunya-framework/yunya-common-core/yunya-common-core.iml
+yunya-framework/yunya-common-redis/target/generated-sources/
+yunya-framework/yunya-common-redis/yunya-common-redis.iml
+yunya-framework/yunya-framework.iml
+yunya-gate/yunya-gate.iml
+yunya-modules/yunya-admin-system/src/test/java/com/yunya/modules/system/mapper/
+yunya-modules/yunya-admin-system/yunya-admin-system.iml
+yunya-modules/yunya-modules.iml
+yunya-remote/src/main/java/com/yunya/feign/auth/vo/
+yunya-remote/target/generated-sources/
+yunya-remote/yunya-remote.iml
+yunya-tools/yunya-tools.iml

@@ -3,7 +3,7 @@
 * 采用前后端分离的模式，微服务版本，前端基于vue+element-ui。
 * 后端采用Spring Boot、Spring Cloud & Alibaba。
 * 注册中心、配置中心选型Nacos，权限认证使用OAuth + jwt。
-* 流量控制框架选型Sentinel。
+* 流量控制框架选型Sentinel（暂未部署）。
 
 
 ## 系统模块
@@ -12,16 +12,16 @@
 com.yunya     
 ├── yunya-gateway         // 网关模块 [8765]
 ├── yunya-auth            // 认证中心 [8777]
-├── yunya-api             // 接口模块
-│       └── auth
-│       └── system 
-│                       // 系统接口                      // 系统接口
+├── yunya-api             // 服务调用模块
+│       └── auth          // 权限feign  
+│       └── system        // 系统管理feign  
 ├── yunya-common          // 通用模块
 │       └── yunya-common-core                         // 核心模块
 │       └── yunya-common-redis                        // 缓存服务
-│       └── yunya-auth-sdk                     // 安全模块
+│       └── yunya-auth-sdk                            // 权限工具
 ├── yunya-modules         // 业务模块
-│       └── yunya-admin-system                              // 系统模块 [8102]
+│       └── yunya-admin-system                        // 系统模块 [8102]
+├── yunya-tools           // 通用工具  
 ├──pom.xml                // 公共依赖
 ~~~
 
