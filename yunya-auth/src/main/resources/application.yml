@@ -49,7 +49,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: 47.99.146.90:8849
+        server-addr: localhost:8848
     sentinel:
       transport:
         dashboard: localhost:8080
@@ -101,13 +101,6 @@ jwt:
   token-header: Authorization
   expire: 14400
   rsa-secret: xx1WET12^%3^(WE45
-
-#auth:
-#  user:
-#    token-header: Authorization
-#  client:
-#    id: yunya-auth
-#    secret: 123456
 
 logging:
   level:

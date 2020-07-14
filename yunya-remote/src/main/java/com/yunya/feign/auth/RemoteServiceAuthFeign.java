@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @date 2017/9/15
  */
 @FeignClient(
-    name = YunyaServiceNameConstants.YUNYA_CLINIC_SERVICE,
+    name = YunyaServiceNameConstants.YUNYA_AUTH_SERVICE,
     fallbackFactory = RemoteServiceAuthFallBackFactory.class)
 public interface RemoteServiceAuthFeign {
 
