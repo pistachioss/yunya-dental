@@ -1,6 +1,6 @@
 package com.yunya.auth.domain;
 
-import com.yunya.feign.system.domain.UserInfo;
+import com.yunya.feign.system.vo.UserInfo;
 import lombok.Data;
 import lombok.ToString;
 

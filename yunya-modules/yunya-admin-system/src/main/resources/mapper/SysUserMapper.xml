@@ -191,7 +191,7 @@
         </where>
     </select>
     <!-- 根据用户名查询用户信息 -->
-    <select id="selectUserInfoByUserName" resultType="com.yunya.feign.system.domain.UserInfo">
+    <select id="selectUserInfoByUserName" resultType="com.yunya.feign.system.vo.UserInfo">
         select
             su.id,
             su.username,

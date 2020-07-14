@@ -1,8 +1,8 @@
 package com.yunya.auth.controller;
 
-import com.yunya.auth.form.ClientRequestForm;
-import com.yunya.auth.service.AuthClientService;
 import com.yunya.auth.configuration.KeyConfiguration;
+import com.yunya.auth.service.AuthClientService;
+import com.yunya.feign.auth.form.ClientRequestForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;

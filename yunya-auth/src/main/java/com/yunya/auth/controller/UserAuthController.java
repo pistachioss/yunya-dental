@@ -1,8 +1,8 @@
 package com.yunya.auth.controller;
 
 import com.yunya.auth.domain.UserAuthResponse;
-import com.yunya.auth.form.JwtRequestFrom;
 import com.yunya.auth.service.UserAuthService;
+import com.yunya.feign.system.form.JwtRequestFrom;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -32,15 +32,15 @@ public class UserAuthController {
   /**
    * 用户登陆
    *
-   * @param authenticationRequest 参数封装
+   * @param paramForm 参数封装
    * @return
    * @throws Exception
    */
   @PostMapping("/token")
   public ResponseResult createAuthenticationToken(
-      @RequestBody @Validated JwtRequestFrom authenticationRequest) throws Exception {
-    log.info(authenticationRequest.getUsername() + " require logging...");
-    UserAuthResponse loginUser = userAuthService.login(authenticationRequest);
+      @RequestBody @Validated JwtRequestFrom paramForm) throws Exception {
+    log.info(paramForm.getUsername() + " require logging...");
+    UserAuthResponse loginUser = userAuthService.login(paramForm);
     return ResponseUtil.success(loginUser);
   }
 

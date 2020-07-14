@@ -2,8 +2,8 @@ package com.yunya.gate.filter;
 
 import com.alibaba.fastjson.JSON;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.domain.LogInfo;
-import com.yunya.feign.system.domain.PermissionInfo;
+import com.yunya.feign.system.vo.LogInfo;
+import com.yunya.feign.system.vo.PermissionInfo;
 import com.yunya.framework.auth.config.UserAuthConfig;
 import com.yunya.framework.common.utils.jwt.IJWTInfo;
 import com.yunya.framework.auth.utils.UserAuthUtil;

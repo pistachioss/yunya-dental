@@ -1,6 +1,6 @@
 package com.yunya.auth;
 
-import com.yunya.feign.annotation.EnableYunyaFeignClients;
+import com.yunya.feign.EnableYunyaFeignClients;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;

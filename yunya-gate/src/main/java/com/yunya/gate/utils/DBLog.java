@@ -1,7 +1,7 @@
 package com.yunya.gate.utils;
 
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.domain.LogInfo;
+import com.yunya.feign.system.vo.LogInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;

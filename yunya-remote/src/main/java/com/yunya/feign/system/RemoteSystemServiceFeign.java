@@ -1,17 +1,17 @@
 package com.yunya.feign.system;
 
 import com.yunya.feign.system.factory.RemoteSystemServiceFallBackFactory;
-import com.yunya.feign.system.domain.LogInfo;
-import com.yunya.feign.system.domain.PermissionInfo;
-import com.yunya.feign.system.domain.UserInfo;
+import com.yunya.feign.system.form.JwtRequestFrom;
+import com.yunya.feign.system.vo.LogInfo;
+import com.yunya.feign.system.vo.PermissionInfo;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,11 +30,11 @@ public interface RemoteSystemServiceFeign {
   /**
    * 校验用户合法性
    *
-   * @param params 参数封装
+   * @param jwtRequestFrom 参数封装
    * @return
    */
   @RequestMapping(value = "/api/user/validate", method = RequestMethod.POST)
-  UserInfo validate(@RequestParam Map<String, Object> params);
+  UserInfo validate(@RequestBody JwtRequestFrom jwtRequestFrom);
 
   /**
    * 根据用户ID获取用户的权限列表

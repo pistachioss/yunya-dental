@@ -21,6 +21,12 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- validation 参数校验 -->
+        <dependency>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

@@ -1,4 +1,4 @@
-package com.yunya.auth.form;
+package com.yunya.feign.system.form;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

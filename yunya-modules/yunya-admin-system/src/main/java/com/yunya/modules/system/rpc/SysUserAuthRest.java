@@ -1,6 +1,6 @@
 package com.yunya.modules.system.rpc;
 
-import com.yunya.feign.system.domain.UserInfo;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.modules.system.rpc.service.PermissionService;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,14 +31,11 @@ public class SysUserAuthRest {
   /**
    * 根据用户名、密码查询用户信息
    *
-   * @param body 参数封装
+   * @param paramMap 参数封装
    * @return UserInfoVO
    */
   @RequestMapping(value = "/user/validate", method = RequestMethod.POST)
-  public UserInfo validate(@RequestBody Map<String, String> body) {
-    return permissionService.validate(body.get("username"), body.get("password"));
+  public UserInfo validate(@RequestBody Map<String, String> paramMap) {
+    return permissionService.validate(paramMap.get("username"), paramMap.get("password"));
   }
-
-
-
 }

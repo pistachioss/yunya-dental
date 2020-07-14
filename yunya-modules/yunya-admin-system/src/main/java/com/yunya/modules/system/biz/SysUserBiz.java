@@ -2,7 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.system.domain.UserInfo;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;

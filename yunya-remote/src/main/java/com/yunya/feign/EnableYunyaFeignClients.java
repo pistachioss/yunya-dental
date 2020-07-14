@@ -1,4 +1,4 @@
-package com.yunya.feign.annotation;
+package com.yunya.feign;
 
 import org.springframework.cloud.openfeign.EnableFeignClients;
 

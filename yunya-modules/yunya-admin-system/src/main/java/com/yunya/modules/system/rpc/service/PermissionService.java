@@ -1,6 +1,6 @@
 package com.yunya.modules.system.rpc.service;
 
-import com.yunya.feign.system.domain.UserInfo;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.modules.system.biz.SysUserBiz;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;

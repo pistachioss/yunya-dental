@@ -1,6 +1,6 @@
 package com.yunya.modules.system.biz;
 
-import com.yunya.feign.system.domain.UserInfo;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.modules.system.rpc.service.PermissionService;
 import org.junit.Test;
 import org.junit.runner.RunWith;

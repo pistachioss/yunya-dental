@@ -1,4 +1,4 @@
-package com.yunya.auth.form;
+package com.yunya.feign.auth.form;
 
 import lombok.Data;
 import lombok.ToString;

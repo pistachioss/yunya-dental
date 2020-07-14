@@ -23,7 +23,7 @@
  *
  */
 
-package com.yunya.feign.system.domain;
+package com.yunya.feign.system.vo;
 
 import java.io.Serializable;
 

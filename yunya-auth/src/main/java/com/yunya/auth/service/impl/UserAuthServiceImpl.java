@@ -1,23 +1,20 @@
 package com.yunya.auth.service.impl;
 
 import com.yunya.auth.domain.UserAuthResponse;
-import com.yunya.auth.form.JwtRequestFrom;
 import com.yunya.auth.service.UserAuthService;
 import com.yunya.auth.utils.JwtTokenUtil;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.domain.UserInfo;
-import com.yunya.framework.common.utils.jwt.JWTInfo;
+import com.yunya.feign.system.form.JwtRequestFrom;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.auth.UserAuthException;
+import com.yunya.framework.common.utils.jwt.JWTInfo;
 import com.yunya.framework.redis.util.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 简单介绍: 用户鉴权接口实现
@@ -32,9 +29,9 @@ import java.util.Map;
 public class UserAuthServiceImpl implements UserAuthService {
 
   /** 注入对象 */
-  @Autowired private JwtTokenUtil jwtTokenUtil;
+  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
 
-  @Autowired private RemoteSystemServiceFeign systemService;
+  @Autowired private JwtTokenUtil jwtTokenUtil;
 
   @Autowired private RedisUtils redisUtils;
 
@@ -45,16 +42,13 @@ public class UserAuthServiceImpl implements UserAuthService {
   /**
    * 用户登陆
    *
-   * @param authenticationRequest 参数封装
+   * @param paramForm 参数封装
    * @return String（token）
    */
   @Override
-  public UserAuthResponse login(JwtRequestFrom authenticationRequest) throws Exception {
-    Map<String, Object> map = new HashMap<>(16);
-    map.put("username", authenticationRequest.getUsername());
-    map.put("password", authenticationRequest.getPassword());
+  public UserAuthResponse login(JwtRequestFrom paramForm) throws Exception {
     // 调用远程服务获取用户信息
-    UserInfo userInfo = systemService.validate(map);
+    UserInfo userInfo = systemServiceFeign.validate(paramForm);
     checkUserInfo(userInfo);
     String userId = userInfo.getId();
     if (!StringUtils.isEmpty(userId)) {

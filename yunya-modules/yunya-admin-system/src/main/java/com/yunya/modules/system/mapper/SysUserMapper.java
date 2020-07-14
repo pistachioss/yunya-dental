@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.feign.system.domain.UserInfo;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.modules.system.entity.SysUser;
 import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
 import com.yunya.modules.system.vo.SysEmployeeVO;

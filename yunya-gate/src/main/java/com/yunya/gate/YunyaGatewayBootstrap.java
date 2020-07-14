@@ -1,6 +1,6 @@
 package com.yunya.gate;
 
-import com.yunya.feign.annotation.EnableYunyaFeignClients;
+import com.yunya.feign.EnableYunyaFeignClients;
 import com.yunya.framework.auth.EnableYunyaAuthClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
