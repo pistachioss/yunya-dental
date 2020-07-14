@@ -62,7 +62,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     sysUser.setUsername(resource.getMobilePhone());
     // 密码加密，加盐
     sysUser.setPassword(
-        new BCryptPasswordEncoder(UserConstant.PW_ENCORDER_SALT)
+        new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
             .encode(UserConstant.DEFAULT_USER_PASSWORD));
     // 新增用户基础信息
     int result = mapper.insertUser(sysUser);

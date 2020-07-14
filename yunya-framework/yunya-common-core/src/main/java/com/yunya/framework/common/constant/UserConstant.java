@@ -9,7 +9,7 @@ package com.yunya.framework.common.constant;
 public class UserConstant {
 
   /** 密码加盐 */
-  public static int PW_ENCORDER_SALT = 12;
+  public static int PW_ENCODER_SALT = 12;
   /** 用户初始化密码 */
   public static final CharSequence DEFAULT_USER_PASSWORD = "123456";
 }

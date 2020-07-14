@@ -25,19 +25,22 @@ public class PageQueryParams extends LinkedHashMap<String, Object> {
 
   public PageQueryParams(Map<String, Object> params) {
     this.putAll(params);
-    if (null != params.get("whetherPage")) {
-      this.whetherPage = (Boolean) params.get("whetherPage");
+    String pageParam = "whetherPage";
+    String numParam = "pageNum";
+    String sizeParam = "pageSize";
+    if (null != params.get(pageParam)) {
+      this.whetherPage = (Boolean) params.get(pageParam);
     }
     // 分页参数
-    if (params.get("pageNum") != null) {
-      this.page = Integer.parseInt(params.get("pageNum").toString());
+    if (params.get(numParam) != null) {
+      this.page = Integer.parseInt(params.get(numParam).toString());
     }
-    if (params.get("pageSize") != null) {
-      this.limit = Integer.parseInt(params.get("pageSize").toString());
+    if (params.get(sizeParam) != null) {
+      this.limit = Integer.parseInt(params.get(sizeParam).toString());
     }
-    this.remove("whetherPage");
-    this.remove("pageNum");
-    this.remove("pageSize");
+    this.remove(pageParam);
+    this.remove(numParam);
+    this.remove(sizeParam);
   }
 
   public Integer getPageNum() {
