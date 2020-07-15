@@ -74,7 +74,8 @@ public class DictionaryTypeBiz extends BaseBiz<DictionaryTypeMapper, DictionaryT
     DictionaryType type = mapper.selectByPrimaryKey(id);
     if (null == type) {
       throw new ClientServiceException(
-          "修改字典，字典类型ID为'" + id + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改字典失败，字典类型名称为'" + form.getName() + "'的数据不存在",
+          OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     if (!type.getName().equals(form.getName())) {
       String name = form.getName();

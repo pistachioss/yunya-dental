@@ -18,10 +18,12 @@ import java.io.Serializable;
 public class OrganizationInfoVO implements Serializable {
   /** 组织ID */
   private Integer id;
-  /**组织父ID*/
+  /** 组织父ID */
   private Integer parentId;
   /** 组织全名 */
   private String name;
+  /** 组织统一信用代码 */
+  private String creditCode;
   /** 组织类型 */
   private Byte type;
   /** 自定义组织排序 */

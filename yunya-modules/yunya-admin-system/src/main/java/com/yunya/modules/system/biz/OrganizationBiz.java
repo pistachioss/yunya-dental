@@ -2,6 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -47,6 +48,16 @@ public class OrganizationBiz {
 
   /** 医疗机构类型 */
   private static final Byte MEDICAL_TYPE = 2;
+
+  /**
+   * 根据ID获取组织信息
+   *
+   * @param id 组织ID
+   * @return
+   */
+  public OrganizationInfo findOrgInfoById(Integer id) {
+    return companyMapper.selectOrgInfoById(id);
+  }
 
   /**
    * 根据条件初始化组织树
@@ -123,7 +134,8 @@ public class OrganizationBiz {
     Company company = companyMapper.selectByPrimaryKey(id);
     if (null == company) {
       throw new ClientServiceException(
-          "修改组织，组织ID为'" + id + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改组织信息失败，名称为'" + resource.getName() + "'的数据不存在",
+          OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     String companyName = resource.getName();
     // 名称有修改，校验名称是否重复

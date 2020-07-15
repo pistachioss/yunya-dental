@@ -1,0 +1,168 @@
+package com.yunya.modules.system.rpc;
+
+import com.yunya.feign.system.form.BrandModel;
+import com.yunya.feign.system.form.DepartmentModel;
+import com.yunya.feign.system.form.DictionaryItemModel;
+import com.yunya.feign.system.form.DictionaryTypeModel;
+import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.UserInfo;
+import com.yunya.modules.system.biz.*;
+import com.yunya.modules.system.entity.Brand;
+import com.yunya.modules.system.entity.Department;
+import com.yunya.modules.system.entity.DictionaryItem;
+import com.yunya.modules.system.entity.DictionaryType;
+import com.yunya.modules.system.rpc.service.PermissionService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 简介: 系统管理服务对外接口暴露
+ *
+ * @author: chow
+ * @date: 2020/7/15 10:24
+ * @description:
+ * @since: 1.0.0
+ */
+@RestController
+@RequestMapping("api")
+public class SystemServiceRest {
+
+  /** 权限 */
+  @Autowired private PermissionService permissionService;
+  /** 品牌 */
+  @Autowired private BrandBiz brandBiz;
+  /** 部门 */
+  @Autowired private DepartmentBiz departmentBiz;
+  /** 字典明细 */
+  @Autowired private DictionaryItemBiz dictionaryItemBiz;
+  /** 字典类型 */
+  @Autowired private DictionaryTypeBiz dictionaryTypeBiz;
+  /** 组织 */
+  @Autowired private OrganizationBiz organizationBiz;
+  /***/
+  /***/
+  /***/
+  /***/
+
+  /**
+   * 根据用户名、密码查询用户信息
+   *
+   * @param params 参数封装
+   * @return UserInfoVO
+   */
+  @RequestMapping(value = "/user/validate", method = RequestMethod.POST)
+  public UserInfo validate(@RequestBody Map<String, String> params) {
+    return permissionService.validate(params.get("username"), params.get("password"));
+  }
+
+  /**
+   * 根据ID查询品牌
+   *
+   * @param id 品牌ID
+   * @return
+   */
+  @RequestMapping(value = "/brand/one/{id}", method = RequestMethod.GET)
+  public Brand findBrandById(@PathVariable Integer id) {
+    return brandBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件获取品牌列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/brand/list", method = RequestMethod.POST)
+  public List<Brand> findBrandList(@RequestBody BrandModel model) {
+    Brand brand = new Brand();
+    BeanUtils.copyProperties(model, brand);
+    return brandBiz.selectList(brand);
+  }
+
+  /**
+   * 根据ID查询部门
+   *
+   * @param id 部门ID
+   * @return
+   */
+  @RequestMapping(value = "/department/{id}", method = RequestMethod.GET)
+  public Department findDepartmentById(@PathVariable Integer id) {
+    return departmentBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询部门列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/department/list", method = RequestMethod.POST)
+  public List<Department> findDepartmentList(@RequestBody DepartmentModel model) {
+    Department department = new Department();
+    BeanUtils.copyProperties(model, department);
+    return departmentBiz.selectList(department);
+  }
+
+  /**
+   * 根据ID查询字典明细
+   *
+   * @param id 字典明细ID
+   * @return
+   */
+  @RequestMapping(value = "/dictionary/{id}", method = RequestMethod.GET)
+  public DictionaryItem findDictionaryItemById(@PathVariable Integer id) {
+    return dictionaryItemBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询字典明细列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/dictionary/list", method = RequestMethod.POST)
+  public List<DictionaryItem> findDictionaryItemList(@RequestBody DictionaryItemModel model) {
+    DictionaryItem dictItem = new DictionaryItem();
+    BeanUtils.copyProperties(model, dictItem);
+    return dictionaryItemBiz.selectList(dictItem);
+  }
+
+  /**
+   * 根据ID查询字典类型
+   *
+   * @param id 字典类型ID
+   * @return
+   */
+  @RequestMapping(value = "/dict/{id}", method = RequestMethod.GET)
+  public DictionaryType findDictionaryTypeById(@PathVariable Integer id) {
+    return dictionaryTypeBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询字典类型列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/dict/list", method = RequestMethod.GET)
+  public List<DictionaryType> findDictionaryTypeList(@RequestBody DictionaryTypeModel model) {
+    DictionaryType dictType = new DictionaryType();
+    BeanUtils.copyProperties(model, dictType);
+    return dictionaryTypeBiz.selectList(dictType);
+  }
+
+  /**
+   * 根据组织ID查询组织信息
+   *
+   * @param id 组织ID
+   * @return
+   */
+  @RequestMapping(value = "/organization/{id}", method = RequestMethod.GET)
+  public OrganizationInfo findOrgInfoByOrgId(@PathVariable Integer id) {
+    return organizationBiz.findOrgInfoById(id);
+  }
+}

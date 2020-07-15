@@ -1,5 +1,6 @@
 package com.yunya.modules.system.mapper;
 
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.modules.system.entity.Company;
 import com.yunya.modules.system.form.query.OrganizationQueryForm;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
@@ -8,8 +9,16 @@ import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
-@org.apache.ibatis.annotations.Mapper
 public interface CompanyMapper extends Mapper<Company> {
+
+  /**
+   * 根据ID获取组织信息
+   *
+   * @param id 组织ID
+   * @return
+   */
+  OrganizationInfo selectOrgInfoById(@Param("id") Integer id);
+
   /**
    * 新增组织（返回新增ID）
    *

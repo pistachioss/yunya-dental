@@ -1,6 +1,6 @@
 package com.yunya.framework.common.utils.jwt;
 
-import com.yunya.framework.common.constant.CommonConstants;
+import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.utils.RsaKeyHelper;
 import com.yunya.framework.common.utils.StringHelper;
 import io.jsonwebtoken.Claims;
@@ -36,8 +36,8 @@ public class JWTHelper {
         Jwts.builder()
             .setSubject(jwtInfo.getUniqueName())
             .setIssuedAt(new Date(System.currentTimeMillis()))
-            .claim(CommonConstants.JWT_KEY_USER_ID, jwtInfo.getId())
-            .claim(CommonConstants.JWT_KEY_NAME, jwtInfo.getName())
+            .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
+            .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
             .setExpiration(DateTime.now().plusSeconds(expire).toDate())
             .signWith(SignatureAlgorithm.RS256, RSA_KEY_HELPER.getPrivateKey(priKeyPath))
             .compact();
@@ -60,8 +60,8 @@ public class JWTHelper {
             // 签发时间
             .setIssuedAt(new Date(System.currentTimeMillis()))
             // 私有声明
-            .claim(CommonConstants.JWT_KEY_USER_ID, jwtInfo.getId())
-            .claim(CommonConstants.JWT_KEY_NAME, jwtInfo.getName())
+            .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
+            .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
             // 加密
             .signWith(SignatureAlgorithm.RS256, RSA_KEY_HELPER.getPrivateKey(priKey))
             .compact();
@@ -85,8 +85,8 @@ public class JWTHelper {
             // 签发时间
             .setIssuedAt(new Date(System.currentTimeMillis()))
             // 私有声明
-            .claim(CommonConstants.JWT_KEY_USER_ID, jwtInfo.getId())
-            .claim(CommonConstants.JWT_KEY_NAME, jwtInfo.getName())
+            .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
+            .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
             // 过期时间
             .setExpiration(DateTime.now().plusSeconds(expire).toDate())
             // 加密
@@ -134,8 +134,8 @@ public class JWTHelper {
     Claims body = claimsJws.getBody();
     return new JWTInfo(
         body.getSubject(),
-        StringHelper.getObjectValue(body.get(CommonConstants.JWT_KEY_USER_ID)),
-        StringHelper.getObjectValue(body.get(CommonConstants.JWT_KEY_NAME)));
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_USER_ID)),
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_NAME)));
   }
 
   /**
@@ -152,7 +152,7 @@ public class JWTHelper {
     Claims body = claimsJws.getBody();
     return new JWTInfo(
         body.getSubject(),
-        StringHelper.getObjectValue(body.get(CommonConstants.JWT_KEY_USER_ID)),
-        StringHelper.getObjectValue(body.get(CommonConstants.JWT_KEY_NAME)));
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_USER_ID)),
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_NAME)));
   }
 }

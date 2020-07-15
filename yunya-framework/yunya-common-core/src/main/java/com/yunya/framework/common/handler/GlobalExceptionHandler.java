@@ -14,13 +14,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 全局异常处理
+ * 全局异常处理 todo 更新全局异常处理
  *
  * @author ace
  * @date 2017/9/8
  */
 @Slf4j
-@ControllerAdvice("com.yunya.framework")
+@ControllerAdvice("com.yunya")
 @ResponseBody
 public class GlobalExceptionHandler {
 

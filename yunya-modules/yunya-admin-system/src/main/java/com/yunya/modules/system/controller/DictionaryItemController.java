@@ -11,6 +11,7 @@ import com.yunya.modules.system.vo.DictionaryItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,13 +25,29 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(value = "字典明细数据管理", description = "字典数据增删改查")
 @RestController
-@RequestMapping("dict/item")
+@RequestMapping("dict")
 public class DictionaryItemController {
+
   /** 注入对象 */
   private final DictionaryItemBiz dictionaryItemBiz;
 
   public DictionaryItemController(DictionaryItemBiz dictionaryItemBiz) {
     this.dictionaryItemBiz = dictionaryItemBiz;
+  }
+
+  /**
+   * 根据ID查询字典明细信息
+   *
+   * @param id 字典明细ID
+   * @return
+   */
+  @ApiOperation("根据ID获取字典明细信息")
+  @GetMapping("/item/{id}")
+  public ResponseResult findById(@PathVariable Integer id) {
+    DictionaryItemVO vo = new DictionaryItemVO();
+    DictionaryItem item = dictionaryItemBiz.selectById(id);
+    BeanUtils.copyProperties(item, vo);
+    return ResponseUtil.success(vo);
   }
 
   /**
@@ -41,7 +58,7 @@ public class DictionaryItemController {
    */
   @ApiOperation("根据条件查询字典明细列表（可分页）")
   @ApiImplicitParam(name = "form", value = "字典明细全局查询参数封装模型", dataType = "DictQueryForm")
-  @PostMapping("/list")
+  @PostMapping("/item/list")
   public ResponseResult findList(@RequestBody @Validated DictQueryForm queryForm) {
     PageInfo<DictionaryItemVO> resultList = dictionaryItemBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
@@ -54,7 +71,7 @@ public class DictionaryItemController {
    * @return map
    */
   @ApiOperation("新增字典明细")
-  @PostMapping("/add")
+  @PostMapping("/item/add")
   public ResponseResult add(@RequestBody @Validated DictionaryItem resource) {
     dictionaryItemBiz.add(resource);
     return ResponseUtil.success();
@@ -74,7 +91,7 @@ public class DictionaryItemController {
       value = "字典明细ID",
       dataType = "int",
       paramType = "path")
-  @PutMapping("/edit/{id}")
+  @PutMapping("/item/edit/{id}")
   public ResponseResult edit(@PathVariable Integer id, @RequestBody @Validated DictForm form) {
     dictionaryItemBiz.edit(id, form);
     return ResponseUtil.success();
@@ -93,7 +110,7 @@ public class DictionaryItemController {
       value = "字典明细ID",
       dataType = "int",
       paramType = "path")
-  @DeleteMapping("/delete/{id}")
+  @DeleteMapping("/item/delete/{id}")
   public ResponseResult delete(@PathVariable Integer id) {
     dictionaryItemBiz.deleteDictItem(id);
     return ResponseUtil.success();

@@ -67,7 +67,8 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     DictionaryItem item = mapper.selectByPrimaryKey(id);
     if (null == item) {
       throw new ClientServiceException(
-          "修改ID为'" + id + "'失败，该字典数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改字典明细数据失败，名称为'" + form.getName() + "'，的数据不存在",
+          OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     if (!item.getName().equals(form.getName())) {
       String name = form.getName();

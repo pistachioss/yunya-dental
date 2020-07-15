@@ -49,7 +49,8 @@ public class ClinicExtInfoBiz extends BaseBiz<ClinicExtInfoMapper, ClinicExtInfo
     Company company = companyMapper.selectByPrimaryKey(companyId);
     if (null == company) {
       throw new ClientServiceException(
-          "修改医疗机构信息，门诊ID为'" + companyId + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改医疗机构信息失败，名称为'" + form.getAbbreviation() + "'的数据不存在",
+          OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     company.setCreditCode(form.getCreditCode());
     companyMapper.updateByPrimaryKeySelective(company);

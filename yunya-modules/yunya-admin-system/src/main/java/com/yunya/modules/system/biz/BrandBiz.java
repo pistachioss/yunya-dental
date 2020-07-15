@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.modules.system.entity.Brand;
 import com.yunya.modules.system.entity.ClinicExtInfo;
@@ -16,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -62,8 +64,8 @@ public class BrandBiz extends BaseBiz<BrandMapper, Brand> {
       throw new ClientServiceException(
           "新增品牌'" + brandName + "'失败，该品牌名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-    // resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    // resource.setCrtName(BaseContextHandler.getUsername());
+    resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resource.setCrtName(BaseContextHandler.getUsername());
     mapper.insertSelective(resource);
   }
 
@@ -78,7 +80,7 @@ public class BrandBiz extends BaseBiz<BrandMapper, Brand> {
     Brand brand = mapper.selectByPrimaryKey(brandId);
     if (null == brand) {
       throw new ClientServiceException(
-          "修改品牌，品牌ID为'" + brandId + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改品牌失败，名称为'" + form.getName() + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
 
     // 名称有修改，校验名称是否重复
@@ -97,9 +99,9 @@ public class BrandBiz extends BaseBiz<BrandMapper, Brand> {
     if (null != form.getInservice()) {
       brand.setInservice(form.getInservice());
     }
-    // brand.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    // brand.setUpdName(BaseContextHandler.getUsername());
-    // brand.setUpdTime(new Date(System.currentTimeMillis()));
+    brand.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    brand.setUpdName(BaseContextHandler.getUsername());
+    brand.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(brand);
   }
 

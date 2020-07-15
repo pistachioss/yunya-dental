@@ -11,6 +11,7 @@ import com.yunya.modules.system.vo.BrandVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,11 +27,27 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("brand")
 public class BrandController {
+
   /** 注入服务 */
   private final BrandBiz brandBiz;
 
   public BrandController(BrandBiz brandBiz) {
     this.brandBiz = brandBiz;
+  }
+
+  /**
+   * 根据ID查询品牌
+   *
+   * @param id 品牌ID
+   * @return
+   */
+  @ApiOperation("根据ID查询品牌信息")
+  @GetMapping("/one/{id}")
+  public ResponseResult findById(@PathVariable Integer id) {
+    BrandVO vo = new BrandVO();
+    Brand brand = brandBiz.selectById(id);
+    BeanUtils.copyProperties(brand, vo);
+    return ResponseUtil.success(vo);
   }
 
   /**

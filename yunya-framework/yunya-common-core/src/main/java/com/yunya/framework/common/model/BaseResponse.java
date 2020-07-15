@@ -2,7 +2,7 @@ package com.yunya.framework.common.model;
 
 /**
  * 前端响应基类
- *
+ * todo 后期需移除
  * @author ace
  * @date 2017/8/23
  */

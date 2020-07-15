@@ -25,6 +25,9 @@ public class CommonConstants {
   public static final Integer TOKEN_FORBIDDEN_CODE = 40301;
 
   public static final Integer EX_OTHER_CODE = 500;
+
+  /** 当前组织ID */
+  public static final String CONTEXT_KEY_ORG_ID = "currentOrgId";
   /** 当前用户ID */
   public static final String CONTEXT_KEY_USER_ID = "currentUserId";
   /** 当前用户名 */
@@ -33,8 +36,4 @@ public class CommonConstants {
   public static final String CONTEXT_KEY_USER_NAME = "currentUser";
   /** 当前用户token */
   public static final String CONTEXT_KEY_USER_TOKEN = "currentUserToken";
-  /** jwt用户ID */
-  public static final String JWT_KEY_USER_ID = "userId";
-  /** jwt用户名 */
-  public static final String JWT_KEY_NAME = "name";
 }

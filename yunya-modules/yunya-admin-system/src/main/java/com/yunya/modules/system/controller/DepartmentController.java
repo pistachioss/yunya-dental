@@ -11,6 +11,7 @@ import com.yunya.modules.system.vo.DepartmentVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,6 +32,21 @@ public class DepartmentController {
 
   public DepartmentController(DepartmentBiz departmentBiz) {
     this.departmentBiz = departmentBiz;
+  }
+
+  /**
+   * 根据ID查询部门信息
+   *
+   * @param id 部门ID
+   * @return
+   */
+  @ApiOperation("根据ID查询部门模版")
+  @GetMapping("/one/{id}")
+  public ResponseResult findById(@PathVariable Integer id) {
+    DepartmentVO vo = new DepartmentVO();
+    Department department = departmentBiz.selectById(id);
+    BeanUtils.copyProperties(department, vo);
+    return ResponseUtil.success(vo);
   }
 
   /**
@@ -76,7 +92,7 @@ public class DepartmentController {
       paramType = "path")
   @PutMapping("/edit/{id}")
   public ResponseResult editDepartment(
-          @PathVariable Integer id, @Validated @RequestBody BaseForm form) {
+      @PathVariable Integer id, @Validated @RequestBody BaseForm form) {
     departmentBiz.modifyDepartment(id, form);
     return ResponseUtil.success();
   }

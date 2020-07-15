@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.OrganizationBiz;
@@ -37,6 +38,18 @@ public class OrganizationController {
   }
 
   /**
+   * 根据ID获取组织信息
+   *
+   * @param id 组织ID
+   * @return
+   */
+  @GetMapping("/one/{id}")
+  public ResponseResult findById(@PathVariable Integer id) {
+    OrganizationInfo vo = organizationBiz.findOrgInfoById(id);
+    return ResponseUtil.success(vo);
+  }
+
+  /**
    * 获取组织树列表
    *
    * @return list
@@ -56,7 +69,7 @@ public class OrganizationController {
    */
   @ApiOperation("根据条件查询组织列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody @Validated OrganizationQueryForm queryForm) {
+  public ResponseResult findList(@RequestBody OrganizationQueryForm queryForm) {
     PageInfo<OrganizationInfoVO> resultList = organizationBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
