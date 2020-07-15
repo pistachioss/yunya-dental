@@ -17,6 +17,117 @@ public class BaseContextHandler {
   public static ThreadLocal<Map<String, Object>> threadLocal =
       new ThreadLocal<Map<String, Object>>();
 
+  /**
+   * 获取当前组织ID
+   *
+   * @return
+   */
+  public static String getOrgId() {
+    Object value = get(CommonConstants.CONTEXT_KEY_ORG_ID);
+    return returnObjectValue(value);
+  }
+
+  /**
+   * 获取当前用户ID
+   *
+   * @return
+   */
+  public static String getUserID() {
+    Object value = get(CommonConstants.CONTEXT_KEY_USER_ID);
+    return returnObjectValue(value);
+  }
+
+  /**
+   * 获取当前用户名
+   *
+   * @return
+   */
+  public static String getUsername() {
+    Object value = get(CommonConstants.CONTEXT_KEY_USERNAME);
+    return returnObjectValue(value);
+  }
+
+  /**
+   * 获取当前用户姓名
+   *
+   * @return
+   */
+  public static String getName() {
+    Object value = get(CommonConstants.CONTEXT_KEY_USER_NAME);
+    return StringHelper.getObjectValue(value);
+  }
+
+  /**
+   * 获取当前token
+   *
+   * @return
+   */
+  public static String getToken() {
+    Object value = get(CommonConstants.CONTEXT_KEY_USER_TOKEN);
+    return StringHelper.getObjectValue(value);
+  }
+
+  /**
+   * 设置组织ID
+   *
+   * @param orgId
+   */
+  public static void setOrgId(String orgId) {
+    set(CommonConstants.CONTEXT_KEY_ORG_ID, orgId);
+  }
+
+  /**
+   * 设置token
+   *
+   * @param token
+   */
+  public static void setToken(String token) {
+    set(CommonConstants.CONTEXT_KEY_USER_TOKEN, token);
+  }
+
+  /**
+   * 设置姓名
+   *
+   * @param name
+   */
+  public static void setName(String name) {
+    set(CommonConstants.CONTEXT_KEY_USER_NAME, name);
+  }
+
+  /**
+   * 设置用户ID
+   *
+   * @param userID
+   */
+  public static void setUserID(String userID) {
+    set(CommonConstants.CONTEXT_KEY_USER_ID, userID);
+  }
+
+  /**
+   * 设置用户名
+   *
+   * @param username
+   */
+  public static void setUsername(String username) {
+    set(CommonConstants.CONTEXT_KEY_USERNAME, username);
+  }
+
+  /**
+   * 对象转字符串
+   *
+   * @param value
+   * @return
+   */
+  private static String returnObjectValue(Object value) {
+    return value == null ? null : value.toString();
+  }
+
+  /**
+   * 设置到局部线程变量
+   *
+   * @param key
+   * @param value
+   */
   public static void set(String key, Object value) {
     Map<String, Object> map = threadLocal.get();
     if (map == null) {
@@ -26,6 +137,12 @@ public class BaseContextHandler {
     map.put(key, value);
   }
 
+  /**
+   * 从局部线程变量中获取
+   *
+   * @param key
+   * @return
+   */
   public static Object get(String key) {
     Map<String, Object> map = threadLocal.get();
     if (map == null) {
@@ -35,46 +152,7 @@ public class BaseContextHandler {
     return map.get(key);
   }
 
-  public static String getUserID() {
-    Object value = get(CommonConstants.CONTEXT_KEY_USER_ID);
-    return returnObjectValue(value);
-  }
-
-  public static String getUsername() {
-    Object value = get(CommonConstants.CONTEXT_KEY_USERNAME);
-    return returnObjectValue(value);
-  }
-
-  public static String getName() {
-    Object value = get(CommonConstants.CONTEXT_KEY_USER_NAME);
-    return StringHelper.getObjectValue(value);
-  }
-
-  public static String getToken() {
-    Object value = get(CommonConstants.CONTEXT_KEY_USER_TOKEN);
-    return StringHelper.getObjectValue(value);
-  }
-
-  public static void setToken(String token) {
-    set(CommonConstants.CONTEXT_KEY_USER_TOKEN, token);
-  }
-
-  public static void setName(String name) {
-    set(CommonConstants.CONTEXT_KEY_USER_NAME, name);
-  }
-
-  public static void setUserID(String userID) {
-    set(CommonConstants.CONTEXT_KEY_USER_ID, userID);
-  }
-
-  public static void setUsername(String username) {
-    set(CommonConstants.CONTEXT_KEY_USERNAME, username);
-  }
-
-  private static String returnObjectValue(Object value) {
-    return value == null ? null : value.toString();
-  }
-
+  /** 从线程局部变量中移除 */
   public static void remove() {
     threadLocal.remove();
   }
