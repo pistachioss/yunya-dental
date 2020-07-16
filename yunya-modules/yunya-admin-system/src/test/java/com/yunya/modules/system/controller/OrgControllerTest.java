@@ -27,11 +27,8 @@ public class OrgControllerTest {
   @Test
   public void testFindList() {
     OrganizationQueryForm form = new OrganizationQueryForm();
-     form.setTypes(new Byte[] {0, 2});
-    form.setWhetherPage(false);
-    form.setPageSize(3);
-    form.setPageNum(2);
-    form.setName("门诊");
+    form.setTypes(new Byte[] {0, 2});
+    form.put("name", "门诊");
     ResponseResult list = organizationController.findList(form);
     System.out.println(list);
   }

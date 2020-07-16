@@ -1,9 +1,6 @@
 package com.yunya.modules.system.rpc;
 
-import com.yunya.feign.system.form.BrandModel;
-import com.yunya.feign.system.form.DepartmentModel;
-import com.yunya.feign.system.form.DictionaryItemModel;
-import com.yunya.feign.system.form.DictionaryTypeModel;
+import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.modules.system.biz.*;
@@ -11,7 +8,9 @@ import com.yunya.modules.system.entity.Brand;
 import com.yunya.modules.system.entity.Department;
 import com.yunya.modules.system.entity.DictionaryItem;
 import com.yunya.modules.system.entity.DictionaryType;
+import com.yunya.modules.system.form.query.OrganizationQueryForm;
 import com.yunya.modules.system.rpc.service.PermissionService;
+import com.yunya.modules.system.vo.OrganizationInfoVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -79,8 +78,8 @@ public class SystemServiceRest {
   @RequestMapping(value = "/brand/list", method = RequestMethod.POST)
   public List<Brand> findBrandList(@RequestBody BrandModel model) {
     Brand brand = new Brand();
-    BeanUtils.copyProperties(model, brand);
-    return brandBiz.selectList(brand);
+    BeanUtils.copyProperties(model,brand);
+    return brandBiz.selectByObj(brand);
   }
 
   /**
@@ -104,7 +103,7 @@ public class SystemServiceRest {
   public List<Department> findDepartmentList(@RequestBody DepartmentModel model) {
     Department department = new Department();
     BeanUtils.copyProperties(model, department);
-    return departmentBiz.selectList(department);
+    return departmentBiz.selectByObj(department);
   }
 
   /**
@@ -128,7 +127,7 @@ public class SystemServiceRest {
   public List<DictionaryItem> findDictionaryItemList(@RequestBody DictionaryItemModel model) {
     DictionaryItem dictItem = new DictionaryItem();
     BeanUtils.copyProperties(model, dictItem);
-    return dictionaryItemBiz.selectList(dictItem);
+    return dictionaryItemBiz.selectByObj(dictItem);
   }
 
   /**
@@ -152,7 +151,7 @@ public class SystemServiceRest {
   public List<DictionaryType> findDictionaryTypeList(@RequestBody DictionaryTypeModel model) {
     DictionaryType dictType = new DictionaryType();
     BeanUtils.copyProperties(model, dictType);
-    return dictionaryTypeBiz.selectList(dictType);
+    return dictionaryTypeBiz.selectByObj(dictType);
   }
 
   /**
@@ -164,5 +163,18 @@ public class SystemServiceRest {
   @RequestMapping(value = "/organization/{id}", method = RequestMethod.GET)
   public OrganizationInfo findOrgInfoByOrgId(@PathVariable Integer id) {
     return organizationBiz.findOrgInfoById(id);
+  }
+
+  /**
+   * 根据条件查询组织信息
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/organization/list", method = RequestMethod.POST)
+  public List<OrganizationInfoVO> findOrgInfoList(OrganizationQueryModel model) {
+    OrganizationQueryForm form = new OrganizationQueryForm();
+    BeanUtils.copyProperties(model, form);
+    return organizationBiz.findList(form).getList();
   }
 }

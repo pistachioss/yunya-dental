@@ -33,5 +33,5 @@ public interface CompanyMapper extends Mapper<Company> {
    * @param queryForm 参数封装
    * @return list
    */
-  List<OrganizationInfoVO> selectOrganizationByExample(OrganizationQueryForm queryForm);
+  List<OrganizationInfoVO> selectOrganizationByExample(@Param("queryForm") OrganizationQueryForm queryForm);
 }

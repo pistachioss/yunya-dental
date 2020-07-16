@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="3e2beb00-fe2a-43de-b720-82b65c47dc66" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/yunya-auth/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-auth/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-framework/yunya-auth-sdk/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-framework/yunya-auth-sdk/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-framework/yunya-common-core/src/main/java/com/yunya/framework/common/utils/QueryUtil.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-framework/yunya-common-core/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-framework/yunya-common-core/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-framework/yunya-common-redis/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-framework/yunya-common-redis/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-gate/target/classes/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-gate/target/classes/bootstrap.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-gate/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-gate/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/test/java/com/yunya/modules/system/controller/SystemServiceRestController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/META-INF/additional-spring-configuration-metadata.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/application.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/bootstrap.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/builder/generatorConfig.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/BrandMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/ClinicExtInfoMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/CompanyDepartmentMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/CompanyMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/DepartmentMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/DictionaryItemMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/DictionaryTypeMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/PostGroupMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/PostMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysDistrictsMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysElementMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysEmployeeMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysGateLogMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysMenuMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysPostElementMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysResourceAuthorityMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysUserMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/classes/mapper/SysUserPostMapper.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-remote/src/main/java/com/yunya/feign/system/form/OrganizationQueryModel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-remote/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/yunya-remote/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yunya-framework/yunya-common-core/src/main/java/com/yunya/framework/common/biz/BaseBiz.java" beforeDir="false" afterPath="$PROJECT_DIR$/yunya-framework/yunya-common-core/src/main/java/com/yunya/framework/common/biz/BaseBiz.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/main/java/com/yunya/modules/system/biz/BrandBiz.java" beforeDir="false" afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/main/java/com/yunya/modules/system/biz/BrandBiz.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/main/java/com/yunya/modules/system/mapper/CompanyMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/main/java/com/yunya/modules/system/mapper/CompanyMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/main/java/com/yunya/modules/system/rpc/SystemServiceRest.java" beforeDir="false" afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/main/java/com/yunya/modules/system/rpc/SystemServiceRest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/main/resources/mapper/CompanyMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/main/resources/mapper/CompanyMapper.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/test/java/com/yunya/modules/system/controller/OrgControllerTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/yunya-modules/yunya-admin-system/src/test/java/com/yunya/modules/system/controller/OrgControllerTest.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="CodeStyleSettingsInfer">
+    <option name="done" value="true" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="localRepository" value="$MAVEN_REPOSITORY$" />
+        <option name="mavenHome" value="$APPLICATION_HOME_DIR$/plugins/maven/lib/maven3" />
+        <option name="userSettingsFile" value="$APPLICATION_HOME_DIR$/plugins/maven/lib/maven3/conf/settings.xml" />
+      </MavenGeneralSettings>
+    </option>
+    <option name="importingSettings">
+      <MavenImportingSettings>
+        <option name="jdkForImporter" value="1.8" />
+        <option name="vmOptionsForImporter" value="-Xmx768m" />
+      </MavenImportingSettings>
+    </option>
+  </component>
+  <component name="ProjectCodeStyleSettingsMigration">
+    <option name="version" value="1" />
+  </component>
+  <component name="ProjectId" id="1efj4vqr7x2GeeiIDXwhuowG0lj" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="DatabaseDriversLRU" value="mysql" />
+    <property name="RequestMappingsPanelOrder0" value="0" />
+    <property name="RequestMappingsPanelOrder1" value="1" />
+    <property name="RequestMappingsPanelWidth0" value="75" />
+    <property name="RequestMappingsPanelWidth1" value="75" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="aspect.path.notification.shown" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="project.structure.last.edited" value="Problems" />
+    <property name="project.structure.proportion" value="0.15" />
+    <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.import" />
+  </component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
+  <component name="RunManager" selected="JUnit.SystemServiceRestController.test">
+    <configuration name="BrandControllerTest.testFindBrand" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="yunya-admin-system" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.yunya.modules.system.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.yunya.modules.system.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.yunya.modules.system.controller.BrandControllerTest" />
+      <option name="METHOD_NAME" value="testFindBrand" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BSP.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ClientControllerTest.testGetUserPublicKey" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="yunya-auth" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.yunya.auth.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.yunya.auth.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.yunya.auth.controller.ClientControllerTest" />
+      <option name="METHOD_NAME" value="testGetUserPublicKey" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BSP.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="OrgControllerTest.testFindList" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="yunya-admin-system" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.yunya.modules.system.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.yunya.modules.system.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.yunya.modules.system.controller.OrgControllerTest" />
+      <option name="METHOD_NAME" value="testFindList" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BSP.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="SystemServiceRestController.test" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="yunya-admin-system" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.yunya.modules.system.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.yunya.modules.system.controller" />
+      <option name="MAIN_CLASS_NAME" value="com.yunya.modules.system.controller.SystemServiceRestController" />
+      <option name="METHOD_NAME" value="test" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BSP.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="JUnit" factoryName="JUnit">
+      <option name="TEST_OBJECT" value="class" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+        <option name="BSP.BeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="YunyaAuthBootstrap" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="yunya-auth" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.yunya.auth.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.yunya.auth.YunyaAuthBootstrap" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="YunyaSystemApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="yunya-admin-system" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.yunya.modules.system.YunyaSystemApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" ALTERNATIVE_JRE_ENABLED="false">
+      <deployment />
+      <server-settings>
+        <option name="BASE_DIRECTORY_NAME" value="_Default_(Template)_Project" />
+      </server-settings>
+      <predefined_log_file enabled="true" id="Tomcat" />
+      <predefined_log_file enabled="true" id="Tomcat Catalina" />
+      <predefined_log_file id="Tomcat Manager" />
+      <predefined_log_file id="Tomcat Host Manager" />
+      <predefined_log_file id="Tomcat Localhost Access" />
+      <RunnerSettings RunnerId="Debug">
+        <option name="DEBUG_PORT" value="51597" />
+      </RunnerSettings>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Cover">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Debug">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Run">
+        <option name="USE_ENV_VARIABLES" value="true" />
+        <STARTUP>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </STARTUP>
+        <SHUTDOWN>
+          <option name="USE_DEFAULT" value="true" />
+          <option name="SCRIPT" value="" />
+          <option name="VM_PARAMETERS" value="" />
+          <option name="PROGRAM_PARAMETERS" value="" />
+        </SHUTDOWN>
+      </ConfigurationWrapper>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="JUnit.SystemServiceRestController.test" />
+        <item itemvalue="JUnit.OrgControllerTest.testFindList" />
+        <item itemvalue="Spring Boot.YunyaAuthBootstrap" />
+        <item itemvalue="JUnit.BrandControllerTest.testFindBrand" />
+        <item itemvalue="JUnit.ClientControllerTest.testGetUserPublicKey" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="3e2beb00-fe2a-43de-b720-82b65c47dc66" name="Default Changelist" comment="" />
+      <created>1594719353242</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1594719353242</updated>
+      <workItem from="1594719360115" duration="48818000" />
+    </task>
+    <task id="LOCAL-00001" summary="更新.ignore文件；reademe.md文件">
+      <created>1594719987105</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1594719987105</updated>
+    </task>
+    <task id="LOCAL-00002" summary="更新依赖">
+      <created>1594731201589</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1594731201589</updated>
+    </task>
+    <task id="LOCAL-00003" summary="新增将组织ID设置到局部线程变量">
+      <created>1594777812592</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1594777812592</updated>
+    </task>
+    <task id="LOCAL-00004" summary="更新基础工程，新增部分远程调用方法">
+      <created>1594809371014</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1594809371014</updated>
+    </task>
+    <task id="LOCAL-00005" summary="修改mapper参数">
+      <created>1594814640301</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1594814640301</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="2" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="更新.ignore文件；reademe.md文件" />
+    <MESSAGE value="更新依赖" />
+    <MESSAGE value="新增将组织ID设置到局部线程变量" />
+    <MESSAGE value="更新基础工程，新增部分远程调用方法" />
+    <MESSAGE value="修改mapper参数" />
+    <option name="LAST_COMMIT_MESSAGE" value="修改mapper参数" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="568" y="276" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog" timestamp="1594869843196">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="568" y="276" key="#com.intellij.codeInsight.editorActions.RestoreReferencesDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1594869843196" />
+    <state x="496" y="219" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1594726744801">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="496" y="219" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1594726744801" />
+    <state x="568" y="292" key="#com.intellij.ide.util.PackageChooserDialog" timestamp="1594788616645">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="568" y="292" key="#com.intellij.ide.util.PackageChooserDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1594788616645" />
+    <state x="568" y="256" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog" timestamp="1594874457451">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="568" y="256" key="#com.intellij.refactoring.safeDelete.UnsafeUsagesDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1594874457451" />
+    <state x="266" y="60" key="CommitChangelistDialog2" timestamp="1594814640034">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="266" y="60" key="CommitChangelistDialog2/0.0.1792.1120@0.0.1792.1120" timestamp="1594814640034" />
+    <state x="182" y="101" key="DiffContextDialog" timestamp="1594809362888">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="182" y="101" key="DiffContextDialog/0.0.1792.1120@0.0.1792.1120" timestamp="1594809362888" />
+    <state width="1740" height="365" key="GridCell.Tab.0.bottom" timestamp="1594874365711">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1740" height="365" key="GridCell.Tab.0.bottom/0.0.1792.1120@0.0.1792.1120" timestamp="1594874365711" />
+    <state width="1740" height="365" key="GridCell.Tab.0.center" timestamp="1594874365710">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1740" height="365" key="GridCell.Tab.0.center/0.0.1792.1120@0.0.1792.1120" timestamp="1594874365710" />
+    <state width="1740" height="365" key="GridCell.Tab.0.left" timestamp="1594874365709">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1740" height="365" key="GridCell.Tab.0.left/0.0.1792.1120@0.0.1792.1120" timestamp="1594874365709" />
+    <state width="1740" height="365" key="GridCell.Tab.0.right" timestamp="1594874365710">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1740" height="365" key="GridCell.Tab.0.right/0.0.1792.1120@0.0.1792.1120" timestamp="1594874365710" />
+    <state width="1740" height="365" key="GridCell.Tab.1.bottom" timestamp="1594874365713">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1740" height="365" key="GridCell.Tab.1.bottom/0.0.1792.1120@0.0.1792.1120" timestamp="1594874365713" />
+    <state width="1740" height="365" key="GridCell.Tab.1.center" timestamp="1594874365712">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1740" height="365" key="GridCell.Tab.1.center/0.0.1792.1120@0.0.1792.1120" timestamp="1594874365712" />
+    <state width="1740" height="365" key="GridCell.Tab.1.left" timestamp="1594874365711">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1740" height="365" key="GridCell.Tab.1.left/0.0.1792.1120@0.0.1792.1120" timestamp="1594874365711" />
+    <state width="1740" height="365" key="GridCell.Tab.1.right" timestamp="1594874365712">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state width="1740" height="365" key="GridCell.Tab.1.right/0.0.1792.1120@0.0.1792.1120" timestamp="1594874365712" />
+    <state x="381" y="241" key="IDE.errors.dialog" timestamp="1594725925519">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="381" y="241" key="IDE.errors.dialog/0.0.1792.1120@0.0.1792.1120" timestamp="1594725925519" />
+    <state x="295" y="111" key="SettingsEditor" timestamp="1594781612641">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="295" y="111" key="SettingsEditor/0.0.1792.1120@0.0.1792.1120" timestamp="1594781612641" />
+    <state x="92" y="147" key="new project wizard" timestamp="1594726660395">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="92" y="147" key="new project wizard/0.0.1792.1120@0.0.1792.1120" timestamp="1594726660395" />
+    <state x="477" y="88" width="838" height="1032" key="search.everywhere.popup" timestamp="1594801244143">
+      <screen x="0" y="0" width="1792" height="1120" />
+    </state>
+    <state x="477" y="88" width="838" height="1032" key="search.everywhere.popup/0.0.1792.1120@0.0.1792.1120" timestamp="1594801244143" />
+  </component>
+</project>

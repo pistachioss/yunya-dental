@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.CompanyDepartmentMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.modules.system.entity.CompanyDepartment" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="parent_id" property="parentId" jdbcType="INTEGER" />
+    <result column="company_id" property="companyId" jdbcType="INTEGER" />
+    <result column="department_id" property="departmentId" jdbcType="INTEGER" />
+    <result column="order_num" property="orderNum" jdbcType="INTEGER" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+   <!-- 根据条件查询组织部门信息 -->
+    <select id="selectOrganizationDepartmentByExample" resultType="com.yunya.modules.system.vo.OrgDeptVO">
+        SELECT
+          cdc.id,
+          cdc.parentId,
+          cdc.companyId,
+          cdc.companyName,
+          cdc.deptId,
+          cdc.deptName,
+          cdc.type,
+          cdc.orderNum
+        FROM
+          (
+          SELECT
+            cd.id,
+            cd.parent_id AS parentId,
+            cd.department_id AS deptId,
+            d.`name` AS deptName,
+            d.type,
+            cd.order_num AS orderNum,
+            cd.company_id AS companyId,
+            c.`name` AS companyName
+          FROM
+            company_department cd
+            LEFT JOIN department d ON cd.department_id = d.id
+            LEFT JOIN company c ON cd.company_id = c.id
+          ) cdc
+        <where>
+          <if test="queryForm.id != null">
+            and cdc.id = #{queryForm.id}
+          </if>
+          <if test="queryForm.companyId != null">
+            and cdc.companyId = #{queryForm.companyId}
+          </if>
+          <if test="queryForm.name != null and queryForm.name != ''">
+            and cdc.deptName like CONCAT(CONCAT('%',#{queryForm.name}),'%')
+          </if>
+          <if test="queryForm.types != null and queryForm.types.length > 0">
+            and cdc.type in
+            <foreach collection="queryForm.types" item="item" index="index" open="(" close=")" separator=",">
+              #{item}
+            </foreach>
+          </if>
+        </where>
+        ORDER BY
+          parentId,
+          orderNum
+    </select>
+</mapper>
