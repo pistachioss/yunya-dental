@@ -20,6 +20,8 @@
 *.zip
 *.tar.gz
 *.rar
+*.idea
+*.target
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
@@ -56,3 +58,20 @@ yunya-remote/src/main/java/com/yunya/feign/auth/vo/
 yunya-remote/target/generated-sources/
 yunya-remote/yunya-remote.iml
 yunya-tools/yunya-tools.iml
+yunya-auth/target/maven-status/
+yunya-framework/yunya-auth-sdk/target/generated-sources/
+yunya-framework/yunya-auth-sdk/target/maven-status/
+yunya-framework/yunya-common-core/target/maven-status/
+yunya-framework/yunya-common-redis/target/maven-status/
+yunya-gate/target/classes/application.yml
+yunya-gate/target/classes/bootstrap.yml
+yunya-gate/target/generated-sources/
+yunya-gate/target/maven-status/
+yunya-modules/yunya-admin-system/target/classes/META-INF/
+yunya-modules/yunya-admin-system/target/classes/application.yml
+yunya-modules/yunya-admin-system/target/classes/bootstrap.yml
+yunya-modules/yunya-admin-system/target/classes/builder/
+yunya-modules/yunya-admin-system/target/classes/mapper/
+yunya-modules/yunya-admin-system/target/generated-sources/
+yunya-modules/yunya-admin-system/target/maven-status/
+yunya-remote/target/maven-status/
