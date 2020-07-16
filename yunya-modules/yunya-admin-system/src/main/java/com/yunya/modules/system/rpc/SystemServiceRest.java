@@ -4,11 +4,7 @@ import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.modules.system.biz.*;
-import com.yunya.modules.system.entity.Brand;
-import com.yunya.modules.system.entity.Department;
-import com.yunya.modules.system.entity.DictionaryItem;
-import com.yunya.modules.system.entity.DictionaryType;
-import com.yunya.modules.system.form.query.OrganizationQueryForm;
+import com.yunya.modules.system.entity.*;
 import com.yunya.modules.system.rpc.service.PermissionService;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import org.springframework.beans.BeanUtils;
@@ -42,8 +38,10 @@ public class SystemServiceRest {
   @Autowired private DictionaryTypeBiz dictionaryTypeBiz;
   /** 组织 */
   @Autowired private OrganizationBiz organizationBiz;
-  /***/
-  /***/
+  /** 组织部门 */
+  @Autowired private CompanyDepartmentBiz companyDepartmentBiz;
+  /** 岗位 */
+  @Autowired private PostBiz postBiz;
   /***/
   /***/
 
@@ -78,7 +76,7 @@ public class SystemServiceRest {
   @RequestMapping(value = "/brand/list", method = RequestMethod.POST)
   public List<Brand> findBrandList(@RequestBody BrandModel model) {
     Brand brand = new Brand();
-    BeanUtils.copyProperties(model,brand);
+    BeanUtils.copyProperties(model, brand);
     return brandBiz.selectByObj(brand);
   }
 
@@ -172,9 +170,55 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/organization/list", method = RequestMethod.POST)
-  public List<OrganizationInfoVO> findOrgInfoList(OrganizationQueryModel model) {
-    OrganizationQueryForm form = new OrganizationQueryForm();
-    BeanUtils.copyProperties(model, form);
-    return organizationBiz.findList(form).getList();
+  public List<OrganizationInfoVO> findOrgInfoList(@RequestBody OrganizationModel model) {
+    return organizationBiz.findOrgInfoList(model);
+  }
+
+  /**
+   * 根据组织部门ID查询组织部门信息
+   *
+   * @param id 组织部门ID
+   * @return obj
+   */
+  @RequestMapping(value = "/org/dept/{id}", method = RequestMethod.GET)
+  public CompanyDepartment findCompanyDepartmentById(@PathVariable Integer id) {
+    return companyDepartmentBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询组织部门列表
+   *
+   * @param model 查询参数
+   * @return list
+   */
+  @RequestMapping(value = "/org/dept/list", method = RequestMethod.POST)
+  public List<CompanyDepartment> findCompanyDepartmentList(@RequestBody OrgDepartmentModel model) {
+    CompanyDepartment department = new CompanyDepartment();
+    BeanUtils.copyProperties(model, department);
+    return companyDepartmentBiz.selectByObj(department);
+  }
+
+  /**
+   * 根据岗位ID查询岗位信息
+   *
+   * @param id 岗位ID
+   * @return obj
+   */
+  @RequestMapping(value = "/post/one/{id}", method = RequestMethod.GET)
+  public Post findPostById(@PathVariable Integer id) {
+    return postBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询岗位信息列表
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/post/list", method = RequestMethod.POST)
+  public List<Post> findPostList(@RequestBody PostModel model) {
+    Post post = new Post();
+    BeanUtils.copyProperties(model, post);
+    return postBiz.selectByObj(post);
   }
 }

@@ -26,7 +26,7 @@ public class SysResourceAuthority {
      * 资源ID
      */
     @Column(name = "resource_id")
-    private Integer resourceId;
+    private String resourceId;
 
     /**
      * 资源类型(0-菜单；1-功能按钮)
@@ -134,7 +134,7 @@ public class SysResourceAuthority {
      *
      * @return resource_id - 资源ID
      */
-    public Integer getResourceId() {
+    public String getResourceId() {
         return resourceId;
     }
 
@@ -143,7 +143,7 @@ public class SysResourceAuthority {
      *
      * @param resourceId 资源ID
      */
-    public void setResourceId(Integer resourceId) {
+    public void setResourceId(String resourceId) {
         this.resourceId = resourceId;
     }
 

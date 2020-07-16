@@ -15,7 +15,7 @@ public class SysPostElement {
 
   /** 系统按钮ID */
   @Column(name = "sys_element_id")
-  private Integer sysElementId;
+  private String sysElementId;
 
   /** 权限类型 */
   private Byte type;
@@ -79,7 +79,7 @@ public class SysPostElement {
    *
    * @return sys_element_id - 系统按钮ID
    */
-  public Integer getSysElementId() {
+  public String getSysElementId() {
     return sysElementId;
   }
 
@@ -88,7 +88,7 @@ public class SysPostElement {
    *
    * @param sysElementId 系统按钮ID
    */
-  public void setSysElementId(Integer sysElementId) {
+  public void setSysElementId(String sysElementId) {
     this.sysElementId = sysElementId;
   }
 

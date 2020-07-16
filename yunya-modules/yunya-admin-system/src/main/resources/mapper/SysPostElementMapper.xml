@@ -7,7 +7,7 @@
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="post_id" property="postId" jdbcType="INTEGER" />
-    <result column="sys_element_id" property="sysElementId" jdbcType="INTEGER" />
+    <result column="sys_element_id" property="sysElementId" jdbcType="VARCHAR" />
     <result column="type" property="type" jdbcType="TINYINT" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />

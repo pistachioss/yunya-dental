@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Api(value = "组织部门管理", description = "组织部门增删改查")
 @RestController
-@RequestMapping("organization/dept")
+@RequestMapping("organization")
 public class OrganizationDepartmentController {
 
   /** 注入对象 */
@@ -35,6 +35,19 @@ public class OrganizationDepartmentController {
 
   public OrganizationDepartmentController(CompanyDepartmentBiz organizationDepartmentBiz) {
     this.organizationDepartmentBiz = organizationDepartmentBiz;
+  }
+
+  /**
+   * 根据ID查询组织部门信息
+   *
+   * @param id 组织的部门ID
+   * @return obj
+   */
+  @ApiOperation("根据ID查询组织部门信息")
+  @GetMapping("/dept/one{id}")
+  public ResponseResult findById(@PathVariable Integer id) {
+    CompanyDepartment companyDepartment = organizationDepartmentBiz.selectById(id);
+    return ResponseUtil.success(companyDepartment);
   }
 
   /**
@@ -50,7 +63,7 @@ public class OrganizationDepartmentController {
       dataType = "int",
       value = "组织ID",
       paramType = "path")
-  @GetMapping("/tree/{companyId}")
+  @GetMapping("/dept/tree/{companyId}")
   public ResponseResult findTree(@PathVariable Integer companyId) {
     List<OrgDeptTreeVO> treeList = organizationDepartmentBiz.findDeptTree(companyId);
     return ResponseUtil.success(treeList);
@@ -63,7 +76,7 @@ public class OrganizationDepartmentController {
    * @return list
    */
   @ApiOperation("根据条件查询组织部门列表（可分页）")
-  @PostMapping("/list")
+  @PostMapping("/dept/list")
   public ResponseResult findList(@RequestBody @Validated OrgDeptQueryForm queryForm) {
     PageInfo<OrgDeptVO> resultList = organizationDepartmentBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
@@ -76,7 +89,7 @@ public class OrganizationDepartmentController {
    * @return map
    */
   @ApiOperation("新增组织部门")
-  @PostMapping("/add")
+  @PostMapping("/dept/add")
   public ResponseResult add(@RequestBody @Validated CompanyDepartment resource) {
     organizationDepartmentBiz.addCompanyDepartment(resource);
     return ResponseUtil.success();
@@ -96,9 +109,9 @@ public class OrganizationDepartmentController {
       required = true,
       dataType = "int",
       paramType = "path")
-  @PutMapping("/edit/{id}")
+  @PutMapping("/dept/edit/{id}")
   public ResponseResult edit(
-          @PathVariable Integer id, @RequestBody @Validated CompanyDepartmentForm form) {
+      @PathVariable Integer id, @RequestBody @Validated CompanyDepartmentForm form) {
     organizationDepartmentBiz.edit(id, form);
     return ResponseUtil.success();
   }
@@ -116,7 +129,7 @@ public class OrganizationDepartmentController {
       required = true,
       dataType = "int",
       paramType = "path")
-  @DeleteMapping("/delete/{id}")
+  @DeleteMapping("/dept/delete/{id}")
   public ResponseResult delete(@PathVariable Integer id) {
     organizationDepartmentBiz.deleteOrganizationDepartment(id);
     return ResponseUtil.success();

@@ -34,6 +34,18 @@ public class PostController {
   }
 
   /**
+   * 根据ID查询岗位信息
+   *
+   * @param id 岗位ID
+   * @return
+   */
+  @GetMapping("/one/{id}")
+  public ResponseResult findById(@PathVariable Integer id) {
+    Post post = postBiz.selectById(id);
+    return ResponseUtil.success(post);
+  }
+
+  /**
    * 根据条件查询岗位列表
    *
    * @param queryForm 参数封装

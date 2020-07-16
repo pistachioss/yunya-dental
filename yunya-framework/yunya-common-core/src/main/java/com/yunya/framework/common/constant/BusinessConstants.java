@@ -26,10 +26,20 @@ public class BusinessConstants {
   public static final String RESOURCE_TYPE_URI = "uri";
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
+
   /** 用户离职状态 */
   public static final Byte USER_RESIGNATION_STATUS = 3;
 
-  /** -------------------------用户、员工信息相关常量--------------------------- */
+  /** -------------------------组织（公司）信息相关常量--------------------------- */
+
+  /** 公司类型 */
+  public static final Byte COMPANY_TYPE = 0;
+  /** 大区类型 */
+  public static final Byte DISTRICT_TYPE = 1;
+  /** 医疗机构类型 */
+  public static final Byte MEDICAL_TYPE = 2;
+  /** 其他类型 */
+  public static final Byte OTHER_TYPE = 3;
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
 }

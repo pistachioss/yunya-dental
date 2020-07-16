@@ -2,11 +2,13 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.MapUtil;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.modules.system.entity.ClinicExtInfo;
 import com.yunya.modules.system.entity.Company;
@@ -26,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 简单介绍:</br> 组织业务层
@@ -47,7 +50,7 @@ public class OrganizationBiz {
   @Autowired private SysUserPostMapper sysUserPostMapper;
 
   /** 医疗机构类型 */
-  private static final Byte MEDICAL_TYPE = 2;
+  private final Byte MEDICAL_TYPE = BusinessConstants.MEDICAL_TYPE;
 
   /**
    * 根据ID获取组织信息
@@ -290,5 +293,22 @@ public class OrganizationBiz {
           "删除ID为'" + organizationId + "'的组织失败，该组织已被使用", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
     companyMapper.deleteByPrimaryKey(organizationId);
+  }
+
+  /**
+   * 根据条件查询组织信息列表（feign）
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  public List<OrganizationInfoVO> findOrgInfoList(OrganizationModel model) {
+    // 将obj转Map
+    Map<String, Object> objectMap = MapUtil.objectToMap(model);
+    OrganizationQueryForm form = new OrganizationQueryForm();
+    form.putAll(objectMap);
+    form.setWhetherPage(model.getWhetherPage());
+    form.setPageNum(model.getPageNum());
+    form.setPageSize(model.getPageSize());
+    return findList(form).getList();
   }
 }

@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-public class OrganizationQueryModel implements Serializable {
+public class OrganizationModel implements Serializable {
   private Integer id;
   /** 组织名称 */
   private String name;
@@ -25,4 +25,10 @@ public class OrganizationQueryModel implements Serializable {
   private String clinicNumber;
   /** 组织简称 */
   private String abbreviation;
+  /** 是否分页 */
+  private Boolean whetherPage;
+  /** 当前页 */
+  private Integer pageNum;
+  /** 每页显示条数 */
+  private Integer pageSize;
 }

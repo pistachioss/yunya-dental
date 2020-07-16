@@ -57,25 +57,6 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
   }
 
   /**
-   * 获取所有的菜单按钮权限
-   *
-   * @return
-   */
-  public List<SysElement> getAllElementPermissions() {
-    return null;
-  }
-
-  /**
-   * 获取用户全部菜单功能权限
-   *
-   * @param userId 用户ID
-   * @return
-   */
-  public List<SysElement> getAuthorityElementByUserId(String userId) {
-    return null;
-  }
-
-  /**
    * 新增菜单功能按钮
    *
    * @param resource 参数封装
@@ -110,7 +91,7 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
    * @param id 功能按钮ID
    * @param resource 参数封装
    */
-  public void edit(Integer id, SysElement resource) {
+  public void edit(String id, SysElement resource) {
     SysElement sysElement = mapper.selectByPrimaryKey(id);
     if (null != sysElement) {
       SysElement element = EntityUtils.build(resource, SysElement.class);
@@ -124,7 +105,7 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
    *
    * @param id 功能ID
    */
-  public void deleteSysElement(Integer id) {
+  public void deleteSysElement(String id) {
     SysPostElement entity = new SysPostElement();
     entity.setSysElementId(id);
     List<SysPostElement> elements = sysPostElementBiz.selectList(entity);

@@ -24,7 +24,7 @@ import java.io.Serializable;
 public class SysElementQueryForm extends PageQueryParams implements Serializable {
   /** 按钮ID */
   @ApiModelProperty("按钮ID")
-  private Integer id;
+  private String id;
   /** 菜单ID */
   @ApiModelProperty(value = "菜单ID", required = true)
   private Integer menuId;

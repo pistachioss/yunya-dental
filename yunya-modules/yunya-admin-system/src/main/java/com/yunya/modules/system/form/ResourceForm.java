@@ -21,7 +21,7 @@ import java.io.Serializable;
 public class ResourceForm implements Serializable {
   /** 功能权限ID */
   @ApiModelProperty(value = "菜单（功能权限）ID", required = true)
-  private Integer resourceId;
+  private String resourceId;
   /** 功能权限类型 */
   @ApiModelProperty(value = "功能权限类型0-菜单权限；1-功能权限", required = true)
   private Byte resourceType;

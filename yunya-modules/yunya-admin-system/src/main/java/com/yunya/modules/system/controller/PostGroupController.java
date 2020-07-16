@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Api(value = "岗位组管理", description = "岗位组管理（岗位组的增删改查功能）")
 @RestController
-@RequestMapping("post/group")
+@RequestMapping("post")
 public class PostGroupController {
 
   /** 注入对象 */
@@ -38,13 +38,26 @@ public class PostGroupController {
   }
 
   /**
+   * 根据ID查询岗位组信息
+   *
+   * @param id 岗位组ID
+   * @return obj
+   */
+  @ApiOperation("根据岗位组ID查询岗位组信息")
+  @GetMapping("/group/one/{id}")
+  public ResponseResult findById(@PathVariable Integer id) {
+    PostGroup postGroup = postGroupBiz.selectById(id);
+    return ResponseUtil.success(postGroup);
+  }
+
+  /**
    * 根据条件查询岗位组列表（可分页）
    *
    * @param queryForm 参数封装
    * @return list
    */
   @ApiOperation("根据条件查询岗位组列表（可分页）")
-  @PostMapping("/list")
+  @PostMapping("/group/list")
   public ResponseResult findList(@RequestBody @Validated PostGroupQueryForm queryForm) {
     PageInfo<PostGroupVO> resultList = postGroupBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
@@ -56,7 +69,7 @@ public class PostGroupController {
    * @return list
    */
   @ApiOperation("获取岗位组树列表")
-  @GetMapping("/tree")
+  @GetMapping("/group/tree")
   public ResponseResult getTree() {
     List<PostGroupTreeVO> resultList = postGroupBiz.initPostGroupTree();
     return ResponseUtil.success(resultList);
@@ -69,7 +82,7 @@ public class PostGroupController {
    * @return map
    */
   @ApiOperation("新增岗位分组")
-  @PostMapping("/add")
+  @PostMapping("/group/add")
   public ResponseResult add(@RequestBody @Validated PostGroup resource) {
     postGroupBiz.add(resource);
     return ResponseUtil.success();
@@ -89,7 +102,7 @@ public class PostGroupController {
       required = true,
       dataType = "int",
       paramType = "path")
-  @PutMapping("/edit/{id}")
+  @PutMapping("/group/edit/{id}")
   public ResponseResult edit(@PathVariable Integer id, @RequestBody @Validated PostGroupForm form) {
     postGroupBiz.edit(id, form);
     return ResponseUtil.success();
@@ -101,13 +114,14 @@ public class PostGroupController {
    * @param id 岗位组ID
    * @return map
    */
+  @ApiOperation("根据岗位组ID删除岗位组信息")
   @ApiImplicitParam(
       name = "id",
       value = "岗位组ID",
       required = true,
       dataType = "int",
       paramType = "path")
-  @DeleteMapping("/delete/{id}")
+  @DeleteMapping("/group/delete/{id}")
   public ResponseResult delete(@PathVariable Integer id) {
     postGroupBiz.deletePostGroup(id);
     return ResponseUtil.success();

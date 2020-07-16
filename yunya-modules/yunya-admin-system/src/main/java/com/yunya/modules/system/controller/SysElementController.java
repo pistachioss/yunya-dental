@@ -73,7 +73,7 @@ public class SysElementController {
   @ApiOperation("修改系统菜单按钮")
   @PutMapping("/edit/{id}")
   public ResponseResult edit(
-      @PathVariable Integer id, @RequestBody @Validated SysElement resource) {
+      @PathVariable String id, @RequestBody @Validated SysElement resource) {
     sysElementBiz.edit(id, resource);
     return ResponseUtil.success();
   }
@@ -86,7 +86,7 @@ public class SysElementController {
    */
   @ApiOperation("删除系统功能按钮")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable Integer id) {
+  public ResponseResult delete(@PathVariable String id) {
     sysElementBiz.deleteSysElement(id);
     return ResponseUtil.success();
   }

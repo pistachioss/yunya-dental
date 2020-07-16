@@ -8,7 +8,7 @@
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="post_id" property="postId" jdbcType="INTEGER"/>
         <result column="post_group_id" property="postGroupId" jdbcType="INTEGER"/>
-        <result column="resource_id" property="resourceId" jdbcType="INTEGER"/>
+        <result column="resource_id" property="resourceId" jdbcType="VARCHAR"/>
         <result column="resource_type" property="resourceType" jdbcType="TINYINT"/>
         <result column="parent_id" property="parentId" jdbcType="INTEGER"/>
         <result column="path" property="path" jdbcType="VARCHAR"/>

@@ -1,8 +1,12 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.feign.system.form.BrandModel;
+import com.yunya.feign.system.form.OrgDepartmentModel;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.modules.system.entity.Brand;
+import com.yunya.modules.system.entity.CompanyDepartment;
 import com.yunya.modules.system.rpc.SystemServiceRest;
+import com.yunya.modules.system.vo.OrganizationInfoVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,26 @@ public class SystemServiceRestController {
   public void test() {
     BrandModel model = new BrandModel();
     List<Brand> list = systemServiceRest.findBrandList(model);
+    System.out.println(list);
+  }
+
+  @Test
+  public void testFindOrgList() {
+    OrganizationModel form = new OrganizationModel();
+    form.setWhetherPage(false);
+    form.setPageNum(2);
+    form.setPageSize(2);
+    //form.setName("门诊");
+    form.setTypes(new Byte[]{0,1});
+    List<OrganizationInfoVO> list = systemServiceRest.findOrgInfoList(form);
+    System.out.println(list);
+  }
+
+  @Test
+  public void testFindOrgDept() {
+    OrgDepartmentModel model = new OrgDepartmentModel();
+    model.setCompanyId(21);
+    List<CompanyDepartment> list = systemServiceRest.findCompanyDepartmentList(model);
     System.out.println(list);
   }
 }

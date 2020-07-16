@@ -1,6 +1,7 @@
 package com.yunya.modules.system;
 
 import com.yunya.feign.EnableYunyaFeignClients;
+import com.yunya.framework.common.swagger.anotation.EnableCustomSwagger2;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
@@ -19,6 +20,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableTransactionManagement
 @EnableDiscoveryClient
 @ComponentScan(basePackages = {"com.yunya.modules.system", "com.yunya.framework"})
+@EnableCustomSwagger2
 public class YunyaSystemApplication {
 
   public static void main(String[] args) {
