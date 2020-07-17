@@ -1,7 +1,7 @@
 package com.yunya.modules.system.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.modules.system.entity.SysPostElement;
+import com.yunya.models.system.SysPostElement;
 import com.yunya.modules.system.form.ResourceForm;
 import com.yunya.modules.system.form.SysPostResourceForm;
 import com.yunya.modules.system.mapper.SysPostElementMapper;

@@ -1,6 +1,6 @@
 package com.yunya.auth.mapper;
 
-import com.yunya.auth.domain.entity.Client;
+import com.yunya.models.auth.Client;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;

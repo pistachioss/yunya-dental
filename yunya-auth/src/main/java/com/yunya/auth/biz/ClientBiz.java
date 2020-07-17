@@ -1,7 +1,7 @@
 package com.yunya.auth.biz;
 
-import com.yunya.auth.domain.entity.Client;
-import com.yunya.auth.domain.entity.ClientService;
+import com.yunya.models.auth.Client;
+import com.yunya.models.auth.ClientService;
 import com.yunya.auth.mapper.ClientMapper;
 import com.yunya.framework.common.biz.BaseBiz;
 import org.springframework.stereotype.Service;

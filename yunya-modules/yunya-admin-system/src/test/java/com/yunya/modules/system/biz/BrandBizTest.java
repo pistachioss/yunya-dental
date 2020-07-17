@@ -2,7 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.model.PageQueryParams;
-import com.yunya.modules.system.entity.Brand;
+import com.yunya.models.system.Brand;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

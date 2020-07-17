@@ -1,62 +1,50 @@
-package com.yunya.modules.system.entity;
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+package com.yunya.models.system;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.persistence.Table;
 import java.util.Date;
 
-@ApiModel("新增品牌参数模型")
-public class Brand {
-  @ApiModelProperty(hidden = true)
+@Table(name = "sys_post_element")
+public class SysPostElement {
   @Id private Integer id;
 
-  /** 品牌 */
-  @NotBlank(message = "品牌名称为空")
-  @Size(max = 50, message = "品牌名称不能超过50个字符")
-  @ApiModelProperty(value = "品牌名称", required = true)
-  private String name;
+  /** 岗位ID */
+  @Column(name = "post_id")
+  private Integer postId;
 
-  /** 自定义排序 */
-  @Column(name = "order_num")
-  @ApiModelProperty("自定义排序")
-  private Integer orderNum;
+  /** 系统按钮ID */
+  @Column(name = "sys_element_id")
+  private String sysElementId;
+
+  /** 权限类型 */
+  private Byte type;
 
   /** 是否启用 */
-  @ApiModelProperty("是否启用")
   private Boolean inservice;
 
   /** 创建人ID */
   @Column(name = "crt_id")
-  @ApiModelProperty(hidden = true)
   private Integer crtId;
 
   /** 创建人名称 */
   @Column(name = "crt_name")
-  @ApiModelProperty(hidden = true)
   private String crtName;
 
   /** 创建时间 */
   @Column(name = "crt_time")
-  @ApiModelProperty(hidden = true)
   private Date crtTime;
 
   @Column(name = "upd_id")
-  @ApiModelProperty(hidden = true)
   private Integer updId;
-
-  /** 修改时间 */
-  @Column(name = "upd_time")
-  @ApiModelProperty(hidden = true)
-  private Date updTime;
 
   /** 修改人名称 */
   @Column(name = "upd_name")
-  @ApiModelProperty(hidden = true)
   private String updName;
+
+  /** 修改时间 */
+  @Column(name = "upd_time")
+  private Date updTime;
 
   /** @return id */
   public Integer getId() {
@@ -69,39 +57,57 @@ public class Brand {
   }
 
   /**
-   * 获取品牌
+   * 获取岗位ID
    *
-   * @return name - 品牌
+   * @return post_id - 岗位ID
    */
-  public String getName() {
-    return name;
+  public Integer getPostId() {
+    return postId;
   }
 
   /**
-   * 设置品牌
+   * 设置岗位ID
    *
-   * @param name 品牌
+   * @param postId 岗位ID
    */
-  public void setName(String name) {
-    this.name = name;
+  public void setPostId(Integer postId) {
+    this.postId = postId;
   }
 
   /**
-   * 获取自定义排序
+   * 获取系统按钮ID
    *
-   * @return order_num - 自定义排序
+   * @return sys_element_id - 系统按钮ID
    */
-  public Integer getOrderNum() {
-    return orderNum;
+  public String getSysElementId() {
+    return sysElementId;
   }
 
   /**
-   * 设置自定义排序
+   * 设置系统按钮ID
    *
-   * @param orderNum 自定义排序
+   * @param sysElementId 系统按钮ID
    */
-  public void setOrderNum(Integer orderNum) {
-    this.orderNum = orderNum;
+  public void setSysElementId(String sysElementId) {
+    this.sysElementId = sysElementId;
+  }
+
+  /**
+   * 获取权限类型
+   *
+   * @return
+   */
+  public Byte getType() {
+    return type;
+  }
+
+  /**
+   * 设置权限类型
+   *
+   * @param type 权限类型
+   */
+  public void setType(Byte type) {
+    this.type = type;
   }
 
   /**
@@ -187,24 +193,6 @@ public class Brand {
   }
 
   /**
-   * 获取修改时间
-   *
-   * @return upd_time - 修改时间
-   */
-  public Date getUpdTime() {
-    return updTime;
-  }
-
-  /**
-   * 设置修改时间
-   *
-   * @param updTime 修改时间
-   */
-  public void setUpdTime(Date updTime) {
-    this.updTime = updTime;
-  }
-
-  /**
    * 获取修改人名称
    *
    * @return upd_name - 修改人名称
@@ -220,5 +208,23 @@ public class Brand {
    */
   public void setUpdName(String updName) {
     this.updName = updName;
+  }
+
+  /**
+   * 获取修改时间
+   *
+   * @return upd_time - 修改时间
+   */
+  public Date getUpdTime() {
+    return updTime;
+  }
+
+  /**
+   * 设置修改时间
+   *
+   * @param updTime 修改时间
+   */
+  public void setUpdTime(Date updTime) {
+    this.updTime = updTime;
   }
 }

@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.feign.system.vo.OrganizationInfo;
-import com.yunya.modules.system.entity.Company;
+import com.yunya.models.system.Company;
 import com.yunya.modules.system.form.query.OrganizationQueryForm;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import org.apache.ibatis.annotations.Param;

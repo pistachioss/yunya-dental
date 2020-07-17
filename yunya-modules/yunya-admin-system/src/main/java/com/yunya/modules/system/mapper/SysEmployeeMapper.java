@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.SysEmployee;
+import com.yunya.models.system.SysEmployee;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 

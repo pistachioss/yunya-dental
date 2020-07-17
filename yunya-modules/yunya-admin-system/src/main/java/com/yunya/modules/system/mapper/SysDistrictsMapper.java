@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.SysDistricts;
+import com.yunya.models.system.SysDistricts;
 import com.yunya.modules.system.form.query.SysDistrictsQueryForm;
 import com.yunya.modules.system.vo.SysDistrictsVO;
 import org.apache.ibatis.annotations.Param;

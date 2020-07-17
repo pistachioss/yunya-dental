@@ -1,6 +1,6 @@
 package com.yunya.auth.service.impl;
 
-import com.yunya.auth.domain.entity.Client;
+import com.yunya.models.auth.Client;
 import com.yunya.auth.mapper.ClientMapper;
 import com.yunya.auth.service.AuthClientService;
 import com.yunya.framework.common.exception.auth.ClientInvalidException;

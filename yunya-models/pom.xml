@@ -9,32 +9,16 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>yunya-remote</artifactId>
-    <description>远程服务调用</description>
+    <artifactId>yunya-models</artifactId>
+    <description>云牙系统实体类工程</description>
 
     <dependencies>
-
-        <!-- 实体类 -->
         <dependency>
             <groupId>com.yunya</groupId>
-            <artifactId>yunya-models</artifactId>
+            <artifactId>yunya-common-core</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
-
     </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 
 
 </project>

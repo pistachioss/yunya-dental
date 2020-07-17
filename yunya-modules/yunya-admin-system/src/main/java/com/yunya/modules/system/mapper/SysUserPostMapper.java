@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.SysUserPost;
+import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
 import com.yunya.modules.system.vo.SysUserPostOrgVO;

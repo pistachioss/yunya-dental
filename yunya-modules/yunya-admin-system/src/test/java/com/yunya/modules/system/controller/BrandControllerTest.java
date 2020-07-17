@@ -1,7 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.modules.system.entity.Brand;
+import com.yunya.models.system.Brand;
 import com.yunya.modules.system.form.base.BaseForm;
 import com.yunya.modules.system.form.query.BrandQueryForm;
 import org.junit.Test;

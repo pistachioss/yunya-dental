@@ -1,4 +1,4 @@
-package com.yunya.modules.system.entity;
+package com.yunya.models.system;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -6,26 +6,19 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
-@ApiModel("部门模版新增参数模型")
-public class Department {
-  @Id
+@ApiModel("新增品牌参数模型")
+public class Brand {
   @ApiModelProperty(hidden = true)
-  private Integer id;
+  @Id private Integer id;
 
-  /** 部门名 */
-  @ApiModelProperty(value = "部门名称", required = true)
-  @Size(max = 50, message = "名称长度不能超过50个字符")
-  @NotBlank(message = "部门名称不能为空！")
+  /** 品牌 */
+  @NotBlank(message = "品牌名称为空")
+  @Size(max = 50, message = "品牌名称不能超过50个字符")
+  @ApiModelProperty(value = "品牌名称", required = true)
   private String name;
-
-  /** 部门类型(0-门诊部门；1-公司部门） */
-  @ApiModelProperty(value = "部门类型（0-门诊部门；1-公司部门）", required = true)
-  @NotNull(message = "部门类型不能为空！")
-  private Byte type;
 
   /** 自定义排序 */
   @Column(name = "order_num")
@@ -55,15 +48,15 @@ public class Department {
   @ApiModelProperty(hidden = true)
   private Integer updId;
 
-  /** 修改人名称 */
-  @Column(name = "upd_name")
-  @ApiModelProperty(hidden = true)
-  private String updName;
-
   /** 修改时间 */
   @Column(name = "upd_time")
   @ApiModelProperty(hidden = true)
   private Date updTime;
+
+  /** 修改人名称 */
+  @Column(name = "upd_name")
+  @ApiModelProperty(hidden = true)
+  private String updName;
 
   /** @return id */
   public Integer getId() {
@@ -76,55 +69,36 @@ public class Department {
   }
 
   /**
-   * 获取部门名
+   * 获取品牌
    *
-   * @return name - 部门名
+   * @return name - 品牌
    */
   public String getName() {
     return name;
   }
 
   /**
-   * 设置部门名
+   * 设置品牌
    *
-   * @param name 部门名
+   * @param name 品牌
    */
   public void setName(String name) {
     this.name = name;
   }
 
   /**
-   * 获取部门类型(0-门诊部门；1-公司部门）
+   * 获取自定义排序
    *
-   * @return type - 部门类型(0-门诊部门；1-公司部门）
-   */
-  public Byte getType() {
-    return type;
-  }
-
-  /**
-   * 设置部门类型(0-门诊部门；1-公司部门）
-   *
-   * @param type 部门类型(0-门诊部门；1-公司部门）
-   */
-  public void setType(Byte type) {
-    this.type = type;
-  }
-
-  /**
-   * 获取自定义部门排序
-   *
-   * @return int
+   * @return order_num - 自定义排序
    */
   public Integer getOrderNum() {
     return orderNum;
   }
 
   /**
-   * 设置自定义部门排序
+   * 设置自定义排序
    *
-   * @param orderNum 参数
-   * @return int
+   * @param orderNum 自定义排序
    */
   public void setOrderNum(Integer orderNum) {
     this.orderNum = orderNum;
@@ -213,24 +187,6 @@ public class Department {
   }
 
   /**
-   * 获取修改人名称
-   *
-   * @return upd_name - 修改人名称
-   */
-  public String getUpdName() {
-    return updName;
-  }
-
-  /**
-   * 设置修改人名称
-   *
-   * @param updName 修改人名称
-   */
-  public void setUpdName(String updName) {
-    this.updName = updName;
-  }
-
-  /**
    * 获取修改时间
    *
    * @return upd_time - 修改时间
@@ -246,5 +202,23 @@ public class Department {
    */
   public void setUpdTime(Date updTime) {
     this.updTime = updTime;
+  }
+
+  /**
+   * 获取修改人名称
+   *
+   * @return upd_name - 修改人名称
+   */
+  public String getUpdName() {
+    return updName;
+  }
+
+  /**
+   * 设置修改人名称
+   *
+   * @param updName 修改人名称
+   */
+  public void setUpdName(String updName) {
+    this.updName = updName;
   }
 }

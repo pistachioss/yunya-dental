@@ -1,5 +1,6 @@
-package com.yunya.modules.system.entity;
+package com.yunya.models.system;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
@@ -10,42 +11,39 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
-@Table(name = "company")
-public class Company {
+@ApiModel("新增岗位组参数模型")
+@Table(name = "post_group")
+public class PostGroup {
+  /** 主键 */
   @Id
   @ApiModelProperty(hidden = true)
   private Integer id;
 
-  /** 父节点编号 */
+  /** 上级岗位分类ID */
+  @ApiModelProperty(value = "上级岗位组ID", required = true)
+  @NotNull(message = "上级岗位组ID为空")
   @Column(name = "parent_id")
-  @ApiModelProperty("组织父ID")
   private Integer parentId;
 
-  /** 公司名称 */
-  @NotBlank(message = "组织名称为空！")
-  @Size(max = 50, message = "组织名称长度不能超过50个字符")
-  @ApiModelProperty("组织名称")
+  /** 岗位分类名称 */
+  @ApiModelProperty(value = "岗位组名称", required = true)
+  @NotBlank(message = "岗位组名称为空")
+  @Size(max = 50, message = "岗位组名称长度不能超过50个字符")
   private String name;
 
-  /** 公司属性0:公司,1:区域管理,2:医疗机构,3:其他 */
-  @NotNull(message = "组织类型为空！")
-  @ApiModelProperty(value = "组织类型（0:公司,1:区域管理,2:医疗机构,3:其他）", required = true)
-  private Byte type;
-
-  /** 组织统一社会代码 */
-  @ApiModelProperty("组织统一信用代码")
-  @Column(name = "credit_code")
-  @Size(max = 18, message = "统一信用代码长度不能超过18个字符")
-  private String creditCode;
-
   /** 自定义排序 */
-  @NotNull(message = "自定义组织排序为空！")
+  @ApiModelProperty(value = "自定义排序为空", required = true)
+  @NotNull(message = "自定义排序为空")
   @Column(name = "order_num")
-  @ApiModelProperty(value = "自定义排序", required = true)
   private Integer orderNum;
 
+  /** 允许操作（编辑/删除） */
+  @ApiModelProperty(value = "字段是否允许操作（编辑/删除）")
+  @Column(name = "allow_operation")
+  private Boolean allowOperation;
+
   /** 是否启用 */
-  @ApiModelProperty("是否启用")
+  @ApiModelProperty(value = "是否启用")
   private Boolean inservice;
 
   /** 创建人ID */
@@ -63,7 +61,6 @@ public class Company {
   @ApiModelProperty(hidden = true)
   private Date crtTime;
 
-  /** 更新人ID */
   @Column(name = "upd_id")
   @ApiModelProperty(hidden = true)
   private Integer updId;
@@ -78,86 +75,58 @@ public class Company {
   @ApiModelProperty(hidden = true)
   private String updName;
 
-  /** @return id */
+  /**
+   * 获取主键
+   *
+   * @return id - 主键
+   */
   public Integer getId() {
     return id;
   }
 
-  /** @param id */
+  /**
+   * 设置主键
+   *
+   * @param id 主键
+   */
   public void setId(Integer id) {
     this.id = id;
   }
 
   /**
-   * 获取父节点编号
+   * 获取上级岗位分类ID
    *
-   * @return parent_id - 父节点编号
+   * @return parent_id - 上级岗位分类ID
    */
   public Integer getParentId() {
     return parentId;
   }
 
   /**
-   * 设置父节点编号
+   * 设置上级岗位分类ID
    *
-   * @param parentId 父节点编号
+   * @param parentId 上级岗位分类ID
    */
   public void setParentId(Integer parentId) {
     this.parentId = parentId;
   }
 
   /**
-   * 获取公司名称
+   * 获取岗位分类名称
    *
-   * @return name - 公司名称
+   * @return name - 岗位分类名称
    */
   public String getName() {
     return name;
   }
 
   /**
-   * 设置公司名称
+   * 设置岗位分类名称
    *
-   * @param name 公司名称
+   * @param name 岗位分类名称
    */
   public void setName(String name) {
     this.name = name;
-  }
-
-  /**
-   * 获取公司属性0:公司,1:区域管理,2:医疗机构,3:其他
-   *
-   * @return type - 公司属性0:公司,1:区域管理,2:医疗机构,3:其他
-   */
-  public Byte getType() {
-    return type;
-  }
-
-  /**
-   * 设置公司属性0:公司,1:区域管理,2:医疗机构,3:其他
-   *
-   * @param type 公司属性0:公司,1:区域管理,2:医疗机构,3:其他
-   */
-  public void setType(Byte type) {
-    this.type = type;
-  }
-
-  /**
-   * 获取组织统一社会代码
-   *
-   * @return creditCode
-   */
-  public String getCreditCode() {
-    return creditCode;
-  }
-
-  /**
-   * 设置组织统一社会代码
-   *
-   * @param creditCode 组织统一社会代码
-   */
-  public void setCreditCode(String creditCode) {
-    this.creditCode = creditCode;
   }
 
   /**
@@ -176,6 +145,24 @@ public class Company {
    */
   public void setOrderNum(Integer orderNum) {
     this.orderNum = orderNum;
+  }
+
+  /**
+   * 获取允许操作（编辑/删除）
+   *
+   * @return allowOperation
+   */
+  public Boolean getAllowOperation() {
+    return allowOperation;
+  }
+
+  /**
+   * 设置允许被操纵
+   *
+   * @param allowOperation 获取允许操作（编辑/删除）
+   */
+  public void setAllowOperation(Boolean allowOperation) {
+    this.allowOperation = allowOperation;
   }
 
   /**
@@ -250,20 +237,12 @@ public class Company {
     this.crtTime = crtTime;
   }
 
-  /**
-   * 获取更新人ID
-   *
-   * @return upd_id - 更新人ID
-   */
+  /** @return upd_id */
   public Integer getUpdId() {
     return updId;
   }
 
-  /**
-   * 设置更新人ID
-   *
-   * @param updId 更新人ID
-   */
+  /** @param updId */
   public void setUpdId(Integer updId) {
     this.updId = updId;
   }

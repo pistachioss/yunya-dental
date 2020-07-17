@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.yunya.modules.system.mapper.ClinicExtInfoMapper">
-    <resultMap id="BaseResultMap" type="com.yunya.modules.system.entity.ClinicExtInfo">
+    <resultMap id="BaseResultMap" type="com.yunya.models.system.ClinicExtInfo">
         <!--
           WARNING - @mbg.generated
         -->
@@ -60,7 +60,7 @@
         cei.company_id = #{companyId}
     </select>
     <!-- 根据品牌ID查询关联该品牌的诊所信息 -->
-    <select id="selectClinicExtInfoByBrandId" resultType="com.yunya.modules.system.entity.ClinicExtInfo">
+    <select id="selectClinicExtInfoByBrandId" resultType="com.yunya.models.system.ClinicExtInfo">
       select
         id,
         company_id,

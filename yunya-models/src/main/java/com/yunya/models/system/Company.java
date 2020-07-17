@@ -1,42 +1,47 @@
-package com.yunya.modules.system.entity;
+package com.yunya.models.system;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 
-@ApiModel("组织部门新增参数模型")
-@Table(name = "company_department")
-public class CompanyDepartment {
+@Table(name = "company")
+public class Company {
   @Id
   @ApiModelProperty(hidden = true)
   private Integer id;
 
-  /** 公司父部门ID */
-  @ApiModelProperty("组织父部门ID")
+  /** 父节点编号 */
   @Column(name = "parent_id")
+  @ApiModelProperty("组织父ID")
   private Integer parentId;
 
-  /** 公司ID */
-  @ApiModelProperty(value = "组织ID", required = true)
-  @Column(name = "company_id")
-  @NotNull(message = "组织ID为空！")
-  private Integer companyId;
+  /** 公司名称 */
+  @NotBlank(message = "组织名称为空！")
+  @Size(max = 50, message = "组织名称长度不能超过50个字符")
+  @ApiModelProperty("组织名称")
+  private String name;
 
-  /** 部门模版ID */
-  @ApiModelProperty(value = "部门模版ID", required = true)
-  @Column(name = "department_id")
-  @NotNull(message = "部门模版ID为空！")
-  private Integer departmentId;
+  /** 公司属性0:公司,1:区域管理,2:医疗机构,3:其他 */
+  @NotNull(message = "组织类型为空！")
+  @ApiModelProperty(value = "组织类型（0:公司,1:区域管理,2:医疗机构,3:其他）", required = true)
+  private Byte type;
 
-  /** 组织部门排序 */
-  @ApiModelProperty(value = "自定义排序", required = true)
+  /** 组织统一社会代码 */
+  @ApiModelProperty("组织统一信用代码")
+  @Column(name = "credit_code")
+  @Size(max = 18, message = "统一信用代码长度不能超过18个字符")
+  private String creditCode;
+
+  /** 自定义排序 */
+  @NotNull(message = "自定义组织排序为空！")
   @Column(name = "order_num")
-  @NotNull(message = "组织部门自定义排序为空")
+  @ApiModelProperty(value = "自定义排序", required = true)
   private Integer orderNum;
 
   /** 是否启用 */
@@ -58,19 +63,20 @@ public class CompanyDepartment {
   @ApiModelProperty(hidden = true)
   private Date crtTime;
 
+  /** 更新人ID */
   @Column(name = "upd_id")
   @ApiModelProperty(hidden = true)
   private Integer updId;
-
-  /** 修改人名称 */
-  @Column(name = "upd_name")
-  @ApiModelProperty(hidden = true)
-  private String updName;
 
   /** 修改时间 */
   @Column(name = "upd_time")
   @ApiModelProperty(hidden = true)
   private Date updTime;
+
+  /** 修改人名称 */
+  @Column(name = "upd_name")
+  @ApiModelProperty(hidden = true)
+  private String updName;
 
   /** @return id */
   public Integer getId() {
@@ -83,67 +89,90 @@ public class CompanyDepartment {
   }
 
   /**
-   * 获取公司父部门ID
+   * 获取父节点编号
    *
-   * @return parent_id - 公司父部门ID
+   * @return parent_id - 父节点编号
    */
   public Integer getParentId() {
     return parentId;
   }
 
   /**
-   * 设置公司父部门ID
+   * 设置父节点编号
    *
-   * @param parentId 公司父部门ID
+   * @param parentId 父节点编号
    */
   public void setParentId(Integer parentId) {
     this.parentId = parentId;
   }
 
   /**
-   * 获取公司ID
+   * 获取公司名称
    *
-   * @return company_id - 公司ID
+   * @return name - 公司名称
    */
-  public Integer getCompanyId() {
-    return companyId;
+  public String getName() {
+    return name;
   }
 
   /**
-   * 设置公司ID
+   * 设置公司名称
    *
-   * @param companyId 公司ID
+   * @param name 公司名称
    */
-  public void setCompanyId(Integer companyId) {
-    this.companyId = companyId;
+  public void setName(String name) {
+    this.name = name;
   }
 
   /**
-   * 获取部门模版ID
+   * 获取公司属性0:公司,1:区域管理,2:医疗机构,3:其他
    *
-   * @return department_id - 部门模版ID
+   * @return type - 公司属性0:公司,1:区域管理,2:医疗机构,3:其他
    */
-  public Integer getDepartmentId() {
-    return departmentId;
+  public Byte getType() {
+    return type;
   }
 
   /**
-   * 设置部门模版ID
+   * 设置公司属性0:公司,1:区域管理,2:医疗机构,3:其他
    *
-   * @param departmentId 部门模版ID
+   * @param type 公司属性0:公司,1:区域管理,2:医疗机构,3:其他
    */
-  public void setDepartmentId(Integer departmentId) {
-    this.departmentId = departmentId;
+  public void setType(Byte type) {
+    this.type = type;
   }
 
+  /**
+   * 获取组织统一社会代码
+   *
+   * @return creditCode
+   */
+  public String getCreditCode() {
+    return creditCode;
+  }
+
+  /**
+   * 设置组织统一社会代码
+   *
+   * @param creditCode 组织统一社会代码
+   */
+  public void setCreditCode(String creditCode) {
+    this.creditCode = creditCode;
+  }
+
+  /**
+   * 获取自定义排序
+   *
+   * @return order_num - 自定义排序
+   */
   public Integer getOrderNum() {
     return orderNum;
   }
 
   /**
-   * 排序序号
+   * 设置自定义排序
    *
-   * @param orderNum 自定义组织部门排序
+   * @param orderNum 自定义排序
    */
   public void setOrderNum(Integer orderNum) {
     this.orderNum = orderNum;
@@ -221,32 +250,22 @@ public class CompanyDepartment {
     this.crtTime = crtTime;
   }
 
-  /** @return upd_id */
+  /**
+   * 获取更新人ID
+   *
+   * @return upd_id - 更新人ID
+   */
   public Integer getUpdId() {
     return updId;
   }
 
-  /** @param updId */
+  /**
+   * 设置更新人ID
+   *
+   * @param updId 更新人ID
+   */
   public void setUpdId(Integer updId) {
     this.updId = updId;
-  }
-
-  /**
-   * 获取修改人名称
-   *
-   * @return upd_name - 修改人名称
-   */
-  public String getUpdName() {
-    return updName;
-  }
-
-  /**
-   * 设置修改人名称
-   *
-   * @param updName 修改人名称
-   */
-  public void setUpdName(String updName) {
-    this.updName = updName;
   }
 
   /**
@@ -265,5 +284,23 @@ public class CompanyDepartment {
    */
   public void setUpdTime(Date updTime) {
     this.updTime = updTime;
+  }
+
+  /**
+   * 获取修改人名称
+   *
+   * @return upd_name - 修改人名称
+   */
+  public String getUpdName() {
+    return updName;
+  }
+
+  /**
+   * 设置修改人名称
+   *
+   * @param updName 修改人名称
+   */
+  public void setUpdName(String updName) {
+    this.updName = updName;
   }
 }

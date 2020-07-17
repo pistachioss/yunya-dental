@@ -1,6 +1,6 @@
 package com.yunya.auth.mapper;
 
-import com.yunya.auth.domain.entity.ClientService;
+import com.yunya.models.auth.ClientService;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 

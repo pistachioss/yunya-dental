@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.Post;
+import com.yunya.models.system.Post;
 import com.yunya.modules.system.form.query.PostQueryForm;
 import com.yunya.modules.system.vo.PostVO;
 import org.apache.ibatis.annotations.Param;

@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.DictionaryType;
+import com.yunya.models.system.DictionaryType;
 import com.yunya.modules.system.form.query.DictQueryForm;
 import com.yunya.modules.system.vo.DictionaryTypeVO;
 import org.apache.ibatis.annotations.Param;

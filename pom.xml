@@ -18,6 +18,7 @@
         <module>yunya-gate</module>
         <module>yunya-modules</module>
         <module>yunya-tools</module>
+        <module>yunya-models</module>
     </modules>
 
     <properties>

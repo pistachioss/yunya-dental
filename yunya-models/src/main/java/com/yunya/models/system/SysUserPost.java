@@ -1,4 +1,4 @@
-package com.yunya.modules.system.entity;
+package com.yunya.models.system;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -6,24 +6,55 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@ApiModel("字典类型参数模型")
-@Table(name = "dictionary_type")
-public class DictionaryType {
-    @Id
+@ApiModel("用户可登陆组织")
+@Table(name = "sys_user_post")
+public class SysUserPost {
     @ApiModelProperty(hidden = true)
+    @Id
     private Integer id;
 
+    @ApiModelProperty(value = "用户ID", required = true)
+    @NotNull(message = "用户ID不能为空")
+    @Column(name = "user_id")
+    private Integer userId;
+
+    @ApiModelProperty(value = "可登录组织ID",required = true)
+    @NotNull(message = "组织ID不能为空")
+    @Column(name = "company_id")
+    private Integer companyId;
+
     /**
-     * 字典名称
+     * 部门ID
      */
-    @ApiModelProperty(value = "字典类型名称", required = true)
-    @NotBlank(message = "字典类型名称为空！")
-    @Size(max = 50, message = "字典类型名称不能超过50个字符")
-    private String name;
+    @ApiModelProperty(value = "组织部门ID", required = true)
+    @NotNull(message = "组织部门ID不能为空")
+    @Column(name = "department_id")
+    private Integer departmentId;
+
+    /**
+     * 岗位ID
+     */
+    @ApiModelProperty(value = "岗位ID", required = true)
+    @NotNull(message = "岗位ID不能为空")
+    @Column(name = "post_id")
+    private Integer postId;
+
+    /**
+     * 系统终端ID
+     */
+    @ApiModelProperty("系统终端ID")
+    @Column(name = "system_id")
+    private Integer systemId;
+
+    /**
+     * 角色组ID
+     */
+    @ApiModelProperty("岗位组ID")
+    @Column(name = "group_id")
+    private Integer groupId;
 
     /**
      * 是否启用
@@ -34,40 +65,40 @@ public class DictionaryType {
     /**
      * 创建人ID
      */
-    @Column(name = "crt_id")
     @ApiModelProperty(hidden = true)
+    @Column(name = "crt_id")
     private Integer crtId;
 
     /**
      * 创建人名称
      */
-    @Column(name = "crt_name")
     @ApiModelProperty(hidden = true)
+    @Column(name = "crt_name")
     private String crtName;
 
     /**
      * 创建时间
      */
-    @Column(name = "crt_time")
     @ApiModelProperty(hidden = true)
+    @Column(name = "crt_time")
     private Date crtTime;
 
-    @Column(name = "upd_id")
     @ApiModelProperty(hidden = true)
+    @Column(name = "upd_id")
     private Integer updId;
 
     /**
      * 修改人名称
      */
-    @Column(name = "upd_name")
     @ApiModelProperty(hidden = true)
+    @Column(name = "upd_name")
     private String updName;
 
     /**
      * 修改时间
      */
-    @Column(name = "upd_time")
     @ApiModelProperty(hidden = true)
+    @Column(name = "upd_time")
     private Date updTime;
 
     /**
@@ -85,21 +116,103 @@ public class DictionaryType {
     }
 
     /**
-     * 获取字典名称
-     *
-     * @return name - 字典名称
+     * @return user_id
      */
-    public String getName() {
-        return name;
+    public Integer getUserId() {
+        return userId;
     }
 
     /**
-     * 设置字典名称
-     *
-     * @param name 字典名称
+     * @param userId
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
+    }
+
+    /**
+     * @return company_id
+     */
+    public Integer getCompanyId() {
+        return companyId;
+    }
+
+    /**
+     * @param companyId
+     */
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
+    }
+
+    /**
+     * 获取部门ID
+     *
+     * @return department_id - 部门ID
+     */
+    public Integer getDepartmentId() {
+        return departmentId;
+    }
+
+    /**
+     * 设置部门ID
+     *
+     * @param departmentId 部门ID
+     */
+    public void setDepartmentId(Integer departmentId) {
+        this.departmentId = departmentId;
+    }
+
+    /**
+     * 获取岗位ID
+     *
+     * @return post_id - 岗位ID
+     */
+    public Integer getPostId() {
+        return postId;
+    }
+
+    /**
+     * 设置岗位ID
+     *
+     * @param postId 岗位ID
+     */
+    public void setPostId(Integer postId) {
+        this.postId = postId;
+    }
+
+    /**
+     * 获取系统终端ID
+     *
+     * @return system_id - 系统终端ID
+     */
+    public Integer getSystemId() {
+        return systemId;
+    }
+
+    /**
+     * 设置系统终端ID
+     *
+     * @param systemId 系统终端ID
+     */
+    public void setSystemId(Integer systemId) {
+        this.systemId = systemId;
+    }
+
+    /**
+     * 获取角色组ID
+     *
+     * @return group_id - 角色组ID
+     */
+    public Integer getGroupId() {
+        return groupId;
+    }
+
+    /**
+     * 设置角色组ID
+     *
+     * @param groupId 角色组ID
+     */
+    public void setGroupId(Integer groupId) {
+        this.groupId = groupId;
     }
 
     /**

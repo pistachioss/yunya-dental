@@ -1,7 +1,7 @@
 package com.yunya.modules.system.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.modules.system.entity.SysGateLog;
+import com.yunya.models.system.SysGateLog;
 import com.yunya.modules.system.mapper.SysGateLogMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.Department;
+import com.yunya.models.system.Department;
 import com.yunya.modules.system.form.query.DepartmentQueryForm;
 import com.yunya.modules.system.vo.DepartmentVO;
 import org.apache.ibatis.annotations.Param;

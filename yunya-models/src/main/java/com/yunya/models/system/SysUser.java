@@ -1,4 +1,4 @@
-package com.yunya.modules.system.entity;
+package com.yunya.models.system;
 
 import javax.persistence.Column;
 import javax.persistence.Id;

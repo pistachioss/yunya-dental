@@ -3,7 +3,7 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.modules.system.entity.SysDistricts;
+import com.yunya.models.system.SysDistricts;
 import com.yunya.modules.system.form.query.SysDistrictsQueryForm;
 import com.yunya.modules.system.mapper.SysDistrictsMapper;
 import com.yunya.modules.system.vo.SysDistrictsVO;

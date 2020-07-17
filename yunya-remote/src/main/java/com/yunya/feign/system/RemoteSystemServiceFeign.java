@@ -1,12 +1,12 @@
 package com.yunya.feign.system;
 
 import com.yunya.feign.system.factory.RemoteSystemServiceFallBackFactory;
-import com.yunya.feign.system.form.JwtRequestFrom;
-import com.yunya.feign.system.vo.LogInfo;
-import com.yunya.feign.system.vo.PermissionInfo;
-import com.yunya.feign.system.vo.UserInfo;
+import com.yunya.feign.system.form.*;
+import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.models.system.*;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,6 +35,132 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/user/validate", method = RequestMethod.POST)
   UserInfo validate(@RequestBody JwtRequestFrom jwtRequestFrom);
+
+  /**
+   * 根据ID查询品牌
+   *
+   * @param id 品牌ID
+   * @return
+   */
+  @RequestMapping(value = "/brand/one/{id}", method = RequestMethod.GET)
+  Brand findBrandById(@PathVariable Integer id);
+
+  /**
+   * 根据条件获取品牌列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/brand/list", method = RequestMethod.POST)
+  List<Brand> findBrandList(@RequestBody BrandModel model);
+
+  /**
+   * 根据ID查询部门
+   *
+   * @param id 部门ID
+   * @return
+   */
+  @RequestMapping(value = "/department/{id}", method = RequestMethod.GET)
+  Department findDepartmentById(@PathVariable Integer id);
+
+  /**
+   * 根据条件查询部门列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/department/list", method = RequestMethod.POST)
+  List<Department> findDepartmentList(@RequestBody DepartmentModel model);
+
+  /**
+   * 根据ID查询字典明细
+   *
+   * @param id 字典明细ID
+   * @return
+   */
+  @RequestMapping(value = "/dictionary/{id}", method = RequestMethod.GET)
+  DictionaryItem findDictionaryItemById(@PathVariable Integer id);
+
+  /**
+   * 根据条件查询字典明细列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/dictionary/list", method = RequestMethod.POST)
+  List<DictionaryItem> findDictionaryItemList(@RequestBody DictionaryItemModel model);
+
+  /**
+   * 根据ID查询字典类型
+   *
+   * @param id 字典类型ID
+   * @return
+   */
+  @RequestMapping(value = "/dict/{id}", method = RequestMethod.GET)
+  DictionaryType findDictionaryTypeById(@PathVariable Integer id);
+
+  /**
+   * 根据条件查询字典类型列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/dict/list", method = RequestMethod.GET)
+  List<DictionaryType> findDictionaryTypeList(@RequestBody DictionaryTypeModel model);
+
+  /**
+   * 根据组织ID查询组织信息
+   *
+   * @param id 组织ID
+   * @return
+   */
+  @RequestMapping(value = "/organization/{id}", method = RequestMethod.GET)
+  OrganizationInfo findOrgInfoByOrgId(@PathVariable Integer id);
+
+  /**
+   * 根据条件查询组织信息
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/organization/list", method = RequestMethod.POST)
+  List<OrganizationInfoVO> findOrgInfoList(@RequestBody OrganizationModel model);
+
+  /**
+   * 根据组织部门ID查询组织部门信息
+   *
+   * @param id 组织部门ID
+   * @return obj
+   */
+  @RequestMapping(value = "/org/dept/{id}", method = RequestMethod.GET)
+  CompanyDepartment findCompanyDepartmentById(@PathVariable Integer id);
+
+  /**
+   * 根据条件查询组织部门列表
+   *
+   * @param model 查询参数
+   * @return list
+   */
+  @RequestMapping(value = "/org/dept/list", method = RequestMethod.POST)
+  List<CompanyDepartment> findCompanyDepartmentList(@RequestBody OrgDepartmentModel model);
+
+  /**
+   * 根据岗位ID查询岗位信息
+   *
+   * @param id 岗位ID
+   * @return obj
+   */
+  @RequestMapping(value = "/post/one/{id}", method = RequestMethod.GET)
+  Post findPostById(@PathVariable Integer id);
+
+  /**
+   * 根据条件查询岗位信息列表
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/post/list", method = RequestMethod.POST)
+  List<Post> findPostList(@RequestBody PostModel model);
 
   /**
    * 根据用户ID获取用户的权限列表

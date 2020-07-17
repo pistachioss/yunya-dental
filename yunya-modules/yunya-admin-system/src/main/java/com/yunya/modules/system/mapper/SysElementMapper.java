@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.SysElement;
+import com.yunya.models.system.SysElement;
 import com.yunya.modules.system.form.query.SysElementQueryForm;
 import com.yunya.modules.system.vo.SysElementVO;
 import org.apache.ibatis.annotations.Param;

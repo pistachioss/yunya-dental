@@ -1,4 +1,4 @@
-package com.yunya.auth.domain.entity;
+package com.yunya.models.auth;
 
 import javax.persistence.Column;
 import javax.persistence.Id;

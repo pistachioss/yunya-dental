@@ -1,4 +1,4 @@
-package com.yunya.modules.system.entity;
+package com.yunya.models.system;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -6,44 +6,41 @@ import io.swagger.annotations.ApiModelProperty;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Date;
 
-@ApiModel("新增岗位组参数模型")
-@Table(name = "post_group")
-public class PostGroup {
-  /** 主键 */
+@ApiModel("组织部门新增参数模型")
+@Table(name = "company_department")
+public class CompanyDepartment {
   @Id
   @ApiModelProperty(hidden = true)
   private Integer id;
 
-  /** 上级岗位分类ID */
-  @ApiModelProperty(value = "上级岗位组ID", required = true)
-  @NotNull(message = "上级岗位组ID为空")
+  /** 公司父部门ID */
+  @ApiModelProperty("组织父部门ID")
   @Column(name = "parent_id")
   private Integer parentId;
 
-  /** 岗位分类名称 */
-  @ApiModelProperty(value = "岗位组名称", required = true)
-  @NotBlank(message = "岗位组名称为空")
-  @Size(max = 50, message = "岗位组名称长度不能超过50个字符")
-  private String name;
+  /** 公司ID */
+  @ApiModelProperty(value = "组织ID", required = true)
+  @Column(name = "company_id")
+  @NotNull(message = "组织ID为空！")
+  private Integer companyId;
 
-  /** 自定义排序 */
-  @ApiModelProperty(value = "自定义排序为空", required = true)
-  @NotNull(message = "自定义排序为空")
+  /** 部门模版ID */
+  @ApiModelProperty(value = "部门模版ID", required = true)
+  @Column(name = "department_id")
+  @NotNull(message = "部门模版ID为空！")
+  private Integer departmentId;
+
+  /** 组织部门排序 */
+  @ApiModelProperty(value = "自定义排序", required = true)
   @Column(name = "order_num")
+  @NotNull(message = "组织部门自定义排序为空")
   private Integer orderNum;
 
-  /** 允许操作（编辑/删除） */
-  @ApiModelProperty(value = "字段是否允许操作（编辑/删除）")
-  @Column(name = "allow_operation")
-  private Boolean allowOperation;
-
   /** 是否启用 */
-  @ApiModelProperty(value = "是否启用")
+  @ApiModelProperty("是否启用")
   private Boolean inservice;
 
   /** 创建人ID */
@@ -65,104 +62,91 @@ public class PostGroup {
   @ApiModelProperty(hidden = true)
   private Integer updId;
 
-  /** 修改时间 */
-  @Column(name = "upd_time")
-  @ApiModelProperty(hidden = true)
-  private Date updTime;
-
   /** 修改人名称 */
   @Column(name = "upd_name")
   @ApiModelProperty(hidden = true)
   private String updName;
 
-  /**
-   * 获取主键
-   *
-   * @return id - 主键
-   */
+  /** 修改时间 */
+  @Column(name = "upd_time")
+  @ApiModelProperty(hidden = true)
+  private Date updTime;
+
+  /** @return id */
   public Integer getId() {
     return id;
   }
 
-  /**
-   * 设置主键
-   *
-   * @param id 主键
-   */
+  /** @param id */
   public void setId(Integer id) {
     this.id = id;
   }
 
   /**
-   * 获取上级岗位分类ID
+   * 获取公司父部门ID
    *
-   * @return parent_id - 上级岗位分类ID
+   * @return parent_id - 公司父部门ID
    */
   public Integer getParentId() {
     return parentId;
   }
 
   /**
-   * 设置上级岗位分类ID
+   * 设置公司父部门ID
    *
-   * @param parentId 上级岗位分类ID
+   * @param parentId 公司父部门ID
    */
   public void setParentId(Integer parentId) {
     this.parentId = parentId;
   }
 
   /**
-   * 获取岗位分类名称
+   * 获取公司ID
    *
-   * @return name - 岗位分类名称
+   * @return company_id - 公司ID
    */
-  public String getName() {
-    return name;
+  public Integer getCompanyId() {
+    return companyId;
   }
 
   /**
-   * 设置岗位分类名称
+   * 设置公司ID
    *
-   * @param name 岗位分类名称
+   * @param companyId 公司ID
    */
-  public void setName(String name) {
-    this.name = name;
+  public void setCompanyId(Integer companyId) {
+    this.companyId = companyId;
   }
 
   /**
-   * 获取自定义排序
+   * 获取部门模版ID
    *
-   * @return order_num - 自定义排序
+   * @return department_id - 部门模版ID
    */
+  public Integer getDepartmentId() {
+    return departmentId;
+  }
+
+  /**
+   * 设置部门模版ID
+   *
+   * @param departmentId 部门模版ID
+   */
+  public void setDepartmentId(Integer departmentId) {
+    this.departmentId = departmentId;
+  }
+
   public Integer getOrderNum() {
     return orderNum;
   }
 
   /**
-   * 设置自定义排序
+   * 排序序号
    *
-   * @param orderNum 自定义排序
+   * @param orderNum 自定义组织部门排序
    */
   public void setOrderNum(Integer orderNum) {
     this.orderNum = orderNum;
-  }
-
-  /**
-   * 获取允许操作（编辑/删除）
-   *
-   * @return allowOperation
-   */
-  public Boolean getAllowOperation() {
-    return allowOperation;
-  }
-
-  /**
-   * 设置允许被操纵
-   *
-   * @param allowOperation 获取允许操作（编辑/删除）
-   */
-  public void setAllowOperation(Boolean allowOperation) {
-    this.allowOperation = allowOperation;
   }
 
   /**
@@ -248,24 +232,6 @@ public class PostGroup {
   }
 
   /**
-   * 获取修改时间
-   *
-   * @return upd_time - 修改时间
-   */
-  public Date getUpdTime() {
-    return updTime;
-  }
-
-  /**
-   * 设置修改时间
-   *
-   * @param updTime 修改时间
-   */
-  public void setUpdTime(Date updTime) {
-    this.updTime = updTime;
-  }
-
-  /**
    * 获取修改人名称
    *
    * @return upd_name - 修改人名称
@@ -281,5 +247,23 @@ public class PostGroup {
    */
   public void setUpdName(String updName) {
     this.updName = updName;
+  }
+
+  /**
+   * 获取修改时间
+   *
+   * @return upd_time - 修改时间
+   */
+  public Date getUpdTime() {
+    return updTime;
+  }
+
+  /**
+   * 设置修改时间
+   *
+   * @param updTime 修改时间
+   */
+  public void setUpdTime(Date updTime) {
+    this.updTime = updTime;
   }
 }

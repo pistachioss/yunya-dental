@@ -1,103 +1,81 @@
-package com.yunya.modules.system.entity;
-
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+package com.yunya.models.system;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@ApiModel("用户可登陆组织")
-@Table(name = "sys_user_post")
-public class SysUserPost {
-    @ApiModelProperty(hidden = true)
+@Table(name = "sys_resource_authority")
+public class SysResourceAuthority {
     @Id
     private Integer id;
-
-    @ApiModelProperty(value = "用户ID", required = true)
-    @NotNull(message = "用户ID不能为空")
-    @Column(name = "user_id")
-    private Integer userId;
-
-    @ApiModelProperty(value = "可登录组织ID",required = true)
-    @NotNull(message = "组织ID不能为空")
-    @Column(name = "company_id")
-    private Integer companyId;
-
-    /**
-     * 部门ID
-     */
-    @ApiModelProperty(value = "组织部门ID", required = true)
-    @NotNull(message = "组织部门ID不能为空")
-    @Column(name = "department_id")
-    private Integer departmentId;
 
     /**
      * 岗位ID
      */
-    @ApiModelProperty(value = "岗位ID", required = true)
-    @NotNull(message = "岗位ID不能为空")
     @Column(name = "post_id")
     private Integer postId;
 
     /**
-     * 系统终端ID
+     * 岗位组ID
      */
-    @ApiModelProperty("系统终端ID")
-    @Column(name = "system_id")
-    private Integer systemId;
+    @Column(name = "post_group_id")
+    private Integer postGroupId;
 
     /**
-     * 角色组ID
+     * 资源ID
      */
-    @ApiModelProperty("岗位组ID")
-    @Column(name = "group_id")
-    private Integer groupId;
+    @Column(name = "resource_id")
+    private String resourceId;
+
+    /**
+     * 资源类型(0-菜单；1-功能按钮)
+     */
+    @Column(name = "resource_type")
+    private Byte resourceType;
+
+    @Column(name = "parent_id")
+    private Integer parentId;
+
+    private String path;
+
+    private String description;
 
     /**
      * 是否启用
      */
-    @ApiModelProperty("是否启用")
     private Boolean inservice;
 
     /**
      * 创建人ID
      */
-    @ApiModelProperty(hidden = true)
     @Column(name = "crt_id")
     private Integer crtId;
 
     /**
      * 创建人名称
      */
-    @ApiModelProperty(hidden = true)
     @Column(name = "crt_name")
     private String crtName;
 
     /**
      * 创建时间
      */
-    @ApiModelProperty(hidden = true)
     @Column(name = "crt_time")
     private Date crtTime;
 
-    @ApiModelProperty(hidden = true)
     @Column(name = "upd_id")
     private Integer updId;
 
     /**
      * 修改人名称
      */
-    @ApiModelProperty(hidden = true)
     @Column(name = "upd_name")
     private String updName;
 
     /**
      * 修改时间
      */
-    @ApiModelProperty(hidden = true)
     @Column(name = "upd_time")
     private Date updTime;
 
@@ -113,52 +91,6 @@ public class SysUserPost {
      */
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    /**
-     * @return user_id
-     */
-    public Integer getUserId() {
-        return userId;
-    }
-
-    /**
-     * @param userId
-     */
-    public void setUserId(Integer userId) {
-        this.userId = userId;
-    }
-
-    /**
-     * @return company_id
-     */
-    public Integer getCompanyId() {
-        return companyId;
-    }
-
-    /**
-     * @param companyId
-     */
-    public void setCompanyId(Integer companyId) {
-        this.companyId = companyId;
-    }
-
-    /**
-     * 获取部门ID
-     *
-     * @return department_id - 部门ID
-     */
-    public Integer getDepartmentId() {
-        return departmentId;
-    }
-
-    /**
-     * 设置部门ID
-     *
-     * @param departmentId 部门ID
-     */
-    public void setDepartmentId(Integer departmentId) {
-        this.departmentId = departmentId;
     }
 
     /**
@@ -180,39 +112,99 @@ public class SysUserPost {
     }
 
     /**
-     * 获取系统终端ID
+     * 获取岗位组ID
      *
-     * @return system_id - 系统终端ID
+     * @return post_group_id - 岗位组ID
      */
-    public Integer getSystemId() {
-        return systemId;
+    public Integer getPostGroupId() {
+        return postGroupId;
     }
 
     /**
-     * 设置系统终端ID
+     * 设置岗位组ID
      *
-     * @param systemId 系统终端ID
+     * @param postGroupId 岗位组ID
      */
-    public void setSystemId(Integer systemId) {
-        this.systemId = systemId;
+    public void setPostGroupId(Integer postGroupId) {
+        this.postGroupId = postGroupId;
     }
 
     /**
-     * 获取角色组ID
+     * 获取资源ID
      *
-     * @return group_id - 角色组ID
+     * @return resource_id - 资源ID
      */
-    public Integer getGroupId() {
-        return groupId;
+    public String getResourceId() {
+        return resourceId;
     }
 
     /**
-     * 设置角色组ID
+     * 设置资源ID
      *
-     * @param groupId 角色组ID
+     * @param resourceId 资源ID
      */
-    public void setGroupId(Integer groupId) {
-        this.groupId = groupId;
+    public void setResourceId(String resourceId) {
+        this.resourceId = resourceId;
+    }
+
+    /**
+     * 获取资源类型(0-菜单；1-功能按钮)
+     *
+     * @return resource_type - 资源类型(0-菜单；1-功能按钮)
+     */
+    public Byte getResourceType() {
+        return resourceType;
+    }
+
+    /**
+     * 设置资源类型(0-菜单；1-功能按钮)
+     *
+     * @param resourceType 资源类型(0-菜单；1-功能按钮)
+     */
+    public void setResourceType(Byte resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    /**
+     * @return parent_id
+     */
+    public Integer getParentId() {
+        return parentId;
+    }
+
+    /**
+     * @param parentId
+     */
+    public void setParentId(Integer parentId) {
+        this.parentId = parentId;
+    }
+
+    /**
+     * @return path
+     */
+    public String getPath() {
+        return path;
+    }
+
+    /**
+     * @param path
+     */
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    /**
+     * @return description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**

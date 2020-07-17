@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.SysMenu;
+import com.yunya.models.system.SysMenu;
 import com.yunya.modules.system.form.MenuElementForm;
 import com.yunya.modules.system.form.query.SysMenuQueryForm;
 import com.yunya.modules.system.vo.SysMenuVO;

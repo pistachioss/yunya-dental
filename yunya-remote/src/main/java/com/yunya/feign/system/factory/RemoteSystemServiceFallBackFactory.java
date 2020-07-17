@@ -1,10 +1,9 @@
 package com.yunya.feign.system.factory;
 
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.JwtRequestFrom;
-import com.yunya.feign.system.vo.LogInfo;
-import com.yunya.feign.system.vo.PermissionInfo;
-import com.yunya.feign.system.vo.UserInfo;
+import com.yunya.feign.system.form.*;
+import com.yunya.feign.system.vo.*;
+import com.yunya.models.system.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +30,76 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
    */
   @Override
   public UserInfo validate(JwtRequestFrom jwtRequestFrom) {
+    return null;
+  }
+
+  @Override
+  public Brand findBrandById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<Brand> findBrandList(BrandModel model) {
+    return null;
+  }
+
+  @Override
+  public Department findDepartmentById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<Department> findDepartmentList(DepartmentModel model) {
+    return null;
+  }
+
+  @Override
+  public DictionaryItem findDictionaryItemById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<DictionaryItem> findDictionaryItemList(DictionaryItemModel model) {
+    return null;
+  }
+
+  @Override
+  public DictionaryType findDictionaryTypeById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<DictionaryType> findDictionaryTypeList(DictionaryTypeModel model) {
+    return null;
+  }
+
+  @Override
+  public OrganizationInfo findOrgInfoByOrgId(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<OrganizationInfoVO> findOrgInfoList(OrganizationModel model) {
+    return null;
+  }
+
+  @Override
+  public CompanyDepartment findCompanyDepartmentById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<CompanyDepartment> findCompanyDepartmentList(OrgDepartmentModel model) {
+    return null;
+  }
+
+  @Override
+  public Post findPostById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<Post> findPostList(PostModel model) {
     return null;
   }
 

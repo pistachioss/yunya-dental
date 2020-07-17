@@ -1,6 +1,6 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.modules.system.entity.Brand;
+import com.yunya.models.system.Brand;
 import com.yunya.modules.system.form.query.BrandQueryForm;
 import com.yunya.modules.system.vo.BrandVO;
 import org.apache.ibatis.annotations.Param;

@@ -1,6 +1,6 @@
 package com.yunya.modules.system.form;
 
-import com.yunya.modules.system.entity.Company;
+import com.yunya.models.system.Company;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

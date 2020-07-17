@@ -1,6 +1,6 @@
 package com.yunya.auth.controller;
 
-import com.yunya.auth.domain.entity.Client;
+import com.yunya.models.auth.Client;
 import com.yunya.auth.biz.ClientBiz;
 import com.yunya.framework.common.controller.BaseController;
 import com.yunya.framework.common.model.ResponseResult;

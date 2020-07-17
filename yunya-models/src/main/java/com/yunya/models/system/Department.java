@@ -1,49 +1,68 @@
-package com.yunya.modules.system.entity;
+package com.yunya.models.system;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.Date;
 
-@Table(name = "sys_post_element")
-public class SysPostElement {
-  @Id private Integer id;
+@ApiModel("部门模版新增参数模型")
+public class Department {
+  @Id
+  @ApiModelProperty(hidden = true)
+  private Integer id;
 
-  /** 岗位ID */
-  @Column(name = "post_id")
-  private Integer postId;
+  /** 部门名 */
+  @ApiModelProperty(value = "部门名称", required = true)
+  @Size(max = 50, message = "名称长度不能超过50个字符")
+  @NotBlank(message = "部门名称不能为空！")
+  private String name;
 
-  /** 系统按钮ID */
-  @Column(name = "sys_element_id")
-  private String sysElementId;
-
-  /** 权限类型 */
+  /** 部门类型(0-门诊部门；1-公司部门） */
+  @ApiModelProperty(value = "部门类型（0-门诊部门；1-公司部门）", required = true)
+  @NotNull(message = "部门类型不能为空！")
   private Byte type;
 
+  /** 自定义排序 */
+  @Column(name = "order_num")
+  @ApiModelProperty("自定义排序")
+  private Integer orderNum;
+
   /** 是否启用 */
+  @ApiModelProperty("是否启用")
   private Boolean inservice;
 
   /** 创建人ID */
   @Column(name = "crt_id")
+  @ApiModelProperty(hidden = true)
   private Integer crtId;
 
   /** 创建人名称 */
   @Column(name = "crt_name")
+  @ApiModelProperty(hidden = true)
   private String crtName;
 
   /** 创建时间 */
   @Column(name = "crt_time")
+  @ApiModelProperty(hidden = true)
   private Date crtTime;
 
   @Column(name = "upd_id")
+  @ApiModelProperty(hidden = true)
   private Integer updId;
 
   /** 修改人名称 */
   @Column(name = "upd_name")
+  @ApiModelProperty(hidden = true)
   private String updName;
 
   /** 修改时间 */
   @Column(name = "upd_time")
+  @ApiModelProperty(hidden = true)
   private Date updTime;
 
   /** @return id */
@@ -57,57 +76,58 @@ public class SysPostElement {
   }
 
   /**
-   * 获取岗位ID
+   * 获取部门名
    *
-   * @return post_id - 岗位ID
+   * @return name - 部门名
    */
-  public Integer getPostId() {
-    return postId;
+  public String getName() {
+    return name;
   }
 
   /**
-   * 设置岗位ID
+   * 设置部门名
    *
-   * @param postId 岗位ID
+   * @param name 部门名
    */
-  public void setPostId(Integer postId) {
-    this.postId = postId;
+  public void setName(String name) {
+    this.name = name;
   }
 
   /**
-   * 获取系统按钮ID
+   * 获取部门类型(0-门诊部门；1-公司部门）
    *
-   * @return sys_element_id - 系统按钮ID
-   */
-  public String getSysElementId() {
-    return sysElementId;
-  }
-
-  /**
-   * 设置系统按钮ID
-   *
-   * @param sysElementId 系统按钮ID
-   */
-  public void setSysElementId(String sysElementId) {
-    this.sysElementId = sysElementId;
-  }
-
-  /**
-   * 获取权限类型
-   *
-   * @return
+   * @return type - 部门类型(0-门诊部门；1-公司部门）
    */
   public Byte getType() {
     return type;
   }
 
   /**
-   * 设置权限类型
+   * 设置部门类型(0-门诊部门；1-公司部门）
    *
-   * @param type 权限类型
+   * @param type 部门类型(0-门诊部门；1-公司部门）
    */
   public void setType(Byte type) {
     this.type = type;
+  }
+
+  /**
+   * 获取自定义部门排序
+   *
+   * @return int
+   */
+  public Integer getOrderNum() {
+    return orderNum;
+  }
+
+  /**
+   * 设置自定义部门排序
+   *
+   * @param orderNum 参数
+   * @return int
+   */
+  public void setOrderNum(Integer orderNum) {
+    this.orderNum = orderNum;
   }
 
   /**

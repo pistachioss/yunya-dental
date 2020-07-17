@@ -1,4 +1,4 @@
-package com.yunya.modules.system.entity;
+package com.yunya.models.system;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

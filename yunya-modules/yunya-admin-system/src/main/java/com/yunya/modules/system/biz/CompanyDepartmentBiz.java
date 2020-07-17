@@ -7,7 +7,7 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.TreeUtil;
-import com.yunya.modules.system.entity.CompanyDepartment;
+import com.yunya.models.system.CompanyDepartment;
 import com.yunya.modules.system.form.CompanyDepartmentForm;
 import com.yunya.modules.system.form.query.OrgDeptQueryForm;
 import com.yunya.modules.system.mapper.CompanyDepartmentMapper;

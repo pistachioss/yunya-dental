@@ -3,7 +3,7 @@ package com.yunya.modules.system.biz;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.modules.system.entity.SysUserPost;
+import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.form.LoginOrganizationForm;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.PostVO;
