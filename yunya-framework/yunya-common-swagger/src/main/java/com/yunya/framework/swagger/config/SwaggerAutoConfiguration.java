@@ -1,4 +1,4 @@
-package com.yunya.framework.common.swagger;
+package com.yunya.framework.swagger.config;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -31,7 +31,6 @@ import java.util.List;
 @EnableAutoConfiguration
 @ConditionalOnProperty(name = "swagger.enabled", matchIfMissing = true)
 public class SwaggerAutoConfiguration {
-
   /** 默认的排除路径，排除Spring Boot默认的错误处理路径和端点 */
   private static final List<String> DEFAULT_EXCLUDE_PATH = Arrays.asList("/error", "/actuator/**");
 
@@ -129,9 +128,9 @@ public class SwaggerAutoConfiguration {
   }
 
   /**
-   * Api信息
+   * 生成api
    *
-   * @param swaggerProperties 配置信息
+   * @param swaggerProperties
    * @return
    */
   private ApiInfo apiInfo(SwaggerProperties swaggerProperties) {
