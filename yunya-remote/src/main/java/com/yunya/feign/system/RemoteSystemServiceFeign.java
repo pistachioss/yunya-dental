@@ -42,8 +42,8 @@ public interface RemoteSystemServiceFeign {
    * @param id 品牌ID
    * @return
    */
-  @RequestMapping(value = "/brand/one/{id}", method = RequestMethod.GET)
-  Brand findBrandById(@PathVariable Integer id);
+  @RequestMapping(value = "/api/brand/one/{id}", method = RequestMethod.GET)
+  Brand findBrandById(@PathVariable("id") Integer id);
 
   /**
    * 根据条件获取品牌列表
@@ -51,7 +51,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/brand/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/brand/list", method = RequestMethod.POST)
   List<Brand> findBrandList(@RequestBody BrandModel model);
 
   /**
@@ -60,8 +60,8 @@ public interface RemoteSystemServiceFeign {
    * @param id 部门ID
    * @return
    */
-  @RequestMapping(value = "/department/{id}", method = RequestMethod.GET)
-  Department findDepartmentById(@PathVariable Integer id);
+  @RequestMapping(value = "/api/department/{id}", method = RequestMethod.GET)
+  Department findDepartmentById(@PathVariable("id") Integer id);
 
   /**
    * 根据条件查询部门列表
@@ -69,7 +69,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/department/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/department/list", method = RequestMethod.POST)
   List<Department> findDepartmentList(@RequestBody DepartmentModel model);
 
   /**
@@ -78,8 +78,8 @@ public interface RemoteSystemServiceFeign {
    * @param id 字典明细ID
    * @return
    */
-  @RequestMapping(value = "/dictionary/{id}", method = RequestMethod.GET)
-  DictionaryItem findDictionaryItemById(@PathVariable Integer id);
+  @RequestMapping(value = "/api/dictionary/{id}", method = RequestMethod.GET)
+  DictionaryItem findDictionaryItemById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询字典明细列表
@@ -87,7 +87,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/dictionary/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/dictionary/list", method = RequestMethod.POST)
   List<DictionaryItem> findDictionaryItemList(@RequestBody DictionaryItemModel model);
 
   /**
@@ -96,8 +96,8 @@ public interface RemoteSystemServiceFeign {
    * @param id 字典类型ID
    * @return
    */
-  @RequestMapping(value = "/dict/{id}", method = RequestMethod.GET)
-  DictionaryType findDictionaryTypeById(@PathVariable Integer id);
+  @RequestMapping(value = "/api/dict/{id}", method = RequestMethod.GET)
+  DictionaryType findDictionaryTypeById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询字典类型列表
@@ -105,7 +105,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/dict/list", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/dict/list", method = RequestMethod.GET)
   List<DictionaryType> findDictionaryTypeList(@RequestBody DictionaryTypeModel model);
 
   /**
@@ -114,8 +114,8 @@ public interface RemoteSystemServiceFeign {
    * @param id 组织ID
    * @return
    */
-  @RequestMapping(value = "/organization/{id}", method = RequestMethod.GET)
-  OrganizationInfo findOrgInfoByOrgId(@PathVariable Integer id);
+  @RequestMapping(value = "/api/organization/{id}", method = RequestMethod.GET)
+  OrganizationInfo findOrgInfoByOrgId(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询组织信息
@@ -123,7 +123,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/organization/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/organization/list", method = RequestMethod.POST)
   List<OrganizationInfoVO> findOrgInfoList(@RequestBody OrganizationModel model);
 
   /**
@@ -132,8 +132,8 @@ public interface RemoteSystemServiceFeign {
    * @param id 组织部门ID
    * @return obj
    */
-  @RequestMapping(value = "/org/dept/{id}", method = RequestMethod.GET)
-  CompanyDepartment findCompanyDepartmentById(@PathVariable Integer id);
+  @RequestMapping(value = "/api/org/dept/{id}", method = RequestMethod.GET)
+  CompanyDepartment findCompanyDepartmentById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询组织部门列表
@@ -141,7 +141,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询参数
    * @return list
    */
-  @RequestMapping(value = "/org/dept/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/org/dept/list", method = RequestMethod.POST)
   List<CompanyDepartment> findCompanyDepartmentList(@RequestBody OrgDepartmentModel model);
 
   /**
@@ -150,8 +150,8 @@ public interface RemoteSystemServiceFeign {
    * @param id 岗位ID
    * @return obj
    */
-  @RequestMapping(value = "/post/one/{id}", method = RequestMethod.GET)
-  Post findPostById(@PathVariable Integer id);
+  @RequestMapping(value = "/api/post/one/{id}", method = RequestMethod.GET)
+  Post findPostById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询岗位信息列表
@@ -159,7 +159,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return list
    */
-  @RequestMapping(value = "/post/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/post/list", method = RequestMethod.POST)
   List<Post> findPostList(@RequestBody PostModel model);
 
   /**

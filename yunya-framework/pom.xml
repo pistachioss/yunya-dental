@@ -16,6 +16,7 @@
         <module>yunya-auth-sdk</module>
         <module>yunya-common-core</module>
         <module>yunya-common-redis</module>
+        <module>yunya-common-swagger</module>
     </modules>
 
 

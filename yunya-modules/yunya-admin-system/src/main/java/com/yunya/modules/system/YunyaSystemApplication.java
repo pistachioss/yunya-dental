@@ -1,7 +1,7 @@
 package com.yunya.modules.system;
 
 import com.yunya.feign.EnableYunyaFeignClients;
-import com.yunya.framework.common.swagger.anotation.EnableCustomSwagger2;
+import com.yunya.framework.swagger.EnableCustomSwagger2;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;

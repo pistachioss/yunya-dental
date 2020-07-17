@@ -13,10 +13,17 @@
     <description>云牙系统实体类工程</description>
 
     <dependencies>
+        <!-- 云牙公共核心依赖 -->
         <dependency>
             <groupId>com.yunya</groupId>
             <artifactId>yunya-common-core</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <!-- swagger -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
         </dependency>
     </dependencies>
 

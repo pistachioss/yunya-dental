@@ -101,6 +101,13 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- swagger -->
+        <dependency>
+            <groupId>com.yunya</groupId>
+            <artifactId>yunya-common-swagger</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <build>

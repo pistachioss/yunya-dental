@@ -1,4 +1,4 @@
-package com.yunya.framework.common.swagger;
+package com.yunya.framework.swagger.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;

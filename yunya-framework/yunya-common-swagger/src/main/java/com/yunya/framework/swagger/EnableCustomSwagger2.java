@@ -1,6 +1,6 @@
-package com.yunya.framework.common.swagger.anotation;
+package com.yunya.framework.swagger;
 
-import com.yunya.framework.common.swagger.SwaggerAutoConfiguration;
+import com.yunya.framework.swagger.config.SwaggerAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;

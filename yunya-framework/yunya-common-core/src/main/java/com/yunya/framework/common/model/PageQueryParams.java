@@ -1,6 +1,5 @@
 package com.yunya.framework.common.model;
 
-import io.swagger.annotations.ApiModelProperty;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -14,7 +13,6 @@ public class PageQueryParams extends LinkedHashMap<String, Object> {
 
   private static final long serialVersionUID = 1L;
   /** 是否分页 */
-  @ApiModelProperty("是否分页；默认true；不分页传false")
   private Boolean whetherPage = true;
   /** 查询页 */
   private Integer page = 1;
