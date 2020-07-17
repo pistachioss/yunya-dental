@@ -1,5 +1,6 @@
 package com.yunya.modules.system.mapper;
 
+import com.yunya.feign.system.vo.SysUserEmployeeInfo;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.models.system.SysUser;
 import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
@@ -65,4 +66,12 @@ public interface SysUserMapper extends Mapper<SysUser> {
    * @return
    */
   UserInfo selectUserInfoByUserName(@Param("username") String username);
+
+  /**
+   * 根据用户ID查询用户（员工）信息
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  SysUserEmployeeInfo selectSysUserEmployeeInfoByUserId(@Param("userId") Integer userId);
 }

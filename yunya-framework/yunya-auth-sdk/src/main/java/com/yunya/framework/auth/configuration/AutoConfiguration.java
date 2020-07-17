@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Configuration;
  * @date 2017/9/15
  */
 @Configuration
-@ComponentScan({"com.yunya.framework"})
+@ComponentScan({"com.yunya.framework.auth"})
 public class AutoConfiguration {
 
   /**

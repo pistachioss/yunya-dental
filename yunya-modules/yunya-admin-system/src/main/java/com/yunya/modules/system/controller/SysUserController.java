@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.SysUserEmployeeInfo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.SysUserBiz;
@@ -33,10 +34,22 @@ public class SysUserController {
   }
 
   /**
+   * 根据用户ID获取用户信息（包含员工信息）
+   *
+   * @param id 用户ID
+   * @return obj
+   */
+  @GetMapping("/one/{id}")
+  public ResponseResult findById(@PathVariable Integer id) {
+    SysUserEmployeeInfo info = sysUserBiz.findUserInfoByUserId(id);
+    return ResponseUtil.success(info);
+  }
+
+  /**
    * 新增用户
    *
    * @param resource 参数封装
-   * @return map
+   * @return void
    */
   @PostMapping("/add")
   public ResponseResult add(@RequestBody @Validated SysUserForm resource) {
@@ -61,7 +74,7 @@ public class SysUserController {
   /**
    * 根据条件查询员工信息
    *
-   * @param queryForm
+   * @param queryForm 参数封装
    * @return
    */
   @PostMapping("/employee")

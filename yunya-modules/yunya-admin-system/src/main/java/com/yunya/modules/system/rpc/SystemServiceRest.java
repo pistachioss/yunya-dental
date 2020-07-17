@@ -2,6 +2,7 @@ package com.yunya.modules.system.rpc;
 
 import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.SysUserEmployeeInfo;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
@@ -44,8 +45,10 @@ public class SystemServiceRest {
   @Autowired private CompanyDepartmentBiz companyDepartmentBiz;
   /** 岗位 */
   @Autowired private PostBiz postBiz;
-  /***/
-  /***/
+  /** 岗位组 */
+  @Autowired private PostGroupBiz postGroupBiz;
+  /** 用户（员工） */
+  @Autowired private SysUserBiz sysUserBiz;
 
   /**
    * 根据用户名、密码查询用户信息
@@ -147,7 +150,7 @@ public class SystemServiceRest {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/dict/list", method = RequestMethod.GET)
+  @RequestMapping(value = "/dict/list", method = RequestMethod.POST)
   public List<DictionaryType> findDictionaryTypeList(@RequestBody DictionaryTypeModel model) {
     DictionaryType dictType = new DictionaryType();
     BeanUtils.copyProperties(model, dictType);
@@ -222,5 +225,40 @@ public class SystemServiceRest {
     Post post = new Post();
     BeanUtils.copyProperties(model, post);
     return postBiz.selectByObj(post);
+  }
+
+  /**
+   * 根据岗位组ID查询岗位组信息
+   *
+   * @param id 岗位组ID
+   * @return
+   */
+  @RequestMapping(value = "/post/group/{id}", method = RequestMethod.GET)
+  public PostGroup findPostGroupById(@PathVariable Integer id) {
+    return postGroupBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询岗位组列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/postGroup/list", method = RequestMethod.POST)
+  public List<PostGroup> findPostGroupList(@RequestBody PostGroupModel model) {
+    PostGroup postGroup = new PostGroup();
+    BeanUtils.copyProperties(model, postGroup);
+    return postGroupBiz.selectByObj(postGroup);
+  }
+
+  /**
+   * 根据用户ID查询用户信息
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  @RequestMapping("/userIfo/{userId}")
+  public SysUserEmployeeInfo findSysUserEmployeeInfoByUserId(@PathVariable Integer userId) {
+    return sysUserBiz.findUserInfoByUserId(userId);
   }
 }

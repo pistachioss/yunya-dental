@@ -2,6 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.SysUserEmployeeInfo;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -11,6 +12,7 @@ import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
@@ -43,10 +45,11 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
   /** 用户的员工信息 */
   @Autowired private SysEmployeeMapper sysEmployeeMapper;
-
   /** 用户可登陆组织 */
   @Autowired private SysUserPostBiz sysUserPostBiz;
-
+  /** 字典明细 */
+  @Autowired private DictionaryItemBiz dictionaryItemBiz;
+  /** 缓存 */
   @Autowired private RedisUtils redisUtils;
 
   /**
@@ -209,13 +212,10 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * @return SysUser
    */
   public PageInfo<SysEmployeeVO> getEmployeeByCondition(SysEmployeeQueryForm form) {
-
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-
     List<SysEmployeeVO> sysEmployeeVOs = mapper.selectSysEmployeeByCondition(form);
-
     return new PageInfo<>(sysEmployeeVOs);
   }
 
@@ -227,5 +227,21 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    */
   public UserInfo findUserInfoByUserName(String username) {
     return mapper.selectUserInfoByUserName(username);
+  }
+
+  /**
+   * 根据用户ID查询用户（员工信息）
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  public SysUserEmployeeInfo findUserInfoByUserId(Integer userId) {
+    SysUserEmployeeInfo info = mapper.selectSysUserEmployeeInfoByUserId(userId);
+    if (null != info) {
+      // 查询员工学历
+      DictionaryItem item = dictionaryItemBiz.selectById(Integer.parseInt(info.getEducation()));
+      info.setEducation(item.getName());
+    }
+    return info;
   }
 }

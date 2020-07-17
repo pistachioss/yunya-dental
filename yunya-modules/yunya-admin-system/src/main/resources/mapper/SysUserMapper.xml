@@ -208,5 +208,42 @@
         left join sys_employee se on su.id = se.user_id
         where su.username = #{username}
     </select>
+    <!-- 根据用户ID查询用户及员工信息 -->
+    <select id="selectSysUserEmployeeInfoByUserId" resultType="com.yunya.feign.system.vo.SysUserEmployeeInfo">
+        select
+            su.id,
+            se.id as employeeId,
+            su.username,
+            se.`name`,
+            su.birthday,
+            su.address,
+            su.mobile_phone as mobilePhone,
+            su.email,
+            su.gender,
+            su.description,
+            su.province,
+            su.city,
+            su.country,
+            su.origin,
+            se.identity,
+            se.work_status as workStatus,
+            se.work_type as workType,
+            se.contract_signing_date as contractSigningDate,
+            se.entry_date as entryDate,
+            se.graduated_school as graduatedSchool,
+            se.education,
+            se.leave_time as leaveTime,
+            se.title,
+            se.post_level as postLevel,
+            se.emergency_contact as emergencyContact,
+            se.emergency_contact_phone as emergencyContactPhone,
+            se.discount,
+            se.photo as photo,
+            se.diploma_photo as diplomaPhoto,
+            se.work_number as workNumber
+        from sys_user su
+        left join sys_employee se on su.id = se.user_id
+        where su.id = #{userId}
+    </select>
 
 </mapper>
