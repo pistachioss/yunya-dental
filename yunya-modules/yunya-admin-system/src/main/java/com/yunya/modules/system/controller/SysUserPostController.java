@@ -6,6 +6,7 @@ import com.yunya.modules.system.biz.SysUserPostBiz;
 import com.yunya.modules.system.entity.SysUserPost;
 import com.yunya.modules.system.form.LoginOrganizationForm;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
+import com.yunya.modules.system.vo.SysUserPostOrgVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -40,10 +41,24 @@ public class SysUserPostController {
    * @param userId 用户ID
    * @return map
    */
-  @ApiOperation("获取用户可登陆组织列表")
+  @ApiOperation("获取用户可登陆组织列表(用户登陆)")
   @GetMapping("/list/{userId}")
   public ResponseResult getUserLoginList(@PathVariable Integer userId) {
     List<SysUserLoginOrgVO> loginList = sysUserPostBiz.getUserLoginListByUserId(userId);
+    return ResponseUtil.success(loginList);
+  }
+
+
+  /**
+   * 根据用户ID获取用户可登陆组织列表
+   *
+   * @param userId 用户ID
+   * @return map
+   */
+  @ApiOperation("获取用户可登陆组织列表(员工信息管理用)")
+  @GetMapping("/userPostlist/{userId}")
+  public ResponseResult getUserPostList(@PathVariable Integer userId) {
+    List<SysUserPostOrgVO> loginList = sysUserPostBiz.getUserPostListByUserId(userId);
     return ResponseUtil.success(loginList);
   }
 

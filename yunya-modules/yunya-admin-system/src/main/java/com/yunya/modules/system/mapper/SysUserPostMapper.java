@@ -3,6 +3,7 @@ package com.yunya.modules.system.mapper;
 import com.yunya.modules.system.entity.SysUserPost;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
+import com.yunya.modules.system.vo.SysUserPostOrgVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -39,6 +40,14 @@ public interface SysUserPostMapper extends Mapper<SysUserPost> {
    * @return
    */
   List<SysUserLoginOrgVO> selectListByUserId(@Param("userId") Integer userId);
+
+  /**
+   * 根据用户ID查询全部可登陆组织(用户管理-可登录组织)
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  List<SysUserPostOrgVO> selectUserPostListByUserId(@Param("userId") Integer userId);
 
   /**
    * 根据用户ID、组织ID查询岗位列表

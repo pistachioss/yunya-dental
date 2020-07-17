@@ -8,6 +8,7 @@ import com.yunya.modules.system.form.LoginOrganizationForm;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
+import com.yunya.modules.system.vo.SysUserPostOrgVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -110,6 +111,17 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
    */
   public List<SysUserLoginOrgVO> getUserLoginListByUserId(Integer userId) {
     List<SysUserLoginOrgVO> resultList = mapper.selectListByUserId(userId);
+    return resultList;
+  }
+
+  /**
+   * 根据用户ID获取用户可登陆组织列表(员工管理-可登录组织)
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  public List<SysUserPostOrgVO> getUserPostListByUserId(Integer userId) {
+    List<SysUserPostOrgVO> resultList = mapper.selectUserPostListByUserId(userId);
     return resultList;
   }
 

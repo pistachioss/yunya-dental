@@ -46,6 +46,23 @@
         left join clinic_ext_info cei on sup.company_id = cei.company_id
         where sup.user_id = #{userId}
     </select>
+
+    <!-- 根据组织ID、用户ID查询岗位列表(员工管理-可登录组织列表) -->
+    <select id="selectUserPostListByUserId" resultType="com.yunya.modules.system.vo.SysUserPostOrgVO">
+        select
+            sup.id,
+            sup.company_id as orgId,
+            sup.department_id as orgDeptId,
+            sup.post_id as postId,
+            c.`name` as name,
+            c.`type` as type,
+            ifnull(cei.abbreviation,'公司') as abbreviation
+        from sys_user_post sup
+        left join company c on sup.company_id = c.id
+        left join clinic_ext_info cei on sup.company_id = cei.company_id
+        where sup.user_id = #{userId}
+    </select>
+
     <!-- 根据组织ID、用户ID查询岗位列表 -->
     <select id="selectPostList" resultType="com.yunya.modules.system.vo.PostVO">
         select distinct
