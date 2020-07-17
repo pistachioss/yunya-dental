@@ -7,6 +7,7 @@ import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
 import com.yunya.modules.system.rpc.service.PermissionService;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
+import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import java.util.Map;
  * @description:
  * @since: 1.0.0
  */
+@Api("系统管理服务接口暴露")
 @RestController
 @RequestMapping("api")
 public class SystemServiceRest {

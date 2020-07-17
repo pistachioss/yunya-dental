@@ -53,10 +53,10 @@ public class UserAuthRestInterceptor extends HandlerInterceptorAdapter {
       }
     }
     // 校验token获取JWT信息
-    IJWTInfo infoFromToken = jwtTokenUtil.getInfoFromToken(token);
-    BaseContextHandler.setUsername(infoFromToken.getUniqueName());
-    BaseContextHandler.setName(infoFromToken.getName());
-    BaseContextHandler.setUserID(infoFromToken.getId());
+    IJWTInfo jwtInfo = jwtTokenUtil.getInfoFromToken(token);
+    BaseContextHandler.setUsername(jwtInfo.getUniqueName());
+    BaseContextHandler.setName(jwtInfo.getName());
+    BaseContextHandler.setUserID(jwtInfo.getId());
     return super.preHandle(request, response, handler);
   }
 

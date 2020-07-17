@@ -44,7 +44,7 @@ public class OrganizationDepartmentController {
    * @return obj
    */
   @ApiOperation("根据ID查询组织部门信息")
-  @GetMapping("/dept/one{id}")
+  @GetMapping("/dept/one/{id}")
   public ResponseResult findById(@PathVariable Integer id) {
     CompanyDepartment companyDepartment = organizationDepartmentBiz.selectById(id);
     return ResponseUtil.success(companyDepartment);
