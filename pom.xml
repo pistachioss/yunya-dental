@@ -54,6 +54,7 @@
         <swagger.fox.version>2.9.2</swagger.fox.version>
         <swagger.core.version>1.5.24</swagger.core.version>
         <lombok.version>1.18.12</lombok.version>
+        <swagger-ui.version>1.9.6</swagger-ui.version>
     </properties>
 
     <dependencyManagement>
@@ -232,6 +233,13 @@
                 <groupId>io.springfox</groupId>
                 <artifactId>springfox-swagger-ui</artifactId>
                 <version>${swagger.fox.version}</version>
+            </dependency>
+
+            <!-- doc swagger-ui -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>swagger-bootstrap-ui</artifactId>
+                <version>${swagger-ui.version}</version>
             </dependency>
 
             <dependency>
