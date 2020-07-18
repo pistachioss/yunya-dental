@@ -1,6 +1,8 @@
 package com.yunya.framework.common.utils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,5 +41,45 @@ public class MapUtil {
       e.printStackTrace();
     }
     return map;
+  }
+
+  /**
+   * Map转成实体对象
+   *
+   * @author chow
+   * @create 2020/7/17
+   * @since 1.0.0
+   */
+  public static <T> T mapToObject(Map<String, Object> map, Class<T> clazz) {
+    if (map == null) {
+      return null;
+    }
+    T obj = null;
+    try {
+      obj = clazz.newInstance();
+
+      Field[] fields = obj.getClass().getDeclaredFields();
+      for (Field field : fields) {
+        int mod = field.getModifiers();
+        if (Modifier.isStatic(mod) || Modifier.isFinal(mod)) {
+          continue;
+        }
+        field.setAccessible(true);
+        String filedTypeName = field.getType().getName();
+        if ("java.util.date".equalsIgnoreCase(filedTypeName)) {
+          String dateTimestamp = String.valueOf(map.get(field.getName()));
+          if ("null".equalsIgnoreCase(dateTimestamp)) {
+            field.set(obj, null);
+          } else {
+            field.set(obj, new Date(Long.parseLong(dateTimestamp)));
+          }
+        } else {
+          field.set(obj, map.get(field.getName()));
+        }
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return obj;
   }
 }
