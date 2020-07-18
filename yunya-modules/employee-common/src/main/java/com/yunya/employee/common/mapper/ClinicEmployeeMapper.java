@@ -1,7 +1,7 @@
 package com.yunya.employee.common.mapper;
 
 
-import com.yunya.clinic.employee.common.entity.ClinicEmployee;
+import com.yunya.models.clinic.ClinicEmployee;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 

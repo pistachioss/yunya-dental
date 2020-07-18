@@ -1,14 +1,15 @@
 package com.yunya.employee.common.controller;
 
+
 import com.github.pagehelper.PageInfo;
-import com.github.wxiaoqi.security.common.util.ResponseUtil;
-import com.github.wxiaoqi.security.common.util.RestDataResult;
-import com.yunya.clinic.employee.common.model.request.ClinicEmployeeConfigReq;
-import com.yunya.clinic.employee.common.model.request.ClinicEmployeePageReq;
-import com.yunya.clinic.employee.common.model.response.ClinicEmployeePageRes;
-import com.yunya.clinic.employee.common.service.ClinicEmployeeBiz;
+import com.yunya.employee.common.model.request.ClinicEmployeeConfigReq;
+import com.yunya.employee.common.model.request.ClinicEmployeePageReq;
+import com.yunya.employee.common.model.response.ClinicEmployeePageRes;
+import com.yunya.employee.common.service.ClinicEmployeeBiz;
+import com.yunya.framework.common.model.ResponseResult;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -18,34 +19,58 @@ import javax.annotation.Resource;
  */
 @Api(tags = {"门诊端员工管理"})
 @RestController
-@RequestMapping("clinic/employee")
 public class ClinicEmployeeController {
-
-    @Resource
-    private ClinicEmployeeBiz clinicEmployeeBiz;
+//
+//    @Resource
+//    private ClinicEmployeeBiz clinicEmployeeBiz;
+//
+//    /**
+//     * 门诊员工配置
+//     *
+//     * @return
+//     */
+//    @ApiOperation("门诊端-诊所设置-员工设置-员工配置")
+//    @PutMapping("/config/{employeeId}")
+//    public ResponseResult modifyEmployeeConfig(@PathVariable("employeeId") Integer employeeId,
+//                                               @RequestBody ClinicEmployeeConfigReq configRequest) {
+//        clinicEmployeeBiz.modifyClinicEmployeeConfig(employeeId, configRequest);
+//        return ResponseResult.success();
+//    }
+//
+//    /**
+//     * 门诊员工列表查询
+//     * @return
+//     */
+//    @ApiOperation("门诊端-员工管理-列表")
+//    @PostMapping("/list")
+//    public ResponseResult getEmployeePage(@RequestBody ClinicEmployeePageReq pageReq) {
+//        PageInfo<ClinicEmployeePageRes> pageInfo = clinicEmployeeBiz.getEmployeePageList(pageReq);
+//        return ResponseResult.success(pageInfo);
+//    }
 
     /**
+     * todo
+     * 门诊员工列表查询
+     * @return
+     */
+    @ApiOperation("门诊端-员工管理-列表")
+    @PostMapping("clinic/employee/list")
+    public ResponseResult getEmployeePage(@RequestBody ClinicEmployeePageReq pageReq) {
+        return null;
+    }
+
+    /**
+     * todo
      * 门诊员工配置
      *
      * @return
      */
     @ApiOperation("门诊端-诊所设置-员工设置-员工配置")
-    @PutMapping("/config/{employeeId}")
-    public RestDataResult modifyEmployeeConfig(@PathVariable("employeeId") Integer employeeId,
+    @PutMapping("clinic/employee/config/{employeeId}")
+    public ResponseResult modifyEmployeeConfig(@PathVariable("employeeId") Integer employeeId,
                                                @RequestBody ClinicEmployeeConfigReq configRequest) {
-        clinicEmployeeBiz.modifyClinicEmployeeConfig(employeeId, configRequest);
-        return ResponseUtil.successRes();
+       return null;
     }
 
-    /**
-     * 门诊员工列表查询
-     * @return
-     */
-    @ApiOperation("门诊端-员工管理-列表")
-    @PostMapping("/list")
-    public RestDataResult<PageInfo<ClinicEmployeePageRes>> getEmployeePage(@RequestBody ClinicEmployeePageReq pageReq) {
-        PageInfo<ClinicEmployeePageRes> pageInfo = clinicEmployeeBiz.getEmployeePageList(pageReq);
-        return ResponseUtil.successRes(pageInfo);
-    }
 
 }

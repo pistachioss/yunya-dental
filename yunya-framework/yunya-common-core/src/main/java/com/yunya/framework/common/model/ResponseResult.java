@@ -1,5 +1,6 @@
 package com.yunya.framework.common.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.ToString;
 import org.apache.poi.ss.formula.functions.T;
@@ -26,7 +27,4 @@ public class ResponseResult implements Serializable {
   /** 审核状态 */
   private Boolean audit;
 
-  public static ResponseResult success(T data) {
-    return new ResponseResult("0", "ok", data);
-  }
 }

@@ -1,7 +1,8 @@
 package com.yunya.employee.common.mapper;
 
-import com.yunya.clinic.employee.common.entity.BaseEmployee;
-import com.yunya.clinic.employee.common.model.response.BaseEmployeePageRes;
+
+import com.yunya.employee.common.model.response.BaseEmployeePageRes;
+import com.yunya.models.clinic.BaseEmployee;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
