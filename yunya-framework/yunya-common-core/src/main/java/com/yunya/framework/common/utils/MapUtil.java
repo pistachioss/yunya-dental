@@ -68,11 +68,11 @@ public class MapUtil {
         String filedTypeName = field.getType().getName();
         if ("java.util.date".equalsIgnoreCase(filedTypeName)) {
           String dateTimestamp = String.valueOf(map.get(field.getName()));
-          if ("null".equalsIgnoreCase(dateTimestamp)) {
-            field.set(obj, null);
-          } else {
-            field.set(obj, new Date(Long.parseLong(dateTimestamp)));
-          }
+          field.set(
+              obj,
+              "null".equalsIgnoreCase(dateTimestamp)
+                  ? null
+                  : new Date(Long.parseLong(dateTimestamp)));
         } else {
           field.set(obj, map.get(field.getName()));
         }

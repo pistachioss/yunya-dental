@@ -2,7 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.system.vo.SysUserEmployeeInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -19,6 +19,7 @@ import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.form.LoginOrganizationForm;
 import com.yunya.modules.system.form.SysUserForm;
 import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
+import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.mapper.SysEmployeeMapper;
 import com.yunya.modules.system.mapper.SysUserMapper;
 import com.yunya.modules.system.vo.SysEmployeeVO;
@@ -51,6 +52,20 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   @Autowired private DictionaryItemBiz dictionaryItemBiz;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+
+  /**
+   * 根据条件查询用户信息详情列表
+   *
+   * @param queryFrom 查询条件
+   * @return list
+   */
+  public PageInfo<SysUserInfoDetail> findUserDetailInfoList(SysUserInfoDetailQueryFrom queryFrom) {
+    if (queryFrom.getWhetherPage()) {
+      PageHelper.startPage(queryFrom.getPageNum(), queryFrom.getPageSize());
+    }
+    List<SysUserInfoDetail> resultList = mapper.selectSysUserInfoDetailList(queryFrom);
+    return new PageInfo<>(resultList);
+  }
 
   /**
    * 新增用户
@@ -235,8 +250,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * @param userId 用户ID
    * @return
    */
-  public SysUserEmployeeInfo findUserInfoByUserId(Integer userId) {
-    SysUserEmployeeInfo info = mapper.selectSysUserEmployeeInfoByUserId(userId);
+  public SysUserInfoDetail findUserInfoByUserId(Integer userId) {
+    SysUserInfoDetail info = mapper.selectSysUserEmployeeInfoByUserId(userId);
     if (null != info) {
       // 查询员工学历
       DictionaryItem item = dictionaryItemBiz.selectById(Integer.parseInt(info.getEducation()));

@@ -3,6 +3,8 @@ package com.yunya.modules.system.controller;
 import com.yunya.feign.system.form.BrandModel;
 import com.yunya.feign.system.form.OrgDepartmentModel;
 import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.models.system.Brand;
 import com.yunya.models.system.CompanyDepartment;
 import com.yunya.modules.system.rpc.SystemServiceRest;
@@ -43,8 +45,8 @@ public class SystemServiceRestController {
     form.setWhetherPage(false);
     form.setPageNum(2);
     form.setPageSize(2);
-    //form.setName("门诊");
-    form.setTypes(new Byte[]{0,1});
+    // form.setName("门诊");
+    form.setTypes(new Byte[] {0, 1});
     List<OrganizationInfoVO> list = systemServiceRest.findOrgInfoList(form);
     System.out.println(list);
   }
@@ -55,5 +57,13 @@ public class SystemServiceRestController {
     model.setCompanyId(21);
     List<CompanyDepartment> list = systemServiceRest.findCompanyDepartmentList(model);
     System.out.println(list);
+  }
+
+  @Test
+  public void testFindUserList() {
+    SysUserEmployeeModel model = new SysUserEmployeeModel();
+    model.setWhetherPage(false);
+    List<SysUserInfoDetail> infoList = systemServiceRest.findSysUserEmployeeInfoList(model);
+    System.out.println(infoList);
   }
 }

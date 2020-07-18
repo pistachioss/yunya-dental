@@ -1,13 +1,13 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.system.vo.SysUserEmployeeInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.SysUserBiz;
 import com.yunya.modules.system.form.SysUserForm;
 import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
-import com.yunya.modules.system.form.query.SysUserQueryFrom;
+import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.vo.SysEmployeeVO;
 import io.swagger.annotations.Api;
 import org.springframework.validation.annotation.Validated;
@@ -41,8 +41,20 @@ public class SysUserController {
    */
   @GetMapping("/one/{id}")
   public ResponseResult findById(@PathVariable Integer id) {
-    SysUserEmployeeInfo info = sysUserBiz.findUserInfoByUserId(id);
+    SysUserInfoDetail info = sysUserBiz.findUserInfoByUserId(id);
     return ResponseUtil.success(info);
+  }
+
+  /**
+   * 根据条件查询用户(员工)详情信息列表（可分页）
+   *
+   * @param queryFrom 参数封装
+   * @return list
+   */
+  @PostMapping("/list")
+  public ResponseResult findList(@RequestBody SysUserInfoDetailQueryFrom queryFrom) {
+    PageInfo<SysUserInfoDetail> resultList = sysUserBiz.findUserDetailInfoList(queryFrom);
+    return ResponseUtil.success(resultList);
   }
 
   /**
@@ -90,16 +102,6 @@ public class SysUserController {
    * @return map
    */
   public ResponseResult delete(Integer id) {
-    return ResponseUtil.success();
-  }
-
-  /**
-   * 根据条件查询用户信息列表（可分页）
-   *
-   * @param queryFrom 参数封装
-   * @return list
-   */
-  public ResponseResult findList(SysUserQueryFrom queryFrom) {
     return ResponseUtil.success();
   }
 }

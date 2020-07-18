@@ -243,7 +243,8 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
       if (hashSet.size() > 0) {
         menus =
             hashSet.stream()
-                .map(vo -> mapper.selectByPrimaryKey(vo.getResourceId()))
+                .filter(vo -> vo.getResourceType() == 0)
+                .map(vo -> mapper.selectByPrimaryKey(Integer.valueOf(vo.getResourceId())))
                 .collect(Collectors.toCollection(ArrayList::new));
       }
     }

@@ -79,7 +79,7 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
-  public List<OrganizationInfoVO> findOrgInfoList(OrganizationModel model) {
+  public List<OrganizationInfoDetail> findOrgInfoList(OrganizationModel model) {
     return null;
   }
 

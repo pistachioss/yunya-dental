@@ -18,9 +18,9 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @ToString
-public class SysUserEmployeeInfo extends BaseEntity implements Serializable {
-  /**用户ID*/
-  private Integer id;
+public class SysUserInfoDetail extends BaseEntity implements Serializable {
+  /** 用户ID */
+  private Integer userId;
 
   /** 员工ID */
   private Integer employeeId;
@@ -46,6 +46,13 @@ public class SysUserEmployeeInfo extends BaseEntity implements Serializable {
   /** 性别: 0, 男; 1, 女 */
   private Byte gender;
 
+  /** 员工岗位 */
+  private String posts;
+
+  /** 员工门诊 */
+  private String companys;
+
+  /** 描述 */
   private String description;
 
   /** 省份 */
@@ -60,9 +67,10 @@ public class SysUserEmployeeInfo extends BaseEntity implements Serializable {
   /** 籍贯 */
   private String origin;
 
+  /** 身份证号 */
   private String identity;
 
-  /** 试用: 0, 正式: 1，实习: 2, 离职 3*/
+  /** 试用: 0, 正式: 1，实习: 2, 离职 3 */
   private Byte workStatus;
 
   /** 工作类型（兼职-0；全职-1） */

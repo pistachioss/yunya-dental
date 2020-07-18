@@ -124,7 +124,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api/organization/list", method = RequestMethod.POST)
-  List<OrganizationInfoVO> findOrgInfoList(@RequestBody OrganizationModel model);
+  List<OrganizationInfoDetail> findOrgInfoList(@RequestBody OrganizationModel model);
 
   /**
    * 根据组织部门ID查询组织部门信息

@@ -1,9 +1,10 @@
 package com.yunya.modules.system.mapper;
 
-import com.yunya.feign.system.vo.SysUserEmployeeInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.models.system.SysUser;
 import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
+import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.vo.SysEmployeeVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -11,6 +12,15 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.List;
 
 public interface SysUserMapper extends Mapper<SysUser> {
+
+  /**
+   * 根据条件查询员工详细信息列表
+   *
+   * @param queryFrom 查询条件
+   * @return
+   */
+  List<SysUserInfoDetail> selectSysUserInfoDetailList(@Param("queryFrom") SysUserInfoDetailQueryFrom queryFrom);
+
   /**
    * 校验用户名是否存在
    *
@@ -73,5 +83,5 @@ public interface SysUserMapper extends Mapper<SysUser> {
    * @param userId 用户ID
    * @return
    */
-  SysUserEmployeeInfo selectSysUserEmployeeInfoByUserId(@Param("userId") Integer userId);
+  SysUserInfoDetail selectSysUserEmployeeInfoByUserId(@Param("userId") Integer userId);
 }

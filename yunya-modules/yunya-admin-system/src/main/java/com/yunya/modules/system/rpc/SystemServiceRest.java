@@ -2,10 +2,11 @@ package com.yunya.modules.system.rpc;
 
 import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.OrganizationInfo;
-import com.yunya.feign.system.vo.SysUserEmployeeInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
+import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.rpc.service.PermissionService;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import io.swagger.annotations.Api;
@@ -161,7 +162,7 @@ public class SystemServiceRest {
    * 根据组织ID查询组织信息
    *
    * @param id 组织ID
-   * @return
+   * @return obj
    */
   @RequestMapping(value = "/organization/{id}", method = RequestMethod.GET)
   public OrganizationInfo findOrgInfoByOrgId(@PathVariable Integer id) {
@@ -172,7 +173,7 @@ public class SystemServiceRest {
    * 根据条件查询组织信息
    *
    * @param model 查询条件
-   * @return
+   * @return list
    */
   @RequestMapping(value = "/organization/list", method = RequestMethod.POST)
   public List<OrganizationInfoVO> findOrgInfoList(@RequestBody OrganizationModel model) {
@@ -231,7 +232,7 @@ public class SystemServiceRest {
    * 根据岗位组ID查询岗位组信息
    *
    * @param id 岗位组ID
-   * @return
+   * @return obj
    */
   @RequestMapping(value = "/post/group/{id}", method = RequestMethod.GET)
   public PostGroup findPostGroupById(@PathVariable Integer id) {
@@ -257,8 +258,22 @@ public class SystemServiceRest {
    * @param userId 用户ID
    * @return
    */
-  @RequestMapping("/userIfo/{userId}")
-  public SysUserEmployeeInfo findSysUserEmployeeInfoByUserId(@PathVariable Integer userId) {
+  @RequestMapping(value = "/userInfo/{userId}", method = RequestMethod.GET)
+  public SysUserInfoDetail findSysUserEmployeeInfoByUserId(@PathVariable Integer userId) {
     return sysUserBiz.findUserInfoByUserId(userId);
+  }
+
+  /**
+   * 根据条件查询用户信息（含员工信息）
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/userInfo/list", method = RequestMethod.POST)
+  public List<SysUserInfoDetail> findSysUserEmployeeInfoList(
+      @RequestBody SysUserEmployeeModel model) {
+    SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
+    from.setWhetherPage(model.getWhetherPage());
+    return sysUserBiz.findUserDetailInfoList(from).getList();
   }
 }

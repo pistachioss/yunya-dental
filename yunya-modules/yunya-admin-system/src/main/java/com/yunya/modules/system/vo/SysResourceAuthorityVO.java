@@ -27,7 +27,7 @@ public class SysResourceAuthorityVO implements Serializable {
   /** 岗位组名称 */
   private String postGroupName;
   /** 资源ID */
-  private Integer resourceId;
+  private String resourceId;
   /** 资源类型 */
   private Byte resourceType;
 }
