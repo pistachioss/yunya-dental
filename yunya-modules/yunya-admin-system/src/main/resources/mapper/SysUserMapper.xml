@@ -110,6 +110,10 @@
         #{updName}
       )
     </insert>
+    <!-- 根据ID删除员工信息 -->
+    <delete id="deleteEmployeeByUserId">
+        delete from sys_employee where user_id = #{id}
+    </delete>
     <!-- 检查用户名是否存在 -->
     <select id="checkUserNameUnique" resultType="java.lang.Integer">
       select count(1) from sys_user where `name` = #{name}
@@ -137,58 +141,6 @@
         description
       from sys_user
       where username = #{username}
-    </select>
-
-    <select id="selectSysEmployeeByCondition" resultMap="EmployeeInfoResultMap">
-        select
-        e.user_id as userId,
-        u.username,
-        u.birthday,
-        u.address,
-        u.email,
-        u.description,
-        u.province,
-        u.city,
-        u.country,
-        u.origin,
-        u.inservice,
-        e.`name`,
-        e.gender,
-        e.mobile_phone as mobiePhone,
-        e.telephone,
-        e.identity,
-        e.work_status as workStatus,
-        e.work_type as workType,
-        e.contract_signing_date as contractSigningDate,
-        e.entry_date as entryDate,
-        e.graduated_school as graduatedSchool,
-        e.education,
-        e.discount,
-        e.leave_time as leaveTime,
-        e.title,
-        e.post_level as postLevel,
-        e.emergency_contact as emergencyContact,
-        e.emergency_contact_phone as emergencyContactPhone,
-        e.photo,
-        e.diploma_photo as diplmaPhone,
-        e.crt_id as crtId,
-        upst.company_id as orgId,
-        upst.department_id as orgDeptId,
-        upst.post_id as postId
-        from sys_employee e
-        LEFT JOIN sys_user u on u.id = e.user_id
-        left join sys_user_post upst on upst.user_id = e.user_id
-        <where>
-            <if test="form.name != null and form.name != ''">
-                and e.`name` LIKE CONCAT(CONCAT('%',#{form.name}),'%')
-            </if>
-            <if test="form.postId != null">
-                and upst.post_id = #{form.postId}
-            </if>
-            <if test="form.workStatus != null">
-                and e.work_status = #{form.workStatus}
-            </if>
-        </where>
     </select>
     <!-- 根据用户名查询用户信息 -->
     <select id="selectUserInfoByUserName" resultType="com.yunya.feign.system.vo.UserInfo">
@@ -219,7 +171,7 @@
             su.address,
             su.mobile_phone as mobilePhone,
             su.email,
-            su.gender,
+            if(su.gender =0,'男','女'),
             su.description,
             su.province,
             su.city,
@@ -245,9 +197,9 @@
         left join sys_employee se on su.id = se.user_id
         where su.id = #{userId}
     </select>
-
     <!-- 根据条件查询员工详细信息 -->
-    <select id="selectSysUserInfoDetailList" parameterType="java.util.Map" resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
+    <select id="selectSysUserInfoDetailList" parameterType="java.util.Map"
+            resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
         SELECT
         user_info.*,
         (
@@ -277,7 +229,7 @@
         se.address,
         su.mobile_phone AS mobilePhone,
         su.email,
-        su.gender,
+        if(su.gender = 0, '男', '女'),
         su.description,
         se.province,
         se.city,
@@ -319,19 +271,22 @@
                 and user_info.userId = #{queryFrom.userId}
             </if>
             <if test="queryFrom.orgIds != null and queryFrom.orgIds.size > 0">
-               and <foreach collection="queryFrom.orgIds" item="item" index="index" open="(" close=")" separator="or">
-                        FIND_IN_SET(#{item}, user_info.company_ids)
-                    </foreach>
+                and
+                <foreach collection="queryFrom.orgIds" item="item" index="index" open="(" close=")" separator="or">
+                    FIND_IN_SET(#{item}, user_info.company_ids)
+                </foreach>
             </if>
             <if test="queryFrom.postGroupId != null and queryFrom.postGroupId.size > 0">
-                and <foreach collection="queryFrom.postGroupId" item="item" index="index" open="(" close=")" separator="or">
-                        FIND_IN_SET(#{item}, user_info.group_ids)
-                    </foreach>
+                and
+                <foreach collection="queryFrom.postGroupId" item="item" index="index" open="(" close=")" separator="or">
+                    FIND_IN_SET(#{item}, user_info.group_ids)
+                </foreach>
             </if>
             <if test="queryFrom.postIds != null and queryFrom.postIds.size > 0">
-                and <foreach collection="queryFrom.postIds" item="item" index="index" open="(" close=")" separator="or">
-                        FIND_IN_SET(#{item}, user_info.post_ids)
-                    </foreach>
+                and
+                <foreach collection="queryFrom.postIds" item="item" index="index" open="(" close=")" separator="or">
+                    FIND_IN_SET(#{item}, user_info.post_ids)
+                </foreach>
             </if>
             <if test="queryFrom.keyWord != null and queryFrom.keyWord != ''">
                 and user_info.name like concact('%', #{queryFrom.keyWord} ,'%') or user_info.mobilePhone like
@@ -342,5 +297,4 @@
             </if>
         </where>
     </select>
-
 </mapper>

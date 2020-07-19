@@ -29,7 +29,10 @@ import java.util.*;
 /**
  * Excel相关处理
  *
- * @author chow
+ * @author: chow
+ * @date: 2020/7/18 21:46
+ * @description:
+ * @since: 1.0.0
  */
 public class ExcelUtil<T> {
   private static final Logger log = LoggerFactory.getLogger(ExcelUtil.class);
@@ -353,7 +356,6 @@ public class ExcelUtil<T> {
     headerFont.setColor(IndexedColors.WHITE.getIndex());
     style.setFont(headerFont);
     styles.put("header", style);
-
     return styles;
   }
 

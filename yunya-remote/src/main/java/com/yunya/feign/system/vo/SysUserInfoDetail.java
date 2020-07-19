@@ -1,5 +1,6 @@
 package com.yunya.feign.system.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import com.yunya.framework.common.model.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,6 +21,7 @@ import java.io.Serializable;
 @ToString
 public class SysUserInfoDetail extends BaseEntity implements Serializable {
   /** 用户ID */
+  @Excel(name = "用户ID")
   private Integer userId;
 
   /** 员工ID */
@@ -29,27 +31,33 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   private String username;
 
   /** 真实姓名 */
+  @Excel(name = "员工姓名")
   private String name;
 
   /** 生日 */
+  @Excel(name = "出生日期")
   private String birthday;
 
   /** 地址 */
   private String address;
 
   /** 手机号码 */
+  @Excel(name = "手机号码")
   private String mobilePhone;
 
   /** 邮箱地址 */
   private String email;
 
   /** 性别: 0, 男; 1, 女 */
+  @Excel(name = "性别")
   private Byte gender;
 
   /** 员工岗位 */
+  @Excel(name = "岗位")
   private String posts;
 
   /** 员工门诊 */
+  @Excel(name = "可登陆门诊")
   private String companys;
 
   /** 描述 */
@@ -80,6 +88,7 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   private String contractSigningDate;
 
   /** 入职时间 */
+  @Excel(name = "入职日期")
   private String entryDate;
 
   /** 毕业院校 */

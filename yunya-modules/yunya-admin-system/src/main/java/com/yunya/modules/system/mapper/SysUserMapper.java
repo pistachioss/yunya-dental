@@ -3,9 +3,7 @@ package com.yunya.modules.system.mapper;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.models.system.SysUser;
-import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
 import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
-import com.yunya.modules.system.vo.SysEmployeeVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -19,7 +17,8 @@ public interface SysUserMapper extends Mapper<SysUser> {
    * @param queryFrom 查询条件
    * @return
    */
-  List<SysUserInfoDetail> selectSysUserInfoDetailList(@Param("queryFrom") SysUserInfoDetailQueryFrom queryFrom);
+  List<SysUserInfoDetail> selectSysUserInfoDetailList(
+      @Param("queryFrom") SysUserInfoDetailQueryFrom queryFrom);
 
   /**
    * 校验用户名是否存在
@@ -62,14 +61,6 @@ public interface SysUserMapper extends Mapper<SysUser> {
   SysUser selectSysUserByUsername(@Param("username") String username);
 
   /**
-   * 根据条件查询员工
-   *
-   * @param form 用户封装
-   * @return SysUser
-   */
-  List<SysEmployeeVO> selectSysEmployeeByCondition(@Param("form") SysEmployeeQueryForm form);
-
-  /**
    * 根据用户名查询用户信息
    *
    * @param username 用户名
@@ -84,4 +75,11 @@ public interface SysUserMapper extends Mapper<SysUser> {
    * @return
    */
   SysUserInfoDetail selectSysUserEmployeeInfoByUserId(@Param("userId") Integer userId);
+
+  /**
+   * 根据用户ID删除员工信息
+   *
+   * @param id 用户ID
+   */
+  void deleteEmployeeByUserId(@Param("id") Integer id);
 }

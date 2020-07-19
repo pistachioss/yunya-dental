@@ -4,14 +4,17 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.system.SysUser;
 import com.yunya.modules.system.biz.SysUserBiz;
 import com.yunya.modules.system.form.SysUserForm;
-import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
 import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
-import com.yunya.modules.system.vo.SysEmployeeVO;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 简单介绍:</br> 系统用户控制层
@@ -34,11 +37,25 @@ public class SysUserController {
   }
 
   /**
+   * 根据用户名查询用户信息
+   *
+   * @param username 用户名
+   * @return
+   */
+  @ApiOperation("根据用户名(手机号)查询用户信息")
+  @GetMapping("/{username}")
+  public ResponseResult findByUsername(@PathVariable String username) {
+    SysUser user = sysUserBiz.getUserByUsername(username);
+    return ResponseUtil.success(user);
+  }
+
+  /**
    * 根据用户ID获取用户信息（包含员工信息）
    *
    * @param id 用户ID
    * @return obj
    */
+  @ApiOperation("根据用户ID获取用户信息（包含员工信息）")
   @GetMapping("/one/{id}")
   public ResponseResult findById(@PathVariable Integer id) {
     SysUserInfoDetail info = sysUserBiz.findUserInfoByUserId(id);
@@ -51,6 +68,7 @@ public class SysUserController {
    * @param queryFrom 参数封装
    * @return list
    */
+  @ApiOperation("根据条件查询用户(员工)详情信息列表（可分页）")
   @PostMapping("/list")
   public ResponseResult findList(@RequestBody SysUserInfoDetailQueryFrom queryFrom) {
     PageInfo<SysUserInfoDetail> resultList = sysUserBiz.findUserDetailInfoList(queryFrom);
@@ -63,6 +81,7 @@ public class SysUserController {
    * @param resource 参数封装
    * @return void
    */
+  @ApiOperation("新增用户")
   @PostMapping("/add")
   public ResponseResult add(@RequestBody @Validated SysUserForm resource) {
     sysUserBiz.add(resource);
@@ -76,6 +95,7 @@ public class SysUserController {
    * @param form 参数封装
    * @return map
    */
+  @ApiOperation("用户修改")
   @PutMapping("/edit/{userId}")
   public ResponseResult edit(
       @PathVariable Integer userId, @RequestBody @Validated SysUserForm form) {
@@ -84,24 +104,30 @@ public class SysUserController {
   }
 
   /**
-   * 根据条件查询员工信息
-   *
-   * @param queryForm 参数封装
-   * @return
-   */
-  @PostMapping("/employee")
-  public ResponseResult findEmployee(@RequestBody @Validated SysEmployeeQueryForm queryForm) {
-    PageInfo<SysEmployeeVO> sysEmployeeVO = sysUserBiz.getEmployeeByCondition(queryForm);
-    return ResponseUtil.success(sysEmployeeVO);
-  }
-
-  /**
    * 用户删除
    *
    * @param id 用户ID
    * @return map
    */
-  public ResponseResult delete(Integer id) {
+  @ApiOperation("根据用户ID删除用户")
+  @DeleteMapping("/delete/{id}")
+  public ResponseResult delete(@PathVariable Integer id) {
+    sysUserBiz.deleteUserAndEmployeeByUserId(id);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 根据条件查询员工信息列表并导出
+   *
+   * @param response 响应
+   * @param queryFrom 查询条件
+   * @return
+   */
+  @PostMapping("/export")
+  public ResponseResult exportUserInfo(
+      HttpServletResponse response, @RequestBody SysUserInfoDetailQueryFrom queryFrom)
+      throws IOException {
+    sysUserBiz.exportUserInfo(response, queryFrom);
     return ResponseUtil.success();
   }
 }
