@@ -8,7 +8,6 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.framework.common.utils.MapUtil;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.system.ClinicExtInfo;
 import com.yunya.models.system.Company;
@@ -28,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 简单介绍:</br> 组织业务层
@@ -303,12 +301,8 @@ public class OrganizationBiz {
    */
   public List<OrganizationInfoVO> findOrgInfoList(OrganizationModel model) {
     // 将obj转Map
-    Map<String, Object> objectMap = MapUtil.objectToMap(model);
     OrganizationQueryForm form = new OrganizationQueryForm();
-    form.putAll(objectMap);
-    form.setWhetherPage(model.getWhetherPage());
-    form.setPageNum(model.getPageNum());
-    form.setPageSize(model.getPageSize());
+    BeanUtils.copyProperties(model, form);
     return findList(form).getList();
   }
 }
