@@ -14,9 +14,9 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://47.99.146.90:3306/yunya_system?useUnicode=true"
-                        userId="root"
-                        password="123456">
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_system?useUnicode=true"
+                        userId="sa"
+                        password="Admin001!">
         </jdbcConnection>
 
         <javaModelGenerator targetPackage="${targetModelPackage}" targetProject="${targetJavaProject}"/>
@@ -41,6 +41,7 @@
         <table tableName="sys_menu" domainObjectName="SysMenu"/>
         <table tableName="sys_user_post" domainObjectName="SysUserPost"/>
         <table tableName="sys_post_element" domainObjectName="SysPostElement"/>-->
-        <table tableName="post_group" domainObjectName="PostGroup"/>
+        <table tableName="department_room" domainObjectName="DepartmentRoom"/>
+        <table tableName="clinic_department_room" domainObjectName="ClinicDepartmentRoom"/>
     </context>
 </generatorConfiguration>
