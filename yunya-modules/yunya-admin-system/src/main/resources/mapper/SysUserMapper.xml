@@ -289,8 +289,8 @@
                 </foreach>
             </if>
             <if test="queryFrom.keyWord != null and queryFrom.keyWord != ''">
-                and user_info.name like concact('%', #{queryFrom.keyWord} ,'%') or user_info.mobilePhone like
-                concact('%', #{queryFrom.keyWord} ,'%')
+                and user_info.name like concat('%', #{queryFrom.keyWord} ,'%') or user_info.mobilePhone like
+                concat('%', #{queryFrom.keyWord} ,'%')
             </if>
             <if test="queryFrom.workStatus != null">
                 and user_info.workStatus != #{queryFrom.workStatus}
