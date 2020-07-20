@@ -24,6 +24,4 @@ public class OperationCodeConstants {
   public static final Integer SAME_DATA_EXIST = 30006;
   /** 非法参数 */
   public static final Integer PARAMETERS_IS_ILLEGAL = 30007;
-  /** 查询结果为空 */
-  public static final Integer RETURN_VALUE_ISNULL = 30008;
 }
