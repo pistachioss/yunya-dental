@@ -16,12 +16,6 @@
 
     <dependencies>
 
-        <!-- Spring Context Support -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context-support</artifactId>
-        </dependency>
-
         <!-- JWT令牌 -->
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

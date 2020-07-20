@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
- * 简介:
+ * 简介: 权限服务降级处理
  *
  * @author: chow
  * @date: 2020/7/9 12:31

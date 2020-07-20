@@ -2,6 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -10,22 +11,25 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.form.LoginOrganizationForm;
 import com.yunya.modules.system.form.SysUserForm;
-import com.yunya.modules.system.form.query.SysEmployeeQueryForm;
+import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.mapper.SysEmployeeMapper;
 import com.yunya.modules.system.mapper.SysUserMapper;
-import com.yunya.modules.system.vo.SysEmployeeVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -43,11 +47,34 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
   /** 用户的员工信息 */
   @Autowired private SysEmployeeMapper sysEmployeeMapper;
-
   /** 用户可登陆组织 */
   @Autowired private SysUserPostBiz sysUserPostBiz;
-
+  /** 字典明细 */
+  @Autowired private DictionaryItemBiz dictionaryItemBiz;
+  /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+
+  /**
+   * 根据条件查询用户信息详情列表
+   *
+   * @param queryFrom 查询条件
+   * @return list
+   */
+  public PageInfo<SysUserInfoDetail> findUserDetailInfoList(SysUserInfoDetailQueryFrom queryFrom) {
+    if (queryFrom.getWhetherPage()) {
+      PageHelper.startPage(queryFrom.getPageNum(), queryFrom.getPageSize());
+    }
+    List<SysUserInfoDetail> resultList = mapper.selectSysUserInfoDetailList(queryFrom);
+    if (resultList.size() > 0) {
+      for (SysUserInfoDetail detail : resultList) {
+        DictionaryItem item = dictionaryItemBiz.selectById(Integer.parseInt(detail.getEducation()));
+        if (null != item) {
+          detail.setEducation(item.getName());
+        }
+      }
+    }
+    return new PageInfo<>(resultList);
+  }
 
   /**
    * 新增用户
@@ -60,7 +87,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     checkMobileUnique(resource.getMobilePhone());
     SysUser sysUser = EntityUtils.build(resource, SysUser.class);
     sysUser.setUsername(resource.getMobilePhone());
-    // 密码加密，加盐
+    // 密码加密，加盐，设置默认密码
     sysUser.setPassword(
         new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
             .encode(UserConstant.DEFAULT_USER_PASSWORD));
@@ -115,7 +142,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     Integer count = mapper.checkMobileUnique(mobile);
     if (count > 0) {
       throw new ClientServiceException(
-          "身份证号'" + mobile + "'已存在", OperationCodeConstants.SAME_DATA_EXIST);
+          "员工手机号'" + mobile + "'已存在", OperationCodeConstants.SAME_DATA_EXIST);
     }
   }
 
@@ -128,7 +155,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     Integer count = mapper.checkIdentityUnique(identity);
     if (count > 0) {
       throw new ClientServiceException(
-          "身份证号'" + identity + "'已存在", OperationCodeConstants.SAME_DATA_EXIST);
+          "员工身份证号'" + identity + "'已存在", OperationCodeConstants.SAME_DATA_EXIST);
     }
   }
 
@@ -153,8 +180,13 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    */
   public void edit(Integer userId, SysUserForm form) {
     SysUser sysUser = checkUserExist(userId);
+    String currentUsername = sysUser.getUsername();
+    // 不允许修改管理员登陆账号
+    if (userId == 1 && !currentUsername.equals(form.getMobilePhone())) {
+      throw new ClientServiceException("系统管理员不允许修改用户名", OperationCodeConstants.OBJECT_EDIT_FAIL);
+    }
     SysUser sysUserEntity = EntityUtils.build(form, SysUser.class);
-    // 检查用户名是否更换
+    // 更新用户信息
     sysUserEntity.setId(sysUser.getId());
     sysUserEntity.setUsername(form.getMobilePhone());
     int result = mapper.updateByPrimaryKeySelective(sysUserEntity);
@@ -164,8 +196,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setId(employeeResult.getId());
       sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
     }
-    // 用户名被修改或就职状态改为离职
-    if (!sysUser.getUsername().equals(form.getMobilePhone())
+    // 用户名被修改或就职状态改为离职,将当前用户从缓存中移除
+    if (!currentUsername.equals(form.getMobilePhone())
         || BusinessConstants.USER_RESIGNATION_STATUS.equals(form.getWorkStatus())) {
       // 获取被修改用户的token
       String token = redisUtils.get(RedisConstants.REDIS_KEY_USER_ID + userId);
@@ -203,23 +235,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   }
 
   /**
-   * 查询员工信息
-   *
-   * @param form 用户信息封装
-   * @return SysUser
-   */
-  public PageInfo<SysEmployeeVO> getEmployeeByCondition(SysEmployeeQueryForm form) {
-
-    if (form.getWhetherPage()) {
-      PageHelper.startPage(form.getPageNum(), form.getPageSize());
-    }
-
-    List<SysEmployeeVO> sysEmployeeVOs = mapper.selectSysEmployeeByCondition(form);
-
-    return new PageInfo<>(sysEmployeeVOs);
-  }
-
-  /**
    * 根据用户名查询用户信息
    *
    * @param username 用户名
@@ -227,5 +242,62 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    */
   public UserInfo findUserInfoByUserName(String username) {
     return mapper.selectUserInfoByUserName(username);
+  }
+
+  /**
+   * 根据用户ID查询用户（员工信息）
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  public SysUserInfoDetail findUserInfoByUserId(Integer userId) {
+    SysUserInfoDetail info = mapper.selectSysUserEmployeeInfoByUserId(userId);
+    if (null != info) {
+      // 查询员工学历
+      DictionaryItem item = dictionaryItemBiz.selectById(Integer.parseInt(info.getEducation()));
+      if (null != item) {
+        info.setEducation(item.getName());
+      }
+    }
+    return info;
+  }
+
+  /**
+   * 根据用户ID删除用户及关联员工信息
+   *
+   * @param id 用户ID
+   */
+  public void deleteUserAndEmployeeByUserId(Integer id) {
+    if (id == 1) {
+      throw new ClientServiceException("管理员账号，不允许删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
+    }
+    SysUser sysUser = mapper.selectByPrimaryKey(id);
+    if (null == sysUser) {
+      throw new ClientServiceException(
+          "用户删除失败，ID为'" + id + "'的用户不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+    }
+    SysUserPost userPost = new SysUserPost();
+    userPost.setUserId(id);
+    List<SysUserPost> userPosts = sysUserPostBiz.selectList(userPost);
+    if (userPosts.size() > 0) {
+      throw new ClientServiceException(
+          "姓名为'" + sysUser.getName() + "'已产生其他关联数据，不允许删除！",
+          OperationCodeConstants.DELETE_NOT_ALLOW);
+    }
+    mapper.deleteByPrimaryKey(id);
+    mapper.deleteEmployeeByUserId(id);
+  }
+
+  /**
+   * 根据条件导出员工信息列表
+   *
+   * @param response 响应
+   * @param queryFrom 查询条件
+   */
+  public void exportUserInfo(HttpServletResponse response, SysUserInfoDetailQueryFrom queryFrom)
+      throws IOException {
+    List<SysUserInfoDetail> details = mapper.selectSysUserInfoDetailList(queryFrom);
+    ExcelUtil<SysUserInfoDetail> excelUtil = new ExcelUtil<>(SysUserInfoDetail.class);
+    excelUtil.exportExcel(response, details, "员工信息列表");
   }
 }

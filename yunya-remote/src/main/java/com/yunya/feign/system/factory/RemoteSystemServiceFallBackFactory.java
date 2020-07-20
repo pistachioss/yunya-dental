@@ -79,7 +79,7 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
-  public List<OrganizationInfoVO> findOrgInfoList(OrganizationModel model) {
+  public List<OrganizationInfoDetail> findOrgInfoList(OrganizationModel model) {
     return null;
   }
 
@@ -100,6 +100,26 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
 
   @Override
   public List<Post> findPostList(PostModel model) {
+    return null;
+  }
+
+  @Override
+  public PostGroup findPostGroupById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<PostGroup> findPostGroupList(PostGroupModel model) {
+    return null;
+  }
+
+  @Override
+  public SysUserInfoDetail findSysUserEmployeeInfoByUserId(Integer userId) {
+    return null;
+  }
+
+  @Override
+  public List<SysUserInfoDetail> findSysUserEmployeeInfoList(SysUserEmployeeModel model) {
     return null;
   }
 

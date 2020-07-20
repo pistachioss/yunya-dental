@@ -26,12 +26,49 @@ public class SysEmployee {
   /** 性别: 0, 男; 1, 女 */
   private Byte gender;
 
+  /**
+   * 生日
+   */
+  private Date birthday;
+
+  /**
+   * 地址
+   */
+  private String address;
+
+  /**
+   * 省份
+   */
+  private String province;
+
+  /**
+   * 城市
+   */
+  private String city;
+
+  /**
+   * 县/区
+   */
+  private String country;
+
+  /**
+   * 籍贯
+   */
+  private String origin;
+
   /** 身份证 */
   private String identity;
 
   /** 试用: 0, 正式: 1，实习: 2, 离职 */
   @Column(name = "work_status")
   private Byte workStatus;
+
+  /** 奖金系数 */
+  @Column(name = "bonus_coefficient")
+  private Double bonusCoefficient;
+
+  @Column(name = "work_amount")
+  private Double workAmount;
 
   /** 工作类型（兼职-0；全职-1） */
   @Column(name = "work_type")
@@ -208,6 +245,54 @@ public class SysEmployee {
     this.gender = gender;
   }
 
+  public Date getBirthday() {
+    return birthday;
+  }
+
+  public void setBirthday(Date birthday) {
+    this.birthday = birthday;
+  }
+
+  public String getAddress() {
+    return address;
+  }
+
+  public void setAddress(String address) {
+    this.address = address;
+  }
+
+  public String getProvince() {
+    return province;
+  }
+
+  public void setProvince(String province) {
+    this.province = province;
+  }
+
+  public String getCity() {
+    return city;
+  }
+
+  public void setCity(String city) {
+    this.city = city;
+  }
+
+  public String getCountry() {
+    return country;
+  }
+
+  public void setCountry(String country) {
+    this.country = country;
+  }
+
+  public String getOrigin() {
+    return origin;
+  }
+
+  public void setOrigin(String origin) {
+    this.origin = origin;
+  }
+
   /**
    * 获取身份证
    *
@@ -242,6 +327,22 @@ public class SysEmployee {
    */
   public void setWorkStatus(Byte workStatus) {
     this.workStatus = workStatus;
+  }
+
+  public Double getBonusCoefficient() {
+    return bonusCoefficient;
+  }
+
+  public void setBonusCoefficient(Double bonusCoefficient) {
+    this.bonusCoefficient = bonusCoefficient;
+  }
+
+  public Double getWorkAmount() {
+    return workAmount;
+  }
+
+  public void setWorkAmount(Double workAmount) {
+    this.workAmount = workAmount;
   }
 
   /**

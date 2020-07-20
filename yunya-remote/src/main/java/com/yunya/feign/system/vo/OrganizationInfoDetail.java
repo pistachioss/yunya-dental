@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-public class OrganizationInfoVO implements Serializable {
+public class OrganizationInfoDetail implements Serializable {
   /** 组织ID */
   private Integer id;
   /** 组织父ID */

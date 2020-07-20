@@ -4,11 +4,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.framework.common.utils.UUIDUtils;
 import com.yunya.models.system.SysElement;
-import com.yunya.models.system.SysPostElement;
+import com.yunya.models.system.SysResourceAuthority;
 import com.yunya.modules.system.form.ResourceAuthorityForm;
 import com.yunya.modules.system.form.UserResourceForm;
 import com.yunya.modules.system.form.query.SysElementQueryForm;
@@ -26,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * 简单介绍:</br> 系统菜单按钮业务层
@@ -43,15 +44,10 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
   /** 注入对象 */
   private final SysUserPostBiz sysUserPostBiz;
 
-  private final SysPostElementBiz sysPostElementBiz;
-
   private final SysResourceAuthorityBiz sysResourceAuthorityBiz;
 
   public SysElementBiz(
-      SysPostElementBiz sysPostElementBiz,
-      SysUserPostBiz sysUserPostBiz,
-      SysResourceAuthorityBiz sysResourceAuthorityBiz) {
-    this.sysPostElementBiz = sysPostElementBiz;
+      SysUserPostBiz sysUserPostBiz, SysResourceAuthorityBiz sysResourceAuthorityBiz) {
     this.sysUserPostBiz = sysUserPostBiz;
     this.sysResourceAuthorityBiz = sysResourceAuthorityBiz;
   }
@@ -65,7 +61,7 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
     if (null == resource) {
       return;
     }
-    String s = "页面列表";
+    String s = "列表";
     SysElement sysElement = EntityUtils.build(resource, SysElement.class);
     if (resource.getName().contains(s)) {
       sysElement.setType(BusinessConstants.RESOURCE_TYPE_URI);
@@ -106,11 +102,11 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
    * @param id 功能ID
    */
   public void deleteSysElement(String id) {
-    SysPostElement entity = new SysPostElement();
-    entity.setSysElementId(id);
-    List<SysPostElement> elements = sysPostElementBiz.selectList(entity);
-    if (elements.size() > 0) {
-      return;
+    SysResourceAuthority entity = new SysResourceAuthority();
+    entity.setResourceId(id);
+    List<SysResourceAuthority> authorities = sysResourceAuthorityBiz.selectList(entity);
+    if (authorities.size() > 0) {
+      throw new ClientServiceException("该权限已被关联，不允许被删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
   }
@@ -165,10 +161,13 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
             hashSet.addAll(authorityList);
           });
       if (hashSet.size() > 0) {
-        elements =
-            hashSet.stream()
-                .map(vo -> mapper.selectByPrimaryKey(vo.getResourceId()))
-                .collect(Collectors.toCollection(ArrayList::new));
+        SysElement entity;
+        for (SysResourceAuthorityVO vo : hashSet) {
+          entity = new SysElement();
+          entity.setId(vo.getResourceId());
+          SysElement sysElement = mapper.selectOne(entity);
+          elements.add(sysElement);
+        }
       }
     }
     return elements;
@@ -201,8 +200,6 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
         trees.add(node);
       }
     }
-    List<SysElementTreeVO> list =
-        TreeUtil.buildByRecursive(trees, BusinessConstants.DEFAULT_PARENT_ID);
-    return list;
+    return TreeUtil.buildByRecursive(trees, BusinessConstants.DEFAULT_PARENT_ID);
   }
 }
