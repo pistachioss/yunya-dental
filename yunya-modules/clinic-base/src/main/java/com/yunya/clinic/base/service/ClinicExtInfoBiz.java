@@ -5,7 +5,6 @@ import com.yunya.clinic.base.model.request.MedicalClinicInfoReq;
 import com.yunya.clinic.base.mapper.ClinicExtInfoMapper;
 import com.yunya.clinic.base.model.response.MedicalClinicExtInfoRes;
 import com.yunya.feign.system.feign.OrganizationFeign;
-import com.yunya.feign.system.form.CompanyEditForm;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.utils.EntityUtils;

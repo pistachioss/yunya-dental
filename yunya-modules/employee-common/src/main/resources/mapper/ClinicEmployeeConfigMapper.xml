@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yunya.employee.common.mapper.ClinicEmployeeMapper">
-    <resultMap id="BaseResultMap" type="com.yunya.models.clinic.ClinicEmployee">
+<mapper namespace="com.yunya.employee.common.mapper.ClinicEmployeeConfigMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.epcommon.ClinicEmployeeConfig">
         <id column="id" jdbcType="INTEGER" property="id" />
         <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
         <result column="clinic_id" jdbcType="INTEGER" property="clinicId" />
@@ -21,11 +21,11 @@
 
     <insert id="insertBatch">
         insert into
-            `clinic_employee`
-            (`employee_id`, `clinic_id`)
+        `clinic_employee`
+        (`employee_id`, `clinic_id`)
         values
-            <foreach collection ="list" item="item" index= "index" separator =",">
-                (#{item.employeeId}, #{item.clinicId})
-             </foreach >
+        <foreach collection ="list" item="item" index= "index" separator =",">
+            (#{item.employeeId}, #{item.clinicId})
+        </foreach >
     </insert>
 </mapper>
