@@ -1,12 +1,12 @@
 package com.yunya.modules.system.form.query;
 
-import com.yunya.framework.common.model.PageQueryParams;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import javax.validation.constraints.Min;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -19,9 +19,18 @@ import java.util.List;
  */
 @Data
 @ToString
-@EqualsAndHashCode(callSuper = true)
-@ApiModel(value = "岗位列表查询参数模型", parent = PageQueryParams.class)
-public class PostQueryForm extends PageQueryParams {
+@ApiModel(value = "岗位列表查询参数模型")
+public class PostQueryForm implements Serializable {
+  @ApiModelProperty(value = "是否分页", required = true)
+  private Boolean whetherPage = true;
+
+  @ApiModelProperty("页码")
+  @Min(message = "最小值", value = 1)
+  private Integer pageNum = 1;
+
+  @ApiModelProperty("每页显示数量")
+  @Min(message = "最小值", value = 1)
+  private Integer pageSize = 10;
   /** 岗位ID */
   @ApiModelProperty("岗位ID")
   private Integer id;

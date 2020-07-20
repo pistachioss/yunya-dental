@@ -1,5 +1,6 @@
 package com.yunya.framework.common.model;
 
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,12 +30,18 @@ public class PageQueryParams extends LinkedHashMap<String, Object> {
     if (null != params.get(pageParam)) {
       this.whetherPage = (Boolean) params.get(pageParam);
     }
+    String pageNum = params.get(numParam).toString();
+    String pageSize = params.get(sizeParam).toString();
     // 分页参数
-    if (params.get(numParam) != null) {
-      this.page = Integer.parseInt(params.get(numParam).toString());
+    if (StringUtils.isNotBlank(pageNum)) {
+      if (Integer.parseInt(pageNum) > 0) {
+        this.page = Integer.parseInt(pageNum);
+      }
     }
-    if (params.get(sizeParam) != null) {
-      this.limit = Integer.parseInt(params.get(sizeParam).toString());
+    if (StringUtils.isNotBlank(pageSize)) {
+      if (Integer.parseInt(pageSize) > 0) {
+        this.limit = Integer.parseInt(pageSize);
+      }
     }
     this.remove(pageParam);
     this.remove(numParam);

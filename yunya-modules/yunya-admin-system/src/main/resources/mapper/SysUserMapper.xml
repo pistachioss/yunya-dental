@@ -28,43 +28,6 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
-    <resultMap id="EmployeeInfoResultMap" type="com.yunya.modules.system.vo.SysEmployeeVO">
-        <!--
-          WARNING - @mbg.generated
-        -->
-        <result column="username" property="username" jdbcType="VARCHAR"/>
-        <result column="birthday" property="birthday" jdbcType="DATE"/>
-        <result column="address" property="address" jdbcType="DATE"/>
-        <result column="email" property="email" jdbcType="VARCHAR"/>
-        <result column="description" property="description" jdbcType="VARCHAR"/>
-        <result column="province" property="province" jdbcType="VARCHAR"/>
-        <result column="city" property="city" jdbcType="VARCHAR"/>
-        <result column="country" property="country" jdbcType="VARCHAR"/>
-        <result column="origin" property="origin" jdbcType="VARCHAR"/>
-        <result column="inservice" property="inservice" jdbcType="BIT"/>
-        <result column="user_id" property="userId" jdbcType="INTEGER"/>
-        <result column="name" property="name" jdbcType="VARCHAR"/>
-        <result column="gender" property="gender" jdbcType="INTEGER"/>
-        <result column="mobile_phone" property="mobilePhone" jdbcType="VARCHAR"/>
-        <result column="tele_phone" property="telePhone" jdbcType="VARCHAR"/>
-        <result column="identity" property="identity" jdbcType="VARCHAR"/>
-        <result column="work_status" property="workStatus" jdbcType="INTEGER"/>
-        <result column="contract_signing_date" property="contractSigningDate" jdbcType="DATE"/>
-        <result column="entry_date" property="entryDate" jdbcType="DATE"/>
-        <result column="graduated_school" property="graduatedSchool" jdbcType="VARCHAR"/>
-        <result column="education" property="education" jdbcType="VARCHAR"/>
-        <result column="discount" property="discount" jdbcType="BIT"/>
-        <result column="leave_time" property="leaveTime" jdbcType="DATE"/>
-        <result column="title" property="title" jdbcType="VARCHAR"/>
-        <result column="post_level" property="postLevel" jdbcType="VARCHAR"/>
-        <result column="photo" property="photo" jdbcType="VARCHAR"/>
-        <result column="diploma_photo" property="diplomaPhoto" jdbcType="VARCHAR"/>
-        <result column="crt_id" property="crtId" jdbcType="VARCHAR"/>
-        <result column="company_id" property="orgId" jdbcType="INTEGER"/>
-        <result column="department_id" property="orgDeptId" jdbcType="INTEGER"/>
-        <result column="post_id" property="postId" jdbcType="INTEGER"/>
-    </resultMap>
-
     <!-- 插入用户 -->
     <insert id="insertUser" parameterType="com.yunya.models.system.SysUser"
             useGeneratedKeys="true" keyProperty="id">

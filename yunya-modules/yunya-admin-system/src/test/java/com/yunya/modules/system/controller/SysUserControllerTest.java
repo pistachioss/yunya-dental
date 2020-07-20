@@ -31,11 +31,9 @@ public class SysUserControllerTest {
     List<Integer> orgIds = new ArrayList<>();
     orgIds.add(21);
     orgIds.add(35);
-    form.put("orgIds", orgIds);
     List<Integer> postIds = new ArrayList<>();
     postIds.add(33);
     postIds.add(34);
-    form.put("postIds",postIds);
     //form.put("userId",1);
     ResponseResult list = sysUserController.findList(form);
     System.out.println(list);
