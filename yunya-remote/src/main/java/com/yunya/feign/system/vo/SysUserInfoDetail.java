@@ -50,7 +50,7 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
 
   /** 性别: 0, 男; 1, 女 */
   @Excel(name = "性别")
-  private Byte gender;
+  private String gender;
 
   /** 员工岗位 */
   @Excel(name = "岗位")
@@ -80,6 +80,12 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
 
   /** 试用: 0, 正式: 1，实习: 2, 离职 3 */
   private Byte workStatus;
+
+  /** 奖金系数 */
+  private Double bonusCoefficient;
+
+  /** 基础工作量 */
+  private Double workAmount;
 
   /** 工作类型（兼职-0；全职-1） */
   private Byte workType;

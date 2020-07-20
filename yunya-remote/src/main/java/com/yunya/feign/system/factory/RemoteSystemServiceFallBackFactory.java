@@ -103,6 +103,26 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
     return null;
   }
 
+  @Override
+  public PostGroup findPostGroupById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<PostGroup> findPostGroupList(PostGroupModel model) {
+    return null;
+  }
+
+  @Override
+  public SysUserInfoDetail findSysUserEmployeeInfoByUserId(Integer userId) {
+    return null;
+  }
+
+  @Override
+  public List<SysUserInfoDetail> findSysUserEmployeeInfoList(SysUserEmployeeModel model) {
+    return null;
+  }
+
   /**
    * 根据用户ID查询权限
    *

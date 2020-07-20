@@ -276,9 +276,15 @@ public class SystemServiceRest {
     SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
     Map<String, Object> map = MapUtil.objectToMap(model);
     from.putAll(map);
-    from.setWhetherPage(model.getWhetherPage());
-    from.setPageNum(model.getPageNum());
-    from.setPageSize(model.getPageSize());
+    if (null != model.getWhetherPage()) {
+      from.setWhetherPage(model.getWhetherPage());
+    }
+    if (null != model.getPageNum()) {
+      from.setPageNum(model.getPageNum());
+    }
+    if (null != model.getPageSize()) {
+      from.setPageSize(model.getPageSize());
+    }
     return sysUserBiz.findUserDetailInfoList(from).getList();
   }
 }

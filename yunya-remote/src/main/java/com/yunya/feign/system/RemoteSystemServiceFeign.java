@@ -163,6 +163,42 @@ public interface RemoteSystemServiceFeign {
   List<Post> findPostList(@RequestBody PostModel model);
 
   /**
+   * 根据岗位组ID查询岗位组信息
+   *
+   * @param id 岗位组ID
+   * @return obj
+   */
+  @RequestMapping(value = "/post/group/{id}", method = RequestMethod.GET)
+  PostGroup findPostGroupById(@PathVariable(value = "id") Integer id);
+
+  /**
+   * 根据条件查询岗位组列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/postGroup/list", method = RequestMethod.POST)
+  List<PostGroup> findPostGroupList(@RequestBody PostGroupModel model);
+
+  /**
+   * 根据用户ID查询用户信息
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  @RequestMapping(value = "/userInfo/{userId}", method = RequestMethod.GET)
+  SysUserInfoDetail findSysUserEmployeeInfoByUserId(@PathVariable(value = "userId") Integer userId);
+
+  /**
+   * 根据条件查询用户信息（含员工信息）
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/userInfo/list", method = RequestMethod.POST)
+  List<SysUserInfoDetail> findSysUserEmployeeInfoList(@RequestBody SysUserEmployeeModel model);
+
+  /**
    * 根据用户ID获取用户的权限列表
    *
    * @param userId 用户ID

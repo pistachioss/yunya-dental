@@ -11,9 +11,17 @@
         <result column="mobile_phone" property="mobilePhone" jdbcType="VARCHAR"/>
         <result column="telephone" property="telephone" jdbcType="VARCHAR"/>
         <result column="gender" property="gender" jdbcType="TINYINT"/>
+        <result column="birthday" property="birthday" jdbcType="DATE"/>
+        <result column="address" property="address" jdbcType="VARCHAR"/>
+        <result column="province" property="province" jdbcType="VARCHAR"/>
+        <result column="city" property="city" jdbcType="VARCHAR"/>
+        <result column="country" property="country" jdbcType="VARCHAR"/>
+        <result column="origin" property="origin" jdbcType="VARCHAR"/>
         <result column="identity" property="identity" jdbcType="VARCHAR"/>
         <result column="work_status" property="workStatus" jdbcType="TINYINT"/>
         <result column="work_type" property="workType" jdbcType="TINYINT"/>
+        <result column="bonus_coefficient" property="bonusCoefficient" jdbcType="DOUBLE"/>
+        <result column="work_amount" property="workAmount" jdbcType="DOUBLE"/>
         <result column="contract_signing_date" property="contractSigningDate" jdbcType="DATE"/>
         <result column="entry_date" property="entryDate" jdbcType="DATE"/>
         <result column="graduated_school" property="graduatedSchool" jdbcType="VARCHAR"/>
@@ -42,9 +50,17 @@
           se.mobile_phone,
           se.telephone,
           se.gender,
+          se.birthday,
+          se.address,
+          se.province,
+          se.city,
+          se.country,
+          se.origin,
           se.identity,
           se.work_status,
           se.work_type,
+          se.bonus_coefficient,
+          se.work_amount,
           se.contract_signing_date,
           se.emergency_contact_phone,
           se.discount,

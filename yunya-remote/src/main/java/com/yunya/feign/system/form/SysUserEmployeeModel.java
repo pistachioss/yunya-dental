@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.List;
 
@@ -21,7 +22,8 @@ import java.util.List;
 @ToString
 public class SysUserEmployeeModel implements Serializable {
   /** 是否分页 */
-  @ApiModelProperty("是否分页")
+  @ApiModelProperty(value = "是否分页", required = true)
+  @NotNull(message = "是否分页不能为空")
   private Boolean whetherPage;
   /** 当前页 */
   @ApiModelProperty("当前页")
