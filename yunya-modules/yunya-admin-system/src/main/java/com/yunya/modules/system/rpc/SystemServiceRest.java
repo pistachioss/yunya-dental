@@ -2,11 +2,15 @@ package com.yunya.modules.system.rpc;
 
 import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
+import com.yunya.framework.common.utils.MapUtil;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
+import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.rpc.service.PermissionService;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
+import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +26,7 @@ import java.util.Map;
  * @description:
  * @since: 1.0.0
  */
+@Api("系统管理服务接口暴露")
 @RestController
 @RequestMapping("api")
 public class SystemServiceRest {
@@ -42,8 +47,10 @@ public class SystemServiceRest {
   @Autowired private CompanyDepartmentBiz companyDepartmentBiz;
   /** 岗位 */
   @Autowired private PostBiz postBiz;
-  /***/
-  /***/
+  /** 岗位组 */
+  @Autowired private PostGroupBiz postGroupBiz;
+  /** 用户（员工） */
+  @Autowired private SysUserBiz sysUserBiz;
 
   /**
    * 根据用户名、密码查询用户信息
@@ -145,7 +152,7 @@ public class SystemServiceRest {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/dict/list", method = RequestMethod.GET)
+  @RequestMapping(value = "/dict/list", method = RequestMethod.POST)
   public List<DictionaryType> findDictionaryTypeList(@RequestBody DictionaryTypeModel model) {
     DictionaryType dictType = new DictionaryType();
     BeanUtils.copyProperties(model, dictType);
@@ -156,7 +163,7 @@ public class SystemServiceRest {
    * 根据组织ID查询组织信息
    *
    * @param id 组织ID
-   * @return
+   * @return obj
    */
   @RequestMapping(value = "/organization/{id}", method = RequestMethod.GET)
   public OrganizationInfo findOrgInfoByOrgId(@PathVariable Integer id) {
@@ -167,7 +174,7 @@ public class SystemServiceRest {
    * 根据条件查询组织信息
    *
    * @param model 查询条件
-   * @return
+   * @return list
    */
   @RequestMapping(value = "/organization/list", method = RequestMethod.POST)
   public List<OrganizationInfoVO> findOrgInfoList(@RequestBody OrganizationModel model) {
@@ -220,5 +227,64 @@ public class SystemServiceRest {
     Post post = new Post();
     BeanUtils.copyProperties(model, post);
     return postBiz.selectByObj(post);
+  }
+
+  /**
+   * 根据岗位组ID查询岗位组信息
+   *
+   * @param id 岗位组ID
+   * @return obj
+   */
+  @RequestMapping(value = "/post/group/{id}", method = RequestMethod.GET)
+  public PostGroup findPostGroupById(@PathVariable Integer id) {
+    return postGroupBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询岗位组列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/postGroup/list", method = RequestMethod.POST)
+  public List<PostGroup> findPostGroupList(@RequestBody PostGroupModel model) {
+    PostGroup postGroup = new PostGroup();
+    BeanUtils.copyProperties(model, postGroup);
+    return postGroupBiz.selectByObj(postGroup);
+  }
+
+  /**
+   * 根据用户ID查询用户信息
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  @RequestMapping(value = "/userInfo/{userId}", method = RequestMethod.GET)
+  public SysUserInfoDetail findSysUserEmployeeInfoByUserId(@PathVariable Integer userId) {
+    return sysUserBiz.findUserInfoByUserId(userId);
+  }
+
+  /**
+   * 根据条件查询用户信息（含员工信息）
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/userInfo/list", method = RequestMethod.POST)
+  public List<SysUserInfoDetail> findSysUserEmployeeInfoList(
+      @RequestBody SysUserEmployeeModel model) {
+    SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
+    Map<String, Object> map = MapUtil.objectToMap(model);
+    from.putAll(map);
+    if (null != model.getWhetherPage()) {
+      from.setWhetherPage(model.getWhetherPage());
+    }
+    if (null != model.getPageNum()) {
+      from.setPageNum(model.getPageNum());
+    }
+    if (null != model.getPageSize()) {
+      from.setPageSize(model.getPageSize());
+    }
+    return sysUserBiz.findUserDetailInfoList(from).getList();
   }
 }

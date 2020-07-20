@@ -55,6 +55,12 @@ public class SysUserForm implements Serializable {
   /** 就职状态 */
   @ApiModelProperty(value = "就职状态（0-试用期；1-已转正；2-离职）", required = true)
   private Byte workStatus;
+  /** 奖金系数 */
+  @ApiModelProperty("奖金系数")
+  private Double bonusCoefficient;
+  /** 基础工作量 */
+  @ApiModelProperty("基础工作量")
+  private Double workAmount;
   /** 全职/兼职 */
   @ApiModelProperty(value = "全职-1/兼职-0", required = true)
   private Byte workType;

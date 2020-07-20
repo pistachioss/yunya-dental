@@ -1,4 +1,4 @@
-package com.yunya.framework.common.utils;
+package com.yunya.framework.common.utils.jwt;
 
 import org.apache.commons.codec.binary.Base64;
 

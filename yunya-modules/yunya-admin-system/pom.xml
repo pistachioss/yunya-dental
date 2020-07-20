@@ -55,12 +55,6 @@
             <artifactId>spring-cloud-sleuth-zipkin</artifactId>
         </dependency>
 
-        <!-- spring-boot-admin-client -->
-        <dependency>
-            <groupId>de.codecentric</groupId>
-            <artifactId>spring-boot-admin-starter-client</artifactId>
-        </dependency>
-
         <!-- spring-boot-web -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

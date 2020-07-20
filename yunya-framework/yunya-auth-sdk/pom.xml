@@ -36,13 +36,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- spring-cloud-openfeign-core -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-openfeign-core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-
         <!-- 系统api接口 -->
         <dependency>
             <groupId>com.yunya</groupId>

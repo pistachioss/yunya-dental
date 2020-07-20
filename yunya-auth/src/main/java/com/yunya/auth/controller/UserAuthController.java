@@ -5,6 +5,8 @@ import com.yunya.auth.service.UserAuthService;
 import com.yunya.feign.system.form.JwtRequestFrom;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
  *
  * @author chow
  */
+@Api("用户鉴权")
 @RestController
 @RequestMapping("jwt")
 @Slf4j
@@ -36,6 +39,7 @@ public class UserAuthController {
    * @return
    * @throws Exception
    */
+  @ApiOperation("登陆")
   @PostMapping("/token")
   public ResponseResult createAuthenticationToken(
       @RequestBody @Validated JwtRequestFrom paramForm) throws Exception {
@@ -51,6 +55,7 @@ public class UserAuthController {
    * @return
    * @throws Exception
    */
+  @ApiOperation("token刷新")
   @GetMapping("/refresh")
   public ResponseResult refreshAndGetAuthenticationToken(HttpServletRequest request)
       throws Exception {
@@ -67,6 +72,7 @@ public class UserAuthController {
    * @return
    * @throws Exception
    */
+  @ApiOperation("token校验")
   @GetMapping("/verify")
   public ResponseResult verify(String token) throws Exception {
     userAuthService.validate(token);
@@ -79,6 +85,7 @@ public class UserAuthController {
    * @param request 请求
    * @return
    */
+  @ApiOperation("登出")
   @PostMapping("/logout")
   public ResponseResult logout(HttpServletRequest request) {
     String token = request.getHeader(tokenHeader);

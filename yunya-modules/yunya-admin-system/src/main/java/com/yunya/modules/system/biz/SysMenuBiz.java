@@ -4,6 +4,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.system.SysElement;
@@ -134,7 +137,7 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
     element.setMenuId(id);
     List<SysElement> elements = sysElementBiz.selectList(element);
     if (menus.size() > 0 || elements.size() > 0) {
-      return;
+      throw new ClientServiceException("该菜单已被关联，不允许被删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
   }
@@ -213,6 +216,8 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
     // 查询用户在该组织下的所有岗位列表
     Integer orgId = resourceForm.getOrgId();
     Integer userId = resourceForm.getUserId();
+    // 将用户登陆组织设置到线程局部变量
+    BaseContextHandler.setOrgId(orgId.toString());
     List<PostVO> posts = sysUserPostBiz.findUserPostList(orgId, userId);
     List<SysMenu> authorityList = getPostMenuResourceAuthorityList(posts);
     return initTree(authorityList);
@@ -240,7 +245,8 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
       if (hashSet.size() > 0) {
         menus =
             hashSet.stream()
-                .map(vo -> mapper.selectByPrimaryKey(vo.getResourceId()))
+                .filter(vo -> vo.getResourceType() == 0)
+                .map(vo -> mapper.selectByPrimaryKey(Integer.valueOf(vo.getResourceId())))
                 .collect(Collectors.toCollection(ArrayList::new));
       }
     }
