@@ -38,9 +38,4 @@ public class CommonConstants {
   public static final String CONTEXT_KEY_USER_NAME = "currentUser";
   /** 当前用户token */
   public static final String CONTEXT_KEY_USER_TOKEN = "currentUserToken";
-
-  /** 社会信用统一码 */
-  public static final Pattern CREDIT_PATTERN = Pattern.compile("^[0-9A-Z]{18}$");
-
-  public static final String CLINIC_BUSINESS_PATTER = "HH:mm";
 }

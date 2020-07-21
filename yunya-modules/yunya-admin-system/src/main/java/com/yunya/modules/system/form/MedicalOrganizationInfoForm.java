@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 
@@ -25,7 +26,9 @@ public class MedicalOrganizationInfoForm implements Serializable {
   @ApiModelProperty(value = "组织统一信用代码",required = true)
   @Size(max = 32, message = "统一信用代码长度不能超过32个字符")
   @NotBlank(message = "统一信用代码为空")
+  @Pattern(regexp = "^[0-9A-Z]{18}$", message = "统一信用代码格式出错")
   private String creditCode;
+
   /** 门诊品牌 */
   @ApiModelProperty(value = "品牌ID",required = true)
   @NotBlank(message = "品牌不能为空")

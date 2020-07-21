@@ -1,6 +1,7 @@
 package com.yunya.modules.system.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.BaseException;
@@ -59,10 +60,6 @@ public class ClinicExtInfoBiz extends BaseBiz<ClinicExtInfoMapper, ClinicExtInfo
   public void edit(Integer companyId, MedicalOrganizationInfoForm form) {
     //校验信用代码
     String creditCode = form.getCreditCode();
-    Matcher matcher = CommonConstants.CREDIT_PATTERN.matcher(creditCode);
-    if (!matcher.matches()) {
-      throw new ClientServiceException("统一信用代码格式出错",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
-    }
     String abbreviation = form.getAbbreviation();
     //校验时间
     judgeBusinessTime(form.getBusinessStartTime(), form.getBusinessEndTime());
@@ -84,9 +81,9 @@ public class ClinicExtInfoBiz extends BaseBiz<ClinicExtInfoMapper, ClinicExtInfo
   private void judgeBusinessTime(String startBusinessTime, String endBusinessTime) {
     if (StringUtils.isNotBlank(startBusinessTime) && StringUtils.isNotBlank(endBusinessTime)) {
       LocalTime startTime = LocalTime.parse(startBusinessTime, DateTimeFormatter
-              .ofPattern(CommonConstants.CLINIC_BUSINESS_PATTER));
+              .ofPattern(BusinessConstants.CLINIC_BUSINESS_PATTER));
       LocalTime endTime = LocalTime.parse(endBusinessTime, DateTimeFormatter
-              .ofPattern(CommonConstants.CLINIC_BUSINESS_PATTER));
+              .ofPattern(BusinessConstants.CLINIC_BUSINESS_PATTER));
       if (startTime.isAfter(endTime)) {
         throw new ClientServiceException("结束时间不可以小于等于开始时间",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
       }
