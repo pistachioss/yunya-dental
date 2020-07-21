@@ -26,4 +26,6 @@ public class OperationCodeConstants {
   public static final Integer PARAMETERS_IS_ILLEGAL = 30007;
   /** 查询结果为空 */
   public static final Integer RETURN_VALUE_ISNULL = 30008;
+  /** 数据不存在 */
+  public static final Integer DATA_NOT_EXIST = 30009;
 }

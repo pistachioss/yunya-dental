@@ -28,7 +28,6 @@ public class OrgControllerTest {
   public void testFindList() {
     OrganizationQueryForm form = new OrganizationQueryForm();
     form.setTypes(new Byte[] {0, 2});
-    form.put("name", "门诊");
     ResponseResult list = organizationController.findList(form);
     System.out.println(list);
   }

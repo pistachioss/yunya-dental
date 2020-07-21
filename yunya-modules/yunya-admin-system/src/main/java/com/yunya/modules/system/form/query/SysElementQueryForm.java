@@ -1,12 +1,11 @@
 package com.yunya.modules.system.form.query;
 
-import com.yunya.framework.common.model.PageQueryParams;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 /**
@@ -20,8 +19,17 @@ import java.io.Serializable;
 @ApiModel("菜单按钮查询参数封装模型")
 @Data
 @ToString
-@EqualsAndHashCode(callSuper = true)
-public class SysElementQueryForm extends PageQueryParams implements Serializable {
+public class SysElementQueryForm implements Serializable {
+  @ApiModelProperty(value = "是否分页", required = true)
+  private Boolean whetherPage = true;
+
+  @ApiModelProperty("页码")
+  @Min(message = "最小值", value = 1)
+  private Integer pageNum = 1;
+
+  @ApiModelProperty("每页显示数量")
+  @Min(message = "最小值", value = 1)
+  private Integer pageSize = 10;
   /** 按钮ID */
   @ApiModelProperty("按钮ID")
   private String id;

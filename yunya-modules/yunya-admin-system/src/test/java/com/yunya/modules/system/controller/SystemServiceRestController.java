@@ -62,10 +62,10 @@ public class SystemServiceRestController {
   @Test
   public void testFindUserList() {
     SysUserEmployeeModel model = new SysUserEmployeeModel();
-    model.setWhetherPage(false);
-    //model.setPageNum(1);
-    //model.setPageSize(8);
-    model.setKeyWord("15");
+    model.setWhetherPage(true);
+    model.setPageNum(1);
+    model.setPageSize(7);
+    //model.setKeyWord("15");
     List<SysUserInfoDetail> infoList = systemServiceRest.findSysUserEmployeeInfoList(model);
     System.out.println(infoList);
   }

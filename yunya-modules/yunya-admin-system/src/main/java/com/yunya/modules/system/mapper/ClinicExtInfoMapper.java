@@ -24,4 +24,13 @@ public interface ClinicExtInfoMapper extends Mapper<ClinicExtInfo> {
    * @return list
    */
   List<ClinicExtInfo> selectClinicExtInfoByBrandId(@Param("brandId") Integer brandId);
+
+  /**
+   * 根据门诊简称查询数量
+   *
+   * @param abbreviation 门诊简称
+   * @param companyId 门诊id
+   * @return Integer
+   */
+  Integer countByAbbreviation(@Param("abbreviation") String abbreviation, @Param("companyId")Integer companyId);
 }

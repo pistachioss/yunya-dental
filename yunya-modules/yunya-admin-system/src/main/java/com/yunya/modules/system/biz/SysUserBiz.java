@@ -57,14 +57,14 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   /**
    * 根据条件查询用户信息详情列表
    *
-   * @param queryFrom 查询条件
+   * @param queryForm 查询条件
    * @return list
    */
-  public PageInfo<SysUserInfoDetail> findUserDetailInfoList(SysUserInfoDetailQueryFrom queryFrom) {
-    if (queryFrom.getWhetherPage()) {
-      PageHelper.startPage(queryFrom.getPageNum(), queryFrom.getPageSize());
+  public PageInfo<SysUserInfoDetail> findUserDetailInfoList(SysUserInfoDetailQueryFrom queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-    List<SysUserInfoDetail> resultList = mapper.selectSysUserInfoDetailList(queryFrom);
+    List<SysUserInfoDetail> resultList = mapper.selectSysUserInfoDetailList(queryForm);
     if (resultList.size() > 0) {
       for (SysUserInfoDetail detail : resultList) {
         DictionaryItem item = dictionaryItemBiz.selectById(Integer.parseInt(detail.getEducation()));

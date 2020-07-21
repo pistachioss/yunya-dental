@@ -4,7 +4,6 @@ import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
-import com.yunya.framework.common.utils.MapUtil;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
 import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
@@ -274,17 +273,7 @@ public class SystemServiceRest {
   public List<SysUserInfoDetail> findSysUserEmployeeInfoList(
       @RequestBody SysUserEmployeeModel model) {
     SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
-    Map<String, Object> map = MapUtil.objectToMap(model);
-    from.putAll(map);
-    if (null != model.getWhetherPage()) {
-      from.setWhetherPage(model.getWhetherPage());
-    }
-    if (null != model.getPageNum()) {
-      from.setPageNum(model.getPageNum());
-    }
-    if (null != model.getPageSize()) {
-      from.setPageSize(model.getPageSize());
-    }
+    BeanUtils.copyProperties(model, from);
     return sysUserBiz.findUserDetailInfoList(from).getList();
   }
 }

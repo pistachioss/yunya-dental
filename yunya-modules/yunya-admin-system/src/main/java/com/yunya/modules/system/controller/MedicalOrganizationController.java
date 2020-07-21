@@ -57,7 +57,7 @@ public class MedicalOrganizationController {
    * @param form 参数封装
    * @return map
    */
-  @ApiOperation("编辑医疗机构信息")
+  @ApiOperation("编辑门诊基础信息")
   @ApiImplicitParam(
       name = "companyId",
       value = "组织ID",

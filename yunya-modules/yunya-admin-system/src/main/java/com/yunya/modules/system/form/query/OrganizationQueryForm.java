@@ -1,11 +1,12 @@
 package com.yunya.modules.system.form.query;
 
-import com.yunya.framework.common.model.PageQueryParams;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import javax.validation.constraints.Min;
+import java.io.Serializable;
 
 /**
  * 简单介绍:</br> 组织信息参数Form
@@ -17,9 +18,18 @@ import lombok.ToString;
  */
 @Data
 @ToString
-@EqualsAndHashCode(callSuper = true)
-@ApiModel(value = "组织列表查询参数模型", parent = PageQueryParams.class)
-public class OrganizationQueryForm extends PageQueryParams {
+@ApiModel(value = "组织列表查询参数模型")
+public class OrganizationQueryForm implements Serializable {
+  @ApiModelProperty(value = "是否分页", required = true)
+  private Boolean whetherPage = true;
+
+  @ApiModelProperty("页码")
+  @Min(message = "最小值", value = 1)
+  private Integer pageNum = 1;
+
+  @ApiModelProperty("每页显示数量")
+  @Min(message = "最小值", value = 1)
+  private Integer pageSize = 10;
   /** 组织ID */
   @ApiModelProperty("组织主键ID")
   private Integer id;

@@ -20,7 +20,7 @@ public class OrganizationInfo implements Serializable {
   /** 公司名称 */
   private String name;
   /** 公司属性0:公司,1:区域管理,2:医疗机构,3:其他 */
-  private Byte type;
+  private String type;
   /** 组织统一社会代码 */
   private String creditCode;
   /** 门诊编号 */

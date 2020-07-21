@@ -1,11 +1,12 @@
 package com.yunya.modules.system.form.query;
 
-import com.yunya.framework.common.model.PageQueryParams;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import javax.validation.constraints.Min;
+import java.io.Serializable;
 
 /**
  * 简单介绍:</br> 品牌查询参数封装模型
@@ -17,9 +18,19 @@ import lombok.ToString;
  */
 @Data
 @ToString
-@ApiModel(value = "品牌列表查询参数模型（可分页）", parent = PageQueryParams.class)
-@EqualsAndHashCode(callSuper = true)
-public class BrandQueryForm extends PageQueryParams {
+@ApiModel(value = "品牌列表查询参数模型（可分页）")
+public class BrandQueryForm implements Serializable {
+
+  @ApiModelProperty(value = "是否分页", required = true)
+  private Boolean whetherPage = true;
+
+  @ApiModelProperty("页码")
+  @Min(message = "最小值", value = 1)
+  private Integer pageNum = 1;
+
+  @ApiModelProperty("每页显示数量")
+  @Min(message = "最小值", value = 1)
+  private Integer pageSize = 10;
 
   /** 品牌ID */
   @ApiModelProperty("品牌ID")

@@ -25,7 +25,7 @@ public class OrganizationInfoDetail implements Serializable {
   /** 组织统一信用代码 */
   private String creditCode;
   /** 组织类型 */
-  private Byte type;
+  private String type;
   /** 自定义组织排序 */
   private Integer orderNum;
   /** 组织编号 */
