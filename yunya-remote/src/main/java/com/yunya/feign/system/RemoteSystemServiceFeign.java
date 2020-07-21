@@ -168,7 +168,7 @@ public interface RemoteSystemServiceFeign {
    * @param id 岗位组ID
    * @return obj
    */
-  @RequestMapping(value = "/post/group/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/post/group/{id}", method = RequestMethod.GET)
   PostGroup findPostGroupById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -177,7 +177,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/postGroup/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/postGroup/list", method = RequestMethod.POST)
   List<PostGroup> findPostGroupList(@RequestBody PostGroupModel model);
 
   /**
@@ -186,7 +186,7 @@ public interface RemoteSystemServiceFeign {
    * @param userId 用户ID
    * @return
    */
-  @RequestMapping(value = "/userInfo/{userId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/userInfo/{userId}", method = RequestMethod.GET)
   SysUserInfoDetail findSysUserEmployeeInfoByUserId(@PathVariable(value = "userId") Integer userId);
 
   /**
@@ -195,7 +195,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return list
    */
-  @RequestMapping(value = "/userInfo/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/userInfo/list", method = RequestMethod.POST)
   List<SysUserInfoDetail> findSysUserEmployeeInfoList(@RequestBody SysUserEmployeeModel model);
 
   /**
