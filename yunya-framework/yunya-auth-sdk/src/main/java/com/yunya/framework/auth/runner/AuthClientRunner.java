@@ -3,7 +3,6 @@ package com.yunya.framework.auth.runner;
 import com.yunya.feign.auth.RemoteServiceAuthFeign;
 import com.yunya.framework.auth.config.ServiceAuthConfig;
 import com.yunya.framework.auth.config.UserAuthConfig;
-import com.yunya.framework.common.model.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -40,11 +39,9 @@ public class AuthClientRunner implements CommandLineRunner {
   /** 定时刷新用户公钥信息 */
   @Scheduled(cron = "0 0/1 * * * ?")
   public void refreshUserPubKey() {
-    ResponseResult responseResult =
-        serviceAuthFeign.getUserPublicKey(
-            serviceAuthConfig.getClientId(), serviceAuthConfig.getClientSecret());
-    if (responseResult.getStatus().equals(0)) {
-      this.userAuthConfig.setPubKeyByte((byte[]) responseResult.getData());
-    }
+    String clientId = serviceAuthConfig.getClientId();
+    String secret = serviceAuthConfig.getClientSecret();
+    byte[] userPublicKey = serviceAuthFeign.getUserPublicKey(clientId, secret);
+    this.userAuthConfig.setPubKeyByte(userPublicKey);
   }
 }
