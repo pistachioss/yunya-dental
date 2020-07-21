@@ -8,7 +8,7 @@ package com.yunya.framework.common.exception;
  */
 public class BaseException extends RuntimeException {
 
-  private int status = 200;
+  private int status = 0;
 
   public int getStatus() {
     return status;
