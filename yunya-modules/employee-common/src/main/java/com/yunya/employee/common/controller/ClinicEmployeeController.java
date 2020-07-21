@@ -1,7 +1,9 @@
 package com.yunya.employee.common.controller;
 
 
+import com.yunya.employee.common.model.request.ClinicEmployeeConfigQueryReq;
 import com.yunya.employee.common.model.request.ClinicEmployeeConfigReq;
+import com.yunya.employee.common.model.response.ClinicEmployeeConfigRes;
 import com.yunya.employee.common.service.ClinicEmployeeConfigBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -10,6 +12,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * @author bruce
@@ -36,6 +39,11 @@ public class ClinicEmployeeController {
         return ResponseUtil.success();
     }
 
-
+    @ApiOperation("门诊员工配置详情")
+    @PostMapping("clinic/employee/config/detail")
+    public ResponseResult<ClinicEmployeeConfigRes> getEmployeeConfigRecord( @Valid @RequestBody ClinicEmployeeConfigQueryReq req) {
+        ClinicEmployeeConfigRes result = clinicEmployeeConfigBiz.getEmployeeConfig(req);
+        return ResponseUtil.success(result);
+    }
 
 }

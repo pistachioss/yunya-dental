@@ -10,10 +10,15 @@ spring:
     url: jdbc:mysql://192.168.31.90:3306/employee_common?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
     username: sa
     password: Admin001!
+  redis:
+    host: 192.168.31.90
+    port: 6379
+    password: foobared
+    database: 2
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8848
+        server-addr: 192.168.31.215:8848
 
 mybatis:
   mapperLocations: classpath:mapper/*Mapper.xml

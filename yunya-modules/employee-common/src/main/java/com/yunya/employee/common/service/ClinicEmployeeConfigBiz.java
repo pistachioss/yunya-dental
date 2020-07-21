@@ -13,6 +13,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.epcommon.ClinicEmployeeConfig;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 
@@ -48,8 +49,22 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         mapper.updateByPrimaryKeySelective(updateEmployee);
     }
 
+    /**
+     * 查询门诊员工配置信息
+     * @param req
+     * @return
+     */
     public ClinicEmployeeConfigRes getEmployeeConfig(ClinicEmployeeConfigQueryReq req) {
-        return null;
+        Integer employeeId = req.getEmployeeId();
+        Example example = new Example(ClinicEmployeeConfig.class);
+        example.createCriteria().andEqualTo("clinicId", req.getClinicId())
+                                .andEqualTo("employeeId", employeeId);
+        ClinicEmployeeConfig config = mapper.selectOneByExample(example);
+        ClinicEmployeeConfigRes result = EntityUtils.build(config, ClinicEmployeeConfigRes.class);
+        SysUserInfoDetail assistantEmployee = systemServiceFeign.findSysUserEmployeeInfoByUserId(employeeId);
+        //todo 查询科室信息
+        result.setAssistantName(assistantEmployee.getName());
+        return result;
     }
 
 }
