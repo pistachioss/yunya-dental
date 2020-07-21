@@ -130,7 +130,7 @@ public class AccessGatewayFilter implements GlobalFilter {
       return setUnauthorizedResponse(serverWebExchange, "User Token Verify Failed!");
     }
 
-    // 将token设置到请求头和线程局部变量
+    // 将token设置到请求头和线程局部变量RouteLocatorBuilder
     mutate.header(userAuthConfig.getTokenHeader(), redisToken);
     BaseContextHandler.setToken(redisToken);
 

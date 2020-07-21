@@ -8,7 +8,7 @@ package com.yunya.framework.common.model;
  */
 public class BaseResponse {
 
-  private int status = 200;
+  private int status;
   private String message;
 
   public BaseResponse(int status, String message) {

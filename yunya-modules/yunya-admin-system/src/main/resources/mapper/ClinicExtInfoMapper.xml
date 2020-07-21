@@ -76,4 +76,13 @@
       where
          FIND_IN_SET(#{brandId},brand_ids)
     </select>
+
+    <select id="countByAbbreviation" resultType="int">
+        select
+            count(1)
+        from
+            clinic_ext_info
+        where
+            abbreviation  = #{abbreviation} and company_id != #{companyId}
+    </select>
 </mapper>

@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -304,5 +305,16 @@ public class OrganizationBiz {
     OrganizationQueryForm form = new OrganizationQueryForm();
     BeanUtils.copyProperties(model, form);
     return findList(form).getList();
+  }
+
+  public void updateCompanyCredit(Integer companyId, String creditCode) {
+    Company company = companyMapper.selectByPrimaryKey(companyId);
+    if (null == company) {
+      throw new ClientServiceException(
+              String.format("修改医疗机构信息，门诊ID:%d的数据不存在",companyId), OperationCodeConstants.DATA_NOT_EXIST);
+    }
+    company.setCreditCode(creditCode);
+    company.setUpdTime(new Date());
+    companyMapper.updateByPrimaryKeySelective(company);
   }
 }

@@ -1,0 +1,32 @@
+server:
+  port: 8204
+
+spring:
+  application:
+    name: employee-common
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://192.168.31.90:3306/employee_common?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
+    username: sa
+    password: Admin001!
+  redis:
+    host: 192.168.31.90
+    port: 6379
+    password: foobared
+    database: 2
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.215:8848
+
+mybatis:
+  mapperLocations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.yunya.clinic.employee.common.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+
+
+
