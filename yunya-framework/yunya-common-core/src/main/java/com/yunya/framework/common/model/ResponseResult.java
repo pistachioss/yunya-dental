@@ -15,13 +15,13 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-public class ResponseResult implements Serializable {
+public class ResponseResult<T> implements Serializable {
   /** 响应状态 */
   private Integer status;
   /** 提示信息 */
   private String msg;
   /** 响应数据 */
-  private Object data;
+  private T data;
   /** 审核状态 */
   private Boolean audit;
 }

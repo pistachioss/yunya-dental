@@ -45,7 +45,7 @@ public class MedicalOrganizationController {
       required = true,
       paramType = "path")
   @GetMapping("/medical/{companyId}")
-  public ResponseResult findMedicalOrganizationInfo(@PathVariable Integer companyId) {
+  public ResponseResult<MedicalOrganizationInfoVO> findMedicalOrganizationInfo(@PathVariable Integer companyId) {
     MedicalOrganizationInfoVO resultVO = clinicExtInfoBiz.findMedicalOrganizationInfo(companyId);
     return ResponseUtil.success(resultVO);
   }

@@ -1,4 +1,4 @@
-mapperserver:
+server:
   port: 8204
 
 spring:

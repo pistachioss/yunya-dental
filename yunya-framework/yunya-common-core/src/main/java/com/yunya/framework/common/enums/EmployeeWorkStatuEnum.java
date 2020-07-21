@@ -1,9 +1,9 @@
-package com.yunya.employee.common.constant;
+package com.yunya.framework.common.enums;
 
 /**
- *
+ * @author bruce
  */
-public enum EmployeeTypeEnum {
+public enum EmployeeWorkStatuEnum {
     /**
      * 试用期
      */
@@ -21,7 +21,7 @@ public enum EmployeeTypeEnum {
     private final Integer code;
     private final String name;
 
-    EmployeeTypeEnum(Integer code, String name)
+    EmployeeWorkStatuEnum(Integer code, String name)
     {
         this.code = code;
         this.name = name;
@@ -33,7 +33,7 @@ public enum EmployeeTypeEnum {
     }
 
     public static String getName(Integer code) {
-        for(EmployeeTypeEnum enable : values()) {
+        for(EmployeeWorkStatuEnum enable : values()) {
             if(enable.getCode().equals(code)) {
                 return enable.name;
             }

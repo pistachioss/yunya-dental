@@ -63,7 +63,7 @@ public class ResponseUtil {
    * @param audit 审核状态
    * @return
    */
-  public static ResponseResult result(Integer status, String msg, Object data, Boolean audit) {
+  public static <T>ResponseResult result(Integer status, String msg, T data, Boolean audit) {
     ResponseResult responseResult = new ResponseResult();
     responseResult.setStatus(status);
     responseResult.setMsg(msg);

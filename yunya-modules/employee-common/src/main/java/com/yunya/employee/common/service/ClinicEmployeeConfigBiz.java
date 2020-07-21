@@ -1,12 +1,14 @@
 package com.yunya.employee.common.service;
 
 
-import com.yunya.employee.common.constant.EmployeeTypeEnum;
 import com.yunya.employee.common.mapper.ClinicEmployeeConfigMapper;
+import com.yunya.employee.common.model.request.ClinicEmployeeConfigQueryReq;
 import com.yunya.employee.common.model.request.ClinicEmployeeConfigReq;
+import com.yunya.employee.common.model.response.ClinicEmployeeConfigRes;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.enums.EmployeeWorkStatuEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.epcommon.ClinicEmployeeConfig;
@@ -24,10 +26,6 @@ import javax.annotation.Resource;
 @Service
 public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper, ClinicEmployeeConfig> {
 
-
-    @Resource
-    private ClinicEmployeeConfigMapper clinicEmployeeConfigMapper;
-
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
 
@@ -38,7 +36,7 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
      */
     public void modifyClinicEmployeeConfig(Integer employeeId, ClinicEmployeeConfigReq configRequest) {
         SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(employeeId);
-        if (EmployeeTypeEnum.LEAVING.getCode().equals(employee.getWorkStatus())) {
+        if (EmployeeWorkStatuEnum.LEAVING.getCode().equals(employee.getWorkStatus())) {
             throw new ClientServiceException("员工已离职",null);
         }
         //查询该员工对应扩展表主键
@@ -50,7 +48,8 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         mapper.updateByPrimaryKeySelective(updateEmployee);
     }
 
-
-
+    public ClinicEmployeeConfigRes getEmployeeConfig(ClinicEmployeeConfigQueryReq req) {
+        return null;
+    }
 
 }

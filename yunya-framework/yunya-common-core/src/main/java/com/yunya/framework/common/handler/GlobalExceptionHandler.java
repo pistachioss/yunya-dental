@@ -1,16 +1,23 @@
 package com.yunya.framework.common.handler;
 
+import com.alibaba.fastjson.JSON;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.BaseException;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.exception.auth.ClientTokenException;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.common.exception.auth.UserTokenException;
 import com.yunya.framework.common.model.BaseResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -23,6 +30,8 @@ import javax.servlet.http.HttpServletResponse;
 @ControllerAdvice("com.yunya")
 @ResponseBody
 public class GlobalExceptionHandler {
+
+  private static Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(ClientTokenException.class)
   public BaseResponse clientTokenExceptionHandler(
@@ -48,11 +57,11 @@ public class GlobalExceptionHandler {
     return new BaseResponse(ex.getStatus(), ex.getMessage());
   }
 
-  @ExceptionHandler(BaseException.class)
+  @ExceptionHandler(ClientServiceException.class)
   public BaseResponse baseExceptionHandler(HttpServletResponse response, BaseException ex) {
     log.error(ex.getMessage(), ex);
     response.setStatus(500);
-    return new BaseResponse(ex.getStatus(), ex.getMessage());
+    return new BaseResponse(CommonConstants.EX_OTHER_CODE, ex.getMessage());
   }
 
   @ExceptionHandler(Exception.class)
@@ -60,5 +69,12 @@ public class GlobalExceptionHandler {
     response.setStatus(500);
     log.error(ex.getMessage(), ex);
     return new BaseResponse(CommonConstants.EX_OTHER_CODE, ex.getMessage());
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public BaseResponse methodArgumentNotValidHandler(MethodArgumentNotValidException e, HttpServletRequest request) {
+    String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+    logger.error("error in \nurl :{} \nmsg:{}",request.getRequestURI(),message);
+    return new BaseResponse(CommonConstants.EX_OTHER_CODE, message);
   }
 }

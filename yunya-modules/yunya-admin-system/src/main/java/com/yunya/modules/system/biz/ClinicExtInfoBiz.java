@@ -7,7 +7,6 @@ import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.system.ClinicExtInfo;
-import com.yunya.modules.system.form.MedicalClinicInfoForm;
 import com.yunya.modules.system.form.MedicalOrganizationInfoForm;
 import com.yunya.modules.system.mapper.ClinicExtInfoMapper;
 import com.yunya.modules.system.mapper.CompanyMapper;
@@ -18,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.IOException;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Matcher;
@@ -88,7 +88,7 @@ public class ClinicExtInfoBiz extends BaseBiz<ClinicExtInfoMapper, ClinicExtInfo
       LocalTime endTime = LocalTime.parse(endBusinessTime, DateTimeFormatter
               .ofPattern(CommonConstants.CLINIC_BUSINESS_PATTER));
       if (startTime.isAfter(endTime)) {
-        throw new BaseException("结束时间不可以小于等于开始时间");
+        throw new ClientServiceException("结束时间不可以小于等于开始时间",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
       }
     }
   }
