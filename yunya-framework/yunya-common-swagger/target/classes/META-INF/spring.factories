@@ -1,2 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-  com.yunya.framework.swagger.config.SwaggerAutoConfiguration

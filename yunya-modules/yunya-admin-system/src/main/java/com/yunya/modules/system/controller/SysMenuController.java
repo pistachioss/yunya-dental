@@ -45,10 +45,10 @@ public class SysMenuController {
    * @return map
    */
   @ApiOperation("查询用户菜单权限树")
-  @PostMapping("/user/tree")
+  @PostMapping("/user/list")
   public ResponseResult getUserMenuResourceList(
       @RequestBody @Validated UserResourceForm resourceForm) {
-    List<SysMenuTreeVO> resultList = sysMenuBiz.getUserMenuResourceList(resourceForm);
+    List<SysMenu> resultList = sysMenuBiz.getUserMenuResourceList(resourceForm);
     return ResponseUtil.success(resultList);
   }
 
