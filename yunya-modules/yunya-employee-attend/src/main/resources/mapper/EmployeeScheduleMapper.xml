@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.EmployeeSchedule" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="clinic_id" property="clinicId" jdbcType="INTEGER" />
+    <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
+    <result column="employee_id" property="employeeId" jdbcType="INTEGER" />
+    <result column="work_date" property="workDate" jdbcType="DATE" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <resultMap id="EmployeeScheduleVOMap" type="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO" >
+    <result column="clinic_id" property="clinicId" jdbcType="INTEGER" />
+    <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
+    <result column="employee_id" property="employeeId" jdbcType="INTEGER" />
+    <result column="work_date" property="workDate" jdbcType="DATE" />
+  </resultMap>
+  <resultMap id="BaseResultCopyMap" type="com.yunya.modules.employeeattend.vo.EmployeeScheduleCopyVO" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="clinic_id" property="clinicId" jdbcType="INTEGER" />
+    <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
+    <result column="employee_id" property="employeeId" jdbcType="INTEGER" />
+    <result column="work_date" property="workDate" jdbcType="DATE" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="first_start_time" property="firstStartTime" jdbcType="TIMESTAMP"/>
+    <result column="first_end_time" property="firstEndTime" jdbcType="TIMESTAMP"/>
+    <result column="second_start_time" property="secondStartTime" jdbcType="TIMESTAMP"/>
+    <result column="second_end_time" property="secondEndTime" jdbcType="TIMESTAMP"/>
+    <result column="name" property="name" jdbcType="VARCHAR"/>
+  </resultMap>
+
+  <select id="selectAllByDate" resultMap="BaseResultCopyMap">
+        select es.*,bs.first_start_time,bs.first_end_time,bs.second_start_time,bs.second_end_time,be.name as userName from employee_schedule es
+        left join base_schedule bs on es.schedule_id = bs.id
+        left join base_employee be on es.employee_id = be.id
+        where
+        es.work_date &gt;= #{startDate} and es.work_date &lt;= #{endDate} and es.employee_id in
+    <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+    </foreach>
+    order by es.work_date
+    </select>
+
+  <delete id="deleteByDate">
+        delete from employee_schedule where
+        work_date &gt;= #{startDate} and work_date &lt;= #{endDate} and employee_id in
+    <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+      #{item}
+    </foreach>
+    </delete>
+
+  <insert id="batchInsert" parameterType="java.util.List">
+    insert into employee_schedule (id, clinic_id, employee_id, schedule_id, work_date, crt_id, crt_name,
+    crt_time, upd_id, upd_name, upd_time, inservice) VALUES
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.id,jdbcType=INTEGER}, #{item.clinicId,jdbcType=VARCHAR}, #{item.employeeId,jdbcType=VARCHAR},
+      #{item.scheduleId,jdbcType=VARCHAR}, #{item.workDate,jdbcType=TIMESTAMP},
+      #{item.crtId,jdbcType=VARCHAR},#{item.crtName,jdbcType=VARCHAR}, #{item.crtTime,jdbcType=TIMESTAMP},
+      #{item.updId,jdbcType=VARCHAR}, #{item.updName,jdbcType=VARCHAR}, #{item.updTime,jdbcType=TIMESTAMP},
+      #{item.inservice,jdbcType=BIT})
+    </foreach>
+  </insert>
+
+  <select id="selectByDateAndComEmpId" resultMap="BaseResultMap">
+        select * from employee_schedule where DATE_FORMAT(work_date,'%Y-%m-%d') =
+        DATE_FORMAT(#{workDate},'%Y-%m-%d')
+        and employee_id = #{employeeId}
+    </select>
+
+  <select id="selectVOByDateAndCompEmpId" resultMap="EmployeeScheduleVOMap">
+    select employee_id,clinic_id,work_date,schedule_id from employee_schedule where
+    work_date &gt;= #{startDate} and work_date &lt; #{endDate} and employee_id = #{employeeId}
+    <if test="clinicId != null">
+      and clinic_id = #{clinicId}
+    </if>
+    order by work_date
+  </select>
+</mapper>

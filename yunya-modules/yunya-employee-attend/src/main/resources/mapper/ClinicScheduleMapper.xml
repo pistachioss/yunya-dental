@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.employeeattend.mapper.ClinicScheduleMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.ClinicSchedule">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="clinic_id" property="clinicId" jdbcType="INTEGER"/>
+        <result column="schedule_id" property="scheduleId" jdbcType="INTEGER"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="ClinicScheduleVOMap" type="com.yunya.modules.employeeattend.vo.ClinicScheduleVO">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="clinic_id" property="clinicId" jdbcType="INTEGER"/>
+        <result column="schedule_id" property="scheduleId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="color" property="color" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="first_start_time" property="firstStartTime" jdbcType="TIMESTAMP"/>
+        <result column="first_end_time" property="firstEndTime" jdbcType="TIMESTAMP"/>
+        <result column="second_start_time" property="secondStartTime" jdbcType="TIMESTAMP"/>
+        <result column="second_end_time" property="secondEndTime" jdbcType="TIMESTAMP"/>
+        <result column="concat_name" property="concatName" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+    </resultMap>
+
+    <select id="selectVOsByClinicId" resultMap="ClinicScheduleVOMap">
+        select cs.id,cs.clinic_id,bs.id as schedule_id,bs.name,bs.color,bs.type,bs.first_start_time,
+        bs.first_end_time,bs.second_start_time,bs.second_end_time,(IFNULL(cs.inservice,bs.inservice)) as inservice
+        from base_schedule bs
+        left join clinic_schedule cs on cs.schedule_id = bs.id
+        where cs.clinic_id = #{clinicId}
+    </select>
+
+    <select id="selectVOsByClinicIdAndInservice" resultMap="ClinicScheduleVOMap">
+        select cs.id,cs.clinic_id,bs.id as schedule_id,bs.name,bs.color,bs.type,bs.first_start_time,
+        bs.first_end_time,bs.second_start_time,bs.second_end_time,(IFNULL(cs.inservice,bs.inservice)) as inservice
+        from clinic_schedule cs
+        left join base_schedule bs on bs.id =cs.schedule_id
+        where 1=1  and cs.inservice =1
+        <if test="clinicId != null and clinicId != ''">
+            and cs.clinic_id = #{clinicId}
+        </if>
+    </select>
+
+    <insert id="batchInsert">
+        insert into clinic_schedule (
+        clinic_id,
+        schedule_id,
+        inservice,
+        crt_id,
+        crt_name
+        )
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (#{item.clinicId},
+            #{item.scheduleId},
+            #{item.inservice},
+            #{item.crtId},
+            #{item.crtName})
+        </foreach>
+    </insert>
+</mapper>

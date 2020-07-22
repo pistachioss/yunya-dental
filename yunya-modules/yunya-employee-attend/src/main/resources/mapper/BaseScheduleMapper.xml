@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.employeeattend.mapper.BaseScheduleMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.BaseSchedule">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="color" property="color" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="first_start_time" property="firstStartTime" jdbcType="TIMESTAMP"/>
+        <result column="first_end_time" property="firstEndTime" jdbcType="TIMESTAMP"/>
+        <result column="second_start_time" property="secondStartTime" jdbcType="TIMESTAMP"/>
+        <result column="second_end_time" property="secondEndTime" jdbcType="TIMESTAMP"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <resultMap id="BaseInserviceVOMap" type="com.yunya.modules.employeeattend.vo.BaseInserviceVO">
+        <result column="clinicId" property="clinicId" jdbcType="VARCHAR"/>
+        <result column="clinicName" property="clinicName" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+    </resultMap>
+
+    <select id="selectInserviceVOsByScheduleId" resultMap="BaseInserviceVOMap">
+        select c.id as clinicId,c.name as clinicName,cs.inservice from clinic_schedule cs
+        LEFT JOIN clinic c on c.id = cs.clinic_id
+        LEFT JOIN base_schedule bs on bs.id = cs.schedule_id
+        where cs.schedule_id = #{id}
+    </select>
+
+    <select id="selectByTypeAndName" resultMap="BaseResultMap">
+        select * from base_schedule
+        where 1=1
+        <if test="type != null and type != ''">
+            and `type` = #{type}
+        </if>
+        <if test="name != null and name != ''">
+            and `name` like concat('%', #{name}, '%')
+        </if>
+    </select>
+
+    <update id="updateById">
+        update base_schedule set `name` = #{name},
+        color = #{color}, `type` = #{type},
+        first_start_time = #{firstStartTime},
+        first_end_time = #{firstEndTime},
+        second_start_time = #{secondStartTime},
+        second_end_time = #{secondEndTime} where id = #{id}
+    </update>
+</mapper>
