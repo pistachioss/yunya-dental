@@ -49,8 +49,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   @Autowired private SysEmployeeMapper sysEmployeeMapper;
   /** 用户可登陆组织 */
   @Autowired private SysUserPostBiz sysUserPostBiz;
-  /** 字典明细 */
-  @Autowired private DictionaryItemBiz dictionaryItemBiz;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
 
@@ -65,14 +63,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<SysUserInfoDetail> resultList = mapper.selectSysUserInfoDetailList(queryForm);
-    if (resultList.size() > 0) {
-      for (SysUserInfoDetail detail : resultList) {
-        DictionaryItem item = dictionaryItemBiz.selectById(Integer.parseInt(detail.getEducation()));
-        if (null != item) {
-          detail.setEducation(item.getName());
-        }
-      }
-    }
     return new PageInfo<>(resultList);
   }
 
@@ -100,9 +90,9 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       // 新增员工就职状态为离职处理
       if (BusinessConstants.USER_RESIGNATION_STATUS.equals(resource.getWorkStatus())) {
         sysEmployee.setLeaveTime(
-            null == resource.getLeaveDate()
+            null == resource.getLeaveTime()
                 ? new Date(System.currentTimeMillis())
-                : resource.getLeaveDate());
+                : resource.getLeaveTime());
       }
       // 新增用户扩展信息（员工信息）
       sysEmployeeMapper.insertSelective(sysEmployee);
@@ -252,13 +242,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    */
   public SysUserInfoDetail findUserInfoByUserId(Integer userId) {
     SysUserInfoDetail info = mapper.selectSysUserEmployeeInfoByUserId(userId);
-    if (null != info) {
-      // 查询员工学历
-      DictionaryItem item = dictionaryItemBiz.selectById(Integer.parseInt(info.getEducation()));
-      if (null != item) {
-        info.setEducation(item.getName());
-      }
-    }
     return info;
   }
 

@@ -126,7 +126,7 @@
     <!-- 根据用户ID查询用户及员工信息 -->
     <select id="selectSysUserEmployeeInfoByUserId" resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
         select
-            su.id,
+            su.id as userId,
             se.id as employeeId,
             su.username,
             se.`name`,
@@ -134,7 +134,7 @@
             se.address,
             su.mobile_phone as mobilePhone,
             su.email,
-            if(su.gender =0,'男','女'),
+            su.gender,
             su.description,
             se.province,
             se.city,
@@ -194,7 +194,7 @@
         se.address,
         su.mobile_phone AS mobilePhone,
         su.email,
-        if(su.gender = 0, '男', '女'),
+        su.gender,
         su.description,
         se.province,
         se.city,

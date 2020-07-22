@@ -101,7 +101,7 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   private String graduatedSchool;
 
   /** 学历 */
-  private String education;
+  private Integer education;
 
   /** 离职日期 */
   private String leaveTime;

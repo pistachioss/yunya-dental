@@ -76,7 +76,7 @@ public class SysUserForm implements Serializable {
   /** 离职日期 */
   @ApiModelProperty("离职日期（当就职状态为离职时传入）")
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-  private Date leaveDate;
+  private Date leaveTime;
   /** 毕业院校 */
   @ApiModelProperty(value = "毕业院校", required = true)
   @NotBlank(message = "毕业院校不能为空！")
@@ -90,9 +90,6 @@ public class SysUserForm implements Serializable {
   @ApiModelProperty(value = "学历", required = true)
   @NotNull(message = "学历不能为空！")
   private Integer education;
-  /** 基本工作量 */
-  @ApiModelProperty("基本工作量")
-  private BigDecimal baseWorkload;
   /** 紧急联系人 */
   @ApiModelProperty("紧急联系人")
   @Size(max = 25, message = "紧急联系人姓名长度不能超过25个字符")
