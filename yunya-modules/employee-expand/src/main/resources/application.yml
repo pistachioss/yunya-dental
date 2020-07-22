@@ -18,11 +18,11 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8848
+        server-addr: 192.168.31.215:8848
 
 mybatis:
   mapperLocations: classpath:mapper/*Mapper.xml
-  type-aliases-package: com.yunya.models.epcommon
+  type-aliases-package: com.yunya.models.expand
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 

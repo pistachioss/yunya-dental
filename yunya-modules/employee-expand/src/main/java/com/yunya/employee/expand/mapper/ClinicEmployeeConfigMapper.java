@@ -1,6 +1,6 @@
 package com.yunya.employee.expand.mapper;
 
-import com.yunya.models.epcommon.ClinicEmployeeConfig;
+import com.yunya.models.expand.ClinicEmployeeConfig;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 import java.util.List;

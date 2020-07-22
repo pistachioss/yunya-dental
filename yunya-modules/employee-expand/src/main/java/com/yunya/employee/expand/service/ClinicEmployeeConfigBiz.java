@@ -11,7 +11,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.models.epcommon.ClinicEmployeeConfig;
+import com.yunya.models.expand.ClinicEmployeeConfig;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 

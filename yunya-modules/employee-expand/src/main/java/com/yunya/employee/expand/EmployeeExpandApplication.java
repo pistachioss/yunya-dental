@@ -9,7 +9,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 import com.yunya.framework.swagger.EnableCustomSwagger2;
 
 @SpringBootApplication
-@MapperScan("com.yunya.employee.common.mapper")
+@MapperScan("com.yunya.employee.expand.mapper")
 @EnableYunyaFeignClients
 @EnableDiscoveryClient
 @EnableCustomSwagger2
