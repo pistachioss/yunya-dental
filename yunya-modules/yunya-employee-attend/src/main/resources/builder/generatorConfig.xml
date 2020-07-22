@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+    <context id="Mysql" targetRuntime="MyBatis3Simple" defaultModelType="flat">
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
+        <property name="mergeable" value="false"/>
+        <plugin type="tk.mybatis.mapper.generator.MapperPlugin">
+            <property name="mappers" value="tk.mybatis.mapper.common.Mapper"/>
+        </plugin>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://47.99.146.90:3306/yunya_clinic?useUnicode=true"
+                        userId="root"
+                        password="123456">
+        </jdbcConnection>
+
+        <javaModelGenerator targetPackage="${targetModelPackage}" targetProject="${targetJavaProject}"/>
+
+        <sqlMapGenerator targetPackage="${targetXMLPackage}" targetProject="${targetResourcesProject}"/>
+
+        <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
+                             type="XMLMAPPER"/>
+
+        <table tableName="clinic" domainObjectName="Clinic"/>
+        <!--        <table tableName="base_accounting" domainObjectName="BaseAccounting"/>-->
+        <!--        <table tableName="base_accounting_type" domainObjectName="BaseAccountingType"/>-->
+        <!--        <table tableName="base_appoint_item" domainObjectName="BaseAppointItem"/>-->
+        <!--        <table tableName="base_appoint_type" domainObjectName="BaseAppointType"/>-->
+        <!--        <table tableName="base_employee" domainObjectName="BaseEmployee"/>-->
+        <!--        <table tableName="base_member_type" domainObjectName="BaseMemberType"/>-->
+        <!--        <table tableName="base_oral_tariff" domainObjectName="BaseOralTariff"/>-->
+        <!--        <table tableName="base_oral_tariff_category" domainObjectName="BaseOralTariffCategory"/>-->
+        <!--        <table tableName="base_oral_tariff_history" domainObjectName="BaseOralTariffHistory"/>-->
+        <!--        <table tableName="base_schedule" domainObjectName="BaseSchedule"/>-->
+        <!--        <table tableName="base_tariff" domainObjectName="BaseTariff"/>-->
+        <!--        <table tableName="base_tariff_category" domainObjectName="BaseTariffCategory"/>-->
+        <!--        <table tableName="base_tariff_history" domainObjectName="BaseTariffHistory"/>-->
+        <!--        <table tableName="clinic_accounting" domainObjectName="ClinicAccounting"/>-->
+        <!--        <table tableName="clinic_appoint_item" domainObjectName="ClinicAppointItem"/>-->
+        <!--        <table tableName="clinic_employee" domainObjectName="ClinicEmployee"/>-->
+        <!--        <table tableName="clinic_oral_tariff" domainObjectName="ClinicOralTariff"/>-->
+        <!--        <table tableName="base_oral_tariff_member_price" domainObjectName="BaseOralTariffMemberPrice"/>-->
+        <!--        <table tableName="clinic_oral_tariff_member_price" domainObjectName="ClinicOralTariffMemberPrice"/>-->
+        <!--        <table tableName="clinic_tariff" domainObjectName="ClinicTariff"/>-->
+        <!--        <table tableName="base_tariff_member_price" domainObjectName="BaseTariffMemberPrice"/>-->
+        <!--        <table tableName="clinic_tariff_member_price" domainObjectName="ClinicTariffMemberPrice"/>-->
+        <!--        <table tableName="clinic_schedule" domainObjectName="ClinicSchedule"/>-->
+        <!--        <table tableName="employee_schedule" domainObjectName="EmployeeSchedule"/>-->
+        <!--        <table tableName="medical_template" domainObjectName="MedicalTemplate"/>-->
+        <!--        <table tableName="visit" domainObjectName="Visit"/>-->
+        <!--        <table tableName="base_device" domainObjectName="BaseDevice"/>-->
+        <!--        <table tableName="clinic_device" domainObjectName="ClinicDevice"/>-->
+        <!--        <table tableName="base_department_room" domainObjectName="BaseDepartmentRoom"/>-->
+        <!--        <table tableName="clinic_department_room" domainObjectName="ClinicDepartmentRoom"/>-->
+
+    </context>
+</generatorConfiguration>
