@@ -9,6 +9,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.expand.ClinicEmployeeConfig;
@@ -38,7 +39,7 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
     public void modifyClinicEmployeeConfig(Integer employeeId, ClinicEmployeeConfigReq configRequest) {
         SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(employeeId);
         if (BusinessConstants.USER_RESIGNATION_STATUS.equals(employee.getWorkStatus())) {
-            throw new ClientServiceException("员工已离职",null);
+            throw new ClientServiceException("员工已离职", OperationCodeConstants.QUERY_RESULT_INVALID);
         }
         //查询该员工对应扩展表主键
         ClinicEmployeeConfig clinicEmployeeConfig = new ClinicEmployeeConfig();

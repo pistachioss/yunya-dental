@@ -259,8 +259,11 @@
                 and user_info.name like concat('%', #{queryFrom.keyWord} ,'%') or user_info.mobilePhone like
                 concat('%', #{queryFrom.keyWord} ,'%')
             </if>
-            <if test="queryFrom.workStatus != null">
-                and user_info.workStatus != #{queryFrom.workStatus}
+            <if test="queryFrom.workStatus != null and queryFrom.workStatus.length > 0">
+                and user_info.workStatus in
+                <foreach collection="queryFrom.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
         </where>
     </select>

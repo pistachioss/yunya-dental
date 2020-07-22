@@ -1,7 +1,6 @@
 package com.yunya.feign.auth.factory;
 
 import com.yunya.feign.auth.RemoteServiceAuthFeign;
-import com.yunya.framework.common.model.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +17,7 @@ import org.springframework.stereotype.Component;
 public class RemoteServiceAuthFallBackFactory implements RemoteServiceAuthFeign {
 
   @Override
-  public ResponseResult getUserPublicKey(String clientId, String secret) {
+  public byte[] getUserPublicKey(String clientId, String secret) {
     return null;
   }
 }

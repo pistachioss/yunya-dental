@@ -48,5 +48,5 @@ public class SysUserInfoDetailQueryFrom implements Serializable {
   private String keyWord;
   /** 就职状态 */
   @ApiModelProperty("就职状态（试用: 0, 正式: 1，实习: 2, 离职:3）")
-  private Byte workStatus;
+  private Byte[] workStatus;
 }

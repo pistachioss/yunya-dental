@@ -212,7 +212,7 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
    * @param resourceForm 参数封装
    * @return
    */
-  public List<SysMenuTreeVO> getUserMenuResourceList(UserResourceForm resourceForm) {
+  public List<SysMenu> getUserMenuResourceList(UserResourceForm resourceForm) {
     // 查询用户在该组织下的所有岗位列表
     Integer orgId = resourceForm.getOrgId();
     Integer userId = resourceForm.getUserId();
@@ -220,7 +220,7 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
     BaseContextHandler.setOrgId(orgId.toString());
     List<PostVO> posts = sysUserPostBiz.findUserPostList(orgId, userId);
     List<SysMenu> authorityList = getPostMenuResourceAuthorityList(posts);
-    return initTree(authorityList);
+    return authorityList;
   }
 
   /**

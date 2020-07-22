@@ -2,7 +2,6 @@ package com.yunya.feign.auth;
 
 import com.yunya.feign.auth.factory.RemoteServiceAuthFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
-import com.yunya.framework.common.model.ResponseResult;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,7 +25,7 @@ public interface RemoteServiceAuthFeign {
    * @param secret 客户端密钥
    * @return
    */
-  @RequestMapping(value = "/client/userPubKey", method = RequestMethod.POST)
-  ResponseResult getUserPublicKey(
+  @RequestMapping(value = "/rpc/userPubKey", method = RequestMethod.GET)
+  byte[] getUserPublicKey(
       @RequestParam("clientId") String clientId, @RequestParam("secret") String secret);
 }

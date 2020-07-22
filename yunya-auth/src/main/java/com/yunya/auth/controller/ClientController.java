@@ -1,12 +1,14 @@
 package com.yunya.auth.controller;
 
-import com.yunya.auth.configuration.KeyConfiguration;
 import com.yunya.auth.service.AuthClientService;
 import com.yunya.feign.auth.form.ClientRequestForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -25,8 +27,6 @@ public class ClientController {
   /** 注入服务 */
   @Autowired private AuthClientService authClientService;
 
-  @Autowired private KeyConfiguration keyConfiguration;
-
   /**
    * 通过客户端编码，密钥获取客户端列表
    *
@@ -41,20 +41,4 @@ public class ClientController {
     return ResponseUtil.success(clients);
   }
 
-  /**
-   * 获取用户公钥数组
-   *
-   * @param clientId 客户端编码
-   * @param secret 密码
-   * @return
-   * @throws Exception
-   */
-  @PostMapping("/userPubKey")
-  public ResponseResult getUserPublicKey(
-          @RequestParam("clientId") String clientId, @RequestParam("secret") String secret)
-      throws Exception {
-    authClientService.validate(clientId, secret);
-    byte[] userPubKey = keyConfiguration.getUserPubKey();
-    return ResponseUtil.success(userPubKey);
-  }
 }
