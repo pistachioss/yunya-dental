@@ -1,7 +1,5 @@
 package com.yunya.framework.common.constant;
 
-import java.util.regex.Pattern;
-
 /**
  * 公共常量类
  *

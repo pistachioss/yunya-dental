@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * 全局异常处理 todo 更新全局异常处理
+ * 全局异常处理
  *
  * @author ace
  * @date 2017/9/8
@@ -28,14 +28,14 @@ import javax.servlet.http.HttpServletResponse;
 @ResponseBody
 public class GlobalExceptionHandler {
 
-  private static Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
   @ExceptionHandler(ClientTokenException.class)
   public ResponseResult clientTokenExceptionHandler(
       HttpServletResponse response, ClientTokenException ex) {
     response.setStatus(403);
     log.error(ex.getMessage(), ex);
-    return ResponseUtil.result(ex.getStatus(),ex.getMessage(),null,true);
+    return ResponseUtil.fail(ex.getStatus(), ex.getMessage(), null);
   }
 
   @ExceptionHandler(UserTokenException.class)
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
       HttpServletResponse response, UserTokenException ex) {
     response.setStatus(200);
     log.error(ex.getMessage(), ex);
-    return ResponseUtil.result(ex.getStatus(),ex.getMessage(),null,true);
+    return ResponseUtil.fail(ex.getStatus(), ex.getMessage(), null);
   }
 
   @ExceptionHandler(UserAuthException.class)
@@ -51,26 +51,29 @@ public class GlobalExceptionHandler {
       HttpServletResponse response, UserAuthException ex) {
     response.setStatus(200);
     log.error(ex.getMessage(), ex);
-    return ResponseUtil.result(ex.getStatus(),ex.getMessage(),null,true);
+    return ResponseUtil.fail(ex.getStatus(), ex.getMessage(), null);
   }
 
   @ExceptionHandler(ClientServiceException.class)
-  public ResponseResult baseExceptionHandler(HttpServletResponse response, ClientServiceException ex) {
+  public ResponseResult baseExceptionHandler(
+      HttpServletResponse response, ClientServiceException ex) {
+    response.setStatus(200);
     log.error(ex.getMessage(), ex);
-    return ResponseUtil.result(ex.getStatus(),ex.getMessage(),null,true);
+    return ResponseUtil.fail(ex.getStatus(), ex.getMessage(), null);
   }
 
   @ExceptionHandler(Exception.class)
   public ResponseResult otherExceptionHandler(HttpServletResponse response, Exception ex) {
     response.setStatus(500);
     log.error(ex.getMessage(), ex);
-    return ResponseUtil.result(CommonConstants.EX_OTHER_CODE,ex.getMessage(),null,true);
+    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, ex.getMessage(), null);
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
-  public ResponseResult methodArgumentNotValidHandler(MethodArgumentNotValidException e, HttpServletRequest request) {
+  public ResponseResult methodArgumentNotValidHandler(
+      MethodArgumentNotValidException e, HttpServletRequest request) {
     String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-    logger.error("error in \nurl :{} \nmsg:{}",request.getRequestURI(),message);
-    return ResponseUtil.result(CommonConstants.EX_OTHER_CODE, message,null,true);
+    logger.error("error in \nurl :{} \nmsg:{}", request.getRequestURI(), message);
+    return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, message, null);
   }
 }
