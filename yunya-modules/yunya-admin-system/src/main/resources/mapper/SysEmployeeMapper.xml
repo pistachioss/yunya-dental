@@ -78,6 +78,6 @@
     <!-- 根据用户ID查询 -->
     <select id="selectByUserId" resultMap="BaseResultMap">
         <include refid="selectSysEmployee"/>
-        from sys_employee where user_id = #{userId}
+        where user_id = #{userId}
     </select>
 </mapper>

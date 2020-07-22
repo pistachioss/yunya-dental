@@ -8,6 +8,7 @@ import com.yunya.modules.system.form.ClinicDepartmentRoomModel;
 import com.yunya.modules.system.form.query.ClinicDepartmentRoomQueryForm;
 import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,11 +33,38 @@ public class ClinicDepartmentRoomController {
   }
 
   /**
+   * 一键新增全部门诊科室
+   *
+   * @param deptRoomId 科室模板ID
+   * @return
+   */
+  @ApiOperation("一键添加门诊科室")
+  @GetMapping("/clinic/batch/{deptRoomId}")
+  public ResponseResult oneClickAdd(@PathVariable("deptRoomId") Integer deptRoomId) {
+    clinicDepartmentRoomBiz.batchSave(deptRoomId);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 设置门诊科室是否启用
+   *
+   * @param id 门诊科室ID
+   * @return
+   */
+  @ApiOperation("开启/关闭门诊科室启用状态")
+  @GetMapping("/clinic/switch/{id}")
+  public ResponseResult switchDeptRoomDisable(@PathVariable("id") Integer id) {
+    clinicDepartmentRoomBiz.switchDeptRoomDisable(id);
+    return ResponseUtil.success();
+  }
+
+  /**
    * 根据门诊科室ID查询门诊科室
    *
    * @param id 门诊科室ID
    * @return
    */
+  @ApiOperation("根据门诊科室ID查询门诊科室")
   @GetMapping("/clinic/one/{id}")
   public ResponseResult findById(@PathVariable("id") Integer id) {
     ClinicDepartmentRoomVO departmentRoom = clinicDepartmentRoomBiz.findByClinicDeptRoomId(id);
@@ -49,23 +77,11 @@ public class ClinicDepartmentRoomController {
    * @param queryForm 查询参数
    * @return
    */
+  @ApiOperation("根据条件查询门诊科室列表")
   @PostMapping("/clinic/list")
   public ResponseResult findList(@RequestBody ClinicDepartmentRoomQueryForm queryForm) {
     PageInfo<ClinicDepartmentRoomVO> resultList = clinicDepartmentRoomBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
-  }
-
-  /**
-   * 设置科室在某门诊不可用
-   *
-   * @param model 参数模型
-   * @return
-   */
-  @PostMapping("/clinic/switch")
-  public ResponseResult switchDeptRoomDisable(
-      @RequestBody @Validated ClinicDepartmentRoomModel model) {
-    clinicDepartmentRoomBiz.switchDeptRoomDisable(model);
-    return ResponseUtil.success();
   }
 
   /**
@@ -74,6 +90,7 @@ public class ClinicDepartmentRoomController {
    * @param model 门诊科室参数模型
    * @return
    */
+  @ApiOperation("新增门诊科室")
   @PostMapping("/clinic/save")
   public ResponseResult save(@RequestBody @Validated ClinicDepartmentRoomModel model) {
     clinicDepartmentRoomBiz.add(model);

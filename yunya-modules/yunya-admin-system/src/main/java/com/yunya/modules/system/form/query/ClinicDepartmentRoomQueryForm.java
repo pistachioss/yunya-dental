@@ -22,14 +22,17 @@ import java.io.Serializable;
 public class ClinicDepartmentRoomQueryForm implements Serializable {
   @ApiModelProperty(value = "是否分页", required = true)
   private Boolean whetherPage = true;
-
+  /** 查询页码 */
   @ApiModelProperty("页码")
   @Min(message = "页码最小值最小值为1", value = 1)
   private Integer pageNum = 1;
-
+  /** 每页显示条数 */
   @ApiModelProperty("每页显示数量")
   @Min(message = "每页显示条数最小值为1", value = 1)
   private Integer pageSize = 10;
+  /** 门诊科室ID */
+  @ApiModelProperty("门诊科室ID")
+  private Integer clinicDeptRoomId;
   /** (组织)门诊ID */
   @ApiModelProperty("(组织)门诊ID")
   private Integer orgId;

@@ -183,7 +183,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     String currentUsername = sysUser.getUsername();
     // 不允许修改管理员登陆账号
     if (userId == 1 && !currentUsername.equals(form.getMobilePhone())) {
-      throw new ClientServiceException("系统管理员不允许修改用户名", OperationCodeConstants.OBJECT_EDIT_FAIL);
+      throw new ClientServiceException("系统管理员账号不允许修改用户名", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     SysUser sysUserEntity = EntityUtils.build(form, SysUser.class);
     // 更新用户信息

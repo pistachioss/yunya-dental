@@ -93,9 +93,6 @@ public class SysUserForm implements Serializable {
   /** 基本工作量 */
   @ApiModelProperty("基本工作量")
   private BigDecimal baseWorkload;
-  /** 奖金系数 */
-  @ApiModelProperty("奖金系数")
-  private Double bonusFactor;
   /** 紧急联系人 */
   @ApiModelProperty("紧急联系人")
   @Size(max = 25, message = "紧急联系人姓名长度不能超过25个字符")

@@ -3,11 +3,16 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.ClinicDepartmentRoom;
+import com.yunya.models.system.ClinicExtInfo;
 import com.yunya.modules.system.form.ClinicDepartmentRoomModel;
 import com.yunya.modules.system.form.query.ClinicDepartmentRoomQueryForm;
 import com.yunya.modules.system.mapper.ClinicDepartmentRoomMapper;
 import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,21 +31,51 @@ import java.util.List;
 public class ClinicDepartmentRoomBiz
     extends BaseBiz<ClinicDepartmentRoomMapper, ClinicDepartmentRoom> {
 
+  /** 注入对象 */
+  private final ClinicExtInfoBiz clinicExtInfoBiz;
+
+  public ClinicDepartmentRoomBiz(ClinicExtInfoBiz clinicExtInfoBiz) {
+    this.clinicExtInfoBiz = clinicExtInfoBiz;
+  }
+
   /**
-   * 设置科室在门诊不可用或不可用（注:启用表示科室在门诊科室列表中不存在，默认查询科室模版）
+   * 批量新增门诊科室
    *
-   * @param model 参数模型
+   * @param deptRoomId 科室模板ID
    */
-  public void switchDeptRoomDisable(ClinicDepartmentRoomModel model) {
-    ClinicDepartmentRoom entity = new ClinicDepartmentRoom();
-    entity.setCompanyId(model.getOrgId());
-    entity.setDeptRoomId(model.getDepartmentRoomId());
-    if (model.getInservice()) {
-      mapper.delete(entity);
-    } else {
-      entity.setInservice(false);
-      mapper.insertSelective(entity);
+  public void batchSave(Integer deptRoomId) {
+    List<ClinicExtInfo> clinicExtInfos = clinicExtInfoBiz.selectListAll();
+    if (clinicExtInfos.size() > 0) {
+      ClinicDepartmentRoom clinicDeptRoom;
+      for (ClinicExtInfo info : clinicExtInfos) {
+        clinicDeptRoom = new ClinicDepartmentRoom();
+        clinicDeptRoom.setCompanyId(info.getCompanyId());
+        clinicDeptRoom.setDeptRoomId(deptRoomId);
+        clinicDeptRoom.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        clinicDeptRoom.setCrtName(BaseContextHandler.getName());
+        ClinicDepartmentRoom resultData = mapper.selectOne(clinicDeptRoom);
+        if (null == resultData) {
+          mapper.insertSelective(clinicDeptRoom);
+        }
+      }
     }
+    throw new ClientServiceException(
+        "一键新增门诊科室失败，未查询到门诊信息，请联系系统管理员添加门诊！", OperationCodeConstants.QUERY_RESULT_INVALID);
+  }
+
+  /**
+   * 设置门诊科室是否启用
+   *
+   * @param clinicDeptRoomId 门诊科室ID
+   */
+  public void switchDeptRoomDisable(Integer clinicDeptRoomId) {
+    ClinicDepartmentRoom resultData = mapper.selectByPrimaryKey(clinicDeptRoomId);
+    if (null != resultData) {
+      resultData.setInservice(!resultData.getInservice());
+      mapper.updateByPrimaryKeySelective(resultData);
+    }
+    throw new ClientServiceException(
+        "ID为'" + clinicDeptRoomId + "'的门诊科室不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
   }
 
   /**
@@ -68,7 +103,6 @@ public class ClinicDepartmentRoomBiz
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-
     List<ClinicDepartmentRoomVO> resultList = mapper.selectClinicDepartmentRoomList(queryForm);
     return new PageInfo<>(resultList);
   }

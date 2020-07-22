@@ -28,8 +28,4 @@ public class ClinicDepartmentRoomModel implements Serializable {
   @ApiModelProperty(value = "科室ID", required = true)
   @NotNull(message = "科室ID不能为空！")
   private Integer departmentRoomId;
-  /** 是否启用 */
-  @ApiModelProperty("是否启用")
-  @NotNull(message = "是否适用不能为空")
-  private Boolean inservice;
 }
