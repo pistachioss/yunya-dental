@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-
+import java.util.*;
 
 
 /**
@@ -162,7 +160,28 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
      * @param scheduleId
      */
     public List<BaseInserviceVO> clinicList(Integer scheduleId) {
-        return mapper.selectInserviceVOsByScheduleId(scheduleId);
+        //获取门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+
+        List<BaseInserviceVO>list = mapper.selectInserviceVOsByScheduleId(scheduleId);
+        Map<String, BaseInserviceVO> BaseMap = new HashMap();
+        list.forEach(z -> BaseMap.put(z.getClinicId() + "", z));
+
+        List<BaseInserviceVO>relist = new ArrayList<>();
+        for (OrganizationInfoDetail organizationInfoDetail:clinics){
+            BaseInserviceVO baseInserviceVO = new BaseInserviceVO();
+            baseInserviceVO.setClinicId(organizationInfoDetail.getId());
+            baseInserviceVO.setClinicName(organizationInfoDetail.getName());
+            if(BaseMap.get(organizationInfoDetail.getId()+"")!=null){
+                baseInserviceVO.setInservice(BaseMap.get(organizationInfoDetail.getId()+"").getInservice());
+            }else{
+                baseInserviceVO.setInservice(false);
+            }
+            relist.add(baseInserviceVO);
+        }
+        return relist;
     }
 
     /**

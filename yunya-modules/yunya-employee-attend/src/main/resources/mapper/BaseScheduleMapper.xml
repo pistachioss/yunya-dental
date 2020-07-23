@@ -26,10 +26,8 @@
     </resultMap>
 
     <select id="selectInserviceVOsByScheduleId" resultMap="BaseInserviceVOMap">
-        select c.id as clinicId,c.name as clinicName,cs.inservice from clinic_schedule cs
-        LEFT JOIN clinic c on c.id = cs.clinic_id
-        LEFT JOIN base_schedule bs on bs.id = cs.schedule_id
-        where cs.schedule_id = #{id}
+        select clinic_id as clinicId,inservice from clinic_schedule
+        where schedule_id = #{id}
     </select>
 
     <select id="selectByTypeAndName" resultMap="BaseResultMap">

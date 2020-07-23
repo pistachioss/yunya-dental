@@ -15,9 +15,12 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleCopyForm;
@@ -26,6 +29,7 @@ import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper;
 import com.yunya.modules.employeeattend.vo.ClinicScheduleVO;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleCopyVO;
+import com.yunya.modules.employeeattend.vo.EmployeeScheduleExportVO;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -82,18 +86,38 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    *
    * @param employeeScheduleCopyForm
    */
-  public String copy(EmployeeScheduleCopyForm employeeScheduleCopyForm) {
-    StringBuffer conflictinformation = new StringBuffer();
-
+  public  List<EmployeeScheduleExportVO> copy(EmployeeScheduleCopyForm employeeScheduleCopyForm){
+    List<EmployeeScheduleExportVO>employeeConflict = new ArrayList<>();//冲突列表
     List<Integer> employeeIdList = employeeScheduleCopyForm.getEmployeeIdLIst();//复制排班的员工Id列表
-//    String employeeId = "1";//员工ID
+
+    //获取员工信息
+    SysUserEmployeeModel model = new SysUserEmployeeModel();
+    model.setWhetherPage(false);//查询总数不分页
+    List<Integer> orgIds = new ArrayList<>();
+    orgIds.add(Integer.valueOf(employeeScheduleCopyForm.getClinicId()));//设置门诊ID
+    model.setOrgIds(orgIds);
+    model.setWorkStatus(BusinessConstants.USER_RESIGNATION_STATUS);
+    List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);//当前门诊下全部员工
+    Map<String, SysUserInfoDetail> employeeMap = new HashMap();
+    employees.forEach(z -> employeeMap.put(z.getUserId() + "", z));
+    //获取门诊信息
+    OrganizationModel organizationModel = new OrganizationModel();
+    organizationModel.setWhetherPage(false);
+    List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);//全部门诊信息
+    Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
+    clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
+
     Date startDate = employeeScheduleCopyForm.getStartDate();
     Date endDate = employeeScheduleCopyForm.getEndDate();
     Date targetStartDate = employeeScheduleCopyForm.getTargetStartDate();
     // 目标时间与开始时间的天数差
-    int days1 = (int) (targetStartDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+    Long a = targetStartDate.getTime();
+    Long b = startDate.getTime();
+    Long c = a - b;
+    int d = c.intValue();
+    int days1 = (int) ((targetStartDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
     // 时间范围
-    int days2 = (int) (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+    int days2 = (int) ((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24));
     List<EmployeeScheduleCopyVO> EmployeeSchedules = mapper.selectAllByDate(startDate, endDate, employeeIdList);//复制时段内的排班列表
 
     Calendar calendar = Calendar.getInstance();
@@ -136,13 +160,23 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                 EmpEndTime = dateFormat.parse(dateFormat.format(employeeScheduleCopyVO.getSecondEndTime()));
                 EmpStartTime = dateFormat.parse(dateFormat.format(employeeScheduleCopyVO.getFirstStartTime()));
               } catch (ParseException e) {
-                return "日期转化失败";
+                throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
               }
 
               if (copyVoEndTime.before(EmpStartTime) || EmpEndTime.before(copyVoStratTime)) {
 
               } else {
-                conflictinformation.append(employeeScheduleCopyVO.getUserName() + "在" + employeeScheduleCopyVO.getWorkDate().toString() + "排班冲突。");
+                SimpleDateFormat dateFormatExport = new SimpleDateFormat("yyyy-MM-dd");
+                EmployeeScheduleExportVO employeeScheduleExportVO = new EmployeeScheduleExportVO();
+                employeeScheduleExportVO.setName(employeeMap.get(employeeScheduleCopyVO.getEmployeeId()+"").getName());
+                employeeScheduleExportVO.setCopy_date(dateFormatExport.format(employeeScheduleCopyVO.getWorkDate()));
+                employeeScheduleExportVO.setCopy_company_name(clinicMap.get(employeeScheduleCopyVO.getClinicId()+"").getName());
+                employeeScheduleExportVO.setCopy_schedule(employeeScheduleCopyVO.getScheduleName()+"("+dateFormat.format(EmpStartTime)+"-"+dateFormat.format(EmpEndTime)+")");
+
+                employeeScheduleExportVO.setCover_date(dateFormatExport.format(copyVO.getWorkDate()));
+                employeeScheduleExportVO.setCover_company_name(clinicMap.get(copyVO.getClinicId()+"").getName());
+                employeeScheduleExportVO.setCover_schedule(copyVO.getScheduleName()+"("+dateFormat.format(copyVoStratTime)+"-"+dateFormat.format(copyVoEndTime)+")");
+                employeeConflict.add(employeeScheduleExportVO);
               }
             }
           }
@@ -151,7 +185,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     }
     // 删除原有日期排班,插入目标范围排班
 //    mapper.deleteByDate(targetStartDate, targetEndDate, employeeIdList);
-    if (!EmployeeSchedules.isEmpty() && conflictinformation.length() == 0) {
+    if (!EmployeeSchedules.isEmpty() && employeeConflict.size() == 0) {
       Calendar calendar2 = Calendar.getInstance();
       EmployeeSchedules.forEach(x -> {
         calendar2.setTime(x.getWorkDate());
@@ -160,9 +194,9 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         x.setWorkDate(calendar2.getTime());
       });
       mapper.batchInsert(EmployeeSchedules);
-      return "排班成功";
+      return employeeConflict;
     }
-    return conflictinformation.toString();
+    return employeeConflict;
   }
 
   /**
@@ -436,6 +470,17 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       e.printStackTrace();
     }
 
+  }
+
+  /**
+   * 导出员工排班列表
+   * @param response
+   * @param employeeConflict
+   * @throws Exception
+   */
+  public void exportConflict(HttpServletResponse response, List<EmployeeScheduleExportVO>employeeConflict) throws Exception {
+    ExcelUtil<EmployeeScheduleExportVO> excelUtil = new ExcelUtil<>(EmployeeScheduleExportVO.class);
+    excelUtil.exportExcel(response, employeeConflict, "员工排班冲突列表");
   }
 
   /**

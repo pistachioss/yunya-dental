@@ -10,6 +10,7 @@ import com.yunya.modules.employeeattend.form.EmployeeScheduleDeleteForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.service.EmployeeScheduleBiz;
+import com.yunya.modules.employeeattend.vo.EmployeeScheduleExportVO;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -18,6 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * @author 杨柳絮
@@ -79,16 +83,40 @@ public class EmployeeScheduleController {
 
 
   /**
-   * 导出
+   * 导出员工排班
    *
    * @param
    * @throws Exception
    */
-  @GetMapping("/export")
+  @PostMapping("/export")
   public void export(
           HttpServletResponse response, EmployeeScheduleQueryForm employeeScheduleQueryForm
   ) throws Exception {
     employeeScheduleBiz.export(response, employeeScheduleQueryForm);
+  }
+
+  /**
+   * 导出复制排班冲突
+   *
+   * @param
+   * @throws Exception
+   */
+  @PostMapping("/exportconflict")
+  public void exportConflict(
+          HttpServletResponse response,
+          List<EmployeeScheduleExportVO>employeeConflict
+  ) throws Exception {
+//    List<EmployeeScheduleExportVO>employeeConflict = new ArrayList<>();
+//    EmployeeScheduleExportVO employeeScheduleExportVO = new EmployeeScheduleExportVO();
+//    employeeScheduleExportVO.setCover_company_name("Cover_company_name");
+//    employeeScheduleExportVO.setCover_date("2020-12-28");
+//    employeeScheduleExportVO.setCover_schedule("Cover_schedule");
+//    employeeScheduleExportVO.setCopy_company_name("Copy_company_name");
+//    employeeScheduleExportVO.setCopy_date("2019-11-09");
+//    employeeScheduleExportVO.setCopy_schedule("Copy_schedule");
+//    employeeScheduleExportVO.setName("Name");
+//    employeeConflict.add(employeeScheduleExportVO);
+    employeeScheduleBiz.exportConflict(response, employeeConflict);
   }
 
 }
