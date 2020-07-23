@@ -28,4 +28,6 @@ public class OperationCodeConstants {
   public static final Integer RETURN_VALUE_ISNULL = 30008;
   /** 数据不存在 */
   public static final Integer DATA_NOT_EXIST = 30009;
+  /** 时间格式转换异常 */
+  public static final Integer DATA_TRANSFORMATION_EXIST = 30010;
 }
