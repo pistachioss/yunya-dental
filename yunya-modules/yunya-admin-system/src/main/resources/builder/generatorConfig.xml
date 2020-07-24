@@ -41,7 +41,6 @@
         <table tableName="sys_menu" domainObjectName="SysMenu"/>
         <table tableName="sys_user_post" domainObjectName="SysUserPost"/>
         <table tableName="sys_post_element" domainObjectName="SysPostElement"/>-->
-        <table tableName="department_room" domainObjectName="DepartmentRoom"/>
-        <table tableName="clinic_department_room" domainObjectName="ClinicDepartmentRoom"/>
+        <table tableName="member_type" domainObjectName="MemberType"/>
     </context>
 </generatorConfiguration>

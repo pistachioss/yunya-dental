@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.MemberTypeMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.system.MemberType">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="renewal_amount" property="renewalAmount" jdbcType="DECIMAL"/>
+        <result column="age_limit" property="ageLimit" jdbcType="INTEGER"/>
+        <result column="rate" property="rate" jdbcType="REAL"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="description" property="description" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据ID查询会员卡类型信息 -->
+    <select id="selectMemberTypeById" resultType="com.yunya.modules.system.vo.MemberTypeVO">
+      select
+        mt.id,
+        mt.name,
+        mt.renewal_amount as renewalAmount,
+        mt.age_limit as ageLimit,
+        mt.rate,
+        mt.type,
+        mt.description,
+        mt.inservice
+      from
+        member_type mt
+      where
+        mt.id = #{id}
+    </select>
+    <!-- 根据条件查询会员卡类型列表 -->
+    <select id="selectMemberTypeList" resultType="com.yunya.modules.system.vo.MemberTypeVO">
+        select
+        mt.id,
+        mt.name,
+        mt.renewal_amount as renewalAmount,
+        mt.age_limit as ageLimit,
+        mt.rate,
+        mt.type,
+        mt.description,
+        mt.inservice
+        from
+        member_type mt
+        <where>
+            <if test="queryForm.id != null">
+                and mt.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.name != null and queryForm.name != ''">
+                and mt.name like concat('%',#{queryForm.name},'%')
+            </if>
+            <if test="queryForm.type != null">
+                and mt.type = #{queryForm.type}
+            </if>
+            <if test="queryForm.inservice">
+                and mt.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+</mapper>

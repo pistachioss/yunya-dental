@@ -53,7 +53,7 @@ public class SysElement {
 
     @ApiModelProperty("功能父级ID")
     @Column(name = "parent_id")
-    private Integer parentId;
+    private String parentId;
 
     /**
      * 资源树状检索路径
@@ -211,14 +211,14 @@ public class SysElement {
     /**
      * @return parent_id
      */
-    public Integer getParentId() {
+    public String getParentId() {
         return parentId;
     }
 
     /**
      * @param parentId
      */
-    public void setParentId(Integer parentId) {
+    public void setParentId(String parentId) {
         this.parentId = parentId;
     }
 

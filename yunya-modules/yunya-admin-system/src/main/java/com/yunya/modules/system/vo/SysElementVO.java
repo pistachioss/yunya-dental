@@ -28,7 +28,7 @@ public class SysElementVO implements Serializable {
   /** 资源关联菜单 */
   private Integer menuId;
   /** 上级ID */
-  private Integer parentId;
+  private String parentId;
   /** 上级按钮名称 */
   private String parentName;
   /** 资源树状检索路径 */
