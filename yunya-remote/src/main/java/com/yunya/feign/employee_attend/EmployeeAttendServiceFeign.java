@@ -2,7 +2,8 @@ package com.yunya.feign.employee_attend;
 
 import com.yunya.feign.employee_attend.factory.EmployeeAttendServiceFallBackFactory;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
-import com.yunya.feign.system.form.JwtRequestFrom;
+import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
+
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,5 +23,5 @@ public interface EmployeeAttendServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api/employee/attend/list", method = RequestMethod.POST)
-  Map<String, Object> findList(@RequestBody EmployeeScheduleQueryForm employeeScheduleQueryForm);
+  EmployeeScheduleResultVO findList(@RequestBody EmployeeScheduleQueryForm employeeScheduleQueryForm);
 }
