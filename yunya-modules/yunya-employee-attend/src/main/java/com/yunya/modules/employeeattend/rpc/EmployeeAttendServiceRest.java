@@ -5,6 +5,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.EmployeeScheduleBiz;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.rpc.service.EmployeeScheduleSerivce;
+import com.yunya.modules.employeeattend.vo.EmployeeScheduleResultVO;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -30,7 +31,8 @@ public class EmployeeAttendServiceRest {
    * @return
    */
   @RequestMapping(value = "/employee/attend/list", method = RequestMethod.POST)
-  public Map<String, Object> findList(@RequestBody @Validated EmployeeScheduleQueryForm employeeScheduleQueryForm) {
-    return employeeScheduleSerivce.findList(employeeScheduleQueryForm);
+  public EmployeeScheduleResultVO findList(@RequestBody @Validated EmployeeScheduleQueryForm employeeScheduleQueryForm) {
+    EmployeeScheduleResultVO employeeScheduleResultVO = employeeScheduleSerivce.findList(employeeScheduleQueryForm);
+    return employeeScheduleResultVO;
   }
 }

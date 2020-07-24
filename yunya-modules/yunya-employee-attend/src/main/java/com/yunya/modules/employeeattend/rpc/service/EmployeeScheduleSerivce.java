@@ -1,7 +1,5 @@
 package com.yunya.modules.employeeattend.rpc.service;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -14,8 +12,7 @@ import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.biz.ClinicScheduleBiz;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper;
-import com.yunya.modules.employeeattend.vo.ClinicScheduleVO;
-import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
+import com.yunya.modules.employeeattend.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +42,7 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
    * @param employeeScheduleQueryForm
    * @return
    */
-  public Map<String, Object> findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
+  public EmployeeScheduleResultVO findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
     Date startDate = employeeScheduleQueryForm.getStartDate();
     Date endDate = employeeScheduleQueryForm.getEndDate();
     if (null == startDate || null == endDate) {
@@ -97,24 +94,23 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(startDate);
     int days = (int) (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
-    JSONArray shiftWorkDatas = new JSONArray();
+    List<UserWorkVO> shiftWorkDatas = new ArrayList<>();
     for (SysUserInfoDetail baseEmployee : employees) {
-      Map<String, Object> userWorkMap = new LinkedHashMap<>();
-      String userId = baseEmployee.getUserId() + "";
-      userWorkMap.put("compEmpId", userId);
-      userWorkMap.put("name", baseEmployee.getName());
-      userWorkMap.put("postNames", baseEmployee.getPosts());
+      UserWorkVO userWorkMap = new UserWorkVO();
+      String userId = baseEmployee.getUserId()+"";
+      userWorkMap.setCompEmpId(baseEmployee.getUserId());
+      userWorkMap.setName(baseEmployee.getName());
+      userWorkMap.setPostNames(baseEmployee.getPosts());
       // 获取时间内的排班
       List<EmployeeScheduleVO> EmployeeScheduleVOs = mapper.selectVOByDateAndCompEmpId(startDate, endDate, null, userId);
+      List<WorkDayVO>workDayDatas = new ArrayList();
       // 设置排班列表
-      List personDays = new LinkedList();
       for (int i = 0; i < days; i++) {
         calendar.getTime();
-        JSONArray workDayDatas = new JSONArray();
         for (EmployeeScheduleVO employeeScheduleVO : EmployeeScheduleVOs) {
+          WorkDayVO workDayData = new WorkDayVO();
           if (calendar.getTime().equals(employeeScheduleVO.getWorkDate())) {
-            JSONObject workDayData = new JSONObject();
-            workDayData.put("id", employeeScheduleVO.getScheduleId());
+            workDayData.setId(employeeScheduleVO.getScheduleId());
             //拼接排班的时间段
             SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
             Date startTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getFirstStartTime();
@@ -126,22 +122,22 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
             }
             String simtime = dateFormat.format(startTime) + "-" + dateFormat.format(endTime);
 
-            workDayData.put("name", clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + simtime);
-            workDayData.put("date", employeeScheduleVO.getWorkDate());
-            workDayData.put("compClinId", employeeScheduleVO.getClinicId());
-            workDayDatas.add(workDayData);
+            workDayData.setName(clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + simtime);
+            workDayData.setDate(employeeScheduleVO.getWorkDate());
+            workDayData.setCompClinId(employeeScheduleVO.getClinicId());
           }
+          workDayDatas.add(workDayData);
         }
-        personDays.add(workDayDatas);
+
         calendar.add(Calendar.DATE, +COUNT);
       }
-      userWorkMap.put("days", personDays);
+      userWorkMap.setDays(workDayDatas);
       shiftWorkDatas.add(userWorkMap);
       calendar.add(Calendar.DATE, -days);
     }
-    Map<String, Object> result = new HashMap();
-    result.put("data", shiftWorkDatas);
-    result.put("total", count);
-    return result;
+    EmployeeScheduleResultVO employeeScheduleResultVO = new EmployeeScheduleResultVO();
+    employeeScheduleResultVO.setShiftWorkDatas(shiftWorkDatas);
+    employeeScheduleResultVO.setCount(count);
+    return employeeScheduleResultVO;
   }
 }
