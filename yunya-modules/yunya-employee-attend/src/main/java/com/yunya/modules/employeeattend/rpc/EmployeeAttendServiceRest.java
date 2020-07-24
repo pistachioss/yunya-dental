@@ -26,7 +26,7 @@ public class EmployeeAttendServiceRest {
 
   @Autowired private EmployeeScheduleSerivce employeeScheduleSerivce;
   /**
-   * 查看员工排班列表暴露
+   * 查看员工排班列表
    * @param employeeScheduleQueryForm
    * @return
    */
