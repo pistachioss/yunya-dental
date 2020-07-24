@@ -26,6 +26,24 @@ mybatis:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+# 配置swagger
+swagger:
+  enabled: true
+  base-package: com.yunya.employee.expand
+  title: employee-expand
+  version: 1.0.0.SNAPSHOT
+  description: 员工扩展相关功能
+  contact:
+    name: employee-expand
+
+#设置hystrix超时
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000
 
 
 

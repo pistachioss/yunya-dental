@@ -138,7 +138,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
-
+            <!-- 分离lib,resources -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -165,6 +165,65 @@
                         <goals>
                             <goal>repackage</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 打包忽略配置文件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>mapper/**</exclude>
+                        <exclude>**/*.yml</exclude>
+                        <exclude>**/*.xml</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- 生成lib -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!--设置lib目录指定位置-->
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <excludeTransitive>false</excludeTransitive>
+                            <stripVersion>false</stripVersion>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 生成resource -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/resources</directory>
+                                </resource>
+                            </resources>
+                            <!-- 输出路径 -->
+                            <outputDirectory>${project.build.directory}/resources</outputDirectory>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

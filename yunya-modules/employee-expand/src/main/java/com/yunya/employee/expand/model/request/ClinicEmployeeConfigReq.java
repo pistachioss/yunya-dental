@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
+
 /**
  * @author bruce
  * @date 2020/7/10
@@ -31,4 +33,8 @@ public class ClinicEmployeeConfigReq {
      */
     @ApiModelProperty(value = "是否可挂号")
     private Boolean enableRegistry;
+
+    @ApiModelProperty(value = "门诊ID")
+    @NotNull
+    private Integer clinicId;
 }

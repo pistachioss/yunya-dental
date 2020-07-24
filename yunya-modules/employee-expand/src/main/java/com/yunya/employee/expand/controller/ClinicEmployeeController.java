@@ -4,6 +4,7 @@ package com.yunya.employee.expand.controller;
 import com.yunya.employee.expand.model.request.ClinicEmployeeConfigQueryReq;
 import com.yunya.employee.expand.model.request.ClinicEmployeeConfigReq;
 import com.yunya.employee.expand.model.response.ClinicEmployeeConfigRes;
+import com.yunya.employee.expand.model.response.EnableEmployeeRes;
 import com.yunya.employee.expand.service.ClinicEmployeeConfigBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -32,18 +33,12 @@ public class ClinicEmployeeController {
      * @return
      */
     @ApiOperation("门诊端-诊所设置-员工设置-员工配置")
-    @PutMapping("clinic/employee/config/{employeeId}")
-    public ResponseResult modifyEmployeeConfig(@PathVariable("employeeId") Integer employeeId,
+    @PutMapping("clinic/employee/config/{clinicId}/{employeeId}")
+    public ResponseResult modifyEmployeeConfig(@PathVariable("clinicId") Integer clinicId,
+                                               @PathVariable("employeeId") Integer employeeId,
                                                @RequestBody ClinicEmployeeConfigReq configRequest) {
-        clinicEmployeeConfigBiz.modifyClinicEmployeeConfig(employeeId, configRequest);
+        clinicEmployeeConfigBiz.modifyClinicEmployeeConfig(employeeId, clinicId, configRequest);
         return ResponseUtil.success();
-    }
-
-    @ApiOperation("门诊员工配置详情")
-    @PostMapping("clinic/employee/config/detail")
-    public ResponseResult<ClinicEmployeeConfigRes> getEmployeeConfigRecord( @Valid @RequestBody ClinicEmployeeConfigQueryReq req) {
-        ClinicEmployeeConfigRes result = clinicEmployeeConfigBiz.getEmployeeConfig(req);
-        return ResponseUtil.success(result);
     }
 
 }

@@ -1,10 +1,13 @@
 package com.yunya.employee.expand.service;
 
 
+import com.google.common.base.Objects;
 import com.yunya.employee.expand.mapper.ClinicEmployeeConfigMapper;
 import com.yunya.employee.expand.model.request.ClinicEmployeeConfigQueryReq;
 import com.yunya.employee.expand.model.request.ClinicEmployeeConfigReq;
 import com.yunya.employee.expand.model.response.ClinicEmployeeConfigRes;
+import com.yunya.employee.expand.model.response.EnableChooseEmployeeRes;
+import com.yunya.employee.expand.model.response.EnableEmployeeRes;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -13,10 +16,17 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.expand.ClinicEmployeeConfig;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cglib.beans.BeanCopier;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /**
@@ -28,6 +38,8 @@ import javax.annotation.Resource;
 @Service
 public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper, ClinicEmployeeConfig> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClinicEmployeeConfigBiz.class);
+
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
 
@@ -36,7 +48,7 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
      * @param employeeId
      * @param configRequest
      */
-    public void modifyClinicEmployeeConfig(Integer employeeId, ClinicEmployeeConfigReq configRequest) {
+    public void modifyClinicEmployeeConfig(Integer employeeId, Integer clinicId, ClinicEmployeeConfigReq configRequest) {
         SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(employeeId);
         if (BusinessConstants.USER_RESIGNATION_STATUS.equals(employee.getWorkStatus())) {
             throw new ClientServiceException("员工已离职", OperationCodeConstants.QUERY_RESULT_INVALID);
@@ -44,10 +56,15 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         //查询该员工对应扩展表主键
         ClinicEmployeeConfig clinicEmployeeConfig = new ClinicEmployeeConfig();
         clinicEmployeeConfig.setEmployeeId(employeeId);
+        clinicEmployeeConfig.setClinicId(configRequest.getClinicId());
         clinicEmployeeConfig = mapper.selectOne(clinicEmployeeConfig);
         ClinicEmployeeConfig updateEmployee = EntityUtils.build(configRequest, ClinicEmployeeConfig.class);
-        updateEmployee.setId(clinicEmployeeConfig.getId());
-        mapper.updateByPrimaryKeySelective(updateEmployee);
+        if (clinicEmployeeConfig == null) {
+            mapper.insertSelective(updateEmployee);
+        } else {
+            updateEmployee.setId(clinicEmployeeConfig.getId());
+            mapper.updateByPrimaryKeySelective(updateEmployee);
+        }
     }
 
     /**
@@ -67,5 +84,44 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         result.setAssistantName(assistantEmployee.getName());
         return result;
     }
+
+    /**
+     * 查询可预约，可挂号医生
+     * @param clinicId 门诊id
+     * @return
+     */
+    public EnableEmployeeRes getAllEnableEmployee(Integer clinicId) {
+        LOGGER.info("查询可预约，挂号接口请求参数：clinic:{}",clinicId);
+        Example example = new Example(ClinicEmployeeConfig.class);
+        example.createCriteria().andEqualTo("clinicId",clinicId);
+        List<ClinicEmployeeConfig> allList = mapper.selectByExample(example);
+        EnableEmployeeRes res = new EnableEmployeeRes();
+        if (CollectionUtils.isNotEmpty(allList)) {
+            //可预约医生
+            List<ClinicEmployeeConfig> appointList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM,config.getEnableAppoint()))
+                                                            .collect(Collectors.toList());
+            //可挂号医生
+            List<ClinicEmployeeConfig> registerList = allList.stream().filter(config -> Objects.equal(BusinessConstants.ENABLE_NUM,config.getEnableRegistry()))
+                                                            .collect(Collectors.toList());
+            List<EnableChooseEmployeeRes> appointResList = appointList.stream().map(this::assembleEnableEmployee).collect(Collectors.toList());
+            List<EnableChooseEmployeeRes> registerResList = registerList.stream().map(this::assembleEnableEmployee).collect(Collectors.toList());
+            res.setEnableAppointList(appointResList);
+            res.setEnableRegistryList(registerResList);
+        }
+        return res;
+    }
+
+    private EnableChooseEmployeeRes assembleEnableEmployee(ClinicEmployeeConfig config) {
+        EnableChooseEmployeeRes configRes = new EnableChooseEmployeeRes();
+        BeanCopier copier = BeanCopier.create(ClinicEmployeeConfig.class, EnableChooseEmployeeRes.class, false);
+        copier.copy(config,configRes,null);
+        SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(config.getEmployeeId());
+        SysUserInfoDetail assist = systemServiceFeign.findSysUserEmployeeInfoByUserId(config.getAssistantEmployeeId());
+        configRes.setAssistantName(assist == null ? null : assist.getUsername());
+        configRes.setEmployeeName(employee == null ? null : employee.getUsername());
+        //TODO 科室
+        return configRes;
+    }
+
 
 }
