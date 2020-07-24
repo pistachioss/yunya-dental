@@ -78,3 +78,7 @@ yunya-modules/yunya-admin-system/target/generated-sources/
 yunya-modules/yunya-admin-system/target/maven-status/
 yunya-remote/target/maven-status/
 /yunya-modules/clinic-base/target/classes/
+/yunya-modules/clinic-discount/.mvn/wrapper/maven-wrapper.properties
+/yunya-modules/clinic-discount/.mvn/wrapper/MavenWrapperDownloader.java
+/yunya-modules/clinic-discount/.mvn/wrapper/maven-wrapper.jar
+/yunya-modules/clinic-discount/.mvn/wrapper/maven-wrapper.jar
