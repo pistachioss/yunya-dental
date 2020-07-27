@@ -79,9 +79,6 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     model.setKeyWord(name);
     model.setWorkStatus(BusinessConstants.USER_RESIGNATION_STATUS);//离职状态
     int count = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model).size();
-    model.setWhetherPage(true);
-    model.setPageNum(page);
-    model.setPageSize(size);
 //    System.out.println(remoteSystemServiceFeign.getAllPermissionInfo());
     List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
     //获取门诊信息

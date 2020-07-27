@@ -3,6 +3,7 @@ package com.yunya.feign.employee_attend.factory;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
+import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -23,7 +24,7 @@ public class EmployeeAttendServiceFallBackFactory implements EmployeeAttendServi
 
 
   @Override
-  public Map<String, Object> findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
+  public EmployeeScheduleResultVO findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
     return null;
   }
 }
