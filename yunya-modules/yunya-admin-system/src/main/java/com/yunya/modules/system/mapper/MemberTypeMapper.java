@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.models.system.MemberType;
-import com.yunya.modules.system.form.query.MemberTypeQueryForm;
+import com.yunya.modules.system.domain.query.MemberTypeQueryForm;
 import com.yunya.modules.system.vo.MemberTypeVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

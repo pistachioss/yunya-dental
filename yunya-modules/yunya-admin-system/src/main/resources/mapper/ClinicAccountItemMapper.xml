@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.ClinicAccountItemMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.system.ClinicAccountItem">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="company_id" property="companyId" jdbcType="INTEGER"/>
+        <result column="account_item_id" property="accountItemId" jdbcType="INTEGER"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据ID查询门诊入账方式 -->
+    <select id="selectById" resultType="com.yunya.modules.system.vo.ClinicAccountItemVO">
+      select
+        cai.id,
+        cai.company_id as orgId,
+        ifnull( cei.abbreviation, '公司' ) as orgName,
+        cai.account_item_id as accountItemId,
+        ai.name as accountItemName,
+        ai.type,
+        cai.inservice
+      from clinic_account_item cai
+      left join account_item ai on cai.account_item_id = ai.id
+      left join clinic_ext_info cei on cai.company_id = cei.company_id
+      where cai.id = #{id}
+    </select>
+    <!-- 根据条件查询组织入账方式列表 -->
+    <select id="selectClinicAccountItemList" resultType="com.yunya.modules.system.vo.ClinicAccountItemVO">
+        select
+        cai.id,
+        cai.company_id as orgId,
+        ifnull( cei.abbreviation, '公司' ) as orgName,
+        cai.account_item_id as accountItemId,
+        ai.name as accountItemName,
+        ai.type,
+        cai.inservice
+        from clinic_account_item cai
+        left join account_item ai on cai.account_item_id = ai.id
+        left join clinic_ext_info cei on cai.company_id = cei.company_id
+        <where>
+            <if test="queryForm.id != null">
+                and cai.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.accountItemId != null">
+                and cai.account_item_id = #{queryForm.accountItemId}
+            </if>
+            <if test="queryForm.orgId != null">
+                and cai.company_id = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.inservice != null">
+                and cai.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+</mapper>

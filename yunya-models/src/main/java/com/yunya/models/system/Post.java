@@ -1,55 +1,39 @@
 package com.yunya.models.system;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Date;
 
-@ApiModel("岗位新增参数模型")
 public class Post {
   @Id
-  @ApiModelProperty(hidden = true)
   private Integer id;
 
   /** 岗位名称 */
-  @ApiModelProperty(value = "岗位名称", required = true)
-  @NotBlank(message = "岗位名称为空！")
-  @Size(max = 50, message = "名称长度不能超过50个字符")
   private String name;
 
   /** 岗位组ID */
-  @ApiModelProperty(value = "岗位组ID", required = true)
-  @NotNull(message = "岗位组ID为空！")
   private Integer postGroupId;
 
   /** 自定义排序 */
-  @ApiModelProperty("自定义排序")
   @Column(name = "order_num")
   private Integer orderNum;
 
   /**
    * 允许操纵（编辑/删除）
    */
-  @ApiModelProperty(value = "字段是否允许操作（编辑/删除）")
   private Boolean allowOperation;
 
   /** 是否启用 */
-  @ApiModelProperty("是否启用")
   private Boolean inservice;
 
   /** 创建人ID */
   @Column(name = "crt_id")
-  @ApiModelProperty(hidden = true)
   private Integer crtId;
 
   /** 创建人名称 */
   @Column(name = "crt_name")
-  @ApiModelProperty(hidden = true)
   private String crtName;
 
   /** 创建时间 */
@@ -58,17 +42,14 @@ public class Post {
   private Date crtTime;
 
   @Column(name = "upd_id")
-  @ApiModelProperty(hidden = true)
   private Integer updId;
 
   /** 修改人名称 */
   @Column(name = "upd_name")
-  @ApiModelProperty(hidden = true)
   private String updName;
 
   /** 修改时间 */
   @Column(name = "upd_time")
-  @ApiModelProperty(hidden = true)
   private Date updTime;
 
   /** @return id */

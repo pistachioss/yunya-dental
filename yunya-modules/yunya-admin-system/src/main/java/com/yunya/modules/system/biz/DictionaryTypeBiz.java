@@ -7,8 +7,9 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.DictionaryType;
-import com.yunya.modules.system.form.DictForm;
-import com.yunya.modules.system.form.query.DictQueryForm;
+import com.yunya.modules.system.domain.form.DictForm;
+import com.yunya.modules.system.domain.model.DictionaryTypeModel;
+import com.yunya.modules.system.domain.query.DictQueryForm;
 import com.yunya.modules.system.mapper.DictionaryItemMapper;
 import com.yunya.modules.system.mapper.DictionaryTypeMapper;
 import com.yunya.modules.system.vo.DictionaryTypeVO;
@@ -52,16 +53,16 @@ public class DictionaryTypeBiz extends BaseBiz<DictionaryTypeMapper, DictionaryT
    *
    * @param resource 参数封装
    */
-  public void add(DictionaryType resource) {
+  public void add(DictionaryTypeModel resource) {
     String name = resource.getName();
     DictionaryType entity = new DictionaryType();
     entity.setName(name);
-    DictionaryType result = mapper.selectOne(entity);
-    if (null != result) {
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       throw new ClientServiceException(
           "新增字典类型'" + name + "'失败，该字典类型名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-    mapper.insertSelective(resource);
+    mapper.insertSelective(entity);
   }
 
   /**

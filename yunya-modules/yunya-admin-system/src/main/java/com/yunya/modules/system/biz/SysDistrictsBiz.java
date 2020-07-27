@@ -4,7 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.system.SysDistricts;
-import com.yunya.modules.system.form.query.SysDistrictsQueryForm;
+import com.yunya.modules.system.domain.query.SysDistrictsQueryForm;
 import com.yunya.modules.system.mapper.SysDistrictsMapper;
 import com.yunya.modules.system.vo.SysDistrictsVO;
 import org.springframework.stereotype.Service;

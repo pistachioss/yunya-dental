@@ -2,9 +2,9 @@ package com.yunya.modules.system.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.system.SysResourceAuthority;
-import com.yunya.modules.system.form.ResourceAuthorityForm;
-import com.yunya.modules.system.form.ResourceForm;
-import com.yunya.modules.system.form.SysPostResourceForm;
+import com.yunya.modules.system.domain.form.ResourceAuthorityForm;
+import com.yunya.modules.system.domain.form.ResourceForm;
+import com.yunya.modules.system.domain.form.SysPostResourceForm;
 import com.yunya.modules.system.mapper.SysResourceAuthorityMapper;
 import com.yunya.modules.system.vo.SysResourceAuthorityVO;
 import org.springframework.stereotype.Service;

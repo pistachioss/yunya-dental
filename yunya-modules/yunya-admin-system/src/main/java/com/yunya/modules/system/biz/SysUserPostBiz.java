@@ -4,7 +4,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.SysUserPost;
-import com.yunya.modules.system.form.LoginOrganizationForm;
+import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;

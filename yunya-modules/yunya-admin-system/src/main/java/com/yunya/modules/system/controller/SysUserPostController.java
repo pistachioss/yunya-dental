@@ -4,7 +4,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.biz.SysUserPostBiz;
-import com.yunya.modules.system.form.LoginOrganizationForm;
+import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
 import com.yunya.modules.system.vo.SysUserPostOrgVO;
 import io.swagger.annotations.Api;

@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.models.system.CompanyDepartment;
-import com.yunya.modules.system.form.query.OrgDeptQueryForm;
+import com.yunya.modules.system.domain.query.OrgDeptQueryForm;
 import com.yunya.modules.system.vo.OrgDeptVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

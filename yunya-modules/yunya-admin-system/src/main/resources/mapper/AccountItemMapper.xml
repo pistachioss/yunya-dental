@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.AccountItemMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.system.AccountItem">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="account_type_id" property="accountTypeId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据ID查询入账方式 -->
+    <select id="selectById" resultType="com.yunya.modules.system.vo.AccountItemVO">
+      select
+        ai.id,
+        ai.name,
+        ai.account_type_id as accountTypeId,
+        act.name as accountTypeName,
+        ai.type,
+        ai.inservice
+      from account_item ai
+      left join account_type act on ai.account_type_id = act.id
+      where ai.id = #{id}
+    </select>
+    <!-- 根据条件查询入账方式列表 -->
+    <select id="selectAccountItemList" resultType="com.yunya.modules.system.vo.AccountItemVO">
+        select
+            ai.id,
+            ai.name,
+            ai.account_type_id as accountTypeId,
+            act.name as accountTypeName,
+            ai.type,
+            ai.inservice
+        from account_item ai
+        left join account_type act on ai.account_type_id = act.id
+        <where>
+            <if test="queryForm.id != null">
+                and ai.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.accountTypeId != null">
+                and ai.account_type_id = #{queryForm.accountTypeId}
+            </if>
+            <if test="queryForm.name != null and queryForm.name != ''">
+                and ai.name like concat('%',#{queryForm.name},'%')
+            </if>
+            <if test="queryForm.types != null and queryForm.length > 0">
+                and ai.type in
+                <foreach collection="queryForm.types" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.inservice != null">
+                and ai.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+</mapper>

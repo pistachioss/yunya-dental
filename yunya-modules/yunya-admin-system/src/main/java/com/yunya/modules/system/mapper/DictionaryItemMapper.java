@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.models.system.DictionaryItem;
-import com.yunya.modules.system.form.query.DictQueryForm;
+import com.yunya.modules.system.domain.query.DictQueryForm;
 import com.yunya.modules.system.vo.DictionaryItemVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
