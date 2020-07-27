@@ -1,4 +1,4 @@
-package com.yunya.employee.expand.constant;
+package com.yunya.modules.employee.expand.constant;
 
 /**
  * @author bruce

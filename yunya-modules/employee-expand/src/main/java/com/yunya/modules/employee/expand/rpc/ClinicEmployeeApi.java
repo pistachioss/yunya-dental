@@ -1,9 +1,9 @@
-package com.yunya.employee.expand.rpc;
+package com.yunya.modules.employee.expand.rpc;
 
-import com.yunya.employee.expand.model.request.ClinicEmployeeConfigQueryReq;
-import com.yunya.employee.expand.model.response.ClinicEmployeeConfigRes;
-import com.yunya.employee.expand.model.response.EnableEmployeeRes;
-import com.yunya.employee.expand.service.ClinicEmployeeConfigBiz;
+import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigQueryReq;
+import com.yunya.modules.employee.expand.model.response.ClinicEmployeeConfigRes;
+import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
+import com.yunya.modules.employee.expand.service.ClinicEmployeeConfigBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;

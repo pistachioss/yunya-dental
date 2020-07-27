@@ -1,4 +1,4 @@
-package com.yunya.employee.expand.mapper;
+package com.yunya.modules.employee.expand.mapper;
 
 import com.yunya.models.expand.ClinicEmployeeConfig;
 import org.apache.ibatis.annotations.Param;

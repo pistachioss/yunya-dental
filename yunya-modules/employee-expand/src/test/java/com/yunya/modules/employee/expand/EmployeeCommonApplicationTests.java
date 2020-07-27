@@ -1,4 +1,4 @@
-package com.yunya.employee.expand;
+package com.yunya.modules.employee.expand;
 
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;

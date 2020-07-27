@@ -1,4 +1,4 @@
-package com.yunya.employee.expand.model.request;
+package com.yunya.modules.employee.expand.model.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

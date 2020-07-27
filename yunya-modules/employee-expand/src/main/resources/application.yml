@@ -29,7 +29,7 @@ mybatis:
 # 配置swagger
 swagger:
   enabled: true
-  base-package: com.yunya.employee.expand
+  base-package: com.yunya.modules.employee.expand
   title: employee-expand
   version: 1.0.0.SNAPSHOT
   description: 员工扩展相关功能

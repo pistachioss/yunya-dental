@@ -73,6 +73,13 @@ spring:
             - Path=/api/clinic/**
           filters:
             - StripPrefix=2
+        - id: employee-expand
+          uri: lb://employee-expand
+          order: 8004
+          predicates:
+            - Path=/api/expand/**
+          filters:
+            - StripPrefix=2
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848

@@ -1,4 +1,4 @@
-package com.yunya.employee.expand;
+package com.yunya.modules.employee.expand;
 
 import com.yunya.feign.EnableYunyaFeignClients;
 import org.springframework.boot.SpringApplication;
@@ -9,11 +9,11 @@ import tk.mybatis.spring.annotation.MapperScan;
 import com.yunya.framework.swagger.EnableCustomSwagger2;
 
 @SpringBootApplication
-@MapperScan("com.yunya.employee.expand.mapper")
+@MapperScan("com.yunya.modules.employee.expand.mapper")
 @EnableYunyaFeignClients
 @EnableDiscoveryClient
 @EnableCustomSwagger2
-@ComponentScan(basePackages = {"com.yunya.employee.expand","com.yunya.framework.common"})
+@ComponentScan(basePackages = {"com.yunya.modules.employee.expand","com.yunya.framework.common"})
 public class EmployeeExpandApplication {
 
     public static void main(String[] args) {
