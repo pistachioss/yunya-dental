@@ -1,73 +1,57 @@
 package com.yunya.models.system;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
 import java.util.Date;
 
-@ApiModel("字典类型参数模型")
 @Table(name = "dictionary_type")
 public class DictionaryType {
     @Id
-    @ApiModelProperty(hidden = true)
     private Integer id;
 
     /**
      * 字典名称
      */
-    @ApiModelProperty(value = "字典类型名称", required = true)
-    @NotBlank(message = "字典类型名称为空！")
-    @Size(max = 50, message = "字典类型名称不能超过50个字符")
     private String name;
 
     /**
      * 是否启用
      */
-    @ApiModelProperty("是否启用")
     private Boolean inservice;
 
     /**
      * 创建人ID
      */
     @Column(name = "crt_id")
-    @ApiModelProperty(hidden = true)
     private Integer crtId;
 
     /**
      * 创建人名称
      */
     @Column(name = "crt_name")
-    @ApiModelProperty(hidden = true)
     private String crtName;
 
     /**
      * 创建时间
      */
     @Column(name = "crt_time")
-    @ApiModelProperty(hidden = true)
     private Date crtTime;
 
     @Column(name = "upd_id")
-    @ApiModelProperty(hidden = true)
     private Integer updId;
 
     /**
      * 修改人名称
      */
     @Column(name = "upd_name")
-    @ApiModelProperty(hidden = true)
     private String updName;
 
     /**
      * 修改时间
      */
     @Column(name = "upd_time")
-    @ApiModelProperty(hidden = true)
     private Date updTime;
 
     /**

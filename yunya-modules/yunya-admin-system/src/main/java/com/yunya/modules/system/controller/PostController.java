@@ -5,8 +5,9 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.Post;
 import com.yunya.modules.system.biz.PostBiz;
-import com.yunya.modules.system.form.PostForm;
-import com.yunya.modules.system.form.query.PostQueryForm;
+import com.yunya.modules.system.domain.form.PostForm;
+import com.yunya.modules.system.domain.model.PostModel;
+import com.yunya.modules.system.domain.query.PostQueryForm;
 import com.yunya.modules.system.vo.PostVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -66,7 +67,7 @@ public class PostController {
    */
   @ApiOperation("新增岗位")
   @PostMapping("/add")
-  public ResponseResult add(@RequestBody @Validated Post resource) {
+  public ResponseResult add(@RequestBody @Validated PostModel resource) {
     postBiz.add(resource);
     return ResponseUtil.success();
   }

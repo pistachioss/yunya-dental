@@ -5,8 +5,9 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.modules.system.biz.DictionaryItemBiz;
-import com.yunya.modules.system.form.DictForm;
-import com.yunya.modules.system.form.query.DictQueryForm;
+import com.yunya.modules.system.domain.form.DictForm;
+import com.yunya.modules.system.domain.model.DictionaryItemModel;
+import com.yunya.modules.system.domain.query.DictQueryForm;
 import com.yunya.modules.system.vo.DictionaryItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -72,7 +73,7 @@ public class DictionaryItemController {
    */
   @ApiOperation("新增字典明细")
   @PostMapping("/item/add")
-  public ResponseResult add(@RequestBody @Validated DictionaryItem resource) {
+  public ResponseResult add(@RequestBody @Validated DictionaryItemModel resource) {
     dictionaryItemBiz.add(resource);
     return ResponseUtil.success();
   }

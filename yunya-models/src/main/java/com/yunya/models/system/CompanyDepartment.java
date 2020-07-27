@@ -1,75 +1,55 @@
 package com.yunya.models.system;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
-@ApiModel("组织部门新增参数模型")
 @Table(name = "company_department")
 public class CompanyDepartment {
-  @Id
-  @ApiModelProperty(hidden = true)
-  private Integer id;
+  @Id private Integer id;
 
   /** 公司父部门ID */
-  @ApiModelProperty("组织父部门ID")
   @Column(name = "parent_id")
   private Integer parentId;
 
   /** 公司ID */
-  @ApiModelProperty(value = "组织ID", required = true)
   @Column(name = "company_id")
-  @NotNull(message = "组织ID为空！")
   private Integer companyId;
 
   /** 部门模版ID */
-  @ApiModelProperty(value = "部门模版ID", required = true)
   @Column(name = "department_id")
-  @NotNull(message = "部门模版ID为空！")
   private Integer departmentId;
 
   /** 组织部门排序 */
-  @ApiModelProperty(value = "自定义排序", required = true)
   @Column(name = "order_num")
-  @NotNull(message = "组织部门自定义排序为空")
   private Integer orderNum;
 
   /** 是否启用 */
-  @ApiModelProperty("是否启用")
   private Boolean inservice;
 
   /** 创建人ID */
   @Column(name = "crt_id")
-  @ApiModelProperty(hidden = true)
   private Integer crtId;
 
   /** 创建人名称 */
   @Column(name = "crt_name")
-  @ApiModelProperty(hidden = true)
   private String crtName;
 
   /** 创建时间 */
   @Column(name = "crt_time")
-  @ApiModelProperty(hidden = true)
   private Date crtTime;
 
   @Column(name = "upd_id")
-  @ApiModelProperty(hidden = true)
   private Integer updId;
 
   /** 修改人名称 */
   @Column(name = "upd_name")
-  @ApiModelProperty(hidden = true)
   private String updName;
 
   /** 修改时间 */
   @Column(name = "upd_time")
-  @ApiModelProperty(hidden = true)
   private Date updTime;
 
   /** @return id */

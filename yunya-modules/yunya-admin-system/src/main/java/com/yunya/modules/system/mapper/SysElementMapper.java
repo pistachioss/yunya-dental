@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.models.system.SysElement;
-import com.yunya.modules.system.form.query.SysElementQueryForm;
+import com.yunya.modules.system.domain.query.SysElementQueryForm;
 import com.yunya.modules.system.vo.SysElementVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

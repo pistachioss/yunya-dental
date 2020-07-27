@@ -6,9 +6,9 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.MemberType;
-import com.yunya.modules.system.form.MemberTypeForm;
-import com.yunya.modules.system.form.MemberTypeModel;
-import com.yunya.modules.system.form.query.MemberTypeQueryForm;
+import com.yunya.modules.system.domain.form.MemberTypeForm;
+import com.yunya.modules.system.domain.model.MemberTypeModel;
+import com.yunya.modules.system.domain.query.MemberTypeQueryForm;
 import com.yunya.modules.system.mapper.MemberTypeMapper;
 import com.yunya.modules.system.vo.MemberTypeVO;
 import org.springframework.beans.BeanUtils;
@@ -85,18 +85,18 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
           "修改失败，ID为'" + id + "'的数据不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     String name = form.getName();
-    MemberType entity = new MemberType();
     if (!resultData.getName().equals(name)) {
-      entity.setName(name);
-      int count = mapper.selectCount(entity);
+      resultData.setName(name);
+      int count = mapper.selectCount(resultData);
       if (count > 0) {
         throw new ClientServiceException(
             "修改会员类型失败，名称为'" + name + "'的会员卡已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
     }
-    BeanUtils.copyProperties(form, entity);
-    entity.setId(id);
-    mapper.insertSelective(entity);
+    resultData = new MemberType();
+    BeanUtils.copyProperties(form, resultData);
+    resultData.setId(id);
+    mapper.insertSelective(resultData);
   }
 
   /**
@@ -105,7 +105,7 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
    * @param id 会员卡类型ID
    */
   public void deleteMemberTypeById(Integer id) {
-    // todo 校验是否被关联
+    // todo 校验是否被关联（调患者feign）
     mapper.deleteByPrimaryKey(id);
   }
 }

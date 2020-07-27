@@ -8,8 +8,9 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.system.CompanyDepartment;
-import com.yunya.modules.system.form.CompanyDepartmentForm;
-import com.yunya.modules.system.form.query.OrgDeptQueryForm;
+import com.yunya.modules.system.domain.form.CompanyDepartmentForm;
+import com.yunya.modules.system.domain.model.CompanyDepartmentModel;
+import com.yunya.modules.system.domain.query.OrgDeptQueryForm;
 import com.yunya.modules.system.mapper.CompanyDepartmentMapper;
 import com.yunya.modules.system.vo.OrgDeptTreeVO;
 import com.yunya.modules.system.vo.OrgDeptVO;
@@ -83,26 +84,27 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
    *
    * @param resource 参数封装
    */
-  public void addCompanyDepartment(CompanyDepartment resource) {
-    Integer parentId = resource.getParentId();
+  public void addCompanyDepartment(CompanyDepartmentModel resource) {
     Integer departmentId = resource.getDepartmentId();
     Integer companyId = resource.getCompanyId();
-    CompanyDepartment department = new CompanyDepartment();
-    department.setDepartmentId(departmentId);
-    department.setCompanyId(companyId);
-    CompanyDepartment resultData = mapper.selectOne(department);
-    if (null != resultData) {
+    CompanyDepartment entity = new CompanyDepartment();
+    entity.setDepartmentId(departmentId);
+    entity.setCompanyId(companyId);
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       throw new ClientServiceException(
           "新增部门失败，当前组织已存在该部门", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
+    Integer parentId = resource.getParentId();
     if (null != parentId) {
-      CompanyDepartment parentResult = mapper.selectByPrimaryKey(parentId);
-      if (parentResult.getDepartmentId().equals(departmentId)) {
+      CompanyDepartment resultData = mapper.selectByPrimaryKey(parentId);
+      if (resultData.getDepartmentId().equals(departmentId)) {
         throw new ClientServiceException(
             "新增组织部门失败，当前新增部门与上级部门相同", OperationCodeConstants.SAME_DATA_EXIST);
       }
+      entity.setParentId(parentId);
     }
-    mapper.insertSelective(resource);
+    mapper.insertSelective(entity);
   }
 
   /**

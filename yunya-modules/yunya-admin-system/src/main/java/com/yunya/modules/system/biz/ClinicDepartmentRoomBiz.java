@@ -8,11 +8,10 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.ClinicDepartmentRoom;
 import com.yunya.models.system.ClinicExtInfo;
-import com.yunya.modules.system.form.ClinicDepartmentRoomModel;
-import com.yunya.modules.system.form.query.ClinicDepartmentRoomQueryForm;
+import com.yunya.modules.system.domain.model.ClinicDepartmentRoomModel;
+import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
 import com.yunya.modules.system.mapper.ClinicDepartmentRoomMapper;
 import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

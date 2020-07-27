@@ -9,53 +9,40 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.util.Date;
 
-@ApiModel("新增品牌参数模型")
 public class Brand {
-  @ApiModelProperty(hidden = true)
   @Id private Integer id;
 
   /** 品牌 */
-  @NotBlank(message = "品牌名称为空")
-  @Size(max = 50, message = "品牌名称不能超过50个字符")
-  @ApiModelProperty(value = "品牌名称", required = true)
   private String name;
 
   /** 自定义排序 */
   @Column(name = "order_num")
-  @ApiModelProperty("自定义排序")
   private Integer orderNum;
 
   /** 是否启用 */
-  @ApiModelProperty("是否启用")
   private Boolean inservice;
 
   /** 创建人ID */
   @Column(name = "crt_id")
-  @ApiModelProperty(hidden = true)
   private Integer crtId;
 
   /** 创建人名称 */
   @Column(name = "crt_name")
-  @ApiModelProperty(hidden = true)
   private String crtName;
 
   /** 创建时间 */
   @Column(name = "crt_time")
-  @ApiModelProperty(hidden = true)
   private Date crtTime;
 
   @Column(name = "upd_id")
-  @ApiModelProperty(hidden = true)
   private Integer updId;
 
   /** 修改时间 */
   @Column(name = "upd_time")
-  @ApiModelProperty(hidden = true)
   private Date updTime;
 
   /** 修改人名称 */
   @Column(name = "upd_name")
-  @ApiModelProperty(hidden = true)
   private String updName;
 
   /** @return id */

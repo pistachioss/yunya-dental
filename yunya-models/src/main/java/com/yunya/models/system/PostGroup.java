@@ -1,78 +1,56 @@
 package com.yunya.models.system;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.Date;
 
-@ApiModel("新增岗位组参数模型")
 @Table(name = "post_group")
 public class PostGroup {
   /** 主键 */
   @Id
-  @ApiModelProperty(hidden = true)
   private Integer id;
 
   /** 上级岗位分类ID */
-  @ApiModelProperty(value = "上级岗位组ID", required = true)
-  @NotNull(message = "上级岗位组ID为空")
   @Column(name = "parent_id")
   private Integer parentId;
 
   /** 岗位分类名称 */
-  @ApiModelProperty(value = "岗位组名称", required = true)
-  @NotBlank(message = "岗位组名称为空")
-  @Size(max = 50, message = "岗位组名称长度不能超过50个字符")
   private String name;
 
   /** 自定义排序 */
-  @ApiModelProperty(value = "自定义排序为空", required = true)
-  @NotNull(message = "自定义排序为空")
   @Column(name = "order_num")
   private Integer orderNum;
 
   /** 允许操作（编辑/删除） */
-  @ApiModelProperty(value = "字段是否允许操作（编辑/删除）")
   @Column(name = "allow_operation")
   private Boolean allowOperation;
 
   /** 是否启用 */
-  @ApiModelProperty(value = "是否启用")
   private Boolean inservice;
 
   /** 创建人ID */
   @Column(name = "crt_id")
-  @ApiModelProperty(hidden = true)
   private Integer crtId;
 
   /** 创建人名称 */
   @Column(name = "crt_name")
-  @ApiModelProperty(hidden = true)
   private String crtName;
 
   /** 创建时间 */
   @Column(name = "crt_time")
-  @ApiModelProperty(hidden = true)
   private Date crtTime;
 
   @Column(name = "upd_id")
-  @ApiModelProperty(hidden = true)
   private Integer updId;
 
   /** 修改时间 */
   @Column(name = "upd_time")
-  @ApiModelProperty(hidden = true)
   private Date updTime;
 
   /** 修改人名称 */
   @Column(name = "upd_name")
-  @ApiModelProperty(hidden = true)
   private String updName;
 
   /**

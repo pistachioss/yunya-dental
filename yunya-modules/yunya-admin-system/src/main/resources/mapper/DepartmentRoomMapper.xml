@@ -18,9 +18,9 @@
     <!-- 根据条件查询科室列表 -->
     <select id="selectList" resultType="com.yunya.modules.system.vo.DepartmentRoomVO">
         select
-            dr.id,
-            dr.name,
-            dr.inservice
+        dr.id,
+        dr.name,
+        dr.inservice
         from department_room dr
         <where>
             <if test="queryForm.id != null">
@@ -33,5 +33,14 @@
                 and dr.inservice = #{queryForm.inservice}
             </if>
         </where>
+    </select>
+    <!-- 根据ID查询科室信息 -->
+    <select id="selectById" resultType="com.yunya.modules.system.vo.DepartmentRoomVO">
+        select
+        dr.id,
+        dr.name,
+        dr.inservice
+        from department_room dr
+        where dr.id = #{id}
     </select>
 </mapper>

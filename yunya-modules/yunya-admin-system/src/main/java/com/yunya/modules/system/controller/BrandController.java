@@ -5,8 +5,9 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.Brand;
 import com.yunya.modules.system.biz.BrandBiz;
-import com.yunya.modules.system.form.base.BaseForm;
-import com.yunya.modules.system.form.query.BrandQueryForm;
+import com.yunya.modules.system.domain.base.BaseForm;
+import com.yunya.modules.system.domain.model.BrandModel;
+import com.yunya.modules.system.domain.query.BrandQueryForm;
 import com.yunya.modules.system.vo.BrandVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -71,7 +72,7 @@ public class BrandController {
    */
   @ApiOperation("新增品牌")
   @PostMapping("/add")
-  public ResponseResult addBrand(@Validated @RequestBody Brand resource) {
+  public ResponseResult addBrand(@Validated @RequestBody BrandModel resource) {
     brandBiz.add(resource);
     return ResponseUtil.success();
   }

@@ -8,8 +8,9 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.Brand;
 import com.yunya.models.system.ClinicExtInfo;
-import com.yunya.modules.system.form.base.BaseForm;
-import com.yunya.modules.system.form.query.BrandQueryForm;
+import com.yunya.modules.system.domain.base.BaseForm;
+import com.yunya.modules.system.domain.model.BrandModel;
+import com.yunya.modules.system.domain.query.BrandQueryForm;
 import com.yunya.modules.system.mapper.BrandMapper;
 import com.yunya.modules.system.mapper.ClinicExtInfoMapper;
 import com.yunya.modules.system.vo.BrandVO;
@@ -55,18 +56,18 @@ public class BrandBiz extends BaseBiz<BrandMapper, Brand> {
    * @param resource 品牌参数封装
    * @return int
    */
-  public void add(Brand resource) {
+  public void add(BrandModel resource) {
     String brandName = resource.getName();
-    Brand brand = new Brand();
-    brand.setName(brandName);
-    Brand result = mapper.selectOne(brand);
-    if (null != result) {
+    Brand entity = new Brand();
+    entity.setName(brandName);
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       throw new ClientServiceException(
           "新增品牌'" + brandName + "'失败，该品牌名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-    resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    resource.setCrtName(BaseContextHandler.getUsername());
-    mapper.insertSelective(resource);
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getUsername());
+    mapper.insertSelective(entity);
   }
 
   /**

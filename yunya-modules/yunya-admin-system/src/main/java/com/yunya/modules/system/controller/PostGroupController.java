@@ -5,8 +5,9 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.PostGroup;
 import com.yunya.modules.system.biz.PostGroupBiz;
-import com.yunya.modules.system.form.PostGroupForm;
-import com.yunya.modules.system.form.query.PostGroupQueryForm;
+import com.yunya.modules.system.domain.form.PostGroupForm;
+import com.yunya.modules.system.domain.model.PostGroupModel;
+import com.yunya.modules.system.domain.query.PostGroupQueryForm;
 import com.yunya.modules.system.vo.PostGroupVO;
 import com.yunya.modules.system.vo.tree.PostGroupTreeVO;
 import io.swagger.annotations.Api;
@@ -83,7 +84,7 @@ public class PostGroupController {
    */
   @ApiOperation("新增岗位分组")
   @PostMapping("/group/add")
-  public ResponseResult add(@RequestBody @Validated PostGroup resource) {
+  public ResponseResult add(@RequestBody @Validated PostGroupModel resource) {
     postGroupBiz.add(resource);
     return ResponseUtil.success();
   }
