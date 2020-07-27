@@ -39,4 +39,9 @@ public class EmployeeScheduleCopyForm {
    * 需要复制排班的员工ID列表
    */
   private List<Integer> employeeIdLIst;
+
+  /**
+   * 门诊ID
+   */
+  private String clinicId;
 }

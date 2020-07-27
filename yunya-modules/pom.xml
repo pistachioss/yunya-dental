@@ -16,8 +16,14 @@
     <modules>
         <module>yunya-admin-system</module>
         <module>clinic-base</module>
+        <module>clinic-discount</module>
         <module>employee-expand</module>
+<<<<<<< HEAD
         <module>yunya-clinic-appointment</module>
+=======
+        <module>yunya-employee-attend</module>
+        <module>yunya-emr</module>
+>>>>>>> 090f2d8158f26636e9580ce5dc298562f3860967
     </modules>
 
 

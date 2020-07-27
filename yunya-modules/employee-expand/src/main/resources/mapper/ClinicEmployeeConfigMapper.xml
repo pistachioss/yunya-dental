@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yunya.employee.expand.mapper.ClinicEmployeeConfigMapper">
-    <resultMap id="BaseResultMap" type="com.yunya.models.epcommon.ClinicEmployeeConfig">
+<mapper namespace="com.yunya.modules.employee.expand.mapper.ClinicEmployeeConfigMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.expand.ClinicEmployeeConfig">
         <id column="id" jdbcType="INTEGER" property="id" />
         <result column="employee_id" jdbcType="INTEGER" property="employeeId" />
         <result column="clinic_id" jdbcType="INTEGER" property="clinicId" />

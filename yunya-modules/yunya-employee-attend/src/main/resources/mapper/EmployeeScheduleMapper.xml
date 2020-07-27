@@ -42,12 +42,12 @@
     <result column="second_start_time" property="secondStartTime" jdbcType="TIMESTAMP"/>
     <result column="second_end_time" property="secondEndTime" jdbcType="TIMESTAMP"/>
     <result column="name" property="name" jdbcType="VARCHAR"/>
+    <result column="scheduleName" property="scheduleName" jdbcType="VARCHAR"/>
   </resultMap>
 
   <select id="selectAllByDate" resultMap="BaseResultCopyMap">
-        select es.*,bs.first_start_time,bs.first_end_time,bs.second_start_time,bs.second_end_time,be.name as userName from employee_schedule es
+        select es.*,bs.first_start_time,bs.first_end_time,bs.second_start_time,bs.second_end_time,bs.name as scheduleName from employee_schedule es
         left join base_schedule bs on es.schedule_id = bs.id
-        left join base_employee be on es.employee_id = be.id
         where
         es.work_date &gt;= #{startDate} and es.work_date &lt;= #{endDate} and es.employee_id in
     <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
