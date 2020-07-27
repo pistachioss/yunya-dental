@@ -12,10 +12,8 @@
         <result column="enable_download" jdbcType="TINYINT" property="enableDownload" />
         <result column="inservice" jdbcType="TINYINT" property="inservice" />
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
-        <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
         <result column="upd_id" jdbcType="INTEGER" property="updId" />
-        <result column="upd_name" jdbcType="VARCHAR" property="updName" />
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
     </resultMap>
 

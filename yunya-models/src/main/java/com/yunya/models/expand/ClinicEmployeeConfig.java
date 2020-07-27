@@ -72,12 +72,6 @@ public class ClinicEmployeeConfig implements Serializable {
     private Integer crtId;
 
     /**
-     * 创建人名称
-     */
-    @Column(name = "crt_name")
-    private String crtName;
-
-    /**
      * 创建时间
      */
     @Column(name = "crt_time")
@@ -85,13 +79,6 @@ public class ClinicEmployeeConfig implements Serializable {
 
     @Column(name = "upd_id")
     private Integer updId;
-
-    /**
-     * 修改人名称
-     */
-    @Column(name = "upd_name")
-    private String updName;
-
     /**
      * 修改时间
      */
