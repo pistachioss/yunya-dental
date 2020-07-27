@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.appointment.mapper.AppointItemMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.AppointItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="appoint_item_id" jdbcType="INTEGER" property="appointItemId" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="duration" jdbcType="INTEGER" property="duration" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
+    <result column="upd_name" jdbcType="VARCHAR" property="updName" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+
+
+  <resultMap id="AllOrdersMap" type="com.yunya.models.appointment.AppointmentItemEnableModel">
+    <result column="orgId" jdbcType="INTEGER" property="orgId" />
+    <result column="typeName" jdbcType="VARCHAR" property="typeName"/>
+    <collection property="appointmentItemTypes" ofType="com.yunya.models.appointment.AppointmentItemType">
+      <result column="itemId" jdbcType="INTEGER" property="itemId"/>
+      <result column="itemName" jdbcType="VARCHAR" property="itemName"/>
+      <result column="duration" jdbcType="INTEGER" property="duration"/>
+      <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
+      <result column="inservice" jdbcType="BIT" property="inservice"/>
+    </collection>
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    id, appoint_item_id, `name`, duration, remarks, inservice, crt_id, crt_name, crt_time, 
+    upt_id, upd_name, upd_time
+  </sql>
+
+  <!-- 查询预约项目 -->
+  <select id="AllOrders" resultMap="AllOrdersMap">
+    select
+      clinic_item.org_id as orgId,
+      item.id as itemId,
+      item.name as itemName,
+      atype.name as typeName,
+      item.duration,
+      item.remarks,
+      item.inservice
+    from appoint_item item LEFT JOIN
+     (
+        select
+              citem.id,
+                citem.org_id,
+                citem.appoint_item_id,
+                citem.remarks
+            from clinic_appoint_item  citem
+            where citem.org_id=#{compClinId}
+     ) clinic_item
+    ON item.id = clinic_item.appoint_item_id
+    LEFT JOIN appoint_type atype ON	atype.id = item.appoint_type_id
+  </select>
+
+  <!--查询预约分类列表-->
+  <select id="getByOrderTypeId" resultType="com.yunya.models.appointment.AppointmentItemType">
+
+    select
+      itm.id,
+      item.appoint_item_id as orderId,
+      item.name,
+      item.duration,
+      item.inservice as inservice
+    from appoint_item itm
+    LEFT JOIN (
+      select cai.*
+      from clinic_appoint_item cai
+      where cai.org_id=#{orgId}
+      <if test="form.order != null">
+        and itm.appoint_item_id = #{form.orderId}
+      </if>
+      <if test="form">
+        and itm.name like CONCAT(CONCAT('%', #{form.name}), '%')
+      </if>
+    ) clinicItem ON clinicItem.appoint_item_id=itm.appoint_item_id
+
+
+
+
+  </select>
+
+
+</mapper>
