@@ -17,7 +17,7 @@ import java.util.Map;
         fallbackFactory = EmployeeAttendServiceFallBackFactory.class)
 public interface EmployeeAttendServiceFeign {
   /**
-   * 校验用户合法性
+   * 排班列表暴露接口
    *
    * @param employeeScheduleQueryForm 参数封装
    * @return
