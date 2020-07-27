@@ -199,6 +199,116 @@ public interface RemoteSystemServiceFeign {
   List<SysUserInfoDetail> findSysUserEmployeeInfoList(@RequestBody SysUserEmployeeModel model);
 
   /**
+   * 根据科室ID查询科室
+   *
+   * @param id 科室模板ID
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/{id}", method = RequestMethod.GET)
+  DepartmentRoom findDepartmentRoomById(@PathVariable("id") Integer id);
+
+  /**
+   * 根据条件查询科室列表
+   *
+   * @param departmentRoom 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/list", method = RequestMethod.POST)
+  List<DepartmentRoom> findDepartmentRoomList(@RequestBody DepartmentRoom departmentRoom);
+
+  /**
+   * 根据ID查询门诊科室信息
+   *
+   * @param id 门诊科室ID
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/clinic/{id}", method = RequestMethod.GET)
+  ClinicDepartmentRoomVO findClinicDepartmentRoomById(@PathVariable("id") Integer id);
+
+  /**
+   * 根据条件查询门诊科室列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/clinic/list", method = RequestMethod.POST)
+  List<ClinicDepartmentRoomVO> findClinicDepartmentRoomList(
+      @RequestBody ClinicDepartmentRoomQueryForm queryForm);
+
+  /**
+   * 根据ID查询会员卡分类
+   *
+   * @param id 会员卡分类ID
+   * @return
+   */
+  @RequestMapping(value = "/memberType/{id}", method = RequestMethod.GET)
+  MemberType findMemberTypeById(@PathVariable("id") Integer id);
+
+  /**
+   * 根据条件查询会员类型列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/memberType/list", method = RequestMethod.POST)
+  List<MemberType> findMemberTypeList(@RequestBody MemberType model);
+
+  /**
+   * 根据ID查询入账方式分类
+   *
+   * @param id 入账方式分类ID
+   * @return
+   */
+  @RequestMapping(value = "/accountType/{id}", method = RequestMethod.GET)
+  AccountType findAccountTypeById(@PathVariable("id") Integer id);
+
+  /**
+   * 根据条件查询入账方式分类列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/accountType/list", method = RequestMethod.POST)
+  List<AccountType> findAccountTypeList(@RequestBody AccountType model);
+
+  /**
+   * 根据ID查询入账方式
+   *
+   * @param id 入账方式ID
+   * @return
+   */
+  @RequestMapping(value = "/accountItem/{id}", method = RequestMethod.GET)
+  AccountItem findAccountItemById(@PathVariable("id") Integer id);
+
+  /**
+   * 根据条件查询入账方式列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/accountItem/list", method = RequestMethod.POST)
+  List<AccountItem> findAccountItemList(@RequestBody AccountItem model);
+
+  /**
+   * 根据ID查询门诊入账方式
+   *
+   * @param id 门诊入账方式ID
+   * @return
+   */
+  @RequestMapping(value = "/accountItem/clinic/{id}", method = RequestMethod.GET)
+  ClinicAccountItemVO findClinicAccountItemById(@PathVariable("id") Integer id);
+
+  /**
+   * 根据条件查询门诊入账方式列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/accountItem/clinic/list", method = RequestMethod.POST)
+  List<ClinicAccountItemVO> findClinicAccountItemList(
+          @RequestBody ClinicAccountItemQueryForm queryForm);
+
+  /**
    * 根据用户ID获取用户的权限列表
    *
    * @param userId 用户ID
