@@ -54,6 +54,21 @@ public class ResponseUtil {
     return result(SUCCESS_STATUS, SUCCESS_MSG, data, PASS);
   }
 
+
+  /**
+   * 有返回数据的成功处理结果
+   *
+   * @param data 响应数据, msg 返回消息提示语句
+   * @return
+   */
+
+  public static ResponseResult success (String msg, Object data){
+    return result(SUCCESS_STATUS, msg, data,PASS);
+  }
+
+
+
+
   /**
    * 有返回数据的处理结果
    *
