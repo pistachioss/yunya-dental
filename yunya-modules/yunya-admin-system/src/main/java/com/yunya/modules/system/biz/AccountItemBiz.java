@@ -12,7 +12,9 @@ import com.yunya.modules.system.domain.form.AccountItemForm;
 import com.yunya.modules.system.domain.model.AccountItemModel;
 import com.yunya.modules.system.domain.query.AccountItemQueryForm;
 import com.yunya.modules.system.mapper.AccountItemMapper;
+import com.yunya.modules.system.mapper.AccountTypeMapper;
 import com.yunya.modules.system.vo.AccountItemVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,14 +33,13 @@ import java.util.List;
 public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
 
   /** 注入对象 */
-  private final AccountTypeBiz accountTypeBiz;
-
   private final ClinicAccountItemBiz clinicAccountItemBiz;
 
-  public AccountItemBiz(AccountTypeBiz accountTypeBiz, ClinicAccountItemBiz clinicAccountItemBiz) {
-    this.accountTypeBiz = accountTypeBiz;
+  public AccountItemBiz(ClinicAccountItemBiz clinicAccountItemBiz) {
     this.clinicAccountItemBiz = clinicAccountItemBiz;
   }
+
+  @Autowired private AccountTypeMapper accountTypeMapper;
 
   /**
    * 根据ID查询入账方式
@@ -72,7 +73,7 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
    */
   public void add(AccountItemModel model) {
     Integer accountTypeId = model.getAccountTypeId();
-    AccountType accountType = accountTypeBiz.selectById(accountTypeId);
+    AccountType accountType = accountTypeMapper.selectByPrimaryKey(accountTypeId);
     if (null == accountType) {
       throw new ClientServiceException(
           "新增失败，请选择正确的入账方式分类！", OperationCodeConstants.QUERY_RESULT_INVALID);
