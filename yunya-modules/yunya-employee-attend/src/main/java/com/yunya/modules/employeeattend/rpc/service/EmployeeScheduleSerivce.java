@@ -62,6 +62,7 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     Integer size = employeeScheduleQueryForm.getSize();
     String name = employeeScheduleQueryForm.getName();
     Integer clinicId = employeeScheduleQueryForm.getClinicId();
+    Integer formuserId = employeeScheduleQueryForm.getUserId();
 
     List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicIdAndInservice(employeeScheduleQueryForm.getClinicId());
     Map<String, ClinicScheduleVO> ClinicScheduleMap = new HashMap();
@@ -78,6 +79,8 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     model.setPostIds(postNames);
     model.setKeyWord(name);
     model.setWorkStatus(BusinessConstants.USER_RESIGNATION_STATUS);//离职状态
+    model.setUserId(formuserId);
+
     int count = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model).size();
 //    System.out.println(remoteSystemServiceFeign.getAllPermissionInfo());
     List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);

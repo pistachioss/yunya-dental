@@ -13,6 +13,11 @@ import java.util.List;
  */
 @Data
 public class EmployeeScheduleQueryForm {
+
+  /**
+   * 医生或助手id
+   */
+  private Integer userId;
   /**
    * 姓名
    */
