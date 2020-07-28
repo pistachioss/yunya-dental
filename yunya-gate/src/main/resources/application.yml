@@ -80,6 +80,13 @@ spring:
             - Path=/api/expand/**
           filters:
             - StripPrefix=2
+        - id: yunya-emr
+          uri: lb://yunya-emr
+          order: 8005
+          predicates:
+            - Path=/api/emr/**
+          filters:
+            - StripPrefix=2
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
