@@ -41,13 +41,13 @@ public class MemberTypeForm implements Serializable {
   @Min(value = 1, message = "会员卡名续费有效年限不能小于0")
   private Integer ageLimit;
   /** 折扣率（价目表自动调价的折扣率） */
-  @ApiModelProperty("会员卡折扣率")
+  @ApiModelProperty(value = "会员卡折扣率", required = true)
   @NotNull(message = "会员卡折扣率不能为空！")
   @Min(value = 0, message = "会员卡折扣率不能小于0")
   @Max(value = 100, message = "会员卡折扣率不能大于100%")
   private Float rate;
   /** 图标 */
-  @ApiModelProperty("会员卡图标")
+  @ApiModelProperty(value = "会员卡图标", required = true)
   @NotNull(message = "会员卡图标不能为空！")
   private Byte icon;
   /** 会员卡描述（青藤、银藤、金藤、艾维会员） */

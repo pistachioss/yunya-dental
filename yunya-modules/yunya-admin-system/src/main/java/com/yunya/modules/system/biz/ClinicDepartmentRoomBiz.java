@@ -44,22 +44,22 @@ public class ClinicDepartmentRoomBiz
    */
   public void batchSave(Integer deptRoomId) {
     List<ClinicExtInfo> clinicExtInfos = clinicExtInfoBiz.selectListAll();
-    if (clinicExtInfos.size() > 0) {
-      ClinicDepartmentRoom clinicDeptRoom;
-      for (ClinicExtInfo info : clinicExtInfos) {
-        clinicDeptRoom = new ClinicDepartmentRoom();
-        clinicDeptRoom.setCompanyId(info.getCompanyId());
-        clinicDeptRoom.setDeptRoomId(deptRoomId);
-        clinicDeptRoom.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        clinicDeptRoom.setCrtName(BaseContextHandler.getName());
-        ClinicDepartmentRoom resultData = mapper.selectOne(clinicDeptRoom);
-        if (null == resultData) {
-          mapper.insertSelective(clinicDeptRoom);
-        }
+    if (clinicExtInfos.size() == 0) {
+      throw new ClientServiceException(
+          "一键新增门诊科室失败，未查询到门诊信息，请联系系统管理员添加门诊！", OperationCodeConstants.QUERY_RESULT_INVALID);
+    }
+    ClinicDepartmentRoom clinicDeptRoom;
+    for (ClinicExtInfo info : clinicExtInfos) {
+      clinicDeptRoom = new ClinicDepartmentRoom();
+      clinicDeptRoom.setCompanyId(info.getCompanyId());
+      clinicDeptRoom.setDeptRoomId(deptRoomId);
+      //clinicDeptRoom.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+      //clinicDeptRoom.setCrtName(BaseContextHandler.getName());
+      ClinicDepartmentRoom resultData = mapper.selectOne(clinicDeptRoom);
+      if (null == resultData) {
+        mapper.insertSelective(clinicDeptRoom);
       }
     }
-    throw new ClientServiceException(
-        "一键新增门诊科室失败，未查询到门诊信息，请联系系统管理员添加门诊！", OperationCodeConstants.QUERY_RESULT_INVALID);
   }
 
   /**
@@ -69,12 +69,12 @@ public class ClinicDepartmentRoomBiz
    */
   public void switchDeptRoomDisable(Integer clinicDeptRoomId) {
     ClinicDepartmentRoom resultData = mapper.selectByPrimaryKey(clinicDeptRoomId);
-    if (null != resultData) {
-      resultData.setInservice(!resultData.getInservice());
-      mapper.updateByPrimaryKeySelective(resultData);
+    if (null == resultData) {
+      throw new ClientServiceException(
+          "ID为'" + clinicDeptRoomId + "'的门诊科室不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
-    throw new ClientServiceException(
-        "ID为'" + clinicDeptRoomId + "'的门诊科室不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+    resultData.setInservice(!resultData.getInservice());
+    mapper.updateByPrimaryKeySelective(resultData);
   }
 
   /**

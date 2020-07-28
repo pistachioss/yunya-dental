@@ -30,11 +30,11 @@ public class ClinicAccountItemQueryForm implements Serializable {
   @ApiModelProperty("每页显示数量，默认显示10条")
   @Min(message = "最小值", value = 1)
   private Integer pageSize = 10;
-  /**组织入账方式ID*/
+  /** 组织入账方式ID */
   @ApiModelProperty("组织入账方式ID")
   private Integer id;
   /** 入账方式ID */
-  @ApiModelProperty("入账方式ID")
+  @ApiModelProperty(value = "入账方式ID", required = true)
   private Integer accountItemId;
   /** 组织ID */
   @ApiModelProperty("组织ID")

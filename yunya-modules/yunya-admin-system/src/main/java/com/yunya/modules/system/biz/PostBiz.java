@@ -86,8 +86,8 @@ public class PostBiz extends BaseBiz<PostMapper, Post> {
     entity.setOrderNum(orderNum);
     Boolean allowOperation = resource.getAllowOperation();
     entity.setAllowOperation(allowOperation);
-    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    entity.setCrtName(BaseContextHandler.getUsername());
+    //entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    //entity.setCrtName(BaseContextHandler.getUsername());
     mapper.insertSelective(entity);
   }
 

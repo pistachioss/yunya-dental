@@ -41,7 +41,11 @@ public class UserAuthRestInterceptor extends HandlerInterceptorAdapter {
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
-    // 配置该注解，说明不进行用户拦截
+    logger.info("请求路径 >> requestURI:{}", request.getRequestURI());
+    logger.info("请求方式 >> requestMethod:{}", request.getMethod());
+    logger.info("请求参数 >> requestParams:{}", request.getRequestURL());
+    logger.info("请求头token >> requestToken:{}", request.getHeader("x-user-token"));
+
     String token = request.getHeader(userConfiguration.getUserTokenHeader());
     if (StringUtils.isEmpty(token)) {
       if (request.getCookies() != null) {

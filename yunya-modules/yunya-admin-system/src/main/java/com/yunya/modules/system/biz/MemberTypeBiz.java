@@ -85,18 +85,18 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
           "修改失败，ID为'" + id + "'的数据不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     String name = form.getName();
+    resultData = new MemberType();
+    resultData.setName(name);
     if (!resultData.getName().equals(name)) {
-      resultData.setName(name);
       int count = mapper.selectCount(resultData);
       if (count > 0) {
         throw new ClientServiceException(
             "修改会员类型失败，名称为'" + name + "'的会员卡已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
     }
-    resultData = new MemberType();
     BeanUtils.copyProperties(form, resultData);
     resultData.setId(id);
-    mapper.insertSelective(resultData);
+    mapper.updateByPrimaryKeySelective(resultData);
   }
 
   /**

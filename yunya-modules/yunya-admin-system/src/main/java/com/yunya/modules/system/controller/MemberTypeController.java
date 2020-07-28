@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @description:
  * @since: 1.0.0
  */
-@Api(value = "会员卡类型管理", description = "会员卡增删改查")
+@Api(value = "会员卡类型管理", description = "会员卡分类新增、删除、修改、查询")
 @RestController
 @RequestMapping("memberCard")
 public class MemberTypeController {

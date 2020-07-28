@@ -90,20 +90,20 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
     Byte[] types = new Byte[] {0, 2};
     queryForm.setTypes(types);
     List<OrganizationInfoVO> resultList = organizationBiz.findList(queryForm).getList();
-    if (resultList.size() > 0) {
-      ClinicAccountItem entity;
-      for (OrganizationInfoVO vo : resultList) {
-        entity = new ClinicAccountItem();
-        entity.setCompanyId(vo.getId());
-        entity.setAccountItemId(accountItemId);
-        ClinicAccountItem resultData = mapper.selectOne(entity);
-        if (null == resultData) {
-          mapper.insertSelective(entity);
-        }
+    if (resultList.size() == 0) {
+      throw new ClientServiceException(
+          "一键新增组织入账方式失败，未查询到组织信息，请联系管理员添加组织！", OperationCodeConstants.QUERY_RESULT_INVALID);
+    }
+    ClinicAccountItem entity;
+    for (OrganizationInfoVO vo : resultList) {
+      entity = new ClinicAccountItem();
+      entity.setCompanyId(vo.getId());
+      entity.setAccountItemId(accountItemId);
+      ClinicAccountItem resultData = mapper.selectOne(entity);
+      if (null == resultData) {
+        mapper.insertSelective(entity);
       }
     }
-    throw new ClientServiceException(
-        "一键新增组织入账方式失败，未查询到组织信息，请联系管理员添加组织！", OperationCodeConstants.QUERY_RESULT_INVALID);
   }
 
   /**
@@ -113,11 +113,11 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
    */
   public void switchClinicAccountItem(Integer id) {
     ClinicAccountItem resultData = mapper.selectByPrimaryKey(id);
-    if (resultData != null) {
-      resultData.setInservice(!resultData.getInservice());
-      mapper.updateByPrimaryKeySelective(resultData);
+    if (resultData == null) {
+      throw new ClientServiceException(
+          "ID为'" + id + "'的组织支付方式不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
-    throw new ClientServiceException(
-        "ID为'" + id + "'的组织支付方式不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+    resultData.setInservice(!resultData.getInservice());
+    mapper.updateByPrimaryKeySelective(resultData);
   }
 }

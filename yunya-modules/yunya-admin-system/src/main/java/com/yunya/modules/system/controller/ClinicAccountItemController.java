@@ -1,5 +1,6 @@
 package com.yunya.modules.system.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicAccountItemBiz;
@@ -53,8 +54,8 @@ public class ClinicAccountItemController {
   @ApiOperation("根据条件查询门诊入账方式列表(可分页)")
   @PostMapping("/clinic/list")
   public ResponseResult findList(@RequestBody ClinicAccountItemQueryForm queryForm) {
-    clinicAccountItemBiz.findList(queryForm);
-    return ResponseUtil.success();
+    PageInfo<ClinicAccountItemVO> resultList = clinicAccountItemBiz.findList(queryForm);
+    return ResponseUtil.success(resultList);
   }
 
   /**

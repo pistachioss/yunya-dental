@@ -15,7 +15,7 @@ public class OrganizationTreeVO extends TreeNode {
   /** 组织名称 */
   private String name;
   /** 组织类型 */
-  private Byte type;
+  private String type;
   /** 自定义排序 */
   private Integer orderNum;
   /** 组织编号 */
@@ -36,11 +36,11 @@ public class OrganizationTreeVO extends TreeNode {
     this.name = name;
   }
 
-  public Byte getType() {
+  public String getType() {
     return type;
   }
 
-  public void setType(Byte type) {
+  public void setType(String type) {
     this.type = type;
   }
 

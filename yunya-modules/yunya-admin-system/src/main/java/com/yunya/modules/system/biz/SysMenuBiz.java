@@ -216,8 +216,6 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
     // 查询用户在该组织下的所有岗位列表
     Integer orgId = resourceForm.getOrgId();
     Integer userId = resourceForm.getUserId();
-    // 将用户登陆组织设置到线程局部变量
-    BaseContextHandler.setOrgId(orgId.toString());
     List<PostVO> posts = sysUserPostBiz.findUserPostList(orgId, userId);
     List<SysMenu> authorityList = getPostMenuResourceAuthorityList(posts);
     return authorityList;

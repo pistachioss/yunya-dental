@@ -75,8 +75,8 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
       throw new ClientServiceException(
           "新增科室失败，'" + name + "'已经存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    entity.setCrtName(BaseContextHandler.getName());
+    //entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    //entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
   }
 

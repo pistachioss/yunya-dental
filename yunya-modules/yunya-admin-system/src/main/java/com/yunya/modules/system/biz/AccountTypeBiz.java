@@ -96,6 +96,8 @@ public class AccountTypeBiz extends BaseBiz<AccountTypeMapper, AccountType> {
           "修改失败，系统默认的入账方式分类不允许被修改！", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     String name = form.getName();
+    resultData = new AccountType();
+    resultData.setName(name);
     if (!resultData.getName().equals(name)) {
       int count = mapper.selectCount(resultData);
       if (count > 0) {
@@ -103,8 +105,6 @@ public class AccountTypeBiz extends BaseBiz<AccountTypeMapper, AccountType> {
             "修改失败，名称为'" + name + "'的数据已存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
       }
     }
-    resultData = new AccountType();
-    resultData.setName(name);
     Boolean inservice = form.getInservice();
     if (null != inservice) {
       resultData.setInservice(inservice);

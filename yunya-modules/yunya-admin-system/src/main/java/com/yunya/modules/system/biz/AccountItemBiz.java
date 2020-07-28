@@ -105,12 +105,15 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
           "修改失败，ID为'" + id + "'的入账方式不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     String name = form.getName();
-    if (!resultData.getName().equals(name)) {
-      throw new ClientServiceException(
-          "修改失败，当前入账方式分类下已存在名称为'" + name + "'的入账方式", OperationCodeConstants.SAME_DATA_EXIST);
-    }
     resultData = new AccountItem();
     resultData.setName(name);
+    if (!resultData.getName().equals(name)) {
+      int count = mapper.selectCount(resultData);
+      if (count > 0) {
+        throw new ClientServiceException(
+            "修改失败，当前入账方式分类下已存在名称为'" + name + "'的入账方式", OperationCodeConstants.SAME_DATA_EXIST);
+      }
+    }
     Byte type = form.getType();
     resultData.setType(type);
     resultData.setId(id);
