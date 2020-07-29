@@ -16,12 +16,11 @@ import com.yunya.framework.common.controller.BaseController;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppItem;
-import com.yunya.models.appointment.AppointmentItemEnableModel;
-import com.yunya.models.appointment.AppointmentItemType;
 import com.yunya.modules.appointment.biz.AppItemBiz;
 import com.yunya.modules.appointment.form.AppItemForm;
-import com.yunya.modules.appointment.form.AppointOrderTypeQueryForm;
-import com.yunya.modules.appointment.vo.AppointmentItemQuery;
+import com.yunya.modules.appointment.form.AppointItemTypeQueryForm;
+import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.modules.appointment.vo.AppointmentItemTypeVo;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,15 +46,14 @@ public class AppItemController extends BaseController<AppItemBiz, AppItem> {
      * @return
      * @description 查询公司端、门诊端的预约列表，Mock两端数据，返回vo对象列表
      */
-    @GetMapping("/list")
-    public PageInfo<AppointmentItemType> findAppItemList(@RequestBody AppointmentItemQuery form) {
+    @PostMapping("/list")
+    public PageInfo<AppointmentItemTypeVo> findAppItemList(@RequestBody AppointItemTypeQueryForm form) {
         //查询门诊端的预约列表
-
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
 
-        List<AppointmentItemType> appItemList = baseBiz.findAppItemList(form.getCompClinId(), form.getOrderId());
+        List<AppointmentItemTypeVo> appItemList = baseBiz.findAppItemList(form);
         return new PageInfo<>(appItemList);
     }
 
@@ -80,7 +78,7 @@ public class AppItemController extends BaseController<AppItemBiz, AppItem> {
      * @return
      */
     @PostMapping("/search")
-    public List<AppointmentItemType> searchAppItem(@RequestBody AppointOrderTypeQueryForm baseQueryForm) {
+    public List<AppointmentItemTypeVo> searchAppItem(@RequestBody AppointItemTypeQueryForm baseQueryForm) {
         return baseBiz.findByAppItemName(baseQueryForm);
     }
 
@@ -106,7 +104,7 @@ public class AppItemController extends BaseController<AppItemBiz, AppItem> {
      * @return
      */
     @GetMapping("/available/{compClinId}")
-    public List<AppointmentItemEnableModel> findAvailableAppItem(@PathVariable("compClinId") String compClinId) {
+    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable("compClinId") String compClinId) {
         return baseBiz.findAvailableAppItemList(compClinId);
     }
 }

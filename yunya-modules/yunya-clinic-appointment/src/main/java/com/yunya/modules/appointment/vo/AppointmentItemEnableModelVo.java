@@ -1,9 +1,10 @@
-package com.yunya.models.appointment;
+package com.yunya.modules.appointment.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -11,13 +12,13 @@ import java.util.List;
  */
 @Data
 @ApiModel("可预约项目列表")
-public class AppointmentItemEnableModel {
+public class AppointmentItemEnableModelVo implements Serializable {
     @ApiModelProperty("门诊ID")
     private Integer orgId;
 
     @ApiModelProperty("预约类型")
     private String typeName;
     @ApiModelProperty("可预约项目")
-    private List<AppointmentItemType> appointmentItemTypes;
+    private List<AppointmentItemTypeVo> appointmentItemTypes;
 
 }

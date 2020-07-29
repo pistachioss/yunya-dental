@@ -8,7 +8,7 @@
  * <author>          <time>          <version>          <desc>
  * Perter_Chou         23:38           Since 1.0         版权信息
  */
-package com.yunya.models.appointment;
+package com.yunya.modules.appointment.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -28,9 +28,10 @@ import java.io.Serializable;
 @Data
 @ToString
 @ApiModel("可预约项目类型封装")
-public class AppointmentItemType implements Serializable {
+public class AppointmentItemTypeVo implements Serializable {
+    private Integer id;
     @ApiModelProperty("预约项目ID")
-    private Integer itemId;
+    private Integer appointItemId;
 
     @ApiModelProperty("预约项目名称")
     private String itemName;

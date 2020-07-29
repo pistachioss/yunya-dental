@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.appointment.mapper.ClinicDeviceItemMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.ClinicDeviceItem">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="device_id" jdbcType="INTEGER" property="deviceId" />
+    <result column="number" jdbcType="VARCHAR" property="number" />
+    <result column="org_id" jdbcType="INTEGER" property="orgId" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
+    <result column="upd_name" jdbcType="VARCHAR" property="updName" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, device_id, `number`, org_id, remarks, inservice, crt_id, crt_name, crt_time, 
+    upt_id, upd_name, upd_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from clinic_device_item
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from clinic_device_item
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.yunya.models.appointment.ClinicDeviceItem" useGeneratedKeys="true">
+    insert into clinic_device_item (device_id, `number`, org_id, 
+      remarks, inservice, crt_id, 
+      crt_name, crt_time, upt_id, 
+      upd_name, upd_time)
+    values (#{deviceId,jdbcType=INTEGER}, #{number,jdbcType=VARCHAR}, #{orgId,jdbcType=INTEGER}, 
+      #{remarks,jdbcType=VARCHAR}, #{inservice,jdbcType=BIT}, #{crtId,jdbcType=INTEGER}, 
+      #{crtName,jdbcType=VARCHAR}, #{crtTime,jdbcType=TIMESTAMP}, #{uptId,jdbcType=INTEGER}, 
+      #{updName,jdbcType=VARCHAR}, #{updTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" keyColumn="id" keyProperty="id" parameterType="com.yunya.models.appointment.ClinicDeviceItem" useGeneratedKeys="true">
+    insert into clinic_device_item
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="deviceId != null">
+        device_id,
+      </if>
+      <if test="number != null">
+        `number`,
+      </if>
+      <if test="orgId != null">
+        org_id,
+      </if>
+      <if test="remarks != null">
+        remarks,
+      </if>
+      <if test="inservice != null">
+        inservice,
+      </if>
+      <if test="crtId != null">
+        crt_id,
+      </if>
+      <if test="crtName != null">
+        crt_name,
+      </if>
+      <if test="crtTime != null">
+        crt_time,
+      </if>
+      <if test="uptId != null">
+        upt_id,
+      </if>
+      <if test="updName != null">
+        upd_name,
+      </if>
+      <if test="updTime != null">
+        upd_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="deviceId != null">
+        #{deviceId,jdbcType=INTEGER},
+      </if>
+      <if test="number != null">
+        #{number,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null">
+        #{orgId,jdbcType=INTEGER},
+      </if>
+      <if test="remarks != null">
+        #{remarks,jdbcType=VARCHAR},
+      </if>
+      <if test="inservice != null">
+        #{inservice,jdbcType=BIT},
+      </if>
+      <if test="crtId != null">
+        #{crtId,jdbcType=INTEGER},
+      </if>
+      <if test="crtName != null">
+        #{crtName,jdbcType=VARCHAR},
+      </if>
+      <if test="crtTime != null">
+        #{crtTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="uptId != null">
+        #{uptId,jdbcType=INTEGER},
+      </if>
+      <if test="updName != null">
+        #{updName,jdbcType=VARCHAR},
+      </if>
+      <if test="updTime != null">
+        #{updTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.yunya.models.appointment.ClinicDeviceItem">
+    update clinic_device_item
+    <set>
+      <if test="deviceId != null">
+        device_id = #{deviceId,jdbcType=INTEGER},
+      </if>
+      <if test="number != null">
+        `number` = #{number,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null">
+        org_id = #{orgId,jdbcType=INTEGER},
+      </if>
+      <if test="remarks != null">
+        remarks = #{remarks,jdbcType=VARCHAR},
+      </if>
+      <if test="inservice != null">
+        inservice = #{inservice,jdbcType=BIT},
+      </if>
+      <if test="crtId != null">
+        crt_id = #{crtId,jdbcType=INTEGER},
+      </if>
+      <if test="crtName != null">
+        crt_name = #{crtName,jdbcType=VARCHAR},
+      </if>
+      <if test="crtTime != null">
+        crt_time = #{crtTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="uptId != null">
+        upt_id = #{uptId,jdbcType=INTEGER},
+      </if>
+      <if test="updName != null">
+        upd_name = #{updName,jdbcType=VARCHAR},
+      </if>
+      <if test="updTime != null">
+        upd_time = #{updTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.yunya.models.appointment.ClinicDeviceItem">
+    update clinic_device_item
+    set device_id = #{deviceId,jdbcType=INTEGER},
+      `number` = #{number,jdbcType=VARCHAR},
+      org_id = #{orgId,jdbcType=INTEGER},
+      remarks = #{remarks,jdbcType=VARCHAR},
+      inservice = #{inservice,jdbcType=BIT},
+      crt_id = #{crtId,jdbcType=INTEGER},
+      crt_name = #{crtName,jdbcType=VARCHAR},
+      crt_time = #{crtTime,jdbcType=TIMESTAMP},
+      upt_id = #{uptId,jdbcType=INTEGER},
+      upd_name = #{updName,jdbcType=VARCHAR},
+      upd_time = #{updTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

@@ -1,7 +1,7 @@
 package com.yunya.modules.appointment.mapper;
 
 import com.yunya.models.appointment.AppItem;
-import com.yunya.models.appointment.AppointmentItemType;
+import com.yunya.modules.appointment.vo.AppointmentItemTypeVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -15,5 +15,5 @@ public interface AppItemMapper extends Mapper<AppItem> {
      * @param keyword    关键字
      * @return
      */
-    List<AppointmentItemType> selectAppitemByName(@Param("compClinId") String compClinId, @Param("keyword") String keyword);
+    List<AppointmentItemTypeVo> selectAppitemByName(@Param("compClinId") String compClinId, @Param("keyword") String keyword);
 }

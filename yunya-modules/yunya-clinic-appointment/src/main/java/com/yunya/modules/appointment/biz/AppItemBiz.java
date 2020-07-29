@@ -12,12 +12,12 @@ package com.yunya.modules.appointment.biz;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.appointment.AppItem;
-import com.yunya.models.appointment.AppointmentItemEnableModel;
-import com.yunya.models.appointment.AppointmentItemType;
 import com.yunya.modules.appointment.form.AppItemForm;
-import com.yunya.modules.appointment.form.AppointOrderTypeQueryForm;
+import com.yunya.modules.appointment.form.AppointItemTypeQueryForm;
 import com.yunya.modules.appointment.mapper.AppItemMapper;
-import com.yunya.modules.appointment.mapper.AppointItemMapper;
+import com.yunya.modules.appointment.mapper.AppointmentMapper;
+import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.modules.appointment.vo.AppointmentItemTypeVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,19 +36,17 @@ import java.util.List;
 public class AppItemBiz extends BaseBiz<AppItemMapper, AppItem> {
 
     @Autowired
-    private AppointItemMapper appointItemMapper;
+    private AppointmentMapper appointmentMapper;
 
     /**
      * 根据门诊id、预约项目分类查询门诊端预约项目列表
      *
-     * @param compClinId 公司端门诊Id
+     * @param from
      * @return
      */
-    public List<AppointmentItemType> findAppItemList(String compClinId, int orderId) {
+    public List<AppointmentItemTypeVo> findAppItemList(AppointItemTypeQueryForm from) {
         //获取公司端预约项目列表
-        AppointOrderTypeQueryForm appointOrderTypeQueryForm = new AppointOrderTypeQueryForm();
-        appointOrderTypeQueryForm.setOrderId(orderId);
-        List<AppointmentItemType> ordersTypeList = appointItemMapper.getByOrderTypeId(appointOrderTypeQueryForm);
+        List<AppointmentItemTypeVo> ordersTypeList = appointmentMapper.getByOrderTypeId(from);
         return ordersTypeList;
     }
 
@@ -69,11 +67,11 @@ public class AppItemBiz extends BaseBiz<AppItemMapper, AppItem> {
      * @param form
      * @return
      */
-    public List<AppointmentItemType> findByAppItemName(AppointOrderTypeQueryForm form) {
+    public List<AppointmentItemTypeVo> findByAppItemName(AppointItemTypeQueryForm form) {
         //通过feign查询预约信息，查询门诊端预约信息
-        AppointOrderTypeQueryForm appointOrderTypeQueryForm = new AppointOrderTypeQueryForm();
+        AppointItemTypeQueryForm appointOrderTypeQueryForm = new AppointItemTypeQueryForm();
         appointOrderTypeQueryForm.setName(form.getName());
-        List<AppointmentItemType> ordersTypes = appointItemMapper.getByOrderTypeId(appointOrderTypeQueryForm);
+        List<AppointmentItemTypeVo> ordersTypes = appointmentMapper.getByOrderTypeId(appointOrderTypeQueryForm);
         return ordersTypes;
     }
 
@@ -82,8 +80,11 @@ public class AppItemBiz extends BaseBiz<AppItemMapper, AppItem> {
      * @param compClinId
      * @return
      */
-    public List<AppointmentItemEnableModel> findAvailableAppItemList(String compClinId) {
-        List<AppointmentItemEnableModel> ordersModels = appointItemMapper.AllOrders(Integer.valueOf(compClinId));
+    public List<AppointmentItemEnableModelVo> findAvailableAppItemList(String compClinId) {
+        AppointItemTypeQueryForm appointOrderTypeQueryForm = new AppointItemTypeQueryForm();
+        appointOrderTypeQueryForm.setOrgId(Integer.valueOf(compClinId));
+
+        List<AppointmentItemEnableModelVo> ordersModels = appointmentMapper.selectAllAppointItemByOrgId(appointOrderTypeQueryForm);
         if(ordersModels.isEmpty()){
             return null;
         }

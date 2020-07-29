@@ -22,7 +22,7 @@
     </resultMap>
     <!--根基预约名称查询预约项目列表-->
     <select id="selectAppitemByName" parameterType="java.util.Map"
-            resultType="com.yunya.models.appointment.AppointmentItemType">
+            resultType="com.yunya.modules.appointment.vo.AppointmentItemTypeVo">
         select
         apt.item_no as id, apt.comp_appitem_id as orderId, apt.item_name as name, apt.app_duration as duration,
         apt.isvalid as isvalid

@@ -33,5 +33,7 @@ public class AppointmentItemQuery implements Serializable {
 
     @ApiModelProperty(value = "组织id")
     private String compClinId;
-    private Integer orderId;
+
+    @ApiModelProperty("预约类型ID")
+    private Integer appointTypeId;
 }

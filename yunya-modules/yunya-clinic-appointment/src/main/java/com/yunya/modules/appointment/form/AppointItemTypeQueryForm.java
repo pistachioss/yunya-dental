@@ -16,7 +16,7 @@ import java.io.Serializable;
  */
 @ApiModel("预约项目查询参数封装")
 @Data
-public class AppointOrderTypeQueryForm implements Serializable {
+public class AppointItemTypeQueryForm implements Serializable {
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
 
@@ -29,9 +29,12 @@ public class AppointOrderTypeQueryForm implements Serializable {
     private Integer pageSize = 10;
 
     @ApiModelProperty("预约项目id")
-    private Integer orderId;
+    private Integer appointItemId;
 
     @ApiModelProperty("预约名称")
     private String name;
+
+    @ApiModelProperty(value = "门诊ID", required = true)
+    private Integer orgId;
 
 }
