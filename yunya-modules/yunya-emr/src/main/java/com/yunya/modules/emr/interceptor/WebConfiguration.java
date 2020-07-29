@@ -54,9 +54,9 @@ public class WebConfiguration implements WebMvcConfigurer {
     ArrayList<String> list = new ArrayList<>();
     String[] urls = {
       "/medical/**",
-      "/medical_common",
-      "/medical_History",
-      "/medical_Orthodontics"
+      "/medical_common/**",
+      "/medical_History/**",
+      "/medical_Orthodontics/**"
     };
     Collections.addAll(list, urls);
     return list;

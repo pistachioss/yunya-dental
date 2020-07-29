@@ -28,4 +28,16 @@
             `medical_template_category_id` = #{categoryId}
     </select>
 
+    <select id="countByName" resultType="int">
+        select
+            count(1)
+        from
+            `medical_template`
+        where
+            `name` = #{name}
+            <if test="id != null">
+                `id` = #{id}
+            </if>
+    </select>
+
 </mapper>

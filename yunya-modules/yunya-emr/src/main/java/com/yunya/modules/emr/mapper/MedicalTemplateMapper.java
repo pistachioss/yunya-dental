@@ -14,4 +14,12 @@ public interface MedicalTemplateMapper extends Mapper<MedicalTemplate> {
      * @return
      */
     int countByCategoryId(@Param("categoryId") Integer categoryId);
+
+    /**
+     * 根据模板名称查询数量
+     * @param name
+     * @param id
+     * @return
+     */
+    int countByName(@Param("name") String name, @Param("id") Integer id);
 }

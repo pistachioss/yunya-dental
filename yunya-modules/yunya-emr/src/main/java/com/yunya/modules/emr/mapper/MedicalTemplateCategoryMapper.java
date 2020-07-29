@@ -20,8 +20,8 @@ public interface MedicalTemplateCategoryMapper extends Mapper<MedicalTemplateCat
 
     /**
      * 查询
-     * @param categoryId
+     * @param parentId
      * @return
      */
-    List<ChildCategoryListVo> getTemplateList(@Param("categoryId") Integer categoryId);
+    List<ChildCategoryListVo> getTemplateList(@Param("parentId") Integer parentId);
 }
