@@ -1,6 +1,7 @@
 package com.yunya.feign.emr.domain.form;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,13 +15,14 @@ import javax.validation.constraints.Size;
  */
 @Setter
 @Getter
-@ApiModel("修改病历模板分类模型")
+@ApiModel(value = "修改病历模板分类模型")
 public class MedicalTempCategoryForm {
 
-    @NotNull(message = "请先选中病历模板子分类")
-    private Integer id;
     @NotNull
+    @ApiModelProperty(value = "分类父Id", required = true)
     private Integer parentId;
+
+    @ApiModelProperty(value = "分类名称", required = true)
     @Size(max = 25, message = "名称不能超过25个字")
     @NotBlank
     private String name;

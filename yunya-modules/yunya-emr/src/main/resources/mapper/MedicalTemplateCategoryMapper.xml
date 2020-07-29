@@ -20,8 +20,19 @@
             `name` = #{name}
             and `parent_id` = #{parentId}
             <if test="id != null">
-                and `id` != {id}
+                and `id` != #{id}
             </if>
     </select>
 
+    <select id="getTemplateList" resultType="com.yunya.feign.emr.domain.vo.ChildCategoryListVo">
+        select
+            `id`,
+            `name`
+        from
+            `medical_template_category`
+        where
+            `parent_id` = #{parentId}
+        order by
+            `upd_time` desc
+    </select>
 </mapper>

@@ -9,6 +9,7 @@ public interface MedicalTemplateMapper extends Mapper<MedicalTemplate> {
 
     /**
      * 查询分类下病历模板数量
+     *
      * @param categoryId
      * @return
      */
