@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysUser;
@@ -81,6 +82,7 @@ public class SysUserController {
    * @param resource 参数封装
    * @return void
    */
+  @CurrentUser
   @ApiOperation("新增用户")
   @PostMapping("/add")
   public ResponseResult add(@RequestBody @Validated SysUserForm resource) {

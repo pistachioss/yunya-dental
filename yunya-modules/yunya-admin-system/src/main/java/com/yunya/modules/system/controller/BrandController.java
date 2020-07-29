@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.Brand;
@@ -70,6 +71,7 @@ public class BrandController {
    * @param resource 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("新增品牌")
   @PostMapping("/add")
   public ResponseResult addBrand(@Validated @RequestBody BrandModel resource) {
@@ -84,6 +86,7 @@ public class BrandController {
    * @param form 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("编辑品牌")
   @ApiImplicitParam(name = "id", value = "品牌ID", dataType = "number", paramType = "path")
   @PutMapping("/edit/{id}")

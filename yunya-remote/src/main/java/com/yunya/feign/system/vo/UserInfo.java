@@ -16,6 +16,8 @@ import java.io.Serializable;
 public class UserInfo implements Serializable {
   /** 用户ID */
   private String id;
+  /** 当前登陆组织ID */
+  private Integer currentOrgId;
   /** 用户名 */
   private String username;
   /** 密码 */

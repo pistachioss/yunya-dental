@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.system.CompanyDepartment;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -104,6 +106,8 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
       }
       entity.setParentId(parentId);
     }
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
   }
 
@@ -135,6 +139,9 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
     }
     result.setParentId(parentId);
     result.setOrderNum(form.getOrderNum());
+    result.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    result.setUpdName(BaseContextHandler.getName());
+    result.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(result);
   }
 

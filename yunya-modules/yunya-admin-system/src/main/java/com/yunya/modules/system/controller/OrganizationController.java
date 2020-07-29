@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.OrganizationBiz;
@@ -80,6 +81,7 @@ public class OrganizationController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增组织")
   @PostMapping("/add")
   public ResponseResult addOrganization(@Validated @RequestBody OrganizationForm resource) {
@@ -94,6 +96,7 @@ public class OrganizationController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("编辑组织")
   @ApiImplicitParam(
       name = "id",

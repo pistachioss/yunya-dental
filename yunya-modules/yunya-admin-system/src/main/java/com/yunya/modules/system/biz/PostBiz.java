@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -86,8 +87,8 @@ public class PostBiz extends BaseBiz<PostMapper, Post> {
     entity.setOrderNum(orderNum);
     Boolean allowOperation = resource.getAllowOperation();
     entity.setAllowOperation(allowOperation);
-    //entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    //entity.setCrtName(BaseContextHandler.getUsername());
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
   }
 
@@ -122,6 +123,9 @@ public class PostBiz extends BaseBiz<PostMapper, Post> {
     if (null != form.getInservice()) {
       post.setInservice(form.getInservice());
     }
+    post.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    post.setUpdName(BaseContextHandler.getName());
+    post.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(post);
   }
 

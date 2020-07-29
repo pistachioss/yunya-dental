@@ -3,6 +3,7 @@ package com.yunya.modules.system.biz;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.system.ClinicExtInfo;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 
 /**
  * 简单介绍:</br> 医疗机构扩展信息控制层
@@ -63,6 +65,9 @@ public class ClinicExtInfoBiz extends BaseBiz<ClinicExtInfoMapper, ClinicExtInfo
     // 更新组织表信用代码
     organizationBiz.updateCompanyCredit(companyId, creditCode);
     ClinicExtInfo build = EntityUtils.build(form, ClinicExtInfo.class);
+    build.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    build.setUpdName(BaseContextHandler.getName());
+    build.setUpdTime(new Date(System.currentTimeMillis()));
     build.setId(extInfo.getId());
     mapper.updateByPrimaryKeySelective(build);
   }

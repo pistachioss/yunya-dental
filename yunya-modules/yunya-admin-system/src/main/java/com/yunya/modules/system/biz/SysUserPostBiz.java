@@ -2,6 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -39,6 +41,8 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
     Integer userId = resource.getUserId();
     checkUserOrgDeptUnique(userId, resource.getDepartmentId());
     checkUserOrgPostUnique(userId, resource.getCompanyId(), resource.getPostId());
+    resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resource.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(resource);
   }
 
@@ -91,6 +95,9 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
     sysUserPost.setDepartmentId(form.getOrgDeptId());
     sysUserPost.setCompanyId(form.getOrgId());
     sysUserPost.setPostId(form.getPostId());
+    sysUserPost.setUserId(Integer.valueOf(BaseContextHandler.getUserID()));
+    sysUserPost.setUpdName(BaseContextHandler.getName());
+    sysUserPost.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(sysUserPost);
   }
 

@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.CompanyDepartment;
@@ -89,6 +90,7 @@ public class OrganizationDepartmentController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增组织部门")
   @PostMapping("/dept/add")
   public ResponseResult add(@RequestBody @Validated CompanyDepartmentModel resource) {
@@ -103,6 +105,7 @@ public class OrganizationDepartmentController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("编辑组织部门")
   @ApiImplicitParam(
       name = "id",

@@ -9,6 +9,7 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.constant.UserConstant;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -80,6 +81,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     sysUser.setPassword(
         new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
             .encode(UserConstant.DEFAULT_USER_PASSWORD));
+    sysUser.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    sysUser.setCrtName(BaseContextHandler.getName());
     // 新增用户基础信息
     int result = mapper.insertUser(sysUser);
     if (result > 0) {
@@ -93,6 +96,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
                 ? new Date(System.currentTimeMillis())
                 : resource.getLeaveTime());
       }
+      sysEmployee.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+      sysEmployee.setCrtName(BaseContextHandler.getName());
       // 新增用户扩展信息（员工信息）
       sysEmployeeMapper.insertSelective(sysEmployee);
       List<LoginOrganizationForm> organizationForms = resource.getLoginOrganizationForms();
@@ -118,6 +123,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       entity.setDepartmentId(form.getOrgDeptId());
       entity.setPostId(form.getPostId());
       entity.setUserId(userId);
+      entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+      entity.setCrtName(BaseContextHandler.getName());
       sysUserPostBiz.add(entity);
     }
   }
@@ -178,11 +185,17 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     // 更新用户信息
     sysUserEntity.setId(sysUser.getId());
     sysUserEntity.setUsername(form.getMobilePhone());
+    sysUserEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    sysUserEntity.setUpdName(BaseContextHandler.getName());
+    sysUserEntity.setUpdTime(new Date(System.currentTimeMillis()));
     int result = mapper.updateByPrimaryKeySelective(sysUserEntity);
     if (result > 0) {
       SysEmployee employeeResult = sysEmployeeMapper.selectByUserId(userId);
       SysEmployee sysEmployeeEntity = EntityUtils.build(form, SysEmployee.class);
       sysEmployeeEntity.setId(employeeResult.getId());
+      sysEmployeeEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+      sysEmployeeEntity.setUpdName(BaseContextHandler.getName());
+      sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
       sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
     }
     // 用户名被修改或就职状态改为离职,将当前用户从缓存中移除

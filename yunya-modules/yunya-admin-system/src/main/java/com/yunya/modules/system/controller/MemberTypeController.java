@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.MemberTypeBiz;
@@ -65,6 +66,7 @@ public class MemberTypeController {
    * @param model 参数模型
    * @return
    */
+  @CurrentUser
   @PostMapping("/save")
   @ApiOperation("新增会员类型方式")
   public ResponseResult save(@RequestBody @Validated MemberTypeModel model) {
@@ -79,6 +81,7 @@ public class MemberTypeController {
    * @param form 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("修改会员卡类型信息")
   @PutMapping("/edit/{id}")
   public ResponseResult modify(

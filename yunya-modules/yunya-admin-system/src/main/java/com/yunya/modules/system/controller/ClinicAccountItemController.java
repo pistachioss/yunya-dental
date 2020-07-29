@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicAccountItemBiz;
@@ -64,6 +65,7 @@ public class ClinicAccountItemController {
    * @param model 参数模型
    * @return
    */
+  @CurrentUser
   @ApiOperation("新增门诊入账方式")
   @PostMapping("/clinic/save")
   public ResponseResult save(@RequestBody @Validated ClinicAccountItemModel model) {

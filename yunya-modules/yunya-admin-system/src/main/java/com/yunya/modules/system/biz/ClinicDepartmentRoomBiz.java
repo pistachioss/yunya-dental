@@ -53,8 +53,8 @@ public class ClinicDepartmentRoomBiz
       clinicDeptRoom = new ClinicDepartmentRoom();
       clinicDeptRoom.setCompanyId(info.getCompanyId());
       clinicDeptRoom.setDeptRoomId(deptRoomId);
-      //clinicDeptRoom.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-      //clinicDeptRoom.setCrtName(BaseContextHandler.getName());
+      clinicDeptRoom.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+      clinicDeptRoom.setCrtName(BaseContextHandler.getName());
       ClinicDepartmentRoom resultData = mapper.selectOne(clinicDeptRoom);
       if (null == resultData) {
         mapper.insertSelective(clinicDeptRoom);
@@ -86,6 +86,8 @@ public class ClinicDepartmentRoomBiz
     ClinicDepartmentRoom entity = new ClinicDepartmentRoom();
     entity.setCompanyId(model.getOrgId());
     entity.setDeptRoomId(model.getDepartmentRoomId());
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     ClinicDepartmentRoom resultData = mapper.selectOne(entity);
     if (null == resultData) {
       mapper.insertSelective(entity);

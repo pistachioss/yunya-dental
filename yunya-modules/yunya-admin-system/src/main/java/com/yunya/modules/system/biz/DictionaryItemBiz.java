@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.DictionaryType;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -50,6 +52,8 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     DictionaryItem entity = new DictionaryItem();
     entity.setDictionaryTypeId(dictTypeId);
     entity.setName(name);
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     int count = mapper.selectCount(entity);
     if (count > 0) {
       throw new ClientServiceException(
@@ -86,6 +90,9 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     if (form.getInservice() != null) {
       item.setInservice(form.getInservice());
     }
+    item.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    item.setUpdName(BaseContextHandler.getName());
+    item.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(item);
   }
 

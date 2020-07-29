@@ -65,8 +65,8 @@ public class BrandBiz extends BaseBiz<BrandMapper, Brand> {
       throw new ClientServiceException(
           "新增品牌'" + brandName + "'失败，该品牌名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-   // entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    //entity.setCrtName(BaseContextHandler.getUsername());
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
   }
 
@@ -100,8 +100,8 @@ public class BrandBiz extends BaseBiz<BrandMapper, Brand> {
     if (null != form.getInservice()) {
       brand.setInservice(form.getInservice());
     }
-    //brand.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    //brand.setUpdName(BaseContextHandler.getUsername());
+    brand.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    brand.setUpdName(BaseContextHandler.getName());
     brand.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(brand);
   }

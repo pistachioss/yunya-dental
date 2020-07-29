@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.AccountType;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -87,6 +89,8 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
       throw new ClientServiceException(
           "新增失败，当前入账方式分类下已存在名称为'" + name + "'的入账方式", OperationCodeConstants.SAME_DATA_EXIST);
     }
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     Byte type = model.getType();
     entity.setType(type);
     mapper.insertSelective(entity);
@@ -116,6 +120,9 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     }
     Byte type = form.getType();
     resultData.setType(type);
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
     resultData.setId(id);
     mapper.updateByPrimaryKeySelective(resultData);
   }

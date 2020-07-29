@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.AccountItemBiz;
@@ -65,6 +66,7 @@ public class AccountItemController {
    * @param model 新增参数模型
    * @return
    */
+  @CurrentUser
   @ApiOperation("新增入账方式")
   @PostMapping("/item/save")
   public ResponseResult save(@RequestBody @Validated AccountItemModel model) {
@@ -79,6 +81,7 @@ public class AccountItemController {
    * @param form 修改参数模型
    * @return
    */
+  @CurrentUser
   @ApiOperation("修改入账方式")
   @PutMapping("/item/edit/{id}")
   public ResponseResult edit(

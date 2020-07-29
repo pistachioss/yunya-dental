@@ -6,6 +6,7 @@ import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.TreeUtil;
@@ -121,6 +122,8 @@ public class OrganizationBiz {
     }
     Byte type = resource.getType();
     Company company = EntityUtils.build(resource, Company.class);
+    company.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    company.setCrtName(BaseContextHandler.getName());
     companyMapper.insertCompany(company);
     // 添加组织类型为医疗机构，添加医疗机构扩展信息
     addClinicExtInfo(resource, company.getId(), type);
@@ -166,6 +169,9 @@ public class OrganizationBiz {
     if (null != inservice) {
       company.setInservice(inservice);
     }
+    company.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    company.setUpdName(BaseContextHandler.getName());
+    company.setUpdTime(new Date(System.currentTimeMillis()));
     companyMapper.updateByPrimaryKeySelective(company);
     // 更新医疗机构扩展信息,并校验医疗机构简称是否重复
     updateOrganizationExtInfo(id, resource, companyType);
@@ -197,6 +203,9 @@ public class OrganizationBiz {
       clinicExtInfo.setClinicNumber(resource.getClinicNumber());
       String brands = StringUtils.join(resource.getBrandIds(), ",");
       clinicExtInfo.setBrandIds(brands);
+      clinicExtInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+      clinicExtInfo.setUpdName(BaseContextHandler.getName());
+      clinicExtInfo.setUpdTime(new Date(System.currentTimeMillis()));
       clinicExtInfoMapper.updateByPrimaryKeySelective(clinicExtInfo);
     }
   }
@@ -271,6 +280,8 @@ public class OrganizationBiz {
       String brands = StringUtils.join(resource.getBrandIds(), ",");
       clinicExtInfo.setBrandIds(brands);
       clinicExtInfo.setAbbreviation(resource.getAbbreviation());
+      clinicExtInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+      clinicExtInfo.setCrtName(BaseContextHandler.getName());
       clinicExtInfoMapper.insertSelective(clinicExtInfo);
     }
   }
@@ -311,7 +322,8 @@ public class OrganizationBiz {
     Company company = companyMapper.selectByPrimaryKey(companyId);
     if (null == company) {
       throw new ClientServiceException(
-              String.format("修改医疗机构信息，门诊ID:%d的数据不存在",companyId), OperationCodeConstants.DATA_NOT_EXIST);
+          String.format("修改医疗机构信息，门诊ID:%d的数据不存在", companyId),
+          OperationCodeConstants.DATA_NOT_EXIST);
     }
     company.setCreditCode(creditCode);
     company.setUpdTime(new Date());

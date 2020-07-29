@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicDepartmentRoomBiz;
@@ -90,6 +91,7 @@ public class ClinicDepartmentRoomController {
    * @param model 门诊科室参数模型
    * @return
    */
+  @CurrentUser
   @ApiOperation("新增门诊科室")
   @PostMapping("/clinic/save")
   public ResponseResult save(@RequestBody @Validated ClinicDepartmentRoomModel model) {

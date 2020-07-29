@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.ClinicAccountItem;
 import com.yunya.modules.system.domain.model.ClinicAccountItemModel;
@@ -76,6 +77,8 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
     if (count > 0) {
       return;
     }
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
   }
 
