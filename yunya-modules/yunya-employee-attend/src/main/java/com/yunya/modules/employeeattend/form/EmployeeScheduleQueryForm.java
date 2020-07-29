@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.form;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -42,13 +43,13 @@ public class EmployeeScheduleQueryForm {
    * 开始时间
    */
   @ApiModelProperty("开始时间")
-  private Date startDate;
+  private String startDate;
 
   /**
    * 截止时间
    */
   @ApiModelProperty("截止时间")
-  private Date endDate;
+  private String endDate;
 
   @ApiModelProperty("页数")
   private Integer page;

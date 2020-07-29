@@ -1,6 +1,8 @@
 package com.yunya.modules.employeeattend.controller;
 
 
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
@@ -43,7 +46,14 @@ public class EmployeeScheduleController {
   @DeleteMapping
   @ApiOperation("删除排班表")
   public ResponseResult delete(@RequestBody @Validated EmployeeScheduleDeleteForm employeeScheduleDeleteForm) {
+
     EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleDeleteForm, EmployeeSchedule.class);
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    try {
+      employeeSchedule.setWorkDate(simpleDateFormat.parse(employeeScheduleDeleteForm.getWorkDateString()));
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+    }
     employeeScheduleBiz.delete(employeeSchedule);
     return ResponseUtil.success();
   }

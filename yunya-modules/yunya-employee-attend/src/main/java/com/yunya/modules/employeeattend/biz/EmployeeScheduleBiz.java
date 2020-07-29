@@ -65,17 +65,22 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    *
    * @param employeeScheduleForm
    */
-  public void create(EmployeeScheduleForm employeeScheduleForm) throws ParseException {
+  public void create(EmployeeScheduleForm employeeScheduleForm){
     // 判断排班是否冲突
     if (isExist(employeeScheduleForm)) {
       System.out.println("冲突");//抛出冲突异常
       return;
     }
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
     EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleForm, EmployeeSchedule.class);
     employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
     employeeSchedule.setClinicId(employeeScheduleForm.getClinicId());
     employeeSchedule.setScheduleId(Integer.valueOf(employeeScheduleForm.getScheduleId()));
-    employeeSchedule.setWorkDate(employeeScheduleForm.getWorkDate());
+    try {
+      employeeSchedule.setWorkDate(simpleDateFormat.parse(employeeScheduleForm.getWorkDate()));
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+    }
     mapper.insertSelective(employeeSchedule);
   }
 
@@ -105,9 +110,18 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
     clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
 
-    Date startDate = employeeScheduleCopyForm.getStartDate();
-    Date endDate = employeeScheduleCopyForm.getEndDate();
-    Date targetStartDate = employeeScheduleCopyForm.getTargetStartDate();
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+
+    Date startDate = null;
+    Date endDate = null;
+    Date targetStartDate = null;
+    try {
+      startDate = simpleDateFormat.parse(employeeScheduleCopyForm.getStartDate());
+      endDate = simpleDateFormat.parse(employeeScheduleCopyForm.getEndDate());
+      targetStartDate = simpleDateFormat.parse(employeeScheduleCopyForm.getTargetStartDate());
+    } catch (Exception e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+    }
     // 目标时间与开始时间的天数差
     Long a = targetStartDate.getTime();
     Long b = startDate.getTime();
@@ -204,8 +218,15 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    * @return
    */
   public Map<String, Object> findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
-    Date startDate = employeeScheduleQueryForm.getStartDate();
-    Date endDate = employeeScheduleQueryForm.getEndDate();
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    Date startDate = null;
+    Date endDate = null;
+    try {
+      startDate = simpleDateFormat.parse(employeeScheduleQueryForm.getStartDate());
+      endDate = simpleDateFormat.parse(employeeScheduleQueryForm.getEndDate());
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+    }
     if (null == startDate || null == endDate) {
       Calendar calendar = Calendar.getInstance();
       startDate = DateUtil.getThisWeekMonday(new Date());
@@ -213,7 +234,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       calendar.add(Calendar.DATE, +SHIFT_DAYS);
       endDate = calendar.getTime();
     } else {
-      startDate = employeeScheduleQueryForm.getStartDate();
       endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
     }
 
@@ -309,7 +329,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    * @param employeeScheduleForm
    * @return
    */
-  private boolean isExist(EmployeeScheduleForm employeeScheduleForm) throws ParseException {
+  private boolean isExist(EmployeeScheduleForm employeeScheduleForm){
     boolean flag = false;
     // 获取门诊排班列表 （获取开始和结束时间）
     List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicIdAndInservice(employeeScheduleForm.getClinicId());
@@ -328,10 +348,17 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     }
     EmployeeSchedule employeeSchedule = new EmployeeSchedule();
     employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
-    employeeSchedule.setWorkDate(employeeScheduleForm.getWorkDate());
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    Date date = null;
+    try {
+      date = simpleDateFormat.parse(employeeScheduleForm.getWorkDate());
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+    }
+    employeeSchedule.setWorkDate(date);
     // 获取排班信息,判断跟其他门诊以及当前门诊的排班是否冲突
     List<EmployeeSchedule> employeeSchedules =
-            mapper.selectByDateAndComEmpId(employeeScheduleForm.getUserId(), employeeScheduleForm.getWorkDate());
+            mapper.selectByDateAndComEmpId(employeeScheduleForm.getUserId(), date);
     if (!employeeSchedules.isEmpty()) {
       for (int d = 0; d < employeeSchedules.size(); d++) {
         EmployeeSchedule data = employeeSchedules.get(d);
@@ -371,8 +398,15 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    */
   public void export(HttpServletResponse response, EmployeeScheduleQueryForm employeeScheduleQueryForm) throws Exception {
     // 获取人员排班内容
-    Date startDate = employeeScheduleQueryForm.getStartDate();
-    Date endDate = employeeScheduleQueryForm.getEndDate();
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    Date startDate = null;
+    Date endDate = null;
+    try {
+      startDate = simpleDateFormat.parse(employeeScheduleQueryForm.getStartDate());
+      endDate = simpleDateFormat.parse(employeeScheduleQueryForm.getEndDate());
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+    }
     if (null == startDate || null == endDate) {
       Calendar calendar = Calendar.getInstance();
       startDate = DateUtil.getThisWeekMonday(new Date());
@@ -380,8 +414,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       calendar.add(Calendar.DATE, +SHIFT_DAYS);
       endDate = calendar.getTime();
     } else {
-      startDate = employeeScheduleQueryForm.getStartDate();
-      endDate = employeeScheduleQueryForm.getEndDate();
+      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
     }
     Integer clinicId = employeeScheduleQueryForm.getClinicId();
 
@@ -442,7 +475,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       shiftWorkDatas.add(row);
       calendar.add(Calendar.DATE, -days);
     }
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     // 岗位+员工+排班
     List<String> heads = new ArrayList<>();

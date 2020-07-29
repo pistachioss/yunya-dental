@@ -35,7 +35,7 @@ public class EmployeeScheduleDeleteForm implements Serializable {
    */
   @NotNull(message = "排班日期不允许为空")
   @ApiModelProperty("排班日期")
-  private Date workDate;
+  private String workDateString;
 
   /**
    * 门诊ID

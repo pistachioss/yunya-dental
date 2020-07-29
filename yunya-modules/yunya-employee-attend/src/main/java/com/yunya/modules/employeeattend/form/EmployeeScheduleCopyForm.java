@@ -20,25 +20,25 @@ public class EmployeeScheduleCopyForm {
    */
   @NotNull(message = "开始时间不能为空")
   @ApiModelProperty("开始时间")
-  private Date startDate;
+  private String startDate;
 
   /**
    * 结束时间
    */
   @ApiModelProperty("结束时间")
-  private Date endDate;
+  private String endDate;
 
   /**
    * 目标开始时间
    */
   @ApiModelProperty("目标开始时间")
-  private Date targetStartDate;
+  private String targetStartDate;
 
   /**
    * 目标结束时间
    */
   @ApiModelProperty("目标结束时间")
-  private Date targetEndDate;
+  private String targetEndDate;
 
   /**
    * 需要复制排班的员工ID列表

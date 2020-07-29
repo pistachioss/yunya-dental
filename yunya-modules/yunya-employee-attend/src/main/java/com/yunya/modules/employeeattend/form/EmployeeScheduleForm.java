@@ -25,7 +25,7 @@ public class EmployeeScheduleForm {
 
   @NotBlank(message = "排班日期不允许为空")
   @ApiModelProperty("排班日期")
-  private Date WorkDate;
+  private String WorkDate;
 
   /**
    * 公司端对应的诊所ID
