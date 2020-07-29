@@ -12,6 +12,7 @@ import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.biz.EmployeeScheduleBiz;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleExportVO;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -40,6 +41,7 @@ public class EmployeeScheduleController {
    * @param employeeScheduleDeleteForm
    */
   @DeleteMapping
+  @ApiOperation("删除排班表")
   public ResponseResult delete(@RequestBody @Validated EmployeeScheduleDeleteForm employeeScheduleDeleteForm) {
     EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleDeleteForm, EmployeeSchedule.class);
     employeeScheduleBiz.delete(employeeSchedule);
@@ -52,6 +54,7 @@ public class EmployeeScheduleController {
    * @return
    */
   @PostMapping("/findList")
+  @ApiOperation("查看员工排班列表")
   public ResponseResult findList(@RequestBody @Validated EmployeeScheduleQueryForm employeeScheduleQueryForm) {
     return ResponseUtil.success(employeeScheduleBiz.findList(employeeScheduleQueryForm));
   }
@@ -63,6 +66,7 @@ public class EmployeeScheduleController {
    * @return
    */
   @PostMapping("/copy")
+  @ApiOperation("复制排班表")
   public ResponseResult copy(@RequestBody @Validated EmployeeScheduleCopyForm employeeScheduleCopyForm) {
     return ResponseUtil.success(employeeScheduleBiz.copy(employeeScheduleCopyForm));
   }
@@ -73,6 +77,7 @@ public class EmployeeScheduleController {
    * @param employeeScheduleForm
    */
   @PostMapping("/create")
+  @ApiOperation("添加")
   public ResponseResult create(@RequestBody EmployeeScheduleForm employeeScheduleForm) throws ParseException {
     employeeScheduleBiz.create(employeeScheduleForm);
     return ResponseUtil.success();
@@ -86,6 +91,7 @@ public class EmployeeScheduleController {
    * @throws Exception
    */
   @PostMapping("/export")
+  @ApiOperation("导出员工排班")
   public void export(
           HttpServletResponse response, EmployeeScheduleQueryForm employeeScheduleQueryForm
   ) throws Exception {
@@ -99,6 +105,7 @@ public class EmployeeScheduleController {
    * @throws Exception
    */
   @PostMapping("/exportconflict")
+  @ApiOperation("导出复制排班冲突")
   public void exportConflict(
           HttpServletResponse response,
           List<EmployeeScheduleExportVO>employeeConflict

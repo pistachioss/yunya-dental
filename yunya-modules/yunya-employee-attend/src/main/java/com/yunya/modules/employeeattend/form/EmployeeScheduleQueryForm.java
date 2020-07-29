@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.form;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -17,34 +18,42 @@ public class EmployeeScheduleQueryForm {
   /**
    * 医生或助手id
    */
+  @ApiModelProperty("医生或助手id")
   private Integer userId;
   /**
    * 姓名
    */
+  @ApiModelProperty("姓名")
   private String name;
 
   /**
    * 岗位ID列表
    */
+  @ApiModelProperty("岗位ID列表")
   private List<Integer> postNames;
 
   /**
    * 门诊ID
    */
+  @ApiModelProperty("门诊ID")
   private Integer clinicId;
 
   /**
    * 开始时间
    */
+  @ApiModelProperty("开始时间")
   private Date startDate;
 
   /**
    * 截止时间
    */
+  @ApiModelProperty("截止时间")
   private Date endDate;
 
+  @ApiModelProperty("页数")
   private Integer page;
 
+  @ApiModelProperty("每页个数")
   private Integer size;
 
 }
