@@ -26,15 +26,13 @@ public class ClinicEmployeeConfigReq {
     /**
      * 是否可预约
      */
-    @ApiModelProperty(value = "是否可预约")
-    private Boolean enableAppoint;
+    @ApiModelProperty(value = "是否可预约",required = true)
+    @NotNull
+    private Integer enableAppoint;
     /**
      * 是否可挂号
      */
-    @ApiModelProperty(value = "是否可挂号")
-    private Boolean enableRegistry;
-
-    @ApiModelProperty(value = "门诊ID")
+    @ApiModelProperty(value = "是否可挂号", required = true)
     @NotNull
-    private Integer clinicId;
+    private Integer enableRegistry;
 }
