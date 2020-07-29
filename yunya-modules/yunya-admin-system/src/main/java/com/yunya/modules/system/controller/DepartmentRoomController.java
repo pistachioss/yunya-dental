@@ -82,6 +82,7 @@ public class DepartmentRoomController {
    * @param form 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("修改科室")
   @PutMapping("/modify/{id}")
   public ResponseResult modify(

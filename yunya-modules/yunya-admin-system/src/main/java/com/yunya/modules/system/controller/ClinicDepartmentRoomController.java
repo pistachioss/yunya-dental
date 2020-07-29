@@ -52,6 +52,7 @@ public class ClinicDepartmentRoomController {
    * @param id 门诊科室ID
    * @return
    */
+  @CurrentUser
   @ApiOperation("开启/关闭门诊科室启用状态")
   @GetMapping("/clinic/switch/{id}")
   public ResponseResult switchDeptRoomDisable(@PathVariable("id") Integer id) {

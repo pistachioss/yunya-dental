@@ -15,6 +15,7 @@ import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -74,6 +75,9 @@ public class ClinicDepartmentRoomBiz
           "ID为'" + clinicDeptRoomId + "'的门诊科室不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     resultData.setInservice(!resultData.getInservice());
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(resultData);
   }
 
