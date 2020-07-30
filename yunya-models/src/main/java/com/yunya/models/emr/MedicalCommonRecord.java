@@ -86,7 +86,7 @@ public class MedicalCommonRecord {
     /**
      * 状态：0不需要审批，1待审核，2同意，3拒绝
      */
-    private Byte status;
+    private Integer status;
 
     /**
      * 医生审批时间
@@ -380,7 +380,7 @@ public class MedicalCommonRecord {
      *
      * @return status - 状态：0不需要审批，1待审核，2同意，3拒绝
      */
-    public Byte getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
@@ -389,7 +389,7 @@ public class MedicalCommonRecord {
      *
      * @param status 状态：0不需要审批，1待审核，2同意，3拒绝
      */
-    public void setStatus(Byte status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

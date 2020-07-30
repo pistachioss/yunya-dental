@@ -1,6 +1,8 @@
 package com.yunya.modules.emr.controller;
 
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Date;
 
 /**
  * @author 杨柳絮
@@ -33,7 +36,10 @@ public class MedicalCommonRecordController {
    */
   @PostMapping("/create")
   @ApiOperation("新增数据")
+  @CurrentUser
   public ResponseResult create(@RequestBody @Valid MedicalCommonRecordModel model) {
+    model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    model.setCrtTime(new Date());
     return ResponseUtil.success(medicalCommonRecordBiz.create(model));
   }
 
