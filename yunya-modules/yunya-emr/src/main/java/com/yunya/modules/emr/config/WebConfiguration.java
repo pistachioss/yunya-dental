@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
@@ -12,7 +13,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *
  * @author chow
  */
-@Configuration("systemWebConfig")
+@Configuration
 @Primary
 public class WebConfiguration implements WebMvcConfigurer {
 
@@ -23,7 +24,15 @@ public class WebConfiguration implements WebMvcConfigurer {
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(getUserAuthRestInterceptor()).addPathPatterns("/**");
+    registry.addInterceptor(getUserAuthRestInterceptor())
+            .addPathPatterns("/**")
+            .excludePathPatterns("/swagger-resources/**", "/webjars/**", "/v2/**", "/swagger-ui.html/**","/doc.html/**");
+  }
+
+  @Override
+  public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    registry.addResourceHandler("swagger-ui.html","/webjars/**")
+            .addResourceLocations("classpath:/META-INF/resources/","classpath:/META-INF/resources/webjars/");
   }
 
   /**
