@@ -1,11 +1,12 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicDepartmentRoomBiz;
-import com.yunya.modules.system.form.ClinicDepartmentRoomModel;
-import com.yunya.modules.system.form.query.ClinicDepartmentRoomQueryForm;
+import com.yunya.modules.system.domain.model.ClinicDepartmentRoomModel;
+import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
 import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -51,6 +52,7 @@ public class ClinicDepartmentRoomController {
    * @param id 门诊科室ID
    * @return
    */
+  @CurrentUser
   @ApiOperation("开启/关闭门诊科室启用状态")
   @GetMapping("/clinic/switch/{id}")
   public ResponseResult switchDeptRoomDisable(@PathVariable("id") Integer id) {
@@ -90,6 +92,7 @@ public class ClinicDepartmentRoomController {
    * @param model 门诊科室参数模型
    * @return
    */
+  @CurrentUser
   @ApiOperation("新增门诊科室")
   @PostMapping("/clinic/save")
   public ResponseResult save(@RequestBody @Validated ClinicDepartmentRoomModel model) {
@@ -103,6 +106,7 @@ public class ClinicDepartmentRoomController {
    * @param id 门诊科室ID
    * @return
    */
+  @ApiOperation("根据门诊科室ID删除门诊科室")
   @DeleteMapping("/clinic/delete/{id}")
   public ResponseResult deleteByClinicDeptRoomId(@PathVariable("id") Integer id) {
     clinicDepartmentRoomBiz.deleteByClinicDeptRoomId(id);

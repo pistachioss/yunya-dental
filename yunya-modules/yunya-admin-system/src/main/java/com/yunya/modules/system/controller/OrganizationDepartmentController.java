@@ -1,12 +1,14 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.CompanyDepartment;
 import com.yunya.modules.system.biz.CompanyDepartmentBiz;
-import com.yunya.modules.system.form.CompanyDepartmentForm;
-import com.yunya.modules.system.form.query.OrgDeptQueryForm;
+import com.yunya.modules.system.domain.form.CompanyDepartmentForm;
+import com.yunya.modules.system.domain.model.CompanyDepartmentModel;
+import com.yunya.modules.system.domain.query.OrgDeptQueryForm;
 import com.yunya.modules.system.vo.OrgDeptTreeVO;
 import com.yunya.modules.system.vo.OrgDeptVO;
 import io.swagger.annotations.Api;
@@ -88,9 +90,10 @@ public class OrganizationDepartmentController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增组织部门")
   @PostMapping("/dept/add")
-  public ResponseResult add(@RequestBody @Validated CompanyDepartment resource) {
+  public ResponseResult add(@RequestBody @Validated CompanyDepartmentModel resource) {
     organizationDepartmentBiz.addCompanyDepartment(resource);
     return ResponseUtil.success();
   }
@@ -102,6 +105,7 @@ public class OrganizationDepartmentController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("编辑组织部门")
   @ApiImplicitParam(
       name = "id",

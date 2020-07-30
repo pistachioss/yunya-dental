@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.models.system.SysResourceAuthority;
-import com.yunya.modules.system.form.ResourceAuthorityForm;
+import com.yunya.modules.system.domain.form.ResourceAuthorityForm;
 import com.yunya.modules.system.vo.SysResourceAuthorityVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

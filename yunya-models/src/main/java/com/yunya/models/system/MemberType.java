@@ -40,6 +40,11 @@ public class MemberType {
     private Byte type;
 
     /**
+     * 图标
+     */
+    private Byte icon;
+
+    /**
      * 会员卡描述（青藤、银藤、金藤、艾维会员）
      */
     private String description;
@@ -188,6 +193,14 @@ public class MemberType {
      */
     public void setType(Byte type) {
         this.type = type;
+    }
+
+    public Byte getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Byte icon) {
+        this.icon = icon;
     }
 
     /**

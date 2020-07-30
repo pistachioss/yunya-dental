@@ -4,11 +4,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.CompanyDepartment;
 import com.yunya.models.system.Department;
-import com.yunya.modules.system.form.base.BaseForm;
-import com.yunya.modules.system.form.query.DepartmentQueryForm;
+import com.yunya.modules.system.domain.base.BaseForm;
+import com.yunya.modules.system.domain.model.DepartmentModel;
+import com.yunya.modules.system.domain.query.DepartmentQueryForm;
 import com.yunya.modules.system.mapper.CompanyDepartmentMapper;
 import com.yunya.modules.system.mapper.DepartmentMapper;
 import com.yunya.modules.system.vo.DepartmentVO;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,14 +39,14 @@ public class DepartmentBiz extends BaseBiz<DepartmentMapper, Department> {
   /**
    * 根据条件查询部门列表（可分页）
    *
-   * @param form 查询条件封装
+   * @param queryForm 查询条件封装
    * @return list
    */
-  public PageInfo<DepartmentVO> findAll(DepartmentQueryForm form) {
-    if (form.getWhetherPage()) {
-      PageHelper.startPage(form.getPageNum(), form.getPageSize());
+  public PageInfo<DepartmentVO> findAll(DepartmentQueryForm queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-    List<DepartmentVO> resultList = mapper.selectDepartmentByExample(form);
+    List<DepartmentVO> resultList = mapper.selectDepartmentByExample(queryForm);
     return new PageInfo<>(resultList);
   }
 
@@ -52,18 +55,20 @@ public class DepartmentBiz extends BaseBiz<DepartmentMapper, Department> {
    *
    * @param resource 参数封装
    */
-  public void add(Department resource) {
+  public void add(DepartmentModel resource) {
     String name = resource.getName();
-    Department department = new Department();
-    department.setName(name);
-    Department resultData = mapper.selectOne(department);
-    if (null != resultData) {
+    Department entity = new Department();
+    entity.setName(name);
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       throw new ClientServiceException(
           "新增部门'" + name + "'失败，该部门名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-    // resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    // resource.setCrtName(BaseContextHandler.getUsername());
-    mapper.insertSelective(resource);
+    entity.setType(resource.getType());
+    entity.setOrderNum(resource.getOrderNum());
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
+    mapper.insertSelective(entity);
   }
 
   /**
@@ -96,9 +101,9 @@ public class DepartmentBiz extends BaseBiz<DepartmentMapper, Department> {
     if (null != inservice) {
       department.setInservice(inservice);
     }
-    // department.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    // department.setUpdName(BaseContextHandler.getUsername());
-    // department.setUpdTime(new Date(System.currentTimeMillis()));
+    department.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    department.setUpdName(BaseContextHandler.getName());
+    department.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(department);
   }
 

@@ -3,7 +3,7 @@ package com.yunya.modules.system.mapper;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.models.system.SysUser;
-import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
+import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 

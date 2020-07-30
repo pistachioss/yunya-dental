@@ -1,10 +1,11 @@
 package com.yunya.modules.system.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.system.SysResourceAuthority;
-import com.yunya.modules.system.form.ResourceAuthorityForm;
-import com.yunya.modules.system.form.ResourceForm;
-import com.yunya.modules.system.form.SysPostResourceForm;
+import com.yunya.modules.system.domain.form.ResourceAuthorityForm;
+import com.yunya.modules.system.domain.form.ResourceForm;
+import com.yunya.modules.system.domain.form.SysPostResourceForm;
 import com.yunya.modules.system.mapper.SysResourceAuthorityMapper;
 import com.yunya.modules.system.vo.SysResourceAuthorityVO;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,8 @@ public class SysResourceAuthorityBiz
         resourceAuthority.setResourceType(element.getResourceType());
         SysResourceAuthority resultData = mapper.selectOne(resourceAuthority);
         if (null == resultData) {
+          resourceAuthority.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+          resourceAuthority.setCrtName(BaseContextHandler.getName());
           mapper.insertSelective(resourceAuthority);
         }
       }

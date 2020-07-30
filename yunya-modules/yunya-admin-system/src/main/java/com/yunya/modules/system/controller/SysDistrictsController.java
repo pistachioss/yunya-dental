@@ -5,7 +5,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysDistricts;
 import com.yunya.modules.system.biz.SysDistrictsBiz;
-import com.yunya.modules.system.form.query.SysDistrictsQueryForm;
+import com.yunya.modules.system.domain.query.SysDistrictsQueryForm;
 import com.yunya.modules.system.vo.SysDistrictsVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

@@ -89,7 +89,7 @@
     </insert>
 
     <!-- 根据条件查询组织详情列表 -->
-    <select id="selectOrganizationByExample" parameterType="java.util.Map" resultType="com.yunya.modules.system.vo.OrganizationInfoVO">
+    <select id="selectOrganizationByExample" resultType="com.yunya.modules.system.vo.OrganizationInfoVO">
         SELECT
         ccb.id,
         ccb.`name`,

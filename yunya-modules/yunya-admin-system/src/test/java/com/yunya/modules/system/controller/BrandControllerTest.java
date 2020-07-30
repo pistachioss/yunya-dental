@@ -2,8 +2,8 @@ package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.system.Brand;
-import com.yunya.modules.system.form.base.BaseForm;
-import com.yunya.modules.system.form.query.BrandQueryForm;
+import com.yunya.modules.system.domain.base.BaseForm;
+import com.yunya.modules.system.domain.query.BrandQueryForm;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +40,7 @@ public class BrandControllerTest {
     Brand form = new Brand();
     form.setName("艾牙齿科");
     form.setOrderNum(1);
-    brandController.addBrand(form);
+    //brandController.addBrand(form);
   }
 
   /** 测试品牌编辑 */

@@ -1,12 +1,13 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.MemberTypeBiz;
-import com.yunya.modules.system.form.MemberTypeForm;
-import com.yunya.modules.system.form.MemberTypeModel;
-import com.yunya.modules.system.form.query.MemberTypeQueryForm;
+import com.yunya.modules.system.domain.form.MemberTypeForm;
+import com.yunya.modules.system.domain.model.MemberTypeModel;
+import com.yunya.modules.system.domain.query.MemberTypeQueryForm;
 import com.yunya.modules.system.vo.MemberTypeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -21,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * @description:
  * @since: 1.0.0
  */
-@Api(value = "会员卡类型管理", description = "会员卡增删改查")
+@Api(value = "会员卡类型管理", description = "会员卡分类新增、删除、修改、查询")
 @RestController
 @RequestMapping("memberCard")
 public class MemberTypeController {
@@ -65,6 +66,7 @@ public class MemberTypeController {
    * @param model 参数模型
    * @return
    */
+  @CurrentUser
   @PostMapping("/save")
   @ApiOperation("新增会员类型方式")
   public ResponseResult save(@RequestBody @Validated MemberTypeModel model) {
@@ -79,6 +81,7 @@ public class MemberTypeController {
    * @param form 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("修改会员卡类型信息")
   @PutMapping("/edit/{id}")
   public ResponseResult modify(

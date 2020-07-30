@@ -1,7 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.modules.system.form.query.OrganizationQueryForm;
+import com.yunya.modules.system.domain.query.OrganizationQueryForm;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.models.system.SysMenu;
-import com.yunya.modules.system.form.MenuElementForm;
-import com.yunya.modules.system.form.query.SysMenuQueryForm;
+import com.yunya.modules.system.domain.form.MenuElementForm;
+import com.yunya.modules.system.domain.query.SysMenuQueryForm;
 import com.yunya.modules.system.vo.SysMenuVO;
 import com.yunya.modules.system.vo.tree.SysMenuElementTreeVO;
 import org.apache.ibatis.annotations.Param;

@@ -2,12 +2,13 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysUser;
 import com.yunya.modules.system.biz.SysUserBiz;
-import com.yunya.modules.system.form.SysUserForm;
-import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
+import com.yunya.modules.system.domain.form.SysUserForm;
+import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -81,6 +82,7 @@ public class SysUserController {
    * @param resource 参数封装
    * @return void
    */
+  @CurrentUser
   @ApiOperation("新增用户")
   @PostMapping("/add")
   public ResponseResult add(@RequestBody @Validated SysUserForm resource) {
@@ -95,6 +97,7 @@ public class SysUserController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("用户修改")
   @PutMapping("/edit/{userId}")
   public ResponseResult edit(
@@ -123,6 +126,7 @@ public class SysUserController {
    * @param queryFrom 查询条件
    * @return
    */
+  @ApiOperation("根据条件查询员工信息列表并导出列表")
   @PostMapping("/export")
   public ResponseResult exportUserInfo(
       HttpServletResponse response, @RequestBody SysUserInfoDetailQueryFrom queryFrom)

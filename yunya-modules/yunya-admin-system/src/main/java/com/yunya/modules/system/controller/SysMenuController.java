@@ -5,9 +5,9 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysMenu;
 import com.yunya.modules.system.biz.SysMenuBiz;
-import com.yunya.modules.system.form.MenuElementForm;
-import com.yunya.modules.system.form.UserResourceForm;
-import com.yunya.modules.system.form.query.SysMenuQueryForm;
+import com.yunya.modules.system.domain.form.MenuElementForm;
+import com.yunya.modules.system.domain.form.UserResourceForm;
+import com.yunya.modules.system.domain.query.SysMenuQueryForm;
 import com.yunya.modules.system.vo.SysMenuVO;
 import com.yunya.modules.system.vo.tree.SysMenuElementTreeVO;
 import com.yunya.modules.system.vo.tree.SysMenuTreeVO;
@@ -44,7 +44,7 @@ public class SysMenuController {
    * @param resourceForm 参数封装
    * @return map
    */
-  @ApiOperation("查询用户菜单权限树")
+  @ApiOperation("查询用户菜单权限树(选择用户可登陆组织)")
   @PostMapping("/user/list")
   public ResponseResult getUserMenuResourceList(
       @RequestBody @Validated UserResourceForm resourceForm) {

@@ -5,12 +5,14 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.system.Post;
 import com.yunya.models.system.PostGroup;
-import com.yunya.modules.system.form.PostGroupForm;
-import com.yunya.modules.system.form.query.PostGroupQueryForm;
+import com.yunya.modules.system.domain.form.PostGroupForm;
+import com.yunya.modules.system.domain.model.PostGroupModel;
+import com.yunya.modules.system.domain.query.PostGroupQueryForm;
 import com.yunya.modules.system.mapper.PostGroupMapper;
 import com.yunya.modules.system.mapper.PostMapper;
 import com.yunya.modules.system.vo.PostGroupVO;
@@ -20,7 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -86,7 +90,7 @@ public class PostGroupBiz extends BaseBiz<PostGroupMapper, PostGroup> {
    *
    * @param resource 参数封装
    */
-  public void add(PostGroup resource) {
+  public void add(PostGroupModel resource) {
     Integer parentId = resource.getParentId();
     PostGroup postGroup = mapper.selectByPrimaryKey(parentId);
     if (null == postGroup) {
@@ -96,12 +100,19 @@ public class PostGroupBiz extends BaseBiz<PostGroupMapper, PostGroup> {
     String name = resource.getName();
     PostGroup entity = new PostGroup();
     entity.setName(name);
-    PostGroup resultData = mapper.selectOne(entity);
-    if (null != resultData) {
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       throw new ClientServiceException(
           "新增岗位组'" + name + "'失败，该岗位组名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-    mapper.insertSelective(resource);
+    entity.setParentId(parentId);
+    Boolean allowOperation = resource.getAllowOperation();
+    entity.setAllowOperation(allowOperation);
+    Integer orderNum = resource.getOrderNum();
+    entity.setOrderNum(orderNum);
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
+    mapper.insertSelective(entity);
   }
 
   /**
@@ -119,6 +130,9 @@ public class PostGroupBiz extends BaseBiz<PostGroupMapper, PostGroup> {
     if (null != form.getInservice()) {
       postGroup.setInservice(form.getInservice());
     }
+    postGroup.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    postGroup.setUpdName(BaseContextHandler.getName());
+    postGroup.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(postGroup);
   }
 
@@ -134,8 +148,8 @@ public class PostGroupBiz extends BaseBiz<PostGroupMapper, PostGroup> {
       String name = form.getName();
       PostGroup entity = new PostGroup();
       entity.setName(name);
-      PostGroup result = mapper.selectOne(entity);
-      if (null != result) {
+      int count = mapper.selectCount(entity);
+      if (count > 0) {
         throw new ClientServiceException(
             "修改岗位组'" + name + "'失败，该岗位组名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }

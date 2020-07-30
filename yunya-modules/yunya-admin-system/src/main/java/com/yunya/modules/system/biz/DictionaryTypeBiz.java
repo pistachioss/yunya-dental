@@ -4,11 +4,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.DictionaryType;
-import com.yunya.modules.system.form.DictForm;
-import com.yunya.modules.system.form.query.DictQueryForm;
+import com.yunya.modules.system.domain.form.DictForm;
+import com.yunya.modules.system.domain.model.DictionaryTypeModel;
+import com.yunya.modules.system.domain.query.DictQueryForm;
 import com.yunya.modules.system.mapper.DictionaryItemMapper;
 import com.yunya.modules.system.mapper.DictionaryTypeMapper;
 import com.yunya.modules.system.vo.DictionaryTypeVO;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -52,16 +55,18 @@ public class DictionaryTypeBiz extends BaseBiz<DictionaryTypeMapper, DictionaryT
    *
    * @param resource 参数封装
    */
-  public void add(DictionaryType resource) {
+  public void add(DictionaryTypeModel resource) {
     String name = resource.getName();
     DictionaryType entity = new DictionaryType();
     entity.setName(name);
-    DictionaryType result = mapper.selectOne(entity);
-    if (null != result) {
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       throw new ClientServiceException(
           "新增字典类型'" + name + "'失败，该字典类型名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-    mapper.insertSelective(resource);
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
+    mapper.insertSelective(entity);
   }
 
   /**
@@ -71,13 +76,12 @@ public class DictionaryTypeBiz extends BaseBiz<DictionaryTypeMapper, DictionaryT
    * @param form 参数封装
    */
   public void edit(Integer id, DictForm form) {
-    DictionaryType type = mapper.selectByPrimaryKey(id);
-    if (null == type) {
+    DictionaryType resultData = mapper.selectByPrimaryKey(id);
+    if (null == resultData) {
       throw new ClientServiceException(
-          "修改字典失败，字典类型名称为'" + form.getName() + "'的数据不存在",
-          OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改字典失败，ID为'" + id + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
-    if (!type.getName().equals(form.getName())) {
+    if (!resultData.getName().equals(form.getName())) {
       String name = form.getName();
       DictionaryType entity = new DictionaryType();
       entity.setName(name);
@@ -86,12 +90,15 @@ public class DictionaryTypeBiz extends BaseBiz<DictionaryTypeMapper, DictionaryT
         throw new ClientServiceException(
             "修改字典类型'" + name + "'失败，该字典类型名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
-      type.setName(name);
+      resultData.setName(name);
     }
     if (null != form.getInservice()) {
-      type.setInservice(form.getInservice());
+      resultData.setInservice(form.getInservice());
     }
-    mapper.updateByPrimaryKeySelective(type);
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
+    mapper.updateByPrimaryKeySelective(resultData);
   }
 
   /**
