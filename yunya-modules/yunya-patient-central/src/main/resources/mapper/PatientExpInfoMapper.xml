@@ -35,4 +35,15 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <sql id="PatientExpInfo_Column_List">
+    id,patient_id patientId,patient_kind patientkind,useful_phone usefulPhone,identity,profession,heredity,other_health otherHealth,brush_times brushTimes,brush_time brushTime,brush_hardness brushHardness,smoking_age smokingAge,
+    smoking_num smokingNum,use_electric_brush useElectricBrush,use_collutory useCollutory,use_floss useFloss,bruxism ,address,province,city,country,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,
+    upt_id uptId,upd_name updName,upd_time updTime
+  </sql>
+
+  <!--根据患者id查询患者扩展信息-->
+  <select id="selectIdByPatientId" resultType="com.yunya.models.patient_central.PatientExpInfo">
+    select <include refid="PatientExpInfo_Column_List"/> from patient_exp_info where patient_id = #{id}
+  </select>
 </mapper>

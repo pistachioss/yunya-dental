@@ -2,20 +2,17 @@ package com.yunya.modules.patient_central.controller;
 
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
-import com.yunya.modules.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.modules.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.modules.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.modules.patient_central.domain.vo.PatientPublicInfoVo;
+import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
+import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 简单介绍:</br> 患者资料（患者信息 增删查改）
+ * 简单介绍:</br> 患者资料模块控制器
  *
  * @author: WY
  * @date 2020/7/24 19:51
@@ -47,12 +44,26 @@ public class PatientBaseInfoController {
         return patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
     }
 
-    @ApiOperation("添加患者信息")
+    @ApiOperation("添加患者基本信息信息")
     @PostMapping("/add")
-    public ResponseResult addPatient(@PathVariable @Validated PatientBaseInfoModel patientBaseInfoModel){
+    public ResponseResult addPatient(@RequestBody @Validated  PatientBaseInfoModel patientBaseInfoModel){
         patientBaseInfoBiz.addPatient(patientBaseInfoModel);
         return ResponseUtil.success();
     }
+
+    @ApiOperation("添加完善患者基本信息")
+    @PostMapping("/addPatientInfo")
+    public ResponseResult addPatientInfo(@RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel){
+        patientBaseInfoBiz.addPatientInfo(patientExtendInfoModel);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation("根据患者id查询患者资料")
+    @GetMapping ("/findPatientDate/{id}")
+    public ResponseResult findPatientDate(@PathVariable Integer id){
+        return ResponseUtil.success(patientBaseInfoBiz.findPatientDate(id));
+    }
+
 
 
 

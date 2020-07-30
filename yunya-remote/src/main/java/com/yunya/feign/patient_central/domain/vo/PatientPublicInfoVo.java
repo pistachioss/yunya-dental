@@ -1,19 +1,17 @@
-package com.yunya.modules.patient_central.domain.vo;
+package com.yunya.feign.patient_central.domain.vo;
 
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
- * 简单介绍:</br> 患者公用字段信息
+ * 简单介绍:</br> 患者信息Vo
  *
  * @author: WY
  * @date 2020/7/27 16:19
- * @description:
+ * @description: 患者公用字段信息
  * @since: 1.0.0
  */
 @Data

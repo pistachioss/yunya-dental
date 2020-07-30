@@ -1,21 +1,30 @@
 package com.yunya.modules.patient_central.biz;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.modules.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.modules.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.modules.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.modules.patient_central.domain.vo.PatientPublicInfoVo;
+import com.yunya.models.patient_central.PatientExpInfo;
+import com.yunya.models.patient_central.PatientExtInfo;
+import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
+import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
+import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
+import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -30,6 +39,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
 
     @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
+
+    @Autowired private PatientExtInfoMapper patientExtInfoMapper;
+
+    @Autowired private PatientExpInfoMapper patientExpInfoMapper;
 
 
     /**
@@ -61,17 +74,69 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         return ResponseUtil.success();
     }
 
-
     /**
      * 添加患者信息
-     * @param patientBaseInfo
+     * @param patientBaseInfoModel
      */
     public void addPatient(PatientBaseInfoModel patientBaseInfoModel) {
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-        patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientBaseInfo.setCrtName(BaseContextHandler.getName());
+        patientBaseInfo.setCrtId(1); //TODO Integer.parseInt(BaseContextHandler.getUserID())
+        patientBaseInfo.setCrtName(BaseContextHandler.getName());//TODO Integer.parseInt(BaseContextHandler.getUserName())
         mapper.insertSelective(patientBaseInfo);
+    }
+
+    /**
+     * 添加完善患者扩展信息、其他信息
+     * @param patientExtendInfoModel
+     */
+    public void addPatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
+        PatientBaseInfo patientBaseInfo = patientExtendInfoModel.getPatientBaseInfo(); //完善患者基本信息  对补全信息进行更新
+        patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+        patientBaseInfo.setUptId(1);//TODO Integer.parseInt(BaseContextHandler.getUserID())
+        patientBaseInfo.setUpdName("更新人名称");//TODO Integer.parseInt(BaseContextHandler.getUserName())
+        patientBaseInfo.setUpdTime(new Date());
+        mapper.updateByPrimaryKey(patientBaseInfo);
+        PatientExpInfo patientExpInfo = patientExtendInfoModel.getPatientExpInfo();    //完善患者扩展信息
+        if(patientExpInfo.getId() == null){   //如果用户没有扩展信息就添加扩展信息 如果有就修改
+            patientExpInfo.setCrtId(1); //TODO Integer.parseInt(BaseContextHandler.getUserID())
+            patientExpInfo.setCrtName("创建人名称");//TODO Integer.parseInt(BaseContextHandler.getUserName())
+            patientExpInfoMapper.insertSelective(patientExpInfo);
+        }else {
+            patientExpInfo.setUptId(1); //TODO Integer.parseInt(BaseContextHandler.getUserID())
+            patientExpInfo.setUpdName("更新人名称");//TODO Integer.parseInt(BaseContextHandler.getUserName())
+            patientExpInfo.setUpdTime(new Date());
+            patientExpInfoMapper.updateByPrimaryKey(patientExpInfo);
+        }
+        List<PatientExtInfo> patientExtInfoList = patientExtendInfoModel.getPatientExtInfoList();//完善患者其他信息（标签、疾病史、过敏原）
+        List<PatientExtInfo> patientExtInfos = patientExtInfoMapper.patientExtInfoListByid(patientBaseInfo.getId());
+        if(patientExtInfos.size()!= 0 || patientExtInfos != null){ //判断是否已存在id，若存在就删除
+            patientExtInfoMapper.deletePatientExtInfoByPatientId(patientBaseInfo.getId());
+        }
+        List<PatientExtInfo> addPatientExtInfoList = new ArrayList<PatientExtInfo>();            //循环添加 标签、疾病史、过敏原 集合
+        for (PatientExtInfo patientExtInfo: patientExtInfoList) {
+            patientExtInfo.setCrtId(1);//TODO Integer.parseInt(BaseContextHandler.getUserID())
+            patientExtInfo.setCrtName("创建人名称");//TODO Integer.parseInt(BaseContextHandler.getUserName())
+            patientExtInfo.setUptId(1);
+            patientExtInfo.setUpdName("更新人名称");
+            patientExtInfo.setUpdTime(new Date());
+            addPatientExtInfoList.add(patientExtInfo);
+        }
+        patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
+
+    }
+
+    /**
+     * 根据患者id查询患者资料
+     * @param id
+     * @return PatientExtendInfoModel
+     */
+    public PatientExtendInfoVo findPatientDate(Integer id) {
+        PatientExtendInfoVo patientExtendInfoVo = new PatientExtendInfoVo();
+        patientExtendInfoVo.setPatientBaseInfo(mapper.selectByPrimaryKey(id));
+        patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id));
+        patientExtendInfoVo.setPatientExtInfoList(patientExtInfoMapper.patientExtInfoListByid(id));
+        return patientExtendInfoVo;
     }
 }

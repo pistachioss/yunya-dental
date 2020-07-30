@@ -1,26 +1,25 @@
-package com.yunya.modules.patient_central.domain.query;
+package com.yunya.feign.patient_central.domain.vo;
 
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简单介绍:</br> 患者信息查询模型
+ * 简单介绍:</br> 患者信息VO
  *
  * @author: WY
- * @date 2020/7/27 10:06
+ * @date 2020/7/25 15:56
  * @description:
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("患者信息查询参数模型")
-public class PatientBaseInfoQueryForm implements Serializable {
+public class PatientBaseInfoVo implements Serializable {
     /**
      * 主键
      */
@@ -108,6 +107,7 @@ public class PatientBaseInfoQueryForm implements Serializable {
      * 创建人ID
      */
     @Column(name = "crt_id")
+    @NotNull(message = "创建人ID为空！")
     private Integer crtId;
 
     /**

@@ -34,16 +34,16 @@
   </sql>
 
   <!--根据手机号查询用户是否纯在-->
-  <select id="findUserExists" resultType="com.yunya.modules.patient_central.domain.vo.PatientBaseInfoVo">
+  <select id="findUserExists" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
         select <include refid="Patient_Column_List"></include>
-        from patient_base_info where name = #{from.name} and mobile = #{from.mobile}
+        from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
   </select>
 
   <select id="findUserExistsByMobile" resultType="int">
     select count(1) from patient_base_info where mobile = #{mobile}
   </select>
 
-  <select id="findPatientPublicInfoById" resultType="com.yunya.modules.patient_central.domain.vo.PatientPublicInfoVo">
+  <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo">
     select pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
 		   pbi.medical_nummber medicalNummber,pmi.member_type_id memberTypeId,
 		   cast(SUM(pmi.principal_amount+pmi.bonus_amount) as decimal(15,2)) memberCardMoneySum,
@@ -53,6 +53,19 @@
     join patient_member_info pmi      on pbi.id = pmi.patient_id
     where pbi.id = #{id}
   </select>
+
+  <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
+    select id,origin_id patientId,name,gender,mobile,crt_time crtTime
+    from patient_base_info where origin_id = #{form.patientId} and origin_type = #{form.originType}
+    order by crtTime desc
+  </select>
+
+  <select id="findRecommendRelationById" resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
+    select id,origin_id patientId,name,gender,mobile,crt_time crtTime
+    from patient_base_info where origin_id = #{form.patientId} and origin_type = #{form.originType}
+    order by crtTime desc
+  </select>
+
 
 </mapper>
 

@@ -19,4 +19,16 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <sql id="PatientKinRelationVo_Column_List">
+    pkr.id,pkr.patient_id patientId,pkr.linked_patient_id linkedPatientId,pbi.name relationName,pkr.kinship_id kinshipId,
+	pbi.gender gender,pbi.mobile mobile,pkr.remarks,pkr.crt_time crtTime
+  </sql>
+
+  <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientKinRelationVo">
+    select <include refid="PatientKinRelationVo_Column_List"/>
+    from patient_kin_relation pkr join patient_base_info pbi on pkr.linked_patient_id = pbi.id
+    where pkr.patient_id = #{id}
+    order by crtTime desc
+  </select>
 </mapper>
