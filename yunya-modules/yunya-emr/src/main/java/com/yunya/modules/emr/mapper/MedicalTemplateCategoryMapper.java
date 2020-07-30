@@ -1,8 +1,11 @@
 package com.yunya.modules.emr.mapper;
 
+import com.yunya.feign.emr.domain.vo.ChildCategoryListVo;
 import com.yunya.models.emr.MedicalTemplateCategory;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
+
+import java.util.List;
 
 public interface MedicalTemplateCategoryMapper extends Mapper<MedicalTemplateCategory> {
 
@@ -14,4 +17,11 @@ public interface MedicalTemplateCategoryMapper extends Mapper<MedicalTemplateCat
      * @return
      */
     int countByName(@Param("name") String name, @Param("parentId") Integer parentId, @Param("id") Integer id);
+
+    /**
+     * 查询
+     * @param parentId
+     * @return
+     */
+    List<ChildCategoryListVo> getTemplateList(@Param("parentId") Integer parentId);
 }

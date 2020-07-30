@@ -28,6 +28,8 @@ public class MemberTypeVO implements Serializable {
   private Float rate;
   /** 类型,0:普通,1:VIP */
   private Byte type;
+  /** 会员卡图标 */
+  private Byte icon;
   /** 会员卡描述（青藤、银藤、金藤、艾维会员） */
   private String description;
   /** 是否启用 */

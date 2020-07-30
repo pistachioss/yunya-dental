@@ -4,6 +4,8 @@ import com.yunya.models.emr.GeneralTemplate;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.List;
+
 public interface GeneralTemplateMapper extends Mapper<GeneralTemplate> {
 
     /**
@@ -12,4 +14,12 @@ public interface GeneralTemplateMapper extends Mapper<GeneralTemplate> {
      * @return
      */
     int countByCategoryId(@Param("categoryId") Integer categoryId);
+
+    /**
+     * 根据内容模糊查询
+     * @param keyword
+     * @param categoryId
+     * @return
+     */
+    List<GeneralTemplate> listByKeyword(@Param("keyword") String keyword, @Param("categoryId")Integer categoryId);
 }

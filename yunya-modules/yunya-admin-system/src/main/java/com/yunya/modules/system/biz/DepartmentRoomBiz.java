@@ -7,13 +7,15 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.ClinicDepartmentRoom;
 import com.yunya.models.system.DepartmentRoom;
-import com.yunya.modules.system.form.DepartmentRoomForm;
-import com.yunya.modules.system.form.query.DepartmentRoomQueryForm;
+import com.yunya.modules.system.domain.form.DepartmentRoomForm;
+import com.yunya.modules.system.domain.model.DepartmentRoomModel;
+import com.yunya.modules.system.domain.query.DepartmentRoomQueryForm;
 import com.yunya.modules.system.mapper.DepartmentRoomMapper;
 import com.yunya.modules.system.vo.DepartmentRoomVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -36,6 +38,17 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
   }
 
   /**
+   * 根据ID查询科室模板信息
+   *
+   * @param id 科室ID
+   * @return
+   */
+  public DepartmentRoomVO findById(Integer id) {
+    DepartmentRoomVO resultData = mapper.selectById(id);
+    return resultData;
+  }
+
+  /**
    * 科室列表查询
    *
    * @param queryForm 查询条件
@@ -54,12 +67,12 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
    *
    * @param resource 参数封装
    */
-  public void saveDepartmentRoom(DepartmentRoomForm resource) {
+  public void saveDepartmentRoom(DepartmentRoomModel resource) {
     DepartmentRoom entity = new DepartmentRoom();
     String name = resource.getName();
     entity.setName(name);
-    DepartmentRoom resultData = mapper.selectOne(entity);
-    if (resultData != null) {
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       throw new ClientServiceException(
           "新增科室失败，'" + name + "'已经存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
@@ -91,6 +104,9 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
     if (null != form.getInservice()) {
       entity.setInservice(form.getInservice());
     }
+    entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setUpdName(BaseContextHandler.getName());
+    entity.setUpdTime(new Date(System.currentTimeMillis()));
     entity.setId(id);
     mapper.updateByPrimaryKeySelective(entity);
   }

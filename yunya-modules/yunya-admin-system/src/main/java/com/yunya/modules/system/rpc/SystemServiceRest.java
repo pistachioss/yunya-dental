@@ -6,8 +6,12 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
-import com.yunya.modules.system.form.query.SysUserInfoDetailQueryFrom;
+import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
+import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
+import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.rpc.service.PermissionService;
+import com.yunya.modules.system.vo.ClinicAccountItemVO;
+import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import io.swagger.annotations.Api;
 import org.springframework.beans.BeanUtils;
@@ -50,6 +54,18 @@ public class SystemServiceRest {
   @Autowired private PostGroupBiz postGroupBiz;
   /** 用户（员工） */
   @Autowired private SysUserBiz sysUserBiz;
+  /** 科室模版 */
+  @Autowired private DepartmentRoomBiz departmentRoomBiz;
+  /** 门诊科室 */
+  @Autowired private ClinicDepartmentRoomBiz clinicDepartmentRoomBiz;
+  /** 会员卡分类 */
+  @Autowired private MemberTypeBiz memberTypeBiz;
+  /** 入账方式分类 */
+  @Autowired private AccountTypeBiz accountTypeBiz;
+  /** 入账方式信息 */
+  @Autowired private AccountItemBiz accountItemBiz;
+  /** 门诊入账方式 */
+  @Autowired private ClinicAccountItemBiz clinicAccountItemBiz;
 
   /**
    * 根据用户名、密码查询用户信息
@@ -259,7 +275,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/userInfo/{userId}", method = RequestMethod.GET)
-  public SysUserInfoDetail findSysUserEmployeeInfoByUserId(@PathVariable Integer userId) {
+  public SysUserInfoDetail findSysUserEmployeeInfoByUserId(@PathVariable("userId") Integer userId) {
     return sysUserBiz.findUserInfoByUserId(userId);
   }
 
@@ -275,5 +291,139 @@ public class SystemServiceRest {
     SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
     BeanUtils.copyProperties(model, from);
     return sysUserBiz.findUserDetailInfoList(from).getList();
+  }
+
+  /**
+   * 根据科室ID查询科室
+   *
+   * @param id 科室模板ID
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/{id}", method = RequestMethod.GET)
+  public DepartmentRoom findDepartmentRoomById(@PathVariable("id") Integer id) {
+    return departmentRoomBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询科室列表
+   *
+   * @param departmentRoom 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/list", method = RequestMethod.POST)
+  public List<DepartmentRoom> findDepartmentRoomList(@RequestBody DepartmentRoom departmentRoom) {
+    return departmentRoomBiz.selectList(departmentRoom);
+  }
+
+  /**
+   * 根据ID查询门诊科室信息
+   *
+   * @param id 门诊科室ID
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/clinic/{id}", method = RequestMethod.GET)
+  public ClinicDepartmentRoomVO findClinicDepartmentRoomById(@PathVariable("id") Integer id) {
+    return clinicDepartmentRoomBiz.findByClinicDeptRoomId(id);
+  }
+
+  /**
+   * 根据条件查询门诊科室列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/clinic/list", method = RequestMethod.POST)
+  public List<ClinicDepartmentRoomVO> findClinicDepartmentRoomList(
+      @RequestBody ClinicDepartmentRoomQueryForm queryForm) {
+    return clinicDepartmentRoomBiz.findList(queryForm).getList();
+  }
+
+  /**
+   * 根据ID查询会员卡分类
+   *
+   * @param id 会员卡分类ID
+   * @return
+   */
+  @RequestMapping(value = "/memberType/{id}", method = RequestMethod.GET)
+  public MemberType findMemberTypeById(@PathVariable("id") Integer id) {
+    return memberTypeBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询会员类型列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/memberType/list", method = RequestMethod.POST)
+  public List<MemberType> findMemberTypeList(@RequestBody MemberType model) {
+    return memberTypeBiz.selectList(model);
+  }
+
+  /**
+   * 根据ID查询入账方式分类
+   *
+   * @param id 入账方式分类ID
+   * @return
+   */
+  @RequestMapping(value = "/accountType/{id}", method = RequestMethod.GET)
+  public AccountType findAccountTypeById(@PathVariable("id") Integer id) {
+    return accountTypeBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询入账方式分类列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/accountType/list", method = RequestMethod.POST)
+  public List<AccountType> findAccountTypeList(@RequestBody AccountType model) {
+    return accountTypeBiz.selectList(model);
+  }
+
+  /**
+   * 根据ID查询入账方式
+   *
+   * @param id 入账方式ID
+   * @return
+   */
+  @RequestMapping(value = "/accountItem/{id}", method = RequestMethod.GET)
+  public AccountItem findAccountItemById(@PathVariable("id") Integer id) {
+    return accountItemBiz.selectById(id);
+  }
+
+  /**
+   * 根据条件查询入账方式列表
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/accountItem/list", method = RequestMethod.POST)
+  public List<AccountItem> findAccountItemList(@RequestBody AccountItem model) {
+    return accountItemBiz.selectList(model);
+  }
+
+  /**
+   * 根据ID查询门诊入账方式
+   *
+   * @param id 门诊入账方式ID
+   * @return
+   */
+  @RequestMapping(value = "/accountItem/clinic/{id}", method = RequestMethod.GET)
+  public ClinicAccountItemVO findClinicAccountItemById(@PathVariable("id") Integer id) {
+    return clinicAccountItemBiz.findById(id);
+  }
+
+  /**
+   * 根据条件查询门诊入账方式列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/accountItem/clinic/list", method = RequestMethod.POST)
+  public List<ClinicAccountItemVO> findClinicAccountItemList(
+      @RequestBody ClinicAccountItemQueryForm queryForm) {
+    return clinicAccountItemBiz.findList(queryForm).getList();
   }
 }

@@ -1,12 +1,14 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.DictionaryType;
 import com.yunya.modules.system.biz.DictionaryTypeBiz;
-import com.yunya.modules.system.form.DictForm;
-import com.yunya.modules.system.form.query.DictQueryForm;
+import com.yunya.modules.system.domain.form.DictForm;
+import com.yunya.modules.system.domain.model.DictionaryTypeModel;
+import com.yunya.modules.system.domain.query.DictQueryForm;
 import com.yunya.modules.system.vo.DictionaryTypeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -41,8 +43,9 @@ public class DictionaryTypeController {
    * @param id 字典类型ID
    * @return
    */
+  @ApiOperation("根据ID查询字典类型")
   @GetMapping("/type/{id}")
-  public ResponseResult findById(@PathVariable Integer id) {
+  public ResponseResult findById(@PathVariable("id") Integer id) {
     DictionaryTypeVO vo = new DictionaryTypeVO();
     DictionaryType dictionaryType = dictionaryTypeBiz.selectById(id);
     BeanUtils.copyProperties(dictionaryType, vo);
@@ -68,9 +71,10 @@ public class DictionaryTypeController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增字典类型")
   @PostMapping("/type/add")
-  public ResponseResult addDictType(@RequestBody @Validated DictionaryType resource) {
+  public ResponseResult addDictType(@RequestBody @Validated DictionaryTypeModel resource) {
     dictionaryTypeBiz.add(resource);
     return ResponseUtil.success();
   }
@@ -82,6 +86,7 @@ public class DictionaryTypeController {
    * @param form 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("编辑字典类型")
   @ApiImplicitParam(
       name = "id",

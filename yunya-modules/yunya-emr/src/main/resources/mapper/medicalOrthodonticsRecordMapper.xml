@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.emr.mapper.MedicalOrthodonticsRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.MedicalOrthodonticsRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="facial_symmetry" property="facialSymmetry" jdbcType="BIT" />
+    <result column="gummy_smile" property="gummySmile" jdbcType="TINYINT" />
+    <result column="chin_deflection" property="chinDeflection" jdbcType="TINYINT" />
+    <result column="lip_muscle" property="lipMuscle" jdbcType="TINYINT" />
+    <result column="profile" property="profile" jdbcType="TINYINT" />
+    <result column="chin_shape" property="chinShape" jdbcType="TINYINT" />
+    <result column="dentition" property="dentition" jdbcType="VARCHAR" />
+    <result column="dentition_left" property="dentitionLeft" jdbcType="TINYINT" />
+    <result column="dentition_right" property="dentitionRight" jdbcType="TINYINT" />
+    <result column="anterior_overjet" property="anteriorOverjet" jdbcType="TINYINT" />
+    <result column="anterior_overbite" property="anteriorOverbite" jdbcType="TINYINT" />
+    <result column="malocclusion" property="malocclusion" jdbcType="BIT" />
+    <result column="malocclusion_tooth_bit" property="malocclusionToothBit" jdbcType="VARCHAR" />
+    <result column="arch_maxilla_up" property="archMaxillaUp" jdbcType="TINYINT" />
+    <result column="arch_maxilla_up_level" property="archMaxillaUpLevel" jdbcType="TINYINT" />
+    <result column="arch_maxilla_down" property="archMaxillaDown" jdbcType="TINYINT" />
+    <result column="arch_maxilla_down_level" property="archMaxillaDownLevel" jdbcType="TINYINT" />
+    <result column="spee" property="spee" jdbcType="TINYINT" />
+    <result column="arch_middle_maxilla_up" property="archMiddleMaxillaUp" jdbcType="TINYINT" />
+    <result column="up_offset" property="upOffset" jdbcType="TINYINT" />
+    <result column="arch_middle_maxilla_down" property="archMiddleMaxillaDown" jdbcType="TINYINT" />
+    <result column="down_offset" property="downOffset" jdbcType="TINYINT" />
+    <result column="oral_hygiene" property="oralHygiene" jdbcType="TINYINT" />
+    <result column="tongue_status" property="tongueStatus" jdbcType="VARCHAR" />
+    <result column="tongue_function" property="tongueFunction" jdbcType="VARCHAR" />
+    <result column="gingiva_status" property="gingivaStatus" jdbcType="TINYINT" />
+    <result column="labial_frenum_status" property="labialFrenumStatus" jdbcType="BIT" />
+    <result column="tongue_frenum_status" property="tongueFrenumStatus" jdbcType="BIT" />
+    <result column="habit" property="habit" jdbcType="VARCHAR" />
+    <result column="habit_remark" property="habitRemark" jdbcType="VARCHAR" />
+    <result column="tonsil" property="tonsil" jdbcType="TINYINT" />
+    <result column="mouth_open" property="mouthOpen" jdbcType="VARCHAR" />
+    <result column="mouth_open_limit" property="mouthOpenLimit" jdbcType="TINYINT" />
+    <result column="tmj_left" property="tmjLeft" jdbcType="TINYINT" />
+    <result column="tmj_left_level" property="tmjLeftLevel" jdbcType="TINYINT" />
+    <result column="left_is_clicking" property="leftIsClicking" jdbcType="BIT" />
+    <result column="tmj_right" property="tmjRight" jdbcType="TINYINT" />
+    <result column="tmj_right_level" property="tmjRightLevel" jdbcType="TINYINT" />
+    <result column="right_is_clicking" property="rightIsClicking" jdbcType="BIT" />
+    <result column="muscle" property="muscle" jdbcType="BIT" />
+    <result column="muscle_left" property="muscleLeft" jdbcType="VARCHAR" />
+    <result column="muscle_right" property="muscleRight" jdbcType="VARCHAR" />
+    <result column="other" property="other" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

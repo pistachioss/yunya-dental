@@ -54,19 +54,12 @@ class EmployeeAttendApplicationTests {
   @Test
   public void copy() {
     EmployeeScheduleCopyForm employeeScheduleCopyForm = new EmployeeScheduleCopyForm();
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
-    Date date1 = null;
-    Date date2 = null;
-    Date date3 = null;
-    Date date4 = null;
-    try {
-      date1 = simpleDateFormat.parse("2020-07-13");
-      date2 = simpleDateFormat.parse("2020-07-14");
-      date3 = simpleDateFormat.parse("2020-08-23");
-      date4 = simpleDateFormat.parse("2020-08-24");
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
+
+
+      String date1 = "2020-07-12";
+      String date2 = "2020-07-13";
+      String date3 = "2020-08-10";
+      String date4 = "2020-08-11";
     employeeScheduleCopyForm.setStartDate(date1);
     employeeScheduleCopyForm.setEndDate(date2);
     employeeScheduleCopyForm.setTargetStartDate(date3);

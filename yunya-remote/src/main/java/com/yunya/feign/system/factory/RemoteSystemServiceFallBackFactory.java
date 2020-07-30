@@ -123,6 +123,66 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
     return null;
   }
 
+  @Override
+  public DepartmentRoom findDepartmentRoomById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<DepartmentRoom> findDepartmentRoomList(DepartmentRoom departmentRoom) {
+    return null;
+  }
+
+  @Override
+  public ClinicDepartmentRoomVO findClinicDepartmentRoomById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<ClinicDepartmentRoomVO> findClinicDepartmentRoomList(ClinicDepartmentRoomQueryForm queryForm) {
+    return null;
+  }
+
+  @Override
+  public MemberType findMemberTypeById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<MemberType> findMemberTypeList(MemberType model) {
+    return null;
+  }
+
+  @Override
+  public AccountType findAccountTypeById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<AccountType> findAccountTypeList(AccountType model) {
+    return null;
+  }
+
+  @Override
+  public AccountItem findAccountItemById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<AccountItem> findAccountItemList(AccountItem model) {
+    return null;
+  }
+
+  @Override
+  public ClinicAccountItemVO findClinicAccountItemById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<ClinicAccountItemVO> findClinicAccountItemList(ClinicAccountItemQueryForm queryForm) {
+    return null;
+  }
+
   /**
    * 根据用户ID查询权限
    *

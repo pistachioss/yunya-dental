@@ -1,17 +1,16 @@
 package com.yunya.models.emr;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
-import lombok.Data;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
- * @author 
- * 普通模板（词条，范句，要点，诊断）
+ * @author
  */
 @Table(name="general_template")
 @Data

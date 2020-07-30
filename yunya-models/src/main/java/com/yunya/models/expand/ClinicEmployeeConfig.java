@@ -1,12 +1,12 @@
 package com.yunya.models.expand;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
 import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * @author 
@@ -39,7 +39,7 @@ public class ClinicEmployeeConfig implements Serializable {
     /**
      * 门诊默认科室ID
      */
-    @Column(name = "assistant_employee_id")
+    @Column(name = "clinic_department_room_id")
     private Integer clinicDepartmentRoomId;
 
     /**

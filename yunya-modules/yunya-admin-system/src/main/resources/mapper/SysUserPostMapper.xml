@@ -32,7 +32,7 @@
     <select id="checkOrgPostUnique" resultType="java.lang.Integer">
       select count(1)
       from sys_user_post
-      where user_id = #{userId} and department_id = #{orgId} and post_id = #{postId}
+      where user_id = #{userId} and company_id = #{orgId} and post_id = #{postId}
     </select>
     <!-- 根据用户ID查询可登陆组织列表 -->
     <select id="selectListByUserId" resultType="com.yunya.modules.system.vo.SysUserLoginOrgVO">

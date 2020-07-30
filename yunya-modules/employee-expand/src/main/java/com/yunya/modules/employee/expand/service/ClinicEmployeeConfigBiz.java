@@ -55,9 +55,11 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         //查询该员工对应扩展表主键
         ClinicEmployeeConfig clinicEmployeeConfig = new ClinicEmployeeConfig();
         clinicEmployeeConfig.setEmployeeId(employeeId);
-        clinicEmployeeConfig.setClinicId(configRequest.getClinicId());
+        clinicEmployeeConfig.setClinicId(clinicId);
         clinicEmployeeConfig = mapper.selectOne(clinicEmployeeConfig);
         ClinicEmployeeConfig updateEmployee = EntityUtils.build(configRequest, ClinicEmployeeConfig.class);
+        updateEmployee.setEmployeeId(employeeId);
+        updateEmployee.setClinicId(clinicId);
         if (clinicEmployeeConfig == null) {
             mapper.insertSelective(updateEmployee);
         } else {

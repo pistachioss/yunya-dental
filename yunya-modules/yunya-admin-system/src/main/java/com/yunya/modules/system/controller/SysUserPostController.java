@@ -1,10 +1,11 @@
 package com.yunya.modules.system.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.biz.SysUserPostBiz;
-import com.yunya.modules.system.form.LoginOrganizationForm;
+import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
 import com.yunya.modules.system.vo.SysUserPostOrgVO;
 import io.swagger.annotations.Api;
@@ -68,6 +69,7 @@ public class SysUserPostController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增用户可登陆组织")
   @PostMapping("/add")
   public ResponseResult add(@RequestBody @Validated SysUserPost resource) {
@@ -82,6 +84,7 @@ public class SysUserPostController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("修改用户可登陆组织")
   @ApiImplicitParam(
       name = "userPostId",

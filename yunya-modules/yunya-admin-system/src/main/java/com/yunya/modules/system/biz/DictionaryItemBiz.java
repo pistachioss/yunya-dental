@@ -4,11 +4,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.DictionaryType;
-import com.yunya.modules.system.form.DictForm;
-import com.yunya.modules.system.form.query.DictQueryForm;
+import com.yunya.modules.system.domain.form.DictForm;
+import com.yunya.modules.system.domain.model.DictionaryItemModel;
+import com.yunya.modules.system.domain.query.DictQueryForm;
 import com.yunya.modules.system.mapper.DictionaryItemMapper;
 import com.yunya.modules.system.mapper.DictionaryTypeMapper;
 import com.yunya.modules.system.vo.DictionaryItemVO;
@@ -16,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -38,7 +41,7 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
    *
    * @param resource 参数封装
    */
-  public void add(DictionaryItem resource) {
+  public void add(DictionaryItemModel resource) {
     String name = resource.getName();
     Integer dictTypeId = resource.getDictionaryTypeId();
     DictionaryType typeResult = dictionaryTypeMapper.selectByPrimaryKey(dictTypeId);
@@ -49,12 +52,14 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     DictionaryItem entity = new DictionaryItem();
     entity.setDictionaryTypeId(dictTypeId);
     entity.setName(name);
-    DictionaryItem result = mapper.selectOne(entity);
-    if (null != result) {
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
       throw new ClientServiceException(
           "添加字典数据'" + name + "'失败，该字典下已存在相同名称数据", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
-    mapper.insertSelective(resource);
+    mapper.insertSelective(entity);
   }
 
   /**
@@ -85,6 +90,9 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
     if (form.getInservice() != null) {
       item.setInservice(form.getInservice());
     }
+    item.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    item.setUpdName(BaseContextHandler.getName());
+    item.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(item);
   }
 

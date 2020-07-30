@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -20,15 +21,8 @@ import java.util.Collections;
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
 
-  /**
-   * 注入用户权限认证拦截器
-   *
-   * @return
-   */
-  @Bean
-  WebHandlertInterceptor getUserAuthRestInterceptor() {
-    return new WebHandlertInterceptor();
-  }
+  @Resource
+  private WebHandlertInterceptor webHandlertInterceptor;
 
   /**
    * 注入全局异常处理类
@@ -47,7 +41,7 @@ public class WebConfiguration implements WebMvcConfigurer {
    */
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(getUserAuthRestInterceptor()).addPathPatterns(getIncludePathPatterns());
+    registry.addInterceptor(webHandlertInterceptor).addPathPatterns(getIncludePathPatterns());
   }
 
   // todo 调整需要鉴权的路径
@@ -59,7 +53,10 @@ public class WebConfiguration implements WebMvcConfigurer {
   private ArrayList<String> getIncludePathPatterns() {
     ArrayList<String> list = new ArrayList<>();
     String[] urls = {
-      "/medical/**"
+      "/medical/**",
+      "/medical_common/**",
+      "/medical_History/**",
+      "/medical_Orthodontics/**"
     };
     Collections.addAll(list, urls);
     return list;

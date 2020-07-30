@@ -1,10 +1,11 @@
 package com.yunya.modules.system.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.SysResourceAuthorityBiz;
-import com.yunya.modules.system.form.ResourceAuthorityForm;
-import com.yunya.modules.system.form.SysPostResourceForm;
+import com.yunya.modules.system.domain.form.ResourceAuthorityForm;
+import com.yunya.modules.system.domain.form.SysPostResourceForm;
 import com.yunya.modules.system.vo.SysResourceAuthorityVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,6 +43,7 @@ public class SysResourceAuthorityController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增岗位资源权限")
   @PostMapping("/add")
   public ResponseResult add(@RequestBody @Validated SysPostResourceForm resource) {

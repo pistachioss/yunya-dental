@@ -5,12 +5,14 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.Post;
 import com.yunya.models.system.PostGroup;
 import com.yunya.models.system.SysUserPost;
-import com.yunya.modules.system.form.PostForm;
-import com.yunya.modules.system.form.query.PostQueryForm;
+import com.yunya.modules.system.domain.form.PostForm;
+import com.yunya.modules.system.domain.model.PostModel;
+import com.yunya.modules.system.domain.query.PostQueryForm;
 import com.yunya.modules.system.mapper.PostGroupMapper;
 import com.yunya.modules.system.mapper.PostMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
@@ -19,6 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -60,41 +66,30 @@ public class PostBiz extends BaseBiz<PostMapper, Post> {
    *
    * @param resource 参数封装
    */
-  public void add(Post resource) {
-    checkPostGroupParam(resource.getPostGroupId());
-    checkNameRepeat(resource.getName());
-    // resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    // resource.setCrtName(BaseContextHandler.getUsername());
-    mapper.insertSelective(resource);
-  }
-
-  /**
-   * 新增检查名称是否重复
-   *
-   * @param name 岗位名称
-   */
-  private void checkNameRepeat(String name) {
-    Post post = new Post();
-    post.setName(name);
-    Post result = mapper.selectOne(post);
-    if (null != result) {
-      throw new ClientServiceException(
-          "新增岗位'" + name + "'失败，该岗位名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
-    }
-  }
-
-  /**
-   * 检查岗位组参数是否合法
-   *
-   * @param postGroupId 岗位分类ID
-   */
-  private void checkPostGroupParam(Integer postGroupId) {
+  public void add(PostModel resource) {
+    Integer postGroupId = resource.getPostGroupId();
     PostGroup postGroup = postGroupMapper.selectByPrimaryKey(postGroupId);
     if (null == postGroup || BusinessConstants.DEFAULT_PARENT_ID.equals(postGroup.getParentId())) {
       throw new ClientServiceException(
           "新增岗位失败,岗位组ID'" + postGroupId + "', 岗位分类参数不合法",
           OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
+    String name = resource.getName();
+    Post entity = new Post();
+    entity.setName(name);
+    int count = mapper.selectCount(entity);
+    if (count > 0) {
+      throw new ClientServiceException(
+          "新增岗位'" + name + "'失败，该岗位名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+    }
+    entity.setPostGroupId(postGroupId);
+    Integer orderNum = resource.getOrderNum();
+    entity.setOrderNum(orderNum);
+    Boolean allowOperation = resource.getAllowOperation();
+    entity.setAllowOperation(allowOperation);
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
+    mapper.insertSelective(entity);
   }
 
   /**
@@ -117,8 +112,8 @@ public class PostBiz extends BaseBiz<PostMapper, Post> {
     if (!post.getName().equals(formName)) {
       Post entity = new Post();
       entity.setName(formName);
-      Post result = mapper.selectOne(entity);
-      if (null != result) {
+      int count = mapper.selectCount(entity);
+      if (count > 0) {
         throw new ClientServiceException(
             "修改岗位'" + formName + "'失败，该岗位名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
@@ -128,6 +123,9 @@ public class PostBiz extends BaseBiz<PostMapper, Post> {
     if (null != form.getInservice()) {
       post.setInservice(form.getInservice());
     }
+    post.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    post.setUpdName(BaseContextHandler.getName());
+    post.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(post);
   }
 

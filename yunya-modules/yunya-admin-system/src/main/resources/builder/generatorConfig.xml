@@ -40,7 +40,10 @@
         <table tableName="sys_element" domainObjectName="SysElement"/>
         <table tableName="sys_menu" domainObjectName="SysMenu"/>
         <table tableName="sys_user_post" domainObjectName="SysUserPost"/>
-        <table tableName="sys_post_element" domainObjectName="SysPostElement"/>-->
-        <table tableName="member_type" domainObjectName="MemberType"/>
+        <table tableName="sys_post_element" domainObjectName="SysPostElement"/>
+        <table tableName="account_item" domainObjectName="AccountItem"/>
+        <table tableName="clinic_account" domainObjectName="ClinicAccount"/>
+        -->
+        <table tableName="account_type" domainObjectName="AccountType"/>
     </context>
 </generatorConfiguration>

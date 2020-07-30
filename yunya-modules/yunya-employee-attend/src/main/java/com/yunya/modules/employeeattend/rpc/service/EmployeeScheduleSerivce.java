@@ -7,6 +7,8 @@ import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.biz.ClinicScheduleBiz;
@@ -17,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -43,8 +46,15 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
    * @return
    */
   public EmployeeScheduleResultVO findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
-    Date startDate = employeeScheduleQueryForm.getStartDate();
-    Date endDate = employeeScheduleQueryForm.getEndDate();
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    Date startDate = null;
+    Date endDate = null;
+    try {
+      startDate = simpleDateFormat.parse(employeeScheduleQueryForm.getStartDate());
+      endDate = simpleDateFormat.parse(employeeScheduleQueryForm.getEndDate());
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+    }
     if (null == startDate || null == endDate) {
       Calendar calendar = Calendar.getInstance();
       startDate = DateUtil.getThisWeekMonday(new Date());
@@ -52,7 +62,6 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
       calendar.add(Calendar.DATE, +SHIFT_DAYS);
       endDate = calendar.getTime();
     } else {
-      startDate = employeeScheduleQueryForm.getStartDate();
       endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
     }
 

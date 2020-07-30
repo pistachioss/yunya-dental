@@ -9,6 +9,13 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
     default-property-inclusion: always
+  redis:
+    database: 2
+    host: 192.168.31.90
+    port: 6379
+    pool:
+    max-active: 20
+    password: foobared
   datasource:
     host: 192.168.31.90
     port: 3306
@@ -105,19 +112,6 @@ swagger:
     name: yunya-system
 
 #redis-cache 相关
-redis:
-  pool:
-    maxActive: 300
-    maxIdle: 100
-    maxWait: 1000
-  host: ${REDIS_HOST:192.168.31.90}
-  port: ${REDIS_PORT:6379}
-  password: foobared
-  timeout: 2000
-  # 服务或应用名
-  sysName: yunya-system
-  enable: true
-  database: 0
 
 # 暴露所以端点
 management:

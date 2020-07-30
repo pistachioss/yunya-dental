@@ -10,6 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 
 /**
  * @author bruce
@@ -32,7 +33,7 @@ public class ClinicEmployeeController {
     @PutMapping("clinic/employee/config/{clinicId}/{employeeId}")
     public ResponseResult modifyEmployeeConfig(@PathVariable("clinicId") Integer clinicId,
                                                @PathVariable("employeeId") Integer employeeId,
-                                               @RequestBody ClinicEmployeeConfigReq configRequest) {
+                                               @Valid @RequestBody ClinicEmployeeConfigReq configRequest) {
         clinicEmployeeConfigBiz.modifyClinicEmployeeConfig(employeeId, clinicId, configRequest);
         return ResponseUtil.success();
     }

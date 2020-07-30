@@ -11,6 +11,7 @@
         <result column="age_limit" property="ageLimit" jdbcType="INTEGER"/>
         <result column="rate" property="rate" jdbcType="REAL"/>
         <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="icon" property="icon" jdbcType="TINYINT"/>
         <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
@@ -29,6 +30,7 @@
         mt.age_limit as ageLimit,
         mt.rate,
         mt.type,
+        mt.icon,
         mt.description,
         mt.inservice
       from
@@ -44,6 +46,7 @@
         mt.renewal_amount as renewalAmount,
         mt.age_limit as ageLimit,
         mt.rate,
+        mt.icon,
         mt.type,
         mt.description,
         mt.inservice

@@ -2,6 +2,7 @@ package com.yunya.modules.emr.controller;
 
 import com.yunya.feign.emr.domain.form.MedicalTempCategoryForm;
 import com.yunya.feign.emr.domain.model.MedicalTempCategoryModel;
+import com.yunya.feign.emr.domain.vo.ChildCategoryListVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.emr.biz.MedicalTemplateCategoryBiz;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * @author bruce
@@ -31,7 +33,7 @@ public class MedicalTemplateCategoryController {
     }
 
     @ApiOperation("公司端-病历模板分类-修改")
-    @PostMapping("medical/template/category/{id}")
+    @PutMapping("medical/template/category/{id}")
     public ResponseResult updateRecord(@PathVariable("id") Integer id,
                                        @Valid @RequestBody MedicalTempCategoryForm updateForm) {
         categoryBiz.updateRecord(id, updateForm);
@@ -44,5 +46,12 @@ public class MedicalTemplateCategoryController {
     public ResponseResult deleteRecord(@PathVariable("id") Integer id) {
         categoryBiz.deleteRecord(id);
         return ResponseUtil.success();
+    }
+
+    @ApiOperation("公司端-病历模板分类-子分类查询")
+    @GetMapping("medical/template/category/{parentId}")
+    public ResponseResult<ChildCategoryListVo> getChildRecord(@PathVariable("parentId") Integer parentId) {
+        List<ChildCategoryListVo> list = categoryBiz.getChildListRecord(parentId);
+        return ResponseUtil.success(list);
     }
 }

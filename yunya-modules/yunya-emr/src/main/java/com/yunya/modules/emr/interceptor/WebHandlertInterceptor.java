@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -15,9 +16,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author bruce
  * @date 2020/7/28
  */
+@Configuration
 public class WebHandlertInterceptor extends HandlerInterceptorAdapter {
-//    @Resource
-//    private UserAuthConfig userAuthConfig;
 
     @Resource(name = "stringRedisTemplate")
     private ValueOperations<String, String> valueOperations;

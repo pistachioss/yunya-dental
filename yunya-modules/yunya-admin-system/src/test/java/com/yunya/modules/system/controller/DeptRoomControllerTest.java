@@ -1,7 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.modules.system.form.DepartmentRoomForm;
+import com.yunya.modules.system.domain.form.DepartmentRoomForm;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ public class DeptRoomControllerTest {
   public void add() {
     DepartmentRoomForm resource = new DepartmentRoomForm();
     resource.setName("正畸中心");
-    ResponseResult result = departmentRoomController.add(resource);
-    System.out.println(result);
+   // ResponseResult result = departmentRoomController.add(resource);
+    //System.out.println(result);
   }
 }

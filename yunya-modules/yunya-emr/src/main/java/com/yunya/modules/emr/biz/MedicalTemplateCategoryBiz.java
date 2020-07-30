@@ -2,8 +2,10 @@ package com.yunya.modules.emr.biz;
 
 import com.yunya.feign.emr.domain.form.MedicalTempCategoryForm;
 import com.yunya.feign.emr.domain.model.MedicalTempCategoryModel;
+import com.yunya.feign.emr.domain.vo.ChildCategoryListVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.emr.MedicalTemplateCategory;
@@ -13,6 +15,7 @@ import com.yunya.modules.emr.mapper.MedicalTemplateMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * @author bruce
@@ -34,6 +37,8 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
             throw new ClientServiceException("新增分类与系统中已有分类重复，不允许新增！", OperationCodeConstants.NAME_IS_OCCUPIED);
         }
         MedicalTemplateCategory createEntity = EntityUtils.build(createModel, MedicalTemplateCategory.class);
+        createEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        createEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         mapper.insertSelective(createEntity);
     }
 
@@ -43,9 +48,10 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         if (count > 0 ) {
             throw new ClientServiceException("新增分类与系统中已有分类重复，不允许新增！", OperationCodeConstants.NAME_IS_OCCUPIED);
         }
-        MedicalTemplateCategory createEntity = EntityUtils.build(modifyForm, MedicalTemplateCategory.class);
-        createEntity.setId(id);
-        mapper.updateByPrimaryKeySelective(createEntity);
+        MedicalTemplateCategory updateEntity = EntityUtils.build(modifyForm, MedicalTemplateCategory.class);
+        updateEntity.setId(id);
+        updateEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+        mapper.updateByPrimaryKeySelective(updateEntity);
     }
 
     public void deleteRecord(Integer id) {
@@ -58,6 +64,11 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         MedicalTemplateCategory category = new MedicalTemplateCategory();
         category.setId(id);
         mapper.deleteByPrimaryKey(category);
+    }
+
+    public List<ChildCategoryListVo> getChildListRecord(Integer parentId) {
+        List<ChildCategoryListVo> resultList = mapper.getTemplateList(parentId);
+        return resultList;
     }
 
 }
