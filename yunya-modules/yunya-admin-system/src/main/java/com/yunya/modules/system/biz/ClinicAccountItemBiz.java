@@ -16,6 +16,7 @@ import com.yunya.modules.system.vo.OrganizationInfoVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -104,6 +105,8 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
       entity.setAccountItemId(accountItemId);
       ClinicAccountItem resultData = mapper.selectOne(entity);
       if (null == resultData) {
+        entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        entity.setCrtName(BaseContextHandler.getName());
         mapper.insertSelective(entity);
       }
     }
@@ -121,6 +124,9 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
           "ID为'" + id + "'的组织支付方式不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     resultData.setInservice(!resultData.getInservice());
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(resultData);
   }
 }

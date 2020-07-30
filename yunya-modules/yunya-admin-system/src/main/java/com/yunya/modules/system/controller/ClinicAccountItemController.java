@@ -79,6 +79,7 @@ public class ClinicAccountItemController {
    * @param accountItemId 入账方式ID
    * @return
    */
+  @CurrentUser
   @ApiOperation("一键新增门诊入账方式")
   @GetMapping("/clinic/batch/{accountItemId}")
   public ResponseResult oneClickAdd(@PathVariable("accountItemId") Integer accountItemId) {
@@ -92,6 +93,8 @@ public class ClinicAccountItemController {
    * @param id 组织支付方式ID
    * @return
    */
+  @CurrentUser
+  @ApiOperation("设置组织支付方式是否可用")
   @GetMapping("/clinic/{id}")
   public ResponseResult switchClinicAccountItem(@PathVariable("id") Integer id) {
     clinicAccountItemBiz.switchClinicAccountItem(id);

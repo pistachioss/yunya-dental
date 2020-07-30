@@ -97,6 +97,7 @@ public class SysUserController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("用户修改")
   @PutMapping("/edit/{userId}")
   public ResponseResult edit(
@@ -125,6 +126,7 @@ public class SysUserController {
    * @param queryFrom 查询条件
    * @return
    */
+  @ApiOperation("根据条件查询员工信息列表并导出列表")
   @PostMapping("/export")
   public ResponseResult exportUserInfo(
       HttpServletResponse response, @RequestBody SysUserInfoDetailQueryFrom queryFrom)

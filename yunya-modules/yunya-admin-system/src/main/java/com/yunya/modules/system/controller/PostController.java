@@ -41,6 +41,7 @@ public class PostController {
    * @param id 岗位ID
    * @return
    */
+  @ApiOperation("根据ID查询岗位信息")
   @GetMapping("/one/{id}")
   public ResponseResult findById(@PathVariable Integer id) {
     Post post = postBiz.selectById(id);

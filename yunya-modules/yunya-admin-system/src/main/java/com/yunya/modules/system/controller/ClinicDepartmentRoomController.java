@@ -106,6 +106,7 @@ public class ClinicDepartmentRoomController {
    * @param id 门诊科室ID
    * @return
    */
+  @ApiOperation("根据门诊科室ID删除门诊科室")
   @DeleteMapping("/clinic/delete/{id}")
   public ResponseResult deleteByClinicDeptRoomId(@PathVariable("id") Integer id) {
     clinicDepartmentRoomBiz.deleteByClinicDeptRoomId(id);

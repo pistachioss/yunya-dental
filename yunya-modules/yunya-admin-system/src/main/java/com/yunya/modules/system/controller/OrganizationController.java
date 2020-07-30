@@ -44,6 +44,7 @@ public class OrganizationController {
    * @param id 组织ID
    * @return
    */
+  @ApiOperation("根据ID获取组织信息")
   @GetMapping("/one/{id}")
   public ResponseResult findById(@PathVariable Integer id) {
     OrganizationInfo vo = organizationBiz.findOrgInfoById(id);

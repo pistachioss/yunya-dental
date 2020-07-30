@@ -43,8 +43,9 @@ public class DictionaryTypeController {
    * @param id 字典类型ID
    * @return
    */
+  @ApiOperation("根据ID查询字典类型")
   @GetMapping("/type/{id}")
-  public ResponseResult findById(@PathVariable Integer id) {
+  public ResponseResult findById(@PathVariable("id") Integer id) {
     DictionaryTypeVO vo = new DictionaryTypeVO();
     DictionaryType dictionaryType = dictionaryTypeBiz.selectById(id);
     BeanUtils.copyProperties(dictionaryType, vo);
