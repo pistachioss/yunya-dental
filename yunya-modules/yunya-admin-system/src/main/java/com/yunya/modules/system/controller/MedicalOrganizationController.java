@@ -1,5 +1,6 @@
 package com.yunya.modules.system.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicExtInfoBiz;
@@ -57,6 +58,7 @@ public class MedicalOrganizationController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("编辑门诊基础信息")
   @ApiImplicitParam(
       name = "companyId",

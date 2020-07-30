@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.PostGroup;
@@ -82,6 +83,7 @@ public class PostGroupController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增岗位分组")
   @PostMapping("/group/add")
   public ResponseResult add(@RequestBody @Validated PostGroupModel resource) {
@@ -96,6 +98,7 @@ public class PostGroupController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("修改岗位组")
   @ApiImplicitParam(
       name = "id",

@@ -15,6 +15,7 @@ import com.yunya.modules.system.vo.DepartmentRoomVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -103,6 +104,9 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
     if (null != form.getInservice()) {
       entity.setInservice(form.getInservice());
     }
+    entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setUpdName(BaseContextHandler.getName());
+    entity.setUpdTime(new Date(System.currentTimeMillis()));
     entity.setId(id);
     mapper.updateByPrimaryKeySelective(entity);
   }

@@ -18,7 +18,7 @@ import java.util.Collections;
  * @date 2017/9/8
  */
 @Primary
-@Configuration("adminWebConfig")
+@Configuration("authWebConfig")
 public class WebConfiguration implements WebMvcConfigurer {
 
   /**
@@ -59,17 +59,7 @@ public class WebConfiguration implements WebMvcConfigurer {
    */
   private ArrayList<String> getIncludePathPatterns() {
     ArrayList<String> list = new ArrayList<>();
-    String[] urls = {
-      "/element/**",
-      "/gateLog/**",
-      "/group/**",
-      "/groupType/**",
-      "/menu/**",
-      "/user/**",
-      "/api/permissions",
-      "/api/user/un/**",
-      "/service/**"
-    };
+    String[] urls = {"/service/**", "/client/**"};
     Collections.addAll(list, urls);
     return list;
   }

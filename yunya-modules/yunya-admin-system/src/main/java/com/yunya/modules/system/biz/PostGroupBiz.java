@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.system.Post;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -108,6 +110,8 @@ public class PostGroupBiz extends BaseBiz<PostGroupMapper, PostGroup> {
     entity.setAllowOperation(allowOperation);
     Integer orderNum = resource.getOrderNum();
     entity.setOrderNum(orderNum);
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
   }
 
@@ -126,6 +130,9 @@ public class PostGroupBiz extends BaseBiz<PostGroupMapper, PostGroup> {
     if (null != form.getInservice()) {
       postGroup.setInservice(form.getInservice());
     }
+    postGroup.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    postGroup.setUpdName(BaseContextHandler.getName());
+    postGroup.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(postGroup);
   }
 

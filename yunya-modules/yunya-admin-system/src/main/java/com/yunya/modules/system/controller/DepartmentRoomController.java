@@ -1,5 +1,6 @@
 package com.yunya.modules.system.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.DepartmentRoomBiz;
@@ -66,6 +67,7 @@ public class DepartmentRoomController {
    * @param resource 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("新增科室")
   @PostMapping("/save")
   public ResponseResult add(@RequestBody @Validated DepartmentRoomModel resource) {
@@ -80,6 +82,7 @@ public class DepartmentRoomController {
    * @param form 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("修改科室")
   @PutMapping("/modify/{id}")
   public ResponseResult modify(

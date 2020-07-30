@@ -67,7 +67,7 @@ public class DepartmentBiz extends BaseBiz<DepartmentMapper, Department> {
     entity.setType(resource.getType());
     entity.setOrderNum(resource.getOrderNum());
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    entity.setCrtName(BaseContextHandler.getUsername());
+    entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
   }
 
@@ -102,7 +102,7 @@ public class DepartmentBiz extends BaseBiz<DepartmentMapper, Department> {
       department.setInservice(inservice);
     }
     department.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    department.setUpdName(BaseContextHandler.getUsername());
+    department.setUpdName(BaseContextHandler.getName());
     department.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(department);
   }

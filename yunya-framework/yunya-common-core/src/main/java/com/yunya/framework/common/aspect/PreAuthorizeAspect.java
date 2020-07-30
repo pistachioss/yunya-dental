@@ -1,6 +1,6 @@
-package com.yunya.framework.auth.aspect;
+package com.yunya.framework.common.aspect;
 
-import com.yunya.framework.auth.annotation.HasPermissions;
+import com.yunya.framework.common.annation.HasPermissions;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.common.utils.ServletUtils;
@@ -35,7 +35,7 @@ public class PreAuthorizeAspect {
    * @return
    * @throws Throwable
    */
-  @Around("@annotation(com.yunya.framework.auth.annotation.HasPermissions)")
+  @Around("@annotation(com.yunya.framework.common.annation.HasPermissions)")
   public Object around(ProceedingJoinPoint point) throws Throwable {
     Signature signature = point.getSignature();
     MethodSignature methodSignature = (MethodSignature) signature;

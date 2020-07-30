@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.AccountType;
@@ -15,6 +16,7 @@ import com.yunya.modules.system.vo.AccountTypeVO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -75,6 +77,8 @@ public class AccountTypeBiz extends BaseBiz<AccountTypeMapper, AccountType> {
       throw new ClientServiceException(
           "新增失败，名称为'" + name + "'的入账方式分类已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
   }
 
@@ -96,6 +100,8 @@ public class AccountTypeBiz extends BaseBiz<AccountTypeMapper, AccountType> {
           "修改失败，系统默认的入账方式分类不允许被修改！", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     String name = form.getName();
+    resultData = new AccountType();
+    resultData.setName(name);
     if (!resultData.getName().equals(name)) {
       int count = mapper.selectCount(resultData);
       if (count > 0) {
@@ -103,12 +109,13 @@ public class AccountTypeBiz extends BaseBiz<AccountTypeMapper, AccountType> {
             "修改失败，名称为'" + name + "'的数据已存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
       }
     }
-    resultData = new AccountType();
-    resultData.setName(name);
     Boolean inservice = form.getInservice();
     if (null != inservice) {
       resultData.setInservice(inservice);
     }
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
     resultData.setId(id);
     mapper.updateByPrimaryKeySelective(resultData);
   }

@@ -44,7 +44,7 @@ public class SysMenuController {
    * @param resourceForm 参数封装
    * @return map
    */
-  @ApiOperation("查询用户菜单权限树")
+  @ApiOperation("查询用户菜单权限树(选择用户可登陆组织)")
   @PostMapping("/user/list")
   public ResponseResult getUserMenuResourceList(
       @RequestBody @Validated UserResourceForm resourceForm) {

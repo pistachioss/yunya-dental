@@ -1,5 +1,7 @@
 package com.yunya.modules.system.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicAccountItemBiz;
@@ -53,8 +55,8 @@ public class ClinicAccountItemController {
   @ApiOperation("根据条件查询门诊入账方式列表(可分页)")
   @PostMapping("/clinic/list")
   public ResponseResult findList(@RequestBody ClinicAccountItemQueryForm queryForm) {
-    clinicAccountItemBiz.findList(queryForm);
-    return ResponseUtil.success();
+    PageInfo<ClinicAccountItemVO> resultList = clinicAccountItemBiz.findList(queryForm);
+    return ResponseUtil.success(resultList);
   }
 
   /**
@@ -63,6 +65,7 @@ public class ClinicAccountItemController {
    * @param model 参数模型
    * @return
    */
+  @CurrentUser
   @ApiOperation("新增门诊入账方式")
   @PostMapping("/clinic/save")
   public ResponseResult save(@RequestBody @Validated ClinicAccountItemModel model) {
@@ -76,6 +79,7 @@ public class ClinicAccountItemController {
    * @param accountItemId 入账方式ID
    * @return
    */
+  @CurrentUser
   @ApiOperation("一键新增门诊入账方式")
   @GetMapping("/clinic/batch/{accountItemId}")
   public ResponseResult oneClickAdd(@PathVariable("accountItemId") Integer accountItemId) {
@@ -89,6 +93,8 @@ public class ClinicAccountItemController {
    * @param id 组织支付方式ID
    * @return
    */
+  @CurrentUser
+  @ApiOperation("设置组织支付方式是否可用")
   @GetMapping("/clinic/{id}")
   public ResponseResult switchClinicAccountItem(@PathVariable("id") Integer id) {
     clinicAccountItemBiz.switchClinicAccountItem(id);

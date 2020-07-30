@@ -26,6 +26,9 @@ public class CommonConstants {
 
   public static final Integer EX_OTHER_CODE = 500;
 
+  /** 请求头token */
+  public static final String TOKEN_HEADER = "Authorization";
+
   /** 当前组织ID */
   public static final String CONTEXT_KEY_ORG_ID = "currentOrgId";
   /** 当前用户ID */

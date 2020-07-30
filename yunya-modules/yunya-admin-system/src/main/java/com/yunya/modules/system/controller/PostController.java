@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.Post;
@@ -40,6 +41,7 @@ public class PostController {
    * @param id 岗位ID
    * @return
    */
+  @ApiOperation("根据ID查询岗位信息")
   @GetMapping("/one/{id}")
   public ResponseResult findById(@PathVariable Integer id) {
     Post post = postBiz.selectById(id);
@@ -65,6 +67,7 @@ public class PostController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增岗位")
   @PostMapping("/add")
   public ResponseResult add(@RequestBody @Validated PostModel resource) {
@@ -79,6 +82,7 @@ public class PostController {
    * @param form 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("编辑岗位")
   @ApiImplicitParam(
       name = "id",

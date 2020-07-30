@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.DictionaryItem;
@@ -71,6 +72,7 @@ public class DictionaryItemController {
    * @param resource 参数封装
    * @return map
    */
+  @CurrentUser
   @ApiOperation("新增字典明细")
   @PostMapping("/item/add")
   public ResponseResult add(@RequestBody @Validated DictionaryItemModel resource) {
@@ -85,6 +87,7 @@ public class DictionaryItemController {
    * @param form 参数封装
    * @return
    */
+  @CurrentUser
   @ApiOperation("编辑字典明细")
   @ApiImplicitParam(
       name = "id",

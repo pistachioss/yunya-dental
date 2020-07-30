@@ -2,13 +2,17 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.TreeUtil;
+import com.yunya.framework.common.utils.jwt.JWTHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysElement;
 import com.yunya.models.system.SysMenu;
 import com.yunya.modules.system.domain.form.MenuElementForm;
@@ -23,6 +27,7 @@ import com.yunya.modules.system.vo.tree.SysMenuElementTreeVO;
 import com.yunya.modules.system.vo.tree.SysMenuTreeVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
@@ -60,6 +65,8 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
     this.sysUserPostBiz = sysUserPostBiz;
     this.sysResourceAuthorityBiz = sysResourceAuthorityBiz;
   }
+
+  @Autowired private RedisUtils redisUtils;
 
   /**
    * 根据条件查询(可分页)
@@ -213,11 +220,17 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
    * @return
    */
   public List<SysMenu> getUserMenuResourceList(UserResourceForm resourceForm) {
-    // 查询用户在该组织下的所有岗位列表
     Integer orgId = resourceForm.getOrgId();
     Integer userId = resourceForm.getUserId();
-    // 将用户登陆组织设置到线程局部变量
-    BaseContextHandler.setOrgId(orgId.toString());
+    // 将用户登陆的组织ID设置到用户信息，并存入到redis中
+    String token = redisUtils.get(RedisConstants.REDIS_KEY_USER_ID + userId);
+    if (StringUtils.isNotBlank(token)) {
+      UserInfo userInfo =
+          redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + token, UserInfo.class);
+      userInfo.setCurrentOrgId(orgId);
+      redisUtils.set(RedisConstants.REDIS_KEY_USER_TOKEN + token, userInfo, 14400);
+    }
+    // 查询用户在该组织下的所有岗位列表
     List<PostVO> posts = sysUserPostBiz.findUserPostList(orgId, userId);
     List<SysMenu> authorityList = getPostMenuResourceAuthorityList(posts);
     return authorityList;
