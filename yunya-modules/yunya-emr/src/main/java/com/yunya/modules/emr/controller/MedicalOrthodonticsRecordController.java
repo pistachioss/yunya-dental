@@ -62,19 +62,19 @@ public class MedicalOrthodonticsRecordController {
     return ResponseUtil.success(medicalOrthodonticsRecordBiz.create(model));
   }
 
-  /**
-   * 查询
-   *
-   * @param
-   * @return
-   */
-  @PostMapping("/txe")
-  @ApiOperation("查询列表")
-  public ResponseResult txe() {
-    EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
-    employeeScheduleQueryForm.setClinicId(35);
-    employeeScheduleQueryForm.setEndDate("2020-08-07");
-    employeeScheduleQueryForm.setStartDate("2020-07-30");
-    return ResponseUtil.success(employeeAttendServiceFeign.findList(employeeScheduleQueryForm));
-  }
+//  /**
+//   * 查询
+//   *
+//   * @param
+//   * @return
+//   */
+//  @PostMapping("/txe")
+//  @ApiOperation("查询列表")
+//  public ResponseResult txe() {
+//    EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+//    employeeScheduleQueryForm.setClinicId(35);
+//    employeeScheduleQueryForm.setEndDate("2020-08-07");
+//    employeeScheduleQueryForm.setStartDate("2020-07-30");
+//    return ResponseUtil.success(employeeAttendServiceFeign.findList(employeeScheduleQueryForm));
+//  }
 }
