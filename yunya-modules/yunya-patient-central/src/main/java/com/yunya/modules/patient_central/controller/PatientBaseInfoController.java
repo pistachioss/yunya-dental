@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
@@ -44,6 +45,7 @@ public class PatientBaseInfoController {
         return patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
     }
 
+    @CurrentUser
     @ApiOperation("添加患者基本信息信息")
     @PostMapping("/add")
     public ResponseResult addPatient(@RequestBody @Validated  PatientBaseInfoModel patientBaseInfoModel){

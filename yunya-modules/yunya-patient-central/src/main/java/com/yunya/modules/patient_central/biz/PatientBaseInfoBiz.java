@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -14,6 +15,7 @@ import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
+import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
@@ -44,6 +46,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
     @Autowired private PatientExpInfoMapper patientExpInfoMapper;
 
+    @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
 
     /**
      * 通过患者id查询患者共用属性
@@ -53,7 +57,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     public PatientPublicInfoVo findPatientPublicInfoById(Integer id) {
         PatientPublicInfoVo patientPublicInfoVo = new PatientPublicInfoVo();
         patientPublicInfoVo =  patientBaseInfoMapper.findPatientPublicInfoById(id);
-        patientPublicInfoVo.setMemberCardName(""); //TODO 根据会员卡类型id调用feign
+        MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
+        patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
         return patientPublicInfoVo;
     }
 
@@ -82,7 +87,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-        patientBaseInfo.setCrtId(1); //TODO Integer.parseInt(BaseContextHandler.getUserID())
+        String userID = BaseContextHandler.getUserID();
+        patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientBaseInfo.setCrtName(BaseContextHandler.getName());//TODO Integer.parseInt(BaseContextHandler.getUserName())
         mapper.insertSelective(patientBaseInfo);
     }
