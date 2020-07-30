@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.discount.mapper.RechargeCardMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.discount.RechargeCard">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="physical_card" property="physicalCard" jdbcType="BIT"/>
+        <result column="market_product_type_id" property="marketProductTypeId" jdbcType="INTEGER"/>
+        <result column="face_value" property="faceValue" jdbcType="DECIMAL"/>
+        <result column="selling_price" property="sellingPrice" jdbcType="DECIMAL"/>
+        <result column="bonus" property="bonus" jdbcType="DECIMAL"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="doc" property="doc" jdbcType="VARCHAR"/>
+        <result column="selling_start_date" property="sellingStartDate" jdbcType="DATE"/>
+        <result column="selling_end_date" property="sellingEndDate" jdbcType="DATE"/>
+        <result column="activation_deadline" property="activationDeadline" jdbcType="DATE"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="clinic_ids" property="clinicIds" jdbcType="VARCHAR"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="revision" property="revision" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="DiscountVOMap" type="com.yunya.modules.discount.vo.DiscountVO">
+        <result column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="markerProductName" property="markerProductName" jdbcType="VARCHAR"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="selectVOs" resultMap="DiscountVOMap">
+        select rc.id,rc.name,mpt.name as markerProductName,rc.icon,rc.crt_time from recharge_card rc
+        left join market_product_type mpt on mpt.id = rc.market_product_type_id
+        <where>
+            <if test="marketProductTypeId != null">
+                and rc.market_product_type_id = #{marketProductTypeId}
+            </if>
+            <if test="name != null and name != ''">
+                and rc.name = #{name}
+            </if>
+            <if test="startDate != null and endDate !=null">
+                rc.crt_time &gt;= #{startDate} and rc.crt_time &lt; #{endDate}
+            </if>
+        </where>
+        group by rc.id
+    </select>
+</mapper>
