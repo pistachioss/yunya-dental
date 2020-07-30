@@ -1,4 +1,4 @@
-package com.yunya.clinic.base;
+package com.yunya.modules.clinic.base;
 
 import com.yunya.feign.EnableYunyaFeignClients;
 import org.springframework.boot.SpringApplication;

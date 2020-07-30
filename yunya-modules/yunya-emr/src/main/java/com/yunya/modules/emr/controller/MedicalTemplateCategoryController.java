@@ -2,7 +2,9 @@ package com.yunya.modules.emr.controller;
 
 import com.yunya.feign.emr.domain.form.MedicalTempCategoryForm;
 import com.yunya.feign.emr.domain.model.MedicalTempCategoryModel;
-import com.yunya.feign.emr.domain.vo.ChildCategoryListVo;
+import com.yunya.feign.emr.domain.vo.TemplateCategoryVo;
+import com.yunya.feign.emr.domain.vo.TemplateParentCategoryVo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.emr.biz.MedicalTemplateCategoryBiz;
@@ -27,6 +29,7 @@ public class MedicalTemplateCategoryController {
 
     @ApiOperation("公司端-病历模板分类-新增")
     @PostMapping("medical/template/category")
+    @CurrentUser
     public ResponseResult createRecord(@Valid @RequestBody MedicalTempCategoryModel createModel) {
         categoryBiz.createRecord(createModel);
         return ResponseUtil.success();
@@ -34,6 +37,7 @@ public class MedicalTemplateCategoryController {
 
     @ApiOperation("公司端-病历模板分类-修改")
     @PutMapping("medical/template/category/{id}")
+    @CurrentUser
     public ResponseResult updateRecord(@PathVariable("id") Integer id,
                                        @Valid @RequestBody MedicalTempCategoryForm updateForm) {
         categoryBiz.updateRecord(id, updateForm);
@@ -48,10 +52,16 @@ public class MedicalTemplateCategoryController {
         return ResponseUtil.success();
     }
 
-    @ApiOperation("公司端-病历模板分类-子分类查询")
-    @GetMapping("medical/template/category/{parentId}")
-    public ResponseResult<ChildCategoryListVo> getChildRecord(@PathVariable("parentId") Integer parentId) {
-        List<ChildCategoryListVo> list = categoryBiz.getChildListRecord(parentId);
+    @ApiOperation("公司端-病历模板分类查询")
+    @GetMapping("medical/template/category/all")
+    public ResponseResult<TemplateCategoryVo> getChildRecord() {
+        List<TemplateCategoryVo> list = categoryBiz.getAllCategory();
         return ResponseUtil.success(list);
+    }
+
+    @ApiOperation("父分类字典")
+    @GetMapping("medical/template/category/parent")
+    public ResponseResult<TemplateParentCategoryVo> getParentCategory() {
+        return ResponseUtil.success(categoryBiz.getParentCategory());
     }
 }

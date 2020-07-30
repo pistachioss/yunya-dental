@@ -24,14 +24,20 @@
         select
             `id`,
             `content`
-        from
-            `general_template`
-        <where>
-            `medical_template_category_id` = #{categoryId}
+        from `general_template`
+        where `medical_template_category_id` = #{categoryId}
             <if test="keyword != null" >
                 and `content` like concat('%', #{keyword}, '%')
             </if>
-        </where>
-        order by upd_time desc
+        order by `enable` desc, `upd_time` desc
     </select>
+
+    <update id="enableById">
+        update
+            `general_template`
+        set `enable` = #{enable}
+        where `medical_template_category_id` = #{categoryId}
+          and `id` = #{templateId}
+    </update>
+
 </mapper>

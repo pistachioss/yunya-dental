@@ -1,4 +1,4 @@
-package com.yunya.clinic.base;
+package com.yunya.modules.clinic.base;
 
 import org.junit.Test;
 import org.springframework.boot.test.context.SpringBootTest;
