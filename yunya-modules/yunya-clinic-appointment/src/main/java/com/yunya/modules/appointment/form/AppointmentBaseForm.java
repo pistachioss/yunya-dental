@@ -30,12 +30,12 @@ public class AppointmentBaseForm implements Serializable {
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名",required = true)
     @NotBlank(message = "患者姓名为空！")
-    private String patientame;
+    private String patientName;
 
-    /** 手机号 */
-    @ApiModelProperty(value = "手机号", required = true)
-    @NotBlank(message = "手机号为空！")
-    private String telephone;
+    /** 诊所ID */
+    @ApiModelProperty(value = "诊所ID",required = true)
+    @NotNull(message = "门诊ID不能为空！")
+    private Integer orgId ;
 
     /** 预约日期 */
     @ApiModelProperty(value = "预约日期",required = true)
@@ -51,7 +51,7 @@ public class AppointmentBaseForm implements Serializable {
     /** 预约时长（默认15分钟） */
     @ApiModelProperty(value = "预约时长（默认15分钟）",required = true)
     @NotNull(message = "预约时长为空！")
-    private Integer time;
+    private Integer appointDuration;
 
     /**预约状态  未确认-false;确认-true*/
     @ApiModelProperty(value = "预约状态  未确认-false;确认-true")
@@ -59,91 +59,42 @@ public class AppointmentBaseForm implements Serializable {
 
     /** 医生id */
     @ApiModelProperty(value = "医生id", required = true)
-    @NotBlank(message = "医生id为空！")
+    @NotBlank(message = "医生不能为空！")
     private String dentistId;
-
-    /** c */
-    @ApiModelProperty(value = "医生id", required = true)
-    @NotBlank(message = "医生姓名为空！")
-    private String dentistName;
 
     /**助手id*/
     @ApiModelProperty("助手id")
     private String assistantId;
 
-    /**助手姓名*/
-    @ApiModelProperty("助手姓名")
-    private String assistantName;
-
     /** 预约科室id */
     @ApiModelProperty("预约科室id")
-    private String deptId;
-
-    /** 预约科室名称（本门诊科室列表） */
-    @ApiModelProperty("预约科室名称（本门诊科室列表）")
-    private String deptName;
+    private String clinicDeptRoomId;
 
     /** 预约设备id */
     @ApiModelProperty("预约设备id ")
-    private String deviceId;
-
-    /** 预约设备名称（本门诊设备列表） */
-    @ApiModelProperty("预约设备名称（本门诊设备列表）")
-    private String deviceName;
+    private String clinicDeviceItemId;
 
     /** 牙位 */
     @ApiModelProperty("牙位")
     private String toothBit;
 
+    /** 预约确认 0-未确认；1-确认 */
+    @ApiModelProperty("预约确认 0-未确认；1-确认")
+    private Byte confirmStatus;
+
     /** 预约项目明细条目id */
     @ApiModelProperty("预约项目明细条目id")
-    private Integer appointItemId;
-
-    /** 预约项目明细条目名称 */
-    @ApiModelProperty("预约项目明细条目名称")
-    private String appointItemName;
-
-    /** 预约项目明细条目类型Id */
-    @ApiModelProperty("预约项目明细条目类型Id")
-    private Integer appointItemTypeId;
-
-    /** 预约项目明细条目类型名称 */
-    @ApiModelProperty("预约项目明细条目类型名称")
-    private String appointItemTypeName;
+    private Integer clinicAppointItemId;
 
     /** 预约内容 */
     @ApiModelProperty("预约内容")
-    private String content;
+    private String appointContent;
 
     /** 备注 */
     @ApiModelProperty("备注")
     private String remark;
 
-    /** 是否启用 */
-    @ApiModelProperty("是否启用")
-    private String inservice ;
-
-    /** 创建人ID */
-    @ApiModelProperty(value = "创建人ID")
-    private Integer crtId ;
-
-    /** 创建人姓名 */
-    @ApiModelProperty(value = "创建人姓名")
-    private String crtName ;
-
-    /** 创建时间 */
-    @ApiModelProperty(value = "创建时间")
-    private Date crtTime ;
-
-    /** 更新人ID */
-    @ApiModelProperty(value = "更新人ID")
-    private Integer uptId ;
-
-    /** 更新人姓名 */
-    @ApiModelProperty(value = "更新人姓名")
-    private String updName ;
-
-    /** 更新时间 */
-    @ApiModelProperty(value = "更新时间")
-    private Date updTime ;
+    /** 是否启用 是否有效 */
+    @ApiModelProperty(value = "是否启用 是否有效",required = true)
+    private Byte inservice;
 }

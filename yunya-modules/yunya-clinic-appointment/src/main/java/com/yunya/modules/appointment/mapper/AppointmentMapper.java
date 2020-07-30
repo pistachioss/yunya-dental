@@ -60,10 +60,25 @@ public interface AppointmentMapper extends Mapper<Appointment> {
             @Param("appointEndTime") Date appointEndTime);
 
 
+    /**
+     * 根据医生id，预约开始时间，预约结束时间查询所有预约列表
+     * @param dentistId    医生id
+     * @param appointStartTime  预约开始时间
+     * @param appointEndTime    预约结束时间
+     * @return    符合条件的所有预约列表
+     */
     List<AppointConflictInfoVo> findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime(
             @Param("dentistId") Integer dentistId,
             @Param("appointStartTime") Date appointStartTime,
             @Param("appointEndTime") Date appointEndTime);
+
+
+    /**
+     * 新增患者预约
+     * @param appointment
+     * @return
+     */
+    Integer insertAppointment(Appointment appointment);
 
 
 }
