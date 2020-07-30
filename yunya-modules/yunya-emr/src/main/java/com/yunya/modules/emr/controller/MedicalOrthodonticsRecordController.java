@@ -31,9 +31,8 @@ import java.util.Date;
 @RequestMapping("/medical_Orthodontics")
 @CrossOrigin
 public class MedicalOrthodonticsRecordController {
-
-  @Autowired private MedicalOrthodonticsRecordBiz medicalOrthodonticsRecordBiz;
   @Autowired private EmployeeAttendServiceFeign employeeAttendServiceFeign;
+  @Autowired private MedicalOrthodonticsRecordBiz medicalOrthodonticsRecordBiz;
   /**
    * 查询正畸电子病历
    *
@@ -45,7 +44,7 @@ public class MedicalOrthodonticsRecordController {
   public ResponseResult findList(@RequestBody @Valid MedicalOrthodonticsRecordQueryForm query) {
     MedicalOrthodonticsRecord medicalOrthodonticsRecord = new MedicalOrthodonticsRecord();
     BeanUtils.copyProperties(query,medicalOrthodonticsRecord);
-    return ResponseUtil.success(medicalOrthodonticsRecordBiz.selectByObj(medicalOrthodonticsRecord));
+    return ResponseUtil.success(medicalOrthodonticsRecordBiz.selectByEntity(medicalOrthodonticsRecord));
   }
 
   /**
@@ -61,5 +60,21 @@ public class MedicalOrthodonticsRecordController {
     model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setCrtTime(new Date());
     return ResponseUtil.success(medicalOrthodonticsRecordBiz.create(model));
+  }
+
+  /**
+   * 查询
+   *
+   * @param
+   * @return
+   */
+  @PostMapping("/txe")
+  @ApiOperation("查询列表")
+  public ResponseResult txe() {
+    EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+    employeeScheduleQueryForm.setClinicId(35);
+    employeeScheduleQueryForm.setEndDate("2020-08-07");
+    employeeScheduleQueryForm.setStartDate("2020-07-30");
+    return ResponseUtil.success(employeeAttendServiceFeign.findList(employeeScheduleQueryForm));
   }
 }

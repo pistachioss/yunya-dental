@@ -43,4 +43,6 @@ public class MedicalCommonRecordController {
     return ResponseUtil.success(medicalCommonRecordBiz.create(model));
   }
 
+
+
 }

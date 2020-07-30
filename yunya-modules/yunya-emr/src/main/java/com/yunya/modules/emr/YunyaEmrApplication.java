@@ -13,7 +13,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableYunyaFeignClients
 @EnableDiscoveryClient
 @EnableCustomSwagger2
-@ComponentScan(basePackages = {"com.yunya.modules.emr","com.yunya.framework.common"})
+@ComponentScan(basePackages = {"com.yunya.modules.emr","com.yunya.framework.common","com.yunya.framework.redis"})
 public class YunyaEmrApplication {
 
     public static void main(String[] args) {
