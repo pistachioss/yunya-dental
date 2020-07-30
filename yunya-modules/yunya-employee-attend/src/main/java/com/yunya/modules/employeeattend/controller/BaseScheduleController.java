@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.controller;
 
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.employee_attend.BaseSchedule;
@@ -62,6 +63,7 @@ public class BaseScheduleController {
      */
     @PostMapping("/setting")
     @ApiOperation("配置")
+    @CurrentUser
     public ResponseResult setting(@RequestBody @Valid ClinicCommonForm clinicCommonForm) {
         baseScheduleBiz.setting(clinicCommonForm);
         return ResponseUtil.success();

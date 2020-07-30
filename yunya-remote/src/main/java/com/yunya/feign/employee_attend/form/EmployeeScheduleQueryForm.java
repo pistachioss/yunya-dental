@@ -37,12 +37,12 @@ public class EmployeeScheduleQueryForm {
   /**
    * 开始时间
    */
-  private Date startDate;
+  private String startDate;
 
   /**
    * 截止时间
    */
-  private Date endDate;
+  private String endDate;
 
   private Integer page;
 
