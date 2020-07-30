@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.clinic.discount.mapper.CardStatisticsMapper">
+    <resultMap id="BaseResultMap" type="com.clinic.discount.entity.CardStatistics">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="relevance_id" property="relevanceId" jdbcType="INTEGER"/>
+        <result column="relevance_name" property="relevanceName" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="count" property="count" jdbcType="INTEGER"/>
+        <result column="selling_count" property="sellingCount" jdbcType="INTEGER"/>
+        <result column="rationing_date" property="rationingDate" jdbcType="DATE"/>
+        <result column="executor_name" property="executorName" jdbcType="VARCHAR"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="revision" property="revision" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap id="CardStatisticsVOMap" type="com.clinic.discount.vo.CardStatisticsVO">
+        <result column="relevance_id" property="relevanceId" jdbcType="INTEGER"/>
+        <result column="relevance_name" property="relevanceName" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
+        <result column="count" property="count" jdbcType="INTEGER"/>
+        <result column="selling_count" property="sellingCount" jdbcType="INTEGER"/>
+        <result column="rationing_date" property="rationingDate" jdbcType="DATE"/>
+        <result column="executor_name" property="executorName" jdbcType="VARCHAR"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="revision" property="revision" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <select id="selectVOByNameAndTypes" resultMap="CardStatisticsVOMap">
+        select relevance_id,relevance_name,status,`type`,`count`,selling_count,rationing_date
+        executor_name,crt_name,revision from card_statistics where 1=1
+        <if test="name != null and name != ''">
+            and `name` like concat('%', #{name}, '%')
+        </if>
+        <if test="list != null and list.size > 0">
+          and `type` in
+          <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+          </foreach>
+        </if>
+    </select>
+</mapper>

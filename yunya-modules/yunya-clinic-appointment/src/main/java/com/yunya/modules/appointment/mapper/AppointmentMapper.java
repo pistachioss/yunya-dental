@@ -1,0 +1,69 @@
+package com.yunya.modules.appointment.mapper;
+
+import com.yunya.models.appointment.Appointment;
+import com.yunya.modules.appointment.form.AppointItemTypeQueryForm;
+import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
+import com.yunya.modules.appointment.vo.AppointmentBaseVo;
+import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.modules.appointment.vo.AppointmentItemTypeVo;
+import org.apache.ibatis.annotations.Param;
+import tk.mybatis.mapper.common.Mapper;
+
+import java.util.Date;
+import java.util.List;
+
+/**
+ * 患者预约dao
+ */
+public interface AppointmentMapper extends Mapper<Appointment> {
+
+    /**
+     * 根据条件查询所有可预约项目
+     *
+     * @param form
+     * @return
+     */
+    List<AppointmentItemEnableModelVo> selectAllAppointItemByOrgId(@Param("form") AppointItemTypeQueryForm form);
+
+    /**
+     * 根据条件查询可预约项目类型
+     *
+     * @param form
+     * @return
+     */
+    List<AppointmentItemTypeVo> getByOrderTypeId(@Param("form") AppointItemTypeQueryForm form);
+
+    /**
+     * 根据设备id，预约开始时间，预约结束时间查询所有预约列表
+     *
+     * @param deviceId         设备id
+     * @param appointStartTime 预约开始时间
+     * @param appointEndTime   预约结束时间
+     * @return 所有符合条件的预约列表
+     */
+    List<AppointConflictInfoVo> findAppointListByDeviceIdAndAppointStartTimeAndAppointEndTime(
+            @Param("deviceId") Integer deviceId,
+            @Param("appointStartTime") Date appointStartTime,
+            @Param("appointEndTime") Date appointEndTime);
+
+    /**
+     * 根据患者id，预约开始时间，预约结束时间查询所有预约列表
+     *
+     * @param patientId        患者Id
+     * @param appointStartTime 预约开始时间
+     * @param appointEndTime   预约结束时间
+     * @return 所有符合条件的预约列表
+     */
+    List<AppointConflictInfoVo> findAppointListByPatientIdAndAppointStartTimeAndAppointEndTime(
+            @Param("patientId") Integer patientId,
+            @Param("appointStartTime") Date appointStartTime,
+            @Param("appointEndTime") Date appointEndTime);
+
+
+    List<AppointConflictInfoVo> findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime(
+            @Param("dentistId") Integer dentistId,
+            @Param("appointStartTime") Date appointStartTime,
+            @Param("appointEndTime") Date appointEndTime);
+
+
+}

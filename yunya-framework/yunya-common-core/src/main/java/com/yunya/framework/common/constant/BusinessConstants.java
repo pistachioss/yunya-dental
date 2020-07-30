@@ -47,4 +47,8 @@ public class BusinessConstants {
 
   /** ------------------------ 其他 -----------------------------------------*/
   public static final String CLINIC_BUSINESS_PATTER = "HH:mm";
+
+  public static final Integer DISABLE_NUM = 0;
+
+  public static final Integer ENABLE_NUM = 1;
 }

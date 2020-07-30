@@ -1,0 +1,50 @@
+server:
+  port: 8205
+
+spring:
+  application:
+    name: yunya-emr
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://192.168.31.90:3306/yunya_emr?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
+    username: sa
+    password: Admin001!
+  redis:
+    host: 192.168.31.90
+    port: 6379
+    password: foobared
+    database: 2
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.215:8848
+
+mybatis:
+  mapperLocations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.yunya.models.emr
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 配置swagger
+swagger:
+  enabled: true
+  base-package: com.yunya.modules.emr
+  title: yunya-emr
+  version: 1.0.0.SNAPSHOT
+  description: 电子病历相关功能
+  contact:
+    name: yunya-emr
+
+#设置hystrix超时
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000
+
+
+
+

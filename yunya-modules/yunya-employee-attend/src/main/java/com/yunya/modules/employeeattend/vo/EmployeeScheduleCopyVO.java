@@ -99,4 +99,9 @@ public class EmployeeScheduleCopyVO{
    * 员工姓名
    */
   private String userName;
+  /**
+   * 排班名称
+   */
+  private String scheduleName;
+
 }

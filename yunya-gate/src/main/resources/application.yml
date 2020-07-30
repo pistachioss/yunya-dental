@@ -73,6 +73,20 @@ spring:
             - Path=/api/clinic/**
           filters:
             - StripPrefix=2
+        - id: employee-expand
+          uri: lb://employee-expand
+          order: 8004
+          predicates:
+            - Path=/api/expand/**
+          filters:
+            - StripPrefix=2
+        - id: yunya-emr
+          uri: lb://yunya-emr
+          order: 8005
+          predicates:
+            - Path=/api/emr/**
+          filters:
+            - StripPrefix=2
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
@@ -95,7 +109,7 @@ management:
 # 忽略网关鉴权的请求路径
 gate:
   ignore:
-    startWith: /auth/jwt
+    startWith: /auth/jwt,/auth/v2/api-docs,/system/v2/api-docs,/emr/v2/api-docs,/clinic/v2/api-docs,/expand/v2/api-docs
 
 auth:
   serviceId: yunya-auth
