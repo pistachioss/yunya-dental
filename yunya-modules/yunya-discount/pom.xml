@@ -13,10 +13,11 @@
     <description>优惠模块</description>
 
     <properties>
-        <java.version>1.8</java.version>
+        <!-- mapper接口、实体生成路径 -->
         <targetJavaProject>${basedir}/src/main/java</targetJavaProject>
         <targetMapperPackage>com.yunya.modules.discount.mapper</targetMapperPackage>
         <targetModelPackage>com.yunya.modules.discount.entity</targetModelPackage>
+        <!-- XML生成路径 -->
         <targetResourcesProject>${basedir}/src/main/resources</targetResourcesProject>
         <targetXMLPackage>mapper</targetXMLPackage>
     </properties>

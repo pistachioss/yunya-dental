@@ -14,9 +14,9 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://47.99.146.90:3306/clinic_discount?useUnicode=true"
-                        userId="root"
-                        password="123456">
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_discount?useUnicode=true"
+                        userId="sa"
+                        password="Admin001!">
         </jdbcConnection>
 
         <javaModelGenerator targetPackage="${targetModelPackage}" targetProject="${targetJavaProject}"/>
@@ -25,7 +25,7 @@
 
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
-        <!--        <table tableName="market_product_type" domainObjectName="MarketProductType"/>-->
+                <table tableName="coupon_common_info" domainObjectName="CouponCommonInfo"/>
         <!--        <table tableName="card" domainObjectName="Card"/>-->
         <!--        <table tableName="card_clinic" domainObjectName="CardClinic"/>-->
         <!--        <table tableName="card_statistics" domainObjectName="CardStatistics"/>-->
