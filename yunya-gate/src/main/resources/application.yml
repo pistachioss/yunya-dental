@@ -94,6 +94,15 @@ spring:
             - Path=/api/employee/attend/**
           filters:
             - StripPrefix=3
+  
+        # 通用工具服务，编号后排
+        -   id: aliyun-oss
+            uri: lb://aliyun-oss
+            order: 8999
+            predicates:
+              - Path=/api/aliyunoss/**
+            filters:
+              - StripPrefix=2
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
