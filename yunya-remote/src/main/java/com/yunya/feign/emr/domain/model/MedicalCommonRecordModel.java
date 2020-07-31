@@ -1,6 +1,7 @@
 package com.yunya.feign.emr.domain.model;
 
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
+import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -123,4 +124,7 @@ public class MedicalCommonRecordModel {
 
   @ApiModelProperty("修改时间")
   private Date updTime;
+
+  @ApiModelProperty("词条使用频率")
+  private List<MedicalGeneralNumVO>medicalGeneralNumList;
 }

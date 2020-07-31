@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.emr.mapper.MedicalGeneralNumMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="general_id" property="generalId" jdbcType="INTEGER" />
+    <result column="medical_id" property="medicalId" jdbcType="INTEGER" />
+    <result column="number" property="number" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <insert id="saveList">
+    insert into
+    medical_general_num
+    (`general_id`, `medical_id`,`number`,`crt_time`)
+    values
+    <foreach collection ="list" item="item" index= "index" separator =",">
+      (#{item.generalId}, #{item.medicalId},#{item.number}, #{item.crtTime})
+    </foreach >
+  </insert>
+
+</mapper>
