@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
@@ -17,10 +16,6 @@ import javax.validation.constraints.Size;
 @Getter
 @ApiModel(value = "修改病历模板分类模型")
 public class MedicalTempCategoryForm {
-
-    @NotNull
-    @ApiModelProperty(value = "分类父Id", required = true)
-    private Integer parentId;
 
     @ApiModelProperty(value = "分类名称", required = true)
     @Size(max = 25, message = "名称不能超过25个字")

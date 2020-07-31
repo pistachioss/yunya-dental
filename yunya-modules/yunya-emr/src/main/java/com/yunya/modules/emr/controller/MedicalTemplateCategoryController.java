@@ -36,11 +36,12 @@ public class MedicalTemplateCategoryController {
     }
 
     @ApiOperation("公司端-病历模板分类-修改")
-    @PutMapping("medical/template/category/{id}")
+    @PutMapping("medical/template/{parentId}/category/{id}")
     @CurrentUser
-    public ResponseResult updateRecord(@PathVariable("id") Integer id,
+    public ResponseResult updateRecord(@PathVariable("parentId") Integer parentId,
+                                       @PathVariable("id") Integer id,
                                        @Valid @RequestBody MedicalTempCategoryForm updateForm) {
-        categoryBiz.updateRecord(id, updateForm);
+        categoryBiz.updateRecord(parentId, id, updateForm);
         return ResponseUtil.success();
     }
 

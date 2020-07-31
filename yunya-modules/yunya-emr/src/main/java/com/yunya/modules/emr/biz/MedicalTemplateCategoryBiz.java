@@ -51,9 +51,11 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         mapper.insertSelective(createEntity);
     }
 
-    public void updateRecord(Integer id, MedicalTempCategoryForm modifyForm) {
+    public void updateRecord(Integer parentId, Integer id, MedicalTempCategoryForm modifyForm) {
+        //校验数据
+        checkCategory(parentId,id);
         //查询名称是否存在
-        int count = mapper.countByName(modifyForm.getName(), modifyForm.getParentId(), id);
+        int count = mapper.countByName(modifyForm.getName(), parentId, id);
         if (count > 0 ) {
             throw new ClientServiceException("新增分类与系统中已有分类重复，不允许新增！", OperationCodeConstants.NAME_IS_OCCUPIED);
         }
@@ -116,6 +118,16 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         List<MedicalTemplateCategory> list = mapper.selectByExample(example);
         List<TemplateParentCategoryVo> result = EntityUtils.build(list, TemplateParentCategoryVo.class);
         return result;
+    }
+
+    private void checkCategory(Integer parentId, Integer id) {
+        Example example = new Example(MedicalTemplateCategory.class);
+        example.createCriteria().andEqualTo("parentId", parentId)
+                .andEqualTo("id", id);
+        MedicalTemplateCategory category = mapper.selectOneByExample(example);
+        if (category == null) {
+            throw new ClientServiceException("数据不存在", OperationCodeConstants.DATA_NOT_EXIST);
+        }
     }
 
 }
