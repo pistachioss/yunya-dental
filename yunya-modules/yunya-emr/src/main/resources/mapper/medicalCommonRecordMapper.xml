@@ -27,4 +27,67 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+  <select id="findList" resultMap="BaseResultMap">
+    select
+    *
+    from
+    medical_common_record
+    <where>
+      patient_id = #{patientId}
+      <if test="id != null" >
+        and id = #{id}
+      </if>
+    </where>
+    order by crt_time desc
+  </select>
+
+  <insert id="insertMedical" parameterType="com.yunya.models.emr.MedicalCommonRecord"
+          useGeneratedKeys="true" keyProperty="id">
+     INSERT INTO medical_common_record (
+	id,
+	treatment_id,
+	patient_id,
+	major_dentist_id,
+	chief_complaint,
+	present_illness,
+	past_history,
+	re_examination,
+	examination,
+	diagnosis,
+	plan,
+	treatment,
+	prescription,
+	type,
+	status,
+	approval_time,
+	time,
+	crt_id,
+	crt_time,
+	upd_id,
+	upd_time
+)
+VALUES
+	(   #{id},
+		#{treatmentId},
+		#{patientId},
+		#{majorDentistId},
+		#{chiefComplaint},
+		#{presentIllness},
+		#{pastHistory},
+		#{reExamination},
+		#{examination},
+		#{diagnosis},
+		#{plan},
+		#{treatment},
+		#{prescription},
+		#{type},
+		#{status},
+		#{approvalTime},
+		#{time},
+		#{crtId},
+		#{crtTime},
+		#{updId},
+		#{updTime}
+	)
+    </insert>
 </mapper>

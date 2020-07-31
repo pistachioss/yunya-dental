@@ -1,9 +1,12 @@
 package com.yunya.modules.emr.biz;
 
+import com.google.common.collect.Lists;
 import com.yunya.feign.emr.domain.form.MedicalTempCategoryForm;
 import com.yunya.feign.emr.domain.model.MedicalTempCategoryModel;
-import com.yunya.feign.emr.domain.vo.ChildCategoryListVo;
+import com.yunya.feign.emr.domain.vo.TemplateCategoryVo;
+import com.yunya.feign.emr.domain.vo.TemplateParentCategoryVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -12,10 +15,16 @@ import com.yunya.models.emr.MedicalTemplateCategory;
 import com.yunya.modules.emr.mapper.GeneralTemplateMapper;
 import com.yunya.modules.emr.mapper.MedicalTemplateCategoryMapper;
 import com.yunya.modules.emr.mapper.MedicalTemplateMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author bruce
@@ -66,9 +75,47 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         mapper.deleteByPrimaryKey(category);
     }
 
-    public List<ChildCategoryListVo> getChildListRecord(Integer parentId) {
-        List<ChildCategoryListVo> resultList = mapper.getTemplateList(parentId);
-        return resultList;
+    /**
+     * 病例模板父子分类返回
+     * @return
+     */
+    public List<TemplateCategoryVo> getAllCategory() {
+        List<TemplateCategoryVo> resultList = Lists.newArrayList();
+        List<MedicalTemplateCategory> list = mapper.selectAll();
+        if (CollectionUtils.isEmpty(list)) {
+            return resultList;
+        }
+        //查询父分类集合
+        List<MedicalTemplateCategory> parentList = list.stream().filter(obj ->
+                            Objects.equals(BusinessConstants.DEFAULT_PARENT_ID, obj.getParentId()))
+                            .collect(Collectors.toList());
+        //父分类子分类做map映射
+        Map<Integer, List<MedicalTemplateCategory>> categoryMap = list.stream().
+                                    collect(Collectors.groupingBy(obj -> obj.getParentId()));
+        //生成父分类的vo集合
+        List<TemplateCategoryVo> parentVos = EntityUtils.build(parentList, TemplateCategoryVo.class);
+        parentVos.forEach(superVo -> {
+            //取出原始数据子分类集合
+            List<MedicalTemplateCategory> childList = categoryMap.get(superVo.getId());
+            if (CollectionUtils.isEmpty(childList)) {
+                return;
+            }
+            //子分类进行排序（更新时间倒叙）
+            childList.sort(Comparator.comparing(MedicalTemplateCategory::getCrtTime).reversed());
+            //构建子分类返回vo
+            List<TemplateCategoryVo> childResultList = EntityUtils.build(childList, TemplateCategoryVo.class);
+            superVo.setChildList(childResultList);
+        });
+        return parentVos;
+    }
+
+    public List<TemplateParentCategoryVo> getParentCategory() {
+        Example example = new Example(MedicalTemplateCategory.class);
+        example.createCriteria().andEqualTo("parentId", BusinessConstants.DEFAULT_PARENT_ID);
+        example.setOrderByClause("upd_time desc");
+        List<MedicalTemplateCategory> list = mapper.selectByExample(example);
+        List<TemplateParentCategoryVo> result = EntityUtils.build(list, TemplateParentCategoryVo.class);
+        return result;
     }
 
 }

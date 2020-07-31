@@ -35,11 +35,7 @@ public class MedicalRecordHistory {
     @Column(name = "major_dentist_id")
     private Integer majorDentistId;
 
-    /**
-     * 主治医生名称
-     */
-    @Column(name = "major_dentist_name")
-    private String majorDentistName;
+
 
     /**
      * 主诉
@@ -225,23 +221,7 @@ public class MedicalRecordHistory {
         this.majorDentistId = majorDentistId;
     }
 
-    /**
-     * 获取主治医生名称
-     *
-     * @return major_dentist_name - 主治医生名称
-     */
-    public String getMajorDentistName() {
-        return majorDentistName;
-    }
 
-    /**
-     * 设置主治医生名称
-     *
-     * @param majorDentistName 主治医生名称
-     */
-    public void setMajorDentistName(String majorDentistName) {
-        this.majorDentistName = majorDentistName;
-    }
 
     /**
      * 获取主诉

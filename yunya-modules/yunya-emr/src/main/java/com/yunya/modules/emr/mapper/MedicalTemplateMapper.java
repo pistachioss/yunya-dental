@@ -5,6 +5,9 @@ import com.yunya.models.emr.MedicalTemplate;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.List;
+
+
 public interface MedicalTemplateMapper extends Mapper<MedicalTemplate> {
 
     /**
@@ -21,5 +24,21 @@ public interface MedicalTemplateMapper extends Mapper<MedicalTemplate> {
      * @param id
      * @return
      */
-    int countByName(@Param("name") String name, @Param("id") Integer id);
+    int countByName(@Param("name") String name, @Param("categoryId") Integer categoryId, @Param("id") Integer id);
+
+    /**
+     * 根据内容模糊查询
+     * @param keyword
+     * @param categoryId
+     * @return
+     */
+    List<MedicalTemplate> listByKeyword(@Param("keyword") String keyword, @Param("categoryId")Integer categoryId);
+
+    /**
+     * 启用禁用模板
+     * @param categoryId
+     * @param templateId
+     * @param enable
+     */
+    void enableById(@Param("categoryId") Integer categoryId, @Param("templateId") Integer templateId, @Param("enable") Integer enable);
 }

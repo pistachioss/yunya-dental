@@ -12,7 +12,7 @@ import javax.validation.constraints.Size;
  * @author xiangyang
  * @date 2020/7/29
  */
-@ApiModel(value = "普通模板修改模型（词条，范句，要点，诊断）")
+@ApiModel(value = "修改普通模板模型（词条，范句，要点，诊断）")
 @Setter
 @Getter
 public class GeneralTemplateForm {

@@ -38,6 +38,9 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
+    if (!(handler instanceof HandlerMethod)) {
+      return super.preHandle(request, response, handler);
+    }
     HandlerMethod handlerMethod = (HandlerMethod) handler;
     CurrentUser annotation = handlerMethod.getBeanType().getAnnotation(CurrentUser.class);
     if (annotation == null) {
