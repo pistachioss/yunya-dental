@@ -101,7 +101,7 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
                 return;
             }
             //子分类进行排序（更新时间倒叙）
-            childList.sort(Comparator.comparing(MedicalTemplateCategory::getUpdTime).reversed());
+            childList.sort(Comparator.comparing(MedicalTemplateCategory::getCrtTime).reversed());
             //构建子分类返回vo
             List<TemplateCategoryVo> childResultList = EntityUtils.build(childList, TemplateCategoryVo.class);
             superVo.setChildList(childResultList);
