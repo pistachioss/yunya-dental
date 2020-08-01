@@ -17,6 +17,8 @@ import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -88,8 +90,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             Date endDate = dateTime.plusDays(1).toDate();
 
             employeeScheduleQueryForm.setUserId(Integer.valueOf(dentistId));
-//            employeeScheduleQueryForm.setStartDate(appointmentBaseForm.getAppointDate());
-//            employeeScheduleQueryForm.setEndDate(endDate);
+            employeeScheduleQueryForm.setStartDate(appointmentBaseForm.getAppointDate());
+            employeeScheduleQueryForm.setEndDate(endDate);
             // 获取排班列表
             EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
             if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){

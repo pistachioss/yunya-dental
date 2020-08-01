@@ -2,8 +2,6 @@ package com.yunya.feign.employee_attend.form;
 
 import lombok.Data;
 
-import javax.naming.directory.SearchResult;
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +12,7 @@ import java.util.List;
  * @date 2020/7/10 9:47
  */
 @Data
-public class EmployeeScheduleQueryForm implements Serializable {
+public class EmployeeScheduleQueryForm {
 
   /**
    * 医生或助手id

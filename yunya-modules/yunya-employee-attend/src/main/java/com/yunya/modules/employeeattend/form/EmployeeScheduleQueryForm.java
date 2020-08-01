@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +14,7 @@ import java.util.List;
  * @date 2020/7/10 9:47
  */
 @Data
-public class EmployeeScheduleQueryForm implements Serializable {
+public class EmployeeScheduleQueryForm {
 
   /**
    * 医生或助手id

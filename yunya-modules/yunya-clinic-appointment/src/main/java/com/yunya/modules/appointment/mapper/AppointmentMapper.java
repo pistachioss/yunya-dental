@@ -1,14 +1,37 @@
 package com.yunya.modules.appointment.mapper;
 
 import com.yunya.models.appointment.Appointment;
+import com.yunya.modules.appointment.form.AppointItemTypeQueryForm;
 import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
+import com.yunya.modules.appointment.vo.AppointmentBaseVo;
+import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.modules.appointment.vo.AppointmentItemTypeVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 患者预约dao
+ */
 public interface AppointmentMapper extends Mapper<Appointment> {
+
+    /**
+     * 根据条件查询所有可预约项目
+     *
+     * @param form
+     * @return
+     */
+    List<AppointmentItemEnableModelVo> selectAllAppointItemByOrgId(@Param("form") AppointItemTypeQueryForm form);
+
+    /**
+     * 根据条件查询可预约项目类型
+     *
+     * @param form
+     * @return
+     */
+    List<AppointmentItemTypeVo> getByOrderTypeId(@Param("form") AppointItemTypeQueryForm form);
 
     /**
      * 根据设备id，预约开始时间，预约结束时间查询所有预约列表
@@ -37,24 +60,10 @@ public interface AppointmentMapper extends Mapper<Appointment> {
             @Param("appointEndTime") Date appointEndTime);
 
 
-    /**
-     * 根据医生id，预约开始时间，预约结束时间查询所有预约列表
-     * @param dentistId    医生id
-     * @param appointStartTime  预约开始时间
-     * @param appointEndTime    预约结束时间
-     * @return    符合条件的所有预约列表
-     */
     List<AppointConflictInfoVo> findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime(
             @Param("dentistId") Integer dentistId,
             @Param("appointStartTime") Date appointStartTime,
             @Param("appointEndTime") Date appointEndTime);
 
-
-    /**
-     * 新增患者预约
-     * @param appointment
-     * @return
-     */
-    Integer insertAppointment(Appointment appointment);
 
 }

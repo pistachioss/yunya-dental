@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_appointment_central?useUnicode=true"
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_system?useUnicode=true"
                         userId="sa"
                         password="Admin001!">
         </jdbcConnection>
@@ -41,14 +41,7 @@
         <table tableName="sys_menu" domainObjectName="SysMenu"/>
         <table tableName="sys_user_post" domainObjectName="SysUserPost"/>
         <table tableName="sys_post_element" domainObjectName="SysPostElement"/>-->
-        <table tableName="appoint_item" domainObjectName="AppointItem"/>
-        <table tableName="appoint_type" domainObjectName="AppointType"/>
-        <table tableName="appointment" domainObjectName="Appointment"/>
-        <table tableName="appointment_modify_record" domainObjectName="AppointmentModifyRecord"/>
-        <table tableName="appointment_operate_record" domainObjectName="AppointmentOperateRecord"/>
-        <table tableName="appointment_split" domainObjectName="AppointmentSplit"/>
-        <table tableName="clinic_appoint_item" domainObjectName="ClinicAppointItem"/>
-        <table tableName="clinic_device_item" domainObjectName="ClinicDeviceItem"/>
-        <table tableName="clinic_device_type" domainObjectName="ClinicDeviceType"/>
+        <table tableName="department_room" domainObjectName="DepartmentRoom"/>
+        <table tableName="clinic_department_room" domainObjectName="ClinicDepartmentRoom"/>
     </context>
 </generatorConfiguration>
