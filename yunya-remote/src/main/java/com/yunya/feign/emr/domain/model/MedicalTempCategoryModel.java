@@ -15,7 +15,7 @@ import javax.validation.constraints.Size;
  */
 @Setter
 @Getter
-@ApiModel(value = "添加病历模板分类模型")
+@ApiModel(value = "新增病历模板分类模型")
 public class MedicalTempCategoryModel {
     @ApiModelProperty(value = "分类父Id", required = true)
     @NotNull

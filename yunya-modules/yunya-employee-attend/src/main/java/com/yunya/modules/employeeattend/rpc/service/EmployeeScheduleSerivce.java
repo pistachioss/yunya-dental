@@ -47,21 +47,23 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
    */
   public EmployeeScheduleResultVO findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    String startDateString = employeeScheduleQueryForm.getStartDate();
+    String endDateString = employeeScheduleQueryForm.getEndDate();
     Date startDate = null;
     Date endDate = null;
-    try {
-      startDate = simpleDateFormat.parse(employeeScheduleQueryForm.getStartDate());
-      endDate = simpleDateFormat.parse(employeeScheduleQueryForm.getEndDate());
-    } catch (ParseException e) {
-      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-    }
-    if (null == startDate || null == endDate) {
+    if (null == startDateString || null == endDateString) {
       Calendar calendar = Calendar.getInstance();
       startDate = DateUtil.getThisWeekMonday(new Date());
       calendar.setTime(startDate);
       calendar.add(Calendar.DATE, +SHIFT_DAYS);
       endDate = calendar.getTime();
     } else {
+      try {
+        startDate = simpleDateFormat.parse(employeeScheduleQueryForm.getStartDate());
+        endDate = simpleDateFormat.parse(employeeScheduleQueryForm.getEndDate());
+      } catch (ParseException e) {
+        throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+      }
       endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
     }
 

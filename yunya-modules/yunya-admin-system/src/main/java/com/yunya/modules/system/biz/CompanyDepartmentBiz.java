@@ -19,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -98,14 +99,16 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
           "新增部门失败，当前组织已存在该部门", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
     Integer parentId = resource.getParentId();
-    if (null != parentId) {
+    if (!BusinessConstants.DEFAULT_PARENT_ID.equals(parentId)) {
       CompanyDepartment resultData = mapper.selectByPrimaryKey(parentId);
       if (resultData.getDepartmentId().equals(departmentId)) {
         throw new ClientServiceException(
             "新增组织部门失败，当前新增部门与上级部门相同", OperationCodeConstants.SAME_DATA_EXIST);
       }
-      entity.setParentId(parentId);
     }
+    Integer orderNum = resource.getOrderNum();
+    entity.setOrderNum(orderNum);
+    entity.setParentId(parentId);
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);

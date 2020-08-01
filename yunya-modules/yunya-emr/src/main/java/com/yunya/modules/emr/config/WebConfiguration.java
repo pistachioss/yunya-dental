@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *
  * @author chow
  */
-@Configuration("systemWebConfig")
+@Configuration
 @Primary
 public class WebConfiguration implements WebMvcConfigurer {
 
@@ -23,7 +23,8 @@ public class WebConfiguration implements WebMvcConfigurer {
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(getUserAuthRestInterceptor()).addPathPatterns("/**");
+    registry.addInterceptor(getUserAuthRestInterceptor())
+            .addPathPatterns("/**");
   }
 
   /**

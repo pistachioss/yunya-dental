@@ -278,7 +278,7 @@ public class AccessGatewayFilter implements GlobalFilter {
    * @return
    */
   private boolean isStartWith(String requestUri) {
-    return Arrays.stream(startWith.split(",")).anyMatch(requestUri::startsWith);
+    return Arrays.stream(startWith.split(",")).anyMatch(str -> requestUri.contains(str.trim()));
   }
 
   /**

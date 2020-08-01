@@ -1,6 +1,7 @@
 package com.yunya.feign.emr.domain.model;
 
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
+import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -18,6 +19,8 @@ import java.util.List;
 @Data
 public class MedicalCommonRecordModel {
 
+  @ApiModelProperty("ID")
+  private Integer id;
   /**
    * 就诊ID
    */
@@ -67,25 +70,25 @@ public class MedicalCommonRecordModel {
    * 检查
    */
   @ApiModelProperty("检查")
-  private List<ExaminationsVO> examinations;
+  private List<ExaminationsVO> examination;
 
   /**
    * 诊断
    */
   @ApiModelProperty("诊断")
-  private List<ExaminationsVO> diagnosiss;
+  private List<ExaminationsVO> diagnosis;
 
   /**
    * 诊疗计划
    */
   @ApiModelProperty("诊疗计划")
-  private List<ExaminationsVO> plans;
+  private List<ExaminationsVO> plan;
 
   /**
    * 诊疗方案
    */
   @ApiModelProperty("诊疗方案")
-  private List<ExaminationsVO> treatments;
+  private List<ExaminationsVO> treatment;
 
   /**
    * 处方
@@ -98,7 +101,7 @@ public class MedicalCommonRecordModel {
    */
   @ApiModelProperty("类型：0初诊，1复诊")
   @NotNull(message = "类型不能为空")
-  private Boolean type;
+  private Integer type;
 
   @ApiModelProperty("状态：0不需要审批，1待审核，2同意，3拒绝 新建病历时主治医生传0，助手传1")
   @NotNull(message = "状态不能为空")
@@ -121,4 +124,7 @@ public class MedicalCommonRecordModel {
 
   @ApiModelProperty("修改时间")
   private Date updTime;
+
+  @ApiModelProperty("词条使用频率")
+  private List<MedicalGeneralNumVO>medicalGeneralNumList;
 }

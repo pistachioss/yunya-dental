@@ -21,7 +21,7 @@ import javax.validation.Valid;
  * @author GaoLuding
  * @create 2020-05-15 13:23
  */
-@Api(tags = "公司排班设置接口")
+@Api(tags = "公司班次设置接口")
 @RestController
 @RequestMapping("/base_schedule")
 @CrossOrigin
@@ -30,26 +30,26 @@ public class BaseScheduleController {
     private BaseScheduleBiz baseScheduleBiz;
 
     /**
-     * 添加排班
+     * 添加班次
      *
      * @param baseSchedule
      * @return
      */
     @PostMapping
-    @ApiOperation("添加排班")
+    @ApiOperation("添加班次")
     public ResponseResult save(@RequestBody @Valid BaseSchedule baseSchedule) {
         baseScheduleBiz.saveBaseSchedule(baseSchedule);
         return ResponseUtil.success();
     }
 
     /**
-     * 修改排班
+     * 修改班次
      *
      * @param baseSchedule
      * @return
      */
     @PutMapping
-    @ApiOperation("修改排班")
+    @ApiOperation("修改班次")
     public ResponseResult update(@RequestBody BaseSchedule baseSchedule) {
         baseScheduleBiz.updateBaseSchedule(baseSchedule);
         return ResponseUtil.success();
@@ -70,13 +70,13 @@ public class BaseScheduleController {
     }
 
     /**
-     * 获取排班
+     * 获取班次
      *
      * @param id
      * @return
      */
     @GetMapping("/{id}")
-    @ApiOperation("获取排班")
+    @ApiOperation("获取班次")
     public ResponseResult find(@PathVariable(name = "id") Integer id) {
         return ResponseUtil.success(baseScheduleBiz.selectById(id));
     }
@@ -95,12 +95,12 @@ public class BaseScheduleController {
     }
 
     /**
-     * 排班门诊列表
+     * 班次门诊列表
      *
      * @return
      */
     @GetMapping("/clinic/{id}")
-    @ApiOperation("排班门诊列表")
+    @ApiOperation("班次门诊列表")
     public ResponseResult clinicList(@PathVariable("id") Integer id) {
         return ResponseUtil.success(baseScheduleBiz.clinicList(id));
     }

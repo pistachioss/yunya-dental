@@ -31,13 +31,39 @@
     <select id="countByName" resultType="int">
         select
             count(1)
-        from
-            `medical_template`
-        where
-            `name` = #{name}
-            <if test="id != null">
-                `id` = #{id}
-            </if>
+        from `medical_template`
+        where `name` = #{name}
+          and `medical_template_category_id` = #{categoryId}
+         <if test="id != null">
+            and `id` != #{id}
+         </if>
     </select>
 
+    <select id="listByKeyword" resultMap="BaseResultMap">
+        select
+            `id`,
+            `content`,
+            `type`,
+            `chief_complaint`,
+            `present_illness`,
+            `past_history`,
+            `examination`,
+            `diagnosis`,
+            `plan`,
+            `treatment`
+        from `medical_template`
+        where `medical_template_category_id` = #{categoryId}
+            <if test="keyword != null" >
+                and `name` like concat('%', #{keyword}, '%')
+            </if>
+        order by `enable` desc, `upd_time` desc
+    </select>
+
+    <update id="enableById">
+        update
+            `general_template`
+        set `enable` = #{enable}
+        where `medical_template_category_id` = #{categoryId}
+          and `id` = #{templateId}
+    </update>
 </mapper>
