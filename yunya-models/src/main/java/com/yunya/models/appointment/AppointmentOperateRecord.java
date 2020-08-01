@@ -3,8 +3,8 @@ package com.yunya.models.appointment;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "appoint_item")
-public class AppointItem {
+@Table(name = "appointment_operate_record")
+public class AppointmentOperateRecord {
     /**
      * 主键
      */
@@ -12,30 +12,32 @@ public class AppointItem {
     private Integer id;
 
     /**
-     * 预约项目分类ID
+     * 诊所ID
      */
-    @Column(name = "appoint_type_id")
-    private Integer appointTypeId;
+    @Column(name = "org_id")
+    private Integer orgId;
 
     /**
-     * 预约项目详情名称
+     * 预约ID
      */
-    private String name;
+    @Column(name = "appointment_id")
+    private Integer appointmentId;
 
     /**
-     * 预约时长
+     * 操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
      */
-    private Integer duration;
-
-    /**
-     * 备注 备注
-     */
-    private String remarks;
+    @Column(name = "operate_type")
+    private Byte operateType;
 
     /**
      * 是否启用 是否有效
      */
     private Boolean inservice;
+
+    /**
+     * 备注 备注
+     */
+    private String remarks;
 
     /**
      * 创建人ID
@@ -92,75 +94,57 @@ public class AppointItem {
     }
 
     /**
-     * 获取预约项目分类ID
+     * 获取诊所ID
      *
-     * @return appoint_type_id - 预约项目分类ID
+     * @return org_id - 诊所ID
      */
-    public Integer getAppointTypeId() {
-        return appointTypeId;
+    public Integer getOrgId() {
+        return orgId;
     }
 
     /**
-     * 设置预约项目分类ID
+     * 设置诊所ID
      *
-     * @param appointTypeId 预约项目分类ID
+     * @param orgId 诊所ID
      */
-    public void setAppointTypeId(Integer appointTypeId) {
-        this.appointTypeId = appointTypeId;
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 
     /**
-     * 获取预约项目详情名称
+     * 获取预约ID
      *
-     * @return name - 预约项目详情名称
+     * @return appointment_id - 预约ID
      */
-    public String getName() {
-        return name;
+    public Integer getAppointmentId() {
+        return appointmentId;
     }
 
     /**
-     * 设置预约项目详情名称
+     * 设置预约ID
      *
-     * @param name 预约项目详情名称
+     * @param appointmentId 预约ID
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setAppointmentId(Integer appointmentId) {
+        this.appointmentId = appointmentId;
     }
 
     /**
-     * 获取预约时长
+     * 获取操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
      *
-     * @return duration - 预约时长
+     * @return operate_type - 操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
      */
-    public Integer getDuration() {
-        return duration;
+    public Byte getOperateType() {
+        return operateType;
     }
 
     /**
-     * 设置预约时长
+     * 设置操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
      *
-     * @param duration 预约时长
+     * @param operateType 操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
      */
-    public void setDuration(Integer duration) {
-        this.duration = duration;
-    }
-
-    /**
-     * 获取备注 备注
-     *
-     * @return remarks - 备注 备注
-     */
-    public String getRemarks() {
-        return remarks;
-    }
-
-    /**
-     * 设置备注 备注
-     *
-     * @param remarks 备注 备注
-     */
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
+    public void setOperateType(Byte operateType) {
+        this.operateType = operateType;
     }
 
     /**
@@ -179,6 +163,24 @@ public class AppointItem {
      */
     public void setInservice(Boolean inservice) {
         this.inservice = inservice;
+    }
+
+    /**
+     * 获取备注 备注
+     *
+     * @return remarks - 备注 备注
+     */
+    public String getRemarks() {
+        return remarks;
+    }
+
+    /**
+     * 设置备注 备注
+     *
+     * @param remarks 备注 备注
+     */
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
     /**

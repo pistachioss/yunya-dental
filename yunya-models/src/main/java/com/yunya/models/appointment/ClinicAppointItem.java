@@ -3,8 +3,8 @@ package com.yunya.models.appointment;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "appoint_item")
-public class AppointItem {
+@Table(name = "clinic_appoint_item")
+public class ClinicAppointItem {
     /**
      * 主键
      */
@@ -12,20 +12,16 @@ public class AppointItem {
     private Integer id;
 
     /**
-     * 预约项目分类ID
+     * 诊所ID
      */
-    @Column(name = "appoint_type_id")
-    private Integer appointTypeId;
+    @Column(name = "org_id")
+    private Integer orgId;
 
     /**
-     * 预约项目详情名称
+     * 预约项目ID
      */
-    private String name;
-
-    /**
-     * 预约时长
-     */
-    private Integer duration;
+    @Column(name = "appoint_item_id")
+    private Integer appointItemId;
 
     /**
      * 备注 备注
@@ -92,57 +88,39 @@ public class AppointItem {
     }
 
     /**
-     * 获取预约项目分类ID
+     * 获取诊所ID
      *
-     * @return appoint_type_id - 预约项目分类ID
+     * @return org_id - 诊所ID
      */
-    public Integer getAppointTypeId() {
-        return appointTypeId;
+    public Integer getOrgId() {
+        return orgId;
     }
 
     /**
-     * 设置预约项目分类ID
+     * 设置诊所ID
      *
-     * @param appointTypeId 预约项目分类ID
+     * @param orgId 诊所ID
      */
-    public void setAppointTypeId(Integer appointTypeId) {
-        this.appointTypeId = appointTypeId;
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 
     /**
-     * 获取预约项目详情名称
+     * 获取预约项目ID
      *
-     * @return name - 预约项目详情名称
+     * @return appoint_item_id - 预约项目ID
      */
-    public String getName() {
-        return name;
+    public Integer getAppointItemId() {
+        return appointItemId;
     }
 
     /**
-     * 设置预约项目详情名称
+     * 设置预约项目ID
      *
-     * @param name 预约项目详情名称
+     * @param appointItemId 预约项目ID
      */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * 获取预约时长
-     *
-     * @return duration - 预约时长
-     */
-    public Integer getDuration() {
-        return duration;
-    }
-
-    /**
-     * 设置预约时长
-     *
-     * @param duration 预约时长
-     */
-    public void setDuration(Integer duration) {
-        this.duration = duration;
+    public void setAppointItemId(Integer appointItemId) {
+        this.appointItemId = appointItemId;
     }
 
     /**

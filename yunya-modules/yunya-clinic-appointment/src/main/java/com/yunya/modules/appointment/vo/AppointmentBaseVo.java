@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Future;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -23,13 +25,15 @@ public class AppointmentBaseVo implements Serializable {
     @ApiModelProperty("主键")
     private Integer id ;
     /** 患者ID */
-    @ApiModelProperty("患者ID")
+    @ApiModelProperty(value = "患者ID", required = true)
+    @NotNull(message = "患者不能为空！")
     private Integer patientId ;
     /** 诊所ID */
     @ApiModelProperty("诊所ID")
     private Integer orgId ;
     /** 医生ID */
-    @ApiModelProperty("医生ID")
+    @ApiModelProperty(value = "医生ID", required = true)
+    @NotNull(message = "预约医生不能为空！")
     private Integer dentistId ;
     /** 助手ID;默认医生配置助手ID */
     @ApiModelProperty("助手ID;默认医生配置助手ID")
@@ -44,16 +48,21 @@ public class AppointmentBaseVo implements Serializable {
     @ApiModelProperty("预约项目ID")
     private Integer clinicAppointItemId ;
     /** 预约总时长;默认取预约项目时长 */
-    @ApiModelProperty("预约总时长;默认取预约项目时长")
+    @ApiModelProperty(value = "预约总时长;默认取预约项目时长", required = true)
+    @NotNull(message = "预约时长不能为空！")
     private Integer appointDuration ;
     /** 预约日期 */
     @ApiModelProperty("预约日期")
+    @Future(message = "预约时间不能早于当前时间！")
+    @NotNull(message = "预约日期不能为空！")
     private Date appointDate ;
     /** 预约时间 */
     @ApiModelProperty("预约时间")
+    @NotNull(message = "预约时间不能为空！")
     private String appointTime ;
     /** 预约开始时间 */
     @ApiModelProperty("预约开始时间")
+    @Future(message = "预约时间不能早于当前时间！")
     private Date appointStartTime ;
     /** 预约结束时间 */
     @ApiModelProperty("预约结束时间")

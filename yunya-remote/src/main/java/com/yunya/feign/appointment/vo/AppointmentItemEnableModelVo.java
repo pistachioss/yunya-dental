@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.vo;
+package com.yunya.feign.appointment.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

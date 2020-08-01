@@ -3,8 +3,8 @@ package com.yunya.models.appointment;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "appoint_item")
-public class AppointItem {
+@Table(name = "appointment_split")
+public class AppointmentSplit {
     /**
      * 主键
      */
@@ -12,20 +12,34 @@ public class AppointItem {
     private Integer id;
 
     /**
-     * 预约项目分类ID
+     * 诊所ID
      */
-    @Column(name = "appoint_type_id")
-    private Integer appointTypeId;
+    @Column(name = "org_id")
+    private Integer orgId;
 
     /**
-     * 预约项目详情名称
+     * 预约ID
      */
-    private String name;
+    @Column(name = "appointment_id")
+    private Integer appointmentId;
 
     /**
-     * 预约时长
+     * 拆分开始时间 需校验时间
      */
-    private Integer duration;
+    @Column(name = "split_start_time")
+    private Date splitStartTime;
+
+    /**
+     * 拆分结束时间 需校验时间
+     */
+    @Column(name = "split_end_time")
+    private Date splitEndTime;
+
+    /**
+     * 医生/助手ID
+     */
+    @Column(name = "assistant_id")
+    private Integer assistantId;
 
     /**
      * 备注 备注
@@ -92,57 +106,93 @@ public class AppointItem {
     }
 
     /**
-     * 获取预约项目分类ID
+     * 获取诊所ID
      *
-     * @return appoint_type_id - 预约项目分类ID
+     * @return org_id - 诊所ID
      */
-    public Integer getAppointTypeId() {
-        return appointTypeId;
+    public Integer getOrgId() {
+        return orgId;
     }
 
     /**
-     * 设置预约项目分类ID
+     * 设置诊所ID
      *
-     * @param appointTypeId 预约项目分类ID
+     * @param orgId 诊所ID
      */
-    public void setAppointTypeId(Integer appointTypeId) {
-        this.appointTypeId = appointTypeId;
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 
     /**
-     * 获取预约项目详情名称
+     * 获取预约ID
      *
-     * @return name - 预约项目详情名称
+     * @return appointment_id - 预约ID
      */
-    public String getName() {
-        return name;
+    public Integer getAppointmentId() {
+        return appointmentId;
     }
 
     /**
-     * 设置预约项目详情名称
+     * 设置预约ID
      *
-     * @param name 预约项目详情名称
+     * @param appointmentId 预约ID
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setAppointmentId(Integer appointmentId) {
+        this.appointmentId = appointmentId;
     }
 
     /**
-     * 获取预约时长
+     * 获取拆分开始时间 需校验时间
      *
-     * @return duration - 预约时长
+     * @return split_start_time - 拆分开始时间 需校验时间
      */
-    public Integer getDuration() {
-        return duration;
+    public Date getSplitStartTime() {
+        return splitStartTime;
     }
 
     /**
-     * 设置预约时长
+     * 设置拆分开始时间 需校验时间
      *
-     * @param duration 预约时长
+     * @param splitStartTime 拆分开始时间 需校验时间
      */
-    public void setDuration(Integer duration) {
-        this.duration = duration;
+    public void setSplitStartTime(Date splitStartTime) {
+        this.splitStartTime = splitStartTime;
+    }
+
+    /**
+     * 获取拆分结束时间 需校验时间
+     *
+     * @return split_end_time - 拆分结束时间 需校验时间
+     */
+    public Date getSplitEndTime() {
+        return splitEndTime;
+    }
+
+    /**
+     * 设置拆分结束时间 需校验时间
+     *
+     * @param splitEndTime 拆分结束时间 需校验时间
+     */
+    public void setSplitEndTime(Date splitEndTime) {
+        this.splitEndTime = splitEndTime;
+    }
+
+    /**
+     * 获取医生/助手ID
+     *
+     * @return assistant_id - 医生/助手ID
+     */
+    public Integer getAssistantId() {
+        return assistantId;
+    }
+
+    /**
+     * 设置医生/助手ID
+     *
+     * @param assistantId 医生/助手ID
+     */
+    public void setAssistantId(Integer assistantId) {
+        this.assistantId = assistantId;
     }
 
     /**

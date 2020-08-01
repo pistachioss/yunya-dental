@@ -1,10 +1,12 @@
 package com.yunya.models.appointment;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
-@Table(name = "appoint_item")
-public class AppointItem {
+@Table(name = "appointment_modify_record")
+public class AppointmentModifyRecord {
     /**
      * 主键
      */
@@ -12,20 +14,32 @@ public class AppointItem {
     private Integer id;
 
     /**
-     * 预约项目分类ID
+     * 诊所ID
      */
-    @Column(name = "appoint_type_id")
-    private Integer appointTypeId;
+    @Id
+    @Column(name = "org_id")
+    private Integer orgId;
 
     /**
-     * 预约项目详情名称
+     * 预约ID
      */
-    private String name;
+    @Id
+    @Column(name = "appointment_id")
+    private Integer appointmentId;
 
     /**
-     * 预约时长
+     * 被修改的预约日期
      */
-    private Integer duration;
+    @Id
+    @Column(name = "appoint_date")
+    private Date appointDate;
+
+    /**
+     * 被修改的预约医生
+     */
+    @Id
+    @Column(name = "dentist_id")
+    private Integer dentistId;
 
     /**
      * 备注 备注
@@ -92,57 +106,75 @@ public class AppointItem {
     }
 
     /**
-     * 获取预约项目分类ID
+     * 获取诊所ID
      *
-     * @return appoint_type_id - 预约项目分类ID
+     * @return org_id - 诊所ID
      */
-    public Integer getAppointTypeId() {
-        return appointTypeId;
+    public Integer getOrgId() {
+        return orgId;
     }
 
     /**
-     * 设置预约项目分类ID
+     * 设置诊所ID
      *
-     * @param appointTypeId 预约项目分类ID
+     * @param orgId 诊所ID
      */
-    public void setAppointTypeId(Integer appointTypeId) {
-        this.appointTypeId = appointTypeId;
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 
     /**
-     * 获取预约项目详情名称
+     * 获取预约ID
      *
-     * @return name - 预约项目详情名称
+     * @return appointment_id - 预约ID
      */
-    public String getName() {
-        return name;
+    public Integer getAppointmentId() {
+        return appointmentId;
     }
 
     /**
-     * 设置预约项目详情名称
+     * 设置预约ID
      *
-     * @param name 预约项目详情名称
+     * @param appointmentId 预约ID
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setAppointmentId(Integer appointmentId) {
+        this.appointmentId = appointmentId;
     }
 
     /**
-     * 获取预约时长
+     * 获取被修改的预约日期
      *
-     * @return duration - 预约时长
+     * @return appoint_date - 被修改的预约日期
      */
-    public Integer getDuration() {
-        return duration;
+    public Date getAppointDate() {
+        return appointDate;
     }
 
     /**
-     * 设置预约时长
+     * 设置被修改的预约日期
      *
-     * @param duration 预约时长
+     * @param appointDate 被修改的预约日期
      */
-    public void setDuration(Integer duration) {
-        this.duration = duration;
+    public void setAppointDate(Date appointDate) {
+        this.appointDate = appointDate;
+    }
+
+    /**
+     * 获取被修改的预约医生
+     *
+     * @return dentist_id - 被修改的预约医生
+     */
+    public Integer getDentistId() {
+        return dentistId;
+    }
+
+    /**
+     * 设置被修改的预约医生
+     *
+     * @param dentistId 被修改的预约医生
+     */
+    public void setDentistId(Integer dentistId) {
+        this.dentistId = dentistId;
     }
 
     /**

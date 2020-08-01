@@ -28,7 +28,7 @@ import java.io.Serializable;
 @Data
 @ToString
 @ApiModel("可预约项目类型封装")
-public class AppointmentItemTypeVo implements Serializable {
+public class AppointmentItemVo implements Serializable {
     private Integer id;
     @ApiModelProperty("预约项目ID")
     private Integer appointItemId;

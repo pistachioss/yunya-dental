@@ -3,8 +3,8 @@ package com.yunya.models.appointment;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "appoint_item")
-public class AppointItem {
+@Table(name = "appoint_type")
+public class AppointType {
     /**
      * 主键
      */
@@ -12,20 +12,9 @@ public class AppointItem {
     private Integer id;
 
     /**
-     * 预约项目分类ID
-     */
-    @Column(name = "appoint_type_id")
-    private Integer appointTypeId;
-
-    /**
-     * 预约项目详情名称
+     * 预约项目分类名称
      */
     private String name;
-
-    /**
-     * 预约时长
-     */
-    private Integer duration;
 
     /**
      * 备注 备注
@@ -92,57 +81,21 @@ public class AppointItem {
     }
 
     /**
-     * 获取预约项目分类ID
+     * 获取预约项目分类名称
      *
-     * @return appoint_type_id - 预约项目分类ID
-     */
-    public Integer getAppointTypeId() {
-        return appointTypeId;
-    }
-
-    /**
-     * 设置预约项目分类ID
-     *
-     * @param appointTypeId 预约项目分类ID
-     */
-    public void setAppointTypeId(Integer appointTypeId) {
-        this.appointTypeId = appointTypeId;
-    }
-
-    /**
-     * 获取预约项目详情名称
-     *
-     * @return name - 预约项目详情名称
+     * @return name - 预约项目分类名称
      */
     public String getName() {
         return name;
     }
 
     /**
-     * 设置预约项目详情名称
+     * 设置预约项目分类名称
      *
-     * @param name 预约项目详情名称
+     * @param name 预约项目分类名称
      */
     public void setName(String name) {
         this.name = name;
-    }
-
-    /**
-     * 获取预约时长
-     *
-     * @return duration - 预约时长
-     */
-    public Integer getDuration() {
-        return duration;
-    }
-
-    /**
-     * 设置预约时长
-     *
-     * @param duration 预约时长
-     */
-    public void setDuration(Integer duration) {
-        this.duration = duration;
     }
 
     /**
