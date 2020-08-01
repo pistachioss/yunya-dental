@@ -2,12 +2,6 @@ package com.yunya.modules.employee.expand.service;
 
 
 import com.google.common.base.Objects;
-import com.yunya.modules.employee.expand.mapper.ClinicEmployeeConfigMapper;
-import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigQueryReq;
-import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
-import com.yunya.modules.employee.expand.model.response.ClinicEmployeeConfigRes;
-import com.yunya.modules.employee.expand.model.response.EnableChooseEmployeeRes;
-import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -16,6 +10,12 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.expand.ClinicEmployeeConfig;
+import com.yunya.modules.employee.expand.mapper.ClinicEmployeeConfigMapper;
+import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigQueryReq;
+import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
+import com.yunya.modules.employee.expand.model.response.ClinicEmployeeConfigRes;
+import com.yunya.modules.employee.expand.model.response.EnableChooseEmployeeRes;
+import com.yunya.modules.employee.expand.model.response.EnableEmployeeRes;
 import org.apache.commons.collections4.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

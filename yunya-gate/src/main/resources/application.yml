@@ -65,13 +65,13 @@ spring:
           metadata:
             title: "系统基础服务"
             
-        - id: employee-expand
-          uri: lb://employee-expand
+        - id: yunya-employee-expand
+          uri: lb://yunya-employee-expand
           order: 8004
           predicates:
-            - Path=/api/expand/**
+            - Path=/api/employee/expand/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=3
           metadata:
             title: "员工个人服务"
             

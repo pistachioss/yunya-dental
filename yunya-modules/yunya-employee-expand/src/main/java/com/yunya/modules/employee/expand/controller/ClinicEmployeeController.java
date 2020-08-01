@@ -1,13 +1,16 @@
 package com.yunya.modules.employee.expand.controller;
 
 
-import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
-import com.yunya.modules.employee.expand.service.ClinicEmployeeConfigBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
+import com.yunya.modules.employee.expand.service.ClinicEmployeeConfigBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;

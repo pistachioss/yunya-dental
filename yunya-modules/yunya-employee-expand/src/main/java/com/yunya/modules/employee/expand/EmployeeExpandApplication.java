@@ -1,12 +1,12 @@
 package com.yunya.modules.employee.expand;
 
 import com.yunya.feign.EnableYunyaFeignClients;
+import com.yunya.framework.swagger.EnableCustomSwagger2;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.context.annotation.ComponentScan;
 import tk.mybatis.spring.annotation.MapperScan;
-import com.yunya.framework.swagger.EnableCustomSwagger2;
 
 @SpringBootApplication
 @MapperScan("com.yunya.modules.employee.expand.mapper")

@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: employee-expand
+    name: yunya-employee-expand
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
@@ -30,11 +30,11 @@ mybatis:
 swagger:
   enabled: true
   base-package: com.yunya.modules.employee.expand
-  title: employee-expand
+  title: yunya-employee-expand
   version: 1.0.0.SNAPSHOT
   description: 员工扩展相关功能
   contact:
-    name: employee-expand
+    name: yunya-employee-expand
 
 #设置hystrix超时
 hystrix:
