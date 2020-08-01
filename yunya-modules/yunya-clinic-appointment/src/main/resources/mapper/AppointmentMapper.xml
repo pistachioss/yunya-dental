@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yunya.modules.appointment.mapper.AppointmentMapper">
-
-  <resultMap id="appointmentMap" type="com.yunya.models.appointment.Appointment">
+  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.Appointment">
+    <!--
+      WARNING - @mbg.generated
+    -->
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="patient_id" jdbcType="INTEGER" property="patientId" />
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
     <result column="dentist_id" jdbcType="INTEGER" property="dentistId" />
     <result column="assistant_id" jdbcType="INTEGER" property="assistantId" />
-    <result column="clinic_dept_room_id" jdbcType="INTEGER" property="clinicAppointItemId" />
+    <result column="clinic_dept_room_id" jdbcType="INTEGER" property="clinicDeptRoomId" />
     <result column="clinic_device_item_id" jdbcType="INTEGER" property="clinicDeviceItemId" />
     <result column="clinic_appoint_item_id" jdbcType="INTEGER" property="clinicAppointItemId" />
     <result column="appoint_duration" jdbcType="INTEGER" property="appointDuration" />
@@ -19,9 +21,9 @@
     <result column="appoint_period" jdbcType="VARCHAR" property="appointPeriod" />
     <result column="tooth_bit" jdbcType="VARCHAR" property="toothBit" />
     <result column="appoint_content" jdbcType="VARCHAR" property="appointContent" />
-    <result column="appoint_type" jdbcType="INTEGER" property="appointType" />
-    <result column="confirm_status" jdbcType="INTEGER" property="confirmStatus" />
-    <result column="appoint_status" jdbcType="INTEGER" property="appointStatus" />
+    <result column="appoint_type" jdbcType="TINYINT" property="appointType" />
+    <result column="confirm_status" jdbcType="BIT" property="confirmStatus" />
+    <result column="appoint_status" jdbcType="TINYINT" property="appointStatus" />
     <result column="remarks" jdbcType="VARCHAR" property="remarks" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
@@ -30,34 +32,6 @@
     <result column="upt_id" jdbcType="INTEGER" property="uptId" />
     <result column="upd_name" jdbcType="VARCHAR" property="updName" />
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
-  </resultMap>
-
-  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.AppointItem">
-    <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="appoint_item_id" jdbcType="INTEGER" property="appointItemId" />
-    <result column="name" jdbcType="VARCHAR" property="name" />
-    <result column="duration" jdbcType="INTEGER" property="duration" />
-    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
-    <result column="inservice" jdbcType="BIT" property="inservice" />
-    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
-    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
-    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
-    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
-    <result column="upd_name" jdbcType="VARCHAR" property="updName" />
-    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
-  </resultMap>
-
-
-  <resultMap id="AllOrdersMap" type="com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo">
-    <result column="orgId" jdbcType="INTEGER" property="orgId" />
-    <result column="typeName" jdbcType="VARCHAR" property="typeName"/>
-    <collection property="appointmentItemTypes" ofType="com.yunya.modules.appointment.vo.AppointmentItemTypeVo">
-      <result column="itemId" jdbcType="INTEGER" property="appointItemId"/>
-      <result column="itemName" jdbcType="VARCHAR" property="itemName"/>
-      <result column="duration" jdbcType="INTEGER" property="duration"/>
-      <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
-      <result column="inservice" jdbcType="BIT" property="inservice"/>
-    </collection>
   </resultMap>
 
   <sql id="Base_Column_List">
@@ -95,52 +69,12 @@
       upd_name, upd_time
   </sql>
 
-  <!-- 查询预约项目 -->
-  <select id="selectAllAppointItemByOrgId" resultMap="AllOrdersMap">
-    select
-      clinic_item.org_id as orgId,
-      item.id as itemId,
-      item.name as itemName,
-      atype.name as typeName,
-      item.duration,
-      item.remarks,
-      item.inservice
-    from appoint_item item LEFT JOIN
-     clinic_appoint_item  citem
-    ON item.id = clinic_item.appoint_item_id
-    LEFT JOIN appoint_type atype ON	atype.id = item.appoint_type_id
-    where citem.org_id = #{form.orgId}
-    <if test="form.appointId != null">
-      and citem.id = #{form.appointId}
-    </if>
-    <if test="form.name">
-      and citem.name = #{form.name}
-    </if>
-  </select>
 
-  <!--查询预约分类列表-->
-  <select id="getByOrderTypeId" resultType="com.yunya.modules.appointment.vo.AppointmentItemTypeVo">
-    select
-    item.id,
-    cai.appoint_item_id as appointItemId,
-    item.name as itemName,
-    item.duration,
-    item.inservice,
-    item.remarks
-    from appoint_item item LEFT JOIN clinic_appoint_item cai ON cai.appoint_item_id = item.id
-    where cai.org_id=#{form.orgId}
-    <if test="form.appointItemId != null">
-      and cai.appoint_item_id=#{form.appointItemId}
-    </if>
-    <if test="form.name != null">
-      and itm.name like CONCAT(CONCAT('%', #{form.name}), '%')
-    </if>
-  </select>
 
   <!-- 根据设备id，预约开始时间，预约结束时间查询所有预约列表 -->
   <select id="findAppointListByDeviceIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.modules.appointment.vo.AppointConflictInfoVo">
     select
-      <include refid="Base_Column_List"></include>
+      <include refid="Base_Column_List" />
     from appointment apt
     where
       not (DATE_FORMAT(apt.appoint_end_time,'%d %b %Y %T') &lt; DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
@@ -151,7 +85,7 @@
   <!-- 根据患者id，预约开始时间，预约结束时间查询所有预约列表 -->
   <select id="findAppointListByPatientIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.modules.appointment.vo.AppointConflictInfoVo">
     select
-      <include refid="Base_Column_List"></include>
+      <include refid="Base_Column_List" />
     from appointment apt
     where
       not (DATE_FORMAT(apt.appoint_end_time,'%d %b %Y %T') &lt; DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
@@ -162,7 +96,7 @@
   <!-- 根据医生id，预约开始时间，预约结束时间查询所有预约列表 -->
   <select id="findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.modules.appointment.vo.AppointConflictInfoVo">
     select
-      <include refid="Base_Column_List"></include>
+      <include refid="Base_Column_List" />
     from appointment apt
     where
       not (DATE_FORMAT(apt.appoint_end_time,'%d %b %Y %T') &lt; DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
@@ -171,7 +105,7 @@
   </select>
 
   <!-- 新增患者预约 -->
-  <insert id="insertAppointment" parameterType="com.yunya.models.appointment.Appointment" useGeneratedKeys="true" keyProperty="id">
+  <insert id="insertAppointment" keyProperty="id" parameterType="com.yunya.models.appointment.Appointment" useGeneratedKeys="true">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
       select @@IDENTITY as id
     </selectKey>

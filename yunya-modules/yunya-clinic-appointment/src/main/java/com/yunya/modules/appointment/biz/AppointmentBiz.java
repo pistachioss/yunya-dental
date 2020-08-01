@@ -7,17 +7,14 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
-import com.yunya.models.appointment.AppointmentOperateRecord;
-import com.yunya.modules.appointment.form.AppointmentBaseForm;
+import com.yunya.feign.appointment.domain.base.AppointmentBaseForm;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
-import io.swagger.models.auth.In;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +31,7 @@ import java.util.*;
  * @update yunya-lihuibin    2020-07-28    新建
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
     /** 默认显示7天的预约信息 */
@@ -61,17 +59,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param form  预约参数封装
      * @throws ParseException
      */
-    @Transactional(rollbackFor = Exception.class)
-    public ResponseResult addAppointment(AppointmentBaseForm form) throws ParseException {
+    public Map<String,Object> addAppointment(AppointmentBaseForm form) throws ParseException {
 
         // 检查当前预约的医生是否排班
-         ResponseResult dentistScheduleResult = this.checkScheduling(form);
-        // 如果预约的医生没有排班，则返回结果
-        if (dentistScheduleResult.getStatus().equals(0)){
-            return dentistScheduleResult;
+        Map<String, Object> checkSchedulingResult = this.checkScheduling(form);
+        // 如果预约的医生没有排班，则返回警告信息结果
+        if (StringHelper.isNull(checkSchedulingResult.get("data"))){
+            return checkSchedulingResult;
         }
         // 检查当前预约是否冲突
-        ResponseResult appointConflictResult = this.checkConflict(form);
+        Map<String,Object> appointConflictResult = this.checkConflict(form);
         // 如果当前的预约没有冲突则添加新预约
         if (null == appointConflictResult){
             // 患者名字
@@ -92,10 +89,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
             Map<String,Object> responseResult = new HashMap<>();
             responseResult.put("appointment",appointmentEntity);
-            responseResult.put("appointmentRecord",appointmentOperateRecord);
 
-            // 如果添加预约成功，则返回预约信息
-            return ResponseUtil.success(responseResult);
+            // 如果添加预约成功，则返回预约成功信息
+            return responseResult;
         }
 
         // 如果预约有冲突返回冲突的预约
@@ -108,9 +104,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appointmentBaseForm    预约参数封装表单
      * @return
      */
-    private ResponseResult checkScheduling(AppointmentBaseForm appointmentBaseForm){
+    private Map<String,Object> checkScheduling(AppointmentBaseForm appointmentBaseForm){
         // 获取预约医生Id
         String dentistId = appointmentBaseForm.getDentistId();
+        Map<String,Object> responseResultMap = new HashMap<>();
 
         if (!StringHelper.isEmpty(dentistId)){
             EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
@@ -121,19 +118,30 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
             employeeScheduleQueryForm.setUserId(Integer.valueOf(dentistId));
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String startDate = sdf.format(appointmentBaseForm.getAppointDate());
-            employeeScheduleQueryForm.setStartDate(startDate);
-            employeeScheduleQueryForm.setClinicId(appointmentBaseForm.getOrgId());
-            employeeScheduleQueryForm.setEndDate(endDate);
+            String startDateStr = sdf.format(appointmentBaseForm.getAppointDate());
+            String endDateStr = sdf.format(endDate);
+            employeeScheduleQueryForm.setStartDate(startDateStr);
+            employeeScheduleQueryForm.setClinicId(Integer.valueOf(BaseContextHandler.getOrgId()));
+            employeeScheduleQueryForm.setEndDate(endDateStr);
             // 获取排班列表
             EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
+            // 预约医生没有排班，返回空
             if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
-                return ResponseUtil.fail(0,"预约医生在预约日期当天未排班，建议排班后再新增预约！", employeeScheduleResult);
+                responseResultMap.put("status",0);
+                responseResultMap.put("msg","预约医生在预约日期当天未排班，建议排班后再新增预约！");
+                responseResultMap.put("data",null);
+                return responseResultMap;
             }
             // 成功返回排班信息
-            return ResponseUtil.success(employeeScheduleResult);
+            responseResultMap.put("status",1);
+            responseResultMap.put("msg",null);
+            responseResultMap.put("data",employeeScheduleResult);
+            return responseResultMap;
         }
-        return ResponseUtil.fail(0,"预约医生id不能为空！",null);
+        responseResultMap.put("status",0);
+        responseResultMap.put("msg","预约医生id不能为空！");
+        responseResultMap.put("data",null);
+        return responseResultMap;
     }
 
     /**
@@ -141,7 +149,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appointmentForm
      * @throws ParseException
      */
-    private ResponseResult checkConflict(AppointmentBaseForm appointmentForm) throws ParseException {
+    private Map<String,Object> checkConflict(AppointmentBaseForm appointmentForm) throws ParseException {
         // 获取患者id、医生id、设备id、预约日期、时间、时长
         String patientId = appointmentForm.getPatientId();
         String dentistId = appointmentForm.getDentistId();
@@ -162,6 +170,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         DateTime endTime = startTime.plusMinutes(time);
         Date appointEndTime = endTime.toDate();
 
+        Map<String,Object> responseMapResult = new HashMap<>();
+
         // 判断患者预约是否存在冲突
         if (!StringHelper.isEmpty(patientId)) {
             List<AppointConflictInfoVo> patientList = mapper.findAppointListByPatientIdAndAppointStartTimeAndAppointEndTime(
@@ -174,7 +184,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     appointConflictInfoVo.setAbbreviation(organizationInfo.getAbbreviation());
                 });
                 // 预约冲突返回冲突信息
-                return ResponseUtil.fail(4,"患者预约冲突！",patientList);
+                responseMapResult.put("status",4);
+                responseMapResult.put("msg","患者预约冲突！");
+                responseMapResult.put("data",patientList);
+                return responseMapResult;
             }
         }
 
@@ -190,7 +203,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
                 });
                 // 预约冲突返回冲突信息
-                return ResponseUtil.fail(5,"医生预约冲突！",dentisList);
+                responseMapResult.put("status",5);
+                responseMapResult.put("msg","医生预约冲突！");
+                responseMapResult.put("data",dentisList);
+                return responseMapResult;
             }
         }
 
@@ -206,7 +222,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     appointConflictInfoVo.setClinicNumber(organizationInfo.getClinicNumber());
                 });
                 // 预约冲突返回冲突信息
-                return ResponseUtil.fail(6,"设备预约冲突！", deviceList);
+                responseMapResult.put("status",6);
+                responseMapResult.put("msg","设备预约冲突！");
+                responseMapResult.put("data",deviceList);
+                return responseMapResult;
             }
         }
         return null;
@@ -267,24 +286,37 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 设置预约状态 0-预约未到，1-履约，2，取消预约，3-失约
         appointment.setAppointStatus((byte)0);
         // 设置诊所id
-        appointment.setOrgId(form.getOrgId());
+        appointment.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
         // 设置操作人id
-        // appointment.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        // 设置当前用户id  Mock
-        appointment.setCrtId(10001);
-        // 设置当前时间
-        appointment.setCrtTime(new Date(System.currentTimeMillis()));
-
+         appointment.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
 
         return appointment;
     }
 
 
-    public ResponseResult checkConflictTest(AppointmentBaseForm appointmentBaseForm) throws ParseException {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ///////////////////////test/////////////////////////
+    public Map<String, Object> checkConflictTest(AppointmentBaseForm appointmentBaseForm) throws ParseException {
         return this.checkConflict(appointmentBaseForm);
     }
 
-    public ResponseResult checkSchedulingTest(AppointmentBaseForm appointmentForm){
+    public Map<String, Object> checkSchedulingTest(AppointmentBaseForm appointmentForm){
         return this.checkScheduling(appointmentForm);
     }
 

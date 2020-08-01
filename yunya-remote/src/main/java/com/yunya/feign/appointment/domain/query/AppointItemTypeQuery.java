@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.form;
+package com.yunya.feign.appointment.domain.query;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -16,7 +16,7 @@ import java.io.Serializable;
  */
 @ApiModel("预约项目查询参数封装")
 @Data
-public class AppointItemTypeQueryForm implements Serializable {
+public class AppointItemTypeQuery implements Serializable {
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
 

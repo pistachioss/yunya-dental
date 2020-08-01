@@ -9,6 +9,13 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
     default-property-inclusion: always
+  redis:
+    database: 2
+    host: 192.168.31.90
+    port: 6379
+    pool:
+    max-active: 20
+    password: foobared
   datasource:
     host: 192.168.31.90
     port: 3306
@@ -46,7 +53,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8848
+        server-addr: 192.168.31.215:8848
       config:
         namespace:
     sentinel:
@@ -58,7 +65,7 @@ sample:
     # When enabled=false, traces log to the console. Comment to send to zipkin
 
 mybatis:
-  basepackage: com.yunya.modules.system.mapper
+  basepackage: com.yunya.modules.appointment
   xmlLocation: classpath:mapper/**/*.xml
   mapper-locations: "classpath*:mapper/*.xml"
 
@@ -68,19 +75,19 @@ server:
 # 必须配置
 feign:
   httpclient:
-    enabled: false
+    enabled: true
   okhttp:
     enabled: true
 
 # 负载均衡
-ribbon:
-  eureka:
-    enabled: true
-  ReadTimeout: 100000
-  ConnectTimeout: 100000
-  MaxAutoRetries: 0
-  MaxAutoRetriesNextServer: 1
-  OkToRetryOnAllOperations: false
+#ribbon:
+#  eureka:
+#    enabled: true
+#  ReadTimeout: 100000
+#  ConnectTimeout: 100000
+#  MaxAutoRetries: 0
+#  MaxAutoRetriesNextServer: 1
+#  OkToRetryOnAllOperations: false
 
 # 熔断
 hystrix:
@@ -99,27 +106,27 @@ hystrix:
 # 配置swagger
 swagger:
   enabled: true
-  base-package: com.yunya.modules.system
-  title: yunya-system
+  base-package: com.yunya.modules.appointment
+  title: 云牙预约中心
   version: 1.0.0.SNAPSHOT
-  description: YUNYA系统管理后端服务
+  description: 预约项目
   contact:
-    name: yunya-system
+    name: yunya-clinic-appointment
 
 #redis-cache 相关
-redis:
-  pool:
-    maxActive: 300
-    maxIdle: 100
-    maxWait: 1000
-  host: ${REDIS_HOST:192.168.31.90}
-  port: ${REDIS_PORT:6379}
-  password: foobared
-  timeout: 2000
-  # 服务或应用名
-  sysName: yunya-system
-  enable: true
-  database: 0
+#redis:
+#  pool:
+#    maxActive: 300
+#    maxIdle: 100
+#    maxWait: 1000
+#  host: ${REDIS_HOST:192.168.31.90}
+#  port: ${REDIS_PORT:6379}
+#  password: foobared
+#  timeout: 2000
+#  # 服务或应用名
+#  sysName: yunya-system
+#  enable: true
+#  database: 0
 
 # 暴露所以端点
 management:

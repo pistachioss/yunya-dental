@@ -4,7 +4,6 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.appointment.AppointmentOperateRecord;
 import com.yunya.modules.appointment.mapper.AppointmentOperateRecordMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,9 +19,6 @@ import java.util.Date;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecordMapper, AppointmentOperateRecord> {
-    @Autowired
-    private AppointmentOperateRecordMapper appointOperateRecordMapper;
-
 
     /**
      * 插入预约记录

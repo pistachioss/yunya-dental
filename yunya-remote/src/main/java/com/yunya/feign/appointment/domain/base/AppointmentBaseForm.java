@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.form;
+package com.yunya.feign.appointment.domain.base;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,11 +31,6 @@ public class AppointmentBaseForm implements Serializable {
     @ApiModelProperty(value = "患者姓名",required = true)
     @NotBlank(message = "患者姓名为空！")
     private String patientName;
-
-    /** 诊所ID */
-    @ApiModelProperty(value = "诊所ID",required = true)
-    @NotNull(message = "门诊ID不能为空！")
-    private Integer orgId ;
 
     /** 预约日期 */
     @ApiModelProperty(value = "预约日期",required = true)
