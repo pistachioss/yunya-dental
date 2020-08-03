@@ -12,20 +12,14 @@ package com.yunya.modules.appointment.rpc;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.modules.appointment.biz.AppointItemBiz;
-import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
-import com.yunya.modules.appointment.biz.AppointTypeBiz;
+import com.yunya.modules.appointment.biz.ClinicAppointTypeBiz;
 import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.modules.appointment.vo.AppointmentItemVo;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,7 +42,7 @@ public class AppointItemRest {
     private AppointItemBiz baseBiz;
 
     @Autowired
-    private AppointTypeBiz appointTypeBiz;
+    private ClinicAppointTypeBiz clinicAppointTypeBiz;
 
     /**
      * 根据条件查询门诊可预约项目
@@ -58,14 +52,14 @@ public class AppointItemRest {
      * @description 查询公司端、门诊端的预约列表，Mock两端数据，返回vo对象列表
      */
     @PostMapping("/list")
-    public PageInfo<AppointmentItemVo> findAppItemList(@RequestBody AppointItemQuery form) {
+    public List<AppointmentItemVo> findAppItemList(@RequestBody AppointItemQuery form) {
         //查询门诊端的预约列表
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
 
         List<AppointmentItemVo> appItemList = baseBiz.findAppItemList(form);
-        return new PageInfo<>(appItemList);
+        return appItemList;
     }
 
     /**
@@ -97,7 +91,7 @@ public class AppointItemRest {
      */
     @GetMapping("/select/{id}")
     public AppointType selectAppointTypeById(@PathVariable("id") Integer id){
-        AppointType appointType = appointTypeBiz.selectAppointTypeById(id);
+        AppointType appointType = clinicAppointTypeBiz.selectAppointTypeById(id);
         return appointType;
     }
 }

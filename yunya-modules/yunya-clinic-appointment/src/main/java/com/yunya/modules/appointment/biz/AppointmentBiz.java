@@ -293,32 +293,4 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return appointment;
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    ///////////////////////test/////////////////////////
-    public Map<String, Object> checkConflictTest(AppointmentBaseForm appointmentBaseForm) throws ParseException {
-        return this.checkConflict(appointmentBaseForm);
-    }
-
-    public Map<String, Object> checkSchedulingTest(AppointmentBaseForm appointmentForm){
-        return this.checkScheduling(appointmentForm);
-    }
-
-
 }

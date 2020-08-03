@@ -21,7 +21,7 @@ import java.util.Date;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class AppointTypeBiz extends BaseBiz<AppointTypeMapper, AppointType> {
+public class ClinicAppointTypeBiz extends BaseBiz<AppointTypeMapper, AppointType> {
 
     /**
      * 新增预约项目类型

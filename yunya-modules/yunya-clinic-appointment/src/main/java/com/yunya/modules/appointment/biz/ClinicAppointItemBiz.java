@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -48,7 +49,9 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
      * @return
      */
     public List<ClinicAppointItem> findByAppointItemId(Integer appointItemId){
-        return mapper.findClinicAppointItemByAppointItemId(appointItemId);
+
+        List<ClinicAppointItem> clinicAppointItems = mapper.findClinicAppointItemByAppointItemId(appointItemId);
+        return clinicAppointItems;
     }
 
     /**

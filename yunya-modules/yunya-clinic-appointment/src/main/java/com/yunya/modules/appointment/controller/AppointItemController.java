@@ -4,6 +4,7 @@
  * Perter_Chou 14:20 Since 1.0 版权信息
  */
 package com.yunya.modules.appointment.controller;
+import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
@@ -83,8 +84,9 @@ public class AppointItemController {
      */
     @ApiOperation(value = "预约搜索")
     @PostMapping("/search")
-    public List<AppointmentItemVo> searchAppItem(@Validated @RequestBody AppointItemQuery baseQueryForm) {
-        return appItemBiz.findByAppItemName(baseQueryForm);
+    public ResponseResult searchAppItem(@Validated @RequestBody AppointItemQuery baseQueryForm) {
+        List<AppointmentItemVo>  appointmentItemVos = appItemBiz.findByAppItemName(baseQueryForm);
+        return ResponseUtil.success(appointmentItemVos);
     }
 
     /**
@@ -116,10 +118,11 @@ public class AppointItemController {
         if (id == null || id <= 0){
             return ResponseUtil.fail(OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY,"id参数非法！",null);
         }
-        List<ClinicAppointItem> appointItems = clinicAppointItemBiz.findByAppointItemId(id);
+        // TODO 检测要删除的预约项目是否已被预约，如果已被预约则不能删除
+        /*List<ClinicAppointItem> appointItems = clinicAppointItemBiz.findByAppointItemId(id);
         if (!StringHelper.isEmpty(appointItems)){
             return ResponseUtil.fail(OperationCodeConstants.DELETE_NOT_ALLOW,"数据不允许被删除！",null);
-        }
+        }*/
 
         Integer result = appItemBiz.delAppointItemById(id);
         if (result <= 0){
