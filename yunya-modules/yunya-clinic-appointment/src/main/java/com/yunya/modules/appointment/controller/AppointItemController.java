@@ -86,7 +86,8 @@ public class AppointItemController {
     @PostMapping("/search")
     public ResponseResult searchAppItem(@Validated @RequestBody AppointItemQuery baseQueryForm) {
         List<AppointmentItemVo>  appointmentItemVos = appItemBiz.findByAppItemName(baseQueryForm);
-        return ResponseUtil.success(appointmentItemVos);
+        PageInfo pageInfo = new PageInfo(appointmentItemVos);
+        return ResponseUtil.success(pageInfo);
     }
 
     /**

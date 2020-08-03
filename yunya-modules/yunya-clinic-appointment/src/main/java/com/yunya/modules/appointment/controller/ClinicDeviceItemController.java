@@ -72,7 +72,7 @@ public class ClinicDeviceItemController {
     @ApiOperation(value = "添加设备id到门诊设备表")
     @PostMapping("/add")
     @CurrentUser
-    public ResponseResult addDevice(@RequestBody @Validated List<DeviceItemModel> deviceForms) {
+    public ResponseResult addDevice(@RequestBody @Validated DeviceItemModel deviceForms) {
         ResponseResult responseResult = clinicDeviceItemBiz.addDevice(deviceForms);
         return responseResult;
     }

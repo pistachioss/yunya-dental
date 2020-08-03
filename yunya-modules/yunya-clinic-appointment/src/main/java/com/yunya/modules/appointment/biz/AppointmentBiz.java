@@ -128,18 +128,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 预约医生没有排班，返回空
             if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
                 responseResultMap.put("status",0);
-                responseResultMap.put("msg","预约医生在预约日期当天未排班，建议排班后再新增预约！");
+                responseResultMap.put("errMwg","预约医生在预约日期当天未排班，建议排班后再新增预约！");
                 responseResultMap.put("data",null);
                 return responseResultMap;
             }
             // 成功返回排班信息
             responseResultMap.put("status",1);
-            responseResultMap.put("msg",null);
+            responseResultMap.put("errMwg",null);
             responseResultMap.put("data",employeeScheduleResult);
             return responseResultMap;
         }
         responseResultMap.put("status",0);
-        responseResultMap.put("msg","预约医生id不能为空！");
+        responseResultMap.put("errMwg","预约医生id不能为空！");
         responseResultMap.put("data",null);
         return responseResultMap;
     }
@@ -185,7 +185,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 });
                 // 预约冲突返回冲突信息
                 responseMapResult.put("status",4);
-                responseMapResult.put("msg","患者预约冲突！");
+                responseMapResult.put("errMwg","患者预约冲突！");
                 responseMapResult.put("data",patientList);
                 return responseMapResult;
             }
@@ -204,7 +204,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 });
                 // 预约冲突返回冲突信息
                 responseMapResult.put("status",5);
-                responseMapResult.put("msg","医生预约冲突！");
+                responseMapResult.put("errMwg","医生预约冲突！");
                 responseMapResult.put("data",dentisList);
                 return responseMapResult;
             }
@@ -223,7 +223,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 });
                 // 预约冲突返回冲突信息
                 responseMapResult.put("status",6);
-                responseMapResult.put("msg","设备预约冲突！");
+                responseMapResult.put("errMwg","设备预约冲突！");
                 responseMapResult.put("data",deviceList);
                 return responseMapResult;
             }
