@@ -63,6 +63,7 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
     BaseContextHandler.setUsername(userInfo.getUsername());
     BaseContextHandler.setName(userInfo.getName());
     BaseContextHandler.setUserID(userInfo.getId());
+    BaseContextHandler.setOrgId(userInfo.getCurrentOrgId().toString());
     return super.preHandle(request, response, handler);
   }
 

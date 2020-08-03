@@ -30,7 +30,7 @@
 
   <!--患者表中的全部字段-->
   <sql id="Patient_Column_List">
-    id,org_id,name,pinyin_name,avatar_path,mobile,Mobile_owner,medical_nummber,gender,age,birthday,origin_type,origin_id,remarks,inservice,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time
+    id,org_id orgId,name,pinyin_name pinyinName,avatar_path avatarPath,mobile,Mobile_owner mobileOwner,medical_nummber medicalNummber,gender,age,birthday,origin_type originType,origin_id originId,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime
   </sql>
 
   <!--根据手机号查询用户是否纯在-->
@@ -64,6 +64,11 @@
     select id,origin_id patientId,name,gender,mobile,crt_time crtTime
     from patient_base_info where origin_id = #{form.patientId} and origin_type = #{form.originType}
     order by crtTime desc
+  </select>
+
+  <select id="findPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    select <include refid="Patient_Column_List"></include>
+    from patient_base_info where CONCAT(name,pinyin_name,mobile) like CONCAT(CONCAT('%',#{form.condition}),'%')
   </select>
 
 

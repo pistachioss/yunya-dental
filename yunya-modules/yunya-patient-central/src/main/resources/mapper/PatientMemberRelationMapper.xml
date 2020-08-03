@@ -19,4 +19,12 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="FindMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
+    select id from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+  </select>
+
+  <delete id="deleteByPatientId">
+    delete from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+  </delete>
 </mapper>

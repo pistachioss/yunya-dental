@@ -15,4 +15,11 @@ public interface PatientKinRelationMapper extends Mapper<PatientKinRelation> {
      * @return List<PatientKinRelation>
      */
     List<PatientKinRelationVo> selectListByPatientId(@Param("id") Integer id);
+
+    /**
+     * 根据患者id 和推荐人id 查询推荐关系是否已经存在
+     * @param patientKinRelation
+     * @return PatientKinRelation
+     */
+    PatientKinRelation findPatientKinRelation(@Param("patientKinRelation") PatientKinRelation patientKinRelation);
 }

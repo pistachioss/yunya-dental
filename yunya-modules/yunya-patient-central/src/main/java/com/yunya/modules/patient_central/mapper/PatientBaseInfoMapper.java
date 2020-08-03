@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.mapper;
 
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo;
@@ -55,4 +56,11 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
      * @return List<PatientRecommendRelationVo>
      */
     List<PatientRecommendRelationVo> findRecommendRelationById(@Param("form") PatientRecommendRelationChartQueryForm form);
+
+    /**
+     * 根据姓名/手机号/姓名拼音模糊查询患者
+     * @param form
+     * @return List<PatientBaseInfoVo>
+     */
+    List<PatientBaseInfoVo> findPatientByNameAndMobile(@Param("form") PatientLikeFinleQueryForm form);
 }

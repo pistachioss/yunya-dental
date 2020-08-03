@@ -26,4 +26,16 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVO">
+    select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,
+		 member_type_id memberTypeId,crt_time crtTime
+    from patient_member_info where patient_id =#{id}
+  </select>
+
+  <select id="findMemberBindingRelation" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVO">
+    select pbi.name name,pmr.master_card_id masterCardId,pmr.bind_type bindType
+    from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
+    where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+  </select>
 </mapper>

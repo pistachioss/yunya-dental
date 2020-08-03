@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -58,7 +59,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         PatientPublicInfoVo patientPublicInfoVo = new PatientPublicInfoVo();
         patientPublicInfoVo =  patientBaseInfoMapper.findPatientPublicInfoById(id);
         MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
-        patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
+        if(memberType.getName()!=null){
+            patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
+        }
         return patientPublicInfoVo;
     }
 
@@ -87,9 +90,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-        String userID = BaseContextHandler.getUserID();
         patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientBaseInfo.setCrtName(BaseContextHandler.getName());//TODO Integer.parseInt(BaseContextHandler.getUserName())
+        patientBaseInfo.setCrtName(BaseContextHandler.getName());
+        patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         mapper.insertSelective(patientBaseInfo);
     }
 
@@ -100,18 +103,19 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     public void addPatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
         PatientBaseInfo patientBaseInfo = patientExtendInfoModel.getPatientBaseInfo(); //完善患者基本信息  对补全信息进行更新
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-        patientBaseInfo.setUptId(1);//TODO Integer.parseInt(BaseContextHandler.getUserID())
-        patientBaseInfo.setUpdName("更新人名称");//TODO Integer.parseInt(BaseContextHandler.getUserName())
+        patientBaseInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientBaseInfo.setUpdName(BaseContextHandler.getName());
+        patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         patientBaseInfo.setUpdTime(new Date());
         mapper.updateByPrimaryKey(patientBaseInfo);
         PatientExpInfo patientExpInfo = patientExtendInfoModel.getPatientExpInfo();    //完善患者扩展信息
         if(patientExpInfo.getId() == null){   //如果用户没有扩展信息就添加扩展信息 如果有就修改
-            patientExpInfo.setCrtId(1); //TODO Integer.parseInt(BaseContextHandler.getUserID())
-            patientExpInfo.setCrtName("创建人名称");//TODO Integer.parseInt(BaseContextHandler.getUserName())
+            patientExpInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientExpInfo.setCrtName(BaseContextHandler.getName());
             patientExpInfoMapper.insertSelective(patientExpInfo);
         }else {
-            patientExpInfo.setUptId(1); //TODO Integer.parseInt(BaseContextHandler.getUserID())
-            patientExpInfo.setUpdName("更新人名称");//TODO Integer.parseInt(BaseContextHandler.getUserName())
+            patientExpInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientExpInfo.setUpdName(BaseContextHandler.getName());
             patientExpInfo.setUpdTime(new Date());
             patientExpInfoMapper.updateByPrimaryKey(patientExpInfo);
         }
@@ -122,10 +126,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
         List<PatientExtInfo> addPatientExtInfoList = new ArrayList<PatientExtInfo>();            //循环添加 标签、疾病史、过敏原 集合
         for (PatientExtInfo patientExtInfo: patientExtInfoList) {
-            patientExtInfo.setCrtId(1);//TODO Integer.parseInt(BaseContextHandler.getUserID())
-            patientExtInfo.setCrtName("创建人名称");//TODO Integer.parseInt(BaseContextHandler.getUserName())
-            patientExtInfo.setUptId(1);
-            patientExtInfo.setUpdName("更新人名称");
+            patientExtInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientExtInfo.setCrtName(BaseContextHandler.getName());
+            patientExtInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientExtInfo.setUpdName(BaseContextHandler.getName());
             patientExtInfo.setUpdTime(new Date());
             addPatientExtInfoList.add(patientExtInfo);
         }
@@ -144,5 +148,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id));
         patientExtendInfoVo.setPatientExtInfoList(patientExtInfoMapper.patientExtInfoListByid(id));
         return patientExtendInfoVo;
+    }
+
+    /**
+     * 根据姓名/手机号/姓名拼音模糊查询患者
+     * @param condition
+     * @return List<PatientBaseInfoVo>
+     */
+    public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+        return patientBaseInfoMapper.findPatientByNameAndMobile(form);
     }
 }

@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.controller;
 
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -35,24 +36,25 @@ public class PatientBaseInfoController {
 
     @ApiOperation("根据Id查询患者信息公用信息")
     @GetMapping("/findPatientPublicInfoById/{id}")
-    public ResponseResult findPatientPublicInfoById(@PathVariable Integer id){
+    public ResponseResult findPatientPublicInfoById(@PathVariable("id") Integer id){
         return ResponseUtil.success(patientBaseInfoBiz.findPatientPublicInfoById(id));
     }
 
     @ApiOperation("根据姓名和手机号判断是否已存在")
     @PostMapping("/findUserExists")
-    public ResponseResult findUserExists(@RequestBody @Validated PatientBaseInfoQueryForm patientBaseInfoQueryForm){
+    public ResponseResult findUserExists(@RequestBody PatientBaseInfoQueryForm patientBaseInfoQueryForm){
         return patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
     }
 
     @CurrentUser
     @ApiOperation("添加患者基本信息信息")
     @PostMapping("/add")
-    public ResponseResult addPatient(@RequestBody @Validated  PatientBaseInfoModel patientBaseInfoModel){
+    public ResponseResult addPatient(@RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel){
         patientBaseInfoBiz.addPatient(patientBaseInfoModel);
         return ResponseUtil.success();
     }
 
+    @CurrentUser
     @ApiOperation("添加完善患者基本信息")
     @PostMapping("/addPatientInfo")
     public ResponseResult addPatientInfo(@RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel){
@@ -62,15 +64,14 @@ public class PatientBaseInfoController {
 
     @ApiOperation("根据患者id查询患者资料")
     @GetMapping ("/findPatientDate/{id}")
-    public ResponseResult findPatientDate(@PathVariable Integer id){
+    public ResponseResult findPatientDate(@PathVariable("id") Integer id){
         return ResponseUtil.success(patientBaseInfoBiz.findPatientDate(id));
     }
 
-
-
-
-
-
-
+    @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
+    @PostMapping ("/findPatientByNameAndMobile")
+    public ResponseResult findPatientByNameAndMobile(@RequestBody PatientLikeFinleQueryForm patientBaseInfoQueryForm){
+        return ResponseUtil.success(patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm));
+    }
 
 }

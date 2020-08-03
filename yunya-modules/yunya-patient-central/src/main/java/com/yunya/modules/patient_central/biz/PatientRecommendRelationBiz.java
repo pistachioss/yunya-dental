@@ -28,8 +28,6 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class PatientRecommendRelationBiz extends BaseBiz<PatientRecommendRelationMapper, PatientRecommendRelation> {
 
-    @Autowired private PatientRecommendRelationMapper patientRecommendRelationMapper;
-
     @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
     /**
@@ -47,7 +45,7 @@ public class PatientRecommendRelationBiz extends BaseBiz<PatientRecommendRelatio
 
     /**
      * 根据id查询患者推荐关系拓展图
-     * @param id
+     * @param form
      * @return List<PatientRecommendRelationVo>
      */
     public List<PatientRecommendRelationVo> findRecommendRelationById(PatientRecommendRelationChartQueryForm form) {

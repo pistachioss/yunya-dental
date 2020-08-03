@@ -5,6 +5,9 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.model.PatientKinRelationModel;
 import com.yunya.feign.patient_central.domain.query.PatientKinRelationQueryForm;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientKinRelation;
 import com.yunya.feign.patient_central.domain.vo.PatientKinRelationVo;
 import com.yunya.modules.patient_central.mapper.PatientKinRelationMapper;
@@ -32,7 +35,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
 
     /**
      * 根据患者id 查询患者亲属列表
-     * @param id
+     * @param form
      * @return List<PatientKinRelation>
      */
     public PageInfo<PatientKinRelationVo> findList(PatientKinRelationQueryForm form) {
@@ -48,19 +51,25 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
      * @param patientKinRelationModel
      * @return
      */
-    public void add(PatientKinRelationModel patientKinRelationModel) {
+    public ResponseResult add(PatientKinRelationModel patientKinRelationModel) {
         PatientKinRelation patientKinRelation = new PatientKinRelation();
         BeanUtils.copyProperties(patientKinRelationModel,patientKinRelation);
+        PatientKinRelation patientKinRelationvo = patientKinRelationMapper.findPatientKinRelation(patientKinRelation);
+        if(patientKinRelationvo!=null){
+            return ResponseUtil.success("患者关系已存在",patientKinRelationvo);
+        }
         if(patientKinRelationModel.getId() == null){
-            patientKinRelation.setCrtId(1); //TODO Integer.parseInt(BaseContextHandler.getUserID())
-            patientKinRelation.setCrtName("创建人名称");
+            patientKinRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientKinRelation.setCrtName(BaseContextHandler.getName());
+            patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
             mapper.insert(patientKinRelation);
         }else {
-            patientKinRelation.setUptId(1);//TODO Integer.parseInt(BaseContextHandler.getUserID())
-            patientKinRelation.setUpdName("修改人名称");
+            patientKinRelation.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientKinRelation.setUpdName(BaseContextHandler.getName());
             patientKinRelation.setUpdTime(new Date());
+            patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
             mapper.updateByPrimaryKeySelective(patientKinRelation);
         }
-
+        return ResponseUtil.success();
     }
 }

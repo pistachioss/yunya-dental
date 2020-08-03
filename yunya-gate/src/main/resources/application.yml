@@ -87,6 +87,13 @@ spring:
             - Path=/api/emr/**
           filters:
             - StripPrefix=2
+        - id: yunya-patient
+          uri: lb://yunya-patient
+          order: 8006
+          predicates:
+            - Path=/api/patient/**
+          filters:
+            - StripPrefix=2
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848

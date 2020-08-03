@@ -2,15 +2,11 @@ package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.patient_central.PatientRecommendRelation;
 import com.yunya.modules.patient_central.biz.PatientRecommendRelationBiz;
-import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +38,7 @@ public class PatientRecommendRelationController {
     }
 
     @ApiOperation("查询患者推荐关系拓展图")
-    @GetMapping("/findRecommendRelationById")
+    @GetMapping("/findRecommendRelation")
     public ResponseResult findRecommendRelationById(@RequestBody PatientRecommendRelationChartQueryForm form){
         return ResponseUtil.success(patientRecommendRelationBiz.findRecommendRelationById(form));
     }

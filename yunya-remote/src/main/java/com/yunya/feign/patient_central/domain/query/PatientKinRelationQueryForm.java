@@ -5,8 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -24,6 +24,8 @@ public class PatientKinRelationQueryForm implements Serializable {
     /**
      * 患者ID
      */
+    @NotNull(message = "患者ID不能为空！")
+    @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 
     @ApiModelProperty(value = "是否分页", required = true)
