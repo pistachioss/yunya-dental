@@ -94,6 +94,16 @@ spring:
             - StripPrefix=3
           metadata:
             title: "排班考勤服务"
+
+        - id: yunya-patient
+            uri: lb://yunya-patient
+            order: 8007
+            predicates:
+              - Path=/api/patient/**
+            filters:
+              - StripPrefix=2
+            metadata:
+              title: "患者资料服务"
   
         # 通用工具服务，编号后排
         - id: aliyun-oss
