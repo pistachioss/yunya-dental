@@ -16,21 +16,24 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "草稿病例申请")
 public class DraftMedicalApplyModel {
 
-    @ApiModelProperty(value = "审批事件ID")
+    @ApiModelProperty(value = "审批事件ID", required = true)
     @NotNull
     private Integer eventId;
 
-    @ApiModelProperty(value = "审批事件类型 0：草稿病历审批，1：申请新增病历审批，2：申请修改病历审批，3：删除审批")
+    @ApiModelProperty(value = "审批事件类型 0：草稿病历审批，1：申请新增病历审批，2：申请修改病历审批，3：删除审批", required = true)
     @NotNull
     private Integer eventType;
 
-    @ApiModelProperty(value = "申请人Id")
+    @ApiModelProperty(value = "申请人Id", required = true)
     @NotNull
     private Integer proposerId;
 
-    @ApiModelProperty(value = "审批人Id")
+    @ApiModelProperty(value = "审批人Id", required = true)
     @NotNull
     private Integer approverId;
+
+    @ApiModelProperty(value = "申请类型 0：新增，1：修改", required = true)
+    private Integer applyType;
 
 
 }

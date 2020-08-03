@@ -13,6 +13,7 @@
         <result column="diagnosis" jdbcType="VARCHAR" property="diagnosis" />
         <result column="plan" jdbcType="VARCHAR" property="plan" />
         <result column="treatment" jdbcType="VARCHAR" property="treatment" />
+        <result column="enable" jdbcType="TINYINT" property="enable" />
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
         <result column="upd_id" jdbcType="INTEGER" property="updId" />
@@ -42,7 +43,7 @@
     <select id="listByKeyword" resultMap="BaseResultMap">
         select
             `id`,
-            `content`,
+            `name`,
             `type`,
             `chief_complaint`,
             `present_illness`,
@@ -50,7 +51,8 @@
             `examination`,
             `diagnosis`,
             `plan`,
-            `treatment`
+            `treatment`,
+            `enable`
         from `medical_template`
         where `medical_template_category_id` = #{categoryId}
             <if test="keyword != null" >

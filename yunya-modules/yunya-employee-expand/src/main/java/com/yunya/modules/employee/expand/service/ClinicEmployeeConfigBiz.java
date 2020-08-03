@@ -74,12 +74,16 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
      * @return
      */
     public ClinicEmployeeConfigRes getEmployeeConfig(ClinicEmployeeConfigQueryReq req) {
+        ClinicEmployeeConfigRes result = null;
         Integer employeeId = req.getEmployeeId();
         Example example = new Example(ClinicEmployeeConfig.class);
         example.createCriteria().andEqualTo("clinicId", req.getClinicId())
                                 .andEqualTo("employeeId", employeeId);
         ClinicEmployeeConfig config = mapper.selectOneByExample(example);
-        ClinicEmployeeConfigRes result = EntityUtils.build(config, ClinicEmployeeConfigRes.class);
+        result = EntityUtils.build(config, ClinicEmployeeConfigRes.class);
+        if (result == null) {
+            return null;
+        }
         SysUserInfoDetail assistantEmployee = systemServiceFeign.findSysUserEmployeeInfoByUserId(employeeId);
         //todo 查询科室信息
         result.setAssistantName(assistantEmployee.getName());

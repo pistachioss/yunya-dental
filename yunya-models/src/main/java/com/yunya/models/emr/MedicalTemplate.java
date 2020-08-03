@@ -1,12 +1,13 @@
 package com.yunya.models.emr;
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import lombok.Data;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 /**
  * @author 
  * 病历模板
@@ -68,6 +69,11 @@ public class MedicalTemplate implements Serializable {
      * 处理
      */
     private String treatment;
+
+    /**
+     * 启用/禁用
+     */
+    private Integer enable;
 
     /**
      * 创建人Id
