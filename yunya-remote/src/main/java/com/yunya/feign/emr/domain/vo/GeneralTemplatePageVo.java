@@ -17,4 +17,7 @@ public class GeneralTemplatePageVo {
     private Integer id;
     @ApiModelProperty(value = "词条内容")
     private String content;
+
+    @ApiModelProperty(value = "启用/禁用")
+    private String enable;
 }

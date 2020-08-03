@@ -27,6 +27,21 @@
           <if test="eventType != null">
             and `event_type` = #{eventType}
           </if>
-          and `status` = #{status}
+          <if test="status != null">
+            and `status` = #{status}
+          </if>
+    </select>
+
+    <select id="findNewestReject" resultMap="BaseResultMap">
+        select
+            `id`,
+            `event_id`,
+            `approve_time`,
+            `status`
+        from `approval_record`
+        where `event_id` = #{eventId}
+          and `event_type` = 0
+          and `status` = 2
+        order by `approve_time` desc limit 1
     </select>
 </mapper>

@@ -95,7 +95,7 @@ public class TemplateController {
     }
 
     @ApiOperation("公司端病例模板详情")
-    @GetMapping("template/medical/{templateId}}")
+    @GetMapping("template/medical/{templateId}")
     public ResponseResult<MedicalDetailDetailVo> getMedicalTemplateRecord(@PathVariable("templateId") Integer templateId) {
         MedicalDetailDetailVo result = templateBiz.getMedicalTemplateDetail(templateId);
         return ResponseUtil.success(result);

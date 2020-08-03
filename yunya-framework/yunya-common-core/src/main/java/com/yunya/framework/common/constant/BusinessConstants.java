@@ -1,7 +1,5 @@
 package com.yunya.framework.common.constant;
 
-import java.util.regex.Pattern;
-
 /**
  * 简介: 业务相关常量
  *
@@ -51,4 +49,6 @@ public class BusinessConstants {
   public static final Integer DISABLE_NUM = 0;
 
   public static final Integer ENABLE_NUM = 1;
+
+  public static final Long HOUR_GAP = 24L;
 }

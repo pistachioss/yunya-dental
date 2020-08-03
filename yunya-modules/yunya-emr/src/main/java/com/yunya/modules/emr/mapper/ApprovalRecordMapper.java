@@ -17,4 +17,12 @@ public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<Ap
      */
     int countByEventIdAndType(@Param("eventId") Integer eventId, @Param("eventType") Integer eventType,
                              @Param("status") Integer status);
+
+
+    /**
+     * 查询草稿审批历史
+     * @param eventId
+     * @return
+     */
+    ApprovalRecord findNewestReject(@Param("eventId") Integer eventId);
 }

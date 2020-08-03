@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 @ApiModel(value = "草稿病例申请")
 public class DraftMedicalApplyModel {
 
-    @ApiModelProperty(value = "审批事件ID", required = true)
+    @ApiModelProperty(value = "电子病例ID", required = true)
     @NotNull
     private Integer eventId;
 

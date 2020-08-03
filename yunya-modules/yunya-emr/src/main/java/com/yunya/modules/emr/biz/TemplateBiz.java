@@ -69,6 +69,7 @@ public class TemplateBiz {
         generalMapper.listByKeyword(query.getKeyword(), categoryId);
         List<GeneralTemplatePageVo> list = Lists.newArrayListWithExpectedSize(page.size());
         list = EntityUtils.build(page.getResult(), GeneralTemplatePageVo.class);
+        list.forEach(obj -> obj.setEnable(EnableEnum.getValue(Integer.valueOf(obj.getEnable()))));
         return new PageInfo<>(list);
     }
 

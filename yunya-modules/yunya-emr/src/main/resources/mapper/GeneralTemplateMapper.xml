@@ -24,7 +24,8 @@
     <select id="listByKeyword" resultMap="BaseResultMap">
         select
             `id`,
-            `content`
+            `content`,
+            `enable`
         from `general_template`
         where `medical_template_category_id` = #{categoryId}
             <if test="keyword != null" >
