@@ -20,7 +20,7 @@ public class MedicalDetailDetailVo {
     private String name;
 
     @ApiModelProperty(value = "模板类型")
-    private Integer type;
+    private String type;
 
     @ApiModelProperty(value = "主诉")
     private String chiefComplaint;
