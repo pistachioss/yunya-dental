@@ -25,5 +25,5 @@ public interface YunyaServiceNameConstants {
   /** 预约服务 */
   String YUNYA_CLINIC_APPOINTMENT = "yunya-clinic-appointment";
   /** 患者服务 */
-  String YUNYA_PATIENT = "yunya_patient";
+  String YUNYA_PATIENT = "yunya-patient";
 }
