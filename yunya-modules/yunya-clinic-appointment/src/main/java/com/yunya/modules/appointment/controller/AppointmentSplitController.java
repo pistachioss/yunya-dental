@@ -26,7 +26,7 @@ import java.util.Map;
  * @update yunya-lihuibin    2020-07-30    新建
  */
 @RestController
-@RequestMapping("appointment/appointSplit")
+@RequestMapping("appoint_split")
 @Api(tags = "预约分解控制器")
 public class AppointmentSplitController {
 

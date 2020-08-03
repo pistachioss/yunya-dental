@@ -29,7 +29,7 @@ import java.util.Map;
  */
 @Api(tags = "预约设备项目服务控制层")
 @RestController
-@RequestMapping("appointment/device")
+@RequestMapping("appoint_device")
 public class ClinicDeviceItemController {
 
     @Autowired
