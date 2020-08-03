@@ -77,16 +77,20 @@
         item.id,
         cai.appoint_item_id as appointItemId,
         item.name as itemName,
+        atype.name as typeName,
         item.duration,
         item.inservice,
         item.remarks
-        from appoint_item item LEFT JOIN clinic_appoint_item cai ON cai.appoint_item_id = item.id
-        where cai.org_id=#{form.orgId}
-        <if test="form.appointItemId != null">
-            and cai.appoint_item_id=#{form.appointItemId}
-        </if>
-        <if test="form.itemName != null">
-            and item.name like CONCAT(CONCAT('%', #{form.itemName}), '%')
-        </if>
+        from appoint_item item
+        LEFT JOIN clinic_appoint_item cai ON cai.appoint_item_id = item.id
+        LEFT JOIN appoint_type atype on  atype.id = item.appoint_type_id
+        <where>
+            <if test="form.appointItemId != null">
+                cai.appoint_item_id=#{form.appointItemId}
+            </if>
+            <if test="form.itemName != null">
+                and item.name like CONCAT(CONCAT('%', #{form.itemName}), '%')
+            </if>
+        </where>
     </select>
 </mapper>

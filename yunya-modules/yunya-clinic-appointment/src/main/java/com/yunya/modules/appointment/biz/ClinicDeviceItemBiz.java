@@ -60,12 +60,37 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
 
     /**
      * 新增门诊端可用设备
-     *
-     * @param deviceForms 设备信息
+     * @param deviceForm 设备信息
      * @return
      */
-    public ResponseResult addDevice(List<DeviceItemModel> deviceForms) {
+    public ResponseResult addDevice(DeviceItemModel deviceForm){
+        ClinicDeviceItem device = new ClinicDeviceItem();
+        device.setOrgId(deviceForm.getOrgId());
+        device.setDeviceId(deviceForm.getDeviceId());
+        device.setNumber(deviceForm.getNumber());
+        ClinicDeviceItem one = mapper.selectOne(device);
+        if (one != null) {
+            // 相同的设备已经存在，将设备删除重新添加
+            return  ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"设备已经存在！",null);
+        } else {
+            device.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            int insert = mapper.insertSelective(device);
+            if (insert <= 0) {
+                return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"设备添加失败！",null);
+            }
+        }
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 新增门诊端可用设备(批量)
+     *
+     * @param deviceFormArr 设备信息
+     * @return
+     */
+    public ResponseResult addDevices(DeviceItemModel[] deviceFormArr) {
         List errList = new ArrayList<Map<String, Object>>();
+        List<DeviceItemModel> deviceForms = new ArrayList<>(Arrays.asList(deviceFormArr));
         if (deviceForms.size() > 0) {
             deviceForms.forEach(deviceForm -> {
                 ClinicDeviceItem device = new ClinicDeviceItem();
@@ -84,7 +109,7 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
                     errList.add(resultMap);
                 } else {
                     device.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-                    int insert = mapper.insert(device);
+                    int insert = mapper.insertSelective(device);
                     if (insert <= 0) {
                         Map<String, Object> resultMap = new HashMap<>();
                         resultMap.put("id", device.getId());

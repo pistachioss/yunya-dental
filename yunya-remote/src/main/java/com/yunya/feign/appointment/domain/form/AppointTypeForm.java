@@ -46,6 +46,6 @@ public class AppointTypeForm implements Serializable {
      * 是否启用 是否有效
      */
     @ApiModelProperty(value = "是否启用 是否有效")
-    private Boolean inservice;
+    private Byte inservice;
 
 }

@@ -54,7 +54,9 @@
       cdi.number,
       cdi.device_id as deviceId,
       cdi.org_id as orgId,
-      cdt.name
+      cdt.name,
+      cdi.remarks,
+      cdi.inservice
     from clinic_device_item cdi LEFT JOIN clinic_device_type cdt
     on cdi.device_id = cdt.id
     where cdi.id = #{id}
