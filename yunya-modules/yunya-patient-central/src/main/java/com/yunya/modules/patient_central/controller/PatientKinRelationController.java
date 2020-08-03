@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.controller;
 
+import com.yunya.feign.patient_central.domain.form.PatientKinRelationForm;
 import com.yunya.feign.patient_central.domain.model.PatientKinRelationModel;
 import com.yunya.feign.patient_central.domain.query.PatientKinRelationQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -37,10 +38,18 @@ public class PatientKinRelationController {
     }
 
     @CurrentUser
-    @ApiOperation("添加患者亲属关系(可添加 可修改)")
+    @ApiOperation("添加患者亲属关系")
     @PostMapping("/add")
     public ResponseResult add(@RequestBody @Validated PatientKinRelationModel patientKinRelationModel ){
         return patientKinRelationBiz.add(patientKinRelationModel);
+    }
+
+    @CurrentUser
+    @ApiOperation("修改患者亲属关系")
+    @PostMapping("/update")
+    public ResponseResult update(@RequestBody @Validated PatientKinRelationForm patientKinRelationForm ){
+        patientKinRelationBiz.update(patientKinRelationForm);
+        return ResponseUtil.success();
     }
 
     @ApiOperation("删除患者亲属关系")

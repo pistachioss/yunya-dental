@@ -24,4 +24,6 @@ public interface YunyaServiceNameConstants {
   String YUNYA_EMPLOYEE_EXPAND = "yunya-employee-expand";
   /** 预约服务 */
   String YUNYA_CLINIC_APPOINTMENT = "yunya-clinic-appointment";
+  /** 患者服务 */
+  String YUNYA_PATIENT = "yunya_patient";
 }
