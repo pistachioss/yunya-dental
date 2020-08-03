@@ -34,7 +34,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @RestController
-@RequestMapping("/appoint/item")
+@RequestMapping("/appointment/item")
 @Api(tags = "端预约项目Controller")
 public class AppointItemController {
     /**

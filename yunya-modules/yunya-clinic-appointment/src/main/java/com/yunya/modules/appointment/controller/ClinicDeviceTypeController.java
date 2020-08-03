@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Api(tags = "设备类型控制器")
 @RestController
-@RequestMapping("/device/type")
+@RequestMapping("appointment/device/type")
 public class ClinicDeviceTypeController {
 
     @Autowired

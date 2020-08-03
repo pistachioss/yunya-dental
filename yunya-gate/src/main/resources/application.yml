@@ -105,6 +105,17 @@ spring:
             - StripPrefix=2
           metadata:
             title: "资源图片服务"
+
+        # 预约服务
+        - id: yunya-clinic-appointment
+            uri: lb://yunya-clinic-appointment
+            order: 8009
+            predicates:
+              - Path=/api/appointment/**
+            filters:
+              - StripPrefix=2
+            metadata:
+              title: "预约服务"
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
