@@ -47,4 +47,9 @@ public class ClinicScheduleController {
     public ResponseResult findVOsByClinicIdAndInservice(@PathVariable("clinicId") Integer clinicId) {
         return ResponseUtil.success(clinicScheduleBiz.findVOsByClinicIdAndInservice(clinicId));
     }
+    @GetMapping("/base/{scheduleId}")
+    @ApiOperation("获取开启该班次的门诊列表")
+    public ResponseResult findVOByScheduleIdAndInservice(@PathVariable("scheduleId") Integer scheduleId){
+        return ResponseUtil.success(clinicScheduleBiz.findVOByScheduleIdAndInservice(scheduleId));
+    }
 }
