@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientKinRelationMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientKinRelation" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="linked_patient_id" property="linkedPatientId" jdbcType="INTEGER" />
+    <result column="kinship_id" property="kinshipId" jdbcType="INTEGER" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="PatientKinRelationVo_Column_List">
+    pkr.id,pkr.patient_id patientId,pkr.linked_patient_id linkedPatientId,pbi.name relationName,pkr.kinship_id kinshipId,
+	pbi.gender gender,pbi.mobile mobile,pkr.remarks,pkr.crt_time crtTime
+  </sql>
+
+  <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientKinRelationVo">
+    select <include refid="PatientKinRelationVo_Column_List"/>
+    from patient_kin_relation pkr join patient_base_info pbi on pkr.linked_patient_id = pbi.id
+    where pkr.patient_id = #{id}
+    order by crtTime desc
+  </select>
+
+  <select id="findPatientKinRelation" resultType="com.yunya.models.patient_central.PatientKinRelation">
+    select pkr.id id,pkr.org_id orgId,pkr.patient_id patientId,pkr.linked_patient_id linkedPatientId,pkr.kinship_id kinshipId,pkr.remarks remarks,pkr.inservice inservice,
+           pkr.crt_id crtId,pkr.crt_name crtName,pkr.crt_time crtTime,pkr.upt_id uptId,pkr.upd_name updName,pkr.upd_time updTime
+    from patient_kin_relation pkr
+    where pkr.patient_id =#{patientKinRelation.patientId} and pkr.linked_patient_id =#{patientKinRelation.linkedPatientId}
+  </select>
+</mapper>

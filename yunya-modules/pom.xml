@@ -21,6 +21,7 @@
         <module>yunya-clinic-appointment</module>
         <module>yunya-employee-attend</module>
         <module>yunya-emr</module>
+        <module>yunya-patient-central</module>
     </modules>
 
 

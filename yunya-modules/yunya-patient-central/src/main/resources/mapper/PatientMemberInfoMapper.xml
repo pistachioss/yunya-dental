@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientMemberInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientMemberInfo" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="member_type_id" property="memberTypeId" jdbcType="INTEGER" />
+    <result column="master_card" property="masterCard" jdbcType="BIT" />
+    <result column="card_number" property="cardNumber" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL" />
+    <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL" />
+    <result column="point" property="point" jdbcType="INTEGER" />
+    <result column="last_expired_time" property="lastExpiredTime" jdbcType="TIMESTAMP" />
+    <result column="next_expired_time" property="nextExpiredTime" jdbcType="TIMESTAMP" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVO">
+    select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,
+		 member_type_id memberTypeId,crt_time crtTime
+    from patient_member_info where patient_id =#{id}
+  </select>
+
+  <select id="findMemberBindingRelation" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVO">
+    select pbi.name name,pmr.master_card_id masterCardId,pmr.bind_type bindType
+    from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
+    where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+  </select>
+</mapper>
