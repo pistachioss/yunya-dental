@@ -21,6 +21,9 @@ public class MedicalTemplatePageVo {
     private String name;
 
     @ApiModelProperty(value = "模板类型")
-    private Integer type;
+    private String type;
+
+    @ApiModelProperty(value = "启用/禁用")
+    private String enable;
 
 }

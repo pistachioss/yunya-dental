@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(tags = "预约类型项目控制器")
 @RestController
-@RequestMapping("appointment/type")
+@RequestMapping("appoint_type")
 public class AppointTypeController {
 
     @Autowired

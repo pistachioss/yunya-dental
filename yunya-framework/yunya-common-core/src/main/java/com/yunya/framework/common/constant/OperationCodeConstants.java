@@ -30,4 +30,6 @@ public class OperationCodeConstants {
   public static final Integer DATA_NOT_EXIST = 30009;
   /** 时间格式转换异常 */
   public static final Integer DATA_TRANSFORMATION_EXIST = 30010;
+  /** 申请正在审批中 */
+  public static final Integer APPLY_APPROVE_PENDING = 30011;
 }

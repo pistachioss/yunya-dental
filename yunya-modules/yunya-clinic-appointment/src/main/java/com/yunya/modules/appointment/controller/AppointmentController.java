@@ -26,7 +26,7 @@ import java.util.Map;
  */
 @Api(tags = "患者预约Controller(禁止使用)")
 @RestController
-@RequestMapping("appointment")
+@RequestMapping("appoint")
 public class AppointmentController {
 
     /** 预约服务 */

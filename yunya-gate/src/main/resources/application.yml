@@ -84,7 +84,7 @@ spring:
             - StripPrefix=2
           metadata:
             title: "电子病历服务"
-        
+
         - id: yunya-employee-attend
           uri: lb://yunya-employee-attend
           order: 8006
@@ -97,14 +97,14 @@ spring:
 
         - id: yunya-patient
           uri: lb://yunya-patient
-          order: 8007
+          order: 9002
           predicates:
             - Path=/api/patient/**
           filters:
             - StripPrefix=2
           metadata:
             title: "患者资料服务"
-  
+
         # 通用工具服务，编号后排
         - id: aliyun-oss
           uri: lb://aliyun-oss
@@ -116,16 +116,16 @@ spring:
           metadata:
             title: "资源图片服务"
 
-        # 预约服务
         - id: yunya-clinic-appointment
           uri: lb://yunya-clinic-appointment
-          order: 8009
+          order: 9001
           predicates:
             - Path=/api/appointment/**
           filters:
             - StripPrefix=2
           metadata:
             title: "预约服务"
+
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848

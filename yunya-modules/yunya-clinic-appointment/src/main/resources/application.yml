@@ -43,11 +43,15 @@ spring:
   #          http:
   #            legacy:
   #              enabled: true
+  redis:
+    host: 192.168.31.90
+    port: 6379
+    password: foobared
+    database: 2
   cloud:
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
-      #        server-addr: 192.168.31.215:8848
       config:
         namespace:
     sentinel:
@@ -108,19 +112,19 @@ swagger:
     name: yunya-clinic-appointment
 
 #redis-cache 相关
-redis:
-  pool:
-    maxActive: 300
-    maxIdle: 100
-    maxWait: 1000
-  host: ${REDIS_HOST:192.168.31.90}
-  port: ${REDIS_PORT:6379}
-  password: foobared
-  timeout: 2000
-  # 服务或应用名
-  sysName: yunya-system
-  enable: true
-  database: 0
+#redis:
+#  pool:
+#    maxActive: 300
+#    maxIdle: 100
+#    maxWait: 1000
+#  host: 192.168.31.90
+#  port: 6379
+#  password: foobared
+#  timeout: 2000
+#  # 服务或应用名
+#  sysName: yunya-clinic-appointment
+#  enable: true
+#  database: 2
 
 # 暴露所以端点
 management:

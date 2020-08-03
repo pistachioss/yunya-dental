@@ -1,5 +1,7 @@
 package com.yunya.models.appointment;
 
+import io.swagger.models.auth.In;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -14,18 +16,24 @@ public class ClinicAppointmentSetting {
     private Integer id;
 
     /**
-     * 设备名称
+     * 用户id
      */
-    private String name;
+    @Column(name = "user_id")
+    private Integer userId;
 
     /**
-     * 诊所ID
+     * 预约单位(分钟)
      */
-    @Column(name = "org_id")
-    private Integer orgId;
+    @Column(name = "appoint_unit")
+    private Integer appointUnit;
 
     /**
-     * 备注 备注
+     * 预约显示列数
+     */
+    private Integer columns;
+
+    /**
+     * 备注
      */
     private String remarks;
 
@@ -89,39 +97,55 @@ public class ClinicAppointmentSetting {
     }
 
     /**
-     * 获取设备名称
+     * 获取用户id
      *
-     * @return name - 设备名称
+     * @return userId - 用户id
      */
-    public String getName() {
-        return name;
+    public Integer getUserId() {
+        return userId;
     }
 
     /**
-     * 设置设备名称
+     * 设置用户id
      *
-     * @param name 设备名称
+     * @param userId 用户id
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     /**
-     * 获取诊所ID
+     * 获取获取预约单位（分钟）
      *
      * @return org_id - 诊所ID
      */
-    public Integer getOrgId() {
-        return orgId;
+    public Integer getAppointUnit() {
+        return appointUnit;
     }
 
     /**
-     * 设置诊所ID
+     * 获取预约单位（分钟）
      *
-     * @param orgId 诊所ID
+     * @param appointUnit 预约单位（分钟）
      */
-    public void setOrgId(Integer orgId) {
-        this.orgId = orgId;
+    public void setAppointUnit(Integer appointUnit) {
+        this.appointUnit = appointUnit;
+    }
+
+    /**
+     * 获取预约显示列数
+     * @return columns - 预约显示列数
+     */
+    public Integer getColumns(){
+        return columns;
+    }
+
+    /**
+     * 设置预约显示的列数
+     * @param columns - 预约显示的列数
+     */
+    public void setColumns(Integer columns){
+        this.columns = columns;
     }
 
     /**
