@@ -11,6 +11,7 @@ import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -33,9 +34,16 @@ public class SwaggerResourceConfig implements SwaggerResourcesProvider {
         gatewayProperties.getRoutes().stream().filter(routeDefinition -> routes.contains(routeDefinition.getId())).forEach(route -> {
             route.getPredicates().stream()
                     .filter(predicateDefinition -> ("Path").equalsIgnoreCase(predicateDefinition.getName()))
-                    .forEach(predicateDefinition -> resources.add(swaggerResource(route.getId(),
-                            predicateDefinition.getArgs().get(NameUtils.GENERATED_NAME_PREFIX + "0")
-                                    .replace("**", "v2/api-docs"))));
+                    .forEach(predicateDefinition -> {
+                        String title = route.getId();
+                        try {
+                            title = "[ " + route.getMetadata().get("title").toString() + " ] ";
+                        } catch (Exception e) {
+                        }
+                        resources.add(swaggerResource(title + route.getId(),
+                                predicateDefinition.getArgs().get(NameUtils.GENERATED_NAME_PREFIX + "0")
+                                        .replace("**", "v2/api-docs")));
+                    });
         });
 
         return resources;

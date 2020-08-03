@@ -46,7 +46,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8848
+        server-addr: 192.168.31.215:8848
       #        server-addr: 192.168.31.215:8848
       config:
         namespace:
@@ -59,7 +59,7 @@ sample:
     # When enabled=false, traces log to the console. Comment to send to zipkin
 
 mybatis:
-  basepackage: com.yunya.modules.system.mapper
+  basepackage: com.yunya.modules.appointment.mapper
   xmlLocation: classpath:mapper/**/*.xml
   mapper-locations: "classpath*:mapper/*.xml"
 
@@ -100,12 +100,12 @@ hystrix:
 # 配置swagger
 swagger:
   enabled: true
-  base-package: com.yunya.modules.system
-  title: yunya-system
+  base-package: com.yunya.modules.appointment
+  title: yunya-clinic-appointment
   version: 1.0.0.SNAPSHOT
-  description: YUNYA系统管理后端服务
+  description: YUNYA患者预约后端服务
   contact:
-    name: yunya-system
+    name: yunya-clinic-appointment
 
 #redis-cache 相关
 redis:

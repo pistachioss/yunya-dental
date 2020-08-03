@@ -15,7 +15,7 @@ import javax.validation.constraints.Size;
  */
 @Setter
 @Getter
-@ApiModel(value = "病例模板更新模型")
+@ApiModel(value = "修改病例模板模型")
 public class MedicalTemplateForm {
 
     @ApiModelProperty(value = "模板名称", required = true)

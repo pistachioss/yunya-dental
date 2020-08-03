@@ -120,16 +120,6 @@ public class EmployeeScheduleController {
           HttpServletResponse response,
           List<EmployeeScheduleExportVO>employeeConflict
   ) throws Exception {
-//    List<EmployeeScheduleExportVO>employeeConflict = new ArrayList<>();
-//    EmployeeScheduleExportVO employeeScheduleExportVO = new EmployeeScheduleExportVO();
-//    employeeScheduleExportVO.setCover_company_name("Cover_company_name");
-//    employeeScheduleExportVO.setCover_date("2020-12-28");
-//    employeeScheduleExportVO.setCover_schedule("Cover_schedule");
-//    employeeScheduleExportVO.setCopy_company_name("Copy_company_name");
-//    employeeScheduleExportVO.setCopy_date("2019-11-09");
-//    employeeScheduleExportVO.setCopy_schedule("Copy_schedule");
-//    employeeScheduleExportVO.setName("Name");
-//    employeeConflict.add(employeeScheduleExportVO);
     employeeScheduleBiz.exportConflict(response, employeeConflict);
   }
 

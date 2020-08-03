@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.emr.mapper.MedicalCommonRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.emr.MedicalCommonRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="major_dentist_id" property="majorDentistId" jdbcType="INTEGER" />
+    <result column="chief_complaint" property="chiefComplaint" jdbcType="VARCHAR" />
+    <result column="present_illness" property="presentIllness" jdbcType="VARCHAR" />
+    <result column="past_history" property="pastHistory" jdbcType="VARCHAR" />
+    <result column="re_examination" property="reExamination" jdbcType="VARCHAR" />
+    <result column="examination" property="examination" jdbcType="VARCHAR" />
+    <result column="diagnosis" property="diagnosis" jdbcType="VARCHAR" />
+    <result column="plan" property="plan" jdbcType="VARCHAR" />
+    <result column="treatment" property="treatment" jdbcType="VARCHAR" />
+    <result column="prescription" property="prescription" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="BIT" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="approval_time" property="approvalTime" jdbcType="TIMESTAMP" />
+    <result column="time" property="time" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <select id="findList" resultMap="BaseResultMap">
+    select
+    *
+    from
+    medical_common_record
+    <where>
+      patient_id = #{patientId}
+      <if test="id != null" >
+        and id = #{id}
+      </if>
+    </where>
+    order by crt_time desc
+  </select>
+
+  <insert id="insertMedical" parameterType="com.yunya.models.emr.MedicalCommonRecord"
+          useGeneratedKeys="true" keyProperty="id">
+     INSERT INTO medical_common_record (
+	id,
+	treatment_id,
+	patient_id,
+	major_dentist_id,
+	chief_complaint,
+	present_illness,
+	past_history,
+	re_examination,
+	examination,
+	diagnosis,
+	plan,
+	treatment,
+	prescription,
+	type,
+	status,
+	approval_time,
+	time,
+	crt_id,
+	crt_time,
+	upd_id,
+	upd_time
+)
+VALUES
+	(   #{id},
+		#{treatmentId},
+		#{patientId},
+		#{majorDentistId},
+		#{chiefComplaint},
+		#{presentIllness},
+		#{pastHistory},
+		#{reExamination},
+		#{examination},
+		#{diagnosis},
+		#{plan},
+		#{treatment},
+		#{prescription},
+		#{type},
+		#{status},
+		#{approvalTime},
+		#{time},
+		#{crtId},
+		#{crtTime},
+		#{updId},
+		#{updTime}
+	)
+    </insert>
+</mapper>

@@ -81,12 +81,12 @@ public class MedicalCommonRecord {
     /**
      * 类型：0初诊，1复诊
      */
-    private Boolean type;
+    private Integer type;
 
     /**
      * 状态：0不需要审批，1待审核，2同意，3拒绝
      */
-    private Byte status;
+    private Integer status;
 
     /**
      * 医生审批时间
@@ -362,7 +362,7 @@ public class MedicalCommonRecord {
      *
      * @return type - 类型：0初诊，1复诊
      */
-    public Boolean getType() {
+    public Integer getType() {
         return type;
     }
 
@@ -371,7 +371,7 @@ public class MedicalCommonRecord {
      *
      * @param type 类型：0初诊，1复诊
      */
-    public void setType(Boolean type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
@@ -380,7 +380,7 @@ public class MedicalCommonRecord {
      *
      * @return status - 状态：0不需要审批，1待审核，2同意，3拒绝
      */
-    public Byte getStatus() {
+    public Integer getStatus() {
         return status;
     }
 
@@ -389,7 +389,7 @@ public class MedicalCommonRecord {
      *
      * @param status 状态：0不需要审批，1待审核，2同意，3拒绝
      */
-    public void setStatus(Byte status) {
+    public void setStatus(Integer status) {
         this.status = status;
     }
 

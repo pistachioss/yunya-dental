@@ -1,0 +1,50 @@
+server:
+  port: 8204
+
+spring:
+  application:
+    name: yunya-employee-expand
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://192.168.31.90:3306/employee_expand?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
+    username: sa
+    password: Admin001!
+  redis:
+    host: 192.168.31.90
+    port: 6379
+    password: foobared
+    database: 2
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.215:8848
+
+mybatis:
+  mapperLocations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.yunya.models.expand
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 配置swagger
+swagger:
+  enabled: true
+  base-package: com.yunya.modules.employee.expand
+  title: yunya-employee-expand
+  version: 1.0.0.SNAPSHOT
+  description: 员工扩展相关功能
+  contact:
+    name: yunya-employee-expand
+
+#设置hystrix超时
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000
+
+
+
+

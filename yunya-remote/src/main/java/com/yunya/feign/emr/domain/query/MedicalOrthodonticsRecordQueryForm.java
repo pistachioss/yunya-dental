@@ -20,4 +20,7 @@ public class MedicalOrthodonticsRecordQueryForm {
   @NotNull(message = "患者ID不能为空")
   private Integer patientId;
 
+  @ApiModelProperty("ID")
+  private Integer id;
+
 }

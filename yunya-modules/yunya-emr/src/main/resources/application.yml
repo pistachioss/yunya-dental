@@ -32,7 +32,7 @@ swagger:
   base-package: com.yunya.modules.emr
   title: yunya-emr
   version: 1.0.0.SNAPSHOT
-  description: 电子病历相关功能
+  description: 电子病历相关功能 (网关地址：/api/emr/**)
   contact:
     name: yunya-emr
 

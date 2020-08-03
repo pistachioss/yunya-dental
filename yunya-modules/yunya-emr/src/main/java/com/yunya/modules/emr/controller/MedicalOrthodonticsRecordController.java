@@ -3,6 +3,8 @@ package com.yunya.modules.emr.controller;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.emr.domain.query.MedicalOrthodonticsRecordQueryForm;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.MedicalOrthodonticsRecord;
@@ -29,9 +31,8 @@ import java.util.Date;
 @RequestMapping("/medical_Orthodontics")
 @CrossOrigin
 public class MedicalOrthodonticsRecordController {
-
-  @Autowired private MedicalOrthodonticsRecordBiz medicalOrthodonticsRecordBiz;
   @Autowired private EmployeeAttendServiceFeign employeeAttendServiceFeign;
+  @Autowired private MedicalOrthodonticsRecordBiz medicalOrthodonticsRecordBiz;
   /**
    * 查询正畸电子病历
    *
@@ -43,7 +44,7 @@ public class MedicalOrthodonticsRecordController {
   public ResponseResult findList(@RequestBody @Valid MedicalOrthodonticsRecordQueryForm query) {
     MedicalOrthodonticsRecord medicalOrthodonticsRecord = new MedicalOrthodonticsRecord();
     BeanUtils.copyProperties(query,medicalOrthodonticsRecord);
-    return ResponseUtil.success(medicalOrthodonticsRecordBiz.selectByObj(medicalOrthodonticsRecord));
+    return ResponseUtil.success(medicalOrthodonticsRecordBiz.selectByEntity(medicalOrthodonticsRecord));
   }
 
   /**
@@ -54,24 +55,26 @@ public class MedicalOrthodonticsRecordController {
    */
   @PostMapping("/create")
   @ApiOperation("新增数据")
+  @CurrentUser
   public ResponseResult create(@RequestBody @Valid MedicalOrthodonticsRecord model) {
-    model.setCrtId(12);
+    model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setCrtTime(new Date());
     return ResponseUtil.success(medicalOrthodonticsRecordBiz.create(model));
   }
 
-  @PostMapping("/texy")
-  @ApiOperation("查询列表")
-  public ResponseResult List() {
-    EmployeeScheduleQueryForm m = new EmployeeScheduleQueryForm();
-    m.setClinicId(35);
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-    try {
-      m.setStartDate(sdf.parse("2020-07-30"));
-      m.setEndDate(sdf.parse("2020-08-02"));
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
-    return ResponseUtil.success(employeeAttendServiceFeign.findList(m));
-  }
+//  /**
+//   * 查询
+//   *
+//   * @param
+//   * @return
+//   */
+//  @PostMapping("/txe")
+//  @ApiOperation("查询列表")
+//  public ResponseResult txe() {
+//    EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+//    employeeScheduleQueryForm.setClinicId(35);
+//    employeeScheduleQueryForm.setEndDate("2020-08-07");
+//    employeeScheduleQueryForm.setStartDate("2020-07-30");
+//    return ResponseUtil.success(employeeAttendServiceFeign.findList(employeeScheduleQueryForm));
+//  }
 }
