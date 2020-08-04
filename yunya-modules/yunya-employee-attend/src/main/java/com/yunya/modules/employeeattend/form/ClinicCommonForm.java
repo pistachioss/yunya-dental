@@ -22,6 +22,10 @@ public class ClinicCommonForm implements Serializable {
     private Integer id;
 
     @ApiModelProperty("门诊节点")
-    @NotNull(message = "门诊节点列表不能为空")
-    private List<ClinicNode> clinicNodes;
+    @NotNull(message = "门诊节点不能为空")
+    private Integer clinicId;
+
+    @ApiModelProperty(value = "是否启用")
+    private Boolean inservice;
+
 }

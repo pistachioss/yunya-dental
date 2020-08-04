@@ -3,6 +3,7 @@ package com.yunya.modules.employeeattend.form;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 /**
@@ -17,4 +18,12 @@ public class ScheduleForm implements Serializable {
     private String name;
     @ApiModelProperty("类型名称")
     private String typeName;
+
+    @ApiModelProperty("页码")
+    @Min(message = "最小值", value = 1)
+    private Integer pageNum = 1;
+
+    @ApiModelProperty("每页显示数量")
+    @Min(message = "最小值", value = 1)
+    private Integer pageSize = 10;
 }

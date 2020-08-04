@@ -101,7 +101,7 @@ public class MedicalCommonRecordController {
    * @return
    */
   @PostMapping("/update")
-  @ApiOperation("修改普通电子病历（当天24点之前可随意修改，超过24点需要提交审核修改并将修改前的历史记录插入历史表）")
+  @ApiOperation("修改普通电子病历（当天24点之前可随意修改，超过24点需要提交审核修改并将修改前的历史记录插入历史表 不走这个方法）")
   @CurrentUser
   public ResponseResult update(@RequestBody @Valid MedicalCommonRecordForm model) {
     model.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
