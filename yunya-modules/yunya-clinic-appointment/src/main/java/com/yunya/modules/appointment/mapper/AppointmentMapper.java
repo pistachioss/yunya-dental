@@ -1,5 +1,7 @@
 package com.yunya.modules.appointment.mapper;
 
+import com.yunya.feign.appointment.domain.query.AppointmentQuery;
+import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
 import org.apache.ibatis.annotations.Param;
@@ -48,6 +50,14 @@ public interface AppointmentMapper extends Mapper<Appointment> {
             @Param("dentistId") Integer dentistId,
             @Param("appointStartTime") Date appointStartTime,
             @Param("appointEndTime") Date appointEndTime);
+
+    /**
+     * 根据条件查询预约列表
+     * @param query  条件查询参数
+     * @return
+     */
+    List<AppointmentVo> findAppointmentByExample(@Param("query") AppointmentQuery query);
+
 
 
     /**

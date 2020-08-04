@@ -25,18 +25,6 @@ public class DeviceItemVo implements Serializable {
     private Integer id;
 
     /**
-     * 预约设备类型ID
-     */
-    @ApiModelProperty(value = "预约设备类型ID")
-    private Integer deviceId;
-
-    /**
-     * 设备编号
-     */
-    @ApiModelProperty(value = "设备编号")
-    private String number;
-
-    /**
      * 诊所ID
      */
     @ApiModelProperty(value = "诊所ID")
@@ -49,6 +37,12 @@ public class DeviceItemVo implements Serializable {
     private String name;
 
     /**
+     * 设备编号
+     */
+    @ApiModelProperty(value = "设备编号")
+    private String number;
+
+    /**
      * 是否启用 是否有效
      */
     @ApiModelProperty(value = "是否启用 是否有效")
@@ -59,4 +53,10 @@ public class DeviceItemVo implements Serializable {
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
+
+    /**
+     * 设备数量
+     */
+    @ApiModelProperty(value = "设备数量")
+    private Integer deviceNum;
 }

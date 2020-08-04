@@ -28,7 +28,8 @@
       cdi.number,
       cdi.device_id as deviceId,
       cdi.org_id as orgId,
-      cdt.name
+      cdt.name,
+      count(cdt.name) as deviceNum
     from clinic_device_item cdi LEFT JOIN clinic_device_type cdt
     on cdi.device_id = cdt.id
     <where>
@@ -45,6 +46,7 @@
         and cdt.name like CONCAT('%',#{query.name},'%')
       </if>
     </where>
+    group by cdt.name
   </select>
 
   <!-- 根据设备id查询设备 -->

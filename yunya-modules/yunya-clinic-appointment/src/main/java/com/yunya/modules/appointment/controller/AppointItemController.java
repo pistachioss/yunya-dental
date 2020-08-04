@@ -5,13 +5,18 @@
  */
 package com.yunya.modules.appointment.controller;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.domain.form.ClinicAppointItemForm;
+import com.yunya.feign.appointment.domain.model.AppointItemBatchConfigModel;
+import com.yunya.feign.appointment.domain.query.AppointItemConfigQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentQuery;
+import com.yunya.feign.appointment.vo.AppointmentVo;
+import com.yunya.feign.appointment.vo.ClinicAppointItemConfigVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.models.appointment.ClinicAppointItem;
 import com.yunya.modules.appointment.biz.AppointItemBiz;
+import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.modules.appointment.biz.ClinicAppointItemBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
@@ -34,7 +39,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @RestController
-@RequestMapping("appoit_item")
+@RequestMapping("appoint_item")
 @Api(tags = "端预约项目Controller")
 public class AppointItemController {
     /**
@@ -42,6 +47,9 @@ public class AppointItemController {
      */
     @Autowired
     private AppointItemBiz appItemBiz;
+
+    @Autowired
+    private AppointmentBiz appointmentBiz;
 
     @Autowired
     private ClinicAppointItemBiz clinicAppointItemBiz;
@@ -58,6 +66,21 @@ public class AppointItemController {
             @PathVariable("compClinId") String compClinId) {
         List<AppointmentItemEnableModelVo> availableAppItemList = appItemBiz.findAvailableAppItemList(compClinId);
         return ResponseUtil.success(availableAppItemList);
+    }
+
+    /**
+     * 通过预约项目id查询配置适用门诊列表
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation(value = "通过预约项目id查询配置适用门诊列表")
+    @PostMapping("/find/item_config")
+    public ResponseResult findAppointItemAndOrgInfo(@RequestBody @Validated AppointItemConfigQuery query){
+        List<ClinicAppointItemConfigVo> clinicAppointItemConfigVos = clinicAppointItemBiz.findByAppointItemId(query.getAppointItemId());
+        if (query.getWhetherPage()){
+            return ResponseUtil.success(new PageInfo<>(clinicAppointItemConfigVos));
+        }
+        return ResponseUtil.success(clinicAppointItemConfigVos);
     }
 
     /**
@@ -86,8 +109,10 @@ public class AppointItemController {
     @PostMapping("/search")
     public ResponseResult searchAppItem(@Validated @RequestBody AppointItemQuery baseQueryForm) {
         List<AppointmentItemVo>  appointmentItemVos = appItemBiz.findByAppItemName(baseQueryForm);
-        PageInfo pageInfo = new PageInfo(appointmentItemVos);
-        return ResponseUtil.success(pageInfo);
+        if (baseQueryForm.getWhetherPage()){
+            return ResponseUtil.success(new PageInfo(appointmentItemVos));
+        }
+        return ResponseUtil.success(appointmentItemVos);
     }
 
     /**
@@ -108,6 +133,34 @@ public class AppointItemController {
     }
 
     /**
+     *  修改预约项目适用门诊（公司端可用不可用）
+     * @param form 修改数据表单
+     * @return
+     */
+    @ApiOperation(value = "修改预约项目适用门诊（公司端可用不可用）")
+    @PostMapping("/update")
+    @CurrentUser
+    public ResponseResult addAndUpdate(@RequestBody @Validated ClinicAppointItemForm form){
+        Integer result = clinicAppointItemBiz.addAndUpdateAppItem(form);
+        if (result <= 0){
+            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"修改失败！",null);
+        }
+        return ResponseUtil.success();
+    }
+
+    /**
+     *  可预约项目统一设置配置（公司端）
+     * @return
+     */
+    @ApiOperation(value = "可预约项目统一设置配置（公司端）")
+    @PostMapping("/update/batch")
+    @CurrentUser
+    public ResponseResult updateAppointItemWithBatch(@RequestBody @Validated AppointItemBatchConfigModel configModel){
+        clinicAppointItemBiz.updateAppointItemWithBatch(configModel.getAppointItemId(),configModel.getBytes());
+        return ResponseUtil.success();
+    }
+
+    /**
      * 根据id删除项目
      * @param id
      * @return
@@ -120,10 +173,12 @@ public class AppointItemController {
             return ResponseUtil.fail(OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY,"id参数非法！",null);
         }
         // TODO 检测要删除的预约项目是否已被预约，如果已被预约则不能删除
-        /*List<ClinicAppointItem> appointItems = clinicAppointItemBiz.findByAppointItemId(id);
-        if (!StringHelper.isEmpty(appointItems)){
+        AppointmentQuery query = new AppointmentQuery();
+        query.setClinicAppointItemId(id);
+        List<AppointmentVo> appointmentByExample = appointmentBiz.findAppointmentByExample(query);
+        if (appointmentByExample != null && !appointmentByExample.isEmpty()){
             return ResponseUtil.fail(OperationCodeConstants.DELETE_NOT_ALLOW,"数据不允许被删除！",null);
-        }*/
+        }
 
         Integer result = appItemBiz.delAppointItemById(id);
         if (result <= 0){

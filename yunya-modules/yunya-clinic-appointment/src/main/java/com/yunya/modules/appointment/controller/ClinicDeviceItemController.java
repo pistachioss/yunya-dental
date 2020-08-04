@@ -1,16 +1,20 @@
 package com.yunya.modules.appointment.controller;
 
-import com.yunya.feign.appointment.domain.form.DeviceItemForm;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.domain.form.DeviceEditForm;
+import com.yunya.feign.appointment.domain.form.DeviceItemManageForm;
+import com.yunya.feign.appointment.domain.form.DeviceTypeForm;
 import com.yunya.feign.appointment.domain.model.DeviceItemModel;
 import com.yunya.feign.appointment.domain.query.DeviceItemQuery;
 import com.yunya.feign.appointment.vo.DeviceItemVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.appointment.ClinicDeviceType;
 import com.yunya.modules.appointment.biz.ClinicDeviceItemBiz;
+import com.yunya.modules.appointment.biz.ClinicDeviceTypeBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 预约设备项目服务控制层
@@ -35,6 +38,9 @@ public class ClinicDeviceItemController {
     @Autowired
     private ClinicDeviceItemBiz clinicDeviceItemBiz;
 
+    @Autowired
+    private ClinicDeviceTypeBiz clinicDeviceTypeBiz;
+
     /**
      * 根据条件查询设备列表
      *
@@ -45,6 +51,9 @@ public class ClinicDeviceItemController {
     @PostMapping("/find")
     public ResponseResult findDeviceList(@RequestBody DeviceItemQuery query) {
         List<DeviceItemVo> resultMap = clinicDeviceItemBiz.selectDeviceItemByExample(query);
+        if (query.getWhetherPage()){
+            return ResponseUtil.success(new PageInfo<>(resultMap));
+        }
         return ResponseUtil.success(resultMap);
     }
 
@@ -62,6 +71,8 @@ public class ClinicDeviceItemController {
         DeviceItemVo deviceItemVo = clinicDeviceItemBiz.selectDeviceItemById(id);
         return ResponseUtil.success(deviceItemVo);
     }
+
+
 
     /**
      * 添加门诊设备
@@ -97,8 +108,22 @@ public class ClinicDeviceItemController {
     @ApiOperation(value = "修改设备项目")
     @CurrentUser
     @PostMapping("/update")
-    public ResponseResult updateDevice(@RequestBody @Validated DeviceItemForm form){
+    public ResponseResult updateDevice(@RequestBody @Validated DeviceItemManageForm form){
         return clinicDeviceItemBiz.updateDeviceItem(form);
     }
+
+    /**
+     * 设备名称修改（公司端）
+     * @param form
+     * @return
+     */
+    @ApiOperation(value = "设备名称修改（公司端）")
+    @CurrentUser
+    @PostMapping("/edit")
+    public ResponseResult editDeviceName(@RequestBody @Validated DeviceEditForm form){
+        return clinicDeviceTypeBiz.editDeviceName(form);
+    }
+
+
 
 }

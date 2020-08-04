@@ -1,4 +1,5 @@
 package com.yunya.modules.appointment.mapper;
+import com.yunya.feign.appointment.domain.model.AppointItemConfigModel;
 import com.yunya.models.appointment.AppointItem;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemTypeQuery;

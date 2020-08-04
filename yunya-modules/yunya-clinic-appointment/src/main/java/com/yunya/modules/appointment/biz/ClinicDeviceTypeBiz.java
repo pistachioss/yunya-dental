@@ -1,4 +1,5 @@
 package com.yunya.modules.appointment.biz;
+import com.yunya.feign.appointment.domain.form.DeviceEditForm;
 import com.yunya.feign.appointment.domain.form.DeviceTypeForm;
 import com.yunya.feign.appointment.domain.model.DeviceTypeModel;
 import com.yunya.feign.appointment.domain.query.DeviceItemQuery;
@@ -13,6 +14,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.appointment.ClinicDeviceItem;
 import com.yunya.models.appointment.ClinicDeviceType;
 import com.yunya.modules.appointment.mapper.ClinicDeviceTypeMapper;
 import io.swagger.models.auth.In;
@@ -127,9 +129,6 @@ public class ClinicDeviceTypeBiz extends BaseBiz<ClinicDeviceTypeMapper, ClinicD
      * @return
      */
     public DeviceTypeVo findDeviceTypeById(Integer id){
-        if (id == null || id <=0 ){
-            return null;
-        }
         ClinicDeviceType clinicDeviceType = mapper.selectByPrimaryKey(id);
         if (clinicDeviceType == null){
             return null;
@@ -148,4 +147,27 @@ public class ClinicDeviceTypeBiz extends BaseBiz<ClinicDeviceTypeMapper, ClinicD
         List<DeviceTypeVo> deviceTypeVos = mapper.selectDeviceTypeByExample(query);
         return deviceTypeVos;
     }
+
+    /**
+     * 设备名称修改
+     * @param form  参数列表
+     * @return
+     */
+    public ResponseResult editDeviceName(DeviceEditForm form){
+
+        ClinicDeviceType deviceType = mapper.selectByPrimaryKey(form.getDeviceId());
+        if (deviceType == null){
+            return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"数据不存在！",null);
+        }
+        deviceType.setName(form.getName());
+        deviceType.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        deviceType.setUpdName(BaseContextHandler.getName());
+        deviceType.setUpdTime(new Date(System.currentTimeMillis()));
+        int result = mapper.insertSelective(deviceType);
+        if (result <= 0){
+            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"修改失败！",null);
+        }
+        return ResponseUtil.success();
+    }
+
 }

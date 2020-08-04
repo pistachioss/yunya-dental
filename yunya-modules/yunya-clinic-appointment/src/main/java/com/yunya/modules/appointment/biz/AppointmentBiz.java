@@ -1,5 +1,7 @@
 package com.yunya.modules.appointment.biz;
 
+import com.yunya.feign.appointment.domain.query.AppointmentQuery;
+import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
@@ -142,6 +144,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         responseResultMap.put("errMwg","预约医生id不能为空！");
         responseResultMap.put("data",null);
         return responseResultMap;
+    }
+
+    /**
+     * 根据条件查询预约列表
+     * @param query  条件查询参数
+     * @return
+     */
+    public List<AppointmentVo> findAppointmentByExample(AppointmentQuery query){
+        return mapper.findAppointmentByExample(query);
     }
 
     /**

@@ -30,7 +30,7 @@
 
   <!-- 根据门诊id和预约项目id 查询记录 -->
   <select id="findClinicAppointItemByOrgIdAndClinicAppointItemId" parameterType="java.lang.Integer" resultType="com.yunya.models.appointment.ClinicAppointItem">
-    select cai* from clinic_appoint_item cai where cai.org_id = #{orgId} and cai.appoint_item_id = #{appointItemId}
+    select cai.* from clinic_appoint_item cai where cai.org_id = #{orgId} and cai.appoint_item_id = #{appointItemId}
   </select>
 
   <!-- 根据预约项目id 查询记录 -->
