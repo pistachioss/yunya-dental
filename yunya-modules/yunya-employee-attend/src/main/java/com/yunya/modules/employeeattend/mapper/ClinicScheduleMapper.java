@@ -34,7 +34,7 @@ public interface ClinicScheduleMapper extends Mapper<ClinicSchedule> {
      *
      * @param clinicSchedules
      */
-    void batchInsert(@Param("list") List<ClinicSchedule> clinicSchedules);
+    int batchInsert(@Param("list") List<ClinicSchedule> clinicSchedules);
 
     /**
      * 获取VO对象

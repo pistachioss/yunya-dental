@@ -136,6 +136,24 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
         clinicScheduleBiz.saveOrUpdate(data);
     }
 
+    public int settingAll(Integer id){
+        if (selectById(id) == null) {
+            throw new ClientServiceException("查询无结果",OperationCodeConstants.RETURN_VALUE_ISNULL);
+        }
+        //获取门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        List<ClinicNode> clinicNodes = new ArrayList<>();
+        for(OrganizationInfoDetail organizationInfoDetail:clinics){
+            ClinicNode clinicNode = new ClinicNode();
+            clinicNode.setClinicId(organizationInfoDetail.getId());
+            clinicNode.setInservice(true);
+            clinicNodes.add(clinicNode);
+        }
+        return clinicScheduleBiz.batchInsert(id,clinicNodes);
+    }
+
     /**
      * 删除
      *

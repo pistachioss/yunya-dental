@@ -63,11 +63,23 @@ public class BaseScheduleController {
      * @return
      */
     @PostMapping("/setting")
-    @ApiOperation("配置")
+    @ApiOperation("设置门诊是否可用当前班次")
     @CurrentUser
     public ResponseResult setting(@RequestBody @Valid ClinicCommonForm clinicCommonForm) {
         baseScheduleBiz.setting(clinicCommonForm);
         return ResponseUtil.success();
+    }
+    /**
+     * 统一开启门诊班次
+     *
+     * @param id
+     * @return
+     */
+    @PostMapping("/settingAll")
+    @ApiOperation("统一开启门诊班次")
+    @CurrentUser
+    public ResponseResult settingAll(@PathVariable(name = "id")Integer id){
+        return ResponseUtil.success(baseScheduleBiz.settingAll(id));
     }
 
     /**
