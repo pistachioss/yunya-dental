@@ -126,7 +126,4 @@ public class MedicalCommonRecordForm {
   @ApiModelProperty("词条使用频率")
   private List<MedicalGeneralNumVO>medicalGeneralNumList;
 
-  @ApiModelProperty("修改状态 0：当天24点之前修改 ，1：超过24点提交审核修改")
-  @NotNull(message = "修改状态不能为空")
-  private Integer updateType;
 }

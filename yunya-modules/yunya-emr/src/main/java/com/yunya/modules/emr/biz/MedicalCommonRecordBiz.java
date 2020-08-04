@@ -14,10 +14,12 @@ import com.yunya.modules.emr.mapper.ApprovalRecordMapper;
 import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
 import com.yunya.modules.emr.mapper.MedicalGeneralNumMapper;
 import com.yunya.modules.emr.mapper.MedicalRecordHistoryMapper;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,6 +36,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
   private MedicalGeneralNumMapper medicalGeneralNumMapper;
   @Autowired
   private MedicalApprovalBiz medicalApprovalBiz;
+  @Autowired
+  private MedicalRecordHistoryBiz medicalRecordHistoryBiz;
 
   public int create(MedicalCommonRecordModel model) {
     MedicalCommonRecord medicalCommonRecord = new MedicalCommonRecord();
@@ -55,12 +59,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       medicalCommonRecord.setTreatment(jsonArray.toJSONString());
     }
 
-    MedicalRecordHistory medicalRecordHistory = new MedicalRecordHistory();
-    BeanUtils.copyProperties(medicalCommonRecord, medicalRecordHistory);
+//    MedicalRecordHistory medicalRecordHistory = new MedicalRecordHistory();
+//    BeanUtils.copyProperties(medicalCommonRecord, medicalRecordHistory);
     int result = mapper.insertMedical(medicalCommonRecord);
     if (result > 0 && medicalCommonRecord.getStatus() == 0) {//主治医生新增病历时，历史表中同步插入一条数据
-      medicalRecordHistory.setMedicalRecordId(medicalCommonRecord.getId().toString());
-      medicalRecordHistoryMapper.insert(medicalRecordHistory);
+      medicalRecordHistoryBiz.insertMedicalHistory(medicalCommonRecord);
     }
     if(result > 0 && medicalCommonRecord.getStatus() == 1){//助手新增病历时，审核表中同步插入一条数据
       DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
@@ -112,17 +115,20 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     }
 
     int re = 0;
-    if (medicalCommonRecordForm.getUpdateType() == 0) {
+
+    //调用figen获取就诊信息 medicalCommonRecordForm.getTreatmentId() 就诊id 未对接
+
+    if (false) {//判断当前时间是否超过就诊当天24点
       re = mapper.updateByPrimaryKey(medicalcopy);
+      MedicalRecordHistory medicalRecordHistory = new MedicalRecordHistory();
+      BeanUtils.copyProperties(medicalcopy,medicalRecordHistory);
+      medicalRecordHistory.setId(null);
+      medicalRecordHistory.setMedicalRecordId(medicalcopy.getId().toString());
+      Example example = new Example(MedicalRecordHistory.class);
+      example.createCriteria().andEqualTo("medical_record_id",medicalcopy.getId());
+      medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory,example);
     } else {//超过当天24小时，修改病历需要提价审核 ，通过后在历史表中增加一条记录
-      re = mapper.updateByPrimaryKey(medicalcopy);
-      if(re>0){
-        MedicalRecordHistory medicalRecordHistory = new MedicalRecordHistory();
-        medicalRecordHistory.setMedicalRecordId(medicalcopy.getId().toString());
-        medicalcopy.setId(null);
-        BeanUtils.copyProperties(medicalcopy, medicalRecordHistory);
-        medicalRecordHistoryMapper.insert(medicalRecordHistory);
-      }
+     return 0;
     }
     if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
