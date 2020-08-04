@@ -1,12 +1,16 @@
 package com.yunya.modules.emr.biz;
 
 import com.alibaba.fastjson.JSONArray;
+import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
+import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
 import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.models.emr.ApprovalRecord;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.models.emr.MedicalGeneralNum;
 import com.yunya.models.emr.MedicalRecordHistory;
+import com.yunya.modules.emr.mapper.ApprovalRecordMapper;
 import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
 import com.yunya.modules.emr.mapper.MedicalGeneralNumMapper;
 import com.yunya.modules.emr.mapper.MedicalRecordHistoryMapper;
@@ -15,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,7 +32,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
   private MedicalRecordHistoryMapper medicalRecordHistoryMapper;
   @Autowired
   private MedicalGeneralNumMapper medicalGeneralNumMapper;
-
+  @Autowired
+  private MedicalApprovalBiz medicalApprovalBiz;
 
   public int create(MedicalCommonRecordModel model) {
     MedicalCommonRecord medicalCommonRecord = new MedicalCommonRecord();
@@ -56,6 +62,15 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       medicalRecordHistory.setMedicalRecordId(medicalCommonRecord.getId().toString());
       medicalRecordHistoryMapper.insert(medicalRecordHistory);
     }
+    if(result > 0 && medicalCommonRecord.getStatus() == 1){//助手新增病历时，审核表中同步插入一条数据
+      DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
+      draftMedicalApplyModel.setEventId(medicalCommonRecord.getId());
+      draftMedicalApplyModel.setEventType(0);
+      draftMedicalApplyModel.setProposerId(medicalCommonRecord.getCrtId());
+      draftMedicalApplyModel.setApplyType(0);
+      draftMedicalApplyModel.setApproverId(medicalCommonRecord.getMajorDentistId());
+      medicalApprovalBiz.applyDraftCase(draftMedicalApplyModel);
+    }
     if (model.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
       for (MedicalGeneralNumVO m : model.getMedicalGeneralNumList()) {
@@ -73,6 +88,55 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
 
   public List<MedicalCommonRecord> findList(MedicalCommonRecord model) {
     return mapper.findList(model);
+  }
+
+  public int updateMedical(MedicalCommonRecordForm medicalCommonRecordForm) {
+    MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
+    BeanUtils.copyProperties(medicalCommonRecordForm, medicalcopy);
+
+    JSONArray jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getExamination());//转化四个和牙位有关的字段信息
+    if (medicalCommonRecordForm.getExamination() != null) {
+      medicalcopy.setExamination(jsonArray.toJSONString());
+    }
+    if (medicalCommonRecordForm.getDiagnosis() != null) {
+      jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getDiagnosis());
+      medicalcopy.setDiagnosis(jsonArray.toJSONString());
+    }
+    if (medicalCommonRecordForm.getPlan() != null) {
+      jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getPlan());
+      medicalcopy.setPlan(jsonArray.toJSONString());
+    }
+    if (medicalCommonRecordForm.getTreatment() != null) {
+      jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getTreatment());
+      medicalcopy.setTreatment(jsonArray.toJSONString());
+    }
+
+    int re = 0;
+    if (medicalCommonRecordForm.getUpdateType() == 0) {
+      re = mapper.updateByPrimaryKey(medicalcopy);
+    } else {//超过当天24小时，修改病历需要提价审核 ，通过后在历史表中增加一条记录
+      re = mapper.updateByPrimaryKey(medicalcopy);
+      if(re>0){
+        MedicalRecordHistory medicalRecordHistory = new MedicalRecordHistory();
+        medicalRecordHistory.setMedicalRecordId(medicalcopy.getId().toString());
+        medicalcopy.setId(null);
+        BeanUtils.copyProperties(medicalcopy, medicalRecordHistory);
+        medicalRecordHistoryMapper.insert(medicalRecordHistory);
+      }
+    }
+    if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
+      List<MedicalGeneralNum> numList = new ArrayList<>();
+      for (MedicalGeneralNumVO m : medicalCommonRecordForm.getMedicalGeneralNumList()) {
+        MedicalGeneralNum medicalGeneralNum = new MedicalGeneralNum();
+        medicalGeneralNum.setCrtTime(new Date());
+        medicalGeneralNum.setGeneralId(m.getGeneralId());
+        medicalGeneralNum.setMedicalId(medicalCommonRecordForm.getId());
+        medicalGeneralNum.setNumber(m.getNumber());
+        numList.add(medicalGeneralNum);
+      }
+      medicalGeneralNumMapper.saveList(numList);
+    }
+    return re;
   }
 
 }

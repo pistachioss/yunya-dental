@@ -9,4 +9,5 @@ public interface MedicalCommonRecordMapper extends Mapper<MedicalCommonRecord> {
   List<MedicalCommonRecord> findList(MedicalCommonRecord model);
 
   int insertMedical(MedicalCommonRecord model);
+
 }

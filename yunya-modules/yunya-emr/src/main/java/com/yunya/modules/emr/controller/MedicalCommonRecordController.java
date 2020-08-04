@@ -1,6 +1,7 @@
 package com.yunya.modules.emr.controller;
 
 import com.alibaba.fastjson.JSONArray;
+import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
 import com.yunya.feign.emr.domain.query.MedicalCommonRecordQueryForm;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
@@ -92,4 +93,19 @@ public class MedicalCommonRecordController {
     return ResponseUtil.success(reList);
   }
 
+  /**
+   * 修改普通电子病历（
+   * 当天24点之前可随意修改，超过24点需要提交审核修改并将记录插入历史表）
+   *
+   * @param model
+   * @return
+   */
+  @PostMapping("/update")
+  @ApiOperation("修改普通电子病历（当天24点之前可随意修改，超过24点需要提交审核修改并将修改前的历史记录插入历史表）")
+  @CurrentUser
+  public ResponseResult update(@RequestBody @Valid MedicalCommonRecordForm model) {
+    model.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    model.setUpdTime(new Date());
+    return ResponseUtil.success(medicalCommonRecordBiz.updateMedical(model));
+  }
 }
