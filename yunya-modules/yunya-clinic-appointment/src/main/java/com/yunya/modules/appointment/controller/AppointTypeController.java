@@ -2,6 +2,7 @@ package com.yunya.modules.appointment.controller;
 
 import com.yunya.feign.appointment.domain.form.AppointTypeForm;
 import com.yunya.feign.appointment.domain.model.AppointTypeModel;
+import com.yunya.feign.appointment.vo.AppointTypeListVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
@@ -12,6 +13,8 @@ import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 预约类型项目控制器
@@ -84,10 +87,6 @@ public class AppointTypeController {
     @CurrentUser
     public ResponseResult updateAppointType(@RequestBody @Validated AppointTypeForm form){
         Integer id = form.getId();
-        if (id == null || id <= 0){
-            return ResponseUtil.fail(OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY,"id参数非法！",null);
-        }
-
         // 检测数据库中是否存在要更新的数据
         AppointType appointType = clinicAppointTypeBiz.selectById(id);
         if (appointType == null) {
@@ -109,11 +108,19 @@ public class AppointTypeController {
     @ApiOperation(value = "根据id查询预约项目种类")
     @GetMapping("/select/{id}")
     public ResponseResult selectAppointTypeById(@PathVariable("id") Integer id){
-        if (id == null || id <= 0){
-            return ResponseUtil.fail(OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY,"id参数非法！",null);
-        }
         AppointType appointType = clinicAppointTypeBiz.selectAppointTypeById(id);
         return ResponseUtil.success(appointType);
+    }
+
+    /**
+     * 查询可预约项目类型列表
+     * @return
+     */
+    @ApiOperation(value = "查询可预约项目类型列表")
+    @GetMapping("/type_list")
+    public ResponseResult findAppointTypeList(){
+        List<AppointTypeListVo> appointTypeList = clinicAppointTypeBiz.findAppointTypeList();
+        return ResponseUtil.success(appointTypeList);
     }
 
 

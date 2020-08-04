@@ -33,11 +33,11 @@ public class ClinicDeviceTypeController {
     private ClinicDeviceTypeBiz clinicDeviceTypeBiz;
 
     /**
-     * 添加设备类型
+     * 添加设备类型(公司端-门诊设备-新增)
      * @param typeModel  设备类型参数封装
      * @return
      */
-    @ApiOperation(value = "添加设备类型")
+    @ApiOperation(value = "添加设备类型(公司端-门诊设备-新增)")
     @CurrentUser
     @PostMapping("/add")
     public ResponseResult addDeviceType(@RequestBody @Validated DeviceTypeModel typeModel){

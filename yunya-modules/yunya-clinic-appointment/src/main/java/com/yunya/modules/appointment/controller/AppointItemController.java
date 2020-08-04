@@ -5,6 +5,7 @@
  */
 package com.yunya.modules.appointment.controller;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
 import com.yunya.feign.appointment.domain.form.ClinicAppointItemForm;
 import com.yunya.feign.appointment.domain.model.AppointItemBatchConfigModel;
 import com.yunya.feign.appointment.domain.query.AppointItemConfigQuery;
@@ -40,7 +41,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("appoint_item")
-@Api(tags = "端预约项目Controller")
+@Api(tags = "预约项目Controller")
 public class AppointItemController {
     /**
      * 预约项目
@@ -68,12 +69,14 @@ public class AppointItemController {
         return ResponseUtil.success(availableAppItemList);
     }
 
+
+
     /**
-     * 通过预约项目id查询配置适用门诊列表
+     * 通过预约项目id查询配置适用门诊列表(公司端-预约项目-配置)
      * @param query 查询条件
      * @return
      */
-    @ApiOperation(value = "通过预约项目id查询配置适用门诊列表")
+    @ApiOperation(value = "通过预约项目id查询配置适用门诊列表(公司端-预约项目-配置)")
     @PostMapping("/find/item_config")
     public ResponseResult findAppointItemAndOrgInfo(@RequestBody @Validated AppointItemConfigQuery query){
         List<ClinicAppointItemConfigVo> clinicAppointItemConfigVos = clinicAppointItemBiz.findByAppointItemId(query.getAppointItemId());
@@ -84,28 +87,24 @@ public class AppointItemController {
     }
 
     /**
-     * 新增门诊预约项目
+     * 新增门诊预约项目(公司端-预约项目-新增)
      *
      * @param appItemForm 预约项目Form
      */
-    @ApiOperation(value = "新增门诊预约项目")
+    @ApiOperation(value = "新增门诊预约项目(公司端-预约项目-新增)")
     @PostMapping("/add")
     @CurrentUser
     public ResponseResult saveAppItem(@RequestBody @Validated AppointmentItemModel appItemForm) {
-        Integer integer = appItemBiz.insertAppointItem(appItemForm);
-        if (integer > 0) {
-            return ResponseUtil.success();
-        }
-        return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"预约项目添加失败！",null);
+        return appItemBiz.insertAppointItem(appItemForm);
     }
 
     /**
-     * 预约搜索
+     * 预约项目检索搜索（公司端-查询）
      *
      * @param baseQueryForm 查询条件
      * @return
      */
-    @ApiOperation(value = "预约搜索")
+    @ApiOperation(value = "预约项目检索搜索（公司端-查询）")
     @PostMapping("/search")
     public ResponseResult searchAppItem(@Validated @RequestBody AppointItemQuery baseQueryForm) {
         List<AppointmentItemVo>  appointmentItemVos = appItemBiz.findByAppItemName(baseQueryForm);
@@ -116,16 +115,15 @@ public class AppointItemController {
     }
 
     /**
-     * 修改门诊预约项目（不启用）
+     * 修改门诊预约项目（公司端-预约项目-操作-修改-提交）
      *
-     * @param id          门诊预约类id
      * @param appItemForm 预约项目Form
      */
-    @ApiOperation(value = "修改门诊预约项目")
-    @PutMapping("/update/{id}")
+    @ApiOperation(value = "修改门诊预约项目（公司端-预约项目-操作-修改-提交）")
+    @PutMapping("/appoint_modify")
     @CurrentUser
-    public ResponseResult update(@PathVariable("id") Integer id, @RequestBody @Validated AppointmentItemModel appItemForm) {
-        Integer integer = appItemBiz.updateAppItem(id, appItemForm);
+    public ResponseResult update(@RequestBody @Validated AppointItemModifyForm appItemForm) {
+        Integer integer = appItemBiz.updateAppItem(appItemForm);
         if (integer > 0) {
             return ResponseUtil.success();
         }
@@ -133,12 +131,12 @@ public class AppointItemController {
     }
 
     /**
-     *  修改预约项目适用门诊（公司端可用不可用）
+     *  修改预约项目适用门诊（公司端-预约项目-配置-是否适用）
      * @param form 修改数据表单
      * @return
      */
-    @ApiOperation(value = "修改预约项目适用门诊（公司端可用不可用）")
-    @PostMapping("/update")
+    @ApiOperation(value = "修改预约项目适用门诊（公司端-预约项目-配置-是否适用）")
+    @PostMapping("/config")
     @CurrentUser
     public ResponseResult addAndUpdate(@RequestBody @Validated ClinicAppointItemForm form){
         Integer result = clinicAppointItemBiz.addAndUpdateAppItem(form);
@@ -149,11 +147,11 @@ public class AppointItemController {
     }
 
     /**
-     *  可预约项目统一设置配置（公司端）
+     *  可预约项目统一设置配置（公司端-预约项目-配置-统一设置适用）
      * @return
      */
-    @ApiOperation(value = "可预约项目统一设置配置（公司端）")
-    @PostMapping("/update/batch")
+    @ApiOperation(value = "可预约项目统一设置配置（公司端-预约项目-配置-统一设置适用）")
+    @PostMapping("/config/batch")
     @CurrentUser
     public ResponseResult updateAppointItemWithBatch(@RequestBody @Validated AppointItemBatchConfigModel configModel){
         clinicAppointItemBiz.updateAppointItemWithBatch(configModel.getAppointItemId(),configModel.getBytes());
@@ -161,18 +159,15 @@ public class AppointItemController {
     }
 
     /**
-     * 根据id删除项目
-     * @param id
+     * 根据id删除项目（公司端--预约项目-操作-删除）
+     * @param id  预约项目id
      * @return
      */
-    @ApiOperation(value = "根据条件删除项目")
+    @ApiOperation(value = "根据id删除项目（公司端--预约项目-操作-删除）")
     @DeleteMapping("/del/{id}")
     public ResponseResult del(@PathVariable("id") Integer id){
 
-        if (id == null || id <= 0){
-            return ResponseUtil.fail(OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY,"id参数非法！",null);
-        }
-        // TODO 检测要删除的预约项目是否已被预约，如果已被预约则不能删除
+        // 检测要删除的预约项目是否已被预约，如果已被预约则不能删除
         AppointmentQuery query = new AppointmentQuery();
         query.setClinicAppointItemId(id);
         List<AppointmentVo> appointmentByExample = appointmentBiz.findAppointmentByExample(query);

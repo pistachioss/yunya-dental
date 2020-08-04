@@ -22,7 +22,7 @@ import java.io.Serializable;
 public class DeviceItemModel implements Serializable {
     /**门诊id*/
     @ApiModelProperty(value = "门诊id", required = true)
-    @NotNull(message = "门诊id为空！")
+    @NotNull(message = "门诊id为空，请先选中门诊！")
     private Integer orgId;
 
     /**公司端设备id*/

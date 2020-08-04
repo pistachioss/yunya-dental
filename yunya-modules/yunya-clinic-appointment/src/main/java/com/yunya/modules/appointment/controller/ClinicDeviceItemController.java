@@ -42,12 +42,12 @@ public class ClinicDeviceItemController {
     private ClinicDeviceTypeBiz clinicDeviceTypeBiz;
 
     /**
-     * 根据条件查询设备列表
+     * 根据条件查询门诊设备列表（公司端）
      *
      * @description
      * @param query 查询条件
      */
-    @ApiOperation(value = "根据公司端门诊id查询设备列表")
+    @ApiOperation(value = "根据条件查询门诊设备列表（公司端）")
     @PostMapping("/find")
     public ResponseResult findDeviceList(@RequestBody DeviceItemQuery query) {
         List<DeviceItemVo> resultMap = clinicDeviceItemBiz.selectDeviceItemByExample(query);
@@ -72,15 +72,13 @@ public class ClinicDeviceItemController {
         return ResponseUtil.success(deviceItemVo);
     }
 
-
-
     /**
-     * 添加门诊设备
+     * 添加门诊设备(公司端-设备管理-新增)
      *
      * @description 添加设备id到门诊设备表
      * @param deviceForms 设备列表
      */
-    @ApiOperation(value = "添加设备id到门诊设备表")
+    @ApiOperation(value = "添加门诊设备(公司端-设备管理-新增)")
     @PostMapping("/add")
     @CurrentUser
     public ResponseResult addDevice(@RequestBody @Validated DeviceItemModel deviceForms) {
@@ -89,35 +87,35 @@ public class ClinicDeviceItemController {
     }
 
     /**
-     * 删除门诊设备
+     * 删除门诊设备(公司端-设备管理-删除)
      *
      * @description 根据设备id删除门诊设备
      * @param id 门诊设备id
      */
-    @ApiOperation(value = "根据设备id删除门诊设备")
+    @ApiOperation(value = "删除门诊设备(公司端-设备管理-删除)")
     @DeleteMapping("/del/{id}")
     public ResponseResult deleteDevice(@PathVariable("id") Integer id) {
         return clinicDeviceItemBiz.deleteDeviceItemById(id);
     }
 
     /**
-     * 修改设备项目
+     * 修改设备项目(公司端-设备管理-修改)
      * @param form  修改数据表单
      * @return
      */
-    @ApiOperation(value = "修改设备项目")
+    @ApiOperation(value = "修改设备项目(公司端-设备管理-修改)", notes = "启用/操作-修改 用")
     @CurrentUser
-    @PostMapping("/update")
+    @PostMapping("/update/manage")
     public ResponseResult updateDevice(@RequestBody @Validated DeviceItemManageForm form){
         return clinicDeviceItemBiz.updateDeviceItem(form);
     }
 
     /**
-     * 设备名称修改（公司端）
+     * 设备名称修改（公司端-门诊设备-修改）
      * @param form
      * @return
      */
-    @ApiOperation(value = "设备名称修改（公司端）")
+    @ApiOperation(value = "设备名称修改（公司端-门诊设备-修改）")
     @CurrentUser
     @PostMapping("/edit")
     public ResponseResult editDeviceName(@RequestBody @Validated DeviceEditForm form){

@@ -26,7 +26,7 @@ public class AppointmentItemModel implements Serializable {
      * 预约项目类别id
      */
     @ApiModelProperty(value = "项目名称", required = true)
-    @NotBlank(message = "项目分类id为空！")
+    @NotBlank(message = "项目分类id为空！请先选中预约分类！")
     private String appointTypeId;
 
     /**
@@ -39,8 +39,7 @@ public class AppointmentItemModel implements Serializable {
     /**
      * 预约默认时长（分钟）
      */
-    @ApiModelProperty(value = "预约默认时长（分钟）", required = true)
-    @NotNull(message = "预约默认时长（分钟）不能为空！")
+    @ApiModelProperty(value = "预约默认时长（分钟）")
     private Integer duration;
 
     /** 备注 */
