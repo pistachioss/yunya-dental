@@ -52,7 +52,7 @@ public interface RemoteAppointmentFeign {
      * @return
      */
     @GetMapping("/api/appointment/available/{compClinId}")
-    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable("compClinId") String compClinId);
+    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "compClinId") String compClinId);
 
     /**
      * 根据id查询预约项目种类
@@ -60,5 +60,5 @@ public interface RemoteAppointmentFeign {
      * @return
      */
     @GetMapping("/api/appointment/select/{id}")
-    public ResponseResult selectAppointTypeById(@PathVariable("id") Integer id);
+    public ResponseResult selectAppointTypeById(@PathVariable(value = "id") Integer id);
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.persistence.Id;
 import java.util.List;
 
 @FeignClient(
@@ -34,5 +35,5 @@ public interface PatientCentralServiceFeign {
      * @return PatientBaseInfo
      */
     @RequestMapping (value = "/api/findPatientInfoById/{id}",method = RequestMethod.GET)
-    PatientBaseInfo findPatientInfoById(@PathVariable Integer id);
+    PatientBaseInfo findPatientInfoById(@PathVariable(value = "id") Integer id);
 }
