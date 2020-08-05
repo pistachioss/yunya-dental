@@ -40,8 +40,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
   private MedicalRecordHistoryBiz medicalRecordHistoryBiz;
 
   public int create(MedicalCommonRecordModel model) {
-    Example example = new Example(MedicalCommonRecordModel.class);
-    example.createCriteria().andEqualTo("treatment_id",model.getTreatmentId());
+    Example example = new Example(MedicalCommonRecord.class);
+    example.createCriteria().andEqualTo("treatmentId",model.getTreatmentId());
     if(mapper.selectByExample(example).size()>0){
       throw new ClientServiceException("当前就诊记录已有病历", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
@@ -133,7 +133,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       medicalRecordHistory.setId(null);
       medicalRecordHistory.setMedicalRecordId(medicalcopy.getId().toString());
       Example example = new Example(MedicalRecordHistory.class);
-      example.createCriteria().andEqualTo("medical_record_id",medicalcopy.getId());
+      example.createCriteria().andEqualTo("medicalRecordId",medicalcopy.getId());
       medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory,example);
     } else {//超过当天24小时，修改病历需要提价审核 ，通过后在历史表中增加一条记录
       throw new ClientServiceException("已过修改时间，请提交审核", OperationCodeConstants.OBJECT_EDIT_FAIL);
