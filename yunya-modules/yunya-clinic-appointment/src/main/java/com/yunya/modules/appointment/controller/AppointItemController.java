@@ -154,7 +154,10 @@ public class AppointItemController {
     @PostMapping("/config/batch")
     @CurrentUser
     public ResponseResult updateAppointItemWithBatch(@RequestBody @Validated AppointItemBatchConfigModel configModel){
-        clinicAppointItemBiz.updateAppointItemWithBatch(configModel.getAppointItemId(),configModel.getBytes());
+        Integer result = clinicAppointItemBiz.updateAppointItemWithBatch(configModel.getAppointItemId());
+        if (result <= 0){
+            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"设置配置失败！",null);
+        }
         return ResponseUtil.success();
     }
 

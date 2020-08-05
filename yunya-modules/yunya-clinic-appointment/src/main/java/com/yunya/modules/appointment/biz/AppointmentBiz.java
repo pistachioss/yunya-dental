@@ -12,7 +12,9 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.feign.appointment.domain.base.AppointmentBaseForm;
@@ -63,14 +65,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param form  预约参数封装
      * @throws ParseException
      */
-    public Map<String,Object> addAppointment(AppointmentBaseForm form) throws ParseException {
+    public ResponseResult addAppointment(AppointmentBaseForm form) throws ParseException {
 
-        // 检查当前预约的医生是否排班
-        Map<String, Object> checkSchedulingResult = this.checkScheduling(form);
-        // 如果预约的医生没有排班，则返回警告信息结果
-        if (StringHelper.isNull(checkSchedulingResult.get("data"))){
-            return checkSchedulingResult;
-        }
         // 检查当前预约是否冲突
         Map<String,Object> appointConflictResult = this.checkConflict(form);
         // 如果当前的预约没有冲突则添加新预约
@@ -80,7 +76,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 将预约form转化为实体
             Appointment appointmentEntity = this.transferFormToEntity(form);
             // 插入预约
-            Integer index = mapper.insertAppointment(appointmentEntity);
+            Integer index = mapper.insertSelective(appointmentEntity);
             if (index <= 0){
                 throw new ClientServiceException("【"+patientame + "】预约失败！", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -90,16 +86,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             if (appointmentOperateRecord <= 0 ){
                 throw new ClientServiceException("【"+patientame+"】的预约操作记录添加失败！", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
-
-            Map<String,Object> responseResult = new HashMap<>();
-            responseResult.put("appointment",appointmentEntity);
-
             // 如果添加预约成功，则返回预约成功信息
-            return responseResult;
+            return ResponseUtil.success();
         }
 
         // 如果预约有冲突返回冲突的预约
-        return appointConflictResult;
+        return ResponseUtil.success(appointConflictResult);
     }
 
 
@@ -110,10 +102,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private Map<String,Object> checkScheduling(AppointmentBaseForm appointmentBaseForm){
         // 获取预约医生Id
-        String dentistId = appointmentBaseForm.getDentistId();
+        Integer dentistId = appointmentBaseForm.getDentistId();
         Map<String,Object> responseResultMap = new HashMap<>();
 
-        if (!StringHelper.isEmpty(dentistId)){
+        if (dentistId != null){
             EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
 
             // 排班结束日期（排班当天的下一天）
@@ -164,9 +156,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private Map<String,Object> checkConflict(AppointmentBaseForm appointmentForm) throws ParseException {
         // 获取患者id、医生id、设备id、预约日期、时间、时长
-        String patientId = appointmentForm.getPatientId();
-        String dentistId = appointmentForm.getDentistId();
-        String deviceId = appointmentForm.getClinicDeviceItemId();
+        Integer patientId = appointmentForm.getPatientId();
+        Integer dentistId = appointmentForm.getDentistId();
+        Integer deviceId = appointmentForm.getClinicDeviceItemId();
         Date appointDate = appointmentForm.getAppointDate();
         // 转换字符串预约时间为Date类型
         String appointTimeStr = appointmentForm.getAppointTime();
@@ -186,9 +178,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Map<String,Object> responseMapResult = new HashMap<>();
 
         // 判断患者预约是否存在冲突
-        if (!StringHelper.isEmpty(patientId)) {
+        if (patientId != null) {
             List<AppointConflictInfoVo> patientList = mapper.findAppointListByPatientIdAndAppointStartTimeAndAppointEndTime(
-                    Integer.valueOf(patientId), appointStartTime, appointEndTime);
+                    patientId, appointStartTime, appointEndTime);
             if (!StringHelper.isEmpty(patientList)){
                 patientList.forEach(appointConflictInfoVo -> {
                     OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
@@ -205,9 +197,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
 
         // 判断医生预约是否存在冲突
-        if (!StringHelper.isEmpty(dentistId)){
+        if (dentistId != null){
             List<AppointConflictInfoVo> dentisList = mapper.findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime(
-                    Integer.valueOf(dentistId), appointStartTime, appointEndTime);
+                    dentistId, appointStartTime, appointEndTime);
             if (!StringHelper.isEmpty(dentisList)){
                 dentisList.forEach(appointConflictInfoVo -> {
                     OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
@@ -224,9 +216,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
 
         // 判断设备预约是否存在冲突
-        if (!StringHelper.isEmpty(deviceId)){
+        if (deviceId != null){
             List<AppointConflictInfoVo> deviceList = mapper.findAppointListByDeviceIdAndAppointStartTimeAndAppointEndTime(
-                    Integer.valueOf(deviceId), appointStartTime, appointEndTime);
+                    deviceId, appointStartTime, appointEndTime);
             if (!StringHelper.isEmpty(deviceList)){
                 deviceList.forEach(appointConflictInfoVo -> {
                     OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());

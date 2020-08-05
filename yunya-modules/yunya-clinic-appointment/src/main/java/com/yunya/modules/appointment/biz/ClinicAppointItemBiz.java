@@ -12,13 +12,12 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.appointment.ClinicAppointItem;
 import com.yunya.feign.appointment.domain.form.ClinicAppointItemForm;
 import com.yunya.modules.appointment.mapper.ClinicAppointItemMapper;
+import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 门诊预约项目业务层
@@ -103,20 +102,25 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
      * @Param types 公司属性0:公司,1:区域管理,2:医疗机构,3:其他
      * @return
      */
-    public void updateAppointItemWithBatch(Integer appointId, Byte[] types){
+    public Integer updateAppointItemWithBatch(Integer appointId){
         OrganizationModel model = new OrganizationModel();
-        model.setTypes(types);
+        model.setTypes(new Byte[]{2});
+        model.setWhetherPage(false);
         List<OrganizationInfoDetail> orgInfoList = systemServiceFeign.findOrgInfoList(model);
-        orgInfoList.forEach(organizationInfoDetail -> {
-            ClinicAppointItem clinicAppointItem = mapper.findClinicAppointItemByOrgIdAndClinicAppointItemId(appointId, organizationInfoDetail.getId());
-            if (clinicAppointItem == null){
-                ClinicAppointItem appointItem = new ClinicAppointItem();
-                appointItem.setAppointItemId(appointId);
-                appointItem.setOrgId(organizationInfoDetail.getId());
-                appointItem.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-                mapper.insertSelective(appointItem);
-            }
-        });
+        if (orgInfoList != null && !orgInfoList.isEmpty()){
+            orgInfoList.forEach(organizationInfoDetail -> {
+                ClinicAppointItem clinicAppointItem = mapper.findClinicAppointItemByOrgIdAndClinicAppointItemId(appointId, organizationInfoDetail.getId());
+                if (clinicAppointItem == null){
+                    ClinicAppointItem appointItem = new ClinicAppointItem();
+                    appointItem.setAppointItemId(appointId);
+                    appointItem.setOrgId(organizationInfoDetail.getId());
+                    appointItem.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                    mapper.insertSelective(appointItem);
+                }
+            });
+            return 1;
+        }
+        return 0;
     }
 
 }

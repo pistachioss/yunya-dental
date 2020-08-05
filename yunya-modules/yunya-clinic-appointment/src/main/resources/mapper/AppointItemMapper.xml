@@ -75,7 +75,6 @@
     <select id="getByOrderTypeId" resultType="com.yunya.modules.appointment.vo.AppointmentItemVo">
         select
         item.id,
-        cai.appoint_item_id as appointItemId,
         item.name as itemName,
         atype.name as typeName,
         item.duration,

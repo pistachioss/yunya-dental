@@ -45,8 +45,8 @@ public class AppointmentController {
     @PostMapping("/add")
     @CurrentUser
     public ResponseResult addAppointment(@RequestBody AppointmentBaseForm form) throws ParseException {
-        Map<String,Object> responseResult = appointmentBiz.addAppointment(form);
-        return ResponseUtil.success(responseResult);
+        ResponseResult responseResult = appointmentBiz.addAppointment(form);
+        return responseResult;
     }
 
 

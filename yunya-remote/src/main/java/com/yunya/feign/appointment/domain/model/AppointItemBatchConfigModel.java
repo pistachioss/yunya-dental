@@ -26,10 +26,4 @@ public class AppointItemBatchConfigModel implements Serializable {
     @NotNull(message = "预约项目ID")
     private Integer appointItemId;
 
-    /**
-     * 公司属性 0 :公司,1:区域管理,2:医疗机构,3:其他
-     */
-    @ApiModelProperty(value = "公司属性 0 :公司,1:区域管理,2:医疗机构,3:其他", required = true)
-    @NotNull(message = "公司属性不能为空！")
-    private Byte[] bytes;
 }
