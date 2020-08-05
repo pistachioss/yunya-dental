@@ -18,13 +18,13 @@ import javax.validation.constraints.Min;
 import java.util.List;
 
 /**
- * 设备类型控制器
+ * 预约设备类型Controller
  *
  * @author yunya-lihuibin
  * @create 2020-08-03 0:28
  * @update yunya-lihuibin    2020-08-03    新建
  */
-@Api(tags = "设备类型控制器")
+@Api(tags = "预约设备类型Controller（公司端）")
 @RestController
 @RequestMapping("appoint_device/type")
 public class ClinicDeviceTypeController {

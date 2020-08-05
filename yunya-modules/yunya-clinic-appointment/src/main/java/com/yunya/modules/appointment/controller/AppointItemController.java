@@ -33,7 +33,7 @@ import java.util.List;
 
 /**
  * 〈一句话功能简述〉<br>
- * 〈APP端预约项目Controller〉
+ * 〈预约项目详情Controller（公司端）
  *
  * @author Peter_Chou
  * @create 2019/8/15
@@ -41,7 +41,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("appoint_item")
-@Api(tags = "预约项目Controller")
+@Api(tags = "预约项目详情Controller（公司端）")
 public class AppointItemController {
     /**
      * 预约项目

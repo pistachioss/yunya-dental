@@ -24,13 +24,13 @@ import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
- * 预约设备项目服务控制层
+ * 预约可用设备Controller（公司端）
  *
  * @author yunya-lihuibin
  * @create 2020-07-31 21:00
  * @update yunya-lihuibin    2020-07-31    新建
  */
-@Api(tags = "预约设备项目服务控制层")
+@Api(tags = "预约可用设备Controller（公司端）")
 @RestController
 @RequestMapping("appoint_device")
 public class ClinicDeviceItemController {

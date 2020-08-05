@@ -18,13 +18,13 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * 患者预约Controller
+ * 患者预约中心Controller
  *
  * @author yunya-lihuibin
  * @create 2020-07-29 11:22
  * @update yunya-lihuibin    2020-07-29    新建
  */
-@Api(tags = "患者预约Controller(禁止使用)")
+@Api(tags = "患者预约中心Controller(开发中)")
 @RestController
 @RequestMapping("appoint")
 public class AppointmentController {

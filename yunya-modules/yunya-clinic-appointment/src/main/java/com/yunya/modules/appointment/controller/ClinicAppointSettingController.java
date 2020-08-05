@@ -16,7 +16,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 预约设置控制器
+ * 预约设置Controller
  *
  * @author yunya-lihuibin
  * @create 2020-08-03 18:57
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("appoint_set")
-@Api(tags = "预约设置控制器")
+@Api(tags = "预约设置Controller")
 public class ClinicAppointSettingController {
 
     @Autowired
@@ -48,7 +48,7 @@ public class ClinicAppointSettingController {
      * @param query  用户名
      * @return
      */
-    @ApiOperation(value = "根据用户id查询预约显示设置")
+    @ApiOperation(value = "根据条件查询预约显示设置")
     @PostMapping("/find")
     public ResponseResult selectAppointSettingByUserId(@RequestBody AppointSettingQuery query){
         AppointSettingVo appointSettingVo = clinicAppointSettingBiz.selectAppointSettingByUserId(query);

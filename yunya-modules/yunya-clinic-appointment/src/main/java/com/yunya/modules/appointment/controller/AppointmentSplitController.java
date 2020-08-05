@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 预约分解
+ * "预约时长分解Controller
  *
  * @author yunya-lihuibin
  * @create 2020-07-30 14:15
@@ -27,7 +27,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("appoint_split")
-@Api(tags = "预约分解控制器")
+@Api(tags = "预约时长分解Controller")
 public class AppointmentSplitController {
 
     @Autowired
