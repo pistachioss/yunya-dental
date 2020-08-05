@@ -68,9 +68,9 @@ public class ClinicScheduleBiz extends BaseBiz<ClinicScheduleMapper, ClinicSched
      * @param id
      * @param clinicNodes
      */
-    public void batchInsert(Integer id, List<ClinicNode> clinicNodes) {
+    public int batchInsert(Integer id, List<ClinicNode> clinicNodes) {
         if(clinicNodes.isEmpty()){
-            return;
+            return 0;
         }
 
         List<ClinicSchedule> clinicSchedules = new ArrayList<>();
@@ -83,7 +83,7 @@ public class ClinicScheduleBiz extends BaseBiz<ClinicScheduleMapper, ClinicSched
             clinicSchedule.setCrtName(BaseContextHandler.getUsername());
             clinicSchedules.add(clinicSchedule);
         }
-        mapper.batchInsert(clinicSchedules);
+        return mapper.batchInsert(clinicSchedules);
     }
 
     /**
