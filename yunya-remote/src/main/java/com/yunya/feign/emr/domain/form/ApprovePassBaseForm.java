@@ -14,8 +14,8 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @ApiModel(value = "审批通过对象模型")
-public class ApprovePassForm {
-    @ApiModelProperty(value = "电子病例Id", required = true)
+public class ApprovePassBaseForm {
+    @ApiModelProperty(value = "审批事件Id", required = true)
     @NotNull
     private Integer eventId;
 }

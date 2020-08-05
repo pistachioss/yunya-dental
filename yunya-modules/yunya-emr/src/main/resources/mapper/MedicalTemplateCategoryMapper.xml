@@ -13,7 +13,7 @@
 
     <select id="countByName" resultType="int">
         select
-            count(1)
+            count(*)
         from
             `medical_template_category`
         where

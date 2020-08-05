@@ -38,7 +38,7 @@ public class MedicalApprovalController {
     @CurrentUser
     public ResponseResult passDraft(@PathVariable("approveId") Integer approveId,
                                     @Valid @RequestBody MedicalApprovePassForm passForm) {
-        approvalBiz.pass(approveId, passForm);
+        approvalBiz.passMedical(approveId, passForm);
         return ResponseUtil.success();
     }
 
@@ -47,7 +47,7 @@ public class MedicalApprovalController {
     @CurrentUser
     public ResponseResult passDraft(@PathVariable("approveId") Integer approveId,
                                     @Valid @RequestBody MedicalApproveRejectForm rejectForm) {
-        approvalBiz.reject(approveId, rejectForm);
+        approvalBiz.rejectMedical(approveId, rejectForm);
         return ResponseUtil.success();
     }
 }

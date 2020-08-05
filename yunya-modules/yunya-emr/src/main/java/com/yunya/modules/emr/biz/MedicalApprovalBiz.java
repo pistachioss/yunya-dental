@@ -3,6 +3,8 @@ package com.yunya.modules.emr.biz;
 import com.yunya.feign.emr.domain.form.ApproveRejectForm;
 import com.yunya.feign.emr.domain.form.MedicalApprovePassForm;
 import com.yunya.feign.emr.domain.form.MedicalApproveRejectForm;
+import com.yunya.feign.emr.domain.model.ApplyBaseModel;
+import com.yunya.feign.emr.domain.model.ChangeMedicalApplyModel;
 import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -13,16 +15,21 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.emr.ApprovalRecord;
+import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.modules.emr.enums.ApplyTypeEnum;
 import com.yunya.modules.emr.enums.ApproveStatusEnum;
 import com.yunya.modules.emr.enums.EventTypeEnum;
 import com.yunya.modules.emr.mapper.ApprovalRecordMapper;
+import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * @author xiangyang
@@ -34,16 +41,19 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
 
+    @Resource
+    private MedicalCommonRecordMapper medicalMapper;
+
     /**
      * 草稿病例申请
      *
-     * @param draftModel
+     * @param draftModel 草稿病例申请
      */
-    @Transactional(rollbackFor = Exception.class)
     public void applyDraftCase(DraftMedicalApplyModel draftModel) {
-        int pendCount = 0;
-        Integer applyType = draftModel.getApplyType();
-        Integer eventId = draftModel.getEventId();
+        int pendCount;
+        ApplyBaseModel applyBase = draftModel.getApplyBase();
+        Integer applyType = applyBase.getApplyType();
+        Integer eventId = applyBase.getEventId();
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         //查询用户岗位信息
         SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(loginUserId);
@@ -80,8 +90,14 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         }
     }
 
-    public void pass(Integer approveId, MedicalApprovePassForm passForm) {
-        int pendCount = 0;
+    /**
+     * 病例审批通过
+     * @param approveId 审批id
+     * @param passForm 审批通过
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void passMedical(Integer approveId, MedicalApprovePassForm passForm) {
+        int pendCount;
         Integer eventId = passForm.getPassForm().getEventId();
         //查询该病历的审批情况
         pendCount = mapper.countByEventIdAndType(eventId, EventTypeEnum.DRAFT_AUDIT.getCode(), ApproveStatusEnum.APPROVE_PENDING.getCode());
@@ -90,16 +106,22 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         }
         //更新审批记录信息
         ApprovalRecord passEntity = new ApprovalRecord();
-        passEntity.setStatus(Integer.valueOf(ApproveStatusEnum.AUDIT_PASS.getCode()));
+        passEntity.setStatus(ApproveStatusEnum.AUDIT_PASS.getCode());
         updateMedicalApprove(approveId, passEntity);
         //todo 更新电子病历信息
         //todo 插入电子病历历史记录
     }
 
-    public void reject(Integer approveId, MedicalApproveRejectForm rejectForm) {
-        int pendCount = 0;
+    /**
+     * 病例审核拒绝
+     * @param approveId 审批Id
+     * @param rejectForm 审批拒绝
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void rejectMedical(Integer approveId, MedicalApproveRejectForm rejectForm) {
+        int pendCount;
         ApproveRejectForm appRejectForm = rejectForm.getRejectForm();
-        //查询该病历的审批情况
+        //查询该病历是否存在待审批记录，不存在非法操作
         pendCount = mapper.countByEventIdAndType(appRejectForm.getEventId(), EventTypeEnum.DRAFT_AUDIT.getCode(), ApproveStatusEnum.APPROVE_PENDING.getCode());
         if (pendCount == 0) {
             throw new ClientServiceException("该病例不存在", OperationCodeConstants.DATA_ERROR);
@@ -107,12 +129,24 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         //更新审批记录信息
         ApprovalRecord rejectEntity = new ApprovalRecord();
         rejectEntity.setApproveReason(appRejectForm.getRejectReason());
-        rejectEntity.setStatus(Integer.valueOf(ApproveStatusEnum.AUDIT_REJECT.getCode()));
+        rejectEntity.setStatus(ApproveStatusEnum.AUDIT_REJECT.getCode());
         updateMedicalApprove(approveId, rejectEntity);
         //todo 更新电子病历信息
     }
 
-//    public void apply
+    public void applyChangeCase(ChangeMedicalApplyModel changeModel) {
+        //申请基础信息
+        ApplyBaseModel applyBase = changeModel.getApplyBase();
+        //审批事件id 就诊id或电子病例id
+        Integer eventId  = applyBase.getEventId();
+        List<MedicalCommonRecord> list = this.findByFilter(eventId);
+        if (CollectionUtils.isNotEmpty(list)) {
+            throw new ClientServiceException("选择的就诊记录已写病历，不允许申请新增！", OperationCodeConstants.DATA_EXIST);
+        }
+        //查询该条就诊记录对应的待审批记录
+        int count = mapper.countByEventIdAndType(eventId, null, ApproveStatusEnum.APPROVE_PENDING.getCode());
+
+    }
 
     private void updateMedicalApprove(Integer approveId, ApprovalRecord record) {
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -125,13 +159,18 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         mapper.updateByPrimaryKeySelective(record);
     }
 
-    private ApprovalRecord constructCreateEntity (DraftMedicalApplyModel draftModel, Integer loginUserId) {
+    private void constructCreateEntity (DraftMedicalApplyModel draftModel, Integer loginUserId) {
         ApprovalRecord addApplyEntity = EntityUtils.build(draftModel, ApprovalRecord.class);
         addApplyEntity.setStatus(ApproveStatusEnum.APPROVE_PENDING.getCode());
         addApplyEntity.setCrtId(loginUserId);
         addApplyEntity.setUpdId(loginUserId);
         mapper.insertSelective(addApplyEntity);
-        return addApplyEntity;
+    }
+
+    private List<MedicalCommonRecord> findByFilter(Integer eventId) {
+        Example example = new Example(MedicalCommonRecord.class);
+        example.createCriteria().andEqualTo("treatmentId", eventId);
+        return medicalMapper.selectByExample(example);
     }
 
 }

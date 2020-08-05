@@ -21,7 +21,7 @@
 
     <select id="countByEventIdAndType" resultType="int">
         select
-            count(1)
+            count(*)
         from `approval_record`
         where `event_id` = #{eventId}
           <if test="eventType != null">
