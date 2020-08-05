@@ -35,9 +35,6 @@ public class AppointmentItemVo implements Serializable {
     @ApiModelProperty("预约项目名称")
     private String itemName;
 
-    @ApiModelProperty("预约类型名称")
-    private String typeName;
-
     @ApiModelProperty("默认时长,单位分钟")
     private Integer duration;
 

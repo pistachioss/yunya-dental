@@ -192,163 +192,163 @@
     </selectKey>
     insert into appointment
     <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="patientId != null">
+      <if test="appointment.patientId != null">
         patient_id,
       </if>
-      <if test="orgId != null">
+      <if test="appointment.orgId != null">
         org_id,
       </if>
-      <if test="dentistId != null">
+      <if test="appointment.dentistId != null">
         dentist_id,
       </if>
-      <if test="assistantId != null">
+      <if test="appointment.assistantId != null">
         assistant_id,
       </if>
-      <if test="clinicDeptRoomId != null">
+      <if test="appointment.clinicDeptRoomId != null">
         clinic_dept_room_id,
       </if>
-      <if test="clinicDeviceItemId != null">
+      <if test="appointment.clinicDeviceItemId != null">
         clinic_device_item_id,
       </if>
-      <if test="clinicAppointItemId != null">
+      <if test="appointment.clinicAppointItemId != null">
         clinic_appoint_item_id,
       </if>
-      <if test="appointDuration != null">
+      <if test="appointment.appointDuration != null">
         appoint_duration,
       </if>
-      <if test="appointDate != null">
+      <if test="appointment.appointDate != null">
         appoint_date,
       </if>
-      <if test="appointTime != null">
+      <if test="appointment.appointTime != null">
         appoint_time,
       </if>
-      <if test="appointStartTime != null">
+      <if test="appointment.appointStartTime != null">
         appoint_start_time,
       </if>
-      <if test="appointEndTime != null">
+      <if test="appointment.appointEndTime != null">
         appoint_end_time,
       </if>
-      <if test="appointPeriod != null">
+      <if test="appointment.appointPeriod != null">
         appoint_period,
       </if>
-      <if test="toothBit != null">
+      <if test="appointment.toothBit != null">
         tooth_bit,
       </if>
-      <if test="appointContent != null">
+      <if test="appointment.appointContent != null">
         appoint_content,
       </if>
-      <if test="appointType != null">
+      <if test="appointment.appointType != null">
         appoint_type,
       </if>
-      <if test="confirmStatus != null">
+      <if test="appointment.confirmStatus != null">
         confirm_status,
       </if>
-      <if test="appointStatus != null">
+      <if test="appointment.appointStatus != null">
         appoint_status,
       </if>
-      <if test="remarks != null">
+      <if test="appointment.remarks != null">
         remarks,
       </if>
-      <if test="inservice != null">
+      <if test="appointment.inservice != null">
         inservice,
       </if>
-      <if test="crtId != null">
+      <if test="appointment.crtId != null">
         crt_id,
       </if>
-      <if test="crtName != null">
+      <if test="appointment.crtName != null">
         crt_name,
       </if>
-      <if test="crtTime != null">
+      <if test="appointment.crtTime != null">
         crt_time,
       </if>
-      <if test="uptId != null">
+      <if test="appointment.uptId != null">
         upt_id,
       </if>
-      <if test="updName != null">
+      <if test="appointment.updName != null">
         upd_name,
       </if>
-      <if test="updTime != null">
+      <if test="appointment.updTime != null">
         upd_time,
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="patientId != null">
-        #{patientId,jdbcType=INTEGER},
+      <if test="appointment.patientId != null">
+        #{appointment.patientId,jdbcType=INTEGER},
       </if>
-      <if test="orgId != null">
-        #{orgId,jdbcType=INTEGER},
+      <if test="appointment.orgId != null">
+        #{appointment.orgId,jdbcType=INTEGER},
       </if>
-      <if test="dentistId != null">
-        #{dentistId,jdbcType=INTEGER},
+      <if test="appointment.dentistId != null">
+        #{appointment.dentistId,jdbcType=INTEGER},
       </if>
-      <if test="assistantId != null">
-        #{assistantId,jdbcType=INTEGER},
+      <if test="appointment.assistantId != null">
+        #{appointment.assistantId,jdbcType=INTEGER},
       </if>
-      <if test="clinicDeptRoomId != null">
-        #{clinicDeptRoomId,jdbcType=INTEGER},
+      <if test="appointment.clinicDeptRoomId != null">
+        #{appointment.clinicDeptRoomId,jdbcType=INTEGER},
       </if>
-      <if test="clinicDeviceItemId != null">
-        #{clinicDeviceItemId,jdbcType=INTEGER},
+      <if test="appointment.clinicDeviceItemId != null">
+        #{appointment.clinicDeviceItemId,jdbcType=INTEGER},
       </if>
-      <if test="clinicAppointItemId != null">
-        #{clinicAppointItemId,jdbcType=INTEGER},
+      <if test="appointment.clinicAppointItemId != null">
+        #{appointment.clinicAppointItemId,jdbcType=INTEGER},
       </if>
-      <if test="appointDuration != null">
-        #{appointDuration,jdbcType=INTEGER},
+      <if test="appointment.appointDuration != null">
+        #{appointment.appointDuration,jdbcType=INTEGER},
       </if>
-      <if test="appointDate != null">
-        #{appointDate,jdbcType=DATE},
+      <if test="appointment.appointDate != null">
+        #{appointment.appointDate,jdbcType=DATE},
       </if>
-      <if test="appointTime != null">
-        #{appointTime,jdbcType=VARCHAR},
+      <if test="appointment.appointTime != null">
+        #{appointment.appointTime,jdbcType=VARCHAR},
       </if>
-      <if test="appointStartTime != null">
-        #{appointStartTime,jdbcType=TIMESTAMP},
+      <if test="appointment.appointStartTime != null">
+        #{appointment.appointStartTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="appointEndTime != null">
-        #{appointEndTime,jdbcType=TIMESTAMP},
+      <if test="appointment.appointEndTime != null">
+        #{appointment.appointEndTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="appointPeriod != null">
-        #{appointPeriod,jdbcType=VARCHAR},
+      <if test="appointment.appointPeriod != null">
+        #{appointment.appointPeriod,jdbcType=VARCHAR},
       </if>
-      <if test="toothBit != null">
-        #{toothBit,jdbcType=VARCHAR},
+      <if test="appointment.toothBit != null">
+        #{appointment.toothBit,jdbcType=VARCHAR},
       </if>
-      <if test="appointContent != null">
-        #{appointContent,jdbcType=VARCHAR},
+      <if test="appointment.appointContent != null">
+        #{appointment.appointContent,jdbcType=VARCHAR},
       </if>
-      <if test="appointType != null">
-        #{appointType,jdbcType=TINYINT},
+      <if test="appointment.appointType != null">
+        #{appointment.appointType,jdbcType=TINYINT},
       </if>
-      <if test="confirmStatus != null">
-        #{confirmStatus,jdbcType=BOOLEAN},
+      <if test="appointment.confirmStatus != null">
+        #{appointment.confirmStatus,jdbcType=BOOLEAN},
       </if>
-      <if test="appointStatus != null">
-        #{appointStatus,jdbcType=TINYINT},
+      <if test="appointment.appointStatus != null">
+        #{appointment.appointStatus,jdbcType=TINYINT},
       </if>
-      <if test="remarks != null">
-        #{remarks,jdbcType=VARCHAR},
+      <if test="appointment.remarks != null">
+        #{appointment.remarks,jdbcType=VARCHAR},
       </if>
-      <if test="inservice != null">
-        #{inservice,jdbcType=BIT},
+      <if test="appointment.inservice != null">
+        #{appointment.inservice,jdbcType=BIT},
       </if>
-      <if test="crtId != null">
-        #{crtId,jdbcType=INTEGER},
+      <if test="appointment.crtId != null">
+        #{appointment.crtId,jdbcType=INTEGER},
       </if>
-      <if test="crtName != null">
-        #{crtName,jdbcType=VARCHAR},
+      <if test="appointment.crtName != null">
+        #{appointment.crtName,jdbcType=VARCHAR},
       </if>
-      <if test="crtTime != null">
-        #{crtTime,jdbcType=TIMESTAMP},
+      <if test="appointment.crtTime != null">
+        #{appointment.crtTime,jdbcType=TIMESTAMP},
       </if>
-      <if test="uptId != null">
-        #{uptId,jdbcType=INTEGER},
+      <if test="appointment.uptId != null">
+        #{appointment.uptId,jdbcType=INTEGER},
       </if>
-      <if test="updName != null">
-        #{updName,jdbcType=VARCHAR},
+      <if test="appointment.updName != null">
+        #{appointment.updName,jdbcType=VARCHAR},
       </if>
-      <if test="updTime != null">
-        #{updTime,jdbcType=TIMESTAMP},
+      <if test="appointment.updTime != null">
+        #{appointment.updTime,jdbcType=TIMESTAMP},
       </if>
     </trim>
   </insert>

@@ -20,7 +20,8 @@ public class AppointmentItemEnableModelVo implements Serializable {
 
     @ApiModelProperty("预约类型")
     private String typeName;
+
     @ApiModelProperty("可预约项目")
-    private List<AppointmentItemVo> appointmentItemTypes;
+    private List<AppointmentItemVo> appointmentItems;
 
 }

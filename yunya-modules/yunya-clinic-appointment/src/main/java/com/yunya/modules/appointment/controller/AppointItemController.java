@@ -64,7 +64,7 @@ public class AppointItemController {
     @ApiOperation(value = "查询门诊可用的预约项目")
     @GetMapping("/list/{compClinId}")
     public ResponseResult findClinicAvailableItem(
-            @PathVariable("compClinId") String compClinId) {
+            @PathVariable("compClinId") Integer compClinId) {
         List<AppointmentItemEnableModelVo> availableAppItemList = appItemBiz.findAvailableAppItemList(compClinId);
         return ResponseUtil.success(availableAppItemList);
     }

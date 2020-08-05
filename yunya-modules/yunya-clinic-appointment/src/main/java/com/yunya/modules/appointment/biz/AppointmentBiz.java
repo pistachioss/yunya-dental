@@ -76,7 +76,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 将预约form转化为实体
             Appointment appointmentEntity = this.transferFormToEntity(form);
             // 插入预约
-            Integer index = mapper.insertSelective(appointmentEntity);
+            Integer index = mapper.insertAppointment(appointmentEntity);
             if (index <= 0){
                 throw new ClientServiceException("【"+patientame + "】预约失败！", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

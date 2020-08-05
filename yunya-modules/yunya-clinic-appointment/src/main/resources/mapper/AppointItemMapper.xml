@@ -22,9 +22,8 @@
     <resultMap id="AllOrdersMap" type="com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo">
         <result column="orgId" jdbcType="INTEGER" property="orgId" />
         <result column="typeName" jdbcType="VARCHAR" property="typeName" />
-        <collection ofType="com.yunya.modules.appointment.vo.AppointmentItemVo" property="appointmentItemTypes">
+        <collection ofType="com.yunya.modules.appointment.vo.AppointmentItemVo" property="appointmentItems">
             <id column="id" jdbcType="INTEGER" property="id" />
-            <result column="itemId" jdbcType="INTEGER" property="appointItemId" />
             <result column="itemName" jdbcType="VARCHAR" property="itemName" />
             <result column="duration" jdbcType="INTEGER" property="duration" />
             <result column="remarks" jdbcType="VARCHAR" property="remarks" />
@@ -52,7 +51,7 @@
     <select id="selectAllAppointItemByOrgId" resultMap="AllOrdersMap">
         select
         citem.org_id as orgId,
-        item.id as itemId,
+        item.id,
         item.name as itemName,
         atype.name as typeName,
         item.duration,
@@ -67,7 +66,7 @@
             and citem.id = #{form.appointId}
         </if>
         <if test="form.name != null">
-            and citem.name = #{form.name}
+            and citem.name like concat('%',#{form.name},'%')
         </if>
     </select>
 

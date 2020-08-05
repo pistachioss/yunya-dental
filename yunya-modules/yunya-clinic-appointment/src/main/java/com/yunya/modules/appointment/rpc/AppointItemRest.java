@@ -79,7 +79,7 @@ public class AppointItemRest {
      * @return
      */
     @GetMapping("/available/{compClinId}")
-    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable("compClinId") String compClinId) {
+    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable("compClinId") Integer compClinId) {
         return baseBiz.findAvailableAppItemList(compClinId);
     }
 

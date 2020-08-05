@@ -115,9 +115,9 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
      * @param compClinId
      * @return
      */
-    public List<AppointmentItemEnableModelVo> findAvailableAppItemList(String compClinId) {
+    public List<AppointmentItemEnableModelVo> findAvailableAppItemList(Integer compClinId) {
         AppointItemTypeQuery appointOrderTypeQueryForm = new AppointItemTypeQuery();
-        appointOrderTypeQueryForm.setOrgId(Integer.valueOf(compClinId));
+        appointOrderTypeQueryForm.setOrgId(compClinId);
 
         List<AppointmentItemEnableModelVo> ordersModels = mapper.selectAllAppointItemByOrgId(appointOrderTypeQueryForm);
         if(ordersModels.isEmpty()){
