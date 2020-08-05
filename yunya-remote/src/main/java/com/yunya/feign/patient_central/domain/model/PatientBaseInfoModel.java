@@ -6,7 +6,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -56,7 +58,8 @@ public class PatientBaseInfoModel implements Serializable {
     /**
      * 手机号码 长度14
      */
-    @NotNull(message = "患者手机号码不能为空！")
+    @NotBlank(message = "患者手机号不能为空")
+    @Pattern(regexp = "^[1][3,4,5,6,7,8,9][0-9]{9}$", message = "手机号格式有误")
     @ApiModelProperty(value = "患者手机号码",required = true)
     private String mobile;
 

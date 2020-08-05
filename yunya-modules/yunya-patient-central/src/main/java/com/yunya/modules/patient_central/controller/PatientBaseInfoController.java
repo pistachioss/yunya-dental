@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(value = "患者信息", description = "患者信息（增删查改）")
 @RestController
-@RequestMapping("patient")
+@RequestMapping("central")
 public class PatientBaseInfoController {
 
     /** 注入服务 */
