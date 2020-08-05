@@ -16,4 +16,5 @@ public class MedicalApprovePassForm {
 
     @ApiModelProperty(value = "审批通过对象")
     private ApprovePassBaseForm passForm;
+
 }
