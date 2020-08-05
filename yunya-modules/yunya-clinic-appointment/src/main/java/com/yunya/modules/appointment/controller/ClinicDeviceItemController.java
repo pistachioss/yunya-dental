@@ -109,19 +109,4 @@ public class ClinicDeviceItemController {
     public ResponseResult updateDevice(@RequestBody @Validated DeviceItemManageForm form){
         return clinicDeviceItemBiz.updateDeviceItem(form);
     }
-
-    /**
-     * 设备名称修改（公司端-门诊设备-修改）
-     * @param form
-     * @return
-     */
-    @ApiOperation(value = "设备名称修改（公司端-门诊设备-修改）")
-    @CurrentUser
-    @PostMapping("/edit")
-    public ResponseResult editDeviceName(@RequestBody @Validated DeviceEditForm form){
-        return clinicDeviceTypeBiz.editDeviceName(form);
-    }
-
-
-
 }

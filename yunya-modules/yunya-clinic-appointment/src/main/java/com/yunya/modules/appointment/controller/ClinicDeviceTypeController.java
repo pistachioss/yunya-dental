@@ -58,11 +58,11 @@ public class ClinicDeviceTypeController {
     }
 
     /**
-     * 修改设备类型
+     * 设备名称修改（公司端-门诊设备-修改）
      * @param from  修改数据信息表单
      * @return
      */
-    @ApiOperation(value = "修改设备类型")
+    @ApiOperation(value = "设备名称修改（公司端-门诊设备-修改）")
     @CurrentUser
     @PostMapping("/update")
     public ResponseResult updateDeviceType(@RequestBody @Validated DeviceTypeForm from){
