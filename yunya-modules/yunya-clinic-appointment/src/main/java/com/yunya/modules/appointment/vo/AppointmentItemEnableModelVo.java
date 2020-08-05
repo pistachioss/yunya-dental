@@ -3,6 +3,7 @@ package com.yunya.modules.appointment.vo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.List;
  * 可预约项目列表
  */
 @Data
+@ToString
 @ApiModel("可预约项目列表")
 public class AppointmentItemEnableModelVo implements Serializable {
     @ApiModelProperty("门诊ID")

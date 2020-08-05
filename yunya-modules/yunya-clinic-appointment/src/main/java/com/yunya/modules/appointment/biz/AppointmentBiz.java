@@ -5,6 +5,7 @@ import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
+import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -15,6 +16,7 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.feign.appointment.domain.base.AppointmentBaseForm;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
 import org.joda.time.DateTime;
@@ -47,9 +49,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     @Autowired
     private EmployeeAttendServiceFeign employeeAttendServiceFeign;
 
-    /** 注入病历模板服务 */
-    //@Autowired
-    //private EmrServiceFeign emrServiceFeign;
+    /** 患者中心服务 */
+    @Autowired
+    private PatientCentralServiceFeign patientCentralServiceFeign;
 
     /** 注入预约操作服务 */
     @Autowired
@@ -280,17 +282,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 设置预约类型(0-初诊；1-复诊)
         // 根据患者是否有病历号来判断患者预约类型
-        // TODO
-        /**
-         *  患者病历model = emrServiceFeign.通过患者id查询患者病历(患者id);
-         *  if(患者病历model != null ){
-         *    // 病历号为空，初诊
-         *    appointment.setAppointType(0);
-         *  } else {
-         *    // 病历号不为空，复诊
-         *    appointment.setAppointType(1);
-         *  }
-         */
+        PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(Integer.valueOf(form.getPatientId()));
+        if (patientBaseInfo == null){
+            // 病历号为空，初诊
+            appointment.setAppointType((byte)0);
+        } else {
+            // 病历号不为空，复诊
+            appointment.setAppointType((byte)0);
+        }
+
         // 设置预约种类Mock数据
         appointment.setAppointType((byte)0);
 
