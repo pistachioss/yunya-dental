@@ -4,6 +4,7 @@ package com.yunya.modules.employeeattend.mapper;
 
 
 import com.yunya.models.employee_attend.BaseSchedule;
+import com.yunya.modules.employeeattend.form.ScheduleForm;
 import com.yunya.modules.employeeattend.vo.BaseInserviceVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -20,11 +21,11 @@ public interface BaseScheduleMapper extends Mapper<BaseSchedule> {
 
     /**
      * 查询列表
-     * @param type
-     * @param name
+     * @param
+     * @param
      * @return
      */
-    List<BaseSchedule> selectByTypeAndName(@Param("type") String type, @Param("name") String name);
+    List<BaseSchedule> selectByTypeAndName(ScheduleForm scheduleForm);
 
     /**
      * 修改

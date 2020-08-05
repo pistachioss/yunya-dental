@@ -15,6 +15,7 @@ import com.yunya.models.employee_attend.ClinicSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.form.ClinicCommonForm;
 import com.yunya.modules.employeeattend.form.ClinicNode;
+import com.yunya.modules.employeeattend.form.ScheduleForm;
 import com.yunya.modules.employeeattend.mapper.BaseScheduleMapper;
 import com.yunya.modules.employeeattend.vo.BaseInserviceVO;
 import org.apache.commons.lang3.StringUtils;
@@ -151,6 +152,9 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
             clinicNode.setInservice(true);
             clinicNodes.add(clinicNode);
         }
+        ClinicSchedule data = new ClinicSchedule();
+        data.setScheduleId(id);
+        clinicScheduleBiz.delete(data);
         return clinicScheduleBiz.batchInsert(id,clinicNodes);
     }
 
@@ -205,12 +209,12 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
     /**
      * 查询列表
      *
-     * @param typeName
-     * @param name
+     * @param
+     * @param
      * @return
      */
-    public  PageInfo<BaseSchedule> search(String typeName, String name, Integer pageNum, Integer pageSize) {
-        PageHelper.startPage(pageNum, pageSize);
-        return new PageInfo<>(mapper.selectByTypeAndName(typeName, name));
+    public  PageInfo<BaseSchedule> search(ScheduleForm scheduleForm) {
+        PageHelper.startPage(scheduleForm.getPageNum(), scheduleForm.getPageSize());
+        return new PageInfo<>(mapper.selectByTypeAndName(scheduleForm));
     }
 }

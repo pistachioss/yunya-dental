@@ -10,6 +10,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.expand.ClinicEmployeeConfig;
+import com.yunya.models.system.DepartmentRoom;
 import com.yunya.modules.employee.expand.mapper.ClinicEmployeeConfigMapper;
 import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigQueryReq;
 import com.yunya.modules.employee.expand.model.request.ClinicEmployeeConfigReq;
@@ -85,8 +86,10 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
             return null;
         }
         SysUserInfoDetail assistantEmployee = systemServiceFeign.findSysUserEmployeeInfoByUserId(employeeId);
-        //todo 查询科室信息
-        result.setAssistantName(assistantEmployee.getName());
+        //查询科室信息
+        DepartmentRoom room = systemServiceFeign.findDepartmentRoomById(result.getClinicDepartmentRoomId());
+        result.setAssistantName(assistantEmployee == null ? null : assistantEmployee.getName());
+        result.setClinicDepartmentRoomName(room == null ? null : room.getName());
         return result;
     }
 

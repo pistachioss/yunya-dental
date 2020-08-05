@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * 描述:
@@ -17,7 +18,7 @@ public class ScheduleForm implements Serializable {
     @ApiModelProperty("名称")
     private String name;
     @ApiModelProperty("类型名称")
-    private String typeName;
+    private List<String> typeNames;
 
     @ApiModelProperty("页码")
     @Min(message = "最小值", value = 1)

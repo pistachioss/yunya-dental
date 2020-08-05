@@ -2,26 +2,23 @@ package com.yunya.modules.emr.biz;
 
 import com.alibaba.fastjson.JSONArray;
 import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
+import com.yunya.feign.emr.domain.model.ApplyBaseModel;
 import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
 import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.models.emr.ApprovalRecord;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.models.emr.MedicalGeneralNum;
 import com.yunya.models.emr.MedicalRecordHistory;
-import com.yunya.modules.emr.mapper.ApprovalRecordMapper;
 import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
 import com.yunya.modules.emr.mapper.MedicalGeneralNumMapper;
 import com.yunya.modules.emr.mapper.MedicalRecordHistoryMapper;
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -67,11 +64,13 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     }
     if(result > 0 && medicalCommonRecord.getStatus() == 1){//助手新增病历时，审核表中同步插入一条数据
       DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
-      draftMedicalApplyModel.setEventId(medicalCommonRecord.getId());
-      draftMedicalApplyModel.setEventType(0);
-      draftMedicalApplyModel.setProposerId(medicalCommonRecord.getCrtId());
-      draftMedicalApplyModel.setApplyType(0);
-      draftMedicalApplyModel.setApproverId(medicalCommonRecord.getMajorDentistId());
+      ApplyBaseModel applyBase = new ApplyBaseModel();
+      applyBase.setEventId(medicalCommonRecord.getId());
+      applyBase.setEventType(0);
+      applyBase.setProposerId(medicalCommonRecord.getCrtId());
+      applyBase.setApplyType(0);
+      applyBase.setApproverId(medicalCommonRecord.getMajorDentistId());
+      draftMedicalApplyModel.setApplyBase(applyBase);
       medicalApprovalBiz.applyDraftCase(draftMedicalApplyModel);
     }
     if (model.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率

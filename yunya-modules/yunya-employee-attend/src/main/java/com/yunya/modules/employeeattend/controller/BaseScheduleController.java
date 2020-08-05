@@ -72,13 +72,13 @@ public class BaseScheduleController {
     /**
      * 统一开启门诊班次
      *
-     * @param id
+     * @param
      * @return
      */
-    @PostMapping("/settingAll")
+    @GetMapping("/settingAll/{id}")
     @ApiOperation("统一开启门诊班次")
     @CurrentUser
-    public ResponseResult settingAll(@PathVariable(name = "id")Integer id){
+    public ResponseResult settingAll(@PathVariable(name = "id") Integer id){
         return ResponseUtil.success(baseScheduleBiz.settingAll(id));
     }
 
@@ -139,7 +139,7 @@ public class BaseScheduleController {
     @PostMapping("/search")
     @ApiOperation("查询")
     public ResponseResult search(@RequestBody ScheduleForm scheduleForm) {
-        PageInfo<BaseSchedule>pa =  baseScheduleBiz.search(scheduleForm.getTypeName(), scheduleForm.getName(),scheduleForm.getPageNum(),scheduleForm.getPageSize());
+        PageInfo<BaseSchedule>pa =  baseScheduleBiz.search(scheduleForm);
         return ResponseUtil.success(pa);
     }
 }

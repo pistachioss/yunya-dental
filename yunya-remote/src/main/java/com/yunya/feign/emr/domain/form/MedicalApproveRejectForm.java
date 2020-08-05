@@ -13,6 +13,7 @@ import lombok.Setter;
 @Setter
 @ApiModel(value = "病例审批拒绝对象模型")
 public class MedicalApproveRejectForm {
+
     @ApiModelProperty(value = "审批通过对象")
     private ApproveRejectForm rejectForm;
 }

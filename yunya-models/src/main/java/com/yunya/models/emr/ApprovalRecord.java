@@ -27,7 +27,7 @@ public class ApprovalRecord implements Serializable {
     private Integer eventId;
 
     /**
-     * 审批事件类型 0：草稿病历审批，1：申请新增病历审批，2：申请修改病历审批，3：删除审批
+     * 审批事件类型 0：草稿病历审批，1：申请病历变更审批，2：删除审批
      */
     @Column(name = "event_type")
     private Integer eventType;
