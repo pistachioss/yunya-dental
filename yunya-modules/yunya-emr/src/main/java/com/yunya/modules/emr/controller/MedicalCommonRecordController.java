@@ -10,12 +10,14 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.MedicalCommonRecord;
+import com.yunya.models.emr.MedicalRecordHistory;
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import tk.mybatis.mapper.entity.Example;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -34,7 +36,8 @@ import java.util.List;
 @CrossOrigin
 public class MedicalCommonRecordController {
 
-  @Autowired private MedicalCommonRecordBiz medicalCommonRecordBiz;
+  @Autowired
+  private MedicalCommonRecordBiz medicalCommonRecordBiz;
 
   /**
    * 新增普通电子病历
@@ -49,7 +52,9 @@ public class MedicalCommonRecordController {
     model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setCrtTime(new Date());
     return ResponseUtil.success(medicalCommonRecordBiz.create(model));
+
   }
+
   /**
    * 查询普通电子病历
    *
@@ -58,32 +63,32 @@ public class MedicalCommonRecordController {
    */
   @PostMapping("/findList")
   @ApiOperation("查询数据")
-  public ResponseResult findList(@RequestBody @Valid MedicalCommonRecordQueryForm model){
+  public ResponseResult findList(@RequestBody @Valid MedicalCommonRecordQueryForm model) {
     MedicalCommonRecord medicalCommonRecord = new MedicalCommonRecord();
-    BeanUtils.copyProperties(model,medicalCommonRecord);
+    BeanUtils.copyProperties(model, medicalCommonRecord);
     List<MedicalCommonRecord> list = medicalCommonRecordBiz.findList(medicalCommonRecord);
-    List<MedicalCommonRecordModel>reList = new ArrayList<>();
-    List<ExaminationsVO>list1 = null;
+    List<MedicalCommonRecordModel> reList = new ArrayList<>();
+    List<ExaminationsVO> list1 = null;
     JSONArray jsonArray = null;
-    for(MedicalCommonRecord medical:list){//处理和牙位有关字段的转换
+    for (MedicalCommonRecord medical : list) {//处理和牙位有关字段的转换
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
-      BeanUtils.copyProperties(medical,medicalCommonRecordModel);
-      if(medical.getExamination()!=null){
+      BeanUtils.copyProperties(medical, medicalCommonRecordModel);
+      if (medical.getExamination() != null) {
         jsonArray = JSONArray.parseArray(medical.getExamination());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setExamination(list1);
       }
-      if(medical.getDiagnosis()!=null){
+      if (medical.getDiagnosis() != null) {
         jsonArray = JSONArray.parseArray(medical.getDiagnosis());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setDiagnosis(list1);
       }
-      if(medical.getPlan()!=null){
+      if (medical.getPlan() != null) {
         jsonArray = JSONArray.parseArray(medical.getPlan());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setPlan(list1);
       }
-      if(medical.getTreatment()!=null){
+      if (medical.getTreatment() != null) {
         jsonArray = JSONArray.parseArray(medical.getTreatment());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);
         medicalCommonRecordModel.setTreatment(list1);
@@ -96,7 +101,6 @@ public class MedicalCommonRecordController {
   /**
    * 修改普通电子病历（
    * 当天24点之前可随意修改，超过24点需要提交审核修改并将记录插入历史表）
-   *
    * @param model
    * @return
    */

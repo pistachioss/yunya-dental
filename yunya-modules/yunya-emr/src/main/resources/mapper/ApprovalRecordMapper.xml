@@ -29,7 +29,7 @@
           </if>
           <if test="status != null">
             and `status` = #{status}
-          </if>
+          </if >
     </select>
 
     <select id="findNewestReject" resultMap="BaseResultMap">
