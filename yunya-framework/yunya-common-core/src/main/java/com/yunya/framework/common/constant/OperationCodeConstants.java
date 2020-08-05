@@ -33,7 +33,9 @@ public class OperationCodeConstants {
   /** 申请正在审批中 */
   public static final Integer APPLY_APPROVE_PENDING = 30011;
   /** 异常数据 */
-  public static final Integer DATA_ERROR = 30011;
-  /** 数据不存在 */
-  public static final Integer DATA_EXIST = 30012;
+  public static final Integer DATA_ERROR = 30012;
+  /** 数据已存在 */
+  public static final Integer DATA_EXIST = 30013;
+  /** 无权限操作 */
+  public static final Integer NO_PERMISSION_OPERATION = 30014;
 }

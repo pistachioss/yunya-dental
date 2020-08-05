@@ -10,7 +10,6 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.models.emr.MedicalGeneralNum;
 import com.yunya.models.emr.MedicalRecordHistory;
@@ -75,12 +74,10 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
       ApplyBaseModel applyBase = new ApplyBaseModel();
       applyBase.setEventId(medicalCommonRecord.getId());
-      applyBase.setEventType(0);
       applyBase.setProposerId(medicalCommonRecord.getCrtId());
-      applyBase.setApplyType(0);
       applyBase.setApproverId(medicalCommonRecord.getMajorDentistId());
       draftMedicalApplyModel.setApplyBase(applyBase);
-      medicalApprovalBiz.applyDraftCase(draftMedicalApplyModel);
+      medicalApprovalBiz.applyAddDraftCase(draftMedicalApplyModel);
     }
     if (model.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
