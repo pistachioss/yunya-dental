@@ -7,6 +7,10 @@ import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
 import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.MedicalCommonRecord;
 import com.yunya.models.emr.MedicalGeneralNum;
 import com.yunya.models.emr.MedicalRecordHistory;
@@ -37,6 +41,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
   private MedicalRecordHistoryBiz medicalRecordHistoryBiz;
 
   public int create(MedicalCommonRecordModel model) {
+    Example example = new Example(MedicalCommonRecordModel.class);
+    example.createCriteria().andEqualTo("treatment_id",model.getTreatmentId());
+    if(mapper.selectByExample(example).size()>0){
+      throw new ClientServiceException("当前就诊记录已有病历", OperationCodeConstants.NAME_IS_OCCUPIED);
+    }
     MedicalCommonRecord medicalCommonRecord = new MedicalCommonRecord();
     BeanUtils.copyProperties(model, medicalCommonRecord);
     JSONArray jsonArray = (JSONArray) JSONArray.toJSON(model.getExamination());
@@ -93,6 +102,9 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
   }
 
   public int updateMedical(MedicalCommonRecordForm medicalCommonRecordForm) {
+    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+      throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
+    }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
     BeanUtils.copyProperties(medicalCommonRecordForm, medicalcopy);
 
@@ -127,7 +139,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       example.createCriteria().andEqualTo("medical_record_id",medicalcopy.getId());
       medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory,example);
     } else {//超过当天24小时，修改病历需要提价审核 ，通过后在历史表中增加一条记录
-     return 0;
+      throw new ClientServiceException("已过修改时间，请提交审核", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
