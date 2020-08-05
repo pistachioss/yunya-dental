@@ -54,7 +54,7 @@
         bs.first_end_time,bs.second_start_time,bs.second_end_time,(IFNULL(cs.inservice,bs.inservice)) as inservice
         from clinic_schedule cs
         left join base_schedule bs on bs.id =cs.schedule_id
-        where 1=1  and cs.inservice =1
+        where 1=1  and cs.inservice = 1
         <if test="clinicId != null and clinicId != ''">
             and cs.clinic_id = #{clinicId}
         </if>

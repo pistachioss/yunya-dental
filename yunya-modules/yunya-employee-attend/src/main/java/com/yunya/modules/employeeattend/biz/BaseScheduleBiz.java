@@ -167,7 +167,7 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
         EmployeeSchedule employeeSchedule = new EmployeeSchedule();
         employeeSchedule.setScheduleId(id);
         if (!employeeScheduleBiz.selectList(employeeSchedule).isEmpty()) {
-            throw new ClientServiceException("查询无结果",OperationCodeConstants.RETURN_VALUE_ISNULL);
+            throw new ClientServiceException("该班次已经使用",OperationCodeConstants.DELETE_NOT_ALLOW);
         }
         deleteById(id);
 
