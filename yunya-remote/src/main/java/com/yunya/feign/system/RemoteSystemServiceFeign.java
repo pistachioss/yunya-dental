@@ -242,7 +242,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api//memberType/{id}", method = RequestMethod.GET)
-  MemberType findMemberTypeById(@PathVariable("id") Integer id);
+  MemberType findMemberTypeById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询会员类型列表
