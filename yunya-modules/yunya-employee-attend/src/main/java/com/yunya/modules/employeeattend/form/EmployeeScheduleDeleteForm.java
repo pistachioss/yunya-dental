@@ -19,14 +19,14 @@ public class EmployeeScheduleDeleteForm implements Serializable {
   /**
    * 员工ID
    */
-  @NotBlank(message = "员工ID不允许为空")
+  @NotNull(message = "员工ID不允许为空")
   @ApiModelProperty("员工ID")
   private Integer employeeId;
 
   /**
    * 公司端排班表ID
    */
-  @NotBlank(message = "公司端排班表ID不允许为空")
+  @NotNull(message = "公司端排班表ID不允许为空")
   @ApiModelProperty("公司端排班表ID")
   private Integer scheduleId;
 
