@@ -118,6 +118,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     return mapper.findList(model);
   }
 
+  /**
+   * 当天24点内医生进行病历修改 调用的方法
+   * @param medicalCommonRecordForm
+   * @return
+   */
   public int updateMedical(MedicalCommonRecordForm medicalCommonRecordForm) {
     if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
       throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
@@ -173,9 +178,14 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     return re;
   }
 
+  /**
+   * 病历变更通过后 调用的修改方法
+   * @param medicalCommonRecordForm
+   * @return
+   */
   public int updateMedicalAfter(MedicalCommonRecordForm medicalCommonRecordForm) {
-    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())&&medicalCommonRecordForm.getMajorDentistId()!=Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
-      throw new ClientServiceException("创建者或主治医生才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
+    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+      throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
     BeanUtils.copyProperties(medicalCommonRecordForm, medicalcopy);
@@ -203,7 +213,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     if (re > 0 && medicalcopy.getStatus() == 0) {//主治医生修改病历时，历史表中同步插入一条数据
       medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
     }
-    if (re > 0 && medicalcopy.getStatus() == 2) {//助手修改病历通过时，审核表中同步插入一条数据
+    if (re > 0 && (medicalcopy.getStatus() == 2||medicalcopy.getStatus() == 3)) {//助手修改病历通过时，审核表中同步插入一条数据
       DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
       ApplyBaseModel applyBase = new ApplyBaseModel();
       applyBase.setEventId(medicalcopy.getId());
@@ -211,7 +221,6 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       applyBase.setApproverId(medicalcopy.getMajorDentistId());
       draftMedicalApplyModel.setApplyBase(applyBase);
       medicalApprovalBiz.applyUpdateDraftCase(draftMedicalApplyModel);
-      medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
     }
 
     if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
@@ -228,5 +237,55 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     }
     return re;
   }
+
+  /**
+   * 病历审核通过或拒绝后 走的方法
+   * @param medicalCommonRecordForm
+   * @return
+   */
+  public int updateMedicalApproval(MedicalCommonRecordForm medicalCommonRecordForm) {
+    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())&&medicalCommonRecordForm.getMajorDentistId()!=Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+      throw new ClientServiceException("创建者或主治医生才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
+    }
+    MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
+    BeanUtils.copyProperties(medicalCommonRecordForm, medicalcopy);
+
+    JSONArray jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getExamination());//转化四个和牙位有关的字段信息
+    if (medicalCommonRecordForm.getExamination() != null) {
+      medicalcopy.setExamination(jsonArray.toJSONString());
+    }
+    if (medicalCommonRecordForm.getDiagnosis() != null) {
+      jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getDiagnosis());
+      medicalcopy.setDiagnosis(jsonArray.toJSONString());
+    }
+    if (medicalCommonRecordForm.getPlan() != null) {
+      jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getPlan());
+      medicalcopy.setPlan(jsonArray.toJSONString());
+    }
+    if (medicalCommonRecordForm.getTreatment() != null) {
+      jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getTreatment());
+      medicalcopy.setTreatment(jsonArray.toJSONString());
+    }
+
+    int re = 0;
+    re = mapper.updateByPrimaryKey(medicalcopy);
+    if (re > 0 && medicalcopy.getStatus() == 2) {//助手修改病历通过时，审核表中同步插入一条数据
+      medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
+    }
+    if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
+      List<MedicalGeneralNum> numList = new ArrayList<>();
+      for (MedicalGeneralNumVO m : medicalCommonRecordForm.getMedicalGeneralNumList()) {
+        MedicalGeneralNum medicalGeneralNum = new MedicalGeneralNum();
+        medicalGeneralNum.setCrtTime(new Date());
+        medicalGeneralNum.setGeneralId(m.getGeneralId());
+        medicalGeneralNum.setMedicalId(medicalCommonRecordForm.getId());
+        medicalGeneralNum.setNumber(m.getNumber());
+        numList.add(medicalGeneralNum);
+      }
+      medicalGeneralNumMapper.saveList(numList);
+    }
+    return re;
+  }
+
 
 }
