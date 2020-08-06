@@ -95,12 +95,30 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
      * 患者来源修改
      * @param patientOriginForm
      */
-    public void update(PatientOriginForm patientOriginForm) {
+    public ResponseResult update(PatientOriginForm patientOriginForm) {
         PatientOrigin patientOrigin = new PatientOrigin();
+        PatientOrigin patientOriginv = mapper.selectByPrimaryKey(patientOrigin.getId());
+        if(patientOriginv.getAllowOperate() == false){
+            return ResponseUtil.success("该患者来源不可编辑",patientOriginv);
+        }
         BeanUtils.copyProperties(patientOriginForm,patientOrigin);
         patientOrigin.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
         patientOrigin.setUpdTime(new Date());
         mapper.updateByPrimaryKeySelective(patientOrigin);
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 删除患者来源
+     * @param id
+     */
+    public ResponseResult deleteOriginById(Integer id) {
+        PatientOrigin patientOriginv = mapper.selectByPrimaryKey(id);
+        if(patientOriginv.getAllowOperate() == false){
+            return ResponseUtil.success("该患者来源不可删除",patientOriginv);
+        }
+        mapper.deleteByPrimaryKey(id);
+        return ResponseUtil.success();
     }
 }

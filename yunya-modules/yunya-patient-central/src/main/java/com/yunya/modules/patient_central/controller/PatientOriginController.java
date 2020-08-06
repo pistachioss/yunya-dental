@@ -48,15 +48,13 @@ public class PatientOriginController {
     @ApiOperation("修改患者来源")
     @PostMapping("/update")
     public ResponseResult update(@RequestBody PatientOriginForm patientOriginForm){
-        patientOriginBiz.update(patientOriginForm);
-        return ResponseUtil.success();
+        return patientOriginBiz.update(patientOriginForm);
     }
 
     @ApiOperation("删除患者来源")
     @DeleteMapping("/delete/{id}")
     public ResponseResult delete(@PathVariable("id") Integer id){
-        patientOriginBiz.deleteById(id);
-        return ResponseUtil.success();
+        return patientOriginBiz.deleteOriginById(id);
     }
 
 
