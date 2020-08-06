@@ -70,7 +70,7 @@ public class PatientBaseInfoController {
         return ResponseUtil.success(patientBaseInfoBiz.findPatientDate(id));
     }
 
-    @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
+    @ApiOperation("根据姓名/病例编号/手机号/姓名拼音模糊查询患者")
     @PostMapping ("/findPatientByNameAndMobile")
     public ResponseResult findPatientByNameAndMobile(@RequestBody PatientLikeFinleQueryForm patientBaseInfoQueryForm){
         return ResponseUtil.success(patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm));
