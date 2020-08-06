@@ -21,6 +21,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.tariff.*;
+import com.yunya.modules.tariff.mapper.BaseOralTariffCategoryMapper;
 import com.yunya.modules.tariff.mapper.BaseOralTariffMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +47,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   /** 系统服务远程调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 商品分类 */
-  @Autowired private BaseOralTariffCategoryBiz baseOralTariffCategoryBiz;
+  @Autowired private BaseOralTariffCategoryMapper baseOralTariffCategoryMapper;
   /** 商品项目操作记录 */
   @Autowired private BaseOralTariffHistoryBiz baseOralTariffHistoryBiz;
   /** 门诊商品项目会员价 */
@@ -86,7 +87,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
    */
   public void add(BaseOralTariffModel model) {
     Integer categoryId = model.getOralTariffCategoryId();
-    BaseOralTariffCategory oralTariffCategory = baseOralTariffCategoryBiz.selectById(categoryId);
+    BaseOralTariffCategory oralTariffCategory =
+        baseOralTariffCategoryMapper.selectByPrimaryKey(categoryId);
     if (null == oralTariffCategory) {
       throw new ClientServiceException(
           "新增失败，ID为'" + categoryId + "'的商品分类不存在，请选择正确的商品分类！",
@@ -437,13 +439,13 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     categoryEntity = new BaseOralTariffCategory();
     categoryEntity.setName(categoryName);
     categoryEntity.setNumber(categoryNumber);
-    categoryResult = baseOralTariffCategoryBiz.selectOne(categoryEntity);
+    categoryResult = baseOralTariffCategoryMapper.selectOne(categoryEntity);
     Integer categoryId;
     if (null == categoryResult) {
       // 新增商品分类
       categoryEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       categoryEntity.setCrtName(BaseContextHandler.getName());
-      baseOralTariffCategoryBiz.insertSelective(categoryEntity);
+      baseOralTariffCategoryMapper.insertSelective(categoryEntity);
       categoryId = categoryEntity.getId();
     } else {
       categoryId = categoryResult.getId();
@@ -485,7 +487,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     BaseOralTariffCategory categoryResult;
     categoryEntity = new BaseOralTariffCategory();
     categoryEntity.setNumber(categoryNumber);
-    categoryResult = baseOralTariffCategoryBiz.selectOne(categoryEntity);
+    categoryResult = baseOralTariffCategoryMapper.selectOne(categoryEntity);
     if (categoryResult != null) {
       String categoryResultName = categoryResult.getName();
       if (!categoryName.equals(categoryResultName)) {
@@ -504,7 +506,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
 
     categoryEntity = new BaseOralTariffCategory();
     categoryEntity.setName(categoryName);
-    categoryResult = baseOralTariffCategoryBiz.selectOne(categoryEntity);
+    categoryResult = baseOralTariffCategoryMapper.selectOne(categoryEntity);
     if (categoryResult != null) {
       String categoryResultNumber = categoryResult.getNumber();
       if (!categoryNumber.equals(categoryResultNumber)) {
