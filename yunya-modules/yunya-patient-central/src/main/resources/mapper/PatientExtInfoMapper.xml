@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientExtInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientExtInfo" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="dict_item_id" property="dictItemId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="PatientExtInfo_Column_List">
+    org_id,patient_id,dict_item_id,type,description,remarks,inservice,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time
+  </sql>
+
+  <sql id="PatientExtInfoList_Column_List">
+    id,org_id orgId,patient_id patientId,dict_item_id dictItemId,type type,description,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime
+  </sql>
+
+  <insert id="insertPatientExtInfoList" parameterType="java.util.List">
+        insert into patient_ext_info (<include refid="PatientExtInfo_Column_List"/>)
+        values 
+        <foreach collection="list" item="item" index="index" separator=",">
+          (#{item.orgId},
+          #{item.patientId},
+          #{item.dictItemId},
+          #{item.type},
+          #{item.description},
+          #{item.remarks},
+          #{item.inservice},
+          #{item.crtId},
+          #{item.crtName},
+          #{item.crtTime},
+          #{item.uptId},
+          #{item.updName},
+          #{item.updTime})
+        </foreach>
+  </insert>
+
+  <select id="patientExtInfoListByid" resultType="com.yunya.models.patient_central.PatientExtInfo">
+    select <include refid="PatientExtInfoList_Column_List"/>
+    from patient_ext_info
+    where patient_id = #{id}
+  </select>
+
+  <delete id="deletePatientExtInfoByPatientId" >
+    delete from patient_ext_info where patient_id = #{id}
+  </delete>
+
+</mapper>

@@ -17,10 +17,12 @@
         <module>yunya-admin-system</module>
         <module>clinic-base</module>
         <module>yunya-discount</module>
-        <module>employee-expand</module>
+        <module>yunya-employee-expand</module>
         <module>yunya-clinic-appointment</module>
         <module>yunya-employee-attend</module>
         <module>yunya-emr</module>
+        <module>yunya-patient-central</module>
+        <module>yunya-tariff</module>
     </modules>
 
 

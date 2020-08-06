@@ -4,6 +4,7 @@ package com.yunya.modules.employeeattend.mapper;
 
 import com.yunya.models.employee_attend.ClinicSchedule;
 
+import com.yunya.modules.employeeattend.vo.ClinicScheduleBaseVO;
 import com.yunya.modules.employeeattend.vo.ClinicScheduleVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -33,5 +34,13 @@ public interface ClinicScheduleMapper extends Mapper<ClinicSchedule> {
      *
      * @param clinicSchedules
      */
-    void batchInsert(@Param("list") List<ClinicSchedule> clinicSchedules);
+    int batchInsert(@Param("list") List<ClinicSchedule> clinicSchedules);
+
+    /**
+     * 获取VO对象
+     *
+     * @param scheduleId
+     * @return
+     */
+    List<ClinicScheduleBaseVO> findVOByScheduleIdAndInservice(@Param("scheduleId") Integer scheduleId);
 }

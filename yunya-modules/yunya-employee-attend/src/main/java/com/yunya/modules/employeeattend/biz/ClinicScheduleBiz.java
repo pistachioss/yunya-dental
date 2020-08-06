@@ -1,17 +1,24 @@
 package com.yunya.modules.employeeattend.biz;
 
 
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.employee_attend.ClinicSchedule;
 import com.yunya.modules.employeeattend.form.ClinicNode;
 import com.yunya.modules.employeeattend.mapper.ClinicScheduleMapper;
+import com.yunya.modules.employeeattend.vo.ClinicScheduleBaseVO;
 import com.yunya.modules.employeeattend.vo.ClinicScheduleVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 描述:
@@ -22,7 +29,8 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class ClinicScheduleBiz extends BaseBiz<ClinicScheduleMapper, ClinicSchedule> {
-
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     /**
      * 新增和更新
      *
@@ -60,9 +68,9 @@ public class ClinicScheduleBiz extends BaseBiz<ClinicScheduleMapper, ClinicSched
      * @param id
      * @param clinicNodes
      */
-    public void batchInsert(Integer id, List<ClinicNode> clinicNodes) {
+    public int batchInsert(Integer id, List<ClinicNode> clinicNodes) {
         if(clinicNodes.isEmpty()){
-            return;
+            return 0;
         }
 
         List<ClinicSchedule> clinicSchedules = new ArrayList<>();
@@ -75,7 +83,7 @@ public class ClinicScheduleBiz extends BaseBiz<ClinicScheduleMapper, ClinicSched
             clinicSchedule.setCrtName(BaseContextHandler.getUsername());
             clinicSchedules.add(clinicSchedule);
         }
-        mapper.batchInsert(clinicSchedules);
+        return mapper.batchInsert(clinicSchedules);
     }
 
     /**
@@ -86,5 +94,27 @@ public class ClinicScheduleBiz extends BaseBiz<ClinicScheduleMapper, ClinicSched
      */
     public List<ClinicScheduleVO> findVOsByClinicIdAndInservice(Integer clinicId) {
         return mapper.selectVOsByClinicIdAndInservice(clinicId);
+    }
+    /**
+     * 获取列表
+     *
+     * @param scheduleId
+     * @return
+     */
+    public List<ClinicScheduleBaseVO> findVOByScheduleIdAndInservice(Integer scheduleId) {
+        //获取门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
+        clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
+
+        List<ClinicScheduleBaseVO>list = mapper.findVOByScheduleIdAndInservice(scheduleId);
+        List<ClinicScheduleBaseVO>relist = new ArrayList<>();
+        for(ClinicScheduleBaseVO clinicScheduleBaseVO:list){
+            clinicScheduleBaseVO.setClinicName(clinicMap.get(clinicScheduleBaseVO.getClinicId().toString()).getName());
+            relist.add(clinicScheduleBaseVO);
+        }
+        return relist;
     }
 }

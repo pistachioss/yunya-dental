@@ -1,9 +1,12 @@
 package com.yunya.modules.employeeattend.biz;
 
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -12,6 +15,7 @@ import com.yunya.models.employee_attend.ClinicSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.form.ClinicCommonForm;
 import com.yunya.modules.employeeattend.form.ClinicNode;
+import com.yunya.modules.employeeattend.form.ScheduleForm;
 import com.yunya.modules.employeeattend.mapper.BaseScheduleMapper;
 import com.yunya.modules.employeeattend.vo.BaseInserviceVO;
 import org.apache.commons.lang3.StringUtils;
@@ -38,7 +42,7 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     /**
-     * 新增排班
+     * 新增班次
      *
      * @param baseSchedule
      */
@@ -46,7 +50,7 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
         BaseSchedule data = new BaseSchedule();
         data.setName(baseSchedule.getName());
         if (mapper.selectOne(data) != null) {
-            throw new ClientServiceException("排班冲突",OperationCodeConstants.SAME_DATA_EXIST);
+            throw new ClientServiceException("班次冲突",OperationCodeConstants.SAME_DATA_EXIST);
         }
 
         if (compareDate(baseSchedule)) {
@@ -67,7 +71,7 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
     }
 
     /**
-     * 修改排班
+     * 修改班次
      *
      * @param baseSchedule
      */
@@ -125,15 +129,33 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
         if (selectById(id) == null) {
             throw new ClientServiceException("查询无结果",OperationCodeConstants.RETURN_VALUE_ISNULL);
         }
+        Integer clinicId = clinicCommonForm.getClinicId();
+        ClinicSchedule data = new ClinicSchedule();
+        data.setScheduleId(id);
+        data.setClinicId(clinicId);
+        data.setInservice(clinicCommonForm.getInservice());
+        clinicScheduleBiz.saveOrUpdate(data);
+    }
 
-        List<ClinicNode> clinicScheduleNodes = clinicCommonForm.getClinicNodes();
-        if (!clinicScheduleNodes.isEmpty()) {
-            ClinicSchedule data = new ClinicSchedule();
-            data.setScheduleId(id);
-            clinicScheduleBiz.delete(data);
-
-            clinicScheduleBiz.batchInsert(id, clinicScheduleNodes);
+    public int settingAll(Integer id){
+        if (selectById(id) == null) {
+            throw new ClientServiceException("查询无结果",OperationCodeConstants.RETURN_VALUE_ISNULL);
         }
+        //获取门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        List<ClinicNode> clinicNodes = new ArrayList<>();
+        for(OrganizationInfoDetail organizationInfoDetail:clinics){
+            ClinicNode clinicNode = new ClinicNode();
+            clinicNode.setClinicId(organizationInfoDetail.getId());
+            clinicNode.setInservice(true);
+            clinicNodes.add(clinicNode);
+        }
+        ClinicSchedule data = new ClinicSchedule();
+        data.setScheduleId(id);
+        clinicScheduleBiz.delete(data);
+        return clinicScheduleBiz.batchInsert(id,clinicNodes);
     }
 
     /**
@@ -145,7 +167,7 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
         EmployeeSchedule employeeSchedule = new EmployeeSchedule();
         employeeSchedule.setScheduleId(id);
         if (!employeeScheduleBiz.selectList(employeeSchedule).isEmpty()) {
-            throw new ClientServiceException("查询无结果",OperationCodeConstants.RETURN_VALUE_ISNULL);
+            throw new ClientServiceException("该班次已经使用",OperationCodeConstants.DELETE_NOT_ALLOW);
         }
         deleteById(id);
 
@@ -155,7 +177,7 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
     }
 
     /**
-     * 排班门诊列表
+     * 班次门诊列表
      *
      * @param scheduleId
      */
@@ -187,11 +209,12 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
     /**
      * 查询列表
      *
-     * @param typeName
-     * @param name
+     * @param
+     * @param
      * @return
      */
-    public List<BaseSchedule> search(String typeName, String name) {
-        return mapper.selectByTypeAndName(typeName, name);
+    public  PageInfo<BaseSchedule> search(ScheduleForm scheduleForm) {
+        PageHelper.startPage(scheduleForm.getPageNum(), scheduleForm.getPageSize());
+        return new PageInfo<>(mapper.selectByTypeAndName(scheduleForm));
     }
 }

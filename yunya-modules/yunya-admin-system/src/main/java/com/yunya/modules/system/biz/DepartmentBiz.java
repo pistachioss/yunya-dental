@@ -74,37 +74,37 @@ public class DepartmentBiz extends BaseBiz<DepartmentMapper, Department> {
   /**
    * 编辑部门模版
    *
-   * @param departmentId 部门模版ID
+   * @param id 部门模版ID
    * @param form 参数封装
    */
-  public void modifyDepartment(Integer departmentId, BaseForm form) {
-    Department department = mapper.selectByPrimaryKey(departmentId);
-    if (null == department) {
+  public void modifyDepartment(Integer id, BaseForm form) {
+    Department resultData = mapper.selectByPrimaryKey(id);
+    if (null == resultData) {
       throw new ClientServiceException(
-          "修改部门，部门ID为'" + departmentId + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改部门，部门ID为'" + id + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     String name = form.getName();
     // 部门名称有修改，校验名称是否重复
-    if (!name.equals(department.getName())) {
-      Department entity = new Department();
-      entity.setName(name);
-      Department result = mapper.selectOne(entity);
-      if (null != result) {
+    if (!resultData.getName().equals(name)) {
+      resultData = new Department();
+      resultData.setName(name);
+      int count = mapper.selectCount(resultData);
+      if (count > 0) {
         throw new ClientServiceException(
             "修改部门'" + name + "'失败，该部门名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
-      department.setName(name);
     }
-    department.setType(form.getType());
-    department.setOrderNum(form.getOrderNum());
+    resultData.setType(form.getType());
+    resultData.setOrderNum(form.getOrderNum());
     Boolean inservice = form.getInservice();
     if (null != inservice) {
-      department.setInservice(inservice);
+      resultData.setInservice(inservice);
     }
-    department.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    department.setUpdName(BaseContextHandler.getName());
-    department.setUpdTime(new Date(System.currentTimeMillis()));
-    mapper.updateByPrimaryKeySelective(department);
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
+    resultData.setId(id);
+    mapper.updateByPrimaryKeySelective(resultData);
   }
 
   /**

@@ -6,6 +6,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.biz.SysUserPostBiz;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
+import com.yunya.modules.system.domain.model.SysUserPostModel;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
 import com.yunya.modules.system.vo.SysUserPostOrgVO;
 import io.swagger.annotations.Api;
@@ -72,7 +73,7 @@ public class SysUserPostController {
   @CurrentUser
   @ApiOperation("新增用户可登陆组织")
   @PostMapping("/add")
-  public ResponseResult add(@RequestBody @Validated SysUserPost resource) {
+  public ResponseResult add(@RequestBody @Validated SysUserPostModel resource) {
     sysUserPostBiz.add(resource);
     return ResponseUtil.success();
   }

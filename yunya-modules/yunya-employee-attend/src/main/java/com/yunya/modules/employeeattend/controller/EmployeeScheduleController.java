@@ -103,7 +103,7 @@ public class EmployeeScheduleController {
   @PostMapping("/export")
   @ApiOperation("导出员工排班")
   public void export(
-          HttpServletResponse response, EmployeeScheduleQueryForm employeeScheduleQueryForm
+          HttpServletResponse response, @RequestBody EmployeeScheduleQueryForm employeeScheduleQueryForm
   ) throws Exception {
     employeeScheduleBiz.export(response, employeeScheduleQueryForm);
   }
@@ -118,7 +118,7 @@ public class EmployeeScheduleController {
   @ApiOperation("导出复制排班冲突")
   public void exportConflict(
           HttpServletResponse response,
-          List<EmployeeScheduleExportVO>employeeConflict
+          @RequestBody List<EmployeeScheduleExportVO>employeeConflict
   ) throws Exception {
     employeeScheduleBiz.exportConflict(response, employeeConflict);
   }

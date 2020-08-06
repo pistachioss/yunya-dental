@@ -1,17 +1,25 @@
 package com.yunya.modules.appointment.mapper;
 
+import com.yunya.feign.appointment.domain.query.DeviceItemQuery;
+import com.yunya.feign.appointment.vo.DeviceItemVo;
 import com.yunya.models.appointment.ClinicDeviceItem;
+import org.apache.ibatis.annotations.Param;
+import tk.mybatis.mapper.common.Mapper;
 
-public interface ClinicDeviceItemMapper {
-    int deleteByPrimaryKey(Integer id);
+import java.util.List;
 
-    int insert(ClinicDeviceItem record);
+public interface ClinicDeviceItemMapper extends Mapper<ClinicDeviceItem> {
+    /**
+     * 根据条件查询设备信息
+     * @param query  查询条件
+     * @return
+     */
+    List<DeviceItemVo> selectDeviceItemByExample(@Param("query") DeviceItemQuery query);
 
-    int insertSelective(ClinicDeviceItem record);
-
-    ClinicDeviceItem selectByPrimaryKey(Integer id);
-
-    int updateByPrimaryKeySelective(ClinicDeviceItem record);
-
-    int updateByPrimaryKey(ClinicDeviceItem record);
+    /**
+     * 根据设备id查询设备
+     * @param id  设备id
+     * @return
+     */
+    DeviceItemVo selectDeviceItemById(@Param("id") Integer id);
 }

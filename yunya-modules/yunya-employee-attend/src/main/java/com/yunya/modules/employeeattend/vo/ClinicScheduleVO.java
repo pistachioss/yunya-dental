@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -30,21 +31,25 @@ public class ClinicScheduleVO implements Serializable {
     /**
      * 开始时间点1
      */
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date firstStartTime;
 
     /**
      * 结束时间点1
      */
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date firstEndTime;
 
     /**
      * 开始时间点2
      */
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date secondStartTime;
 
     /**
      * 结束时间点2
      */
+    @JsonFormat(pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date secondEndTime;
 
     private String concatName;

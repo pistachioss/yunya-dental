@@ -4,12 +4,15 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.system.PostGroup;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
+import com.yunya.modules.system.domain.model.SysUserPostModel;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
 import com.yunya.modules.system.vo.SysUserPostOrgVO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,13 +40,16 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
    *
    * @param resource 参数封装
    */
-  public void add(SysUserPost resource) {
+  public void add(SysUserPostModel resource) {
     Integer userId = resource.getUserId();
     checkUserOrgDeptUnique(userId, resource.getDepartmentId());
     checkUserOrgPostUnique(userId, resource.getCompanyId(), resource.getPostId());
-    resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    resource.setCrtName(BaseContextHandler.getName());
-    mapper.insertSelective(resource);
+    SysUserPost entity = new SysUserPost();
+    BeanUtils.copyProperties(resource, entity);
+    entity.setGroupId(resource.getPostGroupId());
+    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    entity.setCrtName(BaseContextHandler.getName());
+    mapper.insertSelective(entity);
   }
 
   /**

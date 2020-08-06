@@ -108,6 +108,16 @@ logging:
     # tk.mybatis: DEBUG
     com.yunya.auth: DEBUG
 
+# 配置swagger
+swagger:
+  enabled: true
+  base-package: com.yunya.auth
+  title: 用户鉴权服务
+  version: 1.0.0.SNAPSHOT
+  description: YUNYA系统鉴权服务
+  contact:
+    name: yunya-auth
+
 # 暴露所有端点
 management:
   endpoints:

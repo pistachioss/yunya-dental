@@ -65,13 +65,13 @@ spring:
           metadata:
             title: "系统基础服务"
             
-        - id: employee-expand
-          uri: lb://employee-expand
+        - id: yunya-employee-expand
+          uri: lb://yunya-employee-expand
           order: 8004
           predicates:
-            - Path=/api/expand/**
+            - Path=/api/employee/expand/**
           filters:
-            - StripPrefix=2
+            - StripPrefix=3
           metadata:
             title: "员工个人服务"
             
@@ -84,7 +84,7 @@ spring:
             - StripPrefix=2
           metadata:
             title: "电子病历服务"
-        
+
         - id: yunya-employee-attend
           uri: lb://yunya-employee-attend
           order: 8006
@@ -94,7 +94,7 @@ spring:
             - StripPrefix=3
           metadata:
             title: "排班考勤服务"
-  
+
         # 通用工具服务，编号后排
         - id: aliyun-oss
           uri: lb://aliyun-oss
@@ -105,6 +105,38 @@ spring:
             - StripPrefix=2
           metadata:
             title: "资源图片服务"
+
+        - id: yunya-clinic-appointment
+          uri: lb://yunya-clinic-appointment
+          order: 9001
+          predicates:
+            - Path=/api/appointment/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "预约服务"
+
+        - id: yunya-patient
+          uri: lb://yunya-patient
+          order: 9002
+          predicates:
+            - Path=/api/patient/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "患者资料服务"
+
+        - id: yunya-tariff
+          uri: lb://yunya-tariff
+          order: 9003
+          predicates:
+            - Path=/api/tariff/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "价目表服务"
+
+
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848

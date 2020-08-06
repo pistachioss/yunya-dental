@@ -43,7 +43,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api/brand/one/{id}", method = RequestMethod.GET)
-  Brand findBrandById(@PathVariable("id") Integer id);
+  Brand findBrandById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件获取品牌列表
@@ -61,7 +61,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api/department/{id}", method = RequestMethod.GET)
-  Department findDepartmentById(@PathVariable("id") Integer id);
+  Department findDepartmentById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询部门列表
@@ -205,7 +205,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api//deptRoom/{id}", method = RequestMethod.GET)
-  DepartmentRoom findDepartmentRoomById(@PathVariable("id") Integer id);
+  DepartmentRoom findDepartmentRoomById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询科室列表
@@ -223,7 +223,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api//deptRoom/clinic/{id}", method = RequestMethod.GET)
-  ClinicDepartmentRoomVO findClinicDepartmentRoomById(@PathVariable("id") Integer id);
+  ClinicDepartmentRoomVO findClinicDepartmentRoomById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询门诊科室列表
@@ -242,7 +242,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api//memberType/{id}", method = RequestMethod.GET)
-  MemberType findMemberTypeById(@PathVariable("id") Integer id);
+  MemberType findMemberTypeById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询会员类型列表
@@ -260,7 +260,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api//accountType/{id}", method = RequestMethod.GET)
-  AccountType findAccountTypeById(@PathVariable("id") Integer id);
+  AccountType findAccountTypeById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询入账方式分类列表
@@ -278,7 +278,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api//accountItem/{id}", method = RequestMethod.GET)
-  AccountItem findAccountItemById(@PathVariable("id") Integer id);
+  AccountItem findAccountItemById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询入账方式列表
@@ -296,7 +296,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api//accountItem/clinic/{id}", method = RequestMethod.GET)
-  ClinicAccountItemVO findClinicAccountItemById(@PathVariable("id") Integer id);
+  ClinicAccountItemVO findClinicAccountItemById(@PathVariable(value = "id") Integer id);
 
   /**
    * 根据条件查询门诊入账方式列表

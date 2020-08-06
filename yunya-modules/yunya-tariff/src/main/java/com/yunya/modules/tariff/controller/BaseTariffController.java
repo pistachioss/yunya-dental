@@ -1,0 +1,134 @@
+package com.yunya.modules.tariff.controller;
+
+import com.yunya.feign.tariff.domain.form.BaseTariffForm;
+import com.yunya.feign.tariff.domain.model.BaseTariffModel;
+import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
+import com.yunya.feign.tariff.domain.vo.BaseTariffInfoVO;
+import com.yunya.feign.tariff.domain.vo.BaseTariffVO;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.tariff.biz.BaseTariffBiz;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.util.List;
+
+/**
+ * 描述: 基础价目表控制器
+ *
+ * @author GaoLuding
+ * @create 2020-05-19 13:28
+ */
+@Api(tags = "基础价目表管理接口")
+@RestController
+@RequestMapping("tariffs")
+public class BaseTariffController {
+
+  /** 注入对象 */
+  private final BaseTariffBiz baseTariffBiz;
+
+  public BaseTariffController(BaseTariffBiz baseTariffBiz) {
+    this.baseTariffBiz = baseTariffBiz;
+  }
+
+  /**
+   * 根据ID获取价目表信息
+   *
+   * @param id ID
+   * @return
+   */
+  @ApiOperation("根据ID获取价目表信息(包含门诊价目表价格)")
+  @GetMapping("/one/{id}")
+  public ResponseResult findById(@PathVariable("id") Integer id) {
+    BaseTariffInfoVO resultData = baseTariffBiz.findBaseTariffInfoById(id);
+    return ResponseUtil.success(resultData);
+  }
+
+  /**
+   * 根据条件查询基础价目表列表
+   *
+   * @return
+   */
+  @ApiOperation("根据条件查询基础价目表列表(可分页)")
+  @PostMapping("/list")
+  public ResponseResult listList(@RequestBody BaseTariffQueryForm queryForm) {
+    List<BaseTariffVO> resultList = baseTariffBiz.findList(queryForm);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 新增价目表
+   *
+   * @param model 新增参数
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("新增价目表")
+  @PostMapping("/add")
+  public ResponseResult save(@RequestBody @Validated BaseTariffModel model) {
+    baseTariffBiz.add(model);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 修改价目表信息
+   *
+   * @param form 修改参数
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("修改价目表信息")
+  @PutMapping("/modify/{id}")
+  public ResponseResult modify(
+      @PathVariable("id") Integer id, @RequestBody @Validated BaseTariffForm form) {
+    baseTariffBiz.modify(id, form);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 根据ID删除
+   *
+   * @param id ID
+   * @return
+   */
+  @ApiOperation("根据ID删除")
+  @DeleteMapping("/delete/{id}")
+  public ResponseResult delete(@PathVariable("id") Integer id) {
+    baseTariffBiz.delete(id);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 导入价目表
+   *
+   * @param excelFile 文件
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("导入价目表")
+  @PostMapping("/import")
+  public ResponseResult importExcel(MultipartFile excelFile) throws Exception {
+    String resultStr = baseTariffBiz.importExcel(excelFile);
+    return ResponseUtil.success(resultStr);
+  }
+
+  /**
+   * 根据条件导出价目表
+   *
+   * @param response http响应
+   * @param queryForm 查询条件
+   * @throws Exception
+   */
+  @ApiOperation("根据条件导出价目表")
+  @PostMapping("/export")
+  public ResponseResult exportExcel(
+      HttpServletResponse response, @RequestBody BaseTariffQueryForm queryForm) throws Exception {
+    baseTariffBiz.exportExcel(response, queryForm);
+    return ResponseUtil.success();
+  }
+}

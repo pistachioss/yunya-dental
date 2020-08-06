@@ -16,10 +16,16 @@ public interface YunyaServiceNameConstants {
   String YUNYA_GATE_SERVICE = "yunya-gateway";
   /** 云牙系统服务 */
   String YUNYA_SYSTEM_SERVICE = "yunya-system";
-  /** 云牙门诊服务 */
-  String YUNYA_CLINIC_SERVICE = "yunya-clinic";
   /** 云牙排班服务 */
   String YUNYA_EMPLOYEE_ATTEND = "yunya-employee-attend";
   /** 员工扩展服务 */
-  String YUNYA_EMPLOYEE_EXPAND = "employee-expand";
+  String YUNYA_EMPLOYEE_EXPAND = "yunya-employee-expand";
+  /** 预约服务 */
+  String YUNYA_CLINIC_APPOINTMENT = "yunya-clinic-appointment";
+
+  /** 价目表服务 */
+  String YUNYA_TARIFF_SERVICE = "yunya-tariff";
+
+  /** 患者服务 */
+  String YUNYA_PATIENT = "yunya-patient";
 }

@@ -20,12 +20,15 @@ import java.io.Serializable;
 @ToString
 public class LoginOrganizationForm implements Serializable {
   /** 组织ID */
-  @ApiModelProperty("组织ID")
+  @ApiModelProperty(value = "组织ID", required = true)
   private Integer orgId;
   /** 组织部门ID */
-  @ApiModelProperty("组织部门ID")
+  @ApiModelProperty(value = "组织部门ID", required = true)
   private Integer orgDeptId;
   /** 岗位ID */
-  @ApiModelProperty("岗位ID")
+  @ApiModelProperty(value = "岗位ID", required = true)
   private Integer postId;
+  /** 岗位组ID */
+  @ApiModelProperty(value = "岗位组ID", required = true)
+  private Integer postGroupId;
 }

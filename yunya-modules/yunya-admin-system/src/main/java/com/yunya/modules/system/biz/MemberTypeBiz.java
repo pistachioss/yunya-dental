@@ -88,10 +88,10 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
       throw new ClientServiceException(
           "修改失败，ID为'" + id + "'的数据不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
-    String name = form.getName();
-    resultData = new MemberType();
-    resultData.setName(name);
-    if (!resultData.getName().equals(name)) {
+    if (!resultData.getName().equals(form.getName())) {
+      String name = form.getName();
+      resultData = new MemberType();
+      resultData.setName(name);
       int count = mapper.selectCount(resultData);
       if (count > 0) {
         throw new ClientServiceException(
