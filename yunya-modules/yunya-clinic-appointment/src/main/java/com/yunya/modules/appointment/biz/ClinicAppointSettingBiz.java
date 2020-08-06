@@ -32,18 +32,31 @@ import java.util.List;
 public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMapper, ClinicAppointmentSetting> {
 
     /**
-     * 编辑设置
+     * 编辑(添加)设置
      * @param form  设置数据表单
      * @return
      */
-    public ResponseResult editSetting(AppointSettingForm form){
+    public ResponseResult editOrAddSetting(AppointSettingForm form){
         ClinicAppointmentSetting build = EntityUtils.build(form, ClinicAppointmentSetting.class);
-        build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
-        build.setUpdName(BaseContextHandler.getName());
-        build.setUpdTime(new Date(System.currentTimeMillis()));
-        int result = mapper.updateByPrimaryKeySelective(build);
-        if (result <= 0 ){
-            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"编辑失败！",null);
+
+        AppointSettingQuery query = new AppointSettingQuery();
+        query.setUserId(form.getUserId());
+        AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(query);
+        // 如果已经存在用户设置，则进行修改设置操作，否则进行新增操作
+        if (appointSettingVo != null){
+            build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+            build.setUpdName(BaseContextHandler.getName());
+            build.setUpdTime(new Date(System.currentTimeMillis()));
+            int result = mapper.updateByPrimaryKeySelective(build);
+            if (result <= 0 ){
+                return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"编辑失败！",null);
+            }
+        } else {
+            build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            int result = mapper.insertSelective(build);
+            if (result <= 0 ){
+                return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"编辑失败！",null);
+            }
         }
         return ResponseUtil.success();
     }

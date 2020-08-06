@@ -36,23 +36,11 @@ public class ClinicAppointSettingController {
      * @return
      */
     @ApiOperation(value = "编辑预约设置")
-    @PostMapping("/edit")
+    @PostMapping("/update")
     @CurrentUser
-    public ResponseResult editAppointSetting(@RequestBody @Validated AppointSettingForm form){
-        ResponseResult responseResult = clinicAppointSettingBiz.editSetting(form);
+    public ResponseResult editOrAddAppointSetting(@RequestBody @Validated AppointSettingForm form){
+        ResponseResult responseResult = clinicAppointSettingBiz.editOrAddSetting(form);
         return responseResult;
-    }
-
-    /**
-     * 根据条件查询预约显示设置
-     * @param query  用户名
-     * @return
-     */
-    @ApiOperation(value = "根据条件查询预约显示设置")
-    @PostMapping("/find")
-    public ResponseResult selectAppointSettingByUserId(@RequestBody AppointSettingQuery query){
-        AppointSettingVo appointSettingVo = clinicAppointSettingBiz.selectAppointSettingByUserId(query);
-        return ResponseUtil.success(appointSettingVo);
     }
 
     /**
@@ -65,19 +53,6 @@ public class ClinicAppointSettingController {
     public ResponseResult selectAppointSettingById(@PathVariable("id") Integer id){
         AppointSettingVo appointSettingVo = clinicAppointSettingBiz.selectAppointSettingById(id);
         return ResponseUtil.success(appointSettingVo);
-    }
-
-    /**
-     * 添加预约设置
-     * @param form  数据表单
-     * @return
-     */
-    @ApiOperation(value = "添加预约设置")
-    @PostMapping("/add")
-    @CurrentUser
-    public ResponseResult addAppointSetting(@RequestBody @Validated AppointSettingForm form){
-        ResponseResult responseResult = clinicAppointSettingBiz.editSetting(form);
-        return ResponseUtil.success(responseResult);
     }
 
     /**

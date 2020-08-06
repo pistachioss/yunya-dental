@@ -186,171 +186,25 @@
   </select>
 
 <!-- 添加预约 -->
-  <insert id="insertAppointment" keyColumn="id" keyProperty="id" parameterType="com.yunya.models.appointment.Appointment" useGeneratedKeys="true">
-    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
-      select LAST_INSERT_ID()
-    </selectKey>
-    insert into appointment
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="appointment.patientId != null">
-        patient_id,
-      </if>
-      <if test="appointment.orgId != null">
-        org_id,
-      </if>
-      <if test="appointment.dentistId != null">
-        dentist_id,
-      </if>
-      <if test="appointment.assistantId != null">
-        assistant_id,
-      </if>
-      <if test="appointment.clinicDeptRoomId != null">
-        clinic_dept_room_id,
-      </if>
-      <if test="appointment.clinicDeviceItemId != null">
-        clinic_device_item_id,
-      </if>
-      <if test="appointment.clinicAppointItemId != null">
-        clinic_appoint_item_id,
-      </if>
-      <if test="appointment.appointDuration != null">
-        appoint_duration,
-      </if>
-      <if test="appointment.appointDate != null">
-        appoint_date,
-      </if>
-      <if test="appointment.appointTime != null">
-        appoint_time,
-      </if>
-      <if test="appointment.appointStartTime != null">
-        appoint_start_time,
-      </if>
-      <if test="appointment.appointEndTime != null">
-        appoint_end_time,
-      </if>
-      <if test="appointment.appointPeriod != null">
-        appoint_period,
-      </if>
-      <if test="appointment.toothBit != null">
-        tooth_bit,
-      </if>
-      <if test="appointment.appointContent != null">
-        appoint_content,
-      </if>
-      <if test="appointment.appointType != null">
-        appoint_type,
-      </if>
-      <if test="appointment.confirmStatus != null">
-        confirm_status,
-      </if>
-      <if test="appointment.appointStatus != null">
-        appoint_status,
-      </if>
-      <if test="appointment.remarks != null">
-        remarks,
-      </if>
-      <if test="appointment.inservice != null">
-        inservice,
-      </if>
-      <if test="appointment.crtId != null">
-        crt_id,
-      </if>
-      <if test="appointment.crtName != null">
-        crt_name,
-      </if>
-      <if test="appointment.crtTime != null">
-        crt_time,
-      </if>
-      <if test="appointment.uptId != null">
-        upt_id,
-      </if>
-      <if test="appointment.updName != null">
-        upd_name,
-      </if>
-      <if test="appointment.updTime != null">
-        upd_time,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="appointment.patientId != null">
-        #{appointment.patientId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.orgId != null">
-        #{appointment.orgId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.dentistId != null">
-        #{appointment.dentistId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.assistantId != null">
-        #{appointment.assistantId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.clinicDeptRoomId != null">
-        #{appointment.clinicDeptRoomId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.clinicDeviceItemId != null">
-        #{appointment.clinicDeviceItemId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.clinicAppointItemId != null">
-        #{appointment.clinicAppointItemId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.appointDuration != null">
-        #{appointment.appointDuration,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.appointDate != null">
-        #{appointment.appointDate,jdbcType=DATE},
-      </if>
-      <if test="appointment.appointTime != null">
-        #{appointment.appointTime,jdbcType=VARCHAR},
-      </if>
-      <if test="appointment.appointStartTime != null">
-        #{appointment.appointStartTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="appointment.appointEndTime != null">
-        #{appointment.appointEndTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="appointment.appointPeriod != null">
-        #{appointment.appointPeriod,jdbcType=VARCHAR},
-      </if>
-      <if test="appointment.toothBit != null">
-        #{appointment.toothBit,jdbcType=VARCHAR},
-      </if>
-      <if test="appointment.appointContent != null">
-        #{appointment.appointContent,jdbcType=VARCHAR},
-      </if>
-      <if test="appointment.appointType != null">
-        #{appointment.appointType,jdbcType=TINYINT},
-      </if>
-      <if test="appointment.confirmStatus != null">
-        #{appointment.confirmStatus,jdbcType=BOOLEAN},
-      </if>
-      <if test="appointment.appointStatus != null">
-        #{appointment.appointStatus,jdbcType=TINYINT},
-      </if>
-      <if test="appointment.remarks != null">
-        #{appointment.remarks,jdbcType=VARCHAR},
-      </if>
-      <if test="appointment.inservice != null">
-        #{appointment.inservice,jdbcType=BIT},
-      </if>
-      <if test="appointment.crtId != null">
-        #{appointment.crtId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.crtName != null">
-        #{appointment.crtName,jdbcType=VARCHAR},
-      </if>
-      <if test="appointment.crtTime != null">
-        #{appointment.crtTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="appointment.uptId != null">
-        #{appointment.uptId,jdbcType=INTEGER},
-      </if>
-      <if test="appointment.updName != null">
-        #{appointment.updName,jdbcType=VARCHAR},
-      </if>
-      <if test="appointment.updTime != null">
-        #{appointment.updTime,jdbcType=TIMESTAMP},
-      </if>
-    </trim>
+  <insert id="insertAppointment" keyProperty="id" parameterType="com.yunya.models.appointment.Appointment" useGeneratedKeys="true">
+    insert into appointment (patient_id, org_id, dentist_id,
+      assistant_id, clinic_dept_room_id, clinic_device_item_id,
+      clinic_appoint_item_id, appoint_duration, appoint_date,
+      appoint_time, appoint_start_time, appoint_end_time,
+      appoint_period, tooth_bit, appoint_content,
+      appoint_type, confirm_status, appoint_status,
+      remarks, inservice, crt_id,
+      crt_name, crt_time, upt_id,
+      upd_name, upd_time)
+    values (#{patientId}, #{orgId}, #{dentistId},
+      #{assistantId}, #{clinicDeptRoomId}, #{clinicDeviceItemId},
+      #{clinicAppointItemId}, #{appointDuration}, #{appointDate},
+      #{appointTime}, #{appointStartTime}, #{appointEndTime},
+      #{appointPeriod}, #{toothBit}, #{appointContent},
+      #{appointType}, #{confirmStatus}, #{appointStatus},
+      #{remarks}, #{inservice}, #{crtId},
+      #{crtName}, #{crtTime}, #{uptId},
+      #{updName}, #{updTime})
   </insert>
 
 

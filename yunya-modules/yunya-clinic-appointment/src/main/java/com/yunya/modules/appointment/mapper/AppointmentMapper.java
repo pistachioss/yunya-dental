@@ -64,6 +64,6 @@ public interface AppointmentMapper extends Mapper<Appointment> {
      * @param appointment 预约信息
      * @return  插入预约的id
      */
-    Integer insertAppointment(@Param("appointment") Appointment appointment);
+    Integer insertAppointment(Appointment appointment);
 
 }

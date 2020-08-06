@@ -1,21 +1,15 @@
 package com.yunya.modules.appointment.controller;
 
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
-import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
-import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
-import com.yunya.feign.appointment.domain.base.AppointmentBaseForm;
+import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Map;
 
 /**
  * 患者预约中心Controller
@@ -44,7 +38,7 @@ public class AppointmentController {
     @ApiOperation(value = "添加预约（有冲突检测）")
     @PostMapping("/add")
     @CurrentUser
-    public ResponseResult addAppointment(@RequestBody AppointmentBaseForm form) throws ParseException {
+    public ResponseResult addAppointment(@RequestBody AppointmentBaseModel form) throws ParseException {
         ResponseResult responseResult = appointmentBiz.addAppointment(form);
         return responseResult;
     }

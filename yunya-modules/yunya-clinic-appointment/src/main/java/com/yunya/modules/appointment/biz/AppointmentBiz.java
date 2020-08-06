@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz;
 
+import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
@@ -17,7 +18,7 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
-import com.yunya.feign.appointment.domain.base.AppointmentBaseForm;
+import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
@@ -65,7 +66,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param form  预约参数封装
      * @throws ParseException
      */
-    public ResponseResult addAppointment(AppointmentBaseForm form) throws ParseException {
+    public ResponseResult addAppointment(AppointmentBaseModel form) throws ParseException {
 
         // 检查当前预约是否冲突
         Map<String,Object> appointConflictResult = this.checkConflict(form);
@@ -94,27 +95,68 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return ResponseUtil.success(appointConflictResult);
     }
 
+    /**
+     *  再次添加预约
+     * @param form  预约参数封装
+     * @return
+     */
+    public ResponseResult forcedAddAppointment(AppointmentBaseModel form) {
+
+        return ResponseUtil.success();
+    }
+
+
+    /**
+     * 删除预约（取消预约）
+     * @param appointId   预约id
+     * @return
+     */
+    public ResponseResult delAppointment(Integer appointId){
+
+        // 修改预约状态
+
+        // 添加操作记录
+
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 编辑预约（修改预约）
+     * @param form  预约表单
+     * @return
+     */
+    public ResponseResult updateAppointment(AppointmentBaseForm form){
+
+        // 添加操作记录
+
+        return ResponseUtil.success();
+    }
+
+//    TODO  查询预约（根据预约id）
+
+//    TODO  查询预约（根据条件）
+
 
     /**
      * 添加预约时，检查预约当日预约的医生和助手是否排班
-     * @param appointmentBaseForm    预约参数封装表单
+     * @param appointmentBaseModel    预约参数封装表单
      * @return
      */
-    private Map<String,Object> checkScheduling(AppointmentBaseForm appointmentBaseForm){
+    private Map<String,Object> checkScheduling(AppointmentBaseModel appointmentBaseModel){
         // 获取预约医生Id
-        Integer dentistId = appointmentBaseForm.getDentistId();
+        Integer dentistId = appointmentBaseModel.getDentistId();
         Map<String,Object> responseResultMap = new HashMap<>();
 
         if (dentistId != null){
             EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
 
             // 排班结束日期（排班当天的下一天）
-            DateTime dateTime = new DateTime(appointmentBaseForm.getAppointDate());
+            DateTime dateTime = new DateTime(appointmentBaseModel.getAppointDate());
             Date endDate = dateTime.plusDays(1).toDate();
 
             employeeScheduleQueryForm.setUserId(Integer.valueOf(dentistId));
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String startDateStr = sdf.format(appointmentBaseForm.getAppointDate());
+            String startDateStr = sdf.format(appointmentBaseModel.getAppointDate());
             String endDateStr = sdf.format(endDate);
             employeeScheduleQueryForm.setStartDate(startDateStr);
             employeeScheduleQueryForm.setClinicId(Integer.valueOf(BaseContextHandler.getOrgId()));
@@ -154,7 +196,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appointmentForm
      * @throws ParseException
      */
-    private Map<String,Object> checkConflict(AppointmentBaseForm appointmentForm) throws ParseException {
+    private Map<String,Object> checkConflict(AppointmentBaseModel appointmentForm) throws ParseException {
         // 获取患者id、医生id、设备id、预约日期、时间、时长
         Integer patientId = appointmentForm.getPatientId();
         Integer dentistId = appointmentForm.getDentistId();
@@ -241,7 +283,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param form  表单
      * @return  appointment
      */
-    private Appointment transferFormToEntity(AppointmentBaseForm form) throws ParseException {
+    private Appointment transferFormToEntity(AppointmentBaseModel form) throws ParseException {
         // 将form表单转化为appointment实体
         Appointment appointment = EntityUtils.build(form, Appointment.class);
         // 设置患者Id
