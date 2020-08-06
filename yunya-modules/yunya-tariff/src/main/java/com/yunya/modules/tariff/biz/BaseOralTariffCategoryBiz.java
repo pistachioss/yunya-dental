@@ -104,8 +104,12 @@ public class BaseOralTariffCategoryBiz
       throw new ClientServiceException(
           "修改失败，ID为'" + id + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
+
+    String resultDataName = resultData.getName();
+    String resultDataNumber = resultData.getNumber();
     String name = form.getName();
-    if (!resultData.getName().equals(form.getName())) {
+
+    if (!resultDataName.equals(name)) {
       resultData = new BaseOralTariffCategory();
       resultData.setName(name);
       int count = mapper.selectCount(resultData);
@@ -113,8 +117,9 @@ public class BaseOralTariffCategoryBiz
         throw new ClientServiceException("修改失败，名称为'" + name + "'的价目表分类已存在！", NAME_IS_OCCUPIED);
       }
     }
+
     String number = form.getNumber();
-    if (!resultData.getNumber().equals(form.getNumber())) {
+    if (!resultDataNumber.equals(number)) {
       resultData = new BaseOralTariffCategory();
       resultData.setNumber(number);
       int count = mapper.selectCount(resultData);
@@ -123,6 +128,7 @@ public class BaseOralTariffCategoryBiz
             "修改失败，编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
     }
+
     resultData.setName(name);
     resultData.setNumber(number);
     resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));

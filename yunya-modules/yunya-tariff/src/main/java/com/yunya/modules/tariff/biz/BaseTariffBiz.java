@@ -161,9 +161,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
           "修改失败，ID为'" + id + "的价目表不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
 
+    String resultDataName = resultData.getName();
+    String resultDataItemNumber = resultData.getItemNumber();
+    String resultDataTariffCategoryNumber = resultData.getTariffCategoryNumber();
     BaseTariff entity = new BaseTariff();
     String name = form.getName();
-    if (!resultData.getName().equals(name)) {
+
+    if (!resultDataName.equals(name)) {
       entity = new BaseTariff();
       entity.setName(name);
       int count = mapper.selectCount(entity);
@@ -174,7 +178,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
 
     String number = form.getItemNumber();
-    if (!resultData.getItemNumber().equals(number)) {
+    if (!resultDataItemNumber.equals(number)) {
       entity = new BaseTariff();
       entity.setItemNumber(number);
       int count = mapper.selectCount(entity);
@@ -184,7 +188,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       }
     }
 
-    String categoryNumber = resultData.getTariffCategoryNumber().substring(0, 2);
+    String categoryNumber = resultDataTariffCategoryNumber.substring(0, 2);
     String itemNumber = number.substring(0, 2);
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException(

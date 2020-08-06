@@ -1,6 +1,8 @@
 package com.yunya.modules.tariff.controller;
 
+import com.yunya.feign.tariff.domain.form.BaseTariffCategoryForm;
 import com.yunya.feign.tariff.domain.model.BaseTariffCategoryModel;
+import com.yunya.feign.tariff.domain.query.BaseTariffCategoryQueryForm;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,5 +31,20 @@ public class BaseTariffCategoryControllerTest {
     model.setNumber("T76283");
     ResponseResult result = baseTariffCategoryController.save(model);
     System.out.println(result);
+  }
+
+  @Test
+  public void update(){
+    BaseTariffCategoryForm form = new BaseTariffCategoryForm();
+    form.setName("测试修改");
+    form.setNumber("T00123");
+    baseTariffCategoryController.modify(21, form);
+  }
+
+  @Test
+  public void list(){
+    BaseTariffCategoryQueryForm queryForm = new BaseTariffCategoryQueryForm();
+    ResponseResult list = baseTariffCategoryController.findList(queryForm);
+    System.out.println(list);
   }
 }

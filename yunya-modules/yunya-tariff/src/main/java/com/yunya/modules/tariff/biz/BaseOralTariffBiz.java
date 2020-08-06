@@ -164,9 +164,13 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
           "修改失败，ID为'" + id + "的商品项目不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
 
+    String resultDataName = resultData.getName();
+    String resultDataItemNumber = resultData.getItemNumber();
+    String resultDataOralTariffCategoryNumber = resultData.getOralTariffCategoryNumber();
+
     BaseOralTariff entity = new BaseOralTariff();
     String name = form.getName();
-    if (!resultData.getName().equals(name)) {
+    if (!resultDataName.equals(name)) {
       entity = new BaseOralTariff();
       entity.setName(name);
       int count = mapper.selectCount(entity);
@@ -177,7 +181,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     }
 
     String number = form.getItemNumber();
-    if (!resultData.getItemNumber().equals(number)) {
+    if (!resultDataItemNumber.equals(number)) {
       entity = new BaseOralTariff();
       entity.setItemNumber(number);
       int count = mapper.selectCount(entity);
@@ -187,7 +191,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       }
     }
 
-    String categoryNumber = resultData.getOralTariffCategoryNumber().substring(0, 2);
+    String categoryNumber = resultDataOralTariffCategoryNumber.substring(0, 2);
     String itemNumber = number.substring(0, 2);
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException(
