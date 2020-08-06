@@ -1,4 +1,4 @@
-package com.yunya.feign.appointment.domain.base;
+package com.yunya.feign.appointment.domain.form;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -25,7 +25,7 @@ public class AppointmentBaseForm implements Serializable {
     /** 患者id */
     @ApiModelProperty(value = "患者id",required = true)
     @NotBlank(message = "患者id为空！")
-    private String patientId;
+    private Integer patientId;
 
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名",required = true)
@@ -55,19 +55,19 @@ public class AppointmentBaseForm implements Serializable {
     /** 医生id */
     @ApiModelProperty(value = "医生id", required = true)
     @NotBlank(message = "医生不能为空！")
-    private String dentistId;
+    private Integer dentistId;
 
     /**助手id*/
     @ApiModelProperty("助手id")
-    private String assistantId;
+    private Integer assistantId;
 
     /** 预约科室id */
     @ApiModelProperty("预约科室id")
-    private String clinicDeptRoomId;
+    private Integer clinicDeptRoomId;
 
     /** 预约设备id */
     @ApiModelProperty("预约设备id ")
-    private String clinicDeviceItemId;
+    private Integer clinicDeviceItemId;
 
     /** 牙位 */
     @ApiModelProperty("牙位")
@@ -75,7 +75,7 @@ public class AppointmentBaseForm implements Serializable {
 
     /** 预约确认 0-未确认；1-确认 */
     @ApiModelProperty("预约确认 0-未确认；1-确认")
-    private Byte confirmStatus;
+    private Boolean confirmStatus;
 
     /** 预约项目明细条目id */
     @ApiModelProperty("预约项目明细条目id")
@@ -91,5 +91,5 @@ public class AppointmentBaseForm implements Serializable {
 
     /** 是否启用 是否有效 */
     @ApiModelProperty(value = "是否启用 是否有效",required = true)
-    private Byte inservice;
+    private Boolean inservice;
 }

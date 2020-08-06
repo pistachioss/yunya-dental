@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.appointment.mapper.ClinicAppointmentSettingMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.ClinicAppointmentSetting" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="appoint_unit" property="appointUnit" jdbcType="INTEGER" />
+    <result column="columns" property="columns" jdbcType="INTEGER" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!-- 根据用户id查询预约设置 -->
+  <select id="selectAppointSettingByExample" parameterType="java.lang.Integer" resultType="com.yunya.feign.appointment.vo.AppointSettingVo">
+    select
+      cas.id,
+      cas.user_id as userId,
+      cas.appoint_unit as appointUnit,
+      cas.`columns`,
+      cas.inservice,
+      cas.remarks
+    from clinic_appointment_setting cas
+    <where>
+      <if test="query.userId != null">
+        cas.user_id = #{query.userId}
+      </if>
+    </where>
+  </select>
+
+</mapper>

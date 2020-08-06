@@ -127,4 +127,7 @@ public class MedicalCommonRecordModel {
 
   @ApiModelProperty("词条使用频率")
   private List<MedicalGeneralNumVO>medicalGeneralNumList;
+
+  @ApiModelProperty("审批操作截止时间")
+  private String deadTime;
 }

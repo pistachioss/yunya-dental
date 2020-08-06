@@ -49,21 +49,16 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
-
-  <resultMap id="AllOrdersMap" type="com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo">
-    <result column="orgId" jdbcType="INTEGER" property="orgId" />
-    <result column="typeName" jdbcType="VARCHAR" property="typeName"/>
-    <collection property="appointmentItemTypes" ofType="com.yunya.modules.appointment.vo.AppointmentItemVo">
-      <result column="itemId" jdbcType="INTEGER" property="appointItemId"/>
-      <result column="itemName" jdbcType="VARCHAR" property="itemName"/>
-      <result column="duration" jdbcType="INTEGER" property="duration"/>
-      <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
-      <result column="inservice" jdbcType="BIT" property="inservice"/>
-    </collection>
-  </resultMap>
-
   <sql id="Base_Column_List">
-    iapt.id,
+    id, patient_id, org_id, dentist_id, assistant_id, clinic_dept_room_id, clinic_device_item_id,
+    clinic_appoint_item_id, appoint_duration, appoint_date, appoint_time, appoint_start_time,
+    appoint_end_time, appoint_period, tooth_bit, appoint_content, appoint_type, confirm_status,
+    appoint_status, remarks, inservice, crt_id, crt_name, crt_time, upt_id, upd_name,
+    upd_time
+  </sql>
+
+  <sql id="Appoint_ConflictInfo_Column">
+    apt.id,
     apt.patient_id as patientId,
     apt.org_id as orgId,
     apt.dentist_id as dentistId,
@@ -89,7 +84,7 @@
   <!-- 根据设备id，预约开始时间，预约结束时间查询所有预约列表 -->
   <select id="findAppointListByDeviceIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.modules.appointment.vo.AppointConflictInfoVo">
     select
-      <include refid="Base_Column_List"></include>
+      <include refid="Appoint_ConflictInfo_Column"></include>
     from appointment apt
     where
       not <![CDATA[(DATE_FORMAT(apt.appoint_end_time,'%d %b %Y %T') < DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
@@ -108,14 +103,109 @@
       and apt.patient_id = #{patientId}
   </select>
 
+  <!-- 根据医生id，预约开始时间，预约结束时间查询所有预约列表 -->
   <select id="findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.modules.appointment.vo.AppointConflictInfoVo">
     select
-      <include refid="Base_Column_List"></include>
+      <include refid="Appoint_ConflictInfo_Column"></include>
     from appointment apt
     where
       not <![CDATA[(DATE_FORMAT(apt.appoint_end_time,'%d %b %Y %T') < DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
       or DATE_FORMAT(apt.appoint_start_time,'%d %b %Y %T') > DATE_FORMAT(#{appointEndTime},'%d %b %Y %T'))]]>
       and apt.dentist_id = #{dentistId}
   </select>
+
+  <!-- 根据条件查询预约列表 -->
+  <select id="findAppointmentByExample" parameterType="com.yunya.feign.appointment.domain.query.AppointmentQuery" resultType="com.yunya.feign.appointment.vo.AppointmentVo">
+    select
+      a.id,
+      a.patient_id as patientId,
+      a.org_id as orgId,
+      a.dentist_id as dentistId,
+      a.assistant_id as assistantId,
+      a.clinic_dept_room_id as clinicDeptRoomId,
+      a.clinic_device_item_id as clinicDeviceItemId,
+      a.clinic_appoint_item_id as clinicAppointItemId,
+      a.appoint_duration as appointDuration,
+      a.appoint_date as appointDate,
+      a.appoint_time as appointTime,
+      a.appoint_start_time as appointStartTime,
+      a.appoint_end_time as appointEndTime,
+      a.appoint_period as appointPeriod,
+      a.appoint_type as appointType,
+      a.confirm_status as confirmStatus,
+      a.appoint_status as appointStatus,
+      a.tooth_bit as toothBit,
+      a.appoint_content as appointContent,
+      a.remarks,
+      a.inservice
+    from appointment a
+    <where>
+      <if test="query.patientId != null">
+        a.patient_id = #{query.patientId}
+      </if>
+      <if test="query.orgId != null">
+        and a.org_id = #{query.orgId}
+      </if>
+      <if test="query.dentistId != null">
+        and a.dentist_id = #{query.dentistId}
+      </if>
+      <if test="query.assistantId != null">
+        and a.assistant_id = #{query.assistantId}
+      </if>
+      <if test="query.clinicDeptRoomId != null">
+        and a.clinic_dept_room_id = #{query.clinicDeptRoomId}
+      </if>
+      <if test="query.clinicDeviceItemId != null">
+        and a.clinic_device_item_id = #{query.clinicDeviceItemId}
+      </if>
+      <if test="query.clinicAppointItemId != null">
+        and a.clinic_appoint_item_id = #{query.clinicAppointItemId}
+      </if>
+      <if test="query.appointDate != null">
+        and a.appoint_date = #{query.appointDate}
+      </if>
+      <if test="query.appointTime != null">
+        and a.appoint_time = #{q.appointTime}
+      </if>
+      <if test="query.appointStartTime != null">
+        and a.appoint_start_time = #{query.appointStartTime}
+      </if>
+      <if test="query.appointEndTime != null">
+        and a.appoint_end_time = #{query.appointEndTime}
+      </if>
+      <if test="query.appointType != null">
+        and a.appoint_type = #{query.appointType}
+      </if>
+      <if test="query.confirmStatus != null">
+        and a.confirmStatus = #{query.confirmStatus}
+      </if>
+      <if test="query.appointStatus != null">
+        and a.appoint_status = #{query.appointStatus}
+      </if>
+    </where>
+  </select>
+
+<!-- 添加预约 -->
+  <insert id="insertAppointment" keyProperty="id" parameterType="com.yunya.models.appointment.Appointment" useGeneratedKeys="true">
+    insert into appointment (patient_id, org_id, dentist_id,
+      assistant_id, clinic_dept_room_id, clinic_device_item_id,
+      clinic_appoint_item_id, appoint_duration, appoint_date,
+      appoint_time, appoint_start_time, appoint_end_time,
+      appoint_period, tooth_bit, appoint_content,
+      appoint_type, confirm_status, appoint_status,
+      remarks, inservice, crt_id,
+      crt_name, crt_time, upt_id,
+      upd_name, upd_time)
+    values (#{patientId}, #{orgId}, #{dentistId},
+      #{assistantId}, #{clinicDeptRoomId}, #{clinicDeviceItemId},
+      #{clinicAppointItemId}, #{appointDuration}, #{appointDate},
+      #{appointTime}, #{appointStartTime}, #{appointEndTime},
+      #{appointPeriod}, #{toothBit}, #{appointContent},
+      #{appointType}, #{confirmStatus}, #{appointStatus},
+      #{remarks}, #{inservice}, #{crtId},
+      #{crtName}, #{crtTime}, #{uptId},
+      #{updName}, #{updTime})
+  </insert>
+
 
 </mapper>

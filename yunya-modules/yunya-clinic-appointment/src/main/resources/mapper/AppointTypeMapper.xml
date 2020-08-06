@@ -19,7 +19,15 @@
 
 
   <select id="selectAppointTypeByName" parameterType="java.lang.String" resultType="com.yunya.models.appointment.AppointType">
-    select * from appoint_type atype where atype.name = #{name}
+    select atype.* from appoint_type atype where atype.name = #{name}
+  </select>
+
+  <select id="findAppointTypeList" resultType="com.yunya.feign.appointment.vo.AppointTypeListVo">
+    select
+      atype.id,
+      atype.name,
+      atype.inservice
+    from appoint_type atype
   </select>
 
 </mapper>

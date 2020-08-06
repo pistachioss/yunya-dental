@@ -1,7 +1,10 @@
 package com.yunya.modules.appointment.biz;
-import com.yunya.feign.appointment.domain.form.DeviceItemForm;
+import com.yunya.feign.appointment.domain.form.DeviceEditForm;
+import com.yunya.feign.appointment.domain.form.DeviceItemManageForm;
 import com.yunya.feign.appointment.domain.model.DeviceItemModel;
+import com.yunya.feign.appointment.domain.query.AppointmentQuery;
 import com.yunya.feign.appointment.domain.query.DeviceItemQuery;
+import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.appointment.vo.DeviceItemVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -9,13 +12,12 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.ClinicDeviceItem;
+import com.yunya.models.appointment.ClinicDeviceType;
 import com.yunya.modules.appointment.mapper.ClinicDeviceItemMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
 
@@ -34,13 +36,12 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
     private AppointmentBiz appointmentBiz;
 
     /**
-     * 通过公司id查询该门诊的设备id列表
-     *
+     * 根据条件该门诊的设备id列表
+     * @param query 条件列表
      * @return
      */
     public List<DeviceItemVo> selectDeviceItemByExample(DeviceItemQuery query) {
         List<DeviceItemVo> devices = mapper.selectDeviceItemByExample(query);
-
         return devices;
     }
 
@@ -50,9 +51,6 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
      * @return
      */
     public DeviceItemVo selectDeviceItemById(Integer id){
-        if (id == null || id <= 0){
-            return null;
-        }
         DeviceItemVo deviceItemVo = mapper.selectDeviceItemById(id);
         return deviceItemVo;
     }
@@ -60,12 +58,37 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
 
     /**
      * 新增门诊端可用设备
-     *
-     * @param deviceForms 设备信息
+     * @param deviceForm 设备信息
      * @return
      */
-    public ResponseResult addDevice(List<DeviceItemModel> deviceForms) {
+    public ResponseResult addDevice(DeviceItemModel deviceForm){
+        ClinicDeviceItem device = new ClinicDeviceItem();
+        device.setOrgId(deviceForm.getOrgId());
+        device.setDeviceId(deviceForm.getDeviceId());
+        device.setNumber(deviceForm.getNumber());
+        ClinicDeviceItem one = mapper.selectOne(device);
+        if (one != null) {
+            // 相同的设备已经存在，将设备删除重新添加
+            return  ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"设备已经存在！",null);
+        } else {
+            device.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            int insert = mapper.insertSelective(device);
+            if (insert <= 0) {
+                return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"设备添加失败！",null);
+            }
+        }
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 新增门诊端可用设备(批量)
+     *
+     * @param deviceFormArr 设备信息
+     * @return
+     */
+    public ResponseResult addDevices(DeviceItemModel[] deviceFormArr) {
         List errList = new ArrayList<Map<String, Object>>();
+        List<DeviceItemModel> deviceForms = new ArrayList<>(Arrays.asList(deviceFormArr));
         if (deviceForms.size() > 0) {
             deviceForms.forEach(deviceForm -> {
                 ClinicDeviceItem device = new ClinicDeviceItem();
@@ -84,7 +107,7 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
                     errList.add(resultMap);
                 } else {
                     device.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-                    int insert = mapper.insert(device);
+                    int insert = mapper.insertSelective(device);
                     if (insert <= 0) {
                         Map<String, Object> resultMap = new HashMap<>();
                         resultMap.put("id", device.getId());
@@ -110,20 +133,16 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
      * @return
      */
     public ResponseResult deleteDeviceItemById(Integer id){
-        if (id == null || id <=0 ){
-            return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL,"门诊id参数非法！",null);
-        }
         ClinicDeviceItem clinicDeviceItem = mapper.selectByPrimaryKey(id);
         if (clinicDeviceItem == null){
             return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"删除的设备不存在！",null);
         }
 
         // 检测设备是否使用中
-        Appointment appointEntity = new Appointment();
-        appointEntity.setClinicDeviceItemId(id);
-        Example ep = new Example(appointEntity.getClass());
-        List<Appointment> appointments = appointmentBiz.selectByExample(ep);
-        if (appointments != null && !appointments.isEmpty()){
+        AppointmentQuery query = new AppointmentQuery();
+        query.setClinicDeviceItemId(id);
+        List<AppointmentVo> appointmentByExample = appointmentBiz.findAppointmentByExample(query);
+        if (appointmentByExample != null && !appointmentByExample.isEmpty()){
             return ResponseUtil.fail(OperationCodeConstants.DELETE_NOT_ALLOW,"设备使用中，不能删除！",null);
         }
 
@@ -139,7 +158,7 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
      * @param form  修改数据表单
      * @return
      */
-    public ResponseResult updateDeviceItem(DeviceItemForm form){
+    public ResponseResult updateDeviceItem(DeviceItemManageForm form){
 
         DeviceItemVo deviceItemVo = mapper.selectDeviceItemById(form.getId());
         if (deviceItemVo == null){

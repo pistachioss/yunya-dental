@@ -2,6 +2,7 @@ package com.yunya.modules.appointment.biz;
 
 import com.yunya.feign.appointment.domain.form.AppointTypeForm;
 import com.yunya.feign.appointment.domain.model.AppointTypeModel;
+import com.yunya.feign.appointment.vo.AppointTypeListVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 预约项目类型服务层
@@ -21,7 +23,7 @@ import java.util.Date;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class ClinicAppointTypeBiz extends BaseBiz<AppointTypeMapper, AppointType> {
+public class AppointTypeBiz extends BaseBiz<AppointTypeMapper, AppointType> {
 
     /**
      * 新增预约项目类型
@@ -74,6 +76,12 @@ public class ClinicAppointTypeBiz extends BaseBiz<AppointTypeMapper, AppointType
         return mapper.selectByPrimaryKey(id);
     }
 
-
+    /**
+     *  查询可预约类型列表
+     * @return
+     */
+    public List<AppointTypeListVo> findAppointTypeList(){
+        return mapper.findAppointTypeList();
+    }
 
 }

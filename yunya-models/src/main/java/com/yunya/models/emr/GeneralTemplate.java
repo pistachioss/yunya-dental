@@ -31,6 +31,11 @@ public class GeneralTemplate implements Serializable {
     private Integer medicalTemplateCategoryId;
 
     /**
+     * 启用/禁用
+     */
+    private Integer enable;
+
+    /**
      * 创建人Id
      */
     @Column(name = "crt_id")

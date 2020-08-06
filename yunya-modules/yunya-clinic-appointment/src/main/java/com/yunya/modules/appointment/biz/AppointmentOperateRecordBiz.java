@@ -33,14 +33,11 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         appointOperateRecord.setOrgId(orgId);
         appointOperateRecord.setAppointmentId(appointmentId);
         appointOperateRecord.setOperateType(operateType);
-        // TODO
-//        appointOperateRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        appointOperateRecord.setCrtId(10001);
+        appointOperateRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointOperateRecord.setCrtName(BaseContextHandler.getName());
         appointOperateRecord.setCrtTime(new Date(System.currentTimeMillis()));
-        appointOperateRecord.setInservice(true);
 
-        int insert = mapper.insert(appointOperateRecord);
+        int insert = mapper.insertSelective(appointOperateRecord);
         return insert;
     }
 

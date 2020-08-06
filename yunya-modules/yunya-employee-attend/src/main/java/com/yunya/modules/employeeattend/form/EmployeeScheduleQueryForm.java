@@ -52,9 +52,9 @@ public class EmployeeScheduleQueryForm {
   private String endDate;
 
   @ApiModelProperty("页数")
-  private Integer page;
+  private Integer page = 1;
 
   @ApiModelProperty("每页个数")
-  private Integer size;
+  private Integer size = 10;
 
 }

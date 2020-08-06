@@ -71,7 +71,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       System.out.println("冲突");//抛出冲突异常
       return;
     }
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleForm, EmployeeSchedule.class);
     employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
     employeeSchedule.setClinicId(employeeScheduleForm.getClinicId());
@@ -306,7 +306,11 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             }
             String simtime = dateFormat.format(startTime) + "-" + dateFormat.format(endTime);
 
-            workDayData.put("name", clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + simtime);
+            workDayData.put("companyType", clinicMap.get(employeeScheduleVO.getClinicId() + "").getType());
+            workDayData.put("companyName", clinicMap.get(employeeScheduleVO.getClinicId() + "").getName());
+            workDayData.put("employeeName", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());
+            workDayData.put("color", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getColor());
+            workDayData.put("simtime",simtime);
             workDayData.put("date", employeeScheduleVO.getWorkDate());
             workDayData.put("compClinId", employeeScheduleVO.getClinicId());
             workDayDatas.add(workDayData);

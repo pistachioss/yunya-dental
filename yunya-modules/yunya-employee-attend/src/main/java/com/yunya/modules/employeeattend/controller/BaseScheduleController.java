@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.controller;
 
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -56,17 +57,29 @@ public class BaseScheduleController {
     }
 
     /**
-     * 设置门诊是否可用
+     * 设置门诊是否可用当前班次
      *
      * @param clinicCommonForm
      * @return
      */
     @PostMapping("/setting")
-    @ApiOperation("配置")
+    @ApiOperation("设置门诊是否可用当前班次")
     @CurrentUser
     public ResponseResult setting(@RequestBody @Valid ClinicCommonForm clinicCommonForm) {
         baseScheduleBiz.setting(clinicCommonForm);
         return ResponseUtil.success();
+    }
+    /**
+     * 统一开启门诊班次
+     *
+     * @param
+     * @return
+     */
+    @GetMapping("/settingAll/{id}")
+    @ApiOperation("统一开启门诊班次")
+    @CurrentUser
+    public ResponseResult settingAll(@PathVariable(name = "id") Integer id){
+        return ResponseUtil.success(baseScheduleBiz.settingAll(id));
     }
 
     /**
@@ -126,6 +139,7 @@ public class BaseScheduleController {
     @PostMapping("/search")
     @ApiOperation("查询")
     public ResponseResult search(@RequestBody ScheduleForm scheduleForm) {
-        return ResponseUtil.success(baseScheduleBiz.search(scheduleForm.getTypeName(), scheduleForm.getName()));
+        PageInfo<BaseSchedule>pa =  baseScheduleBiz.search(scheduleForm);
+        return ResponseUtil.success(pa);
     }
 }

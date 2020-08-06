@@ -34,5 +34,5 @@ public interface ClinicEmployeeConfigFeign {
      * @return
      */
     @GetMapping("clinic/employee/{clinicId}/config/list")
-    public EnableEmployeeRes getEnableEmployeeList(@PathVariable("clinicId") Integer clinicId);
+    public EnableEmployeeRes getEnableEmployeeList(@PathVariable(value = "clinicId") Integer clinicId);
 }

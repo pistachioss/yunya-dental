@@ -1,0 +1,34 @@
+package com.yunya.feign.patient_central.factory;
+
+
+import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
+import com.yunya.models.patient_central.PatientBaseInfo;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+
+/**
+ * 简单介绍:</br>患者服务调用降级处理
+ *
+ * @author: WY
+ * @date 2020/8/3 15:35
+ * @description:
+ * @since: 1.0.0
+ */
+@Slf4j
+@Component
+public class PatientCentralServiceFallBackFactory implements PatientCentralServiceFeign {
+
+    @Override
+    public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm patientBaseInfoQueryForm) {
+        return null;
+    }
+
+    @Override
+    public PatientBaseInfo findPatientInfoById(Integer id) {
+        return null;
+    }
+}

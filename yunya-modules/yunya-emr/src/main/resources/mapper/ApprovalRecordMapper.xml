@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.emr.mapper.ApprovalRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.emr.ApprovalRecord">
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="event_id" jdbcType="INTEGER" property="eventId" />
+        <result column="event_type" jdbcType="TINYINT" property="eventType" />
+        <result column="proposer_id" jdbcType="INTEGER" property="proposerId" />
+        <result column="apply_reason" jdbcType="VARCHAR" property="applyReason" />
+        <result column="apply_type" jdbcType="TINYINT" property="applyType" />
+        <result column="approver_id" jdbcType="INTEGER" property="approverId" />
+        <result column="approve_time" jdbcType="TIMESTAMP" property="approveTime" />
+        <result column="approve_reason" jdbcType="VARCHAR" property="approveReason" />
+        <result column="dead_time" jdbcType="DATE" property="deadTime" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+        <result column="upd_id" jdbcType="INTEGER" property="updId" />
+        <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+    </resultMap>
+
+    <select id="countByEventIdAndType" resultType="int">
+        select
+            count(*)
+        from `approval_record`
+        where `event_id` = #{eventId}
+          <if test="eventType != null">
+            and `event_type` = #{eventType}
+          </if>
+          <if test="status != null">
+            and `status` = #{status}
+          </if >
+    </select>
+
+    <select id="findNewestReject" resultMap="BaseResultMap">
+        select
+            `id`,
+            `event_id`,
+            `approve_time`,
+            `status`
+        from `approval_record`
+        where `event_id` = #{eventId}
+          and `event_type` = 0
+          and `status` = 2
+        order by `approve_time` desc limit 1
+    </select>
+
+    <select id="findTreatmentRecord" resultMap="BaseResultMap">
+        select
+            `id`,
+            `event_id`,
+            `approve_time`,
+            `status`
+        from `approval_record`
+        where `event_id` = #{treatmentId}
+          and `event_type` = 1
+          and `apply_type` = 0
+          and `status` = 1
+    </select>
+
+    <select id="findMedicalChangeRecord" resultMap="BaseResultMap">
+        select
+            `id`,
+            `event_id`,
+            `approve_time`,
+            `status`
+        from `approval_record`
+        where `event_id` = #{medicalId}
+          and `event_type` = 1
+          and `apply_type` = 1
+          and `status` = 1
+        order by `approve_time` desc limit 1
+    </select>
+
+    <select id="countByTreatmentId" resultType="int">
+        select
+            count(*)
+        from `approval_record`
+        where `event_id` = #{treatmentId}
+           and `event_type` = 1
+           and `status` in (0,1)
+    </select>
+</mapper>

@@ -5,6 +5,7 @@
         <id column="id" jdbcType="INTEGER" property="id" />
         <result column="content" jdbcType="VARCHAR" property="content" />
         <result column="medical_template_category_id" jdbcType="INTEGER" property="medicalTemplateCategoryId" />
+        <result column="enable" jdbcType="TINYINT" property="enable" />
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
         <result column="upd_id" jdbcType="INTEGER" property="updId" />
@@ -13,7 +14,7 @@
 
     <select id="countByCategoryId" resultType="int">
         select
-            count(1)
+            count(*)
         from
             `general_template`
         where
@@ -23,7 +24,8 @@
     <select id="listByKeyword" resultMap="BaseResultMap">
         select
             `id`,
-            `content`
+            `content`,
+            `enable`
         from `general_template`
         where `medical_template_category_id` = #{categoryId}
             <if test="keyword != null" >

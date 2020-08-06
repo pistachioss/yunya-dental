@@ -9,12 +9,17 @@
  * 作者姓名           修改时间           版本号              描述
  */
 package com.yunya.modules.appointment.biz;
+import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
+import com.yunya.feign.appointment.domain.model.AppointItemConfigModel;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemTypeQuery;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppointItem;
 import com.yunya.modules.appointment.mapper.AppointItemMapper;
 import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
@@ -47,13 +52,19 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
      * @param appItemForm
      * @return
      */
-    public Integer insertAppointItem(AppointmentItemModel appItemForm){
+    public ResponseResult insertAppointItem(AppointmentItemModel appItemForm){
 
-        AppointItem appointItem = new AppointItem();
         AppointItem build = EntityUtils.build(appItemForm, AppointItem.class);
+        AppointItem appointItem = mapper.selectOne(build);
+        if (appointItem != null){
+            return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"预约项目名称与系统中已有预约项目重复，不允许新增！",null);
+        }
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-
-        return mapper.insertSelective(build);
+        int result = mapper.insertSelective(build);
+        if (result <= 0){
+            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"添加失败i！",null);
+        }
+        return ResponseUtil.success();
     }
 
     /**
@@ -72,14 +83,19 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
     /**
      * 修改门诊端预约项目
      */
-    public Integer updateAppItem(Integer id, AppointmentItemModel appItemForm) {
+    public Integer updateAppItem(AppointItemModifyForm appItemForm) {
         //将Form对象转换成Entity
-        AppointItem appItem = EntityUtils.build(appItemForm, AppointItem.class);
-        appItem.setId(id);
-        appItem.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
-        appItem.setUpdName(BaseContextHandler.getName());
-        appItem.setUpdTime(new Date(System.currentTimeMillis()));
-        return mapper.updateByPrimaryKeySelective(appItem);
+        AppointItem appointItem = mapper.selectByPrimaryKey(appItemForm.getId());
+        if (appItemForm == null){
+            return 0;
+        }
+        appointItem.setName(appItemForm.getName());
+        appointItem.setDuration(appItemForm.getDuration());
+        appointItem.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        appointItem.setUpdName(BaseContextHandler.getName());
+        appointItem.setUpdTime(new Date(System.currentTimeMillis()));
+
+        return mapper.updateByPrimaryKeySelective(appointItem);
     }
 
     /**
@@ -99,9 +115,9 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
      * @param compClinId
      * @return
      */
-    public List<AppointmentItemEnableModelVo> findAvailableAppItemList(String compClinId) {
+    public List<AppointmentItemEnableModelVo> findAvailableAppItemList(Integer compClinId) {
         AppointItemTypeQuery appointOrderTypeQueryForm = new AppointItemTypeQuery();
-        appointOrderTypeQueryForm.setOrgId(Integer.valueOf(compClinId));
+        appointOrderTypeQueryForm.setOrgId(compClinId);
 
         List<AppointmentItemEnableModelVo> ordersModels = mapper.selectAllAppointItemByOrgId(appointOrderTypeQueryForm);
         if(ordersModels.isEmpty()){

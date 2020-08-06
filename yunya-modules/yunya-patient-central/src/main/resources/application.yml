@@ -1,3 +1,6 @@
+server:
+  port: 8018
+
 logging:
   level:
     #        tk.mybatis: DEBUG
@@ -67,8 +70,7 @@ mybatis:
   xmlLocation: classpath:mapper/**/*.xml
   mapper-locations: "classpath*:mapper/*.xml"
 
-server:
-  port: 8108
+
 
 # 必须配置
 feign:
@@ -104,12 +106,12 @@ hystrix:
 # 配置swagger
 swagger:
   enabled: true
-  base-package: com.yunya.modules.system
-  title: yunya-system
+  base-package: com.yunya.modules.patient_central
+  title: yunya-patient
   version: 1.0.0.SNAPSHOT
-  description: YUNYA系统管理后端服务
+  description: YUNYA患者信息管理服务
   contact:
-    name: yunya-system
+    name: yunya-patient
 
 #redis-cache 相关
 

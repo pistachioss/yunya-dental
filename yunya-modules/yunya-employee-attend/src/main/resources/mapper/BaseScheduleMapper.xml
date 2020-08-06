@@ -33,8 +33,11 @@
     <select id="selectByTypeAndName" resultMap="BaseResultMap">
         select * from base_schedule
         where 1=1
-        <if test="type != null and type != ''">
-            and `type` = #{type}
+        <if test="typeNames != null ">
+            and `type` in
+            <foreach collection="typeNames" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
         </if>
         <if test="name != null and name != ''">
             and `name` like concat('%', #{name}, '%')

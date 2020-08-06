@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.form.PatientKinRelationForm;
 import com.yunya.feign.patient_central.domain.model.PatientKinRelationModel;
 import com.yunya.feign.patient_central.domain.query.PatientKinRelationQueryForm;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -63,13 +64,22 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
             patientKinRelation.setCrtName(BaseContextHandler.getName());
             patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
             mapper.insert(patientKinRelation);
-        }else {
-            patientKinRelation.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientKinRelation.setUpdName(BaseContextHandler.getName());
-            patientKinRelation.setUpdTime(new Date());
-            patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-            mapper.updateByPrimaryKeySelective(patientKinRelation);
         }
         return ResponseUtil.success();
+    }
+
+    /**
+     * 修改患者亲属关系
+     * @param patientKinRelationModel
+     * @return ResponseResult
+     */
+    public void update(PatientKinRelationForm patientKinRelationForm) {
+        PatientKinRelation patientKinRelation = new PatientKinRelation();
+        BeanUtils.copyProperties(patientKinRelationForm,patientKinRelation);
+        patientKinRelation.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientKinRelation.setUpdName(BaseContextHandler.getName());
+        patientKinRelation.setUpdTime(new Date());
+        patientKinRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        mapper.updateByPrimaryKeySelective(patientKinRelation);
     }
 }

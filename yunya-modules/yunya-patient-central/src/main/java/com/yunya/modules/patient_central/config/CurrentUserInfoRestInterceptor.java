@@ -6,10 +6,12 @@ import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.auth.UserAuthException;
+import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import javax.servlet.http.Cookie;
@@ -38,6 +40,9 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
+    if (!(handler instanceof HandlerMethod)) {
+      return super.preHandle(request, response, handler);
+    }
     HandlerMethod handlerMethod = (HandlerMethod) handler;
     CurrentUser annotation = handlerMethod.getBeanType().getAnnotation(CurrentUser.class);
     if (annotation == null) {
@@ -83,4 +88,6 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
     BaseContextHandler.remove();
     super.afterCompletion(request, response, handler, ex);
   }
+
+
 }

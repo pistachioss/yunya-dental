@@ -25,7 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -55,14 +58,18 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
      * @param id
      * @return PatientPublicInfo
      */
-    public PatientPublicInfoVo findPatientPublicInfoById(Integer id) {
+    public ResponseResult findPatientPublicInfoById(Integer id) {
         PatientPublicInfoVo patientPublicInfoVo = new PatientPublicInfoVo();
         patientPublicInfoVo =  patientBaseInfoMapper.findPatientPublicInfoById(id);
-        MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
-        if(memberType.getName()!=null){
-            patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
+        if(patientPublicInfoVo.getMemberTypeId()==null){
+            return ResponseUtil.success("该患者会员卡类型ID为空","");
         }
-        return patientPublicInfoVo;
+        MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
+        if(memberType.getName() == null){
+            return ResponseUtil.success("根据患者会员卡类型ID未查询到会员卡","");
+        }
+        patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
+        return ResponseUtil.success(patientPublicInfoVo);
     }
 
     /**
@@ -157,5 +164,32 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
      */
     public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
         return patientBaseInfoMapper.findPatientByNameAndMobile(form);
+    }
+
+    /**
+     * 根据输入年龄计算患者出生年份
+     * @param age 年龄
+     */
+    public Date birthYear(Integer age) {
+        // 获取输入年龄当天日历
+        Calendar now = Calendar.getInstance();
+        // 计算减去年龄后的年份
+        now.add(Calendar.YEAR, -age);
+        // 拼装日期字符串
+        String birthYear =
+                now.get(Calendar.YEAR)
+                        + "-"
+                        + (now.get(Calendar.MONTH) + 1)
+                        + "-"
+                        + now.get(Calendar.DAY_OF_MONTH);
+        // 设置时间格式
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = null;
+        try {
+            date = dateFormat.parse(birthYear);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return date;
     }
 }

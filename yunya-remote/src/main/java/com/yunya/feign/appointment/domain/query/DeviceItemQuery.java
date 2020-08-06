@@ -20,6 +20,18 @@ import java.io.Serializable;
 @Data
 @ToString
 public class DeviceItemQuery implements Serializable {
+
+    @ApiModelProperty(value = "是否分页", required = true)
+    private Boolean whetherPage = true;
+
+    @ApiModelProperty("页码")
+    @Min(message = "最小值", value = 1)
+    private Integer pageNum = 1;
+
+    @ApiModelProperty("每页显示数量")
+    @Min(message = "最小值", value = 1)
+    private Integer pageSize = 10;
+
     /**
      * 预约设备类型ID
      */
@@ -43,4 +55,10 @@ public class DeviceItemQuery implements Serializable {
      */
     @ApiModelProperty(value = "设备类型名称")
     private String name;
+
+    /**
+     * 是否启用
+     */
+    @ApiModelProperty(value = "是否启用")
+    private Boolean inservice;
 }

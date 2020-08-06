@@ -18,6 +18,8 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.emr.GeneralTemplate;
 import com.yunya.models.emr.MedicalTemplate;
+import com.yunya.modules.emr.enums.EnableEnum;
+import com.yunya.modules.emr.enums.TemplateTypeEnum;
 import com.yunya.modules.emr.mapper.GeneralTemplateMapper;
 import com.yunya.modules.emr.mapper.MedicalTemplateMapper;
 import org.springframework.stereotype.Service;
@@ -67,6 +69,7 @@ public class TemplateBiz {
         generalMapper.listByKeyword(query.getKeyword(), categoryId);
         List<GeneralTemplatePageVo> list = Lists.newArrayListWithExpectedSize(page.size());
         list = EntityUtils.build(page.getResult(), GeneralTemplatePageVo.class);
+        list.forEach(obj -> obj.setEnable(EnableEnum.getValue(Integer.valueOf(obj.getEnable()))));
         return new PageInfo<>(list);
     }
 
@@ -77,18 +80,19 @@ public class TemplateBiz {
         }
 
         MedicalTemplate createEntity = EntityUtils.build(createModel, MedicalTemplate.class);
+        createEntity.setMedicalTemplateCategoryId(categoryId);
         createEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         createEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         medicalMapper.insertSelective(createEntity);
     }
 
     public void updateMedicalRecord(Integer categoryId, Integer templateId, MedicalTemplateForm updateForm) {
+        //校验数据是否存在
+        checkTemp(categoryId, templateId, medicalMapper, MedicalTemplate.class);
         int count = medicalMapper.countByName(updateForm.getName(), categoryId, templateId);
         if (count > 0) {
             throw new ClientServiceException("病例模板名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
         }
-        //校验数据是否存在
-        checkTemp(categoryId, templateId, medicalMapper, MedicalTemplate.class);
         MedicalTemplate updateEntity = EntityUtils.build(updateForm, MedicalTemplate.class);
         updateEntity.setId(templateId);
         updateEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -101,12 +105,17 @@ public class TemplateBiz {
         medicalMapper.listByKeyword(query.getKeyword(), categoryId);
         List<MedicalTemplatePageVo> list = Lists.newArrayListWithExpectedSize(page.size());
         list = EntityUtils.build(page.getResult(), MedicalTemplatePageVo.class);
+        list.forEach(obj -> {
+            obj.setEnable(EnableEnum.getValue(Integer.valueOf(obj.getEnable())));
+            obj.setType(TemplateTypeEnum.getValue(Integer.valueOf(obj.getType())));
+        });
         return new PageInfo<>(list);
     }
 
     public MedicalDetailDetailVo getMedicalTemplateDetail(Integer templateId) {
         MedicalTemplate entity = medicalMapper.selectByPrimaryKey(templateId);
         MedicalDetailDetailVo detail = EntityUtils.build(entity, MedicalDetailDetailVo.class);
+        detail.setType(TemplateTypeEnum.getValue(Integer.valueOf(entity.getType())));
         return detail;
     }
 

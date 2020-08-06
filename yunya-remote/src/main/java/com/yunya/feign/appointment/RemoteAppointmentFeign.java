@@ -33,7 +33,7 @@ public interface RemoteAppointmentFeign {
      * @return
      * @description 查询公司端、门诊端的预约列表，Mock两端数据，返回vo对象列表
      */
-    @PostMapping("/list")
+    @PostMapping("/api/appointment/list")
     public PageInfo<AppointmentItemVo> findAppItemList(@RequestBody AppointItemQuery form);
 
     /**
@@ -42,7 +42,7 @@ public interface RemoteAppointmentFeign {
      * @param baseQueryForm 查询条件
      * @return
      */
-    @PostMapping("/search")
+    @PostMapping("/api/appointment/search")
     public List<AppointmentItemVo> searchAppItem(@RequestBody AppointItemQuery baseQueryForm);
 
     /**
@@ -51,14 +51,14 @@ public interface RemoteAppointmentFeign {
      * @param compClinId
      * @return
      */
-    @GetMapping("/available/{compClinId}")
-    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable("compClinId") String compClinId);
+    @GetMapping("/api/appointment/available/{compClinId}")
+    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "compClinId") String compClinId);
 
     /**
      * 根据id查询预约项目种类
      * @param id 预约项目id
      * @return
      */
-    @GetMapping("/select/{id}")
-    public ResponseResult selectAppointTypeById(@PathVariable("id") Integer id);
+    @GetMapping("/api/appointment/select/{id}")
+    public ResponseResult selectAppointTypeById(@PathVariable(value = "id") Integer id);
 }

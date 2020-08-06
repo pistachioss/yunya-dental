@@ -20,7 +20,7 @@ import java.io.Serializable;
 @ApiModel(value = "修改设备项目表单")
 @Data
 @ToString
-public class DeviceItemForm implements Serializable {
+public class DeviceItemManageForm implements Serializable {
     /**
      * 设备项目id
      */
@@ -29,21 +29,17 @@ public class DeviceItemForm implements Serializable {
     private Integer id;
 
     /**
-     * 预约设备类型ID
-     */
-    @ApiModelProperty(value = "预约设备类型ID")
-    private Integer deviceId;
-
-    /**
      * 设备编号
      */
-    @ApiModelProperty(value = "设备编号")
+    @ApiModelProperty(value = "设备编号", required = true)
+    @NotNull(message = "设备编号不能为空！")
     private String number;
 
     /**
      * 诊所ID
      */
-    @ApiModelProperty(value = "诊所ID")
+    @ApiModelProperty(value = "诊所ID", required = true)
+    @NotNull(message = "诊所id不能为空！")
     private Integer orgId;
 
     /**

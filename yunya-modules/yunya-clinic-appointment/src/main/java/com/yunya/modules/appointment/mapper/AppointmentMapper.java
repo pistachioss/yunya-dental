@@ -1,8 +1,11 @@
 package com.yunya.modules.appointment.mapper;
 
+import com.yunya.feign.appointment.domain.query.AppointmentQuery;
+import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.web.bind.annotation.PostMapping;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.Date;
@@ -49,11 +52,17 @@ public interface AppointmentMapper extends Mapper<Appointment> {
             @Param("appointStartTime") Date appointStartTime,
             @Param("appointEndTime") Date appointEndTime);
 
+    /**
+     * 根据条件查询预约列表
+     * @param query  条件查询参数
+     * @return
+     */
+    List<AppointmentVo> findAppointmentByExample(@Param("query") AppointmentQuery query);
 
     /**
-     * 新增患者预约
-     * @param appointment
-     * @return
+     * 添加预约
+     * @param appointment 预约信息
+     * @return  插入预约的id
      */
     Integer insertAppointment(Appointment appointment);
 

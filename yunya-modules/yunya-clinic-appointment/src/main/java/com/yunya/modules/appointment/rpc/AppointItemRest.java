@@ -11,11 +11,10 @@
 package com.yunya.modules.appointment.rpc;
 
 import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.modules.appointment.biz.AppointItemBiz;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
-import com.yunya.modules.appointment.biz.ClinicAppointTypeBiz;
+import com.yunya.modules.appointment.biz.AppointTypeBiz;
 import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.modules.appointment.vo.AppointmentItemVo;
 import io.swagger.annotations.Api;
@@ -33,7 +32,7 @@ import java.util.List;
  * @since 1.0.0
  */
 @RestController
-@RequestMapping("/api/appoint")
+@RequestMapping("/api/appointment")
 @CrossOrigin
 @Api(tags = "患者预约服务调用API")
 public class AppointItemRest {
@@ -42,7 +41,7 @@ public class AppointItemRest {
     private AppointItemBiz baseBiz;
 
     @Autowired
-    private ClinicAppointTypeBiz clinicAppointTypeBiz;
+    private AppointTypeBiz appointTypeBiz;
 
     /**
      * 根据条件查询门诊可预约项目
@@ -80,7 +79,7 @@ public class AppointItemRest {
      * @return
      */
     @GetMapping("/available/{compClinId}")
-    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable("compClinId") String compClinId) {
+    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable("compClinId") Integer compClinId) {
         return baseBiz.findAvailableAppItemList(compClinId);
     }
 
@@ -91,7 +90,7 @@ public class AppointItemRest {
      */
     @GetMapping("/select/{id}")
     public AppointType selectAppointTypeById(@PathVariable("id") Integer id){
-        AppointType appointType = clinicAppointTypeBiz.selectAppointTypeById(id);
+        AppointType appointType = appointTypeBiz.selectAppointTypeById(id);
         return appointType;
     }
 }

@@ -16,7 +16,7 @@ import java.security.PrivateKey;
  *
  * @author: WY
  * @date 2020/7/29 10:13
- * @description: 患者亲属关系添加模板
+ * @description:
  * @since: 1.0.0
  */
 

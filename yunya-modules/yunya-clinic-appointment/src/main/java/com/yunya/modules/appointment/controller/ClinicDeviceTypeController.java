@@ -18,26 +18,26 @@ import javax.validation.constraints.Min;
 import java.util.List;
 
 /**
- * 设备类型控制器
+ * 预约设备类型Controller
  *
  * @author yunya-lihuibin
  * @create 2020-08-03 0:28
  * @update yunya-lihuibin    2020-08-03    新建
  */
-@Api(tags = "设备类型控制器")
+@Api(tags = "预约设备类型Controller（公司端）")
 @RestController
-@RequestMapping("appointment/device/type")
+@RequestMapping("appoint_device/type")
 public class ClinicDeviceTypeController {
 
     @Autowired
     private ClinicDeviceTypeBiz clinicDeviceTypeBiz;
 
     /**
-     * 添加设备类型
+     * 添加设备类型(公司端-门诊设备-新增)
      * @param typeModel  设备类型参数封装
      * @return
      */
-    @ApiOperation(value = "添加设备类型")
+    @ApiOperation(value = "添加设备类型(公司端-门诊设备-新增)")
     @CurrentUser
     @PostMapping("/add")
     public ResponseResult addDeviceType(@RequestBody @Validated DeviceTypeModel typeModel){
@@ -58,11 +58,11 @@ public class ClinicDeviceTypeController {
     }
 
     /**
-     * 修改设备类型
+     * 设备名称修改（公司端-门诊设备-修改）
      * @param from  修改数据信息表单
      * @return
      */
-    @ApiOperation(value = "修改设备类型")
+    @ApiOperation(value = "设备名称修改（公司端-门诊设备-修改）")
     @CurrentUser
     @PostMapping("/update")
     public ResponseResult updateDeviceType(@RequestBody @Validated DeviceTypeForm from){

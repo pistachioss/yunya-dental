@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("PatientMember")
 public class PatientMemberInfoController {
+
+    /** 注入服务 */
     private PatientMemberInfoBiz patientMemberInfoBiz;
 
     public PatientMemberInfoController(PatientMemberInfoBiz patientMemberInfoBiz) {
