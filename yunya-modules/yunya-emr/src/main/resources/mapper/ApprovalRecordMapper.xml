@@ -58,6 +58,20 @@
           and `status` = 1
     </select>
 
+    <select id="findMedicalChangeRecord" resultMap="BaseResultMap">
+        select
+            `id`,
+            `event_id`,
+            `approve_time`,
+            `status`
+        from `approval_record`
+        where `event_id` = #{medicalId}
+          and `event_type` = 1
+          and `apply_type` = 1
+          and `status` = 1
+        order by `approve_time` desc limit 1
+    </select>
+
     <select id="countByTreatmentId" resultType="int">
         select
             count(*)
