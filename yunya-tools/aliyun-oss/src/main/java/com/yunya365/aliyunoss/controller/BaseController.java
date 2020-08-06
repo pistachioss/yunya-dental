@@ -12,7 +12,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URL;
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -21,14 +20,17 @@ import java.util.UUID;
 public class BaseController {
 
     private String getSuffixName(String fileName) {
+        if (fileName == null) return "";
         return fileName.substring(fileName.lastIndexOf("."));
     }
 
     private String getFileName(String fullName) {
+
         return fullName.substring(fullName.lastIndexOf("/") + 1);
     }
 
     private String makeObjectFullName(OssUploadForm ossUploadForm) {
+
         String fileName = ossUploadForm.getFile().getOriginalFilename();
         String suffixName = getSuffixName(fileName);
         if (ossUploadForm.getOssCategory() < 0 || ossUploadForm.getOssCategory() >= BucketFolderEnum.values().length) {
@@ -36,34 +38,34 @@ public class BaseController {
         }
         BucketFolderEnum bucketFolderEnum = BucketFolderEnum.values()[ossUploadForm.getOssCategory()];
         String subFolder = bucketFolderEnum.getBaseFolder(ossUploadForm.getCompanyId(), ossUploadForm.getObjectId());
-        String objectName = subFolder + UUID.randomUUID().toString() + suffixName;
-        return objectName;
+        return subFolder + UUID.randomUUID().toString() + suffixName;
     }
 
     private String makeObjectFullName(OssUrlForm ossUrlForm) {
+
         BucketFolderEnum bucketFolderEnum = BucketFolderEnum.values()[ossUrlForm.getOssCategory()];
         String subFolder = bucketFolderEnum.getBaseFolder(ossUrlForm.getCompanyId(), ossUrlForm.getObjectId());
-        String objectName = subFolder + ossUrlForm.getOssFilename();
-        return objectName;
+        return subFolder + ossUrlForm.getOssFilename();
     }
 
     private String makeObjectFullName(OssUrlForm ossUrlForm, Boolean isNewFileName) {
+
         BucketFolderEnum bucketFolderEnum = BucketFolderEnum.values()[ossUrlForm.getOssCategory()];
         String subFolder = bucketFolderEnum.getBaseFolder(ossUrlForm.getCompanyId(), ossUrlForm.getObjectId());
         String objectName;
-        if(isNewFileName){
+        if (isNewFileName) {
             String suffixName = getSuffixName(ossUrlForm.getOssFilename());
             objectName = subFolder + UUID.randomUUID().toString() + suffixName;
-        }
-        else{
+        } else {
             objectName = subFolder + ossUrlForm.getOssFilename();
         }
         return objectName;
     }
 
+    @ResponseBody
     @RequestMapping(value = "upload", method = RequestMethod.POST)
     @ApiOperation("1.单资源：上传")
-    public ResponseResult uploadfile(@RequestBody OssUploadForm ossUploadForm) throws Exception {
+    public ResponseResult uploadfile(OssUploadForm ossUploadForm) throws Exception {
 
         String objectName = makeObjectFullName(ossUploadForm);
         OssUtil.putObject(objectName, ossUploadForm.getFile().getInputStream());
@@ -82,7 +84,8 @@ public class BaseController {
     @RequestMapping(value = "copy", method = RequestMethod.POST)
     @ApiOperation("3.单资源：复制资源文件（可实现重命名）")
     public ResponseResult copy(@RequestBody OssCopyForm ossCopyForm) throws Exception {
-        if(ossCopyForm.getDestForm().getCompanyId() != ossCopyForm.getSrcForm().getCompanyId()){
+
+        if (!ossCopyForm.getDestForm().getCompanyId().equals(ossCopyForm.getSrcForm().getCompanyId())) {
             throw new Exception("不能复制到不同注册公司");
         }
         String src = makeObjectFullName(ossCopyForm.getSrcForm());
