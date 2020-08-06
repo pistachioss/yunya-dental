@@ -71,7 +71,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       System.out.println("冲突");//抛出冲突异常
       return;
     }
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleForm, EmployeeSchedule.class);
     employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
     employeeSchedule.setClinicId(employeeScheduleForm.getClinicId());

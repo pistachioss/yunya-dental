@@ -101,6 +101,7 @@ public class MedicalCommonRecordController {
   /**
    * 修改普通电子病历（
    * 当天24点之前可随意修改，超过24点需要提交审核修改并将记录插入历史表）
+   *
    * @param model
    * @return
    */
@@ -111,5 +112,14 @@ public class MedicalCommonRecordController {
     model.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setUpdTime(new Date());
     return ResponseUtil.success(medicalCommonRecordBiz.updateMedical(model));
+  }
+
+  @PostMapping("/updateAfter")
+  @ApiOperation("修改普通电子病历（超过24点需要提交审核修改,并将修改后的历史记录插入历史表）")
+  @CurrentUser
+  public ResponseResult updateAfter(@RequestBody @Valid MedicalCommonRecordForm model) {
+    model.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    model.setUpdTime(new Date());
+    return ResponseUtil.success(medicalCommonRecordBiz.updateMedicalAfter(model));
   }
 }
