@@ -58,14 +58,18 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
      * @param id
      * @return PatientPublicInfo
      */
-    public PatientPublicInfoVo findPatientPublicInfoById(Integer id) {
+    public ResponseResult findPatientPublicInfoById(Integer id) {
         PatientPublicInfoVo patientPublicInfoVo = new PatientPublicInfoVo();
         patientPublicInfoVo =  patientBaseInfoMapper.findPatientPublicInfoById(id);
-        MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
-        if(memberType.getName()!=null){
-            patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
+        if(patientPublicInfoVo.getMemberTypeId()==null){
+            return ResponseUtil.success("该患者会员卡类型ID为空","");
         }
-        return patientPublicInfoVo;
+        MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
+        if(memberType.getName() == null){
+            return ResponseUtil.success("根据患者会员卡类型ID未查询到会员卡","");
+        }
+        patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
+        return ResponseUtil.success(patientPublicInfoVo);
     }
 
     /**
