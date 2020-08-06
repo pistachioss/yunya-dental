@@ -41,6 +41,6 @@
         <table tableName="sys_menu" domainObjectName="SysMenu"/>
         <table tableName="sys_user_post" domainObjectName="SysUserPost"/>
         <table tableName="sys_post_element" domainObjectName="SysPostElement"/>-->
-        <table tableName="member_recharge_toll_record" domainObjectName="MemberRechargeTollRecord"/>
+        <table tableName="patient_origin" domainObjectName="PatientOrigin"/>
     </context>
 </generatorConfiguration>

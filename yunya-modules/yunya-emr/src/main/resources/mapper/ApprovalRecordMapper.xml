@@ -11,7 +11,7 @@
         <result column="approver_id" jdbcType="INTEGER" property="approverId" />
         <result column="approve_time" jdbcType="TIMESTAMP" property="approveTime" />
         <result column="approve_reason" jdbcType="VARCHAR" property="approveReason" />
-        <result column="dead_time" jdbcType="TIMESTAMP" property="deadTime" />
+        <result column="dead_time" jdbcType="DATE" property="deadTime" />
         <result column="status" jdbcType="TINYINT" property="status" />
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
@@ -43,5 +43,27 @@
           and `event_type` = 0
           and `status` = 2
         order by `approve_time` desc limit 1
+    </select>
+
+    <select id="findTreatmentRecord" resultMap="BaseResultMap">
+        select
+            `id`,
+            `event_id`,
+            `approve_time`,
+            `status`
+        from `approval_record`
+        where `event_id` = #{treatmentId}
+          and `event_type` = 1
+          and `apply_type` = 0
+          and `status` = 1
+    </select>
+
+    <select id="countByTreatmentId" resultType="int">
+        select
+            count(*)
+        from `approval_record`
+        where `event_id` = #{treatmentId}
+           and `event_type` = 1
+           and `status` in (0,1)
     </select>
 </mapper>

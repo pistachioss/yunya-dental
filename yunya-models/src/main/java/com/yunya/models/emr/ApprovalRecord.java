@@ -7,6 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -72,7 +73,7 @@ public class ApprovalRecord implements Serializable {
      * 操作截止时间
      */
     @Column(name = "dead_time")
-    private LocalDateTime deadTime;
+    private LocalDate deadTime;
 
     /**
      * 状态  0：待审批  1：同意 2：拒绝

@@ -25,4 +25,16 @@ public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<Ap
      * @return
      */
     ApprovalRecord findNewestReject(@Param("eventId") Integer eventId);
+
+    ApprovalRecord findTreatmentRecord(@Param("treatmentId") Integer treatmentId);
+
+    /**
+     * 根据条件查询就诊审批记录
+     * @param treatmentId
+     * @param eventType
+     * @param status
+     * @return
+     */
+    int countByTreatmentId(@Param("treatmentId") Integer treatmentId, @Param("eventType") Integer eventType,
+                              @Param("status") Integer status);
 }
