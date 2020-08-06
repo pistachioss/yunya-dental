@@ -5,7 +5,6 @@ import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.modules.patient_central.biz.PatientOriginBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("origin")
 public class PatientOriginController {
 
+    /** 注入服务 */
     private PatientOriginBiz patientOriginBiz;
 
     public PatientOriginController(PatientOriginBiz patientOriginBiz) {

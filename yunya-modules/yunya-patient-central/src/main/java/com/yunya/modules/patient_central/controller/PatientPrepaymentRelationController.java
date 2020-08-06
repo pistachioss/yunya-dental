@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("prepayment")
 public class PatientPrepaymentRelationController {
 
+    /** 注入服务 */
     private PatientPrepaymentRelationBiz patientPrepaymentBiz;
 
     public PatientPrepaymentRelationController(PatientPrepaymentRelationBiz patientPrepaymentBiz) {

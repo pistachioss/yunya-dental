@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("kin")
 public class PatientKinRelationController {
 
+    /** 注入服务 */
     private PatientKinRelationBiz patientKinRelationBiz;
 
     public PatientKinRelationController(PatientKinRelationBiz patientKinRelationBiz) {

@@ -25,6 +25,7 @@ import java.util.List;
 @RequestMapping("Recommend")
 public class PatientRecommendRelationController {
 
+    /** 注入服务 */
     private PatientRecommendRelationBiz patientRecommendRelationBiz;
 
     public PatientRecommendRelationController(PatientRecommendRelationBiz patientRecommendRelationBiz) {

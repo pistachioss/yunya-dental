@@ -13,6 +13,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+
 /**
  * 简单介绍:</br> 患者资料模块控制器
  *
@@ -72,6 +74,12 @@ public class PatientBaseInfoController {
     @PostMapping ("/findPatientByNameAndMobile")
     public ResponseResult findPatientByNameAndMobile(@RequestBody PatientLikeFinleQueryForm patientBaseInfoQueryForm){
         return ResponseUtil.success(patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm));
+    }
+
+    @ApiOperation("根据输入年龄计算出生年份")
+    @GetMapping("/birth/{age}")
+    public Date birthYear(@PathVariable("age") Integer age) {
+        return patientBaseInfoBiz.birthYear(age);
     }
 
 }
