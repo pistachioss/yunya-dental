@@ -100,9 +100,9 @@ public class AccountTypeBiz extends BaseBiz<AccountTypeMapper, AccountType> {
           "修改失败，系统默认的入账方式分类不允许被修改！", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     String name = form.getName();
-    resultData = new AccountType();
-    resultData.setName(name);
     if (!resultData.getName().equals(name)) {
+      resultData = new AccountType();
+      resultData.setName(name);
       int count = mapper.selectCount(resultData);
       if (count > 0) {
         throw new ClientServiceException(

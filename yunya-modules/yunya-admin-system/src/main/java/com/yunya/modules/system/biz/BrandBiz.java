@@ -73,37 +73,36 @@ public class BrandBiz extends BaseBiz<BrandMapper, Brand> {
   /**
    * 编辑品牌信息
    *
-   * @param brandId 品牌ID
+   * @param id 品牌ID
    * @param form 封装参数
    * @return
    */
-  public void modifyBrand(Integer brandId, BaseForm form) {
-    Brand brand = mapper.selectByPrimaryKey(brandId);
-    if (null == brand) {
+  public void modifyBrand(Integer id, BaseForm form) {
+    Brand resultData = mapper.selectByPrimaryKey(id);
+    if (null == resultData) {
       throw new ClientServiceException(
           "修改品牌失败，名称为'" + form.getName() + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
-
+    String name = form.getName();
     // 名称有修改，校验名称是否重复
-    if (!form.getName().equals(brand.getName())) {
-      String brandName = form.getName();
-      Brand entity = new Brand();
-      entity.setName(brandName);
-      Brand result = mapper.selectOne(entity);
-      if (null != result) {
+    if (!resultData.getName().equals(name)) {
+      resultData = new Brand();
+      resultData.setName(name);
+      int count = mapper.selectCount(resultData);
+      if (count > 0) {
         throw new ClientServiceException(
-            "修改品牌'" + brandName + "'失败，该品牌名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+            "修改品牌'" + name + "'失败，该品牌名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
-      brand.setName(brandName);
     }
-    brand.setOrderNum(form.getOrderNum());
+    resultData.setOrderNum(form.getOrderNum());
     if (null != form.getInservice()) {
-      brand.setInservice(form.getInservice());
+      resultData.setInservice(form.getInservice());
     }
-    brand.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    brand.setUpdName(BaseContextHandler.getName());
-    brand.setUpdTime(new Date(System.currentTimeMillis()));
-    mapper.updateByPrimaryKeySelective(brand);
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
+    resultData.setId(id);
+    mapper.updateByPrimaryKeySelective(resultData);
   }
 
   /**

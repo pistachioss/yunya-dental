@@ -39,7 +39,7 @@ public class SysUserInfoDetailQueryFrom implements Serializable {
   private List<Integer> orgIds;
   /** 岗位组ID */
   @ApiModelProperty("岗位组ID列表")
-  private List<Integer> postGroupId;
+  private List<Integer> postGroupIds;
   /** 岗位组ID列表 */
   @ApiModelProperty("岗位ID列表")
   private List<Integer> postIds;

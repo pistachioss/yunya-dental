@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.system.SysUserPost;
+import com.yunya.modules.system.domain.model.SysUserPostModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ public class UserPostControllerTest {
 
   @Test
   public void add() {
-    SysUserPost entity = new SysUserPost();
+    SysUserPostModel entity = new SysUserPostModel();
     entity.setCompanyId(21);
     entity.setDepartmentId(20);
     entity.setPostId(33);

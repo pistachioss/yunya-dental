@@ -14,6 +14,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.system.Post;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
@@ -119,13 +120,14 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     SysUserPost entity;
     for (LoginOrganizationForm form : organizationForms) {
       entity = new SysUserPost();
+      entity.setUserId(userId);
       entity.setCompanyId(form.getOrgId());
       entity.setDepartmentId(form.getOrgDeptId());
       entity.setPostId(form.getPostId());
-      entity.setUserId(userId);
+      entity.setGroupId(form.getPostGroupId());
       entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       entity.setCrtName(BaseContextHandler.getName());
-      sysUserPostBiz.add(entity);
+      sysUserPostBiz.insertSelective(entity);
     }
   }
 

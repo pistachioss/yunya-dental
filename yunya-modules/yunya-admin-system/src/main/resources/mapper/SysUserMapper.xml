@@ -125,46 +125,6 @@
     </select>
     <!-- 根据用户ID查询用户及员工信息 -->
     <select id="selectSysUserEmployeeInfoByUserId" resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
-        select
-            su.id as userId,
-            se.id as employeeId,
-            su.username,
-            se.`name`,
-            se.birthday,
-            se.address,
-            su.mobile_phone as mobilePhone,
-            su.email,
-            su.gender,
-            su.description,
-            se.province,
-            se.city,
-            se.country,
-            se.origin,
-            se.identity,
-            se.work_status as workStatus,
-            se.bonus_coefficient as bonusCoefficient,
-            se.work_amount as workAmount,
-            se.work_type as workType,
-            se.contract_signing_date as contractSigningDate,
-            se.entry_date as entryDate,
-            se.graduated_school as graduatedSchool,
-            se.education,
-            se.leave_time as leaveTime,
-            se.title,
-            se.post_level as postLevel,
-            se.emergency_contact as emergencyContact,
-            se.emergency_contact_phone as emergencyContactPhone,
-            se.discount,
-            se.photo as photo,
-            se.diploma_photo as diplomaPhoto,
-            se.work_number as workNumber
-        from sys_user su
-        left join sys_employee se on su.id = se.user_id
-        where su.id = #{userId}
-    </select>
-    <!-- 根据条件查询员工详细信息 -->
-    <select id="selectSysUserInfoDetailList" parameterType="java.util.Map"
-            resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
         SELECT
         user_info.*,
         (
@@ -174,6 +134,13 @@
         post p
         WHERE
         FIND_IN_SET( p.id, user_info.post_ids )) AS posts,
+        (
+        SELECT
+        GROUP_CONCAT( pg.`name` )
+        FROM
+        post_group pg
+        WHERE
+        FIND_IN_SET( pg.id, user_info.group_ids )) AS postGroups,
         (
         SELECT
         GROUP_CONCAT( c.`name` )
@@ -190,6 +157,88 @@
         se.`name` AS name,
         sup.company_ids,
         sup.post_ids,
+        sup.group_ids,
+        se.birthday,
+        se.address,
+        su.mobile_phone AS mobilePhone,
+        su.email,
+        su.gender,
+        su.description,
+        se.province,
+        se.city,
+        se.country,
+        se.origin,
+        se.identity,
+        se.work_status AS workStatus,
+        se.bonus_coefficient as bonusCoefficient,
+        se.work_amount as workAmount,
+        se.work_type AS workType,
+        se.contract_signing_date AS contractSigningDate,
+        se.entry_date AS entryDate,
+        se.graduated_school AS graduatedSchool,
+        se.education AS education,
+        se.leave_time AS leaveTime,
+        se.title,
+        se.post_level AS postLevel,
+        se.emergency_contact AS emergencyContact,
+        se.emergency_contact_phone AS emergencyContactPhone,
+        se.discount,
+        se.photo,
+        se.diploma_photo AS diplomaPhoto,
+        se.work_number AS workNumber
+        FROM
+        sys_user su
+        LEFT JOIN sys_employee se ON su.id = se.user_id
+        LEFT JOIN (
+        SELECT
+        sup.user_id,
+        GROUP_CONCAT( DISTINCT sup.company_id SEPARATOR ',' ) AS company_ids,
+        GROUP_CONCAT( DISTINCT sup.post_id SEPARATOR ',' ) AS post_ids,
+        GROUP_CONCAT( DISTINCT sup.group_id SEPARATOR ',' ) AS group_ids
+        FROM
+        sys_user_post sup
+        GROUP BY
+        sup.user_id
+        ) sup ON su.id = sup.user_id
+        ) user_info
+        where user_info.userId = #{userId}
+    </select>
+    <!-- 根据条件查询员工详细信息 -->
+    <select id="selectSysUserInfoDetailList" parameterType="java.util.Map"
+            resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
+        SELECT
+        user_info.*,
+        (
+        SELECT
+        GROUP_CONCAT( p.`name` )
+        FROM
+        post p
+        WHERE
+        FIND_IN_SET( p.id, user_info.post_ids )) AS posts,
+        (
+        SELECT
+        GROUP_CONCAT( pg.`name` )
+        FROM
+        post_group pg
+        WHERE
+        FIND_IN_SET( pg.id, user_info.group_ids )) AS postGroups,
+        (
+        SELECT
+        GROUP_CONCAT( c.`name` )
+        FROM
+        company c
+        WHERE
+        FIND_IN_SET( c.id, user_info.company_ids )) AS companys
+        FROM
+        (
+        SELECT
+        su.id AS userId,
+        se.id AS employeeId,
+        su.username AS username,
+        se.`name` AS name,
+        sup.company_ids,
+        sup.post_ids,
+        sup.group_ids,
         se.birthday,
         se.address,
         su.mobile_phone AS mobilePhone,
@@ -243,9 +292,9 @@
                     FIND_IN_SET(#{item}, user_info.company_ids)
                 </foreach>
             </if>
-            <if test="queryFrom.postGroupId != null and queryFrom.postGroupId.size > 0">
+            <if test="queryFrom.postGroupIds != null and queryFrom.postGroupIds.size > 0">
                 and
-                <foreach collection="queryFrom.postGroupId" item="item" index="index" open="(" close=")" separator="or">
+                <foreach collection="queryFrom.postGroupIds" item="item" index="index" open="(" close=")" separator="or">
                     FIND_IN_SET(#{item}, user_info.group_ids)
                 </foreach>
             </if>

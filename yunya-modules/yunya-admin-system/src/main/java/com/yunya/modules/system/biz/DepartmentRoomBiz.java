@@ -94,21 +94,23 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
           "修改失败，ID为'" + id + "'的数据不存在", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     String name = form.getName();
-    DepartmentRoom entity = new DepartmentRoom();
-    entity.setName(name);
-    int count = mapper.selectCount(entity);
-    if (count > 0) {
-      throw new ClientServiceException(
-          "修改失败，名称为'" + name + "'的科室已经存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+    if (!resultData.getName().equals(name)) {
+      resultData = new DepartmentRoom();
+      resultData.setName(name);
+      int count = mapper.selectCount(resultData);
+      if (count > 0) {
+        throw new ClientServiceException(
+            "修改失败，名称为'" + name + "'的科室已经存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+      }
     }
     if (null != form.getInservice()) {
-      entity.setInservice(form.getInservice());
+      resultData.setInservice(form.getInservice());
     }
-    entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    entity.setUpdName(BaseContextHandler.getName());
-    entity.setUpdTime(new Date(System.currentTimeMillis()));
-    entity.setId(id);
-    mapper.updateByPrimaryKeySelective(entity);
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
+    resultData.setId(id);
+    mapper.updateByPrimaryKeySelective(resultData);
   }
 
   /**

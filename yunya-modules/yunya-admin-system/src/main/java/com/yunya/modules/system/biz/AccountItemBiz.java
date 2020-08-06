@@ -109,9 +109,9 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
           "修改失败，ID为'" + id + "'的入账方式不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
     }
     String name = form.getName();
-    resultData = new AccountItem();
-    resultData.setName(name);
     if (!resultData.getName().equals(name)) {
+      resultData = new AccountItem();
+      resultData.setName(name);
       int count = mapper.selectCount(resultData);
       if (count > 0) {
         throw new ClientServiceException(

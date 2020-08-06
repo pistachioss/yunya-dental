@@ -35,6 +35,10 @@ public class SysUserControllerTest {
     postIds.add(33);
     postIds.add(34);
     //form.put("userId",1);
+    List<Integer> groupIds = new ArrayList<>();
+    groupIds.add(3);
+    groupIds.add(4);
+    form.setPostGroupIds(groupIds);
     ResponseResult list = sysUserController.findList(form);
     System.out.println(list);
   }
