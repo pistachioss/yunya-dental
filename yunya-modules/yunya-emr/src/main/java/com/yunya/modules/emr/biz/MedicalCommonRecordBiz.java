@@ -200,10 +200,10 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     int re = 0;
     re = mapper.updateByPrimaryKey(medicalcopy);
     //判断 通过才可以添加记录
-    if (re > 0 && medicalcopy.getStatus() == 0) {//主治医生新增病历时，历史表中同步插入一条数据
+    if (re > 0 && medicalcopy.getStatus() == 0) {//主治医生修改病历时，历史表中同步插入一条数据
       medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
     }
-    if (re > 0 && medicalcopy.getStatus() == 1) {//助手修改病历时，审核表中同步插入一条数据
+    if (re > 0 && medicalcopy.getStatus() == 2) {//助手修改病历通过时，审核表中同步插入一条数据
       DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
       ApplyBaseModel applyBase = new ApplyBaseModel();
       applyBase.setEventId(medicalcopy.getId());
@@ -211,6 +211,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       applyBase.setApproverId(medicalcopy.getMajorDentistId());
       draftMedicalApplyModel.setApplyBase(applyBase);
       medicalApprovalBiz.applyUpdateDraftCase(draftMedicalApplyModel);
+      medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
     }
 
     if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
