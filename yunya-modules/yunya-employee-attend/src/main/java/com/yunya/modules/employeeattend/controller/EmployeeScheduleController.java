@@ -103,7 +103,7 @@ public class EmployeeScheduleController {
   @PostMapping("/export")
   @ApiOperation("导出员工排班")
   public void export(
-          HttpServletResponse response, EmployeeScheduleQueryForm employeeScheduleQueryForm
+          HttpServletResponse response, @RequestBody EmployeeScheduleQueryForm employeeScheduleQueryForm
   ) throws Exception {
     employeeScheduleBiz.export(response, employeeScheduleQueryForm);
   }
