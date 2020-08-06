@@ -118,7 +118,7 @@ public class EmployeeScheduleController {
   @ApiOperation("导出复制排班冲突")
   public void exportConflict(
           HttpServletResponse response,
-          List<EmployeeScheduleExportVO>employeeConflict
+          @RequestBody List<EmployeeScheduleExportVO>employeeConflict
   ) throws Exception {
     employeeScheduleBiz.exportConflict(response, employeeConflict);
   }
