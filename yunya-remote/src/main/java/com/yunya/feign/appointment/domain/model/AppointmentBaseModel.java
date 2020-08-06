@@ -1,14 +1,14 @@
 package com.yunya.feign.appointment.domain.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBase;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
-
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 患者预约基础参数列表封装
@@ -24,12 +24,12 @@ import java.util.Date;
 public class AppointmentBaseModel implements Serializable {
     /** 患者id */
     @ApiModelProperty(value = "患者id",required = true)
-    @NotBlank(message = "患者id为空！")
+    @NotNull(message = "患者id为空！")
     private Integer patientId;
 
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名",required = true)
-    @NotBlank(message = "患者姓名为空！")
+    @NotNull(message = "患者姓名为空！")
     private String patientName;
 
     /** 预约日期 */
@@ -40,7 +40,7 @@ public class AppointmentBaseModel implements Serializable {
 
     /** 预约时间（默认当前系统时间） */
     @ApiModelProperty(value = "预约时间（默认当前系统时间）",required = true)
-    @NotBlank(message = "预约时间为空！")
+    @NotNull(message = "预约时间为空！")
     private String appointTime;
 
     /** 预约时长（默认15分钟） */
@@ -54,7 +54,7 @@ public class AppointmentBaseModel implements Serializable {
 
     /** 医生id */
     @ApiModelProperty(value = "医生id", required = true)
-    @NotBlank(message = "医生不能为空！")
+    @NotNull(message = "医生不能为空！")
     private Integer dentistId;
 
     /**助手id*/
@@ -90,6 +90,10 @@ public class AppointmentBaseModel implements Serializable {
     private String remark;
 
     /** 是否启用 是否有效 */
-    @ApiModelProperty(value = "是否启用 是否有效",required = true)
+    @ApiModelProperty(value = "是否启用 是否有效")
     private Boolean inservice;
+
+    /** 时长分解列表 */
+    @ApiModelProperty(value = "时长分解列表")
+    private List<AppointmentSplitBase> splitList;
 }

@@ -3,13 +3,17 @@ package com.yunya.modules.appointment.controller;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Map;
 
 /**
  * 患者预约中心Controller
@@ -40,6 +44,22 @@ public class AppointmentController {
     @CurrentUser
     public ResponseResult addAppointment(@RequestBody AppointmentBaseModel form) throws ParseException {
         ResponseResult responseResult = appointmentBiz.addAppointment(form);
+        return responseResult;
+    }
+
+    /**
+     * 新增预约（继续添加）
+     *
+     * @description 出现预约冲突后继续添加患者预约
+     * @param appointmentForm 预约Form表单
+     */
+    @ApiOperation(value = "新增预约（继续添加）")
+    @PostMapping("/continueAdd")
+    @CurrentUser
+    public ResponseResult continueAddAppointment(
+            @RequestBody @Validated AppointmentBaseModel appointmentForm) throws ParseException {
+
+        ResponseResult responseResult = appointmentBiz.continueAddAppointment(appointmentForm);
         return responseResult;
     }
 

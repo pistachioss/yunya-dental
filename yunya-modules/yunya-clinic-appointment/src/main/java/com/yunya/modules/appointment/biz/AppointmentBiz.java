@@ -1,6 +1,7 @@
 package com.yunya.modules.appointment.biz;
 
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
+import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
@@ -19,13 +20,19 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
+import com.yunya.models.appointment.AppointmentOperateRecord;
+import com.yunya.models.auth.Client;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.vo.AppointConflictInfoVo;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.models.auth.In;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zipkin2.Call;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -60,16 +67,22 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     @Autowired
     private AppointmentOperateRecordBiz appointOperateRecordBiz;
 
+    /** 时长分解服务 */
+    @Autowired
+    private AppointmentSplitBiz appointmentSplitBiz;
+
 
     /**
-     * 添加预约、检查预约是否冲突
+     * 添加预约（检查预约是否冲突）
      * @param form  预约参数封装
      * @throws ParseException
      */
     public ResponseResult addAppointment(AppointmentBaseModel form) throws ParseException {
 
         // 检查当前预约是否冲突
-        Map<String,Object> appointConflictResult = this.checkConflict(form);
+//        Map<String,Object> appointConflictResult = this.checkConflict(form);
+        // TODO mock数据，需要删除
+        Map<String,Object> appointConflictResult = null;
         // 如果当前的预约没有冲突则添加新预约
         if (null == appointConflictResult){
             // 患者名字
@@ -79,13 +92,25 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 插入预约
             Integer index = mapper.insertAppointment(appointmentEntity);
             if (index <= 0){
-                throw new ClientServiceException("【"+patientame + "】预约失败！", OperationCodeConstants.OBJECT_EDIT_FAIL);
+                throw new ClientServiceException("【"+patientame + "】预约失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
+
+            // 添加预约时长分解
+            AppointmentSplitModel model = new AppointmentSplitModel();
+            model.setSplitList(form.getSplitList());
+            model.setOrgId(appointmentEntity.getOrgId());
+            model.setAppointmentId(appointmentEntity.getId());
+            model.setAppointDuration(appointmentEntity.getAppointDuration());
+            Integer splitResult = appointmentSplitBiz.insertSplit(model);
+            if (splitResult == null || splitResult <= 0){
+                throw new ClientServiceException((String) "分解时长失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
+
             // 插入预约操作记录(添加)
             Integer appointmentOperateRecord = appointOperateRecordBiz.insertAppointmentOperateRecord(
                     appointmentEntity.getId(), appointmentEntity.getOrgId(), (byte) 0);
             if (appointmentOperateRecord <= 0 ){
-                throw new ClientServiceException("【"+patientame+"】的预约操作记录添加失败！", OperationCodeConstants.OBJECT_EDIT_FAIL);
+                throw new ClientServiceException("【"+patientame+"】的预约操作记录添加失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
             // 如果添加预约成功，则返回预约成功信息
             return ResponseUtil.success();
@@ -96,12 +121,38 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
-     *  再次添加预约
+     *  添加预约（冲突后继续添加）
      * @param form  预约参数封装
      * @return
      */
-    public ResponseResult forcedAddAppointment(AppointmentBaseModel form) {
+    public ResponseResult continueAddAppointment(AppointmentBaseModel form) throws ParseException {
+        // 将Form转为Entity
+        Appointment build = transferFormToEntity(form);
+        int result = mapper.insertAppointment(build);
+        if (result > 0) {
+            // 添加预约时长分解
+            AppointmentSplitModel splitModel = new AppointmentSplitModel();
+            splitModel.setSplitList(form.getSplitList());
+            splitModel.setAppointDuration(build.getAppointDuration());
+            splitModel.setAppointmentId(build.getId());
+            splitModel.setOrgId(build.getOrgId());
+            Integer splitResult = appointmentSplitBiz.insertSplit(splitModel);
+            if (splitResult == null || splitResult <= 0){
+                throw new ClientServiceException((String) "分解时长失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
 
+            // 判断预约是否添加成功
+            AppointmentOperateRecord record = new AppointmentOperateRecord();
+            record.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+            record.setAppointmentId(build.getId());
+            // 操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
+            record.setOperateType((byte) 0);
+            record.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            record.setCrtName(BaseContextHandler.getName());
+            record.setCrtTime(new Date(System.currentTimeMillis()));
+            // 生成新增预约操作记录
+            appointOperateRecordBiz.insertSelective(record);
+        }
         return ResponseUtil.success();
     }
 
@@ -283,7 +334,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param form  表单
      * @return  appointment
      */
-    private Appointment transferFormToEntity(AppointmentBaseModel form) throws ParseException {
+    private Appointment transferFormToEntity(AppointmentBaseModel form) {
         // 将form表单转化为appointment实体
         Appointment appointment = EntityUtils.build(form, Appointment.class);
         // 设置患者Id
@@ -292,7 +343,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Date appointDate = form.getAppointDate();
         String appointTimeStr = form.getAppointTime();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
-        Date appointTime = simpleDateFormat.parse(appointTimeStr);
+        Date appointTime = null;
+        try {
+            appointTime = simpleDateFormat.parse(appointTimeStr);
+        } catch (ParseException e) {
+            throw new ClientServiceException("[时间格式转换异常]："+e.getMessage(),OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        }
         Integer time = form.getAppointDuration();
         // 获取预约开始时间的毫秒
         long ms = appointDate.getTime() + appointTime.getTime();
@@ -325,15 +381,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointment.setAppointType((byte)0);
         }
 
-        // 设置预约种类Mock数据
-        appointment.setAppointType((byte)0);
-
         // 设置预约状态 0-预约未到，1-履约，2，取消预约，3-失约
         appointment.setAppointStatus((byte)0);
-        // 设置诊所id
         appointment.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-        // 设置操作人id
-         appointment.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        appointment.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        appointment.setCrtName(BaseContextHandler.getName());
+        appointment.setCrtTime(new Date(System.currentTimeMillis()));
 
         return appointment;
     }

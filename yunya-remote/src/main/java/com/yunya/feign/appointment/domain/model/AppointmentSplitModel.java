@@ -24,7 +24,14 @@ public class AppointmentSplitModel {
     @NotNull(message = "总预约时长不能为空!")
     private Integer appointDuration;
 
-    @ApiModelProperty(value = "预约分解列表", required = true)
-    @NotNull(message = "预约分解不能为空！")
+    /** 组织id */
+    @ApiModelProperty(value = "组织id", hidden = true)
+    private Integer orgId;
+
+    /** 预约id */
+    @ApiModelProperty(value = "预约id", hidden = true)
+    private Integer appointmentId;
+
+    @ApiModelProperty(value = "预约分解列表")
     private List<AppointmentSplitBase> splitList;
 }
