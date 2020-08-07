@@ -4,6 +4,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya365.aliyunoss.enums.BucketFolderEnum;
 import com.yunya365.aliyunoss.form.OssCopyForm;
+import com.yunya365.aliyunoss.form.OssFolderForm;
 import com.yunya365.aliyunoss.form.OssUploadForm;
 import com.yunya365.aliyunoss.form.OssUrlForm;
 import com.yunya365.aliyunoss.util.OssUtil;
@@ -29,6 +30,17 @@ public class BaseController {
         return fullName.substring(fullName.lastIndexOf("/") + 1);
     }
 
+    private String getSubFolder(Integer compId, Integer catId, Integer objId){
+
+        BucketFolderEnum bucketFolderEnum = BucketFolderEnum.values()[catId];
+        return bucketFolderEnum.getBaseFolder(compId, objId);
+    }
+
+    private String getSubFolder(OssFolderForm ossFolderForm){
+
+        return getSubFolder(ossFolderForm.getCompanyId(), ossFolderForm.getOssCategory(), ossFolderForm.getObjectId());
+    }
+
     private String makeObjectFullName(OssUploadForm ossUploadForm) {
 
         String fileName = ossUploadForm.getFile().getOriginalFilename();
@@ -36,22 +48,17 @@ public class BaseController {
         if (ossUploadForm.getOssCategory() < 0 || ossUploadForm.getOssCategory() >= BucketFolderEnum.values().length) {
             ossUploadForm.setOssCategory(0);
         }
-        BucketFolderEnum bucketFolderEnum = BucketFolderEnum.values()[ossUploadForm.getOssCategory()];
-        String subFolder = bucketFolderEnum.getBaseFolder(ossUploadForm.getCompanyId(), ossUploadForm.getObjectId());
-        return subFolder + UUID.randomUUID().toString() + suffixName;
+        return getSubFolder(ossUploadForm) + UUID.randomUUID().toString() + suffixName;
     }
 
     private String makeObjectFullName(OssUrlForm ossUrlForm) {
 
-        BucketFolderEnum bucketFolderEnum = BucketFolderEnum.values()[ossUrlForm.getOssCategory()];
-        String subFolder = bucketFolderEnum.getBaseFolder(ossUrlForm.getCompanyId(), ossUrlForm.getObjectId());
-        return subFolder + ossUrlForm.getOssFilename();
+        return getSubFolder(ossUrlForm) + ossUrlForm.getOssFilename();
     }
 
     private String makeObjectFullName(OssUrlForm ossUrlForm, Boolean isNewFileName) {
 
-        BucketFolderEnum bucketFolderEnum = BucketFolderEnum.values()[ossUrlForm.getOssCategory()];
-        String subFolder = bucketFolderEnum.getBaseFolder(ossUrlForm.getCompanyId(), ossUrlForm.getObjectId());
+        String subFolder = getSubFolder(ossUrlForm);
         String objectName;
         if (isNewFileName) {
             String suffixName = getSuffixName(ossUrlForm.getOssFilename());
@@ -92,5 +99,13 @@ public class BaseController {
         String dest = makeObjectFullName(ossCopyForm.getDestForm(), ossCopyForm.getIsNewFileName());
         OssUtil.copyObject(src, dest);
         return ResponseUtil.success(getFileName(dest));
+    }
+
+    @RequestMapping(value = "signature", method = RequestMethod.POST)
+    @ApiOperation("0.获取签名，以便上传或获取文件等")
+    public ResponseResult getSignedUrl(OssFolderForm ossFolderForm) throws Exception {
+
+        String subFolder = getSubFolder(ossFolderForm);
+        return ResponseUtil.success(OssUtil.getSignature(subFolder));
     }
 }
