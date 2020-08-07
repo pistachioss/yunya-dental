@@ -46,8 +46,6 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   @Autowired private BaseTariffCategoryBiz baseTariffCategoryBiz;
   /** 价目表操作记录 */
   @Autowired private BaseTariffHistoryBiz baseTariffHistoryBiz;
-  /** 门诊价目表会员价 */
-  @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
   /** 门诊价目表 */
   @Autowired private ClinicTariffBiz clinicTariffBiz;
 

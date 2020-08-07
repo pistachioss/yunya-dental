@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(tags = "门诊商品项目管理接口")
 @RestController
-@RequestMapping("clinicOralTariffs")
+@RequestMapping("oral/clinic")
 public class ClinicOralTariffController {
 
   /** 注入对象 */

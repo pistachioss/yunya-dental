@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Api(tags = "商品项目管理")
 @RestController
-@RequestMapping("goods")
+@RequestMapping("oral/base")
 public class BaseOralTariffController {
 
   /** 注入对象 */

@@ -22,8 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(tags = "价目表分类管理接口")
 @RestController
-@RequestMapping("/tariffCategory")
-@CrossOrigin
+@RequestMapping("category")
 public class BaseTariffCategoryController {
 
   /** 注入对象 */

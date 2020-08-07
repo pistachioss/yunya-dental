@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(tags = "公司商品分类管理接口")
 @RestController
-@RequestMapping("goodsCategory")
+@RequestMapping("oral/category")
 public class BaseOralTariffCategoryController {
 
   /** 注入对象 */

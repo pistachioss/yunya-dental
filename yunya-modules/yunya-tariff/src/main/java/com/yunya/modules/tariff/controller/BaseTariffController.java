@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Api(tags = "基础价目表管理接口")
 @RestController
-@RequestMapping("tariffs")
+@RequestMapping("base")
 public class BaseTariffController {
 
   /** 注入对象 */
