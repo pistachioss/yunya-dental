@@ -65,7 +65,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    *
    * @param employeeScheduleForm
    */
-  public void create(EmployeeScheduleForm employeeScheduleForm){
+  public void create(EmployeeScheduleForm employeeScheduleForm) {
     // 判断排班是否冲突
     if (!isExist(employeeScheduleForm)) {
       throw new ClientServiceException("排班冲突", OperationCodeConstants.SAME_DATA_EXIST);
@@ -88,8 +88,8 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    *
    * @param employeeScheduleCopyForm
    */
-  public  List<EmployeeScheduleExportVO> copy(EmployeeScheduleCopyForm employeeScheduleCopyForm){
-    List<EmployeeScheduleExportVO>employeeConflict = new ArrayList<>();//冲突列表
+  public List<EmployeeScheduleExportVO> copy(EmployeeScheduleCopyForm employeeScheduleCopyForm) {
+    List<EmployeeScheduleExportVO> employeeConflict = new ArrayList<>();//冲突列表
     List<Integer> employeeIdList = employeeScheduleCopyForm.getEmployeeIdLIst();//复制排班的员工Id列表
 
     //获取员工信息
@@ -179,14 +179,14 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
               } else {
                 SimpleDateFormat dateFormatExport = new SimpleDateFormat("yyyy-MM-dd");
                 EmployeeScheduleExportVO employeeScheduleExportVO = new EmployeeScheduleExportVO();
-                employeeScheduleExportVO.setName(employeeMap.get(employeeScheduleCopyVO.getEmployeeId()+"").getName());
+                employeeScheduleExportVO.setName(employeeMap.get(employeeScheduleCopyVO.getEmployeeId() + "").getName());
                 employeeScheduleExportVO.setCopy_date(dateFormatExport.format(employeeScheduleCopyVO.getWorkDate()));
-                employeeScheduleExportVO.setCopy_company_name(clinicMap.get(employeeScheduleCopyVO.getClinicId()+"").getName());
-                employeeScheduleExportVO.setCopy_schedule(employeeScheduleCopyVO.getScheduleName()+"("+dateFormat.format(EmpStartTime)+"-"+dateFormat.format(EmpEndTime)+")");
+                employeeScheduleExportVO.setCopy_company_name(clinicMap.get(employeeScheduleCopyVO.getClinicId() + "").getName());
+                employeeScheduleExportVO.setCopy_schedule(employeeScheduleCopyVO.getScheduleName() + "(" + dateFormat.format(EmpStartTime) + "-" + dateFormat.format(EmpEndTime) + ")");
 
                 employeeScheduleExportVO.setCover_date(dateFormatExport.format(copyVO.getWorkDate()));
-                employeeScheduleExportVO.setCover_company_name(clinicMap.get(copyVO.getClinicId()+"").getName());
-                employeeScheduleExportVO.setCover_schedule(copyVO.getScheduleName()+"("+dateFormat.format(copyVoStratTime)+"-"+dateFormat.format(copyVoEndTime)+")");
+                employeeScheduleExportVO.setCover_company_name(clinicMap.get(copyVO.getClinicId() + "").getName());
+                employeeScheduleExportVO.setCover_schedule(copyVO.getScheduleName() + "(" + dateFormat.format(copyVoStratTime) + "-" + dateFormat.format(copyVoEndTime) + ")");
                 employeeConflict.add(employeeScheduleExportVO);
               }
             }
@@ -309,7 +309,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             workDayData.put("companyName", clinicMap.get(employeeScheduleVO.getClinicId() + "").getName());
             workDayData.put("employeeName", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());
             workDayData.put("color", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getColor());
-            workDayData.put("simtime",simtime);
+            workDayData.put("simtime", simtime);
             workDayData.put("date", employeeScheduleVO.getWorkDate());
             workDayData.put("compClinId", employeeScheduleVO.getClinicId());
             workDayDatas.add(workDayData);
@@ -334,7 +334,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    * @param employeeScheduleForm
    * @return
    */
-  private boolean isExist(EmployeeScheduleForm employeeScheduleForm){
+  private boolean isExist(EmployeeScheduleForm employeeScheduleForm) {
     boolean flag = false;
     // 获取门诊排班列表 （获取开始和结束时间）
     List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicIdAndInservice(employeeScheduleForm.getClinicId());
@@ -521,17 +521,19 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
 
   /**
    * 导出员工排班列表
+   *
    * @param response
    * @param employeeConflict
    * @throws Exception
    */
-  public void exportConflict(HttpServletResponse response, List<EmployeeScheduleExportVO>employeeConflict) throws Exception {
+  public void exportConflict(HttpServletResponse response, List<EmployeeScheduleExportVO> employeeConflict) throws Exception {
     ExcelUtil<EmployeeScheduleExportVO> excelUtil = new ExcelUtil<>(EmployeeScheduleExportVO.class);
     excelUtil.exportExcel(response, employeeConflict, "员工排班冲突列表");
   }
 
   /**
    * 输出方法
+   *
    * @param response
    * @param list
    * @param headList
@@ -547,7 +549,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     ExcelWriter excelWriter = null;
     try {
       // 表单
-      excelWriter = new ExcelWriter(getOutputStream(fileName,response),ExcelTypeEnum.XLSX);
+      excelWriter = new ExcelWriter(getOutputStream(fileName, response), ExcelTypeEnum.XLSX);
       Sheet sheet = new Sheet(1, 0);
       sheet.setSheetName("第一个Sheet");
       // 创建一个表格
