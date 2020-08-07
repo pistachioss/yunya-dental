@@ -35,12 +35,11 @@ public class AppointmentBaseForm implements Serializable {
 
     /** 患者id */
     @ApiModelProperty(value = "患者id",required = true)
-    @NotNull(message = "患者id为空！")
+    @NotNull(message = "患者id不能为空！")
     private Integer patientId;
 
     /** 患者姓名 */
-    @ApiModelProperty(value = "患者姓名",required = true)
-    @NotNull(message = "患者姓名为空！")
+    @ApiModelProperty(value = "患者姓名",hidden = true)
     private String patientName;
 
     /** 预约日期 */

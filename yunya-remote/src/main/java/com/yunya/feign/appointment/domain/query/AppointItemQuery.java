@@ -33,10 +33,6 @@ public class AppointItemQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
-    /** 预约项目id */
-    @ApiModelProperty(value = "预约项目id")
-    private Integer appointItemId;
-
     /** 预约项目类型id */
     @ApiModelProperty(value = "预约项目类型id")
     private Integer appointTypeId;

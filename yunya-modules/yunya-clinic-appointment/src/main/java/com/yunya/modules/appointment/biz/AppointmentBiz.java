@@ -129,7 +129,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param form  预约参数封装
      * @return
      */
-    public ResponseResult continueAddAppointment(AppointmentBaseModel form) throws ParseException {
+    public ResponseResult continueAddAppointment(AppointmentBaseModel form) {
         // 将Form转为Entity
         Appointment build = transferFormToEntity(form);
         int result = mapper.insertAppointment(build);
@@ -224,6 +224,34 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 返回冲突数据
         return ResponseUtil.success(objectMap);
+    }
+
+
+    /**
+     * 编辑预约（有冲突继续保存）
+     * @param appointmentForm 更新预约信息form
+     */
+    public Appointment continueUpdateAppointment(AppointmentBaseForm appointmentForm) {
+        saveAppointModify(appointmentForm);
+        Appointment appointEntity = transferFormToEntity(appointmentForm);
+        appointEntity.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        appointEntity.setUpdName(BaseContextHandler.getName());
+        appointEntity.setUpdTime(new Date(System.currentTimeMillis()));
+        int num = mapper.updateByPrimaryKeySelective(appointEntity);
+        // 生成修改预约操作记录
+        if (num > 0) {
+            AppointmentOperateRecord record = new AppointmentOperateRecord();
+            record.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+            record.setAppointmentId(appointEntity.getId());
+            // 操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
+            record.setOperateType((byte) 2);
+            record.setRemarks(appointEntity.getRemarks());
+            record.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            record.setCrtName(BaseContextHandler.getName());
+            record.setCrtTime(new Date(System.currentTimeMillis()));
+            appointOperateRecordBiz.insertSelective(record);
+        }
+        return appointEntity;
     }
 
 //    TODO  查询预约（根据预约id）
@@ -377,14 +405,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param form  表单
      * @return  appointment
      */
-    private Appointment transferFormToEntity(AppointmentBaseModel form) {
+    private Appointment transferFormToEntity(Object form) {
+        if (!(form instanceof AppointmentBaseModel) || !(form instanceof AppointmentBaseForm)){
+            throw new ClientServiceException("对象转换实体异常！",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        }
         // 将form表单转化为appointment实体
         Appointment appointment = EntityUtils.build(form, Appointment.class);
-        // 设置患者Id
-        appointment.setPatientId(Integer.valueOf(form.getPatientId()));
         // 获取预约日期、时间、时长
-        Date appointDate = form.getAppointDate();
-        String appointTimeStr = form.getAppointTime();
+        Date appointDate = appointment.getAppointDate();
+        String appointTimeStr = appointment.getAppointTime();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
         Date appointTime = null;
         try {
@@ -392,7 +421,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         } catch (ParseException e) {
             throw new ClientServiceException("[时间格式转换异常]："+e.getMessage(),OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
         }
-        Integer time = form.getAppointDuration();
+        Integer time = appointment.getAppointDuration();
         // 获取预约开始时间的毫秒
         long ms = appointDate.getTime() + appointTime.getTime();
         // 转换预约开始时间
@@ -415,7 +444,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 设置预约类型(0-初诊；1-复诊)
         // 根据患者是否有病历号来判断患者预约类型
-        PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(Integer.valueOf(form.getPatientId()));
+        PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
         if (patientBaseInfo == null){
             // 病历号为空，初诊
             appointment.setAppointType((byte)0);

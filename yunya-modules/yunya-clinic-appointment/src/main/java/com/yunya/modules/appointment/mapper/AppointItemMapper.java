@@ -34,5 +34,5 @@ public interface AppointItemMapper extends Mapper<AppointItem> {
      * @param form
      * @return
      */
-    List<AppointmentItemVo> getByOrderTypeId(@Param("form") AppointItemQuery form);
+    List<AppointmentItemVo> findAppointItemByExample(@Param("form") AppointItemQuery form);
 }

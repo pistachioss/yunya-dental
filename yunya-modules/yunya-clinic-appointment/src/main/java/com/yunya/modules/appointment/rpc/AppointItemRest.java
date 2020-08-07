@@ -69,7 +69,7 @@ public class AppointItemRest {
      */
     @PostMapping("/search")
     public List<AppointmentItemVo> searchAppItem(@RequestBody AppointItemQuery baseQueryForm) {
-        return baseBiz.findByAppItemName(baseQueryForm);
+        return baseBiz.findAppointItemByExample(baseQueryForm);
     }
 
     /**

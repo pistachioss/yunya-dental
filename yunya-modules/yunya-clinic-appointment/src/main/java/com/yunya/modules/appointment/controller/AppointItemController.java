@@ -105,14 +105,14 @@ public class AppointItemController {
      * @param baseQueryForm 查询条件
      * @return
      */
-    @ApiOperation(value = "预约项目检索搜索（公司端-查询）")
+    @ApiOperation(value = "预约项目检索搜索/根据预约项目类型检索（公司端-查询）")
     @PostMapping("/search")
     public ResponseResult searchAppItem(@Validated @RequestBody AppointItemQuery baseQueryForm) {
 
         if (baseQueryForm.getWhetherPage()){
             PageHelper.startPage(baseQueryForm.getPageNum(),baseQueryForm.getPageSize());
         }
-        List<AppointmentItemVo>  appointmentItemVos = appItemBiz.findByAppItemName(baseQueryForm);
+        List<AppointmentItemVo>  appointmentItemVos = appItemBiz.findAppointItemByExample(baseQueryForm);
         return ResponseUtil.success(new PageInfo<>(appointmentItemVos));
     }
 

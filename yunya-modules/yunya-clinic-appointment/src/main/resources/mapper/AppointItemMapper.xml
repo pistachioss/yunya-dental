@@ -71,7 +71,7 @@
     </select>
 
     <!--查询预约分类列表-->
-    <select id="getByOrderTypeId" resultType="com.yunya.modules.appointment.vo.AppointmentItemVo">
+    <select id="findAppointItemByExample" resultType="com.yunya.modules.appointment.vo.AppointmentItemVo">
         select
         DISTINCT item.id,
         item.name as itemName,
@@ -83,8 +83,8 @@
         LEFT JOIN clinic_appoint_item cai ON cai.appoint_item_id = item.id
         LEFT JOIN appoint_type atype on  atype.id = item.appoint_type_id
         <where>
-            <if test="form.appointItemId != null">
-                cai.appoint_item_id=#{form.appointItemId}
+            <if test="form.appointTypeId != null">
+                atype.id =#{form.appointTypeId}
             </if>
             <if test="form.itemName != null">
                 and item.name like CONCAT(CONCAT('%', #{form.itemName}), '%')
