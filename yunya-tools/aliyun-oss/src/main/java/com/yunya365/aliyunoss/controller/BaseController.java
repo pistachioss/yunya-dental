@@ -11,6 +11,7 @@ import com.yunya365.aliyunoss.util.OssUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URL;
 import java.util.UUID;
@@ -69,11 +70,11 @@ public class BaseController {
         return objectName;
     }
 
-    @ResponseBody
-    @RequestMapping(value = "upload", method = RequestMethod.POST)
+    @RequestMapping(value = "upload", method = RequestMethod.POST, consumes = "multipart/form-data")
     @ApiOperation("1.单资源：上传")
-    public ResponseResult uploadfile(OssUploadForm ossUploadForm) throws Exception {
+    public ResponseResult uploadfile(@RequestParam("file") MultipartFile file, OssUploadForm ossUploadForm) throws Exception {
 
+        ossUploadForm.setFile(file);
         String objectName = makeObjectFullName(ossUploadForm);
         OssUtil.putObject(objectName, ossUploadForm.getFile().getInputStream());
         return ResponseUtil.success(getFileName(objectName));
@@ -102,7 +103,7 @@ public class BaseController {
     }
 
     @RequestMapping(value = "signature", method = RequestMethod.POST)
-    @ApiOperation("0.获取签名，以便上传或获取文件等")
+    @ApiOperation("0.获取签名，以便上传或获取文件等（服务器签名后js直传）")
     public ResponseResult getSignedUrl(OssFolderForm ossFolderForm) throws Exception {
 
         String subFolder = getSubFolder(ossFolderForm);
