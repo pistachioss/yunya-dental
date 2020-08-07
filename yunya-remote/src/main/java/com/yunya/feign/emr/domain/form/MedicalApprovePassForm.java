@@ -17,4 +17,6 @@ public class MedicalApprovePassForm {
     @ApiModelProperty(value = "审批通过对象")
     private ApprovePassBaseForm passForm;
 
+    @ApiModelProperty(value = "电子病例修改对象")
+    private MedicalCommonRecordForm medicalCommonRecordForm;
 }

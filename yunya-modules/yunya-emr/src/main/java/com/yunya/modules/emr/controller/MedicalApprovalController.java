@@ -1,21 +1,16 @@
 package com.yunya.modules.emr.controller;
 
-import com.yunya.feign.emr.domain.form.ChangeApprovePassForm;
-import com.yunya.feign.emr.domain.form.ChangeApproveRejectForm;
-import com.yunya.feign.emr.domain.form.MedicalApprovePassForm;
-import com.yunya.feign.emr.domain.form.MedicalApproveRejectForm;
-import com.yunya.feign.emr.domain.model.ChangeMedicalApplyModel;
-import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.emr.biz.MedicalApprovalBiz;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import com.yunya.feign.emr.domain.form.*;
+import com.yunya.feign.emr.domain.model.*;
+import com.yunya.framework.common.annation.*;
+import com.yunya.framework.common.model.*;
+import com.yunya.framework.common.utils.*;
+import com.yunya.modules.emr.biz.*;
+import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
-import javax.validation.Valid;
+import javax.annotation.*;
+import javax.validation.*;
 
 /**
  * @author xiangyang
@@ -82,7 +77,7 @@ public class MedicalApprovalController {
     @PutMapping("medical/change/pass/{id}")
     @CurrentUser
     public ResponseResult passChange(@PathVariable(value = "id") Integer approveId,
-                                    @Valid @RequestBody ChangeApprovePassForm passForm) {
+                                     @Valid @RequestBody ChangeApprovePassForm passForm) {
         approvalBiz.passChange(approveId, passForm);
         return ResponseUtil.success();
     }
@@ -94,5 +89,11 @@ public class MedicalApprovalController {
                                      @Valid @RequestBody ChangeApproveRejectForm rejectForm) {
         approvalBiz.rejectChange(approveId, rejectForm);
         return ResponseUtil.success();
+    }
+
+    @ApiOperation("草稿病例分页查询")
+    @PostMapping("medical/draft/page")
+    public ResponseResult getDraftAuditPage() {
+        return null;
     }
 }

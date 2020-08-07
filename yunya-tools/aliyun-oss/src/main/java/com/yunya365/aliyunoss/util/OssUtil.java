@@ -65,7 +65,8 @@ public class OssUtil {
         PutObjectRequest putObjectRequest = new PutObjectRequest(bucket, fullPathName, ins);
         putObjectRequest.setMetadata(metadata);
         PutObjectResult result = ossClient.putObject(putObjectRequest);
-        ossClient.shutdown();
+//        ossClient.shutdown();
+//        ossClient = null;
         return result;
     }
 
@@ -81,7 +82,8 @@ public class OssUtil {
             req.setProcess(style);
         }
         URL result = ossClient.generatePresignedUrl(req);
-        ossClient.shutdown();
+//        ossClient.shutdown();
+//        ossClient = null;
         return result;
     }
 
@@ -100,7 +102,8 @@ public class OssUtil {
         CopyObjectRequest copyObjectRequest = new CopyObjectRequest(bucket, srcFullPathName, bucket, dest_FullPathName);
         copyObjectRequest.setNewObjectMetadata(metadata);
         CopyObjectResult result = ossClient.copyObject(copyObjectRequest);
-        ossClient.shutdown();
+//        ossClient.shutdown();
+//        ossClient = null;
         return result;
     }
 
@@ -153,7 +156,8 @@ public class OssUtil {
             // Assert.fail(e.getMessage());
             System.out.println(e.getMessage());
         } finally {
-            ossClient.shutdown();
+//        ossClient.shutdown();
+//        ossClient = null;
         }
         return null;
     }
