@@ -25,7 +25,7 @@ import java.util.List;
  */
 @Api(tags = "价目表变更记录管理")
 @RestController
-@RequestMapping("history")
+@RequestMapping("base")
 public class BaseTariffHistoryController {
 
   /** 注入对象 */

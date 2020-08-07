@@ -27,13 +27,13 @@ public class BaseOralTariffExportVO implements Serializable {
   @Excel(name = "商品项目名称")
   private String name;
 
-  /** 项目分类名称 */
-  @Excel(name = "商品分类名称")
-  private String oralTariffCategoryName;
-
   /** 项目分类编号 */
   @Excel(name = "商品分类编号")
   private String oralTariffCategoryNumber;
+
+  /** 项目分类名称 */
+  @Excel(name = "商品分类名称")
+  private String oralTariffCategoryName;
 
   /** 英文名称 */
   @Excel(name = "商品英文名称")

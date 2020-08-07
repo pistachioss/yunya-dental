@@ -25,7 +25,7 @@
     <!-- 商品项目信息结果集（封装门诊商品项目信息） -->
     <resultMap id="BaseOralTariffInfoResultMap" type="com.yunya.feign.tariff.domain.vo.BaseOralTariffInfoVO">
         <id column="id" property="id" jdbcType="INTEGER"/>
-        <result column="oral_tariff_category_id" property="oralTariffCategoryId" jdbcType="INTEGER"/>
+        <result column="oralTariffCategoryId" property="oralTariffCategoryId" jdbcType="INTEGER"/>
         <result column="oralTariffCategoryName" property="oralTariffCategoryName" jdbcType="VARCHAR"/>
         <result column="oralTariffCategoryNumber" property="oralTariffCategoryNumber" jdbcType="VARCHAR"/>
         <result column="itemNumber" property="itemNumber" jdbcType="VARCHAR"/>
@@ -95,11 +95,11 @@
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and bot.name like concat('%',#{queryForm.keyWord},'%')
-                or bot.number like concat('%',#{queryForm.keyWord},'%')
+                or bot.item_number like concat('%',#{queryForm.keyWord},'%')
                 or bot.pinyin like concat('%',#{queryForm.keyWord},'%')
             </if>
             <if test="queryForm.inservice != null">
-                and bot.inservice = {queryForm.inservice}
+                and bot.inservice = #{queryForm.inservice}
             </if>
         </where>
     </select>
@@ -123,7 +123,7 @@
         <where>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and bot.name like concat('%',#{queryForm.keyWord},'%')
-                or bot.number like concat('%',#{queryForm.keyWord},'%')
+                or bot.item_number like concat('%',#{queryForm.keyWord},'%')
                 or bot.pinyin like concat('%',#{queryForm.keyWord},'%')
             </if>
         </where>

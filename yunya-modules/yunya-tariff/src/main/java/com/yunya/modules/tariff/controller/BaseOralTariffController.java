@@ -1,5 +1,6 @@
 package com.yunya.modules.tariff.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.tariff.domain.form.BaseOralTariffForm;
 import com.yunya.feign.tariff.domain.model.BaseOralTariffModel;
 import com.yunya.feign.tariff.domain.query.BaseOralTariffQueryForm;
@@ -42,7 +43,7 @@ public class BaseOralTariffController {
    * @param id 商品项目ID
    * @return
    */
-  @ApiOperation("根据ID获取商品项目信息(包含门诊商品项目价格)")
+  @ApiOperation("根据ID(商品项目ID)获取商品项目信息(包含门诊商品项目价格)")
   @GetMapping("/one/{id}")
   public ResponseResult findById(@PathVariable("id") Integer id) {
     BaseOralTariffInfoVO resultData = baseOralTariffBiz.findBaseOralTariffInfoById(id);
@@ -57,7 +58,7 @@ public class BaseOralTariffController {
   @ApiOperation("根据条件查询商品项目列表(可分页)")
   @PostMapping("/list")
   public ResponseResult listList(@RequestBody BaseOralTariffQueryForm queryForm) {
-    List<BaseOralTariffVO> resultList = baseOralTariffBiz.findList(queryForm);
+    PageInfo<BaseOralTariffVO> resultList = baseOralTariffBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
 

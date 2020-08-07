@@ -52,7 +52,7 @@ public class BaseTariffCategoryController {
    */
   @ApiOperation("根据条件查询价目表分类列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(BaseTariffCategoryQueryForm queryForm) {
+  public ResponseResult findList(@RequestBody BaseTariffCategoryQueryForm queryForm) {
     PageInfo<BaseTariffCategoryVO> resultList = baseTariffCategoryBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }

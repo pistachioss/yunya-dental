@@ -1,6 +1,7 @@
 package com.yunya.modules.tariff.biz;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
@@ -19,6 +20,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.tariff.*;
 import com.yunya.modules.tariff.mapper.BaseOralTariffCategoryMapper;
@@ -72,12 +74,12 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
    * @param queryForm 查询条件
    * @return
    */
-  public List<BaseOralTariffVO> findList(BaseOralTariffQueryForm queryForm) {
+  public PageInfo<BaseOralTariffVO> findList(BaseOralTariffQueryForm queryForm) {
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<BaseOralTariffVO> resultList = mapper.selectBaseOralTariffList(queryForm);
-    return resultList;
+    return new PageInfo<>(resultList);
   }
 
   /**
@@ -129,7 +131,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     // 添加门诊商品项目
     Integer id = entity.getId();
     List<ClinicItemPriceModel> clinicItemPriceModels = model.getClinicItemPriceModels();
-    if (clinicItemPriceModels.size() > 0) {
+    if (StringHelper.isEmpty(clinicItemPriceModels)) {
       ClinicOralTariff clinicOralTariff;
       for (ClinicItemPriceModel itemPriceModel : clinicItemPriceModels) {
         clinicOralTariff = new ClinicOralTariff();
@@ -211,7 +213,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     // 更新门诊商品项目价格
     List<ClinicItemPriceVO> clinicItemInfos = resultData.getClinicItemInfos();
     List<ClinicItemPriceForm> clinicItemPriceForms = form.getClinicItemPriceForms();
-    if (clinicItemInfos.size() > 0) {
+    if (StringHelper.isEmpty(clinicItemInfos)) {
       ClinicOralTariff clinicEntity;
       for (ClinicItemPriceVO itemInfo : clinicItemInfos) {
         for (ClinicItemPriceForm itemPriceForm : clinicItemPriceForms) {

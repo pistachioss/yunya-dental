@@ -1,5 +1,6 @@
 package com.yunya.feign.tariff.domain.model;
 
+import com.yunya.framework.common.annation.Excel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -19,23 +20,30 @@ import java.math.BigDecimal;
 public class BaseOralTariffImportModel implements Serializable {
 
   /** 商品项目编码 */
+  @Excel(name = "商品项目编码", type = Excel.Type.IMPORT)
   private String itemNumber;
 
   /** 商品项目名称 */
+  @Excel(name = "商品项目名称", type = Excel.Type.IMPORT)
   private String name;
 
   /** 商品分类编号 */
+  @Excel(name = "商品分类编号", type = Excel.Type.IMPORT)
   private String oralTariffCategoryNumber;
 
   /** 商品分类名称 */
+  @Excel(name = "商品分类名称", type = Excel.Type.IMPORT)
   private String oralTariffCategoryName;
 
   /** 商品项目英文名称 */
+  @Excel(name = "商品项目英文名称", type = Excel.Type.IMPORT)
   private String englishName;
 
   /** 单位 */
+  @Excel(name = "单位", type = Excel.Type.IMPORT)
   private String unit;
 
   /** 价格 */
+  @Excel(name = "价格", type = Excel.Type.IMPORT)
   private BigDecimal price;
 }

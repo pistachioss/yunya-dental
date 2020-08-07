@@ -52,7 +52,7 @@ public class BaseOralTariffCategoryController {
    */
   @ApiOperation("根据条件查询商品分类列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(BaseOralTariffCategoryQueryForm queryForm) {
+  public ResponseResult findList(@RequestBody BaseOralTariffCategoryQueryForm queryForm) {
     PageInfo<BaseOralTariffCategoryVO> resultList = baseOralTariffCategoryBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
