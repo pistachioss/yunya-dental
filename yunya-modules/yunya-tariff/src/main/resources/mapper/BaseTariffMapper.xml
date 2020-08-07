@@ -27,7 +27,7 @@
     <!-- 基础价目表信息结果集（封装门诊价目表信息） -->
     <resultMap id="BaseTariffInfoResultMap" type="com.yunya.feign.tariff.domain.vo.BaseTariffInfoVO">
         <id column="id" property="id" jdbcType="INTEGER"/>
-        <result column="tariff_category_id" property="tariffCategoryId" jdbcType="INTEGER"/>
+        <result column="tariffCategoryId" property="tariffCategoryId" jdbcType="INTEGER"/>
         <result column="tariffCategoryName" property="tariffCategoryName" jdbcType="VARCHAR"/>
         <result column="tariffCategoryNumber" property="tariffCategoryNumber" jdbcType="VARCHAR"/>
         <result column="itemNumber" property="itemNumber" jdbcType="VARCHAR"/>
@@ -96,11 +96,11 @@
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and bt.name like concat('%',#{queryForm.keyWord},'%')
-                or bt.number like concat('%',#{queryForm.keyWord},'%')
+                or bt.item_number like concat('%',#{queryForm.keyWord},'%')
                 or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
             </if>
             <if test="queryForm.inservice != null">
-                and bt.inservice = {queryForm.inservice}
+                and bt.inservice = #{queryForm.inservice}
             </if>
         </where>
     </select>
@@ -123,7 +123,7 @@
         <where>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and bt.name like concat('%',#{queryForm.keyWord},'%')
-                or bt.number like concat('%',#{queryForm.keyWord},'%')
+                or bt.item_number like concat('%',#{queryForm.keyWord},'%')
                 or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
             </if>
         </where>

@@ -22,8 +22,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(tags = "价目表分类管理接口")
 @RestController
-@RequestMapping("/tariffCategory")
-@CrossOrigin
+@RequestMapping("category")
 public class BaseTariffCategoryController {
 
   /** 注入对象 */
@@ -53,7 +52,7 @@ public class BaseTariffCategoryController {
    */
   @ApiOperation("根据条件查询价目表分类列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(BaseTariffCategoryQueryForm queryForm) {
+  public ResponseResult findList(@RequestBody BaseTariffCategoryQueryForm queryForm) {
     PageInfo<BaseTariffCategoryVO> resultList = baseTariffCategoryBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }

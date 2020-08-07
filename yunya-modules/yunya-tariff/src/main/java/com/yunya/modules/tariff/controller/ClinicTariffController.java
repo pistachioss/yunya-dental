@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Api(tags = "门诊价目表管理接口")
 @RestController
-@RequestMapping("clinicTariffs")
+@RequestMapping("clinic")
 public class ClinicTariffController {
 
   @Autowired private ClinicTariffBiz clinicTariffBiz;

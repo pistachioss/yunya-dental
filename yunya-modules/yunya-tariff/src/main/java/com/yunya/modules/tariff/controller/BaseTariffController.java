@@ -26,7 +26,7 @@ import java.util.List;
  */
 @Api(tags = "基础价目表管理接口")
 @RestController
-@RequestMapping("tariffs")
+@RequestMapping("base")
 public class BaseTariffController {
 
   /** 注入对象 */
@@ -42,7 +42,7 @@ public class BaseTariffController {
    * @param id ID
    * @return
    */
-  @ApiOperation("根据ID获取价目表信息(包含门诊价目表价格)")
+  @ApiOperation("根据ID(基础价目表ID)获取价目表信息(包含门诊价目表价格)")
   @GetMapping("/one/{id}")
   public ResponseResult findById(@PathVariable("id") Integer id) {
     BaseTariffInfoVO resultData = baseTariffBiz.findBaseTariffInfoById(id);

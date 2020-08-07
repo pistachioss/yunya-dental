@@ -16,6 +16,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.tariff.*;
 import com.yunya.modules.tariff.mapper.BaseTariffMapper;
@@ -46,8 +47,6 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   @Autowired private BaseTariffCategoryBiz baseTariffCategoryBiz;
   /** 价目表操作记录 */
   @Autowired private BaseTariffHistoryBiz baseTariffHistoryBiz;
-  /** 门诊价目表会员价 */
-  @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
   /** 门诊价目表 */
   @Autowired private ClinicTariffBiz clinicTariffBiz;
 
@@ -124,7 +123,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     // 添加门诊价目表
     Integer id = entity.getId();
     List<ClinicItemPriceModel> clinicItemPriceModels = model.getClinicItemPriceModels();
-    if (clinicItemPriceModels.size() > 0) {
+    if (StringHelper.isEmpty(clinicItemPriceModels)) {
       ClinicTariff clinicTariff;
       for (ClinicItemPriceModel itemPriceModel : clinicItemPriceModels) {
         clinicTariff = new ClinicTariff();
@@ -206,7 +205,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     // 更新门诊价目表价格
     List<ClinicItemPriceVO> clinicItemInfos = resultData.getClinicItemInfos();
     List<ClinicItemPriceForm> clinicItemPriceForms = form.getClinicItemPriceForms();
-    if (clinicItemInfos.size() > 0) {
+    if (StringHelper.isEmpty(clinicItemInfos)) {
       ClinicTariff clinicEntity;
       for (ClinicItemPriceVO itemInfo : clinicItemInfos) {
         for (ClinicItemPriceForm itemPriceForm : clinicItemPriceForms) {

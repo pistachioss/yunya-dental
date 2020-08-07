@@ -22,9 +22,9 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Api("商品项目变更记录管理")
+@Api(tags = "商品项目变更记录管理")
 @RestController
-@RequestMapping("/goods")
+@RequestMapping("oral/history")
 public class BaseOralTariffHistoryController {
 
   /** 注入对象 */
