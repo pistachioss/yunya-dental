@@ -1,5 +1,7 @@
 package com.yunya.modules.emr.controller;
 
+import com.yunya.feign.emr.domain.form.ChangeApprovePassForm;
+import com.yunya.feign.emr.domain.form.ChangeApproveRejectForm;
 import com.yunya.feign.emr.domain.form.MedicalApprovePassForm;
 import com.yunya.feign.emr.domain.form.MedicalApproveRejectForm;
 import com.yunya.feign.emr.domain.model.ChangeMedicalApplyModel;
@@ -73,6 +75,24 @@ public class MedicalApprovalController {
     @CurrentUser
     public ResponseResult applyUpdateDraftCase(@Valid @RequestBody ChangeMedicalApplyModel draftModel) {
         approvalBiz.applyUpdateChangeCase(draftModel);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation(value = "申请新增病例变更通过")
+    @PutMapping("medical/change/pass/{id}")
+    @CurrentUser
+    public ResponseResult passChange(@PathVariable(value = "id") Integer approveId,
+                                    @Valid @RequestBody ChangeApprovePassForm passForm) {
+        approvalBiz.passChange(approveId, passForm);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation(value = "申请修改病例变更拒绝")
+    @PutMapping("medical/change/reject/{id}")
+    @CurrentUser
+    public ResponseResult passChange(@PathVariable(value = "id") Integer approveId,
+                                     @Valid @RequestBody ChangeApproveRejectForm rejectForm) {
+        approvalBiz.rejectChange(approveId, rejectForm);
         return ResponseUtil.success();
     }
 }

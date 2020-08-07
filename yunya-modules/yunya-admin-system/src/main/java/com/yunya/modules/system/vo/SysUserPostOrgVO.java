@@ -30,4 +30,6 @@ public class SysUserPostOrgVO implements Serializable {
   private Integer orgDeptId;
   /** 岗位ID */
   private Integer postId;
+  /** 岗位组ID */
+  private Integer postGroupId;
 }

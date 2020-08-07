@@ -95,16 +95,6 @@ spring:
           metadata:
             title: "排班考勤服务"
 
-        - id: yunya-patient
-          uri: lb://yunya-patient
-          order: 9002
-          predicates:
-            - Path=/api/patient/**
-          filters:
-            - StripPrefix=2
-          metadata:
-            title: "患者资料服务"
-
         # 通用工具服务，编号后排
         - id: aliyun-oss
           uri: lb://aliyun-oss
@@ -125,6 +115,27 @@ spring:
             - StripPrefix=2
           metadata:
             title: "预约服务"
+
+        - id: yunya-patient
+          uri: lb://yunya-patient
+          order: 9002
+          predicates:
+            - Path=/api/patient/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "患者资料服务"
+
+        - id: yunya-tariff
+          uri: lb://yunya-tariff
+          order: 9003
+          predicates:
+            - Path=/api/tariff/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "价目表服务"
+
 
     nacos:
       discovery:

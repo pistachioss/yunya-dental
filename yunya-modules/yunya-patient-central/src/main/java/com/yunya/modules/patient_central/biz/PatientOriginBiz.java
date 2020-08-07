@@ -97,11 +97,11 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
      */
     public ResponseResult update(PatientOriginForm patientOriginForm) {
         PatientOrigin patientOrigin = new PatientOrigin();
+        BeanUtils.copyProperties(patientOriginForm,patientOrigin);
         PatientOrigin patientOriginv = mapper.selectByPrimaryKey(patientOrigin.getId());
         if(patientOriginv.getAllowOperate() == false){
             return ResponseUtil.success("该患者来源不可编辑",patientOriginv);
         }
-        BeanUtils.copyProperties(patientOriginForm,patientOrigin);
         patientOrigin.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
         patientOrigin.setUpdTime(new Date());

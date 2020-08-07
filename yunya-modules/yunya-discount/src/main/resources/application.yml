@@ -45,6 +45,16 @@ ribbon:
   MaxAutoRetriesNextServer: 1
   OkToRetryOnAllOperations: false
 
+# 配置swagger
+swagger:
+  enabled: true
+  base-package: com.yunya.modules.discount
+  title: 系统折扣服务
+  version: 1.0.0.SNAPSHOT
+  description: YUNYA系统折扣服务
+  contact:
+    name: yunya-discount
+
 # 熔断
 hystrix:
   threadpool:

@@ -41,12 +41,14 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
     @Resource
     private RemoteSystemServiceFeign systemServiceFeign;
-
     @Resource
     private MedicalCommonRecordMapper medicalMapper;
-
     @Resource
     private MedicalCommonRecordMapper commonRecordMapper;
+    @Resource
+    private MedicalCommonRecordBiz commonRecordBiz;
+    @Resource
+    private MedicalRecordHistoryBiz historyBiz;
 
     /**
      * 新增草稿病例申请
@@ -61,19 +63,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(loginUserId);
         //TODO 判断登录用户是否拥有助手权限
         SysUserInfoDetail loginUser = systemServiceFeign.findSysUserEmployeeInfoByUserId(loginUserId);
-        //todo 调用电子病历详情接口
+        //查询电子病历详情
         MedicalCommonRecord medicalCommonRecord = medicalMapper.selectByPrimaryKey(applyBase.getEventId());
         if (medicalCommonRecord != null) {
-            Integer treatmentId = medicalCommonRecord.getTreatmentId();
-            ApprovalRecord treatmentRecord = mapper.findTreatmentRecord(treatmentId);
-            if (treatmentRecord != null) {
-                //病例变更截止时间
-                LocalDate deadTime = treatmentRecord.getDeadTime();
-                LocalDate now = LocalDate.now();
-                if (now.isAfter(deadTime)) {
-                    throw new ClientServiceException("已超过变更截止时间，不能新增病例", OperationCodeConstants.NO_PERMISSION_OPERATION);
-                }
-            }
+            ApprovalRecord treatmentRecord = mapper.findTreatmentRecord(medicalCommonRecord.getTreatmentId());
+            //如果是新增变更申请 查询截止时间是否已经超时
+            checkDeadTimeOut(treatmentRecord);
         }
         //查询该病历的审批情况
         pendCount = mapper.countByEventIdAndType(applyBase.getEventId(), EventTypeEnum.DRAFT_AUDIT.getCode(), null);
@@ -91,11 +86,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     public void applyUpdateDraftCase(DraftMedicalApplyModel draftModel) {
         ApplyBaseModel applyBase = draftModel.getApplyBase();
         Integer eventId = applyBase.getEventId();
-        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
-        //todo 查询电子病例详情
-        if (false) {
-            throw new ClientServiceException("无权限申请修改此病历，请联系新增病历医生申请修改！", OperationCodeConstants.NO_PERMISSION_OPERATION);
-        }
+        //校验登录人是否有权限进行更改病例申请操作
+        checkModifyPermission(eventId);
+        //查询修改病例变更申请的最新记录
+        ApprovalRecord medicalChangeRecord = mapper.findMedicalChangeRecord(eventId);
+        //如果是修改变更申请 查询截止时间是否已经超时
+        checkDeadTimeOut(medicalChangeRecord);
         //校验并且返回最新拒绝审批时间
         LocalDateTime approveTime = getAndCheckNewestApproveTime(eventId);
         //校验审批时间是否已经超过24h
@@ -121,16 +117,14 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         if (pendCount == 0) {
             throw new ClientServiceException("该病例申请不存在", OperationCodeConstants.DATA_ERROR);
         }
-        ApprovalRecord approvalRecord = mapper.selectByPrimaryKey(approveId);
-        if (approvalRecord != null) {
-            if (!Objects.equals(String.valueOf(approvalRecord.getApproverId()), BaseContextHandler.getUserID())) {
-                throw new ClientServiceException("无权限审批", OperationCodeConstants.NO_PERMISSION_OPERATION);
-            }
-            //更新审批记录信息
-            updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_PASS.getCode(),null,null);
-            //todo 更新电子病历信息
-            //todo 插入电子病历历史记录
-        }
+        //检查是否有权限审批病例
+        checkApprovePermission(approveId);
+        //更新审批记录信息
+        updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_PASS.getCode(),null,null);
+        //todo 更新电子病历信息
+
+        //todo 插入电子病历历史记录
+        historyBiz.insertMedicalHistory(null);
     }
 
     /**
@@ -148,15 +142,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         if (pendCount == 0) {
             throw new ClientServiceException("该病例不存在", OperationCodeConstants.DATA_ERROR);
         }
-        ApprovalRecord approvalRecord = mapper.selectByPrimaryKey(approveId);
-        if (approvalRecord != null) {
-            if (!Objects.equals(String.valueOf(approvalRecord.getApproverId()), BaseContextHandler.getUserID())) {
-                throw new ClientServiceException("无权限审批", OperationCodeConstants.NO_PERMISSION_OPERATION);
-            }
-            //更新审批记录信息
-            updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_REJECT.getCode(),  appRejectForm.getRejectReason(), null);
-            //todo 更新电子病历信息
-        }
+        //检查是否有权限审批病例
+        checkApprovePermission(approveId);
+        //更新审批记录信息
+        updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_REJECT.getCode(),  appRejectForm.getRejectReason(), null);
+        //todo 更新电子病历信息
+
     }
 
     /**
@@ -189,14 +180,11 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      * @param changeModel 申请病例变更修改参数
      */
     public void applyUpdateChangeCase(ChangeMedicalApplyModel changeModel) {
-        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+
         ApplyBaseModel applyBase = changeModel.getApplyBase();
         Integer eventId = applyBase.getEventId();
-        //todo 查询电子病例详情
-        //查询申请变更该病例的操作人是否是新增该病例的医生或助手
-        if (false) {
-            throw new ClientServiceException("无权限申请修改此病历，请联系新增病历医生申请修改！", OperationCodeConstants.NO_PERMISSION_OPERATION);
-        }
+        //校验登录人是否有权限进行更改病例申请操作
+        checkModifyPermission(eventId);
         //校验并且返回最新拒绝审批时间
         LocalDateTime approveTime = getAndCheckNewestApproveTime(eventId);
         if (!judgeRejectTimeout(approveTime)) {
@@ -245,7 +233,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         record.setApproverId(loginUserId);
         record.setApproveTime(now);
         record.setApproveReason(StringUtils.isBlank(approveReason) ? null : approveReason);
-        record.setDeadTime(deadTime == null ? null : deadTime);
+        record.setDeadTime(deadTime);
         record.setStatus(status);
         record.setCrtId(loginUserId);
         record.setUpdId(loginUserId);
@@ -304,5 +292,43 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         }
         //最新拒绝草稿病例申请的审批时间
         return newestDraft.getApproveTime();
+    }
+
+    private void checkDeadTimeOut(ApprovalRecord record) {
+        if (record != null) {
+            //病例变更截止时间
+            LocalDate deadTime = record.getDeadTime();
+            LocalDate now = LocalDate.now();
+            if (now.isAfter(deadTime)) {
+                throw new ClientServiceException("已超过变更截止时间，不能新增病例", OperationCodeConstants.NO_PERMISSION_OPERATION);
+            }
+        }
+    }
+
+    /**
+     * 检查是否有权限修改病例
+     * @param eventId 电子病例Id
+     */
+    private void checkModifyPermission(Integer eventId) {
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        //查询电子病历详情
+        MedicalCommonRecord medicalCommonRecord = medicalMapper.selectByPrimaryKey(eventId);
+        //查询申请变更该病例的操作人是否是新增该病例的医生或助手
+        if (!Objects.equals(loginUserId, medicalCommonRecord.getCrtId())) {
+            throw new ClientServiceException("无权限申请修改此病历，请联系新增病历医生申请修改！", OperationCodeConstants.NO_PERMISSION_OPERATION);
+        }
+    }
+
+    /**
+     * 检查是否有权限审批病例
+     * @param approveId 审批id
+     */
+    private void checkApprovePermission(Integer approveId) {
+        ApprovalRecord approvalRecord = mapper.selectByPrimaryKey(approveId);
+        if (approvalRecord != null) {
+            if (!Objects.equals(String.valueOf(approvalRecord.getApproverId()), BaseContextHandler.getUserID())) {
+                throw new ClientServiceException("无权限审批", OperationCodeConstants.NO_PERMISSION_OPERATION);
+            }
+        }
     }
 }

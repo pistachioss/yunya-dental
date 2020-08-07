@@ -69,31 +69,31 @@ public class DictionaryItemBiz extends BaseBiz<DictionaryItemMapper, DictionaryI
    * @param form 参数封装
    */
   public void edit(Integer id, DictForm form) {
-    DictionaryItem item = mapper.selectByPrimaryKey(id);
-    if (null == item) {
+    DictionaryItem resultData = mapper.selectByPrimaryKey(id);
+    if (null == resultData) {
       throw new ClientServiceException(
           "修改字典明细数据失败，名称为'" + form.getName() + "'，的数据不存在",
           OperationCodeConstants.QUERY_RESULT_INVALID);
     }
-    if (!item.getName().equals(form.getName())) {
+    if (!resultData.getName().equals(form.getName())) {
       String name = form.getName();
-      DictionaryItem entity = new DictionaryItem();
-      entity.setDictionaryTypeId(item.getDictionaryTypeId());
-      entity.setName(name);
-      DictionaryItem result = mapper.selectOne(entity);
-      if (null != result) {
+      resultData = new DictionaryItem();
+      resultData.setDictionaryTypeId(resultData.getDictionaryTypeId());
+      resultData.setName(name);
+      int count = mapper.selectCount(resultData);
+      if (count > 0) {
         throw new ClientServiceException(
             "修改字典数据" + name + "'，该名称字典数据已存在", OperationCodeConstants.OBJECT_EDIT_FAIL);
       }
-      item.setName(name);
     }
     if (form.getInservice() != null) {
-      item.setInservice(form.getInservice());
+      resultData.setInservice(form.getInservice());
     }
-    item.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    item.setUpdName(BaseContextHandler.getName());
-    item.setUpdTime(new Date(System.currentTimeMillis()));
-    mapper.updateByPrimaryKeySelective(item);
+    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    resultData.setUpdName(BaseContextHandler.getName());
+    resultData.setUpdTime(new Date(System.currentTimeMillis()));
+    resultData.setId(id);
+    mapper.updateByPrimaryKeySelective(resultData);
   }
 
   /**

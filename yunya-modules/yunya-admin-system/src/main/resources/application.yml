@@ -105,7 +105,7 @@ hystrix:
 swagger:
   enabled: true
   base-package: com.yunya.modules.system
-  title: yunya-system
+  title: 系统管理服务
   version: 1.0.0.SNAPSHOT
   description: YUNYA系统管理后端服务
   contact:

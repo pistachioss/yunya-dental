@@ -54,6 +54,7 @@
             sup.company_id as orgId,
             sup.department_id as orgDeptId,
             sup.post_id as postId,
+            sup.group_id as postGroupId,
             c.`name` as name,
             c.`type` as type,
             ifnull(cei.abbreviation,'公司') as abbreviation

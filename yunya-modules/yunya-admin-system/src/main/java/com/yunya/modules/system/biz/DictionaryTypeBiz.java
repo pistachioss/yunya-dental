@@ -83,14 +83,13 @@ public class DictionaryTypeBiz extends BaseBiz<DictionaryTypeMapper, DictionaryT
     }
     if (!resultData.getName().equals(form.getName())) {
       String name = form.getName();
-      DictionaryType entity = new DictionaryType();
-      entity.setName(name);
-      DictionaryType result = mapper.selectOne(entity);
-      if (null != result) {
+      resultData = new DictionaryType();
+      resultData.setName(name);
+      int result = mapper.selectCount(resultData);
+      if (result > 0) {
         throw new ClientServiceException(
             "修改字典类型'" + name + "'失败，该字典类型名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
-      resultData.setName(name);
     }
     if (null != form.getInservice()) {
       resultData.setInservice(form.getInservice());
@@ -98,6 +97,7 @@ public class DictionaryTypeBiz extends BaseBiz<DictionaryTypeMapper, DictionaryT
     resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     resultData.setUpdName(BaseContextHandler.getName());
     resultData.setUpdTime(new Date(System.currentTimeMillis()));
+    resultData.setId(id);
     mapper.updateByPrimaryKeySelective(resultData);
   }
 
