@@ -31,4 +31,5 @@ public interface AppointmentSplitMapper extends Mapper<AppointmentSplit> {
      */
     List<AppointmentSplitVo> findAppointmentSplitByExample(@Param("query") AppointmentSplitQuery query);
 
+
 }

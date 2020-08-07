@@ -83,7 +83,7 @@ public class AppointTypeController {
      * @return
      */
     @ApiOperation(value = "更新数据")
-    @PostMapping("/update")
+    @PutMapping("/update")
     @CurrentUser
     public ResponseResult updateAppointType(@RequestBody @Validated AppointTypeForm form){
         Integer id = form.getId();

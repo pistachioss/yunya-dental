@@ -31,12 +31,25 @@ public class ClinicAppointSettingController {
     private ClinicAppointSettingBiz clinicAppointSettingBiz;
 
     /**
-     * 编辑预约设置
+     * 新增预约设置
+     * @param model
+     * @return
+     */
+    @ApiOperation(value = "新增预约设置")
+    @PostMapping("/add")
+    @CurrentUser
+    public ResponseResult addAppointSetting(@RequestBody @Validated AppointSettingModel model){
+        ResponseResult responseResult = clinicAppointSettingBiz.addAppointSetting(model);
+        return responseResult;
+    }
+
+    /**
+     * 修改预约设置
      * @param form  设置表单
      * @return
      */
-    @ApiOperation(value = "编辑预约设置")
-    @PostMapping("/update")
+    @ApiOperation(value = "修改预约设置")
+    @PutMapping("/update")
     @CurrentUser
     public ResponseResult editOrAddAppointSetting(@RequestBody @Validated AppointSettingForm form){
         ResponseResult responseResult = clinicAppointSettingBiz.editOrAddSetting(form);

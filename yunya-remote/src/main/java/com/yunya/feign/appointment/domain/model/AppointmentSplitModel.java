@@ -29,7 +29,8 @@ public class AppointmentSplitModel {
     private Integer orgId;
 
     /** 预约id */
-    @ApiModelProperty(value = "预约id", hidden = true)
+    @ApiModelProperty(value = "预约id", required = true)
+    @NotNull(message = "预约id不能为空！")
     private Integer appointmentId;
 
     @ApiModelProperty(value = "预约分解列表")

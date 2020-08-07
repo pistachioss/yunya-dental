@@ -11,17 +11,15 @@ import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
 import com.yunya.modules.appointment.vo.AppointmentSplitVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
 import java.util.List;
-import java.util.Map;
 
 /**
- * "预约时长分解Controller
+ * "时长分解Controller
  *
  * @author yunya-lihuibin
  * @create 2020-07-30 14:15
@@ -29,40 +27,37 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("appoint_split")
-@Api(tags = "预约时长分解Controller")
+@Api(tags = "时长分解Controller")
 public class AppointmentSplitController {
 
     @Autowired
     private AppointmentSplitBiz appointSpitBiz;
 
     /**
-     * 添加预约分解
+     * 添加时长分解
      * @param splitModel 数据列表
      * @return
      */
-    @ApiOperation(value = "添加预约分解")
-    @PutMapping("/add")
+    @ApiOperation(value = "添加时长分解")
+    @PostMapping("/add")
     @CurrentUser
-    public ResponseResult addSplit(@Validated @RequestBody AppointmentSplitModel splitModel) throws ParseException {
-        Integer result = appointSpitBiz.insertSplit(splitModel);
+    public ResponseResult addAppointSplit(@Validated @RequestBody AppointmentSplitModel splitModel) throws ParseException {
+        Integer result = appointSpitBiz.insertAppointSplit(splitModel);
         if (result <= 0){
-            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"分解时长失败！",null);
+            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"时长分解失败！",null);
         }
         return ResponseUtil.success();
     }
 
     /**
-     * 删除分解预约
-     * @param delForm  条件列表
+     * 根据id删除时长分解
+     * @param splitId  条件列表
      * @return
      */
-    @ApiOperation(value = " 删除分解预约")
-    @PostMapping("/del")
-    public ResponseResult delSplit(@Validated @RequestBody AppointmentSplitDelForm delForm){
-        Integer result = appointSpitBiz.delSplit(delForm);
-        if (result <= 0){
-            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"删除时长分解失败！",null);
-        }
+    @ApiOperation(value = " 删除时长分解")
+    @DeleteMapping("/del/{splitId}")
+    public ResponseResult delAppointSplit(@PathVariable("splitId") Integer splitId){
+        appointSpitBiz.deleteById(splitId);
         return ResponseUtil.success();
     }
 
@@ -71,12 +66,27 @@ public class AppointmentSplitController {
      * @param query 条件列表
      * @return
      */
-    @ApiOperation(value = "根据条件查询分解预约")
+    @ApiOperation(value = "根据条件查询时长分解")
     @PostMapping("/findAll")
-    public ResponseResult findAppointmentSplitByExample(@Validated @RequestBody AppointmentSplitQuery query){
+    public ResponseResult findAppointSplitByExample(@Validated @RequestBody AppointmentSplitQuery query){
         List<AppointmentSplitVo> result = appointSpitBiz.findAppointmentSplitByExample(query);
         return ResponseUtil.success(result);
     }
+
+    /**
+     * 修改时长分解
+     * @param form  时长分解表单
+     * @return
+     */
+    @ApiOperation(value = "修改时长分解")
+    @PutMapping("/update")
+    @CurrentUser
+    public ResponseResult updateAppointSplit(@RequestBody @Validated AppointmentSplitModel form){
+        Integer result = appointSpitBiz.updateAppointSplit(form);
+        return ResponseUtil.success();
+    }
+
+
 
 
 

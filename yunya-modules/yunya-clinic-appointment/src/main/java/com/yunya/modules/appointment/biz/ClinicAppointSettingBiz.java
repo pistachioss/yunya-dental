@@ -7,6 +7,7 @@ import com.yunya.feign.appointment.vo.AppointSettingVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -37,8 +38,11 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
      * @return
      */
     public ResponseResult editOrAddSetting(AppointSettingForm form){
-        ClinicAppointmentSetting build = EntityUtils.build(form, ClinicAppointmentSetting.class);
 
+        if (form.getAppointUnit() > 30 || form.getAppointUnit() < 5){
+            throw new ClientServiceException("预约单位设置错误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
+        ClinicAppointmentSetting build = EntityUtils.build(form, ClinicAppointmentSetting.class);
         AppointSettingQuery query = new AppointSettingQuery();
         query.setUserId(form.getUserId());
         AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(query);
@@ -49,13 +53,13 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
             build.setUpdTime(new Date(System.currentTimeMillis()));
             int result = mapper.updateByPrimaryKeySelective(build);
             if (result <= 0 ){
-                return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"编辑失败！",null);
+                throw new ClientServiceException("修改预约设置失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
         } else {
             build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
             int result = mapper.insertSelective(build);
             if (result <= 0 ){
-                return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"编辑失败！",null);
+                throw new ClientServiceException("新增预约设置失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
         }
         return ResponseUtil.success();
@@ -83,21 +87,24 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
     }
 
     /**
-     * 添加预约显示设置
+     * 新增预约设置
      * @param model  数据
      * @return
      */
     public ResponseResult addAppointSetting(AppointSettingModel model){
+        if (model.getAppointUnit() > 30 || model.getAppointUnit() < 5){
+            throw new ClientServiceException("预约单位设置错误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
         // 检测是否已经存在给定的数据
         ClinicAppointmentSetting build = EntityUtils.build(model, ClinicAppointmentSetting.class);
         List<ClinicAppointmentSetting> clinicAppointmentSettings = mapper.selectByExample(build);
         if (clinicAppointmentSettings != null && !clinicAppointmentSettings.isEmpty()){
-            return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "添加的数据已经存在！",null);
+            throw new ClientServiceException("预约设置已经存在！",OperationCodeConstants.DATA_EXIST);
         }
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         int result = mapper.insertSelective(build);
         if (result <= 0){
-            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"添加设置失败！",null);
+            throw new ClientServiceException("新增预约设置失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
         return ResponseUtil.success();
     }
@@ -110,11 +117,11 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
     public ResponseResult delAppointSetting(Integer id){
         ClinicAppointmentSetting clinicAppointmentSetting = mapper.selectByPrimaryKey(id);
         if (clinicAppointmentSetting == null){
-            return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"数据不存在！",null);
+            throw new ClientServiceException("数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
         }
         int result = mapper.deleteByPrimaryKey(id);
         if (result <= 0){
-            return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"删除失败！", null);
+            throw new ClientServiceException("删除失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
         return ResponseUtil.success();
     }

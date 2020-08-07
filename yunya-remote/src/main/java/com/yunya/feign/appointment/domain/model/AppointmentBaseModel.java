@@ -22,10 +22,20 @@ import java.util.List;
 @Data
 @ToString
 public class AppointmentBaseModel implements Serializable {
+
+    /** 预约id */
+    @ApiModelProperty(value = "预约id")
+    private Integer id;
+
     /** 患者id */
     @ApiModelProperty(value = "患者id",required = true)
     @NotNull(message = "患者id为空！")
     private Integer patientId;
+
+    /** 门诊id */
+    @ApiModelProperty(value = "门诊id", required = true)
+    @NotNull(message = "门诊id不能为空！")
+    private Integer orgId;
 
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名",required = true)

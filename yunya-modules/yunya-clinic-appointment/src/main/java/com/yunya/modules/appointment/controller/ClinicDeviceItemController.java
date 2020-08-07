@@ -105,7 +105,7 @@ public class ClinicDeviceItemController {
      */
     @ApiOperation(value = "修改设备项目(公司端-设备管理-修改)", notes = "启用/操作-修改 用")
     @CurrentUser
-    @PostMapping("/update/manage")
+    @PutMapping("/update/manage")
     public ResponseResult updateDevice(@RequestBody @Validated DeviceItemManageForm form){
         return clinicDeviceItemBiz.updateDeviceItem(form);
     }
