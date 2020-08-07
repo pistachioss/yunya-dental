@@ -1,4 +1,4 @@
-package com.yunya.feign.appointment.domain.model;
+package com.yunya.feign.appointment.domain.form;
 
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBase;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBase;
@@ -18,7 +18,7 @@ import java.util.List;
  */
 @ApiModel("预约分解参数封装")
 @Data
-public class AppointmentSplitModel {
+public class AppointmentSplitForm {
 
     /** 总预约时长 */
     @ApiModelProperty(value = "总预约时长", required = true)
@@ -35,5 +35,5 @@ public class AppointmentSplitModel {
     private Integer appointmentId;
 
     @ApiModelProperty(value = "预约分解列表")
-    private List<AppointmentSplitBase> splitList;
+    private List<AppointmentSplitUpdateBase> splitList;
 }

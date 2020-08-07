@@ -54,7 +54,7 @@ public class AppointmentController {
      * @description 出现预约冲突后继续添加患者预约
      * @param appointmentForm 预约Form表单
      */
-    @ApiOperation(value = "新增预约（继续添加）")
+    @ApiOperation(value = "新增预约（预约冲突后继续添加）")
     @PostMapping("/continueAdd")
     @CurrentUser
     public ResponseResult continueAddAppointment(

@@ -69,6 +69,18 @@ public class ClinicAppointSettingController {
     }
 
     /**
+     * 根据条件查询预约显示设置
+     * @param query
+     * @return
+     */
+    @ApiOperation(value = "根据条件查询预约显示设置")
+    @PostMapping("/find")
+    public ResponseResult findAppointSettingByExample(@RequestBody @Validated AppointSettingQuery query){
+        AppointSettingVo appointSettingVo = clinicAppointSettingBiz.findAppointSettingByUserId(query);
+        return ResponseUtil.success(appointSettingVo);
+    }
+
+    /**
      * 根据设置id删除数据
      * @param id
      * @return

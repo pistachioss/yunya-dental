@@ -1,9 +1,12 @@
 package com.yunya.modules.appointment.controller;
 
+import com.yunya.feign.appointment.domain.form.AppointSplitCheckForm;
+import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.modules.appointment.biz.AppointmentSplitBiz;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitDelForm;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
@@ -50,11 +53,27 @@ public class AppointmentSplitController {
     }
 
     /**
+     * 预约检测（第一次新增时长分解（提交）用）
+     * @param form
+     * @return
+     */
+    @ApiOperation(value = "预约检测（第一次新增时长分解（提交）用，第一次只检测时长分解是否正确，数据库不进行实际的新增，整个添加预约表单提交时才会在数据库新增）")
+    @PostMapping("/add/check")
+    @CurrentUser
+    public ResponseResult addAppointSplitCheck(@RequestBody @Validated AppointSplitCheckForm form){
+        List<AppointmentSplit> splits = appointSpitBiz.appointSplitCheck(form.getAppointDuration(), form.getSplitList());
+        if (splits == null || splits.isEmpty()){
+            return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL,"时长分解有误！",null);
+        }
+        return ResponseUtil.success(splits);
+    }
+
+    /**
      * 根据id删除时长分解
      * @param splitId  条件列表
      * @return
      */
-    @ApiOperation(value = " 删除时长分解")
+    @ApiOperation(value = " 删除时长分解（新增/修改预约-预约时长分解-删除 用）")
     @DeleteMapping("/del/{splitId}")
     public ResponseResult delAppointSplit(@PathVariable("splitId") Integer splitId){
         appointSpitBiz.deleteById(splitId);
@@ -62,11 +81,11 @@ public class AppointmentSplitController {
     }
 
     /**
-     * 根据条件查询分解预约
+     * 根据条件查询分解预约（时长分解按钮用）
      * @param query 条件列表
      * @return
      */
-    @ApiOperation(value = "根据条件查询时长分解")
+    @ApiOperation(value = "根据条件查询时长分解（新增/修改预约-时长分解 用）")
     @PostMapping("/findAll")
     public ResponseResult findAppointSplitByExample(@Validated @RequestBody AppointmentSplitQuery query){
         List<AppointmentSplitVo> result = appointSpitBiz.findAppointmentSplitByExample(query);
@@ -78,10 +97,10 @@ public class AppointmentSplitController {
      * @param form  时长分解表单
      * @return
      */
-    @ApiOperation(value = "修改时长分解")
+    @ApiOperation(value = "修改时长分解（修改预约-预约时长分解-提交 用）")
     @PutMapping("/update")
     @CurrentUser
-    public ResponseResult updateAppointSplit(@RequestBody @Validated AppointmentSplitModel form){
+    public ResponseResult updateAppointSplit(@RequestBody @Validated AppointmentSplitForm form){
         Integer result = appointSpitBiz.updateAppointSplit(form);
         return ResponseUtil.success();
     }

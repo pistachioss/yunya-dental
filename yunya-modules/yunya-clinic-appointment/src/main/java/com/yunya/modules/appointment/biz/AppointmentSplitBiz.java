@@ -1,5 +1,7 @@
 package com.yunya.modules.appointment.biz;
 
+import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBase;
+import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -72,12 +74,13 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
 
     /**
      * 修改时长分解
-     * @param form  时长分解表单
+     * @param form  时长分解表单 TODO
      * @return
      */
-    public Integer updateAppointSplit(AppointmentSplitModel form){
-        List<AppointmentSplitBase> splitList = form.getSplitList();
-        if (splitList == null && splitList.isEmpty()){
+    public Integer updateAppointSplit(AppointmentSplitForm form){
+        List<AppointmentSplitUpdateBase> splitList = form.getSplitList();
+//        List<AppointmentSplitBase> splitList = form.getSplitList();
+        if (splitList == null || splitList.isEmpty()){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
@@ -99,12 +102,24 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
     }
 
     /**
+     * 时长分解检查（新增用）
+     * @param appointDuration
+     * @param splitList
+     * @return
+     */
+    public List<AppointmentSplit> appointSplitCheck(Integer appointDuration, List<AppointmentSplitBase> splitList){
+        List<AppointmentSplit> splits = this.checkSplit(null, appointDuration, splitList);
+        return splits;
+    }
+
+
+    /**
      * 将form参数封装转化为 AppointmentSplit实体 并检查分解开始时间是否早于结束分解时间
      * @param appointmentSplitBase   form参数
      * @return  成功返回AppointmentSplit;  失败返回null（分解开始时间不早于结束分解时间）
      * @throws ParseException
      */
-    private AppointmentSplit formToEntity(AppointmentSplitBase appointmentSplitBase ) {
+    private AppointmentSplit formToEntity(AppointmentSplitBase appointmentSplitBase) {
         String splitStartTimeStr = appointmentSplitBase.getSplitStartTime();
         String splitEndTimeStr = appointmentSplitBase.getSplitEndTime();
         // 获取当前年月日
@@ -146,9 +161,9 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @param appointId  预约id
      * @param appointDuration  预约总时长
      * @param splitList  时长分解列表
-     * @return  时长分解符合条件返回List<AppointmentSplit>实体列表；否则返回null
+     * @return  时长分解符合条件返回List<AppointmentSplit>实体列表；否则返回null TODO
      */
-    private List<AppointmentSplit> checkSplit(Integer appointId,Integer appointDuration, List<AppointmentSplitBase> splitList) {
+    private List<AppointmentSplit> checkSplit(Integer appointId,Integer appointDuration, List<? extends AppointmentSplitBase> splitList) {
         List<AppointmentSplit> splits = new ArrayList<>();
         if(splitList == null || splitList.isEmpty()){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
