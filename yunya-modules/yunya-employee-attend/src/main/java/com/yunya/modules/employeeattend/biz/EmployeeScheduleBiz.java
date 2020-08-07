@@ -67,9 +67,8 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    */
   public void create(EmployeeScheduleForm employeeScheduleForm){
     // 判断排班是否冲突
-    if (isExist(employeeScheduleForm)) {
-      System.out.println("冲突");//抛出冲突异常
-      return;
+    if (!isExist(employeeScheduleForm)) {
+      throw new ClientServiceException("排班冲突", OperationCodeConstants.SAME_DATA_EXIST);
     }
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleForm, EmployeeSchedule.class);
@@ -344,13 +343,20 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     ClinicSchedules.forEach(x -> clinicScheduleMap.put(x.getScheduleId() + "", x));
     // 根据排班表ID获取排班开始时间和结束时间
     String shiftId = employeeScheduleForm.getScheduleId();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
-    Date startTime = clinicScheduleMap.get(shiftId).getFirstStartTime();
-    Date endTime = new Date();
-    if (clinicScheduleMap.get(shiftId).getSecondEndTime() != null) {
-      endTime = clinicScheduleMap.get(shiftId).getSecondEndTime();
-    } else {
-      endTime = clinicScheduleMap.get(shiftId).getFirstEndTime();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    Date startTime = null;
+    Date endTime = null;
+    try {
+      startTime = dateFormat.parse(dateFormat.format(clinicScheduleMap.get(shiftId).getFirstStartTime()));
+      endTime = new Date();
+      if (clinicScheduleMap.get(shiftId).getSecondEndTime() != null) {
+        endTime = dateFormat.parse(dateFormat.format(clinicScheduleMap.get(shiftId).getSecondEndTime()));
+      } else {
+        endTime = dateFormat.parse(dateFormat.format(clinicScheduleMap.get(shiftId).getFirstEndTime()));
+      }
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
     }
     EmployeeSchedule employeeSchedule = new EmployeeSchedule();
     employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
@@ -371,26 +377,32 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         Integer dataShiftId = data.getScheduleId();
         // 获取当前数据排班的开始时间和结束时间
         ClinicScheduleVO oldShift = clinicScheduleMap.get(dataShiftId + "");
+        System.out.println("就在这里↓");
+        System.out.println(endTime.equals(oldShift.getFirstStartTime()));
         if (oldShift.getSecondEndTime() != null) {
-          if (endTime.before(oldShift.getSecondEndTime()) ||
-                  startTime.after(oldShift.getFirstStartTime())) {
-            flag = false;
-          } else {
+          if (endTime.before(oldShift.getFirstStartTime()) ||
+                  endTime.equals(oldShift.getFirstStartTime()) ||
+                  startTime.equals(oldShift.getSecondEndTime()) ||
+                  startTime.after(oldShift.getSecondEndTime())) {
             flag = true;
+          } else {
+            flag = false;
             return flag;
           }
         } else {
-          if (endTime.before(oldShift.getFirstEndTime()) ||
-                  startTime.after(oldShift.getFirstStartTime())) {
-            flag = false;
-          } else {
+          if (endTime.before(oldShift.getFirstStartTime()) ||
+                  endTime.equals(oldShift.getFirstStartTime()) ||
+                  startTime.equals(oldShift.getSecondEndTime()) ||
+                  startTime.after(oldShift.getFirstEndTime())) {
             flag = true;
+          } else {
+            flag = false;
             return flag;
           }
         }
       }
     } else {
-      flag = false;
+      flag = true;
     }
     return flag;
   }
