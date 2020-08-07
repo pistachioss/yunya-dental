@@ -136,7 +136,7 @@ public class AppointItemController {
      * @return
      */
     @ApiOperation(value = "修改预约项目适用门诊（公司端-预约项目-配置-是否适用）")
-    @PostMapping("/config")
+    @PutMapping("/config")
     @CurrentUser
     public ResponseResult addAndUpdate(@RequestBody @Validated ClinicAppointItemForm form){
         Integer result = clinicAppointItemBiz.addAndUpdateAppItem(form);
@@ -151,7 +151,7 @@ public class AppointItemController {
      * @return
      */
     @ApiOperation(value = "可预约项目统一设置配置（公司端-预约项目-配置-统一设置适用）")
-    @PostMapping("/config/batch")
+    @PutMapping("/config/batch")
     @CurrentUser
     public ResponseResult updateAppointItemWithBatch(@RequestBody @Validated AppointItemBatchConfigModel configModel){
         Integer result = clinicAppointItemBiz.updateAppointItemWithBatch(configModel.getAppointItemId());

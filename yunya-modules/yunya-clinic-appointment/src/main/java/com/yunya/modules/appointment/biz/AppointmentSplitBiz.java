@@ -4,10 +4,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBase;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitDelForm;
@@ -18,7 +15,6 @@ import com.yunya.modules.appointment.vo.AppointmentSplitVo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -40,53 +36,18 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @return
      * @throws ParseException
      */
-    public Integer insertSplit(AppointmentSplitModel splitModel) throws ParseException {
+    public Integer insertAppointSplit(AppointmentSplitModel splitModel) {
+
         List<AppointmentSplitBase> splitList = splitModel.getSplitList();
-        List<AppointmentSplit> splits = new ArrayList<>();
-        Map<String, Object> errtMap = new HashMap<>();
-
         if (splitList == null || splitList.isEmpty()){
-            return -1;
+            throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-
-        splitList.forEach(appointmentSplitBase -> {
-            // 将appointmentSplitBase表单转化为AppointmentSplit实体
-            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBase);
-            // 如果分解开始时间不早于结束分解时间 返回错误信息
-            if (null == appointmentSplit){
-                throw new ClientServiceException("分解开始时长不能大于分解结束时长！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
-            } else{
-                // 否则将实体添加到集合中
-                appointmentSplit.setAppointmentId(splitModel.getAppointmentId());
-                appointmentSplit.setOrgId(splitModel.getOrgId());
-                appointmentSplit.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-                splits.add(appointmentSplit);
-            }
-        });
-
-        // 检测拆分的时间是否等于总预约时长
-        Integer appointDuration = splitModel.getAppointDuration();
-        Integer sumMinute = 0;
-        for (AppointmentSplit split: splits ) {
-            Calendar instance = Calendar.getInstance();
-            // 预约开始时间
-            instance.setTime(split.getSplitStartTime());
-            int startHour = instance.get(Calendar.HOUR_OF_DAY);
-            int startMinute = instance.get(Calendar.MINUTE);
-
-            // 预约结束时间
-            instance.setTime(split.getSplitEndTime());
-            int endHour = instance.get(Calendar.HOUR_OF_DAY);
-            int endMinute = instance.get(Calendar.MINUTE);
-
-            sumMinute += (endHour - startHour) * 60 + (endMinute - startMinute);
+        // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
+        List<AppointmentSplit> splits = this.checkSplit(splitModel.getAppointmentId(),splitModel.getAppointDuration(),splitList);
+        if (splits == null || splits.isEmpty()){
+            throw new ClientServiceException("时长分解有误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        if (appointDuration != sumMinute){
-            throw new ClientServiceException("预约分解时长错误，分解后的时长必须和预约总时长相等！请重新分解。", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
-        }
-
-        int result = mapper.insertAppointmentSplit(splits);
-        return result;
+        return mapper.insertAppointmentSplit(splits);
 
     }
 
@@ -95,7 +56,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @param delForm
      * @return
      */
-    public Integer delSplit(AppointmentSplitDelForm delForm){
+    public Integer delAppointSplit(AppointmentSplitDelForm delForm){
         int result = mapper.delAppoointmentSplitByIds(delForm.getSplitIds());
         return result;
     }
@@ -109,6 +70,33 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         return mapper.findAppointmentSplitByExample(query);
     }
 
+    /**
+     * 修改时长分解
+     * @param form  时长分解表单
+     * @return
+     */
+    public Integer updateAppointSplit(AppointmentSplitModel form){
+        List<AppointmentSplitBase> splitList = form.getSplitList();
+        if (splitList == null && splitList.isEmpty()){
+            throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
+        // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
+        List<AppointmentSplit> splits = this.checkSplit(form.getAppointmentId(), form.getAppointDuration(), splitList);
+        if (splits == null || splits.isEmpty()){
+            throw new ClientServiceException("时长分解有误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
+        splits.forEach(appointmentSplit -> {
+            AppointmentSplit hasAppointSplit = mapper.selectByPrimaryKey(appointmentSplit.getId());
+            if (hasAppointSplit == null){
+                throw new ClientServiceException("要修改的数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
+            }
+            int result = mapper.updateByPrimaryKeySelective(appointmentSplit);
+            if (result <= 0){
+                throw new ClientServiceException("修改时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
+        });
+        return 1;
+    }
 
     /**
      * 将form参数封装转化为 AppointmentSplit实体 并检查分解开始时间是否早于结束分解时间
@@ -151,7 +139,55 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         build.setSplitStartTime(startTimeDate);
         build.setSplitEndTime(endTimeDate);
         return build;
+    }
 
+    /**
+     * 检测时长分解是否符合条件（分解之后的时长和必须等于预约总时长）
+     * @param appointId  预约id
+     * @param appointDuration  预约总时长
+     * @param splitList  时长分解列表
+     * @return  时长分解符合条件返回List<AppointmentSplit>实体列表；否则返回null
+     */
+    private List<AppointmentSplit> checkSplit(Integer appointId,Integer appointDuration, List<AppointmentSplitBase> splitList) {
+        List<AppointmentSplit> splits = new ArrayList<>();
+        if(splitList == null || splitList.isEmpty()){
+            throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
+        splitList.forEach(appointmentSplitBase -> {
+            // 将appointmentSplitBase表单转化为AppointmentSplit实体
+            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBase);
+            // 如果分解开始时间不早于结束分解时间 返回错误信息
+            if (null == appointmentSplit){
+                throw new ClientServiceException("分解开始时长不能大于分解结束时长！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            } else{
+                // 否则将实体添加到集合中
+                appointmentSplit.setAppointmentId(appointId);
+                appointmentSplit.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+                appointmentSplit.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                splits.add(appointmentSplit);
+            }
+        });
+
+        // 检测拆分的时间是否等于总预约时长
+        Integer sumMinute = 0;
+        for (AppointmentSplit split: splits ) {
+            Calendar instance = Calendar.getInstance();
+            // 预约开始时间
+            instance.setTime(split.getSplitStartTime());
+            int startHour = instance.get(Calendar.HOUR_OF_DAY);
+            int startMinute = instance.get(Calendar.MINUTE);
+
+            // 预约结束时间
+            instance.setTime(split.getSplitEndTime());
+            int endHour = instance.get(Calendar.HOUR_OF_DAY);
+            int endMinute = instance.get(Calendar.MINUTE);
+            sumMinute += (endHour - startHour) * 60 + (endMinute - startMinute);
+        }
+
+        if (appointDuration != sumMinute){
+            throw new ClientServiceException("预约分解时长错误，分解后的时长必须和预约总时长相等！请重新分解。", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
+        return splits;
     }
 
 

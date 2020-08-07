@@ -64,7 +64,7 @@ public class ClinicDeviceTypeController {
      */
     @ApiOperation(value = "设备名称修改（公司端-门诊设备-修改）")
     @CurrentUser
-    @PostMapping("/update")
+    @PutMapping("/update")
     public ResponseResult updateDeviceType(@RequestBody @Validated DeviceTypeForm from){
         ResponseResult responseResult = clinicDeviceTypeBiz.updateDeviceType(from);
         return responseResult;

@@ -82,9 +82,9 @@
   </sql>
 
   <!-- 根据设备id，预约开始时间，预约结束时间查询所有预约列表 -->
-  <select id="findAppointListByDeviceIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.modules.appointment.vo.AppointConflictInfoVo">
+  <select id="findAppointListByDeviceIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.feign.appointment.vo.AppointConflictInfoVo">
     select
-      <include refid="Appoint_ConflictInfo_Column"></include>
+      <include refid="Appoint_ConflictInfo_Column"/>
     from appointment apt
     where
       not <![CDATA[(DATE_FORMAT(apt.appoint_end_time,'%d %b %Y %T') < DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
@@ -93,9 +93,9 @@
   </select>
 
   <!-- 根据患者id，预约开始时间，预约结束时间查询所有预约列表 -->
-  <select id="findAppointListByPatientIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.modules.appointment.vo.AppointConflictInfoVo">
+  <select id="findAppointListByPatientIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.feign.appointment.vo.AppointConflictInfoVo">
     select
-      <include refid="Base_Column_List"></include>
+      <include refid="Base_Column_List"/>
     from appointment apt
     where
       not <![CDATA[(DATE_FORMAT(apt.appoint_end_time,'%d %b %Y %T') < DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
@@ -104,9 +104,9 @@
   </select>
 
   <!-- 根据医生id，预约开始时间，预约结束时间查询所有预约列表 -->
-  <select id="findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.modules.appointment.vo.AppointConflictInfoVo">
+  <select id="findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime" resultType="com.yunya.feign.appointment.vo.AppointConflictInfoVo">
     select
-      <include refid="Appoint_ConflictInfo_Column"></include>
+      <include refid="Appoint_ConflictInfo_Column"/>
     from appointment apt
     where
       not <![CDATA[(DATE_FORMAT(apt.appoint_end_time,'%d %b %Y %T') < DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
@@ -187,25 +187,70 @@
 
 <!-- 添加预约 -->
   <insert id="insertAppointment" keyProperty="id" parameterType="com.yunya.models.appointment.Appointment" useGeneratedKeys="true">
-    insert into appointment (patient_id, org_id, dentist_id,
-      assistant_id, clinic_dept_room_id, clinic_device_item_id,
-      clinic_appoint_item_id, appoint_duration, appoint_date,
-      appoint_time, appoint_start_time, appoint_end_time,
-      appoint_period, tooth_bit, appoint_content,
-      appoint_type, confirm_status, appoint_status,
-      remarks, inservice, crt_id,
-      crt_name, crt_time, upt_id,
-      upd_name, upd_time)
-    values (#{patientId}, #{orgId}, #{dentistId},
-      #{assistantId}, #{clinicDeptRoomId}, #{clinicDeviceItemId},
-      #{clinicAppointItemId}, #{appointDuration}, #{appointDate},
-      #{appointTime}, #{appointStartTime}, #{appointEndTime},
-      #{appointPeriod}, #{toothBit}, #{appointContent},
-      #{appointType}, #{confirmStatus}, #{appointStatus},
-      #{remarks}, #{inservice}, #{crtId},
-      #{crtName}, #{crtTime}, #{uptId},
-      #{updName}, #{updTime})
+      insert into appointment (patient_id, org_id, dentist_id,
+        assistant_id, clinic_dept_room_id, clinic_device_item_id,
+        clinic_appoint_item_id, appoint_duration, appoint_date,
+        appoint_time, appoint_start_time, appoint_end_time,
+        appoint_period, tooth_bit, appoint_content,
+        appoint_type, confirm_status, appoint_status,
+        remarks, inservice, crt_id,
+        crt_name, crt_time, upt_id,
+        upd_name, upd_time)
+      values (#{patientId}, #{orgId}, #{dentistId},
+        #{assistantId}, #{clinicDeptRoomId}, #{clinicDeviceItemId},
+        #{clinicAppointItemId}, #{appointDuration}, #{appointDate},
+        #{appointTime}, #{appointStartTime}, #{appointEndTime},
+        #{appointPeriod}, #{toothBit}, #{appointContent},
+        #{appointType}, #{confirmStatus}, #{appointStatus},
+        #{remarks}, #{inservice}, #{crtId},
+        #{crtName}, #{crtTime}, #{uptId},
+        #{updName}, #{updTime})
   </insert>
+
+  <!-- 编辑预约——检查患者预约冲突 -->
+  <select id="editCheckPatientConflict" parameterType="java.util.Map" resultType="com.yunya.feign.appointment.vo.AppointConflictInfoVo">
+      select
+         <include refid="Appoint_ConflictInfo_Column"/>
+      from (
+        select *
+        from appointment
+        where not (DATE_FORMAT(appoint_end_time,'%d %b %Y %T') &lt;  DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
+        or DATE_FORMAT(appoint_start_time,'%d %b %Y %T') &gt; DATE_FORMAT(#{appointEndTime},'%d %b %Y %T'))
+        and patient_id = #{patientId} and inservice = 1) apt
+      where apt.id not in (#{id})
+  </select>
+
+  <!-- 编辑预约——检查医生预约冲突 -->
+  <select id="editCheckDentistConflict" parameterType="java.util.Map" resultType="com.yunya.feign.appointment.vo.AppointConflictInfoVo">
+        select
+           <include refid="Appoint_ConflictInfo_Column"/>
+        from
+            (
+            select
+                *
+            from appointment
+            where not (DATE_FORMAT(appoint_end_time,'%d %b %Y %T') &lt;  DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
+            or DATE_FORMAT(appoint_start_time,'%d %b %Y %T') &gt; DATE_FORMAT(#{appointEndTime},'%d %b %Y %T'))
+            and dentist_id = #{dentistId} and inservice = 1
+            ) apt
+        where apt.id not in (#{id})
+  </select>
+
+  <!-- 编辑预约——检查设备预约冲突 -->
+  <select id="editCheckDeviceConflict" parameterType="java.util.Map" resultType="com.yunya.feign.appointment.vo.AppointConflictInfoVo">
+      select
+        <include refid="Appoint_ConflictInfo_Column"/>
+      from
+        (
+          select
+            *
+          from appointment
+          where not (DATE_FORMAT(appoint_end_time,'%d %b %Y %T') &lt;  DATE_FORMAT(#{appointStartTime},'%d %b %Y %T')
+            or DATE_FORMAT(appoint_start_time,'%d %b %Y %T') &gt; DATE_FORMAT(#{appointEndTime},'%d %b %Y %T'))
+            and clinic_device_item_id = #{deviceId} and inservice = 1
+        ) apt
+      where apt.id not in (#{id})
+  </select>
 
 
 </mapper>

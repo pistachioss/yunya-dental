@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.persistence.Column;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -47,6 +49,8 @@ public class AppointSettingForm implements Serializable {
      */
     @ApiModelProperty(value = "预约显示列数", required = true)
     @NotNull(message = "预约显示列数不能为空！")
+    @Min(value = 1)
+    @Max(value = 15)
     private Integer columns;
 
     /**

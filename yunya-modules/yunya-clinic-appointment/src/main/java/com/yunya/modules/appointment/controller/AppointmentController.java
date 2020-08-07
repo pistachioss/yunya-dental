@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.controller;
 
+import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -60,6 +61,19 @@ public class AppointmentController {
             @RequestBody @Validated AppointmentBaseModel appointmentForm) throws ParseException {
 
         ResponseResult responseResult = appointmentBiz.continueAddAppointment(appointmentForm);
+        return responseResult;
+    }
+
+    /**
+     * 修改预约（冲突检测）
+     * @param form
+     * @return
+     */
+    @ApiOperation(value = "修改预约（冲突检测）")
+    @PutMapping("/update")
+    @CurrentUser
+    public ResponseResult updateAppointment(@RequestBody @Validated AppointmentBaseForm form){
+        ResponseResult responseResult = appointmentBiz.updateAppointment(form);
         return responseResult;
     }
 

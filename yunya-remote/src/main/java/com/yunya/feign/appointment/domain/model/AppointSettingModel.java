@@ -30,24 +30,14 @@ public class AppointSettingModel implements Serializable {
     /**
      * 预约单位(分钟)
      */
-    @ApiModelProperty(value = "预约单位(分钟)")
+    @ApiModelProperty(value = "预约单位(分钟)", required = true)
+    @NotNull(message = "预约单位（分钟）不能为空！")
     private Integer appointUnit;
 
     /**
      * 预约显示列数
      */
-    @ApiModelProperty(value = "预约显示列数")
+    @ApiModelProperty(value = "预约显示列数",required = true)
+    @NotNull(message = "预约显示列数不能为空！")
     private Integer columns;
-
-    /**
-     * 备注
-     */
-    @ApiModelProperty("备注")
-    private String remarks;
-
-    /**
-     * 是否启用 是否有效
-     */
-    @ApiModelProperty(value = "是否启用 是否有效")
-    private Byte inservice;
 }

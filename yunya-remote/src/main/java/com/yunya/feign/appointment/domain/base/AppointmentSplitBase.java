@@ -20,6 +20,10 @@ import java.util.Date;
 @ToString
 public class AppointmentSplitBase {
 
+    /** 时长分解id */
+    @ApiModelProperty(value = "时长分解id")
+    private Integer id;
+
     /** 拆分开始时间 */
     @ApiModelProperty(value = "拆分开始时间")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
