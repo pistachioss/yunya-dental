@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -16,10 +17,10 @@ import java.util.Date;
  * @create 2020-07-30 14:19
  * @update yunya-lihuibin    2020-07-30    新建
  */
-@ApiModel("时长分解参数封装")
+@ApiModel(value = "时长分解参数封装", subTypes = {AppointmentSplitUpdateBaseInfo.class})
 @Data
 @ToString
-public class AppointmentSplitBase {
+public class AppointmentSplitBaseInfo implements Serializable {
 
     /** 拆分开始时间 */
     @ApiModelProperty(value = "拆分开始时间", required = true)

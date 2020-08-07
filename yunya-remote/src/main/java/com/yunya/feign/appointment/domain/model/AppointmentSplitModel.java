@@ -1,7 +1,6 @@
 package com.yunya.feign.appointment.domain.model;
 
-import com.yunya.feign.appointment.domain.base.AppointmentSplitBase;
-import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBase;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -35,5 +34,5 @@ public class AppointmentSplitModel {
     private Integer appointmentId;
 
     @ApiModelProperty(value = "预约分解列表")
-    private List<AppointmentSplitBase> splitList;
+    private List<AppointmentSplitBaseInfo> splitList;
 }

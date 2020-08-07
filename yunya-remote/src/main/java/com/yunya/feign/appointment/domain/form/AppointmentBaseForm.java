@@ -69,35 +69,35 @@ public class AppointmentBaseForm implements Serializable {
     private Integer dentistId;
 
     /**助手id*/
-    @ApiModelProperty("助手id")
+    @ApiModelProperty(value = "助手id")
     private Integer assistantId;
 
     /** 预约科室id */
-    @ApiModelProperty("预约科室id")
+    @ApiModelProperty(value = "预约科室id")
     private Integer clinicDeptRoomId;
 
     /** 预约设备id */
-    @ApiModelProperty("预约设备id ")
+    @ApiModelProperty(value = "预约设备id ")
     private Integer clinicDeviceItemId;
 
     /** 牙位 */
-    @ApiModelProperty("牙位")
+    @ApiModelProperty(value = "牙位")
     private String toothBit;
 
     /** 预约确认 0-未确认；1-确认 */
-    @ApiModelProperty("预约确认 0-未确认；1-确认")
+    @ApiModelProperty(value = "预约确认 0-未确认；1-确认")
     private Boolean confirmStatus;
 
     /** 预约项目明细条目id */
-    @ApiModelProperty("预约项目明细条目id")
+    @ApiModelProperty(value = "预约项目明细条目id")
     private Integer clinicAppointItemId;
 
     /** 预约内容 */
-    @ApiModelProperty("预约内容")
+    @ApiModelProperty(value = "预约内容")
     private String appointContent;
 
     /** 备注 */
-    @ApiModelProperty("备注")
+    @ApiModelProperty(value = "备注")
     private String remark;
 
     /** 是否启用 是否有效 */

@@ -73,7 +73,7 @@
     <!--查询预约分类列表-->
     <select id="getByOrderTypeId" resultType="com.yunya.modules.appointment.vo.AppointmentItemVo">
         select
-        item.id,
+        DISTINCT item.id,
         item.name as itemName,
         atype.name as typeName,
         item.duration,

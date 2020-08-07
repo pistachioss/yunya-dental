@@ -1,6 +1,6 @@
 package com.yunya.modules.appointment.biz;
 
-import com.yunya.feign.appointment.domain.base.AppointmentSplitBase;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
@@ -135,7 +135,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         int result = mapper.insertAppointment(build);
         if (result > 0) {
             // 添加预约时长分解
-            List<AppointmentSplitBase> splitList = form.getSplitList();
+            List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             if (splitList != null && !splitList.isEmpty()){
                 AppointmentSplitModel splitModel = new AppointmentSplitModel();
                 splitModel.setSplitList(form.getSplitList());

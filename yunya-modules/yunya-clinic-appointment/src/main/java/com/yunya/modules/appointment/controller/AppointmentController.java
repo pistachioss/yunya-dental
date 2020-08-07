@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * 患者预约中心Controller
@@ -43,7 +41,7 @@ public class AppointmentController {
     @ApiOperation(value = "添加预约（有冲突检测）")
     @PostMapping("/add")
     @CurrentUser
-    public ResponseResult addAppointment(@RequestBody AppointmentBaseModel form) throws ParseException {
+    public ResponseResult addAppointment(@RequestBody @Validated AppointmentBaseModel form) throws ParseException {
         ResponseResult responseResult = appointmentBiz.addAppointment(form);
         return responseResult;
     }

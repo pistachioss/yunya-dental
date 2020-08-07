@@ -1,6 +1,6 @@
 package com.yunya.feign.appointment.domain.form;
 
-import com.yunya.feign.appointment.domain.base.AppointmentSplitBase;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -18,7 +18,7 @@ import java.util.List;
  * @create 2020-08-07 9:19
  * @update yunya-lihuibin    2020-08-07    新建
  */
-@ApiModel(value = "时长分解是否正确参数封装", subTypes = AppointmentSplitBase.class)
+@ApiModel(value = "时长分解是否正确参数封装")
 @Data
 @ToString
 public class AppointSplitCheckForm implements Serializable {
@@ -31,5 +31,5 @@ public class AppointSplitCheckForm implements Serializable {
     /** 时长分解列表 */
     @ApiModelProperty(value = "时长分解列表",required = true)
     @NotEmpty(message = "时长分解列表不能为空！")
-    private List<AppointmentSplitBase> splitList;
+    private List<AppointmentSplitBaseInfo> splitList;
 }
