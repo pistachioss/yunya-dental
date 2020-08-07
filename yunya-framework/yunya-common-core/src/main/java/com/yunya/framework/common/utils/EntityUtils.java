@@ -74,6 +74,12 @@ public class EntityUtils {
               ? null
               : Integer.valueOf(BaseContextHandler.getUserID());
     }
+    if( id == null) {
+      id = 0;
+    }
+    if( name == null) {
+      name = "guest";
+    }
 
     // 默认属性
     String[] fields = {"crtName", "crtId", "crtHost", "crtTime"};
@@ -120,6 +126,12 @@ public class EntityUtils {
           StringUtils.isBlank(BaseContextHandler.getUserID())
               ? null
               : Integer.valueOf(BaseContextHandler.getUserID());
+    }
+    if( id == null) {
+      id = 0;
+    }
+    if( name == null) {
+      name = "guest";
     }
 
     // 默认属性
