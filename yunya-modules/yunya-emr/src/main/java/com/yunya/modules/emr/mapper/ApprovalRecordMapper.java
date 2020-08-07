@@ -1,9 +1,10 @@
 package com.yunya.modules.emr.mapper;
 
 
-import com.yunya.models.emr.ApprovalRecord;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+import com.yunya.models.emr.*;
+import org.apache.ibatis.annotations.*;
+
+import java.util.*;
 
 @Mapper
 public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<ApprovalRecord> {
@@ -49,4 +50,21 @@ public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<Ap
      */
     int countByTreatmentId(@Param("treatmentId") Integer treatmentId, @Param("eventType") Integer eventType,
                               @Param("status") Integer status);
+
+    /**
+     * 根据条件查询病例审核数据集合
+     * @param medicalIds
+     * @param submitTime
+     * @return
+     */
+    List<ApprovalRecord> listMedicalByParam(@Param("medicalIds") List<Integer> medicalIds, @Param("submitTime") String submitTime,
+                                          @Param("loginUserId") Integer loginUserId);
+
+    /**
+     * 根据草稿病例提交时间查询电子病例id集合
+     * @param submitTime
+     * @param loginUserId
+     * @return
+     */
+    List<Integer> listMedicalIdsByCrtTime(@Param("submitTime") String submitTime, @Param("loginUserId") Integer loginUserId);
 }
