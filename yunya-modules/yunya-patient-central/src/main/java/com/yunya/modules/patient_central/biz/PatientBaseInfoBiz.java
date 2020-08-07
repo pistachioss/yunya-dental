@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -191,5 +192,16 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             e.printStackTrace();
         }
         return date;
+    }
+
+    /**
+     * 接受人脸识别结果
+     * @param patientWoPlatformInfoModel
+     */
+    public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
+        PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(1);
+        patientBaseInfo.setwoGuid(patientWoPlatformInfoModel.getGuid());
+        patientBaseInfo.setName("WO平台");
+        mapper.updateByPrimaryKeySelective(patientBaseInfo);
     }
 }

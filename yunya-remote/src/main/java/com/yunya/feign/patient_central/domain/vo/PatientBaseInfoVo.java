@@ -44,10 +44,10 @@ public class PatientBaseInfoVo implements Serializable {
     private String pinyinName;
 
     /**
-     * 头像地址 患者头像存储路径
+     * wo平台对应人员id
      */
-    @Column(name = "avatar_path")
-    private String avatarPath;
+    @Column(name = "wo_guid")
+    private String woGuid;
 
     /**
      * 手机号码 长度14

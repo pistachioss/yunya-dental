@@ -1,13 +1,16 @@
 package com.yunya.modules.patient_central.controller;
 
+import com.uniubi.sdk.api.DeviceControllerApi;
+import com.uniubi.sdk.model.ResultDeviceOutput;
+import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
+import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
@@ -81,5 +84,15 @@ public class PatientBaseInfoController {
     public Date birthYear(@PathVariable("age") Integer age) {
         return patientBaseInfoBiz.birthYear(age);
     }
+
+
+    @ApiOperation(value = "测试人脸识别认证返回", notes = "测试人脸识别认证返回")
+    @ResponseBody
+    @RequestMapping(value = "/renlianshibie", method = RequestMethod.POST)
+    public ResponseResult renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel ){
+        patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
+        return ResponseUtil.success();
+    }
+
 
 }
