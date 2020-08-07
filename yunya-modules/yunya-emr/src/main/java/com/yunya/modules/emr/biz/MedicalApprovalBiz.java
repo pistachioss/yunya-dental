@@ -222,51 +222,68 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String submitTime = query.getSubmitTime();
         String keyword = query.getKeyword();
+        Map<Integer, Integer> majorDoctorMap = null;
+        List<Integer> patientIds = null;
+        List<MedicalCommonRecord> commonRecords;
+        List<ApprovalRecord> list;
+        List<DraftMedicalApprovePageVo> resultList = null;
         //草稿提交时间不为空，先查询审批表，再查询电子病例表得到就诊id和患者id，最后查询患者表信息
         if (submitTime != null) {
             //todo 根据keyword查询患者接口得到患者信息集合（患者Id,病历号），再查询电子病例返回(电子病历Id,就诊Id)，再查询就诊记录的门诊信息，
             //最后查询审批记录
             if (StringUtils.isBlank(keyword)) {
                 PageHelper.startPage(query.getPageNum(), query.getPageSize());
-                List<ApprovalRecord> list = mapper.listMedicalByParam(null, submitTime, loginUserId);
+                list = mapper.listMedicalByParam(null, submitTime, loginUserId);
                 List<Integer> medicalIds = list.stream().map(ApprovalRecord::getEventId).collect(toList());
                 if (CollectionUtils.isNotEmpty(medicalIds)) {
-                    List<MedicalCommonRecord> commonRecords = findByMedicalIds(medicalIds, loginUserId);
+                    commonRecords = findByMedicalIds(medicalIds, loginUserId);
                     if (CollectionUtils.isNotEmpty(commonRecords)) {
-                        //就诊Id集合
-//                        List<Integer> treatmentIds = commonRecords.stream().collect(toMap(MedicalCommonRecord::getId, MedicalCommonRecord::getTreatmentId));
+                        //电子病例id就诊id映射
+                        majorDoctorMap = commonRecords.stream().collect(toMap(MedicalCommonRecord::getId, MedicalCommonRecord::getMajorDentistId));
+                        //电子病例id 患者id映射
+                        Map<Integer, Integer> patientMap = commonRecords.stream().collect(toMap(MedicalCommonRecord::getId, MedicalCommonRecord::getPatientId));
                         //患者Id集合
-                        List<Integer> patientIds = commonRecords.stream().map(MedicalCommonRecord::getPatientId).collect(toList());
+                        patientIds = commonRecords.stream().map(MedicalCommonRecord::getPatientId).collect(toList());
                         //todo 调用就诊和患者
                     }
                 }
-                assembleDraftPageVo(list);
+                resultList = assembleDraftPageVo(list, majorDoctorMap);
             } else {
-                List<Integer> medicalIds = mapper.listMedicalIdsByCrtTime(submitTime, loginUserId);
+                //todo 调用就诊和患者 名字模糊查询
+                if (CollectionUtils.isNotEmpty(patientIds)) {
+                    commonRecords = findByPatientIds(patientIds, submitTime, loginUserId);
+                    List<Integer> medicalIds = commonRecords.stream().map(MedicalCommonRecord::getId).collect(toList());
+                    list = mapper.listMedicalByParam(medicalIds, submitTime, loginUserId);
+                    resultList = assembleDraftPageVo(list, majorDoctorMap);
+                }
             }
 
-        }
-        //todo 根据keyword查询患者接口得到患者信息集合（患者Id,病历号），再查询电子病例返回(电子病历Id,就诊Id)，再查询就诊记录的门诊信息，
-        //最后查询审批记录
-        if (StringUtils.isBlank(keyword)) {
-
         } else {
+            //todo 根据keyword查询患者接口得到患者信息集合（患者Id,病历号），再查询电子病例返回(电子病历Id,就诊Id)，再查询就诊记录的门诊信息，
+            //最后查询审批记录
+            if (StringUtils.isBlank(keyword)) {
 
+            } else {
+
+            }
         }
-        return null;
+        return new PageInfo<>(resultList);
     }
 
-    private List<DraftMedicalApprovePageVo> assembleDraftPageVo(List<ApprovalRecord> list) {
+    private List<DraftMedicalApprovePageVo> assembleDraftPageVo(List<ApprovalRecord> list, Map<Integer, Integer> majorDoctorMap) {
         List<DraftMedicalApprovePageVo> resultList = Lists.newArrayListWithExpectedSize(list.size());
         list.forEach(obj -> {
+            Integer eventId = obj.getEventId();
+            //主治医师信息
+            SysUserInfoDetail majorDoctorInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(majorDoctorMap.get(eventId));
             DraftMedicalApprovePageVo vo = new DraftMedicalApprovePageVo();
             vo.setId(obj.getId());
-            vo.setEventId(obj.getEventId());
+            vo.setEventId(eventId);
             //todo
             vo.setPatientName(null);
             vo.setMedicalNum(null);
             vo.setTreatmentClinicName(null);
-            vo.setMajorDentistName(null);
+            vo.setMajorDentistName(majorDoctorInfo == null ? null : majorDoctorInfo.getName());
             vo.setTreatmentDate(null);
             vo.setSubmitTime(obj.getCrtTime());
             vo.setApproveStatus(ApproveStatusEnum.getValue(obj.getStatus()));
@@ -327,6 +344,17 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     private List<MedicalCommonRecord> findByMedicalIds(List<Integer> medicalIds, Integer loginUserId) {
         Example example = new Example(MedicalCommonRecord.class);
         example.createCriteria().andIn("id", medicalIds).andEqualTo("crtId", loginUserId);
+        return medicalMapper.selectByExample(example);
+    }
+
+    private List<MedicalCommonRecord> findByPatientIds(List<Integer> patientIds, String submitTime, Integer loginUserId) {
+        LocalDateTime start = LocalDateTime.of(LocalDate.parse(submitTime), LocalTime.of(0, 0, 0));
+        LocalDateTime end = LocalDateTime.of(LocalDate.parse(submitTime).plusDays(1), LocalTime.of(0, 0, 0));
+        Example example = new Example(MedicalCommonRecord.class);
+        example.createCriteria().andIn("patientId", patientIds)
+                .andGreaterThanOrEqualTo("crtTime", start)
+                .andLessThanOrEqualTo("crtTime", end)
+                .andEqualTo("crtId", loginUserId);
         return medicalMapper.selectByExample(example);
     }
 
