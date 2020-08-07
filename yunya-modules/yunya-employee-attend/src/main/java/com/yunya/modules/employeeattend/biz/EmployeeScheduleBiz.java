@@ -377,8 +377,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         Integer dataShiftId = data.getScheduleId();
         // 获取当前数据排班的开始时间和结束时间
         ClinicScheduleVO oldShift = clinicScheduleMap.get(dataShiftId + "");
-        System.out.println("就在这里↓");
-        System.out.println(endTime.equals(oldShift.getFirstStartTime()));
         if (oldShift.getSecondEndTime() != null) {
           if (endTime.before(oldShift.getFirstStartTime()) ||
                   endTime.equals(oldShift.getFirstStartTime()) ||
