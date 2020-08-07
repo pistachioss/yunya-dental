@@ -7,6 +7,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
@@ -68,7 +69,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      */
     public Integer updateAppointSplit(AppointmentSplitForm form){
         List<AppointmentSplitUpdateBaseInfo> splitList = form.getSplitList();
-        if (splitList == null || splitList.isEmpty()){
+        if (StringHelper.isEmpty(splitList)){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
@@ -159,9 +160,9 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         if(splitList == null || splitList.isEmpty()){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        splitList.forEach(appointmentSplitBase -> {
+        splitList.forEach(appointmentSplitBaseInfo -> {
             // 将appointmentSplitBase表单转化为AppointmentSplit实体
-            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBase);
+            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBaseInfo);
             // 如果分解开始时间不早于结束分解时间 返回错误信息
             if (null == appointmentSplit){
                 throw new ClientServiceException("分解开始时长不能大于分解结束时长！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);

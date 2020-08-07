@@ -39,5 +39,5 @@ public class AppointItemQuery implements Serializable {
 
     /** 预约项目名称（模糊查询用） */
     @ApiModelProperty(value = "预约项目名称（模糊查询用）")
-    private String itemName;
+    private String name;
 }

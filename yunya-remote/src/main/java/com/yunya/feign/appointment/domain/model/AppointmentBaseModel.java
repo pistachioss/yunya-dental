@@ -100,12 +100,8 @@ public class AppointmentBaseModel implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remarks;
 
-    /** 是否启用 是否有效 */
-    @ApiModelProperty(value = "是否启用 是否有效")
-    private Boolean inservice;
-
     /** 时长分解列表 */
-    @ApiModelProperty(value = "时长分解列表", required = false)
+    @ApiModelProperty(value = "时长分解列表", required = true)
     @NotEmpty(message = "时长分解列表不能为空！")
     private List<AppointmentSplitBaseInfo> splitList;
 }

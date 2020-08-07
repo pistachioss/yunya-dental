@@ -92,11 +92,11 @@ public class AppointmentSplitController {
     }
 
     /**
-     * 修改时长分解
+     * 修改时长分解（修改预约-预约时长分解-提交 用）
      * @param form  时长分解表单
      * @return
      */
-    @ApiOperation(value = "修改时长分解（修改预约-预约时长分解-提交 用）")
+    @ApiOperation(value = "修改时长分解")
     @PutMapping("/update")
     @CurrentUser
     public ResponseResult updateAppointSplit(@RequestBody @Validated AppointmentSplitForm form){

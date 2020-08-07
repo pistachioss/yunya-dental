@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.DeviceTypeForm;
 import com.yunya.feign.appointment.domain.model.DeviceTypeModel;
 import com.yunya.feign.appointment.domain.query.DeviceTypeQuery;
@@ -90,7 +91,7 @@ public class ClinicDeviceTypeController {
     @ApiOperation(value = "根据条件查询设备")
     @PostMapping("/find")
     public ResponseResult findDeviceTypeByExample(@RequestBody DeviceTypeQuery query){
-        List<DeviceTypeVo> deviceTypeList = clinicDeviceTypeBiz.findDeviceTypeList(query);
-        return ResponseUtil.success(deviceTypeList);
+        PageInfo pageInfo = clinicDeviceTypeBiz.findDeviceTypeList(query);
+        return ResponseUtil.success(pageInfo);
     }
 }

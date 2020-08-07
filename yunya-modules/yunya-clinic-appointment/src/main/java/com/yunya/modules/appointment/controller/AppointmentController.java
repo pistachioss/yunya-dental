@@ -7,13 +7,11 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
-import java.util.Map;
 
 /**
  * 患者预约中心Controller
