@@ -715,6 +715,8 @@ public class ExcelUtil<T> {
           case ERROR:
             val = cell.getErrorCellValue();
             break;
+          default:
+            break;
         }
       }
     } catch (Exception e) {
