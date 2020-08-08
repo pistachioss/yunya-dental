@@ -1,5 +1,7 @@
 package com.yunya.modules.emr.enums;
 
+import java.util.*;
+
 /**
  * @author xiangyang
  */
@@ -25,5 +27,20 @@ public enum ApproveStatusEnum {
     public String getValue()
     {
         return value;
+    }
+
+    public static String getValue(Integer code)
+    {
+        if(code != null)
+        {
+            for(ApproveStatusEnum statusEnum : values())
+            {
+                if(Objects.equals(statusEnum.getCode(), code))
+                {
+                    return statusEnum.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

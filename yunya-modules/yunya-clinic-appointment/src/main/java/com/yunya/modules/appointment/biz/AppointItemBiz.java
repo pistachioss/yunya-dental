@@ -75,7 +75,7 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
      */
     public List<AppointmentItemVo> findAppItemList(AppointItemQuery from) {
         //获取公司端预约项目列表
-        List<AppointmentItemVo> ordersTypeList = mapper.getByOrderTypeId(from);
+        List<AppointmentItemVo> ordersTypeList = mapper.findAppointItemByExample(from);
         return ordersTypeList;
     }
 
@@ -104,9 +104,9 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
      * @param form
      * @return
      */
-    public List<AppointmentItemVo> findByAppItemName(AppointItemQuery form) {
+    public List<AppointmentItemVo> findAppointItemByExample(AppointItemQuery form) {
         //通过feign查询预约信息，查询门诊端预约信息
-        List<AppointmentItemVo> ordersTypes = mapper.getByOrderTypeId(form);
+        List<AppointmentItemVo> ordersTypes = mapper.findAppointItemByExample(form);
         return ordersTypes;
     }
 

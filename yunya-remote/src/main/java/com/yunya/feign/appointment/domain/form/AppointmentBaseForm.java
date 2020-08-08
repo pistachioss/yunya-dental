@@ -1,14 +1,18 @@
 package com.yunya.feign.appointment.domain.form;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 患者预约基础参数列表封装
@@ -35,12 +39,11 @@ public class AppointmentBaseForm implements Serializable {
 
     /** 患者id */
     @ApiModelProperty(value = "患者id",required = true)
-    @NotNull(message = "患者id为空！")
+    @NotNull(message = "患者id不能为空！")
     private Integer patientId;
 
     /** 患者姓名 */
-    @ApiModelProperty(value = "患者姓名",required = true)
-    @NotNull(message = "患者姓名为空！")
+    @ApiModelProperty(value = "患者姓名",hidden = true)
     private String patientName;
 
     /** 预约日期 */
@@ -69,38 +72,43 @@ public class AppointmentBaseForm implements Serializable {
     private Integer dentistId;
 
     /**助手id*/
-    @ApiModelProperty("助手id")
+    @ApiModelProperty(value = "助手id")
     private Integer assistantId;
 
     /** 预约科室id */
-    @ApiModelProperty("预约科室id")
+    @ApiModelProperty(value = "预约科室id")
     private Integer clinicDeptRoomId;
 
     /** 预约设备id */
-    @ApiModelProperty("预约设备id ")
+    @ApiModelProperty(value = "预约设备id ")
     private Integer clinicDeviceItemId;
 
     /** 牙位 */
-    @ApiModelProperty("牙位")
+    @ApiModelProperty(value = "牙位")
     private String toothBit;
 
     /** 预约确认 0-未确认；1-确认 */
-    @ApiModelProperty("预约确认 0-未确认；1-确认")
+    @ApiModelProperty(value = "预约确认 0-未确认；1-确认")
     private Boolean confirmStatus;
 
     /** 预约项目明细条目id */
-    @ApiModelProperty("预约项目明细条目id")
+    @ApiModelProperty(value = "预约项目明细条目id")
     private Integer clinicAppointItemId;
 
     /** 预约内容 */
-    @ApiModelProperty("预约内容")
+    @ApiModelProperty(value = "预约内容")
     private String appointContent;
 
     /** 备注 */
-    @ApiModelProperty("备注")
+    @ApiModelProperty(value = "备注")
     private String remark;
 
     /** 是否启用 是否有效 */
     @ApiModelProperty(value = "是否启用 是否有效")
     private Boolean inservice;
+
+    /** 时长分解列表 */
+    @ApiModelProperty(value = "时长分解列表", required = true)
+    @NotEmpty(message = "时长分解列表不能为空！")
+    private List<AppointmentSplitUpdateBaseInfo> splitList;
 }

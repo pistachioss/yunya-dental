@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -50,10 +51,10 @@ public class PatientBaseInfoModel implements Serializable {
     private String pinyinName;
 
     /**
-     * 头像地址 患者头像存储路径
+     * wo平台对应人员id
      */
-    @ApiModelProperty(value = "患者头像地址")
-    private String avatarPath;
+    @ApiModelProperty(value = "wo平台对应人员id")
+    private String woGuid;
 
     /**
      * 手机号码 长度14

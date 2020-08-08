@@ -7,14 +7,11 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Map;
 
 /**
  * 患者预约中心Controller
@@ -43,7 +40,7 @@ public class AppointmentController {
     @ApiOperation(value = "添加预约（有冲突检测）")
     @PostMapping("/add")
     @CurrentUser
-    public ResponseResult addAppointment(@RequestBody AppointmentBaseModel form) throws ParseException {
+    public ResponseResult addAppointment(@RequestBody @Validated AppointmentBaseModel form) throws ParseException {
         ResponseResult responseResult = appointmentBiz.addAppointment(form);
         return responseResult;
     }
@@ -54,11 +51,11 @@ public class AppointmentController {
      * @description 出现预约冲突后继续添加患者预约
      * @param appointmentForm 预约Form表单
      */
-    @ApiOperation(value = "新增预约（继续添加）")
-    @PostMapping("/continueAdd")
+    @ApiOperation(value = "新增预约（预约冲突后继续添加）")
+    @PostMapping("/add/continue")
     @CurrentUser
     public ResponseResult continueAddAppointment(
-            @RequestBody @Validated AppointmentBaseModel appointmentForm) throws ParseException {
+            @RequestBody @Validated AppointmentBaseModel appointmentForm) {
 
         ResponseResult responseResult = appointmentBiz.continueAddAppointment(appointmentForm);
         return responseResult;
@@ -66,8 +63,8 @@ public class AppointmentController {
 
     /**
      * 修改预约（冲突检测）
-     * @param form
-     * @return
+     * @param form 修改表单
+     * @return ResponseResult
      */
     @ApiOperation(value = "修改预约（冲突检测）")
     @PutMapping("/update")
@@ -76,6 +73,20 @@ public class AppointmentController {
         ResponseResult responseResult = appointmentBiz.updateAppointment(form);
         return responseResult;
     }
+
+    /**
+     * 修改预约（继续保存）
+     * @param appointmentForm 修改预约表单
+     * @return  ResponseResult
+     */
+    @ApiOperation(value = "修改预约（继续保存）")
+    @PutMapping("/update/continue")
+    @CurrentUser
+    public ResponseResult editAppointmentContinueSave(@RequestBody @Validated AppointmentBaseForm appointmentForm){
+        return ResponseUtil.success(appointmentBiz.continueUpdateAppointment(appointmentForm));
+    }
+
+
 
 
 }

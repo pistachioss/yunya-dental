@@ -1,13 +1,15 @@
 package com.yunya.modules.appointment.biz;
 
+import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
+import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointmentSplit;
-import com.yunya.feign.appointment.domain.base.AppointmentSplitBase;
-import com.yunya.feign.appointment.domain.form.AppointmentSplitDelForm;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
 import com.yunya.modules.appointment.mapper.AppointmentSplitMapper;
@@ -38,7 +40,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      */
     public Integer insertAppointSplit(AppointmentSplitModel splitModel) {
 
-        List<AppointmentSplitBase> splitList = splitModel.getSplitList();
+        List<AppointmentSplitBaseInfo> splitList = splitModel.getSplitList();
         if (splitList == null || splitList.isEmpty()){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
@@ -52,16 +54,6 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
     }
 
     /**
-     * 删除预约分解
-     * @param delForm
-     * @return
-     */
-    public Integer delAppointSplit(AppointmentSplitDelForm delForm){
-        int result = mapper.delAppoointmentSplitByIds(delForm.getSplitIds());
-        return result;
-    }
-
-    /**
      * 根据条件查询分解预约
      * @param query
      * @return
@@ -72,12 +64,12 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
 
     /**
      * 修改时长分解
-     * @param form  时长分解表单
+     * @param form  时长分解表单 TODO
      * @return
      */
-    public Integer updateAppointSplit(AppointmentSplitModel form){
-        List<AppointmentSplitBase> splitList = form.getSplitList();
-        if (splitList == null && splitList.isEmpty()){
+    public Integer updateAppointSplit(AppointmentSplitForm form){
+        List<AppointmentSplitUpdateBaseInfo> splitList = form.getSplitList();
+        if (StringHelper.isEmpty(splitList)){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
@@ -90,6 +82,9 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
             if (hasAppointSplit == null){
                 throw new ClientServiceException("要修改的数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
             }
+            appointmentSplit.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+            appointmentSplit.setUpdName(BaseContextHandler.getName());
+            appointmentSplit.setUpdTime(new Date(System.currentTimeMillis()));
             int result = mapper.updateByPrimaryKeySelective(appointmentSplit);
             if (result <= 0){
                 throw new ClientServiceException("修改时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
@@ -99,14 +94,26 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
     }
 
     /**
+     * 时长分解检查（新增用）
+     * @param appointDuration
+     * @param splitList
+     * @return
+     */
+    public List<AppointmentSplit> appointSplitCheck(Integer appointDuration, List<AppointmentSplitBaseInfo> splitList){
+        List<AppointmentSplit> splits = this.checkSplit(null, appointDuration, splitList);
+        return splits;
+    }
+
+
+    /**
      * 将form参数封装转化为 AppointmentSplit实体 并检查分解开始时间是否早于结束分解时间
-     * @param appointmentSplitBase   form参数
+     * @param appointmentSplitBaseInfo   form参数
      * @return  成功返回AppointmentSplit;  失败返回null（分解开始时间不早于结束分解时间）
      * @throws ParseException
      */
-    private AppointmentSplit formToEntity(AppointmentSplitBase appointmentSplitBase ) {
-        String splitStartTimeStr = appointmentSplitBase.getSplitStartTime();
-        String splitEndTimeStr = appointmentSplitBase.getSplitEndTime();
+    private AppointmentSplit formToEntity(AppointmentSplitBaseInfo appointmentSplitBaseInfo) {
+        String splitStartTimeStr = appointmentSplitBaseInfo.getSplitStartTime();
+        String splitEndTimeStr = appointmentSplitBaseInfo.getSplitEndTime();
         // 获取当前年月日
         SimpleDateFormat yearMonthDayFormat = new SimpleDateFormat("yyyy-MM-dd");
         String yearMonthDay = yearMonthDayFormat.format(new Date(System.currentTimeMillis()));
@@ -134,7 +141,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         startTimeDate = startParse;
         endTimeDate = endparse;
         // 如果没有错误，转化实体
-        AppointmentSplit build = EntityUtils.build(appointmentSplitBase, AppointmentSplit.class);
+        AppointmentSplit build = EntityUtils.build(appointmentSplitBaseInfo, AppointmentSplit.class);
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         build.setSplitStartTime(startTimeDate);
         build.setSplitEndTime(endTimeDate);
@@ -146,16 +153,16 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @param appointId  预约id
      * @param appointDuration  预约总时长
      * @param splitList  时长分解列表
-     * @return  时长分解符合条件返回List<AppointmentSplit>实体列表；否则返回null
+     * @return  时长分解符合条件返回List<AppointmentSplit>实体列表；否则返回null TODO
      */
-    private List<AppointmentSplit> checkSplit(Integer appointId,Integer appointDuration, List<AppointmentSplitBase> splitList) {
+    private List<AppointmentSplit> checkSplit(Integer appointId,Integer appointDuration, List<? extends AppointmentSplitBaseInfo> splitList) {
         List<AppointmentSplit> splits = new ArrayList<>();
         if(splitList == null || splitList.isEmpty()){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        splitList.forEach(appointmentSplitBase -> {
+        splitList.forEach(appointmentSplitBaseInfo -> {
             // 将appointmentSplitBase表单转化为AppointmentSplit实体
-            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBase);
+            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBaseInfo);
             // 如果分解开始时间不早于结束分解时间 返回错误信息
             if (null == appointmentSplit){
                 throw new ClientServiceException("分解开始时长不能大于分解结束时长！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);

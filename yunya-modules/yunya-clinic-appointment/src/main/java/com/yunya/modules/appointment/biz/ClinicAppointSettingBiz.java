@@ -70,7 +70,7 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
      * @param query
      * @return
      */
-    public AppointSettingVo selectAppointSettingByUserId(AppointSettingQuery query){
+    public AppointSettingVo findAppointSettingByUserId(AppointSettingQuery query){
         AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(query);
         return appointSettingVo;
     }
@@ -97,7 +97,7 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
         }
         // 检测是否已经存在给定的数据
         ClinicAppointmentSetting build = EntityUtils.build(model, ClinicAppointmentSetting.class);
-        List<ClinicAppointmentSetting> clinicAppointmentSettings = mapper.selectByExample(build);
+        List<ClinicAppointmentSetting> clinicAppointmentSettings = mapper.select(build);
         if (clinicAppointmentSettings != null && !clinicAppointmentSettings.isEmpty()){
             throw new ClientServiceException("预约设置已经存在！",OperationCodeConstants.DATA_EXIST);
         }

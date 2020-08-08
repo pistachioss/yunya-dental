@@ -4,6 +4,7 @@
  * Perter_Chou 14:20 Since 1.0 版权信息
  */
 package com.yunya.modules.appointment.controller;
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
 import com.yunya.feign.appointment.domain.form.ClinicAppointItemForm;
@@ -79,11 +80,11 @@ public class AppointItemController {
     @ApiOperation(value = "通过预约项目id查询配置适用门诊列表(公司端-预约项目-配置)")
     @PostMapping("/find/item_config")
     public ResponseResult findAppointItemAndOrgInfo(@RequestBody @Validated AppointItemConfigQuery query){
-        List<ClinicAppointItemConfigVo> clinicAppointItemConfigVos = clinicAppointItemBiz.findByAppointItemId(query.getAppointItemId());
         if (query.getWhetherPage()){
-            return ResponseUtil.success(new PageInfo<>(clinicAppointItemConfigVos));
+            PageHelper.startPage(query.getPageNum(),query.getPageNum());
         }
-        return ResponseUtil.success(clinicAppointItemConfigVos);
+        List<ClinicAppointItemConfigVo> clinicAppointItemConfigVos = clinicAppointItemBiz.findByAppointItemId(query.getAppointItemId());
+        return ResponseUtil.success(new PageInfo<>(clinicAppointItemConfigVos));
     }
 
     /**
@@ -104,14 +105,15 @@ public class AppointItemController {
      * @param baseQueryForm 查询条件
      * @return
      */
-    @ApiOperation(value = "预约项目检索搜索（公司端-查询）")
+    @ApiOperation(value = "预约项目检索搜索/根据预约项目类型检索（公司端-查询）")
     @PostMapping("/search")
     public ResponseResult searchAppItem(@Validated @RequestBody AppointItemQuery baseQueryForm) {
-        List<AppointmentItemVo>  appointmentItemVos = appItemBiz.findByAppItemName(baseQueryForm);
+
         if (baseQueryForm.getWhetherPage()){
-            return ResponseUtil.success(new PageInfo(appointmentItemVos));
+            PageHelper.startPage(baseQueryForm.getPageNum(),baseQueryForm.getPageSize());
         }
-        return ResponseUtil.success(appointmentItemVos);
+        List<AppointmentItemVo>  appointmentItemVos = appItemBiz.findAppointItemByExample(baseQueryForm);
+        return ResponseUtil.success(new PageInfo<>(appointmentItemVos));
     }
 
     /**

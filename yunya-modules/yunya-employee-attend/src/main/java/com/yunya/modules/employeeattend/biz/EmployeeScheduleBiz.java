@@ -65,11 +65,10 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    *
    * @param employeeScheduleForm
    */
-  public void create(EmployeeScheduleForm employeeScheduleForm){
+  public void create(EmployeeScheduleForm employeeScheduleForm) {
     // 判断排班是否冲突
-    if (isExist(employeeScheduleForm)) {
-      System.out.println("冲突");//抛出冲突异常
-      return;
+    if (!isExist(employeeScheduleForm)) {
+      throw new ClientServiceException("排班冲突", OperationCodeConstants.SAME_DATA_EXIST);
     }
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleForm, EmployeeSchedule.class);
@@ -89,8 +88,8 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    *
    * @param employeeScheduleCopyForm
    */
-  public  List<EmployeeScheduleExportVO> copy(EmployeeScheduleCopyForm employeeScheduleCopyForm){
-    List<EmployeeScheduleExportVO>employeeConflict = new ArrayList<>();//冲突列表
+  public List<EmployeeScheduleExportVO> copy(EmployeeScheduleCopyForm employeeScheduleCopyForm) {
+    List<EmployeeScheduleExportVO> employeeConflict = new ArrayList<>();//冲突列表
     List<Integer> employeeIdList = employeeScheduleCopyForm.getEmployeeIdLIst();//复制排班的员工Id列表
 
     //获取员工信息
@@ -180,14 +179,14 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
               } else {
                 SimpleDateFormat dateFormatExport = new SimpleDateFormat("yyyy-MM-dd");
                 EmployeeScheduleExportVO employeeScheduleExportVO = new EmployeeScheduleExportVO();
-                employeeScheduleExportVO.setName(employeeMap.get(employeeScheduleCopyVO.getEmployeeId()+"").getName());
+                employeeScheduleExportVO.setName(employeeMap.get(employeeScheduleCopyVO.getEmployeeId() + "").getName());
                 employeeScheduleExportVO.setCopy_date(dateFormatExport.format(employeeScheduleCopyVO.getWorkDate()));
-                employeeScheduleExportVO.setCopy_company_name(clinicMap.get(employeeScheduleCopyVO.getClinicId()+"").getName());
-                employeeScheduleExportVO.setCopy_schedule(employeeScheduleCopyVO.getScheduleName()+"("+dateFormat.format(EmpStartTime)+"-"+dateFormat.format(EmpEndTime)+")");
+                employeeScheduleExportVO.setCopy_company_name(clinicMap.get(employeeScheduleCopyVO.getClinicId() + "").getName());
+                employeeScheduleExportVO.setCopy_schedule(employeeScheduleCopyVO.getScheduleName() + "(" + dateFormat.format(EmpStartTime) + "-" + dateFormat.format(EmpEndTime) + ")");
 
                 employeeScheduleExportVO.setCover_date(dateFormatExport.format(copyVO.getWorkDate()));
-                employeeScheduleExportVO.setCover_company_name(clinicMap.get(copyVO.getClinicId()+"").getName());
-                employeeScheduleExportVO.setCover_schedule(copyVO.getScheduleName()+"("+dateFormat.format(copyVoStratTime)+"-"+dateFormat.format(copyVoEndTime)+")");
+                employeeScheduleExportVO.setCover_company_name(clinicMap.get(copyVO.getClinicId() + "").getName());
+                employeeScheduleExportVO.setCover_schedule(copyVO.getScheduleName() + "(" + dateFormat.format(copyVoStratTime) + "-" + dateFormat.format(copyVoEndTime) + ")");
                 employeeConflict.add(employeeScheduleExportVO);
               }
             }
@@ -245,8 +244,8 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     Integer size = employeeScheduleQueryForm.getSize();
     String name = employeeScheduleQueryForm.getName();
     Integer clinicId = employeeScheduleQueryForm.getClinicId();
-
-    List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicIdAndInservice(employeeScheduleQueryForm.getClinicId());
+    //获取班次信息
+    List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicId(null);
     Map<String, ClinicScheduleVO> ClinicScheduleMap = new HashMap();
     ClinicSchedules.forEach(x -> ClinicScheduleMap.put(x.getScheduleId() + "", x));
     if (postNames == null || postNames.size() == 0) {
@@ -310,7 +309,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             workDayData.put("companyName", clinicMap.get(employeeScheduleVO.getClinicId() + "").getName());
             workDayData.put("employeeName", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());
             workDayData.put("color", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getColor());
-            workDayData.put("simtime",simtime);
+            workDayData.put("simtime", simtime);
             workDayData.put("date", employeeScheduleVO.getWorkDate());
             workDayData.put("compClinId", employeeScheduleVO.getClinicId());
             workDayDatas.add(workDayData);
@@ -335,22 +334,29 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
    * @param employeeScheduleForm
    * @return
    */
-  private boolean isExist(EmployeeScheduleForm employeeScheduleForm){
+  private boolean isExist(EmployeeScheduleForm employeeScheduleForm) {
     boolean flag = false;
     // 获取门诊排班列表 （获取开始和结束时间）
-    List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicIdAndInservice(employeeScheduleForm.getClinicId());
+    List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicId(null);
 
     Map<String, ClinicScheduleVO> clinicScheduleMap = new HashMap();
     ClinicSchedules.forEach(x -> clinicScheduleMap.put(x.getScheduleId() + "", x));
     // 根据排班表ID获取排班开始时间和结束时间
     String shiftId = employeeScheduleForm.getScheduleId();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
-    Date startTime = clinicScheduleMap.get(shiftId).getFirstStartTime();
-    Date endTime = new Date();
-    if (clinicScheduleMap.get(shiftId).getSecondEndTime() != null) {
-      endTime = clinicScheduleMap.get(shiftId).getSecondEndTime();
-    } else {
-      endTime = clinicScheduleMap.get(shiftId).getFirstEndTime();
+    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    Date startTime = null;
+    Date endTime = null;
+    try {
+      startTime = dateFormat.parse(dateFormat.format(clinicScheduleMap.get(shiftId).getFirstStartTime()));
+      endTime = new Date();
+      if (clinicScheduleMap.get(shiftId).getSecondEndTime() != null) {
+        endTime = dateFormat.parse(dateFormat.format(clinicScheduleMap.get(shiftId).getSecondEndTime()));
+      } else {
+        endTime = dateFormat.parse(dateFormat.format(clinicScheduleMap.get(shiftId).getFirstEndTime()));
+      }
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
     }
     EmployeeSchedule employeeSchedule = new EmployeeSchedule();
     employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
@@ -372,25 +378,29 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         // 获取当前数据排班的开始时间和结束时间
         ClinicScheduleVO oldShift = clinicScheduleMap.get(dataShiftId + "");
         if (oldShift.getSecondEndTime() != null) {
-          if (endTime.before(oldShift.getSecondEndTime()) ||
-                  startTime.after(oldShift.getFirstStartTime())) {
-            flag = false;
-          } else {
+          if (endTime.before(oldShift.getFirstStartTime()) ||
+                  endTime.equals(oldShift.getFirstStartTime()) ||
+                  startTime.equals(oldShift.getSecondEndTime()) ||
+                  startTime.after(oldShift.getSecondEndTime())) {
             flag = true;
+          } else {
+            flag = false;
             return flag;
           }
         } else {
-          if (endTime.before(oldShift.getFirstEndTime()) ||
-                  startTime.after(oldShift.getFirstStartTime())) {
-            flag = false;
-          } else {
+          if (endTime.before(oldShift.getFirstStartTime()) ||
+                  endTime.equals(oldShift.getFirstStartTime()) ||
+                  startTime.equals(oldShift.getSecondEndTime()) ||
+                  startTime.after(oldShift.getFirstEndTime())) {
             flag = true;
+          } else {
+            flag = false;
             return flag;
           }
         }
       }
     } else {
-      flag = false;
+      flag = true;
     }
     return flag;
   }
@@ -425,8 +435,8 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     }
     Integer clinicId = employeeScheduleQueryForm.getClinicId();
 
-    //获取排班信息
-    List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicIdAndInservice(null);
+    //获取班次信息
+    List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicId(null);
     Map<String, ClinicScheduleVO> ClinicScheduleMap = new HashMap();
     ClinicSchedules.forEach(x -> ClinicScheduleMap.put(x.getScheduleId() + "", x));
     //获取员工信息
@@ -455,9 +465,9 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       String userId = baseEmployee.getUserId() + "";
       // 获取时间内的排班
       List<EmployeeScheduleVO> EmployeeScheduleVOs = mapper.selectVOByDateAndCompEmpId(startDate, endDate, null, userId);
+
       for (int i = 0; i < days; i++) {
-        calendar.getTime();
-        List workDayDatas = new ArrayList();
+        String add = " ";
         for (EmployeeScheduleVO employeeScheduleVO : EmployeeScheduleVOs) {
 
           if (calendar.getTime().equals(employeeScheduleVO.getWorkDate())) {
@@ -472,13 +482,35 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             }
             String simtime = dateFormat.format(startTime) + "~" + dateFormat.format(endTime);
 
-            row.add(clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + "-" + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + "-" + simtime);
-          } else {
-            row.add(" ");
+            add = add + clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + "-" + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + "-" + simtime +"\n";
           }
         }
+        row.add(add);
         calendar.add(Calendar.DATE, +COUNT);
       }
+//      for (EmployeeScheduleVO employeeScheduleVO : EmployeeScheduleVOs) {
+//
+//        for (int i = 0; i < days; i++) {
+//
+//          if (calendar.getTime().equals(employeeScheduleVO.getWorkDate())) {
+//            //拼接排班的时间段
+//            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
+//            Date startTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getFirstStartTime();
+//            Date endTime = new Date();
+//            if (ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getSecondEndTime() != null) {
+//              endTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getSecondEndTime();
+//            } else {
+//              endTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getFirstEndTime();
+//            }
+//            String simtime = dateFormat.format(startTime) + "~" + dateFormat.format(endTime);
+//
+//            row.add(clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + "-" + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + "-" + simtime);
+//          } else {
+//            row.add("空");
+//          }
+//        }
+//        calendar.add(Calendar.DATE, +COUNT);
+//      }
       shiftWorkDatas.add(row);
       calendar.add(Calendar.DATE, -days);
     }
@@ -511,17 +543,19 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
 
   /**
    * 导出员工排班列表
+   *
    * @param response
    * @param employeeConflict
    * @throws Exception
    */
-  public void exportConflict(HttpServletResponse response, List<EmployeeScheduleExportVO>employeeConflict) throws Exception {
+  public void exportConflict(HttpServletResponse response, List<EmployeeScheduleExportVO> employeeConflict) throws Exception {
     ExcelUtil<EmployeeScheduleExportVO> excelUtil = new ExcelUtil<>(EmployeeScheduleExportVO.class);
     excelUtil.exportExcel(response, employeeConflict, "员工排班冲突列表");
   }
 
   /**
    * 输出方法
+   *
    * @param response
    * @param list
    * @param headList
@@ -537,7 +571,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     ExcelWriter excelWriter = null;
     try {
       // 表单
-      excelWriter = new ExcelWriter(getOutputStream(fileName,response),ExcelTypeEnum.XLSX);
+      excelWriter = new ExcelWriter(getOutputStream(fileName, response), ExcelTypeEnum.XLSX);
       Sheet sheet = new Sheet(1, 0);
       sheet.setSheetName("第一个Sheet");
       // 创建一个表格

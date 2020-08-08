@@ -1,10 +1,12 @@
-package com.yunya.feign.appointment.domain.model;
+package com.yunya.feign.appointment.domain.form;
 
-import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.ToString;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -17,7 +19,8 @@ import java.util.List;
  */
 @ApiModel("预约分解参数封装")
 @Data
-public class AppointmentSplitModel {
+@ToString
+public class AppointmentSplitForm {
 
     /** 总预约时长 */
     @ApiModelProperty(value = "总预约时长", required = true)
@@ -33,6 +36,7 @@ public class AppointmentSplitModel {
     @NotNull(message = "预约id不能为空！")
     private Integer appointmentId;
 
-    @ApiModelProperty(value = "预约分解列表")
-    private List<AppointmentSplitBaseInfo> splitList;
+    @ApiModelProperty(value = "预约分解列表", required = true)
+    @NotEmpty(message = "预约分解列表不能为空！")
+    private List<AppointmentSplitUpdateBaseInfo> splitList;
 }

@@ -6,7 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.Date;
+import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 
 /**
  * 时长分解参数封装
@@ -15,27 +16,26 @@ import java.util.Date;
  * @create 2020-07-30 14:19
  * @update yunya-lihuibin    2020-07-30    新建
  */
-@ApiModel("时长分解参数封装")
+@ApiModel(value = "时长分解参数封装", subTypes = {AppointmentSplitUpdateBaseInfo.class})
 @Data
 @ToString
-public class AppointmentSplitBase {
-
-    /** 时长分解id */
-    @ApiModelProperty(value = "时长分解id")
-    private Integer id;
+public class AppointmentSplitBaseInfo implements Serializable {
 
     /** 拆分开始时间 */
-    @ApiModelProperty(value = "拆分开始时间")
+    @ApiModelProperty(value = "拆分开始时间", required = true)
+    @NotNull(message = "拆分开始时间不能为空！")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private String splitStartTime;
 
     /** 拆分结束时间 */
-    @ApiModelProperty(value = "拆分结束时间")
+    @ApiModelProperty(value = "拆分结束时间",required = true)
+    @NotNull(message = "拆分结束时间不能为空！")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private String splitEndTime;
 
     /** 医生/助手ID */
-    @ApiModelProperty(value = "医生/助手ID")
+    @ApiModelProperty(value = "医生/助手ID", required = true)
+    @NotNull(message = "医生/助手ID不能为空！")
     private Integer assistantId;
 
 }

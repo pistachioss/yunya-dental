@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.controller;
 
+import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.DeviceEditForm;
 import com.yunya.feign.appointment.domain.form.DeviceItemManageForm;
@@ -50,11 +51,12 @@ public class ClinicDeviceItemController {
     @ApiOperation(value = "根据条件查询门诊设备列表（公司端）")
     @PostMapping("/find")
     public ResponseResult findDeviceList(@RequestBody DeviceItemQuery query) {
-        List<DeviceItemVo> resultMap = clinicDeviceItemBiz.selectDeviceItemByExample(query);
+
         if (query.getWhetherPage()){
-            return ResponseUtil.success(new PageInfo<>(resultMap));
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
-        return ResponseUtil.success(resultMap);
+        List<DeviceItemVo> resultMap = clinicDeviceItemBiz.selectDeviceItemByExample(query);
+        return ResponseUtil.success(new PageInfo<>(resultMap));
     }
 
     /**

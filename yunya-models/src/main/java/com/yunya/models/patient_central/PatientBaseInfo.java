@@ -37,10 +37,10 @@ public class PatientBaseInfo {
     private String pinyinName;
 
     /**
-     * 头像地址 患者头像存储路径
+     * wo平台对应人员id
      */
-    @Column(name = "avatar_path")
-    private String avatarPath;
+    @Column(name = "wo_guid")
+    private String woGuid;
 
     /**
      * 手机号码 长度14
@@ -214,17 +214,17 @@ public class PatientBaseInfo {
      *
      * @return avatar_path - 头像地址 患者头像存储路径
      */
-    public String getAvatarPath() {
-        return avatarPath;
+    public String getwoGuid() {
+        return woGuid;
     }
 
     /**
      * 设置头像地址 患者头像存储路径
      *
-     * @param avatarPath 头像地址 患者头像存储路径
+     * @param woGuid 头像地址 患者头像存储路径
      */
-    public void setAvatarPath(String avatarPath) {
-        this.avatarPath = avatarPath;
+    public void setwoGuid(String woGuid) {
+        this.woGuid = woGuid;
     }
 
     /**
