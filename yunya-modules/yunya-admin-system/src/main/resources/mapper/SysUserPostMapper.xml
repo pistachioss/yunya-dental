@@ -53,14 +53,17 @@
             sup.id,
             sup.company_id as orgId,
             sup.department_id as orgDeptId,
+            d.`name` as deptName,
             sup.post_id as postId,
             sup.group_id as postGroupId,
             c.`name` as name,
             c.`type` as type,
-            ifnull(cei.abbreviation,'公司') as abbreviation
-        from sys_user_post sup
-        left join company c on sup.company_id = c.id
-        left join clinic_ext_info cei on sup.company_id = cei.company_id
+            ifnull( cei.abbreviation, '公司' ) as abbreviation
+        from
+            sys_user_post sup
+            left join ( select cp.id, d.`name` from company_department cp left join department d on cp.department_id = d.id ) d on sup.department_id = d.id
+            left join company c on sup.company_id = c.id
+            left join clinic_ext_info cei on sup.company_id = cei.company_id
         where sup.user_id = #{userId}
     </select>
 

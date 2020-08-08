@@ -28,6 +28,8 @@ public class SysUserPostOrgVO implements Serializable {
   private Byte type;
   /** 组织部门ID */
   private Integer orgDeptId;
+  /** 部门名称 */
+  private String deptName;
   /** 岗位ID */
   private Integer postId;
   /** 岗位组ID */
