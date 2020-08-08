@@ -37,14 +37,6 @@
         <result column="unit" property="unit" jdbcType="VARCHAR"/>
         <result column="price" property="price" jdbcType="DECIMAL"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
-        <collection property="clinicItemInfos" ofType="com.yunya.feign.tariff.domain.vo.ClinicItemPriceVO">
-            <id column="clinicItemId" property="clinicItemId" jdbcType="INTEGER"/>
-            <result column="orgId" property="orgId" jdbcType="INTEGER"/>
-            <result column="orgName" property="orgName" jdbcType="VARCHAR"/>
-            <result column="clinicTariffId" property="clinicTariffId" jdbcType="INTEGER"/>
-            <result column="clinicItemPrice" property="clinicItemPrice" jdbcType="DECIMAL"/>
-            <result column="itemInservice" property="itemInservice" jdbcType="BIT"/>
-        </collection>
     </resultMap>
 
     <!-- 根据基础价目表ID查询价目表信息 -->
@@ -61,14 +53,8 @@
             bt.unit,
             bt.price,
             bt.inservice,
-            ct.id as clinicItemId,
-            ct.clinic_id as orgId,
-            ct.tariff_id as clinicTariffId,
-            ct.price as clinicItemPrice,
-            ct.inservice as itemInservice
         from base_tariff bt
         left join base_tariff_category btc on bt.tariff_category_id = btc.id
-        left join clinic_tariff ct on bt.id = ct.tariff_id
         where bt.id = #{id}
     </select>
     <!-- 根据条件查询价目表列表 -->
@@ -121,6 +107,9 @@
         from base_tariff bt
         left join base_tariff_category btc on bt.tariff_category_id = btc.id
         <where>
+            <if test="queryForm.tariffCategoryId != null">
+                and bt.tariff_category_id = #{queryForm.tariffCategoryId}
+            </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and bt.name like concat('%',#{queryForm.keyWord},'%')
                 or bt.item_number like concat('%',#{queryForm.keyWord},'%')

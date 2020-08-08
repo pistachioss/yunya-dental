@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简介:
+ * 简介: 基础价目表导入模型
  *
  * @author: chow
  * @date: 2020/8/5 17:15
@@ -44,6 +44,6 @@ public class BaseTariffImportModel implements Serializable {
   private String unit;
 
   /** 价格 */
-  @Excel(name = "价格", type = Excel.Type.IMPORT)
+  @Excel(name = "价格", type = Excel.Type.IMPORT, cellType = Excel.ColumnType.NUMERIC)
   private BigDecimal price;
 }

@@ -35,14 +35,6 @@
         <result column="unit" property="unit" jdbcType="VARCHAR"/>
         <result column="price" property="price" jdbcType="DECIMAL"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
-        <collection property="clinicItemInfos" ofType="com.yunya.feign.tariff.domain.vo.ClinicItemPriceVO">
-            <id column="clinicItemId" property="clinicItemId" jdbcType="INTEGER"/>
-            <result column="orgId" property="orgId" jdbcType="INTEGER"/>
-            <result column="orgName" property="orgName" jdbcType="VARCHAR"/>
-            <result column="clinicTariffId" property="clinicTariffId" jdbcType="INTEGER"/>
-            <result column="clinicItemPrice" property="clinicItemPrice" jdbcType="DECIMAL"/>
-            <result column="itemInservice" property="itemInservice" jdbcType="BIT"/>
-        </collection>
     </resultMap>
 
     <!-- 根据商品项目ID查询商品项目信息 -->
@@ -59,14 +51,8 @@
             bot.unit,
             bot.price,
             bot.inservice,
-            cot.id as clinicItemId,
-            cot.clinic_id as orgId,
-            cot.oral_tariff_id as clinicTariffId,
-            cot.price as clinicItemPrice,
-            cot.inservice as itemInservice
         from base_oral_tariff bot
         left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
-        left join clinic_oral_tariff cot on bot.id = cot.oral_tariff_id
         where bot.id = #{id}
     </select>
     <!-- 根据条件查询商品项目列表(不含门诊商品项目价格信息) -->
@@ -104,7 +90,7 @@
         </where>
     </select>
     <!-- 根据条件查询商品项目列表（导出用） -->
-    <select id="selectExportBaseTariffList" resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffExportVO">
+    <select id="selectExportBaseOralTariffList" resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffExportVO">
         select
         bot.id,
         bot.oral_tariff_category_id as oralTariffCategoryId,
@@ -121,6 +107,9 @@
         base_oral_tariff bot
         left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
         <where>
+            <if test="queryForm.oralTariffCategoryId != null">
+                and bot.oral_tariff_category_id = #{queryForm.oralTariffCategoryId}
+            </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and bot.name like concat('%',#{queryForm.keyWord},'%')
                 or bot.item_number like concat('%',#{queryForm.keyWord},'%')

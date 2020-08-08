@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
@@ -19,7 +20,7 @@ import java.math.BigDecimal;
 @ApiModel("门诊项目（商品/处置价目表）单价新增模型")
 @Data
 @ToString
-public class ClinicItemPriceModel {
+public class ClinicItemPriceModel implements Serializable {
   /** 诊所ID */
   @ApiModelProperty(value = "组织ID", required = true)
   private Integer orgId;

@@ -128,9 +128,10 @@ public class BaseOralTariffCategoryBiz
             "修改失败，编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
     }
-
     resultData.setName(name);
     resultData.setNumber(number);
+    Boolean inservice = form.getInservice();
+    resultData.setInservice(inservice);
     resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     resultData.setUpdName(BaseContextHandler.getName());
     resultData.setUpdTime(new Date(System.currentTimeMillis()));
@@ -139,9 +140,9 @@ public class BaseOralTariffCategoryBiz
   }
 
   /**
-   * 根据ID删除价目表分类
+   * 根据ID删除商品分类
    *
-   * @param id 价目表分类ID
+   * @param id 商品分类ID
    */
   public void deleteBaseOralTariffCategoryById(Integer id) {
     BaseOralTariff entity = new BaseOralTariff();
