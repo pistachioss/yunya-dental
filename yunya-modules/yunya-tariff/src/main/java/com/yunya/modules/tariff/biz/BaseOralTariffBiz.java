@@ -359,13 +359,12 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
    * 导入商品项目列表
    *
    * @param excelFile 导入文件
-   * @return
+   * @return string
    */
   public String importExcel(MultipartFile excelFile) throws Exception {
     ExcelUtil<BaseOralTariffImportModel> excelUtil =
         new ExcelUtil<>(BaseOralTariffImportModel.class);
     List<BaseOralTariffImportModel> models = excelUtil.importExcel(excelFile.getInputStream());
-
     if (null == models || models.size() == 0) {
       throw new ClientServiceException(
           "导入失败,导入的商品项目数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
@@ -441,7 +440,16 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
         addOrUpdItem(itemName, itemNumber, englishName, unit, price, categoryId);
       }
     }
-    return successMsg.append("导入成功，共计").append(dataNum).append("'条数据！").toString();
+    return successMsg
+        .append("导入成功，共计")
+        .append(models.size())
+        .append("'条数据！")
+        .append("本次共同步'")
+        .append(orgInfos.size())
+        .append("个门诊'")
+        .append(dataNum)
+        .append("'条数据")
+        .toString();
   }
 
   /**

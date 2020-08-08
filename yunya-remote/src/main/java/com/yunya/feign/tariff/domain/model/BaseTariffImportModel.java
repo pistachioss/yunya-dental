@@ -44,6 +44,6 @@ public class BaseTariffImportModel implements Serializable {
   private String unit;
 
   /** 价格 */
-  @Excel(name = "价格", type = Excel.Type.IMPORT, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "单价", type = Excel.Type.IMPORT, cellType = Excel.ColumnType.NUMERIC)
   private BigDecimal price;
 }

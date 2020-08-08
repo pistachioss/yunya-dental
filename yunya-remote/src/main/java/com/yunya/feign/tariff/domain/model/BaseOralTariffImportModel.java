@@ -36,7 +36,7 @@ public class BaseOralTariffImportModel implements Serializable {
   private String oralTariffCategoryName;
 
   /** 商品项目英文名称 */
-  @Excel(name = "商品项目英文名称", type = Excel.Type.IMPORT)
+  @Excel(name = "商品英文名称", type = Excel.Type.IMPORT)
   private String englishName;
 
   /** 单位 */
@@ -44,6 +44,6 @@ public class BaseOralTariffImportModel implements Serializable {
   private String unit;
 
   /** 价格 */
-  @Excel(name = "价格", type = Excel.Type.IMPORT, cellType = Excel.ColumnType.NUMERIC)
+  @Excel(name = "单价", type = Excel.Type.IMPORT, cellType = Excel.ColumnType.NUMERIC)
   private BigDecimal price;
 }
