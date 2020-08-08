@@ -50,7 +50,7 @@
             bot.english_name as englishName,
             bot.unit,
             bot.price,
-            bot.inservice,
+            bot.inservice
         from base_oral_tariff bot
         left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
         where bot.id = #{id}

@@ -52,7 +52,7 @@
             bt.english_name as englishName,
             bt.unit,
             bt.price,
-            bt.inservice,
+            bt.inservice
         from base_tariff bt
         left join base_tariff_category btc on bt.tariff_category_id = btc.id
         where bt.id = #{id}
