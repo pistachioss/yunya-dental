@@ -1,7 +1,5 @@
 package com.yunya.modules.patient_central.controller;
 
-import com.uniubi.sdk.api.DeviceControllerApi;
-import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
