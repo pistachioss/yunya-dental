@@ -10,20 +10,20 @@
  */
 package com.yunya.modules.appointment.biz;
 import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
-import com.yunya.feign.appointment.domain.model.AppointItemConfigModel;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemTypeQuery;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppointItem;
 import com.yunya.modules.appointment.mapper.AppointItemMapper;
 import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.modules.appointment.vo.AppointmentItemVo;
+import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,16 +86,15 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
     public Integer updateAppItem(AppointItemModifyForm appItemForm) {
         //将Form对象转换成Entity
         AppointItem appointItem = mapper.selectByPrimaryKey(appItemForm.getId());
-        if (appItemForm == null){
-            return 0;
+        if (appointItem == null){
+            throw new ClientServiceException("修改的数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
         }
-        appointItem.setName(appItemForm.getName());
-        appointItem.setDuration(appItemForm.getDuration());
-        appointItem.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
-        appointItem.setUpdName(BaseContextHandler.getName());
-        appointItem.setUpdTime(new Date(System.currentTimeMillis()));
+        AppointItem build = EntityUtils.build(appItemForm, AppointItem.class);
+        build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        build.setUpdName(BaseContextHandler.getName());
+        build.setUpdTime(new Date(System.currentTimeMillis()));
 
-        return mapper.updateByPrimaryKeySelective(appointItem);
+        return mapper.updateByPrimaryKeySelective(build);
     }
 
     /**

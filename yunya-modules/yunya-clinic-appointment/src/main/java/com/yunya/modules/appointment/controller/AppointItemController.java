@@ -23,7 +23,7 @@ import com.yunya.modules.appointment.biz.ClinicAppointItemBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.modules.appointment.vo.AppointmentItemVo;
+import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

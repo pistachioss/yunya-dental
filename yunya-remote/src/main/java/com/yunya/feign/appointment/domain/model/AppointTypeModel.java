@@ -40,6 +40,6 @@ public class AppointTypeModel implements Serializable {
      * 是否启用 是否有效
      */
     @ApiModelProperty(value = "是否启用 是否有效")
-    private Byte inservice;
+    private Boolean inservice;
 
 }

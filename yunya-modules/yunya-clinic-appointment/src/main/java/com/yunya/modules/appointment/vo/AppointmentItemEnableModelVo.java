@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.vo;
 
+import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
