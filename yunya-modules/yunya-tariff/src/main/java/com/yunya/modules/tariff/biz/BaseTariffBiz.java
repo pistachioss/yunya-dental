@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
@@ -334,7 +333,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     Long count = clinicTariffBiz.selectCount(entity);
     if (count > 0) {
       throw new ClientServiceException(
-          "价目表失败，ID为" + TariffId + "'的价目表已被关联！", OperationCodeConstants.DELETE_NOT_ALLOW);
+          "价目表删除失败，ID为" + TariffId + "'的价目表已被关联！", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(TariffId);
     BaseTariffHistory historyEntity = new BaseTariffHistory();
