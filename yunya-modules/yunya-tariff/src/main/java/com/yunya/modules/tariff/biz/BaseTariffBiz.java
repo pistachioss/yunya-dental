@@ -5,11 +5,14 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.tariff.domain.form.BaseTariffAssociationForm;
 import com.yunya.feign.tariff.domain.form.BaseTariffForm;
 import com.yunya.feign.tariff.domain.form.ClinicItemPriceForm;
+import com.yunya.feign.tariff.domain.model.BaseTariffAssociationImportModel;
 import com.yunya.feign.tariff.domain.model.BaseTariffImportModel;
 import com.yunya.feign.tariff.domain.model.BaseTariffModel;
 import com.yunya.feign.tariff.domain.model.ClinicItemPriceModel;
+import com.yunya.feign.tariff.domain.query.BaseTariffAssociationQueryForm;
 import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.tariff.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -29,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
@@ -704,5 +708,158 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     List<BaseTariffExportVO> resultList = mapper.selectExportBaseTariffList(queryForm);
     ExcelUtil<BaseTariffExportVO> excelUtil = new ExcelUtil<>(BaseTariffExportVO.class);
     excelUtil.exportExcel(response, resultList, "基础价目表信息表");
+  }
+
+  /**
+   * 根据条件查询开单关联信息列表（可分页）
+   *
+   * @param queryForm 查询条件
+   * @return list
+   */
+  public PageInfo<BaseTariffAssociationVO> findTariffAssociationList(
+      BaseTariffAssociationQueryForm queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    List<BaseTariffAssociationVO> resultList = mapper.selectBaseTariffAssociationList(queryForm);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 修改价目表开单关联信息
+   *
+   * @param id 价目表ID
+   * @param form 开单关联信息
+   */
+  public void modifyTariffAssociation(Integer id, BaseTariffAssociationForm form) {
+    BaseTariff resultData = mapper.selectByPrimaryKey(id);
+    if (null == resultData) {
+      throw new ClientServiceException(
+          "修改失败，ID为'" + id + "的价目表不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+    }
+    String emr = form.getEmr();
+    String attention = form.getAttention();
+    String fellowUp = "--";
+    List<Integer> fellowUps = form.getFellowUps();
+    if (StringHelper.isBlank(emr)) {
+      emr = "--";
+    }
+    if (StringHelper.isBlank(attention)) {
+      attention = "--";
+    }
+    if (StringHelper.isNotEmpty(fellowUps)) {
+      fellowUp = fellowUps.toString();
+    } else {
+      fellowUp += fellowUps.toString();
+    }
+    resultData.setEmr(emr);
+    resultData.setAttention(attention);
+    resultData.setFellowUp(fellowUp);
+    mapper.updateByPrimaryKeySelective(resultData);
+  }
+
+  /**
+   * 导入价目表开单关联信息
+   *
+   * @param excelFile excel文件
+   */
+  public String importTariffAssociation(MultipartFile excelFile) throws Exception {
+    ExcelUtil<BaseTariffAssociationImportModel> excelUtil =
+        new ExcelUtil<>(BaseTariffAssociationImportModel.class);
+    List<BaseTariffAssociationImportModel> models =
+        excelUtil.importExcel(excelFile.getInputStream());
+    if (null == models || models.size() == 0) {
+      throw new ClientServiceException(
+          "导入失败,导入的价目表数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+    }
+
+    int dataNum = 0;
+    StringBuilder successMsg = new StringBuilder();
+    StringBuilder failureMsg = new StringBuilder();
+
+    String name;
+    String itemNumber;
+    String tariffCategoryNumber;
+    String tariffCategoryName;
+    String emr;
+    String attention;
+    String fellowUp;
+    BaseTariffCategory tariffCategory;
+    BaseTariff tariff;
+
+    for (BaseTariffAssociationImportModel model : models) {
+      dataNum++;
+      name = model.getName();
+      itemNumber = model.getItemNumber();
+      tariffCategoryNumber = model.getTariffCategoryNumber();
+      tariffCategoryName = model.getTariffCategoryName();
+      emr = model.getEmr();
+      attention = model.getAttention();
+      fellowUp = model.getFellowUp();
+
+      tariffCategory = new BaseTariffCategory();
+      tariffCategory.setNumber(tariffCategoryNumber);
+      tariffCategory.setName(tariffCategoryName);
+      BaseTariffCategory tariffCategoryResult = baseTariffCategoryMapper.selectOne(tariffCategory);
+      if (null == tariffCategoryResult) {
+        failureMsg
+            .append("导入失败！未查询到项目分类编号为:")
+            .append(tariffCategoryNumber)
+            .append("，")
+            .append("项目分类名称为:")
+            .append(tariffCategoryName)
+            .append("的开单项目分类！")
+            .append("数据序号为：")
+            .append(dataNum);
+        throw new ClientServiceException(
+            failureMsg.toString(), OperationCodeConstants.QUERY_RESULT_INVALID);
+      }
+
+      tariff = new BaseTariff();
+      tariff.setItemNumber(itemNumber);
+      tariff.setName(name);
+      tariff.setTariffCategoryId(tariffCategoryResult.getId());
+      BaseTariff tariffResult = mapper.selectOne(tariff);
+      if (null == tariffResult) {
+        failureMsg
+            .append("导入失败！未查询到项目编号为:")
+            .append(itemNumber)
+            .append("，")
+            .append("项目名称为:")
+            .append(name)
+            .append("的开单项目！")
+            .append("数据序号为:")
+            .append(dataNum);
+        throw new ClientServiceException(
+            failureMsg.toString(), OperationCodeConstants.QUERY_RESULT_INVALID);
+      }
+
+      tariffResult.setEmr(emr);
+      tariffResult.setAttention(attention);
+      tariffResult.setFellowUp(fellowUp);
+      mapper.updateByPrimaryKeySelective(tariffResult);
+    }
+    return successMsg
+        .append("导入成功！")
+        .append("本次共导入：")
+        .append(dataNum)
+        .append("条开单关联数据！")
+        .toString();
+  }
+
+  /**
+   * 导出价目表开单关联列表
+   *
+   * @param response 响应
+   * @param queryForm 查询条件
+   * @throws IOException IO异常
+   */
+  public void exportTariffAssociation(
+      HttpServletResponse response, BaseTariffAssociationQueryForm queryForm) throws IOException {
+    List<BaseTariffAssociationExportVO> resultList =
+        mapper.selectExportBaseTariffAssociationList(queryForm);
+    ExcelUtil<BaseTariffAssociationExportVO> excelUtil =
+        new ExcelUtil<>(BaseTariffAssociationExportVO.class);
+    excelUtil.exportExcel(response, resultList, "价目表开单关联信息");
   }
 }

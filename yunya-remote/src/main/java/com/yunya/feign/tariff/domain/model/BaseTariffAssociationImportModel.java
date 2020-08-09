@@ -1,29 +1,30 @@
 package com.yunya.feign.tariff.domain.model;
 
 import com.yunya.framework.common.annation.Excel;
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 /**
- * 简介: 基础价目表导入模型
+ * 简介: 价目表开单关联信息导入参数模型
  *
  * @author: chow
- * @date: 2020/8/5 17:15
+ * @date: 2020/8/8 16:45
  * @description:
  * @since: 1.0.0
  */
+@ApiModel("价目表开单关联信息导入参数模型")
 @Data
 @ToString
-public class BaseTariffImportModel implements Serializable {
+public class BaseTariffAssociationImportModel implements Serializable {
 
-  /** 价目表编码 */
-  @Excel(name = "价目表编码", type = Excel.Type.IMPORT)
-  @NotBlank(message = "价目表编码不能为空")
+  /** 项目编码 */
+  @Excel(name = "项目编码", type = Excel.Type.IMPORT)
+  @NotBlank(message = "项目编码不能为空！")
   private String itemNumber;
 
   /** 项目名称 */
@@ -31,27 +32,25 @@ public class BaseTariffImportModel implements Serializable {
   @NotBlank(message = "项目名称不能为空！")
   private String name;
 
-  /** 项目分类编号 */
+  /** 价目表编号 */
   @Excel(name = "项目分类编号", type = Excel.Type.IMPORT)
   @NotBlank(message = "项目分类编号不能为空！")
   private String tariffCategoryNumber;
 
-  /** 项目分类名称 */
+  /** 价目表分类名称 */
   @Excel(name = "项目分类名称", type = Excel.Type.IMPORT)
   @NotBlank(message = "项目分类名称不能为空！")
   private String tariffCategoryName;
 
-  /** 英文名称 */
-  @Excel(name = "项目英文名称", type = Excel.Type.IMPORT)
-  private String englishName;
+  /** 电子病历处理内容 */
+  @Excel(name = "电子病历处理内容", type = Excel.Type.IMPORT)
+  private String emr;
 
-  /** 单位 */
-  @Excel(name = "单位", type = Excel.Type.IMPORT)
-  @NotBlank(message = "单位不能为空！")
-  private String unit;
+  /** 注意事项 */
+  @Excel(name = "注意事项", type = Excel.Type.IMPORT)
+  private String attention;
 
-  /** 价格 */
-  @Excel(name = "单价", type = Excel.Type.IMPORT, cellType = Excel.ColumnType.NUMERIC)
-  @NotNull(message = "单价不能为空！")
-  private BigDecimal price;
+  /** 几天后随访 */
+  @Excel(name = "几天后随访", type = Excel.Type.IMPORT)
+  private String fellowUp;
 }

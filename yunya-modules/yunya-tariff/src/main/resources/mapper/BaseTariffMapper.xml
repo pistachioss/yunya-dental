@@ -13,7 +13,7 @@
         <result column="adjust" property="adjust" jdbcType="BIT"/>
         <result column="achie" property="achie" jdbcType="BIT"/>
         <result column="emr" property="emr" jdbcType="VARCHAR"/>
-        <result column="attertion" property="attertion" jdbcType="VARCHAR"/>
+        <result column="attention" property="attention" jdbcType="VARCHAR"/>
         <result column="fellow_up" property="fellowUp" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
@@ -93,17 +93,13 @@
     <!-- 根据条件查询导出价目表列表 -->
     <select id="selectExportBaseTariffList" resultType="com.yunya.feign.tariff.domain.vo.BaseTariffExportVO">
         select
-        bt.id,
-        bt.tariff_category_id as tariffCategoryId,
-        btc.`name` as tariffCategoryName,
-        btc.number as tariffCategoryNumber,
         bt.item_number as itemNumber,
         bt.`name`,
-        bt.pinyin,
+        btc.`name` as tariffCategoryName,
+        btc.number as tariffCategoryNumber,
         bt.english_name as englishName,
         bt.unit,
-        bt.price,
-        bt.inservice
+        bt.price
         from base_tariff bt
         left join base_tariff_category btc on bt.tariff_category_id = btc.id
         <where>
@@ -114,6 +110,70 @@
                 and bt.name like concat('%',#{queryForm.keyWord},'%')
                 or bt.item_number like concat('%',#{queryForm.keyWord},'%')
                 or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bt.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+    <!-- 根据条件查询价目表开单关联信息列表 -->
+    <select id="selectBaseTariffAssociationList"
+            resultType="com.yunya.feign.tariff.domain.vo.BaseTariffAssociationVO">
+        select
+            bt.id,
+            bt.item_number as itemNumber,
+            bt.`name`,
+            bt.tariff_category_id as tariffCategoryId,
+            btc.`name` as tariffCategoryName,
+            btc.number as tariffCategoryNumber,
+            bt.english_name as englishName,
+            IFNULL( bt.emr, '--' ),
+            IFNULL( bt.attention, '--' ),
+            IFNULL( bt.fellow_up, '--' ) as fellowUp,
+            bt.inservice
+        from
+            base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        <where>
+            <if test="queryForm.tariffCategoryId != null">
+                and bt.tariff_category_id = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and bt.name like concat('%',#{queryForm.keyWord},'%')
+                or bt.item_number like concat('%',#{queryForm.keyWord},'%')
+                or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bt.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+    <!-- 根据条件查询价目表导出开单关联信息列表 -->
+    <select id="selectExportBaseTariffAssociationList"
+            resultType="com.yunya.feign.tariff.domain.vo.BaseTariffAssociationExportVO">
+        select
+        bt.item_number as itemNumber,
+        bt.`name`,
+        btc.`name` as tariffCategoryName,
+        btc.number as tariffCategoryNumber,
+        bt.english_name as englishName,
+        ifnull( bt.emr, '--' ),
+        ifnull( bt.attention, '--' ),
+        ifnull( bt.fellow_up, '--' ) as fellowUp
+        from
+        base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        <where>
+            <if test="queryForm.tariffCategoryId != null">
+                and bt.tariff_category_id = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and bt.name like concat('%',#{queryForm.keyWord},'%')
+                or bt.item_number like concat('%',#{queryForm.keyWord},'%')
+                or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bt.inservice = #{queryForm.inservice}
             </if>
         </where>
     </select>
