@@ -53,7 +53,7 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
 
     public void updateRecord(Integer parentId, Integer id, MedicalTempCategoryForm modifyForm) {
         //校验数据
-        checkCategory(parentId,id);
+        checkCategory(id);
         //查询名称是否存在
         int count = mapper.countByName(modifyForm.getName(), parentId, id);
         if (count > 0 ) {
@@ -120,10 +120,9 @@ public class MedicalTemplateCategoryBiz extends BaseBiz<MedicalTemplateCategoryM
         return result;
     }
 
-    private void checkCategory(Integer parentId, Integer id) {
+    private void checkCategory(Integer id) {
         Example example = new Example(MedicalTemplateCategory.class);
-        example.createCriteria().andEqualTo("parentId", parentId)
-                .andEqualTo("id", id);
+        example.createCriteria().andEqualTo("id", id);
         MedicalTemplateCategory category = mapper.selectOneByExample(example);
         if (category == null) {
             throw new ClientServiceException("数据不存在", OperationCodeConstants.DATA_NOT_EXIST);

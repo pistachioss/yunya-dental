@@ -11,12 +11,13 @@ import java.time.*;
  */
 @Getter
 @Setter
-@ApiModel(value = "草稿病例分页模型")
-public class DraftMedicalApprovePageVo {
+@ApiModel(value = "草稿病例申请分页模型")
+public class MedicalApplyPageVo {
 
+    @ApiModelProperty(value = "审核id")
     private Integer id;
 
-    @ApiModelProperty(value = "电子病例Id或就诊Id")
+    @ApiModelProperty(value = "电子病例Id")
     private Integer eventId;
 
     @ApiModelProperty(value = "患者姓名")
@@ -25,7 +26,7 @@ public class DraftMedicalApprovePageVo {
     @ApiModelProperty(value = "病历号")
     private String medicalNum;
 
-    @ApiModelProperty(value = "接诊门诊")
+    @ApiModelProperty(value = "就诊门诊")
     private String treatmentClinicName;
 
     @ApiModelProperty(value = "主治医生")
@@ -42,4 +43,7 @@ public class DraftMedicalApprovePageVo {
 
     @ApiModelProperty(value = "拒绝原因")
     private String rejectReason;
+
+    @ApiModelProperty(value = "修改截止时间，页面不显示，只做按钮判断用")
+    private LocalDateTime modifyDeadTime;
 }
