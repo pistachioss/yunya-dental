@@ -190,22 +190,24 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     clinicTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     clinicTariff.setCrtName(BaseContextHandler.getName());
     if (StringHelper.isNotEmpty(clinicItemPriceModels)) {
-      for (ClinicItemPriceModel itemPriceModel : clinicItemPriceModels) {
-        clinicTariff.setClinicId(itemPriceModel.getOrgId());
-        clinicTariff.setPrice(itemPriceModel.getItemPrice());
-        clinicTariffBiz.insertSelective(clinicTariff);
-      }
+      clinicItemPriceModels.forEach(
+          itemPriceModel -> {
+            clinicTariff.setClinicId(itemPriceModel.getOrgId());
+            clinicTariff.setPrice(itemPriceModel.getItemPrice());
+            clinicTariffBiz.insertSelective(clinicTariff);
+          });
     } else {
       OrganizationModel orgModel = new OrganizationModel();
       orgModel.setTypes(new Byte[] {2});
       orgModel.setWhetherPage(false);
       List<OrganizationInfoDetail> orgInfos = systemServiceFeign.findOrgInfoList(orgModel);
       if (StringHelper.isNotEmpty(orgInfos)) {
-        for (OrganizationInfoDetail orgInfo : orgInfos) {
-          clinicTariff.setClinicId(orgInfo.getId());
-          clinicTariff.setPrice(price);
-          clinicTariffBiz.insertSelective(clinicTariff);
-        }
+        orgInfos.forEach(
+            orgInfo -> {
+              clinicTariff.setClinicId(orgInfo.getId());
+              clinicTariff.setPrice(price);
+              clinicTariffBiz.insertSelective(clinicTariff);
+            });
       }
     }
   }
