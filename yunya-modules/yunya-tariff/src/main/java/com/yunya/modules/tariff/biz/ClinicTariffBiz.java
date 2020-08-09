@@ -77,9 +77,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       if (StringHelper.isNotEmpty(memberTypes)) {
         HashMap<Integer, Object> memberPrices = new HashMap<>(16);
         Integer orgId = queryForm.getOrgId();
-        for (ClinicTariffVO tariffVO : resultList) {
-          setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
-        }
+        resultList.forEach(
+            tariffVO -> setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO));
       }
     }
     return new PageInfo<>(resultList);
