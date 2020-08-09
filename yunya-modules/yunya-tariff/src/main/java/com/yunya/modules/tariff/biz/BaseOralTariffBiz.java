@@ -441,9 +441,9 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       }
     }
     return successMsg
-        .append("导入成功，共计")
+        .append("导入成功，共计:")
         .append(models.size())
-        .append("'条数据！")
+        .append("条数据！")
         .append("本次共同步'")
         .append(orgInfos.size())
         .append("个门诊'")
@@ -589,7 +589,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       String resultItemNumber = itemResult.getItemNumber();
       if (!resultItemNumber.equals(itemNumber)) {
         failureMsg
-            .append("导入失败，Excel表中第")
+            .append("导入失败，Excel表中第'")
             .append(dataNum)
             .append("'条数据的商品项目编号'")
             .append(itemNumber)
@@ -609,7 +609,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       String itemResultName = itemResult.getName();
       if (!itemResultName.equals(itemName)) {
         failureMsg
-            .append("导入失败，Excel表中第")
+            .append("导入失败，Excel表中第'")
             .append(dataNum)
             .append("'条数据的商品项目名称'")
             .append(itemName)
@@ -666,7 +666,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     String categoryStr = categoryNumber.substring(0, 2);
     if (!itemStr.equals(categoryStr)) {
       failureMsg
-          .append("导入失败，Excel表中第")
+          .append("导入失败，Excel表中第'")
           .append(dataNum)
           .append("'条数据的商品项目编号前3位'")
           .append(itemStr)

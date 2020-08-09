@@ -426,7 +426,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
         addOrUpdBaseItem(itemName, itemNumber, englishName, unit, price, categoryId);
       }
     }
-    return successMsg.append("导入成功，共计").append(dataNum).append("'条数据！").toString();
+    return successMsg.append("导入成功，共计:").append(dataNum).append("条数据！").toString();
   }
 
   /**
