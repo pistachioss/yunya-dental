@@ -82,7 +82,7 @@ public class PersonControllerApiTest {
     @Test
     public void createUsingPOSTTest() {
         PersonInput personInput = new PersonInput();
-        personInput.setName("小王");
+        personInput.setName("小wei");
 
         ResultPersonCreateOutput response = api.createUsingPOST(personInput, appId);
         System.out.println(response);

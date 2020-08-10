@@ -1,24 +1,31 @@
 package com.yunya.modules.patient;
 
+import com.alibaba.fastjson.JSONObject;
 import com.uniubi.sdk.api.DeviceControllerApi;
 import com.uniubi.sdk.auth.authToken.AppAuthParam;
 import com.uniubi.sdk.auth.authToken.TokenFetcher;
 import com.uniubi.sdk.client.CustomTokenClient;
 import com.uniubi.sdk.client.UniUbiClient;
+import com.uniubi.sdk.model.DeviceOutput;
 import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.uniubi.sdk.model.ResultPageResultBeanAuthOutput;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
+import com.yunya.framework.common.utils.MD5Util;
 import com.yunya.modules.patient.tokenApi.TokenTask;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
+import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
 
 @SpringBootTest(classes = YunyaPatientApplicationTests.class)
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -39,7 +46,7 @@ class YunyaPatientApplicationTests {
     }
 
     @Test
-    public static void main1(String[] args){
+    public static void main12(String[] args){
         // 此初始化行为主要是为了获取WO平台该应用的token，如不使用会导致方式调用时被WO平台权限校验拒绝
         // 生产环境下可以将init的行为配置到spring的容器中来进行初始化
         // 初始化成功后，接下来每次调用业务方法，都会自动为发起的请求附上相应的token信息，而无需手工传入
@@ -55,7 +62,7 @@ class YunyaPatientApplicationTests {
 
 
     @Test
-    public static void main(String[] args){
+    public static void main1(String[] args){
         // 调用方法前，需初始化SDK的模块，共有4类
         // 此处入参为客户自定义的实现类，如TokenTask
         DeviceControllerApi api = new CustomTokenClient(new TokenTask()).DeviceClient();
@@ -124,7 +131,6 @@ class YunyaPatientApplicationTests {
     @Test
     public void token(){
         System.out.println(new TokenTask().getToken());
-        System.out.println("c37cce16c0dd5bb5571e8a73630e79b8");
     }
 
     @Test
@@ -140,6 +146,109 @@ class YunyaPatientApplicationTests {
         ids.add(3);
         List<PatientBaseInfoVo> patientInfoByIds = patientBaseInfoBiz.findPatientInfoByIds(ids);
         System.out.println(patientInfoByIds);
+    }
+
+
+    @Test
+    public static void main(String[] args){
+        // 此初始化行为主要是为了获取WO平台该应用的token，如不使用会导致方式调用时被WO平台权限校验拒绝
+        // 生产环境下可以将init的行为配置到spring的容器中来进行初始化
+        // 初始化成功后，接下来每次调用业务方法，都会自动为发起的请求附上相应的token信息，而无需手工传入
+        AppAuthParam appAuthParam = new AppAuthParam(appKey,appSecret,appId);
+        TokenFetcher.init(appAuthParam);
+        // 调用方法前，需初始化SDK的模块，共有4类
+        DeviceControllerApi api = new UniUbiClient().DeviceClient();
+        ResultDeviceOutput result = api.getDeviceUsingGET(appId,deviceKey);
+        DeviceOutput data = result.getData();
+        System.out.println(data.toString());
+        // 应用结束时调用，关闭定时自动获取token的线程池，如webApp关闭时
+        TokenFetcher.shutdown();
+    }
+
+
+
+
+    @Test
+    public String getToken() {
+        long l = System.currentTimeMillis();
+        System.out.println(l);
+        String S = WoPlatformConstants.APPKEY+System.currentTimeMillis()+WoPlatformConstants.APPSECRET;
+        System.out.println(S);
+        String token = MD5Util.getStringMD5(S);
+        System.out.println(token);
+        AppAuthParam appAuthParam = new AppAuthParam(WoPlatformConstants.APPKEY,WoPlatformConstants.APPSECRET,WoPlatformConstants.APPID);
+        TokenFetcher.init(appAuthParam);
+        return token;
+    }
+
+
+    @Test
+    public void qingqiu() throws IOException {
+       String url ="http://wo-api.uni-ubi.com/v1/D40708B670E54D2DA06B1A3974A66EA4/auth";
+        long l = System.currentTimeMillis();
+        System.out.println(l);
+        String S = WoPlatformConstants.APPKEY+System.currentTimeMillis()+WoPlatformConstants.APPSECRET;
+        String sign = MD5Util.getStringMD5(S);
+        Map<String, String> header = new HashMap<>();
+        header.put("appKey","2CA42A1905B44CD18D8EE83049903306");
+        header.put("timestamp", String.valueOf(l));
+        header.put("sign",sign);
+        String resoult = sendGet(url, header);
+        JSONObject ResoultHeader = JSONObject.parseObject(resoult);
+        System.out.println(ResoultHeader);
+        System.out.println(ResoultHeader.get("data"));
+
+    }
+
+
+
+
+
+    /**
+     * 向指定URL发送GET方法的请求
+     */
+    public String sendGet(String url, Map<String, String> header) throws UnsupportedEncodingException, IOException {
+        String result = "";
+        BufferedReader in = null;
+        String urlNameString = url;
+        URL realUrl = new URL(urlNameString);
+        // 打开和URL之间的连接
+        URLConnection connection = realUrl.openConnection();
+        //设置超时时间
+        connection.setConnectTimeout(5000);
+        connection.setReadTimeout(15000);
+        // 设置通用的请求属性
+        if (header!=null) {
+            Iterator<Map.Entry<String, String>> it =header.entrySet().iterator();
+            while(it.hasNext()){
+                Map.Entry<String, String> entry = it.next();
+                System.out.println(entry.getKey()+":"+entry.getValue());
+                connection.setRequestProperty(entry.getKey(), entry.getValue());
+            }
+        }
+
+        connection.setRequestProperty("accept", "*/*");
+        connection.setRequestProperty("connection", "Keep-Alive");
+        connection.setRequestProperty("user-agent","Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+
+        // 建立实际的连接
+        connection.connect();
+        // 获取所有响应头字段
+        Map<String, List<String>> map = connection.getHeaderFields();
+        // 遍历所有的响应头字段
+        for (String key : map.keySet()) {
+            System.out.println(key + "--->" + map.get(key));
+        }
+        // 定义 BufferedReader输入流来读取URL的响应，设置utf8防止中文乱码
+        in = new BufferedReader(new InputStreamReader(connection.getInputStream(), "utf-8"));
+        String line;
+        while ((line = in.readLine()) != null) {
+            result += line;
+        }
+        if (in != null) {
+            in.close();
+        }
+        return result;
     }
 
 }

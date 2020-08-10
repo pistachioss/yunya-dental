@@ -52,7 +52,7 @@ public class PatientBaseInfoController {
         return patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
     }
 
-    @CurrentUser
+    //@CurrentUser
     @ApiOperation("添加患者基本信息信息")
     @PostMapping("/add")
     public ResponseResult addPatient(@RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel){
