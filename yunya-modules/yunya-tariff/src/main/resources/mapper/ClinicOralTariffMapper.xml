@@ -100,7 +100,7 @@
             <if test="queryForm.orgId != null">
                 and cot.orgId =#{queryForm.orgId}
             </if>
-            <if test="queryForm.tariffCategoryId != null">
+            <if test="queryForm.oralTariffCategoryId != null">
                 and cot.oralTariffCategoryId = #{queryForm.oralTariffCategoryId}
             </if>
             <if test="queryForm.oralTariffId != null">
@@ -163,7 +163,7 @@
             <if test="queryForm.orgId != null">
                 and cot.orgId =#{queryForm.orgId}
             </if>
-            <if test="queryForm.tariffCategoryId != null">
+            <if test="queryForm.oralTariffCategoryId != null">
                 and cot.oralTariffCategoryId = #{queryForm.oralTariffCategoryId}
             </if>
             <if test="queryForm.oralTariffId != null">

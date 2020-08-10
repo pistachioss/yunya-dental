@@ -145,8 +145,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
           "新增失败，价目表编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
 
-    String categoryNumber = TariffCategory.getNumber().substring(0, 2);
-    String itemNumber = number.substring(0, 2);
+    String categoryNumber = TariffCategory.getNumber().substring(0, 3);
+    String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException(
           "新增失败，价目表编号前3位与价目表分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
@@ -248,8 +248,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
             "修改失败，价目表编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
     }
-    String categoryNumber = resultDataTariffCategoryNumber.substring(0, 2);
-    String itemNumber = number.substring(0, 2);
+    String categoryNumber = resultDataTariffCategoryNumber.substring(0, 3);
+    String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException(
           "修改失败，价目表编号前3位与价目表分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
@@ -642,8 +642,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       String categoryName,
       String categoryNumber) {
     // 校验分类编号与价目表编号前三位
-    String itemStr = itemNumber.substring(0, 2);
-    String categoryStr = categoryNumber.substring(0, 2);
+    String itemStr = itemNumber.substring(0, 3);
+    String categoryStr = categoryNumber.substring(0, 3);
     if (!itemStr.equals(categoryStr)) {
       failureMsg
           .append("导入失败，Excel表中第")

@@ -14,7 +14,7 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
   /**
    * 根据门诊价目表ID获取门诊价目表信息
    *
-   * @param clinicTariffId 门诊价目表ID¬
+   * @param clinicTariffId 门诊价目表ID
    * @return
    */
   ClinicTariffVO selectClinicTariffById(@Param("clinicTariffId") Integer clinicTariffId);

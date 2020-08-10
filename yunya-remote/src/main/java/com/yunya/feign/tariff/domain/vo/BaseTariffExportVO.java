@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 public class BaseTariffExportVO implements Serializable {
 
   /** 项目编码 */
-  @Excel(name = "项目编码")
+  @Excel(name = "项目编号")
   private String itemNumber;
 
   /** 项目名称 */

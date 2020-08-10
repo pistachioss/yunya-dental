@@ -273,6 +273,6 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       abbreviation = orgInfo.getAbbreviation();
     }
     ExcelUtil<ClinicTariffExportVO> excelUtil = new ExcelUtil<>(ClinicTariffExportVO.class);
-    excelUtil.exportExcel(response, resultList, abbreviation + "_价目表信息列表");
+    excelUtil.exportExcel(response, resultList, abbreviation + "-价目表信息列表");
   }
 }
