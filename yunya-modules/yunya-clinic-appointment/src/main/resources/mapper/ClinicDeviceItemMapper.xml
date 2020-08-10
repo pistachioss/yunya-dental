@@ -26,12 +26,13 @@
     SELECT
       cdi.id,
       cdi.number,
+      cdt.name,
       cdi.device_id as deviceId,
       cdi.org_id as orgId,
-      cdt.name,
-      count(cdt.name) as deviceNum
-    from clinic_device_item cdi LEFT JOIN clinic_device_type cdt
-    on cdi.device_id = cdt.id
+      cdi.inservice,
+      cdi.remarks
+    from clinic_device_item cdi left join clinic_device_type cdt
+    on cdt.id = cdi.device_id
     <where>
       <if test="query.deviceId != null">
         cdi.device_id = #{query.deviceId}
@@ -42,11 +43,7 @@
       <if test="query.orgId != null">
         and cdi.org_id = #{query.orgId}
       </if>
-      <if test="query.name != null">
-        and cdt.name like CONCAT('%',#{query.name},'%')
-      </if>
     </where>
-    group by cdt.name
   </select>
 
   <!-- 根据设备id查询设备 -->

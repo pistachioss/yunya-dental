@@ -127,9 +127,9 @@
             btc.`name` as tariffCategoryName,
             btc.number as tariffCategoryNumber,
             bt.english_name as englishName,
-            IFNULL( bt.emr, '--' ),
-            IFNULL( bt.attention, '--' ),
-            IFNULL( bt.fellow_up, '--' ) as fellowUp,
+            ifnull( bt.emr, '--' ) as emr,
+            ifnull( bt.attention, '--' ) as attention,
+            ifnull( bt.fellow_up, '--' ) as fellowUp,
             bt.inservice
         from
             base_tariff bt

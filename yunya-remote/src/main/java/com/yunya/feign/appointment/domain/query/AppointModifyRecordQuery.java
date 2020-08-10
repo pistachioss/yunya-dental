@@ -5,21 +5,22 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
- * 查询设备参数封装
+ * 修改预约查询参数
  *
  * @author yunya-lihuibin
- * @create 2020-08-02 20:52
- * @update yunya-lihuibin    2020-08-02    新建
+ * @create 2020-08-10 10:50
+ * @update yunya-lihuibin    2020-08-10    新建
  */
-@ApiModel(value = "查询设备参数封装")
+@ApiModel(value = "修改预约查询参数")
 @Data
 @ToString
-public class DeviceItemQuery implements Serializable {
+public class AppointModifyRecordQuery implements Serializable {
 
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
@@ -33,26 +34,26 @@ public class DeviceItemQuery implements Serializable {
     private Integer pageSize = 10;
 
     /**
-     * 预约设备类型ID
-     */
-    @ApiModelProperty(value = "预约设备类型ID")
-    private Integer deviceId;
-
-    /**
-     * 设备编号
-     */
-    @ApiModelProperty(value = "设备编号")
-    private String number;
-
-    /**
      * 诊所ID
      */
     @ApiModelProperty(value = "诊所ID")
     private Integer orgId;
 
     /**
-     * 是否启用
+     * 预约ID
      */
-    @ApiModelProperty(value = "是否启用")
-    private Boolean inservice;
+    @ApiModelProperty(value = "预约ID")
+    private Integer appointmentId;
+
+    /**
+     * 被修改的预约日期
+     */
+    @ApiModelProperty(value = "被修改的预约日期")
+    private Date appointDate;
+
+    /**
+     * 被修改的预约医生
+     */
+    @ApiModelProperty(value = "被修改的预约医生")
+    private Integer dentistId;
 }

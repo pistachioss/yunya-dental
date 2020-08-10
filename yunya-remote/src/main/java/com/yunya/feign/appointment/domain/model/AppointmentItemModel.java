@@ -1,5 +1,6 @@
 package com.yunya.feign.appointment.domain.model;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
@@ -49,6 +50,6 @@ public class AppointmentItemModel implements Serializable {
      * 是否有效、是否启用、是否可见
      */
     @ApiModelProperty(value = "是否有效、是否启用、是否可见")
-    private Byte inservice;
+    private Boolean inservice;
 
 }

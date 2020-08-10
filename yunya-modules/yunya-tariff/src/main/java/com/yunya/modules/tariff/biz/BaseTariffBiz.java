@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * 描述: 基础价目表业务层
@@ -120,8 +119,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    */
   public void add(BaseTariffModel model) {
     Integer categoryId = model.getTariffCategoryId();
-    BaseTariffCategory TariffCategory = baseTariffCategoryMapper.selectByPrimaryKey(categoryId);
-    if (null == TariffCategory) {
+    BaseTariffCategory tariffCategory = baseTariffCategoryMapper.selectByPrimaryKey(categoryId);
+    if (null == tariffCategory) {
       throw new ClientServiceException(
           "新增失败，ID为'" + categoryId + "'的价目表分类不存在，请选择正确的价目表分类！",
           OperationCodeConstants.QUERY_RESULT_INVALID);
@@ -145,8 +144,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
           "新增失败，价目表编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
 
-    String categoryNumber = TariffCategory.getNumber().substring(0, 2);
-    String itemNumber = number.substring(0, 2);
+    String categoryNumber = tariffCategory.getNumber().substring(0, 3);
+    String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException(
           "新增失败，价目表编号前3位与价目表分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
@@ -248,8 +247,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
             "修改失败，价目表编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
     }
-    String categoryNumber = resultDataTariffCategoryNumber.substring(0, 2);
-    String itemNumber = number.substring(0, 2);
+    String categoryNumber = resultDataTariffCategoryNumber.substring(0, 3);
+    String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException(
           "修改失败，价目表编号前3位与价目表分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
@@ -263,11 +262,10 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     entity.setId(id);
     mapper.updateByPrimaryKeySelective(entity);
 
-    List<ClinicItemPriceVO> clinicItemInfos = resultData.getClinicItemInfos();
     List<ClinicItemPriceForm> clinicItemPriceForms = form.getClinicItemPriceForms();
 
     // 更新门诊价目表信息
-    updateClinicTariff(id, clinicItemInfos, clinicItemPriceForms);
+    updateClinicTariff(id, clinicItemPriceForms);
 
     // 保存价目表变更记录
     if (!resultData.getName().equals(name) || !resultData.getItemNumber().equals(number)) {
@@ -286,42 +284,34 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    * 更新门诊价目表信息
    *
    * @param itemId 基础价目表ID
-   * @param clinicItemInfos 数据库门诊价目表信息
    * @param clinicItemPriceForms 修改门诊价目表信息
    */
   private void updateClinicTariff(
-      Integer itemId,
-      List<ClinicItemPriceVO> clinicItemInfos,
-      List<ClinicItemPriceForm> clinicItemPriceForms) {
-    if (StringHelper.isNotEmpty(clinicItemInfos) && StringHelper.isNotEmpty(clinicItemPriceForms)) {
-      ClinicTariff clinicEntity = new ClinicTariff();
-      clinicItemPriceForms.stream()
-          .<Consumer<? super ClinicItemPriceVO>>map(
-              itemPriceForm ->
-                  itemInfo -> {
-                    if (null != itemPriceForm.getClinicItemId()
-                        && itemPriceForm.getOrgId().equals(itemInfo.getOrgId())
-                        && !itemInfo.getClinicItemPrice().equals(itemPriceForm.getItemPrice())) {
-                      clinicEntity.setId(itemPriceForm.getClinicItemId());
-                      clinicEntity.setClinicId(itemPriceForm.getOrgId());
-                      clinicEntity.setTariffId(itemId);
-                      clinicEntity.setPrice(itemPriceForm.getItemPrice());
-                      clinicEntity.setInservice(itemPriceForm.getItemInservice());
-                      clinicEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-                      clinicEntity.setUpdName(BaseContextHandler.getName());
-                      clinicEntity.setUpdTime(new Date(System.currentTimeMillis()));
-                      clinicTariffBiz.updateSelectiveById(clinicEntity);
-                    } else {
-                      clinicEntity.setClinicId(itemPriceForm.getOrgId());
-                      clinicEntity.setTariffId(itemId);
-                      clinicEntity.setPrice(itemPriceForm.getItemPrice());
-                      clinicEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-                      clinicEntity.setCrtName(BaseContextHandler.getName());
-                      clinicTariffBiz.insertSelective(clinicEntity);
-                    }
-                  })
-          .forEach(clinicItemInfos::forEach);
+          Integer itemId,
+          List<ClinicItemPriceForm> clinicItemPriceForms) {
+    if (StringHelper.isNotEmpty(clinicItemPriceForms)) {
+      ClinicTariff clinicTariff;
+      for (ClinicItemPriceForm form : clinicItemPriceForms) {
+        clinicTariff = new ClinicTariff();
+        clinicTariff.setClinicId(form.getOrgId());
+        clinicTariff.setTariffId(itemId);
+        clinicTariff.setPrice(form.getItemPrice());
+        clinicTariff.setInservice(form.getItemInservice());
+        Integer clinicItemId = form.getClinicItemId();
+        if (null == clinicItemId) {
+          clinicTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+          clinicTariff.setCrtName(BaseContextHandler.getName());
+          clinicTariffBiz.insertSelective(clinicTariff);
+        } else {
+          clinicTariff.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+          clinicTariff.setUpdName(BaseContextHandler.getName());
+          clinicTariff.setUpdTime(new Date(System.currentTimeMillis()));
+          clinicTariff.setId(clinicItemId);
+          clinicTariffBiz.updateSelectiveById(clinicTariff);
+        }
+      }
     }
+
   }
 
   /**
@@ -642,8 +632,8 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       String categoryName,
       String categoryNumber) {
     // 校验分类编号与价目表编号前三位
-    String itemStr = itemNumber.substring(0, 2);
-    String categoryStr = categoryNumber.substring(0, 2);
+    String itemStr = itemNumber.substring(0, 3);
+    String categoryStr = categoryNumber.substring(0, 3);
     if (!itemStr.equals(categoryStr)) {
       failureMsg
           .append("导入失败，Excel表中第")

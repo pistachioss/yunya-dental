@@ -38,4 +38,6 @@ public class OperationCodeConstants {
   public static final Integer DATA_EXIST = 30013;
   /** 无权限操作 */
   public static final Integer NO_PERMISSION_OPERATION = 30014;
+  /** 数据已被锁定 */
+  public static final Integer KEY_IS_LOCKED = 30014;
 }

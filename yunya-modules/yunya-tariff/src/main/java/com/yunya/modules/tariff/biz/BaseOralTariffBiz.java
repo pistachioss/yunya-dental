@@ -35,7 +35,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * 描述: 商品项目业务层
@@ -148,8 +147,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
           "新增失败，商品项目编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
 
-    String categoryNumber = oralTariffCategory.getNumber().substring(0, 2);
-    String itemNumber = number.substring(0, 2);
+    String categoryNumber = oralTariffCategory.getNumber().substring(0, 3);
+    String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException(
           "新增失败，商品项目编号前3位与商品分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
@@ -260,8 +259,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       }
     }
 
-    String categoryNumber = resultDataOralTariffCategoryNumber.substring(0, 2);
-    String itemNumber = number.substring(0, 2);
+    String categoryNumber = resultDataOralTariffCategoryNumber.substring(0, 3);
+    String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException(
           "修改失败，商品项目编号前3位与商品分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
@@ -275,11 +274,10 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     entity.setId(id);
     mapper.updateByPrimaryKeySelective(entity);
 
-    List<ClinicItemPriceVO> clinicItemInfos = resultData.getClinicItemInfos();
     List<ClinicItemPriceForm> clinicItemPriceForms = form.getClinicItemPriceForms();
 
     // 更新门诊商品项目
-    updateClinicOralTariff(id, clinicItemInfos, clinicItemPriceForms);
+    updateClinicOralTariff(id, clinicItemPriceForms);
 
     // 保存商品项目变更记录
     if (!resultData.getName().equals(name) || !resultData.getItemNumber().equals(number)) {
@@ -298,41 +296,31 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
    * 更新门诊商品项目
    *
    * @param itemId 商品项目ID
-   * @param clinicItemInfos 系统当前门诊商品项目信息
    * @param clinicItemPriceForms 修改门诊商品项目
    */
   private void updateClinicOralTariff(
-      Integer itemId,
-      List<ClinicItemPriceVO> clinicItemInfos,
-      List<ClinicItemPriceForm> clinicItemPriceForms) {
-    if (StringHelper.isNotEmpty(clinicItemInfos) && StringHelper.isNotEmpty(clinicItemPriceForms)) {
-      ClinicOralTariff clinicEntity = new ClinicOralTariff();
-      clinicItemPriceForms.stream()
-          .<Consumer<? super ClinicItemPriceVO>>map(
-              itemPriceForm ->
-                  itemInfo -> {
-                    if (null != itemPriceForm.getClinicItemId()
-                        && itemPriceForm.getOrgId().equals(itemInfo.getOrgId())
-                        && !itemPriceForm.getItemPrice().equals(itemInfo.getClinicItemPrice())) {
-                      clinicEntity.setId(itemPriceForm.getClinicItemId());
-                      clinicEntity.setClinicId(itemPriceForm.getOrgId());
-                      clinicEntity.setOralTariffId(itemId);
-                      clinicEntity.setPrice(itemPriceForm.getItemPrice());
-                      clinicEntity.setInservice(itemPriceForm.getItemInservice());
-                      clinicEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-                      clinicEntity.setUpdName(BaseContextHandler.getName());
-                      clinicEntity.setUpdTime(new Date(System.currentTimeMillis()));
-                      clinicOralTariffBiz.updateSelectiveById(clinicEntity);
-                    } else {
-                      clinicEntity.setClinicId(itemPriceForm.getOrgId());
-                      clinicEntity.setOralTariffId(itemId);
-                      clinicEntity.setPrice(itemPriceForm.getItemPrice());
-                      clinicEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-                      clinicEntity.setCrtName(BaseContextHandler.getName());
-                      clinicOralTariffBiz.insertSelective(clinicEntity);
-                    }
-                  })
-          .forEach(clinicItemInfos::forEach);
+      Integer itemId, List<ClinicItemPriceForm> clinicItemPriceForms) {
+    if (StringHelper.isNotEmpty(clinicItemPriceForms)) {
+      ClinicOralTariff clinicOralTariff;
+      for (ClinicItemPriceForm form : clinicItemPriceForms) {
+        clinicOralTariff = new ClinicOralTariff();
+        clinicOralTariff.setClinicId(form.getOrgId());
+        clinicOralTariff.setOralTariffId(itemId);
+        clinicOralTariff.setPrice(form.getItemPrice());
+        clinicOralTariff.setInservice(form.getItemInservice());
+        Integer clinicItemId = form.getClinicItemId();
+        if (null == clinicItemId) {
+          clinicOralTariff.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+          clinicOralTariff.setCrtName(BaseContextHandler.getName());
+          clinicOralTariffBiz.insertSelective(clinicOralTariff);
+        } else {
+          clinicOralTariff.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+          clinicOralTariff.setUpdName(BaseContextHandler.getName());
+          clinicOralTariff.setUpdTime(new Date(System.currentTimeMillis()));
+          clinicOralTariff.setId(clinicItemId);
+          clinicOralTariffBiz.updateSelectiveById(clinicOralTariff);
+        }
+      }
     }
   }
 
@@ -342,12 +330,12 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
    * @param oralTariffId 商品项目ID
    */
   public void delete(Integer oralTariffId) {
-    ClinicOralTariffMemberPrice entity = new ClinicOralTariffMemberPrice();
+    ClinicOralTariff entity = new ClinicOralTariff();
     entity.setOralTariffId(oralTariffId);
-    Long count = clinicOralTariffMemberPriceBiz.selectCount(entity);
+    Long count = clinicOralTariffBiz.selectCount(entity);
     if (count > 0) {
       throw new ClientServiceException(
-          "商品失败，ID为" + oralTariffId + "'的商品项目已被关联！", OperationCodeConstants.DELETE_NOT_ALLOW);
+          "商品项目删除失败，ID为" + oralTariffId + "'的商品项目已被关联！", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(oralTariffId);
     BaseOralTariffHistory historyEntity = new BaseOralTariffHistory();
@@ -662,8 +650,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       String itemNumber,
       String categoryName,
       String categoryNumber) {
-    String itemStr = itemNumber.substring(0, 2);
-    String categoryStr = categoryNumber.substring(0, 2);
+    String itemStr = itemNumber.substring(0, 3);
+    String categoryStr = categoryNumber.substring(0, 3);
     if (!itemStr.equals(categoryStr)) {
       failureMsg
           .append("导入失败，Excel表中第'")

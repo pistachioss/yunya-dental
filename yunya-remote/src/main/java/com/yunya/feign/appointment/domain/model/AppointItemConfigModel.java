@@ -40,6 +40,6 @@ public class AppointItemConfigModel implements Serializable {
      */
     @ApiModelProperty(value = "是否启用 是否有效", required = true)
     @NotNull(message = "是否启用 是否有效 不能为空！")
-    private Byte inservice;
+    private Boolean inservice;
 
 }

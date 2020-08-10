@@ -101,7 +101,7 @@ public class AppointmentBaseForm implements Serializable {
 
     /** 备注 */
     @ApiModelProperty(value = "备注")
-    private String remark;
+    private String remarks;
 
     /** 是否启用 是否有效 */
     @ApiModelProperty(value = "是否启用 是否有效")

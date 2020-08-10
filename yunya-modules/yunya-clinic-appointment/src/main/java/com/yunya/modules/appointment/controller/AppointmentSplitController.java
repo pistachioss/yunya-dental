@@ -11,8 +11,7 @@ import com.yunya.modules.appointment.biz.AppointmentSplitBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
 import com.yunya.modules.appointment.vo.AppointmentSplitVo;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -99,6 +98,9 @@ public class AppointmentSplitController {
     @ApiOperation(value = "修改时长分解")
     @PutMapping("/update")
     @CurrentUser
+    @ApiImplicitParams(
+            @ApiImplicitParam(name="AppointmentSplitForm")
+    )
     public ResponseResult updateAppointSplit(@RequestBody @Validated AppointmentSplitForm form){
         Integer result = appointSpitBiz.updateAppointSplit(form);
         return ResponseUtil.success();

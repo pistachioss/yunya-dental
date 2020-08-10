@@ -1,13 +1,9 @@
 package com.yunya.models.tariff;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -17,7 +13,6 @@ public class ClinicTariff {
      * 主键ID
      */
     @Id
-    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

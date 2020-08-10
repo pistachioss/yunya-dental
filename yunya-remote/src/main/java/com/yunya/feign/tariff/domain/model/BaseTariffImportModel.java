@@ -22,13 +22,13 @@ import java.math.BigDecimal;
 public class BaseTariffImportModel implements Serializable {
 
   /** 价目表编码 */
-  @Excel(name = "价目表编码", type = Excel.Type.IMPORT)
-  @NotBlank(message = "价目表编码不能为空")
+  @Excel(name = "项目编号", type = Excel.Type.IMPORT)
+  @NotBlank(message = "价目表编号不能为空")
   private String itemNumber;
 
   /** 项目名称 */
   @Excel(name = "项目名称", type = Excel.Type.IMPORT)
-  @NotBlank(message = "项目名称不能为空！")
+  @NotBlank(message = "价目表名称不能为空！")
   private String name;
 
   /** 项目分类编号 */

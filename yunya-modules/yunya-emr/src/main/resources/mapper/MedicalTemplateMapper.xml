@@ -6,6 +6,7 @@
         <result column="medical_template_category_id" jdbcType="INTEGER" property="medicalTemplateCategoryId" />
         <result column="name" jdbcType="VARCHAR" property="name" />
         <result column="type" jdbcType="TINYINT" property="type" />
+        <result column="re_examination" jdbcType="VARCHAR" property="reExamination" />
         <result column="chief_complaint" jdbcType="VARCHAR" property="chiefComplaint" />
         <result column="present_illness" jdbcType="VARCHAR" property="presentIllness" />
         <result column="past_history" jdbcType="VARCHAR" property="pastHistory" />
@@ -13,6 +14,7 @@
         <result column="diagnosis" jdbcType="VARCHAR" property="diagnosis" />
         <result column="plan" jdbcType="VARCHAR" property="plan" />
         <result column="treatment" jdbcType="VARCHAR" property="treatment" />
+        <result column="prescription" jdbcType="VARCHAR" property="prescription" />
         <result column="enable" jdbcType="TINYINT" property="enable" />
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
@@ -63,7 +65,7 @@
 
     <update id="enableById">
         update
-            `general_template`
+            `medical_template`
         set `enable` = #{enable}
         where `medical_template_category_id` = #{categoryId}
           and `id` = #{templateId}

@@ -29,12 +29,17 @@ import java.io.Serializable;
 @ToString
 @ApiModel("可预约项目类型封装")
 public class AppointmentItemVo implements Serializable {
-    private Integer id;
     @ApiModelProperty("预约项目ID")
-    private Integer appointItemId;
+    private Integer id;
 
     @ApiModelProperty("预约项目名称")
-    private String itemName;
+    private String name;
+
+    @ApiModelProperty(value = "预约项目分类ID")
+    private Integer appointTypeId;
+
+    @ApiModelProperty("预约项目类型名称")
+    private String typeName;
 
     @ApiModelProperty("默认时长,单位分钟")
     private Integer duration;

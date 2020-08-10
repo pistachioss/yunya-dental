@@ -35,6 +35,6 @@ public class AppointTypeListVo implements Serializable {
      * 是否启用
      */
     @ApiModelProperty(value = "是否启用")
-    private Byte inservice;
+    private Boolean inservice;
 
 }

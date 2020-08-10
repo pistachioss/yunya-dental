@@ -160,9 +160,10 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         if(splitList == null || splitList.isEmpty()){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        splitList.forEach(appointmentSplitBaseInfo -> {
+
+        splitList.forEach(appointmentSplitBase -> {
             // 将appointmentSplitBase表单转化为AppointmentSplit实体
-            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBaseInfo);
+            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBase);
             // 如果分解开始时间不早于结束分解时间 返回错误信息
             if (null == appointmentSplit){
                 throw new ClientServiceException("分解开始时长不能大于分解结束时长！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);

@@ -16,7 +16,7 @@ import com.yunya.modules.appointment.biz.AppointItemBiz;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.modules.appointment.biz.AppointTypeBiz;
 import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.modules.appointment.vo.AppointmentItemVo;
+import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

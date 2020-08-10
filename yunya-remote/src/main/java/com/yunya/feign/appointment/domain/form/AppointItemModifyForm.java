@@ -38,4 +38,8 @@ public class AppointItemModifyForm implements Serializable {
      */
     @ApiModelProperty(value = "预约默认时长（分钟）")
     private Integer duration;
+
+    /** 是否可用 */
+    @ApiModelProperty(value = "是否可用")
+    private Boolean inservice;
 }

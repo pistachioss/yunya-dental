@@ -46,17 +46,11 @@ public class DeviceItemVo implements Serializable {
      * 是否启用 是否有效
      */
     @ApiModelProperty(value = "是否启用 是否有效")
-    private Integer inservice;
+    private Boolean inservice;
 
     /**
      * 备注
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
-
-    /**
-     * 设备数量
-     */
-    @ApiModelProperty(value = "设备数量")
-    private Integer deviceNum;
 }

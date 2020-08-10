@@ -1,6 +1,5 @@
 package com.yunya.feign.tariff.domain.form;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -17,7 +16,6 @@ import java.math.BigDecimal;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("门诊项目修改参数模型")
 @Data
 @ToString
 public class ClinicItemPriceForm implements Serializable {

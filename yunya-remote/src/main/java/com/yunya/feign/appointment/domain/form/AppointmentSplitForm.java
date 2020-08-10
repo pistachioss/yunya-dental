@@ -17,7 +17,7 @@ import java.util.List;
  * @create 2020-07-30 14:41
  * @update yunya-lihuibin    2020-07-30    新建
  */
-@ApiModel("预约分解参数封装")
+@ApiModel(value = "预约分解参数封装")
 @Data
 @ToString
 public class AppointmentSplitForm {

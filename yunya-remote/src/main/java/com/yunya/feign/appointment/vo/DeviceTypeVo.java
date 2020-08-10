@@ -49,4 +49,10 @@ public class DeviceTypeVo implements Serializable {
      */
     @ApiModelProperty(value = "是否启用 是否有效")
     private Boolean inservice;
+
+    /**
+     * 设备数量
+     */
+    @ApiModelProperty(value = "设备数量")
+    private Integer deviceNum;
 }
