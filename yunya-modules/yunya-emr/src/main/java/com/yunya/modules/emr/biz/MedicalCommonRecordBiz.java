@@ -127,7 +127,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
    * @return
    */
   public int updateMedical(MedicalCommonRecordForm medicalCommonRecordForm) {
-    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+    if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
       throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
@@ -187,7 +187,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
    * @return
    */
   public int updateMedicalAfter(MedicalCommonRecordForm medicalCommonRecordForm) {
-    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+    if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
       throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
@@ -247,7 +247,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
    * @return
    */
   public int updateMedicalApproval(MedicalCommonRecordForm medicalCommonRecordForm) {
-    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())&&medicalCommonRecordForm.getMajorDentistId()!=Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+    if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))&&!medicalCommonRecordForm.getMajorDentistId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
       throw new ClientServiceException("创建者或主治医生才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
