@@ -1,5 +1,10 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.uniubi.sdk.auth.authToken.AppAuthParam;
+import com.uniubi.sdk.auth.authToken.TokenFetcher;
+import com.uniubi.sdk.client.UniUbiClient;
+import com.uniubi.sdk.model.PersonInput;
+import com.uniubi.sdk.model.ResultPersonCreateOutput;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -8,6 +13,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientExpInfo;
 import com.yunya.models.patient_central.PatientExtInfo;
@@ -21,6 +27,7 @@ import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
+import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +52,9 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
 
+    @Autowired
+    private RedisUtils redisUtils;
+
     @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
     @Autowired private PatientExtInfoMapper patientExtInfoMapper;
@@ -52,6 +62,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     @Autowired private PatientExpInfoMapper patientExpInfoMapper;
 
     @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+    @Autowired private WoPersonBiz woPersonBiz;
 
 
     /**
@@ -97,10 +109,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     public void addPatient(PatientBaseInfoModel patientBaseInfoModel) {
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
-        patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-        patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientBaseInfo.setCrtName(BaseContextHandler.getName());
-        patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        //patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+        //patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        //patientBaseInfo.setCrtName(BaseContextHandler.getName());
+        //patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        patientBaseInfo.setwoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName()));//wo平台创建对应人员 返回人员Guid添加到数据库
         mapper.insertSelective(patientBaseInfo);
     }
 
@@ -213,4 +226,5 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     public List<PatientBaseInfoVo> findPatientInfoByIds(List<Integer> ids) {
         return patientBaseInfoMapper.selectPatientInfoByIdList(ids);
     }
+
 }

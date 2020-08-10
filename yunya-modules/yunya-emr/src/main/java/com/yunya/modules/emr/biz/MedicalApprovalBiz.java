@@ -55,6 +55,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      *
      * @param draftModel 草稿病例申请
      */
+    @Transactional(rollbackFor = Exception.class)
     public void applyAddDraftCase(DraftMedicalApplyModel draftModel) {
         boolean locked = false;
         String lockKey = Joiner.on(":").join(RedisConstants.LOCK_DRAFT_APPLY_NS, String.valueOf(draftModel.getApplyBase().getEventId()));
@@ -83,6 +84,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      *
      * @param draftModel 修改草稿病例申请
      */
+    @Transactional(rollbackFor = Exception.class)
     public void applyUpdateDraftCase(DraftMedicalApplyModel draftModel) {
         boolean locked = false;
         String lockKey = Joiner.on(":").join(RedisConstants.LOCK_DRAFT_APPLY_NS, String.valueOf(draftModel.getApplyBase().getEventId()));
@@ -111,6 +113,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      *
      * @param changeModel 申请病例变更新增参数
      */
+    @Transactional(rollbackFor = Exception.class)
     public void applyAddChangeCase(ChangeMedicalApplyModel changeModel) {
         boolean locked = false;
         String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHANGE_APPLY_NS, String.valueOf(changeModel.getApplyBase().getEventId()));
@@ -158,7 +161,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         //查询该病历的审批情况
         pendCount = mapper.countByEventIdAndType(applyBase.getEventId(), EventTypeEnum.DRAFT_AUDIT.getCode(), null);
         if (pendCount > 0) {
-            throw new ClientServiceException("该病例正在审批中，请勿重复申请", OperationCodeConstants.APPLY_APPROVE_PENDING);
+            throw new ClientServiceException("病例已在审批，请勿重复提交申请", OperationCodeConstants.APPLY_APPROVE_PENDING);
         }
         //新增一条草稿病历新增审批
         constructCreateEntity(applyBase, EventTypeEnum.DRAFT_AUDIT.getCode(), ApplyTypeEnum.ADD.getCode(), null);
@@ -180,12 +183,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         ApprovalRecord medicalChangeRecord = mapper.findMedicalChangeRecord(eventId);
         //如果是修改变更申请 查询截止时间是否已经超时
         checkDeadTimeOut(medicalChangeRecord);
-        //校验并且返回最新拒绝审批时间
-        LocalDateTime approveTime = getAndCheckNewestApproveTime(eventId);
-        //校验审批时间是否已经超过24h
-        if (judgeRejectTimeout(approveTime)) {
-            throw new ClientServiceException("该病例申请已超过24小时", OperationCodeConstants.NO_PERMISSION_OPERATION);
-        }
+        //校验最新一条草稿病例审批状态
+        checkNewestDraftStatus(eventId);
         //新增一条草稿病历修改审批
         constructCreateEntity(applyBase, EventTypeEnum.DRAFT_AUDIT.getCode(), ApplyTypeEnum.UPDATE.getCode(), null);
     }
@@ -198,19 +197,15 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      */
     @Transactional(rollbackFor = Exception.class)
     public void passMedical(Integer approveId, MedicalApprovePassForm passForm) {
-        int pendCount;
-        Integer eventId = passForm.getPassForm().getEventId();
-        //查询该病历的审批情况
-        pendCount = mapper.countByEventIdAndType(eventId, EventTypeEnum.DRAFT_AUDIT.getCode(), ApproveStatusEnum.APPROVE_PENDING.getCode());
-        if (pendCount == 0) {
-            throw new ClientServiceException("该病例申请不存在", OperationCodeConstants.DATA_ERROR);
-        }
+        //查询该病历是否存在待审批记录，不存在非法操作
+        isExistApply(approveId);
         //检查是否有权限审批病例
         checkApprovePermission(approveId);
         //更新审批记录信息
         updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_PASS.getCode(), null, null);
         //更新电子病历信息
         passForm.getMedicalCommonRecordForm().setStatus(2);
+        passForm.getMedicalCommonRecordForm().setApprovalTime(new Date());
         commonRecordBiz.updateMedicalApproval(passForm.getMedicalCommonRecordForm());
     }
 
@@ -222,19 +217,16 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      */
     @Transactional(rollbackFor = Exception.class)
     public void rejectMedical(Integer approveId, MedicalApproveRejectForm rejectForm) {
-        int pendCount;
         ApproveRejectForm appRejectForm = rejectForm.getRejectForm();
         //查询该病历是否存在待审批记录，不存在非法操作
-        pendCount = mapper.countByEventIdAndType(appRejectForm.getEventId(), EventTypeEnum.DRAFT_AUDIT.getCode(), ApproveStatusEnum.APPROVE_PENDING.getCode());
-        if (pendCount == 0) {
-            throw new ClientServiceException("该病例不存在", OperationCodeConstants.DATA_ERROR);
-        }
+        isExistApply(approveId);
         //检查是否有权限审批病例
         checkApprovePermission(approveId);
         //更新审批记录信息
         updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_REJECT.getCode(), appRejectForm.getRejectReason(), null);
         //更新电子病历信息
         rejectForm.getMedicalCommonRecordForm().setStatus(3);
+        rejectForm.getMedicalCommonRecordForm().setApprovalTime(new Date());
         commonRecordBiz.updateMedicalApproval(rejectForm.getMedicalCommonRecordForm());
     }
 
@@ -270,16 +262,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      * @param changeModel 申请病例变更修改参数
      */
     public void applyUpdateChangeCase(ChangeMedicalApplyModel changeModel) {
-
         ApplyBaseModel applyBase = changeModel.getApplyBase();
         Integer eventId = applyBase.getEventId();
         //校验登录人是否有权限进行更改病例申请操作
         checkModifyPermission(eventId);
-        //校验并且返回最新拒绝审批时间
-        LocalDateTime approveTime = getAndCheckNewestApproveTime(eventId);
-        if (!judgeRejectTimeout(approveTime)) {
-            throw new ClientServiceException("“该病历已审核拒绝且可以修改，无须申请修改", OperationCodeConstants.NO_PERMISSION_OPERATION);
-        }
+        //查询草稿病例审核状态（草稿通过状态可以变更、拒绝24h之外可以变更、医生超过24h可以变更，待审核或者拒绝时间24h之内不能变更，医生就诊当天不能变更）
+        checkCanChangeUpdate(eventId);
         //病例修改变更申请进入审批
         constructCreateEntity(applyBase, EventTypeEnum.MEDICAL_CHANGE_AUDIT.getCode(), ApplyTypeEnum.UPDATE.getCode(), changeModel.getApplyReason());
     }
@@ -296,6 +284,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         if (now.isAfter(changeDeadTime)) {
             throw new ClientServiceException("选择的允许变更截止时间不能早于操作当天时间", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
+        //查询该病历是否存在待审批记录，不存在非法操作
+        isExistApply(approveId);
         //更新审批记录信息
         updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_PASS.getCode(), null, changeDeadTime);
     }
@@ -307,6 +297,9 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      * @param rejectForm 拒绝对象
      */
     public void rejectChange(Integer approveId, ChangeApproveRejectForm rejectForm) {
+        //查询该病历是否存在待审批记录，不存在非法操作
+        isExistApply(approveId);
+        //更新审批状态
         updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_REJECT.getCode(), rejectForm.getRejectReason(), null);
     }
 
@@ -561,10 +554,9 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         record.setId(approveId);
         record.setApproverId(loginUserId);
         record.setApproveTime(now);
-        record.setApproveReason(StringUtils.isBlank(approveReason) ? null : approveReason);
+        record.setApproveReason(approveReason);
         record.setDeadTime(deadTime);
         record.setStatus(status);
-        record.setCrtId(loginUserId);
         record.setUpdId(loginUserId);
         mapper.updateByPrimaryKeySelective(record);
     }
@@ -627,21 +619,64 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         return hourGap > BusinessConstants.HOUR_GAP;
     }
 
-    private LocalDateTime getAndCheckNewestApproveTime(Integer eventId) {
-        int pendCount;
-        //查询草稿病例是否存在待审批记录
-        pendCount = mapper.countByEventIdAndType(eventId, EventTypeEnum.DRAFT_AUDIT.getCode(),
-                ApproveStatusEnum.APPROVE_PENDING.getCode());
-        if (pendCount > 0) {
-            throw new ClientServiceException("该病历未经过主诊医生审核，不能申请修改！", OperationCodeConstants.APPLY_APPROVE_PENDING);
-        }
-        //查询最新一条拒绝审批的草稿病例
-        ApprovalRecord newestDraft = mapper.findNewestReject(eventId);
+    private void checkNewestDraftStatus(Integer eventId) {
+        //查询最新一条审批的草稿病例
+        ApprovalRecord newestDraft = mapper.findNewestDraft(eventId);
         if (newestDraft == null) {
             throw new ClientServiceException("病例不存在", OperationCodeConstants.NO_PERMISSION_OPERATION);
         }
-        //最新拒绝草稿病例申请的审批时间
-        return newestDraft.getApproveTime();
+        if (ApproveStatusEnum.APPROVE_PENDING.getCode().equals(newestDraft.getStatus())) {
+            throw new ClientServiceException("该病历未经过主诊医生审核，不能申请修改！", OperationCodeConstants.APPLY_APPROVE_PENDING);
+        }
+        //如果最新草稿状态是通过，变更申请同意数必须等于草稿审批同意数，才能修改
+        if (ApproveStatusEnum.AUDIT_PASS.getCode().equals(newestDraft.getStatus())) {
+            int countDraftPass = mapper.countDraftPassByEventId(eventId);
+            int countChangePass = mapper.countChangePassByEventId(eventId);
+            if (countChangePass != countDraftPass) {
+                throw new ClientServiceException("该草稿病历审核已通过，无法修改", OperationCodeConstants.DATA_ERROR);
+            }
+        }
+        if (ApproveStatusEnum.AUDIT_REJECT.getCode().equals(newestDraft.getStatus())) {
+            //最新拒绝草稿病例申请的审批时间
+            LocalDateTime approveTime = newestDraft.getApproveTime();
+            //校验审批时间是否已经超过24h
+            if (judgeRejectTimeout(approveTime)) {
+                throw new ClientServiceException("该病例申请已超过24小时", OperationCodeConstants.NO_PERMISSION_OPERATION);
+            }
+        }
+    }
+
+    /**
+     * 校验是否可以变更修改申请
+     * 草稿通过状态可以变更、拒绝24h之外可以变更、医生超过当天就诊24点可以变更，待审核或者拒绝时间24h之内不能变更，医生就诊当天不能变更）
+     * @param eventId
+     */
+    private void checkCanChangeUpdate(Integer eventId) {
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        MedicalCommonRecord medical = medicalMapper.selectByPrimaryKey(eventId);
+        //查询最新一条草稿病例
+        ApprovalRecord newestDraft = mapper.findNewestDraft(eventId);
+        if (medical == null) {
+            throw new ClientServiceException("该病例不存在", OperationCodeConstants.DATA_ERROR);
+        }
+        //如果是主治医生创建的病例
+        if (medical.getCrtId().equals(medical.getMajorDentistId())) {
+            //是否在就诊当天之内
+        } else {
+            //助理医生变更申请校验
+            if (newestDraft != null) {
+                //待审核草稿不能申请变更
+                if (ApproveStatusEnum.APPROVE_PENDING.getCode().equals(newestDraft.getStatus())) {
+                    throw new ClientServiceException("该病历未经过主诊医生审核，不能申请修改！", OperationCodeConstants.APPLY_APPROVE_PENDING);
+                }
+                if (ApproveStatusEnum.AUDIT_REJECT.getCode().equals(newestDraft.getStatus())) {
+                    //校验最新拒绝审批时间
+                    if (!judgeRejectTimeout(newestDraft.getApproveTime())) {
+                        throw new ClientServiceException("该病历已审核拒绝且可以修改，无须申请修改", OperationCodeConstants.DATA_EXIST);
+                    }
+                }
+            }
+        }
     }
 
     private void checkDeadTimeOut(ApprovalRecord record) {
@@ -697,6 +732,14 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             if (!postGroupList.contains("助手")) {
                 throw new ClientServiceException("无权限操作", OperationCodeConstants.NO_PERMISSION_OPERATION);
             }
+        }
+    }
+
+    private void isExistApply(Integer approveId) {
+        //查询该病历是否存在待审批记录，不存在非法操作
+        ApprovalRecord approvalRecord = mapper.selectByPrimaryKey(approveId);
+        if (approvalRecord == null || !ApproveStatusEnum.APPROVE_PENDING.getCode().equals(approvalRecord.getStatus())) {
+            throw new ClientServiceException("该病例申请不存在", OperationCodeConstants.DATA_ERROR);
         }
     }
 }

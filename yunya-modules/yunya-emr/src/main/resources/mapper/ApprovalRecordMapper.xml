@@ -32,7 +32,7 @@
           </if >
     </select>
 
-    <select id="findNewestReject" resultMap="BaseResultMap">
+    <select id="findNewestDraft" resultMap="BaseResultMap">
         select
             `id`,
             `event_id`,
@@ -41,8 +41,26 @@
         from `approval_record`
         where `event_id` = #{eventId}
           and `event_type` = 0
-          and `status` = 2
-        order by `approve_time` desc limit 1
+        order by `crt_time` desc limit 1
+    </select>
+
+    <select id="countDraftPassByEventId" resultType="int">
+        select
+            count(*)
+        from `approval_record`
+        where `event_id` = #{eventId}
+          and `event_type` = 0
+          and `status` = 1
+    </select>
+
+    <select id="countChangePassByEventId" resultType="int">
+        select
+            count(*)
+        from `approval_record`
+        where `event_id` = #{eventId}
+          and `event_type` = 1
+          and `apply_type` = 1
+          and `status` = 1
     </select>
 
     <select id="findTreatmentRecord" resultMap="BaseResultMap">
@@ -64,6 +82,7 @@
             `id`,
             `event_id`,
             `approve_time`,
+            `dead_time`,
             `status`
         from `approval_record`
         where `event_id` = #{medicalId}
@@ -103,7 +122,7 @@
                 count(*)
             from `approval_record`
             where `event_id` = `ar1`.`event_id`
-            and `crt_time` > `ar1`.`crt_time` );
+            and `crt_time` > `ar1`.`crt_time` )
           <if test="eventType != null">
             and `ar1`.`event_type` = #{eventType}
           </if>
@@ -113,7 +132,7 @@
                  #{item}
             </foreach>
           </if>
-          <if test="submitTime != null">
+          <if test="submitTime != null and submitTime != ''">
              and to_days(`ar1`.`crt_time`) = to_days(#{submitTime})
           </if>
 

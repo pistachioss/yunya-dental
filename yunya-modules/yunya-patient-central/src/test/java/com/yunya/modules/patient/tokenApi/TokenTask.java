@@ -4,6 +4,7 @@ import com.uniubi.sdk.auth.authToken.AppAuthParam;
 import com.uniubi.sdk.auth.authToken.CustomTokenFetcher;
 import com.uniubi.sdk.auth.authToken.TokenFetcher;
 import com.yunya.framework.common.utils.MD5Util;
+import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 
 /**
  * 简单介绍:</br>
@@ -25,10 +26,14 @@ public class TokenTask implements CustomTokenFetcher {
 
     @Override
     public String getToken() {
-        String S = appKey+System.currentTimeMillis()+appSecret;
+        long l = System.currentTimeMillis();
+        System.out.println(l);
+        String S = WoPlatformConstants.APPKEY+System.currentTimeMillis()+WoPlatformConstants.APPSECRET;
+        System.out.println(S);
         String token = MD5Util.getStringMD5(S);
-        AppAuthParam appAuthParam = new AppAuthParam(appKey,appSecret,appId);
+        System.out.println(token);
+        AppAuthParam appAuthParam = new AppAuthParam(WoPlatformConstants.APPKEY,WoPlatformConstants.APPSECRET,WoPlatformConstants.APPID);
         TokenFetcher.init(appAuthParam);
-        return "2da1a2ae13be926cd06d790057618e37d7d83702f59db83e205e8244e8976713";
+        return token;
     }
 }
