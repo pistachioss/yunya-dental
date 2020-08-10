@@ -1,14 +1,18 @@
 package com.yunya.feign.appointment.domain.form;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 患者预约基础参数列表封装
@@ -102,4 +106,9 @@ public class AppointmentBaseForm implements Serializable {
     /** 是否启用 是否有效 */
     @ApiModelProperty(value = "是否启用 是否有效")
     private Boolean inservice;
+
+    /** 时长分解列表 */
+    @ApiModelProperty(value = "时长分解列表", required = true)
+    @NotEmpty(message = "时长分解列表不能为空！")
+    private List<AppointmentSplitUpdateBaseInfo> splitList;
 }

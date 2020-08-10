@@ -76,6 +76,7 @@
         DISTINCT item.id,
         item.name as itemName,
         atype.name as typeName,
+        item.appoint_type_id as appointTypeId,
         item.duration,
         item.inservice,
         item.remarks

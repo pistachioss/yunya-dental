@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "clinic_tariff")
-@ApiModel("门诊价目")
 public class ClinicTariff {
     /**
      * 主键ID
@@ -25,22 +24,17 @@ public class ClinicTariff {
      * 公司端对应的诊所ID
      */
     @Column(name = "clinic_id")
-    @NotNull(message = "门诊ID不能为空")
-    @ApiModelProperty("公司端对应的诊所ID")
     private Integer clinicId;
 
     /**
      * 公司端对应表的ID
      */
     @Column(name = "tariff_id")
-    @NotNull(message = "价目ID不能为空")
-    @ApiModelProperty("公司端对应表的ID")
     private Integer tariffId;
 
     /**
      * 价格
      */
-    @ApiModelProperty("价格")
     private BigDecimal price;
 
     /**

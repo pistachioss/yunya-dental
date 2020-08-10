@@ -391,12 +391,15 @@ public class ExcelUtil<T> {
    * @param cell 单元格信息
    */
   public void setCellVo(Object value, Excel attr, Cell cell) {
-    if (ColumnType.STRING == attr.cellType()) {
-      cell.setCellType(CellType.NUMERIC);
-      cell.setCellValue(StringHelper.isNull(value) ? attr.defaultValue() : value + attr.suffix());
-    } else if (ColumnType.NUMERIC == attr.cellType()) {
-      cell.setCellType(CellType.NUMERIC);
-      cell.setCellValue(Integer.parseInt(value + ""));
+    switch (attr.cellType()) {
+      case STRING:
+        cell.setCellType(CellType.NUMERIC);
+        cell.setCellValue(StringHelper.isNull(value) ? attr.defaultValue() : value + attr.suffix());
+        break;
+      case NUMERIC:
+        cell.setCellType(CellType.NUMERIC);
+        cell.setCellValue(Integer.parseInt(value + ""));
+        break;
     }
   }
 
@@ -539,11 +542,9 @@ public class ExcelUtil<T> {
     for (String item : convertSource) {
       String[] itemArray = item.split("=");
       if (StringHelper.containsAny(separator, propertyValue)) {
-        for (String value : propertyValue.split(separator)) {
-          if (itemArray[0].equals(value)) {
-            propertyString.append(itemArray[1]).append(separator);
-            break;
-          }
+        if (Arrays.stream(propertyValue.split(separator))
+            .anyMatch(value -> itemArray[0].equals(value))) {
+          propertyString.append(itemArray[1]).append(separator);
         }
       } else {
         if (itemArray[0].equals(propertyValue)) {
@@ -676,11 +677,8 @@ public class ExcelUtil<T> {
     this.sheet = wb.createSheet();
     this.styles = createStyles(wb);
     // 设置工作表的名称.
-    if (sheetNo == 0) {
-      wb.setSheetName(index, sheetName);
-    } else {
-      wb.setSheetName(index, sheetName + new DateTime().toString() + "_" + index);
-    }
+    wb.setSheetName(
+        index, sheetNo == 0 ? sheetName : sheetName + new DateTime().toString() + "_" + index);
   }
 
   /**
@@ -692,26 +690,33 @@ public class ExcelUtil<T> {
    */
   public Object getCellValue(Row row, int column) {
     if (row == null) {
-      return row;
+      return null;
     }
     Object val = "";
     try {
       Cell cell = row.getCell(column);
       if (StringHelper.isNotNull(cell)) {
-        if (cell.getCellTypeEnum() == CellType.NUMERIC
-            || cell.getCellTypeEnum() == CellType.FORMULA) {
-          val = cell.getNumericCellValue();
-          // POI Excel 日期格式转换/浮点格式处理
-          val =
-              HSSFDateUtil.isCellDateFormatted(cell)
-                  ? DateUtil.calendar((Long) val)
-                  : new BigDecimal(val.toString());
-        } else if (cell.getCellTypeEnum() == CellType.STRING) {
-          val = cell.getStringCellValue();
-        } else if (cell.getCellTypeEnum() == CellType.BOOLEAN) {
-          val = cell.getBooleanCellValue();
-        } else if (cell.getCellTypeEnum() == CellType.ERROR) {
-          val = cell.getErrorCellValue();
+        switch (cell.getCellTypeEnum()) {
+          case NUMERIC:
+          case FORMULA:
+            val = cell.getNumericCellValue();
+            // POI Excel 日期格式转换/浮点格式处理
+            val =
+                HSSFDateUtil.isCellDateFormatted(cell)
+                    ? DateUtil.calendar((Long) val)
+                    : new BigDecimal(val.toString());
+            break;
+          case STRING:
+            val = cell.getStringCellValue();
+            break;
+          case BOOLEAN:
+            val = cell.getBooleanCellValue();
+            break;
+          case ERROR:
+            val = cell.getErrorCellValue();
+            break;
+          default:
+            break;
         }
       }
     } catch (Exception e) {

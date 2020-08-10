@@ -1,5 +1,6 @@
 package com.yunya.modules.tariff.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.tariff.domain.form.BaseTariffForm;
 import com.yunya.feign.tariff.domain.model.BaseTariffModel;
 import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
@@ -56,8 +57,8 @@ public class BaseTariffController {
    */
   @ApiOperation("根据条件查询基础价目表列表(可分页)")
   @PostMapping("/list")
-  public ResponseResult listList(@RequestBody BaseTariffQueryForm queryForm) {
-    List<BaseTariffVO> resultList = baseTariffBiz.findList(queryForm);
+  public ResponseResult findList(@RequestBody BaseTariffQueryForm queryForm) {
+    PageInfo<BaseTariffVO> resultList = baseTariffBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
 

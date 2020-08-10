@@ -6,21 +6,21 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 简介: 门诊商品项目列表查询参数模型
+ * 简介: 价目表开单关联列表查询参数模型
  *
  * @author: chow
- * @date: 2020/8/6 12:50
+ * @date: 2020/8/8 15:57
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("门诊商品项目列表查询参数模型")
+@ApiModel("价目表开单关联列表查询参数模型")
 @Data
 @ToString
-public class ClinicOralTariffQueryForm implements Serializable {
+public class BaseTariffAssociationQueryForm implements Serializable {
+
   @ApiModelProperty(value = "是否分页,默认true")
   private Boolean whetherPage = true;
 
@@ -32,20 +32,13 @@ public class ClinicOralTariffQueryForm implements Serializable {
   @Min(message = "最小值", value = 1)
   private Integer pageSize = 10;
 
-  @ApiModelProperty(value = "组织ID", required = true)
-  @NotNull(message = "组织ID不能为空！")
-  private Integer orgId;
-
-  @ApiModelProperty(value = "商品分类ID")
-  private Integer oralTariffCategoryId;
-
-  @ApiModelProperty("基础商品项目ID")
-  private Integer oralTariffId;
-
-  @ApiModelProperty("门诊商品项目ID")
+  @ApiModelProperty("基础价目表ID")
   private Integer id;
 
-  @ApiModelProperty("商品项目名称/商品项目编号/拼音缩写")
+  @ApiModelProperty("价目表分类ID")
+  private Integer tariffCategoryId;
+
+  @ApiModelProperty("价目表名称/价目表编号/拼音缩写")
   private String keyWord;
 
   @ApiModelProperty("是否启用")

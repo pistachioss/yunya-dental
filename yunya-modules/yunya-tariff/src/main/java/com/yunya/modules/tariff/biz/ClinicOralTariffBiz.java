@@ -13,6 +13,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.tariff.*;
 import com.yunya.modules.tariff.mapper.ClinicOralTariffMapper;
@@ -51,7 +52,7 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     ClinicOralTariffVO resultData = mapper.selectClinicOralTariffById(clinicOralTariffId);
     if (null != resultData) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      if (memberTypes.size() > 0) {
+      if (StringHelper.isNotEmpty(memberTypes)) {
         HashMap<Integer, Object> memberPrices = new HashMap<>(16);
         setClinicOralTariffMemberPrice(memberPrices, memberTypes, orgId, resultData);
       }
@@ -70,9 +71,9 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<ClinicOralTariffVO> resultList = mapper.selectClinicOralTariffList(queryForm);
-    if (resultList.size() > 0) {
+    if (StringHelper.isNotEmpty(resultList)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      if (memberTypes.size() > 0) {
+      if (StringHelper.isNotEmpty(memberTypes)) {
         HashMap<Integer, Object> memberPrices = new HashMap<>(16);
         Integer orgId = queryForm.getOrgId();
         for (ClinicOralTariffVO tariffVO : resultList) {
@@ -146,20 +147,20 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     }
     mapper.updateByPrimaryKeySelective(resultData);
     List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
-    if (memberPrices.size() == 0) {
+    if (StringHelper.isEmpty(memberPrices)) {
       throw new ClientServiceException(
           "修改失败，门诊商品项目会员卡价格不能为空！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
     ClinicOralTariffMemberPrice clinicOralTariffMemberPrice;
     ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice;
-    Integer OralTariffId = form.getOralTariffId();
+    Integer oralTariffId = form.getOralTariffId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer memberTypeId;
     BigDecimal discountPrice;
     for (ClinicItemMemberPriceForm memberPrice : memberPrices) {
       clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
       clinicOralTariffMemberPrice.setClinicId(orgId);
-      clinicOralTariffMemberPrice.setOralTariffId(OralTariffId);
+      clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
       memberTypeId = memberPrice.getMemberTypeId();
       clinicOralTariffMemberPrice.setMemberTypeId(memberTypeId);
       discountPrice = memberPrice.getDiscountPrice();
@@ -204,13 +205,13 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    * @param form 统一折扣设置参数
    */
   public void uniteMemberDiscount(ClinicOralTariffUniteDiscountForm form) {
-    List<Integer> ClinicOralTariffIds = form.getClinicOralTariffIds();
-    if (ClinicOralTariffIds.size() == 0) {
+    List<Integer> clinicOralTariffIds = form.getClinicOralTariffIds();
+    if (StringHelper.isEmpty(clinicOralTariffIds)) {
       throw new ClientServiceException(
           "统一设置门诊商品项目折扣失败，当前未选择任何门诊商品项目项目！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
     List<MemberUniteDiscountForm> memberUniteDiscountForms = form.getMemberUniteDiscountForms();
-    if (memberUniteDiscountForms.size() == 0) {
+    if (StringHelper.isEmpty(memberUniteDiscountForms)) {
       throw new ClientServiceException(
           "统一设置门诊商品项目折扣失败,当前未选择任何会员卡类型", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
@@ -220,7 +221,7 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice;
     BigDecimal price;
     Integer memberType;
-    for (Integer clinicOralTariffId : ClinicOralTariffIds) {
+    for (Integer clinicOralTariffId : clinicOralTariffIds) {
       for (MemberUniteDiscountForm discountForm : memberUniteDiscountForms) {
         ClinicOralTariff resultData = mapper.selectByPrimaryKey(clinicOralTariffId);
         if (null != resultData) {

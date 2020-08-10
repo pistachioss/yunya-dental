@@ -94,7 +94,7 @@ public class BaseOralTariffCategoryController {
    * @param id 商品分类ID
    * @return
    */
-  @ApiOperation("根据ID删除商品分类")
+  @ApiOperation("根据ID（商品分类ID）删除商品分类")
   @DeleteMapping("/delete/{id}")
   public ResponseResult delete(@PathVariable(value = "id") Integer id) {
     baseOralTariffCategoryBiz.deleteBaseOralTariffCategoryById(id);

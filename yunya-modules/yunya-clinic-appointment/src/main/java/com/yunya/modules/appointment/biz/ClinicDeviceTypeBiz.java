@@ -1,4 +1,6 @@
 package com.yunya.modules.appointment.biz;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.DeviceEditForm;
 import com.yunya.feign.appointment.domain.form.DeviceTypeForm;
 import com.yunya.feign.appointment.domain.model.DeviceTypeModel;
@@ -143,9 +145,12 @@ public class ClinicDeviceTypeBiz extends BaseBiz<ClinicDeviceTypeMapper, ClinicD
      * @param query  查询条件
      * @return
      */
-    public List<DeviceTypeVo> findDeviceTypeList(DeviceTypeQuery query){
+    public PageInfo findDeviceTypeList(DeviceTypeQuery query){
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
         List<DeviceTypeVo> deviceTypeVos = mapper.selectDeviceTypeByExample(query);
-        return deviceTypeVos;
+        return new PageInfo<>(deviceTypeVos);
     }
 
     /**
