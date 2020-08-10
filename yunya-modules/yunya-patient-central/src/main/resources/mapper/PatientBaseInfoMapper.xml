@@ -71,6 +71,14 @@
     from patient_base_info where CONCAT(name,medical_nummber,pinyin_name,mobile) like CONCAT(CONCAT('%',#{form.condition}),'%')
   </select>
 
+  <select id="selectPatientInfoByIdList" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    select <include refid="Patient_Column_List"/>
+    from patient_base_info where id in
+    <foreach collection="ids" item="id" open="(" close=")" separator=",">
+      #{id}
+    </foreach>
+  </select>
+
 
 </mapper>
 

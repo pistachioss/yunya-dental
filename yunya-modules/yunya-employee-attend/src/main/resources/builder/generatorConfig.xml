@@ -14,7 +14,7 @@
         </plugin>
 
         <jdbcConnection driverClass="com.mysql.jdbc.Driver"
-                        connectionURL="jdbc:mysql://47.99.146.90:3306/yunya_clinic?useUnicode=true"
+                        connectionURL="jdbc:mysql://47.99.146.90:3306/yunya_employee_attend?useUnicode=true"
                         userId="root"
                         password="123456">
         </jdbcConnection>

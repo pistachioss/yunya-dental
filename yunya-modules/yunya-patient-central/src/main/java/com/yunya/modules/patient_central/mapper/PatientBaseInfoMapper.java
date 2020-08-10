@@ -63,4 +63,11 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
      * @return List<PatientBaseInfoVo>
      */
     List<PatientBaseInfoVo> findPatientByNameAndMobile(@Param("form") PatientLikeFinleQueryForm form);
+
+    /**
+     * 根据患者id集合查询患者list
+     * @param id
+     * @return
+     */
+    List<PatientBaseInfoVo> selectPatientInfoByIdList(@Param("ids") List<Integer> id);
 }

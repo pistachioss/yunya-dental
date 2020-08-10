@@ -1,33 +1,23 @@
 package com.yunya.modules.emr.biz;
 
-import com.alibaba.fastjson.JSONArray;
-import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
-import com.yunya.feign.emr.domain.model.ApplyBaseModel;
-import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
-import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
-import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
-import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.emr.MedicalCommonRecord;
-import com.yunya.models.emr.MedicalGeneralNum;
-import com.yunya.models.emr.MedicalRecordHistory;
-import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
-import com.yunya.modules.emr.mapper.MedicalGeneralNumMapper;
-import com.yunya.modules.emr.mapper.MedicalRecordHistoryMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
+import com.alibaba.fastjson.*;
+import com.yunya.feign.emr.domain.form.*;
+import com.yunya.feign.emr.domain.model.*;
+import com.yunya.feign.emr.domain.vo.*;
+import com.yunya.framework.common.biz.*;
+import com.yunya.framework.common.constant.*;
+import com.yunya.framework.common.context.*;
+import com.yunya.framework.common.exception.*;
+import com.yunya.models.emr.*;
+import com.yunya.modules.emr.mapper.*;
+import org.springframework.beans.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
+import tk.mybatis.mapper.entity.*;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.text.*;
+import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -46,14 +36,17 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     Date date = null;
     Date now = new Date();
-    try {
-      date = simpleDateFormat.parse(model.getDeadTime());
-      now = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
-    } catch (ParseException e) {
-      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-    }
-    if (model.getDeadTime() != null && date.before(now)) {//如果参数有审批时间(代表是就诊24小时后 通过申请来新增病历) 且审批截止时间超过当前时间 不可进行审批
-      throw new ClientServiceException("超过审批时间", OperationCodeConstants.OBJECT_EDIT_FAIL);
+    if(model.getDeadTime()!=null){
+      try {
+        date = simpleDateFormat.parse(model.getDeadTime());
+        now = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
+        model.setTime(new Date());
+      } catch (Exception e) {
+        throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+      }
+      if (date.before(now)) {//如果参数有审批时间(代表是就诊24小时后 通过申请来新增病历) 且审批截止时间超过当前时间 不可进行审批
+        throw new ClientServiceException("超过审批时间", OperationCodeConstants.OBJECT_EDIT_FAIL);
+      }
     }
 
     Example example = new Example(MedicalCommonRecord.class);
@@ -82,7 +75,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     }
 
     //调用figen获取就诊信息 medicalCommonRecordForm.getTreatmentId() 就诊id 未对接 //是否超过当前24小时
-    if (model.getDeadTime() == null && true) {//判断当前时间是否超过就诊当天24点
+    if (model.getDeadTime() == null && false) {//false处为判断当前时间是否超过就诊当天24点
       throw new ClientServiceException("超过就诊当天24点", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
 
@@ -124,7 +117,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
    * @return
    */
   public int updateMedical(MedicalCommonRecordForm medicalCommonRecordForm) {
-    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+    if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
       throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
@@ -151,7 +144,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
 
     //调用figen获取就诊信息 medicalCommonRecordForm.getTreatmentId() 就诊id 未对接
 
-    if (true) {//判断当前时间是否超过就诊当天24点
+    if (false) {//判断当前时间是否超过就诊当天24点
       throw new ClientServiceException("已过修改时间，请提交审核", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     re = mapper.updateByPrimaryKey(medicalcopy);
@@ -184,7 +177,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
    * @return
    */
   public int updateMedicalAfter(MedicalCommonRecordForm medicalCommonRecordForm) {
-    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+    if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
       throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
@@ -239,12 +232,12 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
   }
 
   /**
-   * 病历审核通过或拒绝后 走的方法
+   * 病历审核通过或拒绝后 走的方法（只有助手的病历才会审核通过或拒绝，医生提交的审核直接通过）
    * @param medicalCommonRecordForm
    * @return
    */
   public int updateMedicalApproval(MedicalCommonRecordForm medicalCommonRecordForm) {
-    if (medicalCommonRecordForm.getCrtId() != Integer.valueOf(BaseContextHandler.getUserID())&&medicalCommonRecordForm.getMajorDentistId()!=Integer.valueOf(BaseContextHandler.getUserID())) {//判断修改人是否为当前病历的创建人
+    if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))&&!medicalCommonRecordForm.getMajorDentistId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
       throw new ClientServiceException("创建者或主治医生才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();

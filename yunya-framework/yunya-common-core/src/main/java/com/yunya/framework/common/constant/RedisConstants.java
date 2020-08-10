@@ -34,4 +34,8 @@ public class RedisConstants implements Serializable {
   public static final String REDIS_KEY_ORG_LIST = "orgList_";
 
   /** ---------------------------*****缓存通用key------------------------------- */
+
+  /** ----------------------- 电子病例----------------------------------------*/
+  public static final String LOCK_DRAFT_APPLY_NS ="lock:draft:apply";
+  public static final String LOCK_CHANGE_APPLY_NS ="lock:change:apply";
 }

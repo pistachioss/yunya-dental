@@ -25,7 +25,7 @@ public class BaseTariffHistoryVO implements Serializable {
   private Integer tariffCategoryId;
 
   /** 价目表分类名称 */
-  private Integer tariffCategoryName;
+  private String tariffCategoryName;
 
   /** 项目编码 */
   private String itemNumber;

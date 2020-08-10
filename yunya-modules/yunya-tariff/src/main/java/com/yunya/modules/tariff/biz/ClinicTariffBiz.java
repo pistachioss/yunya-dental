@@ -3,16 +3,20 @@ package com.yunya.modules.tariff.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.tariff.domain.form.ClinicItemMemberPriceForm;
 import com.yunya.feign.tariff.domain.form.ClinicTariffForm;
 import com.yunya.feign.tariff.domain.form.ClinicTariffUniteDiscountForm;
 import com.yunya.feign.tariff.domain.form.MemberUniteDiscountForm;
 import com.yunya.feign.tariff.domain.query.ClinicTariffQueryForm;
+import com.yunya.feign.tariff.domain.vo.ClinicTariffExportVO;
 import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
@@ -21,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
@@ -52,7 +58,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     ClinicTariffVO resultData = mapper.selectClinicTariffById(clinicTariffId);
     if (null != resultData) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      if (memberTypes.size() > 0) {
+      if (StringHelper.isNotEmpty(memberTypes)) {
         HashMap<Integer, Object> memberPrices = new HashMap<>(16);
         setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, resultData);
       }
@@ -71,14 +77,13 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<ClinicTariffVO> resultList = mapper.selectClinicTariffList(queryForm);
-    if (resultList.size() > 0) {
+    if (StringHelper.isNotEmpty(resultList)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      if (memberTypes.size() > 0) {
+      if (StringHelper.isNotEmpty(memberTypes)) {
         HashMap<Integer, Object> memberPrices = new HashMap<>(16);
         Integer orgId = queryForm.getOrgId();
-        for (ClinicTariffVO tariffVO : resultList) {
-          setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
-        }
+        resultList.forEach(
+            tariffVO -> setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO));
       }
     }
     return new PageInfo<>(resultList);
@@ -147,7 +152,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     }
     mapper.updateByPrimaryKeySelective(resultData);
     List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
-    if (memberPrices.size() == 0) {
+    if (StringHelper.isEmpty(memberPrices)) {
       throw new ClientServiceException(
           "修改失败，门诊价目表会员卡价格不能为空！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
@@ -205,12 +210,12 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    */
   public void uniteMemberDiscount(ClinicTariffUniteDiscountForm form) {
     List<Integer> clinicTariffIds = form.getClinicTariffIds();
-    if (clinicTariffIds.size() == 0) {
+    if (StringHelper.isEmpty(clinicTariffIds)) {
       throw new ClientServiceException(
           "统一设置门诊价目表折扣失败，当前未选择任何门诊价目表项目！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
     List<MemberUniteDiscountForm> memberUniteDiscountForms = form.getMemberUniteDiscountForms();
-    if (memberUniteDiscountForms.size() == 0) {
+    if (StringHelper.isEmpty(memberUniteDiscountForms)) {
       throw new ClientServiceException(
           "统一设置门诊价目表折扣失败,当前未选择任何会员卡类型", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
     }
@@ -250,5 +255,24 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
         }
       }
     }
+  }
+
+  /**
+   * 根据条件导出门诊价目表
+   *
+   * @param response 响应
+   * @param queryForm 查询条件
+   */
+  public void exportClinicTariffList(HttpServletResponse response, ClinicTariffQueryForm queryForm)
+      throws IOException {
+    List<ClinicTariffExportVO> resultList = mapper.selectClinicTariffExportList(queryForm);
+    Integer orgId = queryForm.getOrgId();
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+    String abbreviation = null;
+    if (null != orgInfo) {
+      abbreviation = orgInfo.getAbbreviation();
+    }
+    ExcelUtil<ClinicTariffExportVO> excelUtil = new ExcelUtil<>(ClinicTariffExportVO.class);
+    excelUtil.exportExcel(response, resultList, abbreviation + "-价目表信息列表");
   }
 }

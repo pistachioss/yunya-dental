@@ -118,4 +118,69 @@
             </if>
         </where>    
     </select>
+    <!-- 根据条件查询门诊价目表导出列表 -->
+    <select id="selectClinicTariffExportList"
+            resultType="com.yunya.feign.tariff.domain.vo.ClinicTariffExportVO">
+        select
+            ct.`number` as itemNumber,
+            ct.`name`,
+            ct.tariffCategoryNumber,
+            ct.tariffCategoryName,
+            ct.englishName,
+            ct.unit,
+            ct.price
+        from
+        (
+        select
+        ct.id,
+        ct.clinic_id as orgId,
+        btbtc.tariffCategoryId,
+        btbtc.tariffCategoryName,
+        btbtc.tariffCategoryNumber,
+        btbtc.tariffId,
+        btbtc.`name`,
+        btbtc.pinyin,
+        btbtc.englishName,
+        btbtc.`number`,
+        btbtc.unit,
+        ct.price,
+        ct.inservice
+        from
+        clinic_tariff ct
+        left join (
+        select
+        bt.id as tariffId,
+        btc.id as tariffCategoryId,
+        btc.`name` as tariffCategoryName,
+        btc.number as tariffCategoryNumber,
+        bt.item_number as number,
+        bt.`name`,
+        bt.pinyin,
+        bt.english_name as englishName,
+        unit
+        from
+        base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        ) btbtc on ct.tariff_id = btbtc.tariffId
+        ) ct
+        <where>
+            <if test="queryForm.orgId != null">
+                and ct.orgId =#{queryForm.orgId}
+            </if>
+            <if test="queryForm.tariffCategoryId != null">
+                and ct.tariffCategoryId = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.tariffId != null">
+                and ct.tariffId = #{queryForm.tariffId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
+                and ct.name like concat('%',#{queryForm.keyWord},'%')
+                or ct.pinyin like concat('%',#{queryForm.keyWord},'%')
+                or ct.englishName like concat('%',#{queryForm.keyWord},'%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and ct.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
 </mapper>

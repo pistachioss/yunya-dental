@@ -51,4 +51,6 @@ public class BusinessConstants {
   public static final Integer ENABLE_NUM = 1;
 
   public static final Long HOUR_GAP = 24L;
+
+  public static final Long DRAFT_LOCK_SEC = 600L;
 }

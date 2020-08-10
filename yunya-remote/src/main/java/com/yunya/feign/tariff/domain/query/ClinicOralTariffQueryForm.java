@@ -36,8 +36,7 @@ public class ClinicOralTariffQueryForm implements Serializable {
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
 
-  @ApiModelProperty(value = "商品分类ID", required = true)
-  @NotNull(message = "商品分类不能为空！")
+  @ApiModelProperty(value = "商品分类ID")
   private Integer oralTariffCategoryId;
 
   @ApiModelProperty("基础商品项目ID")

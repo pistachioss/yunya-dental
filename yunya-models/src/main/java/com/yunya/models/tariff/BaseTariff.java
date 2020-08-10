@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "base_tariff")
-@ApiModel(description = "价目表表单")
 public class BaseTariff {
     @Id
     @GeneratedValue(generator = "JDBC")
@@ -23,82 +22,66 @@ public class BaseTariff {
      * 父项目分类
      */
     @Column(name = "tariff_category_id")
-    @NotNull(message = "价目表目录id不能为空")
-    @ApiModelProperty("价目表目录id")
     private Integer tariffCategoryId;
 
     /**
      * 项目编码
      */
     @Column(name = "item_number")
-    @NotBlank(message = "项目编码不能为空")
-    @ApiModelProperty("项目编码")
     private String itemNumber;
 
     /**
      * 项目名称
      */
-    @NotBlank(message = "名称不能为空")
-    @ApiModelProperty("项目名称")
     private String name;
 
-    @ApiModelProperty("拼音")
     private String pinyin;
 
     /**
      * 项目英文名称
      */
     @Column(name = "english_name")
-    @ApiModelProperty("项目英文名称")
     private String englishName;
 
     /**
      * 单位
      */
-    @ApiModelProperty("单位")
     private String unit;
 
     /**
      * 价格
      */
-    @ApiModelProperty("价格")
     private BigDecimal price;
 
     /**
      * 调价方式: 0, 手动调价; 1, 自动调价
      */
-    @ApiModelProperty("调价方式: 0, 手动调价; 1, 自动调价")
     private Boolean adjust;
 
     /**
      * 是否计算绩效:0否,1是
      */
-    @ApiModelProperty("是否计算绩效:0否,1是")
     private Boolean achie;
 
     /**
      * 电子病历处理内容
      */
-    @ApiModelProperty("电子病历处理内容")
     private String emr;
 
     /**
      * 注意事项
      */
-    @ApiModelProperty("注意事项")
-    private String attertion;
+    private String attention;
 
     /**
      * 几天后随访
      */
     @Column(name = "fellow_up")
-    @ApiModelProperty("几天后随访")
     private String fellowUp;
 
     /**
      * 是否启用
      */
-    @ApiModelProperty("是否启用")
     private Boolean inservice;
 
     /**
@@ -321,19 +304,19 @@ public class BaseTariff {
     /**
      * 获取注意事项
      *
-     * @return attertion - 注意事项
+     * @return attention - 注意事项
      */
-    public String getAttertion() {
-        return attertion;
+    public String getAttention() {
+        return attention;
     }
 
     /**
      * 设置注意事项
      *
-     * @param attertion 注意事项
+     * @param attention 注意事项
      */
-    public void setAttertion(String attertion) {
-        this.attertion = attertion;
+    public void setAttention(String attention) {
+        this.attention = attention;
     }
 
     /**

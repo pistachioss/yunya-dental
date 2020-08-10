@@ -1,46 +1,35 @@
 package com.yunya.models.tariff;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "clinic_tariff")
-@ApiModel("门诊价目")
 public class ClinicTariff {
     /**
      * 主键ID
      */
     @Id
-    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
      * 公司端对应的诊所ID
      */
     @Column(name = "clinic_id")
-    @NotNull(message = "门诊ID不能为空")
-    @ApiModelProperty("公司端对应的诊所ID")
     private Integer clinicId;
 
     /**
      * 公司端对应表的ID
      */
     @Column(name = "tariff_id")
-    @NotNull(message = "价目ID不能为空")
-    @ApiModelProperty("公司端对应表的ID")
     private Integer tariffId;
 
     /**
      * 价格
      */
-    @ApiModelProperty("价格")
     private BigDecimal price;
 
     /**

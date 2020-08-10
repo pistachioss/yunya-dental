@@ -115,7 +115,6 @@ public class TemplateBiz {
     public MedicalDetailDetailVo getMedicalTemplateDetail(Integer templateId) {
         MedicalTemplate entity = medicalMapper.selectByPrimaryKey(templateId);
         MedicalDetailDetailVo detail = EntityUtils.build(entity, MedicalDetailDetailVo.class);
-        detail.setType(TemplateTypeEnum.getValue(Integer.valueOf(entity.getType())));
         return detail;
     }
 

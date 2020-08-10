@@ -1,5 +1,7 @@
 package com.yunya.modules.emr.enums;
 
+import java.util.*;
+
 /**
  * @author xiangyang
  */
@@ -23,5 +25,20 @@ public enum ApplyTypeEnum {
 
     public Integer getCode() {
         return code;
+    }
+
+    public static String getValue(Integer code)
+    {
+        if(code != null)
+        {
+            for(ApplyTypeEnum applyEnum : values())
+            {
+                if(Objects.equals(applyEnum.getCode(), code))
+                {
+                    return applyEnum.getValue();
+                }
+            }
+        }
+        return null;
     }
 }

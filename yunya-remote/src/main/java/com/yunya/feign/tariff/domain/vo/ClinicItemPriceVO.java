@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class ClinicItemPriceVO implements Serializable {
-  /** 门诊商品ID */
+  /** 门诊项目ID */
   private Integer clinicItemId;
 
   /** 公司端对应的组织ID */
@@ -27,7 +27,7 @@ public class ClinicItemPriceVO implements Serializable {
   private String orgName;
 
   /** 公司端对应表的ID */
-  private Integer clinicTariffId;
+  private Integer itemId;
 
   /** 单价 */
   private BigDecimal clinicItemPrice;

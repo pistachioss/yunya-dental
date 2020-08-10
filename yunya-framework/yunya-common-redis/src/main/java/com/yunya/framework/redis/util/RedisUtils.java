@@ -1,14 +1,16 @@
 package com.yunya.framework.redis.util;
 
-import com.alibaba.fastjson.JSON;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.data.redis.core.ValueOperations;
-import org.springframework.stereotype.Component;
+import com.alibaba.fastjson.*;
+import lombok.extern.slf4j.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.data.redis.connection.*;
+import org.springframework.data.redis.core.*;
+import org.springframework.data.redis.core.types.*;
+import org.springframework.stereotype.*;
 
-import javax.annotation.Resource;
-import java.util.concurrent.TimeUnit;
+import javax.annotation.*;
+import java.nio.charset.*;
+import java.util.concurrent.*;
 
 /**
  * Redis工具类
@@ -16,6 +18,7 @@ import java.util.concurrent.TimeUnit;
  * @author chow
  */
 @Component
+@Slf4j
 public class RedisUtils {
 
   @Autowired private RedisTemplate<String, Object> redisTemplate;
@@ -33,6 +36,23 @@ public class RedisUtils {
 
   /** 不设置过期时长 */
   public static final long NOT_EXPIRE = -1;
+
+  /**
+   * 释放锁脚本，原子操作，lua脚本
+   */
+  private static final String UNLOCK_LUA;
+
+  static {
+    StringBuilder sb = new StringBuilder();
+    sb.append("if redis.call(\"get\",KEYS[1]) == ARGV[1] ");
+    sb.append("then ");
+    sb.append("    return redis.call(\"del\",KEYS[1]) ");
+    sb.append("else ");
+    sb.append("    return 0 ");
+    sb.append("end ");
+    UNLOCK_LUA = sb.toString();
+  }
+
 
   /**
    * 判断缓存中是否存在
@@ -130,5 +150,33 @@ public class RedisUtils {
    */
   private <T> T fromJson(String json, Class<T> clazz) {
     return JSON.parseObject(json, clazz);
+  }
+
+  /**
+   * 加锁
+   */
+  public boolean setLock(String key, String val, long expire, TimeUnit timeUnit) {
+    try {
+      RedisCallback<Boolean> callback = (connection) ->
+              connection.set(key.getBytes(StandardCharsets.UTF_8),
+                      val.getBytes(StandardCharsets.UTF_8),
+                      Expiration.seconds(timeUnit.toSeconds(expire)),
+                      RedisStringCommands.SetOption.SET_IF_ABSENT);
+      return redisTemplate.execute(callback);
+    } catch (Exception e) {
+      log.error("Failed to LOCK because of undefined redis connection");
+    }
+    return false;
+  }
+
+  /**
+   * 释放锁
+   */
+  public boolean unlock(String lockKey, String lockValue) {
+    RedisCallback<Boolean> callback = (connection) ->
+            connection.eval(UNLOCK_LUA.getBytes(), ReturnType.BOOLEAN, 1,
+                    lockKey.getBytes(StandardCharsets.UTF_8),
+                    lockValue.getBytes(StandardCharsets.UTF_8));
+    return redisTemplate.execute(callback);
   }
 }

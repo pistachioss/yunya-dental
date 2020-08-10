@@ -1,12 +1,11 @@
 package com.yunya.modules.patient_central.controller;
 
-import com.uniubi.sdk.api.DeviceControllerApi;
-import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -16,7 +15,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 患者资料模块控制器
@@ -93,6 +94,5 @@ public class PatientBaseInfoController {
         patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
         return ResponseUtil.success();
     }
-
 
 }

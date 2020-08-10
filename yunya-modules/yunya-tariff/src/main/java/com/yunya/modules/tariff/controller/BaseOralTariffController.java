@@ -57,7 +57,7 @@ public class BaseOralTariffController {
    */
   @ApiOperation("根据条件查询商品项目列表(可分页)")
   @PostMapping("/list")
-  public ResponseResult listList(@RequestBody BaseOralTariffQueryForm queryForm) {
+  public ResponseResult findList(@RequestBody BaseOralTariffQueryForm queryForm) {
     PageInfo<BaseOralTariffVO> resultList = baseOralTariffBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }

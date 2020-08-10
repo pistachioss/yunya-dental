@@ -35,6 +35,6 @@ public interface BaseOralTariffMapper extends Mapper<BaseOralTariff> {
    * @param queryForm 查询条件
    * @return
    */
-  List<BaseOralTariffExportVO> selectExportBaseTariffList(
+  List<BaseOralTariffExportVO> selectExportBaseOralTariffList(
       @Param("queryForm") BaseOralTariffQueryForm queryForm);
 }

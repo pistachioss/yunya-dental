@@ -50,6 +50,7 @@
             `id`,
             `event_id`,
             `approve_time`,
+            `dead_time`,
             `status`
         from `approval_record`
         where `event_id` = #{treatmentId}
@@ -90,29 +91,47 @@
             `ar1`.`apply_type`,
             `ar1`.`approver_id`,
             `ar1`.`approve_reason`,
+            `ar1`.`approve_time`,
             `ar1`.`dead_time`,
             `ar1`.`status`,
             `ar1`.`crt_time`
         from `approval_record` `ar1`
         where
-          and `ar1`.`crt_id` = #{loginUserId}
-          and `ar1`.`event_type` = 0
+          `ar1`.`crt_id` = #{loginUserId}
           and 1 > (
             select
                 count(*)
             from `approval_record`
             where `event_id` = `ar1`.`event_id`
             and `crt_time` > `ar1`.`crt_time` );
+          <if test="eventType != null">
+            and `ar1`.`event_type` = #{eventType}
+          </if>
           <if test="medicalIds != null and medicalIds.size() > 0">
             and `ar1`.`event_id` in
             <foreach collection="medicalIds" item="item" open="(" separator="," close=")">
-                #{item}
+                 #{item}
             </foreach>
           </if>
           <if test="submitTime != null">
-            and to_days(`ar1`.`crt_time`) = to_days(#{submitTime})
+             and to_days(`ar1`.`crt_time`) = to_days(#{submitTime})
           </if>
-        order by ar1.status asc, ar1.crt_time desc
+
+          <if test="auditStatus != null">
+             order by
+                <!-- 查询审核(草稿和变更) -->
+                <if test="auditStatus == 1">
+                    `ar1`.`status` asc, `ar1`.`crt_time` desc
+                </if>
+                <!-- 草稿申请 -->
+                <if test="eventType == 0 and auditStatus == 0">
+                    `ar1`.`status` desc, `ar1`.`crt_time` desc
+                </if>
+                <!-- 变更申请 -->
+                <if test="eventType == 1 and auditStatus == 0">
+                    FIELD(`ar1`.`status`,1,2,0), `ar1`.`crt_time` desc
+                </if>
+          </if>
     </select>
 
     <select id="listMedicalIdsByCrtTime" resultType="int">

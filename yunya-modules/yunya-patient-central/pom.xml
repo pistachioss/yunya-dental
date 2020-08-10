@@ -107,11 +107,15 @@
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>swagger-bootstrap-ui</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-        </dependency>
 
+        <!-- wo平台人脸识别 -->
+        <dependency>
+            <groupId>com.uniubi.sdk</groupId>
+            <artifactId>wo-sdk</artifactId>
+            <version>1.0.18</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/resources/lib/wo-sdk.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
@@ -147,6 +151,9 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.2.5.RELEASE</version>
+                <configuration>
+                    <includeSystemScope>true</includeSystemScope>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>

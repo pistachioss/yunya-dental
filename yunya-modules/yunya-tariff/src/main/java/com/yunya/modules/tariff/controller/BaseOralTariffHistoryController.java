@@ -41,7 +41,7 @@ public class BaseOralTariffHistoryController {
    * @return
    */
   @ApiOperation("获取商品项目id查询变更历史记录")
-  @GetMapping("/history/{oralTariffId}")
+  @GetMapping("/{oralTariffId}")
   public ResponseResult findList(@PathVariable("oralTariffId") Integer oralTariffId) {
     List<BaseOralTariffHistoryVO> resultList = baseOralTariffHistoryBiz.findList(oralTariffId);
     return ResponseUtil.success(resultList);
