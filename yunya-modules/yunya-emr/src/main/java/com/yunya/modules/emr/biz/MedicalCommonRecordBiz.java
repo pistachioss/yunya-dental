@@ -1,33 +1,23 @@
 package com.yunya.modules.emr.biz;
 
-import com.alibaba.fastjson.JSONArray;
-import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
-import com.yunya.feign.emr.domain.model.ApplyBaseModel;
-import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
-import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
-import com.yunya.feign.emr.domain.vo.MedicalGeneralNumVO;
-import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.emr.MedicalCommonRecord;
-import com.yunya.models.emr.MedicalGeneralNum;
-import com.yunya.models.emr.MedicalRecordHistory;
-import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
-import com.yunya.modules.emr.mapper.MedicalGeneralNumMapper;
-import com.yunya.modules.emr.mapper.MedicalRecordHistoryMapper;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import tk.mybatis.mapper.entity.Example;
+import com.alibaba.fastjson.*;
+import com.yunya.feign.emr.domain.form.*;
+import com.yunya.feign.emr.domain.model.*;
+import com.yunya.feign.emr.domain.vo.*;
+import com.yunya.framework.common.biz.*;
+import com.yunya.framework.common.constant.*;
+import com.yunya.framework.common.context.*;
+import com.yunya.framework.common.exception.*;
+import com.yunya.models.emr.*;
+import com.yunya.modules.emr.mapper.*;
+import org.springframework.beans.*;
+import org.springframework.beans.factory.annotation.*;
+import org.springframework.stereotype.*;
+import org.springframework.transaction.annotation.*;
+import tk.mybatis.mapper.entity.*;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.text.*;
+import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
