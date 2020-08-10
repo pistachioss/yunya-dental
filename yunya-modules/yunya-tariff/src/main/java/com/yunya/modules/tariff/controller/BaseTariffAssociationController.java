@@ -3,7 +3,6 @@ package com.yunya.modules.tariff.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.tariff.domain.query.BaseTariffAssociationQueryForm;
 import com.yunya.feign.tariff.domain.form.BaseTariffAssociationForm;
-import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.tariff.domain.vo.BaseTariffAssociationVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -25,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Api("价目表开单关联信息管理")
 @RestController
-@RequestMapping("tariffs")
+@RequestMapping("association")
 public class BaseTariffAssociationController {
 
   /** 注入对象 */
@@ -42,7 +41,7 @@ public class BaseTariffAssociationController {
    * @return
    */
   @ApiOperation("根据条件查询开单关联信息列表（可分页）")
-  @PostMapping("/association/list")
+  @PostMapping("/list")
   public ResponseResult findList(@RequestBody BaseTariffAssociationQueryForm queryForm) {
     PageInfo<BaseTariffAssociationVO> resultList =
         baseTariffBiz.findTariffAssociationList(queryForm);
@@ -57,7 +56,7 @@ public class BaseTariffAssociationController {
    * @return
    */
   @ApiOperation("修改价目表开单关联信息")
-  @PutMapping("/association/modify/{id}")
+  @PutMapping("/modify/{id}")
   public ResponseResult modifyTariffAssociation(
       @PathVariable("id") Integer id, @RequestBody BaseTariffAssociationForm form) {
     baseTariffBiz.modifyTariffAssociation(id, form);
@@ -72,7 +71,7 @@ public class BaseTariffAssociationController {
    * @throws Exception
    */
   @ApiOperation("导入价目表开单关联信息")
-  @PostMapping("/association/import")
+  @PostMapping("/import")
   public ResponseResult importTariffAssociation(MultipartFile excelFile) throws Exception {
     String resultStr = baseTariffBiz.importTariffAssociation(excelFile);
     return ResponseUtil.success(resultStr);
@@ -87,7 +86,7 @@ public class BaseTariffAssociationController {
    * @throws Exception
    */
   @ApiOperation("导出价目表开单关联文件")
-  @PostMapping("/association/export")
+  @PostMapping("/export")
   public ResponseResult exportTariffAssociation(
       HttpServletResponse response, @RequestBody BaseTariffAssociationQueryForm queryForm)
       throws Exception {

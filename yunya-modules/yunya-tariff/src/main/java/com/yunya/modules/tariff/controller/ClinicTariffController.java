@@ -3,7 +3,6 @@ package com.yunya.modules.tariff.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.tariff.domain.form.ClinicTariffForm;
 import com.yunya.feign.tariff.domain.form.ClinicTariffUniteDiscountForm;
-import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.tariff.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
