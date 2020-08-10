@@ -46,14 +46,17 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     Date date = null;
     Date now = new Date();
-    try {
-      date = simpleDateFormat.parse(model.getDeadTime());
-      now = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
-    } catch (ParseException e) {
-      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-    }
-    if (model.getDeadTime() != null && date.before(now)) {//如果参数有审批时间(代表是就诊24小时后 通过申请来新增病历) 且审批截止时间超过当前时间 不可进行审批
-      throw new ClientServiceException("超过审批时间", OperationCodeConstants.OBJECT_EDIT_FAIL);
+    if(model.getDeadTime()!=null){
+      try {
+        date = simpleDateFormat.parse(model.getDeadTime());
+        now = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
+        model.setTime(new Date());
+      } catch (Exception e) {
+        throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+      }
+      if (date.before(now)) {//如果参数有审批时间(代表是就诊24小时后 通过申请来新增病历) 且审批截止时间超过当前时间 不可进行审批
+        throw new ClientServiceException("超过审批时间", OperationCodeConstants.OBJECT_EDIT_FAIL);
+      }
     }
 
     Example example = new Example(MedicalCommonRecord.class);
@@ -82,7 +85,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     }
 
     //调用figen获取就诊信息 medicalCommonRecordForm.getTreatmentId() 就诊id 未对接 //是否超过当前24小时
-    if (model.getDeadTime() == null && true) {//判断当前时间是否超过就诊当天24点
+    if (model.getDeadTime() == null && false) {//false处为判断当前时间是否超过就诊当天24点
       throw new ClientServiceException("超过就诊当天24点", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
 
@@ -151,7 +154,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
 
     //调用figen获取就诊信息 medicalCommonRecordForm.getTreatmentId() 就诊id 未对接
 
-    if (true) {//判断当前时间是否超过就诊当天24点
+    if (false) {//判断当前时间是否超过就诊当天24点
       throw new ClientServiceException("已过修改时间，请提交审核", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     re = mapper.updateByPrimaryKey(medicalcopy);
@@ -239,7 +242,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
   }
 
   /**
-   * 病历审核通过或拒绝后 走的方法
+   * 病历审核通过或拒绝后 走的方法（只有助手的病历才会审核通过或拒绝，医生提交的审核直接通过）
    * @param medicalCommonRecordForm
    * @return
    */
