@@ -16,7 +16,6 @@ import java.math.BigDecimal;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("门诊价目表/商品项目会员卡价参数封装模型")
 @Data
 @ToString
 public class ClinicItemMemberPriceForm implements Serializable {

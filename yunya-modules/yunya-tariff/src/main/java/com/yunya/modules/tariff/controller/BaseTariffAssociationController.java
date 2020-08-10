@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
  * @description:
  * @since: 1.0.0
  */
-@Api("价目表开单关联信息管理")
+@Api(tags = "价目表开单关联信息管理")
 @RestController
 @RequestMapping("association")
 public class BaseTariffAssociationController {

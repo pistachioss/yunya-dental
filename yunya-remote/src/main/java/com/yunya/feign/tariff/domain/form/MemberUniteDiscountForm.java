@@ -15,7 +15,6 @@ import java.io.Serializable;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("门诊价目表/商品项目会员价统一设置参数模型")
 @Data
 @ToString
 public class MemberUniteDiscountForm implements Serializable {
