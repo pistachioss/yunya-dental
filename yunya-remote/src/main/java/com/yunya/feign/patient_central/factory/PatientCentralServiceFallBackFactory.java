@@ -31,4 +31,9 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     public PatientBaseInfo findPatientInfoById(Integer id) {
         return null;
     }
+
+    @Override
+    public List<PatientBaseInfoVo> findPatientInfoByIds(List<Integer> ids) {
+        return null;
+    }
 }

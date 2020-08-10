@@ -3,27 +3,27 @@ package com.yunya.modules.patient;
 import com.uniubi.sdk.api.DeviceControllerApi;
 import com.uniubi.sdk.auth.authToken.AppAuthParam;
 import com.uniubi.sdk.auth.authToken.TokenFetcher;
-import com.uniubi.sdk.auth.authToken.TokenFetcherNoRunnable;
 import com.uniubi.sdk.client.CustomTokenClient;
 import com.uniubi.sdk.client.UniUbiClient;
 import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.uniubi.sdk.model.ResultPageResultBeanAuthOutput;
+import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.modules.patient.tokenApi.TokenTask;
-import org.junit.Before;
+import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Calendar;
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SpringBootTest(classes = YunyaPatientApplicationTests.class)
 @RunWith(SpringJUnit4ClassRunner.class)
 class YunyaPatientApplicationTests {
-
+    PatientBaseInfoBiz patientBaseInfoBiz = new PatientBaseInfoBiz();
     private DeviceControllerApi api;
     //应用Id
     private static String appId = "D40708B670E54D2DA06B1A3974A66EA4";
@@ -130,6 +130,16 @@ class YunyaPatientApplicationTests {
     @Test
     public void miao(){
         System.out.println(System.currentTimeMillis());
+    }
+
+    @Test
+    public void selectAllByIdList(){
+        List<Integer> ids = new ArrayList<>();
+        ids.add(1);
+        ids.add(2);
+        ids.add(3);
+        List<PatientBaseInfoVo> patientInfoByIds = patientBaseInfoBiz.findPatientInfoByIds(ids);
+        System.out.println(patientInfoByIds);
     }
 
 }
