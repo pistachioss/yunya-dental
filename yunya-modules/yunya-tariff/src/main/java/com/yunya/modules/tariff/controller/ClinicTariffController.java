@@ -38,7 +38,7 @@ public class ClinicTariffController {
    * @param id 门诊价目表ID
    * @return
    */
-  @ApiOperation("根据ID获取信息")
+  @ApiOperation("根据门诊价目表ID获取信息")
   @GetMapping("/one/{orgId}/{id}")
   public ResponseResult findById(
       @PathVariable(value = "orgId") Integer orgId, @PathVariable("id") Integer id) {

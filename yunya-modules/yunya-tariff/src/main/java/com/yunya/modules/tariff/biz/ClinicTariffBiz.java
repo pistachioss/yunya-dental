@@ -80,10 +80,12 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     if (StringHelper.isNotEmpty(resultList)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
       if (StringHelper.isNotEmpty(memberTypes)) {
-        HashMap<Integer, Object> memberPrices = new HashMap<>(16);
         Integer orgId = queryForm.getOrgId();
         resultList.forEach(
-            tariffVO -> setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO));
+            tariffVO -> {
+              HashMap<Integer, Object> memberPrices = new HashMap<>(16);
+              setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
+            });
       }
     }
     return new PageInfo<>(resultList);
@@ -102,10 +104,10 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       List<MemberType> memberTypes,
       Integer orgId,
       ClinicTariffVO tariffVO) {
-    ClinicTariffMemberPrice clinicTariffMemberPrice;
-    ClinicTariffMemberPrice memberPriceResult;
     Integer memberTypeId;
     BigDecimal memberPrice;
+    ClinicTariffMemberPrice clinicTariffMemberPrice;
+    ClinicTariffMemberPrice memberPriceResult;
     for (MemberType memberType : memberTypes) {
       clinicTariffMemberPrice = new ClinicTariffMemberPrice();
       clinicTariffMemberPrice.setClinicId(orgId);
