@@ -204,4 +204,13 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfo.setName("WO平台");
         mapper.updateByPrimaryKeySelective(patientBaseInfo);
     }
+
+    /**
+     * 根据患者id集合查询患者list
+     * @param ids
+     * @return List<PatientBaseInfoVo>
+     */
+    public List<PatientBaseInfoVo> findPatientInfoByIds(List<Integer> ids) {
+        return patientBaseInfoMapper.selectPatientInfoByIdList(ids);
+    }
 }
