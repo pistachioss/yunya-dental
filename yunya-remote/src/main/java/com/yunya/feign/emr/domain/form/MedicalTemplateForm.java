@@ -23,9 +23,13 @@ public class MedicalTemplateForm {
     @Size(max = 25)
     private String name;
 
-    @ApiModelProperty(value = "模板类型", required = true)
+    @ApiModelProperty(value = "模板类型（0：初诊  1：复诊）", required = true, example = "0：初诊  1：复诊")
     @NotNull
     private Integer type;
+
+    @ApiModelProperty(value = "复诊")
+    @Size(max = 1000)
+    private String reExamination;
 
     @ApiModelProperty(value = "主诉")
     @NotBlank
@@ -61,5 +65,9 @@ public class MedicalTemplateForm {
     @NotBlank
     @Size(max = 1000)
     private String treatment;
+
+    @ApiModelProperty(value = "处方")
+    @Size(max = 1000)
+    private String prescription;
 
 }

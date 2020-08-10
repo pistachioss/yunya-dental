@@ -83,5 +83,5 @@ public class AppointmentBaseVo implements Serializable {
     private String remarks ;
     /** 是否启用 */
     @ApiModelProperty(value = "是否启用")
-    private String inservice ;
+    private Boolean inservice ;
 }

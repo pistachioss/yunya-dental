@@ -9,6 +9,8 @@
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
     <result column="appointment_id" jdbcType="INTEGER" property="appointmentId" />
     <result column="operate_type" jdbcType="TINYINT" property="operateType" />
+    <result column="before_operation" jdbcType="VARCHAR" property="beforeOperation" />
+    <result column="after_operation" jdbcType="VARCHAR" property="afterOperation" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
     <result column="remarks" jdbcType="VARCHAR" property="remarks" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
@@ -19,84 +21,32 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
-  <!--<sql id="Base_Column_List">
-    id, org_id, appointment_id, operate_type, inservice, remarks, crt_id, crt_name, crt_time,
-    upt_id, upd_name, upd_time
-  </sql>
-  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    select
-    <include refid="Base_Column_List" />
-    from appointment_operate_record
-    where id = #{id,jdbcType=INTEGER}
-  </select>
-  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
-    delete from appointment_operate_record
-    where id = #{id,jdbcType=INTEGER}
-  </delete>
-  <insert id="insert" keyColumn="id" keyProperty="id" parameterType="com.yunya.models.appointment.AppointmentOperateRecord" useGeneratedKeys="true">
-    insert into appointment_operate_record (org_id, appointment_id, operate_type,
-      inservice, remarks, crt_id,
-      crt_name, crt_time, upt_id,
-      upd_name, upd_time)
-    values (#{orgId,jdbcType=INTEGER}, #{appointmentId,jdbcType=INTEGER}, #{operateType,jdbcType=TINYINT},
-      #{inservice,jdbcType=BIT}, #{remarks,jdbcType=VARCHAR}, #{crtId,jdbcType=INTEGER},
-      #{crtName,jdbcType=VARCHAR}, #{crtTime,jdbcType=TIMESTAMP}, #{uptId,jdbcType=INTEGER},
-      #{updName,jdbcType=VARCHAR}, #{updTime,jdbcType=TIMESTAMP})
-  </insert>
+  <!--  根据条件查询预约操作记录 -->
+  <select id="findAppointOperationRecordByExample"
+          parameterType="com.yunya.feign.appointment.domain.query.AppointOperationQuery"
+          resultType="com.yunya.feign.appointment.vo.AppointOperationRecordVo">
+		SELECT
+		  aor.id,
+		  aor.org_id as orgId,
+		  aor.appointment_id as appointmentId,
+		  aor.operate_type as operateType,
+		  aor.before_operation as beforeOperation,
+		  aor.after_operation as afterOperation,
+		  aor.inservice,
+		  aor.remarks,
+		  aor.crt_name as crtName,
+		  aor.crt_time as crtTime
+		FROM appointment_operate_record aor
+		<where>
+          <if test="query.orgId != null">
+            aor.org_id = #{query.orgId}
+          </if>
+          <if test="query.appointmentId != null">
+            and aor.appointment_id = #{query.appointmentId}
+          </if>
+        </where>
+        order by aor.crt_time asc
 
-  <update id="updateByPrimaryKeySelective" parameterType="com.yunya.models.appointment.AppointmentOperateRecord">
-    update appointment_operate_record
-    <set>
-      <if test="orgId != null">
-        org_id = #{orgId,jdbcType=INTEGER},
-      </if>
-      <if test="appointmentId != null">
-        appointment_id = #{appointmentId,jdbcType=INTEGER},
-      </if>
-      <if test="operateType != null">
-        operate_type = #{operateType,jdbcType=TINYINT},
-      </if>
-      <if test="inservice != null">
-        inservice = #{inservice,jdbcType=BIT},
-      </if>
-      <if test="remarks != null">
-        remarks = #{remarks,jdbcType=VARCHAR},
-      </if>
-      <if test="crtId != null">
-        crt_id = #{crtId,jdbcType=INTEGER},
-      </if>
-      <if test="crtName != null">
-        crt_name = #{crtName,jdbcType=VARCHAR},
-      </if>
-      <if test="crtTime != null">
-        crt_time = #{crtTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="uptId != null">
-        upt_id = #{uptId,jdbcType=INTEGER},
-      </if>
-      <if test="updName != null">
-        upd_name = #{updName,jdbcType=VARCHAR},
-      </if>
-      <if test="updTime != null">
-        upd_time = #{updTime,jdbcType=TIMESTAMP},
-      </if>
-    </set>
-    where id = #{id,jdbcType=INTEGER}
-  </update>
-  <update id="updateByPrimaryKey" parameterType="com.yunya.models.appointment.AppointmentOperateRecord">
-    update appointment_operate_record
-    set org_id = #{orgId,jdbcType=INTEGER},
-      appointment_id = #{appointmentId,jdbcType=INTEGER},
-      operate_type = #{operateType,jdbcType=TINYINT},
-      inservice = #{inservice,jdbcType=BIT},
-      remarks = #{remarks,jdbcType=VARCHAR},
-      crt_id = #{crtId,jdbcType=INTEGER},
-      crt_name = #{crtName,jdbcType=VARCHAR},
-      crt_time = #{crtTime,jdbcType=TIMESTAMP},
-      upt_id = #{uptId,jdbcType=INTEGER},
-      upd_name = #{updName,jdbcType=VARCHAR},
-      upd_time = #{updTime,jdbcType=TIMESTAMP}
-    where id = #{id,jdbcType=INTEGER}
-  </update>-->
+  </select>
 
 </mapper>

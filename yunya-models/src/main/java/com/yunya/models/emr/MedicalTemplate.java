@@ -33,6 +33,12 @@ public class MedicalTemplate implements Serializable {
     private Integer type;
 
     /**
+     * 复诊
+     */
+    @Column(name = "re_examination")
+    private String reExamination;
+
+    /**
      * 主诉
      */
     @Column(name = "chief_complaint")
@@ -69,6 +75,11 @@ public class MedicalTemplate implements Serializable {
      * 处理
      */
     private String treatment;
+
+    /**
+     * 处方
+     */
+    private String prescription;
 
     /**
      * 启用/禁用

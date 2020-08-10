@@ -128,6 +128,6 @@ public class MedicalCommonRecordModel {
   @ApiModelProperty("词条使用频率")
   private List<MedicalGeneralNumVO>medicalGeneralNumList;
 
-  @ApiModelProperty("审批操作截止时间")
+  @ApiModelProperty("审批操作截止时间，首次新增病历不传该字段 通过审批操作来添加病历 才传该字段")
   private String deadTime;
 }

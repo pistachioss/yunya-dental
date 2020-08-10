@@ -30,6 +30,18 @@ public class AppointmentOperateRecord {
     private Byte operateType;
 
     /**
+     * 预约修改操作之前的内容
+     */
+    @Column(name = "before_operation")
+    private String beforeOperation;
+
+    /**
+     * 预约修改操作之后的内容
+     */
+    @Column(name = "after_operation")
+    private String afterOperation;
+
+    /**
      * 是否启用 是否有效
      */
     private Boolean inservice;
@@ -145,6 +157,38 @@ public class AppointmentOperateRecord {
      */
     public void setOperateType(Byte operateType) {
         this.operateType = operateType;
+    }
+
+    /**
+     * 获取预约修改操作之前的内容
+     * @return  预约修改操作之前的内容
+     */
+    public String getBeforeOperation() {
+        return beforeOperation;
+    }
+
+    /**
+     * 设置预约修改操作之前的内容
+     * @param beforeOperation  预约修改操作之前的内容
+     */
+    public void setBeforeOperation(String beforeOperation) {
+        this.beforeOperation = beforeOperation;
+    }
+
+    /**
+     * 获取预约修改操作之后的内容
+     * @return  预约修改操作之后的内容
+     */
+    public String getAfterOperation() {
+        return afterOperation;
+    }
+
+    /**
+     * 设置预约修改操作之后的内容
+     * @param afterOperation  预约修改操作之后的内容
+     */
+    public void setAfterOperation(String afterOperation) {
+        this.afterOperation = afterOperation;
     }
 
     /**

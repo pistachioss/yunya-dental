@@ -1,9 +1,7 @@
 package com.yunya.feign.emr.domain.vo;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import io.swagger.annotations.*;
+import lombok.*;
 
 /**
  * @author xiangyang
@@ -19,8 +17,11 @@ public class MedicalDetailDetailVo {
     @ApiModelProperty(value = "模板名称")
     private String name;
 
-    @ApiModelProperty(value = "模板类型")
-    private String type;
+    @ApiModelProperty(value = "模板类型（0：初诊  1：复诊）", example = "0：初诊  1：复诊")
+    private Integer type;
+
+    @ApiModelProperty(value = "复诊")
+    private String reExamination;
 
     @ApiModelProperty(value = "主诉")
     private String chiefComplaint;
@@ -42,4 +43,7 @@ public class MedicalDetailDetailVo {
 
     @ApiModelProperty(value = "处理")
     private String treatment;
+
+    @ApiModelProperty(value = "处方")
+    private String prescription;
 }

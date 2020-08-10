@@ -19,4 +19,48 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!-- 通过id查询 -->
+  <select id="findAppointModifyRecordById" parameterType="integer" resultType="com.yunya.feign.appointment.vo.AppointModifyRecordVo">
+    select
+      amr.id,
+      amr.org_id as orgId,
+      amr.appointment_id as appointmentId,
+      amr.appoint_date as appointDate,
+      amr.dentist_id as dentistId,
+      amr.inservice,
+      amr.remarks
+    from appointment_modify_record amr
+    where amr.id = #{id}
+  </select>
+
+  <!-- 根据条件查询修改内容 -->
+  <select id="findAppointModifyRecordByExample"
+          parameterType="com.yunya.feign.appointment.domain.query.AppointModifyRecordQuery"
+          resultType="com.yunya.feign.appointment.vo.AppointModifyRecordVo">
+    select
+      amr.id,
+      amr.org_id as orgId,
+      amr.appointment_id as appointmentId,
+      amr.appoint_date as appointDate,
+      amr.dentist_id as dentistId,
+      amr.inservice,
+      amr.remarks
+    from appointment_modify_record amr
+    <where>
+      <if test="query.orgId != null">
+        amr.org_id = #{query.orgId}
+      </if>
+      <if test="query.appointmentId != null">
+        and amr.appointment_id = #{query.appointmentId}
+      </if>
+      <if test="query.appointDate != null">
+        and amr.appoint_date = #{query.appointDate}
+      </if>
+      <if test="query.dentistId  != null">
+        and amr.dentist_id = #{query.dentistId}
+      </if>
+    </where>
+  </select>
+
 </mapper>

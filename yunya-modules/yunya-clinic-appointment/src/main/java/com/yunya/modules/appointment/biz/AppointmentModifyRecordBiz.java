@@ -1,18 +1,22 @@
 package com.yunya.modules.appointment.biz;
 
+import com.yunya.feign.appointment.domain.form.AppointModifyRecordForm;
+import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.model.AppointModifyRecordModel;
+import com.yunya.feign.appointment.domain.query.AppointModifyRecordQuery;
+import com.yunya.feign.appointment.vo.AppointModifyRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.modules.appointment.mapper.AppointmentModifyRecordMapper;
-import org.bouncycastle.jcajce.provider.symmetric.util.BaseBlockCipher;
+import io.swagger.models.auth.In;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.crypto.spec.OAEPParameterSpec;
 import java.util.Date;
 import java.util.List;
 
@@ -44,4 +48,74 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
         build.setCrtTime(new Date(System.currentTimeMillis()));
         return mapper.insertSelective(build);
     }
+
+    /**
+     * 保存预约更新被修改的日期、医生
+     * @param appointmentForm 修改之后的内容
+     * @param appointment  修改之前的内容
+     */
+    public void saveAppointModify(Appointment appointment, AppointmentBaseForm appointmentForm) {
+        // 如果修改的内容未医生或者是预约日期，就将被修改的预约医生、预约时间保存
+        if (appointment.getDentistId().equals(appointmentForm.getDentistId())
+                && appointment.getAppointDate().equals(appointmentForm.getAppointDate())) {
+            return;
+        }
+        AppointmentModifyRecord modify = new AppointmentModifyRecord();
+        modify.setAppointmentId(appointmentForm.getId());
+        modify.setOrgId(appointmentForm.getOrgId());
+        modify.setDentistId(appointment.getDentistId());
+        modify.setAppointDate(appointment.getAppointDate());
+        modify.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        modify.setCrtName(BaseContextHandler.getName());
+        modify.setCrtTime(new Date(System.currentTimeMillis()));
+        mapper.insertSelective(modify);
+    }
+
+    /**
+     * 修改预约记录
+     * @param form 修改记录表单
+     * @return
+     */
+    public Integer updateAppointModify(AppointModifyRecordForm form){
+        AppointmentModifyRecord build = EntityUtils.build(form, AppointmentModifyRecord.class);
+        AppointmentModifyRecord appointmentModifyRecord = mapper.selectOne(build);
+        if (appointmentModifyRecord != null){
+            throw new ClientServiceException("记录已经存在！", OperationCodeConstants.SAME_DATA_EXIST);
+        }
+        int result = mapper.updateByPrimaryKeySelective(build);
+        return result;
+    }
+
+    /**
+     * 根据id修改预约记录
+     * @param id 修改预约记录id
+     * @return
+     */
+    public AppointModifyRecordVo findAppointModifyRecordById(Integer id){
+        AppointmentModifyRecord appointmentModifyRecord = mapper.selectByPrimaryKey(id);
+        return EntityUtils.build(appointmentModifyRecord,AppointModifyRecordVo.class);
+    }
+
+    /**
+     * 根据条件查询预约修改记录
+     * @param query
+     * @return
+     */
+    public List<AppointModifyRecordVo> findAppointModifyRecordByExample(AppointModifyRecordQuery query){
+        return mapper.findAppointModifyRecordByExample(query);
+    }
+
+    /**
+     * 根据id删除预约修改记录
+     * @param id
+     * @return
+     */
+    public Integer deleteAppointModifyRecordById(Integer id){
+        AppointModifyRecordVo recordVo = mapper.findAppointModifyRecordById(id);
+        if (recordVo == null){
+            throw new ClientServiceException("要删除的数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        return mapper.deleteByPrimaryKey(id);
+    }
+
 }
