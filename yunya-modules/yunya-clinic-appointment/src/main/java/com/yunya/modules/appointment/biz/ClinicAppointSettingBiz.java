@@ -102,6 +102,8 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
             throw new ClientServiceException("预约设置已经存在！",OperationCodeConstants.DATA_EXIST);
         }
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        build.setCrtName(BaseContextHandler.getName());
+        build.setCrtTime(new Date(System.currentTimeMillis()));
         int result = mapper.insertSelective(build);
         if (result <= 0){
             throw new ClientServiceException("新增预约设置失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);

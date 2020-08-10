@@ -21,20 +21,23 @@
   <!-- 根据条件查询设备类型列表 -->
   <select id="selectDeviceTypeByExample" parameterType="com.yunya.feign.appointment.domain.query.DeviceTypeQuery" resultType="com.yunya.feign.appointment.vo.DeviceTypeVo">
     SELECT
-      cdt.id,
-      cdt.name,
-      cdt.org_id as orgId,
-      cdt.remarks,
-      cdt.inservice
-    FROM clinic_device_type cdt
+        cdt.id,
+        cdi.org_id as orgId,
+        cdt.name,
+        cdt.remarks,
+        cdt.inservice,
+        count(cdt.name) as deviceNum
+    from clinic_device_type cdt LEFT JOIN clinic_device_item cdi
+    on cdi.device_id = cdt.id
     <where>
-      <if test="query.name != null">
-        cdt.name like CONCAT('%',#{query.name},'%')
-      </if>
       <if test="query.orgId != null">
         and cdt.org_id = #{query.orgId}
       </if>
+      <if test="query.name != null">
+        and cdt.name like CONCAT('%',#{query.name},'%')
+      </if>
     </where>
+    group by cdt.name
   </select>
 
 </mapper>

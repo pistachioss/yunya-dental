@@ -1,9 +1,12 @@
 package com.yunya.modules.appointment.biz;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
+import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
+import com.yunya.feign.appointment.domain.model.AppointOperationModel;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
 import com.yunya.feign.appointment.vo.AppointmentVo;
@@ -25,6 +28,7 @@ import com.yunya.models.appointment.Appointment;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.models.appointment.AppointmentOperateRecord;
+import com.yunya.models.auth.Client;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
@@ -32,6 +36,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import zipkin2.Call;
 
 import javax.validation.constraints.NotEmpty;
 import java.text.ParseException;
@@ -114,8 +119,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
 
             // 插入预约操作记录(添加)
-            Integer appointmentOperateRecord = appointOperateRecordBiz.insertAppointmentOperateRecord(
-                    appointmentEntity.getId(), appointmentEntity.getOrgId(), (byte) 0);
+            AppointOperationModel operationModel = new AppointOperationModel();
+            operationModel.setAppointmentId(appointmentEntity.getId());
+            operationModel.setOperateType((byte) 0);
+            Integer appointmentOperateRecord = appointOperateRecordBiz.insertAppointmentOperateRecord(operationModel);
             if (appointmentOperateRecord <= 0 ){
                 throw new ClientServiceException("【"+patientame+"】的预约操作记录添加失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -165,18 +172,89 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return ResponseUtil.success();
     }
 
+    /**
+     * 修改预约状态
+     * @param id 预约id
+     * @param appointState 预约状态 0-预约未到，1-履约，2，取消预约，3-失约
+     * @return
+     */
+    public Appointment updateAppointStatus(Integer id, Byte appointState, String remarks) {
+        Appointment appointment = mapper.selectByPrimaryKey(id);
+        if (appointment == null){
+            throw new ClientServiceException("预约不存在！",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        appointment.setUpdName(BaseContextHandler.getName());
+        appointment.setUpdTime(new Date(System.currentTimeMillis()));
+        // 预约操作记录
+        AppointmentOperateRecord record = new AppointmentOperateRecord();
+        record.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        record.setCrtName(BaseContextHandler.getName());
+        record.setCrtTime(new Date(System.currentTimeMillis()));
+        // 履约
+        if (appointState == 1){
+            appointment.setAppointStatus((byte) 1);
+            mapper.updateByPrimaryKeySelective(appointment);
+            // 操作记录
+            AppointOperationModel model = new AppointOperationModel();
+            model.setAppointmentId(id);
+            model.setOperateType((byte) 3);
+            model.setRemarks(remarks);
+            appointOperateRecordBiz.insertAppointmentOperateRecord(model);
+        } else if (appointState == 2){
+            // 取消预约
+            appointment.setAppointStatus((byte) 2);
+            appointment.setInservice(false);
+            mapper.updateByPrimaryKeySelective(appointment);
+            // 操作记录
+            AppointOperationModel model = new AppointOperationModel();
+            model.setAppointmentId(id);
+            model.setOperateType((byte) 2);
+            model.setRemarks(remarks);
+            appointOperateRecordBiz.insertAppointmentOperateRecord(model);
+        } else if (appointState == 3){
+            // 失约
+            appointment.setAppointStatus((byte) 3);
+            appointment.setInservice(false);
+            mapper.updateByPrimaryKeySelective(appointment);
+            // 操作记录
+            AppointOperationModel model = new AppointOperationModel();
+            model.setAppointmentId(id);
+            model.setOperateType((byte) 2);
+            model.setRemarks(remarks);
+            appointOperateRecordBiz.insertAppointmentOperateRecord(model);
+        }
+        return appointment;
+    }
+
 
     /**
      * 删除预约（取消预约）
-     * @param appointId   预约id
+     * @param id   预约id
+     * @param form  取消预约原因表单
      * @return
      */
-    public ResponseResult delAppointment(Integer appointId){
+    public ResponseResult appointmentCancel(Integer id, AppointmentCancelCauseForm form){
+        Appointment appointment = mapper.selectByPrimaryKey(id);
+        if (appointment == null){
+            throw new ClientServiceException("预约数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        appointment.setInservice(false);
+        appointment.setRemarks(form.getCause());
+        appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        appointment.setUpdName(BaseContextHandler.getName());
+        appointment.setUpdTime(new Date(System.currentTimeMillis()));
+        int result = mapper.updateByPrimaryKeySelective(appointment);
+        if (result <= 0){
+            throw new ClientServiceException("取消预约失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+        }
 
-        // 修改预约状态
-
-        // 添加操作记录
-
+        AppointOperationModel record = new AppointOperationModel();
+        record.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+        record.setAppointmentId(appointment.getId());
+        record.setOperateType((byte) 2);
+        record.setRemarks(form.getCause());
+        appointOperateRecordBiz.insertAppointmentOperateRecord(record);
         return ResponseUtil.success();
     }
 
@@ -195,11 +273,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 检查预约冲突（只检查医生预约冲突、设备预约冲突）
         Map<String, Object> objectMap = editCheckConflict(form.getId(), form);
         if (null == objectMap) {
-            saveAppointModify(form);
+            appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(form.getId()),form);
             // 转换预约内容
             Appointment appointment = transferFormToEntity(appointBaseModel);
-            AppointmentOperateRecord record = new AppointmentOperateRecord();
-            record.setCrtName(BaseContextHandler.getName());
             appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
             appointment.setUpdName(BaseContextHandler.getName());
             appointment.setUpdTime(new Date(System.currentTimeMillis()));
@@ -226,23 +302,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
 
             // 生成修改预约操作记录
-            record.setOrgId(appointment.getOrgId());
-            record.setAppointmentId(appointment.getId());
-            // 操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
-            record.setOperateType((byte) 1);
-            record.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-            record.setCrtTime(new Date(System.currentTimeMillis()));
-            appointOperateRecordBiz.insertSelective(record);
-
-            AppointmentVo build = EntityUtils.build(appointment, AppointmentVo.class);
-            AppointmentOperateRecord appointRecord = new AppointmentOperateRecord();
-            appointRecord.setAppointmentId(appointment.getId());
-            List<AppointmentOperateRecord> records = appointOperateRecordBiz.selectList(appointRecord);
-            if (records.size() > 0) {
-                AppointmentOperateRecord record1 = records.get(records.size() - 1);
-                build.setRemarks(record1.getRemarks());
-            }
-            return ResponseUtil.success(build);
+            appointOperateRecordBiz.saveAppointOperationRecord(appointment,form);
+            return ResponseUtil.success();
         }
         // 返回冲突数据
         return ResponseUtil.success(objectMap);
@@ -253,8 +314,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * 编辑预约（有冲突继续保存）
      * @param appointmentForm 更新预约信息form
      */
-    public Appointment continueUpdateAppointment(AppointmentBaseForm appointmentForm) {
-        saveAppointModify(appointmentForm);
+    public ResponseResult continueUpdateAppointment(AppointmentBaseForm appointmentForm) {
         Appointment appointEntity = transferFormToEntity(appointmentForm);
         appointEntity.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointEntity.setUpdName(BaseContextHandler.getName());
@@ -263,6 +323,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (num <= 0){
             throw new ClientServiceException("编辑预约失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
+
+        // 保存预约更新被修改的日期、医生
+        appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
 
         // 修改时长分解
         AppointmentSplitForm splitForm = new AppointmentSplitForm();
@@ -276,17 +339,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
 
         // 生成修改预约操作记录
-        AppointmentOperateRecord record = new AppointmentOperateRecord();
-        record.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-        record.setAppointmentId(appointEntity.getId());
-        // 操作类型 操作记录(0-新建预约；1-修改预约；2-取消预约；3-确认预约；4；取消确认)
-        record.setOperateType((byte) 2);
-        record.setRemarks(appointEntity.getRemarks());
-        record.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        record.setCrtName(BaseContextHandler.getName());
-        record.setCrtTime(new Date(System.currentTimeMillis()));
-        appointOperateRecordBiz.insertSelective(record);
-        return appointEntity;
+        appointOperateRecordBiz.saveAppointOperationRecord(appointEntity,appointmentForm);
+        return ResponseUtil.success();
     }
 
 //    TODO  查询预约（根据预约id）
@@ -441,7 +495,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return  appointment
      */
     private Appointment transferFormToEntity(Object form) {
-        if (!(form instanceof AppointmentBaseModel) || !(form instanceof AppointmentBaseForm)){
+        if (!(form instanceof AppointmentBaseModel) && !(form instanceof AppointmentBaseForm)){
             throw new ClientServiceException("对象转换实体异常！",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
         }
         // 将form表单转化为appointment实体
@@ -485,7 +539,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointment.setAppointType((byte)0);
         } else {
             // 病历号不为空，复诊
-            appointment.setAppointType((byte)0);
+            appointment.setAppointType((byte)1);
         }
 
         // 设置预约状态 0-预约未到，1-履约，2，取消预约，3-失约
@@ -574,27 +628,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
 
-    /**
-     * 保存预约更新被修改的日期、医生
-     * @param appointmentForm 修改的内容
-     */
-    public void saveAppointModify(AppointmentBaseForm appointmentForm) {
-        // 根据id查询预约
-        Appointment appointment = mapper.selectByPrimaryKey(appointmentForm.getId());
-        // 如果修改的内容未医生或者是预约日期，就将被修改的预约医生、预约时间保存
-        if (appointment.getDentistId().equals(appointmentForm.getDentistId())
-                && appointment.getAppointDate().equals(appointmentForm.getAppointDate())) {
-            return;
-        }
-        AppointmentModifyRecord modify = new AppointmentModifyRecord();
-        modify.setAppointmentId(appointmentForm.getId());
-        modify.setOrgId(appointmentForm.getOrgId());
-        modify.setDentistId(appointment.getDentistId());
-        modify.setAppointDate(appointment.getAppointDate());
-        modify.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        modify.setCrtName(BaseContextHandler.getName());
-        modify.setCrtTime(new Date(System.currentTimeMillis()));
-        appointmentModifyRecordBiz.insertSelective(modify);
-    }
+
 
 }

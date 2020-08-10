@@ -53,10 +53,4 @@ public class DeviceItemVo implements Serializable {
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
-
-    /**
-     * 设备数量
-     */
-    @ApiModelProperty(value = "设备数量")
-    private Integer deviceNum;
 }

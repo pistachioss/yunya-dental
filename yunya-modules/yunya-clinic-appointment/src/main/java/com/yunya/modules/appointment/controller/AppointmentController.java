@@ -1,10 +1,13 @@
 package com.yunya.modules.appointment.controller;
 
+import com.yunya.feign.appointment.domain.form.AppointStatusForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
+import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import io.swagger.annotations.*;
@@ -84,6 +87,37 @@ public class AppointmentController {
     @CurrentUser
     public ResponseResult editAppointmentContinueSave(@RequestBody @Validated AppointmentBaseForm appointmentForm){
         return ResponseUtil.success(appointmentBiz.continueUpdateAppointment(appointmentForm));
+    }
+
+    /**
+     * 修改预约状态
+     * @param id 预约id
+     * @param form 预约表单
+     * @return  ResponseResult
+     */
+    @ApiOperation(value = "修改预约状态")
+    @PutMapping("/update/appoint_status/{id}/{appointStatus}")
+    @CurrentUser
+    public ResponseResult updateAppointStatus(
+            @PathVariable("id") Integer id, @RequestBody @Validated AppointStatusForm form){
+        Appointment appointment = appointmentBiz.updateAppointStatus(id, form.getAppointStatus(),form.getRemarks());
+        return ResponseUtil.success(appointment);
+    }
+
+    /**
+     * 取消预约/删除预约（逻辑删除）
+     * @param id 预约id
+     * @param form 取消预约原因表单
+     * @return  ResponseResult
+     */
+    @ApiOperation(value = "修改预约状态")
+    @PutMapping("/delete/appoint/{id}")
+    @CurrentUser
+    public ResponseResult AppointmentCancel(
+            @PathVariable("id") Integer id,
+           @RequestBody @Validated AppointmentCancelCauseForm form){
+        ResponseResult responseResult = appointmentBiz.appointmentCancel(id, form);
+        return responseResult;
     }
 
 
