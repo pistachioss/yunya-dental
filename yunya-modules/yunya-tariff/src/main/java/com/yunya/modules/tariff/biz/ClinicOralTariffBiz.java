@@ -223,20 +223,18 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     }
 
     Integer orgId = form.getOrgId();
-    ClinicOralTariffMemberPrice clinicOralTariffMemberPrice;
-    ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice;
     BigDecimal price;
     Integer memberType;
     for (Integer clinicOralTariffId : clinicOralTariffIds) {
       for (MemberUniteDiscountForm discountForm : memberUniteDiscountForms) {
         ClinicOralTariff resultData = mapper.selectByPrimaryKey(clinicOralTariffId);
         if (null != resultData) {
-          clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
+          ClinicOralTariffMemberPrice clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
           clinicOralTariffMemberPrice.setClinicId(orgId);
           clinicOralTariffMemberPrice.setOralTariffId(resultData.getOralTariffId());
           memberType = discountForm.getMemberTypeId();
           clinicOralTariffMemberPrice.setMemberTypeId(memberType);
-          resultClinicOralTariffMemberPrice =
+          ClinicOralTariffMemberPrice  resultClinicOralTariffMemberPrice =
               clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
           price = resultData.getPrice();
           BigDecimal discountPrice =
@@ -249,10 +247,11 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
             clinicOralTariffMemberPrice.setCrtName(BaseContextHandler.getName());
             clinicOralTariffMemberPriceBiz.insertSelective(clinicOralTariffMemberPrice);
           } else {
-            clinicOralTariffMemberPrice.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-            clinicOralTariffMemberPrice.setUpdName(BaseContextHandler.getName());
-            clinicOralTariffMemberPrice.setUpdTime(new Date(System.currentTimeMillis()));
-            clinicOralTariffMemberPriceBiz.updateSelectiveById(clinicOralTariffMemberPrice);
+            resultClinicOralTariffMemberPrice.setDiscountPrice(discountPrice);
+            resultClinicOralTariffMemberPrice.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            resultClinicOralTariffMemberPrice.setUpdName(BaseContextHandler.getName());
+            resultClinicOralTariffMemberPrice.setUpdTime(new Date(System.currentTimeMillis()));
+            clinicOralTariffMemberPriceBiz.updateSelectiveById(resultClinicOralTariffMemberPrice);
           }
         }
       }
