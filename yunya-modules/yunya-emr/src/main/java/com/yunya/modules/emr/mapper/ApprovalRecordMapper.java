@@ -25,7 +25,7 @@ public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<Ap
      * @param eventId
      * @return
      */
-    ApprovalRecord findNewestReject(@Param("eventId") Integer eventId);
+    ApprovalRecord findNewestDraft(@Param("eventId") Integer eventId);
 
     /**
      * 查询新增病例变更申请的审批记录
@@ -68,4 +68,18 @@ public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<Ap
      * @return
      */
     List<Integer> listMedicalIdsByCrtTime(@Param("submitTime") String submitTime, @Param("loginUserId") Integer loginUserId);
+
+    /**
+     * 查询草稿审批通过数量
+     * @param eventId
+     * @return
+     */
+    int countDraftPassByEventId(@Param("eventId") Integer eventId);
+
+    /**
+     * 查询草稿变更通过数量
+     * @param eventId
+     * @return
+     */
+    int countChangePassByEventId(@Param("eventId") Integer eventId);
 }
