@@ -44,5 +44,5 @@ public interface PatientCentralServiceFeign {
      * @return List<PatientBaseInfoVo>
      */
     @RequestMapping (value = "/api/findPatientInfoByIds",method = RequestMethod.POST)
-    List<PatientBaseInfoVo> findPatientInfoByIds(@PathVariable List<Integer> ids);
+    List<PatientBaseInfoVo> findPatientInfoByIds(@RequestBody List<Integer> ids);
 }
