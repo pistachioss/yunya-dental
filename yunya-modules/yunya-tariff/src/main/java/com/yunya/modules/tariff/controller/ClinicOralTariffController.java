@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.tariff.domain.form.ClinicOralTariffForm;
 import com.yunya.feign.tariff.domain.form.ClinicOralTariffUniteDiscountForm;
 import com.yunya.feign.tariff.domain.query.ClinicOralTariffQueryForm;
+import com.yunya.feign.tariff.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.tariff.domain.vo.ClinicOralTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -13,6 +14,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 描述: 门诊商品项目管理控制器
@@ -102,6 +106,22 @@ public class ClinicOralTariffController {
   public ResponseResult uniteMemberDiscount(
       @RequestBody @Validated ClinicOralTariffUniteDiscountForm form) {
     clinicOralTariffBiz.uniteMemberDiscount(form);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 根据条件导出门诊商品项目列表
+   *
+   * @param response 响应
+   * @param queryForm 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件导出门诊商品项目列表")
+  @PostMapping("/export")
+  public ResponseResult export(
+      HttpServletResponse response, @RequestBody @Validated ClinicOralTariffQueryForm queryForm)
+      throws IOException {
+    clinicOralTariffBiz.exportClinicOralTariffList(response, queryForm);
     return ResponseUtil.success();
   }
 }
