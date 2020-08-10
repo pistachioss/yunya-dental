@@ -112,6 +112,7 @@
         <dependency>
             <groupId>com.uniubi.sdk</groupId>
             <artifactId>wo-sdk</artifactId>
+            <version>1.0.18</version>
             <scope>system</scope>
             <systemPath>${project.basedir}/src/main/resources/lib/wo-sdk.jar</systemPath>
         </dependency>
