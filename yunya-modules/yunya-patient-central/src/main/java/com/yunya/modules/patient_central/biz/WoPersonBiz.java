@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 public class WoPersonBiz {
 
-    private PersonControllerApi api = new CustomTokenClient(new TokenTask()).PersonClient();
 
     @Autowired
     private RedisUtils redisUtils;
@@ -47,6 +46,7 @@ public class WoPersonBiz {
     public String addWoPersonInput(String name){
         PersonInput personInput = new PersonInput();
         personInput.setName(name);
+        PersonControllerApi api = new CustomTokenClient(new TokenTask()).PersonClient();
         ResultPersonCreateOutput response = api.createUsingPOST(personInput, WoPlatformConstants.APPID);
         PersonCreateOutput data = response.getData();
         return data.getGuid();

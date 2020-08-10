@@ -28,7 +28,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 @MapperScan("com.yunya.modules.patient_central.mapper")
 @EnableTransactionManagement
 @EnableDiscoveryClient
-@ComponentScan(basePackages = {"com.yunya.modules.patient_central", "com.yunya.framework"})
+@ComponentScan(basePackages = {"com.yunya.modules.patient_central", "com.yunya.framework","com.yunya.framework.redis"})
 @EnableCustomSwagger2
 public class YunyaPatientApplication {
     public static void main(String[] args) {

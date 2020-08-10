@@ -4,9 +4,13 @@ import com.alibaba.fastjson.JSONObject;
 import com.yunya.framework.common.utils.MD5Util;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
+import org.apache.ibatis.annotations.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -27,13 +31,11 @@ import java.util.Map;
  * @description:
  * @since: 1.0.0
  */
-@EnableScheduling
+@Configuration
 public class TimingGetRedisToken {
 
     @Autowired
     private RedisUtils redisUtils;
-
-
 
     public String getToken(){
         return redisUtils.get("token");
