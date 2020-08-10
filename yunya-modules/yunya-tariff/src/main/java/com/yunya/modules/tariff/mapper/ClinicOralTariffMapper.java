@@ -2,6 +2,7 @@ package com.yunya.modules.tariff.mapper;
 
 import com.yunya.feign.tariff.domain.query.ClinicOralTariffQueryForm;
 import com.yunya.feign.tariff.domain.vo.BaseOralTariffVO;
+import com.yunya.feign.tariff.domain.vo.ClinicOralTariffExportVO;
 import com.yunya.feign.tariff.domain.vo.ClinicOralTariffVO;
 import com.yunya.models.tariff.ClinicOralTariff;
 import org.apache.ibatis.annotations.Param;
@@ -29,5 +30,14 @@ public interface ClinicOralTariffMapper extends Mapper<ClinicOralTariff> {
    * @return
    */
   List<ClinicOralTariffVO> selectClinicOralTariffList(
+      @Param("queryForm") ClinicOralTariffQueryForm queryForm);
+
+  /**
+   * 根据条件查询门诊商品项目列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  List<ClinicOralTariffExportVO> selectClinicOralTariffExportList(
       @Param("queryForm") ClinicOralTariffQueryForm queryForm);
 }

@@ -3,17 +3,20 @@ package com.yunya.modules.tariff.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.tariff.domain.form.ClinicItemMemberPriceForm;
 import com.yunya.feign.tariff.domain.form.ClinicTariffForm;
 import com.yunya.feign.tariff.domain.form.ClinicTariffUniteDiscountForm;
 import com.yunya.feign.tariff.domain.form.MemberUniteDiscountForm;
 import com.yunya.feign.tariff.domain.query.ClinicTariffQueryForm;
+import com.yunya.feign.tariff.domain.vo.ClinicTariffExportVO;
 import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
@@ -22,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
@@ -250,5 +255,24 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
         }
       }
     }
+  }
+
+  /**
+   * 根据条件导出门诊价目表
+   *
+   * @param response 响应
+   * @param queryForm 查询条件
+   */
+  public void exportClinicTariffList(HttpServletResponse response, ClinicTariffQueryForm queryForm)
+      throws IOException {
+    List<ClinicTariffExportVO> resultList = mapper.selectClinicTariffExportList(queryForm);
+    Integer orgId = queryForm.getOrgId();
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+    String abbreviation = null;
+    if (null != orgInfo) {
+      abbreviation = orgInfo.getAbbreviation();
+    }
+    ExcelUtil<ClinicTariffExportVO> excelUtil = new ExcelUtil<>(ClinicTariffExportVO.class);
+    excelUtil.exportExcel(response, resultList, abbreviation + "_价目表信息列表");
   }
 }

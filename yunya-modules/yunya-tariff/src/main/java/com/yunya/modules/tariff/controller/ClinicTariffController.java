@@ -3,6 +3,7 @@ package com.yunya.modules.tariff.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.tariff.domain.form.ClinicTariffForm;
 import com.yunya.feign.tariff.domain.form.ClinicTariffUniteDiscountForm;
+import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.tariff.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -14,6 +15,9 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * 描述: 门诊价目表控制器
@@ -98,6 +102,22 @@ public class ClinicTariffController {
   public ResponseResult uniteMemberDiscount(
       @RequestBody @Validated ClinicTariffUniteDiscountForm form) {
     clinicTariffBiz.uniteMemberDiscount(form);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 根据条件导出门诊价目表列表
+   *
+   * @param response 响应
+   * @param queryForm 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件导出门诊价目表列表")
+  @PostMapping("/export")
+  public ResponseResult export(
+      HttpServletResponse response, @RequestBody @Validated ClinicTariffQueryForm queryForm)
+      throws IOException {
+    clinicTariffBiz.exportClinicTariffList(response, queryForm);
     return ResponseUtil.success();
   }
 }
