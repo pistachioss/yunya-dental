@@ -45,4 +45,10 @@ public class PatientServiceRest {
     public PatientBaseInfo findPatientInfoById(@PathVariable Integer id){
         return patientBaseInfoBiz.selectById(id);
     }
+
+    @ApiOperation("根据患者id集合查询患者list")
+    @RequestMapping (value = "/findPatientInfoByIds",method = RequestMethod.POST)
+    public List<PatientBaseInfoVo> findPatientInfoByIds(@PathVariable List<Integer> ids){
+        return patientBaseInfoBiz.findPatientInfoByIds(ids);
+    }
 }
