@@ -32,6 +32,21 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
+  <!-- 预约可视图（医生维度） -->
+  <resultMap id="appointmentPatientDimensionColumn" type="com.yunya.feign.appointment.vo.AppointmentPatientDimensionVo">
+    <result column="dentist_id" jdbcType="INTEGER" property="dentistId"/>
+    <result column="patientNum" jdbcType="INTEGER" property="patientNum"/>
+    <result column="currentDate" jdbcType="DATE" property="currentDate"/>
+    <collection property="appointmentPatientCardVos" ofType="com.yunya.feign.appointment.vo.AppointmentPatientCardVo">
+      <id column="id" jdbcType="INTEGER" property="id"/>
+      <result column="patient_id" jdbcType="INTEGER" property="patientId"/>
+      <result column="appoint_type" jdbcType="INTEGER" property="appointType"/>
+      <result column="appoint_content" jdbcType="VARCHAR" property="appointContent"/>
+      <result column="appoint_date" jdbcType="DATE" property="appointDate"/>
+      <result column="appoint_time" jdbcType="VARCHAR" property="appointTime"/>
+    </collection>
+  </resultMap>
+
   <sql id="Base_Column_List">
     id, patient_id, org_id, dentist_id, assistant_id, clinic_dept_room_id, clinic_device_item_id,
     clinic_appoint_item_id, appoint_duration, appoint_date, appoint_time, appoint_start_time,
@@ -246,6 +261,31 @@
     select
        <include refid="Appoint_ConflictInfo_Column"></include>
     from appointment apt where apt.id = #{id}
+  </select>
+
+  <!-- 根据时间和医生id查询预约可视图（医生维度） -->
+  <select id="findAppointmentPatientDimensionByDateAndDentistId" parameterType="java.util.Map" resultMap="appointmentPatientDimensionColumn">
+    select
+      a.id,
+      a.dentist_id,
+      a.appoint_date as currentDate,
+      a.patient_id,
+      a.appoint_type,
+      a.appoint_content,
+      a.appoint_date,
+      a.appoint_time,
+       (select COUNT(*) as num from appointment a1
+          where
+            a1.dentist_id = a.dentist_id
+            and a1.inservice = 1
+            and a1.appoint_date = a.appoint_date) as patientNum
+    from appointment a
+    where
+      a.appoint_date = DATE_FORMAT(#{date},'%Y-%m-%d')
+      and a.inservice = 1
+      and a.appoint_status = 0
+      and a.dentist_id = #{dentistId}
+      and a.org_id = #{orgId}
   </select>
 
 
