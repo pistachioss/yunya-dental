@@ -40,7 +40,7 @@ public class PatientPublicInfoVo implements Serializable {
     /**
      * 病历号 患者第一次就诊时生成
      */
-    private String medicalNummber;
+    private String medicalNumber;
 
     /**
      * 会员卡类型名称

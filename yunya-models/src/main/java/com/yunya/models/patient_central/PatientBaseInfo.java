@@ -59,8 +59,8 @@ public class PatientBaseInfo {
     /**
      * 病历号 患者第一次就诊时生成
      */
-    @Column(name = "medical_nummber")
-    private String medicalNummber;
+    @Column(name = "medical_number")
+    private String medicalNumber;
 
     /**
      * 性别 0-男；1-女；2-未知
@@ -210,16 +210,14 @@ public class PatientBaseInfo {
     }
 
     /**
-     * 获取头像地址 患者头像存储路径
-     *
-     * @return avatar_path - 头像地址 患者头像存储路径
+     * 获取患者对于WO平台人员id
      */
     public String getwoGuid() {
         return woGuid;
     }
 
     /**
-     * 设置头像地址 患者头像存储路径
+     * 患者对于WO平台人员id
      *
      * @param woGuid 头像地址 患者头像存储路径
      */
@@ -266,19 +264,19 @@ public class PatientBaseInfo {
     /**
      * 获取病历号 患者第一次就诊时生成
      *
-     * @return medical_nummber - 病历号 患者第一次就诊时生成
+     * @return medicalNumber - 病历号 患者第一次就诊时生成
      */
-    public String getMedicalNummber() {
-        return medicalNummber;
+    public String getMedicalNumber() {
+        return medicalNumber;
     }
 
     /**
      * 设置病历号 患者第一次就诊时生成
      *
-     * @param medicalNummber 病历号 患者第一次就诊时生成
+     * @param medicalNumber 病历号 患者第一次就诊时生成
      */
-    public void setMedicalNummber(String medicalNummber) {
-        this.medicalNummber = medicalNummber;
+    public void setMedicalNumber(String medicalNumber) {
+        this.medicalNumber = medicalNumber;
     }
 
     /**

@@ -21,7 +21,8 @@ public interface GeneralTemplateMapper extends Mapper<GeneralTemplate> {
      * @param categoryId
      * @return
      */
-    List<GeneralTemplate> listByKeyword(@Param("keyword") String keyword, @Param("categoryId")Integer categoryId);
+    List<GeneralTemplate> listByKeyword(@Param("keyword") String keyword, @Param("categoryId")Integer categoryId,
+                                        @Param("enable") Integer enable);
 
     /**
      * 启用禁用模板

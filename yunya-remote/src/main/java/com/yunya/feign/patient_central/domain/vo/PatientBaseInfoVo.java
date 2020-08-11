@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
 
@@ -23,13 +24,11 @@ public class PatientBaseInfoVo implements Serializable {
     /**
      * 主键
      */
-    @Id
     private Integer id;
 
     /**
      * 诊所ID 添加患者的组织ID
      */
-    @Column(name = "org_id")
     private Integer orgId;
 
     /**
@@ -40,13 +39,11 @@ public class PatientBaseInfoVo implements Serializable {
     /**
      * 拼音姓名 字符串，长度64
      */
-    @Column(name = "pinyin_name")
     private String pinyinName;
 
     /**
      * wo平台对应人员id
      */
-    @Column(name = "wo_guid")
     private String woGuid;
 
     /**
@@ -57,14 +54,12 @@ public class PatientBaseInfoVo implements Serializable {
     /**
      * 手机号所属人 手机号所属人字典ID
      */
-    @Column(name = "mobile_owner")
     private Integer mobileOwner;
 
     /**
      * 病历号 患者第一次就诊时生成
      */
-    @Column(name = "medical_nummber")
-    private String medicalNummber;
+    private String medicalNumber;
 
     /**
      * 性别 0-男；1-女；2-未知
@@ -79,18 +74,17 @@ public class PatientBaseInfoVo implements Serializable {
     /**
      * 出生日期
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date birthday;
 
     /**
      * 患者来源类型 患者来源分类ID
      */
-    @Column(name = "origin_type")
     private Integer originType;
 
     /**
      * 患者来源关联ID 患者来源关联ID（员工ID/患者ID/活动ID）
      */
-    @Column(name = "origin_id")
     private Integer originId;
 
     /**
@@ -106,38 +100,33 @@ public class PatientBaseInfoVo implements Serializable {
     /**
      * 创建人ID
      */
-    @Column(name = "crt_id")
-    @NotNull(message = "创建人ID为空！")
     private Integer crtId;
 
     /**
      * 创建人姓名
      */
-    @Column(name = "crt_name")
     private String crtName;
 
     /**
      * 创建时间
      */
-    @Column(name = "crt_time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date crtTime;
 
     /**
      * 更新人ID
      */
-    @Column(name = "upt_id")
     private Integer uptId;
 
     /**
      * 更新人姓名
      */
-    @Column(name = "upd_name")
     private String updName;
 
     /**
      * 更新时间
      */
-    @Column(name = "upd_time")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date updTime;
 
 }

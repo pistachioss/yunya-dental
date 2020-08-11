@@ -44,7 +44,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         BeanUtils.copyProperties(patientOriginModel,patientOrigin);
         PatientOrigin patientOriginv = patientOriginMapper.findPatientOriginByName(patientOrigin.getName());
         if(patientOriginv!= null){
-            return ResponseUtil.success("该患者来源已添加",patientOriginv);
+            return ResponseUtil.error("该患者来源已添加",patientOriginv);
         }
 
         if(patientOrigin.getParentId() == null){
@@ -53,7 +53,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
             mapper.insertSelective(patientOrigin);
         }else{
             if(patientOriginMapper.findPatientOriginByParentId(patientOrigin.getParentId())==null){
-                return ResponseUtil.success("未找到父级来源","");
+                return ResponseUtil.error("未找到父级来源","");
             }
             patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientOrigin.setCrtName(BaseContextHandler.getName());
@@ -100,7 +100,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         BeanUtils.copyProperties(patientOriginForm,patientOrigin);
         PatientOrigin patientOriginv = mapper.selectByPrimaryKey(patientOrigin.getId());
         if(patientOriginv.getAllowOperate() == false){
-            return ResponseUtil.success("该患者来源不可编辑",patientOriginv);
+            return ResponseUtil.error("该患者来源不可编辑",patientOriginv);
         }
         patientOrigin.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
@@ -116,7 +116,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     public ResponseResult deleteOriginById(Integer id) {
         PatientOrigin patientOriginv = mapper.selectByPrimaryKey(id);
         if(patientOriginv.getAllowOperate() == false){
-            return ResponseUtil.success("该患者来源不可删除",patientOriginv);
+            return ResponseUtil.error("该患者来源不可删除",patientOriginv);
         }
         mapper.deleteByPrimaryKey(id);
         return ResponseUtil.success();

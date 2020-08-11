@@ -10,7 +10,7 @@
     <result column="name" property="name" jdbcType="VARCHAR" />
     <result column="qr_code_path" property="qrCodePath" jdbcType="VARCHAR" />
     <result column="allow_operate" property="allowOperate" jdbcType="BIT" />
-    <result column="time_limit" property="timeLimit" jdbcType="BIT" />
+    <result column="time_limit" property="timeLimit" jdbcType="TINYINT" />
     <result column="limit_start_date" property="limitStartDate" jdbcType="TIMESTAMP" />
     <result column="limit_end_date" property="limitEndDate" jdbcType="TIMESTAMP" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
@@ -35,7 +35,7 @@
 
   <select id="findAll" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
     select <include refid="PatientOrigin_Column_List"/>
-    from patient_origin po order by po.crt_time desc
+    from patient_origin po order by po.crt_time des
   </select>
 
   <select id="findPatientOriginByName" resultType="com.yunya.models.patient_central.PatientOrigin">

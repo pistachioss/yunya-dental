@@ -1,8 +1,10 @@
 package com.yunya.modules.patient_central.controller;
 
+import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
+import com.yunya.feign.patient_central.domain.model.PictureModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
@@ -12,6 +14,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,14 +56,6 @@ public class PatientBaseInfoController {
     }
 
     @CurrentUser
-    @ApiOperation("添加患者基本信息信息")
-    @PostMapping("/add")
-    public ResponseResult addPatient(@RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel){
-        patientBaseInfoBiz.addPatient(patientBaseInfoModel);
-        return ResponseUtil.success();
-    }
-
-    @CurrentUser
     @ApiOperation("添加完善患者基本信息")
     @PostMapping("/addPatientInfo")
     public ResponseResult addPatientInfo(@RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel){
@@ -69,9 +64,9 @@ public class PatientBaseInfoController {
     }
 
     @ApiOperation("根据患者id查询患者资料")
-    @GetMapping ("/findPatientDate/{id}")
-    public ResponseResult findPatientDate(@PathVariable("id") Integer id){
-        return ResponseUtil.success(patientBaseInfoBiz.findPatientDate(id));
+    @GetMapping ("/findPatientData/{id}")
+    public ResponseResult findPatientData(@PathVariable("id") Integer id){
+        return ResponseUtil.success(patientBaseInfoBiz.findPatientData(id));
     }
 
     @ApiOperation("根据姓名/病例编号/手机号/姓名拼音模糊查询患者")
@@ -86,6 +81,38 @@ public class PatientBaseInfoController {
         return patientBaseInfoBiz.birthYear(age);
     }
 
+    @CurrentUser
+    @ApiOperation("添加患者基本信息信息")
+    @PostMapping("/add")
+    public ResponseResult addPatient(@RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel){
+        return ResponseUtil.success(patientBaseInfoBiz.addPatient(patientBaseInfoModel));
+    }
+
+    @ApiOperation(value = "拍照")
+    @GetMapping(value = "/takeAPhoto/{patientId}")
+    public ResponseResult takeAPhoto(@PathVariable("patientId") Integer patientId){
+        patientBaseInfoBiz.takeAPhoto(patientId);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation(value = "获取照片")
+    @GetMapping(value = "/getFaceUrl/{patientId}")
+    public ResponseResult getFaceUrl(@PathVariable("patientId") Integer patientId){
+        return ResponseUtil.success(patientBaseInfoBiz.getFaceUrl(patientId));
+    }
+
+    @ApiOperation(value = "删除照片")
+    @DeleteMapping(value = "/DeleteThePhoto")
+    public ResponseResult DeleteThePhoto(@RequestBody @Validated PictureForm pictureForm){
+        return ResponseUtil.success(patientBaseInfoBiz.DeleteThePhoto(pictureForm));
+    }
+
+    @ApiOperation("设备人员认证授权")
+    @PostMapping("/equipmenAuthorization")
+    public ResponseResult equipmenAuthorization(@RequestBody @Validated PictureModel pictureModel){
+        patientBaseInfoBiz.equipmenAuthorization(pictureModel);
+        return ResponseUtil.success();
+    }
 
     @ApiOperation(value = "测试人脸识别认证返回", notes = "测试人脸识别认证返回")
     @ResponseBody
@@ -95,11 +122,7 @@ public class PatientBaseInfoController {
         return ResponseUtil.success();
     }
 
-    @ApiOperation(value = "拍照")
-    @GetMapping(value = "/takeAPhoto/{id}")
-    public ResponseResult takeAPhoto(@PathVariable("id") Integer id){
-        return ResponseUtil.success(patientBaseInfoBiz.takeAPhoto(id));
-    }
+
 
 
 }

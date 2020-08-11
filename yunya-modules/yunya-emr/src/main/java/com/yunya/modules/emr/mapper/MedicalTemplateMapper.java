@@ -32,7 +32,8 @@ public interface MedicalTemplateMapper extends Mapper<MedicalTemplate> {
      * @param categoryId
      * @return
      */
-    List<MedicalTemplate> listByKeyword(@Param("keyword") String keyword, @Param("categoryId")Integer categoryId);
+    List<MedicalTemplate> listByKeyword(@Param("keyword") String keyword, @Param("categoryId")Integer categoryId
+            , @Param("enable") Integer enable);
 
     /**
      * 启用禁用模板

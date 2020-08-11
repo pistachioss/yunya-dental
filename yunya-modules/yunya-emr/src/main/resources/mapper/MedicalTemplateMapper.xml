@@ -60,7 +60,10 @@
             <if test="keyword != null" >
                 and `name` like concat('%', #{keyword}, '%')
             </if>
-        order by `enable` desc, `upd_time` desc
+            <if test="enable != null">
+                and `enable` = #{enable}
+            </if>
+        order by `enable` desc, `crt_time` desc
     </select>
 
     <update id="enableById">

@@ -15,6 +15,10 @@ public class ResponseUtil {
   private static final Integer SUCCESS_STATUS = 200;
   private static final String SUCCESS_MSG = "success";
 
+  private static final Boolean NoT_PASS = false;
+  private static final Integer ERROR_STATUS = 500;
+  private static final String ERROR_MSG = "error";
+
   /**
    * 无返回数据的成功处理结果
    *
@@ -64,6 +68,17 @@ public class ResponseUtil {
 
   public static ResponseResult success (String msg, Object data){
     return result(SUCCESS_STATUS, msg, data,PASS);
+  }
+
+  /**
+   * 有返回数据的成功处理结果
+   *
+   * @param data 响应数据, msg 返回消息提示语句
+   * @return
+   */
+
+  public static ResponseResult error (String msg, Object data){
+    return result(ERROR_STATUS, msg, data,NoT_PASS);
   }
 
 
