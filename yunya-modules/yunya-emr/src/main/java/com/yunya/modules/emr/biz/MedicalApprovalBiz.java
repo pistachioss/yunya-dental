@@ -507,7 +507,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             //从患者接口中筛选出模糊查询关键字的患者集合
             filterPatientList = filterPatientList.stream().filter(obj ->
                     (!StringUtils.isBlank(obj.getName()) && obj.getName().contains(keyword))
-                            || (!StringUtils.isBlank(obj.getMedicalNummber()) && obj.getMedicalNummber().contains(keyword)))
+                            || (!StringUtils.isBlank(obj.getMedicalNumber()) && obj.getMedicalNumber().contains(keyword)))
                     .collect(toList());
         }
         if (CollectionUtils.isNotEmpty(filterPatientList)) {
@@ -545,7 +545,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setEventId(obj.getEventId());
             //todo
             vo.setPatientName(patientInfo == null ? null : patientInfo.getName());
-            vo.setMedicalNum(patientInfo == null ? null : patientInfo.getMedicalNummber());
+            vo.setMedicalNum(patientInfo == null ? null : patientInfo.getMedicalNumber());
             vo.setTreatmentClinicName(null);
             vo.setMajorDentistName(majorDoctorInfo == null ? null : majorDoctorInfo.getName());
             vo.setTreatmentDate(null);
@@ -578,7 +578,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setEventId(obj.getEventId());
             //todo
             vo.setPatientName(patientInfo == null ? null : patientInfo.getName());
-            vo.setMedicalNum(patientInfo == null ? null : patientInfo.getMedicalNummber());
+            vo.setMedicalNum(patientInfo == null ? null : patientInfo.getMedicalNumber());
             vo.setTreatmentClinicName(null);
             vo.setAssistantDentistName(assistantDoctorInfo == null ? null : assistantDoctorInfo.getName());
             vo.setTreatmentDate(null);
