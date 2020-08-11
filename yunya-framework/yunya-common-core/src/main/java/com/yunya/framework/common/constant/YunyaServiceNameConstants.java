@@ -28,4 +28,6 @@ public interface YunyaServiceNameConstants {
 
   /** 患者服务 */
   String YUNYA_PATIENT = "yunya-patient";
+  /** 电子病例服务 */
+  String YUNYA_EMR = "yunya-emr";
 }

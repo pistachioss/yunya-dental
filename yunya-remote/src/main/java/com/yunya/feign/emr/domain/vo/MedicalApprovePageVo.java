@@ -1,5 +1,6 @@
 package com.yunya.feign.emr.domain.vo;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.*;
 import lombok.*;
 
@@ -36,6 +37,7 @@ public class MedicalApprovePageVo {
     private LocalDate treatmentDate;
 
     @ApiModelProperty(value = "草稿病例提交时间", example = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private LocalDateTime submitTime;
 
     @ApiModelProperty(value = "审核状态")

@@ -1,33 +1,27 @@
 package com.yunya.modules.emr.biz;
 
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
-import com.google.common.collect.Lists;
-import com.yunya.feign.emr.domain.form.GeneralTemplateForm;
-import com.yunya.feign.emr.domain.form.MedicalTemplateForm;
-import com.yunya.feign.emr.domain.model.GeneralTemplateModel;
-import com.yunya.feign.emr.domain.model.MedicalTemplateModel;
-import com.yunya.feign.emr.domain.query.TemplateQuery;
-import com.yunya.feign.emr.domain.vo.GeneralTemplatePageVo;
-import com.yunya.feign.emr.domain.vo.MedicalDetailDetailVo;
-import com.yunya.feign.emr.domain.vo.MedicalTemplatePageVo;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.models.emr.GeneralTemplate;
-import com.yunya.models.emr.MedicalTemplate;
-import com.yunya.modules.emr.enums.EnableEnum;
-import com.yunya.modules.emr.enums.TemplateTypeEnum;
-import com.yunya.modules.emr.mapper.GeneralTemplateMapper;
-import com.yunya.modules.emr.mapper.MedicalTemplateMapper;
-import org.springframework.stereotype.Service;
-import tk.mybatis.mapper.common.Mapper;
-import tk.mybatis.mapper.entity.Example;
+import com.github.pagehelper.*;
+import com.google.common.collect.*;
+import com.yunya.feign.emr.domain.form.*;
+import com.yunya.feign.emr.domain.model.*;
+import com.yunya.feign.emr.domain.query.*;
+import com.yunya.feign.emr.domain.vo.*;
+import com.yunya.framework.common.constant.*;
+import com.yunya.framework.common.context.*;
+import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.utils.*;
+import com.yunya.models.emr.*;
+import com.yunya.modules.emr.enums.*;
+import com.yunya.modules.emr.mapper.*;
+import org.apache.commons.collections4.*;
+import org.springframework.stereotype.*;
+import tk.mybatis.mapper.common.*;
+import tk.mybatis.mapper.entity.*;
 
-import javax.annotation.Resource;
-import java.util.List;
+import javax.annotation.*;
+import java.util.*;
+
+import static java.util.stream.Collectors.*;
 
 /**
  * @author xiangyang
@@ -49,7 +43,7 @@ public class TemplateBiz {
         generalMapper.insertSelective(createEntity);
     }
 
-    public void updateGeneralRecord(Integer categoryId, Integer templateId,  GeneralTemplateForm updateForm) {
+    public void updateGeneralRecord(Integer categoryId, Integer templateId, GeneralTemplateForm updateForm) {
         //校验数据是否存在
         checkTemp(categoryId, templateId, generalMapper, GeneralTemplate.class);
         GeneralTemplate updateEntity = EntityUtils.build(updateForm, GeneralTemplate.class);
@@ -66,7 +60,7 @@ public class TemplateBiz {
 
     public PageInfo<GeneralTemplatePageVo> getGeneralTemplatePage(Integer categoryId, TemplateQuery query) {
         Page<GeneralTemplate> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        generalMapper.listByKeyword(query.getKeyword(), categoryId);
+        generalMapper.listByKeyword(query.getKeyword(), categoryId, query.getEnable());
         List<GeneralTemplatePageVo> list = Lists.newArrayListWithExpectedSize(page.size());
         list = EntityUtils.build(page.getResult(), GeneralTemplatePageVo.class);
         list.forEach(obj -> obj.setEnable(EnableEnum.getValue(Integer.valueOf(obj.getEnable()))));
@@ -102,7 +96,7 @@ public class TemplateBiz {
 
     public PageInfo<MedicalTemplatePageVo> getMedicalTemplatePage(Integer categoryId, TemplateQuery query) {
         Page<MedicalTemplate> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        medicalMapper.listByKeyword(query.getKeyword(), categoryId);
+        medicalMapper.listByKeyword(query.getKeyword(), categoryId, query.getEnable());
         List<MedicalTemplatePageVo> list = Lists.newArrayListWithExpectedSize(page.size());
         list = EntityUtils.build(page.getResult(), MedicalTemplatePageVo.class);
         list.forEach(obj -> {
@@ -110,6 +104,21 @@ public class TemplateBiz {
             obj.setType(TemplateTypeEnum.getValue(Integer.valueOf(obj.getType())));
         });
         return new PageInfo<>(list);
+    }
+
+    public List<String> getEnableMedicalTemplate(Integer categoryId) {
+        List<String> result = Lists.newArrayList();
+        List<GeneralTemplate> generalTemps = generalMapper.listByKeyword(null, categoryId, BusinessConstants.ENABLE_NUM);
+        if (CollectionUtils.isNotEmpty(generalTemps)) {
+            result = generalTemps.stream().map(GeneralTemplate::getContent).collect(toList());
+            return result;
+        }
+        List<MedicalTemplate> medicalTemps = medicalMapper.listByKeyword(null, categoryId, BusinessConstants.ENABLE_NUM);
+        if (CollectionUtils.isNotEmpty(medicalTemps)) {
+            result = medicalTemps.stream().map(MedicalTemplate::getName).collect(toList());
+            return result;
+        }
+        return result;
     }
 
     public MedicalDetailDetailVo getMedicalTemplateDetail(Integer templateId) {

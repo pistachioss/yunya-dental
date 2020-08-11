@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.util.*;
 
 /**
  * @author xiangyang
@@ -34,7 +35,7 @@ public class TemplateController {
     @ApiOperation("公司端-普通模板新增")
     @PostMapping("template/{categoryId}/general")
     @CurrentUser
-    public ResponseResult createGeneralRecord(@PathVariable("categoryId") Integer categoryId,
+    public ResponseResult createGeneralRecord(@PathVariable(value = "categoryId") Integer categoryId,
                                               @Valid @RequestBody GeneralTemplateModel createModel) {
         templateBiz.createGeneralRecord(categoryId, createModel);
         return ResponseUtil.success();
@@ -43,8 +44,8 @@ public class TemplateController {
     @ApiOperation("公司端-普通模板修改")
     @PutMapping("template/{categoryId}/general/{templateId}")
     @CurrentUser
-    public ResponseResult updateGeneralRecord(@PathVariable("templateId") Integer templateId,
-                                              @PathVariable("categoryId") Integer categoryId,
+    public ResponseResult updateGeneralRecord(@PathVariable(value = "templateId") Integer templateId,
+                                              @PathVariable(value = "categoryId") Integer categoryId,
                                               @Valid @RequestBody GeneralTemplateForm updateForm) {
         templateBiz.updateGeneralRecord(categoryId, templateId, updateForm);
         return ResponseUtil.success();
@@ -52,16 +53,16 @@ public class TemplateController {
 
     @ApiOperation("公司端-模板启用/禁用（普通和病例）")
     @PutMapping("template/{categoryId}/{templateId}/{enable}")
-    public ResponseResult enableRecord(@PathVariable("templateId") Integer templateId,
-                                       @PathVariable("categoryId") Integer categoryId,
-                                       @PathVariable("enable") Integer enable) {
+    public ResponseResult enableRecord(@PathVariable(value = "templateId") Integer templateId,
+                                       @PathVariable(value = "categoryId") Integer categoryId,
+                                       @PathVariable(value = "enable") Integer enable) {
         templateBiz.enableRecord(categoryId, templateId, enable);
         return ResponseUtil.success();
     }
 
     @ApiOperation("公司端-普通模板分页查询")
     @PostMapping("template/{categoryId}/general/page")
-    public ResponseResult<PageInfo<GeneralTemplatePageVo>> queryGeneralPageRecord(@PathVariable("categoryId") Integer categoryId,
+    public ResponseResult<PageInfo<GeneralTemplatePageVo>> queryGeneralPageRecord(@PathVariable(value = "categoryId") Integer categoryId,
                                               @RequestBody TemplateQuery query) {
         PageInfo<GeneralTemplatePageVo> pageResult = templateBiz.getGeneralTemplatePage(categoryId, query);
         return ResponseUtil.success(pageResult);
@@ -70,7 +71,7 @@ public class TemplateController {
     @ApiOperation("公司端-病例模板新增")
     @PostMapping("template/{categoryId}/medical")
     @CurrentUser
-    public ResponseResult createMedicalRecord(@PathVariable("categoryId") Integer categoryId,
+    public ResponseResult createMedicalRecord(@PathVariable(value = "categoryId") Integer categoryId,
                                               @Valid @RequestBody MedicalTemplateModel createModel) {
         templateBiz.createMedicalRecord(categoryId, createModel);
         return ResponseUtil.success();
@@ -79,8 +80,8 @@ public class TemplateController {
     @ApiOperation("公司端-病例模板修改")
     @PutMapping("template/{categoryId}/medical/{templateId}")
     @CurrentUser
-    public ResponseResult updateMedicalRecord(@PathVariable("categoryId") Integer categoryId,
-                                              @PathVariable("templateId") Integer templateId,
+    public ResponseResult updateMedicalRecord(@PathVariable(value = "categoryId") Integer categoryId,
+                                              @PathVariable(value = "templateId") Integer templateId,
                                               @Valid @RequestBody MedicalTemplateForm updateForm) {
         templateBiz.updateMedicalRecord(categoryId, templateId, updateForm);
         return ResponseUtil.success();
@@ -88,7 +89,7 @@ public class TemplateController {
 
     @ApiOperation("公司端病例模板分页查询")
     @PostMapping("template/{categoryId}/medical/page")
-    public ResponseResult<PageInfo<MedicalTemplatePageVo>> queryMedicalPageRecord(@PathVariable("categoryId") Integer categoryId,
+    public ResponseResult<PageInfo<MedicalTemplatePageVo>> queryMedicalPageRecord(@PathVariable(value = "categoryId") Integer categoryId,
                                                                                  @RequestBody TemplateQuery query) {
         PageInfo<MedicalTemplatePageVo> pageResult = templateBiz.getMedicalTemplatePage(categoryId, query);
         return ResponseUtil.success(pageResult);
@@ -96,8 +97,15 @@ public class TemplateController {
 
     @ApiOperation("公司端病例模板详情")
     @GetMapping("template/medical/{templateId}")
-    public ResponseResult<MedicalDetailDetailVo> getMedicalTemplateRecord(@PathVariable("templateId") Integer templateId) {
+    public ResponseResult<MedicalDetailDetailVo> getMedicalTemplateRecord(@PathVariable(value = "templateId") Integer templateId) {
         MedicalDetailDetailVo result = templateBiz.getMedicalTemplateDetail(templateId);
+        return ResponseUtil.success(result);
+    }
+
+    @ApiOperation("电子病例-病例模板内容查询")
+    @PostMapping("template/{categoryId}/medical/list")
+    public ResponseResult<String> getTemplateList(@PathVariable(value = "categoryId") Integer categoryId) {
+        List<String> result = templateBiz.getEnableMedicalTemplate(categoryId);
         return ResponseUtil.success(result);
     }
 
