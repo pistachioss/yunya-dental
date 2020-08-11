@@ -421,6 +421,22 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return missedAppointmentByDate;
     }
 
+    /**
+     * 定时任务设置失约患者状态, 每天01：00：00执行
+     * @return 返回处理个数
+     */
+    public Integer missedAppointmentsStatusSchedule(){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date(System.currentTimeMillis()));
+        calendar.add(Calendar.DAY_OF_MONTH,-1);
+        List<Appointment> missedAppointments = this.findMissedAppointmentByDate(calendar.getTime());
+        missedAppointments.forEach(appointment -> {
+            appointment.setAppointStatus((byte) 3);
+            mapper.updateByPrimaryKeySelective(appointment);
+        });
+        return missedAppointments.size();
+    }
+
 
     /**
      * 添加预约时，检查预约当日预约的医生和助手是否排班
