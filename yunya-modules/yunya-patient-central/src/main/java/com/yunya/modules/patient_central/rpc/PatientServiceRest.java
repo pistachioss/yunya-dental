@@ -4,6 +4,7 @@ import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -48,7 +49,13 @@ public class PatientServiceRest {
 
     @ApiOperation("根据患者id集合查询患者list")
     @RequestMapping (value = "/findPatientInfoByIds",method = RequestMethod.POST)
-    public List<PatientBaseInfoVo> findPatientInfoByIds(@PathVariable List<Integer> ids){
+    public List<PatientBaseInfoVo> findPatientInfoByIds(@RequestBody List<Integer> ids){
         return patientBaseInfoBiz.findPatientInfoByIds(ids);
+    }
+
+    @ApiOperation("根据患者id查询患者资料")
+    @RequestMapping (value = "/findPatientDate/{id}",method = RequestMethod.GET)
+    public PatientExtendInfoVo findPatientDate(@PathVariable("id") Integer id){
+        return patientBaseInfoBiz.findPatientDate(id);
     }
 }

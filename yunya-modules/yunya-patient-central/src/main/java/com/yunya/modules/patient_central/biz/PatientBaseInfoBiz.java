@@ -5,12 +5,16 @@ import com.uniubi.sdk.auth.authToken.TokenFetcher;
 import com.uniubi.sdk.client.UniUbiClient;
 import com.uniubi.sdk.model.PersonInput;
 import com.uniubi.sdk.model.ResultPersonCreateOutput;
+import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
+import com.yunya.feign.patient_central.domain.model.PictureModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PictureVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -233,8 +237,43 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
      * @param id
      * @return String
      */
-    public List<PictureVo> takeAPhoto(Integer id) {
+    public void takeAPhoto(Integer id) {
         PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(id);
-        return woPersonBiz.takeAPhoto(patientBaseInfo);
+        woPersonBiz.takeAPhoto(patientBaseInfo);
+    }
+
+    /**
+     * 删除照片并查询
+     * @param pictureForm
+     */
+    public List<PictureVo> DeleteThePhoto(PictureForm pictureForm) {
+        return woPersonBiz.DeleteThePhoto(pictureForm);
+    }
+
+    /**
+     * 设备人员认证授权
+     * @param pictureModel
+     */
+    public void equipmenAuthorization(PictureModel pictureModel) {
+        woPersonBiz.equipmenAuthorization(pictureModel);
+    }
+
+    /**
+     * 获取wo平台人员照片
+     * @param personGuid
+     * @return List<PictureVo>
+     */
+    public List<PictureVo> getFaceUrl(Integer PatientId) {
+        PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(PatientId);
+       return woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getwoGuid());
+    }
+
+    /**
+     * 根据患者id查询患者信息
+     * @param id
+     * @return
+     */
+    public PatientBaseInfo findPatientInfoById(Integer id) {
+       return patientBaseInfoMapper.selectPatientById(id);
     }
 }

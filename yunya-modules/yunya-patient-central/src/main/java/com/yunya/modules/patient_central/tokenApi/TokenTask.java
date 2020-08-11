@@ -29,7 +29,7 @@ public class TokenTask implements CustomTokenFetcher, Serializable {
         if(timingGetRedisToken.getToken() == null){
             try {
                 return timingGetRedisToken.getRedisToken();
-            } catch (IOException e){
+            } catch (Exception e){
                 throw new ClientServiceException(
                         "访问Wo平台获取token失败！", OperationCodeConstants.DATA_ERROR);
             }

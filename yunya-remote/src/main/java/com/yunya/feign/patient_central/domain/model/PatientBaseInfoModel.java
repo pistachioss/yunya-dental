@@ -75,7 +75,7 @@ public class PatientBaseInfoModel implements Serializable {
      * 病历号 患者第一次就诊时生成
      */
     @ApiModelProperty(value = "病历号")
-    private String medicalNummber;
+    private String medicalNumber;
 
     /**
      * 性别 0-男；1-女；2-未知

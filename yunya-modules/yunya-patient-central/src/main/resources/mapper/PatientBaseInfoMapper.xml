@@ -12,7 +12,7 @@
     <result column="wo_guid" property="woGuid" jdbcType="VARCHAR" />
     <result column="mobile" property="mobile" jdbcType="VARCHAR" />
     <result column="mobile_owner" property="mobileOwner" jdbcType="INTEGER" />
-    <result column="medical_nummber" property="medicalNummber" jdbcType="VARCHAR" />
+    <result column="medical_number" property="medicalNumber" jdbcType="VARCHAR" />
     <result column="gender" property="gender" jdbcType="TINYINT" />
     <result column="age" property="age" jdbcType="INTEGER" />
     <result column="birthday" property="birthday" jdbcType="DATE" />
@@ -30,7 +30,7 @@
 
   <!--患者表中的全部字段-->
   <sql id="Patient_Column_List">
-    id,org_id orgId,name,pinyin_name pinyinName,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_nummber medicalNummber,gender,age,birthday,origin_type originType,origin_id originId,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime
+    id,org_id orgId,name,pinyin_name pinyinName,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime
   </sql>
 
   <!--根据手机号查询用户是否纯在-->
@@ -45,7 +45,7 @@
 
   <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo">
     select pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
-		   pbi.medical_nummber medicalNummber,pmi.member_type_id memberTypeId,
+		   pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
 		   cast(SUM(pmi.principal_amount+pmi.bonus_amount) as decimal(15,2)) memberCardMoneySum,
 		   cast(SUM(ppi.prepayment_principal+ppi.prepayment_bonus)as decimal(15,2)) prepaymentsMoneySum
     from patient_base_info pbi
@@ -68,7 +68,7 @@
 
   <select id="findPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
     select <include refid="Patient_Column_List"></include>
-    from patient_base_info where CONCAT(name,medical_nummber,pinyin_name,mobile) like CONCAT(CONCAT('%',#{form.condition}),'%')
+    from patient_base_info where CONCAT(name,medical_number,pinyin_name,mobile) like CONCAT(CONCAT('%',#{form.condition}),'%')
   </select>
 
   <select id="selectPatientInfoByIdList" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">

@@ -19,6 +19,11 @@ import java.util.Date;
 public class PictureVo implements Serializable {
 
     /**
+     * 照片所有者（人员）guid
+     */
+    private String personGuid;
+
+    /**
      * 人员照片
      */
     private String faceUrl;
@@ -27,4 +32,9 @@ public class PictureVo implements Serializable {
      * 创建时间
      */
     private Date createTime;
+
+    /**
+     * 照片id
+     */
+    private String faceGuid;
 }

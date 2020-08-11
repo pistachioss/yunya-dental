@@ -1,8 +1,10 @@
 package com.yunya.modules.patient_central.controller;
 
+import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
+import com.yunya.feign.patient_central.domain.model.PictureModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
@@ -12,6 +14,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.ibatis.annotations.Delete;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -98,8 +101,31 @@ public class PatientBaseInfoController {
     @ApiOperation(value = "拍照")
     @GetMapping(value = "/takeAPhoto/{id}")
     public ResponseResult takeAPhoto(@PathVariable("id") Integer id){
-        return ResponseUtil.success(patientBaseInfoBiz.takeAPhoto(id));
+        patientBaseInfoBiz.takeAPhoto(id);
+        return ResponseUtil.success();
     }
+
+    @ApiOperation(value = "获取照片")
+    @GetMapping(value = "/getFaceUrl/{patientId}")
+    public ResponseResult getFaceUrl(@PathVariable("patientId") Integer patientId){
+        return ResponseUtil.success(patientBaseInfoBiz.getFaceUrl(patientId));
+    }
+
+    @ApiOperation(value = "删除照片")
+    @Delete(value = "/DeleteThePhoto")
+    public ResponseResult DeleteThePhoto(@RequestBody @Validated PictureForm pictureForm){
+        patientBaseInfoBiz.DeleteThePhoto(pictureForm);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation("设备人员认证授权")
+    @PostMapping("/equipmenAuthorization")
+    public ResponseResult equipmenAuthorization(@RequestBody @Validated PictureModel pictureModel){
+        patientBaseInfoBiz.equipmenAuthorization(pictureModel);
+        return ResponseUtil.success();
+    }
+
+
 
 
 }
