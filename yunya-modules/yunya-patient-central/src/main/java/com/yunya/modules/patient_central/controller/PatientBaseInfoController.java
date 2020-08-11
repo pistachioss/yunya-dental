@@ -64,9 +64,9 @@ public class PatientBaseInfoController {
     }
 
     @ApiOperation("根据患者id查询患者资料")
-    @GetMapping ("/findPatientDate/{id}")
-    public ResponseResult findPatientDate(@PathVariable("id") Integer id){
-        return ResponseUtil.success(patientBaseInfoBiz.findPatientDate(id));
+    @GetMapping ("/findPatientData/{id}")
+    public ResponseResult findPatientData(@PathVariable("id") Integer id){
+        return ResponseUtil.success(patientBaseInfoBiz.findPatientData(id));
     }
 
     @ApiOperation("根据姓名/病例编号/手机号/姓名拼音模糊查询患者")
