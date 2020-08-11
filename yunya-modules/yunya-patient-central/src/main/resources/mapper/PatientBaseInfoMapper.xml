@@ -79,6 +79,11 @@
     </foreach>
   </select>
 
+  <select id="selectPatientById" resultType="com.yunya.models.patient_central.PatientBaseInfo">
+    select <include refid="Patient_Column_List"/>
+    from patient_base_info where id = #{id}
+  </select>
+
 
 </mapper>
 

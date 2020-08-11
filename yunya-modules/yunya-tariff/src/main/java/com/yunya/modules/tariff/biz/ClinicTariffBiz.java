@@ -80,10 +80,12 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     if (StringHelper.isNotEmpty(resultList)) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
       if (StringHelper.isNotEmpty(memberTypes)) {
-        HashMap<Integer, Object> memberPrices = new HashMap<>(16);
         Integer orgId = queryForm.getOrgId();
         resultList.forEach(
-            tariffVO -> setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO));
+            tariffVO -> {
+              HashMap<Integer, Object> memberPrices = new HashMap<>(16);
+              setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
+            });
       }
     }
     return new PageInfo<>(resultList);
@@ -102,10 +104,10 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       List<MemberType> memberTypes,
       Integer orgId,
       ClinicTariffVO tariffVO) {
-    ClinicTariffMemberPrice clinicTariffMemberPrice;
-    ClinicTariffMemberPrice memberPriceResult;
     Integer memberTypeId;
     BigDecimal memberPrice;
+    ClinicTariffMemberPrice clinicTariffMemberPrice;
+    ClinicTariffMemberPrice memberPriceResult;
     for (MemberType memberType : memberTypes) {
       clinicTariffMemberPrice = new ClinicTariffMemberPrice();
       clinicTariffMemberPrice.setClinicId(orgId);
@@ -221,20 +223,18 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     }
 
     Integer orgId = form.getOrgId();
-    ClinicTariffMemberPrice clinicTariffMemberPrice;
-    ClinicTariffMemberPrice resultClinicTariffMemberPrice;
     BigDecimal price;
     Integer memberType;
     for (Integer clinicTariffId : clinicTariffIds) {
       for (MemberUniteDiscountForm discountForm : memberUniteDiscountForms) {
         ClinicTariff resultData = mapper.selectByPrimaryKey(clinicTariffId);
         if (null != resultData) {
-          clinicTariffMemberPrice = new ClinicTariffMemberPrice();
+          ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
           clinicTariffMemberPrice.setClinicId(orgId);
           clinicTariffMemberPrice.setTariffId(resultData.getTariffId());
           memberType = discountForm.getMemberTypeId();
           clinicTariffMemberPrice.setMemberTypeId(memberType);
-          resultClinicTariffMemberPrice =
+          ClinicTariffMemberPrice resultClinicTariffMemberPrice =
               clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
           price = resultData.getPrice();
           BigDecimal discountPrice =
@@ -247,10 +247,11 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
             clinicTariffMemberPrice.setCrtName(BaseContextHandler.getName());
             clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
           } else {
-            clinicTariffMemberPrice.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-            clinicTariffMemberPrice.setUpdName(BaseContextHandler.getName());
-            clinicTariffMemberPrice.setUpdTime(new Date(System.currentTimeMillis()));
-            clinicTariffMemberPriceBiz.updateSelectiveById(clinicTariffMemberPrice);
+            resultClinicTariffMemberPrice.setDiscountPrice(discountPrice);
+            resultClinicTariffMemberPrice.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            resultClinicTariffMemberPrice.setUpdName(BaseContextHandler.getName());
+            resultClinicTariffMemberPrice.setUpdTime(new Date(System.currentTimeMillis()));
+            clinicTariffMemberPriceBiz.updateSelectiveById(resultClinicTariffMemberPrice);
           }
         }
       }

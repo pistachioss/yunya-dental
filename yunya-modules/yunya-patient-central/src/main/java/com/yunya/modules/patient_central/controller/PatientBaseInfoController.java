@@ -95,4 +95,11 @@ public class PatientBaseInfoController {
         return ResponseUtil.success();
     }
 
+    @ApiOperation(value = "拍照")
+    @GetMapping(value = "/takeAPhoto/{id}")
+    public ResponseResult takeAPhoto(@PathVariable("id") Integer id){
+        return ResponseUtil.success(patientBaseInfoBiz.takeAPhoto(id));
+    }
+
+
 }
