@@ -84,6 +84,11 @@
     from patient_base_info where id = #{id}
   </select>
 
+  <select id="selectPatientInfoByNameAndMobileAndOrgId" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    select <include refid="Patient_Column_List"/>
+    from patient_base_info where name = #{form.name} and mobile = #{form.mobile} and org_id = #{form.orgId}
+  </select>
+
 
 </mapper>
 

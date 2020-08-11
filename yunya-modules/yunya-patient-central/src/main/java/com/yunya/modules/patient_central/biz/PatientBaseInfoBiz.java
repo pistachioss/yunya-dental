@@ -80,11 +80,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         PatientPublicInfoVo patientPublicInfoVo = new PatientPublicInfoVo();
         patientPublicInfoVo =  patientBaseInfoMapper.findPatientPublicInfoById(id);
         if(patientPublicInfoVo.getMemberTypeId()==null){
-            return ResponseUtil.success("该患者会员卡类型ID为空","");
+            return ResponseUtil.error("该患者会员卡类型ID为空","");
         }
         MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
         if(memberType.getName() == null){
-            return ResponseUtil.success("根据患者会员卡类型ID未查询到会员卡","");
+            return ResponseUtil.error("根据患者会员卡类型ID未查询到会员卡","");
         }
         patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
         return ResponseUtil.success(patientPublicInfoVo);
@@ -98,11 +98,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
         patientBaseInfoVo = patientBaseInfoMapper.findUserExists(patientBaseInfoQueryForm);
         if (patientBaseInfoVo != null){
-           return ResponseUtil.success("添加失败,该用户已存在",patientBaseInfoVo);
+           return ResponseUtil.error("添加失败,该用户已存在",patientBaseInfoVo);
         }
         int count = patientBaseInfoMapper.findUserExistsByMobile(patientBaseInfoQueryForm.getMobile());
         if(count > 0){
-            return ResponseUtil.success("该手机号已存在");
+            return ResponseUtil.error("该手机号已存在","");
         }
         return ResponseUtil.success();
     }
@@ -111,7 +111,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
      * 添加患者信息
      * @param patientBaseInfoModel
      */
-    public void addPatient(PatientBaseInfoModel patientBaseInfoModel) {
+    public PatientBaseInfoVo addPatient(PatientBaseInfoModel patientBaseInfoModel) {
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
         patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
@@ -120,6 +120,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         patientBaseInfo.setwoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName()));//wo平台创建对应人员 返回人员Guid添加到数据库
         mapper.insertSelective(patientBaseInfo);
+        return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
 
     /**
@@ -213,13 +214,13 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
 
     /**
-     * 接受人脸识别结果
+     * 授权人脸识别结果
      * @param patientWoPlatformInfoModel
      */
     public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
-        PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(1);
+        PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
         patientBaseInfo.setwoGuid(patientWoPlatformInfoModel.getGuid());
-        patientBaseInfo.setName("WO平台");
+        patientBaseInfo.setName("WO平台授权人脸识别结果成功");
         mapper.updateByPrimaryKeySelective(patientBaseInfo);
     }
 

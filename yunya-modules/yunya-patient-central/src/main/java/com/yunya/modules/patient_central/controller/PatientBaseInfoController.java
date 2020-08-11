@@ -56,14 +56,6 @@ public class PatientBaseInfoController {
     }
 
     @CurrentUser
-    @ApiOperation("添加患者基本信息信息")
-    @PostMapping("/add")
-    public ResponseResult addPatient(@RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel){
-        patientBaseInfoBiz.addPatient(patientBaseInfoModel);
-        return ResponseUtil.success();
-    }
-
-    @CurrentUser
     @ApiOperation("添加完善患者基本信息")
     @PostMapping("/addPatientInfo")
     public ResponseResult addPatientInfo(@RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel){
@@ -89,19 +81,17 @@ public class PatientBaseInfoController {
         return patientBaseInfoBiz.birthYear(age);
     }
 
-
-    @ApiOperation(value = "测试人脸识别认证返回", notes = "测试人脸识别认证返回")
-    @ResponseBody
-    @RequestMapping(value = "/renlianshibie", method = RequestMethod.POST)
-    public ResponseResult renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel ){
-        patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
-        return ResponseUtil.success();
+    @CurrentUser
+    @ApiOperation("添加患者基本信息信息")
+    @PostMapping("/add")
+    public ResponseResult addPatient(@RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel){
+        return ResponseUtil.success(patientBaseInfoBiz.addPatient(patientBaseInfoModel));
     }
 
     @ApiOperation(value = "拍照")
-    @GetMapping(value = "/takeAPhoto/{id}")
-    public ResponseResult takeAPhoto(@PathVariable("id") Integer id){
-        patientBaseInfoBiz.takeAPhoto(id);
+    @GetMapping(value = "/takeAPhoto/{patientId}")
+    public ResponseResult takeAPhoto(@PathVariable("patientId") Integer patientId){
+        patientBaseInfoBiz.takeAPhoto(patientId);
         return ResponseUtil.success();
     }
 
@@ -112,16 +102,23 @@ public class PatientBaseInfoController {
     }
 
     @ApiOperation(value = "删除照片")
-    @Delete(value = "/DeleteThePhoto")
+    @DeleteMapping(value = "/DeleteThePhoto")
     public ResponseResult DeleteThePhoto(@RequestBody @Validated PictureForm pictureForm){
-        patientBaseInfoBiz.DeleteThePhoto(pictureForm);
-        return ResponseUtil.success();
+        return ResponseUtil.success(patientBaseInfoBiz.DeleteThePhoto(pictureForm));
     }
 
     @ApiOperation("设备人员认证授权")
     @PostMapping("/equipmenAuthorization")
     public ResponseResult equipmenAuthorization(@RequestBody @Validated PictureModel pictureModel){
         patientBaseInfoBiz.equipmenAuthorization(pictureModel);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation(value = "测试人脸识别认证返回", notes = "测试人脸识别认证返回")
+    @ResponseBody
+    @RequestMapping(value = "/renlianshibie", method = RequestMethod.POST)
+    public ResponseResult renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel ){
+        patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
         return ResponseUtil.success();
     }
 
