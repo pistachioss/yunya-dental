@@ -3,6 +3,7 @@ package com.yunya.modules.appointment.controller;
 import com.yunya.feign.appointment.domain.form.AppointStatusForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
+import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -118,6 +119,31 @@ public class AppointmentController {
            @RequestBody @Validated AppointmentCancelCauseForm form){
         ResponseResult responseResult = appointmentBiz.appointmentCancel(id, form);
         return responseResult;
+    }
+
+    /**
+     * 确认预约（就诊画面用）
+     * @param id 预约id
+     * @return  ResponseResult
+     */
+    @ApiOperation(value = "确认预约（就诊画面用）")
+    @PutMapping("/confirm/{id}")
+    @CurrentUser
+    public ResponseResult appointConfirm(@PathVariable("id") Integer id){
+        Integer result = appointmentBiz.confirmAppointment(id);
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 根据id查询预约
+     * @param id  预约id
+     * @return
+     */
+    @ApiOperation(value = "根据id查询预约")
+    @GetMapping("/find/{id}")
+    public ResponseResult findAppointById(Integer id){
+        AppointmentVo appointmentVo = appointmentBiz.findAppointmentById(id);
+        return ResponseUtil.success(appointmentVo);
     }
 
 

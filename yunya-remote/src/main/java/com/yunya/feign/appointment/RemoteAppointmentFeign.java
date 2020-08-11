@@ -6,11 +6,10 @@ import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.models.appointment.AppointType;
+import com.yunya.models.appointment.Appointment;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -33,7 +32,7 @@ public interface RemoteAppointmentFeign {
      * @return
      * @description 查询公司端、门诊端的预约列表，Mock两端数据，返回vo对象列表
      */
-    @PostMapping("/api/appointment/list")
+    @RequestMapping(value = "/api/appointment/list", method = RequestMethod.POST)
     public PageInfo<AppointmentItemVo> findAppItemList(@RequestBody AppointItemQuery form);
 
     /**
@@ -42,7 +41,7 @@ public interface RemoteAppointmentFeign {
      * @param baseQueryForm 查询条件
      * @return
      */
-    @PostMapping("/api/appointment/search")
+    @RequestMapping(value = "/api/appointment/search",method = RequestMethod.POST)
     public List<AppointmentItemVo> searchAppItem(@RequestBody AppointItemQuery baseQueryForm);
 
     /**
@@ -51,7 +50,7 @@ public interface RemoteAppointmentFeign {
      * @param compClinId
      * @return
      */
-    @GetMapping("/api/appointment/available/{compClinId}")
+    @RequestMapping(value = "/api/appointment/available/{compClinId}",method = RequestMethod.GET)
     public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "compClinId") String compClinId);
 
     /**
@@ -59,6 +58,22 @@ public interface RemoteAppointmentFeign {
      * @param id 预约项目id
      * @return
      */
-    @GetMapping("/api/appointment/select/{id}")
-    public ResponseResult selectAppointTypeById(@PathVariable(value = "id") Integer id);
+    @RequestMapping(value = "/api/appointment/select/{id}",method = RequestMethod.GET)
+    public AppointType selectAppointTypeById(@PathVariable(value = "id") Integer id);
+
+    /**
+     * 修改预约信息
+     * @param appointment
+     * @return
+     */
+    @RequestMapping(value = "/api/appointment/appoint/update", method = RequestMethod.POST)
+    public void updateAppointment(@RequestBody Appointment appointment);
+
+    /**
+     * 通过id查询预约信息
+     * @param id
+     * @return
+     */
+    @RequestMapping(value = "/api/appointment/appoint/find/{id}", method = RequestMethod.GET)
+    public Appointment findAppointmentById(@PathVariable("id") Integer id);
 }

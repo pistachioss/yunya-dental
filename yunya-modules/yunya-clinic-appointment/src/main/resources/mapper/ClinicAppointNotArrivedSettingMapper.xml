@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.appointment.mapper.ClinicAppointNotArrivedSettingMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.ClinicAppointNotArrivedSetting">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <id column="user_id" jdbcType="INTEGER" property="userId" />
+    <result column="patient_column" jdbcType="BIT" property="patientColumn" />
+    <result column="appoint_type_column" jdbcType="BIT" property="appointTypeColumn" />
+    <result column="distent_column" jdbcType="BIT" property="distentColumn" />
+    <result column="medical_record_number_column" jdbcType="BIT" property="medicalRecordNumberColumn" />
+    <result column="telephone_column" jdbcType="BIT" property="telephoneColumn" />
+    <result column="appoint_time_column" jdbcType="BIT" property="appointTimeColumn" />
+    <result column="appoint_duration_column" jdbcType="BIT" property="appointDurationColumn" />
+    <result column="appoint_item_type_column" jdbcType="BIT" property="appointItemTypeColumn" />
+    <result column="confirm_status_column" jdbcType="BIT" property="confirmStatusColumn" />
+    <result column="appoint_remarks_column" jdbcType="BIT" property="appointRemarksColumn" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
+    <result column="upd_name" jdbcType="VARCHAR" property="updName" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, user_id as userId, patient_column as patientColumn, appoint_type_column as appointTypeColumn, distent_column as distentColumn,
+    medical_record_number_column as medicalRecordNumberColumn,telephone_column as telephoneColumn, appoint_time_column as appointTimeColumn,
+    appoint_duration_column as appointDurationColumn, appoint_item_type_column as appointItemTypeColumn, confirm_status_column as confirmStatusColumn,
+    appoint_remarks_column as appointRemarksColumn, remarks, inservice
+  </sql>
+
+  <!-- 通过用户id查询预约未到设置 -->
+  <select id="findAppointNotArrivedSettingByUserId" parameterType="java.lang.Integer" resultType="com.yunya.feign.appointment.vo.AppointNotArrivedSettingVo">
+    select
+      <include refid="Base_Column_List"></include>
+    from clinic_appoint_not_arrived_setting
+    where user_id = #{userId}
+  </select>
+
+</mapper>

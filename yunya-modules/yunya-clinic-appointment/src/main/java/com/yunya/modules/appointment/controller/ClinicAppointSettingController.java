@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.*;
  * @update yunya-lihuibin    2020-08-03    新建
  */
 @RestController
-@RequestMapping("appoint_set")
+@RequestMapping("appoint/setting")
 @Api(tags = "预约设置Controller")
 public class ClinicAppointSettingController {
 

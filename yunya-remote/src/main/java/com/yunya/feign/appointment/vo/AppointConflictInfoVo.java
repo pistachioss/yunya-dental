@@ -17,7 +17,7 @@ import java.io.Serializable;
 @ApiModel("预约冲突信息实体")
 @Data
 @ToString
-public class AppointConflictInfoVo extends AppointmentBaseVo implements Serializable {
+public class AppointConflictInfoVo extends AppointmentVo implements Serializable {
 
     @ApiModelProperty("门诊名称")
     private String clinicName;

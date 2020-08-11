@@ -6,6 +6,8 @@ import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.models.appointment.AppointType;
+import com.yunya.models.appointment.Appointment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -36,7 +38,17 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
     }
 
     @Override
-    public ResponseResult selectAppointTypeById(Integer id) {
+    public AppointType selectAppointTypeById(Integer id) {
+        return null;
+    }
+
+    @Override
+    public void updateAppointment(Appointment appointment) {
+
+    }
+
+    @Override
+    public Appointment findAppointmentById(Integer id) {
         return null;
     }
 }

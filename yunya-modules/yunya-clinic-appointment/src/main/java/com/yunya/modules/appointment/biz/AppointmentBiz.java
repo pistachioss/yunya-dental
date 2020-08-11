@@ -32,6 +32,7 @@ import com.yunya.models.auth.Client;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
+import io.swagger.models.auth.In;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -108,14 +109,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
 
             // 添加预约时长分解
-            AppointmentSplitModel model = new AppointmentSplitModel();
-            model.setSplitList(form.getSplitList());
-            model.setOrgId(appointmentEntity.getOrgId());
-            model.setAppointmentId(appointmentEntity.getId());
-            model.setAppointDuration(appointmentEntity.getAppointDuration());
-            Integer splitResult = appointmentSplitBiz.insertAppointSplit(model);
-            if (splitResult == null || splitResult <= 0){
-                throw new ClientServiceException((String) "分解时长失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            if (form.getSplitList() != null || !form.getSplitList().isEmpty()){
+                AppointmentSplitModel model = new AppointmentSplitModel();
+                model.setSplitList(form.getSplitList());
+                model.setOrgId(appointmentEntity.getOrgId());
+                model.setAppointmentId(appointmentEntity.getId());
+                model.setAppointDuration(appointmentEntity.getAppointDuration());
+                Integer splitResult = appointmentSplitBiz.insertAppointSplit(model);
+                if (splitResult == null || splitResult <= 0){
+                    throw new ClientServiceException((String) "分解时长失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                }
             }
 
             // 插入预约操作记录(添加)
@@ -291,14 +294,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
 
             // 修改时长分解
-            AppointmentSplitForm splitForm = new AppointmentSplitForm();
-            splitForm.setSplitList(form.getSplitList());
-            splitForm.setOrgId(appointment.getOrgId());
-            splitForm.setAppointDuration(appointment.getAppointDuration());
-            splitForm.setAppointmentId(appointment.getId());
-            Integer splitResult = appointmentSplitBiz.updateAppointSplit(splitForm);
-            if (splitResult == null || splitResult <= 0){
-                throw new ClientServiceException("时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            List<AppointmentSplitUpdateBaseInfo> splitList = form.getSplitList();
+            if (splitList != null && !splitList.isEmpty()){
+                AppointmentSplitForm splitForm = new AppointmentSplitForm();
+                splitForm.setSplitList(splitList);
+                splitForm.setOrgId(appointment.getOrgId());
+                splitForm.setAppointDuration(appointment.getAppointDuration());
+                splitForm.setAppointmentId(appointment.getId());
+                Integer splitResult = appointmentSplitBiz.updateAppointSplit(splitForm);
+                if (splitResult == null || splitResult <= 0){
+                    throw new ClientServiceException("时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                }
             }
 
             // 生成修改预约操作记录
@@ -328,14 +334,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
 
         // 修改时长分解
-        AppointmentSplitForm splitForm = new AppointmentSplitForm();
-        splitForm.setSplitList(appointmentForm.getSplitList());
-        splitForm.setOrgId(appointmentForm.getOrgId());
-        splitForm.setAppointDuration(appointmentForm.getAppointDuration());
-        splitForm.setAppointmentId(appointmentForm.getId());
-        Integer splitResult = appointmentSplitBiz.updateAppointSplit(splitForm);
-        if (splitResult == null || splitResult <= 0){
-            throw new ClientServiceException("时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+        List<AppointmentSplitUpdateBaseInfo> splitList = appointmentForm.getSplitList();
+        if (splitList != null && !splitList.isEmpty()){
+
+            AppointmentSplitForm splitForm = new AppointmentSplitForm();
+            splitForm.setSplitList(appointmentForm.getSplitList());
+            splitForm.setOrgId(appointmentForm.getOrgId());
+            splitForm.setAppointDuration(appointmentForm.getAppointDuration());
+            splitForm.setAppointmentId(appointmentForm.getId());
+            Integer splitResult = appointmentSplitBiz.updateAppointSplit(splitForm);
+            if (splitResult == null || splitResult <= 0){
+                throw new ClientServiceException("时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
         }
 
         // 生成修改预约操作记录
@@ -346,6 +356,70 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 //    TODO  查询预约（根据预约id）
 
 //    TODO  查询预约（根据条件）
+
+
+    /**
+     * 根据id查询预约
+     * @param id 预约id
+     * @return
+     */
+    public AppointmentVo findAppointmentById(Integer id){
+        AppointmentVo appointmentVo = mapper.findAppointmentById(id);
+        return appointmentVo;
+    }
+
+
+
+    /**
+     * 确认预约
+     * @param id  预约id
+     * @return
+     */
+    public Integer confirmAppointment(Integer id){
+        Appointment appointment = mapper.selectByPrimaryKey(id);
+        AppointOperationModel appointOperationModel = new AppointOperationModel();
+        if (appointment == null){
+            throw new ClientServiceException("预约数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        appointOperationModel.setBeforeOperation(appointment.getConfirmStatus()?"确认":"未确认");
+        appointment.setConfirmStatus(true);
+        appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        appointment.setUpdName(BaseContextHandler.getName());
+        appointment.setUpdTime(new Date(System.currentTimeMillis()));
+        int result = mapper.updateByPrimaryKeySelective(appointment);
+        if (result > 0) {
+            appointOperationModel.setOperateType((byte) 3);
+            appointOperationModel.setAppointmentId(appointment.getId());
+            appointOperationModel.setOrgId(Integer.valueOf(BaseContextHandler.getUserID()));
+            appointOperationModel.setAfterOperation(appointment.getConfirmStatus()?"确认":"未确认");
+            appointOperationModel.setRemarks("确认预约");
+            return appointOperateRecordBiz.insertAppointmentOperateRecord(appointOperationModel);
+        }
+        return result;
+    }
+
+
+    /**
+     * 根据条件查询预约列表
+     * @param query  条件查询参数
+     * @return
+     */
+    public List<AppointmentVo> findAppointmentByExample(AppointmentQuery query){
+        return mapper.findAppointmentByExample(query);
+    }
+
+
+    /**
+     * 根据日期查询失约患者名单
+     * @param currentDate  当前日期
+     * @return
+     */
+    public List<Appointment> findMissedAppointmentByDate(Date currentDate){
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String format = simpleDateFormat.format(currentDate);
+        List<Appointment> missedAppointmentByDate = mapper.findMissedAppointmentByDate(currentDate);
+        return missedAppointmentByDate;
+    }
 
 
     /**
@@ -391,15 +465,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         responseResultMap.put("errMwg","预约医生id不能为空！");
         responseResultMap.put("data",null);
         return responseResultMap;
-    }
-
-    /**
-     * 根据条件查询预约列表
-     * @param query  条件查询参数
-     * @return
-     */
-    public List<AppointmentVo> findAppointmentByExample(AppointmentQuery query){
-        return mapper.findAppointmentByExample(query);
     }
 
     /**

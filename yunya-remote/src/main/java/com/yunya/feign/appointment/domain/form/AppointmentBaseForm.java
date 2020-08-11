@@ -108,7 +108,6 @@ public class AppointmentBaseForm implements Serializable {
     private Boolean inservice;
 
     /** 时长分解列表 */
-    @ApiModelProperty(value = "时长分解列表", required = true)
-    @NotEmpty(message = "时长分解列表不能为空！")
+    @ApiModelProperty(value = "时长分解列表")
     private List<AppointmentSplitUpdateBaseInfo> splitList;
 }

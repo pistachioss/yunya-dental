@@ -107,4 +107,18 @@ public interface AppointmentMapper extends Mapper<Appointment> {
             @Param("appointStartTime") Date appointStartTime,
             @Param("appointEndTime") Date appointEndTime);
 
+    /**
+     * 根据日期查询失约患者名单
+     * @param currentDate 当前日期
+     * @return
+     */
+    List<Appointment> findMissedAppointmentByDate(Date currentDate);
+
+    /**
+     * 根据预约id查询预约
+     * @param id  预约id
+     * @return
+     */
+    AppointmentVo findAppointmentById(@Param("id") Integer id);
+
 }

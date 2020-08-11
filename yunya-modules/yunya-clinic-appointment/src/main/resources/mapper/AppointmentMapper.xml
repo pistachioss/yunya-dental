@@ -32,23 +32,6 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
-
-
-  <resultMap id="BaseResultMap" type="com.yunya.models.appointment.AppointItem">
-    <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="appoint_type_id" jdbcType="INTEGER" property="appointTypeId" />
-    <result column="name" jdbcType="VARCHAR" property="name" />
-    <result column="duration" jdbcType="INTEGER" property="duration" />
-    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
-    <result column="inservice" jdbcType="BIT" property="inservice" />
-    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
-    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
-    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
-    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
-    <result column="upd_name" jdbcType="VARCHAR" property="updName" />
-    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
-  </resultMap>
-
   <sql id="Base_Column_List">
     id, patient_id, org_id, dentist_id, assistant_id, clinic_dept_room_id, clinic_device_item_id,
     clinic_appoint_item_id, appoint_duration, appoint_date, appoint_time, appoint_start_time,
@@ -250,6 +233,19 @@
             and clinic_device_item_id = #{deviceId} and inservice = 1
         ) apt
       where apt.id not in (#{id})
+  </select>
+
+  <!-- 根据日期查询失约患者名单 -->
+  <select id="findMissedAppointmentByDate" parameterType="java.util.Date" resultMap="appointmentMap">
+    SELECT appoint.* FROM `appointment` appoint
+    WHERE appoint.appoint_date = DATE_FORMAT(#{currentDate},'%Y-%m-%d') and appoint.inservice = 1 and appoint.appoint_status = 0
+  </select>
+
+  <!-- 根据预约id查询预约 -->
+  <select id="findAppointmentById" parameterType="java.lang.Integer" resultType="com.yunya.feign.appointment.vo.AppointmentVo">
+    select
+       <include refid="Appoint_ConflictInfo_Column"></include>
+    from appointment apt where apt.id = #{id}
   </select>
 
 
