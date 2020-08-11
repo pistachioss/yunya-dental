@@ -86,7 +86,7 @@ public class ClinicAppointSettingController {
      * @return
      */
     @ApiOperation(value = "根据设置id删除数据")
-    @DeleteMapping("/del/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseResult delAppointSettingById(@PathVariable("id") Integer id){
         return clinicAppointSettingBiz.delAppointSetting(id);
     }

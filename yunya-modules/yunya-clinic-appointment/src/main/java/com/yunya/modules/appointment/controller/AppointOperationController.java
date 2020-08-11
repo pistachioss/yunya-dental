@@ -51,7 +51,7 @@ public class AppointOperationController {
      * @return
      */
     @ApiOperation(value = "根据id删除预约操作记录")
-    @DeleteMapping("del/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseResult deleteAppointOperationRecordById(@PathVariable("id") Integer id){
         operateRecordBiz.deleteAppointOperatioinById(id);
         return ResponseUtil.success();

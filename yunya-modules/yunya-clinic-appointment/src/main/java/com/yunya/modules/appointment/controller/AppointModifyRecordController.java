@@ -52,7 +52,7 @@ public class AppointModifyRecordController {
      * @return
      */
     @ApiOperation(value = "根据id删除预约修改记录")
-    @DeleteMapping("del/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseResult deleteAppointModifyRecord(@PathVariable("id") Integer id){
         appointmentModifyRecordBiz.deleteAppointModifyRecordById(id);
         return ResponseUtil.success();
@@ -64,7 +64,7 @@ public class AppointModifyRecordController {
      * @return
      */
     @ApiOperation(value = "编辑预约修改内容")
-    @PutMapping("update")
+    @PutMapping("/update")
     @CurrentUser
     public ResponseResult updateAppointModifyRecord(@RequestBody @Validated AppointModifyRecordForm form){
         Integer result = appointmentModifyRecordBiz.updateAppointModify(form);

@@ -72,7 +72,7 @@ public class AppointmentSplitController {
      * @return
      */
     @ApiOperation(value = " 删除时长分解（新增/修改预约-预约时长分解-删除 用）")
-    @DeleteMapping("/del/{splitId}")
+    @DeleteMapping("/delete/{splitId}")
     public ResponseResult delAppointSplit(@PathVariable("splitId") Integer splitId){
         appointSpitBiz.deleteById(splitId);
         return ResponseUtil.success();
