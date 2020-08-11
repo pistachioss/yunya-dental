@@ -16,6 +16,17 @@ import java.util.Date;
 public class WorkDayVO {
   private Date date;
   private Integer compClinId;
+  /**
+   * 班次名
+   */
   private String name;
+  /**
+   * 时间段
+   */
+  private String stime;
   private Integer id;
+  /**
+   * 班次属性
+   */
+  private String type;
 }
