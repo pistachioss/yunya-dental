@@ -10,7 +10,9 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
+import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,8 @@ import java.util.List;
 public class PatientServiceRest {
     /** 患者 */
     @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
+
+    @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
 
 
     @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
@@ -57,5 +61,11 @@ public class PatientServiceRest {
     @RequestMapping (value = "/findPatientData/{id}",method = RequestMethod.GET)
     public PatientExtendInfoVo findPatientData(@PathVariable("id") Integer id){
         return patientBaseInfoBiz.findPatientData(id);
+    }
+
+    @ApiOperation("根据患者id查询患者资料")
+    @RequestMapping (value = "/findPatientMemberInfo",method = RequestMethod.POST)
+    public List<PatientMemberInfo> findPatientMemberInfo(@RequestBody PatientMemberInfo patientMemberInfo){
+        return patientMemberInfoBiz.selectList(patientMemberInfo);
     }
 }
