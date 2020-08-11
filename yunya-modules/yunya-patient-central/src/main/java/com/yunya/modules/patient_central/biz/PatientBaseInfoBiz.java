@@ -169,7 +169,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
      * @param id
      * @return PatientExtendInfoModel
      */
-    public PatientExtendInfoVo findPatientDate(Integer id) {
+    public PatientExtendInfoVo findPatientData(Integer id) {
         PatientExtendInfoVo patientExtendInfoVo = new PatientExtendInfoVo();
         patientExtendInfoVo.setPatientBaseInfo(mapper.selectByPrimaryKey(id));
         patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id));

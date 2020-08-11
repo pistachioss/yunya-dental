@@ -38,7 +38,7 @@ public class PatientOrigin {
      * 是否有时间限制（0-否；1-是））
      */
     @Column(name = "time_limit")
-    private Boolean timeLimit;
+    private Byte timeLimit;
 
     /**
      * 限制开始时间
@@ -189,7 +189,7 @@ public class PatientOrigin {
      *
      * @return time_limit - 是否有时间限制（0-否；1-是））
      */
-    public Boolean getTimeLimit() {
+    public Byte getTimeLimit() {
         return timeLimit;
     }
 
@@ -198,7 +198,7 @@ public class PatientOrigin {
      *
      * @param timeLimit 是否有时间限制（0-否；1-是））
      */
-    public void setTimeLimit(Boolean timeLimit) {
+    public void setTimeLimit(Byte timeLimit) {
         this.timeLimit = timeLimit;
     }
 

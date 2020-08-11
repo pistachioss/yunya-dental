@@ -39,7 +39,7 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     }
 
     @Override
-    public PatientExtendInfoVo findPatientDate(Integer id) {
+    public PatientExtendInfoVo findPatientData(Integer id) {
         return null;
     }
 }

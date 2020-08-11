@@ -52,6 +52,6 @@ public interface PatientCentralServiceFeign {
      * @param id
      * @return
      */
-    @RequestMapping (value = "/findPatientDate/{id}",method = RequestMethod.GET)
-    PatientExtendInfoVo findPatientDate(@PathVariable("id") Integer id);
+    @RequestMapping (value = "/findPatientData/{id}",method = RequestMethod.GET)
+    PatientExtendInfoVo findPatientData(@PathVariable("id") Integer id);
 }
