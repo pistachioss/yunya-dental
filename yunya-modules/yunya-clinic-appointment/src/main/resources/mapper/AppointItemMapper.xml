@@ -19,7 +19,7 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
-    <resultMap id="AllOrdersMap" type="com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo">
+    <resultMap id="AllOrdersMap" type="com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo">
         <result column="orgId" jdbcType="INTEGER" property="orgId" />
         <result column="typeName" jdbcType="VARCHAR" property="typeName" />
         <collection ofType="com.yunya.feign.appointment.vo.AppointmentItemVo" property="appointmentItems">

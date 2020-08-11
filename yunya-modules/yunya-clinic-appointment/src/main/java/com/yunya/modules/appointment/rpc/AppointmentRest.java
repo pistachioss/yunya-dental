@@ -8,7 +8,7 @@ import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.AppointItemBiz;
 import com.yunya.modules.appointment.biz.AppointTypeBiz;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
-import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

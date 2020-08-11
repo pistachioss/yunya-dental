@@ -10,7 +10,7 @@ import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.modules.appointment.biz.AppointmentSplitBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
-import com.yunya.modules.appointment.vo.AppointmentSplitVo;
+import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;

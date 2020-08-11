@@ -22,7 +22,7 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppointItem;
 import com.yunya.modules.appointment.mapper.AppointItemMapper;
-import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
