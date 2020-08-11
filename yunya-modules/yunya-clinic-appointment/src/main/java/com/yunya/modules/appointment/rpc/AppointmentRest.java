@@ -69,12 +69,12 @@ public class AppointmentRest {
     /**
      * 获取门诊可预约的项目列表
      *
-     * @param compClinId
+     * @param orgId 门诊id
      * @return
      */
-    @RequestMapping(value = "/item/available/{compClinId}",method=RequestMethod.GET)
-    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable("compClinId") Integer compClinId) {
-        return baseBiz.findAvailableAppItemList(compClinId);
+    @RequestMapping(value = "/item/available/{orgId}",method=RequestMethod.GET)
+    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "orgId") Integer orgId) {
+        return baseBiz.findAvailableAppItemList(orgId);
     }
 
     /**
@@ -83,7 +83,7 @@ public class AppointmentRest {
      * @return
      */
     @RequestMapping(value = "/item/select/{id}", method=RequestMethod.GET)
-    public AppointType selectAppointTypeById(@PathVariable("id") Integer id){
+    public AppointType selectAppointTypeById(@PathVariable(value = "id") Integer id){
         AppointType appointType = appointTypeBiz.selectAppointTypeById(id);
         return appointType;
     }
@@ -91,7 +91,7 @@ public class AppointmentRest {
 
     /**
      * 修改预约信息
-     * @param appointment
+     * @param appointment 修改表单
      * @return
      */
     @RequestMapping(value = "/appoint/update", method = RequestMethod.POST)
@@ -101,11 +101,11 @@ public class AppointmentRest {
 
     /**
      * 通过id查询预约信息
-     * @param id
+     * @param id 预约id
      * @return
      */
     @RequestMapping(value = "/appoint/find/{id}", method = RequestMethod.GET)
-    public Appointment findAppointmentById(@PathVariable("id") Integer id){
+    public Appointment findAppointmentById(@PathVariable(value = "id") Integer id){
         Appointment appointment = appointmentBiz.selectById(id);
         return appointment;
     }

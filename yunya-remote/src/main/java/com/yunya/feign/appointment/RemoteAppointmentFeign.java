@@ -28,7 +28,7 @@ public interface RemoteAppointmentFeign {
     /**
      * 根据条件查询门诊可预约项目
      *
-     * @param form
+     * @param form 条件查询
      * @return
      * @description 查询公司端、门诊端的预约列表，Mock两端数据，返回vo对象列表
      */
@@ -47,11 +47,11 @@ public interface RemoteAppointmentFeign {
     /**
      * 获取门诊可预约的项目列表
      *
-     * @param compClinId
+     * @param orgId 门诊id
      * @return
      */
-    @RequestMapping(value = "/api/appointment/available/{compClinId}",method = RequestMethod.GET)
-    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "compClinId") String compClinId);
+    @RequestMapping(value = "/api/appointment/available/{orgId}",method = RequestMethod.GET)
+    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "orgId") String orgId);
 
     /**
      * 根据id查询预约项目种类
@@ -63,7 +63,7 @@ public interface RemoteAppointmentFeign {
 
     /**
      * 修改预约信息
-     * @param appointment
+     * @param appointment  修改表单
      * @return
      */
     @RequestMapping(value = "/api/appointment/appoint/update", method = RequestMethod.POST)
@@ -71,9 +71,9 @@ public interface RemoteAppointmentFeign {
 
     /**
      * 通过id查询预约信息
-     * @param id
+     * @param id  患者预约id
      * @return
      */
     @RequestMapping(value = "/api/appointment/appoint/find/{id}", method = RequestMethod.GET)
-    public Appointment findAppointmentById(@PathVariable("id") Integer id);
+    public Appointment findAppointmentById(@PathVariable(value = "id") Integer id);
 }
