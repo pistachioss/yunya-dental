@@ -104,16 +104,14 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
       List<MemberType> memberTypes,
       Integer orgId,
       ClinicOralTariffVO tariffVO) {
-    ClinicOralTariffMemberPrice clinicOralTariffMemberPrice;
-    ClinicOralTariffMemberPrice memberPriceResult;
-    Integer memberTypeId;
-    BigDecimal memberPrice;
     for (MemberType memberType : memberTypes) {
-      clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
+      Integer memberTypeId;
+      BigDecimal memberPrice;
+      ClinicOralTariffMemberPrice  clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
       clinicOralTariffMemberPrice.setClinicId(orgId);
       clinicOralTariffMemberPrice.setOralTariffId(tariffVO.getOralTariffId());
       clinicOralTariffMemberPrice.setMemberTypeId(memberType.getId());
-      memberPriceResult = clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
+      ClinicOralTariffMemberPrice memberPriceResult = clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
         memberPrice = memberPriceResult.getDiscountPrice();
