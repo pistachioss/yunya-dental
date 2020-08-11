@@ -27,10 +27,6 @@ public class ClinicOralTariffForm implements Serializable {
   @ApiModelProperty(value = "商品项目ID", required = true)
   @NotNull(message = "商品项目ID不能为空！")
   private Integer oralTariffId;
-  /** 商品项目名称 */
-  @ApiModelProperty(value = "商品项目名称", required = true)
-  @NotBlank(message = "商品项目名称不能为空！")
-  private Integer name;
 
   /** 门诊价目表单价 */
   @ApiModelProperty(value = "门诊商品项目单价", required = true)
