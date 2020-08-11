@@ -3,15 +3,11 @@ package com.yunya.modules.patient_central.tokenApi;
 import com.uniubi.sdk.auth.authToken.CustomTokenFetcher;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.modules.patient_central.tokenApi.TimingGetRedisToken;
-import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * 简单介绍:</br>
@@ -21,14 +17,12 @@ import java.io.IOException;
  * @description:
  * @since: 1.0.0
  */
+
 @Component
-public class TokenTask implements CustomTokenFetcher {
+public class TokenTask implements CustomTokenFetcher, Serializable {
 
     @Autowired
     private TimingGetRedisToken timingGetRedisToken;
-
-    @Autowired
-    private RedisUtils redisUtils;
 
     @Override
     public String getToken() {
@@ -42,6 +36,4 @@ public class TokenTask implements CustomTokenFetcher {
         }
         return timingGetRedisToken.getToken();
     }
-
-
 }

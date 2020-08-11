@@ -4,18 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.yunya.framework.common.utils.MD5Util;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
-import org.apache.ibatis.annotations.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
@@ -24,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 定时获取WoToken
  *
  * @author: WY
  * @date 2020/8/10 16:25
@@ -32,7 +25,7 @@ import java.util.Map;
  * @since: 1.0.0
  */
 @Configuration
-public class TimingGetRedisToken {
+public class TimingGetRedisToken implements Serializable {
 
     @Autowired
     private RedisUtils redisUtils;
@@ -46,7 +39,7 @@ public class TimingGetRedisToken {
     public String getRedisToken() throws IOException {
         String url ="http://wo-api.uni-ubi.com/v1/"+WoPlatformConstants.APPID+"/auth";
         long timestamp = System.currentTimeMillis();
-        String link = WoPlatformConstants.APPKEY+System.currentTimeMillis()+WoPlatformConstants.APPSECRET;
+        String link = WoPlatformConstants.APPKEY+timestamp+WoPlatformConstants.APPSECRET;
         String sign = MD5Util.getStringMD5(link);
         Map<String, String> header = new HashMap<>();
         header.put("appKey",WoPlatformConstants.APPKEY);
@@ -58,10 +51,6 @@ public class TimingGetRedisToken {
         redisUtils.set("token",token);
         return token;
     }
-
-
-
-
 
     /**
      * 向指定URL发送GET方法的请求

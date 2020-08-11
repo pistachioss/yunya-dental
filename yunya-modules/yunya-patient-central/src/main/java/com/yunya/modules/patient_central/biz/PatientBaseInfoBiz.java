@@ -7,6 +7,7 @@ import com.uniubi.sdk.model.PersonInput;
 import com.uniubi.sdk.model.ResultPersonCreateOutput;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.PictureVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -109,10 +110,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     public void addPatient(PatientBaseInfoModel patientBaseInfoModel) {
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
-        //patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-        //patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        //patientBaseInfo.setCrtName(BaseContextHandler.getName());
-        //patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+        patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientBaseInfo.setCrtName(BaseContextHandler.getName());
+        patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         patientBaseInfo.setwoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName()));//wo平台创建对应人员 返回人员Guid添加到数据库
         mapper.insertSelective(patientBaseInfo);
     }
@@ -227,4 +228,13 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         return patientBaseInfoMapper.selectPatientInfoByIdList(ids);
     }
 
+    /**
+     * 拍照
+     * @param id
+     * @return String
+     */
+    public List<PictureVo> takeAPhoto(Integer id) {
+        PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(id);
+        return woPersonBiz.takeAPhoto(patientBaseInfo);
+    }
 }

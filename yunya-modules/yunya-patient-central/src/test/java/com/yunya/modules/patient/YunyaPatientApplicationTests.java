@@ -187,7 +187,7 @@ class YunyaPatientApplicationTests {
        String url ="http://wo-api.uni-ubi.com/v1/D40708B670E54D2DA06B1A3974A66EA4/auth";
         long l = System.currentTimeMillis();
         System.out.println(l);
-        String S = WoPlatformConstants.APPKEY+System.currentTimeMillis()+WoPlatformConstants.APPSECRET;
+        String S = WoPlatformConstants.APPKEY+l+WoPlatformConstants.APPSECRET;
         String sign = MD5Util.getStringMD5(S);
         Map<String, String> header = new HashMap<>();
         header.put("appKey","2CA42A1905B44CD18D8EE83049903306");

@@ -70,4 +70,10 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
      * @return
      */
     List<PatientBaseInfoVo> selectPatientInfoByIdList(@Param("ids") List<Integer> id);
+
+    /**
+     * 根据患者id查询患者信息
+     * @param id
+     */
+    PatientBaseInfo selectPatientById(@Param("id") Integer id);
 }

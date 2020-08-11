@@ -52,7 +52,7 @@ public class PatientBaseInfoController {
         return patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
     }
 
-    //@CurrentUser
+    @CurrentUser
     @ApiOperation("添加患者基本信息信息")
     @PostMapping("/add")
     public ResponseResult addPatient(@RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel){
@@ -94,5 +94,12 @@ public class PatientBaseInfoController {
         patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
         return ResponseUtil.success();
     }
+
+    @ApiOperation(value = "拍照")
+    @GetMapping(value = "/takeAPhoto/{id}")
+    public ResponseResult takeAPhoto(@PathVariable("id") Integer id){
+        return ResponseUtil.success(patientBaseInfoBiz.takeAPhoto(id));
+    }
+
 
 }
