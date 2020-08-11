@@ -28,4 +28,8 @@ public class EmployeeScheduleVO {
    * 工作日
    */
   private Date workDate;
+  /**
+   * 班次属性
+   */
+  private String type;
 }

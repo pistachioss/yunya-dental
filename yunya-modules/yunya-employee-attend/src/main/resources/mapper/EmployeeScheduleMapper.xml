@@ -23,6 +23,7 @@
     <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
     <result column="employee_id" property="employeeId" jdbcType="INTEGER" />
     <result column="work_date" property="workDate" jdbcType="DATE" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
   </resultMap>
   <resultMap id="BaseResultCopyMap" type="com.yunya.modules.employeeattend.vo.EmployeeScheduleCopyVO" >
     <id column="id" property="id" jdbcType="INTEGER" />
@@ -83,11 +84,13 @@
     </select>
 
   <select id="selectVOByDateAndCompEmpId" resultMap="EmployeeScheduleVOMap">
-    select employee_id,clinic_id,work_date,schedule_id from employee_schedule where
-    work_date &gt;= #{startDate} and work_date &lt; #{endDate} and employee_id = #{employeeId}
+    select es.employee_id,es.clinic_id,es.work_date,es.schedule_id,bs.type from employee_schedule es
+    left join base_schedule bs on es.schedule_id = bs.id
+    where
+    es.work_date &gt;= #{startDate} and es.work_date &lt; #{endDate} and es.employee_id = #{employeeId}
     <if test="clinicId != null">
-      and clinic_id = #{clinicId}
+      and es.clinic_id = #{clinicId}
     </if>
-    order by work_date
+    order by es.work_date
   </select>
 </mapper>

@@ -132,8 +132,10 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
               endTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getFirstEndTime();
             }
             String simtime = dateFormat.format(startTime) + "-" + dateFormat.format(endTime);
-
-            workDayData.setName(clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + simtime);
+            workDayData.setStime(simtime);
+            workDayData.setType(employeeScheduleVO.getType());
+//            clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() //门诊名称
+            workDayData.setName( ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());//班次名称
             workDayData.setDate(employeeScheduleVO.getWorkDate());
             workDayData.setCompClinId(employeeScheduleVO.getClinicId());
           }
