@@ -89,6 +89,32 @@
     from patient_base_info where name = #{form.name} and mobile = #{form.mobile} and org_id = #{form.orgId}
   </select>
 
+  <select id="selectPatientDataById"
+            resultType="com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo">
+    select
+      pbi.id,
+      pbi.org_id as orgId,
+      pbi.`name`,
+      pbi.pinyin_name as pinyinName,
+      pbi.mobile,
+      pbi.medical_number as medicalNumber,
+      pbi.gender,
+      pbi.age,
+      pbi.birthday,
+      pbi.remarks,
+      pei.patient_kind as patientKind,
+      pei.useful_phone as usefulPhone,
+      pei.identity,
+      pei.profession,
+      pei.heredity,
+      pei.other_health as otherHealth,
+      pmi.member_type_id as memberTypeId
+    from patient_base_info pbi
+    left join patient_exp_info pei on pbi.id = pei.patient_id
+    left join patient_member_info pmi on pbi.id = pmi.patient_id
+    where pbi.id = #{id}
+  </select>
+
 
 </mapper>
 
