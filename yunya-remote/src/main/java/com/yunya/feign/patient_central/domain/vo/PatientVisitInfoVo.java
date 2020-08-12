@@ -3,6 +3,9 @@ package com.yunya.feign.patient_central.domain.vo;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 /**
@@ -28,21 +31,24 @@ public class PatientVisitInfoVo implements Serializable {
     private String name;
 
     /**
-     * 性别
+     * 性别 0-男；1-女；2-未知
      */
+    private Byte gender;
 
     /**
-     *
      * 年龄
      */
+    private Integer age;
 
     /**
-     * 手机号
+     * 手机号码 长度14
      */
+    private String mobile;
 
     /**
      * 病历编号
      */
+    private String medicalNumber;
 
     /**
      * 初诊日期

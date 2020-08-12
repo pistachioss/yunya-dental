@@ -118,7 +118,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientBaseInfo.setCrtName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    patientBaseInfo.setwoGuid(
+    patientBaseInfo.setWoGuid(
         woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); // wo平台创建对应人员 返回人员Guid添加到数据库
     mapper.insertSelective(patientBaseInfo);
     return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
@@ -228,7 +228,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
     PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
-    patientBaseInfo.setwoGuid(patientWoPlatformInfoModel.getGuid());
+    patientBaseInfo.setWoGuid(patientWoPlatformInfoModel.getGuid());
     patientBaseInfo.setName("WO平台授权人脸识别结果成功");
     mapper.updateByPrimaryKeySelective(patientBaseInfo);
   }
@@ -259,8 +259,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    *
    * @param pictureForm
    */
-  public List<PictureVo> DeleteThePhoto(PictureForm pictureForm) {
-    return woPersonBiz.DeleteThePhoto(pictureForm);
+  public List<PictureVo> deleteThePhoto(PictureForm pictureForm) {
+    return woPersonBiz.deleteThePhoto(pictureForm);
   }
 
   /**
@@ -280,7 +280,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public List<PictureVo> getFaceUrl(Integer PatientId) {
     PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(PatientId);
-    return woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getwoGuid());
+    return woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid());
   }
 
   /**
@@ -342,4 +342,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
 
+  public Object findPatientVisitInfo(Integer id) {
+    return null;
+  }
 }
