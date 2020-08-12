@@ -5,6 +5,7 @@ import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -40,12 +41,17 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     }
 
     @Override
-    public PatientExtendInfoVo findPatientData(Integer id) {
+    public PatientTotalInfoVo findPatientTotalInfo(Integer id) {
         return null;
     }
 
     @Override
     public List<PatientMemberInfo> findPatientMemberInfo(PatientMemberInfo patientMemberInfo) {
         return null;
+    }
+
+    @Override
+    public void updatePatientInfo(PatientBaseInfo patientBaseInfo) {
+
     }
 }
