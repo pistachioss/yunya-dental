@@ -61,7 +61,7 @@ public class WoPersonBiz {
      */
     public void takeAPhoto(PatientBaseInfo patientBaseInfo) {
         DeviceRegisterModeInput input = new DeviceRegisterModeInput();
-        input.setPersonGuid(patientBaseInfo.getwoGuid());
+        input.setPersonGuid(patientBaseInfo.getWoGuid());
         input.setType(WoPlatformConstants.TYPE);
         DeviceApi = new CustomTokenClient(tokenTask).DeviceClient();
         DeviceApi.createRegisterModeUsingPOST(input, WoPlatformConstants.APPID, WoPlatformConstants.DEVICEKEY); //连接硬件设备进行人员拍照注册
@@ -72,7 +72,7 @@ public class WoPersonBiz {
      * @param pictureForm
      * @return List<PictureVo>
      */
-    public List<PictureVo> DeleteThePhoto(PictureForm pictureForm) {
+    public List<PictureVo> deleteThePhoto(PictureForm pictureForm) {
         FaceApi = new CustomTokenClient(tokenTask).FaceClient();
         FaceApi.deleteUsingDELETE(WoPlatformConstants.APPID, pictureForm.getFaceGuid(), pictureForm.getPersonGuid()); //删除照片
         ResultPersonOutput PersonResponse = PersonClientApi.getUsingGET1(WoPlatformConstants.APPID, pictureForm.getPersonGuid()); //获取Wo平台照片路径

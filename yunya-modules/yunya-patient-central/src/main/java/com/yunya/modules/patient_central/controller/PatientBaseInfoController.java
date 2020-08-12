@@ -9,6 +9,7 @@ import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
@@ -89,22 +90,22 @@ public class PatientBaseInfoController {
     }
 
     @ApiOperation(value = "拍照")
-    @GetMapping(value = "/takeAPhoto/{patientId}")
+    @GetMapping("/takeAPhoto/{patientId}")
     public ResponseResult takeAPhoto(@PathVariable("patientId") Integer patientId){
         patientBaseInfoBiz.takeAPhoto(patientId);
         return ResponseUtil.success();
     }
 
     @ApiOperation(value = "获取照片")
-    @GetMapping(value = "/getFaceUrl/{patientId}")
+    @GetMapping("/getFaceUrl/{patientId}")
     public ResponseResult getFaceUrl(@PathVariable("patientId") Integer patientId){
         return ResponseUtil.success(patientBaseInfoBiz.getFaceUrl(patientId));
     }
 
     @ApiOperation(value = "删除照片")
-    @DeleteMapping(value = "/DeleteThePhoto")
-    public ResponseResult DeleteThePhoto(@RequestBody @Validated PictureForm pictureForm){
-        return ResponseUtil.success(patientBaseInfoBiz.DeleteThePhoto(pictureForm));
+    @DeleteMapping("/deleteThePhoto")
+    public ResponseResult deleteThePhoto(@RequestBody @Validated PictureForm pictureForm){
+        return ResponseUtil.success(patientBaseInfoBiz.deleteThePhoto(pictureForm));
     }
 
     @ApiOperation("设备人员认证授权")
@@ -114,12 +115,18 @@ public class PatientBaseInfoController {
         return ResponseUtil.success();
     }
 
+    @IgnoreUserToken
     @ApiOperation(value = "测试人脸识别认证返回", notes = "测试人脸识别认证返回")
-    @ResponseBody
     @RequestMapping(value = "/renlianshibie", method = RequestMethod.POST)
     public ResponseResult renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel ){
         patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
         return ResponseUtil.success();
+    }
+
+    @ApiOperation("根据患者id查询来访信息")
+    @GetMapping("/findPatientVisitInfo/{id}")
+    public ResponseResult findPatientVisitInfo(@PathVariable("id") Integer id){
+        return ResponseUtil.success(patientBaseInfoBiz.findPatientVisitInfo(id));
     }
 
 
