@@ -41,7 +41,7 @@
   </delete>
 
   <!-- 根据条件查询预约分解列表 -->
-  <select id="findAppointmentSplitByExample" parameterType="com.yunya.feign.appointment.domain.query.AppointmentSplitQuery" resultType="com.yunya.modules.appointment.vo.AppointmentSplitVo">
+  <select id="findAppointmentSplitByExample" parameterType="com.yunya.feign.appointment.domain.query.AppointmentSplitQuery" resultType="com.yunya.feign.appointment.vo.AppointmentSplitVo">
     select
       split.id,
       split.org_id as orgId,

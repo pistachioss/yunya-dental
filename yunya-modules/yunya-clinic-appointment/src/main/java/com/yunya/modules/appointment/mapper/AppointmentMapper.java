@@ -1,6 +1,7 @@
 package com.yunya.modules.appointment.mapper;
 
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
+import com.yunya.feign.appointment.vo.AppointmentPatientDimensionVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
@@ -112,7 +113,7 @@ public interface AppointmentMapper extends Mapper<Appointment> {
      * @param currentDate 当前日期
      * @return
      */
-    List<Appointment> findMissedAppointmentByDate(Date currentDate);
+    List<Appointment> findMissedAppointmentByDate(@Param("currentDate") Date currentDate);
 
     /**
      * 根据预约id查询预约
@@ -120,5 +121,18 @@ public interface AppointmentMapper extends Mapper<Appointment> {
      * @return
      */
     AppointmentVo findAppointmentById(@Param("id") Integer id);
+
+    /**
+     * 根据时间查询预约可视图（医生维度）
+     * @param date
+     * @return
+     */
+    AppointmentPatientDimensionVo findAppointmentPatientDimensionByDateAndDentistId(
+            @Param("date") Date date,
+            @Param("dentistId") Integer dentistId,
+            @Param("orgId") Integer orgId);
+
+
+
 
 }

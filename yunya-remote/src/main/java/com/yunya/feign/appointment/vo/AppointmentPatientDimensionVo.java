@@ -1,5 +1,6 @@
 package com.yunya.feign.appointment.vo;
 
+import com.yunya.feign.employee_attend.vo.WorkDayVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 预约可视图模型（患者维度）
@@ -18,11 +20,11 @@ import java.util.Date;
 @ApiModel(value = "预约可视图模型（患者维度）")
 @Data
 @ToString
-public class AppointmentDentistDimensionVo implements Serializable {
+public class AppointmentPatientDimensionVo implements Serializable {
 
     /** 医生id */
     @ApiModelProperty(value = "医生id")
-    private Integer userId;
+    private Integer dentistId;
 
     /** 医生名字 */
     @ApiModelProperty(value = "医生名字")
@@ -34,13 +36,13 @@ public class AppointmentDentistDimensionVo implements Serializable {
 
     /** 日期 */
     @ApiModelProperty(value = "日期")
-    private Date date;
+    private Date currentDate;
 
     /** 预约可视图患者卡片模型 */
     @ApiModelProperty(value = "预约可视图患者卡片")
-    private AppointmentPatientCardVo appointmentPatientCardVo;
+    private List<AppointmentPatientCardVo> appointmentPatientCardVos;
 
     /** 医生排班表卡片模型 */
     @ApiModelProperty(value = "医生排班表卡片")
-    private DentistScheduleVo dentistScheduleVo;
+    private List<WorkDayVO> dentistScheduleVos;
 }

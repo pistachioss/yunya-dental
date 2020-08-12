@@ -1,8 +1,12 @@
 package com.yunya.modules.appointment.controller;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointStatusForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
+import com.yunya.feign.appointment.domain.query.AppointmentDentistDimensionQuery;
+import com.yunya.feign.appointment.vo.AppointmentPatientDimensionVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -15,7 +19,11 @@ import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.validation.constraints.NotNull;
 import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 患者预约中心Controller
@@ -145,6 +153,26 @@ public class AppointmentController {
         AppointmentVo appointmentVo = appointmentBiz.findAppointmentById(id);
         return ResponseUtil.success(appointmentVo);
     }
+
+    /**
+     * 根据时间查询预约可视图（医生维度）
+     * @param query  查询参数
+     * @return
+     */
+    @ApiOperation(value = "根据时间查询预约可视图（医生维度）")
+    @GetMapping("/find/patient/dimension")
+    public ResponseResult findAppointmentPatientDimensionByDate(@RequestBody AppointmentDentistDimensionQuery query){
+        if (query.getWhetherPage()){
+            PageHelper.offsetPage(query.getPageNum(),query.getPageSize());
+        }
+        Date currentDate = query.getCurrentDate();
+        Integer orgId = query.getOrgId();
+        List<AppointmentPatientDimensionVo> appointmentPatientDimensionVos = appointmentBiz.findAppointmentPatientDimensionByDate(currentDate,orgId);
+        PageInfo<AppointmentPatientDimensionVo> pageInfo = new PageInfo<>(appointmentPatientDimensionVos);
+        return ResponseUtil.success(pageInfo);
+    }
+
+
 
 
 

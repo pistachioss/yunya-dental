@@ -2,7 +2,7 @@ package com.yunya.modules.appointment.mapper;
 import com.yunya.models.appointment.AppointItem;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemTypeQuery;
-import com.yunya.modules.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

@@ -1,6 +1,5 @@
 package com.yunya.modules.appointment.biz;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
@@ -9,10 +8,13 @@ import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.domain.model.AppointOperationModel;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
+import com.yunya.feign.appointment.vo.AppointmentPatientDimensionVo;
+import com.yunya.feign.appointment.vo.AppointmentPatientCardVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
+import com.yunya.feign.employee_attend.vo.UserWorkVO;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -26,23 +28,18 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
-import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.models.appointment.AppointmentOperateRecord;
-import com.yunya.models.auth.Client;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
-import io.swagger.models.auth.In;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import zipkin2.Call;
-
-import javax.validation.constraints.NotEmpty;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 患者预约服务
@@ -186,6 +183,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (appointment == null){
             throw new ClientServiceException("预约不存在！",OperationCodeConstants.DATA_NOT_EXIST);
         }
+
+        // 预约未到以外的情况不能编辑预约
+        if (appointment.getAppointStatus() != 0){
+            throw new ClientServiceException("【预约未到】以外的情况不允许编辑预约！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+        }
+
+        // inservice 无效时预约不可以编辑
+        if (!appointment.getInservice()){
+            throw new ClientServiceException("无效预约，不能进行编辑！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+        }
+
         appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointment.setUpdName(BaseContextHandler.getName());
         appointment.setUpdTime(new Date(System.currentTimeMillis()));
@@ -288,6 +296,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 throw new ClientServiceException("已经存在相同的预约！",OperationCodeConstants.SAME_DATA_EXIST);
             }
 
+            // 预约未到以外的情况不能编辑预约
+            if (appointment.getAppointStatus() != 0){
+                throw new ClientServiceException("【预约未到】以外的情况不允许编辑预约！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
+
+            // inservice 无效时预约不可以编辑
+            if (!appointment.getInservice()){
+                throw new ClientServiceException("无效预约，不能进行编辑！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
+
             int num = mapper.updateByPrimaryKeySelective(appointment);
             if (num <= 0){
                 throw new ClientServiceException("编辑预约失败！", OperationCodeConstants.OBJECT_EDIT_FAIL);
@@ -325,6 +343,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointEntity.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointEntity.setUpdName(BaseContextHandler.getName());
         appointEntity.setUpdTime(new Date(System.currentTimeMillis()));
+
+        // 预约未到以外的情况不能编辑预约
+        if (appointEntity.getAppointStatus() != 0){
+            throw new ClientServiceException("【预约未到】以外的情况不允许编辑预约！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+        }
+
+        // inservice 无效时预约不可以编辑
+        if (!appointEntity.getInservice()){
+            throw new ClientServiceException("无效预约，不能进行编辑！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+        }
+
         int num = mapper.updateByPrimaryKeySelective(appointEntity);
         if (num <= 0){
             throw new ClientServiceException("编辑预约失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
@@ -356,6 +385,63 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 //    TODO  查询预约（根据预约id）
 
 //    TODO  查询预约（根据条件）
+
+
+    /**
+     * 根据时间查询预约可视图（医生维度）按预约患者数量降序排列
+     * @param date 当前时间
+     * @return
+     */
+    public List<AppointmentPatientDimensionVo> findAppointmentPatientDimensionByDate(Date date,Integer orgId){
+        // 如果没有输入时间，则默认系统当前时间
+        if (date == null){
+            date = new Date(System.currentTimeMillis());
+        }
+        final Date scheduleDate = date;
+        List<AppointmentPatientDimensionVo> appointmentPatientDimensionVoList = new ArrayList<>();
+        EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        employeeScheduleQueryForm.setStartDate(simpleDateFormat.format(date));
+        employeeScheduleQueryForm.setEndDate(simpleDateFormat.format(date));
+        employeeScheduleQueryForm.setClinicId(orgId);
+        // 查询当前天有排班的员工列表
+        EmployeeScheduleResultVO scheduleResultVO = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
+        if (scheduleResultVO.getCount() <= 0){
+            throw new ClientServiceException("没有查询到排班信息！",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        // 组合医生和预约信息
+        List<UserWorkVO> shiftWorkDatas = scheduleResultVO.getShiftWorkDatas();
+        shiftWorkDatas.forEach(userWorkVO -> {
+            Integer userId = userWorkVO.getCompEmpId();
+            String dentistName = userWorkVO.getName();
+            // 根据排班日期和医生id查询患者信息 医生（一）-----> 患者（多）
+            AppointmentPatientDimensionVo appointmentPatientDimensionVo = mapper.findAppointmentPatientDimensionByDateAndDentistId(scheduleDate,userId,orgId);
+
+            appointmentPatientDimensionVo.setName(dentistName);
+            // 设置医生排班信息
+            appointmentPatientDimensionVo.setDentistScheduleVos(userWorkVO.getDays());
+            // 组合患者基本信息
+            List<AppointmentPatientCardVo> appointmentPatientCardVos = appointmentPatientDimensionVo.getAppointmentPatientCardVos();
+            appointmentPatientCardVos.forEach(appointmentPatientCardVo -> {
+                Integer patientId = appointmentPatientCardVo.getPatientId();
+                PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+                appointmentPatientCardVo.setAge(patientInfo.getAge());
+                appointmentPatientCardVo.setGender(patientInfo.getGender());
+                appointmentPatientCardVo.setName(patientInfo.getName());
+            });
+
+            appointmentPatientDimensionVoList.add(appointmentPatientDimensionVo);
+        });
+
+        // 按医生患者数量降序排列
+        List<AppointmentPatientDimensionVo> appointmentPatientDimensionVosOrderByDesc = appointmentPatientDimensionVoList
+                .stream().sorted(Comparator.comparing(AppointmentPatientDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
+
+        return appointmentPatientDimensionVosOrderByDesc;
+    }
+
+
+
 
 
     /**
@@ -452,13 +538,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
 
             // 排班结束日期（排班当天的下一天）
-            DateTime dateTime = new DateTime(appointmentBaseModel.getAppointDate());
-            Date endDate = dateTime.plusDays(1).toDate();
+//            DateTime dateTime = new DateTime(appointmentBaseModel.getAppointDate());
+//            Date endDate = dateTime.toDate();
 
             employeeScheduleQueryForm.setUserId(Integer.valueOf(dentistId));
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             String startDateStr = sdf.format(appointmentBaseModel.getAppointDate());
-            String endDateStr = sdf.format(endDate);
+            String endDateStr = sdf.format(appointmentBaseModel.getAppointDate());
             employeeScheduleQueryForm.setStartDate(startDateStr);
             employeeScheduleQueryForm.setClinicId(Integer.valueOf(BaseContextHandler.getOrgId()));
             employeeScheduleQueryForm.setEndDate(endDateStr);
