@@ -51,9 +51,13 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     String endDateString = employeeScheduleQueryForm.getEndDate();
     Date startDate = null;
     Date endDate = null;
-    if (null == startDateString || null == endDateString) {
+    if (null == endDateString) {
       Calendar calendar = Calendar.getInstance();
-      startDate = DateUtil.getThisWeekMonday(new Date());
+      try {
+        startDate = DateUtil.getThisWeekMonday(simpleDateFormat.parse(startDateString));
+      } catch (ParseException e) {
+        throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+      }
       calendar.setTime(startDate);
       calendar.add(Calendar.DATE, +SHIFT_DAYS);
       endDate = calendar.getTime();
@@ -75,7 +79,7 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     Integer clinicId = employeeScheduleQueryForm.getClinicId();
     Integer formuserId = employeeScheduleQueryForm.getUserId();
 
-    List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicIdAndInservice(employeeScheduleQueryForm.getClinicId());
+    List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicId(null);
     Map<String, ClinicScheduleVO> ClinicScheduleMap = new HashMap();
     ClinicSchedules.forEach(x -> ClinicScheduleMap.put(x.getScheduleId() + "", x));
     if (postNames == null || postNames.size() == 0) {
