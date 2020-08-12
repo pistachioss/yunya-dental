@@ -342,7 +342,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
 
-  public Object findPatientVisitInfo(Integer id) {
+  public PatientVisitInfoVo findPatientVisitInfo(Integer id) {
+    //mapper.find
     return null;
   }
 }

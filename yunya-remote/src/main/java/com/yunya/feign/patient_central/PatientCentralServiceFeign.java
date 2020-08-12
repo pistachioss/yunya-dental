@@ -64,4 +64,11 @@ public interface PatientCentralServiceFeign {
      */
     @RequestMapping (value = "/findPatientMemberInfo",method = RequestMethod.POST)
     List<PatientMemberInfo> findPatientMemberInfo(@RequestBody PatientMemberInfo patientMemberInfo);
+
+    /**
+     * 修改患者信息
+     * @param patientBaseInfo
+     */
+    @RequestMapping (value = "/updatePatientInfo",method = RequestMethod.POST)
+    void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
 }

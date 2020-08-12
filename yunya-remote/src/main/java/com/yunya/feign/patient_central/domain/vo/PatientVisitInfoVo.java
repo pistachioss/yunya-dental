@@ -3,10 +3,8 @@ package com.yunya.feign.patient_central.domain.vo;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 简单介绍:</br> 患者来访信息Vo
@@ -19,6 +17,11 @@ import java.io.Serializable;
 @Data
 @ToString
 public class PatientVisitInfoVo implements Serializable {
+
+    /**
+     * 患者id
+     */
+    private Integer patientId;
 
     /**
      * 患者头像url
@@ -55,7 +58,15 @@ public class PatientVisitInfoVo implements Serializable {
      */
 
     /**
+     * 末诊日期
+     */
+
+    /**
      * 初诊医生
+     */
+
+    /**
+     * 末诊医生
      */
 
     /**
@@ -63,59 +74,31 @@ public class PatientVisitInfoVo implements Serializable {
      */
 
     /**
-     * 会员类型
+     * 末诊门诊
      */
+
+    /**
+     * 会员卡类型id
+     */
+    private Integer memberTypeId;
+
+    /**
+     * 会员卡类型名称
+     */
+    private String memberCardName;
+
+    /**
+     * 患者来源类型 患者来源分类ID
+     */
+    private Integer originType;
 
     /**
      * 消费总额
      */
+    private BigDecimal expenseSum;
 
-    /**
-     * 末诊日期
-     */
+    /** 患者标签 */
+    private String labels;
 
-    /**
-     * 末诊医生
-     */
-
-    /**
-     * 末诊医生
-     */
-
-    /**
-     * 患者类型
-     */
-
-    /**
-     * 患者标签
-     */
-
-    /**
-     *
-     */
-
-    /**
-     *
-     */
-
-    /**
-     *
-     */
-
-    /**
-     *
-     */
-
-    /**
-     *
-     */
-
-    /**
-     *
-     */
-
-    /**
-     *
-     */
 
 }

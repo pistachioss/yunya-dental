@@ -69,4 +69,10 @@ public class PatientServiceRest {
     public List<PatientMemberInfo> findPatientMemberInfo(@RequestBody PatientMemberInfo patientMemberInfo){
         return patientMemberInfoBiz.selectList(patientMemberInfo);
     }
+
+    @ApiOperation("修改患者信息")
+    @RequestMapping (value = "/updatePatientInfo",method = RequestMethod.POST)
+    public void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
+        patientBaseInfoBiz.updateSelectiveById(patientBaseInfo);
+    }
 }
