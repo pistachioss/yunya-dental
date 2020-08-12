@@ -54,4 +54,14 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     public void updatePatientInfo(PatientBaseInfo patientBaseInfo) {
 
     }
+
+    @Override
+    public PatientBaseInfo findPatientInfo(PatientBaseInfo patientBaseInfo) {
+        return null;
+    }
+
+    @Override
+    public List<PatientBaseInfo> findPatientInfoList(PatientBaseInfo patientBaseInfo) {
+        return null;
+    }
 }

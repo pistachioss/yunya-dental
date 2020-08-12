@@ -1,6 +1,5 @@
 package com.yunya.feign.patient_central.domain.model;
 
-import com.yunya.feign.patient_central.domain.vo.PatientIdCardlnfoVo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -67,7 +66,7 @@ public class PatientWoPlatformInfoModel implements Serializable {
     private String recModeType;
 
     @ApiModelProperty(value = "患者人员信息")
-    private PatientIdCardlnfoVo idCardInfo;
+    private PatientIdCardlnfoModel idCardInfo;
 
 
 }

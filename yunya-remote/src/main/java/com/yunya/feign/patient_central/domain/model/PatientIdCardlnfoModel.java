@@ -1,4 +1,4 @@
-package com.yunya.feign.patient_central.domain.vo;
+package com.yunya.feign.patient_central.domain.model;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,7 +16,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-public class PatientIdCardlnfoVo implements Serializable {
+public class PatientIdCardlnfoModel implements Serializable {
 
     @ApiModelProperty(value = "姓名")
     private String name;

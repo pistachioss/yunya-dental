@@ -342,11 +342,41 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     return patientData;
   }
 
-
+  /**
+   * 根据患者id查询患者来访信息
+   * @param id
+   * @return PatientVisitInfoVo
+   */
   public PatientVisitInfoVo findPatientVisitInfo(Integer id) {
-    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(id);
-    PatientVisitInfoVo patientVisitInfoVo = new PatientVisitInfoVo();
-    BeanUtils.copyProperties(patientBaseInfo, patientVisitInfoVo);
-    return null;
+    PatientVisitInfoVo patientVisitInfoVo = patientBaseInfoMapper.findPatientVisitInfo(id);
+    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientVisitInfoVo.getMemberTypeId());
+    if (memberType.getName() != null) {
+      patientVisitInfoVo.setMemberCardName(memberType.getName());
+    }
+    patientVisitInfoVo.setLabels(getLabels(patientVisitInfoVo.getPatientId()));
+    return patientVisitInfoVo;
   }
+
+  /**
+   * 根据患者id获取患者标签
+   * @param patientId
+   * @return
+   */
+  public String getLabels(Integer patientId){
+    PatientExtInfo patientExtInfo = new PatientExtInfo();
+    StringBuilder labels = new StringBuilder(16);
+    patientExtInfo.setPatientId(patientId);
+    List<PatientExtInfo> extInfos = patientExtInfoMapper.select(patientExtInfo);
+    if (StringHelper.isNotEmpty(extInfos)) {
+      for (PatientExtInfo extInfo : extInfos) {
+        Byte type = extInfo.getType();
+        DictionaryItem item = remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
+        if(type == 0 && null != item){
+          labels.append(item.getName());
+        }
+      }
+    }
+    return labels.toString();
+  }
+
 }

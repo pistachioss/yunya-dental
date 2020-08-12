@@ -75,4 +75,17 @@ public class PatientServiceRest {
     public void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
         patientBaseInfoBiz.updateSelectiveById(patientBaseInfo);
     }
+
+    @ApiOperation("查询患者信息")
+    @RequestMapping (value = "/findPatientInfo/{id}",method = RequestMethod.POST)
+    public PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
+        return patientBaseInfoBiz.selectOne(patientBaseInfo);
+    }
+
+    @ApiOperation("查询患者信息列表")
+    @RequestMapping (value = "/findPatientInfoList/{id}",method = RequestMethod.POST)
+    public List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo){
+        return patientBaseInfoBiz.selectList(patientBaseInfo);
+    }
+
 }

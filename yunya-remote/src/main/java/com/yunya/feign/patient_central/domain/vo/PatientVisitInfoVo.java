@@ -88,9 +88,9 @@ public class PatientVisitInfoVo implements Serializable {
     private String memberCardName;
 
     /**
-     * 患者来源类型 患者来源分类ID
+     * 患者类型
      */
-    private Integer originType;
+    private Integer patientKind;
 
     /**
      * 消费总额
