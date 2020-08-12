@@ -6,7 +6,7 @@
           WARNING - @mbg.generated
         -->
         <id column="id" property="id" jdbcType="INTEGER"/>
-        <result column="clinic_id" property="clinicId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
         <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
         <result column="appointment_id" property="appointmentId" jdbcType="INTEGER"/>
         <result column="dentist_id" property="dentistId" jdbcType="INTEGER"/>
@@ -23,11 +23,11 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
-    <!-- 根据条件查询挂号患者列表 -->
+    <!-- 根据条件查询挂号(未接诊)患者列表 -->
     <select id="selectRegisteredList" resultType="com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO">
         select
             re.id,
-            re.clinic_id as clinicId,
+            re.org_id as orgId,
             re.patient_id as patientId,
             re.appointment_id as appointmentId,
             re.dentist_id as regDentistId,
@@ -36,8 +36,9 @@
             re.reg_time as regTime
         from registered re
         <where>
+            re.status = #{status}
             <if test="queryForm.orgId != null">
-                and re.clinic_id = #{queryForm.orgId}
+                and re.org_id = #{queryForm.orgId}
             </if>
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
                 and DATE_FORMAT(re.crt_time,'%Y-%m-%d') = #{queryForm.currentDate}
@@ -48,6 +49,7 @@
             <if test="queryForm.inservice != null">
                 and re.inservice = #{queryForm.inservice}
             </if>
+            order by re.id desc
         </where>
     </select>
 </mapper>

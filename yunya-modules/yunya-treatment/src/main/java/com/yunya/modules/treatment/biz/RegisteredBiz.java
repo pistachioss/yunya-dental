@@ -5,7 +5,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
@@ -17,12 +17,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientExpInfo;
-import com.yunya.models.patient_central.PatientExtInfo;
-import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.system.DepartmentRoom;
-import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.treatment.Registered;
 import com.yunya.modules.treatment.mapper.RegisteredMapper;
@@ -118,93 +113,47 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
 
-    List<WaitingPatientInfoVO> registeredList = mapper.selectRegisteredList(queryForm);
+    List<WaitingPatientInfoVO> registeredList = mapper.selectRegisteredList((byte) 0, queryForm);
     if (registeredList.size() > 0) {
-      for (WaitingPatientInfoVO vo : registeredList) {
-        // 患者信息
-        Integer patientId = vo.getPatientId();
-        PatientExtendInfoVo patientData = patientCentralServiceFeign.findPatientData(patientId);
-        if (null != patientData) {
-          PatientBaseInfo patientBaseInfo = patientData.getPatientBaseInfo();
-          if (null != patientBaseInfo) {
-            vo.setPatientName(patientBaseInfo.getName());
-            vo.setMobile(patientBaseInfo.getMobile());
-            vo.setGender(patientBaseInfo.getGender());
-            vo.setAge(patientBaseInfo.getAge());
-            vo.setBirthday(patientBaseInfo.getBirthday().toString());
-            vo.setPatientRemark(patientBaseInfo.getRemarks());
-            String medicalNumber = patientBaseInfo.getMedicalNumber();
-            vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
-            vo.setFirstVisit(StringHelper.isNotBlank(medicalNumber) ? (byte) 1 : (byte) 0);
-          }
-
-          PatientExpInfo patientExpInfo = patientData.getPatientExpInfo();
-          if (null != patientExpInfo) {
-            Integer patientKind = patientExpInfo.getPatientKind();
-            DictionaryItem dictionaryItem = systemServiceFeign.findDictionaryItemById(patientKind);
-            vo.setPatientKind(null != dictionaryItem ? dictionaryItem.getName() : "--");
-          }
-
-          StringBuilder allergen = new StringBuilder();
-          List<PatientExtInfo> extInfoList = patientData.getPatientExtInfoList();
-          if (StringHelper.isNotEmpty(extInfoList)) {
-            for (PatientExtInfo extInfo : extInfoList) {
-              if (extInfo.getType() == 2) {
-                DictionaryItem dictionaryItem =
-                    systemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
-                if (null != dictionaryItem) {
-                  allergen.append(dictionaryItem.getName());
-                }
-              }
-            }
-          }
-          vo.setAllergen(allergen.toString());
-
-          PatientMemberInfo memberInfo = new PatientMemberInfo();
-          memberInfo.setPatientId(patientId);
-          List<PatientMemberInfo> memberInfos =
-              patientCentralServiceFeign.findPatientMemberInfo(memberInfo);
-          if (memberInfos.size() > 0) {
-            for (PatientMemberInfo info : memberInfos) {
-              Integer memberTypeId = info.getMemberTypeId();
-              MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
-              if (null != memberType) {
-                vo.setMemberIcon(String.valueOf(memberType.getIcon()));
-              }
-            }
-          }
-        }
-
-        // 设置预约信息
-        setAppointmentInfo(vo);
-
-        // 设置挂号信息
-        setRegisteredInfo(vo);
-      }
+      registeredList.forEach(
+          vo -> {
+            // 设置候诊患者个人信息
+            setPatientInfo(vo);
+            // 设置候诊患者预约信息
+            setAppointmentInfo(vo);
+            // 设置候诊患者挂号信息
+            setRegisteredInfo(vo);
+          });
     }
     return new PageInfo<>(registeredList);
   }
 
   /**
-   * 设置候诊患者挂号信息
+   * 设置候诊患者患者信息
    *
-   * @param vo 患者候诊信息
+   * @param vo 患者候诊
    */
-  private void setRegisteredInfo(WaitingPatientInfoVO vo) {
-    Integer regDentistId = vo.getRegDentistId();
-    SysUserInfoDetail regDentistInfo =
-        systemServiceFeign.findSysUserEmployeeInfoByUserId(regDentistId);
-    vo.setRegDentistName(null != regDentistInfo ? regDentistInfo.getName() : "--");
-    Integer regAssistantId = vo.getRegAssistantId();
-    if (null != regAssistantId) {
-      SysUserInfoDetail regAssistantInfo =
-          systemServiceFeign.findSysUserEmployeeInfoByUserId(regAssistantId);
-      vo.setRegAssistantName(null != regAssistantInfo ? regAssistantInfo.getName() : "--");
-    }
-    Integer regDeptRoomId = vo.getRegDeptRoomId();
-    if (null != regDeptRoomId) {
-      DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(regDeptRoomId);
-      vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
+  private void setPatientInfo(WaitingPatientInfoVO vo) {
+    Integer patientId = vo.getPatientId();
+    PatientTotalInfoVo patientData = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+    if (null != patientData) {
+      vo.setPatientName(patientData.getName());
+      vo.setMobile(patientData.getMobile());
+      vo.setGender(patientData.getGender());
+      vo.setAge(patientData.getAge());
+      vo.setBirthday(patientData.getBirthday());
+      vo.setPatientRemark(patientData.getRemarks());
+      String medicalNumber = patientData.getMedicalNumber();
+      vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
+      vo.setFirstVisit(StringHelper.isNotBlank(medicalNumber) ? (byte) 1 : (byte) 0);
+      vo.setAllergen(patientData.getAllergens());
+      Integer memberTypeId = patientData.getMemberTypeId();
+      if (null != memberTypeId) {
+        MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
+        if (null != memberType) {
+          vo.setMemberIcon(String.valueOf(memberType.getIcon()));
+        }
+      }
     }
   }
 
@@ -240,6 +189,29 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         vo.setAppointStatus(appointment.getAppointStatus());
         vo.setConfirmStatus(appointment.getConfirmStatus());
       }
+    }
+  }
+
+  /**
+   * 设置候诊患者挂号信息
+   *
+   * @param vo 患者候诊信息
+   */
+  private void setRegisteredInfo(WaitingPatientInfoVO vo) {
+    Integer regDentistId = vo.getRegDentistId();
+    SysUserInfoDetail regDentistInfo =
+        systemServiceFeign.findSysUserEmployeeInfoByUserId(regDentistId);
+    vo.setRegDentistName(null != regDentistInfo ? regDentistInfo.getName() : "--");
+    Integer regAssistantId = vo.getRegAssistantId();
+    if (null != regAssistantId) {
+      SysUserInfoDetail regAssistantInfo =
+          systemServiceFeign.findSysUserEmployeeInfoByUserId(regAssistantId);
+      vo.setRegAssistantName(null != regAssistantInfo ? regAssistantInfo.getName() : "--");
+    }
+    Integer regDeptRoomId = vo.getRegDeptRoomId();
+    if (null != regDeptRoomId) {
+      DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(regDeptRoomId);
+      vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
     }
   }
 }
