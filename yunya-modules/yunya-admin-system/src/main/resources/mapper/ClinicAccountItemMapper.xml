@@ -33,26 +33,43 @@
     </select>
     <!-- 根据条件查询组织入账方式列表 -->
     <select id="selectClinicAccountItemList" resultType="com.yunya.modules.system.vo.ClinicAccountItemVO">
-        select
+        SELECT
         cai.id,
-        cai.company_id as orgId,
-        ifnull( cei.abbreviation, '公司' ) as orgName,
-        cai.account_item_id as accountItemId,
-        ai.name as accountItemName,
+        cai.orgId,
+        cai.orgName,
+        cai.accountItemId,
+        cai.accountTypeId,
+        cai.accountItemName,
+        cai.type,
+        cai.inservice
+        FROM
+        (
+        SELECT
+        cai.id,
+        cai.company_id AS orgId,
+        ifnull( cei.abbreviation, '公司' ) AS orgName,
+        cai.account_item_id AS accountItemId,
+        ai.account_type_id AS accountTypeId,
+        ai.`name` AS accountItemName,
         ai.type,
         cai.inservice
-        from clinic_account_item cai
-        left join account_item ai on cai.account_item_id = ai.id
-        left join clinic_ext_info cei on cai.company_id = cei.company_id
+        FROM
+        clinic_account_item cai
+        LEFT JOIN account_item ai ON cai.account_item_id = ai.id
+        LEFT JOIN clinic_ext_info cei ON cai.company_id = cei.company_id
+        ) cai
         <where>
             <if test="queryForm.id != null">
                 and cai.id = #{queryForm.id}
             </if>
+            <if test="queryForm.accountTypeId != null">
+                and cai.accountTypeId = #{queryForm.accountTypeId}
+            </if>
             <if test="queryForm.accountItemId != null">
-                and cai.account_item_id = #{queryForm.accountItemId}
+                and cai.accountItemId = #{queryForm.accountItemId}
             </if>
             <if test="queryForm.orgId != null">
-                and cai.company_id = #{queryForm.orgId}
+                and cai.orgId = #{queryForm.orgId}
             </if>
             <if test="queryForm.inservice != null">
                 and cai.inservice = #{queryForm.inservice}
