@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -59,8 +60,8 @@ public class PatientServiceRest {
 
     @ApiOperation("根据患者id查询患者资料")
     @RequestMapping (value = "/findPatientData/{id}",method = RequestMethod.GET)
-    public PatientExtendInfoVo findPatientData(@PathVariable("id") Integer id){
-        return patientBaseInfoBiz.findPatientData(id);
+    public PatientTotalInfoVo findPatientTotalInfo(@PathVariable("id") Integer id){
+        return patientBaseInfoBiz.findPatientTotalInfo(id);
     }
 
     @ApiOperation("根据患者id查询患者资料")

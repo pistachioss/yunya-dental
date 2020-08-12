@@ -1,13 +1,20 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.uniubi.sdk.auth.authToken.AppAuthParam;
+import com.uniubi.sdk.auth.authToken.TokenFetcher;
+import com.uniubi.sdk.client.UniUbiClient;
+import com.uniubi.sdk.model.PersonInput;
+import com.uniubi.sdk.model.ResultPersonCreateOutput;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.model.PictureModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PictureVo;
+import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -19,9 +26,6 @@ import com.yunya.models.patient_central.PatientExtInfo;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
@@ -172,45 +176,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return PatientExtendInfoModel
    */
   public PatientExtendInfoVo findPatientData(Integer id) {
-    PatientExtendInfoVo patientData = mapper.selectPatientDataById(id);
-    if (null != patientData) {
-      PatientExtInfo patientExtInfo = new PatientExtInfo();
-      patientExtInfo.setPatientId(id);
-      List<PatientExtInfo> extInfos = patientExtInfoMapper.select(patientExtInfo);
-      if (StringHelper.isNotEmpty(extInfos)) {
-        StringBuilder labels = new StringBuilder(16);
-        StringBuilder diseases = new StringBuilder(16);
-        StringBuilder allergens = new StringBuilder(16);
-        for (PatientExtInfo extInfo : extInfos) {
-          Byte type = extInfo.getType();
-          DictionaryItem item =
-              remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
-          switch (type) {
-            case 0:
-              if (null != item) {
-                labels.append(item.getName());
-              }
-              break;
-            case 1:
-              if (null != item) {
-                diseases.append(item.getName());
-              }
-              break;
-            case 2:
-              if (null != item) {
-                allergens.append(item.getName());
-              }
-              break;
-            default:
-              break;
-          }
-        }
-        patientData.setLabels(labels.toString());
-        patientData.setDiseases(diseases.toString());
-        patientData.setAllergens(allergens.toString());
-      }
-    }
-    return patientData;
+    PatientExtendInfoVo patientExtendInfoVo = new PatientExtendInfoVo();
+    patientExtendInfoVo.setPatientBaseInfo(mapper.selectByPrimaryKey(id));
+    patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id));
+    patientExtendInfoVo.setPatientExtInfoList(patientExtInfoMapper.patientExtInfoListByid(id));
+    return patientExtendInfoVo;
   }
 
   /**
@@ -322,4 +292,54 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public PatientBaseInfo findPatientInfoById(Integer id) {
     return patientBaseInfoMapper.selectPatientById(id);
   }
+
+  /**
+   * 根据患者id查询患者全部信息
+   *
+   * @param id
+   * @return PatientTotalInfoVo
+   */
+  public PatientTotalInfoVo findPatientTotalInfo(Integer id) {
+    PatientTotalInfoVo patientData = mapper.selectPatientDataById(id);
+    if (null != patientData) {
+      PatientExtInfo patientExtInfo = new PatientExtInfo();
+      patientExtInfo.setPatientId(id);
+      List<PatientExtInfo> extInfos = patientExtInfoMapper.select(patientExtInfo);
+      if (StringHelper.isNotEmpty(extInfos)) {
+        StringBuilder labels = new StringBuilder(16);
+        StringBuilder diseases = new StringBuilder(16);
+        StringBuilder allergens = new StringBuilder(16);
+        for (PatientExtInfo extInfo : extInfos) {
+          Byte type = extInfo.getType();
+          DictionaryItem item =
+                  remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
+          switch (type) {
+            case 0:
+              if (null != item) {
+                labels.append(item.getName());
+              }
+              break;
+            case 1:
+              if (null != item) {
+                diseases.append(item.getName());
+              }
+              break;
+            case 2:
+              if (null != item) {
+                allergens.append(item.getName());
+              }
+              break;
+            default:
+              break;
+          }
+        }
+        patientData.setLabels(labels.toString());
+        patientData.setDiseases(diseases.toString());
+        patientData.setAllergens(allergens.toString());
+      }
+    }
+    return patientData;
+  }
+
+
 }

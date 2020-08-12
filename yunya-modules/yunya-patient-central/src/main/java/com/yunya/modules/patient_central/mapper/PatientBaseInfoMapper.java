@@ -3,12 +3,9 @@ package com.yunya.modules.patient_central.mapper;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo;
+import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -89,5 +86,5 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
      * @param id 患者ID
      * @return
      */
-    PatientExtendInfoVo selectPatientDataById(@Param("id") Integer id);
+    PatientTotalInfoVo selectPatientDataById(@Param("id") Integer id);
 }

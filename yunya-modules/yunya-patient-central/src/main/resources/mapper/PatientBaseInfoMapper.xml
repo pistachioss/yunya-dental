@@ -90,7 +90,7 @@
   </select>
 
   <select id="selectPatientDataById"
-            resultType="com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo">
+            resultType="com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo">
     select
       pbi.id,
       pbi.org_id as orgId,

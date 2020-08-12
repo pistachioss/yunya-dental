@@ -4,6 +4,7 @@ package com.yunya.feign.patient_central;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.factory.PatientCentralServiceFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -54,7 +55,7 @@ public interface PatientCentralServiceFeign {
      * @return
      */
     @RequestMapping (value = "/findPatientData/{id}",method = RequestMethod.GET)
-    PatientExtendInfoVo findPatientData(@PathVariable("id") Integer id);
+    PatientTotalInfoVo findPatientTotalInfo(@PathVariable("id") Integer id);
 
     /**
      * 根据患者id查询患者资料
