@@ -227,6 +227,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param patientWoPlatformInfoModel
    */
   public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
+    System.out.println(patientWoPlatformInfoModel.toString());
     PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
     patientBaseInfo.setWoGuid(patientWoPlatformInfoModel.getGuid());
     patientBaseInfo.setName("WO平台授权人脸识别结果成功");
@@ -343,7 +344,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
 
   public PatientVisitInfoVo findPatientVisitInfo(Integer id) {
-    //mapper.find
+    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(id);
+    PatientVisitInfoVo patientVisitInfoVo = new PatientVisitInfoVo();
+    BeanUtils.copyProperties(patientBaseInfo, patientVisitInfoVo);
     return null;
   }
 }
