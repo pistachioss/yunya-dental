@@ -2,7 +2,7 @@ package com.yunya.modules.appointment.mapper;
 
 import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
-import com.yunya.modules.appointment.vo.AppointmentSplitVo;
+import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 

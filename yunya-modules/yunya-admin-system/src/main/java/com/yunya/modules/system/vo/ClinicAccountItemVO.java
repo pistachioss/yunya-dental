@@ -27,6 +27,9 @@ public class ClinicAccountItemVO implements Serializable {
   /** 公司端对应支付方式分类表的ID */
   private Integer accountItemId;
 
+  /** 入账方式分类ID */
+  private Integer accountTypeId;
+
   /** 入账方式名称 */
   private String accountItemName;
 

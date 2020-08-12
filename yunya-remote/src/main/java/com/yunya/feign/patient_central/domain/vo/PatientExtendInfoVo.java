@@ -14,25 +14,19 @@ import java.util.List;
  *
  * @author: WY
  * @date 2020/7/28 11:13
- * @description:  患者基本信息表 扩展表 患者其他信息表
+ * @description: 患者基本信息表 扩展表 患者其他信息表
  * @since: 1.0.0
  */
 @Data
 @ToString
 public class PatientExtendInfoVo implements Serializable {
 
-    /**
-     * 患者基本信息表
-     */
-    private PatientBaseInfo patientBaseInfo;
+  /** 患者基本信息表 */
+  private PatientBaseInfo patientBaseInfo;
 
-    /**
-     * 患者信息扩展表
-     */
-    private PatientExpInfo patientExpInfo;
+  /** 患者信息扩展表 */
+  private PatientExpInfo patientExpInfo;
 
-    /**
-     * 患者其他信息表
-     */
-    private List<PatientExtInfo> patientExtInfoList;
+  /** 患者其他信息表 */
+  private List<PatientExtInfo> patientExtInfoList;
 }

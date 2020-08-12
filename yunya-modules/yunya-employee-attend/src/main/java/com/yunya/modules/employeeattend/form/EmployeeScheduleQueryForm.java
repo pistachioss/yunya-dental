@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -43,6 +44,7 @@ public class EmployeeScheduleQueryForm {
    * 开始时间
    */
   @ApiModelProperty("开始时间")
+  @NotNull(message = "开始时间不能为空")
   private String startDate;
 
   /**

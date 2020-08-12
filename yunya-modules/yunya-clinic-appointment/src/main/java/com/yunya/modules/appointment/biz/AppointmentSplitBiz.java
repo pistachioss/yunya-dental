@@ -13,7 +13,7 @@ import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
 import com.yunya.modules.appointment.mapper.AppointmentSplitMapper;
-import com.yunya.modules.appointment.vo.AppointmentSplitVo;
+import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

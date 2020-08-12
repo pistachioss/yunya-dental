@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
 
@@ -14,6 +15,7 @@ import java.util.Date;
 @Data
 @ToString
 public class WorkDayVO {
+  @JsonFormat(shape=JsonFormat.Shape.STRING,pattern = "yyyy-MM-dd",timezone = "GMT+8")
   private Date date;
   private Integer compClinId;
   /**

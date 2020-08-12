@@ -1,6 +1,8 @@
 package com.yunya.modules.emr.controller;
 
 import com.alibaba.fastjson.JSONArray;
+import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
+import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
 import com.yunya.feign.emr.domain.query.MedicalCommonRecordQueryForm;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
@@ -122,4 +124,5 @@ public class MedicalCommonRecordController {
     model.setUpdTime(new Date());
     return ResponseUtil.success(medicalCommonRecordBiz.updateMedicalAfter(model));
   }
+
 }

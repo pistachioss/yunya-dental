@@ -20,9 +20,14 @@ import java.util.Date;
 @Data
 @ToString
 public class AppointmentPatientCardVo implements Serializable {
+
+    /** 预约id */
+    @ApiModelProperty(value = "预约id")
+    private Integer id;
+
     /** 患者id */
     @ApiModelProperty(value = "患者id")
-    private Integer id;
+    private Integer patientId;
 
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")

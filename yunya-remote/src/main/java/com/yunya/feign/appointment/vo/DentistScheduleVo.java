@@ -1,9 +1,11 @@
 package com.yunya.feign.appointment.vo;
 
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -17,4 +19,22 @@ import java.io.Serializable;
 @Data
 @ToString
 public class DentistScheduleVo implements Serializable {
+    /**
+     * 名称
+     */
+    @ApiModelProperty(value = "名称")
+    private String name;
+
+    /**
+     * 类型 是否工作；
+     */
+    @ApiModelProperty(value = "休假类型")
+    private String type;
+
+    /**
+     * 时间段
+     */
+    private String stime;
+
+
 }

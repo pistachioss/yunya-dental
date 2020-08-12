@@ -5,7 +5,6 @@ import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import org.springframework.cloud.openfeign.FeignClient;

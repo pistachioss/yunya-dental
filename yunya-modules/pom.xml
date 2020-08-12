@@ -23,6 +23,7 @@
         <module>yunya-emr</module>
         <module>yunya-patient-central</module>
         <module>yunya-tariff</module>
+        <module>yunya-treatment</module>
     </modules>
 
 
