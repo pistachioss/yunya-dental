@@ -6,7 +6,7 @@
     <id column="user_id" jdbcType="INTEGER" property="userId" />
     <result column="patient_column" jdbcType="BIT" property="patientColumn" />
     <result column="appoint_type_column" jdbcType="BIT" property="appointTypeColumn" />
-    <result column="distent_column" jdbcType="BIT" property="distentColumn" />
+    <result column="dentist_column" jdbcType="BIT" property="dentistColumn" />
     <result column="medical_record_number_column" jdbcType="BIT" property="medicalRecordNumberColumn" />
     <result column="telephone_column" jdbcType="BIT" property="telephoneColumn" />
     <result column="appoint_time_column" jdbcType="BIT" property="appointTimeColumn" />
@@ -24,7 +24,7 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, user_id as userId, patient_column as patientColumn, appoint_type_column as appointTypeColumn, distent_column as distentColumn,
+    id, user_id as userId, patient_column as patientColumn, appoint_type_column as appointTypeColumn, dentist_column as dentistColumn,
     medical_record_number_column as medicalRecordNumberColumn,telephone_column as telephoneColumn, appoint_time_column as appointTimeColumn,
     appoint_duration_column as appointDurationColumn, appoint_item_type_column as appointItemTypeColumn, confirm_status_column as confirmStatusColumn,
     appoint_remarks_column as appointRemarksColumn, remarks, inservice

@@ -51,7 +51,7 @@ public class AppointNotArrivedSettingForm implements Serializable {
      * 医生列 是否显示：0-不显示；1-显示
      */
     @ApiModelProperty(value = "医生列 是否显示：0-不显示；1-显示")
-    private Boolean distentColumn;
+    private Boolean dentistColumn;
 
     /**
      * 病历编号列 是否显示：0-不显示；1-显示

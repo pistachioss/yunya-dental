@@ -43,6 +43,9 @@
       <if test="query.orgId != null">
         and cdi.org_id = #{query.orgId}
       </if>
+      <if test="query.inservice != null">
+        and cdi.inservice = #{query.inservice}
+      </if>
     </where>
   </select>
 

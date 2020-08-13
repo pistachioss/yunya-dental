@@ -33,7 +33,7 @@
   </resultMap>
 
   <!-- 预约可视图（医生维度） -->
-  <resultMap id="appointmentPatientDimensionColumn" type="com.yunya.feign.appointment.vo.AppointmentPatientDimensionVo">
+  <resultMap id="appointmentDimensionColumn" type="com.yunya.feign.appointment.vo.AppointmentDimensionVo">
     <result column="dentist_id" jdbcType="INTEGER" property="dentistId"/>
     <result column="patientNum" jdbcType="INTEGER" property="patientNum"/>
     <result column="currentDate" jdbcType="DATE" property="currentDate"/>
@@ -46,6 +46,36 @@
       <result column="appoint_time" jdbcType="VARCHAR" property="appointTime"/>
     </collection>
   </resultMap>
+  
+<!--  &lt;!&ndash; 预约可视图医生维度视图模型(助手) &ndash;&gt;-->
+<!--  <resultMap id="appointmentDentistDimensionColumn" type="com.yunya.feign.appointment.vo.AppointmentDentistDimensionVo">-->
+<!--    <association property="appointmentDentistInfoVo" javaType="com.yunya.feign.appointment.vo.AppointmentDimensionVo">-->
+<!--      <result column="dentistIdDentist" jdbcType="INTEGER" property="dentistId"/>-->
+<!--      <result column="patientNumDentist" jdbcType="INTEGER" property="patientNum"/>-->
+<!--      <collection property="appointmentPatientCardVos" ofType="com.yunya.feign.appointment.vo.AppointmentPatientCardVo">-->
+<!--        <id column="idDentist" jdbcType="INTEGER" property="id"/>-->
+<!--        <result column="patientIdDentist" jdbcType="INTEGER" property="patientId"/>-->
+<!--        <result column="appointTypeDentist" jdbcType="INTEGER" property="appointType"/>-->
+<!--        <result column="appointContentDentist" jdbcType="VARCHAR" property="appointContent"/>-->
+<!--        <result column="appointDateDentist" jdbcType="DATE" property="appointDate"/>-->
+<!--        <result column="appointTimeDentist" jdbcType="VARCHAR" property="appointTime"/>-->
+<!--      </collection>-->
+<!--    </association>-->
+<!--    <collection property="appointmentAssistents" resultMap="appointmentDentistDimensionSplitColumn"/>-->
+<!--  </resultMap>-->
+
+<!--  <resultMap id="appointmentDentistDimensionSplitColumn" type="com.yunya.feign.appointment.vo.AppointmentDimensionVo">-->
+<!--    <result column="assistantIdAssistant" jdbcType="INTEGER" property="dentistId"/>-->
+<!--    <result column="patientNumAssistant" jdbcType="INTEGER" property="patientNum"/>-->
+<!--    <collection property="appointmentPatientCardVos" ofType="com.yunya.feign.appointment.vo.AppointmentPatientCardVo">-->
+<!--      <id column="idAssistant" jdbcType="INTEGER" property="id"/>-->
+<!--      <result column="patientIdAssistant" jdbcType="INTEGER" property="patientId"/>-->
+<!--      <result column="appointTypeAssistant" jdbcType="INTEGER" property="appointType"/>-->
+<!--      <result column="appointContentAssistant" jdbcType="VARCHAR" property="appointContent"/>-->
+<!--      <result column="appointDateAssistant" jdbcType="DATE" property="appointDate"/>-->
+<!--      <result column="appointTimeAssistant" jdbcType="VARCHAR" property="appointTime"/>-->
+<!--    </collection>-->
+<!--  </resultMap>-->
 
   <sql id="Base_Column_List">
     id, patient_id, org_id, dentist_id, assistant_id, clinic_dept_room_id, clinic_device_item_id,
@@ -263,8 +293,8 @@
     from appointment apt where apt.id = #{id}
   </select>
 
-  <!-- 根据时间和医生id查询预约可视图（医生维度） -->
-  <select id="findAppointmentPatientDimensionByDateAndDentistId" parameterType="java.util.Map" resultMap="appointmentPatientDimensionColumn">
+  <!-- 根据时间和医生id查询预约可视图（患者维度） -->
+  <select id="findAppointmentDimensionInfoByDateAndDentistId" parameterType="java.util.Map" resultMap="appointmentDimensionColumn">
     select
       a.id,
       a.dentist_id,
@@ -281,12 +311,43 @@
             and a1.appoint_date = a.appoint_date) as patientNum
     from appointment a
     where
-      a.appoint_date = DATE_FORMAT(#{date},'%Y-%m-%d')
+      a.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
       and a.inservice = 1
       and a.appoint_status = 0
       and a.dentist_id = #{dentistId}
       and a.org_id = #{orgId}
   </select>
+
+  <!-- 查询预约可视图列表（医生维度） -->
+<!--  <select id="findAppointmentDentistDimensionByExample" parameterType="java.util.Map" resultMap="appointmentDentistDimensionColumn">
+    SELECT
+      (select COUNT(*) from appointment WHERE appoint_date = a.appoint_date and inservice = 1 and dentist_id = a.dentist_id) as patientNumDentist,
+      a.dentist_id as dentistIdDentist,
+      b.id as idDentist,
+      b.patient_id as patientIdDentist,
+      b.appoint_type as appointTypeDentist,
+      b.appoint_content as appointContentDentist,
+      b.appoint_date as appointDateDentist,
+      b.appoint_time as appointTimeDentist,
+      c.assistant_id as idAssistant,
+      c.patient_id as patientIdAssistant,
+      c.appoint_type as appointTypeAssistant,
+      c.appoint_content as appointContentAssistant,
+      c.appoint_date as appointDateAssistant,
+      c.appoint_time as appointTimeAssistant
+    FROM
+      (
+          select
+            id,patient_id,dentist_id,org_id,inservice,appoint_status,appoint_date,assistant_id
+          from appointment
+          WHERE appoint_date = DATE_FORMAT(#{currentDate},'%Y-%m-%d')
+            AND inservice = 1
+            AND appoint_status = 0
+            AND org_id = #{orgId}
+      ) a
+        LEFT JOIN appointment b ON a.patient_id = b.patient_id and a.dentist_id = b.dentist_id
+        LEFT JOIN appointment c ON c.assistant_id = b.assistant_id
+  </select>-->
 
 
 </mapper>

@@ -1,7 +1,7 @@
 package com.yunya.modules.appointment.mapper;
 
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
-import com.yunya.feign.appointment.vo.AppointmentPatientDimensionVo;
+import com.yunya.feign.appointment.vo.AppointmentDimensionVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
@@ -122,17 +122,32 @@ public interface AppointmentMapper extends Mapper<Appointment> {
      */
     AppointmentVo findAppointmentById(@Param("id") Integer id);
 
+
     /**
-     * 根据时间查询预约可视图（医生维度）
-     * @param date
+     * 根据时间查询预约可视图（患者维度）
+     * @param startDate  开始时间
+     * @param endDate    结束时间
+     * @param dentistId  医生id
+     * @param orgId      门诊id
      * @return
      */
-    AppointmentPatientDimensionVo findAppointmentPatientDimensionByDateAndDentistId(
-            @Param("date") Date date,
+    AppointmentDimensionVo findAppointmentDimensionInfoByDateAndDentistId(
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate,
             @Param("dentistId") Integer dentistId,
             @Param("orgId") Integer orgId);
 
-
+    /**
+     * 查询预约可视图列表（医生维度）
+     * @param currentDate
+     * @param dentistId
+     * @param orgId
+     * @return
+     */
+//    List<AppointDentistDimensionVo> findAppointmentDentistDimensionByExample(
+//            @Param("currentDate") Date currentDate,
+//            @Param("dentistId") Integer dentistId,
+//            @Param("orgId") Integer orgId);
 
 
 }
