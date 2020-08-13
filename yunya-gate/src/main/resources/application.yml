@@ -136,6 +136,15 @@ spring:
           metadata:
             title: "价目表服务"
 
+        - id: yunya-treatment
+          uri: lb://yunya-treatment
+          order: 9004
+          predicates:
+            - Path=/api/treatment/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "诊疗服务"
 
     nacos:
       discovery:
