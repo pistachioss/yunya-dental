@@ -64,4 +64,9 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     public List<PatientBaseInfo> findPatientInfoList(PatientBaseInfo patientBaseInfo) {
         return null;
     }
+
+    @Override
+    public String findMedicalNumberByOrgId(Integer orgId) {
+        return null;
+    }
 }
