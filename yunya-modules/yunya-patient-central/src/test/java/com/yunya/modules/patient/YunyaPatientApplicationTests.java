@@ -25,6 +25,8 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @SpringBootTest(classes = YunyaPatientApplicationTests.class)
@@ -135,7 +137,8 @@ class YunyaPatientApplicationTests {
 
     @Test
     public void miao(){
-        System.out.println(System.currentTimeMillis());
+        long time = new Date().getTime();
+        System.out.println(new Date().getTime());
     }
 
     @Test
@@ -150,7 +153,7 @@ class YunyaPatientApplicationTests {
 
 
     @Test
-    public static void main(String[] args){
+    public static void main133(String[] args){
         // 此初始化行为主要是为了获取WO平台该应用的token，如不使用会导致方式调用时被WO平台权限校验拒绝
         // 生产环境下可以将init的行为配置到spring的容器中来进行初始化
         // 初始化成功后，接下来每次调用业务方法，都会自动为发起的请求附上相应的token信息，而无需手工传入
@@ -249,6 +252,49 @@ class YunyaPatientApplicationTests {
             in.close();
         }
         return result;
+    }
+
+
+
+
+    @Test
+    public static void main(String[] args) throws ParseException {
+        String format = "HH:mm:ss";
+        Date nowTime = new SimpleDateFormat(format).parse("09:60:00");
+        Date startTime = new SimpleDateFormat(format).parse("09:20:00");
+        Date endTime = new SimpleDateFormat(format).parse("09:50:59");
+        System.out.println(isEffectiveDate(nowTime, startTime, endTime));
+    }
+
+    /**
+     * 判断当前时间是否在[startTime, endTime]区间，注意时间格式要一致
+     *
+     * @param nowTime 当前时间
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return
+     * @author jqlin
+     */
+    public static boolean isEffectiveDate(Date nowTime, Date startTime, Date endTime) {
+        if (nowTime.getTime() == startTime.getTime()
+                || nowTime.getTime() == endTime.getTime()) {
+            return true;
+        }
+
+        Calendar date = Calendar.getInstance();
+        date.setTime(nowTime);
+
+        Calendar begin = Calendar.getInstance();
+        begin.setTime(startTime);
+
+        Calendar end = Calendar.getInstance();
+        end.setTime(endTime);
+
+        if (date.after(begin) && date.before(end)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 }

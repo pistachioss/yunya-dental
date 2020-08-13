@@ -35,6 +35,11 @@ public class PatientOriginInfoVo implements Serializable {
     private String name;
 
     /**
+     * 患者来源类型 1.员工 2.老患者 3.活动 4.合作商
+     */
+    private Integer originType;
+
+    /**
      * 二维码地址
      */
     private String qrCodePath;

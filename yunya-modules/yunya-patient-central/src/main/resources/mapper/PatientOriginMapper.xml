@@ -42,4 +42,9 @@
     select <include refid="PatientOrigin_Column_List"/>
     from patient_origin po where po.name = #{name}
   </select>
+
+  <select id="findPatientOriginByTypt" resultType="com.yunya.models.patient_central.PatientOrigin">
+    select <include refid="PatientOrigin_Column_List"/>
+    from patient_origin po where po.origin_type = #{from.originType} and po.parent_id != 0
+  </select>
 </mapper>

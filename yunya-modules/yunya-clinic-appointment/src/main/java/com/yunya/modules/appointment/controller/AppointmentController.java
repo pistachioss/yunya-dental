@@ -180,8 +180,9 @@ public class AppointmentController {
     @PostMapping("/find/dentist/dimension")
     public ResponseResult findAppointmentDentistDimensionByExample(@RequestBody AppointDentistListByDateQuery query){
 
-        List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample = appointmentBiz.findAppointmentDentistDimensionByExample(query);
-        return ResponseUtil.success(appointmentDentistDimensionByExample);
+       // List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample = appointmentBiz.findAppointmentDentistDimensionByExample(query);
+
+        return ResponseUtil.success();
     }
 
 

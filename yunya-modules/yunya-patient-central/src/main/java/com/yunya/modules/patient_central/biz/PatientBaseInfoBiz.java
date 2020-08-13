@@ -29,6 +29,7 @@ import com.yunya.models.patient_central.PatientExtInfo;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
@@ -399,18 +400,20 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       case 2:
         PatientLikeFinleQueryForm Patientmodel = new PatientLikeFinleQueryForm();
         Patientmodel.setCondition(form.getName());
-        ResponseUtil.success(patientBaseInfoMapper.findPatientByNameAndMobile(Patientmodel));
-      case 3:
-        //patientOriginBiz.
-        break;
-      case 4:
-
-        break;
+        return ResponseUtil.success(patientBaseInfoMapper.findPatientByNameAndMobile(Patientmodel));
       default:
-
         break;
     }
+    return ResponseUtil.error("请填写正确的患者来源类型","");
+  }
 
-    return null;
+
+  /**
+   * 根据门诊id获取病历号后六位
+   * @param orgId
+   * @return String
+   */
+  public String findMedicalNumberByOrgId(Integer orgId) {
+    return mapper.findMedicalNumberByOrgId(orgId);
   }
 }
