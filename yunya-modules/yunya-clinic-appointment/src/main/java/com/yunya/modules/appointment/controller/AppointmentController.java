@@ -5,8 +5,10 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointStatusForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
-import com.yunya.feign.appointment.domain.query.AppointmentDentistDimensionQuery;
-import com.yunya.feign.appointment.vo.AppointmentPatientDimensionVo;
+import com.yunya.feign.appointment.domain.query.AppointDentistListByDateQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentPatientDimensionByDayQuery;
+import com.yunya.feign.appointment.vo.AppointmentDentistDimensionVo;
+import com.yunya.feign.appointment.vo.AppointmentDimensionVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -20,9 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotNull;
 import java.text.ParseException;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -155,21 +155,33 @@ public class AppointmentController {
     }
 
     /**
-     * 根据时间查询预约可视图（医生维度）
+     * 根据条件查询预约可视图（患者维度）
      * @param query  查询参数
      * @return
      */
-    @ApiOperation(value = "根据时间查询预约可视图（医生维度）")
-    @GetMapping("/find/patient/dimension")
-    public ResponseResult findAppointmentPatientDimensionByDate(@RequestBody AppointmentDentistDimensionQuery query){
+    @ApiOperation(value = "根据条件查询患者维度预约可视图")
+    @PostMapping("/find/patient/dimension")
+    public ResponseResult findAppointmentPatientDimensionByDate(@RequestBody @Validated AppointmentPatientDimensionByDayQuery query){
         if (query.getWhetherPage()){
             PageHelper.offsetPage(query.getPageNum(),query.getPageSize());
         }
-        Date currentDate = query.getCurrentDate();
-        Integer orgId = query.getOrgId();
-        List<AppointmentPatientDimensionVo> appointmentPatientDimensionVos = appointmentBiz.findAppointmentPatientDimensionByDate(currentDate,orgId);
-        PageInfo<AppointmentPatientDimensionVo> pageInfo = new PageInfo<>(appointmentPatientDimensionVos);
+        List<AppointmentDimensionVo> appointmentDimensionVos = appointmentBiz.findAppointmentPatientDimensionByExample(query);
+        PageInfo<AppointmentDimensionVo> pageInfo = new PageInfo<>(appointmentDimensionVos);
         return ResponseUtil.success(pageInfo);
+    }
+
+
+    /**
+     * 根据条件查询预约可视图（医生维度）
+     * @param query  查询参数
+     * @return
+     */
+    @ApiOperation(value = "根据条件查询医生维度预约可视图")
+    @PostMapping("/find/dentist/dimension")
+    public ResponseResult findAppointmentDentistDimensionByExample(@RequestBody AppointDentistListByDateQuery query){
+
+        List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample = appointmentBiz.findAppointmentDentistDimensionByExample(query);
+        return ResponseUtil.success(appointmentDentistDimensionByExample);
     }
 
 

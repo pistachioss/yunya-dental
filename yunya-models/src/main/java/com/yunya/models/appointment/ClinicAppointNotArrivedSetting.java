@@ -34,8 +34,8 @@ public class ClinicAppointNotArrivedSetting {
     /**
      * 医生列 是否显示：0-不显示；1-显示
      */
-    @Column(name = "distent_column")
-    private Boolean distentColumn;
+    @Column(name = "dentist_column")
+    private Boolean dentistColumn;
 
     /**
      * 病历编号列 是否显示：0-不显示；1-显示
@@ -193,16 +193,16 @@ public class ClinicAppointNotArrivedSetting {
      * 获取医生列 是否显示：0-不显示；1-显示
      * @return 医生列 是否显示：0-不显示；1-显示
      */
-    public Boolean getDistentColumn() {
-        return distentColumn;
+    public Boolean getDentistColumn() {
+        return dentistColumn;
     }
 
     /**
      * 设置医生列 是否显示：0-不显示；1-显示
-     * @param distentColumn 医生列 是否显示：0-不显示；1-显示
+     * @param dentistColumn 医生列 是否显示：0-不显示；1-显示
      */
-    public void setDistentColumn(Boolean distentColumn) {
-        this.distentColumn = distentColumn;
+    public void setDentistColumn(Boolean dentistColumn) {
+        this.dentistColumn = dentistColumn;
     }
 
     /**
