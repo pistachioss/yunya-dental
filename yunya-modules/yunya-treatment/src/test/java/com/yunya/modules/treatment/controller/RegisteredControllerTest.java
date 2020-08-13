@@ -26,7 +26,7 @@ public class RegisteredControllerTest {
   @Test
   public void add() {
     RegisteredModel model = new RegisteredModel();
-    model.setClinicId(21);
+    model.setOrgId(35);
     model.setPatientId(1);
     model.setDentistId(12);
     model.setAssistantId(2);

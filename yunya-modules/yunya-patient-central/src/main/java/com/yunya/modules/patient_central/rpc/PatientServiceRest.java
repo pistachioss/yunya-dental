@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -59,8 +60,8 @@ public class PatientServiceRest {
 
     @ApiOperation("根据患者id查询患者资料")
     @RequestMapping (value = "/findPatientData/{id}",method = RequestMethod.GET)
-    public PatientExtendInfoVo findPatientData(@PathVariable("id") Integer id){
-        return patientBaseInfoBiz.findPatientData(id);
+    public PatientTotalInfoVo findPatientTotalInfo(@PathVariable("id") Integer id){
+        return patientBaseInfoBiz.findPatientTotalInfo(id);
     }
 
     @ApiOperation("根据患者id查询患者资料")
@@ -68,4 +69,23 @@ public class PatientServiceRest {
     public List<PatientMemberInfo> findPatientMemberInfo(@RequestBody PatientMemberInfo patientMemberInfo){
         return patientMemberInfoBiz.selectList(patientMemberInfo);
     }
+
+    @ApiOperation("修改患者信息")
+    @RequestMapping (value = "/updatePatientInfo",method = RequestMethod.POST)
+    public void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
+        patientBaseInfoBiz.updateSelectiveById(patientBaseInfo);
+    }
+
+    @ApiOperation("查询患者信息")
+    @RequestMapping (value = "/findPatientInfo/{id}",method = RequestMethod.POST)
+    public PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
+        return patientBaseInfoBiz.selectOne(patientBaseInfo);
+    }
+
+    @ApiOperation("查询患者信息列表")
+    @RequestMapping (value = "/findPatientInfoList/{id}",method = RequestMethod.POST)
+    public List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo){
+        return patientBaseInfoBiz.selectList(patientBaseInfo);
+    }
+
 }

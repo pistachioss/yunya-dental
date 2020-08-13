@@ -159,7 +159,7 @@ management:
 # 忽略网关鉴权的请求路径
 gate:
   ignore:
-    startWith: /auth/jwt,/v2/api-docs,/patient,/central
+    startWith: /auth/jwt,/v2/api-docs,/patient/central/renlianshibie
 
 auth:
   serviceId: yunya-auth

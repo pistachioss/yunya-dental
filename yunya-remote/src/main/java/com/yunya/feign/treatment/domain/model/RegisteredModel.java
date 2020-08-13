@@ -24,7 +24,7 @@ public class RegisteredModel implements Serializable {
   /** 诊所id */
   @ApiModelProperty(value = "诊所id", required = true)
   @NotNull(message = "诊所id不能为空！")
-  private Integer clinicId;
+  private Integer orgId;
 
   /** 患者id */
   @ApiModelProperty(value = "患者id", required = true)

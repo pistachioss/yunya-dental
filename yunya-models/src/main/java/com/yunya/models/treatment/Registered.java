@@ -13,8 +13,8 @@ public class Registered {
     /**
      * 诊所id
      */
-    @Column(name = "clinic_id")
-    private Integer clinicId;
+    @Column(name = "org_id")
+    private Integer orgId;
 
     /**
      * 患者id
@@ -126,17 +126,17 @@ public class Registered {
      *
      * @return clinic_id - 诊所id
      */
-    public Integer getClinicId() {
-        return clinicId;
+    public Integer getOrgId() {
+        return orgId;
     }
 
     /**
      * 设置诊所id
      *
-     * @param clinicId 诊所id
+     * @param orgId 诊所id
      */
-    public void setClinicId(Integer clinicId) {
-        this.clinicId = clinicId;
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 
     /**

@@ -37,6 +37,11 @@ public class PatientBaseInfoVo implements Serializable {
     private String name;
 
     /**
+     * 患者头像url
+     */
+    private String faceUrl;
+
+    /**
      * 拼音姓名 字符串，长度64
      */
     private String pinyinName;

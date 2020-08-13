@@ -31,6 +31,12 @@ public class PatientBaseInfo {
     private String name;
 
     /**
+     * 患者头像url
+     */
+    @Column(name = "face_url")
+    private String faceUrl;
+
+    /**
      * 拼音姓名 字符串，长度64
      */
     @Column(name = "pinyin_name")
@@ -212,7 +218,7 @@ public class PatientBaseInfo {
     /**
      * 获取患者对于WO平台人员id
      */
-    public String getwoGuid() {
+    public String getWoGuid() {
         return woGuid;
     }
 
@@ -221,7 +227,7 @@ public class PatientBaseInfo {
      *
      * @param woGuid 头像地址 患者头像存储路径
      */
-    public void setwoGuid(String woGuid) {
+    public void setWoGuid(String woGuid) {
         this.woGuid = woGuid;
     }
 
@@ -512,4 +518,23 @@ public class PatientBaseInfo {
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
     }
+
+    /**
+     * 获取患者照片
+     *
+     * @return faceUrl
+     */
+    public String getFaceUrl() {
+        return faceUrl;
+    }
+
+    /**
+     * 设置患者照片
+     *
+     * @param faceUrl 更新时间
+     */
+    public void setFaceUrl(String faceUrl) {
+        this.faceUrl = faceUrl;
+    }
+
 }

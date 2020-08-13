@@ -1,8 +1,7 @@
 package com.yunya.modules.emr.controller;
 
 import com.alibaba.fastjson.JSONArray;
-import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
-import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
+
 import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
 import com.yunya.feign.emr.domain.query.MedicalCommonRecordQueryForm;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
@@ -12,14 +11,14 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.MedicalCommonRecord;
-import com.yunya.models.emr.MedicalRecordHistory;
+
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import tk.mybatis.mapper.entity.Example;
+
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -124,5 +123,4 @@ public class MedicalCommonRecordController {
     model.setUpdTime(new Date());
     return ResponseUtil.success(medicalCommonRecordBiz.updateMedicalAfter(model));
   }
-
 }

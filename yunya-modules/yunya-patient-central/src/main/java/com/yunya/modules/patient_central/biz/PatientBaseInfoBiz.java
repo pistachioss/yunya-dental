@@ -9,7 +9,7 @@ import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.model.PictureModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PictureVo;
+import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -18,6 +18,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientExpInfo;
@@ -25,14 +26,11 @@ import com.yunya.models.patient_central.PatientExtInfo;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
+import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
-import org.aspectj.lang.annotation.Before;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -57,224 +55,328 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
 
-    @Autowired
-    private RedisUtils redisUtils;
+  @Autowired private RedisUtils redisUtils;
 
-    @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
+  @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
-    @Autowired private PatientExtInfoMapper patientExtInfoMapper;
+  @Autowired private PatientExtInfoMapper patientExtInfoMapper;
 
-    @Autowired private PatientExpInfoMapper patientExpInfoMapper;
+  @Autowired private PatientExpInfoMapper patientExpInfoMapper;
 
-    @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
-    @Autowired private WoPersonBiz woPersonBiz;
+  @Autowired private WoPersonBiz woPersonBiz;
 
+  /**
+   * 通过患者id查询患者共用属性
+   *
+   * @param id
+   * @return PatientPublicInfo
+   */
+  public ResponseResult findPatientPublicInfoById(Integer id) {
+    PatientPublicInfoVo patientPublicInfoVo = new PatientPublicInfoVo();
+    patientPublicInfoVo = patientBaseInfoMapper.findPatientPublicInfoById(id);
+    if (patientPublicInfoVo.getMemberTypeId() == null) {
+      return ResponseUtil.error("该患者会员卡类型ID为空", "");
+    }
+    MemberType memberType =
+        remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
+    if (memberType.getName() == null) {
+      return ResponseUtil.error("根据患者会员卡类型ID未查询到会员卡", "");
+    }
+    patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
+    return ResponseUtil.success(patientPublicInfoVo);
+  }
 
-    /**
-     * 通过患者id查询患者共用属性
-     * @param id
-     * @return PatientPublicInfo
-     */
-    public ResponseResult findPatientPublicInfoById(Integer id) {
-        PatientPublicInfoVo patientPublicInfoVo = new PatientPublicInfoVo();
-        patientPublicInfoVo =  patientBaseInfoMapper.findPatientPublicInfoById(id);
-        if(patientPublicInfoVo.getMemberTypeId()==null){
-            return ResponseUtil.error("该患者会员卡类型ID为空","");
+  /**
+   * 查询患者是否存在
+   *
+   * @param patientBaseInfoQueryForm
+   */
+  public ResponseResult findUserExists(PatientBaseInfoQueryForm patientBaseInfoQueryForm) {
+    PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
+    patientBaseInfoVo = patientBaseInfoMapper.findUserExists(patientBaseInfoQueryForm);
+    if (patientBaseInfoVo != null) {
+      return ResponseUtil.error("添加失败,该用户已存在", patientBaseInfoVo);
+    }
+    int count = patientBaseInfoMapper.findUserExistsByMobile(patientBaseInfoQueryForm.getMobile());
+    if (count > 0) {
+      return ResponseUtil.error("该手机号已存在", "");
+    }
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 添加患者信息
+   *
+   * @param patientBaseInfoModel
+   */
+  public PatientBaseInfoVo addPatient(PatientBaseInfoModel patientBaseInfoModel) {
+    PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
+    BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
+    patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+    patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientBaseInfo.setCrtName(BaseContextHandler.getName());
+    patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    patientBaseInfo.setWoGuid(
+        woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); // wo平台创建对应人员 返回人员Guid添加到数据库
+    mapper.insertSelective(patientBaseInfo);
+    return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+  }
+
+  /**
+   * 添加完善患者扩展信息、其他信息
+   *
+   * @param patientExtendInfoModel
+   */
+  public void addPatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
+    PatientBaseInfo patientBaseInfo =
+        patientExtendInfoModel.getPatientBaseInfo(); // 完善患者基本信息  对补全信息进行更新
+    patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+    patientBaseInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientBaseInfo.setUpdName(BaseContextHandler.getName());
+    patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    patientBaseInfo.setUpdTime(new Date());
+    mapper.updateByPrimaryKey(patientBaseInfo);
+    PatientExpInfo patientExpInfo = patientExtendInfoModel.getPatientExpInfo(); // 完善患者扩展信息
+    if (patientExpInfo.getId() == null) { // 如果用户没有扩展信息就添加扩展信息 如果有就修改
+      patientExpInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientExpInfo.setCrtName(BaseContextHandler.getName());
+      patientExpInfoMapper.insertSelective(patientExpInfo);
+    } else {
+      patientExpInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientExpInfo.setUpdName(BaseContextHandler.getName());
+      patientExpInfo.setUpdTime(new Date());
+      patientExpInfoMapper.updateByPrimaryKey(patientExpInfo);
+    }
+    List<PatientExtInfo> patientExtInfoList =
+        patientExtendInfoModel.getPatientExtInfoList(); // 完善患者其他信息（标签、疾病史、过敏原）
+    List<PatientExtInfo> patientExtInfos =
+        patientExtInfoMapper.patientExtInfoListByid(patientBaseInfo.getId());
+    if (patientExtInfos.size() != 0 || patientExtInfos != null) { // 判断是否已存在id，若存在就删除
+      patientExtInfoMapper.deletePatientExtInfoByPatientId(patientBaseInfo.getId());
+    }
+    List<PatientExtInfo> addPatientExtInfoList =
+        new ArrayList<PatientExtInfo>(); // 循环添加 标签、疾病史、过敏原 集合
+    for (PatientExtInfo patientExtInfo : patientExtInfoList) {
+      patientExtInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientExtInfo.setCrtName(BaseContextHandler.getName());
+      patientExtInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientExtInfo.setUpdName(BaseContextHandler.getName());
+      patientExtInfo.setUpdTime(new Date());
+      addPatientExtInfoList.add(patientExtInfo);
+    }
+    patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
+  }
+
+  /**
+   * 根据患者id查询患者资料
+   *
+   * @param id
+   * @return PatientExtendInfoModel
+   */
+  public PatientExtendInfoVo findPatientData(Integer id) {
+    PatientExtendInfoVo patientExtendInfoVo = new PatientExtendInfoVo();
+    patientExtendInfoVo.setPatientBaseInfo(mapper.selectByPrimaryKey(id));
+    patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id));
+    patientExtendInfoVo.setPatientExtInfoList(patientExtInfoMapper.patientExtInfoListByid(id));
+    return patientExtendInfoVo;
+  }
+
+  /**
+   * 根据姓名/手机号/姓名拼音模糊查询患者
+   *
+   * @param condition
+   * @return List<PatientBaseInfoVo>
+   */
+  public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+    return patientBaseInfoMapper.findPatientByNameAndMobile(form);
+  }
+
+  /**
+   * 根据输入年龄计算患者出生年份
+   *
+   * @param age 年龄
+   */
+  public Date birthYear(Integer age) {
+    // 获取输入年龄当天日历
+    Calendar now = Calendar.getInstance();
+    // 计算减去年龄后的年份
+    now.add(Calendar.YEAR, -age);
+    // 拼装日期字符串
+    String birthYear =
+        now.get(Calendar.YEAR)
+            + "-"
+            + (now.get(Calendar.MONTH) + 1)
+            + "-"
+            + now.get(Calendar.DAY_OF_MONTH);
+    // 设置时间格式
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    Date date = null;
+    try {
+      date = dateFormat.parse(birthYear);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }
+    return date;
+  }
+
+  /**
+   * 授权人脸识别结果
+   *
+   * @param patientWoPlatformInfoModel
+   */
+  public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
+    System.out.println(patientWoPlatformInfoModel.toString());
+    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
+    patientBaseInfo.setWoGuid(patientWoPlatformInfoModel.getGuid());
+    patientBaseInfo.setName("WO平台授权人脸识别结果成功");
+    mapper.updateByPrimaryKeySelective(patientBaseInfo);
+  }
+
+  /**
+   * 根据患者id集合查询患者list
+   *
+   * @param ids
+   * @return List<PatientBaseInfoVo>
+   */
+  public List<PatientBaseInfoVo> findPatientInfoByIds(List<Integer> ids) {
+    return patientBaseInfoMapper.selectPatientInfoByIdList(ids);
+  }
+
+  /**
+   * 拍照
+   *
+   * @param id
+   * @return String
+   */
+  public void takeAPhoto(Integer id) {
+    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(id);
+    woPersonBiz.takeAPhoto(patientBaseInfo);
+  }
+
+  /**
+   * 删除照片并查询
+   *
+   * @param pictureForm
+   */
+  public List<PictureVo> deleteThePhoto(PictureForm pictureForm) {
+    return woPersonBiz.deleteThePhoto(pictureForm);
+  }
+
+  /**
+   * 设备人员认证授权
+   *
+   * @param pictureModel
+   */
+  public void equipmenAuthorization(PictureModel pictureModel) {
+    woPersonBiz.equipmenAuthorization(pictureModel);
+  }
+
+  /**
+   * 获取wo平台人员照片
+   *
+   * @param personGuid
+   * @return List<PictureVo>
+   */
+  public List<PictureVo> getFaceUrl(Integer PatientId) {
+    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(PatientId);
+    return woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid());
+  }
+
+  /**
+   * 根据患者id查询患者信息
+   *
+   * @param id
+   * @return
+   */
+  public PatientBaseInfo findPatientInfoById(Integer id) {
+    return patientBaseInfoMapper.selectPatientById(id);
+  }
+
+  /**
+   * 根据患者id查询患者全部信息
+   *
+   * @param id
+   * @return PatientTotalInfoVo
+   */
+  public PatientTotalInfoVo findPatientTotalInfo(Integer id) {
+    PatientTotalInfoVo patientData = mapper.selectPatientDataById(id);
+    if (null != patientData) {
+      PatientExtInfo patientExtInfo = new PatientExtInfo();
+      patientExtInfo.setPatientId(id);
+      List<PatientExtInfo> extInfos = patientExtInfoMapper.select(patientExtInfo);
+      if (StringHelper.isNotEmpty(extInfos)) {
+        StringBuilder labels = new StringBuilder(16);
+        StringBuilder diseases = new StringBuilder(16);
+        StringBuilder allergens = new StringBuilder(16);
+        for (PatientExtInfo extInfo : extInfos) {
+          Byte type = extInfo.getType();
+          DictionaryItem item =
+                  remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
+          switch (type) {
+            case 0:
+              if (null != item) {
+                labels.append(item.getName());
+              }
+              break;
+            case 1:
+              if (null != item) {
+                diseases.append(item.getName());
+              }
+              break;
+            case 2:
+              if (null != item) {
+                allergens.append(item.getName());
+              }
+              break;
+            default:
+              break;
+          }
         }
-        MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
-        if(memberType.getName() == null){
-            return ResponseUtil.error("根据患者会员卡类型ID未查询到会员卡","");
+        patientData.setLabels(labels.toString());
+        patientData.setDiseases(diseases.toString());
+        patientData.setAllergens(allergens.toString());
+      }
+    }
+    return patientData;
+  }
+
+  /**
+   * 根据患者id查询患者来访信息
+   * @param id
+   * @return PatientVisitInfoVo
+   */
+  public PatientVisitInfoVo findPatientVisitInfo(Integer id) {
+    PatientVisitInfoVo patientVisitInfoVo = patientBaseInfoMapper.findPatientVisitInfo(id);
+    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientVisitInfoVo.getMemberTypeId());
+    if (memberType.getName() != null) {
+      patientVisitInfoVo.setMemberCardName(memberType.getName());
+    }
+    patientVisitInfoVo.setLabels(getLabels(patientVisitInfoVo.getPatientId()));
+    return patientVisitInfoVo;
+  }
+
+  /**
+   * 根据患者id获取患者标签
+   * @param patientId
+   * @return
+   */
+  public String getLabels(Integer patientId){
+    PatientExtInfo patientExtInfo = new PatientExtInfo();
+    StringBuilder labels = new StringBuilder(16);
+    patientExtInfo.setPatientId(patientId);
+    List<PatientExtInfo> extInfos = patientExtInfoMapper.select(patientExtInfo);
+    if (StringHelper.isNotEmpty(extInfos)) {
+      for (PatientExtInfo extInfo : extInfos) {
+        Byte type = extInfo.getType();
+        DictionaryItem item = remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
+        if(type == 0 && null != item){
+          labels.append(item.getName());
         }
-        patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
-        return ResponseUtil.success(patientPublicInfoVo);
+      }
     }
+    return labels.toString();
+  }
 
-    /**
-     * 查询患者是否存在
-     * @param patientBaseInfoQueryForm
-     */
-    public ResponseResult findUserExists(PatientBaseInfoQueryForm patientBaseInfoQueryForm) {
-        PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
-        patientBaseInfoVo = patientBaseInfoMapper.findUserExists(patientBaseInfoQueryForm);
-        if (patientBaseInfoVo != null){
-           return ResponseUtil.error("添加失败,该用户已存在",patientBaseInfoVo);
-        }
-        int count = patientBaseInfoMapper.findUserExistsByMobile(patientBaseInfoQueryForm.getMobile());
-        if(count > 0){
-            return ResponseUtil.error("该手机号已存在","");
-        }
-        return ResponseUtil.success();
-    }
-
-    /**
-     * 添加患者信息
-     * @param patientBaseInfoModel
-     */
-    public PatientBaseInfoVo addPatient(PatientBaseInfoModel patientBaseInfoModel) {
-        PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
-        BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
-        patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-        patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientBaseInfo.setCrtName(BaseContextHandler.getName());
-        patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        patientBaseInfo.setwoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName()));//wo平台创建对应人员 返回人员Guid添加到数据库
-        mapper.insertSelective(patientBaseInfo);
-        return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
-    }
-
-    /**
-     * 添加完善患者扩展信息、其他信息
-     * @param patientExtendInfoModel
-     */
-    public void addPatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
-        PatientBaseInfo patientBaseInfo = patientExtendInfoModel.getPatientBaseInfo(); //完善患者基本信息  对补全信息进行更新
-        patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-        patientBaseInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientBaseInfo.setUpdName(BaseContextHandler.getName());
-        patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        patientBaseInfo.setUpdTime(new Date());
-        mapper.updateByPrimaryKey(patientBaseInfo);
-        PatientExpInfo patientExpInfo = patientExtendInfoModel.getPatientExpInfo();    //完善患者扩展信息
-        if(patientExpInfo.getId() == null){   //如果用户没有扩展信息就添加扩展信息 如果有就修改
-            patientExpInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientExpInfo.setCrtName(BaseContextHandler.getName());
-            patientExpInfoMapper.insertSelective(patientExpInfo);
-        }else {
-            patientExpInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientExpInfo.setUpdName(BaseContextHandler.getName());
-            patientExpInfo.setUpdTime(new Date());
-            patientExpInfoMapper.updateByPrimaryKey(patientExpInfo);
-        }
-        List<PatientExtInfo> patientExtInfoList = patientExtendInfoModel.getPatientExtInfoList();//完善患者其他信息（标签、疾病史、过敏原）
-        List<PatientExtInfo> patientExtInfos = patientExtInfoMapper.patientExtInfoListByid(patientBaseInfo.getId());
-        if(patientExtInfos.size()!= 0 || patientExtInfos != null){ //判断是否已存在id，若存在就删除
-            patientExtInfoMapper.deletePatientExtInfoByPatientId(patientBaseInfo.getId());
-        }
-        List<PatientExtInfo> addPatientExtInfoList = new ArrayList<PatientExtInfo>();            //循环添加 标签、疾病史、过敏原 集合
-        for (PatientExtInfo patientExtInfo: patientExtInfoList) {
-            patientExtInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientExtInfo.setCrtName(BaseContextHandler.getName());
-            patientExtInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientExtInfo.setUpdName(BaseContextHandler.getName());
-            patientExtInfo.setUpdTime(new Date());
-            addPatientExtInfoList.add(patientExtInfo);
-        }
-        patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
-
-    }
-
-    /**
-     * 根据患者id查询患者资料
-     * @param id
-     * @return PatientExtendInfoModel
-     */
-    public PatientExtendInfoVo findPatientData(Integer id) {
-        PatientExtendInfoVo patientExtendInfoVo = new PatientExtendInfoVo();
-        patientExtendInfoVo.setPatientBaseInfo(mapper.selectByPrimaryKey(id));
-        patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id));
-        patientExtendInfoVo.setPatientExtInfoList(patientExtInfoMapper.patientExtInfoListByid(id));
-        return patientExtendInfoVo;
-    }
-
-    /**
-     * 根据姓名/手机号/姓名拼音模糊查询患者
-     * @param condition
-     * @return List<PatientBaseInfoVo>
-     */
-    public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
-        return patientBaseInfoMapper.findPatientByNameAndMobile(form);
-    }
-
-    /**
-     * 根据输入年龄计算患者出生年份
-     * @param age 年龄
-     */
-    public Date birthYear(Integer age) {
-        // 获取输入年龄当天日历
-        Calendar now = Calendar.getInstance();
-        // 计算减去年龄后的年份
-        now.add(Calendar.YEAR, -age);
-        // 拼装日期字符串
-        String birthYear =
-                now.get(Calendar.YEAR)
-                        + "-"
-                        + (now.get(Calendar.MONTH) + 1)
-                        + "-"
-                        + now.get(Calendar.DAY_OF_MONTH);
-        // 设置时间格式
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = null;
-        try {
-            date = dateFormat.parse(birthYear);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return date;
-    }
-
-    /**
-     * 授权人脸识别结果
-     * @param patientWoPlatformInfoModel
-     */
-    public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
-        PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
-        patientBaseInfo.setwoGuid(patientWoPlatformInfoModel.getGuid());
-        patientBaseInfo.setName("WO平台授权人脸识别结果成功");
-        mapper.updateByPrimaryKeySelective(patientBaseInfo);
-    }
-
-    /**
-     * 根据患者id集合查询患者list
-     * @param ids
-     * @return List<PatientBaseInfoVo>
-     */
-    public List<PatientBaseInfoVo> findPatientInfoByIds(List<Integer> ids) {
-        return patientBaseInfoMapper.selectPatientInfoByIdList(ids);
-    }
-
-    /**
-     * 拍照
-     * @param id
-     * @return String
-     */
-    public void takeAPhoto(Integer id) {
-        PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(id);
-        woPersonBiz.takeAPhoto(patientBaseInfo);
-    }
-
-    /**
-     * 删除照片并查询
-     * @param pictureForm
-     */
-    public List<PictureVo> DeleteThePhoto(PictureForm pictureForm) {
-        return woPersonBiz.DeleteThePhoto(pictureForm);
-    }
-
-    /**
-     * 设备人员认证授权
-     * @param pictureModel
-     */
-    public void equipmenAuthorization(PictureModel pictureModel) {
-        woPersonBiz.equipmenAuthorization(pictureModel);
-    }
-
-    /**
-     * 获取wo平台人员照片
-     * @param personGuid
-     * @return List<PictureVo>
-     */
-    public List<PictureVo> getFaceUrl(Integer PatientId) {
-        PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(PatientId);
-       return woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getwoGuid());
-    }
-
-    /**
-     * 根据患者id查询患者信息
-     * @param id
-     * @return
-     */
-    public PatientBaseInfo findPatientInfoById(Integer id) {
-       return patientBaseInfoMapper.selectPatientById(id);
-    }
 }

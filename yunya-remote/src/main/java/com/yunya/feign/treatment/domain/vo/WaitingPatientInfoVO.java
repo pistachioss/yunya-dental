@@ -22,7 +22,7 @@ public class WaitingPatientInfoVO implements Serializable {
   private Integer id;
 
   /** 诊所id */
-  private Integer clinicId;
+  private Integer orgId;
 
   /** 初/复诊 */
   private Byte firstVisit;

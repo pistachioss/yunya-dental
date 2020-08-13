@@ -1,6 +1,6 @@
 package com.yunya.framework.auth.interceptor;
 
-import com.yunya.framework.auth.annotation.IgnoreUserToken;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.auth.config.UserAuthConfig;
 import com.yunya.framework.common.utils.jwt.IJWTInfo;
 import com.yunya.framework.auth.utils.UserAuthUtil;

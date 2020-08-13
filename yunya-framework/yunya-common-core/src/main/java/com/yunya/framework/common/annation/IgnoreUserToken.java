@@ -1,4 +1,4 @@
-package com.yunya.framework.auth.annotation;
+package com.yunya.framework.common.annation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

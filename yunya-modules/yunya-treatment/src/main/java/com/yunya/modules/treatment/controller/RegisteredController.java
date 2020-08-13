@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "患者挂号管理（新增、取消、就诊列表查询）")
+@Api(tags = "患者挂号管理（新增、取消、侯诊列表查询）")
 @RestController
 @RequestMapping("registered")
 public class RegisteredController {
