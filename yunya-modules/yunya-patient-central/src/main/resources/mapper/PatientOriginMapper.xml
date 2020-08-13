@@ -23,7 +23,7 @@
   </resultMap>
 
   <sql id="PatientOrigin_Column_List">
-    po.id id,po.parent_id parentId,po.name name,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
+    po.id id,po.parent_id parentId,po.name name,po.origin_type originType,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
     po.limit_end_date limitEndDate,po.inservice inservice,po.crt_id crtId,po.crt_name crtName,po.crt_time crtTime,po.upd_id updId,po.upd_name updName,po.upd_time updTime
   </sql>
 
@@ -35,7 +35,7 @@
 
   <select id="findAll" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
     select <include refid="PatientOrigin_Column_List"/>
-    from patient_origin po order by po.crt_time des
+    from patient_origin po order by po.crt_time desc
   </select>
 
   <select id="findPatientOriginByName" resultType="com.yunya.models.patient_central.PatientOrigin">

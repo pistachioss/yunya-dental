@@ -24,4 +24,18 @@ public class WoPlatformConstants {
     /** 设备授权类型 1:本地库 2:云端库 */
     public static final byte TYPE = 1;
 
+    /** ---------------------患者信息--------------------------------- */
+
+    /** 员工来源类型 */
+    public static final Integer STAFF_TYPE = 1;
+
+    /** 患者来源类型 */
+    public static final Integer PATIENT_TYPE = 2;
+
+    /** 活动来源类型 */
+    public static final Integer EVENT_TYPE = 3;
+
+    /** 患者来源类型 */
+    public static final Integer PARTNERS_TYPE = 4;
+
 }
