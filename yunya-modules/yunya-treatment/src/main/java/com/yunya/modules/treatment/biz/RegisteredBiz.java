@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.biz;
 
-import cn.hutool.core.date.DateTime;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
@@ -26,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -63,9 +63,11 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         appointmentFeign.updateAppointment(appointment);
       }
     }
+
     Registered entity = new Registered();
     BeanUtils.copyProperties(model, entity);
-    entity.setRegTime(new DateTime(System.currentTimeMillis()));
+    entity.setRegTime(new Date(System.currentTimeMillis()));
+    entity.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);

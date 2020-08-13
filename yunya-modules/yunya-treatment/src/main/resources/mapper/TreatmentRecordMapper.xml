@@ -1,30 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.treatment.mapper.TreatmentRecordMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.treatment.TreatmentRecord" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="reg_id" property="regId" jdbcType="INTEGER" />
-    <result column="appoint_id" property="appointId" jdbcType="INTEGER" />
-    <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
-    <result column="type" property="type" jdbcType="TINYINT" />
-    <result column="status" property="status" jdbcType="TINYINT" />
-    <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP" />
-    <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP" />
-    <result column="assistant_id_1" property="assistantId1" jdbcType="INTEGER" />
-    <result column="assistant_id_2" property="assistantId2" jdbcType="INTEGER" />
-    <result column="assistant_id_3" property="assistantId3" jdbcType="INTEGER" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.treatment.mapper.TreatmentRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.treatment.TreatmentRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="appointment_id" property="appointmentId" jdbcType="INTEGER"/>
+        <result column="registered_id" property="registeredId" jdbcType="INTEGER"/>
+        <result column="dentist_id" property="dentistId" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
+        <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
+        <result column="medical_record_completed" property="medicalRecordCompleted" jdbcType="BIT"/>
+        <result column="assistant_id_1" property="assistantId1" jdbcType="INTEGER"/>
+        <result column="assistant_id_2" property="assistantId2" jdbcType="INTEGER"/>
+        <result column="assistant_id_3" property="assistantId3" jdbcType="INTEGER"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据条件查询就诊中患者信息列表 -->
+    <select id="selectTreatingList" resultType="com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO">
+        select
+        tr.id,
+        tr.org_id as orgId,
+        tr.type as firstVisit,
+        tr.patient_id as patientId,
+        tr.appointment_id as appointmentId,
+        tr.registered_id as registeredId,
+        tr.dentist_id as treatDentistId,
+        tr.treat_start_time as treatStartTime,
+        tr.medical_record_completed as medicalRecordCompleted
+        from treatment_record tr
+        <where>
+            <if test="queryForm.id != null">
+                and tr.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.orgId != null">
+                and tr.org_id = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
+                and DATE_FORMAT(tr.crt_time,'%Y-%m-%d') = #{queryForm.currentDate}
+            </if>
+            <if test="queryForm.dentistId != null">
+                and tr.dentist_id = #{queryForm.dentistId}
+            </if>
+        </where>
+    </select>
 </mapper>

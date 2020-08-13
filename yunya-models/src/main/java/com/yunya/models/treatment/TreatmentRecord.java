@@ -24,16 +24,16 @@ public class TreatmentRecord {
     private Integer patientId;
 
     /**
-     * 挂号表id
-     */
-    @Column(name = "reg_id")
-    private Integer regId;
-
-    /**
      * 患者预约id
      */
-    @Column(name = "appoint_id")
-    private Integer appointId;
+    @Column(name = "appointment_id")
+    private Integer appointmentId;
+
+    /**
+     * 挂号表id
+     */
+    @Column(name = "registered_id")
+    private Integer registeredId;
 
     /**
      * 主治医生id
@@ -47,7 +47,7 @@ public class TreatmentRecord {
     private Byte type;
 
     /**
-     * 诊疗状态(2-待接诊；3-接诊中；4-接诊完成；5-离店)
+     * 诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
      */
     private Byte status;
 
@@ -62,6 +62,12 @@ public class TreatmentRecord {
      */
     @Column(name = "treat_end_time")
     private Date treatEndTime;
+
+    /**
+     * 是否书写电子病历（0-否；1-是）
+     * */
+    @Column(name = "medical_record_completed")
+    private Boolean medicalRecordCompleted;
 
     /**
      * 配诊助手1ID
@@ -184,37 +190,37 @@ public class TreatmentRecord {
     /**
      * 获取挂号表id
      *
-     * @return reg_id - 挂号表id
+     * @return registered_id - 挂号表id
      */
-    public Integer getRegId() {
-        return regId;
+    public Integer getRegisteredId() {
+        return registeredId;
     }
 
     /**
      * 设置挂号表id
      *
-     * @param regId 挂号表id
+     * @param registeredId 挂号表id
      */
-    public void setRegId(Integer regId) {
-        this.regId = regId;
+    public void setRegisteredId(Integer registeredId) {
+        this.registeredId = registeredId;
     }
 
     /**
      * 获取患者预约id
      *
-     * @return appoint_id - 患者预约id
+     * @return appointment_id - 患者预约id
      */
-    public Integer getAppointId() {
-        return appointId;
+    public Integer getAppointmentId() {
+        return appointmentId;
     }
 
     /**
      * 设置患者预约id
      *
-     * @param appointId 患者预约id
+     * @param appointmentId 患者预约id
      */
-    public void setAppointId(Integer appointId) {
-        this.appointId = appointId;
+    public void setAppointmentId(Integer appointmentId) {
+        this.appointmentId = appointmentId;
     }
 
     /**
@@ -254,18 +260,18 @@ public class TreatmentRecord {
     }
 
     /**
-     * 获取诊疗状态(2-待接诊；3-接诊中；4-接诊完成；5-离店)
+     * 获取诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
      *
-     * @return status - 诊疗状态(2-待接诊；3-接诊中；4-接诊完成；5-离店)
+     * @return status - 诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
      */
     public Byte getStatus() {
         return status;
     }
 
     /**
-     * 设置诊疗状态(2-待接诊；3-接诊中；4-接诊完成；5-离店)
+     * 设置诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
      *
-     * @param status 诊疗状态(2-待接诊；3-接诊中；4-接诊完成；5-离店)
+     * @param status 诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
      */
     public void setStatus(Byte status) {
         this.status = status;
@@ -305,6 +311,14 @@ public class TreatmentRecord {
      */
     public void setTreatEndTime(Date treatEndTime) {
         this.treatEndTime = treatEndTime;
+    }
+
+    public Boolean getMedicalRecordCompleted() {
+        return medicalRecordCompleted;
+    }
+
+    public void setMedicalRecordCompleted(Boolean medicalRecordCompleted) {
+        this.medicalRecordCompleted = medicalRecordCompleted;
     }
 
     /**

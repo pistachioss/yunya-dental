@@ -1,10 +1,18 @@
 package com.yunya.modules.treatment.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
 import io.swagger.annotations.Api;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 简介: 患者接诊管理控制器
@@ -18,6 +26,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("admission")
 public class TreatmentRecordController {
+
   /** 注入服务 */
-  @Autowired private TreatmentRecordBiz treatmentRecordBiz;
+  private final TreatmentRecordBiz treatmentRecordBiz;
+
+  public TreatmentRecordController(TreatmentRecordBiz treatmentRecordBiz) {
+    this.treatmentRecordBiz = treatmentRecordBiz;
+  }
+
+  /**
+   * 根据挂号ID接诊患者
+   *
+   * @param regId 挂号ID
+   * @return
+   */
+  @ApiOperation("开始接诊")
+  @ApiImplicitParam(name = "regId", required = true, value = "患者挂号ID")
+  @CurrentUser
+  @GetMapping("/start/{regId}")
+  public ResponseResult startTreatment(@PathVariable(value = "regId") Integer regId) {
+    treatmentRecordBiz.startTreatment(regId);
+    return ResponseUtil.success();
+  }
+
+  @ApiOperation("根据条件查询就诊中患者列表信息（可分页）")
+  @PostMapping("/list")
+  public ResponseResult findTreatList(@RequestBody @Validated TreatmentRecordQueryForm queryForm) {
+    PageInfo<TreatmentPatientInfoVO> resultList = treatmentRecordBiz.findTreatingList(queryForm);
+    return ResponseUtil.success(resultList);
+  }
 }
