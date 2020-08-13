@@ -57,6 +57,11 @@ public class PatientBaseInfoModel implements Serializable {
     private String woGuid;
 
     /**
+     * 患者头像url
+     */
+    private String faceUrl;
+
+    /**
      * 手机号码 长度14
      */
     @NotBlank(message = "患者手机号不能为空")

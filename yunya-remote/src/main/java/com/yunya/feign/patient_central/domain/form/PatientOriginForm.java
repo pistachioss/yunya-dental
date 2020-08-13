@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -40,6 +41,11 @@ public class PatientOriginForm implements Serializable {
     @NotNull(message = "患者来源名称不能为空！")
     @ApiModelProperty(value = "患者来源父ID（顶级为0）",required = true)
     private String name;
+
+    /**
+     * 患者来源类型 1.员工 2.老患者 3.活动 4.合作商
+     */
+    private Integer originType;
 
     /**
      * 二维码地址

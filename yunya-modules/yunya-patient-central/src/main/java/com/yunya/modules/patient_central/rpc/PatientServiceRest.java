@@ -88,4 +88,11 @@ public class PatientServiceRest {
         return patientBaseInfoBiz.selectList(patientBaseInfo);
     }
 
+    @ApiOperation("根据门诊id获取病历号后六位")
+    @RequestMapping (value = "/medical/{orgId}",method = RequestMethod.GET)
+    public String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId){
+        return patientBaseInfoBiz.findMedicalNumberByOrgId(orgId);
+    }
+
+
 }

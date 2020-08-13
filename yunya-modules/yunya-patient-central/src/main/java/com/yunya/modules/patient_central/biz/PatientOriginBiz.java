@@ -8,6 +8,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.patient_central.PatientOrigin;
@@ -120,5 +121,22 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         }
         mapper.deleteByPrimaryKey(id);
         return ResponseUtil.success();
+    }
+
+    /**
+     * 根据患者来源type查询相应信息
+     * @param patientOrigin
+     * @return List<PatientOrigin>
+     */
+    public List<PatientOrigin> findPatientOriginByTypt(PatientOrigin patientOrigin) {
+        List<PatientOrigin> patientOriginByTypt = mapper.findPatientOriginByTypt(patientOrigin);
+        for (PatientOrigin origin : patientOriginByTypt) {
+            if(origin.getTimeLimit() == 1){
+               if(DateUtil.isEffectiveDate(new Date(),origin.getLimitStartDate(),origin.getLimitEndDate()) == false){
+                   patientOriginByTypt.remove(origin);
+               }
+            }
+        }
+        return patientOriginByTypt;
     }
 }

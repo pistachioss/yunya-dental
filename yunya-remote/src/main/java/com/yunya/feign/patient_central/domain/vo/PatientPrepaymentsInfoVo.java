@@ -8,7 +8,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 预付款基本信息Vo
  *
  * @author: WY
  * @date 2020/7/31 9:46

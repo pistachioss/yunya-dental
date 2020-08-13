@@ -178,10 +178,11 @@ public class AppointmentController {
      */
     @ApiOperation(value = "根据条件查询医生维度预约可视图")
     @PostMapping("/find/dentist/dimension")
-    public ResponseResult findAppointmentDentistDimensionByExample(@RequestBody AppointDentistListByDateQuery query){
+    public ResponseResult findAppointmentDentistDimensionByExample(@RequestBody AppointmentPatientDimensionByDayQuery query){
 
-        List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample = appointmentBiz.findAppointmentDentistDimensionByExample(query);
-        return ResponseUtil.success(appointmentDentistDimensionByExample);
+       // List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample = appointmentBiz.findAppointmentDentistDimensionByExample(query);
+
+        return ResponseUtil.success();
     }
 
 

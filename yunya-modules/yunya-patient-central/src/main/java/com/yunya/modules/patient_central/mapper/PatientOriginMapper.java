@@ -27,4 +27,11 @@ public interface PatientOriginMapper extends Mapper<PatientOrigin> {
      * @return
      */
     PatientOrigin findPatientOriginByName(@Param("name") String name);
+
+    /**
+     * 根据患者来源type和 name 模糊查询
+     * @param patientOrigin
+     * @return List<PatientOrigin>
+     */
+    List<PatientOrigin> findPatientOriginByTypt(@Param("from") PatientOrigin patientOrigin);
 }

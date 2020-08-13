@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 患者来源信息Vo
  *
  * @author: WY
  * @date 2020/8/5 14:49
@@ -33,6 +33,11 @@ public class PatientOriginInfoVo implements Serializable {
      * 患者来源名称
      */
     private String name;
+
+    /**
+     * 患者来源类型 1.员工 2.老患者 3.活动 4.合作商
+     */
+    private Integer originType;
 
     /**
      * 二维码地址

@@ -121,6 +121,14 @@
     where pbi.id = #{id}
   </select>
 
+  <select id="findMedicalNumberByOrgId" resultType="java.lang.String">
+    SELECT
+    IFNULL( MAX( SUBSTR( medical_number, 10, 6 )), '000000' ) AS maxNum
+    FROM
+    patient_base_info
+    WHERE org_id = #{orgId}
+  </select>
+
 
 </mapper>
 

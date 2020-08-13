@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 患者推荐关系Vo
  *
  * @author: WY
  * @date 2020/7/29 14:13

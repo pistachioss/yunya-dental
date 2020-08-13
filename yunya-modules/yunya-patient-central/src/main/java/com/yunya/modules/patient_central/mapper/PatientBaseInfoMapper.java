@@ -93,4 +93,14 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
      * @return PatientVisitInfoVo
      */
     PatientVisitInfoVo findPatientVisitInfo(@Param("id") Integer id);
+
+
+    /**
+     * 根据门诊id获取病历号后六位
+     *
+     * @param orgId
+     * @return String
+     */
+    String findMedicalNumberByOrgId(@Param("orgId") Integer orgId);
+
 }

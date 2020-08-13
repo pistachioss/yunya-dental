@@ -8,9 +8,12 @@ import com.uniubi.sdk.model.ResultPersonCreateOutput;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.model.PictureModel;
+import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.tariff.RemoteTariffServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -26,8 +29,10 @@ import com.yunya.models.patient_central.PatientExtInfo;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
+import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
@@ -66,6 +71,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   @Autowired private WoPersonBiz woPersonBiz;
+
+  @Autowired private PatientOriginBiz patientOriginBiz;
 
   /**
    * 通过患者id查询患者共用属性
@@ -379,4 +386,34 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     return labels.toString();
   }
 
+  /**
+   * 模糊查询员工/老患者信息
+   * @param form
+   * @return ResponseResult
+   */
+  public ResponseResult findPatientAndStaffListInfo(PatientAndStaffListInfoQueryForm form) {
+    switch (form.getOriginType()) {
+      case 1:
+        SysUserEmployeeModel model = new SysUserEmployeeModel();
+        model.setKeyWord(form.getName());
+        return ResponseUtil.success(remoteSystemServiceFeign.findSysUserEmployeeInfoList(model));
+      case 2:
+        PatientLikeFinleQueryForm Patientmodel = new PatientLikeFinleQueryForm();
+        Patientmodel.setCondition(form.getName());
+        return ResponseUtil.success(patientBaseInfoMapper.findPatientByNameAndMobile(Patientmodel));
+      default:
+        break;
+    }
+    return ResponseUtil.error("请填写正确的患者来源类型","");
+  }
+
+
+  /**
+   * 根据门诊id获取病历号后六位
+   * @param orgId
+   * @return String
+   */
+  public String findMedicalNumberByOrgId(Integer orgId) {
+    return mapper.findMedicalNumberByOrgId(orgId);
+  }
 }

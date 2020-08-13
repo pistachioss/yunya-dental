@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -34,6 +35,11 @@ public class PatientOriginTreeVo extends TreeNode {
      * 患者来源名称
      */
     private String name;
+
+    /**
+     * 患者来源类型 1.员工 2.老患者 3.活动 4.合作商
+     */
+    private Integer originType;
 
     /**
      * 二维码地址
