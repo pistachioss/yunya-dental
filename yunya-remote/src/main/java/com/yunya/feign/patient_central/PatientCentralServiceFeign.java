@@ -87,4 +87,12 @@ public interface PatientCentralServiceFeign {
      */
     @RequestMapping (value = "/findPatientInfoList/{id}",method = RequestMethod.POST)
     List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo);
+
+    /**
+     * 根据门诊id获取病历号后六位
+     * @param orgId
+     * @return
+     */
+    @RequestMapping (value = "/medical/{orgId}",method = RequestMethod.GET)
+    String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId);
 }
