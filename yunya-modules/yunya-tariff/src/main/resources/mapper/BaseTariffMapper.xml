@@ -153,12 +153,12 @@
             resultType="com.yunya.feign.tariff.domain.vo.BaseTariffAssociationExportVO">
         select
         bt.item_number as itemNumber,
-        bt.`name`,
+        bt.`name` as name,
         btc.`name` as tariffCategoryName,
         btc.number as tariffCategoryNumber,
         bt.english_name as englishName,
-        ifnull( bt.emr, '--' ),
-        ifnull( bt.attention, '--' ),
+        ifnull( bt.emr, '--' ) as emr,
+        ifnull( bt.attention, '--' ) as attention,
         ifnull( bt.fellow_up, '--' ) as fellowUp
         from
         base_tariff bt
