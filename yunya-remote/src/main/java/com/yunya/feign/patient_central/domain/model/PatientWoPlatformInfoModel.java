@@ -65,8 +65,6 @@ public class PatientWoPlatformInfoModel implements Serializable {
     @ApiModelProperty(value = "识别模式判断 1. 模式正确 2.模式不正确")
     private String recModeType;
 
-    @ApiModelProperty(value = "患者人员信息")
-    private PatientIdCardlnfoModel idCardInfo;
 
 
 }

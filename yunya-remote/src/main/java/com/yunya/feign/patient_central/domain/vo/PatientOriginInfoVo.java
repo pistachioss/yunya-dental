@@ -9,7 +9,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 患者来源信息Vo
  *
  * @author: WY
  * @date 2020/8/5 14:49

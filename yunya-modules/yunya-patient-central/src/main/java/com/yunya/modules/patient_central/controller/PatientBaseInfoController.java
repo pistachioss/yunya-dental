@@ -5,6 +5,7 @@ import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.model.PictureModel;
+import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
@@ -129,7 +130,11 @@ public class PatientBaseInfoController {
         return ResponseUtil.success(patientBaseInfoBiz.findPatientVisitInfo(id));
     }
 
-
+    @ApiOperation("模糊查询员工/老患者信息")
+    @GetMapping("/findPatientAndStaffListInfo")
+    public ResponseResult findPatientAndStaffListInfo(@RequestBody @Validated PatientAndStaffListInfoQueryForm form){
+        return patientBaseInfoBiz.findPatientAndStaffListInfo(form);
+    }
 
 
 }

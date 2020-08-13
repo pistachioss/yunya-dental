@@ -23,6 +23,12 @@ public class PatientOrigin {
     private String name;
 
     /**
+     * 患者来源类型
+     */
+    @Column(name = "origin_type")
+    private Integer originType;
+
+    /**
      * 二维码地址
      */
     @Column(name = "qr_code_path")
@@ -362,5 +368,22 @@ public class PatientOrigin {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取患者来源类型 3活动来源 4合作商来源
+     *
+     * @return originType
+     */
+    public Integer getOriginType() {
+        return originType;
+    }
+    /**
+     * 设置患者来源类型 3活动来源 4合作商来源
+     *
+     * @param originType
+     */
+    public void setOriginType(Integer originType) {
+        this.originType = originType;
     }
 }
