@@ -66,7 +66,7 @@ public class EntityUtils {
             : Integer.valueOf(request.getHeader("userId"));
 
     if (StringUtils.isBlank(name)) {
-      name = BaseContextHandler.getUsername();
+      name = BaseContextHandler.getName();
     }
     if (id == null) {
       id =
@@ -74,10 +74,10 @@ public class EntityUtils {
               ? null
               : Integer.valueOf(BaseContextHandler.getUserID());
     }
-    if( id == null) {
+    if (id == null) {
       id = 0;
     }
-    if( name == null) {
+    if (name == null) {
       name = "guest";
     }
 
@@ -119,7 +119,7 @@ public class EntityUtils {
             : Integer.valueOf(request.getHeader("userId"));
 
     if (StringUtils.isBlank(name)) {
-      name = BaseContextHandler.getUsername();
+      name = BaseContextHandler.getName();
     }
     if (id == null) {
       id =
@@ -127,10 +127,10 @@ public class EntityUtils {
               ? null
               : Integer.valueOf(BaseContextHandler.getUserID());
     }
-    if( id == null) {
+    if (id == null) {
       id = 0;
     }
-    if( name == null) {
+    if (name == null) {
       name = "guest";
     }
 
