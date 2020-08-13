@@ -122,6 +122,7 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
       // 设置排班列表
       for (int i = 0; i < days; i++) {
         calendar.getTime();
+        int num = 0;
         for (EmployeeScheduleVO employeeScheduleVO : EmployeeScheduleVOs) {
           WorkDayVO workDayData = new WorkDayVO();
           if (calendar.getTime().equals(employeeScheduleVO.getWorkDate())) {
@@ -142,10 +143,17 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
             workDayData.setName( ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());//班次名称
             workDayData.setDate(employeeScheduleVO.getWorkDate());
             workDayData.setCompClinId(employeeScheduleVO.getClinicId());
+            num = num+1;
           }
+          if(workDayData.getId()!=null){
+            workDayDatas.add(workDayData);
+          }
+        }
+        if(num==0){
+          WorkDayVO workDayData = new WorkDayVO();
+          workDayData.setDate(calendar.getTime());
           workDayDatas.add(workDayData);
         }
-
         calendar.add(Calendar.DATE, +COUNT);
       }
       userWorkMap.setDays(workDayDatas);
