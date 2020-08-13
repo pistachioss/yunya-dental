@@ -54,6 +54,7 @@
             <if test="queryForm.dentistId != null">
                 and tr.dentist_id = #{queryForm.dentistId}
             </if>
+            order by tr.id desc
         </where>
     </select>
 </mapper>

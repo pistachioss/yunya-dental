@@ -104,8 +104,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   private String generateMedicalRecordNumber(Integer orgId) {
     PatientBaseInfo patientInfo = new PatientBaseInfo();
     patientInfo.setOrgId(orgId);
-    List<PatientBaseInfo> patientInfoList = patientServiceFeign.findPatientInfoList(patientInfo);
-    String suffix = String.format("%06d", patientInfoList.size() + 1);
+    String number = patientServiceFeign.findMedicalNumberByOrgId(orgId);
+    String suffix = String.format("%06d", Integer.parseInt(number) + 1);
     return String.format("%04d", orgId) + new DateTime().toString("yyMMdd") + suffix;
   }
 
@@ -133,8 +133,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             // 设置候诊患者接诊信息
             setTreatingInfo(vo);
           });
-
-
     }
     return new PageInfo<>(treatingList);
   }

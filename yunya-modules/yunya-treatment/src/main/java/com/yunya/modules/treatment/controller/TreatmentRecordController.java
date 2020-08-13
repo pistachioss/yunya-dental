@@ -6,7 +6,6 @@ import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -49,6 +48,12 @@ public class TreatmentRecordController {
     return ResponseUtil.success();
   }
 
+  /**
+   * 根据条件查询就诊中患者列表信息（可分页）
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
   @ApiOperation("根据条件查询就诊中患者列表信息（可分页）")
   @PostMapping("/list")
   public ResponseResult findTreatList(@RequestBody @Validated TreatmentRecordQueryForm queryForm) {
