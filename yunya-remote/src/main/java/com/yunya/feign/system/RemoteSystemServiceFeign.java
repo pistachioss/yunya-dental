@@ -204,7 +204,7 @@ public interface RemoteSystemServiceFeign {
    * @param id 科室模板ID
    * @return
    */
-  @RequestMapping(value = "/api//deptRoom/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/deptRoom/{id}", method = RequestMethod.GET)
   DepartmentRoom findDepartmentRoomById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -213,7 +213,7 @@ public interface RemoteSystemServiceFeign {
    * @param departmentRoom 查询条件
    * @return
    */
-  @RequestMapping(value = "/api//deptRoom/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/deptRoom/list", method = RequestMethod.POST)
   List<DepartmentRoom> findDepartmentRoomList(@RequestBody DepartmentRoom departmentRoom);
 
   /**
@@ -222,7 +222,7 @@ public interface RemoteSystemServiceFeign {
    * @param id 门诊科室ID
    * @return
    */
-  @RequestMapping(value = "/api//deptRoom/clinic/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/deptRoom/clinic/{id}", method = RequestMethod.GET)
   ClinicDepartmentRoomVO findClinicDepartmentRoomById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -231,7 +231,7 @@ public interface RemoteSystemServiceFeign {
    * @param queryForm 查询条件
    * @return
    */
-  @RequestMapping(value = "/api//deptRoom/clinic/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/deptRoom/clinic/list", method = RequestMethod.POST)
   List<ClinicDepartmentRoomVO> findClinicDepartmentRoomList(
       @RequestBody ClinicDepartmentRoomQueryForm queryForm);
 
@@ -241,7 +241,7 @@ public interface RemoteSystemServiceFeign {
    * @param id 会员卡分类ID
    * @return
    */
-  @RequestMapping(value = "/api//memberType/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/memberType/{id}", method = RequestMethod.GET)
   MemberType findMemberTypeById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -250,7 +250,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/api//memberType/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/memberType/list", method = RequestMethod.POST)
   List<MemberType> findMemberTypeList(@RequestBody MemberType model);
 
   /**
@@ -259,7 +259,7 @@ public interface RemoteSystemServiceFeign {
    * @param id 入账方式分类ID
    * @return
    */
-  @RequestMapping(value = "/api//accountType/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/accountType/{id}", method = RequestMethod.GET)
   AccountType findAccountTypeById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -268,7 +268,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/api//accountType/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/accountType/list", method = RequestMethod.POST)
   List<AccountType> findAccountTypeList(@RequestBody AccountType model);
 
   /**
@@ -277,7 +277,7 @@ public interface RemoteSystemServiceFeign {
    * @param id 入账方式ID
    * @return
    */
-  @RequestMapping(value = "/api//accountItem/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/accountItem/{id}", method = RequestMethod.GET)
   AccountItem findAccountItemById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -286,7 +286,7 @@ public interface RemoteSystemServiceFeign {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/api//accountItem/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/accountItem/list", method = RequestMethod.POST)
   List<AccountItem> findAccountItemList(@RequestBody AccountItem model);
 
   /**
@@ -295,7 +295,7 @@ public interface RemoteSystemServiceFeign {
    * @param id 门诊入账方式ID
    * @return
    */
-  @RequestMapping(value = "/api//accountItem/clinic/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/api/accountItem/clinic/{id}", method = RequestMethod.GET)
   ClinicAccountItemVO findClinicAccountItemById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -304,7 +304,7 @@ public interface RemoteSystemServiceFeign {
    * @param queryForm 查询条件
    * @return
    */
-  @RequestMapping(value = "/api//accountItem/clinic/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/accountItem/clinic/list", method = RequestMethod.POST)
   List<ClinicAccountItemVO> findClinicAccountItemList(
           @RequestBody ClinicAccountItemQueryForm queryForm);
 
