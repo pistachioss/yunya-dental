@@ -446,6 +446,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             DepartmentRoom departmentRoom = remoteSystemServiceFeign.findDepartmentRoomById(appointmentVo.getClinicDeptRoomId());
             build.setClinicDeptRoomName(departmentRoom.getName());
 
+            // 欠费金额 服务还没做，先空着，后面补上 TODO
+
             appointmentList.add(build);
         });
 
@@ -461,7 +463,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 按病历号检索
         if (!StringHelper.isEmpty(query.getMedicalNumber())){
-            collect = appointmentList.stream()
+            if (collect == null){
+                collect = appointmentList;
+            }
+            collect = collect.stream()
                     .filter(
                             appointmentListItemVo -> appointmentListItemVo.getMedicalNumber().equals(query.getMedicalNumber())
                     ).collect(Collectors.toList());
@@ -469,7 +474,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 按预约医生检索
         if (!StringHelper.isEmpty(query.getDentistName())){
-            collect = appointmentList.stream()
+            if (collect == null){
+                collect = appointmentList;
+            }
+            collect = collect.stream()
                     .filter(
                             appointmentListItemVo -> appointmentListItemVo.getDentistName().equals(query.getDentistName())
                     ).collect(Collectors.toList());
@@ -477,7 +485,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 按姓名/手机号/姓名拼音
         if (!StringHelper.isEmpty(query.getSeach())){
-            collect = appointmentList.stream()
+            if (collect == null){
+                collect = appointmentList;
+            }
+            collect = collect.stream()
                     .filter(
                             appointmentListItemVo -> appointmentListItemVo.getPatientName().contains(query.getSeach())
                             || appointmentListItemVo.getMobile().equals(query.getSeach())
