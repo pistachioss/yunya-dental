@@ -1,5 +1,6 @@
 package com.yunya.feign.appointment.domain.query;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -8,6 +9,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 条件查询预约分解
@@ -33,6 +35,12 @@ public class AppointmentSplitQuery implements Serializable {
     /** 医生id/助手id */
     @ApiModelProperty(value = "医生id/助手id")
     private Integer assistantId;
+
+    /** 预约日期 */
+    @ApiModelProperty(value = "预约日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date appointDate;
+
 
     /** 是否启用 是否有效 */
     @ApiModelProperty(value = "是否启用 是否有效")

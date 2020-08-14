@@ -10,15 +10,18 @@ import java.util.*;
 public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<ApprovalRecord> {
 
     /**
-     * 根据条件查询审批记录
+     * 查询草稿病例是否已经存在审批记录
      * @param eventId
-     * @param eventType
-     * @param status
      * @return
      */
-    int countByEventIdAndType(@Param("eventId") Integer eventId, @Param("eventType") Integer eventType,
-                             @Param("status") Integer status);
+    int countDraftByEventId(@Param("eventId") Integer eventId);
 
+    /**
+     * 查询新增变更待审批数量
+     * @param eventId eventId
+     * @return count
+     */
+    int countToAuditChangeByEventId(@Param("eventId") Integer eventId);
 
     /**
      * 查询草稿审批历史

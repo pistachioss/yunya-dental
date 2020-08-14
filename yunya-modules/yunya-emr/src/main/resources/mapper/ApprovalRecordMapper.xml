@@ -19,17 +19,22 @@
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
     </resultMap>
 
-    <select id="countByEventIdAndType" resultType="int">
+    <select id="countDraftByEventId" resultType="int">
         select
             count(*)
         from `approval_record`
         where `event_id` = #{eventId}
-          <if test="eventType != null">
-            and `event_type` = #{eventType}
-          </if>
-          <if test="status != null">
-            and `status` = #{status}
-          </if >
+          and `event_type` = 0
+    </select>
+
+    <select id="countToAuditChangeByEventId" resultType="int">
+        select
+            count(*)
+        from `approval_record`
+        where `event_id` = #{eventId}
+          and `event_type` = 1
+          and `apply_type` = 0
+          and `status` = 0
     </select>
 
     <select id="findNewestDraft" resultMap="BaseResultMap">
@@ -37,6 +42,7 @@
             `id`,
             `event_id`,
             `approve_time`,
+            `proposer_id`,
             `status`
         from `approval_record`
         where `event_id` = #{eventId}
@@ -69,7 +75,7 @@
             `event_id`,
             `approve_time`,
             `dead_time`,
-            `status`
+            `proposer_id`
         from `approval_record`
         where `event_id` = #{treatmentId}
           and `event_type` = 1

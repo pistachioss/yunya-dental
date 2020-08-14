@@ -15,7 +15,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-public class PatientMemberRelationVO implements Serializable {
+public class PatientMemberRelationVo implements Serializable {
 
     /**
      * 诊所Id

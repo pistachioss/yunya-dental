@@ -24,4 +24,9 @@ public enum EventTypeEnum {
     public Integer getCode() {
         return code;
     }
+
+    public boolean equals(Integer code)
+    {
+        return this.code.equals(code);
+    }
 }

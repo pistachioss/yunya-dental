@@ -1,6 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientOriginVo;
 import com.yunya.models.patient_central.PatientOrigin;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -34,4 +35,16 @@ public interface PatientOriginMapper extends Mapper<PatientOrigin> {
      * @return List<PatientOrigin>
      */
     List<PatientOrigin> findPatientOriginByTypt(@Param("from") PatientOrigin patientOrigin);
+
+    /**
+     * 查询父级患者来源
+     * @return List<PatientOriginVo>
+     */
+    List<PatientOriginVo> originalType();
+
+    /**
+     * 查询患者来源类型
+     * @return List<PatientOriginInfoVo>
+     */
+    List<PatientOriginInfoVo> selectOriginalType();
 }

@@ -20,11 +20,15 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-  <select id="FindMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
-    select id from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
-  </select>
+    <select id="FindMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
+      select id from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+    </select>
 
-  <delete id="deleteByPatientId">
-    delete from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
-  </delete>
+    <delete id="deleteByPatientId">
+      delete from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+    </delete>
+
+    <delete id="deleteMemberRelation">
+       delete from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId}
+    </delete>
 </mapper>

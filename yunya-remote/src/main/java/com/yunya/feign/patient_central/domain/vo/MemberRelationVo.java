@@ -16,9 +16,9 @@ import java.util.List;
  */
 @Data
 @ToString
-public class MemberRelationVO implements Serializable {
+public class MemberRelationVo implements Serializable {
 
-    private  List<PatientMemberRelationVO> MemberRelationList;
+    private  List<PatientMemberRelationVo> MemberRelationList;
 
-    private  List<PatientMemberRelationVO> MemberBalanceRelationList;
+    private  List<PatientMemberRelationVo> MemberBalanceRelationList;
 }

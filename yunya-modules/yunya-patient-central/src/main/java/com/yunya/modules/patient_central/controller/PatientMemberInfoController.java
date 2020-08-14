@@ -1,6 +1,8 @@
 package com.yunya.modules.patient_central.controller;
 
+import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
+import com.yunya.feign.patient_central.domain.model.openCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -33,13 +35,13 @@ public class PatientMemberInfoController {
     }
 
     @ApiOperation("会员基本信息")
-    @GetMapping("/findMemberBaseInfo/{id}")
+    @GetMapping("/basicInformation/{id}")
     public ResponseResult findMemberBaseInfo(@PathVariable("id") Integer id){
         return ResponseUtil.success(patientMemberInfoBiz.findMemberBaseInfo(id));
     }
 
     @ApiOperation("会员卡关联查询")
-    @GetMapping("/findMemberBindingRelation")
+    @PostMapping("/relatedInformation")
     public ResponseResult findMemberBindingRelation(@RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm){
         return ResponseUtil.success(patientMemberInfoBiz.findMemberBindingRelation(patientMemberRelationQueryForm));
     }
@@ -53,11 +55,28 @@ public class PatientMemberInfoController {
     }
 
     @ApiOperation("删除会员卡关联关系")
-    @DeleteMapping("/deleteById/{id}")
-    public ResponseResult deleteById(@PathVariable("id") Integer id){
-        patientMemberInfoBiz.deleteById(id);
+    @DeleteMapping("/delete")
+    public ResponseResult deleteById(@RequestBody CardRelationForm cardRelationForm){
+        patientMemberInfoBiz.deleteRelationById(cardRelationForm);
         return ResponseUtil.success();
     }
+
+    @CurrentUser
+    @ApiOperation("开卡")
+    @PostMapping("/openCard")
+    public ResponseResult addMemberCard(@RequestBody openCardModel openCardModel){
+        patientMemberInfoBiz.addMemberCard(openCardModel);
+        return ResponseUtil.success();
+    }
+
+    @ApiOperation("变更会员卡类型")
+    @PostMapping("/change")
+    public ResponseResult changeType(@RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm){
+        //patientMemberInfoBiz.changeType(patientMemberRelationQueryForm)
+        return ResponseUtil.success();
+    }
+
+
 
 
 

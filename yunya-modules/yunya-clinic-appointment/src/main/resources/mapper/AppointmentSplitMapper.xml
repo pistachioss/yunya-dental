@@ -52,16 +52,24 @@
       split.remarks,
       split.inservice
     from appointment_split split
-    where split.org_id = #{query.orgId}
-    <if test="query.appointmentId != null">
-      and split.appointment_id = #{query.appointmentId}
-    </if>
-    <if test="query.assistantId != null">
-      and split.assistant_id = #{query.assistantId}
-    </if>
-    <if test="query.inservice != null">
-      and split.inservice = #{query.inservice}
-    </if>
+
+    <where>
+      split.org_id = #{query.orgId}
+      <if test="query.appointmentId != null">
+        and split.appointment_id = #{query.appointmentId}
+      </if>
+      <if test="query.assistantId != null">
+        and split.assistant_id = #{query.assistantId}
+      </if>
+      <if test="query.inservice != null">
+        and split.inservice = #{query.inservice}
+      </if>
+      <if test="query.appointDate != null">
+        and DATE_FORMAT(split.split_start_time,'%Y-%m-%d') = DATE_FORMAT(#{query.appointDate},'%Y-%m-%d')
+      </if>
+    </where>
+
+
   </select>
 
 </mapper>

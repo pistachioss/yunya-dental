@@ -41,4 +41,9 @@ public enum ApplyTypeEnum {
         }
         return null;
     }
+
+    public boolean equals(Integer code)
+    {
+        return this.code.equals(code);
+    }
 }

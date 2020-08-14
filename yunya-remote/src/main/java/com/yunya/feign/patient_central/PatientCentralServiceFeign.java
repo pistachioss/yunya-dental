@@ -54,7 +54,7 @@ public interface PatientCentralServiceFeign {
      * @param id
      * @return
      */
-    @RequestMapping (value = "/findPatientData/{id}",method = RequestMethod.GET)
+    @RequestMapping (value = "/api/findPatientDataInfo/{id}",method = RequestMethod.GET)
     PatientTotalInfoVo findPatientTotalInfo(@PathVariable("id") Integer id);
 
     /**
@@ -62,14 +62,14 @@ public interface PatientCentralServiceFeign {
      * @param patientMemberInfo
      * @return
      */
-    @RequestMapping (value = "/findPatientMemberInfo",method = RequestMethod.POST)
+    @RequestMapping (value = "/api/findPatientMemberInfo",method = RequestMethod.POST)
     List<PatientMemberInfo> findPatientMemberInfo(@RequestBody PatientMemberInfo patientMemberInfo);
 
     /**
      * 修改患者信息
      * @param patientBaseInfo
      */
-    @RequestMapping (value = "/updatePatientInfo",method = RequestMethod.POST)
+    @RequestMapping (value = "/api/updatePatientInfo",method = RequestMethod.POST)
     void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
 
     /**
@@ -77,7 +77,7 @@ public interface PatientCentralServiceFeign {
      * @param patientBaseInfo
      * @return
      */
-    @RequestMapping (value = "/findPatientInfo/{id}",method = RequestMethod.POST)
+    @RequestMapping (value = "/api/findPatientInfo/{id}",method = RequestMethod.POST)
     PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
 
     /**
@@ -85,7 +85,7 @@ public interface PatientCentralServiceFeign {
      * @param patientBaseInfo
      * @return
      */
-    @RequestMapping (value = "/findPatientInfoList/{id}",method = RequestMethod.POST)
+    @RequestMapping (value = "/api/findPatientInfoList/{id}",method = RequestMethod.POST)
     List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo);
 
     /**
@@ -93,6 +93,6 @@ public interface PatientCentralServiceFeign {
      * @param orgId
      * @return
      */
-    @RequestMapping (value = "/medical/{orgId}",method = RequestMethod.GET)
+    @RequestMapping (value = "/api/medical/{orgId}",method = RequestMethod.GET)
     String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId);
 }

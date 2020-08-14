@@ -1,8 +1,8 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVO;
-import com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVO;
+import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -15,12 +15,19 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @param id
      * @return
      */
-    MemberBaseInfoVO findMemberBaseInfo(@Param("id") Integer id);
+    MemberBaseInfoVo findMemberBaseInfo(@Param("id") Integer id);
 
     /**
      * 查询会员卡关联关系
      * @param form
      * @return List<PatientMemberRelationVO>
      */
-    List<PatientMemberRelationVO> findMemberBindingRelation(@Param("form") PatientMemberRelationQueryForm form);
+    List<PatientMemberRelationVo> findMemberBindingRelation(@Param("form") PatientMemberRelationQueryForm form);
+
+    /**
+     * 根据门诊id获取病历号后八位
+     * @param id
+     * @return
+     */
+    String generateCardNumber(@Param("orgId") Integer id);
 }

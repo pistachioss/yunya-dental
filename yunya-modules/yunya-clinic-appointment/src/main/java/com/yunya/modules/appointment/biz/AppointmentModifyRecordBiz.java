@@ -13,7 +13,6 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.modules.appointment.mapper.AppointmentModifyRecordMapper;
-import io.swagger.models.auth.In;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

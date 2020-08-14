@@ -59,7 +59,7 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("根据患者id查询患者资料")
-    @RequestMapping (value = "/findPatientData/{id}",method = RequestMethod.GET)
+    @RequestMapping (value = "/findPatientDataInfo/{id}",method = RequestMethod.GET)
     public PatientTotalInfoVo findPatientTotalInfo(@PathVariable("id") Integer id){
         return patientBaseInfoBiz.findPatientTotalInfo(id);
     }

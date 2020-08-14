@@ -17,7 +17,7 @@ import java.util.Date;
  */
 @Data
 @ToString
-public class MemberBaseInfoVO implements Serializable {
+public class MemberBaseInfoVo implements Serializable {
 
     /**
      * 会员卡卡号

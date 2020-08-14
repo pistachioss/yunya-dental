@@ -2,14 +2,20 @@ package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.form.PatientOriginForm;
 import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
+import com.yunya.feign.patient_central.domain.model.PictureModel;
+import com.yunya.feign.patient_central.domain.query.OriginTypeQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.modules.patient_central.biz.PatientOriginBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.text.ParseException;
 
 /**
  * 简单介绍:</br> 患者来源管理 控制层
@@ -55,6 +61,25 @@ public class PatientOriginController {
     @DeleteMapping("/delete/{id}")
     public ResponseResult delete(@PathVariable("id") Integer id){
         return patientOriginBiz.deleteOriginById(id);
+    }
+
+
+    @ApiOperation("模糊查询员工/老患者信息")
+    @PostMapping("/originType")
+    public ResponseResult findPatientAndStaffListInfo(@RequestBody @Validated PatientAndStaffListInfoQueryForm form){
+        return patientOriginBiz.findPatientAndStaffListInfo(form);
+    }
+
+    @ApiOperation("查询活动/合作商信息")
+    @PostMapping("/originTypeList")
+    public ResponseResult findPatientOriginByTypt(@RequestBody OriginTypeQueryForm form){
+        return ResponseUtil.success(patientOriginBiz.findPatientOriginByTypt(form));
+    }
+
+    @ApiOperation("查询患者来源类型")
+    @GetMapping("/originalType")
+    public ResponseResult findoriginalType(){
+        return ResponseUtil.success(patientOriginBiz.originalType());
     }
 
 

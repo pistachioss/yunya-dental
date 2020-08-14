@@ -1,5 +1,8 @@
 package com.yunya.framework.common.utils;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -76,4 +79,29 @@ public class DateUtil {
             return false;
         }
     }
+
+    /*public static Boolean isEffectiveDate1(String dangqian,String kaishi,String end) throws ParseException {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        System.out.println(dangqian);
+        System.out.println(kaishi);
+        System.out.println(end);
+
+        System.out.println(dateFormat.parse(kaishi).getTime()+"<"+dateFormat.parse(dangqian).getTime());
+        System.out.println(dateFormat.parse(end).getTime()+">"+dateFormat.parse(dangqian).getTime());
+        if(dateFormat.parse(kaishi).getTime() < dateFormat.parse(dangqian).getTime()){
+            System.out.println("true;");
+        }
+        if(dateFormat.parse(end).getTime() > dateFormat.parse(dangqian).getTime()){
+            System.out.println("false;");
+        }
+        if(dateFormat.parse(kaishi).getTime() < dateFormat.parse(dangqian).getTime() && dateFormat.parse(end).getTime() > dateFormat.parse(dangqian).getTime()){
+            System.out.println("true;");
+            System.out.println("------------------------------------------;");
+            return true;
+        }else {
+            System.out.println("false;");
+            System.out.println("------------------------------------------;");
+            return false;
+        }
+    }*/
 }

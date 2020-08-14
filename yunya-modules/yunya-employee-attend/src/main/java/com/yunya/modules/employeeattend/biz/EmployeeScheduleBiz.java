@@ -181,11 +181,11 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                 EmployeeScheduleExportVO employeeScheduleExportVO = new EmployeeScheduleExportVO();
                 employeeScheduleExportVO.setName(employeeMap.get(employeeScheduleCopyVO.getEmployeeId() + "").getName());
                 employeeScheduleExportVO.setCopy_date(dateFormatExport.format(employeeScheduleCopyVO.getWorkDate()));
-                employeeScheduleExportVO.setCopy_company_name(clinicMap.get(employeeScheduleCopyVO.getClinicId() + "").getName());
+                employeeScheduleExportVO.setCopy_company_name(clinicMap.get(employeeScheduleCopyVO.getClinicId() + "").getAbbreviation());
                 employeeScheduleExportVO.setCopy_schedule(employeeScheduleCopyVO.getScheduleName() + "(" + dateFormat.format(EmpStartTime) + "-" + dateFormat.format(EmpEndTime) + ")");
 
                 employeeScheduleExportVO.setCover_date(dateFormatExport.format(copyVO.getWorkDate()));
-                employeeScheduleExportVO.setCover_company_name(clinicMap.get(copyVO.getClinicId() + "").getName());
+                employeeScheduleExportVO.setCover_company_name(clinicMap.get(copyVO.getClinicId() + "").getAbbreviation());
                 employeeScheduleExportVO.setCover_schedule(copyVO.getScheduleName() + "(" + dateFormat.format(copyVoStratTime) + "-" + dateFormat.format(copyVoEndTime) + ")");
                 employeeConflict.add(employeeScheduleExportVO);
               }
@@ -310,7 +310,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             String simtime = dateFormat.format(startTime) + "-" + dateFormat.format(endTime);
 
             workDayData.put("companyType", clinicMap.get(employeeScheduleVO.getClinicId() + "").getType());
-            workDayData.put("companyName", clinicMap.get(employeeScheduleVO.getClinicId() + "").getName());
+            workDayData.put("companyName", clinicMap.get(employeeScheduleVO.getClinicId() + "").getAbbreviation());
             workDayData.put("employeeName", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());
             workDayData.put("color", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getColor());
             workDayData.put("simtime", simtime);
@@ -439,7 +439,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       } catch (ParseException e) {
         throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
       }
-      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+//      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
     }
     Integer clinicId = employeeScheduleQueryForm.getClinicId();
 
@@ -490,7 +490,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             }
             String simtime = dateFormat.format(startTime) + "~" + dateFormat.format(endTime);
 
-            add = add + clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + "-" + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + "-" + simtime +"\n";
+            add = add + clinicMap.get(employeeScheduleVO.getClinicId() + "").getAbbreviation() + "-" + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + "-" + simtime +"\n";
           }
         }
         row.add(add);

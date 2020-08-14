@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.query;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -20,11 +21,13 @@ public class PatientAndStaffListInfoQueryForm implements Serializable {
     /**
      * 患者来源类型
      */
+    @ApiModelProperty(value = "患者来源类型", required = true)
     private Integer originType;
 
     /**
      * 患者or员工姓名
      */
+    @ApiModelProperty(value = "患者or员工姓名", required = true)
     private String name;
 
 

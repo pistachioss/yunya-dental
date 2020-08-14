@@ -47,4 +47,15 @@
     select <include refid="PatientOrigin_Column_List"/>
     from patient_origin po where po.origin_type = #{from.originType} and po.parent_id != 0
   </select>
+
+  <select id="originalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginVo">
+    select po.id,po.name,po.origin_type originType from patient_origin po where parent_id = 0;
+  </select>
+
+  <select id="selectOriginalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
+    select <include refid="PatientOrigin_Column_List"/>
+    from patient_origin po where po.name != '员工介绍' and po.name != '老患者介绍'
+  </select>
+
+
 </mapper>

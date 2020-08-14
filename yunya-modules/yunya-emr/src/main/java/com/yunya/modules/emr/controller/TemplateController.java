@@ -6,9 +6,7 @@ import com.yunya.feign.emr.domain.form.MedicalTemplateForm;
 import com.yunya.feign.emr.domain.model.GeneralTemplateModel;
 import com.yunya.feign.emr.domain.model.MedicalTemplateModel;
 import com.yunya.feign.emr.domain.query.TemplateQuery;
-import com.yunya.feign.emr.domain.vo.GeneralTemplatePageVo;
-import com.yunya.feign.emr.domain.vo.MedicalDetailDetailVo;
-import com.yunya.feign.emr.domain.vo.MedicalTemplatePageVo;
+import com.yunya.feign.emr.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -103,10 +101,10 @@ public class TemplateController {
     }
 
     @ApiOperation("电子病例-病例模板内容查询")
-    @PostMapping("template/{categoryId}/medical/list")
-    public ResponseResult<String> getTemplateList(@PathVariable(value = "categoryId") Integer categoryId) {
-        List<String> result = templateBiz.getEnableMedicalTemplate(categoryId);
-        return ResponseUtil.success(result);
+    @GetMapping("template/{categoryId}/medical/list")
+    public ResponseResult<EnableTemplateVo> getTemplateList(@PathVariable(value = "categoryId") Integer categoryId) {
+        List<EnableTemplateVo> list = templateBiz.getEnableMedicalTemplate(categoryId);
+        return ResponseUtil.success(list);
     }
 
 }
