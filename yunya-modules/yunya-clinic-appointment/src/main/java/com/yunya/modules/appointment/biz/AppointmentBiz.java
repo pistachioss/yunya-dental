@@ -408,6 +408,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointmentQuery.setAppointType(query.getAppointType());
         List<AppointmentVo> appointmentVos = mapper.findAppointmentByExample(appointmentQuery);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
         // 设置预约医生/助手信息
         appointmentVos.forEach(appointmentVo -> {
             AppointmentListItemVo build = EntityUtils.build(appointmentVo, AppointmentListItemVo.class);
@@ -419,7 +420,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             build.setAssistantName(assistantInfoDetail.getName());
 
             // 设置患者详细信息
-            PatientTotalInfoVo patientInfo = patientCentralServiceFeign.findPatientTotalInfo(20);
+            PatientTotalInfoVo patientInfo = patientCentralServiceFeign.findPatientTotalInfo(build.getPatientId());
             build.setAge(patientInfo.getAge());
             try {
                 Date parse = dateFormat.parse(patientInfo.getBirthday());
