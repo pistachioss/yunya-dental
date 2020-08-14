@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -200,7 +201,19 @@ public class OrganizationBiz {
         }
         clinicExtInfo.setAbbreviation(abbreviation);
       }
-      clinicExtInfo.setClinicNumber(resource.getClinicNumber());
+
+      if (!clinicExtInfo.getClinicNumber().equals(resource.getClinicNumber())) {
+        String clinicNumber = resource.getClinicNumber();
+        ClinicExtInfo info = new ClinicExtInfo();
+        info.setClinicNumber(clinicNumber);
+        int result = clinicExtInfoMapper.selectCount(info);
+        if (result > 0) {
+          throw new ClientServiceException(
+              "修改组织编号'" + clinicNumber + "'失败，该组织编号已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+        }
+        clinicExtInfo.setAbbreviation(clinicNumber);
+      }
+
       String brands = StringUtils.join(resource.getBrandIds(), ",");
       clinicExtInfo.setBrandIds(brands);
       clinicExtInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
