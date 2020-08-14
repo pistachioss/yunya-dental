@@ -66,7 +66,7 @@ public class PatientBaseInfoController {
     }
 
     @ApiOperation("根据患者id查询患者资料")
-    @GetMapping ("/findPatientData/{id}")
+    @GetMapping ("/findPatientDataInfo/{id}")
     public ResponseResult findPatientData(@PathVariable("id") Integer id){
         return ResponseUtil.success(patientBaseInfoBiz.findPatientData(id));
     }
@@ -129,10 +129,5 @@ public class PatientBaseInfoController {
     public ResponseResult findPatientVisitInfo(@PathVariable("id") Integer id){
         return ResponseUtil.success(patientBaseInfoBiz.findPatientVisitInfo(id));
     }
-
-
-
-
-
 
 }
