@@ -439,7 +439,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       } catch (ParseException e) {
         throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
       }
-      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+//      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
     }
     Integer clinicId = employeeScheduleQueryForm.getClinicId();
 
