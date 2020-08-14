@@ -28,7 +28,7 @@ public class BusinessConstants {
   /** -------------------------用户、员工信息相关常量--------------------------- */
 
   /** 用户离职状态 已离职*/
-  public static final Byte USER_RESIGNATION_STATUS = 3;
+  public static final Byte USER_RESIGNATION_STATUS = 2;
 
   /** -------------------------组织（公司）信息相关常量--------------------------- */
 

@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -147,8 +148,8 @@ public class OrganizationBiz {
     if (!company.getName().equals(companyName)) {
       Company entity = new Company();
       entity.setName(companyName);
-      Company result = companyMapper.selectOne(entity);
-      if (null != result) {
+      int result = companyMapper.selectCount(entity);
+      if (result > 0) {
         throw new ClientServiceException(
             "修改组织'" + companyName + "'失败，该组织名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
       }
@@ -193,14 +194,26 @@ public class OrganizationBiz {
         String abbreviation = resource.getAbbreviation();
         ClinicExtInfo info = new ClinicExtInfo();
         info.setAbbreviation(abbreviation);
-        ClinicExtInfo result = clinicExtInfoMapper.selectOne(info);
-        if (null != result) {
+        int result = clinicExtInfoMapper.selectCount(info);
+        if (result > 0) {
           throw new ClientServiceException(
               "修改组织简称'" + abbreviation + "'失败，该简称名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
         }
         clinicExtInfo.setAbbreviation(abbreviation);
       }
-      clinicExtInfo.setClinicNumber(resource.getClinicNumber());
+
+      if (!clinicExtInfo.getClinicNumber().equals(resource.getClinicNumber())) {
+        String clinicNumber = resource.getClinicNumber();
+        ClinicExtInfo info = new ClinicExtInfo();
+        info.setClinicNumber(clinicNumber);
+        int result = clinicExtInfoMapper.selectCount(info);
+        if (result > 0) {
+          throw new ClientServiceException(
+              "修改组织编号'" + clinicNumber + "'失败，该组织编号已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+        }
+        clinicExtInfo.setAbbreviation(clinicNumber);
+      }
+
       String brands = StringUtils.join(resource.getBrandIds(), ",");
       clinicExtInfo.setBrandIds(brands);
       clinicExtInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -246,16 +259,25 @@ public class OrganizationBiz {
     }
     ClinicExtInfo clinicExtInfo = new ClinicExtInfo();
     clinicExtInfo.setAbbreviation(abbreviation);
-    ClinicExtInfo result = clinicExtInfoMapper.selectOne(clinicExtInfo);
-    if (null != result) {
+    int result = clinicExtInfoMapper.selectCount(clinicExtInfo);
+    if (result > 0) {
       throw new ClientServiceException(
           "添加医疗机构'" + name + "'该门诊简称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
     }
+
     String clinicNumber = resource.getClinicNumber();
     if (StringUtils.isBlank(clinicNumber)) {
       throw new ClientServiceException(
           "添加医疗机构'" + name + "'门诊编号为空", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
+    clinicExtInfo = new ClinicExtInfo();
+    clinicExtInfo.setClinicNumber(clinicNumber);
+    result = clinicExtInfoMapper.selectCount(clinicExtInfo);
+    if (result > 0) {
+      throw new ClientServiceException(
+          "添加医疗机构'" + name + "'该门诊编号已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+    }
+
     Byte[] brandIds = resource.getBrandIds();
     if (brandIds.length <= 0) {
       throw new ClientServiceException(

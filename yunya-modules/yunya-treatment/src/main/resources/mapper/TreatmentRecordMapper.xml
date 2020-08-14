@@ -16,9 +16,6 @@
         <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
         <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
         <result column="medical_record_completed" property="medicalRecordCompleted" jdbcType="BIT"/>
-        <result column="assistant_id_1" property="assistantId1" jdbcType="INTEGER"/>
-        <result column="assistant_id_2" property="assistantId2" jdbcType="INTEGER"/>
-        <result column="assistant_id_3" property="assistantId3" jdbcType="INTEGER"/>
         <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
@@ -42,6 +39,7 @@
         tr.medical_record_completed as medicalRecordCompleted
         from treatment_record tr
         <where>
+            tr.status = 0
             <if test="queryForm.id != null">
                 and tr.id = #{queryForm.id}
             </if>

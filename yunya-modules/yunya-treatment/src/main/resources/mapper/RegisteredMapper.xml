@@ -13,6 +13,7 @@
         <result column="assistant_id" property="assistantId" jdbcType="INTEGER"/>
         <result column="dept_room_id" property="deptRoomId" jdbcType="INTEGER"/>
         <result column="reg_time" property="regTime" jdbcType="TIME"/>
+        <result column="first_visit" property="firstVisit" jdbcType="TINYINT"/>
         <result column="status" property="status" jdbcType="TINYINT"/>
         <result column="remark" property="remark" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
@@ -33,7 +34,8 @@
             re.dentist_id as regDentistId,
             re.assistant_id as regAssistantId,
             re.dept_room_id as regDeptRoomId,
-            re.reg_time as regTime
+            re.reg_time as regTime,
+            re.first_visit as firstVisit
         from registered re
         <where>
             re.status = #{status}

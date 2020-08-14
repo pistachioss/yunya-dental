@@ -5,6 +5,7 @@ import com.uniubi.sdk.auth.authToken.TokenFetcher;
 import com.uniubi.sdk.client.UniUbiClient;
 import com.uniubi.sdk.model.PersonInput;
 import com.uniubi.sdk.model.ResultPersonCreateOutput;
+import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
 import com.yunya.feign.patient_central.domain.model.PictureModel;
@@ -73,6 +74,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   @Autowired private WoPersonBiz woPersonBiz;
 
   @Autowired private PatientOriginBiz patientOriginBiz;
+
+  @Autowired private PatientCentralServiceFeign patientCentralServiceFeign;
 
   /**
    * 通过患者id查询患者共用属性
@@ -394,4 +397,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public String findMedicalNumberByOrgId(Integer orgId) {
     return mapper.findMedicalNumberByOrgId(orgId);
   }
+
+
 }
