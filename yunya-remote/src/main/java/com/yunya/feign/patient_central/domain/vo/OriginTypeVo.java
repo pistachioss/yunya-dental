@@ -25,7 +25,7 @@ public class OriginTypeVo implements Serializable {
     private  List<PatientOrigin>  activityInfoList;
 
     /**
-     * 患者来源类型：活动来源
+     * 患者来源类型：合作商
      */
     private  List<PatientOrigin>  partnerInfoList;
 

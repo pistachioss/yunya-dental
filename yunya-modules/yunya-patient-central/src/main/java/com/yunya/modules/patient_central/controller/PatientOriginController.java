@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.controller;
 import com.yunya.feign.patient_central.domain.form.PatientOriginForm;
 import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
 import com.yunya.feign.patient_central.domain.model.PictureModel;
+import com.yunya.feign.patient_central.domain.query.OriginTypeQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -69,10 +70,17 @@ public class PatientOriginController {
         return patientOriginBiz.findPatientAndStaffListInfo(form);
     }
 
-    @ApiOperation("模糊查询活动/合作商信息")
-    @GetMapping("/originTypeList")
-    public ResponseResult findPatientOriginByTypt(){
-        return ResponseUtil.success(patientOriginBiz.findPatientOriginByTypt());
+    @ApiOperation("查询活动/合作商信息")
+    @PostMapping("/originTypeList")
+    public ResponseResult findPatientOriginByTypt(@RequestBody OriginTypeQueryForm form){
+        return ResponseUtil.success(patientOriginBiz.findPatientOriginByTypt(form));
     }
+
+    @ApiOperation("查询患者来源类型")
+    @GetMapping("/originalType")
+    public ResponseResult findoriginalType(){
+        return ResponseUtil.success(patientOriginBiz.originalType());
+    }
+
 
 }

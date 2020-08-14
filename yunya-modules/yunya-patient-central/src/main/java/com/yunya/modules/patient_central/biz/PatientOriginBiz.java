@@ -2,11 +2,13 @@ package com.yunya.modules.patient_central.biz;
 
 import com.yunya.feign.patient_central.domain.form.PatientOriginForm;
 import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
+import com.yunya.feign.patient_central.domain.query.OriginTypeQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientOriginTreeVo;
 import com.yunya.feign.patient_central.domain.vo.OriginTypeVo;
+import com.yunya.feign.patient_central.domain.vo.PatientOriginVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -156,11 +158,11 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         return ResponseUtil.error("请填写正确的患者来源类型","");
     }
 
-    /**
+   /* *//**
      * 根据患者来源type查询相应信息
      * @param patientOrigin
      * @return OriginTypeListVo
-     */
+     *//*
     public OriginTypeVo findPatientOriginByTypt() {
         OriginTypeVo originTypeVo = new OriginTypeVo();
         PatientOrigin patientOrigin = new PatientOrigin();
@@ -169,7 +171,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         patientOrigin.setOriginType(4); //根据合作商字典查询
         originTypeVo.setPartnerInfoList(getPartnerList(patientOrigin)); // 获取符合条件的合作商集合
         return originTypeVo;
-    }
+    }*/
 
 
     /**
@@ -178,20 +180,20 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
      * @param originTypeListVo
      * @return List<PatientOrigin>
      */
-    public List<PatientOrigin> getActivityList(PatientOrigin patientOrigin){
-        List<PatientOrigin> ActivityInfoList = mapper.findPatientOriginByTypt(patientOrigin);
-        if(ActivityInfoList.size()>0) {
-            Iterator<PatientOrigin> ActivityIterator = ActivityInfoList.iterator();
-            while (ActivityIterator.hasNext()) {
-                PatientOrigin origin = ActivityIterator.next();
+    public List<PatientOrigin> getPatientOriginList(PatientOrigin patientOrigin){
+        List<PatientOrigin> PatientOriginInfoList = mapper.findPatientOriginByTypt(patientOrigin);
+        if(PatientOriginInfoList.size()>0) {
+            Iterator<PatientOrigin> PatientOriginIterator = PatientOriginInfoList.iterator();
+            while (PatientOriginIterator.hasNext()) {
+                PatientOrigin origin = PatientOriginIterator.next();
                 if (origin.getTimeLimit() == 1) {
                     if (DateUtil.isEffectiveDate(new Date(), origin.getLimitStartDate(), origin.getLimitEndDate()) == false) {
-                        ActivityIterator.remove(); //使用迭代器的删除方法删除
+                        PatientOriginIterator.remove(); //使用迭代器的删除方法删除
                     }
                 }
             }
         }
-        return ActivityInfoList;
+        return PatientOriginInfoList;
     }
 
     /**
@@ -199,7 +201,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
      * @param patientOrigin
      * @param originTypeListVo
      * @return List<PatientOrigin>
-     */
+     *//*
     public List<PatientOrigin> getPartnerList(PatientOrigin patientOrigin){
         List<PatientOrigin> PatientInfoList = mapper.findPatientOriginByTypt(patientOrigin); //获取合作商集合
         if(PatientInfoList.size()>0) {
@@ -214,8 +216,24 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
             }
         }
         return PatientInfoList;
+    }*/
+
+    /**
+     * 查询患者来源类型
+     * @return List<PatientOriginVo>
+     */
+    public List<PatientOriginVo> originalType() {
+        return patientOriginMapper.originalType();
     }
 
-
-
+    /**
+     * 根据患者类型查询来源
+     * @param form
+     * @return List<PatientOrigin>
+     */
+    public List<PatientOrigin> findPatientOriginByTypt(OriginTypeQueryForm form) {
+        PatientOrigin patientOrigin = new PatientOrigin();
+        patientOrigin.setOriginType(form.getOriginType()); //根据来源类型
+        return getPatientOriginList(patientOrigin); //获取符合条件的活动集合
+    }
 }

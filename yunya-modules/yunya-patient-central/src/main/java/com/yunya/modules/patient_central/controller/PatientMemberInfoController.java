@@ -72,7 +72,8 @@ public class PatientMemberInfoController {
     @ApiOperation("变更会员卡类型")
     @PostMapping("/change")
     public ResponseResult changeType(@RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm){
-        return ResponseUtil.success(patientMemberInfoBiz.findMemberBindingRelation(patientMemberRelationQueryForm));
+        //patientMemberInfoBiz.changeType(patientMemberRelationQueryForm)
+        return ResponseUtil.success();
     }
 
 

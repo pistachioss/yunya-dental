@@ -10,6 +10,9 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.PatientMemberChangeLog;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.patient_central.PatientMemberRelation;
 import com.yunya.models.system.MemberType;
@@ -19,6 +22,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -90,8 +95,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     /**
      * 开卡
      * @param openCardModel
+     * @return
      */
-    public void addMemberCard(openCardModel openCardModel) {
+    public ResponseResult addMemberCard(openCardModel openCardModel) {
         PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
         patientMemberInfo.setPatientId(openCardModel.getPatientId());
         patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
@@ -100,6 +106,24 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientMemberInfo.setCrtName(BaseContextHandler.getName());
         mapper.insertSelective(patientMemberInfo);
+
+        PatientMemberChangeLog patientMemberChangeLog = new PatientMemberChangeLog(); //记录开卡日志
+        patientMemberChangeLog.setCardNumber(patientMemberInfo.getCardNumber());
+        MemberType memberType =
+                remoteSystemServiceFeign.findMemberTypeById(patientMemberInfo.getMemberTypeId());
+        if (memberType.getName() == null) {
+            return ResponseUtil.error("根据患者会员卡类型ID未查询到会员卡", "");
+        }
+        patientMemberChangeLog.setMemberCardName(memberType.getName());
+        patientMemberChangeLog.setMemberTypeId(patientMemberInfo.getMemberTypeId());
+        patientMemberChangeLog.setOrgId(patientMemberInfo.getOrgId());
+        OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(patientMemberInfo.getOrgId());//获取门诊简称
+        patientMemberChangeLog.setOrgName(organizationInfo.getAbbreviation());
+        patientMemberChangeLog.setOperatorId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientMemberChangeLog.setOperatorName(BaseContextHandler.getName());
+        patientMemberChangeLog.setOperatingTime(new Date());
+        //patientMemberChangeLog.
+        return ResponseUtil.success();
     }
 
     /**
@@ -128,7 +152,7 @@ w     */
             patientMemberRelation.setId(cardRelationForm.getId());
             PatientMemberRelation MemberRelation = patientMemberRelationMapper.selectOne(patientMemberRelation);
             patientMemberRelationMapper.deleteMemberRelation(MemberRelation.getSecondaryCardId(),MemberRelation.getMasterCardId());
-
+            patientMemberRelationMapper.delete(MemberRelation);
         }
     }
 }
