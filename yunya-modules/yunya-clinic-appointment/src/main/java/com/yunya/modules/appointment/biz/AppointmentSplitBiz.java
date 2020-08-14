@@ -59,7 +59,8 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @return
      */
     public List<AppointmentSplitVo> findAppointmentSplitByExample(AppointmentSplitQuery query){
-        return mapper.findAppointmentSplitByExample(query);
+        List<AppointmentSplitVo> appointmentSplitByExample = mapper.findAppointmentSplitByExample(query);
+        return appointmentSplitByExample;
     }
 
     /**

@@ -1,7 +1,8 @@
 logging:
   level:
     #        tk.mybatis: DEBUG
-    com.yunya.modules.system: DEBUG
+    com.yunya.modules.appointment: DEBUG
+
 spring:
   application:
     name: yunya-clinic-appointment

@@ -159,7 +159,7 @@ public class AppointmentController {
      * @param query  查询参数
      * @return
      */
-    @ApiOperation(value = "根据条件查询患者维度预约可视图")
+    @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询)")
     @PostMapping("/find/patient/dimension")
     public ResponseResult findAppointmentPatientDimensionByDate(@RequestBody @Validated AppointmentPatientDimensionByDayQuery query){
         if (query.getWhetherPage()){
@@ -179,10 +179,8 @@ public class AppointmentController {
     @ApiOperation(value = "根据条件查询医生维度预约可视图")
     @PostMapping("/find/dentist/dimension")
     public ResponseResult findAppointmentDentistDimensionByExample(@RequestBody AppointmentPatientDimensionByDayQuery query){
-
-       // List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample = appointmentBiz.findAppointmentDentistDimensionByExample(query);
-
-        return ResponseUtil.success();
+        List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample = appointmentBiz.findAppointmentDentistDimensionByExample(query);
+        return ResponseUtil.success(appointmentDentistDimensionByExample);
     }
 
 

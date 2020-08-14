@@ -55,8 +55,4 @@ public class AppointmentPatientDimensionByDayQuery implements Serializable {
     @NotNull(message = "门诊id不能为空！")
     private Integer orgId;
 
-    /** 医生id */
-    @ApiModelProperty(value = "医生id")
-    private Integer dentistId;
-
 }
