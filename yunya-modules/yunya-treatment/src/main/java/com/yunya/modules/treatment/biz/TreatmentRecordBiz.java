@@ -234,6 +234,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
       }
       vo.setRegTime(String.valueOf(registered.getRegTime()));
+      vo.setFirstVisit(registered.getFirstVisit());
     }
   }
 

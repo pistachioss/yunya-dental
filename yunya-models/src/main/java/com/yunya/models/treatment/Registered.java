@@ -53,6 +53,12 @@ public class Registered {
     private Date regTime;
 
     /**
+     * 初复诊（0-初诊；1-复诊）
+     */
+    @Column(name = "first_visit")
+    private Byte firstVisit;
+
+    /**
      * 接诊状态状态（0-待接诊；1-已接诊）
      */
     private Byte status;
@@ -245,6 +251,22 @@ public class Registered {
      */
     public void setRegTime(Date regTime) {
         this.regTime = regTime;
+    }
+
+    /**
+     * 获取初复诊
+     * @return
+     */
+    public Byte getFirstVisit() {
+        return firstVisit;
+    }
+
+    /**
+     * 设置初复诊
+     * @param firstVisit
+     */
+    public void setFirstVisit(Byte firstVisit) {
+        this.firstVisit = firstVisit;
     }
 
     /**

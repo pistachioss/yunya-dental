@@ -55,17 +55,24 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
    * @param model 挂号信息
    */
   public void save(RegisteredModel model) {
+    Registered entity = new Registered();
+    BeanUtils.copyProperties(model, entity);
     Integer appointmentId = model.getAppointmentId();
     if (null != appointmentId) {
       Appointment appointment = appointmentFeign.findAppointmentById(appointmentId);
       if (null != appointment) {
         appointment.setAppointStatus((byte) 1);
         appointmentFeign.updateAppointment(appointment);
+        entity.setFirstVisit(appointment.getAppointType());
+      }
+    } else {
+      Integer patientId = model.getPatientId();
+      PatientTotalInfoVo patientData = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+      if (null != patientData) {
+        String medicalNumber = patientData.getMedicalNumber();
+        entity.setFirstVisit(StringHelper.isNotBlank(medicalNumber) ? (byte) 1 : (byte) 0);
       }
     }
-
-    Registered entity = new Registered();
-    BeanUtils.copyProperties(model, entity);
     entity.setRegTime(new Date(System.currentTimeMillis()));
     entity.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -147,7 +154,6 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       vo.setPatientRemark(patientData.getRemarks());
       String medicalNumber = patientData.getMedicalNumber();
       vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
-      vo.setFirstVisit(StringHelper.isNotBlank(medicalNumber) ? (byte) 1 : (byte) 0);
       vo.setAllergen(patientData.getAllergens());
       Integer memberTypeId = patientData.getMemberTypeId();
       if (null != memberTypeId) {

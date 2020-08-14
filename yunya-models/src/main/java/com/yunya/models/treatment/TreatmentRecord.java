@@ -70,24 +70,6 @@ public class TreatmentRecord {
     private Boolean medicalRecordCompleted;
 
     /**
-     * 配诊助手1ID
-     */
-    @Column(name = "assistant_id_1")
-    private Integer assistantId1;
-
-    /**
-     * 配诊助手2ID
-     */
-    @Column(name = "assistant_id_2")
-    private Integer assistantId2;
-
-    /**
-     * 配诊助手3ID
-     */
-    @Column(name = "assistant_id_3")
-    private Integer assistantId3;
-
-    /**
      * 备注
      */
     private String remarks;
@@ -313,66 +295,20 @@ public class TreatmentRecord {
         this.treatEndTime = treatEndTime;
     }
 
+    /**
+     * 获取是否书写病历号 病历书写（0-否；1-是）
+     * @return
+     */
     public Boolean getMedicalRecordCompleted() {
         return medicalRecordCompleted;
     }
 
+  /**
+   * 设置病历书写（0-否；1-是）
+   * @param medicalRecordCompleted 病历书写（0-否；1-是）
+   */
     public void setMedicalRecordCompleted(Boolean medicalRecordCompleted) {
         this.medicalRecordCompleted = medicalRecordCompleted;
-    }
-
-    /**
-     * 获取配诊助手1ID
-     *
-     * @return assistant_id_1 - 配诊助手1ID
-     */
-    public Integer getAssistantId1() {
-        return assistantId1;
-    }
-
-    /**
-     * 设置配诊助手1ID
-     *
-     * @param assistantId1 配诊助手1ID
-     */
-    public void setAssistantId1(Integer assistantId1) {
-        this.assistantId1 = assistantId1;
-    }
-
-    /**
-     * 获取配诊助手2ID
-     *
-     * @return assistant_id_2 - 配诊助手2ID
-     */
-    public Integer getAssistantId2() {
-        return assistantId2;
-    }
-
-    /**
-     * 设置配诊助手2ID
-     *
-     * @param assistantId2 配诊助手2ID
-     */
-    public void setAssistantId2(Integer assistantId2) {
-        this.assistantId2 = assistantId2;
-    }
-
-    /**
-     * 获取配诊助手3ID
-     *
-     * @return assistant_id_3 - 配诊助手3ID
-     */
-    public Integer getAssistantId3() {
-        return assistantId3;
-    }
-
-    /**
-     * 设置配诊助手3ID
-     *
-     * @param assistantId3 配诊助手3ID
-     */
-    public void setAssistantId3(Integer assistantId3) {
-        this.assistantId3 = assistantId3;
     }
 
     /**
