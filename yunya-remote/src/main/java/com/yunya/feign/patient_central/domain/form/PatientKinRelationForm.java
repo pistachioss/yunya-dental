@@ -18,7 +18,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-@ApiModel("患者亲属关系添加模板")
+@ApiModel("患者亲属关系修改模板")
 public class PatientKinRelationForm implements Serializable {
     /**
      *  主键ID

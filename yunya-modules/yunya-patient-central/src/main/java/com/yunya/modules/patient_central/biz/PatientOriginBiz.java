@@ -2,8 +2,13 @@ package com.yunya.modules.patient_central.biz;
 
 import com.yunya.feign.patient_central.domain.form.PatientOriginForm;
 import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
+import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientOriginTreeVo;
+import com.yunya.feign.patient_central.domain.vo.OriginTypeVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -12,6 +17,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.patient_central.PatientOrigin;
+import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,6 +42,10 @@ import java.util.List;
 public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin> {
 
     @Autowired private PatientOriginMapper patientOriginMapper;
+
+    @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+    @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
     /**
      * 患者原来添加
@@ -124,19 +135,87 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     }
 
     /**
+     * 模糊查询员工/老患者信息
+     * @param form
+     * @return ResponseResult
+     */
+    public ResponseResult findPatientAndStaffListInfo(PatientAndStaffListInfoQueryForm form) {
+        switch (form.getOriginType()) {
+            case 1:
+                SysUserEmployeeModel model = new SysUserEmployeeModel();
+                model.setKeyWord(form.getName());
+                model.setWhetherPage(false);
+                return ResponseUtil.success(remoteSystemServiceFeign.findSysUserEmployeeInfoList(model));
+            case 2:
+                PatientLikeFinleQueryForm Patientmodel = new PatientLikeFinleQueryForm();
+                Patientmodel.setCondition(form.getName());
+                return ResponseUtil.success(patientBaseInfoMapper.findPatientByNameAndMobile(Patientmodel));
+            default:
+                break;
+        }
+        return ResponseUtil.error("请填写正确的患者来源类型","");
+    }
+
+    /**
      * 根据患者来源type查询相应信息
      * @param patientOrigin
+     * @return OriginTypeListVo
+     */
+    public OriginTypeVo findPatientOriginByTypt() {
+        OriginTypeVo originTypeVo = new OriginTypeVo();
+        PatientOrigin patientOrigin = new PatientOrigin();
+        patientOrigin.setOriginType(3); //根据活动字典查询
+        originTypeVo.setActivityInfoList(getActivityList(patientOrigin)); //获取符合条件的活动集合
+        patientOrigin.setOriginType(4); //根据合作商字典查询
+        originTypeVo.setPartnerInfoList(getPartnerList(patientOrigin)); // 获取符合条件的合作商集合
+        return originTypeVo;
+    }
+
+
+    /**
+     * 获取符合条件的活动集合
+     * @param patientOrigin
+     * @param originTypeListVo
      * @return List<PatientOrigin>
      */
-    public List<PatientOrigin> findPatientOriginByTypt(PatientOrigin patientOrigin) {
-        List<PatientOrigin> patientOriginByTypt = mapper.findPatientOriginByTypt(patientOrigin);
-        for (PatientOrigin origin : patientOriginByTypt) {
-            if(origin.getTimeLimit() == 1){
-               if(DateUtil.isEffectiveDate(new Date(),origin.getLimitStartDate(),origin.getLimitEndDate()) == false){
-                   patientOriginByTypt.remove(origin);
-               }
+    public List<PatientOrigin> getActivityList(PatientOrigin patientOrigin){
+        List<PatientOrigin> ActivityInfoList = mapper.findPatientOriginByTypt(patientOrigin);
+        if(ActivityInfoList.size()>0) {
+            Iterator<PatientOrigin> ActivityIterator = ActivityInfoList.iterator();
+            while (ActivityIterator.hasNext()) {
+                PatientOrigin origin = ActivityIterator.next();
+                if (origin.getTimeLimit() == 1) {
+                    if (DateUtil.isEffectiveDate(new Date(), origin.getLimitStartDate(), origin.getLimitEndDate()) == false) {
+                        ActivityIterator.remove(); //使用迭代器的删除方法删除
+                    }
+                }
             }
         }
-        return patientOriginByTypt;
+        return ActivityInfoList;
     }
+
+    /**
+     * 获取符合条件的合作商集合
+     * @param patientOrigin
+     * @param originTypeListVo
+     * @return List<PatientOrigin>
+     */
+    public List<PatientOrigin> getPartnerList(PatientOrigin patientOrigin){
+        List<PatientOrigin> PatientInfoList = mapper.findPatientOriginByTypt(patientOrigin); //获取合作商集合
+        if(PatientInfoList.size()>0) {
+            Iterator<PatientOrigin> PatientIterator = PatientInfoList.iterator();
+            while (PatientIterator.hasNext()) {
+                PatientOrigin Patient = PatientIterator.next();
+                if (Patient.getTimeLimit() == 1) {
+                    if (DateUtil.isEffectiveDate(new Date(), Patient.getLimitStartDate(), Patient.getLimitEndDate()) == false) {
+                        PatientIterator.remove(); //使用迭代器的删除方法删除
+                    }
+                }
+            }
+        }
+        return PatientInfoList;
+    }
+
+
+
 }

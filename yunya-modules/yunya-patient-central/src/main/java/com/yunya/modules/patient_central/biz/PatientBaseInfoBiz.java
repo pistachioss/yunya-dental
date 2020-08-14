@@ -387,28 +387,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
   /**
-   * 模糊查询员工/老患者信息
-   * @param form
-   * @return ResponseResult
-   */
-  public ResponseResult findPatientAndStaffListInfo(PatientAndStaffListInfoQueryForm form) {
-    switch (form.getOriginType()) {
-      case 1:
-        SysUserEmployeeModel model = new SysUserEmployeeModel();
-        model.setKeyWord(form.getName());
-        return ResponseUtil.success(remoteSystemServiceFeign.findSysUserEmployeeInfoList(model));
-      case 2:
-        PatientLikeFinleQueryForm Patientmodel = new PatientLikeFinleQueryForm();
-        Patientmodel.setCondition(form.getName());
-        return ResponseUtil.success(patientBaseInfoMapper.findPatientByNameAndMobile(Patientmodel));
-      default:
-        break;
-    }
-    return ResponseUtil.error("请填写正确的患者来源类型","");
-  }
-
-
-  /**
    * 根据门诊id获取病历号后六位
    * @param orgId
    * @return String

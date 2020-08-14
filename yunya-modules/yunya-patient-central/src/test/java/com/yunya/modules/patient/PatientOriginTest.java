@@ -29,6 +29,6 @@ public class PatientOriginTest {
     public void ceshi(){
         PatientOrigin patientOrigin = new PatientOrigin();
         patientOrigin.setOriginType(1);
-        List<PatientOrigin> patientOriginByTypt = patientOriginBiz.findPatientOriginByTypt(patientOrigin);
+        //List<PatientOrigin> patientOriginByTypt = patientOriginBiz.findPatientOriginByTypt(patientOrigin);
     }
 }

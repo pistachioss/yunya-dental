@@ -125,16 +125,12 @@ public class PatientBaseInfoController {
     }
 
     @ApiOperation("根据患者id查询来访信息")
-        @GetMapping("/findPatientVisitInfo/{id}")
+    @GetMapping("/VisitInfo/{id}")
     public ResponseResult findPatientVisitInfo(@PathVariable("id") Integer id){
         return ResponseUtil.success(patientBaseInfoBiz.findPatientVisitInfo(id));
     }
 
-    @ApiOperation("模糊查询员工/老患者信息")
-    @GetMapping("/findPatientAndStaffListInfo")
-    public ResponseResult findPatientAndStaffListInfo(@RequestBody @Validated PatientAndStaffListInfoQueryForm form){
-        return patientBaseInfoBiz.findPatientAndStaffListInfo(form);
-    }
+
 
 
 

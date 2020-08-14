@@ -1,5 +1,7 @@
 package com.yunya.models.patient_central;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -49,12 +51,14 @@ public class PatientOrigin {
     /**
      * 限制开始时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "limit_start_date")
     private Date limitStartDate;
 
     /**
-     * 限制介绍时间
+     * 限制结束时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "limit_end_date")
     private Date limitEndDate;
 
