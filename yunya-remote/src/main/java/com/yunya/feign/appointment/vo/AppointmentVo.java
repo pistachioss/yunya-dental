@@ -144,4 +144,16 @@ public class AppointmentVo implements Serializable {
      */
     @ApiModelProperty(value = "是否启用 是否有效")
     private Boolean inservice;
+
+    /**
+     * 创建时间
+     */
+    @ApiModelProperty(value = "创建时间")
+    private Date crtTime;
+
+    /**
+     * 创建人
+     */
+    @ApiModelProperty(value = "创建人")
+    private String crtName;
 }

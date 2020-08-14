@@ -3,6 +3,7 @@ package com.yunya.feign.appointment.domain.query;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
@@ -16,6 +17,7 @@ import java.io.Serializable;
  */
 @ApiModel("预约项目查询参数封装")
 @Data
+@ToString
 public class AppointItemTypeQuery implements Serializable {
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
