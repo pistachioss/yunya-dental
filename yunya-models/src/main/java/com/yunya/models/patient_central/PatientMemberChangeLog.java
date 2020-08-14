@@ -42,6 +42,11 @@ public class PatientMemberChangeLog {
     private String orgName;
 
     /**
+     * 操作类型
+     */
+    private String operationType;
+
+    /**
      * 操作人id
      */
     @Column(name = "operator_id")
@@ -386,5 +391,21 @@ public class PatientMemberChangeLog {
      */
     public void setUptTime(Date uptTime) {
         this.uptTime = uptTime;
+    }
+
+    /**
+     * 获取操作类型
+     * @return operationType
+     */
+    public String getOperationType() {
+        return operationType;
+    }
+
+    /**
+     * 设置操作类型
+     * @param operationType
+     */
+    public void setOperationType(String operationType) {
+        this.operationType = operationType;
     }
 }

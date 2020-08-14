@@ -10,6 +10,7 @@
     <result column="member_card_name" property="memberCardName" jdbcType="VARCHAR" />
     <result column="member_type_id" property="memberTypeId" jdbcType="INTEGER" />
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="operation_type" property="operationType" jdbcType="VARCHAR" />
     <result column="org_name" property="orgName" jdbcType="VARCHAR" />
     <result column="operator_id" property="operatorId" jdbcType="INTEGER" />
     <result column="operator_name" property="operatorName" jdbcType="VARCHAR" />
