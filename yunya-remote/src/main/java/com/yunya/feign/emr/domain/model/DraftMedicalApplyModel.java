@@ -14,6 +14,9 @@ import lombok.Setter;
 @ApiModel(value = "草稿病例申请对象模型")
 public class DraftMedicalApplyModel {
 
+    @ApiModelProperty(value = "审批Id")
+    private Integer id;
+
     @ApiModelProperty(value = "申请草稿基础信息")
     private ApplyBaseModel applyBase;
 }

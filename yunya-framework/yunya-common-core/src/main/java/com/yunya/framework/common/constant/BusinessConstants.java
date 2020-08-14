@@ -52,5 +52,8 @@ public class BusinessConstants {
 
   public static final Long HOUR_GAP = 24L;
 
-  public static final Long DRAFT_LOCK_SEC = 600L;
+  public static final Long MEDICAL_APPLY_LOCK_SEC = 600L;
+
+  /** 电子待审批状态 */
+  public static Integer MEDICAL_AUDIT_PENDING_STATUS = 1;
 }

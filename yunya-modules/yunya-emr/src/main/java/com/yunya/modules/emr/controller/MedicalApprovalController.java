@@ -30,16 +30,14 @@ public class MedicalApprovalController {
     @PostMapping("medical/draft/add/apply")
     @CurrentUser
     public ResponseResult applyAddDraft(@Valid @RequestBody DraftMedicalApplyModel draftModel) {
-        approvalBiz.applyAddDraftCase(draftModel);
-        return ResponseUtil.success();
+        return approvalBiz.applyAddDraftCase(draftModel);
     }
 
     @ApiOperation(value = "申请-修改草稿病例")
     @PostMapping("medical/draft/update/apply")
     @CurrentUser
     public ResponseResult applyUpdateDraftCase(@Valid @RequestBody DraftMedicalApplyModel draftModel) {
-        approvalBiz.applyUpdateDraftCase(draftModel);
-        return ResponseUtil.success();
+        return approvalBiz.applyUpdateDraftCase(draftModel);
     }
 
     @ApiOperation(value = "通过-草稿病例审批")
@@ -47,8 +45,7 @@ public class MedicalApprovalController {
     @CurrentUser
     public ResponseResult passDraft(@PathVariable(value = "id") Integer approveId,
                                     @Valid @RequestBody MedicalApprovePassForm passForm) {
-        approvalBiz.passMedical(approveId, passForm);
-        return ResponseUtil.success();
+        return approvalBiz.passMedical(approveId, passForm);
     }
 
     @ApiOperation(value = "拒绝-草稿病例审批")
@@ -56,24 +53,21 @@ public class MedicalApprovalController {
     @CurrentUser
     public ResponseResult passDraft(@PathVariable(value = "id") Integer approveId,
                                     @Valid @RequestBody MedicalApproveRejectForm rejectForm) {
-        approvalBiz.rejectMedical(approveId, rejectForm);
-        return ResponseUtil.success();
+        return approvalBiz.rejectMedical(approveId, rejectForm);
     }
 
     @ApiOperation(value = "申请-新增病例变更")
     @PostMapping("medical/change/add/apply")
     @CurrentUser
     public ResponseResult applyAddDraft(@Valid @RequestBody ChangeMedicalApplyModel draftModel) {
-        approvalBiz.applyAddChangeCase(draftModel);
-        return ResponseUtil.success();
+        return approvalBiz.applyAddChangeCase(draftModel);
     }
 
     @ApiOperation(value = "申请-修改病例变更")
     @PostMapping("medical/change/update/apply")
     @CurrentUser
     public ResponseResult applyUpdateDraftCase(@Valid @RequestBody ChangeMedicalApplyModel draftModel) {
-        approvalBiz.applyUpdateChangeCase(draftModel);
-        return ResponseUtil.success();
+        return approvalBiz.applyUpdateChangeCase(draftModel);
     }
 
     @ApiOperation(value = "通过-病例变更审批")
@@ -81,8 +75,7 @@ public class MedicalApprovalController {
     @CurrentUser
     public ResponseResult passChange(@PathVariable(value = "id") Integer approveId,
                                      @Valid @RequestBody ChangeApprovePassForm passForm) {
-        approvalBiz.passChange(approveId, passForm);
-        return ResponseUtil.success();
+        return approvalBiz.passChange(approveId, passForm);
     }
 
     @ApiOperation(value = "拒绝-病例变更审批")
@@ -90,8 +83,7 @@ public class MedicalApprovalController {
     @CurrentUser
     public ResponseResult passChange(@PathVariable(value = "id") Integer approveId,
                                      @Valid @RequestBody ChangeApproveRejectForm rejectForm) {
-        approvalBiz.rejectChange(approveId, rejectForm);
-        return ResponseUtil.success();
+        return approvalBiz.rejectChange(approveId, rejectForm);
     }
 
     @ApiOperation("草稿病例分页查询")

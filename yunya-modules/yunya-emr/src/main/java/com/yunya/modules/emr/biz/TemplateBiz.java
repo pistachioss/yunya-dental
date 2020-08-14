@@ -106,16 +106,26 @@ public class TemplateBiz {
         return new PageInfo<>(list);
     }
 
-    public List<String> getEnableMedicalTemplate(Integer categoryId) {
-        List<String> result = Lists.newArrayList();
+    public List<EnableTemplateVo> getEnableMedicalTemplate(Integer categoryId) {
+        List<EnableTemplateVo> result = Lists.newArrayList();
         List<GeneralTemplate> generalTemps = generalMapper.listByKeyword(null, categoryId, BusinessConstants.ENABLE_NUM);
         if (CollectionUtils.isNotEmpty(generalTemps)) {
-            result = generalTemps.stream().map(GeneralTemplate::getContent).collect(toList());
+            result = generalTemps.stream().map(obj -> {
+                EnableTemplateVo vo = new EnableTemplateVo();
+                vo.setId(obj.getId());
+                vo.setName(obj.getContent());
+                return vo;
+            }).collect(toList());
             return result;
         }
         List<MedicalTemplate> medicalTemps = medicalMapper.listByKeyword(null, categoryId, BusinessConstants.ENABLE_NUM);
         if (CollectionUtils.isNotEmpty(medicalTemps)) {
-            result = medicalTemps.stream().map(MedicalTemplate::getName).collect(toList());
+            result = medicalTemps.stream().map(obj -> {
+                EnableTemplateVo vo = new EnableTemplateVo();
+                vo.setId(obj.getId());
+                vo.setName(obj.getName());
+                return vo;
+            }).collect(toList());
             return result;
         }
         return result;

@@ -1,6 +1,8 @@
 package com.yunya.framework.common.utils;
 
-import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.model.*;
+
+import java.util.*;
 
 /**
  * 响应统一返回工具类
@@ -81,7 +83,9 @@ public class ResponseUtil {
     return result(ERROR_STATUS, msg, data,NoT_PASS);
   }
 
-
+  public static ResponseResult error (RestError error, Objects...param){
+    return result(error.getCode(), String.format(error.getMessage(), param), null, NoT_PASS);
+  }
 
 
   /**
