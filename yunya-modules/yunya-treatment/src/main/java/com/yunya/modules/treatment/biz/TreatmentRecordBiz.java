@@ -6,6 +6,7 @@ import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
@@ -106,7 +107,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     patientInfo.setOrgId(orgId);
     String number = patientServiceFeign.findMedicalNumberByOrgId(orgId);
     String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-    return String.format("%04d", orgId) + new DateTime().toString("yyMMdd") + suffix;
+    OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+    return String.format("%04d", Integer.parseInt(orgInfo.getClinicNumber()))
+        + new DateTime().toString("yyMMdd")
+        + suffix;
   }
 
   /**
