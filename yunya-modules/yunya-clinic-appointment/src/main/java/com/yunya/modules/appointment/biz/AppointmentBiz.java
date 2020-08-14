@@ -659,9 +659,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             employeeScheduleQueryForm.setUserId(dentistId);
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             String startDateStr = sdf.format(appointmentBaseModel.getAppointDate());
-            String endDateStr = sdf.format(appointmentBaseModel.getAppointDate());
             employeeScheduleQueryForm.setStartDate(startDateStr);
-            employeeScheduleQueryForm.setClinicId(Integer.valueOf(BaseContextHandler.getOrgId()));
+            employeeScheduleQueryForm.setClinicId(appointmentBaseModel.getOrgId());
+            // 将排班结束日期退后一天
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(appointmentBaseModel.getAppointDate());
+            calendar.add(Calendar.DAY_OF_MONTH,1);
+            String endDateStr = sdf.format(calendar.getTime());
             employeeScheduleQueryForm.setEndDate(endDateStr);
             // 获取排班列表
             EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
@@ -824,7 +828,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 病历号不为空，复诊
             appointment.setAppointType((byte)1);
         }
-
+        appointment.setInservice(true);
         // 设置预约状态 0-预约未到，1-履约，2，取消预约，3-失约
         appointment.setAppointStatus((byte)0);
         appointment.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
