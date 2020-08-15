@@ -196,7 +196,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /**
    * 根据姓名/手机号/姓名拼音模糊查询患者
    *
-   * @param condition
+   * @param form
    * @return List<PatientBaseInfoVo>
    */
   public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
@@ -286,11 +286,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /**
    * 获取wo平台人员照片
    *
-   * @param personGuid
+   * @param patientId
    * @return List<PictureVo>
    */
-  public List<PictureVo> getFaceUrl(Integer PatientId) {
-    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(PatientId);
+  public List<PictureVo> getFaceUrl(Integer patientId) {
+    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(patientId);
     return woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid());
   }
 

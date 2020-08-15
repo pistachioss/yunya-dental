@@ -60,6 +60,13 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param regId 挂号ID
    */
   public void startTreatment(Integer regId) {
+    TreatmentRecord record = new TreatmentRecord();
+    record.setRegisteredId(regId);
+    int count = mapper.selectCount(record);
+    if (count > 0) {
+      throw new ClientServiceException("接诊失败，该挂号已被接诊，无法再次接诊！", OperationCodeConstants.DATA_EXIST);
+    }
+
     Registered regResult = registeredBiz.selectById(regId);
     if (null == regResult || !regResult.getInservice()) {
       throw new ClientServiceException(
@@ -248,5 +255,16 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     SysUserInfoDetail treatDentistInfo =
         systemServiceFeign.findSysUserEmployeeInfoByUserId(treatDentistId);
     vo.setTreatDentistName(null != treatDentistInfo ? treatDentistInfo.getName() : "--");
+  }
+
+  /**
+   * 更新就诊记录电子病历书写状态
+   *
+   * @param id 就诊记录ID
+   */
+  public void modifyTreatmentRecord(Integer id) {
+    TreatmentRecord record = mapper.selectByPrimaryKey(id);
+    record.setMedicalRecordCompleted(true);
+    mapper.updateByPrimaryKeySelective(record);
   }
 }

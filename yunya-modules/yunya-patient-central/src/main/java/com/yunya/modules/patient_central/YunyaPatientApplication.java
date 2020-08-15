@@ -9,7 +9,6 @@ package com.yunya.modules.patient_central;
  * @since: 1.0.0
  */
 
-import com.alibaba.nacos.api.annotation.NacosInjected;
 import com.yunya.feign.EnableYunyaFeignClients;
 import com.yunya.framework.swagger.EnableCustomSwagger2;
 import org.springframework.boot.SpringApplication;
