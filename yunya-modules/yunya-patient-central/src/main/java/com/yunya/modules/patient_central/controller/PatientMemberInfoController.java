@@ -3,20 +3,17 @@ package com.yunya.modules.patient_central.controller;
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
-import com.yunya.feign.patient_central.domain.model.openCardModel;
+import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
+import com.yunya.feign.patient_central.domain.model.OpenCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.patient_central.PatientMemberChangeLog;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 控制层
@@ -69,7 +66,7 @@ public class PatientMemberInfoController {
     @CurrentUser
     @ApiOperation("开卡")
     @PostMapping("/openCard")
-    public ResponseResult addMemberCard(@RequestBody openCardModel openCardModel){
+    public ResponseResult addMemberCard(@RequestBody OpenCardModel openCardModel){
         patientMemberInfoBiz.addMemberCard(openCardModel);
         return ResponseUtil.success();
     }
@@ -88,11 +85,26 @@ public class PatientMemberInfoController {
         return ResponseUtil.success(patientMemberInfoBiz.changeLog(cardNumber));
     }
 
-   /* @ApiOperation("充值")
+    @CurrentUser
+    @ApiOperation("充值")
     @PostMapping("/Recharge")
-    public ResponseResult Recharge(@RequestBody ){
-        return ResponseUtil.success(patientMemberInfoBiz.changeLog(cardNumber));
+    public ResponseResult Recharge(@RequestBody MemberRechargeModel memberRechargeModel ){
+        patientMemberInfoBiz.Recharge(memberRechargeModel);
+        return ResponseUtil.success();
+    }
+
+    /*@ApiOperation("退费")
+    @PostMapping("/Refund")
+    public ResponseResult Refund(@RequestBody MemberRechargeModel memberRechargeModel ){
+        patientMemberInfoBiz.Refund(memberRechargeModel);
+        return ResponseUtil.success();
     }*/
+
+    @ApiOperation("充值记录")
+    @GetMapping("/RechargeRecord/{cardNumber}")
+    public ResponseResult RechargeRecord(@PathVariable(value = "cardNumber") String cardNumber){
+        return ResponseUtil.success(patientMemberInfoBiz.RechargeRecord(cardNumber));
+    }
 
 
 

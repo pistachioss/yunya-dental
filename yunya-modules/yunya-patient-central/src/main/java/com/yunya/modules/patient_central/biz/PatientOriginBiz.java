@@ -116,6 +116,10 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         if(patientOriginv.getAllowOperate() == false){
             return ResponseUtil.error("该患者来源不可编辑",patientOriginv);
         }
+        if(patientOrigin.getTimeLimit() == 0){
+            patientOrigin.setLimitStartDate(null);
+            patientOrigin.setLimitEndDate(null);
+        }
         patientOrigin.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
         patientOrigin.setUpdTime(new Date());

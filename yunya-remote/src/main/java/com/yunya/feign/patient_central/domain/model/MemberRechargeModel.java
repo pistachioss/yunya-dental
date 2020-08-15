@@ -6,6 +6,7 @@ import lombok.ToString;
 import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 会员卡充值Model
@@ -35,13 +36,9 @@ public class MemberRechargeModel implements Serializable {
     private BigDecimal rechargeBonus;
 
     /**
-     * 备注 备注
+     * 入账方式
      */
-    private String remarks;
+    private List<AccountedWayModel> accountedWayModelList;
 
-    /**
-     * 是否启用 是否有效
-     */
-    private Boolean inservice;
 
 }
