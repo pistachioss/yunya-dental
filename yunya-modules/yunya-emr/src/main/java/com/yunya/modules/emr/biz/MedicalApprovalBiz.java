@@ -76,7 +76,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         log.info("新增草稿病例申请开始提交：[{}  ]", eventId);
         try {
             // 1. 锁定草稿病例
-            locked = redisUtils.setLock(lockKey, lockVal, BusinessConstants.MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+            locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
             if (!locked) {
                 log.warn("【锁定失败】草稿病历无法提交新增申请：[{}]", eventId);
                 return ResponseUtil.error(KEY_IS_LOCKED);
@@ -85,16 +85,21 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
             //2. 检查登录人权限信息
             MedicalCommonRecord medical = medicalMapper.selectByPrimaryKey(eventId);
-            RestErrorBo errorBo = checkAuthAndApproveStatus(medical, loginUserId, eventId);
+            RestErrorBo errorBo = checkAuth(medical, loginUserId, eventId);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
-            //3. 检查草稿电子病例审批信息
+            //3. 检查草稿电子病例状态
+            if (!MEDICAL_AUDIT_PENDING_STATUS.equals(medical.getStatus())) {
+                log.warn("【申请失败】：病例[{}]状态异常，待审核状态不允许重复申请", eventId);
+                return ResponseUtil.error(NO_ALLOW_REPEAT_APPLY);
+            }
+            //4. 检查草稿电子病例审批信息
             if (isExistDraftApply(eventId)) {
                 log.warn("【申请失败】：病例[{}]病例已申请审批", eventId);
                 return ResponseUtil.error(DATA_IS_EXISTED);
             }
-            //4. 检查新增变更
+            //5. 检查新增变更
             ApprovalRecord treatmentRecord = mapper.findTreatmentRecord(medical.getTreatmentId());
             if (treatmentRecord != null) {
                 if (!loginUserId.equals(treatmentRecord.getProposerId())) {
@@ -107,7 +112,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
             }
-            //5. 提交申请新增草稿
+            //6. 提交申请新增草稿
             constructCreateEntity(draftModel.getApplyBase(), DRAFT_AUDIT.getCode(), ADD.getCode(), null);
             return ResponseUtil.success();
         } finally {
@@ -133,7 +138,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         log.info("修改草稿病例申请开始提交：[{}]", lockKey);
         try {
             // 1. 锁定草稿病例
-            locked = redisUtils.setLock(lockKey, lockVal, BusinessConstants.MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+            locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
             if (!locked) {
                 log.warn("【锁定失败】草稿病历[{}]无法提交修改申请", eventId);
                 return ResponseUtil.error(KEY_IS_LOCKED);
@@ -142,17 +147,22 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
             //2. 检查登录人权限信息，检查草稿电子病例状态
             MedicalCommonRecord medical = medicalMapper.selectByPrimaryKey(eventId);
-            RestErrorBo errorBo = checkAuthAndApproveStatus(medical, loginUserId, eventId);
+            RestErrorBo errorBo = checkAuth(medical, loginUserId, eventId);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
-            //3. 检查草稿电子病例审批信息
+            //3. 检查草稿电子病例状态
+            if (MEDICAL_AUDIT_PENDING_STATUS.equals(medical.getStatus())) {
+                log.warn("【申请失败】：病例[{}]状态异常，待审核状态不允许重复申请", eventId);
+                return ResponseUtil.error(NO_ALLOW_REPEAT_APPLY);
+            }
+            //4. 检查草稿电子病例审批信息
             ApprovalRecord record = mapper.selectByPrimaryKey(draftModel.getId());
             if (record == null || !loginUserId.equals(record.getProposerId())) {
                 log.warn("【申请失败】：无权限操作");
                 return ResponseUtil.error(NO_PERMISSION_OPERATION);
             }
-            //4. 草稿病例
+            //5. 草稿病例
             if (DRAFT_AUDIT.equals(record.getEventType())) {
                 if (AUDIT_PASS.equals(record.getStatus())) {
                     log.warn("【申请失败】：草稿病例[{}]审批已通过", eventId);
@@ -167,7 +177,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     log.warn("【申请失败】：草稿病例[{}]已超过拒绝审批时间24h", eventId);
                     return ResponseUtil.error(MODIFY_APPLY_TIMEOUT);
                 }
-             //5. 检查变更病例
+             //6. 检查变更病例
             } else {
                 if (!AUDIT_PASS.equals(record.getStatus())) {
                     log.warn("【申请失败】：申请变更病例[{}]被拒绝", eventId);
@@ -179,7 +189,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
             }
-            //6.草稿病例提交申请
+            //7.草稿病例提交申请
             constructCreateEntity(draftModel.getApplyBase(), DRAFT_AUDIT.getCode(), UPDATE.getCode(), null);
             return ResponseUtil.error(OK);
         } finally {
@@ -205,7 +215,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         log.info("新增病例变更申请开始提交：{}", eventId);
         try {
             // 1. 锁定就诊变更申请
-            locked = redisUtils.setLock(lockKey, lockVal, BusinessConstants.MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+            locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
             if (!locked) {
                 log.warn("【锁定失败】无法提交新增变更申请：{}", eventId);
                 return ResponseUtil.error(KEY_IS_LOCKED);
@@ -250,13 +260,13 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     public ResponseResult applyUpdateChangeCase(ChangeMedicalApplyModel changeModel) {
         boolean locked = false;
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        String lockVal = BaseContextHandler.getUserID();
         Integer eventId = changeModel.getApplyBase().getEventId();
         String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHANGE_APPLY_NS, String.valueOf(changeModel.getApplyBase().getEventId()));
-        String lockVal = BaseContextHandler.getUserID();
         log.info("修改病例变更申请开始提交：{}", eventId);
         try {
             // 1. 锁定就诊变更申请
-            locked = redisUtils.setLock(lockKey, lockVal, BusinessConstants.MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+            locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
             if (!locked) {
                 log.warn("【锁定失败】无法提交新增变更申请：{}", eventId);
                 return ResponseUtil.error(KEY_IS_LOCKED);
@@ -299,7 +309,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 if (AUDIT_REJECT.equals(newestDraft.getStatus())) {
                     //校验最新拒绝审批时间
                     if (!judgeRejectTimeout(newestDraft.getApproveTime())) {
-                        log.warn("【申请失败】：电子病历可以直接修改，无需申请", eventId);
+                        log.warn("【申请失败】：电子病历[{}]可以直接修改，无需申请", eventId);
                         return ResponseUtil.error(REJECTED_NO_NEED_APPLY);
                     }
                 }
@@ -377,12 +387,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         }
         // 检查审批状态
         ApprovalRecord approvalRecord = mapper.selectByPrimaryKey(approveId);
-        if (approvalRecord == null || !ApproveStatusEnum.APPROVE_PENDING.getCode().equals(approvalRecord.getStatus())) {
+        if (approvalRecord == null || !APPROVE_PENDING.getCode().equals(approvalRecord.getStatus())) {
             log.warn("【审批通过失败】：病历[{}]审核状态异常", passForm.getEventId());
             return ResponseUtil.error(MEDICAL_ALREADY_AUDITED);
         }
         //更新审批记录信息
-        updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_PASS.getCode(), null, changeDeadTime);
+        updateMedicalApprove(approveId, AUDIT_PASS.getCode(), null, changeDeadTime);
         return ResponseUtil.success();
     }
 
@@ -395,12 +405,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     public ResponseResult rejectChange(Integer approveId, ChangeApproveRejectForm rejectForm) {
         // 检查审批状态
         ApprovalRecord approvalRecord = mapper.selectByPrimaryKey(approveId);
-        if (approvalRecord == null || !ApproveStatusEnum.APPROVE_PENDING.getCode().equals(approvalRecord.getStatus())) {
+        if (approvalRecord == null || !APPROVE_PENDING.getCode().equals(approvalRecord.getStatus())) {
             log.warn("【审批拒绝失败】：病历[{}]审核状态异常", rejectForm.getEventId());
             return ResponseUtil.error(MEDICAL_ALREADY_AUDITED);
         }
         //更新审批状态
-        updateMedicalApprove(approveId, ApproveStatusEnum.AUDIT_REJECT.getCode(), rejectForm.getRejectReason(), null);
+        updateMedicalApprove(approveId, AUDIT_REJECT.getCode(), rejectForm.getRejectReason(), null);
         return ResponseUtil.success();
     }
 
@@ -455,7 +465,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         if (StringUtils.isBlank(keyword)) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
             //根据病例提交时间查询审批数据
-            list = mapper.listMedicalByParam(null, submitTime, loginUserId, EventTypeEnum.DRAFT_AUDIT.getCode(), auditStatus);
+            list = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
             //查询登录人草稿审批的患者ids映射
             patientIdMap = getDraftPatientIdsByApplyType(list, loginUserId);
             //调用患者接口服务，查询条件下的所有患者信息
@@ -471,7 +481,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
              * 最后查询审批记录
              */
             //根据条件查询登录人所有的申请记录集合
-            List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, submitTime, loginUserId, EventTypeEnum.DRAFT_AUDIT.getCode(), auditStatus);
+            List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
             //查询登录人草稿审批的患者ids映射
             patientIdMap = getDraftPatientIdsByApplyType(loginUserApproveList, loginUserId);
             //根据查询关键字获取电子病例ids集合
@@ -479,7 +489,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             //根据电子病例Ids和病例提交时间查询审批数据
             if (CollectionUtils.isNotEmpty(medicalIds)) {
                 PageHelper.startPage(query.getPageNum(), query.getPageSize());
-                list = mapper.listMedicalByParam(medicalIds, submitTime, loginUserId, EventTypeEnum.DRAFT_AUDIT.getCode(), auditStatus);
+                list = mapper.listMedicalByParam(medicalIds, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
             }
         }
         //数据存入bo对象
@@ -501,17 +511,17 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         if (StringUtils.isBlank(keyword)) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
             //查询变更审批数据
-            list = mapper.listMedicalByParam(null, null, loginUserId, EventTypeEnum.MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
+            list = mapper.listMedicalByParam(null, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
             //根据审批查询结果，生成申请类型映射
             Map<Integer, List<ApprovalRecord>> eventMap = list.stream().collect(groupingBy(ApprovalRecord::getApplyType));
             if (!org.springframework.util.CollectionUtils.isEmpty(eventMap)) {
                 //取出新增变类型变更的审批结果
-                List<ApprovalRecord> treatmentList = eventMap.get(ApplyTypeEnum.ADD.getCode());
+                List<ApprovalRecord> treatmentList = eventMap.get(ADD.getCode());
                 if (CollectionUtils.isNotEmpty(treatmentList)) {
                     List<Integer> treatmentIds = treatmentList.stream().map(ApprovalRecord::getEventId).collect(toList());
                 }
                 //查询登录人变更审批的患者ids映射
-                patientIdMap = getChangePatientIdsByApplyType(list, ApplyTypeEnum.UPDATE.getCode(), loginUserId);
+                patientIdMap = getChangePatientIdsByApplyType(list, UPDATE.getCode(), loginUserId);
                 //调用患者接口服务，查询条件下的所有患者信息
                 filterPatientList = patientFeign.findPatientInfoByIds(Lists.newArrayList(patientIdMap.keySet()));
                 //构建病例和患者映射
@@ -525,9 +535,9 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
              * 最后查询审批表 event_id in (就诊ids，电子病历ids)
              */
             //查询变更审批数据
-            List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, null, loginUserId, EventTypeEnum.MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
+            List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
             //查询登录人变更审批的患者ids映射
-            patientIdMap = getChangePatientIdsByApplyType(loginUserApproveList, ApplyTypeEnum.UPDATE.getCode(), loginUserId);
+            patientIdMap = getChangePatientIdsByApplyType(loginUserApproveList, UPDATE.getCode(), loginUserId);
             //根据查询关键字获取电子病例ids集合
             List<Integer> medicalIds = getQueryMedicalIds(patientIdMap, loginUserId, keyword, patientInfoMap);
             //todo 合并就诊ids和电子病历ids
@@ -535,7 +545,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             //根据电子病例Ids和病例提交时间查询审批数据
             if (CollectionUtils.isNotEmpty(medicalIds)) {
                 PageHelper.startPage(query.getPageNum(), query.getPageSize());
-                list = mapper.listMedicalByParam(medicalIds, null, loginUserId, EventTypeEnum.MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
+                list = mapper.listMedicalByParam(medicalIds, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
             }
         }
         approveBo.assignMember(list, patientInfoMap);
@@ -690,7 +700,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setSubmitTime(obj.getCrtTime());
             vo.setApproveStatus(ApproveStatusEnum.getValue(obj.getStatus()));
             vo.setRejectReason(obj.getApproveReason());
-            vo.setModifyDeadTime(Objects.equals(ApproveStatusEnum.AUDIT_REJECT.getCode(), obj.getStatus()) ? obj.getApproveTime().plusDays(1) : null);
+            vo.setModifyDeadTime(Objects.equals(AUDIT_REJECT.getCode(), obj.getStatus()) ? obj.getApproveTime().plusDays(1) : null);
             resultList.add(vo);
         });
         return resultList;
@@ -825,7 +835,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         addApplyEntity.setEventType(eventType);
         addApplyEntity.setApplyType(applyType);
         addApplyEntity.setApplyReason(StringUtils.isBlank(applyReason) ? null : applyReason);
-        addApplyEntity.setStatus(ApproveStatusEnum.APPROVE_PENDING.getCode());
+        addApplyEntity.setStatus(APPROVE_PENDING.getCode());
         addApplyEntity.setCrtId(loginUserId);
         addApplyEntity.setUpdId(loginUserId);
         mapper.insertSelective(addApplyEntity);
@@ -859,7 +869,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     private boolean judgeRejectTimeout(LocalDateTime approveTime) {
         LocalDateTime now = LocalDateTime.now();
         long hourGap = Duration.between(approveTime, now).toHours();
-        return hourGap > BusinessConstants.HOUR_GAP;
+        return hourGap > HOUR_GAP;
     }
 
     /**
@@ -902,19 +912,13 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         return !CollectionUtils.isEmpty(permission) && permission.contains("助手");
     }
 
-    private RestErrorBo checkAuthAndApproveStatus(MedicalCommonRecord medicalCommonRecord, Integer loginUserId, Integer eventId) {
+    private RestErrorBo checkAuth(MedicalCommonRecord medicalCommonRecord, Integer loginUserId, Integer eventId) {
         RestErrorBo errorBo = RestErrorBo.getInstance();
         //检查登录人权限
         if (!checkPostPermission(loginUserId) || medicalCommonRecord == null ||
                             !loginUserId.equals(medicalCommonRecord.getCrtId())) {
             log.warn("【申请失败】：无权限操作");
             errorBo.setError(NO_PERMISSION_OPERATION);
-            return errorBo;
-        }
-        //检查草稿电子病例状态
-        if (MEDICAL_AUDIT_PENDING_STATUS.equals(medicalCommonRecord.getStatus())) {
-            log.warn("【申请失败】：病例[{}]状态异常，待审核状态不允许重复申请", eventId);
-            errorBo.setError(NO_ALLOW_REPEAT_APPLY);
             return errorBo;
         }
         return errorBo;

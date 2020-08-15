@@ -165,7 +165,9 @@
       a.tooth_bit as toothBit,
       a.appoint_content as appointContent,
       a.remarks,
-      a.inservice
+      a.inservice,
+      a.crt_name as crtName,
+      a.crt_time as crtTime
     from appointment a
     <where>
       <if test="query.patientId != null">

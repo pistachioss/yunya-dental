@@ -5,10 +5,11 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointStatusForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
-import com.yunya.feign.appointment.domain.query.AppointDentistListByDateQuery;
+import com.yunya.feign.appointment.domain.query.AppointListQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentPatientDimensionByDayQuery;
 import com.yunya.feign.appointment.vo.AppointmentDentistDimensionVo;
 import com.yunya.feign.appointment.vo.AppointmentDimensionVo;
+import com.yunya.feign.appointment.vo.AppointmentListItemVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -181,6 +182,23 @@ public class AppointmentController {
     public ResponseResult findAppointmentDentistDimensionByExample(@RequestBody AppointmentPatientDimensionByDayQuery query){
         List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample = appointmentBiz.findAppointmentDentistDimensionByExample(query);
         return ResponseUtil.success(appointmentDentistDimensionByExample);
+    }
+
+    /**
+     * 根据条件查询预约列表（预约列表可视图用）
+     * @param query 查询条件
+     * @return 预约列表
+     */
+    @ApiOperation(value = "根据条件查询预约列表（预约列表可视图用）")
+    @PostMapping("/find/list")
+    public ResponseResult findAppointmentListByExample(@RequestBody @Validated AppointListQuery query){
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        List<AppointmentListItemVo> appointmentList = appointmentBiz.findAppointmentListByExample(query);
+        PageInfo pageInfo = new PageInfo(appointmentList);
+
+        return ResponseUtil.success(pageInfo);
     }
 
 

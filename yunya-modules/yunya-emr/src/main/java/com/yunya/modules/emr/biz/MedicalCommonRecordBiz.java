@@ -8,6 +8,8 @@ import com.yunya.framework.common.biz.*;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.*;
 import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.*;
 import com.yunya.modules.emr.mapper.*;
 import org.springframework.beans.*;
@@ -32,7 +34,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
   @Autowired
   private MedicalRecordHistoryBiz medicalRecordHistoryBiz;
 
-  public int create(MedicalCommonRecordModel model) {
+  public ResponseResult create(MedicalCommonRecordModel model) {
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     Date date = null;
     Date now = new Date();
@@ -90,7 +92,10 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       applyBase.setProposerId(medicalCommonRecord.getCrtId());
       applyBase.setApproverId(medicalCommonRecord.getMajorDentistId());
       draftMedicalApplyModel.setApplyBase(applyBase);
-      medicalApprovalBiz.applyAddDraftCase(draftMedicalApplyModel);
+      ResponseResult responseResult = medicalApprovalBiz.applyAddDraftCase(draftMedicalApplyModel);
+      if(responseResult.getStatus()!=200){
+        return responseResult;
+      }
     }
     if (model.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
@@ -104,7 +109,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       }
       medicalGeneralNumMapper.saveList(numList);
     }
-    return result;
+    return ResponseUtil.success(result);
   }
 
   public List<MedicalCommonRecord> findList(MedicalCommonRecord model) {
