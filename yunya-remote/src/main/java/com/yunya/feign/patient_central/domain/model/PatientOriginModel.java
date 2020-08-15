@@ -65,7 +65,7 @@ public class PatientOriginModel implements Serializable {
      * 是否有时间限制（0-否；1-是））
      */
     @ApiModelProperty(value = "是否有时间限制（0-否；1-是））默认0")
-    private Boolean timeLimit;
+    private Integer timeLimit;
 
     /**
      * 限制开始时间

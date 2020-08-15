@@ -49,15 +49,20 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
 
     @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
+
+
     /**
      * 根据患者id查询会员基本信息
      * @return MemberBaseInfoVO
      */
-    public MemberBaseInfoVo findMemberBaseInfo(Integer id) {
+    public ResponseResult findMemberBaseInfo(Integer id) {
         MemberBaseInfoVo memberBaseInfoVO = patientMemberInfoMapper.findMemberBaseInfo(id);
         MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId());
+        if (memberType.getName() == null) {
+            return ResponseUtil.fail(500,"根据患者会员卡类型ID未查询到会员卡","");
+        }
         memberBaseInfoVO.setMemberCardName(memberType.getName());
-        return memberBaseInfoVO;
+        return ResponseUtil.success(memberBaseInfoVO);
     }
 
     /**
@@ -86,7 +91,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientMemberRelation.setCrtName(BaseContextHandler.getName());
             patientMemberRelationMapper.insertSelective(patientMemberRelation);
-        }else {
+        }
+        if(form.getBindType() == 1) {
             patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
             patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientMemberRelation.setCrtName(BaseContextHandler.getName());
@@ -109,6 +115,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
         patientMemberInfo.setCardNumber(getCardNumber(openCardModel));
+        if(patientMemberInfo.getCardNumber() == null){
+            return ResponseUtil.fail(500,"生成会员卡号失败","");
+        }
         patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientMemberInfo.setCrtName(BaseContextHandler.getName());
         mapper.insertSelective(patientMemberInfo);
@@ -122,6 +131,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
 w     */
     public String getCardNumber(openCardModel openCardModel){
         OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        if (organizationInfo == null) {
+            return null;
+        }
         String number = mapper.generateCardNumber(organizationInfo.getId()); //获取最后一条记录 病历号的后八位
         String suffix = String.format("%06d", Integer.parseInt(number) + 1); //后八位进行加1
         String cardNumber = "H"+organizationInfo.getClinicNumber()+suffix; // 会员卡号 = 门诊编号+后八位
@@ -134,7 +146,7 @@ w     */
      */
     public void deleteRelationById(CardRelationForm cardRelationForm) {
         if(cardRelationForm.getBindType() == 0){
-            mapper.deleteByPrimaryKey(cardRelationForm.getId());
+            patientMemberRelationMapper.deleteByPrimaryKey(cardRelationForm.getId());
         }
         if(cardRelationForm.getBindType() == 1){
             PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
@@ -203,6 +215,6 @@ w     */
      * @return
      */
     public List<PatientMemberChangeLogVo> changeLog(String cardNumber) {
-        return mapper.changeLog(cardNumber);
+        return patientMemberChangeLogMapper.changeLog(cardNumber);
     }
 }

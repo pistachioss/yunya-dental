@@ -28,7 +28,9 @@
   </resultMap>
 
   <sql id="Find_Colum_List">
-    pmcl.id id,pmcl.org_id orgId,pmcl.patient_id patientId,pmcl.member_card_name,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,pmcl.,
+    pmio.id id,pmio.org_id orgId,pmio.patient_id patientId,pmio.member_type_id memberTypeId,pmio.master_card masterCard,pmio.card_number cardNumber,
+    pmio.status status,pmio.principal_amount principalAmount,pmio.bonus_amount bonusAmount,pmio.point point,pmio.last_expired_time lastExpiredTime,
+    pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice
   </sql>
 
   <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo">
@@ -56,9 +58,7 @@
     update patient_member_info set member_card_name
   </update>
 
-  <select id="changeLog" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo">
-    select
-  </select>
+
 
 
 

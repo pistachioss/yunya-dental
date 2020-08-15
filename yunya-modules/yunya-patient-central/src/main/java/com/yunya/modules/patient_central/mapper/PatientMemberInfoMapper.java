@@ -39,10 +39,5 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      */
     int changeType(CardTypeForm form);
 
-    /**
-     * 变更记录
-     * @param cardNumber
-     * @return List<PatientMemberChangeLogVo
-     */
-    List<PatientMemberChangeLogVo> changeLog(String cardNumber);
+
 }

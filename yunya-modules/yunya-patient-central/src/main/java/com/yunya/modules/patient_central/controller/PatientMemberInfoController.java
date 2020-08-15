@@ -42,7 +42,7 @@ public class PatientMemberInfoController {
     @ApiOperation("会员基本信息")
     @GetMapping("/basicInformation/{id}")
     public ResponseResult findMemberBaseInfo(@PathVariable("id") Integer id){
-        return ResponseUtil.success(patientMemberInfoBiz.findMemberBaseInfo(id));
+        return patientMemberInfoBiz.findMemberBaseInfo(id);
     }
 
     @ApiOperation("会员卡关联查询")
@@ -74,6 +74,7 @@ public class PatientMemberInfoController {
         return ResponseUtil.success();
     }
 
+    @CurrentUser
     @ApiOperation("会员卡变更")
     @PostMapping("/change")
     public ResponseResult changeType(@RequestBody @Validated CardTypeForm form){
@@ -86,6 +87,12 @@ public class PatientMemberInfoController {
     public ResponseResult changeLog(@PathVariable(value = "cardNumber") String cardNumber){
         return ResponseUtil.success(patientMemberInfoBiz.changeLog(cardNumber));
     }
+
+   /* @ApiOperation("充值")
+    @PostMapping("/Recharge")
+    public ResponseResult Recharge(@RequestBody ){
+        return ResponseUtil.success(patientMemberInfoBiz.changeLog(cardNumber));
+    }*/
 
 
 

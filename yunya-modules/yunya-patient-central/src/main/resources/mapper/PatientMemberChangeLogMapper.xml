@@ -24,4 +24,17 @@
     <result column="upt_name" property="uptName" jdbcType="VARCHAR" />
     <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+    <sql id="Find_Column_List">
+        pmcl.id id,pmcl.patient_id patientId,pmcl.card_number cardNumber,pmcl.member_card_name memberCardName,pmcl.member_type_id memberTypeId,
+        pmcl.org_id orgId,pmcl.operation_type operationType,pmcl.org_name orgName,pmcl.operator_id operatorId,pmcl.operator_nam operatorNam,
+        pmcl.operating_time operatingTime,pmcl.inservice inservice,pmcl.crt_id crtId,pmcl.crt_name crtName,pmcl.crt_time crtTime,pmcl.upt_id uptId,
+        pmcl.upt_name uptName,pmcl.upt_time uptTime
+
+    </sql>
+
+    <select id="changeLog" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo">
+      select <include refid="Find_Column_List"/>
+      from patient_member_change_log pmcl where pmcl.card_number = #{cardNumber} order by pmcl.operating_time desc
+    </select>
 </mapper>
