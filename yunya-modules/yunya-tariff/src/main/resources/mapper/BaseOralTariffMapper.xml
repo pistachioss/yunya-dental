@@ -80,9 +80,8 @@
                 and bot.oral_tariff_category_id = #{queryForm.oralTariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and bot.name like concat('%',#{queryForm.keyWord},'%')
-                or bot.item_number like concat('%',#{queryForm.keyWord},'%')
-                or bot.pinyin like concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( bot.name, '' ), IFNULL( bot.item_number, '' ), IFNULL( bot.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and bot.inservice = #{queryForm.inservice}
@@ -111,9 +110,8 @@
                 and bot.oral_tariff_category_id = #{queryForm.oralTariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and bot.name like concat('%',#{queryForm.keyWord},'%')
-                or bot.item_number like concat('%',#{queryForm.keyWord},'%')
-                or bot.pinyin like concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( bot.name, '' ), IFNULL( bot.item_number, '' ), IFNULL( bot.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
         </where>
     </select>
