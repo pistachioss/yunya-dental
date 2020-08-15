@@ -52,7 +52,7 @@ public class MedicalCommonRecordController {
   public ResponseResult create(@RequestBody @Valid MedicalCommonRecordModel model) {
     model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setCrtTime(new Date());
-    return ResponseUtil.success(medicalCommonRecordBiz.create(model));
+    return medicalCommonRecordBiz.create(model);
 
   }
 
