@@ -3,20 +3,17 @@ package com.yunya.feign.patient_central;
 
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.factory.PatientCentralServiceFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
-import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.persistence.Id;
 import java.util.List;
 
 @FeignClient(
@@ -54,7 +51,7 @@ public interface PatientCentralServiceFeign {
      * @param id
      * @return
      */
-    @RequestMapping (value = "/api/all/patientInfo/{id}", method = RequestMethod.GET)
+    @RequestMapping (value = "/api/total/patientInfo/{id}", method = RequestMethod.GET)
     PatientTotalInfoVo findPatientTotalInfo(@PathVariable(value = "id") Integer id);
 
     /**
