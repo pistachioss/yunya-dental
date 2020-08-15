@@ -1,11 +1,13 @@
 package com.yunya.modules.patient_central.biz;
 
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
+import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.model.openCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.MemberRelationVo;
+import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -16,6 +18,7 @@ import com.yunya.models.patient_central.PatientMemberChangeLog;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.patient_central.PatientMemberRelation;
 import com.yunya.models.system.MemberType;
+import com.yunya.modules.patient_central.mapper.PatientMemberChangeLogMapper;
 import com.yunya.modules.patient_central.mapper.PatientMemberInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientMemberRelationMapper;
 import org.springframework.beans.BeanUtils;
@@ -24,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -40,6 +44,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
 
     @Autowired private PatientMemberRelationMapper patientMemberRelationMapper;
+
+    @Autowired private PatientMemberChangeLogMapper patientMemberChangeLogMapper;
 
     @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
@@ -106,24 +112,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientMemberInfo.setCrtName(BaseContextHandler.getName());
         mapper.insertSelective(patientMemberInfo);
-
-        PatientMemberChangeLog patientMemberChangeLog = new PatientMemberChangeLog(); //记录开卡日志
-        patientMemberChangeLog.setCardNumber(patientMemberInfo.getCardNumber());
-        MemberType memberType =
-                remoteSystemServiceFeign.findMemberTypeById(patientMemberInfo.getMemberTypeId());
-        if (memberType.getName() == null) {
-            return ResponseUtil.error("根据患者会员卡类型ID未查询到会员卡", "");
-        }
-        patientMemberChangeLog.setMemberCardName(memberType.getName());
-        patientMemberChangeLog.setMemberTypeId(patientMemberInfo.getMemberTypeId());
-        patientMemberChangeLog.setOrgId(patientMemberInfo.getOrgId());
-        OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(patientMemberInfo.getOrgId());//获取门诊简称
-        patientMemberChangeLog.setOrgName(organizationInfo.getAbbreviation());
-        patientMemberChangeLog.setOperatorId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientMemberChangeLog.setOperatorName(BaseContextHandler.getName());
-        patientMemberChangeLog.setOperatingTime(new Date());
-        //patientMemberChangeLog.
-        return ResponseUtil.success();
+        return CardLog(patientMemberInfo,"开卡","");
     }
 
     /**
@@ -154,5 +143,66 @@ w     */
             patientMemberRelationMapper.deleteMemberRelation(MemberRelation.getSecondaryCardId(),MemberRelation.getMasterCardId());
             patientMemberRelationMapper.delete(MemberRelation);
         }
+    }
+
+    /**
+     * 开卡日志
+     */
+
+    public ResponseResult CardLog(PatientMemberInfo patientMemberInfo,String operationType,String isupt){
+        PatientMemberChangeLog patientMemberChangeLog = new PatientMemberChangeLog(); //会员卡记录日志
+        patientMemberChangeLog.setCardNumber(patientMemberInfo.getCardNumber());
+        MemberType memberType =
+                remoteSystemServiceFeign.findMemberTypeById(patientMemberInfo.getMemberTypeId());
+        if (memberType.getName() == null) {
+            return ResponseUtil.fail(500,"根据患者会员卡类型ID未查询到会员卡","");
+        }
+        patientMemberChangeLog.setPatientId(patientMemberInfo.getPatientId());
+        patientMemberChangeLog.setMemberCardName(memberType.getName());
+        patientMemberChangeLog.setMemberTypeId(patientMemberInfo.getMemberTypeId());
+        patientMemberChangeLog.setOrgId(patientMemberInfo.getOrgId());
+        OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(patientMemberInfo.getOrgId());//获取门诊简称
+        if (organizationInfo == null) {
+            return ResponseUtil.fail(500,"为获取到结果","");
+        }
+        patientMemberChangeLog.setOrgName(organizationInfo.getAbbreviation());
+        patientMemberChangeLog.setOperatorId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientMemberChangeLog.setOperatorName(BaseContextHandler.getName());
+        patientMemberChangeLog.setOperatingTime(new Date());
+        patientMemberChangeLog.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientMemberChangeLog.setCrtName(BaseContextHandler.getName());
+        patientMemberChangeLog.setOperationType(operationType);
+        if(isupt != null){
+            patientMemberChangeLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+            patientMemberChangeLog.setUptName(BaseContextHandler.getName());
+            patientMemberChangeLog.setUptTime(new Date());
+        }
+        patientMemberChangeLogMapper.insertSelective(patientMemberChangeLog);
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 修改会员卡类型
+     * @param form
+     */
+    public ResponseResult changeType(CardTypeForm form) {
+        PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
+        BeanUtils.copyProperties(form,patientMemberInfo);
+        PatientMemberInfo patientMember = patientMemberInfoMapper.selectOne(patientMemberInfo);
+        patientMember.setMemberTypeId(form.getMemberTypeId());
+        patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientMember.setUpdName(BaseContextHandler.getName());
+        patientMember.setUpdTime(new Date());
+        mapper.updateByPrimaryKeySelective(patientMember);
+        return CardLog(patientMember,"变更","更新");
+    }
+
+    /**
+     * 变更记录
+     * @param cardNumber
+     * @return
+     */
+    public List<PatientMemberChangeLogVo> changeLog(String cardNumber) {
+        return mapper.changeLog(cardNumber);
     }
 }

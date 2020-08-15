@@ -1,17 +1,22 @@
 package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
+import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.model.openCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
+import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.PatientMemberChangeLog;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 控制层
@@ -69,11 +74,17 @@ public class PatientMemberInfoController {
         return ResponseUtil.success();
     }
 
-    @ApiOperation("变更会员卡类型")
+    @ApiOperation("会员卡变更")
     @PostMapping("/change")
-    public ResponseResult changeType(@RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm){
-        //patientMemberInfoBiz.changeType(patientMemberRelationQueryForm)
+    public ResponseResult changeType(@RequestBody @Validated CardTypeForm form){
+        patientMemberInfoBiz.changeType(form);
         return ResponseUtil.success();
+    }
+
+    @ApiOperation("变更记录")
+    @GetMapping("/changeLog/{cardNumber}")
+    public ResponseResult changeLog(@PathVariable(value = "cardNumber") String cardNumber){
+        return ResponseUtil.success(patientMemberInfoBiz.changeLog(cardNumber));
     }
 
 
