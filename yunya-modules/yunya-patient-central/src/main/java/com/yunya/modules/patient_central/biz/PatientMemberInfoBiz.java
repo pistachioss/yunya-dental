@@ -2,25 +2,24 @@ package com.yunya.modules.patient_central.biz;
 
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
+import com.yunya.feign.patient_central.domain.model.AccountedWayModel;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
-import com.yunya.feign.patient_central.domain.model.openCardModel;
+import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
+import com.yunya.feign.patient_central.domain.model.OpenCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.MemberRelationVo;
 import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
+import com.yunya.feign.patient_central.domain.vo.RechargeRecordVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.patient_central.PatientMemberChangeLog;
-import com.yunya.models.patient_central.PatientMemberInfo;
-import com.yunya.models.patient_central.PatientMemberRelation;
+import com.yunya.models.patient_central.*;
 import com.yunya.models.system.MemberType;
-import com.yunya.modules.patient_central.mapper.PatientMemberChangeLogMapper;
-import com.yunya.modules.patient_central.mapper.PatientMemberInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientMemberRelationMapper;
+import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +47,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     @Autowired private PatientMemberChangeLogMapper patientMemberChangeLogMapper;
 
     @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+    @Autowired private MemberRechargeRecordMapper memberRechargeRecordMapper;
+
+    @Autowired private MemberRechargeTollRecordMapper memberRechargeTollRecordMapper;
 
 
 
@@ -109,7 +112,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
      * @param openCardModel
      * @return
      */
-    public ResponseResult addMemberCard(openCardModel openCardModel) {
+    public ResponseResult addMemberCard(OpenCardModel openCardModel) {
         PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
         patientMemberInfo.setPatientId(openCardModel.getPatientId());
         patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
@@ -129,7 +132,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
      * @param openCardModel
      * @return Integer
 w     */
-    public String getCardNumber(openCardModel openCardModel){
+    public String getCardNumber(OpenCardModel openCardModel){
         OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         if (organizationInfo == null) {
             return null;
@@ -216,5 +219,39 @@ w     */
      */
     public List<PatientMemberChangeLogVo> changeLog(String cardNumber) {
         return patientMemberChangeLogMapper.changeLog(cardNumber);
+    }
+
+    /**
+     * 充值
+     * @param memberRechargeModel
+     */
+    public void Recharge(MemberRechargeModel model) {
+        //添加会员卡充值记录
+        MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+        BeanUtils.copyProperties(model,memberRechargeRecord);
+        memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+        memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+        //添加会员卡充值收费记录
+        if(model.getAccountedWayModelList().size()>0){
+            for (AccountedWayModel accountedWayModel : model.getAccountedWayModelList()) {
+                MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
+                BeanUtils.copyProperties(accountedWayModel,memberRechargeTollRecord);
+                memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+                memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
+                memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
+            }
+        }
+
+    }
+
+    /**
+     * 充值记录
+     * @param cardNumber
+     * @return
+     */
+    public List<RechargeRecordVo> RechargeRecord(String cardNumber) {
+        return null;
     }
 }
