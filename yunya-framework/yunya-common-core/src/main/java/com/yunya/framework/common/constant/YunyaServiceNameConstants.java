@@ -22,12 +22,12 @@ public interface YunyaServiceNameConstants {
   String YUNYA_EMPLOYEE_EXPAND = "yunya-employee-expand";
   /** 预约服务 */
   String YUNYA_CLINIC_APPOINTMENT = "yunya-clinic-appointment";
-
   /** 价目表服务 */
   String YUNYA_TARIFF_SERVICE = "yunya-tariff";
-
   /** 患者服务 */
   String YUNYA_PATIENT = "yunya-patient";
   /** 电子病例服务 */
   String YUNYA_EMR = "yunya-emr";
+  /** 诊疗服务 */
+  String YUNYA_TREATMENT_SERVICE = "yunya-treatment";
 }
