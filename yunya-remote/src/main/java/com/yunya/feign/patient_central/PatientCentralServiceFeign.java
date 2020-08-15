@@ -77,7 +77,7 @@ public interface PatientCentralServiceFeign {
      * @param patientBaseInfo
      * @return
      */
-    @RequestMapping (value = "/api/findPatientInfo/{id}",method = RequestMethod.POST)
+    @RequestMapping (value = "/api/findPatientInfo",method = RequestMethod.POST)
     PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
 
     /**
@@ -85,7 +85,7 @@ public interface PatientCentralServiceFeign {
      * @param patientBaseInfo
      * @return
      */
-    @RequestMapping (value = "/api/findPatientInfoList/{id}",method = RequestMethod.POST)
+    @RequestMapping (value = "/api/findPatientInfoList",method = RequestMethod.POST)
     List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo);
 
     /**

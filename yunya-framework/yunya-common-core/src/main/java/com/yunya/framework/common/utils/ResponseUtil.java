@@ -17,7 +17,7 @@ public class ResponseUtil {
   private static final Integer SUCCESS_STATUS = 200;
   private static final String SUCCESS_MSG = "success";
 
-  private static final Boolean NoT_PASS = false;
+  private static final Boolean NOT_PASS = false;
   private static final Integer ERROR_STATUS = 500;
   private static final String ERROR_MSG = "error";
 
@@ -80,11 +80,11 @@ public class ResponseUtil {
    */
 
   public static ResponseResult error (String msg, Object data){
-    return result(ERROR_STATUS, msg, data,NoT_PASS);
+    return result(ERROR_STATUS, msg, data,NOT_PASS);
   }
 
   public static ResponseResult error (RestError error, Objects...param){
-    return result(error.getCode(), String.format(error.getMessage(), param), null, NoT_PASS);
+    return result(error.getCode(), String.format(error.getMessage(), param), null, NOT_PASS);
   }
 
 

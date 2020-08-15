@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.mapper;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
 import com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import org.apache.ibatis.annotations.Param;
@@ -37,4 +38,11 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @param form
      */
     int changeType(CardTypeForm form);
+
+    /**
+     * 变更记录
+     * @param cardNumber
+     * @return List<PatientMemberChangeLogVo
+     */
+    List<PatientMemberChangeLogVo> changeLog(String cardNumber);
 }
