@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Api("价目表服务接口暴露")
 @RestController
-@RequestMapping("api")
+@RequestMapping("rpc")
 public class TariffServiceRest {
 
   /** 商品分类 */
