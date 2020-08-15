@@ -12,6 +12,11 @@ public class PatientMemberChangeLog {
     private Integer id;
 
     /**
+     * 患者id
+     */
+    private Integer patientId;
+
+    /**
      * 会员卡卡号
      */
     @Column(name = "card_number")
@@ -407,5 +412,21 @@ public class PatientMemberChangeLog {
      */
     public void setOperationType(String operationType) {
         this.operationType = operationType;
+    }
+
+    /**
+     * 获取患者id
+     * @return patientId
+     */
+    public Integer getPatientId() {
+        return patientId;
+    }
+
+    /**
+     * 设置患者id
+     * @param patientId
+     */
+    public void setPatientId(Integer patientId) {
+        this.patientId = patientId;
     }
 }

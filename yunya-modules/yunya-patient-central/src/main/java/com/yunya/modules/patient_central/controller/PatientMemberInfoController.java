@@ -1,6 +1,7 @@
 package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
+import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.model.openCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
@@ -71,8 +72,8 @@ public class PatientMemberInfoController {
 
     @ApiOperation("变更会员卡类型")
     @PostMapping("/change")
-    public ResponseResult changeType(@RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm){
-        //patientMemberInfoBiz.changeType(patientMemberRelationQueryForm)
+    public ResponseResult changeType(@RequestBody @Validated CardTypeForm form){
+        patientMemberInfoBiz.changeType(form);
         return ResponseUtil.success();
     }
 

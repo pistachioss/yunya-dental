@@ -48,4 +48,8 @@
     org_id = #{orgid}
   </select>
 
+  <update id="changeType">
+    update patient_member_info set member_card_name
+  </update>
+
 </mapper>
