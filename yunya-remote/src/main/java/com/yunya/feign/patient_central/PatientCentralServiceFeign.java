@@ -54,8 +54,8 @@ public interface PatientCentralServiceFeign {
      * @param id
      * @return
      */
-    @RequestMapping (value = "/api/findPatientDataInfo/{id}",method = RequestMethod.GET)
-    PatientTotalInfoVo findPatientTotalInfo(@PathVariable("id") Integer id);
+    @RequestMapping (value = "/api/all/patientInfo/{id}", method = RequestMethod.GET)
+    PatientTotalInfoVo findPatientTotalInfo(@PathVariable(value = "id") Integer id);
 
     /**
      * 根据患者id查询患者资料
