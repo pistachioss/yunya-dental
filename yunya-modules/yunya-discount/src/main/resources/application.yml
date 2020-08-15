@@ -49,9 +49,9 @@ ribbon:
 swagger:
   enabled: true
   base-package: com.yunya.modules.discount
-  title: 系统折扣服务
+  title: 系统卡券服务
   version: 1.0.0.SNAPSHOT
-  description: YUNYA系统折扣服务
+  description: YUNYA系统卡券服务
   contact:
     name: yunya-discount
 
