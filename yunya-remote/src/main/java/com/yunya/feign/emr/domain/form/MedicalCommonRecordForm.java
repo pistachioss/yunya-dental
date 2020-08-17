@@ -111,7 +111,7 @@ public class MedicalCommonRecordForm {
   @ApiModelProperty("补写病例时间")
   private Date time;
 
-  @ApiModelProperty("创建者ID")
+  @ApiModelProperty("创建者ID(修改时该字段必传，因为只有创建人才能修改)")
   private Integer crtId;
 
   @ApiModelProperty("创建时间")
