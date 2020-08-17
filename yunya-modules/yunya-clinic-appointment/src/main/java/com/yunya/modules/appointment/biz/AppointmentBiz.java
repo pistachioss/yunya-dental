@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
   /** 缓存 */
+  @Autowired
   private RedisUtils redisUtils;
 
   /** 默认显示7天的预约信息 */
