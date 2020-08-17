@@ -1,13 +1,9 @@
 package com.yunya.feign.appointment.vo;
 
-import com.alibaba.excel.metadata.BaseRowModel;
 import com.yunya.framework.common.annation.Excel;
-import com.yunya.framework.common.annation.Excels;
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
-
 import java.io.Serializable;
 import java.math.BigDecimal;
 

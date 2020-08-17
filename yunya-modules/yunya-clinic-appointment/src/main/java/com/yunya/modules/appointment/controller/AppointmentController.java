@@ -31,7 +31,7 @@ import java.util.List;
  * @create 2020-07-29 11:22
  * @update yunya-lihuibin 2020-07-29 新建
  */
-@Api(tags = "患者预约中心Controller(开发中)")
+@Api(tags = "患者预约中心Controller")
 @RestController
 @RequestMapping("appoint")
 public class AppointmentController {
@@ -125,8 +125,8 @@ public class AppointmentController {
    * @param form 取消预约原因表单
    * @return ResponseResult
    */
-  @ApiOperation(value = "修改预约状态")
-  @PutMapping("/delete/appoint/{id}")
+  @ApiOperation(value = "取消预约/删除预约（逻辑删除）")
+  @DeleteMapping("/delete/appoint/{id}")
   @CurrentUser
   public ResponseResult AppointmentCancel(
       @PathVariable("id") Integer id, @RequestBody @Validated AppointmentCancelCauseForm form) {
