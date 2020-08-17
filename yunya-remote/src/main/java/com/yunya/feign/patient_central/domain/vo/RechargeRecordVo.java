@@ -3,7 +3,9 @@ package com.yunya.feign.patient_central.domain.vo;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 简单介绍:</br> 会员卡充值记录Vo
@@ -16,6 +18,47 @@ import java.io.Serializable;
 @Data
 @ToString
 public class RechargeRecordVo implements Serializable {
+
+    /**
+     * 操作时间
+     */
+
+    private Data OperatingTime;
+
+    /**
+     * 充值本金
+     */
+    private BigDecimal rechargePrincipal;
+
+    /**
+     * 充值赠金
+     */
+    private BigDecimal rechargeBonus;
+
+    /**
+     * 入账方式
+     */
+    private String payment;
+
+    /**
+     * 诊所
+     */
+    private String orgName;
+
+    /**
+     * 操作人id
+     */
+    private Integer operatorId;
+
+    /**
+     * 操作人员
+     */
+    private String operatorName;
+
+    /**
+     * 备注
+     */
+    private String remarks;
 
 
 }

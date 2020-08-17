@@ -39,8 +39,8 @@
         from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
   </select>
 
-  <select id="findUserExistsByMobile" resultType="int">
-    select count(1) from patient_base_info where mobile = #{mobile}
+  <select id="findUserExistsByMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    select Patient_Column_List from patient_base_info where mobile = #{mobile}
   </select>
 
   <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo">
