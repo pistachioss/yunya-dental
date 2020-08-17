@@ -48,36 +48,6 @@
         </collection>
     </resultMap>
 
-    <!--  &lt;!&ndash; 预约可视图医生维度视图模型(助手) &ndash;&gt;-->
-    <!--  <resultMap id="appointmentDentistDimensionColumn" type="com.yunya.feign.appointment.vo.AppointmentDentistDimensionVo">-->
-    <!--    <association property="appointmentDentistInfoVo" javaType="com.yunya.feign.appointment.vo.AppointmentDimensionVo">-->
-    <!--      <result column="dentistIdDentist" jdbcType="INTEGER" property="dentistId"/>-->
-    <!--      <result column="patientNumDentist" jdbcType="INTEGER" property="patientNum"/>-->
-    <!--      <collection property="appointmentPatientCardVos" ofType="com.yunya.feign.appointment.vo.AppointmentPatientCardVo">-->
-    <!--        <id column="idDentist" jdbcType="INTEGER" property="id"/>-->
-    <!--        <result column="patientIdDentist" jdbcType="INTEGER" property="patientId"/>-->
-    <!--        <result column="appointTypeDentist" jdbcType="INTEGER" property="appointType"/>-->
-    <!--        <result column="appointContentDentist" jdbcType="VARCHAR" property="appointContent"/>-->
-    <!--        <result column="appointDateDentist" jdbcType="DATE" property="appointDate"/>-->
-    <!--        <result column="appointTimeDentist" jdbcType="VARCHAR" property="appointTime"/>-->
-    <!--      </collection>-->
-    <!--    </association>-->
-    <!--    <collection property="appointmentAssistents" resultMap="appointmentDentistDimensionSplitColumn"/>-->
-    <!--  </resultMap>-->
-
-    <!--  <resultMap id="appointmentDentistDimensionSplitColumn" type="com.yunya.feign.appointment.vo.AppointmentDimensionVo">-->
-    <!--    <result column="assistantIdAssistant" jdbcType="INTEGER" property="dentistId"/>-->
-    <!--    <result column="patientNumAssistant" jdbcType="INTEGER" property="patientNum"/>-->
-    <!--    <collection property="appointmentPatientCardVos" ofType="com.yunya.feign.appointment.vo.AppointmentPatientCardVo">-->
-    <!--      <id column="idAssistant" jdbcType="INTEGER" property="id"/>-->
-    <!--      <result column="patientIdAssistant" jdbcType="INTEGER" property="patientId"/>-->
-    <!--      <result column="appointTypeAssistant" jdbcType="INTEGER" property="appointType"/>-->
-    <!--      <result column="appointContentAssistant" jdbcType="VARCHAR" property="appointContent"/>-->
-    <!--      <result column="appointDateAssistant" jdbcType="DATE" property="appointDate"/>-->
-    <!--      <result column="appointTimeAssistant" jdbcType="VARCHAR" property="appointTime"/>-->
-    <!--    </collection>-->
-    <!--  </resultMap>-->
-
     <sql id="Base_Column_List">
     id, patient_id, org_id, dentist_id, assistant_id, clinic_dept_room_id, clinic_device_item_id,
     clinic_appoint_item_id, appoint_duration, appoint_date, appoint_time, appoint_start_time,

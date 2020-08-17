@@ -1,5 +1,7 @@
 package com.yunya.modules.appointment.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
@@ -21,6 +23,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -28,6 +31,7 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -84,6 +88,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 预约修改服务 */
     @Autowired
     private AppointmentModifyRecordBiz appointmentModifyRecordBiz;
+
+    /** 注入redis缓冲服务 */
+    @Autowired
+    private RedisUtils redisUtils;
 
     /** 按照患者数量排序 */
     final private String ORDER_PATIENTNUM = "patientNum";
@@ -1195,7 +1203,94 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return appointListExportVo;
     }
 
+    /**
+     * 根据条件查询预约未到患者信息列表
+     *
+     * @param queryForm 查询条件
+     * @return list
+     */
+    public PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(
+            AppointmentCurrentListQuery queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+        }
+        List<AppointmentUnDonePatientInfoVO> resultList =
+                mapper.selectAppointmentUnDonePatientInfoList(queryForm);
+        if (resultList.size() > 0) {
+            String redisKeyAppointmentUnDone = RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE;
+            resultList.forEach(
+                    vo -> {
+                        // 设置患者信息
+                        setPatientInfo(vo);
+                        // 设置预约信息
+                        setAppointmentInfo(vo);
+                        // 将预约未到患者信息设置到缓存
+                        redisUtils.set(redisKeyAppointmentUnDone + vo.getId(), vo);
+                    });
+        }
+        return new PageInfo<>(resultList);
+    }
+
+    /**
+     * 设置候诊患者患者信息
+     *
+     * @param vo 患者候诊
+     */
+    private void setPatientInfo(AppointmentUnDonePatientInfoVO vo) {
+        Integer patientId = vo.getPatientId();
+        PatientTotalInfoVo patientData = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+        if (null != patientData) {
+            vo.setPatientName(patientData.getName());
+            vo.setMobile(patientData.getMobile());
+            vo.setGender(patientData.getGender());
+            vo.setAge(patientData.getAge());
+            vo.setBirthday(patientData.getBirthday());
+            vo.setPatientRemark(patientData.getRemarks());
+            String medicalNumber = patientData.getMedicalNumber();
+            vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
+            vo.setAllergen(patientData.getAllergens());
+            Integer memberTypeId = patientData.getMemberTypeId();
+            if (null != memberTypeId) {
+                MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
+                if (null != memberType) {
+                    vo.setMemberIcon(String.valueOf(memberType.getIcon()));
+                }
+            }
+        }
+    }
+
+    /**
+     * 设置预约未到患者的预约信息
+     *
+     * @param vo 预约未到患者信息
+     */
+    private void setAppointmentInfo(AppointmentUnDonePatientInfoVO vo) {
+        Integer dentistId = vo.getAppointDentistId();
+        SysUserInfoDetail dentistInfo =
+                remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
+        if (null != dentistInfo) {
+            vo.setAppointDentistName(dentistInfo.getName());
+        }
+
+        Integer assistantId = vo.getAppointAssistantId();
+        if (null != assistantId) {
+            SysUserInfoDetail assistantInfo =
+                    remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(assistantId);
+            if (null != assistantInfo) {
+                vo.setAppointAssistantName(assistantInfo.getName());
+            }
+        }
+        Integer deptRoomId = vo.getAppointDeptRoomId();
+        if (null != deptRoomId) {
+            DepartmentRoom departmentRoom = remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
+            if (null != departmentRoom) {
+                vo.setAppointDeptRoomName(departmentRoom.getName());
+            }
+        }
+    }
 
 
 
-}
+
+
+    }
