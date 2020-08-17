@@ -88,7 +88,6 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     Instant instant = treatmentRecord.getTreatStartTime().toInstant();
     ZoneId zoneId = ZoneId.systemDefault();
     LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
-
     if (model.getDeadTime() == null && LocalDateTime.now().isAfter(LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MAX))) {//false处为判断当前时间是否超过就诊当天24点
       throw new ClientServiceException("超过就诊当天24点", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
@@ -109,6 +108,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         return responseResult;
       }
     }
+    remoteTreatmentServiceFeign.updateTreatmentRecord(model.getTreatmentId());//修改就诊记录病历书写状态
     if (model.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
       for (MedicalGeneralNumVO m : model.getMedicalGeneralNumList()) {
@@ -160,9 +160,13 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
 
     int re = 0;
 
-    //调用figen获取就诊信息 medicalCommonRecordForm.getTreatmentId() 就诊id 未对接
+    //调用figen获取就诊信息 根据就诊id  //是否超过当前24小时
+    TreatmentRecord treatmentRecord = remoteTreatmentServiceFeign.findTreatmentRecordById(medicalCommonRecordForm.getTreatmentId());
+    Instant instant = treatmentRecord.getTreatStartTime().toInstant();
+    ZoneId zoneId = ZoneId.systemDefault();
+    LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
 
-    if (false) {//判断当前时间是否超过就诊当天24点
+    if (LocalDateTime.now().isAfter(LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MAX))) {//判断当前时间是否超过就诊当天24点
       throw new ClientServiceException("已过修改时间，请提交审核", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     re = mapper.updateByPrimaryKey(medicalcopy);
