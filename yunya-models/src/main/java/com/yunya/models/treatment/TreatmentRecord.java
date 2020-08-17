@@ -1,5 +1,8 @@
 package com.yunya.models.treatment;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -55,12 +58,16 @@ public class TreatmentRecord {
      * 就诊开始时间（医生点击开始接诊的时间）
      */
     @Column(name = "treat_start_time")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date treatStartTime;
 
     /**
      * 就诊结束时间(医生端点击就诊完成的时间)
      */
     @Column(name = "treat_end_time")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date treatEndTime;
 
     /**
@@ -95,6 +102,8 @@ public class TreatmentRecord {
      * 创建时间
      */
     @Column(name = "crt_time")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date crtTime;
 
     /**
@@ -113,6 +122,8 @@ public class TreatmentRecord {
      * 最后更新时间
      */
     @Column(name = "upd_time")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date updTime;
 
     /**
