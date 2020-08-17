@@ -42,8 +42,8 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
 
     /**
      * 插入预约记录
-     * @param model
-     * @return
+     * @param model  记录表单
+     * @return 返回插入的记录条数
      */
     public Integer insertAppointmentOperateRecord(AppointOperationModel model){
 
@@ -52,8 +52,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         appointOperateRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointOperateRecord.setCrtName(BaseContextHandler.getName());
         appointOperateRecord.setCrtTime(new Date(System.currentTimeMillis()));
-        int insert = mapper.insertSelective(appointOperateRecord);
-        return insert;
+        return mapper.insertSelective(appointOperateRecord);
     }
 
     /**
@@ -63,7 +62,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
      * @param appointment 修改内容之前的数据
      */
     public void saveAppointOperationRecord(Appointment appointment,AppointmentBaseForm appointmentBaseForm){
-
         AppointmentOperateRecord record = new AppointmentOperateRecord();
         record.setAppointmentId(appointmentBaseForm.getId());
         record.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
@@ -71,7 +69,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         record.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         record.setCrtName(BaseContextHandler.getName());
         record.setCrtTime(new Date(System.currentTimeMillis()));
-
         // 保存 预约日期 修改记录
         if (!appointment.getAppointDate().equals(appointmentBaseForm.getAppointDate())){
             record.setBeforeOperation(appointment.getAppointDate().toString());
@@ -97,7 +94,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
                 mapper.insertSelective(record);
             }
         }
-
         // 保存 预约助手 修改记录
         if (!appointment.getAssistantId().equals(appointmentBaseForm.getAssistantId())){
             SysUserInfoDetail beforeModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(appointment.getAssistantId());
@@ -109,7 +105,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
                 mapper.insertSelective(record);
             }
         }
-
         // 保存 预约时长 修改记录
         if (!appointment.getAppointDuration().equals(appointmentBaseForm.getAppointDuration())){
             record.setBeforeOperation(String.valueOf(appointment.getAppointDuration()));
@@ -117,7 +112,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             record.setRemarks("预约时长");
             mapper.insertSelective(record);
         }
-
         // 保存 预约科室 修改记录
         if (!appointment.getDeptRoomId().equals(appointmentBaseForm.getDeptRoomId())){
             ClinicDepartmentRoomVO beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(appointment.getDeptRoomId());
@@ -129,7 +123,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
                 mapper.insertSelective(record);
             }
         }
-
         // 保存 预约确认 修改记录
         if (!appointment.getConfirmStatus().equals(appointmentBaseForm.getConfirmStatus())){
             record.setBeforeOperation(appointment.getConfirmStatus() ? "确认" : "未确认");
@@ -137,7 +130,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             record.setRemarks("预约确认");
             mapper.insertSelective(record);
         }
-
         // 保存 预约设备 修改记录
         if (!appointment.getClinicDeviceItemId().equals(appointmentBaseForm.getClinicDeviceItemId())){
             DeviceItemVo beforeModifyDeviceItemInfo = clinicDeviceItemBiz.selectDeviceItemById(appointment.getClinicDeviceItemId());
@@ -149,7 +141,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             }
             mapper.insertSelective(record);
         }
-
         // 保存 预约内容 修改记录
         if (!appointment.getAppointContent().equals(appointmentBaseForm.getAppointContent())){
             record.setBeforeOperation(appointment.getAppointContent());
@@ -157,7 +148,6 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             record.setRemarks("预约内容");
             mapper.insertSelective(record);
         }
-
         // 保存 预约备注 修改记录
         if (!appointment.getRemarks().equals(appointmentBaseForm.getRemarks())){
             record.setBeforeOperation(appointment.getRemarks());

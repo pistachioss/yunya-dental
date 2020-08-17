@@ -32,8 +32,8 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
 
     /**
      * 新增预约修改记录
-     * @param record
-     * @return
+     * @param record  修改预约表单
+     * @return 添加成功的条数；失败返回0
      */
     public Integer addAppointModifyRecord(AppointModifyRecordModel record){
 

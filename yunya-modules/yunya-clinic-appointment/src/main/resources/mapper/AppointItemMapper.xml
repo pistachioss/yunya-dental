@@ -71,7 +71,7 @@
     </select>
 
     <!--查询预约分类列表-->
-    <select id="findAppointItemByExample" resultType="com.yunya.feign.appointment.vo.AppointmentItemVo">
+    <select id="findAppointItemByExample" parameterType="com.yunya.feign.appointment.domain.query.AppointItemQuery" resultType="com.yunya.feign.appointment.vo.AppointmentItemVo">
         select
         DISTINCT item.id,
         item.name,
@@ -87,8 +87,11 @@
             <if test="form.appointTypeId != null">
                 atype.id =#{form.appointTypeId}
             </if>
-            <if test="form.name != null">
+            <if test="form.name != null and form.fuzzyQuery == true">
                 and item.name like CONCAT(CONCAT('%', #{form.name}), '%')
+            </if>
+            <if test="form.name != null and form.fuzzyQuery == false">
+                and item.name = #{form.name}
             </if>
         </where>
     </select>

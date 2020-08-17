@@ -62,9 +62,6 @@ import java.util.stream.Collectors;
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
-    /** 默认显示7天的预约信息 */
-    private static final int APPOINT_DAYS = 7;
-
     /** 注入yunya-admin-system Feign接口服务 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
@@ -93,19 +90,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     @Autowired
     private RedisUtils redisUtils;
 
-    /** 按照患者数量排序 */
-    final private String ORDER_PATIENTNUM = "patientNum";
-    /** 按照日期排序 */
-    final private String ORDER_DATE = "date";
-    /** 升序 */
-    final private String ORDER_BY_ASC = "asc";
-    /** 降序 */
-    final private String ORDER_BY_DESC = "desc";
-
     /**
      * 添加预约（检查预约是否冲突）
      * @param form  预约参数封装
-     * @throws ParseException
+     * @return ResponseResult
+     * @throws ParseException 日期转换异常
      */
     public ResponseResult addAppointment(AppointmentBaseModel form) throws ParseException {
         // 检查预约当天预约的医生是否排班
@@ -127,8 +116,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 throw new ClientServiceException("【"+patientame + "】预约失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
 
+            List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             // 添加预约时长分解
-            if (form.getSplitList() != null || !form.getSplitList().isEmpty()){
+            if (form.getSplitList() != null || !splitList.isEmpty()){
                 AppointmentSplitModel model = new AppointmentSplitModel();
                 model.setSplitList(form.getSplitList());
                 model.setOrgId(appointmentEntity.getOrgId());
@@ -159,7 +149,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /**
      *  添加预约（冲突后继续添加）
      * @param form  预约参数封装
-     * @return
+     * @return  ResponseResult
      */
     public ResponseResult continueAddAppointment(AppointmentBaseModel form) {
         // 将Form转为Entity
@@ -176,7 +166,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 splitModel.setOrgId(build.getOrgId());
                 Integer splitResult = appointmentSplitBiz.insertAppointSplit(splitModel);
                 if (splitResult == null || splitResult <= 0){
-                    throw new ClientServiceException((String) "分解时长失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                    throw new ClientServiceException( "分解时长失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
                 }
             }
             // 判断预约是否添加成功
@@ -198,7 +188,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * 修改预约状态
      * @param id 预约id
      * @param appointState 预约状态 0-预约未到，1-履约，2，取消预约，3-失约
-     * @return
+     * @return Appointment
      */
     public Appointment updateAppointStatus(Integer id, Byte appointState, String remarks) {
         Appointment appointment = mapper.selectByPrimaryKey(id);
@@ -265,7 +255,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * 删除预约（取消预约）
      * @param id   预约id
      * @param form  取消预约原因表单
-     * @return
+     * @return ResponseResult
      */
     public ResponseResult appointmentCancel(Integer id, AppointmentCancelCauseForm form){
         Appointment appointment = mapper.selectByPrimaryKey(id);
@@ -294,7 +284,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /**
      * 编辑预约（出现冲突）
      * @param form  预约表单
-     * @return
+     * @return ResponseResult
      */
     public ResponseResult updateAppointment(AppointmentBaseForm form){
         AppointmentBaseModel appointBaseModel = EntityUtils.build(form, AppointmentBaseModel.class);
@@ -533,7 +523,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * 根据条件查询预约可视图（医生维度）按预约患者数量降序排列
      * 可用范围 根据医生id、排班时间查询医生预约信息
      * @param query 查询条件
-     * @return
+     * @return List<AppointmentDimensionVo>
      */
     public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(AppointmentPatientDimensionByDayQuery query) {
         List<AppointmentDimensionVo> appointmentDimensionVoList = new ArrayList<>();
@@ -559,9 +549,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointmentDimensionVo.setName(dentistName);
 
             // 设置排班日期
-            userWorkVO.getDays().forEach(workDayVO -> {
-                appointmentDimensionVo.setCurrentDate(workDayVO.getDate());
-            });
+            userWorkVO.getDays().forEach(workDayVO -> appointmentDimensionVo.setCurrentDate(workDayVO.getDate()));
 
             // 设置医生排班信息
             appointmentDimensionVo.setDentistScheduleVos(userWorkVO.getDays());
@@ -582,28 +570,32 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
 
         // 按患者预约数量升序排列
+        // 按照患者数量排序
+        String ORDER_PATIENTNUM = "patientNum";
+        // 按照日期排序
+        String ORDER_DATE = "date";
+        // 升序
+        String ORDER_BY_ASC = "asc";
+        // 降序
+        String ORDER_BY_DESC = "desc";
         if (ORDER_PATIENTNUM.equals(query.getOrder()) && ORDER_BY_ASC.equals(query.getOrderBy())){
-            List<AppointmentDimensionVo> appointmentDimensionVosOrderByAsc = appointmentDimensionVoList
+            return appointmentDimensionVoList
                     .stream().sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum)).collect(Collectors.toList());
-            return appointmentDimensionVosOrderByAsc;
 
         } else if (ORDER_PATIENTNUM.equals(query.getOrder()) && ORDER_BY_DESC.equals(query.getOrderBy())){
             // 按患者预约数量降序排列
-            List<AppointmentDimensionVo> appointmentDimensionVosOrderByDesc = appointmentDimensionVoList
+            return appointmentDimensionVoList
                     .stream().sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
-            return appointmentDimensionVosOrderByDesc;
 
         } else if (ORDER_DATE.equals(query.getOrder()) && ORDER_BY_ASC.equals(query.getOrderBy())){
             // 按日期升序排列
-            List<AppointmentDimensionVo> appointmentDimensionVosOrderByAsc = appointmentDimensionVoList
+            return appointmentDimensionVoList
                     .stream().sorted(Comparator.comparing(AppointmentDimensionVo::getCurrentDate)).collect(Collectors.toList());
-            return appointmentDimensionVosOrderByAsc;
 
         } else if (ORDER_DATE.equals(query.getOrder()) && ORDER_BY_DESC.equals(query.getOrderBy())){
             // 按日期降序排列
-            List<AppointmentDimensionVo> appointmentDimensionVosOrderByDesc = appointmentDimensionVoList
+            return appointmentDimensionVoList
                     .stream().sorted(Comparator.comparing(AppointmentDimensionVo::getCurrentDate).reversed()).collect(Collectors.toList());
-            return appointmentDimensionVosOrderByDesc;
         }
         // 没有排序直接返回
         return appointmentDimensionVoList;
@@ -656,8 +648,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                         if (assistantDetailInfo != null){
                             // 设置助手名字
                             assistantSplitVo.setName(assistantDetailInfo.getName());
-                            String splitStartTime = appointmentSplitVo.getSplitStartTime().toString();
-                            String splitEndTime = appointmentSplitVo.getSplitEndTime().toString();
+                            String splitStartTime = appointmentSplitVo.getSplitStartTime();
+                            String splitEndTime = appointmentSplitVo.getSplitEndTime();
                             // 助手预约时间段
                             String splitTime = splitStartTime + "-" + splitEndTime;
                             appointmentPatientCardVo.setAppointTime(splitTime);
@@ -682,17 +674,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         });
 
         // 按患者数量对医生降序排序
-        Collections.sort(appointmentDentistDimensionVoList, new Comparator<AppointmentDentistDimensionVo>() {
-            @Override
-            public int compare(AppointmentDentistDimensionVo o1, AppointmentDentistDimensionVo o2) {
-                if (o1.getAppointmentDentistInfoVo().getPatientNum() > o2.getAppointmentDentistInfoVo().getPatientNum()) {
-                    return -1;
-                }
-                if (o1.getAppointmentDentistInfoVo().getPatientNum() < o2.getAppointmentDentistInfoVo().getPatientNum()) {
-                    return 1;
-                }
-                return 0;
+        Collections.sort(appointmentDentistDimensionVoList, (o1, o2) -> {
+            if (o1.getAppointmentDentistInfoVo().getPatientNum() > o2.getAppointmentDentistInfoVo().getPatientNum()) {
+                return -1;
             }
+            if (o1.getAppointmentDentistInfoVo().getPatientNum() < o2.getAppointmentDentistInfoVo().getPatientNum()) {
+                return 1;
+            }
+            return 0;
         });
         return appointmentDentistDimensionVoList;
 
@@ -706,8 +695,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return 返回预约视图
      */
     public AppointmentVo findAppointmentById(Integer id){
-        AppointmentVo appointmentVo = mapper.findAppointmentById(id);
-        return appointmentVo;
+        return mapper.findAppointmentById(id);
     }
 
 
@@ -937,7 +925,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Date appointDate = appointment.getAppointDate();
         String appointTimeStr = appointment.getAppointTime();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
-        Date appointTime = null;
+        Date appointTime;
         try {
             appointTime = simpleDateFormat.parse(appointTimeStr);
         } catch (ParseException e) {
@@ -1060,14 +1048,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return null;
     }
 
-
     /**
-     * 预约列表合并导出  TODO
-     *
-     * @param response
-     * @param exportQuery 预约查询Form
-     * @return 导出文件地址
-     * @throws Exception
+     * 预约列表合并导出
+     * @param response  HttpServletResponse
+     * @param exportQuery  预约查询Form
+     * @throws IOException I/O异常
      */
     public void exportAppointListToExcel(HttpServletResponse response, AppointListExportQuery exportQuery) throws IOException {
 
@@ -1161,7 +1146,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             AppointOperationRecordVo appointOperationRecordVo = appointOperationRecords.get(0);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String crtTime = dateFormat.format(appointOperationRecordVo.getCrtTime());
-            String operationRecordContent = null;
             StringBuilder operationRecordContentBuilder = new StringBuilder();
 
             // 设置取消预约原因
@@ -1202,6 +1186,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
                     operationRecordContentBuilder.append("取消了这条预约的确认");
                     break;
+                default:
             }
             appointListExportVo.setAppointOperationRecord(operationRecordContentBuilder.toString());
         }

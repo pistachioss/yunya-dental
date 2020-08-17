@@ -9,11 +9,13 @@
  * 作者姓名           修改时间           版本号              描述
  */
 package com.yunya.modules.appointment.biz;
+
 import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemTypeQuery;
-import com.yunya.feign.appointment.vo.AppointListExportVo;
+import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
+import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -23,8 +25,6 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppointItem;
 import com.yunya.modules.appointment.mapper.AppointItemMapper;
-import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,8 +50,8 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
 
     /**
      * 添加可预约项目
-     * @param appItemForm
-     * @return
+     * @param appItemForm 预约项目表单数据
+     * @return ResponseResult
      */
     public ResponseResult insertAppointItem(AppointmentItemModel appItemForm){
 
@@ -75,8 +75,8 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
     /**
      * 根据门诊id、预约项目分类查询门诊端预约项目列表
      *
-     * @param from
-     * @return
+     * @param from  查询条件封装
+     * @return  返回预约项目列表
      */
     public List<AppointmentItemVo> findAppItemList(AppointItemQuery from) {
         //获取公司端预约项目列表
@@ -84,9 +84,10 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
         return ordersTypeList;
     }
 
-
     /**
      * 修改门诊端预约项目
+     * @param appItemForm 修改参数封装
+     * @return 成功 返回修改成功的条数；否则返回0
      */
     public Integer updateAppItem(AppointItemModifyForm appItemForm) {
         //将Form对象转换成Entity
@@ -104,9 +105,8 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
 
     /**
      * 根据预约项目名称模糊查询预约项目
-     *
-     * @param form
-     * @return
+     * @param form  参数条件查询参数封装
+     * @return  预约项目列表
      */
     public List<AppointmentItemVo> findAppointItemByExample(AppointItemQuery form) {
         //通过feign查询预约信息，查询门诊端预约信息
@@ -116,12 +116,12 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
 
     /**
      * 查询门诊经理端预约列表
-     * @param compClinId
-     * @return
+     * @param orgId  门诊id
+     * @return 预约列表
      */
-    public List<AppointmentItemEnableModelVo> findAvailableAppItemList(Integer compClinId) {
+    public List<AppointmentItemEnableModelVo> findAvailableAppItemList(Integer orgId) {
         AppointItemTypeQuery appointOrderTypeQueryForm = new AppointItemTypeQuery();
-        appointOrderTypeQueryForm.setOrgId(compClinId);
+        appointOrderTypeQueryForm.setOrgId(orgId);
 
         List<AppointmentItemEnableModelVo> ordersModels = mapper.selectAllAppointItemByOrgId(appointOrderTypeQueryForm);
         if(ordersModels.isEmpty()){
@@ -132,8 +132,8 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
 
     /**
      * 根据条件删除预约项目
-     * @param id
-     * @return
+     * @param id  预约项目id
+     * @return 成功返回 删除的条数，否则返回0
      */
     public Integer delAppointItemById(Integer id){
         return mapper.deleteByPrimaryKey(id);
