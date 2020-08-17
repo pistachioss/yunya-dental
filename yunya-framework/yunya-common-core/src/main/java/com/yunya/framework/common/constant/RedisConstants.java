@@ -33,7 +33,12 @@ public class RedisConstants implements Serializable {
   /** 组织（公司、门诊）信息列表 */
   public static final String REDIS_KEY_ORG_LIST = "orgList_";
 
-  /** ---------------------------*****缓存通用key------------------------------- */
+  /** --------------------------- 诊疗列表（预约未到、候诊中、就诊中、接诊完成、离店）缓存通用key------------------------------- */
+  public static final String REDIS_KEY_APPOINTMENT_UN_DONE = "appointment_Un_Done_patientInfo_";
+  public static final String REDIS_KEY_REGISTERED = "registered_patientInfo_";
+  public static final String REDIS_KEY_TREATMENT_ING = "treatment_ing_patientInfo_";
+  public static final String REDIS_KEY_TREATMENT_ED = "treatment_ed_patientInfo_";
+  public static final String REDIS_KEY_TREATMENT_LEAVE = "treatment_leave_patientInfo_";
 
   /** ----------------------- 电子病例----------------------------------------*/
   public static final String LOCK_DRAFT_APPLY_NS ="lock:draft:apply";
