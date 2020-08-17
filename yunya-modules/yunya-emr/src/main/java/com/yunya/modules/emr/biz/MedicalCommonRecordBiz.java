@@ -109,7 +109,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       }
     }
     remoteTreatmentServiceFeign.updateTreatmentRecord(model.getTreatmentId());//修改就诊记录病历书写状态
-    if (model.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
+    if (model.getMedicalGeneralNumList()!=null&&model.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
       for (MedicalGeneralNumVO m : model.getMedicalGeneralNumList()) {
         MedicalGeneralNum medicalGeneralNum = new MedicalGeneralNum();
@@ -178,7 +178,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     example.createCriteria().andEqualTo("medicalRecordId", medicalcopy.getId());
     medicalRecordHistoryMapper.updateByExampleSelective(medicalRecordHistory, example);
 
-    if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
+    if (medicalCommonRecordForm.getMedicalGeneralNumList()!=null&&medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
       for (MedicalGeneralNumVO m : medicalCommonRecordForm.getMedicalGeneralNumList()) {
         MedicalGeneralNum medicalGeneralNum = new MedicalGeneralNum();
@@ -239,7 +239,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
       medicalApprovalBiz.applyUpdateDraftCase(draftMedicalApplyModel);
     }
 
-    if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
+    if (medicalCommonRecordForm.getMedicalGeneralNumList()!=null&&medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
       for (MedicalGeneralNumVO m : medicalCommonRecordForm.getMedicalGeneralNumList()) {
         MedicalGeneralNum medicalGeneralNum = new MedicalGeneralNum();
@@ -289,7 +289,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
     if (re > 0 && medicalcopy.getStatus() == 2) {//助手修改病历通过时，审核表中同步插入一条数据
       medicalRecordHistoryBiz.insertMedicalHistory(medicalcopy);
     }
-    if (medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
+    if (medicalCommonRecordForm.getMedicalGeneralNumList()!=null&&medicalCommonRecordForm.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
       List<MedicalGeneralNum> numList = new ArrayList<>();
       for (MedicalGeneralNumVO m : medicalCommonRecordForm.getMedicalGeneralNumList()) {
         MedicalGeneralNum medicalGeneralNum = new MedicalGeneralNum();
