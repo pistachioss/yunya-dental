@@ -10,6 +10,7 @@ import com.yunya.framework.common.utils.text.Convert;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -65,6 +66,9 @@ public class ExcelUtil<T> {
 
   /** 实体对象 */
   public Class<T> clazz;
+
+  /** 合并表格 */
+  private List<CellRangeAddress> regions;
 
   public ExcelUtil(Class<T> clazz) {
     this.clazz = clazz;
@@ -280,6 +284,10 @@ public class ExcelUtil<T> {
           fillExcelData(index);
         }
       }
+
+      // 设置表格合并
+      this.mergeRegion();
+
       wb.write(outputStream);
     } catch (Exception e) {
       log.error("导出Excel异常{}", e.getMessage());
@@ -724,4 +732,26 @@ public class ExcelUtil<T> {
     }
     return val;
   }
+
+  /**
+   * 设置合并单元格
+   * @param region
+   */
+  public void setMergeRegion(List<CellRangeAddress> region){
+    this.regions = region;
+  }
+
+  /**
+   * 合并单元格
+   */
+  public void mergeRegion(){
+    if (!regions.isEmpty()){
+      regions.forEach(cellRangeAddress -> {
+        sheet.addMergedRegion(cellRangeAddress);
+      });
+    }
+  }
+
+
+
 }

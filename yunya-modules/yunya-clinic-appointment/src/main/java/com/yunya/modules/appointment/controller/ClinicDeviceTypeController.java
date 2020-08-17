@@ -90,7 +90,7 @@ public class ClinicDeviceTypeController {
      */
     @ApiOperation(value = "根据条件查询设备")
     @PostMapping("/find")
-    public ResponseResult findDeviceTypeByExample(@RequestBody DeviceTypeQuery query){
+    public ResponseResult findDeviceTypeByExample(@RequestBody @Validated DeviceTypeQuery query){
         PageInfo pageInfo = clinicDeviceTypeBiz.findDeviceTypeList(query);
         return ResponseUtil.success(pageInfo);
     }

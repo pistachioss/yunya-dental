@@ -13,6 +13,7 @@ import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemTypeQuery;
+import com.yunya.feign.appointment.vo.AppointListExportVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -54,11 +55,13 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
      */
     public ResponseResult insertAppointItem(AppointmentItemModel appItemForm){
 
-        AppointItem build = EntityUtils.build(appItemForm, AppointItem.class);
-        AppointItem appointItem = mapper.selectOne(build);
-        if (appointItem != null){
+        AppointItemQuery itemQuery = new AppointItemQuery();
+        itemQuery.setName(appItemForm.getName());
+        List<AppointmentItemVo> hasSameAppointItems = mapper.findAppointItemByExample(itemQuery);
+        if (hasSameAppointItems != null && hasSameAppointItems.isEmpty()){
             return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"预约项目名称与系统中已有预约项目重复，不允许新增！",null);
         }
+        AppointItem build = EntityUtils.build(appItemForm, AppointItem.class);
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         int result = mapper.insertSelective(build);
         if (result <= 0){

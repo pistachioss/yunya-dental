@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointStatusForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
+import com.yunya.feign.appointment.domain.query.AppointListExportQuery;
 import com.yunya.feign.appointment.domain.query.AppointListQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentPatientDimensionByDayQuery;
 import com.yunya.feign.appointment.vo.AppointmentDentistDimensionVo;
@@ -22,7 +23,8 @@ import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -201,9 +203,21 @@ public class AppointmentController {
         return ResponseUtil.success(pageInfo);
     }
 
-
-
-
-
+    /**
+     * 导出预约列表项目
+     * @param response response
+     * @param query  查询参数
+     * @return ResponseResult
+     * @throws IOException
+     */
+    @ApiOperation(value = "导出预约列表项目")
+    @PostMapping("/export/list")
+    @CurrentUser
+    public ResponseResult exportAppointList(
+            HttpServletResponse response,
+            @RequestBody @Validated AppointListExportQuery query) throws IOException {
+        appointmentBiz.exportAppointListToExcel(response,query);
+        return ResponseUtil.success();
+    }
 
 }

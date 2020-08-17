@@ -37,8 +37,8 @@ public class Appointment {
     /**
      * 门诊科室ID 默认医生配置科室ID
      */
-    @Column(name = "clinic_dept_room_id")
-    private Integer clinicDeptRoomId;
+    @Column(name = "dept_room_id")
+    private Integer deptRoomId;
 
     /**
      * 门诊设备ID
@@ -259,17 +259,17 @@ public class Appointment {
      *
      * @return clinic_dept_room_id - 门诊科室ID 默认医生配置科室ID
      */
-    public Integer getClinicDeptRoomId() {
-        return clinicDeptRoomId;
+    public Integer getDeptRoomId() {
+        return deptRoomId;
     }
 
     /**
      * 设置门诊科室ID 默认医生配置科室ID
      *
-     * @param clinicDeptRoomId 门诊科室ID 默认医生配置科室ID
+     * @param deptRoomId 门诊科室ID 默认医生配置科室ID
      */
-    public void setClinicDeptRoomId(Integer clinicDeptRoomId) {
-        this.clinicDeptRoomId = clinicDeptRoomId;
+    public void setDeptRoomId(Integer deptRoomId) {
+        this.deptRoomId = deptRoomId;
     }
 
     /**

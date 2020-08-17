@@ -31,6 +31,10 @@ public class AppointOperationQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
+    /** 按照时间排序规则默认降序（asc-升序；desc-降序） */
+    @ApiModelProperty(value = "排序规则默认降序（asc-升序；desc-降序）")
+    private String orderBy = "desc";
+
     /**
      * 诊所ID
      */

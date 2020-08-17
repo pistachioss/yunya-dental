@@ -53,7 +53,7 @@ public class AppointmentVo implements Serializable {
      * 门诊科室ID 默认医生配置科室ID
      */
     @ApiModelProperty(value = "门诊科室ID 默认医生配置科室ID")
-    private Integer clinicDeptRoomId;
+    private Integer deptRoomId;
 
     /**
      * 门诊设备ID

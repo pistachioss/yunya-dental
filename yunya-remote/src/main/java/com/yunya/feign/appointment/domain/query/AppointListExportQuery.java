@@ -1,41 +1,39 @@
 package com.yunya.feign.appointment.domain.query;
 
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 预约列表条件查询参数封装
+ * 预约列表导出参数模型
  *
  * @author yunya-lihuibin
  * @create 2020-07-27 15:12
  * @update yunya-lihuibin    2020-07-27    新建
  */
-@ApiModel("预约列表条件查询参数封装")
+@ApiModel("预约列表导出参数模型")
 @Data
 @ToString
-public class AppointListQuery implements Serializable {
+public class AppointListExportQuery implements Serializable {
 
-    @ApiModelProperty(value = "是否分页", required = true)
-    private Boolean whetherPage = true;
+    @ApiModelProperty(value = "页码")
+    @NotNull(message = "页码为空！")
+    private int pageNum;
 
-    @ApiModelProperty("页码")
-    @Min(message = "最小值", value = 1)
-    private Integer pageNum = 1;
-
-    @ApiModelProperty("每页显示数量")
-    @Min(message = "最小值", value = 1)
-    private Integer pageSize = 10;
+    @ApiModelProperty(value = "每页显示条数", required = true)
+    @NotNull(message = "每页显示条数为空！")
+    private int pageSize;
 
     /** 预约日期 */
-    @ApiModelProperty(value = "预约日期", required = true)
+    @ApiModelProperty(value = "预约日期",required = true)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     @NotNull(message = "预约日期不能为空！")
     private Date appointDate;

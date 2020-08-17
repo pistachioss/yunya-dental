@@ -22,13 +22,12 @@
   <select id="selectDeviceTypeByExample" parameterType="com.yunya.feign.appointment.domain.query.DeviceTypeQuery" resultType="com.yunya.feign.appointment.vo.DeviceTypeVo">
     SELECT
         cdt.id,
-        cdi.org_id as orgId,
+        cdt.org_id as orgId,
         cdt.name,
         cdt.remarks,
         cdt.inservice,
         count(cdt.name) as deviceNum
-    from clinic_device_type cdt LEFT JOIN clinic_device_item cdi
-    on cdi.device_id = cdt.id
+    from clinic_device_type cdt
     <where>
       <if test="query.orgId != null">
         and cdt.org_id = #{query.orgId}

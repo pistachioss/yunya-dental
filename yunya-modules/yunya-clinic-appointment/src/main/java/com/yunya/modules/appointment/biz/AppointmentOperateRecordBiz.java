@@ -11,6 +11,7 @@ import com.yunya.feign.system.vo.ClinicDepartmentRoomVO;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
@@ -89,20 +90,24 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         if (!appointment.getDentistId().equals(appointmentBaseForm.getDentistId())){
             SysUserInfoDetail beforeModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(appointment.getDentistId());
             SysUserInfoDetail afterModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(appointmentBaseForm.getDentistId());
-            record.setBeforeOperation(beforeModifyDentistInfo.getName());
-            record.setAfterOperation(afterModifyDentistInfo.getName());
-            record.setRemarks("预约医生");
-            mapper.insertSelective(record);
+            if (beforeModifyDentistInfo != null && afterModifyDentistInfo != null){
+                record.setBeforeOperation(beforeModifyDentistInfo.getName());
+                record.setAfterOperation(afterModifyDentistInfo.getName());
+                record.setRemarks("预约医生");
+                mapper.insertSelective(record);
+            }
         }
 
         // 保存 预约助手 修改记录
         if (!appointment.getAssistantId().equals(appointmentBaseForm.getAssistantId())){
             SysUserInfoDetail beforeModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(appointment.getAssistantId());
             SysUserInfoDetail afterModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(appointmentBaseForm.getAssistantId());
-            record.setBeforeOperation(beforeModifyDentistInfo.getName());
-            record.setAfterOperation(afterModifyDentistInfo.getName());
-            record.setRemarks("预约助手");
-            mapper.insertSelective(record);
+            if (beforeModifyDentistInfo != null && afterModifyDentistInfo != null){
+                record.setBeforeOperation(beforeModifyDentistInfo.getName());
+                record.setAfterOperation(afterModifyDentistInfo.getName());
+                record.setRemarks("预约助手");
+                mapper.insertSelective(record);
+            }
         }
 
         // 保存 预约时长 修改记录
@@ -114,13 +119,15 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         }
 
         // 保存 预约科室 修改记录
-        if (!appointment.getClinicDeptRoomId().equals(appointmentBaseForm.getClinicDeptRoomId())){
-            ClinicDepartmentRoomVO beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(appointment.getClinicDeptRoomId());
+        if (!appointment.getDeptRoomId().equals(appointmentBaseForm.getClinicDeptRoomId())){
+            ClinicDepartmentRoomVO beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(appointment.getDeptRoomId());
             ClinicDepartmentRoomVO afterModifyDepartmentRoomtInfo = systemServiceFeign.findClinicDepartmentRoomById(appointmentBaseForm.getClinicDeptRoomId());
-            record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
-            record.setAfterOperation(afterModifyDepartmentRoomtInfo.getDeptRoomName());
-            record.setRemarks("预约科室");
-            mapper.insertSelective(record);
+            if (beforeModifyDepartmentRoomInfo != null && afterModifyDepartmentRoomtInfo != null){
+                record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
+                record.setAfterOperation(afterModifyDepartmentRoomtInfo.getDeptRoomName());
+                record.setRemarks("预约科室");
+                mapper.insertSelective(record);
+            }
         }
 
         // 保存 预约确认 修改记录
@@ -135,9 +142,11 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         if (!appointment.getClinicDeviceItemId().equals(appointmentBaseForm.getClinicDeviceItemId())){
             DeviceItemVo beforeModifyDeviceItemInfo = clinicDeviceItemBiz.selectDeviceItemById(appointment.getClinicDeviceItemId());
             DeviceItemVo afterModifyDeviceItemtInfo = clinicDeviceItemBiz.selectDeviceItemById(appointmentBaseForm.getClinicDeviceItemId());
-            record.setBeforeOperation(beforeModifyDeviceItemInfo.getNumber());
-            record.setAfterOperation(afterModifyDeviceItemtInfo.getNumber());
-            record.setRemarks("预约设备");
+            if (beforeModifyDeviceItemInfo != null && afterModifyDeviceItemtInfo != null){
+                record.setBeforeOperation(beforeModifyDeviceItemInfo.getNumber());
+                record.setAfterOperation(afterModifyDeviceItemtInfo.getNumber());
+                record.setRemarks("预约设备");
+            }
             mapper.insertSelective(record);
         }
 

@@ -8,7 +8,7 @@
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
     <result column="dentist_id" jdbcType="INTEGER" property="dentistId" />
     <result column="assistant_id" jdbcType="INTEGER" property="assistantId" />
-    <result column="clinic_dept_room_id" jdbcType="INTEGER" property="clinicAppointItemId" />
+    <result column="dept_room_id" jdbcType="INTEGER" property="deptRoomId" />
     <result column="clinic_device_item_id" jdbcType="INTEGER" property="clinicDeviceItemId" />
     <result column="clinic_appoint_item_id" jdbcType="INTEGER" property="clinicAppointItemId" />
     <result column="appoint_duration" jdbcType="INTEGER" property="appointDuration" />
@@ -78,7 +78,7 @@
 <!--  </resultMap>-->
 
   <sql id="Base_Column_List">
-    id, patient_id, org_id, dentist_id, assistant_id, clinic_dept_room_id, clinic_device_item_id,
+    id, patient_id, org_id, dentist_id, assistant_id, dept_room_id, clinic_device_item_id,
     clinic_appoint_item_id, appoint_duration, appoint_date, appoint_time, appoint_start_time,
     appoint_end_time, appoint_period, tooth_bit, appoint_content, appoint_type, confirm_status,
     appoint_status, remarks, inservice, crt_id, crt_name, crt_time, upt_id, upd_name,
@@ -91,7 +91,7 @@
     apt.org_id as orgId,
     apt.dentist_id as dentistId,
     apt.assistant_id as assistantId,
-    apt.clinic_dept_room_id as clinicDeptRoomId,
+    apt.dept_room_id as deptRoomId,
     apt.clinic_device_item_id as clinicDeviceItemId,
     apt.clinic_appoint_item_id as clinicAppointItemId,
     apt.appoint_duration as appointDuration,
@@ -150,7 +150,7 @@
       a.org_id as orgId,
       a.dentist_id as dentistId,
       a.assistant_id as assistantId,
-      a.clinic_dept_room_id as clinicDeptRoomId,
+      a.dept_room_id as deptRoomId,
       a.clinic_device_item_id as clinicDeviceItemId,
       a.clinic_appoint_item_id as clinicAppointItemId,
       a.appoint_duration as appointDuration,
@@ -182,8 +182,8 @@
       <if test="query.assistantId != null">
         and a.assistant_id = #{query.assistantId}
       </if>
-      <if test="query.clinicDeptRoomId != null">
-        and a.clinic_dept_room_id = #{query.clinicDeptRoomId}
+      <if test="query.deptRoomId != null">
+        and a.dept_room_id = #{query.deptRoomId}
       </if>
       <if test="query.clinicDeviceItemId != null">
         and a.clinic_device_item_id = #{query.clinicDeviceItemId}
@@ -218,7 +218,7 @@
 <!-- 添加预约 -->
   <insert id="insertAppointment" keyProperty="id" parameterType="com.yunya.models.appointment.Appointment" useGeneratedKeys="true">
       insert into appointment (patient_id, org_id, dentist_id,
-        assistant_id, clinic_dept_room_id, clinic_device_item_id,
+        assistant_id, dept_room_id, clinic_device_item_id,
         clinic_appoint_item_id, appoint_duration, appoint_date,
         appoint_time, appoint_start_time, appoint_end_time,
         appoint_period, tooth_bit, appoint_content,
@@ -227,7 +227,7 @@
         crt_name, crt_time, upt_id,
         upd_name, upd_time)
       values (#{patientId}, #{orgId}, #{dentistId},
-        #{assistantId}, #{clinicDeptRoomId}, #{clinicDeviceItemId},
+        #{assistantId}, #{DeptRoomId}, #{clinicDeviceItemId},
         #{clinicAppointItemId}, #{appointDuration}, #{appointDate},
         #{appointTime}, #{appointStartTime}, #{appointEndTime},
         #{appointPeriod}, #{toothBit}, #{appointContent},

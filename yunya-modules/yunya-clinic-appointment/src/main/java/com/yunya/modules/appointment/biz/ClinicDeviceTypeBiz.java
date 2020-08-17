@@ -1,4 +1,5 @@
 package com.yunya.modules.appointment.biz;
+
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.DeviceEditForm;
@@ -16,10 +17,8 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.appointment.ClinicDeviceItem;
 import com.yunya.models.appointment.ClinicDeviceType;
 import com.yunya.modules.appointment.mapper.ClinicDeviceTypeMapper;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

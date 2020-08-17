@@ -1,6 +1,5 @@
 package com.yunya.modules.appointment.biz;
 
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.vo.ClinicAppointItemConfigVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
@@ -12,7 +11,6 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.models.appointment.ClinicAppointItem;
 import com.yunya.feign.appointment.domain.form.ClinicAppointItemForm;
 import com.yunya.modules.appointment.mapper.ClinicAppointItemMapper;
-import io.jsonwebtoken.impl.crypto.MacProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,7 +67,9 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
             OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(clinicAppointItem.getOrgId());
 
             ClinicAppointItemConfigVo clinicAppointItemConfigVo = new ClinicAppointItemConfigVo();
-            clinicAppointItemConfigVo.setName(organizationInfo.getName());
+            if (clinicAppointItemConfigVo != null){
+                clinicAppointItemConfigVo.setName(organizationInfo.getName());
+            }
             clinicAppointItemConfigVo.setInservice(clinicAppointItem.getInservice());
             clinicAppointItemConfigVos.add(clinicAppointItemConfigVo);
         });

@@ -45,7 +45,10 @@
             and aor.appointment_id = #{query.appointmentId}
           </if>
         </where>
-        order by aor.crt_time asc
+        order by aor.crt_time
+        <if test="query.orderBy != null">
+            ${query.orderBy}
+        </if>
 
   </select>
 
