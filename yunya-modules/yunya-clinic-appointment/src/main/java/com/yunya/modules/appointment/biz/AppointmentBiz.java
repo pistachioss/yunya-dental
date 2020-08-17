@@ -1,14 +1,12 @@
 package com.yunya.modules.appointment.biz;
-import javax.servlet.http.HttpServletResponse;
-import com.alibaba.excel.EasyExcelFactory;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.metadata.Sheet;
+
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.domain.model.AppointOperationModel;
+import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
@@ -21,7 +19,6 @@ import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
-import com.yunya.framework.common.annation.Excel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -32,7 +29,6 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
-import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.models.appointment.AppointmentOperateRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
@@ -44,10 +40,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -1160,6 +1154,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String crtTime = dateFormat.format(appointOperationRecordVo.getCrtTime());
             String operationRecordContent = null;
+            StringBuilder operationRecordContentBuilder = new StringBuilder();
 
             // 设置取消预约原因
             if (2 == appointOperationRecordVo.getOperateType()){
@@ -1169,33 +1164,33 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             Byte operateType = appointOperationRecordVo.getOperateType();
             switch (operateType){
                 case 0:
-                    operationRecordContent = "[" + crtTime + "]"
-                            + appointOperationRecordVo.getCrtName()
-                            + "新建了这条预约";
+                    operationRecordContentBuilder.append("[" + crtTime + "]");
+                    operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
+                    operationRecordContentBuilder.append("新建了这条预约");
                 case 1:
-                    operationRecordContent = "[" + crtTime + "]"
-                            + appointOperationRecordVo.getCrtName()
-                            + "修改了【"
-                            + appointOperationRecordVo.getRemarks()
-                            + "】，将\""
-                            + appointOperationRecordVo.getBeforeOperation()
-                            + "\"改成了\""
-                            + appointOperationRecordVo.getAfterOperation()
-                            + "\"";
+                    operationRecordContentBuilder.append("[" + crtTime + "]");
+                    operationRecordContentBuilder.append("修改了【");
+                    operationRecordContentBuilder.append(appointOperationRecordVo.getRemarks());
+                    operationRecordContentBuilder.append("】，将\"");
+                    operationRecordContentBuilder.append(appointOperationRecordVo.getBeforeOperation());
+                    operationRecordContentBuilder.append("\"改成了\"");
+                    operationRecordContentBuilder.append(appointOperationRecordVo.getAfterOperation());
+                    operationRecordContentBuilder.append("\"");
                 case 2:
-                    operationRecordContent = "[" + crtTime + "]"
-                            + appointOperationRecordVo.getCrtName()
-                            + "取消了这条预约";
+                    operationRecordContentBuilder.append("[" + crtTime + "]");
+                    operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
+                    operationRecordContentBuilder.append("取消了这条预约");
                 case 3:
-                    operationRecordContent = "[" + crtTime + "]"
-                            + appointOperationRecordVo.getCrtName()
-                            + "确认了这条预约";
+
+                    operationRecordContentBuilder.append("[" + crtTime + "]");
+                    operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
+                    operationRecordContentBuilder.append("确认了这条预约");
                 case 4:
-                    operationRecordContent = "[" + crtTime + "]"
-                            + appointOperationRecordVo.getCrtName()
-                            + "确认了这条预约";
+                    operationRecordContentBuilder.append("[" + crtTime + "]");
+                    operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
+                    operationRecordContentBuilder.append("取消了这条预约的确认");
             }
-            appointListExportVo.setAppointOperationRecord(operationRecordContent);
+            appointListExportVo.setAppointOperationRecord(operationRecordContentBuilder.toString());
         }
         return appointListExportVo;
     }
