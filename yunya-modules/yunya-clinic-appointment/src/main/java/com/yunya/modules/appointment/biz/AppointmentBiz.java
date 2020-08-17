@@ -1175,6 +1175,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     operationRecordContentBuilder.append("[" + crtTime + "]");
                     operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
                     operationRecordContentBuilder.append("新建了这条预约");
+                    break;
                 case 1:
                     operationRecordContentBuilder.append("[" + crtTime + "]");
                     operationRecordContentBuilder.append("修改了【");
@@ -1184,19 +1185,23 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     operationRecordContentBuilder.append("\"改成了\"");
                     operationRecordContentBuilder.append(appointOperationRecordVo.getAfterOperation());
                     operationRecordContentBuilder.append("\"");
+                    break;
                 case 2:
                     operationRecordContentBuilder.append("[" + crtTime + "]");
                     operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
                     operationRecordContentBuilder.append("取消了这条预约");
+                    break;
                 case 3:
 
                     operationRecordContentBuilder.append("[" + crtTime + "]");
                     operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
                     operationRecordContentBuilder.append("确认了这条预约");
+                    break;
                 case 4:
                     operationRecordContentBuilder.append("[" + crtTime + "]");
                     operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
                     operationRecordContentBuilder.append("取消了这条预约的确认");
+                    break;
             }
             appointListExportVo.setAppointOperationRecord(operationRecordContentBuilder.toString());
         }

@@ -119,9 +119,9 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         }
 
         // 保存 预约科室 修改记录
-        if (!appointment.getDeptRoomId().equals(appointmentBaseForm.getClinicDeptRoomId())){
+        if (!appointment.getDeptRoomId().equals(appointmentBaseForm.getDeptRoomId())){
             ClinicDepartmentRoomVO beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(appointment.getDeptRoomId());
-            ClinicDepartmentRoomVO afterModifyDepartmentRoomtInfo = systemServiceFeign.findClinicDepartmentRoomById(appointmentBaseForm.getClinicDeptRoomId());
+            ClinicDepartmentRoomVO afterModifyDepartmentRoomtInfo = systemServiceFeign.findClinicDepartmentRoomById(appointmentBaseForm.getDeptRoomId());
             if (beforeModifyDepartmentRoomInfo != null && afterModifyDepartmentRoomtInfo != null){
                 record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
                 record.setAfterOperation(afterModifyDepartmentRoomtInfo.getDeptRoomName());

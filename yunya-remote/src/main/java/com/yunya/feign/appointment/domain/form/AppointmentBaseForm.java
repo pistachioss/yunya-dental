@@ -77,7 +77,7 @@ public class AppointmentBaseForm implements Serializable {
 
     /** 预约科室id */
     @ApiModelProperty(value = "预约科室id")
-    private Integer clinicDeptRoomId;
+    private Integer deptRoomId;
 
     /** 预约设备id */
     @ApiModelProperty(value = "预约设备id ")

@@ -33,6 +33,10 @@ public class AppointItemQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
+    /** 开启按名字模糊查询（默认开启） */
+    @ApiModelProperty(value = "开启按名字模糊查询（默认开启）")
+    private Boolean fuzzyQuery = true;
+
     /** 预约项目类型id */
     @ApiModelProperty(value = "预约项目类型id")
     private Integer appointTypeId;

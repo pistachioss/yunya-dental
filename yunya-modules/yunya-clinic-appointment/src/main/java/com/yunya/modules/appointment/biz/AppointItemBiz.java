@@ -57,8 +57,10 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
 
         AppointItemQuery itemQuery = new AppointItemQuery();
         itemQuery.setName(appItemForm.getName());
+        // 按名称精确查询
+        itemQuery.setFuzzyQuery(false);
         List<AppointmentItemVo> hasSameAppointItems = mapper.findAppointItemByExample(itemQuery);
-        if (hasSameAppointItems != null && hasSameAppointItems.isEmpty()){
+        if (hasSameAppointItems != null && !hasSameAppointItems.isEmpty()){
             return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"预约项目名称与系统中已有预约项目重复，不允许新增！",null);
         }
         AppointItem build = EntityUtils.build(appItemForm, AppointItem.class);

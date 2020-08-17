@@ -62,13 +62,11 @@ public class ClinicDeviceItemBiz extends BaseBiz<ClinicDeviceItemMapper, ClinicD
      */
     public ResponseResult addDevice(DeviceItemModel deviceForm){
         ClinicDeviceItem device = new ClinicDeviceItem();
-        device.setOrgId(deviceForm.getOrgId());
-        device.setDeviceId(deviceForm.getDeviceId());
         device.setNumber(deviceForm.getNumber());
-        ClinicDeviceItem one = mapper.selectOne(device);
-        if (one != null) {
+        List<ClinicDeviceItem> deviceItems = mapper.select(device);
+        if (deviceItems != null && !deviceItems.isEmpty()) {
             // 相同的设备已经存在，将设备删除重新添加
-            return  ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"设备已经存在！",null);
+            return  ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"已经存在相同编号的设备！",null);
         } else {
             device.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
             int insert = mapper.insertSelective(device);
