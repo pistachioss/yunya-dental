@@ -22,9 +22,9 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
     /**
      * 查询手机号是否纯在
      * @param mobile
-     * @return Integer
+     * @return PatientBaseInfoVo
      */
-    Integer findUserExistsByMobile(@Param("mobile") String mobile);
+    PatientBaseInfoVo findUserExistsByMobile(@Param("mobile") String mobile);
 
     /**
      * 通过用户id查询患者公共字段

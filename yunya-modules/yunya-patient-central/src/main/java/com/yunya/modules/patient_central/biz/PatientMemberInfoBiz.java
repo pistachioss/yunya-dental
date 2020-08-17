@@ -1,5 +1,7 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.AccountedWayModel;
@@ -7,10 +9,8 @@ import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoMod
 import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
 import com.yunya.feign.patient_central.domain.model.OpenCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.MemberRelationVo;
-import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
-import com.yunya.feign.patient_central.domain.vo.RechargeRecordVo;
+import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
+import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -251,7 +251,11 @@ w     */
      * @param cardNumber
      * @return
      */
-    public List<RechargeRecordVo> RechargeRecord(String cardNumber) {
-        return null;
+    public PageInfo<RechargeRecordVo> RechargeRecord(RechargeRecordQueryForm form) {
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
+        }
+        List<RechargeRecordVo> resultList = memberRechargeTollRecordMapper.RechargeRecordList(form);
+        return new PageInfo<>(resultList);
     }
 }

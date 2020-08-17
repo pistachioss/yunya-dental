@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoMod
 import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
 import com.yunya.feign.patient_central.domain.model.OpenCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
+import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -101,13 +102,10 @@ public class PatientMemberInfoController {
     }*/
 
     @ApiOperation("充值记录")
-    @GetMapping("/RechargeRecord/{cardNumber}")
-    public ResponseResult RechargeRecord(@PathVariable(value = "cardNumber") String cardNumber){
-        return ResponseUtil.success(patientMemberInfoBiz.RechargeRecord(cardNumber));
+    @PostMapping("/RechargeRecord")
+    public ResponseResult RechargeRecord(@RequestBody RechargeRecordQueryForm form ){
+        return ResponseUtil.success(patientMemberInfoBiz.RechargeRecord(form));
     }
-
-
-
 
 
 
