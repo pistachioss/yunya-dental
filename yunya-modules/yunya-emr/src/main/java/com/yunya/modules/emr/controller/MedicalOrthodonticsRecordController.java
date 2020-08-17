@@ -54,7 +54,7 @@ public class MedicalOrthodonticsRecordController {
    * @return
    */
   @PostMapping("/create")
-  @ApiOperation("新增数据")
+  @ApiOperation("新增正畸电子病历")
   @CurrentUser
   public ResponseResult create(@RequestBody @Valid MedicalOrthodonticsRecord model) {
     model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
