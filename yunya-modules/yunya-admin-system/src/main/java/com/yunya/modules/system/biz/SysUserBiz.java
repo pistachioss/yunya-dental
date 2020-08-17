@@ -12,6 +12,7 @@ import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.Post;
@@ -97,6 +98,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
                 ? new Date(System.currentTimeMillis())
                 : resource.getLeaveTime());
       }
+      sysEmployee.setPinyin(HanyuPinyinHelper.getFirstLettersLo(resource.getName()));
       sysEmployee.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       sysEmployee.setCrtName(BaseContextHandler.getName());
       // 新增用户扩展信息（员工信息）
@@ -194,6 +196,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     if (result > 0) {
       SysEmployee employeeResult = sysEmployeeMapper.selectByUserId(userId);
       SysEmployee sysEmployeeEntity = EntityUtils.build(form, SysEmployee.class);
+      sysEmployeeEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(form.getName()));
       sysEmployeeEntity.setId(employeeResult.getId());
       sysEmployeeEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       sysEmployeeEntity.setUpdName(BaseContextHandler.getName());
