@@ -1,9 +1,12 @@
 package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
+import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
-import com.yunya.feign.patient_central.domain.model.openCardModel;
+import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
+import com.yunya.feign.patient_central.domain.model.OpenCardModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
+import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -37,7 +40,7 @@ public class PatientMemberInfoController {
     @ApiOperation("会员基本信息")
     @GetMapping("/basicInformation/{id}")
     public ResponseResult findMemberBaseInfo(@PathVariable("id") Integer id){
-        return ResponseUtil.success(patientMemberInfoBiz.findMemberBaseInfo(id));
+        return patientMemberInfoBiz.findMemberBaseInfo(id);
     }
 
     @ApiOperation("会员卡关联查询")
@@ -64,20 +67,45 @@ public class PatientMemberInfoController {
     @CurrentUser
     @ApiOperation("开卡")
     @PostMapping("/openCard")
-    public ResponseResult addMemberCard(@RequestBody openCardModel openCardModel){
+    public ResponseResult addMemberCard(@RequestBody OpenCardModel openCardModel){
         patientMemberInfoBiz.addMemberCard(openCardModel);
         return ResponseUtil.success();
     }
 
-    @ApiOperation("变更会员卡类型")
+    @CurrentUser
+    @ApiOperation("会员卡变更")
     @PostMapping("/change")
-    public ResponseResult changeType(@RequestBody @Validated PatientMemberRelationQueryForm patientMemberRelationQueryForm){
-        //patientMemberInfoBiz.changeType(patientMemberRelationQueryForm)
+    public ResponseResult changeType(@RequestBody @Validated CardTypeForm form){
+        patientMemberInfoBiz.changeType(form);
         return ResponseUtil.success();
     }
 
+    @ApiOperation("变更记录")
+    @GetMapping("/changeLog/{cardNumber}")
+    public ResponseResult changeLog(@PathVariable(value = "cardNumber") String cardNumber){
+        return ResponseUtil.success(patientMemberInfoBiz.changeLog(cardNumber));
+    }
 
+    @CurrentUser
+    @ApiOperation("充值")
+    @PostMapping("/Recharge")
+    public ResponseResult Recharge(@RequestBody MemberRechargeModel memberRechargeModel ){
+        patientMemberInfoBiz.Recharge(memberRechargeModel);
+        return ResponseUtil.success();
+    }
 
+    /*@ApiOperation("退费")
+    @PostMapping("/Refund")
+    public ResponseResult Refund(@RequestBody MemberRechargeModel memberRechargeModel ){
+        patientMemberInfoBiz.Refund(memberRechargeModel);
+        return ResponseUtil.success();
+    }*/
+
+    @ApiOperation("充值记录")
+    @PostMapping("/RechargeRecord")
+    public ResponseResult RechargeRecord(@RequestBody RechargeRecordQueryForm form ){
+        return ResponseUtil.success(patientMemberInfoBiz.RechargeRecord(form));
+    }
 
 
 

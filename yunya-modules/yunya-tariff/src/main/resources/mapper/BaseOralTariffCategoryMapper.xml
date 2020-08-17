@@ -41,8 +41,8 @@
                 and botc.id = #{queryForm.id}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
-                and botc.name like concat('%',#{queryForm.keyWord},'%') or botc.number like
-                concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( botc.name, '' ), IFNULL( botc.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and botc.inservice = #{queryForm.inservice}

@@ -32,7 +32,7 @@ public interface RemoteTariffServiceFeign {
    * @param id 商品分类ID
    * @return
    */
-  @RequestMapping(value = "/oral/category/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/rpc/oral/category/{id}", method = RequestMethod.GET)
   BaseOralTariffCategory findBaseOralTariffCategoryById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -41,7 +41,7 @@ public interface RemoteTariffServiceFeign {
    * @param queryForm 查询条件
    * @return
    */
-  @RequestMapping(value = "/oral/category/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/rpc/oral/category/list", method = RequestMethod.POST)
   List<BaseOralTariffCategory> findBaseOralTariffCategoryList(
       @RequestBody BaseOralTariffCategory queryForm);
 
@@ -51,7 +51,7 @@ public interface RemoteTariffServiceFeign {
    * @param id 商品项目ID
    * @return
    */
-  @RequestMapping(value = "/oral/one/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/rpc/oral/one/{id}", method = RequestMethod.GET)
   BaseOralTariff findBaseOralTariffById(@PathVariable(value = "id") Integer id);
   /**
    * 根据条件查询商品项目列表
@@ -59,7 +59,7 @@ public interface RemoteTariffServiceFeign {
    * @param entity 查询条件
    * @return
    */
-  @RequestMapping(value = "/oral/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/rpc/oral/list", method = RequestMethod.POST)
   List<BaseOralTariff> findBaseOralTariffList(@RequestBody BaseOralTariff entity);
 
   /**
@@ -68,7 +68,7 @@ public interface RemoteTariffServiceFeign {
    * @param id 价目表分类ID
    * @return
    */
-  @RequestMapping(value = "/base/one/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/rpc/base/one/{id}", method = RequestMethod.GET)
   BaseTariffCategory findBaseTariffCategoryById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -77,7 +77,7 @@ public interface RemoteTariffServiceFeign {
    * @param entity 查询条件
    * @return
    */
-  @RequestMapping(value = "/base/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/rpc/base/list", method = RequestMethod.POST)
   List<BaseTariffCategory> findBaseTariffCategoryList(@RequestBody BaseTariffCategory entity);
 
   /**
@@ -86,7 +86,7 @@ public interface RemoteTariffServiceFeign {
    * @param id 基础价目表ID
    * @return
    */
-  @RequestMapping(value = "/tariff/{id}", method = RequestMethod.GET)
+  @RequestMapping(value = "/rpc/tariff/{id}", method = RequestMethod.GET)
   BaseTariff findBaseTariffById(@PathVariable(value = "id") Integer id);
 
   /**
@@ -95,6 +95,6 @@ public interface RemoteTariffServiceFeign {
    * @param entity 查询条件
    * @return
    */
-  @RequestMapping(value = "/tariff/list", method = RequestMethod.POST)
+  @RequestMapping(value = "/rpc/tariff/list", method = RequestMethod.POST)
   List<BaseTariff> findBaseTariffList(@RequestBody BaseTariff entity);
 }

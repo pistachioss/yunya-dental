@@ -34,6 +34,9 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   @Excel(name = "员工姓名")
   private String name;
 
+  /** 姓名拼音 */
+  private String pinyin;
+
   /** 生日 */
   @Excel(name = "出生日期")
   private String birthday;

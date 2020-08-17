@@ -100,7 +100,7 @@
                 and ct.id = #{queryForm.id}
             </if>
             <if test="queryForm.orgId != null">
-                and ct.orgId =#{queryForm.orgId}
+                and ct.orgId = #{queryForm.orgId}
             </if>
             <if test="queryForm.tariffCategoryId != null">
                 and ct.tariffCategoryId = #{queryForm.tariffCategoryId}
@@ -108,10 +108,9 @@
             <if test="queryForm.tariffId != null">
                 and ct.tariffId = #{queryForm.tariffId}
             </if>
-            <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
-                and ct.name like concat('%',#{queryForm.keyWord},'%')
-                or ct.pinyin like concat('%',#{queryForm.keyWord},'%')
-                or ct.englishName like concat('%',#{queryForm.keyWord},'%')
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL( ct.name, '' ), IFNULL( ct.pinyin, '' ), IFNULL( ct.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and ct.inservice = #{queryForm.inservice}
@@ -174,9 +173,8 @@
                 and ct.tariffId = #{queryForm.tariffId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
-                and ct.name like concat('%',#{queryForm.keyWord},'%')
-                or ct.pinyin like concat('%',#{queryForm.keyWord},'%')
-                or ct.englishName like concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( ct.name, '' ), IFNULL( ct.pinyin, '' ), IFNULL( ct.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and ct.inservice = #{queryForm.inservice}

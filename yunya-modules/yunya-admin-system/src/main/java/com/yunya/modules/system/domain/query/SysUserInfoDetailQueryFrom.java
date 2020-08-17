@@ -44,7 +44,7 @@ public class SysUserInfoDetailQueryFrom implements Serializable {
   @ApiModelProperty("岗位ID列表")
   private List<Integer> postIds;
   /** 关键字（姓名、手机号） */
-  @ApiModelProperty("关键字（员工姓名或手机号）")
+  @ApiModelProperty("关键字（员工姓名/姓名拼音首字母/手机号）")
   private String keyWord;
   /** 就职状态 */
   @ApiModelProperty("就职状态（试用: 0, 正式: 1，实习: 2, 离职:3）")

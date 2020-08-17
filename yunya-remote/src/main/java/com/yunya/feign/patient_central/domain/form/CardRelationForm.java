@@ -18,7 +18,7 @@ import java.io.Serializable;
 
 @Data
 @ToString
-@ApiModel("患者亲属关系添加模板")
+@ApiModel("会员卡关系删除")
 public class CardRelationForm implements Serializable {
 
     /**

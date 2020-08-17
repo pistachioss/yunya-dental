@@ -28,17 +28,18 @@ public class SysUserControllerTest {
   @Test
   public void testFindUserListByExample() {
     SysUserInfoDetailQueryFrom form = new SysUserInfoDetailQueryFrom();
-    List<Integer> orgIds = new ArrayList<>();
-    orgIds.add(21);
-    orgIds.add(35);
-    List<Integer> postIds = new ArrayList<>();
-    postIds.add(33);
-    postIds.add(34);
-    //form.put("userId",1);
-    List<Integer> groupIds = new ArrayList<>();
-    groupIds.add(3);
-    groupIds.add(4);
-    form.setPostGroupIds(groupIds);
+    form.setKeyWord("158");
+//    List<Integer> orgIds = new ArrayList<>();
+//    orgIds.add(21);
+//    orgIds.add(35);
+//    List<Integer> postIds = new ArrayList<>();
+//    postIds.add(33);
+//    postIds.add(34);
+//    //form.put("userId",1);
+//    List<Integer> groupIds = new ArrayList<>();
+//    groupIds.add(3);
+//    groupIds.add(4);
+//    form.setPostGroupIds(groupIds);
     ResponseResult list = sysUserController.findList(form);
     System.out.println(list);
   }

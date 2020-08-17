@@ -41,7 +41,8 @@
                 and btc.id = #{queryForm.id}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
-                and btc.name like concat('%',#{queryForm.keyWord},'%') or btc.number like concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( btc.name, '' ), IFNULL( btc.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and btc.inservice = #{queryForm.inservice}

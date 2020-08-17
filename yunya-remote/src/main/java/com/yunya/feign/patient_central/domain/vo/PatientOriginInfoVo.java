@@ -52,7 +52,7 @@ public class PatientOriginInfoVo implements Serializable {
     /**
      * 是否有时间限制（0-否；1-是））
      */
-    private Boolean timeLimit;
+    private Integer timeLimit;
 
     /**
      * 限制开始时间

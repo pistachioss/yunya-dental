@@ -81,9 +81,8 @@
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and bt.name like concat('%',#{queryForm.keyWord},'%')
-                or bt.item_number like concat('%',#{queryForm.keyWord},'%')
-                or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and bt.inservice = #{queryForm.inservice}
@@ -107,9 +106,8 @@
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and bt.name like concat('%',#{queryForm.keyWord},'%')
-                or bt.item_number like concat('%',#{queryForm.keyWord},'%')
-                or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and bt.inservice = #{queryForm.inservice}
@@ -139,9 +137,8 @@
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and bt.name like concat('%',#{queryForm.keyWord},'%')
-                or bt.item_number like concat('%',#{queryForm.keyWord},'%')
-                or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and bt.inservice = #{queryForm.inservice}
@@ -168,9 +165,8 @@
                 and bt.tariff_category_id = #{queryForm.tariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and bt.name like concat('%',#{queryForm.keyWord},'%')
-                or bt.item_number like concat('%',#{queryForm.keyWord},'%')
-                or bt.pinyin like concat('%',#{queryForm.keyWord},'%')
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
                 and bt.inservice = #{queryForm.inservice}

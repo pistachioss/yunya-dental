@@ -18,7 +18,7 @@ import java.io.Serializable;
 @Data
 @ToString
 @ApiModel("开卡（添加会员卡）")
-public class openCardModel implements Serializable {
+public class OpenCardModel implements Serializable {
     /**
      * 患者ID
      */

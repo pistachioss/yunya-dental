@@ -286,9 +286,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    * @param itemId 基础价目表ID
    * @param clinicItemPriceForms 修改门诊价目表信息
    */
-  private void updateClinicTariff(
-          Integer itemId,
-          List<ClinicItemPriceForm> clinicItemPriceForms) {
+  private void updateClinicTariff(Integer itemId, List<ClinicItemPriceForm> clinicItemPriceForms) {
     if (StringHelper.isNotEmpty(clinicItemPriceForms)) {
       ClinicTariff clinicTariff;
       for (ClinicItemPriceForm form : clinicItemPriceForms) {
@@ -311,7 +309,6 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
         }
       }
     }
-
   }
 
   /**
@@ -416,7 +413,16 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
         addOrUpdBaseItem(itemName, itemNumber, englishName, unit, price, categoryId);
       }
     }
-    return successMsg.append("导入成功，共计:").append(dataNum).append("条数据！").toString();
+    return successMsg
+        .append("导入成功，共计:")
+        .append(models.size())
+        .append("条数据！")
+        .append("本次共同步'")
+        .append(orgInfos.size())
+        .append("个门诊'")
+        .append(dataNum)
+        .append("'条数据")
+        .toString();
   }
 
   /**

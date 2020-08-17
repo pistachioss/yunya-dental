@@ -73,7 +73,7 @@
         #{updName}
       )
     </insert>
-    <!-- 根据ID删除员工信息 -->
+    <!-- 根据用户ID删除员工信息 -->
     <delete id="deleteEmployeeByUserId">
         delete from sys_employee where user_id = #{id}
     </delete>
@@ -236,6 +236,7 @@
         se.id AS employeeId,
         su.username AS username,
         se.`name` AS name,
+        se.pinyin as pinyin,
         sup.company_ids,
         sup.post_ids,
         sup.group_ids,
@@ -294,7 +295,8 @@
             </if>
             <if test="queryFrom.postGroupIds != null and queryFrom.postGroupIds.size > 0">
                 and
-                <foreach collection="queryFrom.postGroupIds" item="item" index="index" open="(" close=")" separator="or">
+                <foreach collection="queryFrom.postGroupIds" item="item" index="index" open="(" close=")"
+                         separator="or">
                     FIND_IN_SET(#{item}, user_info.group_ids)
                 </foreach>
             </if>
@@ -305,8 +307,8 @@
                 </foreach>
             </if>
             <if test="queryFrom.keyWord != null and queryFrom.keyWord != ''">
-                and user_info.name like concat('%', #{queryFrom.keyWord} ,'%') or user_info.mobilePhone like
-                concat('%', #{queryFrom.keyWord} ,'%')
+                and CONCAT(IFNULL(user_info.name, ''), IFNULL(user_info.mobilePhone, ''), IFNULL(user_info.pinyin, ''))
+                like concat('%', #{queryFrom.keyWord} ,'%')
             </if>
             <if test="queryFrom.workStatus != null and queryFrom.workStatus.length > 0">
                 and user_info.workStatus in

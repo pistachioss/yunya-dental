@@ -1,15 +1,8 @@
 package com.yunya.modules.patient_central.rpc;
 
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
@@ -17,7 +10,6 @@ import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -59,8 +51,8 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("根据患者id查询患者资料")
-    @RequestMapping (value = "/findPatientDataInfo/{id}",method = RequestMethod.GET)
-    public PatientTotalInfoVo findPatientTotalInfo(@PathVariable("id") Integer id){
+    @RequestMapping (value = "/total/patientInfo/{id}", method = RequestMethod.GET)
+    public PatientTotalInfoVo findPatientTotalInfo(@PathVariable(value = "id") Integer id){
         return patientBaseInfoBiz.findPatientTotalInfo(id);
     }
 
@@ -77,13 +69,13 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("查询患者信息")
-    @RequestMapping (value = "/findPatientInfo/{id}",method = RequestMethod.POST)
+    @RequestMapping (value = "/findPatientInfo",method = RequestMethod.POST)
     public PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo){
         return patientBaseInfoBiz.selectOne(patientBaseInfo);
     }
 
     @ApiOperation("查询患者信息列表")
-    @RequestMapping (value = "/findPatientInfoList/{id}",method = RequestMethod.POST)
+    @RequestMapping (value = "/findPatientInfoList",method = RequestMethod.POST)
     public List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo){
         return patientBaseInfoBiz.selectList(patientBaseInfo);
     }

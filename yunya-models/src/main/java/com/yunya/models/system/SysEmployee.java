@@ -16,6 +16,9 @@ public class SysEmployee {
   /** 员工姓名 */
   private String name;
 
+  /** 姓名拼音 */
+  private String pinyin;
+
   /** 手机 */
   @Column(name = "mobile_phone")
   private String mobilePhone;
@@ -189,6 +192,22 @@ public class SysEmployee {
    */
   public void setName(String name) {
     this.name = name;
+  }
+
+  /**
+   * 获取姓名拼音
+   * @return pinyin
+   */
+  public String getPinyin() {
+    return pinyin;
+  }
+
+  /**
+   * 设置姓名拼音
+   * @param pinyin 姓名拼音
+   */
+  public void setPinyin(String pinyin) {
+    this.pinyin = pinyin;
   }
 
   /**

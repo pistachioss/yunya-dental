@@ -8,6 +8,7 @@
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="user_id" property="userId" jdbcType="INTEGER"/>
         <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="pinyin" property="pinyin" jdbcType="VARCHAR"/>
         <result column="mobile_phone" property="mobilePhone" jdbcType="VARCHAR"/>
         <result column="telephone" property="telephone" jdbcType="VARCHAR"/>
         <result column="gender" property="gender" jdbcType="TINYINT"/>
@@ -47,6 +48,7 @@
           se.id,
           se.user_id,
           se.`name`,
+          se.pinyin,
           se.mobile_phone,
           se.telephone,
           se.gender,

@@ -46,7 +46,7 @@ public class PatientOrigin {
      * 是否有时间限制（0-否；1-是））
      */
     @Column(name = "time_limit")
-    private Byte timeLimit;
+    private Integer timeLimit;
 
     /**
      * 限制开始时间
@@ -56,7 +56,7 @@ public class PatientOrigin {
     private Date limitStartDate;
 
     /**
-     * 限制结束时间
+     * 限制时间
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "limit_end_date")
@@ -199,7 +199,7 @@ public class PatientOrigin {
      *
      * @return time_limit - 是否有时间限制（0-否；1-是））
      */
-    public Byte getTimeLimit() {
+    public Integer getTimeLimit() {
         return timeLimit;
     }
 
@@ -208,7 +208,7 @@ public class PatientOrigin {
      *
      * @param timeLimit 是否有时间限制（0-否；1-是））
      */
-    public void setTimeLimit(Byte timeLimit) {
+    public void setTimeLimit(Integer timeLimit) {
         this.timeLimit = timeLimit;
     }
 

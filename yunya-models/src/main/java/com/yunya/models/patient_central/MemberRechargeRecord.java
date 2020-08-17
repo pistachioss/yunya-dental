@@ -10,6 +10,7 @@ public class MemberRechargeRecord {
      * 主键
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

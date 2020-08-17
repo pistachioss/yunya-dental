@@ -50,11 +50,11 @@
             <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
         </dependency>
 
-        <!-- 链路追踪 -->
+        <!-- 链路追踪
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-sleuth-zipkin</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- spring-boot-web -->
         <dependency>
@@ -101,11 +101,6 @@
             <groupId>com.yunya</groupId>
             <artifactId>yunya-common-swagger</artifactId>
             <version>1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.xiaoymin</groupId>
-            <artifactId>swagger-bootstrap-ui</artifactId>
         </dependency>
 
         <!-- wo平台人脸识别 -->

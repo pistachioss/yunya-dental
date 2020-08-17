@@ -27,6 +27,12 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
+  <sql id="Find_Colum_List">
+    pmio.id id,pmio.org_id orgId,pmio.patient_id patientId,pmio.member_type_id memberTypeId,pmio.master_card masterCard,pmio.card_number cardNumber,
+    pmio.status status,pmio.principal_amount principalAmount,pmio.bonus_amount bonusAmount,pmio.point point,pmio.last_expired_time lastExpiredTime,
+    pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice
+  </sql>
+
   <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo">
     select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,
 		 member_type_id memberTypeId,crt_time crtTime
@@ -47,5 +53,14 @@
     where
     org_id = #{orgid}
   </select>
+
+  <update id="changeType">
+    update patient_member_info set member_card_name
+  </update>
+
+
+
+
+
 
 </mapper>

@@ -1,7 +1,7 @@
 logging:
   level:
     #        tk.mybatis: DEBUG
-    com.yunya.modules.system: DEBUG
+    com.yunya.modules.treatment: DEBUG
 spring:
   application:
     name: yunya-treatment
