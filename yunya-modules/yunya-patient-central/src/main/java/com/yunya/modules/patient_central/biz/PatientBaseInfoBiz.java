@@ -24,19 +24,17 @@ import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientExpInfo;
-import com.yunya.models.patient_central.PatientExtInfo;
+import com.yunya.models.patient_central.*;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
-import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
+import com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,6 +74,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   @Autowired private PatientOriginBiz patientOriginBiz;
 
   @Autowired private PatientCentralServiceFeign patientCentralServiceFeign;
+
+  @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+
+  @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
 
   /**
    * 通过患者id查询患者共用属性
@@ -124,6 +126,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public PatientBaseInfoVo addPatient(PatientBaseInfoModel patientBaseInfoModel) {
     PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
     BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
+    if(patientBaseInfoModel.getFaceUrl()!=null){ //判断是否是更新
+      patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
+      return patientBaseInfoMapper.selectOneById(patientBaseInfo.getId());
+    }
     patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
     patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientBaseInfo.setCrtName(BaseContextHandler.getName());
@@ -131,7 +137,22 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setWoGuid(
         woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); // wo平台创建对应人员 返回人员Guid添加到数据库
     mapper.insertSelective(patientBaseInfo);
+    addPatientPrepaymentsInfo(patientBaseInfo); // 添加患者时,创建预付款账户
     return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+  }
+
+  /**
+   * 添加患者时,创建预付款账户
+   * @param patientBaseInfo
+   */
+  public void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo){
+    PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
+    patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
+    patientPrepaymentsInfo.setPrepaymentNumber(patientMemberInfoBiz.generateCardNumber("Y"));//预付款卡号生成规则 开通Y
+    patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
+    patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
   }
 
   /**

@@ -40,4 +40,10 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
     int changeType(CardTypeForm form);
 
 
+    /**
+     * 根据会员卡号查询
+     * @param cardNumber
+     * @return PatientMemberInfo
+     */
+    PatientMemberInfo selectOneByCardNumber(@Param("cardNumber") String cardNumber);
 }

@@ -19,4 +19,9 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="RechargeRecord" resultType="com.yunya.feign.patient_central.domain.vo.RechargeRecordVo">
+        select  id,crt_time OperatingTime,recharge_principal rechargePrincipal,recharge_bonus rechargeBonus,org_id orgId,crt_name crtName
+        from member_recharge_record where member_id = #{form.cardNumber}
+    </select>
 </mapper>

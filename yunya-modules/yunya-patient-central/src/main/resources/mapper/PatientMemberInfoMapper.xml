@@ -27,40 +27,40 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
-  <sql id="Find_Colum_List">
-    pmio.id id,pmio.org_id orgId,pmio.patient_id patientId,pmio.member_type_id memberTypeId,pmio.master_card masterCard,pmio.card_number cardNumber,
-    pmio.status status,pmio.principal_amount principalAmount,pmio.bonus_amount bonusAmount,pmio.point point,pmio.last_expired_time lastExpiredTime,
-    pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice
-  </sql>
+    <sql id="Find_Colum_List">
+      pmio.id id,pmio.org_id orgId,pmio.patient_id patientId,pmio.member_type_id memberTypeId,pmio.master_card masterCard,pmio.card_number cardNumber,
+      pmio.status status,pmio.principal_amount principalAmount,pmio.bonus_amount bonusAmount,pmio.point point,pmio.last_expired_time lastExpiredTime,
+      pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice
+    </sql>
 
-  <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo">
-    select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,
-		 member_type_id memberTypeId,crt_time crtTime
-    from patient_member_info where patient_id =#{id}
-  </select>
+    <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo">
+      select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,
+           member_type_id memberTypeId,crt_time crtTime
+      from patient_member_info where patient_id =#{id}
+    </select>
 
-  <select id="findMemberBindingRelation" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVo">
-    select pbi.name name,pmr.master_card_id masterCardId,pmr.bind_type bindType
-    from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
-    where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
-  </select>
+    <select id="findMemberBindingRelation" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVo">
+      select pmr.id bindId,pbi.name name,pmr.master_card_id masterCardId,pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType
+      from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
+      where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
+    </select>
 
-  <select id="generateCardNumber" resultType="java.lang.String">
-    select
-    IFNULL( MAX( substr( medical_number, 10, 6 )), '000000' ) as maxnum
-    from
-    patient_base_info
-    where
-    org_id = #{orgid}
-  </select>
+    <select id="generateCardNumber" resultType="java.lang.String">
+      select
+      IFNULL( MAX( substr( card_number, 5, 6 )), '000000' ) as maxnum
+      from
+      patient_member_info
+      where
+      org_id = #{orgId}
+    </select>
 
-  <update id="changeType">
+    <update id="changeType">
     update patient_member_info set member_card_name
-  </update>
+    </update>
 
-
-
-
-
+    <select id="selectOneByCardNumber" resultType="com.yunya.models.patient_central.PatientMemberInfo">
+        select<include refid="Find_Colum_List"/>
+        from patient_member_info pmio where pmio.card_number = #{cardNumber}
+    </select>
 
 </mapper>

@@ -94,18 +94,21 @@ public class PatientMemberInfoController {
         return ResponseUtil.success();
     }
 
-    /*@ApiOperation("退费")
-    @PostMapping("/Refund")
-    public ResponseResult Refund(@RequestBody MemberRechargeModel memberRechargeModel ){
-        patientMemberInfoBiz.Refund(memberRechargeModel);
-        return ResponseUtil.success();
-    }*/
 
     @ApiOperation("充值记录")
     @PostMapping("/RechargeRecord")
     public ResponseResult RechargeRecord(@RequestBody RechargeRecordQueryForm form ){
         return ResponseUtil.success(patientMemberInfoBiz.RechargeRecord(form));
     }
+
+
+  /*  @ApiOperation("消费记录")
+    @PostMapping("/xiaofei")
+    public ResponseResult xiaofei(@RequestBody RechargeRecordQueryForm form ){
+        return ResponseUtil.success(patientMemberInfoBiz.RechargeRecord(form));
+    }*/
+
+
 
 
 

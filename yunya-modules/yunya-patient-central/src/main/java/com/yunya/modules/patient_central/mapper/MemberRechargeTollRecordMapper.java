@@ -1,17 +1,17 @@
 package com.yunya.modules.patient_central.mapper;
 
-import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.RechargeRecordVo;
 import com.yunya.models.patient_central.MemberRechargeTollRecord;
+import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
 public interface MemberRechargeTollRecordMapper extends Mapper<MemberRechargeTollRecord> {
+
     /**
-     *
-     * @param form
+     * 充值记录-获取支付方式
+     * @param id
      * @return
      */
-    List<RechargeRecordVo> RechargeRecordList(RechargeRecordQueryForm form);
+    List<MemberRechargeTollRecord> selectMemberRechargeRecord(@Param("rechargeRecordId") Integer id);
 }
