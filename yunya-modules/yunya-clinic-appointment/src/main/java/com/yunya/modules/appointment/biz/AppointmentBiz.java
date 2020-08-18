@@ -1278,9 +1278,4 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
         }
     }
-
-
-
-
-
     }

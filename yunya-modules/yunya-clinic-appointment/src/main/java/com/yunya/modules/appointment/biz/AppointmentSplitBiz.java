@@ -35,8 +35,8 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
     /**
      * 新增预约分解
      * @param splitModel 时长分解列表
-     * @return
-     * @throws ParseException
+     * @return 插入成功的记录数
+     * @throws ParseException 时间转换异常
      */
     public Integer insertAppointSplit(AppointmentSplitModel splitModel) {
 
@@ -46,7 +46,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         }
         // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
         List<AppointmentSplit> splits = this.checkSplit(splitModel.getAppointmentId(),splitModel.getAppointDuration(),splitList);
-        if (splits == null || splits.isEmpty()){
+        if (splits.isEmpty()){
             throw new ClientServiceException("时长分解有误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         return mapper.insertAppointmentSplit(splits);
@@ -56,17 +56,16 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
     /**
      * 根据条件查询分解预约
      * @param query
-     * @return
+     * @return list
      */
     public List<AppointmentSplitVo> findAppointmentSplitByExample(AppointmentSplitQuery query){
-        List<AppointmentSplitVo> appointmentSplitByExample = mapper.findAppointmentSplitByExample(query);
-        return appointmentSplitByExample;
+        return mapper.findAppointmentSplitByExample(query);
     }
 
     /**
      * 修改时长分解
      * @param form  时长分解表单
-     * @return
+     * @return 修改成功的记录条数
      */
     public Integer updateAppointSplit(AppointmentSplitForm form){
         List<AppointmentSplitUpdateBaseInfo> splitList = form.getSplitList();
@@ -75,7 +74,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         }
         // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
         List<AppointmentSplit> splits = this.checkSplit(form.getAppointmentId(), form.getAppointDuration(), splitList);
-        if (splits == null || splits.isEmpty()){
+        if (splits.isEmpty()){
             throw new ClientServiceException("时长分解有误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         splits.forEach(appointmentSplit -> {
@@ -96,13 +95,12 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
 
     /**
      * 时长分解检查（新增用）
-     * @param appointDuration
-     * @param splitList
-     * @return
+     * @param appointDuration 预约时长
+     * @param splitList 分解列表
+     * @return  分解列表
      */
     public List<AppointmentSplit> appointSplitCheck(Integer appointDuration, List<AppointmentSplitBaseInfo> splitList){
-        List<AppointmentSplit> splits = this.checkSplit(null, appointDuration, splitList);
-        return splits;
+        return this.checkSplit(null, appointDuration, splitList);
     }
 
 
@@ -154,7 +152,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @param appointId  预约id
      * @param appointDuration  预约总时长
      * @param splitList  时长分解列表
-     * @return  时长分解符合条件返回List<AppointmentSplit>实体列表；否则返回null TODO
+     * @return  时长分解符合条件返回List<AppointmentSplit>实体列表；否则返回null
      */
     private List<AppointmentSplit> checkSplit(Integer appointId,Integer appointDuration, List<? extends AppointmentSplitBaseInfo> splitList) {
         List<AppointmentSplit> splits = new ArrayList<>();
