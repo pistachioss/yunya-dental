@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.discount.mapper.CouponFileInfoMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.discount.CouponFileInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
+        <result column="file_type" property="fileType" jdbcType="TINYINT"/>
+        <result column="path" property="path" jdbcType="VARCHAR"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="insertAll" parameterType="java.util.List">
+        INSERT INTO `coupon_file_info`
+        (`id`, `coupon_id`, `file_type`, `path`, `remark`, `inservice`, `crt_id`, `crt_time`, `upd_id`, `upd_time`)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id}, #{item.couponId}, #{item.fileType}, #{item.path}, #{item.remark}, #{item.inservice}, #{item.crtId}, #{item.crtTime}, #{item.updId},
+            #{item.updTime})
+        </foreach>
+    </insert>
+</mapper>

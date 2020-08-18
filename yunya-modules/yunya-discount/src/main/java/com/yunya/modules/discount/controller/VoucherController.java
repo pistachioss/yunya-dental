@@ -1,14 +1,16 @@
 package com.yunya.modules.discount.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.modules.discount.biz.VoucherBiz;
-import com.yunya.models.discount.Voucher;
-import com.yunya.modules.discount.form.DiscountQueryForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.discount.vo.VoucheCouponVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -29,13 +31,14 @@ public class VoucherController {
     /**
      * 新增代金券
      *
-     * @param voucher
+     * @param voucheCouponVO
      * @return
      */
     @PostMapping
     @ApiOperation("新增代金券")
-    public ResponseResult save(@RequestBody @Valid Voucher voucher) {
-        return ResponseUtil.success(voucherBiz.saveVoucher(voucher));
+    @CurrentUser
+    public ResponseResult save(@RequestBody @Valid VoucheCouponVO voucheCouponVO) {
+        return ResponseUtil.success(voucherBiz.saveVoucher(voucheCouponVO));
     }
 
     /**
@@ -85,14 +88,4 @@ public class VoucherController {
         return ResponseUtil.success(voucherBiz.selectListAll());
     }
 
-    /**
-     * 查询列表
-     *
-     * @return
-     */
-    @PostMapping("/search")
-    @ApiOperation("查询列表")
-    public ResponseResult search(DiscountQueryForm discountQueryForm) {
-        return ResponseUtil.success(voucherBiz.search(discountQueryForm));
-    }
 }
