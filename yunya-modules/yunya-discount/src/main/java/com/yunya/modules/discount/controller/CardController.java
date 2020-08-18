@@ -2,7 +2,6 @@ package com.yunya.modules.discount.controller;
 
 import com.yunya.modules.discount.biz.CardBiz;
 import com.yunya.modules.discount.biz.CardClinicBiz;
-import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CardClinic;
 import com.yunya.modules.discount.form.CardClinicForm;
 import com.yunya.modules.discount.form.CardDistributionForm;
@@ -124,10 +123,10 @@ public class CardController {
     @GetMapping("/{type}/{relevanceId}/list")
     @ApiOperation("获取优惠活动具体批次配给计划")
     public ResponseResult getPlanListByRevision(@PathVariable(name = "type") Integer type, @PathVariable(name = "relevanceId") Integer relevanceId) {
-        Card card = new Card();
-        card.setCardType(type);
-        card.setRelevanceId(relevanceId);
-        return ResponseUtil.success(cardBiz.selectList(card));
+//        Card card = new Card();
+//        card.setCardType(type);
+//        card.setRelevanceId(relevanceId);
+        return ResponseUtil.success();
     }
 
     /**
@@ -139,7 +138,7 @@ public class CardController {
     @PostMapping("/sale")
     @ApiOperation("售出")
     public ResponseResult getPlanListByRevision(@RequestBody @Valid CardSaleForm cardSaleForm) {
-        cardBiz.sale(cardSaleForm);
+//        cardBiz.sale(cardSaleForm);
         return ResponseUtil.success();
     }
 }

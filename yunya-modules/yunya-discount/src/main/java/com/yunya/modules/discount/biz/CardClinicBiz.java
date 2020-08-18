@@ -1,6 +1,5 @@
 package com.yunya.modules.discount.biz;
 
-import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CardClinic;
 import com.yunya.models.discount.CardStatistics;
 import com.yunya.modules.discount.form.CardClinicForm;
@@ -234,31 +233,31 @@ public class CardClinicBiz extends BaseBiz<CardClinicMapper, CardClinic> {
      * @param revision
      */
     public void saveCard(Integer type, Integer relevanceId, Integer revision) {
-        CardClinic cardClinic = new CardClinic();
-        cardClinic.setType(type);
-        cardClinic.setRelevanceId(relevanceId);
-        cardClinic.setRevision(revision);
-        List<CardClinic> cardClinics = selectList(cardClinic);
-        cardClinics.forEach(z -> {
-            int count = z.getCount() + 1;
-            StringBuffer stringBuffer = new StringBuffer(z.getStartNumber());
-            int length = stringBuffer.length();
-            List<Card> cards = new ArrayList<>();
-            for (int i = 1; i < count; i++) {
-                Card card = new Card();
-                card.setCardType(type);
-                card.setRelevanceId(relevanceId);
-                // 截取末尾6位数
-                String startNo = stringBuffer.substring(0, length - 5);
-                Integer num = Integer.valueOf(stringBuffer.substring(length - 6, length)) + i - 1;
-                String cardNum = cardNumber(num + "");
-                card.setCardNumber(startNo + cardNum);
-                card.setPassword(randomNumber());
-                card.setClinicId(z.getClinicId());
-                cards.add(card);
-            }
-            cardBiz.batchInsert(cards);
-        });
+//        CardClinic cardClinic = new CardClinic();
+//        cardClinic.setType(type);
+//        cardClinic.setRelevanceId(relevanceId);
+//        cardClinic.setRevision(revision);
+//        List<CardClinic> cardClinics = selectList(cardClinic);
+//        cardClinics.forEach(z -> {
+//            int count = z.getCount() + 1;
+//            StringBuffer stringBuffer = new StringBuffer(z.getStartNumber());
+//            int length = stringBuffer.length();
+//            List<Card> cards = new ArrayList<>();
+//            for (int i = 1; i < count; i++) {
+//                Card card = new Card();
+//                card.setCardType(type);
+//                card.setRelevanceId(relevanceId);
+//                // 截取末尾6位数
+//                String startNo = stringBuffer.substring(0, length - 5);
+//                Integer num = Integer.valueOf(stringBuffer.substring(length - 6, length)) + i - 1;
+//                String cardNum = cardNumber(num + "");
+//                card.setCardNumber(startNo + cardNum);
+//                card.setPassword(randomNumber());
+//                card.setClinicId(z.getClinicId());
+//                cards.add(card);
+//            }
+//            cardBiz.batchInsert(cards);
+//        });
     }
 
     /**

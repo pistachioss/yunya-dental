@@ -56,4 +56,6 @@ public class BusinessConstants {
 
   /** 电子待审批状态 */
   public static Integer MEDICAL_AUDIT_PENDING_STATUS = 1;
+  /** 电子待主治医生提交状态 */
+  public static Integer NORMAL_MEDICAL_STATUS = 0;
 }
