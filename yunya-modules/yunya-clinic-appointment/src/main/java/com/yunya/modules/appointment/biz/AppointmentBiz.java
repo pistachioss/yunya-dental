@@ -40,6 +40,8 @@ import com.yunya.models.system.MemberType;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,6 +63,8 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
+
+    private Logger logger = LoggerFactory.getLogger(AppointmentBiz.class);
 
     /** 注入yunya-admin-system Feign接口服务 */
     @Autowired
@@ -296,27 +300,29 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 检查预约冲突（只检查医生预约冲突、设备预约冲突）
         Map<String, Object> objectMap = editCheckConflict(form.getId(), form);
         if (null == objectMap) {
-            appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(form.getId()),form);
+            Appointment beforeModifyAppointment = mapper.selectByPrimaryKey(form.getId());
+            appointmentModifyRecordBiz.saveAppointModify(beforeModifyAppointment,form);
             // 转换预约内容
             Appointment appointment = transferFormToEntity(appointBaseModel);
             appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
             appointment.setUpdName(BaseContextHandler.getName());
             appointment.setUpdTime(new Date(System.currentTimeMillis()));
             appointment.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-            List<Appointment> hasAppoints = mapper.select(appointment);
-            if (!StringHelper.isEmpty(hasAppoints)){
+            Appointment beforeModifyAppoints = mapper.selectByPrimaryKey(appointment.getId());
+            if (beforeModifyAppoints == null){
                 throw new ClientServiceException("已经存在相同的预约！",OperationCodeConstants.SAME_DATA_EXIST);
             }
-
             // 预约未到以外的情况不能编辑预约
             if (appointment.getAppointStatus() != 0){
                 throw new ClientServiceException("【预约未到】以外的情况不允许编辑预约！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
-
             // inservice 无效时预约不可以编辑
             if (!appointment.getInservice()){
                 throw new ClientServiceException("无效预约，不能进行编辑！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
+
+            // 生成修改预约操作记录
+            appointOperateRecordBiz.saveAppointOperationRecord(beforeModifyAppoints,form);
 
             int num = mapper.updateByPrimaryKeySelective(appointment);
             if (num <= 0){
@@ -336,9 +342,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     throw new ClientServiceException("时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
                 }
             }
-
-            // 生成修改预约操作记录
-            appointOperateRecordBiz.saveAppointOperationRecord(appointment,form);
             return ResponseUtil.success();
         }
         // 返回冲突数据
@@ -440,6 +443,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setPatientName(patientInfo.getName());
                 build.setPatientRemark(patientInfo.getRemarks());
                 build.setAllergen(patientInfo.getAllergens());
+                build.setPinyinName(patientInfo.getPinyinName());
 
                 // 设置会员卡图标类型
                 Integer memberTypeId = patientInfo.getMemberTypeId();
@@ -464,10 +468,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (query.getAppointType() != null
                 || !StringHelper.isEmpty(query.getDentistName())
                 || !StringHelper.isEmpty(query.getMedicalNumber())
-                || !StringHelper.isEmpty(query.getSeach())){
+                || !StringHelper.isEmpty(query.getSearch())){
 
             // 按预约类型检索
-            if (query.getAppointType() == 0 || query.getAppointType() == 1){
+            if (query.getAppointType() != null && (query.getAppointType() == 0 || query.getAppointType() == 1)){
                 collect = appointmentList
                         .stream()
                         .filter(
@@ -498,24 +502,46 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
 
             // 按姓名/手机号/姓名拼音
-            if (!StringHelper.isEmpty(query.getSeach())){
+            if (!StringHelper.isEmpty(query.getSearch())){
                 if (collect == null){
                     collect = appointmentList;
                 }
-                collect = collect.stream()
-                        .filter(
-                                appointmentListItemVo -> appointmentListItemVo.getPatientName().contains(query.getSeach())
-                                        || appointmentListItemVo.getMobile().equals(query.getSeach())
-                                        || appointmentListItemVo.getPinyinName().contains(query.getSeach())
-                        ).collect(Collectors.toList());
+
+                // 匹配姓名
+                String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
+                // 匹配手机号
+                String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
+                // 匹配拼音名字
+                String pinyinNameReg = "^[A-Za-z]+$";
+                // 检索值
+                String search = query.getSearch();
+                // 按姓名检索
+                if (search.matches(patientNameReg)){
+                    collect = collect.stream()
+                            .filter(
+                                    appointmentListItemVo -> appointmentListItemVo.getPatientName().contains(query.getSearch())
+                            ).collect(Collectors.toList());
+                }
+                if (search.matches(mobileReg)){
+                    // 按手机号检索
+                    collect = collect.stream()
+                            .filter(
+                                    appointmentListItemVo -> appointmentListItemVo.getMobile().equals(query.getSearch())
+                            ).collect(Collectors.toList());
+                }
+                if (search.matches(pinyinNameReg)){
+                    // 按拼音名字检索
+                    collect = collect.stream()
+                            .filter(
+                                    appointmentListItemVo -> appointmentListItemVo.getPinyinName().contains(query.getSearch())
+                            ).collect(Collectors.toList());
+                }
             }
         }
-
         // 如果不为空，则有内容过滤，返回过滤之后的结果
         if (collect != null){
             return collect;
         }
-
         return appointmentList;
     }
 

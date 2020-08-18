@@ -20,13 +20,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * 预约修改记录Controller
+ * 预约修改记录Controller(记录修改的预约医生和预约时间)
  *
  * @author yunya-lihuibin
  * @create 2020-08-10 11:03
  * @update yunya-lihuibin    2020-08-10    新建
  */
-@Api(tags = "预约修改记录Controller")
+@Api(tags = "预约修改记录Controller(记录修改的预约医生和预约时间)")
 @RestController
 @RequestMapping("appoint/modify_record")
 public class AppointModifyRecordController {

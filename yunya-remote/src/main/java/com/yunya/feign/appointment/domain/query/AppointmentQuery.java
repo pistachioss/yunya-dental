@@ -1,5 +1,6 @@
 package com.yunya.feign.appointment.domain.query;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -66,6 +67,7 @@ public class AppointmentQuery implements Serializable {
      * 预约日期
      */
     @ApiModelProperty(value = "预约日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date appointDate;
 
     /**
@@ -78,12 +80,14 @@ public class AppointmentQuery implements Serializable {
      * 预约开始时间
      */
     @ApiModelProperty(value = "预约开始时间")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date appointStartTime;
 
     /**
      * 预约结束时间
      */
     @ApiModelProperty(value = "预约结束时间")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date appointEndTime;
 
     /**

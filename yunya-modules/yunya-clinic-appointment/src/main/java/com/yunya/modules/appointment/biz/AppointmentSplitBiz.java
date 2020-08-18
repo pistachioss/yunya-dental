@@ -79,15 +79,17 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         }
         splits.forEach(appointmentSplit -> {
             AppointmentSplit hasAppointSplit = mapper.selectByPrimaryKey(appointmentSplit.getId());
-            if (hasAppointSplit == null){
-                throw new ClientServiceException("要修改的数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
-            }
-            appointmentSplit.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
-            appointmentSplit.setUpdName(BaseContextHandler.getName());
-            appointmentSplit.setUpdTime(new Date(System.currentTimeMillis()));
-            int result = mapper.updateByPrimaryKeySelective(appointmentSplit);
-            if (result <= 0){
-                throw new ClientServiceException("修改时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            if (hasAppointSplit != null){
+                appointmentSplit.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+                appointmentSplit.setUpdName(BaseContextHandler.getName());
+                appointmentSplit.setUpdTime(new Date(System.currentTimeMillis()));
+                int result = mapper.updateByPrimaryKeySelective(appointmentSplit);
+                if (result <= 0){
+                    throw new ClientServiceException("修改时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                }
+            } else {
+                // 如果不存在时长分解，则直接插入
+                mapper.insertSelective(appointmentSplit);
             }
         });
         return 1;

@@ -18,6 +18,8 @@ import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import io.swagger.annotations.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +40,8 @@ import java.util.List;
 @RestController
 @RequestMapping("appoint")
 public class AppointmentController {
+
+  private Logger logger = LoggerFactory.getLogger(AppointmentController.class);
 
   /** 预约服务 */
   @Autowired private AppointmentBiz appointmentBiz;

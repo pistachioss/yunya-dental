@@ -58,9 +58,9 @@ spring:
     sentinel:
       transport:
         dashboard: localhost:8080
-sample:
-  zipkin:
-    discovery-client-enabled: false
+#sample:
+#  zipkin:
+#    discovery-client-enabled: false
     # When enabled=false, traces log to the console. Comment to send to zipkin
 
 mybatis:
@@ -128,11 +128,11 @@ swagger:
 #  database: 2
 
 # 暴露所以端点
-management:
-  endpoints:
-    web:
-      exposure:
-        include: '*'
-  security:
-    enabled: false
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: '*'
+#  security:
+#    enabled: false
 

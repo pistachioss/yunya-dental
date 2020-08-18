@@ -1,5 +1,6 @@
 package com.yunya.feign.appointment.domain.query;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -35,11 +36,13 @@ public class AppointDentistInfoListQuery implements Serializable {
     /** 开始日期 */
     @ApiModelProperty(value = "开始日期", required = true)
     @NotNull(message = "开始日期不能为空！")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date startDate;
 
     /** 结束日期 */
     @ApiModelProperty(value = "结束日期", required = true)
     @NotNull(message = "结束日期不能为空！")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date endDate;
 
     /** 医生id */
