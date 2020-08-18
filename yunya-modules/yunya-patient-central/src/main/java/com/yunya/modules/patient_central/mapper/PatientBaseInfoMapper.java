@@ -103,4 +103,11 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
      */
     String findMedicalNumberByOrgId(@Param("orgId") Integer orgId);
 
+
+    /**
+     * 根据患者id查询患者信息
+     * @param id
+     * @return PatientBaseInfoVo
+     */
+    PatientBaseInfoVo selectOneById(Integer id);
 }

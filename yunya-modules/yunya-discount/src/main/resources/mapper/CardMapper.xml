@@ -1,58 +1,32 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.discount.mapper.CardMapper">
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.CardMapper">
     <resultMap id="BaseResultMap" type="com.yunya.models.discount.Card">
-        <id column="id" property="id" jdbcType="INTEGER"/>
-        <result column="relevance_id" property="relevanceId" jdbcType="INTEGER"/>
-        <result column="clinic_id" property="clinicId" jdbcType="INTEGER"/>
-        <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
-        <result column="password" property="password" jdbcType="VARCHAR"/>
-        <result column="card_type" property="cardType" jdbcType="INTEGER"/>
-        <result column="sms_type" property="smsType" jdbcType="BIT"/>
-        <result column="selling_type" property="sellingType" jdbcType="INTEGER"/>
-        <result column="buyer_name" property="buyerName" jdbcType="VARCHAR"/>
-        <result column="buyer_phone" property="buyerPhone" jdbcType="VARCHAR"/>
-        <result column="operate" property="operate" jdbcType="BIT"/>
-        <result column="status" property="status" jdbcType="INTEGER"/>
-        <result column="charge" property="charge" jdbcType="BIT"/>
-        <result column="accounting_id" property="accountingId" jdbcType="INTEGER"/>
-        <result column="remark" property="remark" jdbcType="VARCHAR"/>
-        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
-        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
-        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
-        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
-        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
-        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
-        <result column="revision" property="revision" jdbcType="INTEGER"/>
+        <id column="id" jdbcType="INTEGER" property="id" />
+        <result column="org_id" jdbcType="INTEGER" property="orgId" />
+        <result column="coupon_id" jdbcType="INTEGER" property="couponId" />
+        <result column="active_org_id" jdbcType="INTEGER" property="activeOrgId" />
+        <result column="patient_id" jdbcType="INTEGER" property="patientId" />
+        <result column="card_number" jdbcType="VARCHAR" property="cardNumber" />
+        <result column="password" jdbcType="VARCHAR" property="password" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="sold_target" jdbcType="VARCHAR" property="soldTarget" />
+        <result column="sold_phone_number" jdbcType="VARCHAR" property="soldPhoneNumber" />
+        <result column="sold_type" jdbcType="TINYINT" property="soldType" />
+        <result column="is_send_text" jdbcType="TINYINT" property="sendText" />
+        <result column="is_sold_and_pay" jdbcType="TINYINT" property="soldAndPay" />
+        <result column="pay_type_id" jdbcType="INTEGER" property="payTypeId" />
+        <result column="pay_id" jdbcType="INTEGER" property="payId" />
+        <result column="sharer" jdbcType="VARCHAR" property="sharer" />
+        <result column="sale_channel_id" jdbcType="INTEGER" property="saleChannelId" />
+        <result column="remark" jdbcType="VARCHAR" property="remark" />
+        <result column="link" jdbcType="VARCHAR" property="link" />
+        <result column="sold_way" jdbcType="TINYINT" property="soldWay" />
+        <result column="is_pay" jdbcType="TINYINT" property="pay" />
+        <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+        <result column="upd_id" jdbcType="INTEGER" property="updId" />
+        <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
     </resultMap>
 
-    <insert id="batchInsert">
-        insert into card (
-        clinic_id,
-        relevance_id,
-        card_number,
-        password,
-        card_type,
-        crt_id,
-        crt_name
-        )
-        values
-        <foreach collection="list" index="index" item="item" separator=",">
-            (#{item.clinicId},
-            #{item.relevanceId},
-            #{item.cardNumber},
-            #{item.password},
-            #{item.cardType},
-            #{item.crtId},
-            #{item.crtName})
-        </foreach>
-    </insert>
-
-    <update id="updateSaleStatusById">
-        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
-            update card set sms_type = #{item.smsType},selling_type = #{item.sellingType},buyer_name = #{item.buyerName},
-            buyer_phone = #{item.buyerPhone},status = #{item.status},charge = #{item.charge} ,accounting_id = #{item.accountingId}
-            where id = #{item.id}
-        </foreach>
-    </update>
 </mapper>

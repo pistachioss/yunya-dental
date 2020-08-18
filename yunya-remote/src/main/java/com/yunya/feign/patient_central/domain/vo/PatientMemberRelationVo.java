@@ -18,6 +18,12 @@ import java.io.Serializable;
 public class PatientMemberRelationVo implements Serializable {
 
     /**
+     * 绑定关系id
+     */
+
+    private Integer bindId;
+
+    /**
      * 诊所Id
      */
     private Integer orgId;

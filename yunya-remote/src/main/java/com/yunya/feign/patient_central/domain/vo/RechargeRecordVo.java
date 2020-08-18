@@ -20,9 +20,13 @@ import java.math.BigDecimal;
 public class RechargeRecordVo implements Serializable {
 
     /**
+     * 会员充值记录id
+     */
+    private Integer id;
+
+    /**
      * 操作时间
      */
-
     private Data OperatingTime;
 
     /**
@@ -39,6 +43,11 @@ public class RechargeRecordVo implements Serializable {
      * 入账方式
      */
     private String payment;
+
+    /**
+     * 门诊id
+     */
+    private Integer orgId;
 
     /**
      * 诊所

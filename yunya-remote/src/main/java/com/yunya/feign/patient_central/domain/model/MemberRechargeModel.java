@@ -1,9 +1,9 @@
 package com.yunya.feign.patient_central.domain.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,21 +23,25 @@ public class MemberRechargeModel implements Serializable {
     /**
      * 会员卡ID
      */
+    @ApiModelProperty(value = "会员卡ID",required = true)
     private Integer memberId;
 
     /**
      * 充值本金
      */
+    @ApiModelProperty(value = "充值本金",required = true)
     private BigDecimal rechargePrincipal;
 
     /**
      * 充值赠金
      */
+    @ApiModelProperty(value = "充值赠金",required = true)
     private BigDecimal rechargeBonus;
 
     /**
      * 入账方式
      */
+    @ApiModelProperty(value = "入账方式",required = true)
     private List<AccountedWayModel> accountedWayModelList;
 
 

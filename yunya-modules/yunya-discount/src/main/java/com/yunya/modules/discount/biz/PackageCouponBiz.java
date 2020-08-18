@@ -44,7 +44,7 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
      */
     public Integer savePackageCoupon(PackageCoupon packageCoupon) {
         PackageCoupon data = new PackageCoupon();
-        data.setName(packageCoupon.getName());
+//        data.setName(packageCoupon.getName());
         if (mapper.selectOne(data) != null) {
             throw new BaseException("套餐券名称已被占用", NAME_IS_OCCUPIED);
         }
@@ -73,8 +73,8 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         PackageCoupon packageCoupon = new PackageCoupon();
         if (flag) {
             // 只能修改时间
-            packageCoupon.setSellingStartDate(discountUpdateForm.getSellingStartDate());
-            packageCoupon.setSellingEndDate(discountUpdateForm.getSellingEndDate());
+//            packageCoupon.setSellingStartDate(discountUpdateForm.getSellingStartDate());
+//            packageCoupon.setSellingEndDate(discountUpdateForm.getSellingEndDate());
             packageCoupon.setEffectiveDays(discountUpdateForm.getEffectiveDays());
             packageCoupon.setActivationDeadline(discountUpdateForm.getActivationDeadline());
         } else {
@@ -82,7 +82,7 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
             String name = discountUpdateForm.getName();
             if (StringUtils.isNotBlank(name)) {
                 PackageCoupon data = new PackageCoupon();
-                data.setName(name);
+//                data.setName(name);
                 if (mapper.select(data).size() >= 2) {
                     throw new BaseException("套餐券名称已被占用", NAME_IS_OCCUPIED);
                 }
@@ -113,14 +113,14 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         cardClinicBiz.delete(cardClinic);
     }
 
-    /**
-     * 查询列表
-     *
-     * @param discountQueryForm
-     * @return
-     */
-    public List<DiscountVO> search(DiscountQueryForm discountQueryForm) {
-        return mapper.selectVOs(discountQueryForm.getMarketProductTypeId(), discountQueryForm.getName(),
-                discountQueryForm.getStartDate(), discountQueryForm.getEndDate());
-    }
+//    /**
+//     * 查询列表
+//     *
+//     * @param discountQueryForm
+//     * @return
+//     */
+//    public List<DiscountVO> search(DiscountQueryForm discountQueryForm) {
+//        return mapper.selectVOs(discountQueryForm.getMarketProductTypeId(), discountQueryForm.getName(),
+//                discountQueryForm.getStartDate(), discountQueryForm.getEndDate());
+//    }
 }

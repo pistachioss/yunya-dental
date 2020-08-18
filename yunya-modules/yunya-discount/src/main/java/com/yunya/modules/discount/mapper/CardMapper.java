@@ -1,22 +1,10 @@
 package com.yunya.modules.discount.mapper;
 
-import com.yunya.models.discount.Card;
-import tk.mybatis.mapper.common.Mapper;
+import com.yunya.models.discount.*;
+import org.apache.ibatis.annotations.*;
 
-import java.util.List;
 
-public interface CardMapper extends Mapper<Card> {
-    /**
-     * 批量添加
-     *
-     * @param list
-     */
-    void batchInsert(List<Card> list);
+@Mapper
+public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
 
-    /**
-     * 修改售出相关内容
-     *
-     * @param cards
-     */
-    void updateSaleStatusById(List<Card> cards);
 }

@@ -20,22 +20,29 @@ public class ApprovePageBo {
      */
     private List<ApprovalRecord> auditList;
     /**
-     * 患者映射（电子病例id或就诊id）
+     * 患者映射 <medicalId，PatientBaseInfoVo>
      */
     private Map<Integer, PatientBaseInfoVo> patientInfoMap;
     /**
-     * 就诊数据映射
+     * 就诊映射 <medicalId，MedicalTreatmentBo>
      */
+    private Map<Integer, MedicalTreatmentBo> treatmentBoMap;
+
+    private long total;
+
+    private int pageNum;
 
     public static ApprovePageBo getInstance() {
         ApprovePageBo bo = new ApprovePageBo();
         bo.setAuditList(Lists.newArrayList());
         bo.setPatientInfoMap(Maps.newHashMap());
+        bo.setTreatmentBoMap(Maps.newHashMap());
         return bo;
     }
 
-    public void assignMember(List<ApprovalRecord> auditList, Map<Integer, PatientBaseInfoVo> patientInfoMap) {
-        this.auditList.addAll(auditList);
+    public void assignMember(Map<Integer, PatientBaseInfoVo> patientInfoMap,
+                             Map<Integer, MedicalTreatmentBo> treatmentBoMap) {
         this.patientInfoMap.putAll(patientInfoMap);
+        this.treatmentBoMap.putAll(treatmentBoMap);
     }
 }

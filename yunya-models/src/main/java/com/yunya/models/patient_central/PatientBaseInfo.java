@@ -13,6 +13,7 @@ public class PatientBaseInfo {
     /**
      * 主键
      */
+    @GeneratedValue(generator = "JDBC")
     @Id
     @NotNull(message = "ID为空！")
     private Integer id;

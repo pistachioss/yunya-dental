@@ -4,8 +4,8 @@ import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "package_coupon_detail")
-public class PackageCouponDetail {
+@Table(name = "package_coupon_item")
+public class PackageCouponItem {
     /**
      * 主键
      */
@@ -13,27 +13,33 @@ public class PackageCouponDetail {
     private Integer id;
 
     /**
-     * 套餐券ID
+     * 优惠券id
      */
-    @Column(name = "package_coupon_id")
-    private Integer packageCouponId;
+    @Column(name = "coupon_id")
+    private Integer couponId;
 
     /**
-     * 类型 0:价目表明细,1:商品明细
+     * 类型 0:基础价目表,1:基础商品表 2:选项目明细
      */
     private Integer type;
 
     /**
-     * 明细ID 根据type类型来查找
+     * 明细ID
      */
-    @Column(name = "detail_id")
-    private Integer detailId;
+    @Column(name = "item_id")
+    private Integer itemId;
 
     /**
-     * 套餐单价
+     * 售出单价
      */
-    @Column(name = "package_coupon_price")
-    private BigDecimal packageCouponPrice;
+    @Column(name = "sale_unit_price")
+    private BigDecimal saleUnitPrice;
+
+    /**
+     * 售出金额
+     */
+    @Column(name = "sale_amount")
+    private BigDecimal saleAmount;
 
     /**
      * 数量
@@ -53,12 +59,6 @@ public class PackageCouponDetail {
     private Integer crtId;
 
     /**
-     * 创建人姓名
-     */
-    @Column(name = "crt_name")
-    private String crtName;
-
-    /**
      * 创建时间
      */
     @Column(name = "crt_time")
@@ -69,12 +69,6 @@ public class PackageCouponDetail {
      */
     @Column(name = "upd_id")
     private Integer updId;
-
-    /**
-     * 更新时间
-     */
-    @Column(name = "upd_name")
-    private String updName;
 
     /**
      * 更新时间
@@ -106,75 +100,93 @@ public class PackageCouponDetail {
     }
 
     /**
-     * 获取套餐券ID
+     * 获取优惠券id
      *
-     * @return package_coupon_id - 套餐券ID
+     * @return coupon_id - 优惠券id
      */
-    public Integer getPackageCouponId() {
-        return packageCouponId;
+    public Integer getCouponId() {
+        return couponId;
     }
 
     /**
-     * 设置套餐券ID
+     * 设置优惠券id
      *
-     * @param packageCouponId 套餐券ID
+     * @param couponId 优惠券id
      */
-    public void setPackageCouponId(Integer packageCouponId) {
-        this.packageCouponId = packageCouponId;
+    public void setCouponId(Integer couponId) {
+        this.couponId = couponId;
     }
 
     /**
-     * 获取类型 0:价目表明细,1:商品明细
+     * 获取类型 0:基础价目表,1:基础商品表 2:选项目明细
      *
-     * @return type - 类型 0:价目表明细,1:商品明细
+     * @return type - 类型 0:基础价目表,1:基础商品表 2:选项目明细
      */
     public Integer getType() {
         return type;
     }
 
     /**
-     * 设置类型 0:价目表明细,1:商品明细
+     * 设置类型 0:基础价目表,1:基础商品表 2:选项目明细
      *
-     * @param type 类型 0:价目表明细,1:商品明细
+     * @param type 类型 0:基础价目表,1:基础商品表 2:选项目明细
      */
     public void setType(Integer type) {
         this.type = type;
     }
 
     /**
-     * 获取明细ID 根据type类型来查找
+     * 获取明细ID
      *
-     * @return detail_id - 明细ID 根据type类型来查找
+     * @return item_id - 明细ID
      */
-    public Integer getDetailId() {
-        return detailId;
+    public Integer getItemId() {
+        return itemId;
     }
 
     /**
-     * 设置明细ID 根据type类型来查找
+     * 设置明细ID
      *
-     * @param detailId 明细ID 根据type类型来查找
+     * @param itemId 明细ID
      */
-    public void setDetailId(Integer detailId) {
-        this.detailId = detailId;
+    public void setItemId(Integer itemId) {
+        this.itemId = itemId;
     }
 
     /**
-     * 获取套餐单价
+     * 获取售出单价
      *
-     * @return package_coupon_price - 套餐单价
+     * @return sale_unit_price - 售出单价
      */
-    public BigDecimal getPackageCouponPrice() {
-        return packageCouponPrice;
+    public BigDecimal getSaleUnitPrice() {
+        return saleUnitPrice;
     }
 
     /**
-     * 设置套餐单价
+     * 设置售出单价
      *
-     * @param packageCouponPrice 套餐单价
+     * @param saleUnitPrice 售出单价
      */
-    public void setPackageCouponPrice(BigDecimal packageCouponPrice) {
-        this.packageCouponPrice = packageCouponPrice;
+    public void setSaleUnitPrice(BigDecimal saleUnitPrice) {
+        this.saleUnitPrice = saleUnitPrice;
+    }
+
+    /**
+     * 获取售出金额
+     *
+     * @return sale_amount - 售出金额
+     */
+    public BigDecimal getSaleAmount() {
+        return saleAmount;
+    }
+
+    /**
+     * 设置售出金额
+     *
+     * @param saleAmount 售出金额
+     */
+    public void setSaleAmount(BigDecimal saleAmount) {
+        this.saleAmount = saleAmount;
     }
 
     /**
@@ -232,24 +244,6 @@ public class PackageCouponDetail {
     }
 
     /**
-     * 获取创建人姓名
-     *
-     * @return crt_name - 创建人姓名
-     */
-    public String getCrtName() {
-        return crtName;
-    }
-
-    /**
-     * 设置创建人姓名
-     *
-     * @param crtName 创建人姓名
-     */
-    public void setCrtName(String crtName) {
-        this.crtName = crtName;
-    }
-
-    /**
      * 获取创建时间
      *
      * @return crt_time - 创建时间
@@ -283,24 +277,6 @@ public class PackageCouponDetail {
      */
     public void setUpdId(Integer updId) {
         this.updId = updId;
-    }
-
-    /**
-     * 获取更新时间
-     *
-     * @return upd_name - 更新时间
-     */
-    public String getUpdName() {
-        return updName;
-    }
-
-    /**
-     * 设置更新时间
-     *
-     * @param updName 更新时间
-     */
-    public void setUpdName(String updName) {
-        this.updName = updName;
     }
 
     /**

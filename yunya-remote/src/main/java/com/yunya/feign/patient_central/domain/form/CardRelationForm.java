@@ -30,5 +30,6 @@ public class CardRelationForm implements Serializable {
     /**
      * 关系类型 会员卡：0 卡余额：1
      */
+    @ApiModelProperty(value = "关系类型 会员卡：0 卡余额：1",required = true)
     private Byte bindType;
 }

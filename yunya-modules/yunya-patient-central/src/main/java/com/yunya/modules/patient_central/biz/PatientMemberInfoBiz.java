@@ -18,6 +18,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.*;
+import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
@@ -100,8 +101,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientMemberRelation.setCrtName(BaseContextHandler.getName());
             patientMemberRelationMapper.insertSelective(patientMemberRelation);
+            int MasterCardI = patientMemberRelation.getMasterCardId();
             patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
-            patientMemberRelation.setSecondaryCardId(patientMemberRelation.getMasterCardId());
+            patientMemberRelation.setSecondaryCardId(MasterCardI);
             patientMemberRelationMapper.insertSelective(patientMemberRelation);
         }
 
@@ -117,13 +119,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         patientMemberInfo.setPatientId(openCardModel.getPatientId());
         patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
-        patientMemberInfo.setCardNumber(getCardNumber(openCardModel));
+        patientMemberInfo.setCardNumber(generateCardNumber("H"));
         if(patientMemberInfo.getCardNumber() == null){
             return ResponseUtil.fail(500,"生成会员卡号失败","");
         }
         patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientMemberInfo.setCrtName(BaseContextHandler.getName());
-        mapper.insertSelective(patientMemberInfo);
+        patientMemberInfoMapper.insertSelective(patientMemberInfo);
         return CardLog(patientMemberInfo,"开卡","");
     }
 
@@ -132,14 +134,15 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
      * @param openCardModel
      * @return Integer
 w     */
-    public String getCardNumber(OpenCardModel openCardModel){
+    public String generateCardNumber(String Mark){
         OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         if (organizationInfo == null) {
             return null;
         }
-        String number = mapper.generateCardNumber(organizationInfo.getId()); //获取最后一条记录 病历号的后八位
+        System.out.println(Integer.parseInt(BaseContextHandler.getUserID()));
+        String number = mapper.generateCardNumber(Integer.parseInt(BaseContextHandler.getOrgId())); //获取最后一条记录 病历号的后八位
         String suffix = String.format("%06d", Integer.parseInt(number) + 1); //后八位进行加1
-        String cardNumber = "H"+organizationInfo.getClinicNumber()+suffix; // 会员卡号 = 门诊编号+后八位
+        String cardNumber = Mark+"000"+suffix; // 会员卡号 = 门诊编号+后八位
         return cardNumber;
     }
 
@@ -187,7 +190,7 @@ w     */
         patientMemberChangeLog.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientMemberChangeLog.setCrtName(BaseContextHandler.getName());
         patientMemberChangeLog.setOperationType(operationType);
-        if(isupt != null){
+        if(isupt != null){ //如果是修改
             patientMemberChangeLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientMemberChangeLog.setUptName(BaseContextHandler.getName());
             patientMemberChangeLog.setUptTime(new Date());
@@ -201,9 +204,7 @@ w     */
      * @param form
      */
     public ResponseResult changeType(CardTypeForm form) {
-        PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
-        BeanUtils.copyProperties(form,patientMemberInfo);
-        PatientMemberInfo patientMember = patientMemberInfoMapper.selectOne(patientMemberInfo);
+        PatientMemberInfo patientMember = patientMemberInfoMapper.selectOneByCardNumber(form.getCardNumber());
         patientMember.setMemberTypeId(form.getMemberTypeId());
         patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientMember.setUpdName(BaseContextHandler.getName());
@@ -255,7 +256,24 @@ w     */
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<RechargeRecordVo> resultList = memberRechargeTollRecordMapper.RechargeRecordList(form);
+        List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form);
+
+        if(resultList.size()>0){
+            for (RechargeRecordVo rechargeRecordVo : resultList) {
+                OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(rechargeRecordVo.getOrgId());//获取门诊简称
+                if (organizationInfo != null) {
+                    rechargeRecordVo.setOrgName(organizationInfo.getAbbreviation());
+                }
+                List<MemberRechargeTollRecord> memberRechargeTollRecordList =  memberRechargeTollRecordMapper.selectMemberRechargeRecord(rechargeRecordVo.getId());
+                StringBuilder labels = new StringBuilder(16);
+                for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
+                    AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberRechargeTollRecord.getPaymentId());
+                    labels.append(accountItem.getName());
+                    labels.append("、");
+                }
+                rechargeRecordVo.setPayment(labels.toString());
+            }
+        }
         return new PageInfo<>(resultList);
     }
 }

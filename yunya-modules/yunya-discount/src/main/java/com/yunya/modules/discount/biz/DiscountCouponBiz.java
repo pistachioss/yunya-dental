@@ -28,7 +28,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCoupon> {
-    // 代金券类型
+    // 折扣券类型
     private static final Integer DISCOUNT_COUPON_TYPE = 0;
     // 状态
     private static final Integer FINISH = 1;
@@ -44,7 +44,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
      */
     public Integer saveDiscountCoupon(DiscountCoupon discountCoupon) {
         DiscountCoupon data = new DiscountCoupon();
-        data.setName(discountCoupon.getName());
+//        data.setName(discountCoupon.getName());
         if (mapper.selectOne(data) != null) {
             throw new BaseException("折扣券名字已被占用", NAME_IS_OCCUPIED);
         }
@@ -72,8 +72,8 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         DiscountCoupon discountCoupon = new DiscountCoupon();
         if (flag) {
             // 只能修改时间
-            discountCoupon.setSellingStartDate(discountUpdateForm.getSellingStartDate());
-            discountCoupon.setSellingEndDate(discountUpdateForm.getSellingEndDate());
+//            discountCoupon.setSellingStartDate(discountUpdateForm.getSellingStartDate());
+//            discountCoupon.setSellingEndDate(discountUpdateForm.getSellingEndDate());
             discountCoupon.setEffectiveDays(discountUpdateForm.getEffectiveDays());
             discountCoupon.setActivationDeadline(discountUpdateForm.getActivationDeadline());
         } else {
@@ -81,7 +81,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             String name = discountUpdateForm.getName();
             if (StringUtils.isNotBlank(name)) {
                 DiscountCoupon data = new DiscountCoupon();
-                data.setName(name);
+//                data.setName(name);
                 if (mapper.select(data).size() >= 2) {
                     throw new BaseException("折扣券名字已被占用", NAME_IS_OCCUPIED);
                 }
@@ -112,14 +112,14 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         cardClinicBiz.delete(cardClinic);
     }
 
-    /**
-     * 查询列表
-     *
-     * @param discountQueryForm
-     * @return
-     */
-    public List<DiscountVO> search(DiscountQueryForm discountQueryForm) {
-        return mapper.selectVOs(discountQueryForm.getMarketProductTypeId(), discountQueryForm.getName(),
-                discountQueryForm.getStartDate(), discountQueryForm.getEndDate());
-    }
+//    /**
+//     * 查询列表
+//     *
+//     * @param discountQueryForm
+//     * @return
+//     */
+//    public List<DiscountVO> search(DiscountQueryForm discountQueryForm) {
+//        return mapper.selectVOs(discountQueryForm.getMarketProductTypeId(), discountQueryForm.getName(),
+//                discountQueryForm.getStartDate(), discountQueryForm.getEndDate());
+//    }
 }

@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.ToString;
@@ -20,31 +21,37 @@ public class MemberBindingRelationInfoModel implements Serializable {
 
     /**   * 患者id
      */
+    @ApiModelProperty(value = "患者id",required = true)
     private Integer patientId;
 
     /**
      * 诊所Id
      */
+    @ApiModelProperty(value = "患者id")
     private Integer orgId;
 
     /**
      * 关联人名称
      */
+    @ApiModelProperty(value = "患者id")
     private String name;
 
     /**
      * 主卡会员人ID
      */
+    @ApiModelProperty(value = "主卡会员人ID",required = true)
     private Integer masterCardId;
 
     /**
      * 副卡会员人ID
      */
+    @ApiModelProperty(value = "副卡会员人ID",required = true)
     private Integer secondaryCardId;
 
     /**
      * 关联类型
      */
-    private Integer bindType;
+    @ApiModelProperty(value = "关联类型",required = true)
+    private Byte bindType;
 
 }

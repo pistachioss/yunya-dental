@@ -17,8 +17,11 @@ public enum EmrError implements RestError {
     NOT_NEED_APPLY(30010, "不需要申请修改，可以直接修改此病历！"),
     NO_AUTH_MODIFY_MED(30011, "无权限申请修改此病历，请联系新增病历医生申请修改！"),
     REJECTED_NO_NEED_APPLY(30012, "该病历已审核拒绝且可以修改，无须申请修改"),
-    DATA_NOT_EXISTED(300013, "数据不存在"),
-    MEDICAL_ALREADY_AUDITED(300014, "病历已被审核")
+    DATA_NOT_EXISTED(30013, "数据不存在"),
+    MEDICAL_ALREADY_AUDITED(30014, "病历已被审核"),
+    TREATMENT_NOT_EXIST(30015,"就诊记录不存在"),
+    NORMAL_MEDICAL_NO_PERMISSION(30016,"普通病例不允许审批"),
+    MEDICAL_STATUS_ERROR(30017,"电子病例审核状态异常"),
     ;
     private final Integer code;
     private final String message;

@@ -1,7 +1,7 @@
 package com.yunya.modules.discount.controller;
 
-import com.yunya.modules.discount.biz.DiscountCouponBiz;
 import com.yunya.models.discount.DiscountCoupon;
+import com.yunya.modules.discount.biz.DiscountCouponBiz;
 import com.yunya.modules.discount.form.DiscountQueryForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
@@ -19,7 +19,7 @@ import javax.validation.Valid;
  * @author GaoLuding
  * @create 2020-07-14 17:23
  */
-@Api(tags = "代金券")
+@Api(tags = "折扣券")
 @RestController
 @RequestMapping("/discount_coupon")
 public class DiscountCouponController {
@@ -85,14 +85,14 @@ public class DiscountCouponController {
         return ResponseUtil.success(discountCouponBiz.selectListAll());
     }
 
-    /**
-     * 查询列表
-     *
-     * @return
-     */
-    @PostMapping("/search")
-    @ApiOperation("查询列表")
-    public ResponseResult search(DiscountQueryForm discountQueryForm) {
-        return ResponseUtil.success(discountCouponBiz.search(discountQueryForm));
-    }
+//    /**
+//     * 查询列表
+//     *
+//     * @return
+//     */
+//    @PostMapping("/search")
+//    @ApiOperation("查询列表")
+//    public ResponseResult search(DiscountQueryForm discountQueryForm) {
+//        return ResponseUtil.success(discountCouponBiz.search(discountQueryForm));
+//    }
 }

@@ -1,20 +1,23 @@
 package com.yunya.modules.discount.biz;
 
-import com.yunya.models.discount.CardClinic;
-import com.yunya.models.discount.Voucher;
-import com.yunya.modules.discount.form.DiscountQueryForm;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.models.discount.*;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
-import com.yunya.modules.discount.mapper.VoucherMapper;
-import com.yunya.modules.discount.vo.DiscountVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.modules.discount.constant.ExceptionCode;
+import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
+import com.yunya.modules.discount.mapper.VoucheCouponMapper;
+import com.yunya.modules.discount.vo.VoucheCouponVO;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
@@ -27,30 +30,73 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class VoucherBiz extends BaseBiz<VoucherMapper, Voucher> {
+public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
     // 代金券类型
     private static final Integer VOUCHER_TYPE = 0;
     // 状态
     private static final Integer FINISH = 1;
     private static final Integer PLAN = 0;
 
-    @Autowired
-    private CardClinicBiz cardClinicBiz;
+
+    @Autowired private CardClinicBiz cardClinicBiz;
+    @Autowired private CouponCommonInfoBiz couponCommonInfoBiz;
+    @Autowired private CouponFileInfoBiz couponFileInfoBiz;
+    @Autowired private CouponCommonInfoMapper couponCommonInfoMapper;
 
     /**
      * 新增
-     *
-     * @param voucher
+     * @param voucheCouponVO
+     * @return
      */
-    public Integer saveVoucher(Voucher voucher) {
-        Voucher data = new Voucher();
-        data.setName(voucher.getName());
-        if (mapper.selectOne(data) != null) {
+    public Integer saveVoucher(VoucheCouponVO voucheCouponVO) {
+        CouponCommonInfo data = new CouponCommonInfo();
+        data.setName(voucheCouponVO.getName());
+        if (couponCommonInfoMapper.selectOne(data) != null) {
             throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
         }
-
-        insertSelective(voucher);
-        return voucher.getId();
+        CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
+        BeanUtils.copyProperties(voucheCouponVO,couponCommonInfo);
+        couponCommonInfo.setType(new Byte("0"));
+        couponCommonInfo.setIsInservice(true);
+        couponCommonInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        couponCommonInfo.setCrtTime(new Date());
+        couponCommonInfoBiz.insertSelective(couponCommonInfo);//基础信息表中插入数据
+        List<CouponFileInfo> list = new ArrayList<>();
+        if(voucheCouponVO.getPaths()!=null && voucheCouponVO.getPaths().size()>0){//图片信息
+            for(FileInfo fileInfo: voucheCouponVO.getPaths()){
+                CouponFileInfo couponFileInfo = new CouponFileInfo();
+                couponFileInfo.setCouponId(couponCommonInfo.getId());
+                couponFileInfo.setInservice(true);
+                couponFileInfo.setRemark(fileInfo.getMark());
+                couponFileInfo.setFileType(new Byte("0"));
+                couponFileInfo.setPath(fileInfo.getPath());
+                couponFileInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                couponFileInfo.setCrtTime(new Date());
+                list.add(couponFileInfo);
+            }
+        }
+        if(voucheCouponVO.getDocs()!=null && voucheCouponVO.getDocs().size()>0){//文档信息
+            for(String doc: voucheCouponVO.getDocs()){
+                CouponFileInfo couponFileInfo = new CouponFileInfo();
+                couponFileInfo.setCouponId(couponCommonInfo.getId());
+                couponFileInfo.setInservice(true);
+                couponFileInfo.setFileType(new Byte("1"));
+                couponFileInfo.setPath(doc);
+                couponFileInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                couponFileInfo.setCrtTime(new Date());
+                list.add(couponFileInfo);
+            }
+        }
+        if(list.size()>0){
+            couponFileInfoBiz.insetAll(list);//插入文件信息
+        }
+        VoucheCoupon voucheCoupon = new VoucheCoupon();
+        BeanUtils.copyProperties(voucheCouponVO,voucheCoupon);
+        voucheCoupon.setCouponId(couponCommonInfo.getId());
+        voucheCoupon.setMixedUseType(voucheCouponVO.getMixedUseType().byteValue());
+        voucheCoupon.setUseableClinci(voucheCouponVO.getClinicIds());
+        insertSelective(voucheCoupon);//插入卡券信息
+        return voucheCoupon.getId();
     }
 
     /**
@@ -70,26 +116,26 @@ public class VoucherBiz extends BaseBiz<VoucherMapper, Voucher> {
             // 未完成分配
             flag = false;
         }
-        Voucher voucher = new Voucher();
+        VoucheCoupon voucheCoupon = new VoucheCoupon();
         if (flag) {
             // 只能修改时间
-            voucher.setSellingStartDate(discountUpdateForm.getSellingStartDate());
-            voucher.setSellingEndDate(discountUpdateForm.getSellingEndDate());
-            voucher.setEffectiveDays(discountUpdateForm.getEffectiveDays());
-            voucher.setActivationDeadline(discountUpdateForm.getActivationDeadline());
+//            voucheCoupon.set(discountUpdateForm.getSellingStartDate());
+//            voucheCoupon.setSellingEndDate(discountUpdateForm.getSellingEndDate());
+            voucheCoupon.setEffectiveDays(discountUpdateForm.getEffectiveDays());
+            voucheCoupon.setActivationDeadline(discountUpdateForm.getActivationDeadline());
         } else {
             // 重名判断
             String name = discountUpdateForm.getName();
             if (StringUtils.isNotBlank(name)) {
-                Voucher data = new Voucher();
-                data.setName(name);
+                VoucheCoupon data = new VoucheCoupon();
+//                data.setName(name);
                 if (mapper.select(data).size() >= 2) {
                     throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
                 }
             }
-            voucher = EntityUtils.build(discountUpdateForm, Voucher.class);
+            voucheCoupon = EntityUtils.build(discountUpdateForm, VoucheCoupon.class);
         }
-        updateSelectiveById(voucher);
+        updateSelectiveById(voucheCoupon);
     }
 
     /**
@@ -113,14 +159,4 @@ public class VoucherBiz extends BaseBiz<VoucherMapper, Voucher> {
         cardClinicBiz.delete(cardClinic);
     }
 
-    /**
-     * 查询列表
-     *
-     * @param discountQueryForm
-     * @return
-     */
-    public List<DiscountVO> search(DiscountQueryForm discountQueryForm) {
-        return mapper.selectVOs(discountQueryForm.getMarketProductTypeId(), discountQueryForm.getName(),
-                discountQueryForm.getStartDate(), discountQueryForm.getEndDate());
-    }
 }
