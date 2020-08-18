@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.discount.mapper.DiscountCouponMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.discount.DiscountCoupon" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="coupon_id" property="couponId" jdbcType="INTEGER" />
+    <result column="discount_rate" property="discountRate" jdbcType="DECIMAL" />
+    <result column="activation_deadline" property="activationDeadline" jdbcType="DATE" />
+    <result column="effective_days" property="effectiveDays" jdbcType="INTEGER" />
+    <result column="is_share" property="isShare" jdbcType="BIT" />
+    <result column="useable_clinic" property="useableClinic" jdbcType="VARCHAR" />
+    <result column="workload_rate" property="workloadRate" jdbcType="DECIMAL" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>
