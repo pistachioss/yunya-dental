@@ -50,7 +50,7 @@ public class TreatmentRecord {
     private Byte type;
 
     /**
-     * 诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
+     * 诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)
      */
     private Byte status;
 
@@ -253,18 +253,18 @@ public class TreatmentRecord {
     }
 
     /**
-     * 获取诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
+     * 获取诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)
      *
-     * @return status - 诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
+     * @return status - 诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)
      */
     public Byte getStatus() {
         return status;
     }
 
     /**
-     * 设置诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
+     * 设置诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)
      *
-     * @param status 诊疗状态(0-接诊中；1-已开单；2-接诊完成，3-离店)
+     * @param status 诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)
      */
     public void setStatus(Byte status) {
         this.status = status;

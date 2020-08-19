@@ -4,7 +4,6 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.sql.JDBCType;
 import java.util.Date;
 
 @Table(name = "base_oral_tariff_category")
