@@ -1,8 +1,9 @@
-package com.yunya.feign.discount.domain.vo;
+package com.yunya.feign.discount.domain.query;
 
 import io.swagger.annotations.*;
 import lombok.*;
 
+import javax.validation.constraints.*;
 import java.util.*;
 
 /**
@@ -19,4 +20,12 @@ public class CouponAllocateQuery {
 
     @ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
     private List<Integer> couponTypeList;
+
+    @ApiModelProperty(value = "页码", required = true)
+    @NotNull
+    private Integer pageNum;
+
+    @ApiModelProperty(value = "每页数量", required = true)
+    @NotNull
+    private Integer pageSize;
 }
