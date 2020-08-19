@@ -4,7 +4,7 @@ package com.yunya.modules.discount.enums;
 import java.util.*;
 
 public enum CouponTypeEnum {
-    VOUCHEN(0, "代金券"),
+    VOUCHER(0, "代金券"),
     DISCOUNT(1, "折扣券"),
     EXCHANGE(2, "兑换券"),
     SPECIAL_PACKAGE(3, "套餐券"),

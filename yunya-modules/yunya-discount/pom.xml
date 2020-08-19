@@ -101,6 +101,13 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
+        <!-- doc swagger-ui -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>swagger-bootstrap-ui</artifactId>
+            <version>${swagger-ui.version}</version>
+        </dependency>
+
     </dependencies>
 
     <build>
