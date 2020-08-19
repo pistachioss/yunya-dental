@@ -49,7 +49,7 @@ public class VoucherController {
      */
     @PutMapping
     @ApiOperation("修改代金券")
-    public ResponseResult update(@RequestBody DiscountUpdateForm discountUpdateForm) {
+    public ResponseResult update(@RequestBody VoucheCouponVO discountUpdateForm) {
         voucherBiz.updateVoucher(discountUpdateForm);
         return ResponseUtil.success();
     }
