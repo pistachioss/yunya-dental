@@ -31,8 +31,8 @@ public interface RemoteAppointmentFeign {
      * @return
      * @description 查询公司端、门诊端的预约列表，Mock两端数据，返回vo对象列表
      */
-    @RequestMapping(value = "/api/appointment/list", method = RequestMethod.POST)
-    public PageInfo<AppointmentItemVo> findAppItemList(@RequestBody AppointItemQuery form);
+    @RequestMapping(value = "/api/list", method = RequestMethod.POST)
+    PageInfo<AppointmentItemVo> findAppItemList(@RequestBody AppointItemQuery form);
 
     /**
      * 预约搜索
@@ -40,8 +40,8 @@ public interface RemoteAppointmentFeign {
      * @param baseQueryForm 查询条件
      * @return
      */
-    @RequestMapping(value = "/api/appointment/search",method = RequestMethod.POST)
-    public List<AppointmentItemVo> searchAppItem(@RequestBody AppointItemQuery baseQueryForm);
+    @RequestMapping(value = "/api/search",method = RequestMethod.POST)
+    List<AppointmentItemVo> searchAppItem(@RequestBody AppointItemQuery baseQueryForm);
 
     /**
      * 获取门诊可预约的项目列表
@@ -49,30 +49,30 @@ public interface RemoteAppointmentFeign {
      * @param orgId 门诊id
      * @return
      */
-    @RequestMapping(value = "/api/appointment/available/{orgId}",method = RequestMethod.GET)
-    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "orgId") String orgId);
+    @RequestMapping(value = "/api/available/{orgId}",method = RequestMethod.GET)
+    List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "orgId") String orgId);
 
     /**
      * 根据id查询预约项目种类
      * @param id 预约项目id
      * @return
      */
-    @RequestMapping(value = "/api/appointment/select/{id}",method = RequestMethod.GET)
-    public AppointType selectAppointTypeById(@PathVariable(value = "id") Integer id);
+    @RequestMapping(value = "/api/select/{id}",method = RequestMethod.GET)
+    AppointType selectAppointTypeById(@PathVariable(value = "id") Integer id);
 
     /**
      * 修改预约信息
      * @param appointment  修改表单
      * @return
      */
-    @RequestMapping(value = "/api/appointment/appoint/update", method = RequestMethod.POST)
-    public void updateAppointment(@RequestBody Appointment appointment);
+    @RequestMapping(value = "/api/appoint/update", method = RequestMethod.POST)
+    void updateAppointment(@RequestBody Appointment appointment);
 
     /**
      * 通过id查询预约信息
      * @param id  患者预约id
      * @return
      */
-    @RequestMapping(value = "/api/appointment/appoint/find/{id}", method = RequestMethod.GET)
-    public Appointment findAppointmentById(@PathVariable(value = "id") Integer id);
+    @RequestMapping(value = "/api/appoint/find/{id}", method = RequestMethod.GET)
+    Appointment findAppointmentById(@PathVariable(value = "id") Integer id);
 }

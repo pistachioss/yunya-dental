@@ -24,7 +24,7 @@ import java.util.List;
  */
 @Api(tags = "预约中心服务调用API")
 @RestController
-@RequestMapping("api/appointment")
+@RequestMapping("api/")
 public class AppointmentRest {
 
     @Autowired

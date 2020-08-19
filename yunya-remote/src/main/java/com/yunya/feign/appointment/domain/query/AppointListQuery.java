@@ -46,7 +46,7 @@ public class AppointListQuery implements Serializable {
 
     /** 患者姓名/手机号/姓名拼音 */
     @ApiModelProperty(value = "患者姓名/手机号/姓名拼音")
-    private String seach;
+    private String search;
 
     /** 病例编号 */
     @ApiModelProperty(value = "病历编号")

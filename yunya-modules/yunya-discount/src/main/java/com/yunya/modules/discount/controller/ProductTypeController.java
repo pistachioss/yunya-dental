@@ -1,17 +1,16 @@
 package com.yunya.modules.discount.controller;
 
-import com.github.pagehelper.PageInfo;
-import com.yunya.feign.discount.domain.form.ProductTypeForm;
-import com.yunya.feign.discount.domain.model.ProductTypeModel;
-import com.yunya.feign.discount.domain.query.ProductTypeQueryForm;
-import com.yunya.feign.discount.domain.vo.ProductTypeVO;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.modules.discount.biz.ProductTypeBiz;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.validation.annotation.Validated;
+import com.github.pagehelper.*;
+import com.yunya.feign.discount.domain.form.*;
+import com.yunya.feign.discount.domain.model.*;
+import com.yunya.feign.discount.domain.query.*;
+import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.framework.common.annation.*;
+import com.yunya.framework.common.model.*;
+import com.yunya.framework.common.utils.*;
+import com.yunya.modules.discount.biz.*;
+import io.swagger.annotations.*;
+import org.springframework.validation.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
 /**

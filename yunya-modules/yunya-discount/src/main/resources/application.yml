@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: clinic-discount
+    name: yunya-discount
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
@@ -51,7 +51,7 @@ swagger:
   base-package: com.yunya.modules.discount
   title: 系统卡券服务
   version: 1.0.0.SNAPSHOT
-  description: YUNYA系统卡券服务
+  description: YUNYA系统卡券服务 (网关地址：/api/discount/**)
   contact:
     name: yunya-discount
 

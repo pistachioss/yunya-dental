@@ -167,7 +167,7 @@
                 and a.clinic_appoint_item_id = #{query.clinicAppointItemId}
             </if>
             <if test="query.appointDate != null">
-                and a.appoint_date = #{query.appointDate}
+                and a.appoint_date = DATE_FORMAT(#{query.appointDate},'%Y-%m-%d')
             </if>
             <if test="query.appointTime != null and query.appointTime != ''">
                 and a.appoint_time = #{q.appointTime}

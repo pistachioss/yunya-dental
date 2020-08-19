@@ -12,6 +12,7 @@ import com.yunya.feign.patient_central.*;
 import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.*;
 import com.yunya.feign.system.vo.*;
+import com.yunya.feign.treatment.*;
 import com.yunya.framework.common.biz.*;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.*;
@@ -20,6 +21,7 @@ import com.yunya.framework.common.model.*;
 import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.*;
 import com.yunya.models.emr.*;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.emr.enums.*;
 import com.yunya.modules.emr.mapper.*;
 import lombok.extern.slf4j.*;
@@ -34,6 +36,7 @@ import java.time.*;
 import java.util.Objects;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.function.Function;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.emr.constant.EmrError.*;
@@ -58,6 +61,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     private MedicalCommonRecordBiz commonRecordBiz;
     @Resource
     private PatientCentralServiceFeign patientFeign;
+    @Resource
+    private RemoteTreatmentServiceFeign treatmentFeign;
     @Resource
     private RedisUtils redisUtils;
 
@@ -85,14 +90,14 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
             //2. 检查登录人权限信息
             MedicalCommonRecord medical = medicalMapper.selectByPrimaryKey(eventId);
-            RestErrorBo errorBo = checkAuth(medical, loginUserId, eventId);
+            RestErrorBo errorBo = checkAuth(medical, loginUserId);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
             //3. 检查草稿电子病例状态
             if (!MEDICAL_AUDIT_PENDING_STATUS.equals(medical.getStatus())) {
-                log.warn("【申请失败】：病例[{}]状态异常，待审核状态不允许重复申请", eventId);
-                return ResponseUtil.error(NO_ALLOW_REPEAT_APPLY);
+                log.warn("【申请失败】：病例[{}]状态异常，电子病例状态不是待审核", eventId);
+                return ResponseUtil.error(MEDICAL_STATUS_ERROR);
             }
             //4. 检查草稿电子病例审批信息
             if (isExistDraftApply(eventId)) {
@@ -147,7 +152,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
             //2. 检查登录人权限信息，检查草稿电子病例状态
             MedicalCommonRecord medical = medicalMapper.selectByPrimaryKey(eventId);
-            RestErrorBo errorBo = checkAuth(medical, loginUserId, eventId);
+            RestErrorBo errorBo = checkAuth(medical, loginUserId);
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
@@ -228,12 +233,15 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 log.warn("【申请失败】：无权限操作");
                 return ResponseUtil.error(NO_PERMISSION_OPERATION);
             }
-            //todo 检查就诊信息（权限，时间）
-
+            //检查就诊信息（权限，时间）
+            RestErrorBo restErrorBo = checkTreatmentInfo(eventId);
+            if (restErrorBo.getError() != null) {
+                return ResponseUtil.error(restErrorBo.getError());
+            }
             //3. 检查电子病例
-            MedicalCommonRecord treatment = findByTreatmentId(eventId);
-            if (treatment != null) {
-                log.warn("【申请失败】：就诊记录已生成电子病例：[{}]", treatment.getId());
+            MedicalCommonRecord medical = findByTreatmentId(eventId);
+            if (medical != null) {
+                log.warn("【申请失败】：就诊记录已生成电子病例：[{}]", medical.getId());
                 return ResponseUtil.error(MEDICAL_IS_EXIST);
             }
             //4. 检查变更审批
@@ -284,17 +292,9 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 log.warn("【申请失败】：无权限申请修改此病历，请联系新增病历医生申请修改！");
                 return ResponseUtil.error(NO_AUTH_MODIFY_MED);
             }
-            if (MEDICAL_AUDIT_PENDING_STATUS.equals(medical.getStatus())) {
-                log.warn("【申请失败】：电子病例[{}]状态异常，待审核状态不能变更申请", eventId);
-                return ResponseUtil.error(AUDIT_PENDING);
-            }
             //4. 检查病历审批
             if (loginUserId.equals(medical.getMajorDentistId())) {
-                //todo 查询就诊信息（就诊时间是否在当天）
-                if (false) {
-                    log.warn("【申请失败】：电子病历[{}]不需要申请修改，可以直接修改此病历！", eventId);
-                    return ResponseUtil.error(NOT_NEED_APPLY);
-                }
+
             } else {
                 ApprovalRecord newestDraft = mapper.findNewestDraft(eventId);
                 if (newestDraft == null || !loginUserId.equals(newestDraft.getProposerId())) {
@@ -424,7 +424,10 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         //条件查询草稿申请
         ApprovePageBo draftApplyBo = getApproveBo(query, 0);
         //组装结果
-        return new PageInfo<>(assembleDraftApplyVos(draftApplyBo));
+        PageInfo<MedicalApplyPageVo> pageInfo = new PageInfo<>(assembleDraftApplyVos(draftApplyBo));
+        pageInfo.setPageNum(draftApplyBo.getPageNum());
+        pageInfo.setTotal(draftApplyBo.getTotal());
+        return pageInfo;
     }
 
     /**
@@ -436,119 +439,109 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     public PageInfo<MedicalApprovePageVo> getDraftApprovePage(MedicalApproveQuery query) {
         //条件查询草稿审批
         ApprovePageBo draftApproveBo = getApproveBo(query, 1);
-        return new PageInfo<>(assembleDraftApproveVos(draftApproveBo));
+        PageInfo<MedicalApprovePageVo> pageInfo = new PageInfo<>(assembleDraftApproveVos(draftApproveBo));
+        pageInfo.setPageNum(draftApproveBo.getPageNum());
+        pageInfo.setTotal(draftApproveBo.getTotal());
+        return pageInfo;
     }
 
     public PageInfo<MedicalChangeApplyPageVo> getChangeApplyPage(ChangeApproveQuery query) {
         //条件查询变更申请
-        ApprovePageBo changeApplyBo = getChangeApproveBo(query, 0);
-        return new PageInfo<>(assembleChangeApplyVos(changeApplyBo));
+        ApproveChangePageBo changeApplyBo = getChangeApproveBo(query, 0);
+        PageInfo<MedicalChangeApplyPageVo> pageInfo = new PageInfo<>(assembleChangeApplyVos(changeApplyBo));
+        pageInfo.setPageNum(changeApplyBo.getPageNum());
+        pageInfo.setTotal(changeApplyBo.getTotal());
+        return pageInfo;
     }
 
     public PageInfo<MedicalChangeApprovePageVo> getChangeApprovePage(ChangeApproveQuery query) {
         //条件查询变更审批
-        ApprovePageBo changeApproveBo = getChangeApproveBo(query, 1);
-        return new PageInfo<>(assembleChangeApproveVos(changeApproveBo));
+        ApproveChangePageBo changeApproveBo = getChangeApproveBo(query, 1);
+        PageInfo<MedicalChangeApprovePageVo> pageInfo = new PageInfo<>(assembleChangeApproveVos(changeApproveBo));
+        pageInfo.setPageNum(changeApproveBo.getPageNum());
+        pageInfo.setTotal(changeApproveBo.getTotal());
+        return pageInfo;
     }
 
     private ApprovePageBo getApproveBo(MedicalApproveQuery query, Integer auditStatus) {
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String submitTime = query.getSubmitTime();
         String keyword = query.getKeyword();
-        List<PatientBaseInfoVo> filterPatientList;
-        Map<Integer, Integer> patientIdMap;
         List<ApprovalRecord> list = new ArrayList<>();
-        Map<Integer, PatientBaseInfoVo> patientInfoMap = Maps.newHashMap();
         //初始化bo
         ApprovePageBo approveBo = ApprovePageBo.getInstance();
+        Page<ApprovalRecord> page = new Page<>();
         //关键字模糊查询条件为空，先查审批相关信息
         if (StringUtils.isBlank(keyword)) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+             page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
             //根据病例提交时间查询审批数据
             list = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
-            //查询登录人草稿审批的患者ids映射
-            patientIdMap = getDraftPatientIdsByApplyType(list, loginUserId);
-            //调用患者接口服务，查询条件下的所有患者信息
-            filterPatientList = patientFeign.findPatientInfoByIds(Lists.newArrayList(patientIdMap.keySet()));
-            //构建病例和患者映射
-            filterPatientList.forEach(obj -> patientInfoMap.put(patientIdMap.get(obj.getId()), obj));
-            //todo 调用就诊接口
-
+            if (CollectionUtils.isNotEmpty(list)) {
+                //构建bo
+                buildPatientAndTreatment(list, loginUserId, approveBo);
+            }
         } else {
-            /**
-             * todo
-             * 根据keyword查询患者接口得到患者信息集合（患者Id,病历号），再查询电子病例返回(电子病历Id,就诊Id)，再查询就诊记录的门诊信息，
-             * 最后查询审批记录
-             */
             //根据条件查询登录人所有的申请记录集合
             List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
-            //查询登录人草稿审批的患者ids映射
-            patientIdMap = getDraftPatientIdsByApplyType(loginUserApproveList, loginUserId);
-            //根据查询关键字获取电子病例ids集合
-            List<Integer> medicalIds = getQueryMedicalIds(patientIdMap, loginUserId, keyword, patientInfoMap);
-            //根据电子病例Ids和病例提交时间查询审批数据
-            if (CollectionUtils.isNotEmpty(medicalIds)) {
-                PageHelper.startPage(query.getPageNum(), query.getPageSize());
-                list = mapper.listMedicalByParam(medicalIds, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
+            if (CollectionUtils.isNotEmpty(loginUserApproveList)) {
+                //查询登录人草稿审批的患者ids映射
+                AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(loginUserApproveList, loginUserId);
+                //根据查询关键字获取电子病例ids集合
+                List<Integer> medicalIds = getQueryMedicalIdsAndSetBo(auditMedicalBo, loginUserId, keyword, approveBo);
+                //根据电子病例Ids和病例提交时间查询审批数据
+                if (CollectionUtils.isNotEmpty(medicalIds)) {
+                    page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+                    list = mapper.listMedicalByParam(medicalIds, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
+                }
             }
         }
         //数据存入bo对象
-        approveBo.assignMember(list, patientInfoMap);
+        approveBo.setAuditList(list);
+        //设置分页信息
+        approveBo.setPageNum(page.getPageNum());
+        approveBo.setTotal(page.getTotal());
         return approveBo;
     }
 
-    private ApprovePageBo getChangeApproveBo(ChangeApproveQuery query, Integer auditStatus) {
+    private ApproveChangePageBo getChangeApproveBo(ChangeApproveQuery query, Integer auditStatus) {
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String keyword = query.getKeyword();
-        List<Integer> patientIds = null;
         List<ApprovalRecord> list = Lists.newArrayList();
-        List<PatientBaseInfoVo> filterPatientList;
-        Map<Integer, Integer> patientIdMap;
-        Map<Integer, PatientBaseInfoVo> patientInfoMap = Maps.newHashMap();
         //初始化bo
-        ApprovePageBo approveBo = ApprovePageBo.getInstance();
+        ApproveChangePageBo approveBo = ApproveChangePageBo.getInstance();
+        Page<ApprovalRecord> page = new Page<>();
         //关键字模糊查询条件为空，先查审批相关信息
         if (StringUtils.isBlank(keyword)) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
             //查询变更审批数据
             list = mapper.listMedicalByParam(null, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
-            //根据审批查询结果，生成申请类型映射
-            Map<Integer, List<ApprovalRecord>> eventMap = list.stream().collect(groupingBy(ApprovalRecord::getApplyType));
-            if (!org.springframework.util.CollectionUtils.isEmpty(eventMap)) {
-                //取出新增变类型变更的审批结果
-                List<ApprovalRecord> treatmentList = eventMap.get(ADD.getCode());
-                if (CollectionUtils.isNotEmpty(treatmentList)) {
-                    List<Integer> treatmentIds = treatmentList.stream().map(ApprovalRecord::getEventId).collect(toList());
-                }
-                //查询登录人变更审批的患者ids映射
-                patientIdMap = getChangePatientIdsByApplyType(list, UPDATE.getCode(), loginUserId);
-                //调用患者接口服务，查询条件下的所有患者信息
-                filterPatientList = patientFeign.findPatientInfoByIds(Lists.newArrayList(patientIdMap.keySet()));
-                //构建病例和患者映射
-                filterPatientList.forEach(obj -> patientInfoMap.put(patientIdMap.get(obj.getId()), obj));
-                //todo 调用就诊
+            if (CollectionUtils.isNotEmpty(list)) {
+                //构建就诊的信息映射
+                buildOfNoParamChangeMap(list, ADD.getCode(), loginUserId, approveBo);
+                //构建电子病历的信息映射
+                buildOfNoParamChangeMap(list, UPDATE.getCode(), loginUserId, approveBo);
             }
         } else {
-            /**
-             * 查询逻辑
-             * 根据keyword查询患者接口得到患者信息集合（患者Id,病历号），再查询就诊记录的门诊信息得到就诊ids集合，用就诊ids查询电子病历得到电子病历ids
-             * 最后查询审批表 event_id in (就诊ids，电子病历ids)
-             */
             //查询变更审批数据
             List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
-            //查询登录人变更审批的患者ids映射
-            patientIdMap = getChangePatientIdsByApplyType(loginUserApproveList, UPDATE.getCode(), loginUserId);
-            //根据查询关键字获取电子病例ids集合
-            List<Integer> medicalIds = getQueryMedicalIds(patientIdMap, loginUserId, keyword, patientInfoMap);
-            //todo 合并就诊ids和电子病历ids
-//            medicalIds.addAll(patientIds);
-            //根据电子病例Ids和病例提交时间查询审批数据
-            if (CollectionUtils.isNotEmpty(medicalIds)) {
-                PageHelper.startPage(query.getPageNum(), query.getPageSize());
-                list = mapper.listMedicalByParam(medicalIds, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
+            if (CollectionUtils.isNotEmpty(loginUserApproveList)) {
+                //构建就诊和电子病例的信息
+                List<Integer> treatmentIds = buildChangeMapOfKeyword(loginUserApproveList, ADD.getCode(), keyword, loginUserId, approveBo);
+                List<Integer> medicalIds = buildChangeMapOfKeyword(loginUserApproveList, UPDATE.getCode(), keyword, loginUserId, approveBo);
+                List<Integer> eventIds = Lists.newArrayListWithCapacity(treatmentIds.size() + medicalIds.size());
+                eventIds.addAll(treatmentIds);
+                eventIds.addAll(medicalIds);
+                //根据电子病例Ids和病例提交时间查询审批数据
+                if (CollectionUtils.isNotEmpty(medicalIds)) {
+                    PageHelper.startPage(query.getPageNum(), query.getPageSize());
+                    list = mapper.listMedicalByParam(eventIds, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
+                }
             }
         }
-        approveBo.assignMember(list, patientInfoMap);
+        approveBo.setAuditList(list);
+        //设置分页信息
+        approveBo.setPageNum(page.getPageNum());
+        approveBo.setTotal(page.getTotal());
         return approveBo;
     }
 
@@ -556,6 +549,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         RestErrorBo errorBo = RestErrorBo.getInstance();
         //1. 检查操作人权限
         List<String> postPermission = getPostPermission(loginUserId);
+        log.info("审批人权限：{}", postPermission);
         if (!postPermission.contains("医生")) {
             errorBo.setError(NO_PERMISSION_OPERATION);
             return errorBo;
@@ -567,9 +561,9 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             errorBo.setError(NO_PERMISSION_OPERATION);
             return errorBo;
         }
-        if (MEDICAL_AUDIT_PENDING_STATUS.equals(medical.getStatus())) {
+        if (NORMAL_MEDICAL_STATUS.equals(medical.getStatus())) {
             log.warn("【审批通过失败】：病历[{}]审核状态异常", eventId);
-            errorBo.setError(MEDICAL_ALREADY_AUDITED);
+            errorBo.setError(NORMAL_MEDICAL_NO_PERMISSION);
             return errorBo;
         }
         //3. 检查审批记录
@@ -594,79 +588,66 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      * @param loginUserId 登录人
      * @return 患者ids
      */
-    public Map<Integer, Integer> getDraftPatientIdsByApplyType(List<ApprovalRecord> list, Integer loginUserId) {
-        Map<Integer, Integer> patientMap = Maps.newHashMap();
-        List<MedicalCommonRecord> commonRecords;
+    public AuditMedicalBo getDraftPatientIdsByApplyType(List<ApprovalRecord> list, Integer loginUserId) {
+        AuditMedicalBo bo = AuditMedicalBo.getInstance();
         //审批结果的所有电子病例id集合
         List<Integer> medicalIds = list.stream().map(ApprovalRecord::getEventId).collect(toList());
         if (CollectionUtils.isNotEmpty(medicalIds)) {
             //根据审批的事件Ids查询电子病例信息集合
-            commonRecords = findByMedicalIds(medicalIds, loginUserId);
-            //<患者Id,电子病例id>映射
-            patientMap = commonRecords.stream().collect(toMap(MedicalCommonRecord::getPatientId, MedicalCommonRecord::getId));
+            List<MedicalCommonRecord> commonRecords = findByMedicalIds(medicalIds, loginUserId);
+            //患者ids
+            List<Integer> patientIds = commonRecords.stream().map(MedicalCommonRecord::getPatientId).collect(toList());
+            //就诊ids
+            List<Integer> treatmentIds = commonRecords.stream().map(MedicalCommonRecord::getTreatmentId).collect(toList());
+            //患者映射 <medicalId, patientId>
+            Map<Integer, Integer> patientIdMap = commonRecords.stream().collect(toMap(MedicalCommonRecord::getId, MedicalCommonRecord::getPatientId));
+            //就诊映射 <medicalId, treatmentId>
+            Map<Integer, Integer> treatmentIdMap = commonRecords.stream().collect(toMap(MedicalCommonRecord::getId, MedicalCommonRecord::getTreatmentId));
+            bo.setPatientMap(patientIdMap);
+            bo.setTreatmentMap(treatmentIdMap);
+            bo.setPatientIds(patientIds);
+            bo.setTreatmentIds(treatmentIds);
         }
-        return patientMap;
-    }
-
-    /**
-     * 查询登录人变更审批的患者ids
-     *
-     * @param list        源数据
-     * @param applyType   变更申请类型
-     * @param loginUserId 登录人
-     * @return 患者ids
-     */
-    private Map<Integer, Integer> getChangePatientIdsByApplyType(List<ApprovalRecord> list, Integer applyType, Integer loginUserId) {
-        Map<Integer, Integer> patientMap = Maps.newHashMap();
-        List<MedicalCommonRecord> commonRecords;
-        //根据审批查询结果，生成申请类型映射
-        Map<Integer, List<ApprovalRecord>> eventMap = list.stream().collect(groupingBy(ApprovalRecord::getApplyType));
-        if (!org.springframework.util.CollectionUtils.isEmpty(eventMap)) {
-            //取出修改变类型变更的审批结果
-            List<ApprovalRecord> medicalList = eventMap.get(applyType);
-            if (CollectionUtils.isNotEmpty(medicalList)) {
-                List<Integer> medicalIds = medicalList.stream().map(ApprovalRecord::getEventId).collect(toList());
-                //根据审批的事件Ids查询电子病例信息集合
-                commonRecords = findByMedicalIds(medicalIds, loginUserId);
-                //电子病例对应的患者map映射
-                patientMap = commonRecords.stream().collect(toMap(MedicalCommonRecord::getPatientId, MedicalCommonRecord::getId));
-            }
-        }
-        return patientMap;
+        return bo;
     }
 
     /**
      * 根据查询关键字获取电子病例ids集合
      *
-     * @param patientIdMap 根据条件查询的登录人对应的<患者id，电子病例id>映射
+     * @param auditMedicalBo 包含患者，就诊信息的bo
      * @param loginUserId  登录人
      * @param keyword      关键字
      * @return list
      */
-    private List<Integer> getQueryMedicalIds(Map<Integer, Integer> patientIdMap, Integer loginUserId, String keyword
-            , Map<Integer, PatientBaseInfoVo> patientInfoMap) {
-        List<Integer> patientIds = Lists.newArrayList(patientIdMap.keySet());
-        List<PatientBaseInfoVo> filterPatientList;
-        List<MedicalCommonRecord> commonRecords;
+    private List<Integer> getQueryMedicalIdsAndSetBo(AuditMedicalBo auditMedicalBo, Integer loginUserId, String keyword
+                                , ApprovePageBo approveBo) {
+        List<Integer> patientIds = Lists.newArrayList(auditMedicalBo.getPatientIds());
         List<Integer> medicalIds = Lists.newArrayList();
         //调用患者接口服务，查询条件下的所有患者信息
-        filterPatientList = patientFeign.findPatientInfoByIds(patientIds);
-        if (CollectionUtils.isNotEmpty(filterPatientList)) {
-            //从患者接口中筛选出模糊查询关键字的患者集合
-            filterPatientList = filterPatientList.stream().filter(obj ->
-                    (!StringUtils.isBlank(obj.getName()) && obj.getName().contains(keyword))
-                            || (!StringUtils.isBlank(obj.getMedicalNumber()) && obj.getMedicalNumber().contains(keyword)))
-                    .collect(toList());
-        }
+        List<PatientBaseInfoVo> filterPatientList = getPatientsByKeyword(patientIds, keyword);
         if (CollectionUtils.isNotEmpty(filterPatientList)) {
             //取出筛选结果中的患者id集合
             patientIds = filterPatientList.stream().map(PatientBaseInfoVo::getId).collect(toList());
             //查询该登录助手的对应的患者ids的电子病例集合
-            commonRecords = findByPatientIds(patientIds, loginUserId);
+            List<MedicalCommonRecord> commonRecords = findByPatientIds(patientIds, loginUserId);
             if (CollectionUtils.isNotEmpty(commonRecords)) {
                 medicalIds = commonRecords.stream().map(MedicalCommonRecord::getId).collect(toList());
-                //构建病例和患者映射
-                filterPatientList.forEach(obj -> patientInfoMap.put(patientIdMap.get(obj.getId()), obj));
+                //筛选后的患者信息映射 <patientId, patient>
+                Map<Integer, PatientBaseInfoVo> patientMap = filterPatientList.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
+                //获取就诊相关信息
+                List<Integer> treatmentIds = commonRecords.stream().map(MedicalCommonRecord::getTreatmentId).collect(toList());
+                //获取就诊相关信息 <treatmentId, bo>
+                Map<Integer, MedicalTreatmentBo> treatmentMap = buildTreatmentMap(treatmentIds);
+                //构建就诊映射 <medicalId, bo>
+                Map<Integer, MedicalTreatmentBo> treatmentInfoMap = Maps.newHashMapWithExpectedSize(treatmentMap.size());
+                //构建患者映射 <medicalId, patient>
+                Map<Integer, PatientBaseInfoVo> patientInfoMap = Maps.newHashMapWithExpectedSize(filterPatientList.size());
+                commonRecords.forEach(obj -> {
+                    treatmentInfoMap.put(obj.getId(), treatmentMap.get(obj.getTreatmentId()));
+                    patientInfoMap.put(obj.getId(), patientMap.get(obj.getPatientId()));
+                });
+                //构建bo
+                approveBo.assignMember(patientInfoMap, treatmentInfoMap);
             }
         }
         return medicalIds;
@@ -677,6 +658,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         List<ApprovalRecord> auditList = draftApllyBo.getAuditList();
         //查询的患者信息映射
         Map<Integer, PatientBaseInfoVo> patientInfoMap = draftApllyBo.getPatientInfoMap();
+        Map<Integer, MedicalTreatmentBo> treatmentBoMap = draftApllyBo.getTreatmentBoMap();
         //返回Vo集合
         List<MedicalApplyPageVo> resultList = Lists.newArrayListWithExpectedSize(auditList.size());
         //取出所有审批人id（主治医生id）
@@ -686,17 +668,17 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         auditList.forEach(obj -> {
             //电子病例对应的患者信息
             PatientBaseInfoVo patientInfo = patientInfoMap.get(obj.getEventId());
+            MedicalTreatmentBo medicalTreatmentBo = treatmentBoMap.get(obj.getEventId());
             //主治医生信息
             SysUserInfoDetail majorDoctorInfo = doctorInfoMap.get(obj.getApproverId());
             MedicalApplyPageVo vo = new MedicalApplyPageVo();
             vo.setId(obj.getId());
             vo.setEventId(obj.getEventId());
-            //todo
             vo.setPatientName(patientInfo == null ? null : patientInfo.getName());
             vo.setMedicalNum(patientInfo == null ? null : patientInfo.getMedicalNumber());
-            vo.setTreatmentClinicName(null);
+            vo.setTreatmentClinicName(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentClinicName());
             vo.setMajorDentistName(majorDoctorInfo == null ? null : majorDoctorInfo.getName());
-            vo.setTreatmentDate(null);
+            vo.setTreatmentDate(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentDate());
             vo.setSubmitTime(obj.getCrtTime());
             vo.setApproveStatus(ApproveStatusEnum.getValue(obj.getStatus()));
             vo.setRejectReason(obj.getApproveReason());
@@ -724,7 +706,6 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             MedicalApprovePageVo vo = new MedicalApprovePageVo();
             vo.setId(obj.getId());
             vo.setEventId(obj.getEventId());
-            //todo
             vo.setPatientName(patientInfo == null ? null : patientInfo.getName());
             vo.setMedicalNum(patientInfo == null ? null : patientInfo.getMedicalNumber());
             vo.setTreatmentClinicName(null);
@@ -738,21 +719,35 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         return resultList;
     }
 
-    private List<MedicalChangeApplyPageVo> assembleChangeApplyVos(ApprovePageBo changeApplyBo) {
+    private List<MedicalChangeApplyPageVo> assembleChangeApplyVos(ApproveChangePageBo changeApplyBo) {
         //查询的审批结果
         List<ApprovalRecord> auditList = changeApplyBo.getAuditList();
-        //查询的患者集合
+        //电子病例--查询的患者集合
         Map<Integer, PatientBaseInfoVo> patientInfoMap = changeApplyBo.getPatientInfoMap();
+        //电子病例--查询的就诊集合
+        Map<Integer, MedicalTreatmentBo> treatmentBoMap = changeApplyBo.getTreatmentBoMap();
+        //就诊记录--查询的患者集合
+        Map<Integer, PatientBaseInfoVo> trePatientInfoMap = changeApplyBo.getTrePatientInfoMap();
+        //就诊记录--查询的就诊集合
+        Map<Integer, MedicalTreatmentBo> treTreatmentBoMap = changeApplyBo.getTreTreatmentBoMap();
         List<MedicalChangeApplyPageVo> resultList = Lists.newArrayListWithExpectedSize(auditList.size());
         auditList.forEach(obj -> {
+            PatientBaseInfoVo patientBaseInfoVo;
+            MedicalTreatmentBo medicalTreatmentBo;
+            if (ADD.equals(obj.getApplyType())) {
+                patientBaseInfoVo = trePatientInfoMap.get(obj.getEventId());
+                medicalTreatmentBo = treTreatmentBoMap.get(obj.getEventId());
+            } else {
+                patientBaseInfoVo = patientInfoMap.get(obj.getEventId());
+                medicalTreatmentBo = treatmentBoMap.get(obj.getEventId());
+            }
             MedicalChangeApplyPageVo vo = new MedicalChangeApplyPageVo();
             vo.setId(obj.getId());
             vo.setEventId(obj.getEventId());
-            //todo
-            vo.setPatientName(null);
-            vo.setMedicalNum(null);
-            vo.setTreatmentClinicName(null);
-            vo.setTreatmentDate(null);
+            vo.setPatientName(patientBaseInfoVo == null ? null : patientBaseInfoVo.getName());
+            vo.setMedicalNum(patientBaseInfoVo == null ? null : patientBaseInfoVo.getMedicalNumber());
+            vo.setTreatmentClinicName(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentClinicName());
+            vo.setTreatmentDate(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentDate());
             vo.setApplyTypeName(ApplyTypeEnum.getValue(obj.getApplyType()));
             vo.setApplyReason(obj.getApplyReason());
             vo.setApproveStatus(ApproveStatusEnum.getValue(obj.getStatus()));
@@ -763,20 +758,28 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         return resultList;
     }
 
-    private List<MedicalChangeApprovePageVo> assembleChangeApproveVos(ApprovePageBo changeApproveBo) {
+    private List<MedicalChangeApprovePageVo> assembleChangeApproveVos(ApproveChangePageBo changeApproveBo) {
         //查询的审批结果
         List<ApprovalRecord> auditList = changeApproveBo.getAuditList();
         //查询的患者集合
-        Map<Integer, PatientBaseInfoVo> patientInfoMap = changeApproveBo.getPatientInfoMap();
         List<MedicalChangeApprovePageVo> resultList = Lists.newArrayListWithExpectedSize(auditList.size());
+        //电子病例--查询的患者集合
+        Map<Integer, PatientBaseInfoVo> patientInfoMap = changeApproveBo.getPatientInfoMap();
+        //就诊记录--查询的患者集合
+        Map<Integer, PatientBaseInfoVo> trePatientInfoMap = changeApproveBo.getTrePatientInfoMap();
         auditList.forEach(obj -> {
+            PatientBaseInfoVo patientBaseInfoVo;
+            if (ADD.equals(obj.getApplyType())) {
+                patientBaseInfoVo = trePatientInfoMap.get(obj.getEventId());
+            } else {
+                patientBaseInfoVo = patientInfoMap.get(obj.getEventId());
+            }
             SysUserInfoDetail applyDentist = systemServiceFeign.findSysUserEmployeeInfoByUserId(obj.getProposerId());
             MedicalChangeApprovePageVo vo = new MedicalChangeApprovePageVo();
             vo.setId(obj.getId());
             vo.setEventId(obj.getEventId());
-            //todo
-            vo.setPatientName(null);
-            vo.setMedicalNum(null);
+            vo.setPatientName(patientBaseInfoVo == null ? null : patientBaseInfoVo.getName());
+            vo.setMedicalNum(patientBaseInfoVo == null ? null : patientBaseInfoVo.getMedicalNumber());
             vo.setApplyTypeDate(LocalDate.of(obj.getCrtTime().getYear(), obj.getCrtTime().getMonth(), obj.getCrtTime().getDayOfMonth()));
             vo.setApplyTypeName(ApplyTypeEnum.getValue(obj.getApplyType()));
             vo.setApplyDentistName(applyDentist == null ? null : applyDentist.getName());
@@ -912,13 +915,193 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         return !CollectionUtils.isEmpty(permission) && permission.contains("助手");
     }
 
-    private RestErrorBo checkAuth(MedicalCommonRecord medicalCommonRecord, Integer loginUserId, Integer eventId) {
+    private RestErrorBo checkAuth(MedicalCommonRecord medicalCommonRecord, Integer loginUserId) {
         RestErrorBo errorBo = RestErrorBo.getInstance();
         //检查登录人权限
         if (!checkPostPermission(loginUserId) || medicalCommonRecord == null ||
                             !loginUserId.equals(medicalCommonRecord.getCrtId())) {
             log.warn("【申请失败】：无权限操作");
             errorBo.setError(NO_PERMISSION_OPERATION);
+            return errorBo;
+        }
+        return errorBo;
+    }
+
+    private void buildPatientAndTreatment(List<ApprovalRecord> list, Integer loginUserId, ApprovePageBo pageBo) {
+        Map<Integer, PatientBaseInfoVo> patientInfoMap = Maps.newHashMap();
+        Map<Integer, MedicalTreatmentBo> treatmentInfoMap = Maps.newHashMap();
+        //查询登录人草稿审批的患者ids映射
+        AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(list, loginUserId);
+        if (CollectionUtils.isNotEmpty(auditMedicalBo.getPatientIds())) {
+            //调用患者接口服务，查询条件下的所有患者信息
+            List<PatientBaseInfoVo> filterPatientList = patientFeign.findPatientInfoByIds(auditMedicalBo.getPatientIds());
+            if (CollectionUtils.isNotEmpty(filterPatientList)) {
+                Map<Integer, PatientBaseInfoVo> patientMap = filterPatientList.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
+                //构建患者映射
+                auditMedicalBo.getPatientMap().forEach((k,v) -> patientInfoMap.put(k, patientMap.get(v)));
+            }
+            //获取就诊相关信息
+            Map<Integer, MedicalTreatmentBo> treatmentMap = buildTreatmentMap(auditMedicalBo.getTreatmentIds());
+            //构建就诊映射
+            auditMedicalBo.getTreatmentMap().forEach((k,v) -> treatmentInfoMap.put(k, treatmentMap.get(v)));
+            //构建bo
+            pageBo.assignMember(patientInfoMap  , treatmentInfoMap);
+        }
+    }
+
+    /**
+     * 构建就诊信息历映射
+     * @param treatmentIds 就诊ids
+     * @return map
+     */
+    private Map<Integer, MedicalTreatmentBo> buildTreatmentMap(List<Integer> treatmentIds) {
+        List<MedicalTreatmentBo> medTreatMedicalBos = Lists.newArrayListWithExpectedSize(treatmentIds.size());
+        for (Integer treatmentId : treatmentIds) {
+            //查询就诊
+            TreatmentRecord treatment = treatmentFeign.findTreatmentRecordById(treatmentId);
+            if (treatment == null) {
+                continue;
+            }
+            MedicalTreatmentBo bo = MedicalTreatmentBo.getInstance();
+            //查询挂号
+            Registered register = treatmentFeign.findRegisteredById(treatment.getRegisteredId());
+            if (register != null) {
+                //查询助手
+                SysUserInfoDetail assistant = systemServiceFeign.findSysUserEmployeeInfoByUserId(register.getAssistantId());
+                bo.setAssistantDentistName(assistant == null ? null : assistant.getName());
+            }
+            //查询就诊门诊
+            OrganizationInfo clinic = systemServiceFeign.findOrgInfoByOrgId(treatment.getOrgId());
+            bo.setTreatmentDate(treatment.getTreatEndTime() == null ? null : treatment.getTreatEndTime().toInstant()
+                    .atOffset(ZoneOffset.ofHours(8)).toLocalDate());
+            bo.setTreatmentClinicName(clinic == null ? null : clinic.getName());
+            bo.setTreatmentId(treatmentId);
+            bo.setPatientId(treatment.getPatientId());
+            medTreatMedicalBos.add(bo);
+        }
+        return medTreatMedicalBos.stream().collect(toMap(MedicalTreatmentBo::getTreatmentId, Function.identity()));
+    }
+
+    private void buildOfNoParamChangeMap(List<ApprovalRecord> list, Integer applyType, Integer loginUserId, ApproveChangePageBo pageBo) {
+        Map<Integer, PatientBaseInfoVo> trePatientInfoMap = Maps.newHashMap();
+        Map<Integer, MedicalTreatmentBo> treTreatmentBoMap = Maps.newHashMap();
+        //根据审批查询结果，生成申请类型映射
+        Map<Integer, List<ApprovalRecord>> eventMap = list.stream().collect(groupingBy(ApprovalRecord::getApplyType));
+        List<ApprovalRecord> approveList = eventMap.get(applyType);
+        if (CollectionUtils.isNotEmpty(approveList)) {
+            if (ADD.equals(applyType)) {
+                //取出新增变类型变更的就诊ids
+                List<Integer> treatmentIds = approveList.stream().map(ApprovalRecord::getEventId).collect(toList());
+                //查询就诊接口，构建就诊映射 <treatmentId, treatment>
+                Map<Integer, MedicalTreatmentBo> treatmentMap = buildTreatmentMap(treatmentIds);
+                //取出查询就诊记录中的患者ids
+                List<Integer> patientIds = treatmentMap.values().stream().map(MedicalTreatmentBo::getPatientId).collect(toList());
+                List<PatientBaseInfoVo> patientInfos = patientFeign.findPatientInfoByIds(patientIds);
+                if (CollectionUtils.isNotEmpty(patientInfos)) {
+                    //构建患者映射 <patientId, PatientBaseInfoVo>
+                    Map<Integer, PatientBaseInfoVo> patientMap = patientInfos.stream().collect(toMap(PatientBaseInfoVo::getId,
+                            Function.identity()));
+                    //数据构建最终结构
+                    treatmentIds.forEach(treatmentId -> {
+                        //构建就诊映射 <treatmentId, MedicalTreatmentBo>
+                        treTreatmentBoMap.put(treatmentId, treatmentMap.get(treatmentId));
+                        //构建患者映射 <treatmentId, PatientBaseInfoVo>
+                        trePatientInfoMap.put(treatmentId, patientMap.get(treatmentMap.get(treatmentId).getPatientId()));
+                    });
+                    pageBo.setTrePatientInfoMap(trePatientInfoMap);
+                    pageBo.setTreTreatmentBoMap(treTreatmentBoMap);
+                }
+            } else {
+                //构建bo
+                buildPatientAndTreatment(list, loginUserId, pageBo);
+            }
+        }
+    }
+
+    /**
+     * 申请变更带参数查询查询
+     * @param list 源审批list
+     * @param applyType 变更类型
+     * @param keyword 关键字
+     * @param loginUserId 登录人
+     * @param pageBo bo
+     */
+    private List<Integer> buildChangeMapOfKeyword(List<ApprovalRecord> list, Integer applyType, String keyword,
+                                         Integer loginUserId, ApproveChangePageBo pageBo) {
+        List<Integer> eventIds = Lists.newArrayList();
+        //根据审批查询结果，生成申请类型映射
+        Map<Integer, List<ApprovalRecord>> eventMap = list.stream().collect(groupingBy(ApprovalRecord::getApplyType));
+        List<ApprovalRecord> approveList = eventMap.get(applyType);
+        if (CollectionUtils.isNotEmpty(approveList)) {
+            if (ADD.equals(applyType)) {
+                //取出新增变类型变更的就诊ids
+                List<Integer> treatmentIds = approveList.stream().map(ApprovalRecord::getEventId).collect(toList());
+                //查询就诊接口，构建就诊映射 <treatmentId, treatment>
+                Map<Integer, MedicalTreatmentBo> treatmentMap = buildTreatmentMap(treatmentIds);
+                //取出查询就诊记录中的患者ids
+                List<Integer> patientIds = treatmentMap.values().stream().map(MedicalTreatmentBo::getPatientId).collect(toList());
+                //调用患者接口服务，查询条件下的所有患者信息
+                List<PatientBaseInfoVo> filterPatients = getPatientsByKeyword(patientIds, keyword);
+                if (CollectionUtils.isNotEmpty(filterPatients)) {
+                    //构建患者映射 <patientId, PatientBaseInfoVo>
+                    Map<Integer, PatientBaseInfoVo> patientMap = filterPatients.stream().collect(toMap(PatientBaseInfoVo::getId,
+                            Function.identity()));
+                    //筛选过滤患者集合对应的就诊映射
+                    Map<Integer, MedicalTreatmentBo> treatmentFilterMap = treatmentMap.values().stream().filter(obj -> patientMap.get(obj.getPatientId()) != null)
+                            .collect(toMap(MedicalTreatmentBo::getTreatmentId, Function.identity()));
+                    pageBo.setTrePatientInfoMap(patientMap);
+                    pageBo.setTreTreatmentBoMap(treatmentFilterMap);
+                    eventIds.addAll(treatmentFilterMap.keySet());
+                }
+            } else {
+                //查询登录人草稿审批的患者ids映射
+                AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(approveList, loginUserId);
+                //根据查询关键字获取电子病例ids集合
+                eventIds = getQueryMedicalIdsAndSetBo(auditMedicalBo, loginUserId, keyword, pageBo);
+            }
+        }
+        return eventIds;
+    }
+
+    private List<PatientBaseInfoVo> getPatientsByKeyword(List<Integer> patientIds, String keyword) {
+        //调用患者接口服务，查询条件下的所有患者信息
+        List<PatientBaseInfoVo> filterPatientList = patientFeign.findPatientInfoByIds(patientIds);
+        if (CollectionUtils.isNotEmpty(filterPatientList)) {
+            //从患者接口中筛选出模糊查询关键字的患者集合
+            filterPatientList = filterPatientList.stream().filter(obj ->
+                    (!StringUtils.isBlank(obj.getName()) && obj.getName().contains(keyword))
+                            || (!StringUtils.isBlank(obj.getMedicalNumber()) && obj.getMedicalNumber().contains(keyword)))
+                    .collect(toList());
+        }
+        return filterPatientList;
+    }
+
+    /**
+     * 就诊时间是否在当前时间之内
+     * @param treatDate treatDate
+     * @return bolean
+     */
+    private boolean checkTreatDateIsBeforeNow(Date treatDate) {
+        if (treatDate != null) {
+            LocalDate now = LocalDate.now();
+            LocalDate treatLocalDate = treatDate.toInstant().atOffset(ZoneOffset.ofHours(8)).toLocalDate();
+            return now.isAfter(treatLocalDate);
+        }
+        return false;
+    }
+
+    private RestErrorBo checkTreatmentInfo(Integer eventId) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        //查询就诊信息（就诊时间是否在当天）
+        TreatmentRecord treatment = treatmentFeign.findTreatmentRecordById(eventId);
+        if (treatment == null) {
+            log.warn("【申请失败】：就诊记录[{}]不存在", eventId);
+            errorBo.setError(TREATMENT_NOT_EXIST);
+            return errorBo;
+        }
+        if (!checkTreatDateIsBeforeNow(treatment.getTreatEndTime())) {
+            log.warn("【申请失败】：电子病历[{}]不需要申请修改，可以直接修改此病历！", eventId);
+            errorBo.setError(NOT_NEED_APPLY);
             return errorBo;
         }
         return errorBo;

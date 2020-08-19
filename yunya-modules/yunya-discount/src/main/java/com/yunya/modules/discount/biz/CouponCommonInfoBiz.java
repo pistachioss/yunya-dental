@@ -17,5 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class CouponCommonInfoBiz extends BaseBiz<CouponCommonInfoMapper, CouponCommonInfo> {
-  /***/
+
+//  public int insertBackId(CouponCommonInfo couponCommonInfo){
+//    return mapper.insertBackId(couponCommonInfo);
+//  }
+
 }
