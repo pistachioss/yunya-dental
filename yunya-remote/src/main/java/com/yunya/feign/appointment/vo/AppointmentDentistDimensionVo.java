@@ -28,8 +28,4 @@ public class AppointmentDentistDimensionVo implements Serializable {
     @ApiModelProperty(value = "分解助手信息")
     private List<AppointmentDimensionVo> appointmentAssistants;
 
-
-
-
-
 }

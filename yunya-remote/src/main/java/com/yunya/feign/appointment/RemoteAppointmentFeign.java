@@ -32,7 +32,7 @@ public interface RemoteAppointmentFeign {
      * @description 查询公司端、门诊端的预约列表，Mock两端数据，返回vo对象列表
      */
     @RequestMapping(value = "/api/list", method = RequestMethod.POST)
-    public PageInfo<AppointmentItemVo> findAppItemList(@RequestBody AppointItemQuery form);
+    PageInfo<AppointmentItemVo> findAppItemList(@RequestBody AppointItemQuery form);
 
     /**
      * 预约搜索
@@ -41,7 +41,7 @@ public interface RemoteAppointmentFeign {
      * @return
      */
     @RequestMapping(value = "/api/search",method = RequestMethod.POST)
-    public List<AppointmentItemVo> searchAppItem(@RequestBody AppointItemQuery baseQueryForm);
+    List<AppointmentItemVo> searchAppItem(@RequestBody AppointItemQuery baseQueryForm);
 
     /**
      * 获取门诊可预约的项目列表
@@ -50,7 +50,7 @@ public interface RemoteAppointmentFeign {
      * @return
      */
     @RequestMapping(value = "/api/available/{orgId}",method = RequestMethod.GET)
-    public List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "orgId") String orgId);
+    List<AppointmentItemEnableModelVo> findAvailableAppItem(@PathVariable(value = "orgId") String orgId);
 
     /**
      * 根据id查询预约项目种类
@@ -58,7 +58,7 @@ public interface RemoteAppointmentFeign {
      * @return
      */
     @RequestMapping(value = "/api/select/{id}",method = RequestMethod.GET)
-    public AppointType selectAppointTypeById(@PathVariable(value = "id") Integer id);
+    AppointType selectAppointTypeById(@PathVariable(value = "id") Integer id);
 
     /**
      * 修改预约信息
@@ -66,7 +66,7 @@ public interface RemoteAppointmentFeign {
      * @return
      */
     @RequestMapping(value = "/api/appoint/update", method = RequestMethod.POST)
-    public void updateAppointment(@RequestBody Appointment appointment);
+    void updateAppointment(@RequestBody Appointment appointment);
 
     /**
      * 通过id查询预约信息
@@ -74,5 +74,5 @@ public interface RemoteAppointmentFeign {
      * @return
      */
     @RequestMapping(value = "/api/appoint/find/{id}", method = RequestMethod.GET)
-    public Appointment findAppointmentById(@PathVariable(value = "id") Integer id);
+    Appointment findAppointmentById(@PathVariable(value = "id") Integer id);
 }
