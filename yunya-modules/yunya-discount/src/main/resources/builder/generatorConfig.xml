@@ -25,17 +25,21 @@
 
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
-                <table tableName="coupon_common_info" domainObjectName="CouponCommonInfo"/>
+
+                <!--<table tableName="coupon_common_info" domainObjectName="CouponCommonInfo"/>-->
         <!--        <table tableName="card" domainObjectName="Card"/>-->
         <!--        <table tableName="card_clinic" domainObjectName="CardClinic"/>-->
         <!--        <table tableName="card_statistics" domainObjectName="CardStatistics"/>-->
-        <!--        <table tableName="discount_coupon" domainObjectName="DiscountCoupon"/>-->
-        <!--        <table tableName="discount_coupon_detail" domainObjectName="DiscountCouponDetail"/>-->
-        <!--        <table tableName="package_coupon" domainObjectName="PackageCoupon"/>-->
-        <!--        <table tableName="package_coupon_detail" domainObjectName="PackageCouponDetail"/>-->
-        <!--        <table tableName="recharge_card" domainObjectName="RechargeCard"/>-->
-        <!--        <table tableName="sales_channel" domainObjectName="SalesChannel"/>-->
-        <!--        <table tableName="voucher" domainObjectName="Voucher"/>-->
-        <!--        <table tableName="voucher_detail" domainObjectName="VoucherDetail"/>-->
+                <!--<table tableName="discount_coupon" domainObjectName="DiscountCoupon"/>-->
+                <!--<table tableName="package_coupon" domainObjectName="PackageCoupon"/>-->
+                <!--<table tableName="package_coupon_item" domainObjectName="PackageCouponItem"/>-->
+                <!--<table tableName="recharge_card" domainObjectName="RechargeCard"/>-->
+                <!--<table tableName="special_package_coupon" domainObjectName="SpecialPackageCoupon"/>-->
+                <!--<table tableName="special_package_coupon_item" domainObjectName="SpecialPackageCouponItem"/>-->
+                <!--<table tableName="vouche_coupon" domainObjectName="VoucheCoupon"/>-->
+                <!--<table tableName="voucher_discount_item" domainObjectName="VoucherDiscountItem"/>-->
+        <!--<table tableName="coupon_file_info" domainObjectName="CouponFileInfo"/>-->
+        <table tableName="coupon_allocate" domainObjectName="CouponAllocate"/>
+
     </context>
 </generatorConfiguration>

@@ -470,9 +470,10 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         List<ApprovalRecord> list = new ArrayList<>();
         //初始化bo
         ApprovePageBo approveBo = ApprovePageBo.getInstance();
+        Page<ApprovalRecord> page = new Page<>();
         //关键字模糊查询条件为空，先查审批相关信息
         if (StringUtils.isBlank(keyword)) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+             page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
             //根据病例提交时间查询审批数据
             list = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(list)) {
@@ -489,15 +490,16 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 List<Integer> medicalIds = getQueryMedicalIdsAndSetBo(auditMedicalBo, loginUserId, keyword, approveBo);
                 //根据电子病例Ids和病例提交时间查询审批数据
                 if (CollectionUtils.isNotEmpty(medicalIds)) {
-                    PageHelper.startPage(query.getPageNum(), query.getPageSize());
+                    page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
                     list = mapper.listMedicalByParam(medicalIds, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
                 }
             }
         }
         //数据存入bo对象
         approveBo.setAuditList(list);
-        approveBo.setPageNum(PageInfo.of(list).getPageNum());
-        approveBo.setTotal(PageInfo.of(list).getTotal());
+        //设置分页信息
+        approveBo.setPageNum(page.getPageNum());
+        approveBo.setTotal(page.getTotal());
         return approveBo;
     }
 
@@ -507,6 +509,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         List<ApprovalRecord> list = Lists.newArrayList();
         //初始化bo
         ApproveChangePageBo approveBo = ApproveChangePageBo.getInstance();
+        Page<ApprovalRecord> page = new Page<>();
         //关键字模糊查询条件为空，先查审批相关信息
         if (StringUtils.isBlank(keyword)) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -536,8 +539,9 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
         }
         approveBo.setAuditList(list);
-        approveBo.setPageNum(PageInfo.of(list).getPageNum());
-        approveBo.setTotal(PageInfo.of(list).getTotal());
+        //设置分页信息
+        approveBo.setPageNum(page.getPageNum());
+        approveBo.setTotal(page.getTotal());
         return approveBo;
     }
 

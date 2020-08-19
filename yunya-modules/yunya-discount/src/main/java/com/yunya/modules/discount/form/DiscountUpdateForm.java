@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.form;
 
+import com.yunya.models.discount.FileInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.Data;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 描述:
@@ -33,13 +35,13 @@ public class DiscountUpdateForm implements Serializable {
      * 实物卡 0:非实体卡,1:实体卡
      */
     @ApiModelProperty("实物卡 0:非实体卡,1:实体卡")
-    private Boolean physicalCard;
+    private Boolean isMakePhysicalCard;
 
     /**
      * 营销产品分类ID
      */
     @ApiModelProperty("营销产品分类ID")
-    private Integer marketProductTypeId;
+    private Integer productTypeId;
 
     /**
      * 面值
@@ -51,31 +53,31 @@ public class DiscountUpdateForm implements Serializable {
      * 售价
      */
     @ApiModelProperty("售价")
-    private BigDecimal sellingPrice;
+    private BigDecimal soldAmount;
 
     /**
      * 图像
      */
     @ApiModelProperty("图像")
-    private String icon;
+    private List<FileInfo> paths;
 
     /**
      * 文档
      */
     @ApiModelProperty("文档")
-    private String doc;
+    private List<String> docs;
 
     /**
      * 售出开始日期
      */
     @ApiModelProperty("售出开始日期")
-    private Date sellingStartDate;
+    private Date availableSaleStartDate;
 
     /**
      * 售出结束日期
      */
     @ApiModelProperty("售出结束日期")
-    private Date sellingEndDate;
+    private Date availableSaleEndDate;
 
     /**
      * 激活截至日期(产品有效期)
@@ -99,19 +101,19 @@ public class DiscountUpdateForm implements Serializable {
      * 是否可混合使用优惠 0.可以混合使用1.跟会员卡混合使用2.无法混合使用
      */
     @ApiModelProperty("是否可混合使用优惠 0.可以混合使用1.跟会员卡混合使用2.无法混合使用")
-    private Integer mixable;
+    private Integer mixedUseType;
 
     /**
      * 是否可与他人共享
      */
     @ApiModelProperty("是否可与他人共享")
-    private Boolean shareable;
+    private Boolean isShare;
 
     /**
      * 工作量比例
      */
     @ApiModelProperty("工作量比例")
-    private Integer workloadRate;
+    private BigDecimal workloadRate;
 
     /**
      * 备注

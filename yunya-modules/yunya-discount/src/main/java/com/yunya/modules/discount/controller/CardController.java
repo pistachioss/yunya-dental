@@ -1,144 +1,34 @@
 package com.yunya.modules.discount.controller;
 
-import com.yunya.modules.discount.biz.CardBiz;
-import com.yunya.modules.discount.biz.CardClinicBiz;
-import com.yunya.models.discount.CardClinic;
-import com.yunya.modules.discount.form.CardClinicForm;
-import com.yunya.modules.discount.form.CardDistributionForm;
-import com.yunya.modules.discount.form.CardSaleForm;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.github.pagehelper.*;
+import com.yunya.feign.discount.domain.query.*;
+import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.framework.common.model.*;
+import com.yunya.framework.common.utils.*;
+import com.yunya.modules.discount.biz.*;
+import io.swagger.annotations.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import javax.annotation.*;
+import javax.validation.*;
 
 /**
  * 描述:
  *
- * @author GaoLuding
- * @create 2020-07-17 11:30
+ * @author xiangyang
+ * @create 2020-08-19
  */
-@Api(tags = "卡券")
+@Api(tags = {"卡券"})
 @RestController
-@RequestMapping("/card")
 public class CardController {
-    @Autowired
-    private CardClinicBiz cardClinicBiz;
-    @Autowired
+
+    @Resource
     private CardBiz cardBiz;
 
-    /**
-     * 配给计划
-     *
-     * @param
-     * @return
-     */
-    @PostMapping("/distribution/plan/list")
-    @ApiOperation("配给计划")
-    public ResponseResult plan(@RequestBody @Valid CardDistributionForm cardDistributionForm) {
-        cardClinicBiz.plan(cardDistributionForm);
-        return ResponseUtil.success();
-    }
-
-    /**
-     * 修改配给计划
-     *
-     * @param
-     * @return
-     */
-    @GetMapping("/distribution/plan")
-    @ApiOperation("修改配给计划")
-    public ResponseResult updatePlan(@RequestBody CardDistributionForm cardDistributionForm) {
-        cardClinicBiz.updatePlan(cardDistributionForm);
-        return ResponseUtil.success();
-    }
-
-    /**
-     * 获取产品分配列表
-     *
-     * @param
-     * @return
-     */
-    @PostMapping("/distribution/search")
-    @ApiOperation("获取产品分配列表")
-    public ResponseResult search(@RequestBody CardClinicForm CardClinicForm) {
-        return ResponseUtil.success(cardClinicBiz.search(CardClinicForm));
-    }
-
-    /**
-     * 产品生成分配
-     *
-     * @param
-     * @return
-     */
-    @GetMapping("/{type}/{relevanceId}/{revision}/distribution/rationing")
-    @ApiOperation("获取优惠活动具体批次配给计划")
-    public ResponseResult rationing(
-            @PathVariable(name = "type") Integer type, @PathVariable(name = "relevanceId") Integer relevanceId,
-            @PathVariable(name = "revision") Integer revision) {
-        cardClinicBiz.rationing(type, relevanceId, revision);
-        return ResponseUtil.success();
-    }
-
-    /**
-     * 获取优惠活动配给计划列表
-     *
-     * @param
-     * @return
-     */
-    @GetMapping("/{type}/{relevanceId}/distribution/plan")
-    @ApiOperation("获取优惠活动计划配给列表")
-    public ResponseResult getPlanList(@PathVariable(name = "type") Integer type, @PathVariable(name = "relevanceId") Integer relevanceId) {
-        cardClinicBiz.getPlanList(relevanceId, type);
-        return ResponseUtil.success();
-    }
-
-    /**
-     * 获取优惠活动具体批次配给计划
-     *
-     * @param
-     * @return
-     */
-    @GetMapping("/{type}/{relevanceId}/{revision}/distribution/plan")
-    @ApiOperation("获取优惠活动具体批次配给计划")
-    public ResponseResult getPlanListByRevision(
-            @PathVariable(name = "type") Integer type, @PathVariable(name = "relevanceId") Integer relevanceId,
-            @PathVariable(name = "revision") Integer revision) {
-        CardClinic cardClinic = new CardClinic();
-        cardClinic.setRelevanceId(relevanceId);
-        cardClinic.setRevision(revision);
-        cardClinic.setType(type);
-        return ResponseUtil.success(cardClinicBiz.selectList(cardClinic));
-    }
-
-    /**
-     * 获取优惠活动所有卡列表
-     *
-     * @param
-     * @return
-     */
-    @GetMapping("/{type}/{relevanceId}/list")
-    @ApiOperation("获取优惠活动具体批次配给计划")
-    public ResponseResult getPlanListByRevision(@PathVariable(name = "type") Integer type, @PathVariable(name = "relevanceId") Integer relevanceId) {
-//        Card card = new Card();
-//        card.setCardType(type);
-//        card.setRelevanceId(relevanceId);
-        return ResponseUtil.success();
-    }
-
-    /**
-     * 售出
-     *
-     * @param
-     * @return
-     */
-    @PostMapping("/sale")
-    @ApiOperation("售出")
-    public ResponseResult getPlanListByRevision(@RequestBody @Valid CardSaleForm cardSaleForm) {
-//        cardBiz.sale(cardSaleForm);
-        return ResponseUtil.success();
+    @ApiOperation(value = "产品生成分配分页查询")
+    @PostMapping("/coupon/generate/allocation/page")
+    public ResponseResult getGenerateAllocateList(@Valid @RequestBody CouponAllocateQuery query) {
+        PageInfo<GenerateAllocatePageVo> pageInfo = cardBiz.getCouponAllocatePage(query);
+        return ResponseUtil.success(pageInfo);
     }
 }

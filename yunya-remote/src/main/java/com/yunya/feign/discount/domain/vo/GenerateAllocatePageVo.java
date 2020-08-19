@@ -3,7 +3,7 @@ package com.yunya.feign.discount.domain.vo;
 import io.swagger.annotations.*;
 import lombok.*;
 
-import java.time.*;
+import java.io.*;
 
 /**
  * @author xiangyang
@@ -12,16 +12,16 @@ import java.time.*;
 @Setter
 @Getter
 @ApiModel(value = "产品生成分配分页模型")
-public class GenerateAllocatePageVo {
+public class GenerateAllocatePageVo implements Serializable {
 
-    @ApiModelProperty(value = "")
+    @ApiModelProperty(value = "优惠券Id")
     private Integer couponId;
 
     @ApiModelProperty(value = "提交人")
     private String submitterName;
 
     @ApiModelProperty(value = "提交时间")
-    private LocalDateTime submitDate;
+    private String submitDate;
 
     @ApiModelProperty(value = "产品名称")
     private String couponName;
@@ -36,5 +36,5 @@ public class GenerateAllocatePageVo {
     private String allocateUserName;
 
     @ApiModelProperty(value = "配给时间")
-    private LocalDateTime allocateDate;
+    private String allocateDate;
 }

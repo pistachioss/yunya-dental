@@ -1,11 +1,10 @@
 package com.yunya.modules.discount.biz;
 
-import com.yunya.models.discount.CardClinic;
+import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.DiscountCoupon;
-import com.yunya.modules.discount.form.DiscountQueryForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.DiscountCouponMapper;
-import com.yunya.modules.discount.vo.DiscountVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -14,8 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
 
@@ -34,8 +31,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
     private static final Integer FINISH = 1;
     private static final Integer PLAN = 0;
 
-    @Autowired
-    private CardClinicBiz cardClinicBiz;
+    @Autowired private CouponAllocateMapper couponAllocateMapper;
 
     /**
      * 新增折扣券
@@ -61,11 +57,9 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
     public void updateDiscountCoupon(DiscountUpdateForm discountUpdateForm) {
         boolean flag = true;
         // 判断是否完成分配
-        CardClinic cardClinic = new CardClinic();
-        cardClinic.setRelevanceId(discountUpdateForm.getId());
-        cardClinic.setType(DISCOUNT_COUPON_TYPE);
-        cardClinic.setStatus(FINISH);
-        if (cardClinicBiz.selectList(cardClinic).isEmpty()) {
+        CouponAllocate couponAllocate = new CouponAllocate();
+        couponAllocate.setCouponId(discountUpdateForm.getId());
+        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
             // 未完成分配
             flag = false;
         }
@@ -98,18 +92,12 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
      */
     public void deleteDiscountCoupon(Integer id) {
         // 判断是否完成分配
-        CardClinic cardClinic = new CardClinic();
-        cardClinic.setRelevanceId(id);
-        cardClinic.setType(DISCOUNT_COUPON_TYPE);
-        cardClinic.setStatus(FINISH);
-        if (!cardClinicBiz.selectList(cardClinic).isEmpty()) {
+        CouponAllocate couponAllocate = new CouponAllocate();
+        couponAllocate.setCouponId(id);
+        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
             throw new BaseException("卡券已完成分配，无法删除", ExceptionCode.CARD_EXIST);
         }
-
         deleteById(id);
-        // 删除分配计划中的记录
-        cardClinic.setStatus(PLAN);
-        cardClinicBiz.delete(cardClinic);
     }
 
 //    /**

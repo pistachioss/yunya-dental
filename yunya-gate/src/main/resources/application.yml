@@ -146,6 +146,16 @@ spring:
           metadata:
             title: "诊疗服务"
 
+        - id: yunya-discount
+          uri: lb://yunya-discount
+          order: 9005
+          predicates:
+            - Path=/api/discount/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "卡券服务"
+
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848

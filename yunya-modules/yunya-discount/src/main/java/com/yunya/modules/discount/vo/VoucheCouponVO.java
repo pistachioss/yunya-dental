@@ -128,7 +128,8 @@ public class VoucheCouponVO {
    * 工作量比例
    */
   @ApiModelProperty("工作量比例")
-  private Integer workloadRate;
+  @NotNull(message = "工作量比例不能为空")
+  private BigDecimal workloadRate;
 
   /**
    * 备注
