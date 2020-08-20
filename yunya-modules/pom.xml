@@ -18,7 +18,7 @@
         <module>clinic-base</module>
         <module>yunya-discount</module>
         <module>yunya-employee-expand</module>
-        <module>yunya-clinic-appointment</module>
+        <module>yunya-appointment-central</module>
         <module>yunya-employee-attend</module>
         <module>yunya-emr</module>
         <module>yunya-patient-central</module>

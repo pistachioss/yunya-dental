@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>yunya-clinic-appointment</artifactId>
+    <artifactId>yunya-appointment-central</artifactId>
 
     <description>云牙系统患者预约</description>
 

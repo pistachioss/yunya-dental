@@ -140,7 +140,7 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @param orgId 门诊id
    * @return
    */
-  AppointmentDimensionVo findAppointmentDimensionInfoByDateAndDentistId(
+  List<AppointmentDimensionVo> findAppointmentDimensionInfoByDateAndDentistId(
       @Param("startDate") Date startDate,
       @Param("endDate") Date endDate,
       @Param("dentistId") Integer dentistId,

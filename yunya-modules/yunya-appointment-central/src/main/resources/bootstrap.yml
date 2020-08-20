@@ -1,6 +1,6 @@
 spring:
   application:
-    name: yunya-clinic-appointment
+    name: yunya-appointment-central
   cloud:
     nacos:
       config:

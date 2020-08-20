@@ -492,9 +492,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<UserWorkVO> shiftWorkDatas = scheduleResultVO.getShiftWorkDatas();
         shiftWorkDatas.forEach(userWorkVO -> {
             // 组合预约医生和患者信息（患者维度）
-            AppointmentDimensionVo dimensionVo = this.combinationPatientDimensionVo(query.getOrgId(), query.getStartDate(), query.getEndDate(), userWorkVO);
+            List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(query.getOrgId(), query.getStartDate(), query.getEndDate(), userWorkVO);
             // 将预约信息放入预约可视图列表
-            appointmentDimensionVoList.add(dimensionVo);
+            if (dimensionVoList != null && !dimensionVoList.isEmpty()){
+                dimensionVoList.forEach(dimensionVo -> appointmentDimensionVoList.add(dimensionVo));
+            }
         });
 
         // 按患者预约数量升序排列
@@ -1227,42 +1229,48 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param dentistWorkSchedule 排班表
      * @return  预约可视图vo
      */
-    private AppointmentDimensionVo combinationPatientDimensionVo(Integer orgId, Date startDate, Date endDate,UserWorkVO dentistWorkSchedule){
+    private List<AppointmentDimensionVo> combinationPatientDimensionVo(Integer orgId, Date startDate, Date endDate,UserWorkVO dentistWorkSchedule){
+        List<AppointmentDimensionVo> appointmentDimensionVoList = new LinkedList<>();
+
         Integer userId = dentistWorkSchedule.getCompEmpId();
         String dentistName = dentistWorkSchedule.getName();
         // 根据排班日期和医生id查询患者信息 医生（一）-----> 患者（多）
-        AppointmentDimensionVo appointmentDimensionVo = mapper.findAppointmentDimensionInfoByDateAndDentistId(
+        List<AppointmentDimensionVo> appointmentDimensionVos = mapper.findAppointmentDimensionInfoByDateAndDentistId(
                 startDate,endDate,userId,orgId);
 
         // 如果医生有预约则设置该医生的预约信息
-        if (appointmentDimensionVo != null){
-            appointmentDimensionVo.setName(dentistName);
-            // 设置排班日期
-            dentistWorkSchedule.getDays().forEach(workDayVO -> appointmentDimensionVo.setCurrentDate(workDayVO.getDate()));
-            // 设置医生排班信息
-            appointmentDimensionVo.setDentistScheduleVos(dentistWorkSchedule.getDays());
-            // 组合患者基本信息
-            List<AppointmentPatientCardVo> appointmentPatientCardVos = appointmentDimensionVo.getAppointmentPatientCardVos();
-            appointmentPatientCardVos.forEach(appointmentPatientCardVo -> {
-                Integer patientId = appointmentPatientCardVo.getPatientId();
-                PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
-                if (patientInfo != null){
-                    appointmentPatientCardVo.setAge(patientInfo.getAge());
-                    appointmentPatientCardVo.setGender(patientInfo.getGender());
-                    appointmentPatientCardVo.setName(patientInfo.getName());
-                }
+        if (appointmentDimensionVos != null && !appointmentDimensionVos.isEmpty()){
+            appointmentDimensionVos.forEach(appointmentDimensionVo -> {
+                appointmentDimensionVo.setName(dentistName);
+                // 设置排班日期
+                dentistWorkSchedule.getDays().forEach(workDayVO -> appointmentDimensionVo.setCurrentDate(workDayVO.getDate()));
+                // 设置医生排班信息
+                appointmentDimensionVo.setDentistScheduleVos(dentistWorkSchedule.getDays());
+                // 组合患者基本信息
+                List<AppointmentPatientCardVo> appointmentPatientCardVos = appointmentDimensionVo.getAppointmentPatientCardVos();
+                appointmentPatientCardVos.forEach(appointmentPatientCardVo -> {
+                    Integer patientId = appointmentPatientCardVo.getPatientId();
+                    PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+                    if (patientInfo != null){
+                        appointmentPatientCardVo.setAge(patientInfo.getAge());
+                        appointmentPatientCardVo.setGender(patientInfo.getGender());
+                        appointmentPatientCardVo.setName(patientInfo.getName());
+                    }
+                });
+                appointmentDimensionVoList.add(appointmentDimensionVo);
             });
-            return appointmentDimensionVo;
+        } else {
+            // 如果该医生在时间段内没有预约，则只设置医生信息和排班信息，不设置患者预约信息
+            AppointmentDimensionVo appointmentDimensionVoNull = new AppointmentDimensionVo();
+            appointmentDimensionVoNull.setDentistId(userId);
+            appointmentDimensionVoNull.setName(dentistName);
+            // 设置排班时间
+            dentistWorkSchedule.getDays().forEach(workDayVO -> appointmentDimensionVoNull.setCurrentDate(workDayVO.getDate()));
+            // 设置医生排班信息
+            appointmentDimensionVoNull.setDentistScheduleVos(dentistWorkSchedule.getDays());
+            appointmentDimensionVoList.add(appointmentDimensionVoNull);
         }
-        // 如果该医生在时间段内没有预约，则只设置医生信息和排班信息，不设置患者预约信息
-        AppointmentDimensionVo appointmentDimensionVoNull = new AppointmentDimensionVo();
-        appointmentDimensionVoNull.setDentistId(userId);
-        appointmentDimensionVoNull.setName(dentistName);
-        // 设置排班时间
-        dentistWorkSchedule.getDays().forEach(workDayVO -> appointmentDimensionVoNull.setCurrentDate(workDayVO.getDate()));
-        // 设置医生排班信息
-        appointmentDimensionVoNull.setDentistScheduleVos(dentistWorkSchedule.getDays());
-        return appointmentDimensionVoNull;
+        return appointmentDimensionVoList;
     }
 
     /**

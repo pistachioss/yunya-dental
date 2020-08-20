@@ -106,8 +106,8 @@ spring:
           metadata:
             title: "资源图片服务"
 
-        - id: yunya-clinic-appointment
-          uri: lb://yunya-clinic-appointment
+        - id: yunya-appointment-central
+          uri: lb://yunya-appointment-central
           order: 9001
           predicates:
             - Path=/api/appointment/**
