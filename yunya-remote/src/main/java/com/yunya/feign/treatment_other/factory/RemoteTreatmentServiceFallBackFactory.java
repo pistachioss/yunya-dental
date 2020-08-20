@@ -1,6 +1,6 @@
-package com.yunya.feign.treatment.factory;
+package com.yunya.feign.treatment_other.factory;
 
-import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment_other.RemoteTreatmentServiceFeign;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import lombok.extern.slf4j.Slf4j;

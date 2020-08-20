@@ -24,6 +24,7 @@
         <module>yunya-patient-central</module>
         <module>yunya-tariff</module>
         <module>yunya-treatment</module>
+        <module>yunya-treatment-other</module>
     </modules>
 
 

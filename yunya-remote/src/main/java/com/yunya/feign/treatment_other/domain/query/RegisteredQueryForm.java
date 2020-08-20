@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment.domain.query;
+package com.yunya.feign.treatment_other.domain.query;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -13,8 +13,7 @@ import java.io.Serializable;
 /**
  * 简介: 患者候诊列表查询参数模型
  *
- * @author: chow
- * @date: 2020/8/11 15:04
+ * @author: Zkq
  * @description:
  * @since: 1.0.0
  */

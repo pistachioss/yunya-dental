@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment.domain.vo;
+package com.yunya.feign.treatment_other.domain.vo;
 
 import lombok.Data;
 import lombok.ToString;
@@ -7,18 +7,17 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简介: 候诊患者信息VO
+ * 简介: 就诊中患者信息VO
  *
  * @author: chow
- * @date: 2020/8/11 15:08
+ * @date: 2020/8/12 16:05
  * @description:
  * @since: 1.0.0
  */
 @Data
 @ToString
-public class WaitingPatientInfoVO implements Serializable {
-
-  /** 挂号ID */
+public class TreatmentPatientInfoVO implements Serializable {
+  /** 接诊记录ID */
   private Integer id;
 
   /** 诊所id */
@@ -55,7 +54,7 @@ public class WaitingPatientInfoVO implements Serializable {
   /** 患者过敏原 */
   private String allergen;
 
-  /** 欠费 */
+  /** 欠费总额 */
   private BigDecimal arrears;
 
   /** 会员图标 */
@@ -108,6 +107,9 @@ public class WaitingPatientInfoVO implements Serializable {
   private Boolean confirmStatus;
 
   /******************************** 挂号信息 *******************************/
+  /** 挂号ID */
+  private Integer registeredId;
+
   /** 挂号医生id */
   private Integer regDentistId;
 
@@ -128,4 +130,26 @@ public class WaitingPatientInfoVO implements Serializable {
 
   /** 挂号时间 */
   private String regTime;
+
+  /******************************* 接诊信息 ********************************/
+  /** 接诊医生ID */
+  private Integer treatDentistId;
+
+  /** 接诊医生姓名 */
+  private String treatDentistName;
+
+  /** 开始接诊时间 */
+  private String treatStartTime;
+
+  /** 原价合计 */
+  private BigDecimal originalPrice;
+
+  /** 后续预约 */
+  private Integer nextAppointment;
+
+  /** 后续随访 */
+  private Integer nextInterview;
+
+  /** 书写病历 */
+  private Boolean medicalRecordCompleted;
 }

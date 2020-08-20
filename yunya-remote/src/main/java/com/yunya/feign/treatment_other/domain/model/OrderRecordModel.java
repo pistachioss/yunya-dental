@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment.domain.model;
+package com.yunya.feign.treatment_other.domain.model;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
