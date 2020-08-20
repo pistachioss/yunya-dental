@@ -934,7 +934,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @throws IOException I/O异常
      */
     public void exportAppointListToExcel(HttpServletResponse response, AppointListExportQuery exportQuery) throws IOException {
-
         // 将参数转化为预约列表查询的参数实体
         AppointListQuery listQuery = EntityUtils.build(exportQuery,AppointListQuery.class);
         List<AppointmentListItemVo> appointmentListItemVoList = this.findAppointmentListByExample(listQuery);
@@ -955,9 +954,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
         SimpleDateFormat exportAppointDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String exportAppointDate = exportAppointDateFormat.format(new Date(System.currentTimeMillis()));
-        // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
-        String excelName = orgInfo.getName() + "预约报表（" + exportAppointDate + "）.xlsx";
-
         // 合并行
         List<CellRangeAddress> mergeCells = new ArrayList<>();
         // 将列表中第一个医生的名字作为初始值
@@ -985,11 +981,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 lastRow++;
             }
         }
-
         ExcelUtil<AppointListExportVo> appointExcelExport = new ExcelUtil<>(AppointListExportVo.class);
         appointExcelExport.setMergeRegion(mergeCells);
-        appointExcelExport.exportExcel(response,appointListExportVos,excelName);
-
+        // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
+        String excelName = orgInfo.getName() + "预约报表（" + exportAppointDate + "）";
+        appointExcelExport.exportExcel(response,appointListExportVos,excelName,excelName);
     }
 
     /**
@@ -1027,11 +1023,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             String crtTime = dateFormat.format(appointOperationRecordVo.getCrtTime());
             StringBuilder operationRecordContentBuilder = new StringBuilder();
 
-            // 设置取消预约原因
-            if (2 == appointOperationRecordVo.getOperateType()){
-                appointListExportVo.setCancleReasion(appointOperationRecordVo.getRemarks());
-            }
-
             Byte operateType = appointOperationRecordVo.getOperateType();
             switch (operateType){
                 case 0:
@@ -1053,6 +1044,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     operationRecordContentBuilder.append("[" + crtTime + "]");
                     operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
                     operationRecordContentBuilder.append("取消了这条预约");
+                    // 设置取消预约原因
+                    appointListExportVo.setCancleReasion(appointOperationRecordVo.getRemarks());
                     break;
                 case 3:
 
