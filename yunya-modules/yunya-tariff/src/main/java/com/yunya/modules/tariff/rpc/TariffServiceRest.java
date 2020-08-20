@@ -1,13 +1,8 @@
 package com.yunya.modules.tariff.rpc;
 
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.tariff.BaseTariffCategory;
-import com.yunya.modules.tariff.biz.BaseOralTariffBiz;
-import com.yunya.modules.tariff.biz.BaseOralTariffCategoryBiz;
-import com.yunya.modules.tariff.biz.BaseTariffBiz;
-import com.yunya.modules.tariff.biz.BaseTariffCategoryBiz;
+import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
+import com.yunya.models.tariff.*;
+import com.yunya.modules.tariff.biz.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +30,10 @@ public class TariffServiceRest {
   @Autowired private BaseTariffCategoryBiz baseTariffCategoryBiz;
   /** 基础价目表 */
   @Autowired private BaseTariffBiz baseTariffBiz;
+  /** 门诊价目表 */
+  @Autowired private ClinicTariffBiz clinicTariffBiz;
+  /** 门诊商品表 */
+  @Autowired private ClinicOralTariffBiz clinicOralTariffBiz;
 
   /**
    * 根据商品分类ID查询商品分类信息
@@ -125,5 +124,27 @@ public class TariffServiceRest {
   @RequestMapping(value = "/tariff/list", method = RequestMethod.POST)
   public List<BaseTariff> findBaseTariffList(@RequestBody BaseTariff entity) {
     return baseTariffBiz.selectList(entity);
+  }
+
+  /**
+   * 根据条件查询门诊价目表信息
+   *
+   * @param entity 门诊价目表
+   * @return
+   */
+  @RequestMapping(value = "/clinic/tariff/one", method = RequestMethod.POST)
+  public ClinicTariff findClinicTariff(@RequestBody ClinicTariff entity) {
+    return clinicTariffBiz.selectOne(entity);
+  }
+
+  /**
+   * 根据条件查询门诊商品信息
+   *
+   * @param entity 商品价目表
+   * @return
+   */
+  @RequestMapping(value = "/clinic/oral/one", method = RequestMethod.POST)
+  public ClinicOralTariff findClinicOralTariff(@RequestBody ClinicOralTariff entity) {
+    return clinicOralTariffBiz.selectOne(entity);
   }
 }

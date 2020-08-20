@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.treatment.mapper.OrderDetailMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment.OrderDetail">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="org_id" jdbcType="INTEGER" property="orgId" />
+    <result column="treatment_record_id" jdbcType="INTEGER" property="treatmentRecordId" />
+    <result column="order_record_id" jdbcType="INTEGER" property="orderRecordId" />
+    <result column="type" jdbcType="TINYINT" property="type" />
+    <result column="billing_item_id" jdbcType="INTEGER" property="billingItemId" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+    <result column="quantity" jdbcType="INTEGER" property="quantity" />
+    <result column="receivable_amount" jdbcType="DECIMAL" property="receivableAmount" />
+    <result column="tooth_bit" jdbcType="VARCHAR" property="toothBit" />
+    <result column="executor_id" jdbcType="INTEGER" property="executorId" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upd_id" jdbcType="INTEGER" property="updId" />
+    <result column="upt_name" jdbcType="VARCHAR" property="uptName" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+</mapper>

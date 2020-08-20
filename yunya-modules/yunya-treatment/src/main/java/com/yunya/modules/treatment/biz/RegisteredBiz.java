@@ -61,6 +61,10 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     if (null != appointmentId) {
       Appointment appointment = appointmentFeign.findAppointmentById(appointmentId);
       if (null != appointment) {
+        if (appointment.getAppointStatus() == 1) {
+          throw new ClientServiceException(
+              "挂号失败，当前预约已被挂号，请勿重复挂号！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        }
         appointment.setAppointStatus((byte) 1);
         appointmentFeign.updateAppointment(appointment);
         entity.setFirstVisit(appointment.getAppointType());

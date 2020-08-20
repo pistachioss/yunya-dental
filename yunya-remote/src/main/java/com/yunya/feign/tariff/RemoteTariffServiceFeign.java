@@ -2,10 +2,7 @@ package com.yunya.feign.tariff;
 
 import com.yunya.feign.tariff.factory.RemoteTariffServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.tariff.BaseTariffCategory;
+import com.yunya.models.tariff.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,6 +50,7 @@ public interface RemoteTariffServiceFeign {
    */
   @RequestMapping(value = "/rpc/oral/one/{id}", method = RequestMethod.GET)
   BaseOralTariff findBaseOralTariffById(@PathVariable(value = "id") Integer id);
+
   /**
    * 根据条件查询商品项目列表
    *
@@ -97,4 +95,22 @@ public interface RemoteTariffServiceFeign {
    */
   @RequestMapping(value = "/rpc/tariff/list", method = RequestMethod.POST)
   List<BaseTariff> findBaseTariffList(@RequestBody BaseTariff entity);
+
+  /**
+   * 根据条件查询门诊价目表信息
+   *
+   * @param entity 门诊价目表
+   * @return
+   */
+  @RequestMapping(value = "/rpc/clinic/tariff/one", method = RequestMethod.POST)
+  ClinicTariff findClinicTariff(@RequestBody ClinicTariff entity);
+
+  /**
+   * 根据条件查询门诊商品信息
+   *
+   * @param entity 商品价目表
+   * @return
+   */
+  @RequestMapping(value = "/rpc/clinic/oral/one", method = RequestMethod.POST)
+  ClinicOralTariff findClinicOralTariff(@RequestBody ClinicOralTariff entity);
 }
