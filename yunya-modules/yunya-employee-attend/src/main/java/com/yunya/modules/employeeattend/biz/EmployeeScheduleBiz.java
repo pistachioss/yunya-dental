@@ -279,7 +279,8 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
 
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(startDate);
-    int days = (int) (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+    System.out.println();
+    int days = ((int) ((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)))+1;
     JSONArray shiftWorkDatas = new JSONArray();
     for (SysUserInfoDetail baseEmployee : employees) {
       Map<String, Object> userWorkMap = new LinkedHashMap<>();
@@ -464,7 +465,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
 
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(startDate);
-    int days = ((int) (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24))+1;
+    int days = ((int) ((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)))+1;
     List<List<Object>> shiftWorkDatas = new ArrayList();
     for (SysUserInfoDetail baseEmployee : employees) {
       List<Object> row = new ArrayList<>();
