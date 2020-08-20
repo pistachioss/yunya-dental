@@ -87,7 +87,7 @@
     select es.employee_id,es.clinic_id,es.work_date,es.schedule_id,bs.type from employee_schedule es
     left join base_schedule bs on es.schedule_id = bs.id
     where
-    es.work_date &gt;= #{startDate} and es.work_date &lt; #{endDate} and es.employee_id = #{employeeId}
+    es.work_date &gt;= #{startDate} and es.work_date &lt;= #{endDate} and es.employee_id = #{employeeId}
     <if test="clinicId != null">
       and es.clinic_id = #{clinicId}
     </if>
