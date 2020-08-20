@@ -10,7 +10,6 @@ import java.util.List;
 
 /**
  * 预约可视图医生维度视图模型
- *
  * @author yunya-lihuibin
  * @create 2020-08-12 14:18
  * @update yunya-lihuibin    2020-08-12    新建
@@ -27,5 +26,4 @@ public class AppointmentDentistDimensionVo implements Serializable {
     /** 分解助手信息 */
     @ApiModelProperty(value = "分解助手信息")
     private List<AppointmentDimensionVo> appointmentAssistants;
-
 }

@@ -401,6 +401,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return  预约列表
      */
     public List<AppointmentListItemVo> findAppointmentListByExample(AppointListQuery query){
+        // 没有经过检索的列表
         List<AppointmentListItemVo> appointmentList = new ArrayList<>();
         AppointmentQuery appointmentQuery = new AppointmentQuery();
         appointmentQuery.setAppointDate(query.getAppointDate());
@@ -413,79 +414,53 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointmentList.add(itemVo);
         });
 
-        // 按条件检索
-        List<AppointmentListItemVo> collect = null;
+        // 按条件检索之后的列表
+        List<AppointmentListItemVo> collect = appointmentList;
+        // 匹配姓名
+        String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
+        // 匹配手机号
+        String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
+        // 匹配拼音名字
+        String pinyinNameReg = "^[A-Za-z]+$";
         if (query.getAppointType() != null
                 || !StringHelper.isEmpty(query.getDentistName())
                 || !StringHelper.isEmpty(query.getMedicalNumber())
                 || !StringHelper.isEmpty(query.getSearch())){
 
-            // 按预约类型检索
-            if (query.getAppointType() != null && (query.getAppointType() == 0 || query.getAppointType() == 1)){
-                collect = appointmentList
-                        .stream()
-                        .filter(
-                                appointmentListItemVo -> appointmentListItemVo.getAppointType().equals(query.getAppointType())
-                        ).collect(Collectors.toList());
-            }
-
-            // 按病历号检索
-            if (!StringHelper.isEmpty(query.getMedicalNumber())){
-                if (collect == null){
-                    collect = appointmentList;
-                }
-                collect = collect.stream()
-                        .filter(
-                                appointmentListItemVo -> appointmentListItemVo.getMedicalNumber().equals(query.getMedicalNumber())
-                        ).collect(Collectors.toList());
-            }
-
-            // 按预约医生检索
-            if (!StringHelper.isEmpty(query.getDentistName())){
-                if (collect == null){
-                    collect = appointmentList;
-                }
-                collect = collect.stream()
-                        .filter(
-                                appointmentListItemVo -> appointmentListItemVo.getDentistName().equals(query.getDentistName())
-                        ).collect(Collectors.toList());
-            }
-
-            // 按姓名/手机号/姓名拼音
-            if (!StringHelper.isEmpty(query.getSearch())){
-                if (collect == null){
-                    collect = appointmentList;
-                }
-                // 匹配姓名
-                String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
-                // 匹配手机号
-                String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
-                // 匹配拼音名字
-                String pinyinNameReg = "^[A-Za-z]+$";
-                // 检索值
-                String search = query.getSearch();
-                // 按姓名检索
-                if (search.matches(patientNameReg)){
-                    collect = collect.stream()
-                            .filter(
-                                    appointmentListItemVo -> appointmentListItemVo.getPatientName().contains(query.getSearch())
-                            ).collect(Collectors.toList());
-                }
-                if (search.matches(mobileReg)){
-                    // 按手机号检索
-                    collect = collect.stream()
-                            .filter(
-                                    appointmentListItemVo -> appointmentListItemVo.getMobile().equals(query.getSearch())
-                            ).collect(Collectors.toList());
-                }
-                if (search.matches(pinyinNameReg)){
-                    // 按拼音名字检索
-                    collect = collect.stream()
-                            .filter(
-                                    appointmentListItemVo -> appointmentListItemVo.getPinyinName().contains(query.getSearch())
-                            ).collect(Collectors.toList());
-                }
-            }
+            collect = collect.stream()
+                    .filter(
+                            appointmentListItemVo -> {
+                                boolean result = false;
+                                // 按预约类型检索
+                                if (query.getAppointType() != null && (query.getAppointType() == 0 || query.getAppointType() == 1)){
+                                    result = result | appointmentListItemVo.getAppointType().equals(query.getAppointType());
+                                }
+                                // 按病历号检索
+                                if (!StringHelper.isEmpty(query.getMedicalNumber())){
+                                    result = result | appointmentListItemVo.getMedicalNumber().equals(query.getMedicalNumber());
+                                }
+                                // 按预约医生检索
+                                if (!StringHelper.isEmpty(query.getDentistName())) {
+                                    result = result | appointmentListItemVo.getDentistName().equals(query.getDentistName());
+                                }
+                                // 按姓名/手机号/姓名拼音
+                                if (!StringHelper.isEmpty(query.getSearch())){
+                                    // 检索值
+                                    String search = query.getSearch();
+                                    // 按姓名检索
+                                    if (search.matches(patientNameReg)){
+                                        result = result | appointmentListItemVo.getPatientName().contains(search);
+                                    } else if (search.matches(mobileReg)) {
+                                        // 按手机号检索
+                                        result = result |  appointmentListItemVo.getMobile().equals(search);
+                                    } else if (search.matches(pinyinNameReg)){
+                                        // 按拼音名字检索
+                                        result = result |  appointmentListItemVo.getPinyinName().contains(search);
+                                    }
+                                }
+                                return result;
+                            }
+                    ).collect(Collectors.toList());
         }
         // 如果不为空，则有内容过滤，返回过滤之后的结果
         if (collect != null){
@@ -569,11 +544,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return
      */
     public List<AppointmentDentistDimensionVo> findAppointmentDentistDimensionByExample(AppointmentPatientDimensionByDayQuery query){
-
         List<AppointmentDentistDimensionVo> appointmentDentistDimensionVoList = new ArrayList<>();
         // 预约医生列表
         List<AppointmentDimensionVo> appointmentDimensionVos = this.findAppointmentPatientDimensionByExample(query);
-
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
         // 根据大医生id查询相关助手信息并且设置助手信息
@@ -595,11 +568,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 }
             }
             return 0;
-
         });
         return appointmentDentistDimensionVoList;
-
-
     }
 
     /**
@@ -648,7 +618,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return mapper.findAppointmentByExample(query);
     }
 
-
     /**
      * 根据日期查询失约患者名单
      * @param currentDate  当前日期
@@ -673,7 +642,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         });
         return missedAppointments.size();
     }
-
 
     /**
      * 添加预约时，检查预约当日预约的医生和助手是否排班
