@@ -108,7 +108,7 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
 
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(startDate);
-    int days = (int) (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+    int days = ((int) ((endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)))+1;
     List<UserWorkVO> shiftWorkDatas = new ArrayList<>();
     for (SysUserInfoDetail baseEmployee : employees) {
       UserWorkVO userWorkMap = new UserWorkVO();
