@@ -239,7 +239,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
       } catch (ParseException e) {
         throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
       }
-      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
+//      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
     }
 
     // 请求参数
@@ -464,7 +464,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
 
     Calendar calendar = Calendar.getInstance();
     calendar.setTime(startDate);
-    int days = (int) (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24);
+    int days = ((int) (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24))+1;
     List<List<Object>> shiftWorkDatas = new ArrayList();
     for (SysUserInfoDetail baseEmployee : employees) {
       List<Object> row = new ArrayList<>();
@@ -496,29 +496,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         row.add(add);
         calendar.add(Calendar.DATE, +COUNT);
       }
-//      for (EmployeeScheduleVO employeeScheduleVO : EmployeeScheduleVOs) {
-//
-//        for (int i = 0; i < days; i++) {
-//
-//          if (calendar.getTime().equals(employeeScheduleVO.getWorkDate())) {
-//            //拼接排班的时间段
-//            SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
-//            Date startTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getFirstStartTime();
-//            Date endTime = new Date();
-//            if (ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getSecondEndTime() != null) {
-//              endTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getSecondEndTime();
-//            } else {
-//              endTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getFirstEndTime();
-//            }
-//            String simtime = dateFormat.format(startTime) + "~" + dateFormat.format(endTime);
-//
-//            row.add(clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() + "-" + ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName() + "-" + simtime);
-//          } else {
-//            row.add("空");
-//          }
-//        }
-//        calendar.add(Calendar.DATE, +COUNT);
-//      }
       shiftWorkDatas.add(row);
       calendar.add(Calendar.DATE, -days);
     }
