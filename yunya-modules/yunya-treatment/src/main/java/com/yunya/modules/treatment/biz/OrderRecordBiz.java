@@ -61,15 +61,16 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer treatmentRecordId = model.getTreatmentRecordId();
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
-    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING + treatmentRecordId, treatmentRecordId);
 
-    int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-    int userId = Integer.parseInt(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
+    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING + treatmentRecordId, treatmentRecordId);
 
     BigDecimal totalAmount = BigDecimal.valueOf(0);
     List<OrderDetail> details = new ArrayList<>();
     List<OrderDetailModel> orderDetails = model.getOrderDetails();
+
+    int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+    int userId = Integer.parseInt(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
 
     // 计算开单总额并初始化订单明细列表
     totalAmount = calculateTotalAmount(orgId, totalAmount, details, orderDetails);
@@ -134,43 +135,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     }
 
     Integer assistantId1 = model.getAssistantId1();
-    if (null != assistantId1) {
-      AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
-      matchingRecord.setTreatmentRecordId(treatmentRecordId);
-      matchingRecord.setOrderRecordId(orderRecordId);
-      matchingRecord.setType((byte) 0);
-      matchingRecord.setAssistantId(assistantId1);
-      matchingRecord.setOrgId(orgId);
-      matchingRecord.setCrtId(userId);
-      matchingRecord.setCrtName(name);
-      matchingRecordBiz.insertSelective(matchingRecord);
-    }
-
     Integer assistantId2 = model.getAssistantId2();
-    if (null != assistantId2) {
-      AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
-      matchingRecord.setTreatmentRecordId(treatmentRecordId);
-      matchingRecord.setOrderRecordId(orderRecordId);
-      matchingRecord.setType((byte) 1);
-      matchingRecord.setAssistantId(assistantId2);
-      matchingRecord.setOrgId(orgId);
-      matchingRecord.setCrtId(userId);
-      matchingRecord.setCrtName(name);
-      matchingRecordBiz.insertSelective(matchingRecord);
-    }
-
     Integer assistantId3 = model.getAssistantId3();
-    if (null != assistantId3) {
-      AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
-      matchingRecord.setTreatmentRecordId(treatmentRecordId);
-      matchingRecord.setType((byte) 2);
-      matchingRecord.setOrderRecordId(orderRecordId);
-      matchingRecord.setAssistantId(assistantId3);
-      matchingRecord.setOrgId(orgId);
-      matchingRecord.setCrtId(userId);
-      matchingRecord.setCrtName(name);
-      matchingRecordBiz.insertSelective(matchingRecord);
-    }
+    saveAssistantMatchingRecord(
+        treatmentRecordId, orderRecordId, assistantId1, assistantId2, assistantId3);
 
     // 开单完成，更新就诊记录状态为已开单
     treatmentRecord.setStatus((byte) 1);
@@ -179,6 +147,105 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     treatmentRecordBiz.updateSelectiveById(treatmentRecord);
 
     redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING + treatmentRecordId);
+  }
+
+  /**
+   * 保存助手配诊记录
+   *
+   * @param treatmentRecordId 就诊记录ID
+   * @param orderRecordId 开单记录ID
+   * @param assistantId1 助手1ID
+   * @param assistantId2 助手2ID
+   * @param assistantId3 助手3ID
+   */
+  private void saveAssistantMatchingRecord(
+      Integer treatmentRecordId,
+      Integer orderRecordId,
+      Integer assistantId1,
+      Integer assistantId2,
+      Integer assistantId3) {
+    int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+    int userId = Integer.parseInt(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
+    matchingRecord.setTreatmentRecordId(treatmentRecordId);
+    matchingRecord.setOrderRecordId(orderRecordId);
+    if (null != assistantId1) {
+      matchingRecord.setType((byte) 0);
+      AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
+      if (null == matchingResult) {
+        matchingRecord.setAssistantId(assistantId1);
+        matchingRecord.setOrgId(orgId);
+        matchingRecord.setCrtId(userId);
+        matchingRecord.setCrtName(name);
+        matchingRecordBiz.insertSelective(matchingRecord);
+      } else {
+        Integer assistantId = matchingResult.getAssistantId();
+        if (!assistantId.equals(assistantId1)) {
+          matchingResult.setAssistantId(assistantId1);
+          matchingResult.setUpdId(userId);
+          matchingResult.setUpdName(name);
+          matchingRecordBiz.updateSelectiveById(matchingResult);
+        }
+      }
+    } else {
+      matchingRecord.setType((byte) 0);
+      matchingRecordBiz.delete(matchingRecord);
+    }
+
+    if (null != assistantId2) {
+      if (assistantId2.equals(assistantId1)) {
+        throw new ClientServiceException(
+            "开单失败，助手2与助手1不能是同一个人！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      }
+      matchingRecord.setType((byte) 1);
+      AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
+      if (null == matchingResult) {
+        matchingRecord.setAssistantId(assistantId2);
+        matchingRecord.setOrgId(orgId);
+        matchingRecord.setCrtId(userId);
+        matchingRecord.setCrtName(name);
+        matchingRecordBiz.insertSelective(matchingRecord);
+      } else {
+        Integer assistantId = matchingResult.getAssistantId();
+        if (!assistantId.equals(assistantId2)) {
+          matchingResult.setAssistantId(assistantId1);
+          matchingResult.setUpdId(userId);
+          matchingResult.setUpdName(name);
+          matchingRecordBiz.updateSelectiveById(matchingResult);
+        }
+      }
+    } else {
+      matchingRecord.setType((byte) 1);
+      matchingRecordBiz.delete(matchingRecord);
+    }
+
+    if (null != assistantId3) {
+      if (assistantId3.equals(assistantId1) || assistantId3.equals(assistantId2)) {
+        throw new ClientServiceException(
+            "开单失败，巡回与助手1或助手2不能是同一个人！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      }
+      matchingRecord.setType((byte) 2);
+      AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
+      if (null == matchingResult) {
+        matchingRecord.setAssistantId(assistantId3);
+        matchingRecord.setOrgId(orgId);
+        matchingRecord.setCrtId(userId);
+        matchingRecord.setCrtName(name);
+        matchingRecordBiz.insertSelective(matchingRecord);
+      } else {
+        Integer assistantId = matchingResult.getAssistantId();
+        if (!assistantId.equals(assistantId3)) {
+          matchingResult.setAssistantId(assistantId1);
+          matchingResult.setUpdId(userId);
+          matchingResult.setUpdName(name);
+          matchingRecordBiz.updateSelectiveById(matchingResult);
+        }
+      }
+    } else {
+      matchingRecord.setType((byte) 2);
+      matchingRecordBiz.delete(matchingRecord);
+    }
   }
 
   /**
