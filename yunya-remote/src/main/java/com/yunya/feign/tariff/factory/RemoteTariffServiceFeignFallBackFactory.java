@@ -1,10 +1,7 @@
 package com.yunya.feign.tariff.factory;
 
 import com.yunya.feign.tariff.RemoteTariffServiceFeign;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
-import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.tariff.BaseTariffCategory;
+import com.yunya.models.tariff.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -59,6 +56,16 @@ public class RemoteTariffServiceFeignFallBackFactory implements RemoteTariffServ
 
   @Override
   public List<BaseTariff> findBaseTariffList(BaseTariff entity) {
+    return null;
+  }
+
+  @Override
+  public ClinicTariff findClinicTariff(ClinicTariff entity) {
+    return null;
+  }
+
+  @Override
+  public ClinicOralTariff findClinicOralTariff(ClinicOralTariff entity) {
     return null;
   }
   /***/
