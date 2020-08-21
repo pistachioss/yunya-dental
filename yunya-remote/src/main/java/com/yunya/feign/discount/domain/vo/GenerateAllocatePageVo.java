@@ -17,6 +17,9 @@ public class GenerateAllocatePageVo implements Serializable {
     @ApiModelProperty(value = "优惠券Id")
     private Integer couponId;
 
+    @ApiModelProperty(value = "优惠券分配id")
+    private Integer couponAllocateId;
+
     @ApiModelProperty(value = "提交人")
     private String submitterName;
 

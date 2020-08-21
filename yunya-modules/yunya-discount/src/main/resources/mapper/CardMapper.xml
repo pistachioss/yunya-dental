@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="mapper.CardMapper">
+<mapper namespace="com.yunya.modules.discount.mapper.CardMapper">
     <resultMap id="BaseResultMap" type="com.yunya.models.discount.Card">
         <id column="id" jdbcType="INTEGER" property="id" />
         <result column="org_id" jdbcType="INTEGER" property="orgId" />
         <result column="coupon_id" jdbcType="INTEGER" property="couponId" />
+        <result column="coupon_allocate_id" jdbcType="INTEGER" property="couponAllocateId"/>
         <result column="active_org_id" jdbcType="INTEGER" property="activeOrgId" />
         <result column="patient_id" jdbcType="INTEGER" property="patientId" />
         <result column="card_number" jdbcType="VARCHAR" property="cardNumber" />
@@ -29,4 +30,20 @@
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
     </resultMap>
 
+    <select id="countByAllocateId" resultType="int">
+        select
+            count(*)
+        from `card`
+        where `coupon_allocate_id` in
+            <foreach collection="couponAllocateIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+
+    <select id="getMaxNumByCouponId" resultType="int">
+        select
+            ifnull(max(`coupon_id`), 0)
+        from `card`
+        where `coupon_id` = #{couponId}
+    </select>
 </mapper>

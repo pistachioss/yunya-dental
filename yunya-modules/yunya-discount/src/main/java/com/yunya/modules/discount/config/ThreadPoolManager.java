@@ -31,7 +31,7 @@ public class ThreadPoolManager {
     /**
      * 阻塞队列size
      */
-    private static final int queueSize = 20;
+    private static final int QUEUE_SIZE = 20;
     /**
      * 线程池的对象
      */
@@ -39,7 +39,7 @@ public class ThreadPoolManager {
     /**
      * 线程名称
      */
-    private static final String namePrefix = "yunya-thread-";
+    private static final String NAME_PREFIX = "yunya-thread-";
     /**
      * 线程尾部id
      */
@@ -96,7 +96,7 @@ public class ThreadPoolManager {
          *
          */
         return new ThreadPoolExecutor(CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
-                KEEP_ALIVE, TimeUnit.SECONDS, new ArrayBlockingQueue<>(queueSize),
+                KEEP_ALIVE, TimeUnit.SECONDS, new ArrayBlockingQueue<>(QUEUE_SIZE),
                 customThreadFactory(), new ThreadPoolExecutor.AbortPolicy());
     }
 
@@ -114,14 +114,16 @@ public class ThreadPoolManager {
     private ThreadFactory customThreadFactory() {
         return (r) -> {
             Thread t = new Thread(null, r,
-                    namePrefix + threadNumber.getAndIncrement(),
+                    NAME_PREFIX + threadNumber.getAndIncrement(),
                     0);
             //守护线程
-            if (t.isDaemon())
+            if (t.isDaemon()) {
                 t.setDaemon(true);
+            }
             //线程优先级
-            if (t.getPriority() != Thread.NORM_PRIORITY)
+            if (t.getPriority() != Thread.NORM_PRIORITY) {
                 t.setPriority(Thread.NORM_PRIORITY);
+            }
 
             //处理未捕捉的异常
             t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
@@ -136,8 +138,8 @@ public class ThreadPoolManager {
 
     public void shutdown(long timeout, TimeUnit timeUnit) {
         try {
-            executor.awaitTermination(timeout, timeUnit);
             executor.shutdown();
+            executor.awaitTermination(timeout, timeUnit);
         } catch (InterruptedException e) {
             log.warn("线程关闭异常");
         }

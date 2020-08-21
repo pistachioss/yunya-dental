@@ -20,9 +20,10 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
     </resultMap>
 
-    <select id="listBatchAllocateByParam" resultType="com.yunya.feign.discount.domain.bo.GenerateAllocateBo">
+    <select id="listBatchAllocateByParam" resultType="com.yunya.feign.discount.domain.bo.GenerateAllocatePageBo">
         select
             `cci`.`id`                 as `couponId`,
+            `ca`.`id`                  as `couponAllocateId`
             `ca`.`crt_id`              as `submitUserId`,
             `ca`.`crt_time`            as `submitDate`,
             `cci`.`name`               as `couponName`,

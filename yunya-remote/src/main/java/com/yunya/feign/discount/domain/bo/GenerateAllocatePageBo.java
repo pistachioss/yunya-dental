@@ -10,8 +10,9 @@ import java.io.*;
  */
 @Setter
 @Getter
-public class GenerateAllocateBo implements Serializable {
+public class GenerateAllocatePageBo implements Serializable {
     private Integer couponId;
+    private Integer couponAllocateId;
     private Integer submitUserId;
     private String submitDate;
     private String couponName;
