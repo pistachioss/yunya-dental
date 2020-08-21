@@ -17,13 +17,6 @@ import lombok.ToString;
 @ToString
 public class ToothCycleVo {
 
-    @ApiModelProperty(value = "主键id")
-    private int id;
-    @ApiModelProperty(value = "诊所id")
-    private int orgId;
-    @ApiModelProperty(value = "患者id")
-    private Boolean patientId;
-    @ApiModelProperty(value = "就诊id")
     private Boolean treatmentRecordId;
     @ApiModelProperty(value = "牙医id")
     private Boolean dentistId;

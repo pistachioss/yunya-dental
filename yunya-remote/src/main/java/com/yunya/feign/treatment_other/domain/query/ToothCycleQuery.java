@@ -20,19 +20,6 @@ import java.util.Date;
 @ToString
 public class ToothCycleQuery {
 
-    @ApiModelProperty(value = "主键id")
-    private int id;
-    @ApiModelProperty(value = "诊所id")
-    private int orgId;
     @ApiModelProperty(value = "患者id")
     private int patientId;
-    @ApiModelProperty(value = "就诊id")
-    private int treatmentRecordId;
-    @ApiModelProperty(value = "牙医id")
-    private int dentistId;
-    @ApiModelProperty(value = "牙周期")
-    private String toothCycle;
-    @ApiModelProperty(value = "检查日期")
-    private Date examinationData;
-
 }

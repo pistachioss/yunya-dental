@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -20,21 +21,21 @@ import java.util.Date;
 @ToString
 public class ToothCycleModel {
 
-    @ApiModelProperty(value = "主键id")
-    private int id;
     @ApiModelProperty(value = "诊所id")
+    @NotNull
     private int orgId;
     @ApiModelProperty(value = "患者id")
+    @NotNull
     private int patientId;
     @ApiModelProperty(value = "就诊id")
+    @NotNull
     private int treatmentRecordId;
     @ApiModelProperty(value = "牙医id")
+    @NotNull
     private int dentistId;
     @ApiModelProperty(value = "牙周期")
     private String toothCycle;
     @ApiModelProperty(value = "检查日期")
+    @NotNull
     private Date examinationData;
-    @ApiModelProperty(value = "创建人id")
-    private int crtId;
-
 }
