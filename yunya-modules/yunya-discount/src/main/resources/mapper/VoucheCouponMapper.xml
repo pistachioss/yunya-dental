@@ -21,4 +21,25 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!--<resultMap id="ListMap" type="com.yunya.modules.discount.vo.CouponCommonInfoFormrm" >-->
+    <!--<id column="id" property="id" jdbcType="INTEGER" />-->
+    <!--<result column="name" property="name" jdbcType="VARCHAR" />-->
+    <!--<result column="crtTime" property="crtTime" jdbcType="TIMESTAMP" />-->
+    <!--<result column="pName" property="pName" jdbcType="VARCHAR" />-->
+    <!--<result column="path" property="path" jdbcType="VARCHAR" />-->
+  <!--</resultMap>-->
+
+  <select id="findList" resultType="com.yunya.modules.discount.vo.CouponCommonInfoVO">
+   select ci.id,ci.name,ci.crt_time crtTime,pt.name pName,cf.path from coupon_common_info ci
+    left join product_type pt on ci.product_type_id = pt.id
+    left join (select MAX(crt_time),path,coupon_id from coupon_file_info group by coupon_id) cf on cf.coupon_id = ci.id
+    where ci.product_type_id = #{productTypeId} and ci.type = #{type}
+    <if test="name != null and name != ''">
+      and ci.name like concat('%', #{name}, '%')
+    </if>
+    <if test="startTime != null and endTime != null">
+      and ci.crt_time between #{startTime} and #{endTime}
+    </if>
+  </select>
 </mapper>

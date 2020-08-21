@@ -102,7 +102,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     public ResponseResult addAppointment(AppointmentBaseModel form) throws ParseException {
         // 检查预约当天预约的医生是否排班
         Map<String, Object> dentistSchedulingConflict = this.checkScheduling(form);
-        if (dentistSchedulingConflict.get("errMwg") != null){
+        if (null != dentistSchedulingConflict){
             return ResponseUtil.success(dentistSchedulingConflict);
         }
         // 检查当前预约是否冲突
@@ -351,6 +351,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /**
      * 编辑预约（有冲突继续保存）
      * @param appointmentForm 更新预约信息form
+     * @return ResponseResult
      */
     public ResponseResult continueUpdateAppointment(AppointmentBaseForm appointmentForm) {
         Appointment appointEntity = transferFormToEntity(appointmentForm);
@@ -653,7 +654,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private Map<String,Object> checkScheduling(AppointmentBaseModel appointmentBaseModel){
         // 获取预约医生Id
         Integer dentistId = appointmentBaseModel.getDentistId();
-        Map<String,Object> responseResultMap = new HashMap<>(16);
+        Map<String,Object> errMap = new HashMap<>(16);
 
         if (dentistId != null){
             EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
@@ -672,28 +673,25 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 获取排班列表
             EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
             if (employeeScheduleResult == null){
-                responseResultMap.put("status",0);
-                responseResultMap.put("errMwg","员工排班服务异常！");
-                responseResultMap.put("data",null);
-                return responseResultMap;
+                errMap.put("status",-1);
+                errMap.put("errMwg","员工排班服务异常！");
+                errMap.put("data",employeeScheduleResult);
+                return errMap;
             }
             // 预约医生没有排班，返回空
             if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
-                responseResultMap.put("status",0);
-                responseResultMap.put("errMwg","预约医生在预约日期当天未排班，建议排班后再新增预约！");
-                responseResultMap.put("data",null);
-                return responseResultMap;
+                errMap.put("status",1);
+                errMap.put("errMwg","预约医生在预约日期当天未排班，建议排班后再新增预约！");
+                errMap.put("data",employeeScheduleResult);
+                return errMap;
             }
-            // 成功返回排班信息
-            responseResultMap.put("status",1);
-            responseResultMap.put("errMwg",null);
-            responseResultMap.put("data",employeeScheduleResult);
-            return responseResultMap;
+            // 成功返回null
+            return null;
         }
-        responseResultMap.put("status",0);
-        responseResultMap.put("errMwg","预约医生id不能为空！");
-        responseResultMap.put("data",null);
-        return responseResultMap;
+        errMap.put("status",2);
+        errMap.put("errMwg","预约医生id不能为空！");
+        errMap.put("data",null);
+        return errMap;
     }
 
     /**
