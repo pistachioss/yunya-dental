@@ -1,19 +1,24 @@
 package com.yunya.modules.discount.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.VoucheCoupon;
+import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import com.yunya.modules.discount.biz.VoucherBiz;
-import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.discount.vo.VoucheCouponVO;
+import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
+import com.yunya.modules.discount.form.VoucheCouponForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 描述:
@@ -27,29 +32,32 @@ import javax.validation.Valid;
 public class VoucherController {
     @Autowired
     private VoucherBiz voucherBiz;
+    @Autowired
+    private CouponCommonInfoBiz couponCommonInfoBiz;
 
     /**
-     * 新增代金券
+     * 新增代金券基础信息
      *
-     * @param voucheCouponVO
+     * @param voucheCouponForm
      * @return
      */
     @PostMapping
-    @ApiOperation("新增代金券")
+    @ApiOperation("新增代金券基础信息(返回插入成功后的ID)")
     @CurrentUser
-    public ResponseResult save(@RequestBody @Valid VoucheCouponVO voucheCouponVO) {
-        return ResponseUtil.success(voucherBiz.saveVoucher(voucheCouponVO));
+    public ResponseResult save(@RequestBody @Valid VoucheCouponForm voucheCouponForm) {
+        return ResponseUtil.success(voucherBiz.saveVoucher(voucheCouponForm));
     }
 
     /**
-     * 修改代金券
+     * 修改代金券基础信息
      *
      * @param discountUpdateForm
      * @return
      */
     @PutMapping
-    @ApiOperation("修改代金券")
-    public ResponseResult update(@RequestBody VoucheCouponVO discountUpdateForm) {
+    @ApiOperation("修改代金券基础信息")
+    @CurrentUser
+    public ResponseResult update(@RequestBody VoucheCouponForm discountUpdateForm) {
         voucherBiz.updateVoucher(discountUpdateForm);
         return ResponseUtil.success();
     }
@@ -61,20 +69,47 @@ public class VoucherController {
      */
     @DeleteMapping("/{id}")
     @ApiOperation("删除代金券")
-    public ResponseResult update(@PathVariable("id") Integer id) {
+    public ResponseResult delete(@PathVariable("id") Integer id) {
         voucherBiz.deleteVoucher(id);
         return ResponseUtil.success();
     }
 
     /**
-     * 获取对象
+     * 获取单个对象详细信息
      *
      * @return
      */
-    @GetMapping("/{id}}")
-    @ApiOperation("获取对象")
+    @GetMapping("/{id}")
+    @ApiOperation("获取单个对象详细信息")
     public ResponseResult findOne(@PathVariable("id") Integer id) {
-        return ResponseUtil.success(voucherBiz.selectById(id));
+        CouponCommonInfo couponCommonInfo = couponCommonInfoBiz.selectById(id);
+        VoucheCoupon voucheCoupon = new VoucheCoupon();
+        voucheCoupon.setCouponId(couponCommonInfo.getId());
+        voucheCoupon = voucherBiz.selectOne(voucheCoupon);
+        VoucheCouponForm voucheCouponForm = new VoucheCouponForm();
+        BeanUtils.copyProperties(voucheCoupon, voucheCouponForm);
+        BeanUtils.copyProperties(couponCommonInfo, voucheCouponForm);
+        voucheCouponForm.setMixedUseType(voucheCoupon.getMixedUseType().intValue());//格式问题 单独进行转换赋值
+        return ResponseUtil.success(voucheCouponForm);
+    }
+
+    /**
+     * 获取折扣券的配给门诊ID列表
+     *
+     * @return
+     */
+    @GetMapping("/findOrgId/{id}")
+    @ApiOperation("获取折扣券的配给门诊ID列表")
+    public ResponseResult findOrgIdList(@PathVariable("id") Integer id) {
+        VoucheCoupon voucheCoupon = new VoucheCoupon();
+        voucheCoupon.setCouponId(id);
+        voucheCoupon = voucherBiz.selectOne(voucheCoupon);
+        List<String> list = Arrays.asList(voucheCoupon.getUseableClinci().split(","));
+        List<Integer>reList = new ArrayList<>();
+        for(String s:list){
+            reList.add(Integer.valueOf(s));
+        }
+        return ResponseUtil.success(reList);
     }
 
     /**
@@ -82,10 +117,11 @@ public class VoucherController {
      *
      * @return
      */
-    @GetMapping("/list")
-    @ApiOperation("获取列表")
-    public ResponseResult list() {
-        return ResponseUtil.success(voucherBiz.selectListAll());
+    @PostMapping("/findList")
+    @ApiOperation("根据分类获取列表")
+    public ResponseResult findList(@RequestBody @Valid CouponCommonInfoQueryForm couponCommonInfoQueryForm) {
+        return ResponseUtil.success(
+                voucherBiz.findList(couponCommonInfoQueryForm));
     }
 
 }
