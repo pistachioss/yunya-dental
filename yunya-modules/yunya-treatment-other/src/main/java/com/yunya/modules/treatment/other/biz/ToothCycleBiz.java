@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.other.biz;
 import com.yunya.feign.treatment_other.domain.form.ToothCycleForm;
 import com.yunya.feign.treatment_other.domain.model.ToothCycleModel;
 import com.yunya.feign.treatment_other.domain.query.ToothCycleQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothCycleVo;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.treatment_other.ToothCycle;
 import com.yunya.modules.treatment.other.mapper.ToothCycleMapper;
@@ -20,14 +21,14 @@ public class ToothCycleBiz {
     @Resource
     private ToothCycleMapper toothCycleMapper;
 
-    public List<ToothCycle>  findCycleList(ToothCycleQuery cycle){
-        List<ToothCycle> cycleList = toothCycleMapper.findCycleList(cycle);
+    public List<ToothCycleVo>  findCycleList(ToothCycleQuery cycle){
+        List<ToothCycleVo> cycleList = toothCycleMapper.findCycleList(cycle);
         return cycleList;
     }
 
 
-    public void  add(ToothCycleModel cycle){
-        toothCycleMapper.add(cycle);
+    public void  add(ToothCycle toothCycle){
+        toothCycleMapper.add(toothCycle);
     }
 
     public void  upd(ToothCycleForm cycle){
