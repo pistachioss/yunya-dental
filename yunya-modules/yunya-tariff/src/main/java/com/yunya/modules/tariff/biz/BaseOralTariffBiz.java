@@ -52,8 +52,6 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   @Autowired private BaseOralTariffCategoryMapper baseOralTariffCategoryMapper;
   /** 商品项目操作记录 */
   @Autowired private BaseOralTariffHistoryBiz baseOralTariffHistoryBiz;
-  /** 门诊商品项目会员价 */
-  @Autowired private ClinicOralTariffMemberPriceBiz clinicOralTariffMemberPriceBiz;
   /** 门诊商品项目 */
   @Autowired private ClinicOralTariffBiz clinicOralTariffBiz;
 
