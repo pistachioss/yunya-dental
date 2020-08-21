@@ -19,10 +19,6 @@
   </resultMap>
   <select id="findCycleList" parameterType="com.yunya.feign.treatment_other.domain.query.ToothCycleQuery" resultType="com.yunya.feign.treatment_other.domain.vo.ToothCycleVo">
         SELECT
-        id,
-        org_id,
-        patient_id,
-        treatment_record_id,
         dentist_id,
         tooth_cycle,
         examination_data
@@ -30,6 +26,7 @@
         tooth_cycle
         WHERE
         patient_id = #{patientId}
+        order by id desc
   </select>
   <insert id="add" parameterType="com.yunya.feign.treatment_other.domain.model.ToothCycleModel">
       INSERT INTO tooth_cycle (org_id,patient_id,treatment_record_id,dentist_id,tooth_cycle,examination_data,crt_id)

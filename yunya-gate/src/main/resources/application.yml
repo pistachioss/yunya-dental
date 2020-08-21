@@ -157,7 +157,7 @@ spring:
             title: "卡券服务"
         - id: yunya-treatment-other
           uri: lb://yunya-treatment-other
-          order: 9006
+          order: 9000
           predicates:
             - Path=/api/treatment/other/**
           filters:

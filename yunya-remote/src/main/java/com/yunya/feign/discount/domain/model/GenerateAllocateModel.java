@@ -19,12 +19,15 @@ public class GenerateAllocateModel {
     @ApiModelProperty(value = "优惠券id")
     @NotNull
     private Integer couponId;
+
     @ApiModelProperty(value = "优惠券code")
     @NotBlank
     private String couponCode;
-    @NotNull
+
     @ApiModelProperty(value = "提交时间")
+    @NotNull
     private LocalDateTime submitDate;
+
     @ApiModelProperty(value = "配给集合")
     @NotEmpty
     private List<ClinicAllocateModel> allocateList;

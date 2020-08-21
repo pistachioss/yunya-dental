@@ -22,4 +22,6 @@ public class ToothCycleQuery {
 
     @ApiModelProperty(value = "患者id")
     private int patientId;
+
+
 }
