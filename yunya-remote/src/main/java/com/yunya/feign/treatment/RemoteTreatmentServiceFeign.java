@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment_other;
+package com.yunya.feign.treatment;
 
 import com.yunya.feign.treatment_other.factory.RemoteTreatmentServiceFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
