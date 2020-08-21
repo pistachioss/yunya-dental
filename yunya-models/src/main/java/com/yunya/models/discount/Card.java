@@ -31,6 +31,12 @@ public class Card {
     private Integer couponId;
 
     /**
+     * 优惠券分配id
+     */
+    @Column(name = "coupon_allocate_id")
+    private Integer couponAllocateId;
+
+    /**
      * 激活的组织Id
      */
     @Column(name = "active_org_id")
