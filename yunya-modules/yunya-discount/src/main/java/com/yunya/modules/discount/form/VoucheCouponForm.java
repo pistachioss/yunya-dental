@@ -1,4 +1,4 @@
-package com.yunya.modules.discount.vo;
+package com.yunya.modules.discount.form;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yunya.models.discount.FileInfo;
@@ -16,12 +16,12 @@ import java.util.List;
 
 /**
  * @author 杨柳絮
- * @className VoucheCouponVO
+ * @className VoucheCouponForm
  * @description
  * @date 2020/8/18 16:16
  */
 @Data
-public class VoucheCouponVO {
+public class VoucheCouponForm {
   /**
    * 主键
    */
@@ -65,17 +65,17 @@ public class VoucheCouponVO {
   @ApiModelProperty("售价")
   private BigDecimal soldAmount;
 
-  /**
-   * 图像
-   */
-  @ApiModelProperty("图像")
-  private List<FileInfo> paths;
-
-  /**
-   * 文档
-   */
-  @ApiModelProperty("文档")
-  private List<String> docs;
+//  /**
+//   * 图像
+//   */
+//  @ApiModelProperty("图像")
+//  private List<FileInfo> paths;
+//
+//  /**
+//   * 文档
+//   */
+//  @ApiModelProperty("文档")
+//  private List<String> docs;
 
   /**
    * 售出开始日期
@@ -141,7 +141,7 @@ public class VoucheCouponVO {
    * 可使用门诊
    */
   @ApiModelProperty("可使用门诊列表")
-  private String clinicIds;
+  private String useableClinci;
 
 
 
