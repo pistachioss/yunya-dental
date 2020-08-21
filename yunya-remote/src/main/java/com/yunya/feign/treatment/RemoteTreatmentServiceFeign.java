@@ -1,6 +1,6 @@
 package com.yunya.feign.treatment;
 
-import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFallBackFactory;
+import com.yunya.feign.treatment_other.factory.RemoteTreatmentServiceFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;

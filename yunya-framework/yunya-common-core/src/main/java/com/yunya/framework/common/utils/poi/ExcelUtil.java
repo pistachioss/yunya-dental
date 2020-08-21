@@ -248,6 +248,26 @@ public class ExcelUtil<T> {
    * 对list数据源将其里面的数据导入到excel表单
    *
    * @param response 返回数据
+   * @param list 导出数据集合
+   * @param sheetName 工作表的名称
+   * @param fileName excel文件名
+   * @return 结果
+   * @throws IOException
+   */
+  public void exportExcel(HttpServletResponse response, List<T> list, String sheetName, String fileName)
+          throws IOException {
+    fileName = new String(fileName.getBytes("utf-8"),"ISO-8859-1");
+    response.setContentType("application/vnd.ms-excel");
+    response.setCharacterEncoding("utf-8");
+    response.setHeader("Content-Disposition","attachment;filename=" + fileName + ".xls");
+    this.init(list, sheetName, Type.EXPORT);
+    exportExcel(response.getOutputStream());
+  }
+
+  /**
+   * 对list数据源将其里面的数据导入到excel表单
+   *
+   * @param response 返回数据
    * @param sheetName 工作表的名称
    * @return 结果
    */

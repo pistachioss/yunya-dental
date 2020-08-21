@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.PhotoServiceMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.PhotoService" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER" />
+    <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
+    <result column="photo_film" property="photoFilm" jdbcType="VARCHAR" />
+    <result column="peiapical_film_id" property="peiapicalFilmId" jdbcType="INTEGER" />
+    <result column="panorama" property="panorama" jdbcType="VARCHAR" />
+    <result column="normotopia_film" property="normotopiaFilm" jdbcType="VARCHAR" />
+    <result column="lateral_film" property="lateralFilm" jdbcType="VARCHAR" />
+    <result column="joint_film" property="jointFilm" jdbcType="VARCHAR" />
+    <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
+    <result column="film_name" property="filmName" jdbcType="VARCHAR" />
+    <result column="orthodontics_film" property="orthodonticsFilm" jdbcType="VARCHAR" />
+    <result column="other_film" property="otherFilm" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+  </resultMap>
+</mapper>

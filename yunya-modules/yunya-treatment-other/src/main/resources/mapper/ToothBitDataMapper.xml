@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.ToothBitDataMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.ToothBitData" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="photo_service_id" property="photoServiceId" jdbcType="INTEGER" />
+    <result column="tooth_bit" property="toothBit" jdbcType="VARCHAR" />
+    <result column="film_name" property="filmName" jdbcType="VARCHAR" />
+    <result column="tooth_bit_film" property="toothBitFilm" jdbcType="VARCHAR" />
+    <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

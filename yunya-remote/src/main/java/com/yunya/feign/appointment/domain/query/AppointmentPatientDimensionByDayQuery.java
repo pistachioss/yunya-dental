@@ -12,13 +12,13 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 预约可视图查询参数（患者维度）
+ * 根据排班开始结束日期/门诊id/医生id查询预约可视图（患者维度）
  *
  * @author yunya-lihuibin
  * @create 2020-08-11 20:08
  * @update yunya-lihuibin    2020-08-11    新建
  */
-@ApiModel(value = "预约可视图查询参数（某一天）（患者维度）")
+@ApiModel(value = "根据排班开始结束日期/门诊id/医生id查询预约可视图（活动天）（患者维度）")
 @Data
 @ToString
 public class AppointmentPatientDimensionByDayQuery implements Serializable {
@@ -41,14 +41,20 @@ public class AppointmentPatientDimensionByDayQuery implements Serializable {
     private String orderBy = "desc";
 
     /** 开始日期 */
-    @ApiModelProperty(value = "开始日期")
+    @ApiModelProperty(value = "开始日期", required = true)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    @NotNull(message = "开始日期不能为空！")
     private Date startDate;
 
     /** 结束日期 */
-    @ApiModelProperty(value = "结束日期")
+    @ApiModelProperty(value = "结束日期", required = true)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    @NotNull(message = "结束日期不能为空！")
     private Date endDate;
+
+    /** 医生id */
+    @ApiModelProperty(value = "医生id", required = true)
+    private Integer dentistId;
 
     /** 门诊id */
     @ApiModelProperty(value = "门诊id", required = true)

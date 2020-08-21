@@ -106,8 +106,8 @@ spring:
           metadata:
             title: "资源图片服务"
 
-        - id: yunya-clinic-appointment
-          uri: lb://yunya-clinic-appointment
+        - id: yunya-appointment-central
+          uri: lb://yunya-appointment-central
           order: 9001
           predicates:
             - Path=/api/appointment/**
@@ -155,6 +155,15 @@ spring:
             - StripPrefix=2
           metadata:
             title: "卡券服务"
+        - id: yunya-treatment-other
+          uri: lb://yunya-treatment-other
+          order: 9006
+          predicates:
+            - Path=/api/treatment/other/**
+          filters:
+            - StripPrefix=3
+          metadata:
+            title: "就诊扩展服务"
 
     nacos:
       discovery:

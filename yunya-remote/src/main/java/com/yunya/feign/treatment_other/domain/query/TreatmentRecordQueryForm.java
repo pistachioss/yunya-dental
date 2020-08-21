@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment.domain.query;
+package com.yunya.feign.treatment_other.domain.query;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -11,16 +11,17 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 简介: 患者候诊列表查询参数模型
+ * 简介: 就诊中患者列表查询参数模型
  *
- * @author: Zkq
+ * @author: chow
+ * @date: 2020/8/12 16:00
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("患者候诊列表查询参数模型")
+@ApiModel("就诊中患者列表查询参数模型")
 @Data
 @ToString
-public class RegisteredQueryForm implements Serializable {
+public class TreatmentRecordQueryForm implements Serializable {
   @ApiModelProperty(value = "是否分页,默认true")
   private Boolean whetherPage = true;
 
@@ -40,12 +41,9 @@ public class RegisteredQueryForm implements Serializable {
   @NotBlank(message = "查询日期不能为空！")
   private String currentDate;
 
-  @ApiModelProperty("挂号ID")
+  @ApiModelProperty("接诊ID")
   private Integer id;
 
   @ApiModelProperty("挂号医生ID")
   private Integer dentistId;
-
-  @ApiModelProperty(value = "是否有效", required = true)
-  private Boolean inservice;
 }

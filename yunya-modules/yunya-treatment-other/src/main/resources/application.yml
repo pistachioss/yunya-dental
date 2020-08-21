@@ -1,0 +1,54 @@
+server:
+  port: 8206
+
+spring:
+  application:
+    name: yunya-treatment-other
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    default-property-inclusion: always
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://192.168.31.90:3306/yunya_treatment_other?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
+    username: sa
+    password: Admin001!
+  redis:
+    host: 192.168.31.90
+    port: 6379
+    password: foobared
+    database: 2
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.215:8848
+
+mybatis:
+  mapperLocations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.yunya.models.treatment.other
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 配置swagger
+swagger:
+  enabled: true
+  base-package: com.yunya.modules.treatment.other
+  title: yunya_treatment_other
+  version: 1.0.0.SNAPSHOT
+  description: 就诊拓展服务 (网关地址：/api/treatment/other/**)
+  contact:
+    name: yunya-treatment-other
+
+#设置hystrix超时
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000
+
+
+
+
