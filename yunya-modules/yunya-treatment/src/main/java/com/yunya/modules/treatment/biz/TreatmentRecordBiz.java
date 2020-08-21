@@ -9,6 +9,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.TreatmentCompletedPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -19,14 +20,18 @@ import com.yunya.models.appointment.Appointment;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotBlank;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -51,8 +56,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   /** 预约服务调用 */
   @Autowired private RemoteAppointmentFeign appointmentFeign;
 
-  /** 注入对象 */
+  /** 挂号 */
   @Autowired private RegisteredBiz registeredBiz;
+
+  /** 开单 */
+  @Autowired private OrderRecordMapper orderRecordMapper;
 
   /**
    * 开始接诊
@@ -126,25 +134,60 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param queryForm 查询条件
    * @return
    */
-  public PageInfo<TreatmentPatientInfoVO> findTreatingList(TreatmentRecordQueryForm queryForm) {
+  public PageInfo<TreatmentPatientInfoVO> findTreatList(TreatmentRecordQueryForm queryForm) {
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
 
     List<TreatmentPatientInfoVO> treatingList = mapper.selectTreatingList(queryForm);
-    if (StringHelper.isNotEmpty(treatingList)) {
-      treatingList.forEach(
-          vo -> {
-            // 设置患者信息
-            setPatientInfo(vo);
-            // 设置候诊患者预约信息
-            setAppointmentInfo(vo);
-            // 设置候诊患者挂号信息
-            setRegisteredInfo(vo);
-            // 设置候诊患者接诊信息
-            setTreatingInfo(vo);
-          });
+    Byte status = queryForm.getTreatmentStatus();
+    switch (status) {
+      case 1:
+      case 2:
+      case 3:
+        if (StringHelper.isNotEmpty(treatingList)) {
+          treatingList.forEach(
+              vo -> {
+                // 设置患者信息
+                setPatientInfo(vo);
+                // 设置预约信息
+                setAppointmentInfo(vo);
+                // 设置挂号信息
+                setRegisteredInfo(vo);
+                // 设置接诊信息
+                setTreatingInfo(vo);
+                // 设置账单信息
+                setOrderInfo(vo);
+              });
+        } else {
+          treatingList = new ArrayList<>();
+        }
+        break;
+      case 4:
+        if (StringHelper.isNotEmpty(treatingList)) {
+          treatingList.forEach(
+              vo -> {
+                // 设置患者信息
+                setPatientInfo(vo);
+                // 设置预约信息
+                setAppointmentInfo(vo);
+                // 设置挂号信息
+                setRegisteredInfo(vo);
+                // 设置接诊信息
+                setTreatingInfo(vo);
+                // 设置账单信息
+                setOrderInfo(vo);
+                // 设置收费信息
+                setChargeInfo(vo);
+              });
+        } else {
+          treatingList = new ArrayList<>();
+        }
+        break;
+      default:
+        break;
     }
+
     return new PageInfo<>(treatingList);
   }
 
@@ -258,6 +301,30 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
+   * 设置开单信息（账单）
+   *
+   * @param vo 就诊患者信息
+   */
+  private void setOrderInfo(TreatmentPatientInfoVO vo) {
+    Integer id = vo.getId();
+    OrderRecord orderRecord = new OrderRecord();
+    orderRecord.setTreatmentRecordId(id);
+    OrderRecord orderRecordResult = orderRecordMapper.selectOne(orderRecord);
+    if (null != orderRecordResult) {
+      vo.setOrderRecordId(orderRecordResult.getId());
+      vo.setOriginalPrice(orderRecordResult.getTotalAmount());
+      vo.setOrderStatus(orderRecordResult.getStatus());
+    }
+  }
+
+  /**
+   * todo 设置收费信息
+   *
+   * @param vo 就诊患者信息
+   */
+  private void setChargeInfo(TreatmentPatientInfoVO vo) {}
+
+  /**
    * 更新就诊记录电子病历书写状态
    *
    * @param id 就诊记录ID
@@ -266,5 +333,20 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     TreatmentRecord record = mapper.selectByPrimaryKey(id);
     record.setMedicalRecordCompleted(true);
     mapper.updateByPrimaryKeySelective(record);
+  }
+
+  /**
+   * 根据条件查询就诊完成患者列表信息（可分页）
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public PageInfo<TreatmentCompletedPatientInfoVO> findTreatCompletedList(
+      TreatmentRecordQueryForm queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+
+    return null;
   }
 }

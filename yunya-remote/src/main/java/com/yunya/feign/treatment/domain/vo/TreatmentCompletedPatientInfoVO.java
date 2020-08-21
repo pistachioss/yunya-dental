@@ -7,16 +7,16 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简介: 就诊中患者信息VO
+ * 简介: 就诊完成患者信息VO
  *
  * @author: chow
- * @date: 2020/8/12 16:05
+ * @date: 2020/8/21 17:50
  * @description:
  * @since: 1.0.0
  */
 @Data
 @ToString
-public class TreatmentPatientInfoVO implements Serializable {
+public class TreatmentCompletedPatientInfoVO implements Serializable {
   /** 接诊记录ID */
   private Integer id;
   /** 诊所id */
@@ -107,13 +107,11 @@ public class TreatmentPatientInfoVO implements Serializable {
   private Integer nextInterview;
   /** 书写病历 */
   private Boolean medicalRecordCompleted;
-  /***************************** 账单信息 *********************************/
-  /** 账单ID */
+  /***************************** 开单记录信息 *******************************/
+  /** 开单记录ID */
   private Integer orderRecordId;
   /** 原价合计 */
   private BigDecimal originalPrice;
-  /** 账单（开单）状态 */
-  private Byte orderStatus;
-  /** 本次收费总额 */
-  private BigDecimal receivedAmount;
+  /** 账单状态 */
+  private Byte status;
 }

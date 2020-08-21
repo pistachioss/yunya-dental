@@ -4,7 +4,9 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.modules.treatment.biz.OrderRecordBiz;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,7 +42,13 @@ public class OrderRecordControllerTest {
     detail.setQuantity(1);
     details.add(detail);
     model.setOrderDetails(details);
-    ResponseResult result = orderRecordController.add(model);
+    ResponseResult result = orderRecordController.holdOrder(model);
     System.out.println(result);
+  }
+
+  @Test
+  public void test(){
+    ResponseResult info = orderRecordController.findOrderInfoByTreatmentId(11);
+    System.out.println(info);
   }
 }

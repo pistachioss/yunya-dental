@@ -32,7 +32,7 @@ public class OrderRecord {
     private Integer treatmentRecordId;
 
     /**
-     * 状态 （0-账单未锁定 ；1-账单锁定；2-结算状态）
+     * 状态 （0-账单未锁定 ；1-账单锁定；2-结算完成状态）
      */
     private Byte status;
 
@@ -161,18 +161,18 @@ public class OrderRecord {
     }
 
     /**
-     * 获取状态 （0-账单未锁定 ；1-账单锁定；2-结算状态）
+     * 获取状态 （0-账单未锁定 ；1-账单锁定；2-结算完成状态）
      *
-     * @return status - 状态 （0-账单未锁定 ；1-账单锁定；2-结算状态）
+     * @return status - 状态 （0-账单未锁定 ；1-账单锁定；2-结算完成状态）
      */
     public Byte getStatus() {
         return status;
     }
 
     /**
-     * 设置状态 （0-账单未锁定 ；1-账单锁定；2-结算状态）
+     * 设置状态 （0-账单未锁定 ；1-账单锁定；2-结算完成状态）
      *
-     * @param status 状态 （0-账单未锁定 ；1-账单锁定；2-结算状态）
+     * @param status 状态 （0-账单未锁定 ；1-账单锁定；2-结算完成状态）
      */
     public void setStatus(Byte status) {
         this.status = status;
