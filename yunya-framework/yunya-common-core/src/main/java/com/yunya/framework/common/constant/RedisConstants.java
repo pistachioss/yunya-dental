@@ -46,4 +46,7 @@ public class RedisConstants implements Serializable {
 
   /** ------------------------------ 开单 --------------------------------------------*/
   public static final String LOCK_ORDER_PROCESSING = "lock:order:process";
+
+  /** ------------------------------ 随访管理 ------------------------------------------------- */
+  public static final String LOCK_VISITING_RECORD = "lock:visiting:record";
 }

@@ -26,22 +26,6 @@
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
 
-        <!--
-        <table tableName="brand" domainObjectName="Brand"/>
-        <table tableName="company" domainObjectName="Company"/>
-        <table tableName="clinic_ext_info" domainObjectName="ClinicExtInfo"/>
-        <table tableName="department" domainObjectName="Department"/>
-        <table tableName="company_department" domainObjectName="CompanyDepartment"/>
-        <table tableName="dictionary_type" domainObjectName="DictionaryType"/>
-        <table tableName="dictionary_item" domainObjectName="DictionaryItem"/>
-        <table tableName="post" domainObjectName="Post"/>
-        <table tableName="sys_districts" domainObjectName="SysDistricts"/>
-        <table tableName="sys_user" domainObjectName="SysUser"/>
-        <table tableName="sys_element" domainObjectName="SysElement"/>
-        <table tableName="sys_menu" domainObjectName="SysMenu"/>
-        <table tableName="sys_user_post" domainObjectName="SysUserPost"/>
-        <table tableName="sys_post_element" domainObjectName="SysPostElement"/>
-        <table tableName="department_room" domainObjectName="DepartmentRoom"/>-->
         <table tableName="appoint_item" domainObjectName="AppointItem"/>
         <table tableName="appoint_type" domainObjectName="AppointType"/>
         <table tableName="appointment" domainObjectName="Appointment"/>
