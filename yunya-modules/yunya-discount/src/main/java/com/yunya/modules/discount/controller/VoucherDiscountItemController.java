@@ -43,14 +43,15 @@ public class VoucherDiscountItemController {
     @ApiOperation("新增代金券折扣券适用项目")
     @CurrentUser
     public ResponseResult saveVouAndDis(@RequestBody @Valid List<VoucherDiscountItemForm> voucherDiscountItems) {
+        Date date = new Date();
         VoucherDiscountItem voucherDiscountItem = new VoucherDiscountItem();
         voucherDiscountItem.setCouponId(voucherDiscountItems.get(0).getCouponId());
         voucherDiscountItemBiz.delete(voucherDiscountItem);//清除之前的适用项目
         voucherDiscountItems.forEach(t -> {
           t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
           t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
-          t.setUpdTime(new Date());
-          t.setCrtTime(new Date());
+          t.setUpdTime(date);
+          t.setCrtTime(date);
         });
         return ResponseUtil.success(voucherDiscountItemBiz.saveVouAndDis(voucherDiscountItems));
     }

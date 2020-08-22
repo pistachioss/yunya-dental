@@ -65,18 +65,6 @@ public class VoucheCouponForm {
   @ApiModelProperty("售价")
   private BigDecimal soldAmount;
 
-//  /**
-//   * 图像
-//   */
-//  @ApiModelProperty("图像")
-//  private List<FileInfo> paths;
-//
-//  /**
-//   * 文档
-//   */
-//  @ApiModelProperty("文档")
-//  private List<String> docs;
-
   /**
    * 售出开始日期
    */
