@@ -26,8 +26,6 @@
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
 
-        <table tableName="photo_service" domainObjectName="PhotoService"/>
         <table tableName="tooth_bit_data" domainObjectName="ToothBitData"/>
-        <table tableName="tooth_cycle" domainObjectName="ToothCycle"/>
     </context>
 </generatorConfiguration>

@@ -1,4 +1,4 @@
-package com.yunya.feign.treatment_other.domain.vo;
+package com.yunya.feign.treatment_other.domain.form;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
@@ -6,29 +6,28 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
  * 简介: 牙周期列表模型
  *
- * @author: Zkq
+ * @author: chow
+ * @date: 2020/8/11 15:04
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("返回牙周期列表模型")
+@ApiModel("修改图片影像模块")
 @Data
 @ToString
-public class ToothCycleVo {
+public class PhotoServiceForm {
+
 
     @ApiModelProperty(value = "主键id")
     private Integer id;
-    @ApiModelProperty(value = "牙医姓名")
-    private String dentistName;
-    @ApiModelProperty(value = "牙医id")
-    private Integer dentistId;
-    @ApiModelProperty(value = "牙周期")
-    private String toothCycle;
-    @ApiModelProperty(value = "检查日期")
+
+    @ApiModelProperty(value = "图片上传日期",required = true)
+    @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date examinationData;
+    private Date uploadTime;
 }

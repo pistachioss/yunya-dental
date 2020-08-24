@@ -19,6 +19,7 @@
   </resultMap>
   <select id="findCycleList" parameterType="com.yunya.feign.treatment_other.domain.query.ToothCycleQuery" resultType="com.yunya.feign.treatment_other.domain.vo.ToothCycleVo">
         SELECT
+        id,
         dentist_id,
         tooth_cycle,
         examination_data
@@ -28,28 +29,29 @@
         patient_id = #{patientId}
         order by id desc
   </select>
-  <insert id="add" parameterType="com.yunya.feign.treatment_other.domain.model.ToothCycleModel">
-      INSERT INTO tooth_cycle (org_id,patient_id,treatment_record_id,dentist_id,tooth_cycle,examination_data,crt_id)
-      VALUES (#{orgId},#{patientId},#{treatmentRecordId},#{dentistId},#{toothCycle},#{examinationData},#{crtId});
+
+  <insert id="add" parameterType="com.yunya.models.treatment_other.ToothCycle">
+    INSERT INTO
+    tooth_cycle
+    (org_id,patient_id,treatment_record_id,dentist_id,tooth_cycle,examination_data,crt_id)
+    VALUES
+    (#{orgId},#{patientId},#{treatmentRecordId},#{dentistId},#{toothCycle},#{examinationData},#{crtId});
   </insert>
-    <update id="upd" parameterType="com.yunya.feign.treatment_other.domain.form.ToothCycleForm">\
-        UPDATE tooth_cycle
-         SET
-         org_id = #{orgId},
-         patient_id = #{patientId},
-         treatment_record_id = #{treatmentRecordId},
-         dentist_id = #{dentistId},
-         tooth_cycle = #{toothCycle},
-         examination_data = #{examinationData},
-         upd_time = #{updTime},
-         WHERE
-         id = #{id}
-    </update>
-    <delete id="del" parameterType="java.lang.Integer">
-        DELETE
-        FROM
-        tooth_cycle
-        WHERE
-        id = #{id}
-    </delete>
+
+  <update id="upd" parameterType="com.yunya.models.treatment_other.ToothCycle">
+    UPDATE tooth_cycle
+    SET
+    tooth_cycle = #{toothCycle},
+    upd_id = #{updId}
+    WHERE
+    id = #{id}
+  </update>
+
+  <delete id="del" parameterType="java.lang.Integer">
+    DELETE
+    FROM
+    tooth_cycle
+    WHERE
+    id = #{id}
+  </delete>
 </mapper>

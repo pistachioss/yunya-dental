@@ -29,7 +29,8 @@ mybatis:
   type-aliases-package: com.yunya.models.treatment.other
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-
+    # 开启驼峰命名
+    map-underscore-to-camel-case: true
 # 配置swagger
 swagger:
   enabled: true

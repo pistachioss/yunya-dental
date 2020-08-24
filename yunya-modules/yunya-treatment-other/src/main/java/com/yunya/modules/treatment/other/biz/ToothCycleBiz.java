@@ -31,8 +31,8 @@ public class ToothCycleBiz {
         toothCycleMapper.add(toothCycle);
     }
 
-    public void  upd(ToothCycleForm cycle){
-        toothCycleMapper.upd(cycle);
+    public void  upd(ToothCycle toothCycle){
+        toothCycleMapper.upd(toothCycle);
     }
 
     public void  del(Integer id){

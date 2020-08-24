@@ -10,19 +10,53 @@
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
     <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER" />
     <result column="dentist_id" property="dentistId" jdbcType="INTEGER" />
-    <result column="photo_film" property="photoFilm" jdbcType="VARCHAR" />
-    <result column="peiapical_film_id" property="peiapicalFilmId" jdbcType="INTEGER" />
-    <result column="panorama" property="panorama" jdbcType="VARCHAR" />
-    <result column="normotopia_film" property="normotopiaFilm" jdbcType="VARCHAR" />
-    <result column="lateral_film" property="lateralFilm" jdbcType="VARCHAR" />
-    <result column="joint_film" property="jointFilm" jdbcType="VARCHAR" />
+    <result column="uri" property="uri" jdbcType="VARCHAR" />
+    <result column="photo_type" property="photoType" jdbcType="INTEGER" />
     <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
     <result column="film_name" property="filmName" jdbcType="VARCHAR" />
-    <result column="orthodontics_film" property="orthodonticsFilm" jdbcType="VARCHAR" />
-    <result column="other_film" property="otherFilm" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
   </resultMap>
+  <select id="findPhotoServiceData" parameterType="com.yunya.feign.treatment_other.domain.query.PhotoServiceQuery"
+          resultType="com.yunya.feign.treatment_other.domain.vo.PhotoServiceVo">
+    SELECT
+    uri,
+    upload_time,
+    film_name,
+    id
+    FROM
+    photo_service
+    WHERE
+    patient_id = #{patientId}
+    and
+    photo_type = #{photoType}
+  </select>
+  <insert id="add" parameterType="com.yunya.models.treatment_other.PhotoService">
+    INSERT
+    INTO
+    photo_service
+    (dentist_id,uri,photo_type,crt_id,org_id,treatment_record_id,patient_id,upload_time,film_name)
+    VALUES
+    (#{dentistId},#{uri},#{photoType},#{crtId},#{orgId},#{treatmentRecordId},#{patientId},#{uploadTime},#{filmName})
+  </insert>
+
+  <update id="upd" parameterType="com.yunya.models.treatment_other.PhotoService">
+        UPDATE photo_service
+        SET
+        upload_time = #{uploadTime},
+        upd_id = #{updId}
+        WHERE
+        id = #{id};
+
+  </update>
+
+  <delete id="del" parameterType="java.lang.Integer">
+    DELETE
+    FROM
+    photo_service
+    WHERE
+    id = #{id}
+  </delete>
 </mapper>
