@@ -35,39 +35,15 @@ public class PhotoService {
     private Integer dentistId;
 
     /**
-     * 照片
+     * 照片url
      */
-    @Column(name = "photo_film")
-    private String photoFilm;
+    private String uri;
 
     /**
-     * 根尖片id
+     * 图片类型
      */
-    @Column(name = "peiapical_film_id")
-    private Integer peiapicalFilmId;
-
-    /**
-     * 全景片
-     */
-    private String panorama;
-
-    /**
-     * 正位片
-     */
-    @Column(name = "normotopia_film")
-    private String normotopiaFilm;
-
-    /**
-     * 侧位片
-     */
-    @Column(name = "lateral_film")
-    private String lateralFilm;
-
-    /**
-     * 关节片
-     */
-    @Column(name = "joint_film")
-    private String jointFilm;
+    @Column(name = "photo_type")
+    private Integer photoType;
 
     /**
      * 图片上传日期
@@ -80,18 +56,6 @@ public class PhotoService {
      */
     @Column(name = "film_name")
     private String filmName;
-
-    /**
-     * 正畸片
-     */
-    @Column(name = "orthodontics_film")
-    private String orthodonticsFilm;
-
-    /**
-     * 其他图片
-     */
-    @Column(name = "other_film")
-    private String otherFilm;
 
     /**
      * 创建时间
@@ -204,111 +168,39 @@ public class PhotoService {
     }
 
     /**
-     * 获取照片
+     * 获取照片url
      *
-     * @return photo_film - 照片
+     * @return uri - 照片url
      */
-    public String getPhotoFilm() {
-        return photoFilm;
+    public String getUri() {
+        return uri;
     }
 
     /**
-     * 设置照片
+     * 设置照片url
      *
-     * @param photoFilm 照片
+     * @param uri 照片url
      */
-    public void setPhotoFilm(String photoFilm) {
-        this.photoFilm = photoFilm;
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
     /**
-     * 获取根尖片id
+     * 获取图片类型
      *
-     * @return peiapical_film_id - 根尖片id
+     * @return photo_type - 图片类型
      */
-    public Integer getPeiapicalFilmId() {
-        return peiapicalFilmId;
+    public Integer getPhotoType() {
+        return photoType;
     }
 
     /**
-     * 设置根尖片id
+     * 设置图片类型
      *
-     * @param peiapicalFilmId 根尖片id
+     * @param photoType 图片类型
      */
-    public void setPeiapicalFilmId(Integer peiapicalFilmId) {
-        this.peiapicalFilmId = peiapicalFilmId;
-    }
-
-    /**
-     * 获取全景片
-     *
-     * @return panorama - 全景片
-     */
-    public String getPanorama() {
-        return panorama;
-    }
-
-    /**
-     * 设置全景片
-     *
-     * @param panorama 全景片
-     */
-    public void setPanorama(String panorama) {
-        this.panorama = panorama;
-    }
-
-    /**
-     * 获取正位片
-     *
-     * @return normotopia_film - 正位片
-     */
-    public String getNormotopiaFilm() {
-        return normotopiaFilm;
-    }
-
-    /**
-     * 设置正位片
-     *
-     * @param normotopiaFilm 正位片
-     */
-    public void setNormotopiaFilm(String normotopiaFilm) {
-        this.normotopiaFilm = normotopiaFilm;
-    }
-
-    /**
-     * 获取侧位片
-     *
-     * @return lateral_film - 侧位片
-     */
-    public String getLateralFilm() {
-        return lateralFilm;
-    }
-
-    /**
-     * 设置侧位片
-     *
-     * @param lateralFilm 侧位片
-     */
-    public void setLateralFilm(String lateralFilm) {
-        this.lateralFilm = lateralFilm;
-    }
-
-    /**
-     * 获取关节片
-     *
-     * @return joint_film - 关节片
-     */
-    public String getJointFilm() {
-        return jointFilm;
-    }
-
-    /**
-     * 设置关节片
-     *
-     * @param jointFilm 关节片
-     */
-    public void setJointFilm(String jointFilm) {
-        this.jointFilm = jointFilm;
+    public void setPhotoType(Integer photoType) {
+        this.photoType = photoType;
     }
 
     /**
@@ -345,42 +237,6 @@ public class PhotoService {
      */
     public void setFilmName(String filmName) {
         this.filmName = filmName;
-    }
-
-    /**
-     * 获取正畸片
-     *
-     * @return orthodontics_film - 正畸片
-     */
-    public String getOrthodonticsFilm() {
-        return orthodonticsFilm;
-    }
-
-    /**
-     * 设置正畸片
-     *
-     * @param orthodonticsFilm 正畸片
-     */
-    public void setOrthodonticsFilm(String orthodonticsFilm) {
-        this.orthodonticsFilm = orthodonticsFilm;
-    }
-
-    /**
-     * 获取其他图片
-     *
-     * @return other_film - 其他图片
-     */
-    public String getOtherFilm() {
-        return otherFilm;
-    }
-
-    /**
-     * 设置其他图片
-     *
-     * @param otherFilm 其他图片
-     */
-    public void setOtherFilm(String otherFilm) {
-        this.otherFilm = otherFilm;
     }
 
     /**

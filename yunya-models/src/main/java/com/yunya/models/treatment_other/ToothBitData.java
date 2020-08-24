@@ -11,16 +11,10 @@ public class ToothBitData {
     private Integer id;
 
     /**
-     * 影像id
-     */
-    @Column(name = "photo_service_id")
-    private Integer photoServiceId;
-
-    /**
      * 牙位id
      */
     @Column(name = "tooth_bit")
-    private String toothBit;
+    private Integer toothBit;
 
     /**
      * 图片名称
@@ -65,6 +59,30 @@ public class ToothBitData {
     private Date updTime;
 
     /**
+     * 患者id
+     */
+    @Column(name = "patient_id")
+    private Integer patientId;
+
+    /**
+     * 组织id
+     */
+    @Column(name = "org_id")
+    private Integer orgId;
+
+    /**
+     * 就诊id
+     */
+    @Column(name = "treatment_record_id")
+    private Integer treatmentRecordId;
+
+    /**
+     * 牙医id
+     */
+    @Column(name = "dentist_id")
+    private Integer dentistId;
+
+    /**
      * @return id
      */
     public Integer getId() {
@@ -79,29 +97,11 @@ public class ToothBitData {
     }
 
     /**
-     * 获取影像id
-     *
-     * @return photo_service_id - 影像id
-     */
-    public Integer getPhotoServiceId() {
-        return photoServiceId;
-    }
-
-    /**
-     * 设置影像id
-     *
-     * @param photoServiceId 影像id
-     */
-    public void setPhotoServiceId(Integer photoServiceId) {
-        this.photoServiceId = photoServiceId;
-    }
-
-    /**
      * 获取牙位id
      *
      * @return tooth_bit - 牙位id
      */
-    public String getToothBit() {
+    public Integer getToothBit() {
         return toothBit;
     }
 
@@ -110,7 +110,7 @@ public class ToothBitData {
      *
      * @param toothBit 牙位id
      */
-    public void setToothBit(String toothBit) {
+    public void setToothBit(Integer toothBit) {
         this.toothBit = toothBit;
     }
 
@@ -238,5 +238,77 @@ public class ToothBitData {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取患者id
+     *
+     * @return patient_id - 患者id
+     */
+    public Integer getPatientId() {
+        return patientId;
+    }
+
+    /**
+     * 设置患者id
+     *
+     * @param patientId 患者id
+     */
+    public void setPatientId(Integer patientId) {
+        this.patientId = patientId;
+    }
+
+    /**
+     * 获取组织id
+     *
+     * @return org_id - 组织id
+     */
+    public Integer getOrgId() {
+        return orgId;
+    }
+
+    /**
+     * 设置组织id
+     *
+     * @param orgId 组织id
+     */
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
+    }
+
+    /**
+     * 获取就诊id
+     *
+     * @return treatment_record_id - 就诊id
+     */
+    public Integer getTreatmentRecordId() {
+        return treatmentRecordId;
+    }
+
+    /**
+     * 设置就诊id
+     *
+     * @param treatmentRecordId 就诊id
+     */
+    public void setTreatmentRecordId(Integer treatmentRecordId) {
+        this.treatmentRecordId = treatmentRecordId;
+    }
+
+    /**
+     * 获取牙医id
+     *
+     * @return dentist_id - 牙医id
+     */
+    public Integer getDentistId() {
+        return dentistId;
+    }
+
+    /**
+     * 设置牙医id
+     *
+     * @param dentistId 牙医id
+     */
+    public void setDentistId(Integer dentistId) {
+        this.dentistId = dentistId;
     }
 }

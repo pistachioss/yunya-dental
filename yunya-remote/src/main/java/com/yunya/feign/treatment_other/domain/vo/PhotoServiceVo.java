@@ -11,24 +11,27 @@ import java.util.Date;
 /**
  * 简介: 牙周期列表模型
  *
- * @author: Zkq
+ * @author: chow
+ * @date: 2020/8/11 15:04
  * @description:
  * @since: 1.0.0
  */
 @ApiModel("返回牙周期列表模型")
 @Data
 @ToString
-public class ToothCycleVo {
+public class PhotoServiceVo {
+
+    @ApiModelProperty(value = "图片uri")
+    private String uri;
 
     @ApiModelProperty(value = "主键id")
     private Integer id;
-    @ApiModelProperty(value = "牙医姓名")
-    private String dentistName;
-    @ApiModelProperty(value = "牙医id")
-    private Integer dentistId;
-    @ApiModelProperty(value = "牙周期")
-    private String toothCycle;
-    @ApiModelProperty(value = "检查日期")
+
+    @ApiModelProperty(value = "图片上传日期")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date examinationData;
+    private Date uploadTime;
+
+    @ApiModelProperty(value = "图片名称")
+    private String filmName;
+
 }

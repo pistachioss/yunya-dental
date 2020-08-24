@@ -1,5 +1,8 @@
 package com.yunya.modules.treatment.other.controller;
 
+import com.yunya.feign.auth.RemoteServiceAuthFeign;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment_other.domain.form.ToothCycleForm;
 import com.yunya.feign.treatment_other.domain.model.ToothCycleModel;
 import com.yunya.feign.treatment_other.domain.query.ToothCycleQuery;
@@ -38,6 +41,9 @@ public class ToothCycleController {
 
     @Autowired
     private ToothCycleBiz toothCycleBiz;
+
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     /**
      * 查询牙周期列表
      *
@@ -48,6 +54,11 @@ public class ToothCycleController {
     @PostMapping("/findCycleList")
     public ResponseResult findCycleList(ToothCycleQuery cycle){
         List<ToothCycleVo> cycleList = toothCycleBiz.findCycleList(cycle);
+        for (ToothCycleVo cycleData: cycleList) {
+            SysUserInfoDetail dentistData = remoteSystemServiceFeign.
+                    findSysUserEmployeeInfoByUserId(cycleData.getDentistId());
+            cycleData.setDentistName(dentistData.getName());
+        }
         return ResponseUtil.success(cycleList);
     }
     /**
@@ -76,10 +87,12 @@ public class ToothCycleController {
     @CurrentUser
     @ApiOperation("修改牙周期记录")
     @PostMapping("/upd")
-    public ResponseResult upd(ToothCycleForm cycle){
+    public ResponseResult upd(@Valid @RequestBody ToothCycleForm cycle){
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
-        cycle.setUpdId(userID);
-        toothCycleBiz.upd(cycle);
+        ToothCycle toothCycle = new ToothCycle();
+        BeanUtils.copyProperties(cycle,toothCycle);
+        toothCycle.setUpdId(userID);
+        toothCycleBiz.upd(toothCycle);
         return ResponseUtil.success();
     }
     /**

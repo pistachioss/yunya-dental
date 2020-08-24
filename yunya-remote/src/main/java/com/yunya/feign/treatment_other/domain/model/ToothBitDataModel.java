@@ -17,29 +17,41 @@ import java.util.Date;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("添加牙周期列表模型")
+@ApiModel("添加牙根尖影像模块")
 @Data
 @ToString
-public class ToothCycleModel {
+public class ToothBitDataModel {
 
     @ApiModelProperty(value = "诊所id",required = true)
     @NotNull
     private int orgId;
+
     @ApiModelProperty(value = "患者id",required = true)
     @NotNull
     private int patientId;
+
     @ApiModelProperty(value = "就诊id",required = true)
     @NotNull
     private int treatmentRecordId;
+
     @ApiModelProperty(value = "牙医id",required = true)
     @NotNull
     private int dentistId;
-    @NotNull
-    @ApiModelProperty(value = "牙周期")
-    private String toothCycle;
-    @ApiModelProperty(value = "检查日期",required = true)
-    @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date examinationData;
 
+    @ApiModelProperty(value = "图片上传日期",required = true)
+    @NotNull
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date uploadTime;
+
+    @ApiModelProperty(value = "牙位id")
+    @NotNull
+    private Integer toothBit;
+
+    @ApiModelProperty(value = "图片uri")
+    @NotNull
+    private String toothBitFilm;
+
+    @ApiModelProperty(value = "图片名称")
+    @NotNull
+    private String filmName;
 }

@@ -30,7 +30,7 @@ public interface ToothCycleMapper extends Mapper<ToothCycle> {
      * 修改牙周期表
      * @param toothCycle
      */
-    void upd(ToothCycleForm toothCycle);
+    void upd(ToothCycle toothCycle);
 
     /**
      * 删除牙周期表

@@ -5,7 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.Date;
+import javax.validation.constraints.NotNull;
 
 /**
  * 简介: 牙周期列表模型
@@ -18,10 +18,18 @@ import java.util.Date;
 @ApiModel("查询牙周期列表模型")
 @Data
 @ToString
-public class ToothCycleQuery {
+public class ToothBitDataQuery {
 
     @ApiModelProperty(value = "患者id")
+    @NotNull
     private int patientId;
+
+    @ApiModelProperty(value = "牙位id")
+    @NotNull
+    private Integer toothBit;
+
+
+
 
 
 }
