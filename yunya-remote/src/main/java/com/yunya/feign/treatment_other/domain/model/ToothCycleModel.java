@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -33,9 +34,12 @@ public class ToothCycleModel {
     @ApiModelProperty(value = "牙医id",required = true)
     @NotNull
     private int dentistId;
+    @NotNull
     @ApiModelProperty(value = "牙周期")
     private String toothCycle;
     @ApiModelProperty(value = "检查日期",required = true)
     @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date examinationData;
+
 }
