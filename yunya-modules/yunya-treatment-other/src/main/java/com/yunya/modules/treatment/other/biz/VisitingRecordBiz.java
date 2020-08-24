@@ -32,6 +32,7 @@ import com.yunya.models.system.MemberType;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
+import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -188,10 +189,23 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             VisitingRecordVo recordVo = this.comboVisitingRecord(visitingRecordVo);
             visitingRecordVoList.add(recordVo);
         }
-
-
         // 按随访时间排序
-        visitingRecordVoSearchList = visitingRecordVoList.stream().sorted(Comparator.comparing(VisitingRecordVo::getVisitingTime)).collect(Collectors.toList());
+        visitingRecordVoSearchList = visitingRecordVoList.stream().sorted(Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
+            if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
+                return -1;
+            }
+            String[] objSplit1 = obj1.trim().split(":");
+            Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
+            String[] objSplit2 = obj2.trim().split(":");
+            Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
+            if (objMinute1 < objMinute2){
+                return -1;
+            } else if (objMinute1 > objMinute2){
+                return 1;
+            } else {
+                return 0;
+            }
+        })).collect(Collectors.toList());
 
         // 按患者姓名、手机号、病历号检索
         // 匹配姓名
