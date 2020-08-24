@@ -76,4 +76,13 @@ public interface RemoteAppointmentFeign {
     @RequestMapping(value = "/api/appoint/find/{id}", method = RequestMethod.GET)
     Appointment findAppointmentById(@PathVariable(value = "id") Integer id);
 
+    /**
+     * 根据条件查询预约列表
+     * @param patientId 患者id
+     * @return  List<Appointment>
+     */
+    @RequestMapping(value = "/appoint/find/patient/list/{patientId}", method = RequestMethod.GET)
+    List<Appointment> findAppointmentByPatientId(@PathVariable(value = "patientId") Integer patientId);
+
+
 }

@@ -156,16 +156,10 @@ public interface AppointmentMapper extends Mapper<Appointment> {
       @Param("queryForm") AppointmentCurrentListQuery queryForm);
 
   /**
-   * 查询预约可视图列表（医生维度）
-   *
-   * @param currentDate
-   * @param dentistId
-   * @param orgId
-   * @return
+   * 根据患者id查询患者所有预约列表
+   * @param patientId 患者id
+   * @return 患者列表
    */
-  //    List<AppointDentistDimensionVo> findAppointmentDentistDimensionByExample(
-  //            @Param("currentDate") Date currentDate,
-  //            @Param("dentistId") Integer dentistId,
-  //            @Param("orgId") Integer orgId);
+  List<Appointment> findAppointmentByPatientId(@Param("patientId") Integer patientId);
 
 }

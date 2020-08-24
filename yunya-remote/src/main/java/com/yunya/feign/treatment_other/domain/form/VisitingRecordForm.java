@@ -66,11 +66,15 @@ public class VisitingRecordForm implements Serializable {
     private Date treatmentDate;
 
     /**
-     * 随访时间 精确到分
+     * 随访日期
      */
-    @ApiModelProperty(value = "随访时间 精确到分")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
-    private Date visitingDateTime;
+    @ApiModelProperty(value = "随访日期")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date visitingDate;
+
+    /** 随访时间 */
+    @ApiModelProperty(value = "随访时间")
+    private String visitingTime;
 
     /**
      * 随访原因 新建随访

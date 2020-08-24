@@ -2,6 +2,7 @@ package com.yunya.modules.appointment.rpc;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
@@ -12,6 +13,7 @@ import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
 
@@ -108,6 +110,16 @@ public class AppointmentRest {
     public Appointment findAppointmentById(@PathVariable(value = "id") Integer id){
         Appointment appointment = appointmentBiz.selectById(id);
         return appointment;
+    }
+
+    /**
+     * 根据条件查询预约列表
+     * @param patientId 患者id
+     * @return  List<Appointment>
+     */
+    @RequestMapping(value = "/appoint/find/patient/list/{patientId}", method = RequestMethod.GET)
+    public List<Appointment> findAppointmentByPatientId(@PathVariable(value = "patientId") Integer patientId){
+        return appointmentBiz.findAppointmentByPatientId(patientId);
     }
 
 

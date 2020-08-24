@@ -69,8 +69,15 @@ public class VisitingRecordModel implements Serializable {
      */
     @ApiModelProperty(value = "随访时间 精确到分", required = true)
     @NotNull(message = "随访时间不能为空!")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
-    private Date visitingDateTime;
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date visitingDate;
+
+    /**
+     * 随访时间
+     */
+    @ApiModelProperty(value = "随访时间", required = true)
+    @NotBlank(message = "随访时间不能为空！")
+    private String visitingTime;
 
     /**
      * 随访原因 新建随访

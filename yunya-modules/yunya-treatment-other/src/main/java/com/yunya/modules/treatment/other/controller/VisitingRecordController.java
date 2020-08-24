@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.other.controller;
 
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
+import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -59,6 +60,7 @@ public class VisitingRecordController {
      */
     @ApiOperation(value = "修改随访记录")
     @PutMapping("/update")
+    @CurrentUser
     public ResponseResult updateRecord(@RequestBody @Validated VisitingRecordForm form){
         return visitingRecordBiz.updateVisitingRecord(form);
     }
@@ -69,7 +71,7 @@ public class VisitingRecordController {
      * @return  ResponseResult
      */
     @ApiOperation(value = "根据id查询随访记录")
-    @PutMapping("/find/{id}")
+    @GetMapping("/find/{id}")
     public ResponseResult findRecordById(@PathVariable("id") Integer id){
         return visitingRecordBiz.findVisitingRecordById(id);
     }
@@ -80,10 +82,31 @@ public class VisitingRecordController {
      * @return  ResponseResult
      */
     @ApiOperation(value = "根据条件查询随访记录")
-    @PutMapping("/find")
+    @PostMapping("/find")
     public ResponseResult findRecordByCondition(@RequestBody @Validated VisitingRecordQuery query){
+        return visitingRecordBiz.findVisitingRecordByCondition(query);
+    }
 
-        return ResponseUtil.success();
+    /**
+     * 随访内容（执行随访按钮用）
+     * @param id 随访记录id
+     * @return ResponseResult
+     */
+    @ApiOperation(value = "随访内容（执行随访按钮用）")
+    @GetMapping("/execute/visiting/{id}")
+    public ResponseResult executeVisiting(@PathVariable("id") Integer id){
+        return visitingRecordBiz.executeVisiting(id);
+    }
+
+    /**
+     * 后续随访查询（随访管理-执行随访-随访-后续随访）
+     * @param query 查询条件
+     * @return ResponseResult
+     */
+    @ApiOperation(value = "后续随访查询（随访管理-执行随访-随访-后续随访）")
+    @PostMapping("/find/after/visiting")
+    public ResponseResult findAfterVisitingContent(@RequestBody @Validated VisitingContentAfterCurrentQuery query){
+        return visitingRecordBiz.findAfterVisitingContent(query);
     }
 
 

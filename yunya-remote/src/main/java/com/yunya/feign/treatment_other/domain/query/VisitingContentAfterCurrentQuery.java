@@ -7,21 +7,20 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
  * @program: yunya-dental
- * @description: 查询随访记录模型
+ * @description: 后续随访内容查询参数
  * @author: LHB
- * @create: 2020-08-21 17:42
+ * @create: 2020-08-24 14:59
  **/
-@ApiModel(value = "查询随访记录模型")
+@ApiModel(value = "后续随访内容查询参数")
 @Data
 @ToString
-public class VisitingRecordQuery implements Serializable {
+public class VisitingContentAfterCurrentQuery implements Serializable {
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
 
@@ -33,34 +32,15 @@ public class VisitingRecordQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
-    /** 门诊id */
-    @ApiModelProperty(value = "门诊id", required = true)
-    @NotNull(message = "门诊id不能为空！")
-    private Integer orgId;
-
     /** 患者id */
-    @ApiModelProperty(value = "患者id", hidden = true)
+    @ApiModelProperty(value = "患者id", required = true)
+    @NotNull(message = "患者id不能为空！")
     private Integer patientId;
 
-    /**
-     * 随访日期
-     */
+    /** 随访日期 */
     @ApiModelProperty(value = "随访日期", required = true)
-    @NotNull(message = "随访日期不能为空！")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date visitingDate;
-
-    /** 患者姓名、手机号 */
-    @ApiModelProperty(value = "患者姓名、手机号")
-    private String search;
-
-    /** 患者病历号 */
-    @ApiModelProperty(value = "患者病历号")
-    private String medicalNumber;
-
-    /** 是否启用 */
-    @ApiModelProperty(value = "是否启用")
-    private Boolean inservice;
-
+    @NotNull(message = "随访日期不能为空！")
+    private Date date;
 
 }

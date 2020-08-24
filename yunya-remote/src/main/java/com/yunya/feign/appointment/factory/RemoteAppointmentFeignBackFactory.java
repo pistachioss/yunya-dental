@@ -50,4 +50,9 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
     public Appointment findAppointmentById(Integer id) {
         return null;
     }
+
+    @Override
+    public List<Appointment> findAppointmentByPatientId(Integer patientId) {
+        return null;
+    }
 }

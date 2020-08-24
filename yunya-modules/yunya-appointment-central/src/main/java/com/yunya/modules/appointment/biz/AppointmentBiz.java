@@ -622,6 +622,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
+     * 根据患者id查询患者预约列表
+     * @param patientId 患者id
+     * @return 患者预约列表
+     */
+    public List<Appointment> findAppointmentByPatientId(Integer patientId){
+        return mapper.findAppointmentByPatientId(patientId);
+    }
+
+    /**
      * 根据日期查询失约患者名单
      * @param currentDate  当前日期
      * @return 预约列表

@@ -18,7 +18,7 @@ public class VisitingRecord {
     private Integer orgId;
 
     /**
-     * 患者就诊ID
+     * 患者就诊记录ID
      */
     @Column(name = "treatment_id")
     private Integer treatmentId;
@@ -48,10 +48,16 @@ public class VisitingRecord {
     private Date treatmentDate;
 
     /**
-     * 随访时间 精确到分
+     * 随访日期
      */
-    @Column(name = "visiting_date_time")
-    private Date visitingDateTime;
+    @Column(name = "visiting_date")
+    private Date visitingDate;
+
+    /**
+     * 随访时间
+     */
+    @Column(name = "visiting_time")
+    private String visitingTime;
 
     /**
      * 随访原因 新建随访
@@ -142,18 +148,18 @@ public class VisitingRecord {
     }
 
     /**
-     * 获取患者就诊ID
+     * 获取患者就诊记录ID
      *
-     * @return treatment_id - 患者就诊ID
+     * @return treatment_id - 患者就诊记录ID
      */
     public Integer getTreatmentId() {
         return treatmentId;
     }
 
     /**
-     * 设置患者就诊ID
+     * 设置患者就诊记录ID
      *
-     * @param treatmentId 患者就诊ID
+     * @param treatmentId 患者就诊记录ID
      */
     public void setTreatmentId(Integer treatmentId) {
         this.treatmentId = treatmentId;
@@ -232,21 +238,39 @@ public class VisitingRecord {
     }
 
     /**
-     * 获取随访时间 精确到分
+     * 获取随访日期
      *
-     * @return visiting_date_time - 随访时间 精确到分
+     * @return visiting_date - 随访日期
      */
-    public Date getVisitingDateTime() {
-        return visitingDateTime;
+    public Date getVisitingDate() {
+        return visitingDate;
     }
 
     /**
-     * 设置随访时间 精确到分
+     * 设置随访日期
      *
-     * @param visitingDateTime 随访时间 精确到分
+     * @param visitingDate 随访日期
      */
-    public void setVisitingDateTime(Date visitingDateTime) {
-        this.visitingDateTime = visitingDateTime;
+    public void setVisitingDate(Date visitingDate) {
+        this.visitingDate = visitingDate;
+    }
+
+    /**
+     * 获取随访时间
+     *
+     * @return visiting_time - 随访时间
+     */
+    public String getVisitingTime() {
+        return visitingTime;
+    }
+
+    /**
+     * 设置随访时间
+     *
+     * @param visitingTime 随访时间
+     */
+    public void setVisitingTime(String visitingTime) {
+        this.visitingTime = visitingTime;
     }
 
     /**

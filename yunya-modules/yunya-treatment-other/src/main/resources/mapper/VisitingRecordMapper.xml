@@ -12,7 +12,8 @@
     <result column="dentist_id" jdbcType="INTEGER" property="dentistId" />
     <result column="dept_room_id" jdbcType="INTEGER" property="deptRoomId" />
     <result column="treatment_date" jdbcType="DATE" property="treatmentDate" />
-    <result column="visiting_date_time" jdbcType="TIMESTAMP" property="visitingDateTime" />
+    <result column="visiting_date" jdbcType="DATE" property="visitingDate" />
+    <result column="visiting_time" jdbcType="VARCHAR" property="visitingTime" />
     <result column="reason" jdbcType="VARCHAR" property="reason" />
     <result column="visiting_content" jdbcType="VARCHAR" property="visitingContent" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
@@ -23,5 +24,70 @@
     <result column="upd_name" jdbcType="VARCHAR" property="updName" />
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
+
+  <resultMap id="VisitingRecordListVoMap" type="com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="org_id" jdbcType="INTEGER" property="orgId" />
+    <result column="treatment_id" jdbcType="INTEGER" property="treatmentId" />
+    <result column="patient_id" jdbcType="INTEGER" property="patientId" />
+    <result column="dentist_id" jdbcType="INTEGER" property="dentistId" />
+    <result column="dept_room_id" jdbcType="INTEGER" property="deptRoomId" />
+    <result column="treatment_date" jdbcType="DATE" property="treatmentDate" />
+    <result column="visiting_date" jdbcType="DATE" property="visitingDate" />
+    <result column="visiting_time" jdbcType="VARCHAR" property="visitingTime" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="visiting_content" jdbcType="VARCHAR" property="visitingContent" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="visitingCount" jdbcType="INTEGER" property="visitingCount"/>
+  </resultMap>
+
+  <!-- 根据随访id查询随访记录（附带后续随访个数） -->
+  <select id="findVisitingRecordById" parameterType="java.lang.Integer" resultMap="VisitingRecordListVoMap">
+    SELECT
+        vr.*,
+        ( SELECT COUNT( id ) FROM visiting_record WHERE patient_id = vr.patient_id ) AS visitingCount
+    FROM
+        `visiting_record` vr
+    WHERE
+        vr.id = #{id}
+  </select>
+
+  <!-- 根据条件查询随访列表 -->
+  <select id="findVisitingRecordByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery" resultMap="VisitingRecordListVoMap">
+    SELECT
+        vr.*,
+        ( SELECT COUNT( id ) FROM visiting_record WHERE patient_id = vr.patient_id ) AS visitingCount
+    FROM
+        `visiting_record` vr
+    <where>
+      <if test="query.orgId != null">
+        vr.org_id = #{query.orgId}
+      </if>
+      <if test="query.visitingDate != null">
+        and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
+      </if>
+      <if test="query.inservice != null">
+        and vr.inservice = #{query.inservice}
+      </if>
+    </where>
+  </select>
+
+  <!-- 根据患者id、时间查询随访列表 -->
+  <select id="findAfterVisitingContentByPatientIdAndDate" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery"
+          resultMap="BaseResultMap">
+      select
+        vr.*
+      from visiting_record vr
+      <where>
+        <if test="query.patientId != null and query.date != null">
+          vr.patient_id = #{query.patientId} and vr.visiting_date > DATE_FORMAT(#{query.date},'%Y-%m-%d')
+        </if>
+      </where>
+  </select>
 
 </mapper>

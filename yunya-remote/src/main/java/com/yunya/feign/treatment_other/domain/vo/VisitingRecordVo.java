@@ -1,14 +1,12 @@
 package com.yunya.feign.treatment_other.domain.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 /**
@@ -58,18 +56,28 @@ public class VisitingRecordVo implements Serializable {
     private Integer deptRoomId;
 
     /**
+     * 科室名字 默认末诊科室
+     */
+    @ApiModelProperty(value = "科室名字 默认末诊科室")
+    private String deptRoomName;
+
+    /**
      * 就诊日期
      */
     @ApiModelProperty(value = "就诊日期")
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date treatmentDate;
 
     /**
-     * 随访时间 精确到分
+     * 随访日期
      */
-    @ApiModelProperty(value = "随访时间 精确到分")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "GMT+8")
-    private Date visitingDateTime;
+    @ApiModelProperty(value = "随访日期")
+    private Date visitingDate;
+
+    /**
+     * 随访时间
+     */
+    @ApiModelProperty(value = "随访时间")
+    private String visitingTime;
 
     /**
      * 随访原因 新建随访
@@ -100,4 +108,55 @@ public class VisitingRecordVo implements Serializable {
      */
     @ApiModelProperty(value = "创建时间")
     private Date crtTime;
+
+    /** 医生名字 */
+    @ApiModelProperty(value = "医生名字")
+    private String dentistName;
+
+    /** 后续随访个数 */
+    @ApiModelProperty(value = "后续随访个数")
+    private Integer visitingCount;
+
+    /******************************* 患者信息 ********************************/
+    /** 患者姓名 */
+    @ApiModelProperty(value = "患者姓名")
+    private String patientName;
+
+    /** 患者病历号 */
+    @ApiModelProperty(value = "患者病历号")
+    private String medicalNumber;
+
+    /** 患者手机号 */
+    @ApiModelProperty(value = "患者手机号")
+    private String mobile;
+
+    /** 患者出生日期 */
+    @ApiModelProperty(value = "患者出生日期")
+    private String birthday;
+
+    /** 性别 */
+    @ApiModelProperty(value = "性别")
+    private Byte gender;
+
+    /** 年龄 */
+    @ApiModelProperty(value = "年龄")
+    private Integer age;
+
+
+    /** 会员图标 */
+    @ApiModelProperty(value = "会员图标")
+    private Byte memberIcon;
+
+    /** 患者过敏原 */
+    @ApiModelProperty(value = "患者过敏原")
+    private String allergen;
+
+    /** 欠费总额 */
+    @ApiModelProperty(value = "欠费总额")
+    private BigDecimal arrears;
+
+    /** 档案备注 */
+    @ApiModelProperty(value = "档案备注")
+    private String patientRemark;
+
 }

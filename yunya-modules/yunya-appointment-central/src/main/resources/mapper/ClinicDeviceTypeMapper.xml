@@ -26,7 +26,7 @@
         cdt.name,
         cdt.remarks,
         cdt.inservice,
-        count(cdt.name) as deviceNum
+        (SELECT count(*) from clinic_device_item where device_id = cdt.id) as deviceNum
     from clinic_device_type cdt
     <where>
       <if test="query.orgId != null">
