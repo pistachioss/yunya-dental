@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.treatment.other.mapper.VisitingRecordMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.VisitingRecord">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="org_id" jdbcType="INTEGER" property="orgId" />
+    <result column="treatment_id" jdbcType="INTEGER" property="treatmentId" />
+    <result column="patient_id" jdbcType="INTEGER" property="patientId" />
+    <result column="dentist_id" jdbcType="INTEGER" property="dentistId" />
+    <result column="dept_room_id" jdbcType="INTEGER" property="deptRoomId" />
+    <result column="treatment_date" jdbcType="DATE" property="treatmentDate" />
+    <result column="visiting_date_time" jdbcType="TIMESTAMP" property="visitingDateTime" />
+    <result column="reason" jdbcType="VARCHAR" property="reason" />
+    <result column="visiting_content" jdbcType="VARCHAR" property="visitingContent" />
+    <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
+    <result column="upd_name" jdbcType="VARCHAR" property="updName" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+
+</mapper>
