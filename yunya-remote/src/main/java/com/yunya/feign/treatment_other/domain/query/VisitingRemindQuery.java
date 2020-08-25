@@ -7,21 +7,20 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
 
 /**
  * @program: yunya-dental
- * @description: 查询随访记录模型
+ * @description: 查询随访提醒
  * @author: LHB
  * @create: 2020-08-21 17:42
  **/
-@ApiModel(value = "查询随访记录模型")
+@ApiModel(value = "查询随访提醒")
 @Data
 @ToString
-public class VisitingRecordQuery implements Serializable {
+public class VisitingRemindQuery implements Serializable {
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
 
@@ -33,26 +32,26 @@ public class VisitingRecordQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
+    /** 用户id */
+    @ApiModelProperty(value = "用户id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
+    private Integer userId;
+
     /** 门诊id */
     @ApiModelProperty(value = "门诊id", required = true)
     @NotNull(message = "门诊id不能为空！")
     private Integer orgId;
-
-    /** 用户id */
-    @ApiModelProperty(value = "用户id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
-    private Integer userId;
 
     /** 患者id */
     @ApiModelProperty(value = "患者id", hidden = true)
     private Integer patientId;
 
     /**
-     * 随访日期
+     * 提醒日期
      */
-    @ApiModelProperty(value = "随访日期", required = true)
-    @NotNull(message = "随访日期不能为空！")
+    @ApiModelProperty(value = "提醒日期", required = true)
+    @NotNull(message = "提醒日期不能为空！")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date visitingDate;
+    private Date remindDate;
 
     /** 患者姓名、手机号 */
     @ApiModelProperty(value = "患者姓名、手机号")
@@ -66,11 +65,9 @@ public class VisitingRecordQuery implements Serializable {
     @ApiModelProperty(value = "是否启用")
     private Boolean inservice;
 
-    /** 随访状态 0-待随访；1-随访完成 */
-    @ApiModelProperty(value = "随访状态 false-待随访；true-随访完成", required = true)
+    /** 提醒状态 0-待提醒；1-提醒完成 */
+    @ApiModelProperty(value = "提醒状态 false-待提醒；true-提醒完成",required = true)
     private Boolean status = false;
-
-
 
 
 }

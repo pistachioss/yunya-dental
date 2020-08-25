@@ -17,6 +17,8 @@
     <result column="reason" jdbcType="VARCHAR" property="reason" />
     <result column="visiting_content" jdbcType="VARCHAR" property="visitingContent" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="status" jdbcType="BIT" property="status" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
     <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
@@ -41,6 +43,8 @@
     <result column="reason" jdbcType="VARCHAR" property="reason" />
     <result column="visiting_content" jdbcType="VARCHAR" property="visitingContent" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="status" jdbcType="BIT" property="status" />
     <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
     <result column="visitingCount" jdbcType="INTEGER" property="visitingCount"/>
@@ -74,6 +78,12 @@
       <if test="query.inservice != null">
         and vr.inservice = #{query.inservice}
       </if>
+      <if test="query.userId != null">
+        and vr.crt_id = #{query.userId}
+      </if>
+      <if test="query.status != null">
+        and vr.status = #{query.status}
+      </if>
     </where>
   </select>
 
@@ -86,6 +96,9 @@
       <where>
         <if test="query.patientId != null and query.date != null">
           vr.patient_id = #{query.patientId} and vr.visiting_date > DATE_FORMAT(#{query.date},'%Y-%m-%d')
+        </if>
+        <if test="query.status != null">
+          and vr.status = #{query.status}
         </if>
       </where>
   </select>

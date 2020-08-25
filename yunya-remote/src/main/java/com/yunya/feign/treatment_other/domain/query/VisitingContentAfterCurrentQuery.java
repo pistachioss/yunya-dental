@@ -43,4 +43,8 @@ public class VisitingContentAfterCurrentQuery implements Serializable {
     @NotNull(message = "随访日期不能为空！")
     private Date date;
 
+    /** 随访状态 0-待随访；1-随访完成 */
+    @ApiModelProperty(value = "随访状态 false-待随访；true-随访完成", required = true)
+    private Boolean status = false;
+
 }

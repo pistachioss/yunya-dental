@@ -93,4 +93,10 @@ public class VisitingRecordForm implements Serializable {
      */
     @ApiModelProperty(value = "是否启用 0-不启用；1-启用")
     private Boolean inservice;
+
+    /**
+     * 随访状态 0-待随访；1-随访完成
+     */
+    @ApiModelProperty(value = "随访状态 0-待随访；1-随访完成")
+    private Boolean status;
 }

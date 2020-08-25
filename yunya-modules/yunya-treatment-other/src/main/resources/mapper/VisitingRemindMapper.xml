@@ -8,11 +8,13 @@
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
     <result column="patient_id" jdbcType="INTEGER" property="patientId" />
-    <result column="distent_id" jdbcType="INTEGER" property="distentId" />
+    <result column="dentist_id" jdbcType="INTEGER" property="dentistId" />
     <result column="treatment_id" jdbcType="INTEGER" property="treatmentId" />
-    <result column="remind_date_time" jdbcType="TIMESTAMP" property="remindDateTime" />
+    <result column="remind_date" jdbcType="DATE" property="remindDate" />
+    <result column="remind_time" jdbcType="VARCHAR" property="remindTime" />
     <result column="remind_content" jdbcType="VARCHAR" property="remindContent" />
     <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="status" jdbcType="BIT" property="status" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
     <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
@@ -21,5 +23,43 @@
     <result column="upd_name" jdbcType="VARCHAR" property="updName" />
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
+
+  <!-- 根据患者id、提醒日期，提醒时间查询随访提醒 -->
+  <select id="findVisitingRemindByPatientIdAndDateTime" parameterType="java.util.Map" resultMap="BaseResultMap">
+     select vrd.* from visiting_remind vrd
+     <where>
+       <if test="patientId != null">
+         vrd.patient_id = #{patientId}
+       </if>
+       <if test="date != null">
+        and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{date},'%Y-%m-%d')
+       </if>
+       <if test="time != null and time != ''">
+        and vrd.remind_time = #{time}
+       </if>
+     </where>
+  </select>
+
+  <!-- 根据条件查询随访提醒记录 -->
+  <select id="findVisitingRemindByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery" resultMap="BaseResultMap">
+      select vrd.* from visiting_remind vrd
+      <where>
+        <if test="query.patientId != null">
+          vrd.patient_id = #{query.patientId}
+        </if>
+        <if test="query.orgId != null">
+          and vrd.org_id = #{query.orgId}
+        </if>
+        <if test="query.remindDate != null">
+          and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+        </if>
+        <if test="query.inservice != null">
+          and vrd.inservice = #{query.inservice}
+        </if>
+        <if test="query.status != null">
+          and vrd.status = #{query.status}
+        </if>
+      </where>
+  </select>
 
 </mapper>

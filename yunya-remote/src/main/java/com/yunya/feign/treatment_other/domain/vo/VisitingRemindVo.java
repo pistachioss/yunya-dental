@@ -11,18 +11,18 @@ import java.util.Date;
 
 /**
  * @program: yunya-dental
- * @description: 随访记录视图模型
+ * @description: 随访提醒视图
  * @author: LHB
  * @create: 2020-08-21 20:25
  **/
-@ApiModel(value = "随访记录视图模型")
+@ApiModel(value = "随访提醒视图")
 @Data
 @ToString
-public class VisitingRecordVo implements Serializable {
+public class VisitingRemindVo implements Serializable {
     /**
-     * 随访记录ID
+     * 随访提醒记录ID
      */
-    @ApiModelProperty(value = "随访记录ID")
+    @ApiModelProperty(value = "随访提醒记录ID")
     private Integer id;
 
     /**
@@ -50,60 +50,28 @@ public class VisitingRecordVo implements Serializable {
     private Integer dentistId;
 
     /**
-     * 科室ID 默认末诊科室
+     * 提醒日期
      */
-    @ApiModelProperty(value = "科室ID")
-    private Integer deptRoomId;
+    @ApiModelProperty(value = "提醒日期")
+    private Date remindDate;
 
     /**
-     * 科室名字 默认末诊科室
+     * 提醒时间
      */
-    @ApiModelProperty(value = "科室名字 默认末诊科室")
-    private String deptRoomName;
+    @ApiModelProperty(value = "提醒时间")
+    private String remindTime;
 
     /**
-     * 就诊日期
+     * 提醒内容
      */
-    @ApiModelProperty(value = "就诊日期")
-    private Date treatmentDate;
-
-    /**
-     * 随访日期
-     */
-    @ApiModelProperty(value = "随访日期")
-    private Date visitingDate;
-
-    /**
-     * 随访时间
-     */
-    @ApiModelProperty(value = "随访时间")
-    private String visitingTime;
-
-    /**
-     * 随访原因 新建随访
-     */
-    @ApiModelProperty(value = "随访原因 新建随访")
-    private String reason;
-
-    /**
-     * 随访内容 执行随访
-     */
-    @ApiModelProperty(value = "随访内容 执行随访")
-    private String visitingContent;
+    @ApiModelProperty(value = "提醒内容")
+    private String remindContent;
 
     /**
      * 是否启用 0-不启用；1-启用
      */
     @ApiModelProperty(value = "是否启用 0-不启用；1-启用")
     private Boolean inservice;
-
-    /** 随访状态 0-待随访；1-随访完成*/
-    @ApiModelProperty(value = "随访状态 0-待随访；1-随访完成")
-    private Boolean status;
-
-    /** 备注 */
-    @ApiModelProperty(value = "备注")
-    private String remarks;
 
     /**
      * 创建人姓名
@@ -121,14 +89,14 @@ public class VisitingRecordVo implements Serializable {
     @ApiModelProperty(value = "医生名字")
     private String dentistName;
 
-    /** 后续随访个数 */
-    @ApiModelProperty(value = "后续随访个数")
-    private Integer visitingCount;
-
     /******************************* 患者信息 ********************************/
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")
     private String patientName;
+
+    /** 拼音名字 */
+    @ApiModelProperty(value = "拼音名字")
+    private String pinyinName;
 
     /** 患者病历号 */
     @ApiModelProperty(value = "患者病历号")

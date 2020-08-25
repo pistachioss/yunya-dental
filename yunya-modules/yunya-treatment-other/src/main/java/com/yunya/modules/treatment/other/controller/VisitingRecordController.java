@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.other.controller;
 
+import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
@@ -10,6 +11,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.CustomLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
  * @author: LHB
  * @create: 2020-08-21 17:06
  **/
-@Api(tags = "随访记录Controller")
+@Api(tags = "随访记录管理")
 @RestController
 @RequestMapping("visiting/record")
 public class VisitingRecordController {
@@ -83,6 +85,7 @@ public class VisitingRecordController {
      */
     @ApiOperation(value = "根据条件查询随访记录")
     @PostMapping("/find")
+    @CurrentUser
     public ResponseResult findRecordByCondition(@RequestBody @Validated VisitingRecordQuery query){
         return visitingRecordBiz.findVisitingRecordByCondition(query);
     }
@@ -107,6 +110,18 @@ public class VisitingRecordController {
     @PostMapping("/find/after/visiting")
     public ResponseResult findAfterVisitingContent(@RequestBody @Validated VisitingContentAfterCurrentQuery query){
         return visitingRecordBiz.findAfterVisitingContent(query);
+    }
+
+    /**
+     * 随访完成（随访完成-提交）
+     * @param form 随访内容
+     * @return ResponseResult
+     */
+    @ApiOperation(value = "随访完成（随访完成-提交）")
+    @PostMapping("/finish")
+    @CurrentUser
+    public ResponseResult finishVisiting(@RequestBody @Validated FinishVisitingForm form) {
+        return visitingRecordBiz.finishVisiting(form);
     }
 
 
