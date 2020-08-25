@@ -12,17 +12,22 @@ import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.TreatmentCompletedPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import org.joda.time.DateTime;
@@ -61,6 +66,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /** 开单 */
   @Autowired private OrderRecordMapper orderRecordMapper;
+
+  /** 开单明细 */
+  @Autowired private OrderDetailMapper orderDetailMapper;
 
   /**
    * 开始接诊
@@ -333,6 +341,44 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     TreatmentRecord record = mapper.selectByPrimaryKey(id);
     record.setMedicalRecordCompleted(true);
     mapper.updateByPrimaryKeySelective(record);
+  }
+
+  /**
+   * 治疗完成
+   *
+   * @param treatmentRecordId 接诊记录ID
+   */
+  public void completeTreatment(Integer treatmentRecordId) {
+    TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
+    if (null == treatmentRecord) {
+      throw new ClientServiceException(
+          "结束治疗失败，传入参数有误，未查询到相关就诊记录！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+    }
+    Byte status = treatmentRecord.getStatus();
+    if (!status.equals(BusinessConstants.TREATMENT_PROCESSING_STATUS)
+        && !status.equals(BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS)) {
+      throw new ClientServiceException(
+          "结束治疗失败，当前就诊已完成或已结账！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+    }
+    OrderRecord order = new OrderRecord();
+    order.setTreatmentRecordId(treatmentRecordId);
+    OrderRecord orderRecord = orderRecordMapper.selectOne(order);
+    if (null == orderRecord) {
+      throw new ClientServiceException(
+          "结束治疗失败，传入参数有误，未查询到相关开单记录！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+    }
+    OrderDetail detail = new OrderDetail();
+    detail.setTreatmentRecordId(treatmentRecordId);
+    int count = orderDetailMapper.selectCount(detail);
+    if (count <= 0) {
+      throw new ClientServiceException(
+          "结束治疗失败,当前就诊未进行开单，请至少开单一个项目！", OperationCodeConstants.DATA_NOT_EXIST);
+    }
+    orderRecord.setStatus((byte) 1);
+    orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
+    treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
+    treatmentRecord.setStatus((byte) 2);
+    mapper.updateByPrimaryKeySelective(treatmentRecord);
   }
 
   /**

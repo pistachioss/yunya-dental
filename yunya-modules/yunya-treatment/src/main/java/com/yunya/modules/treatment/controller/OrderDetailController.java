@@ -1,15 +1,17 @@
 package com.yunya.modules.treatment.controller;
 
+import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
+import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.OrderDetailBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介: 开单明细管理控制器
@@ -23,8 +25,36 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("details")
 public class OrderDetailController {
+
   /** 注入对象 */
   @Autowired private OrderDetailBiz orderDetailBiz;
+
+  /**
+   * 根据账单（开单）记录ID查询开单详情列表
+   *
+   * @param orderRecordId 开单记录ID
+   * @return
+   */
+  @ApiOperation("根据账单（开单）记录ID查询开单详情列表")
+  @GetMapping("/list/{orderRecordId}")
+  public ResponseResult findList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    List<OrderDetailVO> resultList = orderDetailBiz.findOrderDetailVOList(orderRecordId);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 添加商品
+   *
+   * @param model 商品参数
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("添加商品（收费界面用）")
+  @PostMapping("/add/goods")
+  public ResponseResult addGoods(@RequestBody GoodsDetailModel model) {
+    orderDetailBiz.addGoodDetail(model);
+    return ResponseUtil.success();
+  }
 
   /**
    * 根据开单明细ID删除开单明细
@@ -32,10 +62,11 @@ public class OrderDetailController {
    * @param id 开单明细ID
    * @return
    */
+  @CurrentUser
   @ApiOperation("根据开单明细ID删除开单明细")
   @DeleteMapping("/delete/{id}")
   public ResponseResult delete(@PathVariable(value = "id") Integer id) {
-    orderDetailBiz.deleteById(id);
+    orderDetailBiz.deleteOrderDetailById(id);
     return ResponseUtil.success();
   }
 }

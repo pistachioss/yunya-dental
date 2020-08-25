@@ -11,9 +11,9 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
   /**
    * 根据就诊记录ID查询开单详情列表
    *
-   * @param treatmentRecordId 就诊记录ID
+   * @param orderRecordId 就诊记录ID
    * @return
    */
   List<OrderDetailVO> selectOrderDetailVOList(
-      @Param("treatmentRecordId") Integer treatmentRecordId);
+      @Param("treatmentRecordId") Integer orderRecordId);
 }

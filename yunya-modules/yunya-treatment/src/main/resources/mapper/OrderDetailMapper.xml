@@ -38,6 +38,6 @@
         od.executor_id as executorId,
         od.remarks
       from order_detail od
-      where od.treatment_record_id = #{treatmentRecordId}
+      where od.order_record_id = #{orderRecordId}
     </select>
 </mapper>
