@@ -115,7 +115,7 @@ public class DiscountCouponForm {
      * 可使用门诊
      */
     @ApiModelProperty("可使用门诊列表")
-    private String useableClinci;
+    private String useableClinic;
 
 
 
