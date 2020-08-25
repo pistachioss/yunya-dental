@@ -1,17 +1,26 @@
 package com.yunya.modules.discount.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DiscountCoupon;
+import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import com.yunya.modules.discount.biz.DiscountCouponBiz;
+import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
+import com.yunya.modules.discount.form.DiscountCouponForm;
 import com.yunya.modules.discount.form.DiscountQueryForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 描述:
@@ -22,32 +31,34 @@ import javax.validation.Valid;
 @Api(tags = "折扣券")
 @RestController
 @RequestMapping("/discount_coupon")
+@CurrentUser
 public class DiscountCouponController {
     @Autowired
     private DiscountCouponBiz discountCouponBiz;
-
+    @Autowired
+    private CouponCommonInfoBiz couponCommonInfoBiz;
     /**
      * 新增折扣券
      *
-     * @param discountCoupon
+     * @param discountCouponForm
      * @return
      */
     @PostMapping
     @ApiOperation("新增折扣券")
-    public ResponseResult save(@RequestBody @Valid DiscountCoupon discountCoupon) {
-        return ResponseUtil.success(discountCouponBiz.saveDiscountCoupon(discountCoupon));
+    public ResponseResult save(@RequestBody @Valid DiscountCouponForm discountCouponForm) {
+        return ResponseUtil.success(discountCouponBiz.saveDiscountCoupon(discountCouponForm));
     }
 
     /**
      * 修改折扣券
      *
-     * @param discountUpdateForm
+     * @param discountCouponForm
      * @return
      */
     @PutMapping
     @ApiOperation("修改折扣券")
-    public ResponseResult update(@RequestBody DiscountUpdateForm discountUpdateForm) {
-        discountCouponBiz.updateDiscountCoupon(discountUpdateForm);
+    public ResponseResult update(@RequestBody DiscountCouponForm discountCouponForm) {
+        discountCouponBiz.updateDiscountCoupon(discountCouponForm);
         return ResponseUtil.success();
     }
 
@@ -64,35 +75,40 @@ public class DiscountCouponController {
     }
 
     /**
-     * 获取对象
+     * 获取单个对象详细信息
      *
      * @return
      */
-    @GetMapping("/{id}}")
-    @ApiOperation("获取对象")
+    @GetMapping("/{id}")
+    @ApiOperation("获取单个对象详细信息")
     public ResponseResult findOne(@PathVariable("id") Integer id) {
-        return ResponseUtil.success(discountCouponBiz.selectById(id));
+        CouponCommonInfo couponCommonInfo = couponCommonInfoBiz.selectById(id);
+        DiscountCoupon discountCoupon = new DiscountCoupon();
+        discountCoupon.setCouponId(couponCommonInfo.getId());
+        discountCoupon = discountCouponBiz.selectOne(discountCoupon);
+        DiscountCouponForm discountCouponForm = new DiscountCouponForm();
+        BeanUtils.copyProperties(discountCoupon, discountCouponForm);
+        BeanUtils.copyProperties(couponCommonInfo, discountCouponForm);
+        return ResponseUtil.success(discountCouponForm);
     }
 
     /**
-     * 获取列表
+     * 获取代金券的配给门诊ID列表
      *
      * @return
      */
-    @GetMapping("/list")
-    @ApiOperation("获取列表")
-    public ResponseResult list() {
-        return ResponseUtil.success(discountCouponBiz.selectListAll());
+    @GetMapping("/findOrgId/{id}")
+    @ApiOperation("获取代金券的配给门诊ID列表")
+    public ResponseResult findOrgIdList(@PathVariable("id") Integer id) {
+        DiscountCoupon discountCoupon = new DiscountCoupon();
+        discountCoupon.setCouponId(id);
+        discountCoupon = discountCouponBiz.selectOne(discountCoupon);
+        List<String> list = Arrays.asList(discountCoupon.getUseableClinic().split(","));
+        List<Integer>reList = new ArrayList<>();
+        for(String s:list){
+            reList.add(Integer.valueOf(s));
+        }
+        return ResponseUtil.success(reList);
     }
 
-//    /**
-//     * 查询列表
-//     *
-//     * @return
-//     */
-//    @PostMapping("/search")
-//    @ApiOperation("查询列表")
-//    public ResponseResult search(DiscountQueryForm discountQueryForm) {
-//        return ResponseUtil.success(discountCouponBiz.search(discountQueryForm));
-//    }
 }

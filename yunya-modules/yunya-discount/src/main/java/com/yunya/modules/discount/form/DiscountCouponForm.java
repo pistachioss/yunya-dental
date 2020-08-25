@@ -3,8 +3,6 @@ package com.yunya.modules.discount.form;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-
-import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
@@ -89,21 +87,9 @@ public class DiscountCouponForm {
     /**
      * 折扣率
      */
+    @NotNull(message = "折扣率不得为空")
     @ApiModelProperty("折扣率")
     private BigDecimal discountRate;
-
-    /**
-     * 账单单次使用限制数量
-     */
-    @NotNull(message = "单次限制数量不能为空")
-    @ApiModelProperty("账单单词使用限制数量")
-    private Integer limitCount;
-
-    /**
-     * 是否可混合使用优惠 0.可以混合使用1.跟会员卡混合使用2.无法混合使用
-     */
-    @NotNull(message = "是否混合使用选项不能为空")
-    private Integer mixedUseType;
 
     /**
      * 是否可与他人共享
@@ -129,7 +115,7 @@ public class DiscountCouponForm {
      * 可使用门诊
      */
     @ApiModelProperty("可使用门诊列表")
-    private String useableClinci;
+    private String useableClinic;
 
 
 

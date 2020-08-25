@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.vo.TreatmentCompletedPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -62,12 +61,34 @@ public class TreatmentRecordController {
     return ResponseUtil.success(resultList);
   }
 
-/*  *//**
+  /**
+   * 治疗完成
+   *
+   * @param treatmentRecordId 就诊记录ID
+   * @return
+   */
+  @ApiOperation("治疗完成")
+  @ApiImplicitParam(
+      name = "treatmentRecordId",
+      value = "接诊记录ID",
+      required = true,
+      dataType = "int",
+      paramType = "path")
+  @GetMapping("/complete/{treatmentRecordId}")
+  public ResponseResult completeTreatment(
+      @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
+    treatmentRecordBiz.completeTreatment(treatmentRecordId);
+    return ResponseUtil.success();
+  }
+
+  /*  */
+  /**
    * 根据条件查询就诊完成患者列表信息（可分页）
    *
    * @param queryForm 查询条件
    * @return
-   *//*
+   */
+  /*
   @ApiOperation("根据条件查询就诊完成患者列表信息（可分页）")
   @PostMapping("/completed/list")
   public ResponseResult findTreatCompletedList(

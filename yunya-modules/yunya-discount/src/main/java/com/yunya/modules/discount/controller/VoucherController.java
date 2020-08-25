@@ -94,12 +94,12 @@ public class VoucherController {
     }
 
     /**
-     * 获取折扣券的配给门诊ID列表
+     * 获取代金券的配给门诊ID列表
      *
      * @return
      */
     @GetMapping("/findOrgId/{id}")
-    @ApiOperation("获取折扣券的配给门诊ID列表")
+    @ApiOperation("获取代金券的配给门诊ID列表")
     public ResponseResult findOrgIdList(@PathVariable("id") Integer id) {
         VoucheCoupon voucheCoupon = new VoucheCoupon();
         voucheCoupon.setCouponId(id);
@@ -118,7 +118,7 @@ public class VoucherController {
      * @return
      */
     @PostMapping("/findList")
-    @ApiOperation("根据分类获取列表")
+    @ApiOperation("根据分类获取列表(卡券通用方法 用类型来区分)")
     public ResponseResult findList(@RequestBody @Valid CouponCommonInfoQueryForm couponCommonInfoQueryForm) {
         return ResponseUtil.success(
                 voucherBiz.findList(couponCommonInfoQueryForm));

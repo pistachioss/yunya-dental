@@ -11,31 +11,31 @@ package com.yunya.framework.common.constant;
 public class BusinessConstants {
 
   /** ---------------------菜单权限相关常量--------------------------------- */
-  // 系统管理员默认账号
+  /** 系统管理员默认账号 */
   public static final String ADMIN_ACCOUNT = "admin";
-  // 默认顶级父ID
+  /** 默认顶级父ID */
   public static final Integer DEFAULT_PARENT_ID = 0;
-  // 目录
+  /** 目录 */
   public static final String RESOURCE_TYPE_DIRT = "dirt";
-  // 菜单
+  /** 菜单 */
   public static final String RESOURCE_TYPE_MENU = "menu";
-  // 按钮
+  /** 按钮 */
   public static final String RESOURCE_TYPE_BTN = "button";
-  // 页面
+  /** 页面 */
   public static final String RESOURCE_TYPE_URI = "uri";
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
-  // 用户离职状态
+  /** 用户离职状态 */
   public static final Byte USER_RESIGNATION_STATUS = 2;
 
   /** -------------------------组织（公司）信息相关常量--------------------------- */
-  // 公司类型
+  /** 公司类型 */
   public static final Byte COMPANY_TYPE = 0;
-  // 大区类型
+  /** 大区类型 */
   public static final Byte DISTRICT_TYPE = 1;
-  // 医疗机构类型
+  /** 医疗机构类型 */
   public static final Byte MEDICAL_TYPE = 2;
-  // 其他类型
+  /** 其他类型 */
   public static final Byte OTHER_TYPE = 3;
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
@@ -57,20 +57,20 @@ public class BusinessConstants {
   public static Integer NORMAL_MEDICAL_STATUS = 0;
 
   /**************************** 开单记录状态 *******************************/
-  // 账单未锁定
+  /** 账单未锁定 */
   public static final Byte ORDER_UN_LOCK_STATUS = 0;
-  // 账单锁定
+  /** 账单锁定 */
   public static final Byte ORDER_LOCK_STATUS = 1;
-  // 账单已结算
+  /** 账单已结算 */
   public static final Byte ORDER_FINISH_STATUS = 2;
 
   /*******************************就诊记录状态*****************************/
-  // 就诊中
+  /** 就诊中 */
   public static final Byte TREATMENT_PROCESSING_STATUS = 0;
-  // 就诊已开单（接诊未完成）
+  /** 就诊已开单（接诊未完成） */
   public static final Byte TREATMENT_PROCESS_ORDER_STATUS = 1;
-  // 就诊已完成
+  /** 就诊已完成 */
   public static final Byte TREATMENT_PROCESSED_STATUS = 2;
-  // 就诊已结账
+  /** 就诊已结账 */
   public static final Byte TREATMENT_PROCESS_FINISH_STATUS = 3;
 }

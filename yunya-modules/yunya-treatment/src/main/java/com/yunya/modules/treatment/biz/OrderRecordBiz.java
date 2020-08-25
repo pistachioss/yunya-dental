@@ -68,18 +68,26 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     OrderDetailInfoVO resultData = new OrderDetailInfoVO();
     OrderRecord entity = new OrderRecord();
     entity.setTreatmentRecordId(treatmentRecordId);
+    // 订单详情信息
+    List<OrderDetailVO> orderDetails;
     OrderRecord orderRecord = mapper.selectOne(entity);
     if (null != orderRecord) {
-      resultData.setOrderRecordId(orderRecord.getId());
+      Integer orderRecordId = orderRecord.getId();
+      resultData.setOrderRecordId(orderRecordId);
       resultData.setTotalAmount(orderRecord.getTotalAmount());
       resultData.setStatus(orderRecord.getStatus());
+      orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId);
+    } else {
+      orderDetails = new ArrayList<>();
     }
     // 配诊助手列表
-    List<AssistantInfoVO> assistants = matchingRecordBiz.findAssistantInfoVOList(treatmentRecordId);
-    resultData.setAssistants(assistants);
-    // 订单详情信息
-    List<OrderDetailVO> orderDetails = orderDetailBiz.findOrderDetailVOList(treatmentRecordId);
+    List<AssistantInfoVO> assistants;
+    assistants = matchingRecordBiz.findAssistantInfoVOList(treatmentRecordId);
+    if (StringHelper.isEmpty(assistants)) {
+      assistants = new ArrayList<>();
+    }
     resultData.setOrderDetails(orderDetails);
+    resultData.setAssistants(assistants);
     return resultData;
   }
 
