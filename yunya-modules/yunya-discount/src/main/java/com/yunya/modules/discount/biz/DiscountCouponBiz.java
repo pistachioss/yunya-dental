@@ -3,6 +3,7 @@ package com.yunya.modules.discount.biz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.discount.*;
+import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.form.DiscountCouponForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
@@ -12,6 +13,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.modules.discount.constant.ExceptionCode;
+import com.yunya.modules.discount.vo.CouponCommonInfoVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
 import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
@@ -63,13 +66,13 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         DiscountCoupon discountCoupon = new DiscountCoupon();
         BeanUtils.copyProperties(discountCouponForm, discountCoupon);
         discountCoupon.setCouponId(couponCommonInfo.getId());
-        discountCoupon.setUseableClinic(discountCouponForm.getUseableClinci());
+        discountCoupon.setUseableClinic(discountCouponForm.getUseableClinic());
         insertSelective(discountCoupon);//插入卡券信息
         return couponCommonInfo.getId();
     }
 
     /**
-     * 修改代金券信息
+     * 修改折扣券信息
      *
      * @param discountCouponForm
      */
@@ -93,7 +96,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if(discountCoupon!=null){
-                discountCoupon.setUseableClinic(discountCouponForm.getUseableClinci());
+                discountCoupon.setUseableClinic(discountCouponForm.getUseableClinic());
                 discountCoupon.setRemark(discountCouponForm.getRemark());
                 discountCoupon.setActivationDeadline(discountCouponForm.getActivationDeadline());
                 discountCoupon.setWorkloadRate(discountCouponForm.getWorkloadRate());
@@ -129,7 +132,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
     }
 
     /**
-     * 删除代金券
+     * 删除折扣券
      *
      * @param id
      */
