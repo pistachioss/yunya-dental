@@ -78,7 +78,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         Integer eventId = draftModel.getApplyBase().getEventId();
         String lockKey = Joiner.on(":").join(RedisConstants.LOCK_DRAFT_APPLY_NS, String.valueOf(eventId));
         String lockVal = BaseContextHandler.getUserID();
-        log.info("新增草稿病例申请开始提交：[{}  ]", eventId);
+        log.info("新增草稿病例申请开始提交：[{}]", eventId);
         try {
             // 1. 锁定草稿病例
             locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);

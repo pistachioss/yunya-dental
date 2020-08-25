@@ -40,10 +40,119 @@
             </foreach>
     </select>
 
-    <select id="getMaxNumByCouponId" resultType="int">
+    <select id="getSumNumByCouponId" resultType="int">
         select
-            ifnull(max(`coupon_id`), 0)
+            ifnull(sum(`coupon_id`), 0)
         from `card`
         where `coupon_id` = #{couponId}
+    </select>
+
+    <insert id="insertList" parameterType="List">
+        insert into
+            `card`
+            (`org_id`, `coupon_id`, `coupon_allocate_id`, `card_number`, `password`, `status`, `crt_id`, `crt_time`,
+              `upd_id`)
+        values
+        <foreach collection="List" item="item" separator=",">
+            (#{item.orgId}, #{item.couponId}, #{item.couponAllocateId}, #{item.cardNumber},
+             #{item.password},#{item.status},#{item.crtId},#{item.crtTime},#{item.updId})
+        </foreach>
+    </insert>
+
+    <select id="listViewVosByParam" resultType="com.yunya.feign.discount.domain.bo.ViewAllocateBo">
+        select
+        concat_ws(' - ', Min(`card_number`), MAX(`card_number`))  as `numberSegment`,
+            `org_id`                                              as `allocateOrgId`
+        from `card`
+        where `coupon_id` = #{couponId}
+          and `coupon_allocate_id` in
+            <foreach collection="couponAllocateIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        group by `coupon_allocate_id`
+        order by `card_number` asc;
+    </select>
+
+    <select id="listExportVosByParam" resultMap="BaseResultMap">
+        select
+            card_number,
+            password,
+            org_id
+        from `card`
+        where `coupon_id` = #{couponId}
+        and `coupon_allocate_id` in
+        <foreach collection="couponAllocateIds" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+        order by `card_number` asc;
+    </select>
+
+    <select id="listSaleInfoByParam" resultType="com.yunya.feign.discount.domain.bo.CouponSaleBo">
+        select
+            `cci`.id                                                                       as `couponId`,
+            `cci`.name                                                                     as `couponName`,
+            `cci`.`type`                                                                   as `couponType`,
+            concat_ws(' - ', date_format(`cci`.`available_sale_start_date`, '%Y/%m/%d'),
+                      date_format(`cci`.`available_sale_end_date`, '%Y/%m/%d'))            as `saleSegment`,
+            `cci`.`sold_amount`                                                            as `soldAmount`,
+            sum(`ca`.`allocate_num`)                                                       as `allocateNum`,
+            (select
+                 sum(`c`.`status` in (1, 2))
+             from `card` `c`
+             where `c`.`coupon_id` = `ca`.`coupon_id`
+               and `c`.`org_id` = `ca`.`org_id`
+             group by `c`.`coupon_id`, `c`.`org_id`)                                       as `soldNum`,
+             `ca`.`org_id`                                                                 as `orgId`
+        from `coupon_common_info` `cci`
+             inner join `coupon_allocate` `ca` on `cci`.`id` = `ca`.`coupon_id`
+        where `ca`.`org_id` = #{orgId}
+            and isnull(`ca`.`allocate_user_id`) = 0
+            and isnull(`ca`.`allocate_date`) = 0
+            <if test="couponName !=null and couponName != ''">
+                and `cci`.`name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponTypeList != null and couponTypeList.size() > 0">
+                and `cci`.`type` in
+                <foreach collection="couponTypeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        group by `ca`.`coupon_id`, `ca`.`org_id`
+    </select>
+
+    <select id="listCardInfosByParam" resultMap="BaseResultMap">
+        select
+            `id`,
+            `card_number`,
+            `password`,
+            `sold_target`,
+            `sold_phone_number`,
+            `sold_type`,
+            `link`,
+            `status`,
+            `is_pay`,
+            `sold_way`
+        from card
+        where coupon_id = #{couponId}
+            and org_id = #{orgId}
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="phoneNumber !=null and phoneNumber != ''">
+                and `sold_phone_number` like concat('%', #{phoneNumber}, '%')
+            </if>
+            <if test="soldTypeList != null and soldTypeList.size() > 0">
+                and `sold_type` in
+                <foreach collection="soldTypeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="cardStatsList != null and cardStatsList.size() > 0">
+                and `status` in
+                <foreach collection="cardStatsList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `status` asc, `id` asc
     </select>
 </mapper>

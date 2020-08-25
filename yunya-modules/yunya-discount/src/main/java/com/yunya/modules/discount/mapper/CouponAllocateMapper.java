@@ -10,6 +10,7 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.List;
 
 import java.time.*;
+import java.util.*;
 
 public interface CouponAllocateMapper extends Mapper<CouponAllocate> {
 
@@ -20,4 +21,12 @@ public interface CouponAllocateMapper extends Mapper<CouponAllocate> {
     int insertAll(List<CouponAllocateForm> list);
     List<CouponAllocateVO> findVOList(Integer id);
     List<CouponAllocateDetailVO> findVODetailList(CouponAllocateVO couponAllocateVO);
+    int  countGeneratedByParam(@Param("couponId") Integer couponId, @Param("submitDate")LocalDateTime sumitDate);
+
+    /**
+     * 更新优惠券分配信息状态
+     */
+    void updateAllocateByIds(@Param("couponAllocateIds")List<Integer> couponAllocateIds, @Param("submitDate") LocalDateTime submitDate
+                             ,@Param("allocateUserId") Integer allocateUserId, @Param("allocateDate") LocalDateTime allocateDate);
+
 }

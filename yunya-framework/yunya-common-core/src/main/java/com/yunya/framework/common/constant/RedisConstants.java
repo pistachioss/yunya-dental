@@ -65,4 +65,7 @@ public class RedisConstants implements Serializable {
 
   /** ------------------------------ 随访提醒管理 -----------------------------------------------*/
   public static final String LOCK_VISITING_REMIND = "lock:visiting:remind";
+
+  /**--------------------------卡券明细-------------------------------------------*/
+  public static final String LOCK_CARD_GENERATE = "lock:card:generate";
 }

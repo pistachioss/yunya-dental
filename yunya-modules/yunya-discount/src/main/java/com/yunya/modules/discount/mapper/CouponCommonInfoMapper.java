@@ -11,9 +11,9 @@ public interface CouponCommonInfoMapper extends Mapper<CouponCommonInfo> {
 
     /**
      * 查询产品生成分配
-     * @param keyword
+     * @param couponName
      * @param couponTypeList
      * @return
      */
-    List<GenerateAllocatePageBo> listBatchAllocateByParam(@Param("keyword") String keyword, @Param("couponTypeList") List<Integer> couponTypeList);
+    List<GenerateAllocatePageBo> listBatchAllocateByParam(@Param("couponName") String couponName, @Param("couponTypeList") List<Integer> couponTypeList);
 }
