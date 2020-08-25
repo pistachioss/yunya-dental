@@ -1,19 +1,26 @@
 package com.yunya.modules.discount.biz;
 
-import com.yunya.models.discount.CouponAllocate;
-import com.yunya.models.discount.DiscountCoupon;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.models.discount.*;
+import com.yunya.modules.discount.form.DiscountCouponForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
+import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import com.yunya.modules.discount.mapper.DiscountCouponMapper;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.modules.discount.constant.ExceptionCode;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
 import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
 
 /**
@@ -32,61 +39,97 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
     private static final Integer PLAN = 0;
 
     @Autowired private CouponAllocateMapper couponAllocateMapper;
-
+    @Autowired private CouponCommonInfoMapper couponCommonInfoMapper;
+    @Autowired private CouponCommonInfoBiz couponCommonInfoBiz;
+    @Autowired private CouponFileInfoBiz couponFileInfoBiz;
     /**
      * 新增折扣券
      *
-     * @param discountCoupon
+     * @param discountCouponForm
      */
-    public Integer saveDiscountCoupon(DiscountCoupon discountCoupon) {
-        DiscountCoupon data = new DiscountCoupon();
-//        data.setName(discountCoupon.getName());
-        if (mapper.selectOne(data) != null) {
-            throw new BaseException("折扣券名字已被占用", NAME_IS_OCCUPIED);
+    public Integer saveDiscountCoupon(DiscountCouponForm discountCouponForm) {
+        CouponCommonInfo data = new CouponCommonInfo();
+        data.setName(discountCouponForm.getName());
+        if (couponCommonInfoMapper.selectOne(data) != null) {
+            throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
         }
+        CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
+        BeanUtils.copyProperties(discountCouponForm, couponCommonInfo);
+        couponCommonInfo.setType(new Byte("1"));
+        couponCommonInfo.setIsInservice(true);
+        couponCommonInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        couponCommonInfoBiz.insertSelective(couponCommonInfo);//基础信息表中插入数据
 
-        insertSelective(discountCoupon);
-        return discountCoupon.getId();
+        DiscountCoupon discountCoupon = new DiscountCoupon();
+        BeanUtils.copyProperties(discountCouponForm, discountCoupon);
+        discountCoupon.setCouponId(couponCommonInfo.getId());
+        discountCoupon.setUseableClinic(discountCouponForm.getUseableClinci());
+        insertSelective(discountCoupon);//插入卡券信息
+        return couponCommonInfo.getId();
     }
 
     /**
-     * 修改
+     * 修改代金券信息
      *
-     * @param discountUpdateForm
+     * @param discountCouponForm
      */
-    public void updateDiscountCoupon(DiscountUpdateForm discountUpdateForm) {
+    public void updateDiscountCoupon(DiscountCouponForm discountCouponForm) {
+        Integer id = discountCouponForm.getId();
         boolean flag = true;
         // 判断是否完成分配
         CouponAllocate couponAllocate = new CouponAllocate();
-        couponAllocate.setCouponId(discountUpdateForm.getId());
+        couponAllocate.setCouponId(discountCouponForm.getId());
         if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
             // 未完成分配
             flag = false;
         }
         DiscountCoupon discountCoupon = new DiscountCoupon();
+        CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
         if (flag) {
-            // 只能修改时间
-//            discountCoupon.setSellingStartDate(discountUpdateForm.getSellingStartDate());
-//            discountCoupon.setSellingEndDate(discountUpdateForm.getSellingEndDate());
-            discountCoupon.setEffectiveDays(discountUpdateForm.getEffectiveDays());
-            discountCoupon.setActivationDeadline(discountUpdateForm.getActivationDeadline());
+            couponCommonInfo.setId(discountCouponForm.getId());
+            couponCommonInfo.setAvailableSaleStartDate(discountCouponForm.getAvailableSaleStartDate());
+            couponCommonInfo.setAvailableSaleEndDate(discountCouponForm.getAvailableSaleEndDate());
+            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            discountCoupon.setCouponId(discountCouponForm.getId());
+            discountCoupon = selectOne(discountCoupon);
+            if(discountCoupon!=null){
+                discountCoupon.setUseableClinic(discountCouponForm.getUseableClinci());
+                discountCoupon.setRemark(discountCouponForm.getRemark());
+                discountCoupon.setActivationDeadline(discountCouponForm.getActivationDeadline());
+                discountCoupon.setWorkloadRate(discountCouponForm.getWorkloadRate());
+                discountCoupon.setEffectiveDays(discountCouponForm.getEffectiveDays());
+                updateSelectiveById(discountCoupon);//更新明细信息
+            }else {
+                throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
         } else {
             // 重名判断
-            String name = discountUpdateForm.getName();
-            if (StringUtils.isNotBlank(name)) {
-                DiscountCoupon data = new DiscountCoupon();
-//                data.setName(name);
-                if (mapper.select(data).size() >= 2) {
-                    throw new BaseException("折扣券名字已被占用", NAME_IS_OCCUPIED);
-                }
+            String name = discountCouponForm.getName();
+            CouponCommonInfo data = new CouponCommonInfo();
+            data.setName(name);
+            if (couponCommonInfoMapper.select(data).size() >= 2) {
+                throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
             }
-            discountCoupon = EntityUtils.build(discountUpdateForm, DiscountCoupon.class);
+            BeanUtils.copyProperties(discountCouponForm, couponCommonInfo);
+            couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+            couponCommonInfo.setUpdTime(new Date());
+            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//基础信息表中修改数据
+            discountCoupon.setCouponId(discountCouponForm.getId());
+            discountCoupon = selectOne(discountCoupon);
+            if (discountCoupon != null) {
+                DiscountCoupon dc = new DiscountCoupon();
+                BeanUtils.copyProperties(discountCouponForm, dc);
+                dc.setId(discountCoupon.getId());
+                updateSelectiveById(dc);//更新明细信息
+            } else {
+                throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
         }
-        updateSelectiveById(discountCoupon);
+
     }
 
     /**
-     * 删除
+     * 删除代金券
      *
      * @param id
      */
@@ -94,20 +137,16 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         // 判断是否完成分配
         CouponAllocate couponAllocate = new CouponAllocate();
         couponAllocate.setCouponId(id);
-        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
-            throw new BaseException("卡券已完成分配，无法删除", ExceptionCode.CARD_EXIST);
+        if (!couponAllocateMapper.select(couponAllocate).isEmpty()) {
+            throw new BaseException("卡券已完成分配，无法删除", DELETE_NOT_ALLOW);
         }
-        deleteById(id);
+        DiscountCoupon discountCoupon = new DiscountCoupon();
+        discountCoupon.setCouponId(id);
+        CouponFileInfo couponFiledelete = new CouponFileInfo();
+        couponFiledelete.setCouponId(id);
+        couponCommonInfoBiz.deleteById(id);//删除卡券公用信息
+        delete(discountCoupon);//删除折扣券卡券信息
+        couponFileInfoBiz.delete(couponFiledelete);//清除图片文档信息
     }
 
-//    /**
-//     * 查询列表
-//     *
-//     * @param discountQueryForm
-//     * @return
-//     */
-//    public List<DiscountVO> search(DiscountQueryForm discountQueryForm) {
-//        return mapper.selectVOs(discountQueryForm.getMarketProductTypeId(), discountQueryForm.getName(),
-//                discountQueryForm.getStartDate(), discountQueryForm.getEndDate());
-//    }
 }

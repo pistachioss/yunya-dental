@@ -125,5 +125,5 @@ public class DiscountUpdateForm implements Serializable {
      * 可使用门诊
      */
     @ApiModelProperty("可使用门诊ID列表")
-    private String clinicIds;
+    private String useableClinci;
 }

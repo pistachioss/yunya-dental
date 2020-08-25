@@ -1,7 +1,9 @@
 package com.yunya.modules.discount.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.models.discount.DiscountCoupon;
 import com.yunya.modules.discount.biz.DiscountCouponBiz;
+import com.yunya.modules.discount.form.DiscountCouponForm;
 import com.yunya.modules.discount.form.DiscountQueryForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
@@ -22,6 +24,7 @@ import javax.validation.Valid;
 @Api(tags = "折扣券")
 @RestController
 @RequestMapping("/discount_coupon")
+@CurrentUser
 public class DiscountCouponController {
     @Autowired
     private DiscountCouponBiz discountCouponBiz;
@@ -29,25 +32,25 @@ public class DiscountCouponController {
     /**
      * 新增折扣券
      *
-     * @param discountCoupon
+     * @param discountCouponForm
      * @return
      */
     @PostMapping
     @ApiOperation("新增折扣券")
-    public ResponseResult save(@RequestBody @Valid DiscountCoupon discountCoupon) {
-        return ResponseUtil.success(discountCouponBiz.saveDiscountCoupon(discountCoupon));
+    public ResponseResult save(@RequestBody @Valid DiscountCouponForm discountCouponForm) {
+        return ResponseUtil.success(discountCouponBiz.saveDiscountCoupon(discountCouponForm));
     }
 
     /**
      * 修改折扣券
      *
-     * @param discountUpdateForm
+     * @param discountCouponForm
      * @return
      */
     @PutMapping
     @ApiOperation("修改折扣券")
-    public ResponseResult update(@RequestBody DiscountUpdateForm discountUpdateForm) {
-        discountCouponBiz.updateDiscountCoupon(discountUpdateForm);
+    public ResponseResult update(@RequestBody DiscountCouponForm discountCouponForm) {
+        discountCouponBiz.updateDiscountCoupon(discountCouponForm);
         return ResponseUtil.success();
     }
 

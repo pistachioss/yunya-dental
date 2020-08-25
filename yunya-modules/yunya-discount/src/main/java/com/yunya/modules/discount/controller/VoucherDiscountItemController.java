@@ -40,7 +40,7 @@ public class VoucherDiscountItemController {
      * @return
      */
     @PostMapping("/saveVouAndDis")
-    @ApiOperation("新增代金券折扣券适用项目")
+    @ApiOperation("新增和修改代金券折扣券适用项目(每次修改都要传回所有的适用项目进行重新新增)")
     @CurrentUser
     public ResponseResult saveVouAndDis(@RequestBody @Valid List<VoucherDiscountItemForm> voucherDiscountItems) {
         Date date = new Date();

@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
 import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
 
 /**
@@ -150,7 +151,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         CouponAllocate couponAllocate = new CouponAllocate();
         couponAllocate.setCouponId(id);
         if (!couponAllocateMapper.select(couponAllocate).isEmpty()) {
-            throw new BaseException("卡券已完成分配，无法删除", ExceptionCode.CARD_EXIST);
+            throw new BaseException("卡券已完成分配，无法删除", DELETE_NOT_ALLOW);
         }
         VoucheCoupon voucheCoupon = new VoucheCoupon();
         voucheCoupon.setCouponId(id);
