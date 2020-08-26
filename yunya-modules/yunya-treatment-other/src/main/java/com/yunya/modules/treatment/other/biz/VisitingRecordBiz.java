@@ -33,14 +33,10 @@ import com.yunya.models.system.MemberType;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
-import io.swagger.models.auth.In;
-import org.omg.CORBA.INTERNAL;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -86,7 +82,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return  返回插入成功的条数
      */
     public Integer insertVisitingRecord(VisitingRecordModel model){
-
         Integer patientId = model.getPatientId();
         Date visitingDate = model.getVisitingDate();
         VisitingRecordQuery query = new VisitingRecordQuery();
@@ -98,7 +93,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             String format = dateFormat.format(query.getVisitingDate());
             throw new ClientServiceException(format + "的随访已经存在", OperationCodeConstants.DATA_EXIST);
         }
-
         VisitingRecord build = EntityUtils.build(model, VisitingRecord.class);
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         build.setCrtName(BaseContextHandler.getName());

@@ -112,14 +112,6 @@
             <groupId>com.github.xiaoymin</groupId>
             <artifactId>swagger-bootstrap-ui</artifactId>
         </dependency>
-
-        <!-- 系统auth-sdk工程 -->
-        <dependency>
-            <groupId>com.yunya</groupId>
-            <artifactId>yunya-auth-sdk</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-
     </dependencies>
 
 

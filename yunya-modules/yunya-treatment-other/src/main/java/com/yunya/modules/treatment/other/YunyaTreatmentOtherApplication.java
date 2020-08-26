@@ -14,9 +14,8 @@ import tk.mybatis.spring.annotation.MapperScan;
 @EnableYunyaFeignClients
 @EnableDiscoveryClient
 @EnableCustomSwagger2
-@ComponentScan(basePackages = {"com.yunya.modules.treatment.other","com.yunya.framework.common","com.yunya.framework.redis","com.yunya.framework.swagger"})
+@ComponentScan(basePackages = {"com.yunya.modules.treatment.other","com.yunya.framework"})
 public class YunyaTreatmentOtherApplication{
-
     public static void main(String[] args) {
         SpringApplication.run(YunyaTreatmentOtherApplication.class, args);
     }
