@@ -1,10 +1,7 @@
 package com.yunya.framework.common.utils;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.*;
+import java.util.*;
 
 /**
  * 描述:
@@ -13,6 +10,9 @@ import java.util.Date;
  * @create 2019-08-11 10:26
  */
 public class DateUtil {
+
+    private DateUtil(){};
+
     public static Date geLastWeekMonday(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(getThisWeekMonday(date));
@@ -78,6 +78,11 @@ public class DateUtil {
         } else {
             return false;
         }
+    }
+
+    public static LocalDateTime dateToLocalDateTime(Date date) {
+        Instant instant = date.toInstant();
+        return instant.atZone(ZoneOffset.ofHours(8)).toLocalDateTime();
     }
 
     /*public static Boolean isEffectiveDate1(String dangqian,String kaishi,String end) throws ParseException {

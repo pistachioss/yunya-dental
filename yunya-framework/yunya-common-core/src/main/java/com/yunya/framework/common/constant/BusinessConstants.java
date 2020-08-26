@@ -73,4 +73,8 @@ public class BusinessConstants {
   public static final Byte TREATMENT_PROCESSED_STATUS = 2;
   /** 就诊已结账 */
   public static final Byte TREATMENT_PROCESS_FINISH_STATUS = 3;
+  /** 卡券密码位数 */
+  public static Integer CARD_PASS_BIT = 6;
+  /** 卡券导出文件名 */
+  public static String EXPORT_CARD_FILENAME = "产品生成分配";
 }

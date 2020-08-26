@@ -17,7 +17,7 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
     </resultMap>
 
-    <select id="countGenerateByParam" resultType="int">
+    <select id="countGeneratedByParam" resultType="int">
         select
             count(`allocate_user_id`)
         from `coupon_allocate`
@@ -67,4 +67,18 @@
 	coupon_allocate
 	where allocate_date = #{allocateDate}
     </select>
+
+    <update id="updateAllocateByIds">
+        update
+            `coupon_allocate`
+        set `allocate_user_id` = #{allocateUserId},
+            `allocate_date` = #{allocateDate},
+            `upd_id` = #{allocateUserId}
+        where `id` in
+            <foreach collection="couponAllocateIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+            and `crt_time` = #{submitDate}
+    </update>
+
 </mapper>

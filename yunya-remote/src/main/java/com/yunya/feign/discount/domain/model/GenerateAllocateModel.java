@@ -1,5 +1,6 @@
 package com.yunya.feign.discount.domain.model;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.*;
 import lombok.*;
 
@@ -26,6 +27,7 @@ public class GenerateAllocateModel {
 
     @ApiModelProperty(value = "提交时间")
     @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime submitDate;
 
     @ApiModelProperty(value = "配给集合")

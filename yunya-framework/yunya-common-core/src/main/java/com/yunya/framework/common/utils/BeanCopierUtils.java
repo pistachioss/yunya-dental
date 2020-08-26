@@ -1,5 +1,7 @@
 package com.yunya.framework.common.utils;
 
+import com.yunya.framework.common.constant.*;
+import com.yunya.framework.common.exception.*;
 import org.springframework.cglib.beans.*;
 import java.io.*;
 
@@ -19,9 +21,7 @@ public class BeanCopierUtils {
             copier.copy(source, t, null);
             return t;
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new ClientServiceException("对象属性转换异常", OperationCodeConstants.BEAN_CONVERT_ERROR);
         }
-        return null;
     }
-
 }

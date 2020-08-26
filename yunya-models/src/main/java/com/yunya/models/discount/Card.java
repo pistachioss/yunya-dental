@@ -3,6 +3,7 @@ package com.yunya.models.discount;
 import lombok.*;
 
 import javax.persistence.*;
+import java.io.*;
 import java.time.*;
 
 /**
@@ -12,7 +13,7 @@ import java.time.*;
 @Setter
 @Getter
 @Table(name = "card")
-public class Card {
+public class Card implements Serializable {
 
     @Id
     @GeneratedValue(generator = "JDBC")

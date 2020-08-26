@@ -112,6 +112,16 @@ public class VisitingRecord {
     private Date updTime;
 
     /**
+     * 备注 备注
+     */
+    private String remarks;
+
+    /**
+     * 随访状态
+     */
+    private Boolean status;
+
+    /**
      * 获取随访记录ID
      *
      * @return id - 随访记录ID
@@ -433,5 +443,39 @@ public class VisitingRecord {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取备注 备注
+     *
+     * @return remarks - 备注 备注
+     */
+    public String getRemarks() {
+        return remarks;
+    }
+
+    /**
+     * 设置备注 备注
+     *
+     * @param remarks 备注 备注
+     */
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    /**
+     * 获取随访状态
+     * @return status - 随访状态
+     */
+    public Boolean getStatus() {
+        return status;
+    }
+
+    /**
+     * 设置随访状态
+     * @param status - 随访状态
+     */
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
 }

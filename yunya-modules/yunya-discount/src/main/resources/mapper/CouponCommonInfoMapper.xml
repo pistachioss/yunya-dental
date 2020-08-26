@@ -34,8 +34,8 @@
         from `coupon_common_info` `cci`
             inner join `coupon_allocate` `ca` on `ca`.`coupon_id` = `cci`.`id`
         <where>
-            <if test="keyword !=null and keyword != ''">
-                and `cci`.`name` like concat('%', #{keyword}, '%')
+            <if test="couponName !=null and couponName != ''">
+                and `cci`.`name` like concat('%', #{couponName}, '%')
             </if>
             <if test="couponTypeList != null and couponTypeList.size() > 0">
                 and `cci`.`type` in

@@ -2,8 +2,6 @@ package com.yunya.framework.common.utils;
 
 import com.yunya.framework.common.model.*;
 
-import java.util.*;
-
 /**
  * 响应统一返回工具类
  *
@@ -83,7 +81,7 @@ public class ResponseUtil {
     return result(ERROR_STATUS, msg, data,NOT_PASS);
   }
 
-  public static ResponseResult error (RestError error, Objects...param){
+  public static ResponseResult error (RestError error, Object...param){
     return result(error.getCode(), String.format(error.getMessage(), param), null, NOT_PASS);
   }
 
