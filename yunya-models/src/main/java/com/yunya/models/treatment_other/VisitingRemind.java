@@ -1,5 +1,7 @@
 package com.yunya.models.treatment_other;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -36,10 +38,16 @@ public class VisitingRemind {
     private Integer treatmentId;
 
     /**
-     * 提醒时间 精确到分
+     * 提醒日期
      */
-    @Column(name = "remind_date_time")
-    private Date remindDateTime;
+    @Column(name = "remind_date")
+    private Date remindDate;
+
+    /**
+     * 提醒时间
+     */
+    @Column(name = "remind_time")
+    private String remindTime;
 
     /**
      * 提醒内容
@@ -51,6 +59,11 @@ public class VisitingRemind {
      * 备注 备注
      */
     private String remarks;
+
+    /**
+     * 提醒状态 0-待提醒；1-提醒完成
+     */
+    private Boolean status;
 
     /**
      * 是否启用 0-不启用；1-启用
@@ -184,22 +197,41 @@ public class VisitingRemind {
     }
 
     /**
-     * 获取提醒时间 精确到分
+     * 获取提醒日期
      *
-     * @return remindDateTime - 提醒时间 精确到分
+     * @return remindDateTime - 提醒日期
      */
-    public Date getRemindDateTime() {
-        return remindDateTime;
+    public Date getRemindDate() {
+        return remindDate;
     }
 
     /**
-     * 设置提醒时间 精确到分
+     * 设置提醒日期
      *
-     * @param remindDateTime 提醒时间 精确到分
+     * @param remindDate 提醒日期
      */
-    public void setRemindDateTime(Date remindDateTime) {
-        this.remindDateTime = remindDateTime;
+    public void setRemindDate(Date remindDate) {
+        this.remindDate = remindDate;
     }
+
+    /**
+     * 获取提醒时间
+     *
+     * @return remindTime - 提醒时间
+     */
+    public String getRemindTime() {
+        return remindTime;
+    }
+
+    /**
+     * 设置提醒时间
+     *
+     * @param remindTime 提醒时间
+     */
+    public void setRemindTime(String remindTime) {
+        this.remindTime = remindTime;
+    }
+
 
     /**
      * 获取提醒内容
@@ -361,5 +393,21 @@ public class VisitingRemind {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取提醒状态 0-待提醒；1-提醒完成
+     * @return status 提醒状态
+     */
+    public Boolean getStatus() {
+        return status;
+    }
+
+    /**
+     * 设置提醒状态 0-待提醒；1-提醒完成
+     * @param status 提醒状态
+     */
+    public void setStatus(Boolean status) {
+        this.status = status;
     }
 }
