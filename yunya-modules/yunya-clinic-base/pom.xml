@@ -8,12 +8,18 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.yunya</groupId>
-    <artifactId>clinic-base</artifactId>
+    <artifactId>yunya-clinic-base</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>clinic-base</name>
+    <name>yunya-clinic-base</name>
     <description>clinic base project for Spring Boot</description>
 
     <properties>
+        <targetJavaProject>${basedir}/src/main/java</targetJavaProject>
+        <targetMapperPackage>com.yunya.modules.clinic.base.mapper</targetMapperPackage>
+        <targetModelPackage>com.yunya.modules.clinic.base.model</targetModelPackage>
+        <!-- XML生成路径 -->
+        <targetResourcesProject>${basedir}/src/main/resources</targetResourcesProject>
+        <targetXMLPackage>mapper</targetXMLPackage>
         <java.version>1.8</java.version>
     </properties>
 
@@ -29,6 +35,11 @@
         <dependency>
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>swagger-bootstrap-ui</artifactId>
         </dependency>
 
         <!-- SpringCloud Ailibaba Sentinel 哨兵 -->
@@ -118,6 +129,33 @@
 
     <build>
         <plugins>
+            <!-- 此插件用来生成通用mapper的代码 -->
+            <plugin>
+                <groupId>org.mybatis.generator</groupId>
+                <artifactId>mybatis-generator-maven-plugin</artifactId>
+                <version>1.3.2</version>
+                <configuration>
+                    <configurationFile>
+                        ${basedir}/src/main/resources/builder/generatorConfig.xml
+                    </configurationFile>
+                    <overwrite>true</overwrite>
+                    <verbose>true</verbose>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>5.1.49</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                    <dependency>
+                        <groupId>tk.mybatis</groupId>
+                        <artifactId>mapper</artifactId>
+                        <version>3.4.2</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
@@ -130,7 +168,28 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- 打包跳过单元测试 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.18.1</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
         </plugins>
+        <finalName>${project.name}-${project.version}</finalName>
     </build>
 
 </project>

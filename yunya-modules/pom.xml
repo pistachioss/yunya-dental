@@ -15,7 +15,7 @@
 
     <modules>
         <module>yunya-admin-system</module>
-        <module>clinic-base</module>
+        <module>yunya-clinic-base</module>
         <module>yunya-discount</module>
         <module>yunya-employee-expand</module>
         <module>yunya-appointment-central</module>

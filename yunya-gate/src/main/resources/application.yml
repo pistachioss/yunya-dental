@@ -165,6 +165,16 @@ spring:
           metadata:
             title: "就诊扩展服务"
 
+        - id: yunya-clinic-base
+          uri: lb://yunya-clinic-base
+          order: 9006
+          predicates:
+            - Path=/api/clinic/base/**
+          filters:
+            - StripPrefix=3
+          metadata:
+            title: "结算统计服务"
+
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
