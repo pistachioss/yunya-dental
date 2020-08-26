@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.form;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -58,6 +59,7 @@ public class VisitingRemindForm implements Serializable {
      */
     @ApiModelProperty(value = "提醒日期", required = true)
     @NotNull(message = "提醒日期不能为空！")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date remindDate;
 
     /**
@@ -79,4 +81,14 @@ public class VisitingRemindForm implements Serializable {
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
+
+    /** 提醒状态 0-待提醒；1-提醒完成 */
+    @ApiModelProperty(value = "提醒状态 0-待提醒；1-提醒完成")
+    private Boolean status;
+
+    /**
+     * 是否启用 0-不启用；1-启用
+     */
+    @ApiModelProperty(value = "是否启用 0-不启用；1-启用")
+    private Boolean inservice;
 }
