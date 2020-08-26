@@ -71,6 +71,16 @@ public class VisitingRecord {
     private String visitingContent;
 
     /**
+     * 随访状态 0-待随访（默认）；1-随访完成
+     */
+    private Boolean status;
+
+    /**
+     * 备注 备注
+     */
+    private String remarks;
+
+    /**
      * 是否启用 0-启用；1-不启用
      */
     private Boolean inservice;
@@ -110,16 +120,6 @@ public class VisitingRecord {
      */
     @Column(name = "upd_time")
     private Date updTime;
-
-    /**
-     * 备注 备注
-     */
-    private String remarks;
-
-    /**
-     * 随访状态
-     */
-    private Boolean status;
 
     /**
      * 获取随访记录ID

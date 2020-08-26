@@ -117,7 +117,7 @@ public class AppointmentRest {
      * @param patientId 患者id
      * @return  List<Appointment>
      */
-    @RequestMapping(value = "/appoint/find/patient/list/{patientId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/appoint/find/patients/{patientId}", method = RequestMethod.GET)
     public List<Appointment> findAppointmentByPatientId(@PathVariable(value = "patientId") Integer patientId){
         return appointmentBiz.findAppointmentByPatientId(patientId);
     }

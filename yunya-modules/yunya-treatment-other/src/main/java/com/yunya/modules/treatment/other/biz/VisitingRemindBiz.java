@@ -154,9 +154,13 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             return ResponseUtil.success();
         }
         VisitingRemindContentVo build = EntityUtils.build(visitingRemind, VisitingRemindContentVo.class);
-        PatientTotalInfoVo patientTotalInfo = patientCentralServiceFeign.findPatientTotalInfo(id);
-        if (patientTotalInfo != null){
-            build.setMobile(patientTotalInfo.getMobile());
+        if (id != null){
+            PatientTotalInfoVo patientTotalInfo = patientCentralServiceFeign.findPatientTotalInfo(id);
+            if (patientTotalInfo != null){
+                build.setMobile(patientTotalInfo.getMobile());
+            } else {
+                build.setMobile("---");
+            }
         }
         return ResponseUtil.success(build);
     }
@@ -169,44 +173,51 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
         // 组合随访提醒信息列表
         List<VisitingRemindVo> visitingRemindVos = new ArrayList<>();
+        // 检索随访提醒内容列表
+        List<VisitingRemindVo> searchVisitingRemindVo = null;
         List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
-        if (StringHelper.isEmpty(visitingReminds)) {
-            return ResponseUtil.success();
-        }
-        visitingReminds.forEach(visitingRemind -> {
-            VisitingRemindVo build = EntityUtils.build(visitingRemind, VisitingRemindVo.class);
-            // 设置医生信息
-            Integer dentistId = build.getDentistId();
-            SysUserInfoDetail userInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
-            if (userInfoDetail != null){
-                build.setDentistName(userInfoDetail.getName());
-            }
-            // 设置患者信息
-            Integer patientId = build.getPatientId();
-            PatientTotalInfoVo patientTotalInfo = patientCentralServiceFeign.findPatientTotalInfo(patientId);
-            if (patientTotalInfo != null){
-                build.setPatientName(patientTotalInfo.getName());
-                build.setAge(patientTotalInfo.getAge());
-                build.setGender(patientTotalInfo.getGender());
-                build.setBirthday(patientTotalInfo.getBirthday());
-                build.setMedicalNumber(patientTotalInfo.getMedicalNumber());
-                build.setMobile(patientTotalInfo.getMobile());
-                build.setAllergen(patientTotalInfo.getAllergens());
-                build.setPatientRemark(patientTotalInfo.getRemarks());
-                build.setPinyinName(patientTotalInfo.getPinyinName());
-                // 设置会员图标
-                Integer memberTypeId = patientTotalInfo.getMemberTypeId();
-                MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-                if (memberType != null){
-                    build.setMemberIcon(memberType.getIcon());
+        if (!StringHelper.isEmpty(visitingReminds)) {
+            visitingReminds.forEach(visitingRemind -> {
+                VisitingRemindVo build = EntityUtils.build(visitingRemind, VisitingRemindVo.class);
+                // 设置医生信息
+                Integer dentistId = build.getDentistId();
+                if (dentistId != null){
+                    SysUserInfoDetail userInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
+                    if (userInfoDetail != null){
+                        build.setDentistName(userInfoDetail.getName());
+                    }
                 }
-                // 设置会员金额 TODO
-            }
-            visitingRemindVos.add(build);
-        });
-        // 根据患者姓名/手机号/拼音/病历号检索随访提醒内容（包括时间正序排序）
-        List<VisitingRemindVo> searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, query.getSearch(), query.getMedicalNumber());
+                // 设置患者信息
+                Integer patientId = build.getPatientId();
+                if (patientId != null){
+                    PatientTotalInfoVo patientTotalInfo = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+                    if (patientTotalInfo != null){
+                        build.setPatientName(patientTotalInfo.getName());
+                        build.setAge(patientTotalInfo.getAge());
+                        build.setGender(patientTotalInfo.getGender());
+                        build.setBirthday(patientTotalInfo.getBirthday());
+                        build.setMedicalNumber(patientTotalInfo.getMedicalNumber());
+                        build.setMobile(patientTotalInfo.getMobile());
+                        build.setAllergen(patientTotalInfo.getAllergens());
+                        build.setPatientRemark(patientTotalInfo.getRemarks());
+                        build.setPinyinName(patientTotalInfo.getPinyinName());
+                        // 设置会员图标
+                        Integer memberTypeId = patientTotalInfo.getMemberTypeId();
+                        if (memberTypeId != null){
+                            MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
+                            if (memberType != null){
+                                build.setMemberIcon(memberType.getIcon());
+                            }
+                        }
 
+                        // 设置会员金额 TODO
+                    }
+                }
+                visitingRemindVos.add(build);
+            });
+            // 根据患者姓名/手机号/拼音/病历号检索随访提醒内容（包括时间正序排序）
+            searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, query.getSearch(), query.getMedicalNumber());
+        }
         // 分页
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
@@ -254,7 +265,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      */
     private List<VisitingRemindVo> searchVisitingRemind(List<VisitingRemindVo> visitingRemindVos, String search, String medicalNumber) {
         // 检索随访提醒结果列表
-        List<VisitingRemindVo> searchVisitingRemindVo;
+        List<VisitingRemindVo> searchVisitingRemindVo = null;
         // 按条件检索
         // 匹配患者名字
         String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
@@ -262,25 +273,32 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
         // 匹配拼音名字
         String pinyinReg = "^[A-Za-z]+$";
-        searchVisitingRemindVo = visitingRemindVos.stream().filter(visitingRemindVo -> {
-            if (StringHelper.isEmpty(search) || StringHelper.isEmpty(medicalNumber)){
-                return false;
-            }
-            boolean result = false;
-            if (search.matches(patientNameReg)){
-                // 按名字模糊检索
-                result = result | visitingRemindVo.getPatientName().contains(search);
-            } else if (search.matches(mobileReg)){
-                // 按手机检索
-                result = result | visitingRemindVo.getMobile().contains(search);
-            } else if (search.matches(pinyinReg)){
-                // 按拼音检索
-                result = result | visitingRemindVo.getPinyinName().contains(search);
-            }
-            // 按病历号检索
-            result = result | visitingRemindVo.getMedicalNumber().contains(medicalNumber);
-            return result;
-        }).collect(Collectors.toList());
+        if (!StringHelper.isEmpty(search) || !StringHelper.isEmpty(medicalNumber)){
+            searchVisitingRemindVo = visitingRemindVos.stream().filter(visitingRemindVo -> {
+                boolean result = false;
+                if (!StringHelper.isEmpty(search)) {
+                    if (search.matches(patientNameReg)) {
+                        // 按名字模糊检索
+                        result = result | visitingRemindVo.getPatientName().contains(search);
+                    } else if (search.matches(mobileReg)) {
+                        // 按手机检索
+                        result = result | visitingRemindVo.getMobile().contains(search);
+                    } else if (search.matches(pinyinReg)) {
+                        // 按拼音检索
+                        result = result | visitingRemindVo.getPinyinName().contains(search);
+                    }
+                }
+                // 按病历号检索
+                String currentMedicalNumber = visitingRemindVo.getMedicalNumber();
+                if (!StringHelper.isEmpty(currentMedicalNumber)) {
+                    result = result | visitingRemindVo.getMedicalNumber().contains(medicalNumber);
+                }
+                return result;
+            }).collect(Collectors.toList());
+        } else {
+            searchVisitingRemindVo = visitingRemindVos;
+        }
+
         // 将检索结果按时间正序排序
         searchVisitingRemindVo = searchVisitingRemindVo.stream().sorted(Comparator.comparing(VisitingRemindVo::getRemindTime,(obj1,obj2)->{
             if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){

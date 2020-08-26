@@ -2,6 +2,8 @@ package com.yunya.modules.treatment.other.rpc;
 
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -27,13 +29,11 @@ public class TreatmentOtherServiceRest {
 
     /**
      * 插入随访记录
-     * @param model 表单
-     * @return 是否成功
+     * @param visitingRecord 表单
      */
     @ApiOperation(value = "插入随访记录")
     @RequestMapping(value = "/visiting/record/add",method = RequestMethod.POST)
-    @CurrentUser
-    public Integer insertVisitingRecord(@RequestBody VisitingRecordModel model){
-        return visitingRecordBiz.insertVisitingRecord(model);
+    public void insertVisitingRecord(@RequestBody VisitingRecord visitingRecord){
+        visitingRecordBiz.insertSelective(visitingRecord);
     }
 }

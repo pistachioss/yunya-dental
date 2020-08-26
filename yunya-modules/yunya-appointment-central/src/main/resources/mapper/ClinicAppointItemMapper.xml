@@ -19,7 +19,7 @@
   </resultMap>
 
   <sql id="Base_Column_List">
-    id, org_id, appoint_item_id, remarks, inservice, crt_id, crt_name, crt_time, upt_id, 
+    id, org_id, appoint_item_id, remarks, inservice, crt_id, crt_name, crt_time, upt_id,
     upd_name, upd_time
   </sql>
 
