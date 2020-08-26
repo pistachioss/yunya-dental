@@ -49,7 +49,7 @@ public class VisitingRecordController {
      * @param id 根据id删除随访记录
      * @return  ResponseResult
      */
-    @ApiOperation(value = "新增随访记录")
+    @ApiOperation(value = "删除随访记录")
     @DeleteMapping("/delete/{id}")
     public ResponseResult deleteRecord(@PathVariable("id") Integer id){
         return visitingRecordBiz.deleteVisitingRecord(id);
@@ -123,6 +123,5 @@ public class VisitingRecordController {
     public ResponseResult finishVisiting(@RequestBody @Validated FinishVisitingForm form) {
         return visitingRecordBiz.finishVisiting(form);
     }
-
 
 }
