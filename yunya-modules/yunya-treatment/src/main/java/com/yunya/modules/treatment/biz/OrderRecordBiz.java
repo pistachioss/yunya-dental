@@ -342,6 +342,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           "修改开单失败，请至少提交一条开单项目！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
 
+    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK, orderRecordId);
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     OrderDetail orderDetail = new OrderDetail();
@@ -364,5 +365,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     orderRecord.setUpdName(BaseContextHandler.getName());
     mapper.updateByPrimaryKeySelective(orderRecord);
+    redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK);
   }
 }

@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller;
 
 import com.yunya.feign.treatment.domain.form.OrderDetailForm;
+import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -94,7 +95,7 @@ public class OrderRecordController {
    * 根据开单记录ID修改订单明细并提交
    *
    * @param orderRecordId 开单记录ID
-   * @param detailForms 开单明细
+   * @param models 开单明细
    * @return
    */
   @CurrentUser
@@ -102,8 +103,8 @@ public class OrderRecordController {
   @PutMapping("/modify/{orderRecordId}")
   public ResponseResult modifyAndCommitOrder(
       @PathVariable(value = "orderRecordId") Integer orderRecordId,
-      @RequestBody @Validated List<OrderDetailForm> detailForms) {
-    orderRecordBiz.modifyAndCommitOrder(orderRecordId, detailForms);
+      @RequestBody @Validated List<OrderDetailModel> models) {
+    orderRecordBiz.modifyAndCommitOrder(orderRecordId, models);
     return ResponseUtil.success();
   }
 }
