@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.clinic.base.mapper.CashBalanceMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.CashBalance" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="cash_first" property="cashFirst" jdbcType="INTEGER" />
+    <result column="cash_mid" property="cashMid" jdbcType="INTEGER" />
+    <result column="cash_end" property="cashEnd" jdbcType="INTEGER" />
+    <result column="amount_deposited" property="amountDeposited" jdbcType="INTEGER" />
+    <result column="balance_adjustment" property="balanceAdjustment" jdbcType="VARCHAR" />
+    <result column="balance_adjustment_remark" property="balanceAdjustmentRemark" jdbcType="VARCHAR" />
+    <result column="uri" property="uri" jdbcType="VARCHAR" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="inservice" property="inservice" jdbcType="INTEGER" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upe_id" property="upeId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="findCashListByPage" parameterType="com.yunya.feign.cash_balance.query.CashBalanceQuery" resultType="com.yunya.feign.cash_balance.vo.CashBalanceVo">
+    select
+      crt_time,
+      cash_first,
+      cash_mid,
+      cash_end,
+      amount_deposited,
+      balance_adjustment,
+      crt_id
+    from
+        cash_balance
+    where
+        inservice = 0
+    AND
+      crt_id = #{id}
+      <if test="startDate != null">
+        AND #{startDate} &gt; crt_time
+      </if>
+      <if test="endTime != null">
+        AND #{endTime} &lt; crt_time;
+      </if>
+      limit #{pageNum},#{pageSize}
+  </select>
+
+  <select id="findLastData" parameterType="java.lang.Integer">
+    select
+    cash_first,
+    cash_end,
+    amount_deposited,
+    balance_adjustment,
+    balance_adjustment_remark,
+    org_id
+    from
+    cash_balance
+    where org_id = #{orgId}
+    order by id desc
+    limit 1
+  </select>
+
+  <insert id="add" parameterType="com.yunya.models.clinic_base.CashBalance">
+        INSERT INTO
+        cash_balance
+        (cash_first,cash_end,amount_deposited,balance_adjustment,balance_adjustment_remark,uri,org_id,user_id,crt_id)
+        VALUES
+        (#{cashFirst},#{cashEnd},#{amountDeposited},#{balanceAdjustment},#{balanceAdjustmentRemark},#{uri},#{orgId},#{crtId},);
+  </insert>
+
+  <update id="upd" parameterType="com.yunya.models.clinic_base.CashBalance">
+    UPDATE
+        cash_balance
+    SET
+        cash_end=#{cashEnd},
+        amount_deposited=#{amountDeposited},
+        balance_adjustment=#{balanceAdjustment},
+        balance_adjustment_remark=#{balanceAdjustmentRemark},
+        uri=#{uri},
+        upe_id=#{crtId}
+    WHERE
+        id=#{id};
+  </update>
+  <update id="del" parameterType="java.lang.Integer">
+    UPDATE
+        cash_balance
+    SET
+      inservice=1
+    WHERE
+        id=#{id};
+  </update>
+</mapper>
