@@ -7,6 +7,7 @@ import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -14,6 +15,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariff;
+import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
@@ -44,16 +46,53 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   /** 价目表服务 */
   @Autowired private RemoteTariffServiceFeign tariffServiceFeign;
 
+  /** 开单记录 */
   @Autowired private OrderRecordMapper orderRecordMapper;
 
   /**
-   * 根据开单记录ID查询开单详情列表
+   * 根据账单（开单）记录ID查询商品开单详情列表
+   *
+   * @param orderRecordId 就诊记录ID
+   * @return
+   */
+  public List<OrderDetailVO> findGoodsDetailVOList(Integer orderRecordId) {
+    Byte sourceType = 1;
+    List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, sourceType);
+    if (StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(
+          vo -> {
+            // todo 从缓存中获取开单项目信息
+            Integer billingItemId = vo.getBillingItemId();
+            Byte type = vo.getType();
+            if (1 == type) {
+              BaseOralTariff oralTariff = tariffServiceFeign.findBaseOralTariffById(billingItemId);
+              if (null != oralTariff) {
+                vo.setBillingItemName(oralTariff.getName());
+                vo.setUnit(oralTariff.getUnit());
+              }
+            }
+            // todo 从缓存中获取用户（员工）信息
+            Integer executorId = vo.getExecutorId();
+            if (null != executorId) {
+              SysUserInfoDetail employeeInfo =
+                  systemServiceFeign.findSysUserEmployeeInfoByUserId(executorId);
+              vo.setExecutorName(null != employeeInfo ? employeeInfo.getName() : "--");
+            }
+          });
+    } else {
+      resultList = new ArrayList<>();
+    }
+    return resultList;
+  }
+
+  /**
+   * 根据开单记录ID查询开单详情列表(开单界面)
    *
    * @param orderRecordId 开单记录ID
    * @return
    */
   public List<OrderDetailVO> findOrderDetailVOList(Integer orderRecordId) {
-    List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId);
+    List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, null);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
@@ -81,10 +120,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             }
             // todo 从缓存中获取用户（员工）信息
             Integer executorId = vo.getExecutorId();
-            SysUserInfoDetail employeeInfo =
-                systemServiceFeign.findSysUserEmployeeInfoByUserId(executorId);
-            if (null != employeeInfo) {
-              vo.setExecutorName(employeeInfo.getName());
+            if (null != executorId) {
+              SysUserInfoDetail employeeInfo =
+                  systemServiceFeign.findSysUserEmployeeInfoByUserId(executorId);
+              vo.setExecutorName(null != employeeInfo ? employeeInfo.getName() : "--");
             }
           });
     } else {
@@ -94,31 +133,90 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   }
 
   /**
-   * 添加商品
+   * 添加/更新商品
    *
    * @param model 商品参数
    */
-  public void addGoodDetail(GoodsDetailModel model) {
+  public void addAndUpdGoodDetail(GoodsDetailModel model) {
     Integer orderRecordId = model.getOrderRecordId();
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
       throw new ClientServiceException(
           "添加商品失败，传入参数有误，为查询到与之匹配的开单记录！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
-    // 新增商品明细并更新开单记录总额
-    List<OrderDetailModel> orderDetails = model.getOrderDetails();
+
+    Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    // 将参数列表转换成实体列表
+    List<OrderDetailModel> models = model.getOrderDetails();
+    List<OrderDetail> orderDetails = transferModelToEntity(orgId, treatmentRecordId, models);
+
+    // 删除收费新增开单商品
+    OrderDetail orderDetail = new OrderDetail();
+    orderDetail.setOrderRecordId(orderRecordId);
+    orderDetail.setSourceType((byte) 1);
+    mapper.delete(orderDetail);
+
     if (StringHelper.isNotEmpty(orderDetails)) {
-      BigDecimal totalAmount = orderRecord.getTotalAmount();
-      Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
-      OrderDetail entity = new OrderDetail();
+      orderDetails.forEach(
+          entity -> {
+            entity.setOrderRecordId(orderRecordId);
+            entity.setSourceType((byte) 1);
+            mapper.insertSelective(entity);
+          });
+    }
+
+    // 重新计算开单详情总额
+    OrderDetail detail = new OrderDetail();
+    detail.setOrderRecordId(orderRecordId);
+    List<OrderDetail> details = mapper.select(detail);
+    BigDecimal totalAmount = calculateTotalAmount(details);
+    orderRecord.setTotalAmount(totalAmount);
+    orderRecord.setUpdId(userId);
+    orderRecord.setUpdName(name);
+    orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
+  }
+
+  /**
+   * 计算开单明细总额
+   *
+   * @param orderDetails 开单明细列表
+   * @return
+   */
+  public BigDecimal calculateTotalAmount(List<OrderDetail> orderDetails) {
+    BigDecimal totalAmount = BigDecimal.valueOf(0);
+    if (orderDetails.size() > 0) {
+      for (OrderDetail detail : orderDetails) {
+        BigDecimal price = detail.getPrice();
+        Integer quantity = detail.getQuantity();
+        BigDecimal detailTotal = price.multiply(BigDecimal.valueOf(quantity));
+        totalAmount = totalAmount.add(detailTotal);
+      }
+    }
+    return totalAmount;
+  }
+
+  /**
+   * 将开单参数模型转换成开单详情实体
+   *
+   * @param orgId 组织ID
+   * @param treatmentRecordId 就诊记录ID
+   * @param models 参数列表
+   * @return
+   */
+  public List<OrderDetail> transferModelToEntity(
+      Integer orgId, Integer treatmentRecordId, List<OrderDetailModel> models) {
+    List<OrderDetail> orderDetails = new ArrayList<>();
+    if (StringHelper.isNotEmpty(models)) {
+      ClinicTariff tariff = new ClinicTariff();
       ClinicOralTariff oralTariff = new ClinicOralTariff();
       BigDecimal price = BigDecimal.valueOf(0);
-      Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-      String name = BaseContextHandler.getName();
-      for (OrderDetailModel detail : orderDetails) {
+      for (OrderDetailModel detail : models) {
+        OrderDetail entity = new OrderDetail();
+        entity.setOrgId(orgId);
         entity.setTreatmentRecordId(treatmentRecordId);
-        entity.setOrderRecordId(orderRecordId);
         entity.setToothBit(detail.getToothBit());
         entity.setExecutorId(detail.getExecutorId());
         entity.setRemarks(detail.getRemarks());
@@ -129,8 +227,13 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         // todo 从缓存查询开单项目
         switch (type) {
           case 0:
-            throw new ClientServiceException(
-                "添加商品失败，传入的参数有误！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            tariff.setClinicId(orgId);
+            tariff.setTariffId(itemId);
+            ClinicTariff clinicTariff = tariffServiceFeign.findClinicTariff(tariff);
+            if (null != clinicTariff) {
+              price = clinicTariff.getPrice();
+            }
+            break;
           case 1:
             oralTariff.setClinicId(orgId);
             oralTariff.setOralTariffId(itemId);
@@ -147,17 +250,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         entity.setQuantity(quantity);
         BigDecimal detailTotal = price.multiply(BigDecimal.valueOf(quantity));
         entity.setReceivableAmount(detailTotal);
-        entity.setOrgId(orgId);
-        entity.setCrtId(userId);
-        entity.setCrtName(name);
-        mapper.insertSelective(entity);
-        totalAmount = totalAmount.add(detailTotal);
+        entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        entity.setCrtName(BaseContextHandler.getName());
+        orderDetails.add(entity);
       }
-      orderRecord.setTotalAmount(totalAmount);
-      orderRecord.setUpdId(userId);
-      orderRecord.setUpdName(name);
-      orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     }
+    return orderDetails;
   }
 
   /**
@@ -168,13 +266,33 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   public void deleteOrderDetailById(Integer id) {
     OrderDetail orderDetail = mapper.selectByPrimaryKey(id);
     if (null != orderDetail) {
-      Integer crtId = orderDetail.getCrtId();
-      Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-      if (!crtId.equals(userId)) {
-        throw new ClientServiceException(
-            "删除失败,只能删除本人添加项目！", OperationCodeConstants.DELETE_NOT_ALLOW);
+      Integer orderRecordId = orderDetail.getOrderRecordId();
+      OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
+      Byte sourceType = orderDetail.getSourceType();
+      Byte status = orderRecord.getStatus();
+      switch (sourceType) {
+        case 0:
+          if (!BusinessConstants.ORDER_UN_LOCK_STATUS.equals(status)) {
+            throw new ClientServiceException(
+                "删除开单明细失败，当前账单已锁定或已结账，无法删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
+          }
+          break;
+        case 1:
+          if (BusinessConstants.ORDER_FINISH_STATUS.equals(status)) {
+            throw new ClientServiceException(
+                "删除开单明细失败，当前账单已结账，无法删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
+          }
+          break;
+        default:
+          break;
       }
       mapper.deleteByPrimaryKey(id);
+      OrderDetail entity = new OrderDetail();
+      entity.setOrderRecordId(orderRecordId);
+      List<OrderDetail> orderDetails = mapper.select(entity);
+      BigDecimal totalAmount = calculateTotalAmount(orderDetails);
+      orderRecord.setTotalAmount(totalAmount);
+      orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     }
   }
 }

@@ -16,6 +16,7 @@
         <result column="receivable_amount" jdbcType="DECIMAL" property="receivableAmount"/>
         <result column="tooth_bit" jdbcType="VARCHAR" property="toothBit"/>
         <result column="executor_id" jdbcType="INTEGER" property="executorId"/>
+        <result column="source_type" jdbcType="TINYINT" property="sourceType"/>
         <result column="remarks" jdbcType="VARCHAR" property="remarks"/>
         <result column="inservice" jdbcType="BIT" property="inservice"/>
         <result column="crt_id" jdbcType="INTEGER" property="crtId"/>
@@ -38,6 +39,13 @@
         od.executor_id as executorId,
         od.remarks
       from order_detail od
-      where od.order_record_id = #{orderRecordId}
+      <where>
+          <if test="orderRecordId != null">
+              and od.order_record_id = #{orderRecordId}
+          </if>
+          <if test="sourceType != null">
+              and od.source_type = #{sourceType}
+          </if>
+      </where>
     </select>
 </mapper>

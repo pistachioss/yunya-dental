@@ -70,6 +70,12 @@ public class OrderDetail {
     private Integer executorId;
 
     /**
+     * 添加来源（0-开单；1-收费）
+     */
+    @Column(name = "source_type")
+    private Byte sourceType;
+
+    /**
      * 备注
      */
     private String remarks;
@@ -311,6 +317,24 @@ public class OrderDetail {
      */
     public void setExecutorId(Integer executorId) {
         this.executorId = executorId;
+    }
+
+    /**
+     * 获取添加来源（0-开单；1-收费）
+     *
+     * @return sourceType - 添加来源（0-开单；1-收费）
+     */
+    public Byte getSourceType() {
+        return sourceType;
+    }
+
+    /**
+     * 设置添加来源
+     *
+     * @param sourceType 添加来源（0-开单；1-收费）
+     */
+    public void setSourceType(Byte sourceType) {
+        this.sourceType = sourceType;
     }
 
     /**

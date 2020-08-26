@@ -30,6 +30,20 @@ public class OrderDetailController {
   @Autowired private OrderDetailBiz orderDetailBiz;
 
   /**
+   * 根据账单（开单）记录ID查询商品开单详情列表
+   *
+   * @param orderRecordId 开单记录ID
+   * @return
+   */
+  @ApiOperation("根据账单（开单）记录ID查询商品开单详情列表")
+  @GetMapping("/goods/list/{orderRecordId}")
+  public ResponseResult findGoodsList(
+      @PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    List<OrderDetailVO> resultList = orderDetailBiz.findGoodsDetailVOList(orderRecordId);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
    * 根据账单（开单）记录ID查询开单详情列表
    *
    * @param orderRecordId 开单记录ID
@@ -52,7 +66,7 @@ public class OrderDetailController {
   @ApiOperation("添加商品（收费界面用）")
   @PostMapping("/add/goods")
   public ResponseResult addGoods(@RequestBody GoodsDetailModel model) {
-    orderDetailBiz.addGoodDetail(model);
+    orderDetailBiz.addAndUpdGoodDetail(model);
     return ResponseUtil.success();
   }
 
