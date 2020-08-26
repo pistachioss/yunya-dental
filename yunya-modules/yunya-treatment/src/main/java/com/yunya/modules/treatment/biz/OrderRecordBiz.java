@@ -1,7 +1,5 @@
 package com.yunya.modules.treatment.biz;
 
-import com.yunya.feign.tariff.RemoteTariffServiceFeign;
-import com.yunya.feign.treatment.domain.form.OrderDetailForm;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
@@ -15,8 +13,6 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.tariff.ClinicOralTariff;
-import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.models.treatment.AssistantMatchingRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
@@ -42,9 +38,6 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
-
-  /** 价目表服务 */
-  @Autowired private RemoteTariffServiceFeign tariffServiceFeign;
 
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
@@ -102,14 +95,16 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
     redisUtils.set(
         RedisConstants.LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId, treatmentRecordId);
-    BigDecimal totalAmount = BigDecimal.valueOf(0);
-    List<OrderDetail> details = new ArrayList<>();
-    List<OrderDetailModel> orderDetails = model.getOrderDetails();
+    List<OrderDetailModel> models = model.getOrderDetails();
     int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
-    // 计算开单总额并初始化订单明细列表
-    totalAmount = calculateTotalAmount(orgId, totalAmount, details, orderDetails);
+    // 将model转换成entity
+    List<OrderDetail> orderDetails =
+        orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
+    // 计算开单总额
+    BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
+
     OrderRecord orderRecord = new OrderRecord();
     orderRecord.setTreatmentRecordId(treatmentRecordId);
     OrderRecord orderResult = mapper.selectOne(orderRecord);
@@ -117,21 +112,18 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (null == orderResult) {
       orderRecord.setOrgId(orgId);
       orderRecord.setPatientId(treatmentRecord.getPatientId());
-      orderRecord.setTreatmentRecordId(treatmentRecordId);
       orderRecord.setTotalAmount(totalAmount);
       orderRecord.setCrtId(userId);
       orderRecord.setCrtName(name);
       mapper.insertSelective(orderRecord);
       orderRecordId = orderRecord.getId();
-      details.forEach(
-          detail -> {
-            detail.setOrgId(orgId);
-            detail.setTreatmentRecordId(treatmentRecordId);
-            detail.setOrderRecordId(orderRecordId);
-            detail.setCrtId(userId);
-            detail.setCrtName(name);
-            orderDetailBiz.insertSelective(detail);
-          });
+      if (StringHelper.isNotEmpty(orderDetails)) {
+        orderDetails.forEach(
+            detail -> {
+              detail.setOrderRecordId(orderRecordId);
+              orderDetailBiz.insertSelective(detail);
+            });
+      }
     } else {
       orderResult.setTotalAmount(totalAmount);
       orderResult.setUpdId(userId);
@@ -141,15 +133,13 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       OrderDetail orderDetail = new OrderDetail();
       orderDetail.setTreatmentRecordId(treatmentRecordId);
       orderDetailBiz.delete(orderDetail);
-      details.forEach(
-          detail -> {
-            detail.setOrgId(orgId);
-            detail.setTreatmentRecordId(treatmentRecordId);
-            detail.setOrderRecordId(orderRecordId);
-            detail.setCrtId(userId);
-            detail.setCrtName(name);
-            orderDetailBiz.insertSelective(detail);
-          });
+      if (StringHelper.isNotEmpty(orderDetails)) {
+        orderDetails.forEach(
+            detail -> {
+              detail.setOrderRecordId(orderRecordId);
+              orderDetailBiz.insertSelective(detail);
+            });
+      }
     }
     Integer assistantId1 = model.getAssistantId1();
     Integer assistantId2 = model.getAssistantId2();
@@ -194,66 +184,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   }
 
   /**
-   * 计算开单总额
-   *
-   * @param orgId 组织ID
-   * @param totalAmount 初始化总额
-   * @param details 订单明细列表
-   * @param orderDetails 开单明细列表
-   * @return
-   */
-  private BigDecimal calculateTotalAmount(
-      int orgId,
-      BigDecimal totalAmount,
-      List<OrderDetail> details,
-      List<OrderDetailModel> orderDetails) {
-    if (orderDetails.size() > 0) {
-      ClinicTariff tariff = new ClinicTariff();
-      ClinicOralTariff oralTariff = new ClinicOralTariff();
-      BigDecimal price = BigDecimal.valueOf(0);
-      for (OrderDetailModel detail : orderDetails) {
-        OrderDetail orderDetailEntity = new OrderDetail();
-        orderDetailEntity.setToothBit(detail.getToothBit());
-        orderDetailEntity.setExecutorId(detail.getExecutorId());
-        orderDetailEntity.setRemarks(detail.getRemarks());
-        Byte type = detail.getType();
-        orderDetailEntity.setType(type);
-        Integer itemId = detail.getBillingItemId();
-        orderDetailEntity.setBillingItemId(itemId);
-        // todo 从缓存查询开单项目
-        switch (type) {
-          case 0:
-            tariff.setClinicId(orgId);
-            tariff.setTariffId(itemId);
-            ClinicTariff clinicTariff = tariffServiceFeign.findClinicTariff(tariff);
-            if (null != clinicTariff) {
-              price = clinicTariff.getPrice();
-            }
-            break;
-          case 1:
-            oralTariff.setClinicId(orgId);
-            oralTariff.setOralTariffId(itemId);
-            ClinicOralTariff clinicOralTariff = tariffServiceFeign.findClinicOralTariff(oralTariff);
-            if (null != clinicOralTariff) {
-              price = clinicOralTariff.getPrice();
-            }
-            break;
-          default:
-            break;
-        }
-        orderDetailEntity.setPrice(price);
-        Integer quantity = detail.getQuantity();
-        orderDetailEntity.setQuantity(quantity);
-        BigDecimal detailTotal = price.multiply(BigDecimal.valueOf(quantity));
-        orderDetailEntity.setReceivableAmount(detailTotal);
-        totalAmount = totalAmount.add(detailTotal);
-        details.add(orderDetailEntity);
-      }
-    }
-    return totalAmount;
-  }
-
-  /**
    * 保存助手配诊记录
    *
    * @param treatmentRecordId 就诊记录ID
@@ -268,30 +198,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       Integer assistantId1,
       Integer assistantId2,
       Integer assistantId3) {
-    int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-    int userId = Integer.parseInt(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
     AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
     matchingRecord.setTreatmentRecordId(treatmentRecordId);
     matchingRecord.setOrderRecordId(orderRecordId);
     if (null != assistantId1) {
       matchingRecord.setType((byte) 0);
-      AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
-      if (null == matchingResult) {
-        matchingRecord.setAssistantId(assistantId1);
-        matchingRecord.setOrgId(orgId);
-        matchingRecord.setCrtId(userId);
-        matchingRecord.setCrtName(name);
-        matchingRecordBiz.insertSelective(matchingRecord);
-      } else {
-        Integer assistantId = matchingResult.getAssistantId();
-        if (!assistantId.equals(assistantId1)) {
-          matchingResult.setAssistantId(assistantId1);
-          matchingResult.setUpdId(userId);
-          matchingResult.setUpdName(name);
-          matchingRecordBiz.updateSelectiveById(matchingResult);
-        }
-      }
+      addAssistantMatchingRecord(assistantId1, matchingRecord);
     } else {
       matchingRecord.setType((byte) 0);
       matchingRecordBiz.delete(matchingRecord);
@@ -302,22 +214,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
             "开单失败，助手2与助手1不能是同一个人！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 1);
-      AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
-      if (null == matchingResult) {
-        matchingRecord.setAssistantId(assistantId2);
-        matchingRecord.setOrgId(orgId);
-        matchingRecord.setCrtId(userId);
-        matchingRecord.setCrtName(name);
-        matchingRecordBiz.insertSelective(matchingRecord);
-      } else {
-        Integer assistantId = matchingResult.getAssistantId();
-        if (!assistantId.equals(assistantId2)) {
-          matchingResult.setAssistantId(assistantId2);
-          matchingResult.setUpdId(userId);
-          matchingResult.setUpdName(name);
-          matchingRecordBiz.updateSelectiveById(matchingResult);
-        }
-      }
+      addAssistantMatchingRecord(assistantId2, matchingRecord);
     } else {
       matchingRecord.setType((byte) 1);
       matchingRecordBiz.delete(matchingRecord);
@@ -328,25 +225,36 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
             "开单失败，巡回与助手1或助手2不能是同一个人！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 2);
-      AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
-      if (null == matchingResult) {
-        matchingRecord.setAssistantId(assistantId3);
-        matchingRecord.setOrgId(orgId);
-        matchingRecord.setCrtId(userId);
-        matchingRecord.setCrtName(name);
-        matchingRecordBiz.insertSelective(matchingRecord);
-      } else {
-        Integer assistantId = matchingResult.getAssistantId();
-        if (!assistantId.equals(assistantId3)) {
-          matchingResult.setAssistantId(assistantId3);
-          matchingResult.setUpdId(userId);
-          matchingResult.setUpdName(name);
-          matchingRecordBiz.updateSelectiveById(matchingResult);
-        }
-      }
+      addAssistantMatchingRecord(assistantId3, matchingRecord);
     } else {
       matchingRecord.setType((byte) 2);
       matchingRecordBiz.delete(matchingRecord);
+    }
+  }
+
+  /**
+   * 添加助手匹配记录
+   *
+   * @param assistantId 助手ID
+   * @param matchingRecord 匹配记录
+   */
+  private void addAssistantMatchingRecord(
+      Integer assistantId, AssistantMatchingRecord matchingRecord) {
+    AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
+    if (null == matchingResult) {
+      matchingRecord.setAssistantId(assistantId);
+      matchingRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+      matchingRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+      matchingRecord.setCrtName(BaseContextHandler.getName());
+      matchingRecordBiz.insertSelective(matchingRecord);
+    } else {
+      Integer resultAssistantId = matchingResult.getAssistantId();
+      if (!resultAssistantId.equals(assistantId)) {
+        matchingResult.setAssistantId(assistantId);
+        matchingResult.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+        matchingResult.setUpdName(BaseContextHandler.getName());
+        matchingRecordBiz.updateSelectiveById(matchingResult);
+      }
     }
   }
 
@@ -414,79 +322,43 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * 修改开单明细并提交开单信息
    *
    * @param orderRecordId 开单记录ID
-   * @param detailForms 开单信息
+   * @param models 开单信息
    */
-  public void modifyAndCommitOrder(Integer orderRecordId, List<OrderDetailForm> detailForms) {
+  public void modifyAndCommitOrder(Integer orderRecordId, List<OrderDetailModel> models) {
     OrderRecord orderRecord = mapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
       throw new ClientServiceException(
           "修改开单失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", OperationCodeConstants.SAME_DATA_EXIST);
     }
+
     Byte status = orderRecord.getStatus();
     if (BusinessConstants.ORDER_FINISH_STATUS.equals(status)) {
       throw new ClientServiceException(
           "修改开单失败，无法修改已完成结算的账单！", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
-    if (StringHelper.isEmpty(detailForms)) {
+
+    if (StringHelper.isEmpty(models)) {
       throw new ClientServiceException(
-          "修改开单失败，提交账单需至少包含一条开单项目！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+          "修改开单失败，请至少提交一条开单项目！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
 
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
-    BigDecimal totalAmount = BigDecimal.valueOf(0);
-
     OrderDetail orderDetail = new OrderDetail();
-    orderDetail.setTreatmentRecordId(treatmentRecordId);
+    orderDetail.setOrderRecordId(orderRecordId);
     orderDetailBiz.delete(orderDetail);
 
-    ClinicTariff tariff = new ClinicTariff();
-    ClinicOralTariff oralTariff = new ClinicOralTariff();
-    BigDecimal price = BigDecimal.valueOf(0);
-    for (OrderDetailForm form : detailForms) {
-      orderDetail.setOrgId(orgId);
-      orderDetail.setTreatmentRecordId(treatmentRecordId);
-      orderDetail.setOrderRecordId(orderRecordId);
-      orderDetail.setToothBit(form.getToothBit());
-      orderDetail.setExecutorId(form.getExecutorId());
-      orderDetail.setRemarks(form.getRemarks());
-      Byte type = form.getType();
-      orderDetail.setType(type);
-      Integer itemId = form.getBillingItemId();
-      orderDetail.setBillingItemId(itemId);
-      switch (type) {
-        case 0:
-          tariff.setClinicId(orgId);
-          tariff.setTariffId(itemId);
-          ClinicTariff clinicTariff = tariffServiceFeign.findClinicTariff(tariff);
-          if (null != clinicTariff) {
-            price = clinicTariff.getPrice();
-          }
-          break;
-        case 1:
-          oralTariff.setClinicId(orgId);
-          oralTariff.setOralTariffId(itemId);
-          ClinicOralTariff clinicOralTariff = tariffServiceFeign.findClinicOralTariff(oralTariff);
-          if (null != clinicOralTariff) {
-            price = clinicOralTariff.getPrice();
-          }
-          break;
-        default:
-          break;
-      }
-      orderDetail.setPrice(price);
-      Integer quantity = form.getQuantity();
-      orderDetail.setQuantity(quantity);
-      BigDecimal detailTotal = price.multiply(BigDecimal.valueOf(quantity));
-      orderDetail.setReceivableAmount(detailTotal);
-      orderDetail.setCrtId(userId);
-      orderDetail.setCrtName(name);
-      totalAmount = totalAmount.add(detailTotal);
-      orderDetailBiz.insertSelective(orderDetail);
+    List<OrderDetail> orderDetails =
+        orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
+    if (StringHelper.isNotEmpty(orderDetails)) {
+      orderDetails.forEach(
+          detail -> {
+            detail.setOrderRecordId(orderRecordId);
+            orderDetailBiz.insertSelective(detail);
+          });
     }
 
+    BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
     orderRecord.setTotalAmount(totalAmount);
     orderRecord.setStatus((byte) 1);
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
