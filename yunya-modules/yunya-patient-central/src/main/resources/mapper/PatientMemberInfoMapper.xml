@@ -63,7 +63,10 @@
         from patient_member_info pmio where pmio.card_number = #{cardNumber}
     </select>
 
-
+    <select id="selectCardNumber" resultType="com.yunya.models.patient_central.PatientMemberInfo">
+      select <include refid="Find_Colum_List"/>
+      from patient_member_info pmio where pmio.card_number = #{memberId} and pmio.patient_id =#{patientId}
+    </select>
 
 
 </mapper>

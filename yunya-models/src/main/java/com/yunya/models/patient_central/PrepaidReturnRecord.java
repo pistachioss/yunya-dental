@@ -46,10 +46,10 @@ public class PrepaidReturnRecord {
     private BigDecimal returnGiftAmount;
 
     /**
-     * 退费原因
+     * 备注
      */
-    @Column(name = "return_reason")
-    private String returnReason;
+    @Column(name = "remarks")
+    private String remarks;
 
     /**
      * 退费方式
@@ -220,17 +220,17 @@ public class PrepaidReturnRecord {
      *
      * @return return_reason - 退费原因
      */
-    public String getReturnReason() {
-        return returnReason;
+    public String getRemarks() {
+        return remarks;
     }
 
     /**
      * 设置退费原因
      *
-     * @param returnReason 退费原因
+     * @param remarks 退费原因
      */
-    public void setReturnReason(String returnReason) {
-        this.returnReason = returnReason;
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
     /**

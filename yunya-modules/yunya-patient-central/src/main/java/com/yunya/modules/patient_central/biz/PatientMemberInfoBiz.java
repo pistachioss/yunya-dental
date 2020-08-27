@@ -237,7 +237,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
      */
     public void Recharge(MemberRechargeModel model) {
         //查询会员余额 余额增加
-        PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByCardNumber(model.getMemberId());
+        PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(model.getMemberId(),model.getPatientId());
         patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
         patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
         patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
@@ -295,12 +295,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
 
     /**
-     * 消费记录
+     * 退费
      * @param form
      */
     public void refund(MemberReturnRecordModel model) {
         //查询会员余额 退减余额
-        PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByCardNumber(model.getMemberId());
+        PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(model.getMemberId(),model.getPatientId());
         patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().subtract(model.getReturnPrincipalAmount()));
         patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().subtract(model.getReturnGiftAmount()));
         patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
@@ -326,16 +326,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        form.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<MemberReturnRecordVo> resultList =  memberReturnRecordMapper.refundList(form);
         for (MemberReturnRecordVo memberReturnRecordVo : resultList) {
             OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(memberReturnRecordVo.getOrgId());//获取门诊简称
             if (organizationInfo != null) {
                 memberReturnRecordVo.setOrgName(organizationInfo.getAbbreviation());
-            }
-            AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberReturnRecordVo.getReturnWayId()); // todo 充值记录 待确认
-            if(accountItem != null){
-                memberReturnRecordVo.setReturnWayType(accountItem.getName()); //获取支付方式名称
             }
         }
         return new PageInfo<>(resultList);

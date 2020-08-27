@@ -113,7 +113,7 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
      */
     public void Recharge(PrepaidRechargeModel model) {
         //查询会员余额 增加余额
-        PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId());
+        PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId(),model.getPatientId());
         patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
         patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(model.getRechargeBonus()));
         patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
@@ -164,7 +164,7 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
      */
     public void refund(PrepaidMeturnRecordModel model) {
         //查询会员余额 退减余额
-        PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId());
+        PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId(),model.getPatientId());
         patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().subtract(model.getReturnPrincipalAmount()));
         patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().subtract(model.getReturnGiftAmount()));
         patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);

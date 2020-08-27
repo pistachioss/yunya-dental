@@ -40,6 +40,6 @@ public class PrepaidMeturnRecordQueryForm implements Serializable {
      *  患者id
      */
     @ApiModelProperty(value = "患者id",required = true)
-    private String patientId;
+        private String patientId;
 
 }

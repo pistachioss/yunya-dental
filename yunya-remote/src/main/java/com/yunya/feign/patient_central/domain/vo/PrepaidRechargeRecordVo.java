@@ -5,6 +5,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 简单介绍:</br> 充值记录
@@ -25,12 +26,12 @@ public class PrepaidRechargeRecordVo implements Serializable {
     /**
      * 操作时间
      */
-    private Data OperatingTime;
+    private Date operatingTime;
 
     /**
      * 充值本金
      */
-        private BigDecimal rechargePrincipal;
+    private BigDecimal rechargePrincipal;
 
     /**
      * 充值赠金
@@ -53,7 +54,7 @@ public class PrepaidRechargeRecordVo implements Serializable {
     private Integer orgId;
 
     /**
-     * 诊所
+     * 诊所简称
      */
     private String orgName;
 
@@ -70,7 +71,7 @@ public class PrepaidRechargeRecordVo implements Serializable {
     /**
      * 类型
      */
-    private Byte rechargeType;
+    private Integer rechargeType;
 
     /**
      * 充值卡号

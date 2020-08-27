@@ -37,11 +37,11 @@ public class MemberReturnRecordQueryForm implements Serializable {
      *  会员卡
      */
     @ApiModelProperty(value = "会员卡号",required = true)
-    private String cardNumber;
+    private String memberId;
 
     /**
-     *  门诊id
+     * 患者id
      */
-    @ApiModelProperty(value = "门诊id",required = false)
-    private Integer orgId;
+    @ApiModelProperty(value = "患者id",required = true)
+    private String patientId;
 }

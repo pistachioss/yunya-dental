@@ -72,12 +72,14 @@ public class PatientPrepaymentRelationController {
         return ResponseUtil.success();
     }
 
+    @CurrentUser
     @ApiOperation("充值记录")
     @PostMapping({"/RechargeRecord"})
     public ResponseResult RechargeRecord(@RequestBody PrepaidRechargeRecordQueryForm form) {
         return ResponseUtil.success(this.patientPrepaymentBiz.RechargeRecord(form));
     }
 
+    @CurrentUser
     @ApiOperation("退费")
     @PostMapping("/refund")
     public ResponseResult refund(@RequestBody PrepaidMeturnRecordModel model ){
@@ -85,6 +87,7 @@ public class PatientPrepaymentRelationController {
         return ResponseUtil.success();
     }
 
+    @CurrentUser
     @ApiOperation("退费记录")
     @PostMapping("/refundList")
     public ResponseResult refundList(@RequestBody PrepaidMeturnRecordQueryForm queryForm ){

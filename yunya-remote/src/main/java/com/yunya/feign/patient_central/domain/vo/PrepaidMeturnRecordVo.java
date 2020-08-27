@@ -31,12 +31,12 @@ public class PrepaidMeturnRecordVo implements Serializable {
     /**
      * 退本金金额
      */
-    private BigDecimal rechargePrincipal;
+    private BigDecimal returnRrincipalAmount;
 
     /**
      * 退赠送金额
      */
-    private BigDecimal rechargeBonus;
+    private BigDecimal returnGiftAmount;
 
     /**
      * 退费方式

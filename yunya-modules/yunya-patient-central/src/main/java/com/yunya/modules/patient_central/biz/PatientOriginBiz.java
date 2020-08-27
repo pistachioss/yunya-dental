@@ -127,7 +127,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
             patientOrigin.setLimitStartDate(null);
             patientOrigin.setLimitEndDate(null);
         }
-        patientOrigin.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
         patientOrigin.setUpdTime(new Date());
         mapper.updateByPrimaryKeySelective(patientOrigin);

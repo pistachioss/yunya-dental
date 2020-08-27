@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
+import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.MemberRelationVo;
@@ -50,4 +51,10 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
     PatientMemberInfo selectOneByCardNumber(@Param("cardNumber") String cardNumber);
 
 
+    /**
+     * 通过会员卡号和患者id查询会员卡信息
+     * @param memberId patientId
+     * @return PatientMemberInfo
+     */
+    PatientMemberInfo selectCardNumber(@Param("memberId") String memberId,@Param("patientId") Integer patientId);
 }

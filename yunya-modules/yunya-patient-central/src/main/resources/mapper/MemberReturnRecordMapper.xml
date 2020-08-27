@@ -11,7 +11,7 @@
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
     <result column="return_principal_amount" property="returnPrincipalAmount" jdbcType="DECIMAL" />
     <result column="return_gift_amount" property="returnGiftAmount" jdbcType="DECIMAL" />
-    <result column="return_reason" property="returnReason" jdbcType="VARCHAR" />
+    <result column="remarks" property="returnReason" jdbcType="VARCHAR" />
     <result column="return_way_id" property="returnWayId" jdbcType="INTEGER" />
     <result column="return_way_type" property="returnWayType" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
@@ -23,13 +23,14 @@
   </resultMap>
 
   <sql id="Column_List">
-        mrrd.id,mrrd.org_id orgId,mrrd.member_id memberId,mrrd.patient_id patientId,mrrd.return_principal_amount returnPrincipalAmount,	mrrd.return_gift_amount returnGiftAmount,mrrd.return_reason returnReason,mrrd.return_way_id returnWayId,mrrd.return_way_type returnWayType,	mrrd.crt_id crtId,mrrd.crt_name crtName,mrrd.crt_time crtTime,mrrd.upt_id uptId,mrrd.upd_name updName,mrrd.upd_time updTime
+        mrrd.id,mrrd.org_id orgId,mrrd.member_id memberId,mrrd.patient_id patientId,mrrd.return_principal_amount returnPrincipalAmount,	mrrd.return_gift_amount returnGiftAmount,mrrd.remarks,mrrd.return_way_id returnWayId,mrrd.return_way_type returnWayType,	mrrd.crt_id crtId,mrrd.crt_name crtName,mrrd.crt_time crtTime,mrrd.upt_id uptId,mrrd.upd_name updName,mrrd.upd_time updTime
   </sql>
 
   <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.MemberReturnRecordVo">
-      select  id,crt_time operatingTime,return_principal_amount returnPrincipalAmount,return_gift_amount returnGiftAmount,org_id orgId,crt_id operatorId,crt_name operatorName
-      from member_return_record where member_id = #{form.memberId} and org_id =#{orgId}
-      order by mrrd.crt_time desc
+      select  id,crt_time operatingTime,return_principal_amount returnPrincipalAmount,return_gift_amount returnGiftAmount,
+              org_id orgId,crt_id operatorId,crt_name operatorName,return_way_id returnWayId,return_way_type returnWayType,remarks
+      from member_return_record where member_id = #{form.memberId} and patient_id =#{form.patientId}
+      order by crt_time desc
   </select>
 
 </mapper>

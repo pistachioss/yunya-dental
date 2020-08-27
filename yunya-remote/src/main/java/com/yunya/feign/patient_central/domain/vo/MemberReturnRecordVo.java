@@ -31,12 +31,12 @@ public class MemberReturnRecordVo implements Serializable {
     /**
      * 退本金金额
      */
-    private BigDecimal rechargePrincipal;
+    private BigDecimal returnPrincipalAmount;
 
     /**
      * 退赠送金额
      */
-    private BigDecimal rechargeBonus;
+    private BigDecimal returnGiftAmount;
 
     /**
      * 退费方式

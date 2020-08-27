@@ -47,12 +47,12 @@ public class PrepaidMeturnRecordModel implements Serializable {
      * 退费方式ID
      */
     @ApiModelProperty(value = "退费方式ID",required = true)
-    private String returnWayId;
+    private Integer returnWayId;
 
     /**
-     * 退费原因
+     * 备注
      */
-    @ApiModelProperty(value = "退费原因")
-    private String returnReason;
+    @ApiModelProperty(value = "备注")
+    private String remarks;
 
 }

@@ -10,6 +10,7 @@ public class PrepaidRechargeRecord {
      * 主键
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
@@ -22,7 +23,7 @@ public class PrepaidRechargeRecord {
      * 预付款卡ID
      */
     @Column(name = "prepaid_id")
-    private Integer prepaidId;
+    private String prepaidId;
 
     /**
      * 充值本金
@@ -39,6 +40,7 @@ public class PrepaidRechargeRecord {
     /**
      * 备注 备注
      */
+    @Column(name = "remarks")
     private String remarks;
 
     /**
@@ -135,7 +137,7 @@ public class PrepaidRechargeRecord {
      *
      * @return prepaid_id - 预付款卡ID
      */
-    public Integer getPrepaidId() {
+    public String getPrepaidId() {
         return prepaidId;
     }
 
@@ -144,7 +146,7 @@ public class PrepaidRechargeRecord {
      *
      * @param prepaidId 预付款卡ID
      */
-    public void setPrepaidId(Integer prepaidId) {
+    public void setPrepaidId(String prepaidId) {
         this.prepaidId = prepaidId;
     }
 

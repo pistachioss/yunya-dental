@@ -21,6 +21,12 @@ import java.util.List;
 public class MemberRechargeModel implements Serializable {
 
     /**
+     * 患者id
+     */
+    @ApiModelProperty(value = "患者id",required = true)
+    private Integer patientId;
+
+    /**
      * 会员卡号
      */
     @ApiModelProperty(value = "会员卡号",required = true)
@@ -43,6 +49,12 @@ public class MemberRechargeModel implements Serializable {
      */
     @ApiModelProperty(value = "入账方式",required = true)
     private List<AccountedWayModel> accountedWayModelList;
+
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remarks;
 
 
 }

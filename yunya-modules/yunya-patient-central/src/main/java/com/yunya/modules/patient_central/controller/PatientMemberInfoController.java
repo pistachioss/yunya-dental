@@ -99,6 +99,7 @@ public class PatientMemberInfoController {
     }
 
 
+    @CurrentUser
     @ApiOperation("充值记录")
     @PostMapping("/RechargeRecord")
     public ResponseResult RechargeRecord(@RequestBody RechargeRecordQueryForm form ){
@@ -106,6 +107,7 @@ public class PatientMemberInfoController {
     }
 
 
+    @CurrentUser
     @ApiOperation("退费")
     @PostMapping("/refund")
     public ResponseResult refund(@RequestBody MemberReturnRecordModel model ){
@@ -113,6 +115,7 @@ public class PatientMemberInfoController {
         return ResponseUtil.success();
     }
 
+    @CurrentUser
     @ApiOperation("退费记录")
     @PostMapping("/refundList")
     public ResponseResult refundList(@RequestBody MemberReturnRecordQueryForm queryForm ){

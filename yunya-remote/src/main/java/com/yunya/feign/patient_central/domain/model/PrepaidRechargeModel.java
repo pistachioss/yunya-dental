@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -20,6 +21,12 @@ import java.util.List;
 @Data
 @ToString
 public class PrepaidRechargeModel implements Serializable {
+
+    /**
+     * 患者id
+     */
+    @ApiModelProperty(value = "患者id",required = true)
+    private Integer patientId;
 
     /**
      * 预付款卡号ID
@@ -52,7 +59,7 @@ public class PrepaidRechargeModel implements Serializable {
     private String rechargeCardNumber;
 
     /**
-     * 备注
+     * 备注 备注
      */
     @ApiModelProperty(value = "备注")
     private String remarks;

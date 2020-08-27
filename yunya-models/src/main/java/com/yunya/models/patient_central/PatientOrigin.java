@@ -88,8 +88,8 @@ public class PatientOrigin {
     /**
      * 更新人ID
      */
-    @Column(name = "upd_id")
-    private Integer updId;
+    @Column(name = "upt_id")
+    private Integer uptId;
 
     /**
      * 更新人姓名
@@ -323,19 +323,19 @@ public class PatientOrigin {
     /**
      * 获取更新人ID
      *
-     * @return upd_id - 更新人ID
+     * @return upt_id - 更新人ID
      */
-    public Integer getUpdId() {
-        return updId;
+    public Integer getUptId() {
+        return uptId;
     }
 
     /**
      * 设置更新人ID
      *
-     * @param updId 更新人ID
+     * @param uptId 更新人ID
      */
-    public void setUpdId(Integer updId) {
-        this.updId = updId;
+    public void setUptId(Integer uptId) {
+        this.uptId = uptId;
     }
 
     /**

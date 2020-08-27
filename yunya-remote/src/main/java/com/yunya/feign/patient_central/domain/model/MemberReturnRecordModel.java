@@ -47,7 +47,7 @@ public class MemberReturnRecordModel implements Serializable {
      * 退费方式ID
      */
     @ApiModelProperty(value = "退费方式ID",required = true)
-    private String returnWayId;
+    private Integer returnWayId;
 
     /**
      * 退费原因

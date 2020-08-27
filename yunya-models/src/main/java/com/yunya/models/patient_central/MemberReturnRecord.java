@@ -40,10 +40,10 @@ public class MemberReturnRecord {
     private BigDecimal returnGiftAmount;
 
     /**
-     * 退费原因
+     * 备注
      */
-    @Column(name = "return_reason")
-    private String returnReason;
+    @Column(name = "remarks")
+    private String remarks;
 
     /**
      * 退费方式ID
@@ -203,16 +203,16 @@ public class MemberReturnRecord {
      * @return return_reason - 退费原因
      */
     public String getReturnReason() {
-        return returnReason;
+        return remarks;
     }
 
     /**
      * 设置退费原因
      *
-     * @param returnReason 退费原因
+     * @param remarks 退费原因
      */
-    public void setReturnReason(String returnReason) {
-        this.returnReason = returnReason;
+    public void setReturnReason(String remarks) {
+        this.remarks = remarks;
     }
 
     /**
