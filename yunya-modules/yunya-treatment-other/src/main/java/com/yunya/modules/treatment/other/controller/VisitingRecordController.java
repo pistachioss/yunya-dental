@@ -40,8 +40,7 @@ public class VisitingRecordController {
     @PostMapping("/add")
     @CurrentUser
     public ResponseResult addRecord(@RequestBody @Validated VisitingRecordModel model){
-        visitingRecordBiz.insertVisitingRecord(model);
-        return ResponseUtil.success();
+        return visitingRecordBiz.insertVisitingRecord(model);
     }
 
     /**

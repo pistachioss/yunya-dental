@@ -10,6 +10,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
+import com.yunya.feign.treatment_other.domain.model.VisitingContentModel;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
@@ -18,8 +19,10 @@ import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -80,26 +83,35 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return  返回插入成功的条数
      */
     public ResponseResult insertVisitingRecord(VisitingRecordModel model){
-        Integer patientId = model.getPatientId();
-        Date visitingDate = model.getVisitingDate();
-        VisitingRecordQuery query = new VisitingRecordQuery();
-        query.setPatientId(patientId);
-        query.setVisitingDate(visitingDate);
-        List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
-        if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String format = dateFormat.format(query.getVisitingDate());
-            return ResponseUtil.success(format + "的随访已经存在");
+        List<VisitingContentModel> visitingContents = model.getVisitingContents();
+        if (!StringHelper.isEmpty(visitingContents)){
+            Integer patientId = model.getPatientId();
+            for(VisitingContentModel visitingContentModel : visitingContents){
+                Date visitingDate = visitingContentModel.getVisitingDate();
+                VisitingRecordQuery query = new VisitingRecordQuery();
+                query.setPatientId(patientId);
+                query.setVisitingDate(visitingDate);
+                List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
+                if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    String format = dateFormat.format(query.getVisitingDate());
+                    throw new ClientServiceException(format + " 的随访已经存在", OperationCodeConstants.DATA_EXIST);
+                }
+                VisitingRecord build = EntityUtils.build(model, VisitingRecord.class);
+                build.setVisitingDate(visitingContentModel.getVisitingDate());
+                build.setVisitingTime(visitingContentModel.getVisitingTime());
+                build.setReason(visitingContentModel.getReason());
+                build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                build.setCrtName(BaseContextHandler.getName());
+                build.setCrtTime(new Date(System.currentTimeMillis()));
+                int result = mapper.insertSelective(build);
+                if (result <= 0){
+                    return ResponseUtil.success("新增随访失败！");
+                }
+            }
+            return ResponseUtil.success();
         }
-        VisitingRecord build = EntityUtils.build(model, VisitingRecord.class);
-        build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        build.setCrtName(BaseContextHandler.getName());
-        build.setCrtTime(new Date(System.currentTimeMillis()));
-        int result = mapper.insertSelective(build);
-        if (result <= 0){
-            return ResponseUtil.success("新增随访失败！");
-        }
-        return ResponseUtil.success();
+        throw new ClientServiceException("随访内容列表为空！",OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
 
     /**
