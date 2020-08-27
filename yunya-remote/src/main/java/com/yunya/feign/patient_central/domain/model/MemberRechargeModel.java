@@ -21,10 +21,10 @@ import java.util.List;
 public class MemberRechargeModel implements Serializable {
 
     /**
-     * 会员卡ID
+     * 会员卡号
      */
-    @ApiModelProperty(value = "会员卡ID",required = true)
-    private Integer memberId;
+    @ApiModelProperty(value = "会员卡号",required = true)
+    private String memberId;
 
     /**
      * 充值本金

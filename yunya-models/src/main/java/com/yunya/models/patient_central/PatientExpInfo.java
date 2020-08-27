@@ -1,5 +1,7 @@
 package com.yunya.models.patient_central;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -148,6 +150,7 @@ public class PatientExpInfo {
     /**
      * 创建时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "crt_time")
     private Date crtTime;
 
@@ -166,6 +169,7 @@ public class PatientExpInfo {
     /**
      * 更新时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "upd_time")
     private Date updTime;
 

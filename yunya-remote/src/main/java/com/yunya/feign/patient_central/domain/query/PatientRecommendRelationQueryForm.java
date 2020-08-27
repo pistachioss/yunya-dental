@@ -41,8 +41,8 @@ public class PatientRecommendRelationQueryForm implements Serializable {
     /**
      * 患者类型
      */
-    @NotNull(message = "患者类型为空！")
-    @ApiModelProperty(value = "患者类型",required = true)
+    @NotNull(message = "患者来源类型为空")
+    @ApiModelProperty(value = "患者来源类型",required = true)
     private Integer originType;
 
     @ApiModelProperty(value = "是否分页", required = true)

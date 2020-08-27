@@ -123,6 +123,7 @@ public class PatientBaseInfo {
     /**
      * 创建时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "crt_time")
     private Date crtTime;
 
@@ -141,8 +142,15 @@ public class PatientBaseInfo {
     /**
      * 更新时间
      */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "upd_time")
     private Date updTime;
+
+    /**
+     * 推荐来源id
+     */
+    @Column(name = "source_id")
+    private Integer sourceId;
 
     /**
      * 获取主键
@@ -538,4 +546,19 @@ public class PatientBaseInfo {
         this.faceUrl = faceUrl;
     }
 
+    /**
+     * 获取来源id
+     * @return
+     */
+    public Integer getSourceId() {
+        return sourceId;
+    }
+
+    /**
+     * 设置来源id
+     * @param sourceId
+     */
+    public void setSourceId(Integer sourceId) {
+        this.sourceId = sourceId;
+    }
 }

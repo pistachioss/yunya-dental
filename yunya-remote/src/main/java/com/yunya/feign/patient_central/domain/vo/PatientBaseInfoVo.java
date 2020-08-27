@@ -134,4 +134,24 @@ public class PatientBaseInfoVo implements Serializable {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date updTime;
 
+    /**
+     * 末诊时间
+     */
+    private Date lastVisitTime;
+
+    /**
+     * 末诊医生
+     */
+    private String lastVisit;
+
+    /**
+     * 来源id
+     */
+    private Integer sourceId;
+
+    /**
+     * 原来父级id
+     */
+    private Integer sourceParentId;
+
 }

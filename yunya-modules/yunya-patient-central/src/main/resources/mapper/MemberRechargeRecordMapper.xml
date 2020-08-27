@@ -7,7 +7,7 @@
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="member_id" property="memberId" jdbcType="INTEGER" />
+    <result column="member_id" property="memberId" jdbcType="VARCHAR" />
     <result column="recharge_principal" property="rechargePrincipal" jdbcType="DECIMAL" />
     <result column="recharge_bonus" property="rechargeBonus" jdbcType="DECIMAL" />
     <result column="remarks" property="remarks" jdbcType="VARCHAR" />
@@ -21,7 +21,7 @@
   </resultMap>
 
   <select id="RechargeRecord" resultType="com.yunya.feign.patient_central.domain.vo.RechargeRecordVo">
-        select  id,crt_time OperatingTime,recharge_principal rechargePrincipal,recharge_bonus rechargeBonus,org_id orgId,crt_name crtName
-        from member_recharge_record where member_id = #{form.cardNumber}
+        select  id,crt_time operatingTime,recharge_principal rechargePrincipal,recharge_bonus rechargeBonus,org_id orgId,crt_id operatorId,crt_name operatorName
+        from member_recharge_record where member_id = #{form.cardNumber} and org_id = #{orgId}
     </select>
 </mapper>

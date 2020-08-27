@@ -3,6 +3,7 @@ package com.yunya.feign.patient_central.domain.vo;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -36,6 +37,11 @@ public class PatientPublicInfoVo implements Serializable {
      * 手机号码 长度14
      */
     private String mobile;
+
+    /**
+     * 患者头像url
+     */
+    private String faceUrl;
 
     /**
      * 病历号 患者第一次就诊时生成

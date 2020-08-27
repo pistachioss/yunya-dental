@@ -5,8 +5,11 @@ import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
 import com.yunya.feign.patient_central.domain.model.OpenCardModel;
+import com.yunya.feign.patient_central.domain.model.MemberReturnRecordModel;
+import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
+import com.yunya.feign.patient_central.domain.vo.MemberReturnRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -15,6 +18,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 控制层
@@ -40,7 +45,7 @@ public class PatientMemberInfoController {
     @ApiOperation("会员基本信息")
     @GetMapping("/basicInformation/{id}")
     public ResponseResult findMemberBaseInfo(@PathVariable("id") Integer id){
-        return patientMemberInfoBiz.findMemberBaseInfo(id);
+        return ResponseUtil.success(patientMemberInfoBiz.findMemberBaseInfo(id));
     }
 
     @ApiOperation("会员卡关联查询")
@@ -53,8 +58,7 @@ public class PatientMemberInfoController {
     @ApiOperation("添加会员卡关联关系/共享值关联关系")
     @PostMapping("/addMemberBindingRelation")
     public ResponseResult addMemberBindingRelation(@RequestBody MemberBindingRelationInfoModel form){
-        patientMemberInfoBiz.addMemberBindingRelation(form);
-        return ResponseUtil.success();
+        return patientMemberInfoBiz.addMemberBindingRelation(form);
     }
 
     @ApiOperation("删除会员卡关联关系")
@@ -102,14 +106,18 @@ public class PatientMemberInfoController {
     }
 
 
-  /*  @ApiOperation("消费记录")
-    @PostMapping("/xiaofei")
-    public ResponseResult xiaofei(@RequestBody RechargeRecordQueryForm form ){
-        return ResponseUtil.success(patientMemberInfoBiz.RechargeRecord(form));
-    }*/
+    @ApiOperation("退费")
+    @PostMapping("/refund")
+    public ResponseResult refund(@RequestBody MemberReturnRecordModel model ){
+        patientMemberInfoBiz.refund(model);
+        return ResponseUtil.success();
+    }
 
-
-
+    @ApiOperation("退费记录")
+    @PostMapping("/refundList")
+    public ResponseResult refundList(@RequestBody MemberReturnRecordQueryForm queryForm ){
+        return ResponseUtil.success(patientMemberInfoBiz.refundList(queryForm));
+    }
 
 
 }

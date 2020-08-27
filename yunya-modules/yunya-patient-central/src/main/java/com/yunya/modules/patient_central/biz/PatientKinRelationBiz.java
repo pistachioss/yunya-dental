@@ -70,7 +70,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
 
     /**
      * 修改患者亲属关系
-     * @param patientKinRelationModel
+     * @param patientKinRelationForm
      * @return ResponseResult
      */
     public void update(PatientKinRelationForm patientKinRelationForm) {

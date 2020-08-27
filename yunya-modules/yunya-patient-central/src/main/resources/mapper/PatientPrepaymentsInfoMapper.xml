@@ -20,4 +20,20 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+
+    <sql id="Column_List">
+      ppio.id,ppio.org_id orgId,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.prepayment_principal prepaymentPrincipal,ppio.prepayment_bonus prepaymentBonus,
+      ppio.remarks,ppio.inservice,ppio.crt_id crtId,ppio.crt_name crtName,ppio.crt_time crtTime,ppio.upt_id uptId,ppio.upd_name updName,ppio.upd_time updTime
+    </sql>
+  <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientPrepaymentsInfoVo">
+    select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber, CAST(SUM(ppio.prepayment_principal+ppio.prepayment_bonus) AS decimal(15,2)) PrepaymentMoneySum,ppio.crt_time crtTime
+    from patient_prepayments_info ppio where ppio.patient_id = #{id}
+  </select>
+
+  <select id="selectOneByCardNumber" resultType="com.yunya.models.patient_central.PatientPrepaymentsInfo">
+    select <include refid="Column_List"/>
+    from patient_prepayments_info ppio where ppio.prepayment_number = #{form.prepaidId}
+  </select>
+
 </mapper>
