@@ -59,11 +59,11 @@ public class PackageCoupon {
     @Column(name = "limit_count")
     private Integer limitCount;
 
-    /**
-     * 工作量比例
-     */
-    @Column(name = "workload_rate")
-    private BigDecimal workloadRate;
+//    /**
+//     * 工作量比例
+//     */
+//    @Column(name = "workload_rate")
+//    private BigDecimal workloadRate;
 
     /**
      * 备注
@@ -256,23 +256,23 @@ public class PackageCoupon {
         this.limitCount = limitCount;
     }
 
-    /**
-     * 获取工作量比例
-     *
-     * @return workload_rate - 工作量比例
-     */
-    public BigDecimal getWorkloadRate() {
-        return workloadRate;
-    }
-
-    /**
-     * 设置工作量比例
-     *
-     * @param workloadRate 工作量比例
-     */
-    public void setWorkloadRate(BigDecimal workloadRate) {
-        this.workloadRate = workloadRate;
-    }
+//    /**
+//     * 获取工作量比例
+//     *
+//     * @return workload_rate - 工作量比例
+//     */
+//    public BigDecimal getWorkloadRate() {
+//        return workloadRate;
+//    }
+//
+//    /**
+//     * 设置工作量比例
+//     *
+//     * @param workloadRate 工作量比例
+//     */
+//    public void setWorkloadRate(BigDecimal workloadRate) {
+//        this.workloadRate = workloadRate;
+//    }
 
     /**
      * 获取备注

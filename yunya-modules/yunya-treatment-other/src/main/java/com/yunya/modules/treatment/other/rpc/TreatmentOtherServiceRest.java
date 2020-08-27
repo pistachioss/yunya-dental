@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.other.rpc;
 
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
+import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.treatment_other.VisitingRecord;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -33,7 +37,18 @@ public class TreatmentOtherServiceRest {
      */
     @ApiOperation(value = "插入随访记录")
     @RequestMapping(value = "/visiting/record/add",method = RequestMethod.POST)
-    public void insertVisitingRecord(@RequestBody VisitingRecord visitingRecord){
+    public void insertVisitingRecordRest(@RequestBody VisitingRecord visitingRecord){
         visitingRecordBiz.insertSelective(visitingRecord);
+    }
+
+    /**
+     * 根据条件查询随访记录
+     * @param query 查询条件
+     * @return List<VisitingRecordVo>
+     */
+    @ApiOperation(value = "根据条件查询随访记录")
+    @RequestMapping(value = "/visiting/record/find", method = RequestMethod.POST)
+    public List<VisitingRecordVo> findVisitingRecordByConditionRest(@RequestBody VisitingRecordQuery query) {
+        return visitingRecordBiz.findVisitingRecordByConditionRest(query);
     }
 }

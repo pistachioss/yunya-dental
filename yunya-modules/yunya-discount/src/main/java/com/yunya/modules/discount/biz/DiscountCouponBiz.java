@@ -77,7 +77,6 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
      * @param discountCouponForm
      */
     public void updateDiscountCoupon(DiscountCouponForm discountCouponForm) {
-        Integer id = discountCouponForm.getId();
         boolean flag = true;
         // 判断是否完成分配
         CouponAllocate couponAllocate = new CouponAllocate();

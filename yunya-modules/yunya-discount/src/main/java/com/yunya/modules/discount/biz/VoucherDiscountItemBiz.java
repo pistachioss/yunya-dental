@@ -2,6 +2,8 @@ package com.yunya.modules.discount.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.discount.VoucherDiscountItem;
+import com.yunya.modules.discount.form.PackageCouponItemForm;
+import com.yunya.modules.discount.form.SpecialPackageCouponItemForm;
 import com.yunya.modules.discount.mapper.VoucherDiscountItemMapper;
 import com.yunya.modules.discount.form.VoucherDiscountItemForm;
 import org.springframework.stereotype.Service;
@@ -21,5 +23,11 @@ public class VoucherDiscountItemBiz extends BaseBiz<VoucherDiscountItemMapper, V
 
    public int saveVouAndDis(List<VoucherDiscountItemForm> list){
         return mapper.saveVouAndDis(list);
+    }
+    public int savePackage(List<PackageCouponItemForm> list){
+        return mapper.savePackage(list);
+    }
+    public int saveSpecial(List<SpecialPackageCouponItemForm> list){
+        return mapper.saveSpecial(list);
     }
 }

@@ -2,7 +2,6 @@ package com.yunya.modules.discount.controller;
 
 import com.yunya.models.discount.RechargeCard;
 import com.yunya.modules.discount.biz.RechargeCardBiz;
-import com.yunya.modules.discount.form.DiscountQueryForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -86,14 +85,4 @@ public class RechargeCardController {
         return ResponseUtil.success(rechargeCardBiz.selectListAll());
     }
 
-//    /**
-//     * 查询列表
-//     *
-//     * @return
-//     */
-//    @PostMapping("/search")
-//    @ApiOperation("查询列表")
-//    public ResponseResult search(DiscountQueryForm discountQueryForm) {
-//        return ResponseUtil.success(rechargeCardBiz.search(discountQueryForm));
-//    }
 }
