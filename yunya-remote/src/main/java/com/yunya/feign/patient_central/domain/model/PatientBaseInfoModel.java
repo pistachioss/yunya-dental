@@ -106,15 +106,14 @@ public class PatientBaseInfoModel implements Serializable {
     /**
      * 患者来源类型 患者来源分类ID
      */
-    @NotNull(message = "患者来源分类ID！")
-    @ApiModelProperty(value = "患者来源分类ID",required = true)
+    @ApiModelProperty(value = "患者来源分类ID")
     private Integer originType;
 
     /**
      * 患者来源关联ID 患者来源关联ID（员工ID/患者ID/活动ID）
      */
     @NotNull(message = "患者来源关联ID不能为空！")
-    @ApiModelProperty(value = "患者来源关联ID（员工ID/患者ID/活动ID）",required = true)
+    @ApiModelProperty(value = "患者来源关联ID",required = true)
     private Integer originId;
 
     /**
@@ -164,4 +163,10 @@ public class PatientBaseInfoModel implements Serializable {
      */
     @ApiModelProperty(value = "更新时间")
     private Date updTime;
+
+    /**
+     * 推荐来源id
+     */
+    @ApiModelProperty(value = "推荐来源id")
+    private Integer sourceId;
 }

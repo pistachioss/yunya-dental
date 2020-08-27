@@ -17,14 +17,14 @@
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
   <sql id="PatientOrigin_Column_List">
     po.id id,po.parent_id parentId,po.name name,po.origin_type originType,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
-    po.limit_end_date limitEndDate,po.inservice inservice,po.crt_id crtId,po.crt_name crtName,po.crt_time crtTime,po.upd_id updId,po.upd_name updName,po.upd_time updTime
+    po.limit_end_date limitEndDate,po.inservice inservice,po.crt_id crtId,po.crt_name crtName,po.crt_time crtTime,po.upt_id uptId,po.upd_name updName,po.upd_time updTime
   </sql>
 
   <select id="findPatientOriginByParentId" resultType="com.yunya.models.patient_central.PatientOrigin">
@@ -49,12 +49,16 @@
   </select>
 
   <select id="originalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginVo">
-    select po.id,po.name,po.origin_type originType from patient_origin po where parent_id = 0;
+    select po.id,po.name,po.origin_type originType from patient_origin po where po.parent_id = 0 and po.inservice = 1;
   </select>
 
   <select id="selectOriginalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
     select <include refid="PatientOrigin_Column_List"/>
     from patient_origin po where po.name != '员工介绍' and po.name != '老患者介绍'
+  </select>
+
+  <select id="selectTypeMaximum" resultType="java.lang.Integer">
+    select max(origin_type) maxtype from patient_origin
   </select>
 
 

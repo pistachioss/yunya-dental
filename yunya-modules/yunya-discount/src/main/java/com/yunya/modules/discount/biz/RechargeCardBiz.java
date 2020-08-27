@@ -101,14 +101,4 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
 
     }
 
-//    /**
-//     * 查询列表
-//     *
-//     * @param discountQueryForm
-//     * @return
-//     */
-//    public List<DiscountVO> search(DiscountQueryForm discountQueryForm) {
-//        return mapper.selectVOs(discountQueryForm.getMarketProductTypeId(), discountQueryForm.getName(),
-//                discountQueryForm.getStartDate(), discountQueryForm.getEndDate());
-//    }
 }

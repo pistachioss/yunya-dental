@@ -35,4 +35,56 @@
             #{item.updId},#{item.updTime})
         </foreach>
     </insert>
+
+    <insert id="savePackage" parameterType="com.yunya.modules.discount.form.PackageCouponItemForm">
+        INSERT INTO package_coupon_item (
+        id,
+        coupon_id,
+        type,
+        item_id,
+        sale_unit_price,
+        sale_amount,
+        count,
+        workload_rate,
+        crt_id,
+        crt_time,
+        upd_id,
+        upd_time
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id}, #{item.couponId},#{item.type}
+            ,#{item.itemId}
+            ,#{item.saleUnitPrice},#{item.saleAmount}
+            ,#{item.count},#{item.workloadRate}
+            ,#{item.crtId},#{item.crtTime}
+            ,#{item.updId},#{item.updTime})
+        </foreach>
+    </insert>
+
+    <insert id="saveSpecial" parameterType="com.yunya.modules.discount.form.SpecialPackageCouponItemForm">
+        INSERT INTO special_package_coupon_item (
+        id,
+        coupon_id,
+        type,
+        item_id,
+        package_unit_price,
+        sale_amount,
+        count,
+        workload_rate,
+        crt_id,
+        crt_time,
+        upd_id,
+        upd_time
+        )
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.id}, #{item.couponId},#{item.type}
+            ,#{item.itemId}
+            ,#{item.packageUnitPrice},#{item.saleAmount}
+            ,#{item.count},#{item.workloadRate}
+            ,#{item.crtId},#{item.crtTime}
+            ,#{item.updId},#{item.updTime})
+        </foreach>
+    </insert>
 </mapper>

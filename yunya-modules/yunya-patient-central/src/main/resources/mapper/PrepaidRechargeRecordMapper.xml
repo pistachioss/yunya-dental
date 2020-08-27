@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PrepaidRechargeRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PrepaidRechargeRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="prepaid_id" property="prepaidId" jdbcType="VARCHAR" />
+    <result column="recharge_principal" property="rechargePrincipal" jdbcType="DECIMAL" />
+    <result column="recharge_bonus" property="rechargeBonus" jdbcType="DECIMAL" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="recharge_card_number" property="rechargeCardNumber" jdbcType="VARCHAR" />
+    <result column="recharge_type" property="rechargeType" jdbcType="TINYINT" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+    <select id="RechargeRecord" resultType="com.yunya.feign.patient_central.domain.vo.PrepaidRechargeRecordVo">
+      select prrd.id id,prrd.crt_time operatingTime,prrd.recharge_principal rechargePrincipal,prrd.recharge_bonus rechargeBonus,
+             prrd.org_id orgId,prrd.crt_id operatorId,prrd.crt_name operatorName,prtrd.payment_id paymentId,prtrd.remarks remarks,recharge_type rechargeType
+      from prepaid_recharge_record prrd join prepaid_recharge_toll_record prtrd on prrd.id = prtrd.recharge_record_id
+      where prrd.prepaid_id = #{form.prepaidId} and prrd.org_id = #{form.orgId}  order by prrd.crt_time desc
+    </select>
+</mapper>

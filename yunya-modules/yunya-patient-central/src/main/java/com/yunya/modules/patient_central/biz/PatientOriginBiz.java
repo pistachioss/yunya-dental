@@ -62,13 +62,20 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         }
 
         if(patientOrigin.getParentId() == null){
-            patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientOrigin.setCrtName(BaseContextHandler.getName());
-            mapper.insertSelective(patientOrigin);
+            Integer maxiType = mapper.selectTypeMaximum();
+            if(maxiType > 0){ //查询患者来源type字典最大值
+                patientOrigin.setOriginType(maxiType);
+                patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+                patientOrigin.setCrtName(BaseContextHandler.getName());
+                mapper.insertSelective(patientOrigin);
+
+            }
         }else{
-            if(patientOriginMapper.findPatientOriginByParentId(patientOrigin.getParentId())==null){
+            PatientOrigin patientOrig = patientOriginMapper.findPatientOriginByParentId(patientOrigin.getParentId());
+            if(patientOrig == null){
                 return ResponseUtil.error("未找到父级来源","");
             }
+            patientOrigin.setOriginType(patientOrig.getOriginType());
             patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
             patientOrigin.setCrtName(BaseContextHandler.getName());
             mapper.insertSelective(patientOrigin);
@@ -120,7 +127,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
             patientOrigin.setLimitStartDate(null);
             patientOrigin.setLimitEndDate(null);
         }
-        patientOrigin.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setUpdName(BaseContextHandler.getName());
         patientOrigin.setUpdTime(new Date());
         mapper.updateByPrimaryKeySelective(patientOrigin);
@@ -162,26 +169,9 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         return ResponseUtil.error("请填写正确的患者来源类型","");
     }
 
-   /* *//**
-     * 根据患者来源type查询相应信息
-     * @param patientOrigin
-     * @return OriginTypeListVo
-     *//*
-    public OriginTypeVo findPatientOriginByTypt() {
-        OriginTypeVo originTypeVo = new OriginTypeVo();
-        PatientOrigin patientOrigin = new PatientOrigin();
-        patientOrigin.setOriginType(3); //根据活动字典查询
-        originTypeVo.setActivityInfoList(getActivityList(patientOrigin)); //获取符合条件的活动集合
-        patientOrigin.setOriginType(4); //根据合作商字典查询
-        originTypeVo.setPartnerInfoList(getPartnerList(patientOrigin)); // 获取符合条件的合作商集合
-        return originTypeVo;
-    }*/
-
-
     /**
      * 获取符合条件的活动集合
      * @param patientOrigin
-     * @param originTypeListVo
      * @return List<PatientOrigin>
      */
     public List<PatientOrigin> getPatientOriginList(PatientOrigin patientOrigin){
@@ -199,28 +189,6 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         }
         return PatientOriginInfoList;
     }
-
-    /**
-     * 获取符合条件的合作商集合
-     * @param patientOrigin
-     * @param originTypeListVo
-     * @return List<PatientOrigin>
-     *//*
-    public List<PatientOrigin> getPartnerList(PatientOrigin patientOrigin){
-        List<PatientOrigin> PatientInfoList = mapper.findPatientOriginByTypt(patientOrigin); //获取合作商集合
-        if(PatientInfoList.size()>0) {
-            Iterator<PatientOrigin> PatientIterator = PatientInfoList.iterator();
-            while (PatientIterator.hasNext()) {
-                PatientOrigin Patient = PatientIterator.next();
-                if (Patient.getTimeLimit() == 1) {
-                    if (DateUtil.isEffectiveDate(new Date(), Patient.getLimitStartDate(), Patient.getLimitEndDate()) == false) {
-                        PatientIterator.remove(); //使用迭代器的删除方法删除
-                    }
-                }
-            }
-        }
-        return PatientInfoList;
-    }*/
 
     /**
      * 查询患者来源类型

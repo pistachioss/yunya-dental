@@ -6,9 +6,9 @@ import com.uniubi.sdk.client.UniUbiClient;
 import com.uniubi.sdk.model.PersonInput;
 import com.uniubi.sdk.model.ResultPersonCreateOutput;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
-import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
-import com.yunya.feign.patient_central.domain.model.PictureModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.*;
@@ -25,16 +25,11 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
-import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientExpInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientExtInfoMapper;
-import com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper;
+import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,10 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -59,25 +51,28 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
 
-  @Autowired private RedisUtils redisUtils;
-
-  @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
-
-  @Autowired private PatientExtInfoMapper patientExtInfoMapper;
-
-  @Autowired private PatientExpInfoMapper patientExpInfoMapper;
-
-  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
-
-  @Autowired private WoPersonBiz woPersonBiz;
-
-  @Autowired private PatientOriginBiz patientOriginBiz;
-
-  @Autowired private PatientCentralServiceFeign patientCentralServiceFeign;
-
-  @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
-
-  @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
+  @Autowired
+  private RedisUtils redisUtils;
+  @Autowired
+  private PatientBaseInfoMapper patientBaseInfoMapper;
+  @Autowired
+  private PatientExtInfoMapper patientExtInfoMapper;
+  @Autowired
+  private PatientExpInfoMapper patientExpInfoMapper;
+  @Autowired
+  private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  @Autowired
+  private WoPersonBiz woPersonBiz;
+  @Autowired
+  private PatientOriginBiz patientOriginBiz;
+  @Autowired
+  private PatientCentralServiceFeign patientCentralServiceFeign;
+  @Autowired
+  private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+  @Autowired
+  private PatientMemberInfoBiz patientMemberInfoBiz;
+  @Autowired
+  private PatientOriginMapper patientOriginMapper;
 
   /**
    * 通过患者id查询患者共用属性
@@ -85,19 +80,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param id
    * @return PatientPublicInfo
    */
-  public ResponseResult findPatientPublicInfoById(Integer id) {
-    PatientPublicInfoVo patientPublicInfoVo = new PatientPublicInfoVo();
-    patientPublicInfoVo = patientBaseInfoMapper.findPatientPublicInfoById(id);
-    if (patientPublicInfoVo.getMemberTypeId() == null) {
-      return ResponseUtil.error("该患者会员卡类型ID为空", "");
+  public PatientPublicInfoVo findPatientPublicInfoById(Integer id) {
+    PatientPublicInfoVo patientPublicInfoVo = this.patientBaseInfoMapper.findPatientPublicInfoById(id);
+    if (patientPublicInfoVo.getMemberTypeId() != null) {
+      MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
+      if (memberType.getName() != null) {
+        patientPublicInfoVo.setMemberCardName(memberType.getName());
+      }
     }
-    MemberType memberType =
-        remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
-    if (memberType.getName() == null) {
-      return ResponseUtil.error("根据患者会员卡类型ID未查询到会员卡", "");
-    }
-    patientPublicInfoVo.setMemberCardName(memberType.getName()); // 根据会员卡类型id调用feign 查询会员卡类型名称
-    return ResponseUtil.success(patientPublicInfoVo);
+    return patientPublicInfoVo;
   }
 
   /**
@@ -126,33 +117,38 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public PatientBaseInfoVo addPatient(PatientBaseInfoModel patientBaseInfoModel) {
     PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
     BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
-    if(patientBaseInfoModel.getFaceUrl()!=null){ //判断是否是更新
-      patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
-      return patientBaseInfoMapper.selectOneById(patientBaseInfo.getId());
+    if (patientBaseInfoModel.getFaceUrl() != null) { //判断是否是更新
+      this.patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
+      return this.patientBaseInfoMapper.selectOneById(patientBaseInfo.getId());
+    } else {
+      PatientOrigin patientOrigin = this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+      if (patientOrigin != null) {
+        patientBaseInfo.setOriginType(patientOrigin.getOriginType());
+      }
+
+      patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+      patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientBaseInfo.setCrtName(BaseContextHandler.getName());
+      patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientBaseInfo.setWoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); // wo平台创建对应人员 返回人员Guid添加到数据库
+      mapper.insertSelective(patientBaseInfo);
+      this.addPatientPrepaymentsInfo(patientBaseInfo); // 添加患者时,创建预付款账户
+      return this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
-    patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-    patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-    patientBaseInfo.setCrtName(BaseContextHandler.getName());
-    patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    patientBaseInfo.setWoGuid(
-        woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); // wo平台创建对应人员 返回人员Guid添加到数据库
-    mapper.insertSelective(patientBaseInfo);
-    addPatientPrepaymentsInfo(patientBaseInfo); // 添加患者时,创建预付款账户
-    return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
   }
 
   /**
    * 添加患者时,创建预付款账户
    * @param patientBaseInfo
    */
-  public void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo){
+  public void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo) {
     PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
-    patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
-    patientPrepaymentsInfo.setPrepaymentNumber(patientMemberInfoBiz.generateCardNumber("Y"));//预付款卡号生成规则 开通Y
+    patientPrepaymentsInfo.setPrepaymentNumber(this.patientMemberInfoBiz.generateCardNumber("Y", "patient_prepayments_info", "prepayment_number")); //预付款卡号生成规则 开通Y
     patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
-    patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
+    this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
   }
 
   /**
@@ -161,43 +157,45 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param patientExtendInfoModel
    */
   public void addPatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
-    PatientBaseInfo patientBaseInfo =
-        patientExtendInfoModel.getPatientBaseInfo(); // 完善患者基本信息  对补全信息进行更新
+    PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
+    BeanUtils.copyProperties(patientExtendInfoModel.getPatientBaseInfoModel(), patientBaseInfo);
     patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
     patientBaseInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientBaseInfo.setUpdName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     patientBaseInfo.setUpdTime(new Date());
-    mapper.updateByPrimaryKey(patientBaseInfo);
-    PatientExpInfo patientExpInfo = patientExtendInfoModel.getPatientExpInfo(); // 完善患者扩展信息
+    this.mapper.updateByPrimaryKey(patientBaseInfo); // 完善患者基本信息  对补全信息进行更新
+    PatientExpInfo patientExpInfo = new PatientExpInfo();
+    BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientBaseInfo); // 完善患者扩展信息
     if (patientExpInfo.getId() == null) { // 如果用户没有扩展信息就添加扩展信息 如果有就修改
       patientExpInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientExpInfo.setCrtName(BaseContextHandler.getName());
-      patientExpInfoMapper.insertSelective(patientExpInfo);
+      this.patientExpInfoMapper.insertSelective(patientExpInfo); // 添加扩展信息
     } else {
       patientExpInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientExpInfo.setUpdName(BaseContextHandler.getName());
       patientExpInfo.setUpdTime(new Date());
-      patientExpInfoMapper.updateByPrimaryKey(patientExpInfo);
+      this.patientExpInfoMapper.updateByPrimaryKey(patientExpInfo); // 修改扩展信息
     }
-    List<PatientExtInfo> patientExtInfoList =
-        patientExtendInfoModel.getPatientExtInfoList(); // 完善患者其他信息（标签、疾病史、过敏原）
-    List<PatientExtInfo> patientExtInfos =
-        patientExtInfoMapper.patientExtInfoListByid(patientBaseInfo.getId());
-    if (patientExtInfos.size() != 0 || patientExtInfos != null) { // 判断是否已存在id，若存在就删除
-      patientExtInfoMapper.deletePatientExtInfoByPatientId(patientBaseInfo.getId());
+
+    List<PatientExtInfoModel> patientExtInfoList = patientExtendInfoModel.getPatientExtInfoModelList();  // 完善患者其他信息（标签、疾病史、过敏原）
+    List<PatientExtInfo> patientExtInfos = this.patientExtInfoMapper.patientExtInfoListByid(patientBaseInfo.getId());
+    if (patientExtInfos.size() != 0 || patientExtInfos != null) { // 判断是否已存在信息，若存在就删除
+      this.patientExtInfoMapper.deletePatientExtInfoByPatientId(patientBaseInfo.getId());
     }
-    List<PatientExtInfo> addPatientExtInfoList =
-        new ArrayList<PatientExtInfo>(); // 循环添加 标签、疾病史、过敏原 集合
-    for (PatientExtInfo patientExtInfo : patientExtInfoList) {
-      patientExtInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientExtInfo.setCrtName(BaseContextHandler.getName());
-      patientExtInfo.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientExtInfo.setUpdName(BaseContextHandler.getName());
-      patientExtInfo.setUpdTime(new Date());
-      addPatientExtInfoList.add(patientExtInfo);
+
+    List<PatientExtInfoModel> addPatientExtInfoList = new ArrayList();
+    Iterator var7 = patientExtInfoList.iterator();
+    while(var7.hasNext()) {  // 循环添加 标签、疾病史、过敏原 集合
+      PatientExtInfoModel patientExtInfoModel = (PatientExtInfoModel)var7.next();
+      patientExtInfoModel.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientExtInfoModel.setCrtName(BaseContextHandler.getName());
+      patientExtInfoModel.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientExtInfoModel.setUpdName(BaseContextHandler.getName());
+      patientExtInfoModel.setUpdTime(new Date());
+      addPatientExtInfoList.add(patientExtInfoModel);
     }
-    patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
+    this.patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
   }
 
   /**
@@ -208,9 +206,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public PatientExtendInfoVo findPatientData(Integer id) {
     PatientExtendInfoVo patientExtendInfoVo = new PatientExtendInfoVo();
-    patientExtendInfoVo.setPatientBaseInfo(mapper.selectByPrimaryKey(id));
-    patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id));
-    patientExtendInfoVo.setPatientExtInfoList(patientExtInfoMapper.patientExtInfoListByid(id));
+    PatientBaseInfo patientBaseInfo = this.mapper.selectByPrimaryKey(id);
+    PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
+    BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
+    PatientOrigin patientOrigin = patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+    patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId()); //获取患者来源的父级id
+    patientExtendInfoVo.setPatientBaseInfoVo(patientBaseInfoVo); //基本信息
+    patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id)); //扩展信息
+    patientExtendInfoVo.setPatientExtInfoList(patientExtInfoMapper.patientExtInfoListByid(id)); //标签
     return patientExtendInfoVo;
   }
 
@@ -224,41 +227,13 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     return patientBaseInfoMapper.findPatientByNameAndMobile(form);
   }
 
-  /**
-   * 根据输入年龄计算患者出生年份
-   *
-   * @param age 年龄
-   */
-  public Date birthYear(Integer age) {
-    // 获取输入年龄当天日历
-    Calendar now = Calendar.getInstance();
-    // 计算减去年龄后的年份
-    now.add(Calendar.YEAR, -age);
-    // 拼装日期字符串
-    String birthYear =
-        now.get(Calendar.YEAR)
-            + "-"
-            + (now.get(Calendar.MONTH) + 1)
-            + "-"
-            + now.get(Calendar.DAY_OF_MONTH);
-    // 设置时间格式
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    Date date = null;
-    try {
-      date = dateFormat.parse(birthYear);
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
-    return date;
-  }
 
   /**
-   * 授权人脸识别结果
+   * 授权人脸识别结果   测试！！
    *
    * @param patientWoPlatformInfoModel
    */
   public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
-    System.out.println(patientWoPlatformInfoModel.toString());
     PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
     patientBaseInfo.setWoGuid(patientWoPlatformInfoModel.getGuid());
     patientBaseInfo.setName("WO平台授权人脸识别结果成功");
@@ -310,9 +285,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param patientId
    * @return List<PictureVo>
    */
-  public List<PictureVo> getFaceUrl(Integer patientId) {
-    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(patientId);
-    return woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid());
+  public ResponseResult getFaceUrl(Integer patientId) {
+    PatientBaseInfo patientBaseInfo = this.patientBaseInfoMapper.selectPatientById(patientId);
+    List<PictureVo> woPersonnelFaceUrl = this.woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid());
+    return woPersonnelFaceUrl.size() >= 0 && woPersonnelFaceUrl != null ? ResponseUtil.success(this.woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid())) : ResponseUtil.error("未查询到照片，请先拍照", "");
   }
 
   /**
@@ -322,7 +298,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return
    */
   public PatientBaseInfo findPatientInfoById(Integer id) {
-    return patientBaseInfoMapper.selectPatientById(id);
+    return this.patientBaseInfoMapper.selectPatientById(id);
   }
 
   /**
@@ -419,5 +395,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     return mapper.findMedicalNumberByOrgId(orgId);
   }
 
+
+  public void uptPhoto(PatientPhotoForm patientPhotoForm) {
+    PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
+    BeanUtils.copyProperties(patientPhotoForm, patientBaseInfo);
+    this.patientBaseInfoMapper.updatePhoto(patientBaseInfo);
+  }
 
 }

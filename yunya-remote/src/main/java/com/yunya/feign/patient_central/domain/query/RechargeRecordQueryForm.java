@@ -34,5 +34,12 @@ public class RechargeRecordQueryForm implements Serializable {
     /**
      *  会员卡
      */
+    @ApiModelProperty(value = "会员卡号",required = true)
     private String cardNumber;
+
+    /**
+     * 门诊id
+     */
+    @ApiModelProperty(value = "门诊id")
+    private Integer orgId;
 }

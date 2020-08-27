@@ -1,6 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
+import com.yunya.feign.patient_central.domain.vo.MemberRelationVo;
 import com.yunya.models.patient_central.PatientMemberRelation;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -28,4 +29,11 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @param masterCardId
      */
     int deleteMemberRelation(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId);
+
+    /**
+     * 查询关联关系是否已经存在
+     * @param form
+     * @return MemberRelationVo
+     */
+    MemberRelationVo findBindingRelation(@Param("form") MemberBindingRelationInfoModel form);
 }

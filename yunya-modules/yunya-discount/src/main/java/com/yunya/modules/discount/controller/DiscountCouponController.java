@@ -5,10 +5,7 @@ import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DiscountCoupon;
 import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import com.yunya.modules.discount.biz.DiscountCouponBiz;
-import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.form.DiscountCouponForm;
-import com.yunya.modules.discount.form.DiscountQueryForm;
-import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import io.swagger.annotations.Api;
@@ -93,12 +90,12 @@ public class DiscountCouponController {
     }
 
     /**
-     * 获取代金券的配给门诊ID列表
+     * 获取折扣券的配给门诊ID列表
      *
      * @return
      */
     @GetMapping("/findOrgId/{id}")
-    @ApiOperation("获取代金券的配给门诊ID列表")
+    @ApiOperation("获取折扣券的配给门诊ID列表")
     public ResponseResult findOrgIdList(@PathVariable("id") Integer id) {
         DiscountCoupon discountCoupon = new DiscountCoupon();
         discountCoupon.setCouponId(id);
