@@ -259,7 +259,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param visitingRecordVo 随访记录
      * @return 返回组合之后的随访记录信息
      */
-    private VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo){
+    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo){
         // 组合患者信息
         Integer patientId = visitingRecordVo.getPatientId();
         if (patientId != null) {
@@ -419,26 +419,50 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         if (visitingRecord == null){
             return ResponseUtil.success("该随访不存在");
         }
-        String recordLockStr = redisUtils.get(RedisConstants.LOCK_VISITING_RECORD);
-        if (StringHelper.isEmpty(recordLockStr)){
-            try{
-                redisUtils.setLock(RedisConstants.LOCK_VISITING_RECORD,String.valueOf(id),BusinessConstants.MEDICAL_APPLY_LOCK_SEC,TimeUnit.SECONDS);
-                visitingRecord.setVisitingContent(form.getVisitingContent());
-                visitingRecord.setStatus(true);
-                visitingRecord.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
-                visitingRecord.setUpdName(BaseContextHandler.getName());
-                visitingRecord.setUpdTime(new Date(System.currentTimeMillis()));
-                int result = mapper.updateByPrimaryKeySelective(visitingRecord);
-                if (result <= 0){
-                    return ResponseUtil.success("随访状态更新失败");
-                }
-                return ResponseUtil.success();
-            } finally {
-                redisUtils.unlock(RedisConstants.LOCK_VISITING_RECORD,String.valueOf(id));
+
+        visitingRecord.setVisitingContent(form.getVisitingContent());
+        visitingRecord.setStatus(true);
+        visitingRecord.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        visitingRecord.setUpdName(BaseContextHandler.getName());
+        visitingRecord.setUpdTime(new Date(System.currentTimeMillis()));
+        int result = mapper.updateByPrimaryKeySelective(visitingRecord);
+        if (result > 0){
+            VisitingRecordQuery query = new VisitingRecordQuery();
+            query.setPatientId(visitingRecord.getPatientId());
+            query.setVisitingDate(visitingRecord.getVisitingDate());
+            List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+            if (!StringHelper.isEmpty(visitingRecordVos)){
+                final String visitingContentStr = visitingRecord.getVisitingContent();
+                // 合并随访内容
+                visitingRecordVos.forEach(visitingRecordVo -> {
+                    VisitingRecord build = EntityUtils.build(visitingRecordVo, VisitingRecord.class);
+                    build.setVisitingContent(visitingContentStr);
+                    build.setStatus(true);
+                    mapper.updateByPrimaryKeySelective(build);
+                });
             }
-        } else {
-            return ResponseUtil.success("该随访正在被占用，不允许修改！");
+            return ResponseUtil.success();
         }
+        return ResponseUtil.success("随访状态更新失败");
+
+
+    }
+
+    /**
+     * 根据条件查询随访记录（外部服务调用接口）
+     * @param query 查找条件
+     * @return List<VisitingRecordVo>
+     */
+    public List<VisitingRecordVo> findVisitingRecordByConditionRest(VisitingRecordQuery query) {
+        // 随访记录结果列表
+        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        if (visitingRecordVos != null && !visitingRecordVos.isEmpty()) {
+            // 组合随访记录信息
+            visitingRecordVos.forEach(visitingRecordVo -> {
+                this.comboVisitingRecord(visitingRecordVo);
+            });
+        }
+        return visitingRecordVos;
     }
 
     /**

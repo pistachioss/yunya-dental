@@ -88,6 +88,7 @@
         and vr.status = #{query.status}
       </if>
     </where>
+    order by vr.crt_time asc
   </select>
 
   <!-- 根据患者id、时间查询随访列表 -->
