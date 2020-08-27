@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -22,11 +23,12 @@ import java.util.Date;
 @ToString
 public class VisitingContentModel implements Serializable {
     /**
-     * 随访时间 精确到分
+     * 随访日期
      */
-    @ApiModelProperty(value = "随访时间 精确到分", required = true)
-    @NotNull(message = "随访时间不能为空!")
+    @ApiModelProperty(value = "随访日期", required = true)
+    @NotNull(message = "随访日期不能为空!")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Future(message = "随访日期不能早于末诊日期！")
     private Date visitingDate;
 
     /**
