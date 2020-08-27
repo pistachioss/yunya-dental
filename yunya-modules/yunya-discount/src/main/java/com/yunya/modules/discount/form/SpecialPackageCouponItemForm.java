@@ -1,24 +1,21 @@
 package com.yunya.modules.discount.form;
 
-import com.yunya.framework.common.context.BaseContextHandler;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-
-import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import java.util.Date;
-
 
 /**
  * @author 杨柳絮
- * @className VoucherDiscountItemForm
+ * @className SpecialPackageCouponItemForm
  * @description
- * @date 2020/8/20 15:21
+ * @date 2020/8/27 19:27
  */
 @Data
-public class VoucherDiscountItemForm {
+public class SpecialPackageCouponItemForm {
     /**
      * 主键
      */
@@ -33,18 +30,11 @@ public class VoucherDiscountItemForm {
     private Integer couponId;
 
     /**
-     * 项目类型  0:基础价目表,1:基础商品表
+     * 类型 0:基础价目表,1:基础商品表
      */
     @NotNull(message = "项目类型不能为空")
     @ApiModelProperty("项目类型  0:基础价目表,1:基础商品表")
     private Integer type;
-
-    /**
-     * 选择范围  0:全选 1:选项目分类 2:选项目明细
-     */
-    @NotNull(message = "选择范围不能为空")
-    @ApiModelProperty("选择范围  0:全选 1:选项目分类 2:选项目明细")
-    private Byte choiceRangType;
 
     /**
      * 明细ID
@@ -52,6 +42,34 @@ public class VoucherDiscountItemForm {
     @NotNull(message = "明细ID不能为空")
     @ApiModelProperty("明细ID")
     private Integer itemId;
+
+    /**
+     * 套餐单价
+     */
+    @ApiModelProperty("套餐单价")
+    @NotNull(message = "套餐单价不能为空")
+    private BigDecimal packageUnitPrice;
+
+    /**
+     * 套餐价
+     */
+    @ApiModelProperty("套餐价")
+    @NotNull(message = "套餐价不能为空")
+    private BigDecimal saleAmount;
+
+    /**
+     * 数量
+     */
+    @ApiModelProperty("数量")
+    @NotNull(message = "数量不能为空")
+    private Integer count;
+
+    /**
+     * 单个数量补入工作量
+     */
+    @ApiModelProperty("单个数量补入工作量")
+    @NotNull(message = "单个数量补入工作量")
+    private Integer workloadRate;
 
     /**
      * 创建人
@@ -72,5 +90,4 @@ public class VoucherDiscountItemForm {
      * 更新时间
      */
     private Date updTime;
-
 }
