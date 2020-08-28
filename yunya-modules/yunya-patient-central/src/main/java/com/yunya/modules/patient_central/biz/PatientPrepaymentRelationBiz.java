@@ -2,21 +2,22 @@ package com.yunya.modules.patient_central.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientPrepaymentRelationVo;
-import com.yunya.feign.patient_central.domain.vo.PatientPrepaymentsInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PrepaidMeturnRecordVo;
-import com.yunya.feign.patient_central.domain.vo.PrepaidRechargeRecordVo;
+import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
+import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,14 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
      * 预付款关联
      * @param model
      */
-    public void addPrepaymentLink(PatientPrepaymentRelationModel model) {
+    public ResponseResult addPrepaymentLink(PatientPrepaymentRelationModel model) {
+        if (model.getMasterCardId() == model.getSecondaryCardId()) {
+            return ResponseUtil.error("副卡人不能为患者本人！", "");
+        }
+        PatientPrepaymentRelation patientPrepaymentRelation = this.patientPrepaymentRelationMapper.findBindingRelation(model);
+        if (patientPrepaymentRelation != null) {
+            return ResponseUtil.error("该副卡人已存在,不能重复绑定！", patientPrepaymentRelation);
+        }
         PatientPrepaymentRelation patientPrepaymentRelationyi = new PatientPrepaymentRelation();
         BeanUtils.copyProperties(model,patientPrepaymentRelationyi);
         patientPrepaymentRelationyi.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
@@ -77,6 +85,7 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
         patientPrepaymentRelationer.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientPrepaymentRelationer.setCrtName(BaseContextHandler.getName());
         patientPrepaymentRelationMapper.insertSelective(patientPrepaymentRelationer);
+        return ResponseUtil.success();
     }
 
     /**

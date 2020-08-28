@@ -31,4 +31,9 @@
     delete from  patient_prepayment_relation where master_card_id = #{form.secondaryCardId} and secondary_card_id = #{form.masterCardId}
   </delete>
 
+  <select id="findBindingRelation" resultType="com.yunya.models.patient_central.PatientPrepaymentRelation">
+    select <include refid="Column_List"/>
+    from patient_prepayment_relation where master_card_id = #{form.masterCardId} and secondary_card_id = #{form.secondaryCardId}
+  </select>
+
 </mapper>

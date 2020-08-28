@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.mapper;
 
+import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
 import com.yunya.feign.patient_central.domain.vo.PatientPrepaymentRelationVo;
 import com.yunya.models.patient_central.PatientPrepaymentRelation;
 import org.apache.ibatis.annotations.Param;
@@ -23,4 +24,11 @@ public interface PatientPrepaymentRelationMapper extends Mapper<PatientPrepaymen
      * @return
      */
     int deletePrepaymentRelation(@Param("form") PatientPrepaymentRelation patientPrepaymentRelation);
+
+    /**
+     * 绑定关系查询
+     * @param model
+     * @return PatientPrepaymentRelation
+     */
+    PatientPrepaymentRelation findBindingRelation(@Param("form") PatientPrepaymentRelationModel model);
 }

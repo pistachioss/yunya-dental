@@ -33,16 +33,10 @@ public class MemberExpendRecordModel implements Serializable {
     private String memberId;
 
     /**
-     * 消费本金
+     * 消费总额
      */
-    @ApiModelProperty(value = "消费本金",required = true)
-    private BigDecimal expendPrincipal;
-
-    /**
-     * 消费赠金
-     */
-    @ApiModelProperty(value = "消费赠金",required = true)
-    private BigDecimal expendGift;
+    @ApiModelProperty(value = "消费总额",required = true)
+    private BigDecimal expendTotal;
 
     /**
      * 备注

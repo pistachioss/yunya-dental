@@ -124,8 +124,7 @@ public class PatientMemberInfoController {
     @ApiOperation("消费")
     @PostMapping("/expend")
     public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
-        patientMemberInfoBiz.expend(model);
-        return ResponseUtil.success();
+        return patientMemberInfoBiz.expend(model);
     }
 
     @CurrentUser

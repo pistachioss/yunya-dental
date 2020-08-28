@@ -34,7 +34,7 @@
     </sql>
 
     <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo">
-      select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,
+      select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,bonus_amount bonusAmount,
            member_type_id memberTypeId,crt_time crtTime
       from patient_member_info where patient_id =#{id}
     </select>
@@ -47,16 +47,12 @@
 
     <select id="generateCardNumber" resultType="java.lang.String">
       select
-      IFNULL( MAX( substr( ${memberNo}, 5, 6 )), '000000' ) as maxnum
+      IFNULL( MAX( substr( ${memberNo}, 6, 6 )), '000000' ) as maxnum
       from
       ${from}
       where
       org_id = #{orgId}
     </select>
-
-    <update id="changeType">
-    update patient_member_info set member_card_name
-    </update>
 
     <select id="selectOneByCardNumber" resultType="com.yunya.models.patient_central.PatientMemberInfo">
         select<include refid="Find_Colum_List"/>
@@ -66,6 +62,11 @@
     <select id="selectCardNumber" resultType="com.yunya.models.patient_central.PatientMemberInfo">
       select <include refid="Find_Colum_List"/>
       from patient_member_info pmio where pmio.card_number = #{memberId} and pmio.patient_id =#{patientId}
+    </select>
+
+    <select id="selectOneByPatientId" resultType="com.yunya.models.patient_central.PatientMemberInfo">
+      select <include refid="Find_Colum_List"/>
+      from patient_member_info pmio where pmio.patient_id =#{patientId}
     </select>
 
 

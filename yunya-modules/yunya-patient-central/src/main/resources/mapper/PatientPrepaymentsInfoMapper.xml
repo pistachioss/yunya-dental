@@ -27,7 +27,8 @@
     </sql>
 
   <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientPrepaymentsInfoVo">
-    select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber, CAST(SUM(ppio.prepayment_principal+ppio.prepayment_bonus) AS decimal(15,2)) PrepaymentMoneySum,ppio.crt_time crtTime
+    select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,
+    CAST(SUM(ppio.prepayment_principal+ppio.prepayment_bonus) AS decimal(15,2)) prepaymentMoneySum,ppio.prepayment_bonus prepaymentBonus
     from patient_prepayments_info ppio where ppio.patient_id = #{id}
   </select>
 

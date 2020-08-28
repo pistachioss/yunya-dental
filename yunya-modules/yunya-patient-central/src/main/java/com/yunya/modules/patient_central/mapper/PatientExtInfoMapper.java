@@ -33,4 +33,10 @@ public interface PatientExtInfoMapper extends Mapper<PatientExtInfo> {
      * @param id
      */
     int deletePatientExtInfoByPatientId(@Param("id") Integer id);
+
+    /**
+     * 通过患者id查询标签信息
+     * @return
+     */
+    List<PatientExtInfo> selectListByPatientId(@Param("patientId") Integer patientId,@Param("type") Integer type);
 }

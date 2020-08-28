@@ -59,6 +59,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   @Autowired private PatientOriginMapper patientOriginMapper;
 
+  @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
+
   /**
    * 通过患者id查询患者共用属性
    *
@@ -341,11 +343,22 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public PatientVisitInfoVo findPatientVisitInfo(Integer id) {
     PatientVisitInfoVo patientVisitInfoVo = patientBaseInfoMapper.findPatientVisitInfo(id);
-    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientVisitInfoVo.getMemberTypeId());
-    if (memberType.getName() != null) {
-      patientVisitInfoVo.setMemberCardName(memberType.getName());
+    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByPatientId(patientVisitInfoVo.getPatientId()); //查询患者是否开通会员卡
+    if(patientMemberInfo != null){
+      patientVisitInfoVo.setCardNumber(patientMemberInfo.getCardNumber()); //获取会员卡号
+      patientVisitInfoVo.setMemberTypeId(patientMemberInfo.getMemberTypeId());
+      MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(patientMemberInfo.getMemberTypeId()); //获取会员卡名称
+      if (memberType.getName() != null) {
+        patientVisitInfoVo.setMemberCardName(memberType.getName());
+      }
     }
-    patientVisitInfoVo.setLabels(getLabels(patientVisitInfoVo.getPatientId()));
+    if(patientVisitInfoVo.getPatientKind() != null){
+      DictionaryItem dictionaryItemById = remoteSystemServiceFeign.findDictionaryItemById(patientVisitInfoVo.getPatientKind()); //查询患者类型字典名称
+      if(dictionaryItemById!=null){
+        patientVisitInfoVo.setPatientKindName(dictionaryItemById.getName());
+      }
+    }
+    patientVisitInfoVo.setLabels(getLabels(patientVisitInfoVo.getPatientId())); //获取标签
     return patientVisitInfoVo;
   }
 
@@ -362,9 +375,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (StringHelper.isNotEmpty(extInfos)) {
       for (PatientExtInfo extInfo : extInfos) {
         Byte type = extInfo.getType();
-        DictionaryItem item = remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
+        DictionaryItem item = remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId()); //查询标签字典名称
         if(type == 0 && null != item){
           labels.append(item.getName());
+          labels.append("、");
         }
       }
     }
@@ -381,6 +395,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
 
+  /**
+   * 修改头像
+   * @param patientPhotoForm
+   */
   public void uptPhoto(PatientPhotoForm patientPhotoForm) {
     PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
     BeanUtils.copyProperties(patientPhotoForm, patientBaseInfo);

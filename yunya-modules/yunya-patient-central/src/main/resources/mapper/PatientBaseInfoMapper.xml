@@ -119,8 +119,8 @@
   </select>
 
   <select id="findPatientVisitInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientVisitInfoVo">
-    select pbi.id patientId,pbi.name,pbi.gender,pbi.age,pbi.mobile,pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,pei.patient_kind patientKind
-    from patient_base_info pbi join patient_member_info pmi on pbi.id = pmi.patient_id join patient_exp_info pei on pbi.id = pei.patient_id
+    select pbi.id patientId,pbi.name,pbi.gender,pbi.age,pbi.mobile,pbi.medical_number medicalNumber,peio.patient_kind patientKind
+    from patient_base_info pbi left join patient_exp_info peio on pbi.id = peio.patient_id
     where pbi.id = #{id}
   </select>
 

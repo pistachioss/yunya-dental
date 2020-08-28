@@ -20,6 +20,7 @@ public class PatientPrepaymentRelationModel implements Serializable {
 
     @ApiModelProperty("当前患者id")
     private Integer masterCardId;
+
     @ApiModelProperty("副卡人id")
     private Integer secondaryCardId;
 }

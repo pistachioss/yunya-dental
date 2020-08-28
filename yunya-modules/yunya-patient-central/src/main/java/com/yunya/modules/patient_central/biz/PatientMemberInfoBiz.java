@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -302,7 +303,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
      * @param form
      */
     public void refund(MemberReturnRecordModel model) {
-        //查询会员余额 退减余额
+        //查询会员余额 退减余额和赠金
         PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(model.getMemberId(),model.getPatientId());
         patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().subtract(model.getReturnPrincipalAmount()));
         patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().subtract(model.getReturnGiftAmount()));
@@ -343,19 +344,36 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
      * 消费
      * @param model
      */
-    public void expend(MemberExpendRecordModel model) {
+    public ResponseResult expend(MemberExpendRecordModel model) {
+        PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
+        if(patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount()).compareTo(model.getExpendTotal()) == -1 ){ //如果本金+赠金 小于 消费金额
+            return ResponseUtil.error("会员卡余额不足",patientMemberInfo);
+        }else{
+            if(patientMemberInfo.getPrincipalAmount().compareTo(model.getExpendTotal()) == -1 ) { //会员卡余额 小于 消费金额
+                //会员本金减去消费金额
+                BigDecimal surplus = patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal());
+                if(surplus.compareTo(new BigDecimal(0)) == -1){
+
+                }
+            }else {
+                patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()));
+            }
+        }
+        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+        //添加消费记录
         MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
         BeanUtils.copyProperties(model,memberExpendRecord);
         memberExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         memberExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         memberExpendRecord.setCrtName(BaseContextHandler.getName());
         memberExpendRecordMapper.insertSelective(memberExpendRecord);
+        return ResponseUtil.success();
     }
 
     /**
      * 消费记录
      * @param queryForm
-     * @return
+     * @return MemberExpendRecordVo
      */
     public PageInfo<MemberExpendRecordVo> expendList(MemberExpendRecordQueryForm queryForm) {
         if (queryForm.getWhetherPage()) {
@@ -363,7 +381,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         }
         List<MemberExpendRecordVo> resultList = memberExpendRecordMapper.expendList(queryForm);
         if(resultList.size()>0){
-
+            for (MemberExpendRecordVo memberExpendRecordVo : resultList) {
+                OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(memberExpendRecordVo.getOrgId());//获取门诊简称
+                if (organizationInfo != null) {
+                    memberExpendRecordVo.setOrgName(organizationInfo.getAbbreviation());
+                }
+            }
         }
         return new PageInfo<>(resultList);
     }

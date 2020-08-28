@@ -83,6 +83,11 @@ public class PatientVisitInfoVo implements Serializable {
     private Integer memberTypeId;
 
     /**
+     * 会员卡号
+     */
+    private String cardNumber;
+
+    /**
      * 会员卡类型名称
      */
     private String memberCardName;
@@ -91,6 +96,11 @@ public class PatientVisitInfoVo implements Serializable {
      * 患者类型
      */
     private Integer patientKind;
+
+    /**
+     * 患者类型
+     */
+    private String patientKindName;
 
     /**
      * 消费总额

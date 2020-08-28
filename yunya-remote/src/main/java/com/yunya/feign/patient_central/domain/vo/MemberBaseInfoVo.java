@@ -35,6 +35,11 @@ public class MemberBaseInfoVo implements Serializable {
     private BigDecimal memberCardMoneySum;
 
     /**
+     *  赠金
+     */
+    private BigDecimal bonusAmount;
+
+    /**
      * 会员卡类型id
      */
     private Integer memberTypeId;
