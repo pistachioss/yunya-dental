@@ -2,10 +2,10 @@ package com.yunya.modules.patient_central.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
+import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.*;
@@ -17,7 +17,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
-import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +50,8 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
     @Autowired RemoteSystemServiceFeign remoteSystemServiceFeign;
 
     @Autowired PrepaidReturnRecordMapper prepaidReturnRecordMapper;
+
+    @Autowired PrepaidExpendRecordMapper prepaidExpendRecordMapper;
 
     /**
      * 患者预付款基本信息查询
@@ -209,6 +210,27 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
             AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(prepaidMeturnRecordVo.getReturnWayId()); // todo 充值记录 待确认
             if(accountItem != null){
                 prepaidMeturnRecordVo.setReturnWayType(accountItem.getName()); //获取支付方式名称
+            }
+        }
+        return new PageInfo<>(resultList);
+    }
+
+    /**
+     * 消费记录
+     * @param queryForm
+     * @return
+     */
+    public PageInfo<PrepaidExpendRecordVo> expendList(PrepaidExpendRecordQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+        }
+        List<PrepaidExpendRecordVo> resultList = prepaidExpendRecordMapper.expendList(queryForm);
+        if(resultList.size()>0){
+            for (PrepaidExpendRecordVo prepaidExpendRecordVo : resultList) {
+                OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(prepaidExpendRecordVo.getOrgId());//获取门诊简称
+                if (organizationInfo != null) {
+                    prepaidExpendRecordVo.setOrgName(organizationInfo.getAbbreviation());
+                }
             }
         }
         return new PageInfo<>(resultList);

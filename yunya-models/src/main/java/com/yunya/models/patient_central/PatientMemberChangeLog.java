@@ -101,14 +101,14 @@ public class PatientMemberChangeLog {
     /**
      * 更新人姓名
      */
-    @Column(name = "upt_name")
-    private String uptName;
+    @Column(name = "upd_name")
+    private String updName;
 
     /**
      * 更新时间
      */
-    @Column(name = "upt_time")
-    private Date uptTime;
+    @Column(name = "upd_time")
+    private Date updTime;
 
     /**
      * 获取主键
@@ -365,19 +365,19 @@ public class PatientMemberChangeLog {
     /**
      * 获取更新人姓名
      *
-     * @return upt_name - 更新人姓名
+     * @return upd_name - 更新人姓名
      */
-    public String getUptName() {
-        return uptName;
+    public String getUpdName() {
+        return updName;
     }
 
     /**
      * 设置更新人姓名
      *
-     * @param uptName 更新人姓名
+     * @param updName 更新人姓名
      */
-    public void setUptName(String uptName) {
-        this.uptName = uptName;
+    public void setUpdName(String updName) {
+        this.updName = updName;
     }
 
     /**
@@ -386,16 +386,16 @@ public class PatientMemberChangeLog {
      * @return upt_time - 更新时间
      */
     public Date getUptTime() {
-        return uptTime;
+        return updTime;
     }
 
     /**
      * 设置更新时间
      *
-     * @param uptTime 更新时间
+     * @param updTime 更新时间
      */
-    public void setUptTime(Date uptTime) {
-        this.uptTime = uptTime;
+    public void setUpdTime(Date updTime) {
+        this.updTime = updTime;
     }
 
     /**

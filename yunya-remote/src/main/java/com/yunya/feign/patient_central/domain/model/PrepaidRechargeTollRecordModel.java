@@ -20,12 +20,6 @@ import java.math.BigDecimal;
 public class PrepaidRechargeTollRecordModel implements Serializable {
 
     /**
-     * 充值记录ID
-     */
-    @Column(name = "recharge_record_id")
-    private Integer rechargeRecordId;
-
-    /**
      * 入账方式ID
      */
     @Column(name = "payment_id")

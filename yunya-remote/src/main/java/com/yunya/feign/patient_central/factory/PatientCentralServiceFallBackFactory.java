@@ -4,7 +4,6 @@ package com.yunya.feign.patient_central.factory;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;

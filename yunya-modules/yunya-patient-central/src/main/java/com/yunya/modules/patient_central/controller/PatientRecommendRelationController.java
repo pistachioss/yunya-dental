@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
         description = "患者推荐（查）"
 )
 @RestController
-@RequestMapping({"Recommend"})
+@RequestMapping({"recommend"})
 public class PatientRecommendRelationController {
     private PatientRecommendRelationBiz patientRecommendRelationBiz;
 

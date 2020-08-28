@@ -8,19 +8,20 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 简单介绍:</br> 会员卡充值记录Vo
+ * 简单介绍:</br> 消费记录列表Vo
  *
  * @author: WY
- * @date 2020/8/15 17:00
+ * @date 2020/8/28 19:45
  * @description:
  * @since: 1.0.0
  */
+
 @Data
 @ToString
-public class RechargeRecordVo implements Serializable {
+public class PrepaidExpendRecordVo implements Serializable {
 
     /**
-     * 会员充值记录id
+     * 预付款消费记录id
      */
     private Integer id;
 
@@ -30,19 +31,14 @@ public class RechargeRecordVo implements Serializable {
     private Date operatingTime;
 
     /**
-     * 充值本金
+     * 消费本金
      */
-    private BigDecimal rechargePrincipal;
+    private BigDecimal expendPrincipal;
 
     /**
-     * 充值赠金
+     * 消费赠金
      */
-    private BigDecimal rechargeBonus;
-
-    /**
-     * 入账方式
-     */
-    private String payment;
+    private BigDecimal expendGift;
 
     /**
      * 门诊id
@@ -68,6 +64,11 @@ public class RechargeRecordVo implements Serializable {
      * 备注
      */
     private String remarks;
+
+    /**
+     * 消费者
+     */
+    private String expendName;
 
 
 }

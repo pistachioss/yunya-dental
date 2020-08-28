@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.mapper;
 import com.yunya.feign.patient_central.domain.query.MemberExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberExpendRecordVo;
 import com.yunya.models.patient_central.MemberExpendRecord;
+import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
@@ -14,5 +15,5 @@ public interface MemberExpendRecordMapper extends Mapper<MemberExpendRecord> {
      * @param queryForm
      * @return MemberExpendRecordVo
      */
-    List<MemberExpendRecordVo> expendList(MemberExpendRecordQueryForm queryForm);
+    List<MemberExpendRecordVo> expendList(@Param("form") MemberExpendRecordQueryForm queryForm);
 }

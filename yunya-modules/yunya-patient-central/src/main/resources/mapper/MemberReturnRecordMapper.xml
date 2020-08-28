@@ -11,7 +11,7 @@
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
     <result column="return_principal_amount" property="returnPrincipalAmount" jdbcType="DECIMAL" />
     <result column="return_gift_amount" property="returnGiftAmount" jdbcType="DECIMAL" />
-    <result column="remarks" property="returnReason" jdbcType="VARCHAR" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
     <result column="return_way_id" property="returnWayId" jdbcType="INTEGER" />
     <result column="return_way_type" property="returnWayType" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
@@ -27,10 +27,23 @@
   </sql>
 
   <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.MemberReturnRecordVo">
-      select  id,crt_time operatingTime,return_principal_amount returnPrincipalAmount,return_gift_amount returnGiftAmount,
-              org_id orgId,crt_id operatorId,crt_name operatorName,return_way_id returnWayId,return_way_type returnWayType,remarks
-      from member_return_record where member_id = #{form.memberId} and patient_id =#{form.patientId}
-      order by crt_time desc
+      SELECT
+        id,
+        crt_time operatingTime,
+        return_principal_amount returnPrincipalAmount,
+        return_gift_amount returnGiftAmount,
+        org_id orgId,
+        crt_id operatorId,
+        crt_name operatorName,
+        return_way_id returnWayId,
+        return_way_type returnWayType,
+        remarks
+      FROM
+          member_return_record
+      WHERE
+          member_id = #{form.memberId} and patient_id =#{form.patientId}
+      ORDER BY
+          crt_time DESC
   </select>
 
 </mapper>

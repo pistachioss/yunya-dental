@@ -2,11 +2,14 @@ package com.yunya.models.patient_central;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
-import java.util.Date;
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import java.util.Date;
 
 @Table(name = "patient_base_info")
 public class PatientBaseInfo {

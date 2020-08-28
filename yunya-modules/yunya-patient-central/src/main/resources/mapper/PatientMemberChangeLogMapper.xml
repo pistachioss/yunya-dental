@@ -21,8 +21,8 @@
     <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upt_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upt_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
     <sql id="Find_Column_List">
@@ -30,7 +30,6 @@
         pmcl.org_id orgId,pmcl.operation_type operationType,pmcl.org_name orgName,pmcl.operator_id operatorId,pmcl.operator_name operatorName,
         pmcl.operating_time operatingTime,pmcl.inservice inservice,pmcl.crt_id crtId,pmcl.crt_name crtName,pmcl.crt_time crtTime,pmcl.upt_id uptId,
         pmcl.upd_name updName,pmcl.upd_time updTime
-
     </sql>
 
     <select id="changeLog" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo">

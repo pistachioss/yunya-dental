@@ -4,7 +4,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientKinRelationVo;
 import com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.patient_central.PatientRecommendRelation;

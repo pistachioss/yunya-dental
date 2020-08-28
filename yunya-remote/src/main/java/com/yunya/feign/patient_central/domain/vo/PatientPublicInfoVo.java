@@ -3,7 +3,6 @@ package com.yunya.feign.patient_central.domain.vo;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 

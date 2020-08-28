@@ -1,14 +1,11 @@
 package com.yunya.feign.patient_central.domain.model;
 
-import com.yunya.models.patient_central.PrepaidRechargeTollRecord;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.List;
 
 /**
  * 简单介绍:</br> 预付款充值

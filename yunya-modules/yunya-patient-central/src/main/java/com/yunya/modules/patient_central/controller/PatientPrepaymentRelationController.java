@@ -8,6 +8,7 @@ package com.yunya.modules.patient_central.controller;
 import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
+import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -16,13 +17,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Api(
         value = "患者预付款",
@@ -38,17 +33,16 @@ public class PatientPrepaymentRelationController {
     }
 
     @ApiOperation("账户基本信息")
-    @GetMapping({"/PrepaidAccountBaseInfo/{id}"})
+    @GetMapping({"/prepaidAccountBaseInfo/{id}"})
     public ResponseResult findPrepaymentInfo(@PathVariable("id") Integer id) {
         return ResponseUtil.success(this.patientPrepaymentBiz.findPrepaymentInfo(id));
     }
 
     @CurrentUser
     @ApiOperation("新增关联")
-    @PostMapping({"/PrepaymentLink"})
+    @PostMapping({"/prepaymentLink"})
     public ResponseResult addPrepaymentLink(@RequestBody PatientPrepaymentRelationModel model) {
-        this.patientPrepaymentBiz.addPrepaymentLink(model);
-        return ResponseUtil.success();
+        return this.patientPrepaymentBiz.addPrepaymentLink(model);
     }
 
     @ApiOperation("查询关联")
@@ -66,7 +60,7 @@ public class PatientPrepaymentRelationController {
 
     @CurrentUser
     @ApiOperation("充值")
-    @PostMapping({"/Recharge"})
+    @PostMapping({"/recharge"})
     public ResponseResult Recharge(@RequestBody PrepaidRechargeModel memberRechargeModel) {
         this.patientPrepaymentBiz.Recharge(memberRechargeModel);
         return ResponseUtil.success();
@@ -74,7 +68,7 @@ public class PatientPrepaymentRelationController {
 
     @CurrentUser
     @ApiOperation("充值记录")
-    @PostMapping({"/RechargeRecord"})
+    @PostMapping({"/rechargeRecord"})
     public ResponseResult RechargeRecord(@RequestBody PrepaidRechargeRecordQueryForm form) {
         return ResponseUtil.success(this.patientPrepaymentBiz.RechargeRecord(form));
     }
@@ -92,5 +86,19 @@ public class PatientPrepaymentRelationController {
     @PostMapping("/refundList")
     public ResponseResult refundList(@RequestBody PrepaidMeturnRecordQueryForm queryForm ){
         return ResponseUtil.success(patientPrepaymentBiz.refundList(queryForm));
+    }
+
+    /*@CurrentUser
+    @ApiOperation("消费")
+    @PostMapping("/expend")
+    public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
+        return patientMemberInfoBiz.expend(model);
+    }*/
+
+    @CurrentUser
+    @ApiOperation("消费记录")
+    @PostMapping("/expendList")
+    public ResponseResult expendList(@RequestBody PrepaidExpendRecordQueryForm queryForm ){
+        return ResponseUtil.success(patientPrepaymentBiz.expendList(queryForm));
     }
 }

@@ -1,6 +1,5 @@
 package com.yunya.modules.patient_central.biz;
 
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.*;

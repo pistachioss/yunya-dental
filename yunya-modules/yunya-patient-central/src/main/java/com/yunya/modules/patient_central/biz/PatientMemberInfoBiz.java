@@ -204,8 +204,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         patientMemberChangeLog.setOperationType(operationType);
         if (isupt != null) { //不为空就是修改
             patientMemberChangeLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientMemberChangeLog.setUptName(BaseContextHandler.getName());
-            patientMemberChangeLog.setUptTime(new Date());
+            patientMemberChangeLog.setUpdName(BaseContextHandler.getName());
+            patientMemberChangeLog.setUpdTime(new Date());
         }
 
         this.patientMemberChangeLogMapper.insertSelective(patientMemberChangeLog);

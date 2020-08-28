@@ -1,6 +1,5 @@
 package com.yunya.feign.patient_central.domain.vo;
 
-import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
