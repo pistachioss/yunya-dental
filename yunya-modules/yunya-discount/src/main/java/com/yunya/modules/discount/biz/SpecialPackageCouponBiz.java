@@ -46,7 +46,7 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
         CouponCommonInfo data = new CouponCommonInfo();
         data.setName(specialPackageCouponForm.getName());
         if (couponCommonInfoMapper.selectOne(data) != null) {
-            throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
+            throw new BaseException("套餐券名称与系统中已有套餐券重复，不允许新增!", NAME_IS_OCCUPIED);
         }
         CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
         BeanUtils.copyProperties(specialPackageCouponForm, couponCommonInfo);
@@ -107,7 +107,7 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
                 data = new CouponCommonInfo();
                 data.setId(specialPackageCouponForm.getId());
                 if(!couponCommonInfoMapper.selectOne(data).getName().equals(name)){
-                    throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
+                    throw new BaseException("套餐券名称与系统中已有套餐券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
             BeanUtils.copyProperties(specialPackageCouponForm, couponCommonInfo);

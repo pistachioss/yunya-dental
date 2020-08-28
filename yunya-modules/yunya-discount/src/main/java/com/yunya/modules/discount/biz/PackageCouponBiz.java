@@ -35,11 +35,6 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon> {
-    // 套餐券类型
-    private static final Integer PACKAGE_COUPON_TYPE = 2;
-    // 状态
-    private static final Integer FINISH = 1;
-    private static final Integer PLAN = 0;
 
     @Autowired private CouponAllocateMapper couponAllocateMapper;
     @Autowired private CouponCommonInfoMapper couponCommonInfoMapper;
@@ -54,7 +49,7 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         CouponCommonInfo data = new CouponCommonInfo();
         data.setName(packageCouponForm.getName());
         if (couponCommonInfoMapper.selectOne(data) != null) {
-            throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
+            throw new BaseException("兑换券名称与系统中已有兑换券重复，不允许新增!", NAME_IS_OCCUPIED);
         }
         CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
         BeanUtils.copyProperties(packageCouponForm, couponCommonInfo);
@@ -116,7 +111,7 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
                 data = new CouponCommonInfo();
                 data.setId(packageCouponForm.getId());
                 if(!couponCommonInfoMapper.selectOne(data).getName().equals(name)){
-                    throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
+                    throw new BaseException("兑换券名称与系统中已有兑换券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
             BeanUtils.copyProperties(packageCouponForm, couponCommonInfo);

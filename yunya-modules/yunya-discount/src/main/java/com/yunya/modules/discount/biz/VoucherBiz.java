@@ -58,7 +58,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         CouponCommonInfo data = new CouponCommonInfo();
         data.setName(voucheCouponForm.getName());
         if (couponCommonInfoMapper.selectOne(data) != null) {
-            throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
+            throw new BaseException("代金券名称与系统中已有代金券重复，不允许新增!", NAME_IS_OCCUPIED);
         }
         CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
         BeanUtils.copyProperties(voucheCouponForm, couponCommonInfo);
@@ -125,7 +125,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
                 data = new CouponCommonInfo();
                 data.setId(discountUpdateForm.getId());
                 if(!couponCommonInfoMapper.selectOne(data).getName().equals(name)){
-                    throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
+                    throw new BaseException("代金券名称与系统中已有代金券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
             BeanUtils.copyProperties(discountUpdateForm, couponCommonInfo);
