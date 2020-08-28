@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.clinic.base.mapper.SpecializedSubjectProjectMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.SpecializedSubjectProject">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="specialized_subject_projec_namet" jdbcType="VARCHAR" property="specializedSubjectProjectName" />
+    <result column="subitems" jdbcType="VARCHAR" property="subitems" />
+    <result column="inservice" jdbcType="INTEGER" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upd_id" jdbcType="INTEGER" property="updId" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+  <select id="findSpecializedList" parameterType="com.yunya.feign.cash_balance.query.SpecializedSubjectProjectQuery" resultType="com.yunya.feign.cash_balance.vo.SpecializedSubjectProjectVo">
+        select
+            id,
+            specialized_subject_project_name,
+            subitems
+        from
+            specialized_subject_project
+        where
+            inservice = 0
+  </select>
+  <insert id="add" parameterType="com.yunya.models.clinic_base.SpecializedSubjectProject">
+         INSERT INTO
+            specialized_subject_project
+            (specialized_subject_project_name,subitems,crt_id,inservice)
+        VALUES
+            (#{specializedSubjectProjectName},#{subitems},#{crtId},0);
+  </insert>
+  <update id="upd" parameterType="com.yunya.models.clinic_base.SpecializedSubjectProject">
+    UPDATE
+        specialized_subject_project
+    SET
+        specialized_subject_project_name=#{specializedSubjectProjectName},
+        subitems=#{subitems},
+        upd_id=#{crtId}
+    WHERE
+        id=#{id};
+  </update>
+  <update id="del" parameterType="java.lang.Integer">
+    UPDATE
+        specialized_subject_project
+    SET
+      inservice=1
+    WHERE
+        id=#{id};
+  </update>
+</mapper>

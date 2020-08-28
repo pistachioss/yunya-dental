@@ -19,6 +19,7 @@
         <module>yunya-modules</module>
         <module>yunya-tools</module>
         <module>yunya-models</module>
+        <module>yunya-report</module>
     </modules>
 
     <properties>

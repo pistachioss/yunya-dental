@@ -19,7 +19,7 @@ swagger:
     version: 0.0.1.SNAPSHOT
     description: 资源OSS公共服务 （通过路由访问的路径：api/aliyunoss/）
     contact:
-        name: yunya-system
+        name: aliyun-oss
 
 logging:
     level:

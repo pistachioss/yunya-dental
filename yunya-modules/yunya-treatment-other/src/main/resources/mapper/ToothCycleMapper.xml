@@ -54,4 +54,10 @@
     WHERE
     id = #{id}
   </delete>
+
+    <select id="findDataById" parameterType="java.lang.Integer" resultType="com.yunya.feign.treatment_other.domain.vo.ToothCycleFindDataByIdVo">
+        select
+            tooth_cycle
+        from
+    </select>
 </mapper>
