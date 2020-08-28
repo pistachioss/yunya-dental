@@ -2,6 +2,7 @@ package com.yunya.modules.discount.controller;
 
 import com.alibaba.excel.*;
 import com.github.pagehelper.*;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.*;
 import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
@@ -78,5 +79,18 @@ public class CardController {
     public ResponseResult<PageInfo<CardSalePageVo>> getCardSalePageVo(@Valid @RequestBody CardSaleQuery query) {
         PageInfo<CardSalePageVo> pageInfo = cardBiz.getCardSalePageVo(query);
         return ResponseUtil.success(pageInfo);
+    }
+
+    @ApiOperation(value = "产品售卖--查看配给-卡券售出")
+    @PutMapping("/coupon/card/sale/{id}")
+    @CurrentUser
+    public ResponseResult soldCard(@PathVariable(value = "id") Integer cardId,@Valid @RequestBody CardSoldForm form) {
+        return cardBiz.cardSold(cardId, form);
+    }
+
+    @ApiOperation(value = "卡券二维码页面打开")
+    @GetMapping("/coupon/card/qrcode/{id}/{data}")
+    public ResponseResult<CardQrCodeVo> cardQrCodeCheck(@PathVariable(value = "id") Integer id, @PathVariable(value = "data") String cardQrData) {
+        return null;
     }
 }

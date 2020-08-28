@@ -58,7 +58,8 @@ public class Card implements Serializable {
     /**
      * 卡密
      */
-    private String password;
+    @Column(name = "card_password")
+    private String cardPassword;
 
     /**
      * 状态 0:待售出 1:待激活 2:已激活
@@ -92,14 +93,8 @@ public class Card implements Serializable {
     /**
      * 是否售出并收款 0:否 1:是
      */
-    @Column(name = "soldAndPay")
+    @Column(name = "is_sold_and_pay")
     private Integer soldAndPay;
-
-    /**
-     * 入账方式分类
-     */
-    @Column(name = "pay_type_id")
-    private Integer payTypeId;
 
     /**
      * 入账方式

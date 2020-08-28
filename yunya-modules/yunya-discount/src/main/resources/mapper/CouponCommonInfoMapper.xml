@@ -23,7 +23,7 @@
     <select id="listBatchAllocateByParam" resultType="com.yunya.feign.discount.domain.bo.GenerateAllocatePageBo">
         select
             `cci`.`id`                 as `couponId`,
-            `ca`.`id`                  as `couponAllocateId`
+            `ca`.`id`                  as `couponAllocateId`,
             `ca`.`crt_id`              as `submitUserId`,
             `ca`.`crt_time`            as `submitDate`,
             `cci`.`name`               as `couponName`,
@@ -45,6 +45,6 @@
             </if>
         </where>
         group by `ca`.`coupon_id`, DATE_FORMAT(`ca`.`crt_time`, '%Y-%m-%d %H:%i:%s')
-        order by `ca`.`allocate_user_id` asc, `ca`.`crt_time` desc;
+        order by `ca`.`allocate_user_id` asc, `ca`.`crt_time` desc
     </select>
 </mapper>

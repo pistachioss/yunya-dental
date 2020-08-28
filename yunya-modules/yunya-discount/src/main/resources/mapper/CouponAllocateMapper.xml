@@ -81,4 +81,15 @@
             and `crt_time` = #{submitDate}
     </update>
 
+    <select id="getOrgAllocateByParam" resultType="com.yunya.feign.discount.domain.bo.OrgCouponAllocateBo">
+        select
+            `id`                  as `id`,
+            sum(`allocate_num`)   as `sumCount`
+        from `coupon_allocate`
+        where `coupon_id` = #{couponId}
+          and `org_id` = #{orgId}
+          and isnull(`allocate_user_id`) = 0
+        group by `coupon_id`, `org_id`
+    </select>
+
 </mapper>

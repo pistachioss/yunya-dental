@@ -14,15 +14,15 @@ import javax.validation.constraints.*;
 @ApiModel(value = "门诊分配详情模型")
 public class ClinicAllocateModel {
 
-    @ApiModelProperty(value = "配给门诊")
+    @ApiModelProperty(value = "配给门诊", required = true)
     @NotNull
     private Integer orgId;
 
-    @ApiModelProperty(value = "优惠券分配id")
+    @ApiModelProperty(value = "优惠券分配id", required = true)
     @NotNull
     private Integer couponAllocateId;
 
-    @ApiModelProperty(value = "数量")
+    @ApiModelProperty(value = "数量", required = true)
     @NotNull
     private Integer allocateNum;
 }

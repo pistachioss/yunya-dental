@@ -9,14 +9,13 @@
         <result column="active_org_id" jdbcType="INTEGER" property="activeOrgId" />
         <result column="patient_id" jdbcType="INTEGER" property="patientId" />
         <result column="card_number" jdbcType="VARCHAR" property="cardNumber" />
-        <result column="password" jdbcType="VARCHAR" property="password" />
+        <result column="card_password" jdbcType="VARCHAR" property="cardPassword" />
         <result column="status" jdbcType="TINYINT" property="status" />
         <result column="sold_target" jdbcType="VARCHAR" property="soldTarget" />
         <result column="sold_phone_number" jdbcType="VARCHAR" property="soldPhoneNumber" />
         <result column="sold_type" jdbcType="TINYINT" property="soldType" />
         <result column="is_send_text" jdbcType="TINYINT" property="sendText" />
         <result column="is_sold_and_pay" jdbcType="TINYINT" property="soldAndPay" />
-        <result column="pay_type_id" jdbcType="INTEGER" property="payTypeId" />
         <result column="pay_id" jdbcType="INTEGER" property="payId" />
         <result column="sharer" jdbcType="VARCHAR" property="sharer" />
         <result column="sale_channel_id" jdbcType="INTEGER" property="saleChannelId" />
@@ -42,7 +41,7 @@
 
     <select id="getSumNumByCouponId" resultType="int">
         select
-            ifnull(sum(`coupon_id`), 0)
+            ifnull(count(`coupon_id`), 0)
         from `card`
         where `coupon_id` = #{couponId}
     </select>
@@ -50,12 +49,12 @@
     <insert id="insertList" parameterType="List">
         insert into
             `card`
-            (`org_id`, `coupon_id`, `coupon_allocate_id`, `card_number`, `password`, `status`, `crt_id`, `crt_time`,
+            (`org_id`, `coupon_id`, `coupon_allocate_id`, `card_number`, `card_password`, `status`, `crt_id`, `crt_time`,
               `upd_id`)
         values
         <foreach collection="List" item="item" separator=",">
             (#{item.orgId}, #{item.couponId}, #{item.couponAllocateId}, #{item.cardNumber},
-             #{item.password},#{item.status},#{item.crtId},#{item.crtTime},#{item.updId})
+             #{item.cardPassword},#{item.status},#{item.crtId},#{item.crtTime},#{item.updId})
         </foreach>
     </insert>
 
@@ -75,9 +74,9 @@
 
     <select id="listExportVosByParam" resultMap="BaseResultMap">
         select
-            card_number,
-            password,
-            org_id
+            `card_number`,
+            `card_password`,
+            `org_id`
         from `card`
         where `coupon_id` = #{couponId}
         and `coupon_allocate_id` in
@@ -124,7 +123,7 @@
         select
             `id`,
             `card_number`,
-            `password`,
+            `card_password`,
             `sold_target`,
             `sold_phone_number`,
             `sold_type`,
@@ -132,9 +131,9 @@
             `status`,
             `is_pay`,
             `sold_way`
-        from card
-        where coupon_id = #{couponId}
-            and org_id = #{orgId}
+        from `card`
+        where `coupon_id` = #{couponId}
+            and `org_id` = #{orgId}
             <if test="cardNumber !=null and cardNumber != ''">
                 and `card_number` like concat('%', #{cardNumber}, '%')
             </if>
@@ -155,4 +154,30 @@
             </if>
         order by `status` asc, `id` asc
     </select>
+
+    <select id="getOrgCardSoldInfoByParam" resultType="int">
+        select
+            count(`id`) - sum(`status` in (1, 2))
+        from `card`
+        where `coupon_id` = #{couponId}
+          and `org_id` = #{orgId}
+        group by `coupon_id`, `org_id`;
+    </select>
+
+    <update id="updateSoldInfoById" parameterType="com.yunya.models.discount.Card">
+        update `card`
+        set `status`            = #{status},
+            `sold_target`       = #{soldTarget},
+            `sold_phone_number` = #{soldPhoneNumber},
+            `sold_type`         = #{soldType},
+            `is_send_text`      = #{sendText},
+            `is_sold_and_pay`   = #{soldAndPay},
+            `pay_id`            = #{payId},
+            `sale_channel_id`   = #{saleChannelId},
+            `remark`            = #{remark},
+            `sold_way`          = #{soldWay},
+            `is_pay`            = #{pay},
+            `upd_id`            = #{updId}
+        where `id` = #{id}
+    </update>
 </mapper>
