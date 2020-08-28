@@ -21,15 +21,15 @@
     <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upt_name" property="uptName" jdbcType="VARCHAR" />
-    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+    <result column="upt_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upt_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
     <sql id="Find_Column_List">
         pmcl.id id,pmcl.patient_id patientId,pmcl.card_number cardNumber,pmcl.member_card_name memberCardName,pmcl.member_type_id memberTypeId,
-        pmcl.org_id orgId,pmcl.operation_type operationType,pmcl.org_name orgName,pmcl.operator_id operatorId,pmcl.operator_nam operatorNam,
+        pmcl.org_id orgId,pmcl.operation_type operationType,pmcl.org_name orgName,pmcl.operator_id operatorId,pmcl.operator_name operatorName,
         pmcl.operating_time operatingTime,pmcl.inservice inservice,pmcl.crt_id crtId,pmcl.crt_name crtName,pmcl.crt_time crtTime,pmcl.upt_id uptId,
-        pmcl.upt_name uptName,pmcl.upt_time uptTime
+        pmcl.upd_name updName,pmcl.upd_time updTime
 
     </sql>
 

@@ -75,6 +75,9 @@
       <if test="query.visitingDate != null">
         and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
       </if>
+      <if test="query.patientId != null">
+        and vr.patient_id = #{query.patientId}
+      </if>
       <if test="query.inservice != null">
         and vr.inservice = #{query.inservice}
       </if>
@@ -85,6 +88,7 @@
         and vr.status = #{query.status}
       </if>
     </where>
+    order by vr.crt_time asc
   </select>
 
   <!-- 根据患者id、时间查询随访列表 -->

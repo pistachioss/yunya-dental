@@ -26,4 +26,8 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
     List<Card> listCardInfosByParam(@Param("cardNumber") String cardNumber, @Param("soldTypeList") List<Integer> soldTypeList,
                                     @Param("cardStatsList") List<Integer> cardStatsList, @Param("phoneNumber") String phoneNumber,
                                     @Param("couponId") Integer couponId, @Param("orgId") Integer orgId);
+
+    int getOrgCardSoldInfoByParam(@Param("couponId") Integer couponId, @Param("orgId") Integer orgId);
+
+    void updateSoldInfoById(Card card);
 }

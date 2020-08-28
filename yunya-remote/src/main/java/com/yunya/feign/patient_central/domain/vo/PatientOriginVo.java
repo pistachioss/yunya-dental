@@ -34,4 +34,4 @@ public class PatientOriginVo implements Serializable {
      */
     private Integer originType;
 
-    }
+}

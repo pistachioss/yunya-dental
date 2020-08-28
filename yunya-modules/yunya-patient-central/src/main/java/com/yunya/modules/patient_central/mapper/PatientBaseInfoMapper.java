@@ -110,4 +110,10 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
      * @return PatientBaseInfoVo
      */
     PatientBaseInfoVo selectOneById(Integer id);
+
+    /**
+     * 修改患者头像
+     * @param patientBaseInfo
+     */
+    void updatePhoto(@Param("form") PatientBaseInfo patientBaseInfo);
 }

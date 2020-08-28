@@ -1,17 +1,24 @@
 package com.yunya.modules.discount.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.RechargeCard;
+import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import com.yunya.modules.discount.biz.RechargeCardBiz;
-import com.yunya.modules.discount.form.DiscountQueryForm;
 import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.discount.form.RechargeCardForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * 描述:
@@ -23,32 +30,34 @@ import javax.validation.Valid;
 @Api(tags = "充值卡")
 @RestController
 @RequestMapping("/recharge_card")
+@CurrentUser
 public class RechargeCardController {
     @Autowired
     private RechargeCardBiz rechargeCardBiz;
-
+    @Autowired
+    private CouponCommonInfoBiz couponCommonInfoBiz;
     /**
      * 新增充值卡
      *
-     * @param rechargeCard
+     * @param rechargeCardForm
      * @return
      */
     @PostMapping
     @ApiOperation("新增充值卡")
-    public ResponseResult save(@RequestBody @Valid RechargeCard rechargeCard) {
-        return ResponseUtil.success(rechargeCardBiz.saveRechargeCard(rechargeCard));
+    public ResponseResult save(@RequestBody @Valid RechargeCardForm rechargeCardForm) {
+        return ResponseUtil.success(rechargeCardBiz.saveRechargeCard(rechargeCardForm));
     }
 
     /**
      * 修改充值卡
      *
-     * @param discountUpdateForm
+     * @param rechargeCardForm
      * @return
      */
     @PutMapping
     @ApiOperation("修改充值卡")
-    public ResponseResult update(@RequestBody DiscountUpdateForm discountUpdateForm) {
-        rechargeCardBiz.updateRechargeCard(discountUpdateForm);
+    public ResponseResult update(@RequestBody RechargeCardForm rechargeCardForm) {
+        rechargeCardBiz.updateRechargeCard(rechargeCardForm);
         return ResponseUtil.success();
     }
 
@@ -65,35 +74,21 @@ public class RechargeCardController {
     }
 
     /**
-     * 获取对象
+     * 获取单个对象详细信息
      *
      * @return
      */
-    @GetMapping("/{id}}")
-    @ApiOperation("获取对象")
+    @GetMapping("/{id}")
+    @ApiOperation("获取单个对象详细信息")
     public ResponseResult findOne(@PathVariable("id") Integer id) {
-        return ResponseUtil.success(rechargeCardBiz.selectById(id));
+        CouponCommonInfo couponCommonInfo = couponCommonInfoBiz.selectById(id);
+        RechargeCard rechargeCard = new RechargeCard();
+        rechargeCard.setCouponId(couponCommonInfo.getId());
+        rechargeCard = rechargeCardBiz.selectOne(rechargeCard);
+        RechargeCardForm rechargeCardForm = new RechargeCardForm();
+        BeanUtils.copyProperties(rechargeCard, rechargeCardForm);
+        BeanUtils.copyProperties(couponCommonInfo, rechargeCardForm);
+        return ResponseUtil.success(rechargeCardForm);
     }
 
-    /**
-     * 获取列表
-     *
-     * @return
-     */
-    @GetMapping("/list")
-    @ApiOperation("获取列表")
-    public ResponseResult list() {
-        return ResponseUtil.success(rechargeCardBiz.selectListAll());
-    }
-
-//    /**
-//     * 查询列表
-//     *
-//     * @return
-//     */
-//    @PostMapping("/search")
-//    @ApiOperation("查询列表")
-//    public ResponseResult search(DiscountQueryForm discountQueryForm) {
-//        return ResponseUtil.success(rechargeCardBiz.search(discountQueryForm));
-//    }
 }

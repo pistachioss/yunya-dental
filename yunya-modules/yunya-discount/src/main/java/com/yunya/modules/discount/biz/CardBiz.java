@@ -4,9 +4,11 @@ import com.github.pagehelper.*;
 import com.google.common.base.*;
 import com.google.common.collect.*;
 import com.yunya.feign.discount.domain.bo.*;
+import com.yunya.feign.discount.domain.form.*;
 import com.yunya.feign.discount.domain.model.*;
 import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
+import com.yunya.feign.emr.domain.bo.*;
 import com.yunya.feign.system.*;
 import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.biz.*;
@@ -20,6 +22,7 @@ import com.yunya.modules.discount.enums.*;
 import com.yunya.modules.discount.mapper.*;
 import lombok.extern.slf4j.*;
 import org.apache.commons.collections4.*;
+import org.springframework.security.crypto.bcrypt.*;
 import org.springframework.stereotype.*;
 import org.springframework.transaction.annotation.*;
 import tk.mybatis.mapper.entity.*;
@@ -35,7 +38,9 @@ import java.util.function.Function;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.discount.enums.CardStatusEnum.*;
 import static com.yunya.modules.discount.enums.DiscountError.*;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
+import static com.yunya.modules.discount.enums.CardQrCodeEnum.*;
 
 /**
  * 描述:
@@ -78,6 +83,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     /**
      * 生成分配
+     *
      * @param allocateModel model
      * @return res
      * @throws Exception ex
@@ -90,14 +96,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_GENERATE, String.valueOf(couponId), submitDate.toEpochSecond(ZoneOffset.of("+8")));
         String lockVal = String.valueOf(loginUserId);
         long start = System.currentTimeMillis();
-        ResponseResult result;
+        RestErrorBo errorBo;
         log.info("卡券生成分配开始提交：[{}]，提交日期：[{}]", couponId, submitDate);
         try {
-            // 1. 锁定草稿病例
+            // 1. 锁定产品
             locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
             if (!locked) {
                 log.warn("【锁定失败】卡券[{}]正在分配：[{}]，无法提交", couponId, submitDate);
-                return ResponseUtil.error(KEY_IS_LOCKED);
+                return ResponseUtil.error(COUPON_IS_LOCKED);
             }
             log.info("【锁定成功】准备提交卡券生成分配...");
             //1. 校验优惠券分配信息
@@ -115,15 +121,18 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(CARD_IS_GENERATED);
             }
             //2. 校验组织优惠券分配明细
-            result = checkCouponAllocate(allocateList, couponId, submitDate);
-            if (result != null) {
-                return result;
+            errorBo = checkCouponAllocate(allocateList, couponId, submitDate);
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
             }
             //2. 提交生成分配
-            result = generateAllocateDetail(allocateList, couponId, submitDate, allocateModel.getCouponCode());
+            errorBo = generateAllocateDetail(allocateList, couponId, submitDate, allocateModel.getCouponCode());
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError());
+            }
             long end = System.currentTimeMillis();
             log.info("卡券[{}]生成分配完成，执行时间[{}]秒[{}]毫秒", couponId, (end - start) / 1000, (end - start) % 1000);
-            return result;
+            return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -133,8 +142,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public ResponseResult generateAllocateDetail(List<ClinicAllocateModel> allocateList, Integer couponId,
+    public RestErrorBo generateAllocateDetail(List<ClinicAllocateModel> allocateList, Integer couponId,
                                                  LocalDateTime submitDate, String couponCode) throws Exception {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         //所有组织的卡券分配信息
         List<Integer> couponAllocateIds = allocateList.stream().map(ClinicAllocateModel::getCouponAllocateId)
@@ -151,7 +161,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         List<AllocateNumBo> numBoList = getCalculateBoFutureResult(boFutureList);
         if (numBoList.size() != allocateList.size()) {
             log.warn("【卡券生成失败】");
-            return ResponseUtil.error(FAIL_TO_GENERATE);
+            errorBo.setError(FAIL_TO_GENERATE);
+            return errorBo;
         }
         LocalDateTime generateDate = LocalDateTime.now();
         CountDownLatch cardLatch = new CountDownLatch(sumAllocate);
@@ -163,18 +174,20 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         List<Card> cardList = getAllocateFutureResult(cardFutureList);
         if (CollectionUtils.isEmpty(cardList) || sumAllocate != cardList.size()) {
             log.warn("【卡券生成失败】");
-            return ResponseUtil.error(FAIL_TO_GENERATE);
+            errorBo.setError(FAIL_TO_GENERATE);
+            return errorBo;
         }
         log.info("【卡券明细任务执行结束】卡券数量count：[{}]", cardList.size());
         //3. 生成卡券信息
         mapper.insertList(cardList);
         //4. 更新优惠券分配记录
         allocateMapper.updateAllocateByIds(couponAllocateIds, submitDate, loginUserId, generateDate);
-        return ResponseUtil.success();
+        return errorBo;
     }
 
     /**
      * 查看配给详情
+     *
      * @param query query
      * @return list
      */
@@ -197,6 +210,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     /**
      * 查询导出集合
+     *
      * @param query query
      * @return list
      */
@@ -218,7 +232,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 ExportCardAllocateVo vo = new ExportCardAllocateVo();
                 vo.setCardNumber(obj.getCardNumber());
                 vo.setAllocateOrgName(orgMap.get(obj.getOrgId()));
-                vo.setCardPass(new String(Base64.getDecoder().decode(obj.getPassword())));
+                vo.setCardPassword(new String(Base64.getDecoder().decode(obj.getCardPassword())));
                 return vo;
             }).collect(toList());
         }
@@ -228,6 +242,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     /**
      * 产品售卖分页查询
+     *
      * @param query query
      * @return page
      */
@@ -249,8 +264,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     public PageInfo<CardSalePageVo> getCardSalePageVo(CardSaleQuery query) {
         Page<Card> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
         mapper.listCardInfosByParam(query.getCardNumber(), query.getSoldTypeList(), query.getCardStatsList(), query.getPhoneNumber(),
-                                    query.getCouponId(),query.getOrgId());
-        //实体转换为pagevo
+                query.getCouponId(), query.getOrgId());
+        //实体转换为pageVo
         List<CardSalePageVo> list = page.getResult().stream().map(this::cardConvertPageVo).collect(toList());
         PageInfo<CardSalePageVo> pageInfo = new PageInfo<>(list);
         pageInfo.setTotal(page.getTotal());
@@ -258,8 +273,96 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return pageInfo;
     }
 
-    private List<Future<Card>> createCardEntity(Integer couponId, String couponCode, List<AllocateNumBo> numBoList,
-                                                Integer loginUserId, LocalDateTime generateDate, CountDownLatch cardLatch, int totalTask) {
+    public ResponseResult cardSold(Integer cardId, CardSoldForm form) {
+        boolean locked = false;
+        Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_SOLD, String.valueOf(cardId));
+        String lockVal = String.valueOf(loginUserId);
+        log.info("卡券售卖开始提交：[{}]", cardId);
+        try {
+            // 1. 锁定草稿病例
+            locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+            if (!locked) {
+                log.warn("【锁定失败】卡券[{}]正在售卖中，无法提交", cardId);
+                return ResponseUtil.error(CARD_IS_LOCKED);
+            }
+            log.info("【锁定成功】准备提交卡券售卖...");
+
+            RestErrorBo errorBo;
+            Integer orgId = form.getOrgId();
+            Integer couponId = form.getCouponId();
+            //2. 检查优惠券
+            CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
+            errorBo = checkCouponForSale(couponId, couponInfo);
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError());
+            }
+            //3. 检查优惠券分配
+            OrgCouponAllocateBo orgAllocateBo = allocateMapper.getOrgAllocateByParam(couponId, orgId);
+            //获取组织名
+            String orgName = getOrgName(orgId);
+            if (orgAllocateBo == null) {
+                log.warn("【售卖失败】[{}]，[{}]未生成分配", couponInfo.getName(), orgName);
+                return ResponseUtil.error(ORG_COUPON_NOT_ALLOCATE, orgName, couponInfo.getName());
+            }
+            //4. 检查卡券
+            Card card = mapper.selectByPrimaryKey(cardId);
+            errorBo = checkCardForSale(cardId, card, couponInfo, orgId, orgName);
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+            }
+            //5. 卡券售卖
+            Card updateCard = soldVoConvertCard(card, form, loginUserId);
+            mapper.updateSoldInfoById(updateCard);
+            //todo 发短信
+            return ResponseUtil.success();
+        } finally {
+            if (locked) {
+                log.info("【解锁成功】");
+                redisUtils.unlock(lockKey, lockVal);
+            }
+        }
+    }
+
+    private CardQrCodeVo cardQrCodeCheck(String cardQrData) {
+        CardQrCodeVo vo = new CardQrCodeVo();
+        String qrCodeData = new String(Base64.getDecoder().decode(cardQrData));
+        List<String> data = Splitter.on(":").trimResults().omitEmptyStrings().splitToList(qrCodeData);
+        if (data.size() != 2) {
+            log.warn("卡券二维码数据异常");
+            vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
+            vo.setErrorMsg("卡券二维码数据异常");
+            return vo;
+        }
+        Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
+        if (card == null) {
+            vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
+            vo.setErrorMsg("卡券不存在");
+            return vo;
+        }
+        if (ACTIVATED.equals(card.getStatus())) {
+            vo.setCardQrCodeType(QR_CODE_DESTROY.getCode());
+            return vo;
+        }
+        if (!SALE_PENDING.equals(card.getStatus())) {
+            vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
+            vo.setErrorMsg("卡券售出状态异常");
+            return vo;
+        }
+        if (!data.get(0).equals(card.getLink())) {
+            vo.setCardQrCodeType(QR_CODE_INVALID.getCode());
+            return vo;
+        }
+        CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
+//        coupon.getType()
+//        if (coupon == null) {
+//
+//        }
+        return vo;
+    }
+
+    private List<Future<Card>> createCardEntity(Integer couponId, String couponCode, List<AllocateNumBo> numBoList, Integer loginUserId,
+                                                LocalDateTime generateDate, CountDownLatch cardLatch, int totalTask) {
         List<Future<Card>> cardFutureList = Lists.newArrayListWithCapacity(totalTask);
         for (AllocateNumBo allocateNumBo : numBoList) {
             //当前组织分配数
@@ -274,7 +377,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                     card.setCouponAllocateId(allocateNumBo.getCouponAllocateId());
                     card.setCardNumber(String.format(couponCode + "%06d", generateNum.getAndIncrement()));
                     //生成卡密
-                    card.setPassword(generatePass());
+                    card.setCardPassword(generatePass());
                     card.setStatus(SALE_PENDING.getCode());
                     card.setCrtId(loginUserId);
                     card.setCrtTime(generateDate);
@@ -337,18 +440,21 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return vo;
     }
 
-    private ResponseResult checkCouponAllocate(List<ClinicAllocateModel> allocateList, Integer couponId, LocalDateTime submitDate) {
+    private RestErrorBo checkCouponAllocate(List<ClinicAllocateModel> allocateList, Integer couponId, LocalDateTime submitDate) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
         Example example = new Example(CouponAllocate.class);
         example.createCriteria().andEqualTo("couponId", couponId)
                 .andEqualTo("crtTime", submitDate);
         List<CouponAllocate> list = allocateMapper.selectByExample(example);
         if (CollectionUtils.isEmpty(list)) {
             log.warn("【卡券生成失败】：优惠券[{}]未分配，请先分配再生成", couponId);
-            return ResponseUtil.error(DiscountError.COUPON_NOT_ALLOCATE);
+            errorBo.setError(COUPON_NOT_ALLOCATE);
+            return errorBo;
         }
         //校验数量
         if (list.size() != allocateList.size()) {
-            return ResponseUtil.error(DiscountError.NUM_NOT_EQUAL);
+            errorBo.setError(NUM_NOT_EQUAL);
+            return errorBo;
         }
         //已分配优惠券映射
         Map<Integer, CouponAllocate> entityMap = list.stream()
@@ -358,12 +464,15 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             //校验组织分配优惠券数量和时间
             if (couponAllocate == null || !allocateModel.getAllocateNum().equals(couponAllocate.getAllocateNum())
                     || !submitDate.equals(DateUtil.dateToLocalDateTime(couponAllocate.getCrtTime()))) {
-                OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(allocateModel.getOrgId());
-                log.warn("【卡券生成失败】：[{}]优惠券分配时间[{}]", orgInfo.getName(), submitDate);
-                return ResponseUtil.error(DiscountError.ORG_BATCH_ERROR, orgInfo.getName());
+                //获取组织名
+                String orgName = getOrgName(allocateModel.getOrgId());
+                log.warn("【卡券生成失败】：[{}]优惠券分配时间[{}]", orgName, submitDate);
+                errorBo.setError(ORG_BATCH_ERROR);
+                errorBo.setMsg(orgName);
+                return errorBo;
             }
         }
-        return null;
+        return errorBo;
     }
 
     /**
@@ -374,7 +483,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private static String generatePass() {
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < CARD_PASS_BIT; i++) {
-            builder.append(new SecureRandom().nextInt(9));
+            builder.append(new SecureRandom().nextInt(10));
         }
         return Base64.getEncoder().encodeToString(builder.toString().getBytes());
     }
@@ -389,11 +498,88 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     private CardSalePageVo cardConvertPageVo(Card card) {
         CardSalePageVo vo = BeanCopierUtils.generalCopyBean(card, CardSalePageVo.class);
-        vo.setCardPass(new String(Base64.getDecoder().decode(card.getPassword())));
+        vo.setCardPassword(new String(Base64.getDecoder().decode(card.getCardPassword())));
         vo.setSoldTypeName(SoldTypeEnum.getValue(card.getSoldType()));
         vo.setSoldStatusName(CardStatusEnum.getValue(card.getStatus()));
         vo.setPayStatus(TrueFalseEnum.getValue(card.getPay()));
         vo.setSoldWayName(SoldWayEnum.getValue(card.getSoldWay()));
         return vo;
+    }
+
+    private Card soldVoConvertCard(Card card, CardSoldForm form, Integer loginUserId) {
+        Card updateCard = BeanCopierUtils.generalCopyBean(form, Card.class);
+        updateCard.setStatus(ACTIVE_PENDING.getCode());
+        updateCard.setPay(TRUE.equals(form.getSoldAndPay()) ? TRUE.getCode() : FALSE.getCode());
+        updateCard.setUpdId(loginUserId);
+        updateCard.setId(card.getId());
+        //卡券二维码签名
+        updateCard.setLink(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
+                .encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())),card.getId())
+                .getBytes()));
+        return updateCard;
+    }
+
+    private String getOrgName(Integer orgId) {
+        if (orgId == null) {
+            return null;
+        }
+        OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+        //获取组织名称
+        return orgInfo == null ? null : orgInfo.getName();
+    }
+
+    /**
+     * 检查优惠券
+     * @param couponInfo couponInfo
+     * @return RestErrorBo
+     */
+    private RestErrorBo checkCouponForSale(Integer couponId, CouponCommonInfo couponInfo) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        if (couponInfo == null || !couponInfo.getIsInservice()) {
+            log.warn("【售卖失败】优惠券[{}]不存在", couponId);
+            errorBo.setError(COUPON_NOT_EXIST);
+            return errorBo;
+        }
+        //售出开始时间
+        Date saleStartDate = couponInfo.getAvailableSaleStartDate();
+        //售出结束时间
+        Date saleEndDate = couponInfo.getAvailableSaleEndDate();
+        Date now = new Date();
+        if (saleStartDate != null && saleEndDate != null && (now.before(saleStartDate) || now.after(saleEndDate))) {
+            log.warn("【售卖失败】卡券不在优惠券[{}]售出时间范围内", couponInfo.getId());
+            errorBo.setError(SOLD_DATE_RANGE_ERROR);
+            return errorBo;
+        }
+        return errorBo;
+    }
+
+    /**
+     * 检查卡券信息
+     * @param card card
+     * @param coupon coupon
+     * @param orgId orgId
+     * @param orgName orgName
+     * @return RestErrorBo
+     */
+    private RestErrorBo checkCardForSale(Integer cardId, Card card, CouponCommonInfo coupon, Integer orgId, String orgName) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        if (card == null ) {
+            log.warn("【售卖失败】卡券[{}]不存在", cardId);
+            errorBo.setError(CARD_NOT_EXIST);
+            return errorBo;
+        }
+        if (!SALE_PENDING.equals(card.getStatus())) {
+            log.warn("【售卖失败】卡券[{}]售卖状态异常", cardId);
+            errorBo.setError(CARD_SOLD_STATUS_ERROR);
+            return errorBo;
+        }
+        int forSaleCount = mapper.getOrgCardSoldInfoByParam(coupon.getId(), orgId);
+        if (forSaleCount <= 0) {
+            log.warn("【售卖失败】[{}]，的[{}]已全部售出，", orgName, coupon.getName());
+            errorBo.setError(CARD_SOLD_OUT);
+            errorBo.setMsg(orgName, coupon.getName());
+            return errorBo;
+        }
+        return errorBo;
     }
 }

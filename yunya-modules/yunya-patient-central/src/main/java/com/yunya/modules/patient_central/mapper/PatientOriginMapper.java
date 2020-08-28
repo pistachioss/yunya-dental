@@ -47,4 +47,10 @@ public interface PatientOriginMapper extends Mapper<PatientOrigin> {
      * @return List<PatientOriginInfoVo>
      */
     List<PatientOriginInfoVo> selectOriginalType();
+
+    /**
+     *
+     * @return
+     */
+    Integer selectTypeMaximum();
 }

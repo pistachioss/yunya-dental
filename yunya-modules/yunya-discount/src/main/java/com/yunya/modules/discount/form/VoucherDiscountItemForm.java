@@ -49,31 +49,28 @@ public class VoucherDiscountItemForm {
     /**
      * 明细ID
      */
+    @NotNull(message = "明细ID不能为空")
     @ApiModelProperty("明细ID")
     private Integer itemId;
 
     /**
      * 创建人
      */
-    @Column(name = "crt_id")
     private Integer crtId;
 
     /**
      * 创建时间
      */
-    @Column(name = "crt_time")
     private Date crtTime;
 
     /**
      * 更新人
      */
-    @Column(name = "upd_id")
     private Integer updId;
 
     /**
      * 更新时间
      */
-    @Column(name = "upd_time")
     private Date updTime;
 
 }

@@ -22,7 +22,7 @@ import java.util.List;
 public class PatientExtendInfoVo implements Serializable {
 
   /** 患者基本信息表 */
-  private PatientBaseInfo patientBaseInfo;
+  private PatientBaseInfoVo patientBaseInfoVo;
 
   /** 患者信息扩展表 */
   private PatientExpInfo patientExpInfo;

@@ -23,7 +23,7 @@ public class MemberRechargeRecord {
      * 会员卡ID
      */
     @Column(name = "member_id")
-    private Integer memberId;
+    private String memberId;
 
     /**
      * 充值本金
@@ -124,7 +124,7 @@ public class MemberRechargeRecord {
      *
      * @return member_id - 会员卡ID
      */
-    public Integer getMemberId() {
+    public String getMemberId() {
         return memberId;
     }
 
@@ -133,7 +133,7 @@ public class MemberRechargeRecord {
      *
      * @param memberId 会员卡ID
      */
-    public void setMemberId(Integer memberId) {
+    public void setMemberId(String memberId) {
         this.memberId = memberId;
     }
 

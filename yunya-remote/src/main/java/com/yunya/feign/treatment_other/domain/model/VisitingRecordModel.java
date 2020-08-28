@@ -10,6 +10,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -64,25 +65,8 @@ public class VisitingRecordModel implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date treatmentDate;
 
-    /**
-     * 随访时间 精确到分
-     */
-    @ApiModelProperty(value = "随访时间 精确到分", required = true)
-    @NotNull(message = "随访时间不能为空!")
-    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date visitingDate;
-
-    /**
-     * 随访时间
-     */
-    @ApiModelProperty(value = "随访时间", required = true)
-    @NotBlank(message = "随访时间不能为空！")
-    private String visitingTime;
-
-    /**
-     * 随访原因 新建随访
-     */
-    @ApiModelProperty(value = "随访原因 新建随访", required = true)
-    @NotBlank(message = "随访原因不能为空!")
-    private String reason;
+    /** 随访内容 */
+    @ApiModelProperty(value = "随访内容列表",required = true)
+    @NotNull(message = "随访内容列表不能为空!")
+    private List<VisitingContentModel> visitingContents;
 }

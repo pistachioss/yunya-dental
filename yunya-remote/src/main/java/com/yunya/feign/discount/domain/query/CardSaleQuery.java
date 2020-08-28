@@ -14,10 +14,10 @@ import java.util.*;
 @Setter
 @ApiModel(value = "产品销售-查看配给")
 public class CardSaleQuery {
-    @ApiModelProperty(value = "优惠券id")
+    @ApiModelProperty(value = "优惠券id", required = true)
     @NotNull
     private Integer couponId;
-    @ApiModelProperty(value = "组织id")
+    @ApiModelProperty(value = "组织id", required = true)
     @NotNull
     private Integer orgId;
     @ApiModelProperty(value = "卡号")

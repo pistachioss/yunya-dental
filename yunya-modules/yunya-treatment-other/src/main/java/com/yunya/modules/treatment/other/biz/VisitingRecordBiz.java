@@ -10,6 +10,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
+import com.yunya.feign.treatment_other.domain.model.VisitingContentModel;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
@@ -18,8 +19,10 @@ import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -80,26 +83,35 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return  返回插入成功的条数
      */
     public ResponseResult insertVisitingRecord(VisitingRecordModel model){
-        Integer patientId = model.getPatientId();
-        Date visitingDate = model.getVisitingDate();
-        VisitingRecordQuery query = new VisitingRecordQuery();
-        query.setPatientId(patientId);
-        query.setVisitingDate(visitingDate);
-        List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
-        if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            String format = dateFormat.format(query.getVisitingDate());
-            return ResponseUtil.success(format + "的随访已经存在");
+        List<VisitingContentModel> visitingContents = model.getVisitingContents();
+        if (!StringHelper.isEmpty(visitingContents)){
+            Integer patientId = model.getPatientId();
+            for(VisitingContentModel visitingContentModel : visitingContents){
+                Date visitingDate = visitingContentModel.getVisitingDate();
+                VisitingRecordQuery query = new VisitingRecordQuery();
+                query.setPatientId(patientId);
+                query.setVisitingDate(visitingDate);
+                List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
+                if (visitingRecordByCondition != null && !visitingRecordByCondition.isEmpty()){
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                    String format = dateFormat.format(query.getVisitingDate());
+                    throw new ClientServiceException(format + " 的随访已经存在", OperationCodeConstants.DATA_EXIST);
+                }
+                VisitingRecord build = EntityUtils.build(model, VisitingRecord.class);
+                build.setVisitingDate(visitingContentModel.getVisitingDate());
+                build.setVisitingTime(visitingContentModel.getVisitingTime());
+                build.setReason(visitingContentModel.getReason());
+                build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                build.setCrtName(BaseContextHandler.getName());
+                build.setCrtTime(new Date(System.currentTimeMillis()));
+                int result = mapper.insertSelective(build);
+                if (result <= 0){
+                    return ResponseUtil.success("新增随访失败！");
+                }
+            }
+            return ResponseUtil.success();
         }
-        VisitingRecord build = EntityUtils.build(model, VisitingRecord.class);
-        build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        build.setCrtName(BaseContextHandler.getName());
-        build.setCrtTime(new Date(System.currentTimeMillis()));
-        int result = mapper.insertSelective(build);
-        if (result <= 0){
-            return ResponseUtil.success("新增随访失败！");
-        }
-        return ResponseUtil.success();
+        throw new ClientServiceException("随访内容列表为空！",OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
 
     /**
@@ -247,7 +259,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param visitingRecordVo 随访记录
      * @return 返回组合之后的随访记录信息
      */
-    private VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo){
+    public VisitingRecordVo comboVisitingRecord(VisitingRecordVo visitingRecordVo){
         // 组合患者信息
         Integer patientId = visitingRecordVo.getPatientId();
         if (patientId != null) {
@@ -407,26 +419,50 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         if (visitingRecord == null){
             return ResponseUtil.success("该随访不存在");
         }
-        String recordLockStr = redisUtils.get(RedisConstants.LOCK_VISITING_RECORD);
-        if (StringHelper.isEmpty(recordLockStr)){
-            try{
-                redisUtils.setLock(RedisConstants.LOCK_VISITING_RECORD,String.valueOf(id),BusinessConstants.MEDICAL_APPLY_LOCK_SEC,TimeUnit.SECONDS);
-                visitingRecord.setVisitingContent(form.getVisitingContent());
-                visitingRecord.setStatus(true);
-                visitingRecord.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
-                visitingRecord.setUpdName(BaseContextHandler.getName());
-                visitingRecord.setUpdTime(new Date(System.currentTimeMillis()));
-                int result = mapper.updateByPrimaryKeySelective(visitingRecord);
-                if (result <= 0){
-                    return ResponseUtil.success("随访状态更新失败");
-                }
-                return ResponseUtil.success();
-            } finally {
-                redisUtils.unlock(RedisConstants.LOCK_VISITING_RECORD,String.valueOf(id));
+
+        visitingRecord.setVisitingContent(form.getVisitingContent());
+        visitingRecord.setStatus(true);
+        visitingRecord.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        visitingRecord.setUpdName(BaseContextHandler.getName());
+        visitingRecord.setUpdTime(new Date(System.currentTimeMillis()));
+        int result = mapper.updateByPrimaryKeySelective(visitingRecord);
+        if (result > 0){
+            VisitingRecordQuery query = new VisitingRecordQuery();
+            query.setPatientId(visitingRecord.getPatientId());
+            query.setVisitingDate(visitingRecord.getVisitingDate());
+            List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+            if (!StringHelper.isEmpty(visitingRecordVos)){
+                final String visitingContentStr = visitingRecord.getVisitingContent();
+                // 合并随访内容
+                visitingRecordVos.forEach(visitingRecordVo -> {
+                    VisitingRecord build = EntityUtils.build(visitingRecordVo, VisitingRecord.class);
+                    build.setVisitingContent(visitingContentStr);
+                    build.setStatus(true);
+                    mapper.updateByPrimaryKeySelective(build);
+                });
             }
-        } else {
-            return ResponseUtil.success("该随访正在被占用，不允许修改！");
+            return ResponseUtil.success();
         }
+        return ResponseUtil.success("随访状态更新失败");
+
+
+    }
+
+    /**
+     * 根据条件查询随访记录（外部服务调用接口）
+     * @param query 查找条件
+     * @return List<VisitingRecordVo>
+     */
+    public List<VisitingRecordVo> findVisitingRecordByConditionRest(VisitingRecordQuery query) {
+        // 随访记录结果列表
+        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        if (visitingRecordVos != null && !visitingRecordVos.isEmpty()) {
+            // 组合随访记录信息
+            visitingRecordVos.forEach(visitingRecordVo -> {
+                this.comboVisitingRecord(visitingRecordVo);
+            });
+        }
+        return visitingRecordVos;
     }
 
     /**

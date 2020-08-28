@@ -58,11 +58,11 @@ public class SpecialPackageCoupon {
     @Column(name = "is_share")
     private Boolean isShare;
 
-    /**
-     * 工作量比例
-     */
-    @Column(name = "workload_rate")
-    private Integer workloadRate;
+//    /**
+//     * 工作量比例
+//     */
+//    @Column(name = "workload_rate")
+//    private Integer workloadRate;
 
     /**
      * 备注
@@ -255,23 +255,23 @@ public class SpecialPackageCoupon {
         this.isShare = isShare;
     }
 
-    /**
-     * 获取工作量比例
-     *
-     * @return workload_rate - 工作量比例
-     */
-    public Integer getWorkloadRate() {
-        return workloadRate;
-    }
-
-    /**
-     * 设置工作量比例
-     *
-     * @param workloadRate 工作量比例
-     */
-    public void setWorkloadRate(Integer workloadRate) {
-        this.workloadRate = workloadRate;
-    }
+//    /**
+//     * 获取工作量比例
+//     *
+//     * @return workload_rate - 工作量比例
+//     */
+//    public Integer getWorkloadRate() {
+//        return workloadRate;
+//    }
+//
+//    /**
+//     * 设置工作量比例
+//     *
+//     * @param workloadRate 工作量比例
+//     */
+//    public void setWorkloadRate(Integer workloadRate) {
+//        this.workloadRate = workloadRate;
+//    }
 
     /**
      * 获取备注

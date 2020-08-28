@@ -19,6 +19,7 @@
     <result column="birthday" property="birthday" jdbcType="DATE" />
     <result column="origin_type" property="originType" jdbcType="INTEGER" />
     <result column="origin_id" property="originId" jdbcType="INTEGER" />
+    <result column="source_id" property="sourceId" jdbcType="INTEGER" />
     <result column="remarks" property="remarks" jdbcType="VARCHAR" />
     <result column="inservice" property="inservice" jdbcType="BIT" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
@@ -31,10 +32,11 @@
 
   <!--患者表中的全部字段-->
   <sql id="Patient_Column_List">
-    id,org_id orgId,name,pinyin_name pinyinName,face_url faceUrl,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime
+    id,org_id orgId,name,pinyin_name pinyinName,face_url faceUrl,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,
+    inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,source_id sourceId
   </sql>
 
-  <!--根据手机号查询用户是否纯在-->
+    <!--根据手机号查询用户是否纯在-->
   <select id="findUserExists" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
         select <include refid="Patient_Column_List"/>
         from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
@@ -45,7 +47,7 @@
   </select>
 
   <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo">
-    select pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
+    select pbi.face_url faceUrl,pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
 		   pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
 		   cast(SUM(pmi.principal_amount+pmi.bonus_amount) as decimal(15,2)) memberCardMoneySum,
 		   cast(SUM(ppi.prepayment_principal+ppi.prepayment_bonus)as decimal(15,2)) prepaymentsMoneySum
@@ -57,7 +59,7 @@
 
   <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
     select id,origin_id patientId,name,gender,mobile,crt_time crtTime
-    from patient_base_info where origin_id = #{form.patientId} and origin_type = #{form.originType}
+    from patient_base_info where source_id = #{form.patientId} and origin_type = #{form.originType}
     order by crtTime desc
   </select>
 
@@ -117,8 +119,8 @@
   </select>
 
   <select id="findPatientVisitInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientVisitInfoVo">
-    select pbi.id patientId,pbi.name,pbi.gender,pbi.age,pbi.mobile,pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,pei.patient_kind patientKind
-    from patient_base_info pbi join patient_member_info pmi on pbi.id = pmi.patient_id join patient_exp_info pei on pbi.id = pei.patient_id
+    select pbi.id patientId,pbi.name,pbi.gender,pbi.age,pbi.mobile,pbi.medical_number medicalNumber,peio.patient_kind patientKind
+    from patient_base_info pbi left join patient_exp_info peio on pbi.id = peio.patient_id
     where pbi.id = #{id}
   </select>
 
@@ -134,6 +136,10 @@
     select <include refid="Patient_Column_List"/>
     from patient_base_info where id = #{id}
   </select>
+
+  <update id="updatePhoto">
+    update patient_base_info set face_url = #{form.faceUrl} where id = #{form.id}
+  </update>
 
 
 </mapper>

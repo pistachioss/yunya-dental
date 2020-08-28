@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.MemberExpendRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.MemberExpendRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="member_id" property="memberId" jdbcType="VARCHAR" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="expend_principal" property="expendPrincipal" jdbcType="DECIMAL" />
+    <result column="expend_gift" property="expendGift" jdbcType="DECIMAL" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+    <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.MemberExpendRecordVo">
+        select merd.id,merd.org_id orgId,	merd.member_id memberId,	merd.patient_id patientId,	merd.expend_principal expendPrincipal,	merd.expend_gift expendGift,	merd.remarks remarks,	merd.crt_id operatorId,	merd.crt_name operatorName,	merd.crt_time operatingTime,	merd.upt_id uptId,	merd.upd_name updName,	merd.upd_time updTime,pbio.name expendName
+        from member_expend_record merd join  patient_base_info pbio on merd.patient_id = pbio.id
+        where merd.member_id = #{form.memberId} and merd.patient_id = #{form.patientId}
+    </select>
+
+</mapper>

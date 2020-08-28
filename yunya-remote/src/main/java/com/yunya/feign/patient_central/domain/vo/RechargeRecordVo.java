@@ -6,6 +6,7 @@ import lombok.ToString;
 import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * 简单介绍:</br> 会员卡充值记录Vo
@@ -27,7 +28,7 @@ public class RechargeRecordVo implements Serializable {
     /**
      * 操作时间
      */
-    private Data OperatingTime;
+    private Date operatingTime;
 
     /**
      * 充值本金

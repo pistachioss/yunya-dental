@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PrepaidReturnRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PrepaidReturnRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="VARCHAR" />
+    <result column="prepaid_id" property="prepaidId" jdbcType="VARCHAR" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="return_way_id" property="returnWayId" jdbcType="INTEGER" />
+    <result column="return_principal_amount" property="returnPrincipalAmount" jdbcType="DECIMAL" />
+    <result column="return_gift_amount" property="returnGiftAmount" jdbcType="DECIMAL" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="return_way_type" property="returnWayType" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="cpd_id" property="cpdId" jdbcType="INTEGER" />
+    <result column="cpd_name" property="cpdName" jdbcType="VARCHAR" />
+    <result column="cpd_time" property="cpdTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+    <sql id="Column_List">
+      prrd.id,prrd.org_id orgId,prrd.prepaid_id prepaidId,	prrd.patient_id patientId,	prrd.return_way_id returnWayId,	prrd.return_principal_amount returnPrincipalAmount,	prrd.return_gift_amount returnGiftAmount,	prrd.remarks remarks,	prrd.return_way_type returnWayType,	prrd.crt_id crtId,
+      prrd.crt_name crtName,	prrd.crt_time crtTime,	prrd.upt_id uptId,	prrd.cpd_name cpdName,	prrd.cpd_time cpdTime
+    </sql>
+
+    <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.PrepaidMeturnRecordVo">
+        select  id,crt_time operatingTime,return_principal_amount returnRrincipalAmount ,return_gift_amount returnGiftAmount,
+                org_id orgId,crt_id operatorId,crt_name operatorName,return_way_id returnWayId,return_way_type returnWayType,remarks
+        from prepaid_return_record where prepaid_id = #{form.prepaidId} and patient_id =#{form.patientId}
+        order by crt_time desc
+    </select>
+
+
+
+</mapper>

@@ -1,8 +1,11 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
+import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
+import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.MemberRelationVo;
 import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
 import com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVo;
 import com.yunya.models.patient_central.PatientMemberInfo;
@@ -13,7 +16,7 @@ import java.util.List;
 
 public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
     /**
-     * 根据患者id查询会员基本信息
+     * 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）)
      * @param id
      * @return
      */
@@ -31,14 +34,7 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @param id
      * @return
      */
-    String generateCardNumber(@Param("orgId") Integer id);
-
-    /**
-     *
-     * @param form
-     */
-    int changeType(CardTypeForm form);
-
+    String generateCardNumber(@Param("orgId") Integer id ,@Param("from") String tableName,@Param("memberNo") String column);
 
     /**
      * 根据会员卡号查询
@@ -46,4 +42,19 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @return PatientMemberInfo
      */
     PatientMemberInfo selectOneByCardNumber(@Param("cardNumber") String cardNumber);
+
+
+    /**
+     * 通过会员卡号和患者id查询会员卡信息
+     * @param memberId patientId
+     * @return PatientMemberInfo
+     */
+    PatientMemberInfo selectCardNumber(@Param("memberId") String memberId,@Param("patientId") Integer patientId);
+
+    /**
+     * 通过患者id查询会员卡全部信息
+     * @param patientId
+     * @return PatientMemberInfo
+     */
+    PatientMemberInfo selectOneByPatientId(@Param("patientId") Integer patientId);
 }

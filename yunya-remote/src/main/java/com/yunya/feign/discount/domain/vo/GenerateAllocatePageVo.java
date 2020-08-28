@@ -1,9 +1,11 @@
 package com.yunya.feign.discount.domain.vo;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.*;
 import lombok.*;
 
 import java.io.*;
+import java.time.*;
 
 /**
  * @author xiangyang
@@ -24,7 +26,8 @@ public class GenerateAllocatePageVo implements Serializable {
     private String submitterName;
 
     @ApiModelProperty(value = "提交时间")
-    private String submitDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private LocalDateTime submitDate;
 
     @ApiModelProperty(value = "产品名称")
     private String couponName;
@@ -39,5 +42,6 @@ public class GenerateAllocatePageVo implements Serializable {
     private String allocateUserName;
 
     @ApiModelProperty(value = "配给时间")
-    private String allocateDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private LocalDateTime allocateDate;
 }

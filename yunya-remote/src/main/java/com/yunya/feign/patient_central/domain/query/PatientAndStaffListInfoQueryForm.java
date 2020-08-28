@@ -30,5 +30,4 @@ public class PatientAndStaffListInfoQueryForm implements Serializable {
     @ApiModelProperty(value = "患者or员工姓名", required = true)
     private String name;
 
-
 }

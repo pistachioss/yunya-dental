@@ -12,7 +12,7 @@ import java.math.*;
  */
 @Getter
 @Setter
-@ApiModel(value = "产品售卖查询模型")
+@ApiModel(value = "产品售卖查询分页模型")
 public class CouponSalePageVo implements Serializable {
     @ApiModelProperty(value = "优惠券id")
     private Integer couponId;

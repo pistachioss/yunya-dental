@@ -41,7 +41,12 @@ public class PatientPrepaymentsInfoVo implements Serializable {
     /**
      * 预付款本金+预付款赠金
      */
-    private BigDecimal PrepaymentMoneySum;
+    private BigDecimal prepaymentMoneySum;
+
+    /**
+     * 赠金
+     */
+    private BigDecimal prepaymentBonus;
 
     /**
      * 开户日期
