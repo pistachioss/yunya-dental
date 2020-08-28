@@ -6,6 +6,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment_other.domain.form.ToothCycleForm;
 import com.yunya.feign.treatment_other.domain.model.ToothCycleModel;
 import com.yunya.feign.treatment_other.domain.query.ToothCycleQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothCycleFindDataByIdVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothCycleVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -17,10 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -86,7 +84,7 @@ public class ToothCycleController {
      */
     @CurrentUser
     @ApiOperation("修改牙周期记录")
-    @PostMapping("/upd")
+    @PutMapping("/upd")
     public ResponseResult upd(@Valid @RequestBody ToothCycleForm cycle){
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
         ToothCycle toothCycle = new ToothCycle();
@@ -102,10 +100,23 @@ public class ToothCycleController {
      * @return
      */
     @ApiOperation("删除牙周期记录")
-    @PostMapping("/del")
-    public ResponseResult upd(Integer id){
+    @DeleteMapping("/del")
+    public ResponseResult del(Integer id){
         toothCycleBiz.del(id);
         return ResponseUtil.success();
+    }
+
+    /**
+     * 回显牙周期表记录
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("回显牙周期表记录")
+    @PostMapping("/findDataById")
+    public ResponseResult findDataById(Integer id){
+        ToothCycleFindDataByIdVo toothCycleFindDataByIdVo = toothCycleBiz.findDataById(id);
+        return ResponseUtil.success(toothCycleFindDataByIdVo);
     }
 
 }

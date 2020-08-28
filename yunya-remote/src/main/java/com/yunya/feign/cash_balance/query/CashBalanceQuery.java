@@ -21,10 +21,10 @@ public class CashBalanceQuery {
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
 
-    @ApiModelProperty(value = "开始日期",required = true)
+    @ApiModelProperty(value = "开始日期")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date startTime;
-    @ApiModelProperty(value = "结束日期日期",required = true)
+    @ApiModelProperty(value = "结束日期日期")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date endTime;
     @ApiModelProperty(value = "门诊id",required = true)

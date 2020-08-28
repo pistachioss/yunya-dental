@@ -4,6 +4,7 @@ package com.yunya.modules.treatment.other.mapper;
 import com.yunya.feign.treatment_other.domain.form.ToothCycleForm;
 import com.yunya.feign.treatment_other.domain.model.ToothCycleModel;
 import com.yunya.feign.treatment_other.domain.query.ToothCycleQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothCycleFindDataByIdVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothCycleVo;
 import com.yunya.models.treatment_other.ToothCycle;
 import tk.mybatis.mapper.common.Mapper;
@@ -37,4 +38,10 @@ public interface ToothCycleMapper extends Mapper<ToothCycle> {
      * @param id
      */
     void del(Integer id);
+
+    /**
+     * 删除牙周期表
+     * @param id
+     */
+    ToothCycleFindDataByIdVo findDataById(Integer id);
 }

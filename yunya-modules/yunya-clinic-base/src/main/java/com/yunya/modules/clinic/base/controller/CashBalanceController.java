@@ -5,9 +5,12 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.cash_balance.form.CashBalanceForm;
 import com.yunya.feign.cash_balance.model.CashBalanceModel;
 import com.yunya.feign.cash_balance.query.CashBalanceQuery;
+import com.yunya.feign.cash_balance.vo.CashBalanceByIdVo;
 import com.yunya.feign.cash_balance.vo.CashBalanceVo;
 import com.yunya.feign.treatment_other.domain.query.PhotoServiceQuery;
 import com.yunya.feign.treatment_other.domain.vo.PhotoServiceVo;
+import com.yunya.feign.treatment_other.domain.vo.ToothCycleFindDataByIdVo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -52,6 +55,7 @@ public class CashBalanceController {
     @PostMapping("/findCycleList")
     public ResponseResult <PageInfo<CashBalanceVo>> findCashBalance(@Valid @RequestBody CashBalanceQuery query){
         PageInfo<CashBalanceVo> page = cashBalanceBiz.findCashListByPage(query);
+
         return ResponseUtil.success(page);
     }
 
@@ -61,6 +65,7 @@ public class CashBalanceController {
      * @param
      * @return
      */
+    @CurrentUser
     @ApiOperation("添加现金结存")
     @PostMapping("/add")
     public ResponseResult add(@Valid @RequestBody CashBalanceModel model){
@@ -70,10 +75,8 @@ public class CashBalanceController {
         int total;
         //获取当前登录人id
         Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
-        //通过门诊id获取最后一条数据
-        CashBalance lastData = cashBalanceBiz.findLastData(model.getOrgId());
-        //获取期末现金结余为下一条期初现金
-        Integer cashEnd = lastData.getCashEnd();
+        //通过门诊id获取上一条数据的期末现金并设置为当期期初现金
+        Integer cashEnd = cashBalanceBiz.findLastData(model.getOrgId());
         //获取当天差额调整
         Integer balanceAdjustment = model.getBalanceAdjustment();
         //获取当天存款金额
@@ -101,6 +104,7 @@ public class CashBalanceController {
      * @param
      * @return
      */
+    @CurrentUser
     @ApiOperation("修改现金结存")
     @PostMapping("/upd")
     public ResponseResult upd(@Valid @RequestBody CashBalanceForm form){
@@ -138,9 +142,22 @@ public class CashBalanceController {
      */
     @ApiOperation("删除现金结存")
     @PostMapping("/del")
-    public ResponseResult del(@Valid @RequestBody Integer id){
+    public ResponseResult del(Integer id){
         cashBalanceBiz.del(id);
         return ResponseUtil.success();
     }
+    /**
+     * 回显现金结存记录
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("回显牙周期表记录")
+    @PostMapping("/findDataById")
+    public ResponseResult findDataById(Integer id){
+        CashBalanceByIdVo cashBalanceByIdVo = cashBalanceBiz.findDataById(id);
+        return ResponseUtil.success(cashBalanceByIdVo);
+    }
+
 
 }
