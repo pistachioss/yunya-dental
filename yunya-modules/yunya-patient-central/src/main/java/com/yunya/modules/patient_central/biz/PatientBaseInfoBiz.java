@@ -1,43 +1,33 @@
 package com.yunya.modules.patient_central.biz;
 
-import com.uniubi.sdk.auth.authToken.AppAuthParam;
-import com.uniubi.sdk.auth.authToken.TokenFetcher;
-import com.uniubi.sdk.client.UniUbiClient;
-import com.uniubi.sdk.model.PersonInput;
-import com.uniubi.sdk.model.ResultPersonCreateOutput;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.*;
-import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.form.SysUserEmployeeModel;
-import com.yunya.feign.tariff.RemoteTariffServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
-import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
-import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import com.yunya.modules.patient_central.mapper.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -51,28 +41,23 @@ import java.util.*;
 @Transactional(rollbackFor = Exception.class)
 public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
 
-  @Autowired
-  private RedisUtils redisUtils;
-  @Autowired
-  private PatientBaseInfoMapper patientBaseInfoMapper;
-  @Autowired
-  private PatientExtInfoMapper patientExtInfoMapper;
-  @Autowired
-  private PatientExpInfoMapper patientExpInfoMapper;
-  @Autowired
-  private RemoteSystemServiceFeign remoteSystemServiceFeign;
-  @Autowired
-  private WoPersonBiz woPersonBiz;
-  @Autowired
-  private PatientOriginBiz patientOriginBiz;
-  @Autowired
-  private PatientCentralServiceFeign patientCentralServiceFeign;
-  @Autowired
-  private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
-  @Autowired
-  private PatientMemberInfoBiz patientMemberInfoBiz;
-  @Autowired
-  private PatientOriginMapper patientOriginMapper;
+  @Autowired private RedisUtils redisUtils;
+
+  @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
+
+  @Autowired private PatientExtInfoMapper patientExtInfoMapper;
+
+  @Autowired private PatientExpInfoMapper patientExpInfoMapper;
+
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+  @Autowired private WoPersonBiz woPersonBiz;
+
+  @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+
+  @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
+
+  @Autowired private PatientOriginMapper patientOriginMapper;
 
   /**
    * 通过患者id查询患者共用属性
@@ -97,7 +82,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param patientBaseInfoQueryForm
    */
   public ResponseResult findUserExists(PatientBaseInfoQueryForm patientBaseInfoQueryForm) {
-    PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
+    PatientBaseInfoVo patientBaseInfoVo;
     patientBaseInfoVo = patientBaseInfoMapper.findUserExists(patientBaseInfoQueryForm);
     if (patientBaseInfoVo != null) {
       return ResponseUtil.error("添加失败,该用户已存在", patientBaseInfoVo);

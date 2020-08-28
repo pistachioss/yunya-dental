@@ -6,7 +6,7 @@ import javax.persistence.Table;
 import java.util.Date;
 
 @Table(name = "specialized_subject_projec")
-public class SpecializedSubjectProjec {
+public class SpecializedSubjectProject {
     /**
      * 主键id
      */
@@ -16,8 +16,8 @@ public class SpecializedSubjectProjec {
     /**
      * 专科项目名称
      */
-    @Column(name = "Specialized_subject_projec_name")
-    private String specializedSubjectProjecName;
+    @Column(name = "specialized_subject_project_name")
+    private String specializedSubjectProjectName;
 
     /**
      * 子项目
@@ -64,17 +64,17 @@ public class SpecializedSubjectProjec {
      *
      * @return Specialized_subject_projec_name - 专科项目名称
      */
-    public String getSpecializedSubjectProjecName() {
-        return specializedSubjectProjecName;
+    public String getSpecializedSubjectProjectName() {
+        return specializedSubjectProjectName;
     }
 
     /**
      * 设置专科项目名称
      *
-     * @param specializedSubjectProjecName 专科项目名称
+     * @param specializedSubjectProjectName 专科项目名称
      */
-    public void setSpecializedSubjectProjecName(String specializedSubjectProjecName) {
-        this.specializedSubjectProjecName = specializedSubjectProjecName;
+    public void setSpecializedSubjectProjectName(String specializedSubjectProjectName) {
+        this.specializedSubjectProjectName = specializedSubjectProjectName;
     }
 
     /**

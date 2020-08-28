@@ -24,7 +24,7 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
     int deleteByPatientId(@Param("form") MemberBindingRelationInfoModel form);
 
     /**
-     *
+     * 删除关系
      * @param secondaryCardId
      * @param masterCardId
      */
@@ -35,5 +35,5 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @param form
      * @return MemberRelationVo
      */
-    MemberRelationVo findBindingRelation(@Param("form") MemberBindingRelationInfoModel form);
+    PatientMemberRelation findBindingRelation(@Param("form") MemberBindingRelationInfoModel form);
 }

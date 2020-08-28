@@ -40,10 +40,10 @@ public class MemberExpendRecord {
     private BigDecimal expendGift;
 
     /**
-     * 消费原因
+     * 备注
      */
-    @Column(name = "expend_detail")
-    private String expendDetail;
+    @Column(name = "remarks")
+    private String remarks;
 
     /**
      * 创建人id
@@ -188,19 +188,19 @@ public class MemberExpendRecord {
     /**
      * 获取消费原因
      *
-     * @return expend_detail - 消费原因
+     * @return remarks - 消费原因
      */
-    public String getExpendDetail() {
-        return expendDetail;
+    public String getRemarks() {
+        return remarks;
     }
 
     /**
      * 设置消费原因
      *
-     * @param expendDetail 消费原因
+     * @param remarks 消费原因
      */
-    public void setExpendDetail(String expendDetail) {
-        this.expendDetail = expendDetail;
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
     /**

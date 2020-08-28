@@ -8,12 +8,12 @@ import lombok.Setter;
 @Setter
 @Getter
 @ApiModel(value = "专科设置添加模型")
-public class SpecializedSubjectProjecModel {
+public class SpecializedSubjectProjectModel {
 
 
     @ApiModelProperty(value = "专科项目名称",required = true)
-    private int SpecializedSubjectProjecName;
-    @ApiModelProperty(value = "子项目",required = true)
-    private int subitems;
+    private String specializedSubjectProjectName;
+    @ApiModelProperty(value = "子项目多个,拼接",required = true)
+    private String subitems;
 }
 

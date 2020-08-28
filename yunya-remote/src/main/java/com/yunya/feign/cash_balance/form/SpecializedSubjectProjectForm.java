@@ -8,16 +8,16 @@ import lombok.Setter;
 @Setter
 @Getter
 @ApiModel(value = "专科设置修改模型")
-public class SpecializedSubjectProjecForm {
+public class SpecializedSubjectProjectForm {
 
 
     @ApiModelProperty(value = "主键id",required = true)
     private int id;
 
     @ApiModelProperty(value = "专科项目名称",required = true)
-    private int SpecializedSubjectProjecName;
+    private int SpecializedSubjectProjectName;
 
-    @ApiModelProperty(value = "子项目",required = true)
+    @ApiModelProperty(value = "子项目多个,拼接",required = true)
     private int subitems;
 }
 

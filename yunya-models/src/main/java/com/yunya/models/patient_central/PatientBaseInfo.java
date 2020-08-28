@@ -123,7 +123,6 @@ public class PatientBaseInfo {
     /**
      * 创建时间
      */
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "crt_time")
     private Date crtTime;
 
@@ -142,7 +141,6 @@ public class PatientBaseInfo {
     /**
      * 更新时间
      */
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     @Column(name = "upd_time")
     private Date updTime;
 

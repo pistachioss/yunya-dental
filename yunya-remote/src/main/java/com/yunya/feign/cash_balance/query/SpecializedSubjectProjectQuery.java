@@ -11,7 +11,7 @@ import java.util.Date;
 @Setter
 @Getter
 @ApiModel(value = "专科设置分页查询模型")
-public class SpecializedSubjectProjecQuery {
+public class SpecializedSubjectProjectQuery {
 
     //分页查询条件
     @ApiModelProperty(required = true)

@@ -40,10 +40,10 @@ public class PrepaidExpendRecord {
     private BigDecimal expendGift;
 
     /**
-     * 消费详情
+     * 备注
      */
-    @Column(name = "expend_detail")
-    private String expendDetail;
+    @Column(name = "remarks")
+    private String remarks;
 
     /**
      * 创建人id
@@ -188,19 +188,19 @@ public class PrepaidExpendRecord {
     /**
      * 获取消费详情
      *
-     * @return expend_detail - 消费详情
+     * @return remarks - 消费详情
      */
-    public String getExpendDetail() {
-        return expendDetail;
+    public String getRemarks() {
+        return remarks;
     }
 
     /**
      * 设置消费详情
      *
-     * @param expendDetail 消费详情
+     * @param remarks 消费详情
      */
-    public void setExpendDetail(String expendDetail) {
-        this.expendDetail = expendDetail;
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
     }
 
     /**
