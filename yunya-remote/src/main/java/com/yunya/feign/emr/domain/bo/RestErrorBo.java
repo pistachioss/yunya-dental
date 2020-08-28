@@ -12,9 +12,13 @@ import lombok.*;
 public class RestErrorBo {
 
     private RestError error;
+    private Object[] msg;
+
+    public void setMsg(Object...msg) {
+        this.msg = msg;
+    }
 
     public static RestErrorBo getInstance() {
-        RestErrorBo bo = new RestErrorBo();
-        return bo;
+        return new RestErrorBo();
     }
 }

@@ -16,10 +16,10 @@ import java.time.*;
 @ApiModel(value = "查看分配查询模型")
 public class GenerateAllocateQuery {
 
-    @ApiModelProperty(value = "优惠券id")
+    @ApiModelProperty(value = "优惠券id", required = true)
     @NotNull
     private Integer couponId;
-    @ApiModelProperty(value = "提交时间")
+    @ApiModelProperty(value = "提交时间", required = true)
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime submitDate;

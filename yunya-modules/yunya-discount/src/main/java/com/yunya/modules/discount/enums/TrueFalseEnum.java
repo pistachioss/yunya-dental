@@ -3,8 +3,8 @@ package com.yunya.modules.discount.enums;
 import java.util.*;
 
 public enum TrueFalseEnum {
-    ON_LINE(0, "否"),
-    OFF_LINE(1, "是"),
+    FALSE(0, "否"),
+    TRUE(1, "是"),
     ;
 
     private Integer code;

@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
@@ -70,6 +71,7 @@ public class VisitingRecordForm implements Serializable {
      */
     @ApiModelProperty(value = "随访日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Future(message = "随访日期不能早于末诊日期！")
     private Date visitingDate;
 
     /** 随访时间 */
