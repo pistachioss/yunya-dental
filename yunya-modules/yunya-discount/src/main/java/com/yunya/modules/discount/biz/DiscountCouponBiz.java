@@ -109,8 +109,12 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             String name = discountCouponForm.getName();
             CouponCommonInfo data = new CouponCommonInfo();
             data.setName(name);
-            if (couponCommonInfoMapper.select(data).size() >= 2) {
-                throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
+            if (couponCommonInfoMapper.select(data).size() >= 1) {
+                data = new CouponCommonInfo();
+                data.setId(discountCouponForm.getId());
+                if(!couponCommonInfoMapper.selectOne(data).getName().equals(name)){
+                    throw new BaseException("产品名称已经被占用", NAME_IS_OCCUPIED);
+                }
             }
             BeanUtils.copyProperties(discountCouponForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
