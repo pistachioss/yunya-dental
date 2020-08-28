@@ -1,11 +1,9 @@
 package com.yunya365.aliyunoss.util;
 
-import com.alibaba.fastjson.JSONObject;
 import com.aliyun.oss.HttpMethod;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.common.utils.BinaryUtil;
-import com.aliyun.oss.common.utils.StringUtils;
 import com.aliyun.oss.model.*;
 
 import java.io.IOException;
@@ -107,19 +105,19 @@ public class OssUtil {
         return result;
     }
 
-    public static Map<String, String> getSignature(String subFolder){
+    public static Map<String, String> getSignature(String subFolder) {
         if (ossClient == null) {
             initOSSClient();
         }
         String endpoint_tmp = endpoint;
-        if(endpoint.indexOf("://") >= 0){
+        if (endpoint.indexOf("://") >= 0) {
             endpoint_tmp = endpoint.substring(endpoint.indexOf("://") + 3);
         }
         String host = "https://" + bucket + "." + endpoint_tmp; // host的格式为 bucketname.endpoint
         String callbackUrl = "http://88.88.88.88:8888";// callbackUrl为 上传回调服务器的URL，请将下面的IP和Port配置为您自己的真实信息。
         String dir = subFolder; // 用户上传文件时指定的前缀。
         try {
-            long expireTime = 30;
+            long expireTime = 300;
             long expireEndTime = System.currentTimeMillis() + expireTime * 1000;
             Date expiration = new Date(expireEndTime);
             // PostObject请求最大可支持的文件大小为5 GB，即CONTENT_LENGTH_RANGE为5*1024*1024*1024。

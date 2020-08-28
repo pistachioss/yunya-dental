@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -31,13 +33,13 @@ public class BaseController {
         return fullName.substring(fullName.lastIndexOf("/") + 1);
     }
 
-    private String getSubFolder(Integer compId, Integer catId, Integer objId){
+    private String getSubFolder(Integer compId, Integer catId, Integer objId) {
 
         BucketFolderEnum bucketFolderEnum = BucketFolderEnum.values()[catId];
         return bucketFolderEnum.getBaseFolder(compId, objId);
     }
 
-    private String getSubFolder(OssFolderForm ossFolderForm){
+    private String getSubFolder(OssFolderForm ossFolderForm) {
 
         return getSubFolder(ossFolderForm.getCompanyId(), ossFolderForm.getOssCategory(), ossFolderForm.getObjectId());
     }
@@ -87,6 +89,20 @@ public class BaseController {
         String objectName = makeObjectFullName(ossUrlForm);
         URL url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
         return ResponseUtil.success(url);
+    }
+
+    @RequestMapping(value = "url/multi", method = RequestMethod.POST)
+    @ApiOperation("2.多资源：获取外网访问URL列表")
+    public ResponseResult getUrl(@RequestBody List<OssUrlForm> ossUrlForms) throws Exception {
+
+        List<URL> urls = new ArrayList<>();
+        ossUrlForms.forEach(ossUrlForm -> {
+            String objectName = makeObjectFullName(ossUrlForm);
+            URL url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
+            urls.add(url);
+        });
+
+        return ResponseUtil.success(urls);
     }
 
     @RequestMapping(value = "copy", method = RequestMethod.POST)
