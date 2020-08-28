@@ -8,6 +8,7 @@ import com.yunya.modules.treatment.biz.TollBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,7 +39,7 @@ public class TollController {
   @CurrentUser
   @ApiOperation("确认收费")
   @PostMapping("/confirm")
-  public ResponseResult confirmCharge(@RequestBody TollModel model) {
+  public ResponseResult confirmCharge(@RequestBody @Validated TollModel model) {
     tollBiz.confirm(model);
     return ResponseUtil.success();
   }

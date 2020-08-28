@@ -7,6 +7,7 @@ import javax.persistence.*;
 @Table(name = "bill_pay_record")
 public class BillPayRecord {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
@@ -24,8 +25,8 @@ public class BillPayRecord {
     /**
      * 就诊记录id
      */
-    @Column(name = "treatment_id")
-    private Integer treatmentId;
+    @Column(name = "treatment_record_id")
+    private Integer treatmentRecordId;
 
     /**
      * 开单记录id
@@ -147,17 +148,17 @@ public class BillPayRecord {
      *
      * @return treatment_id - 就诊记录id
      */
-    public Integer getTreatmentId() {
-        return treatmentId;
+    public Integer getTreatmentRecordId() {
+        return treatmentRecordId;
     }
 
     /**
      * 设置就诊记录id
      *
-     * @param treatmentId 就诊记录id
+     * @param treatmentRecordId 就诊记录id
      */
-    public void setTreatmentId(Integer treatmentId) {
-        this.treatmentId = treatmentId;
+    public void setTreatmentRecordId(Integer treatmentRecordId) {
+        this.treatmentRecordId = treatmentRecordId;
     }
 
     /**

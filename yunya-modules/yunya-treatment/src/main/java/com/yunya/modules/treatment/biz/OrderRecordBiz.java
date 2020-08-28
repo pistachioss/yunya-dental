@@ -365,6 +365,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     orderRecord.setUpdName(BaseContextHandler.getName());
     mapper.updateByPrimaryKeySelective(orderRecord);
-    redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK);
+    redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
   }
 }

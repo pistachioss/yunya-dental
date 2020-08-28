@@ -10,6 +10,7 @@ public class BillRecord {
      * 账单ID
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
@@ -73,14 +74,15 @@ public class BillRecord {
     private BigDecimal debtAmount;
 
     /**
-     * 账单状态（0-正常；1-挂帐）
-     */
-    private Byte status;
-
-    /**
      * 是否开发票
      */
     private Boolean invoice;
+
+    /**
+     * 发票编号
+     * */
+    @Column(name = "invoice_number")
+    private String invoiceNumber;
 
     /**
      * 是否有效
@@ -322,24 +324,6 @@ public class BillRecord {
     }
 
     /**
-     * 获取账单状态（0-正常；1-挂帐）
-     *
-     * @return status - 账单状态（0-正常；1-挂帐）
-     */
-    public Byte getStatus() {
-        return status;
-    }
-
-    /**
-     * 设置账单状态（0-正常；1-挂帐）
-     *
-     * @param status 账单状态（0-正常；1-挂帐）
-     */
-    public void setStatus(Byte status) {
-        this.status = status;
-    }
-
-    /**
      * 获取是否开发票
      *
      * @return invoice - 是否开发票
@@ -355,6 +339,24 @@ public class BillRecord {
      */
     public void setInvoice(Boolean invoice) {
         this.invoice = invoice;
+    }
+
+    /**
+     * 获取发票编号
+     *
+     * @return
+     */
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    /**
+     * 设置发票编号
+     *
+     * @param invoiceNumber 发票编号
+     */
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
     }
 
     /**

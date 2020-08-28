@@ -126,8 +126,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @return
    */
   private String generateMedicalRecordNumber(Integer orgId) {
-    PatientBaseInfo patientInfo = new PatientBaseInfo();
-    patientInfo.setOrgId(orgId);
     String number = patientServiceFeign.findMedicalNumberByOrgId(orgId);
     String suffix = String.format("%06d", Integer.parseInt(number) + 1);
     OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
