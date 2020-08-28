@@ -7,33 +7,29 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简介: 会员卡账户参数模型
+ * 简介: 其他入账方式信息参数模型
  *
  * @author: chow
- * @date: 2020/8/26 17:39
+ * @date: 2020/8/27 17:35
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("会员卡账户参数模型")
+@ApiModel("其他入账方式信息参数模型")
 @Data
 @ToString
-public class MemberAccountModel {
+public class PaymentModel implements Serializable {
 
-  /** 预付款账户ID */
-  @ApiModelProperty(value = "预付款账户ID", required = true)
-  @NotNull(message = "预付款账户ID不能为空！")
-  private Integer memberAccountId;
-
+  /** 入账方式ID */
   @ApiModelProperty(value = "入账方式ID", required = true)
   @NotNull(message = "入账方式ID不能为空！")
   private Integer accountItemId;
 
-  /** 支付金额 */
-  @ApiModelProperty(value = "支付金额", required = true)
-  @NotNull(message = "支付金额不能为空！")
+  @ApiModelProperty("入账金额")
+  @NotNull(message = "入账金额不能为空！")
   @Min(value = 0, message = "输入金额不能小于0！")
   private BigDecimal amount;
 }

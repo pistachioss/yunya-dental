@@ -37,6 +37,12 @@ public class BillPayDetailRecord {
     private Integer orderRecordId;
 
     /**
+     * 账单记录ID
+     */
+    @Column(name = "bill_record_id")
+    private Integer billRecordId;
+
+    /**
      * 账单收费记录
      */
     @Column(name = "bill_pay_record_id")
@@ -78,7 +84,7 @@ public class BillPayDetailRecord {
      * 创建人ID
      */
     @Column(name = "crt_id")
-    private String crtId;
+    private Integer crtId;
 
     /**
      * 创建人姓名
@@ -201,9 +207,9 @@ public class BillPayDetailRecord {
     }
 
     /**
-     * 获取账单收费记录
+     * 获取账单收费记录ID
      *
-     * @return bill_pay_record_id - 账单收费记录
+     * @return bill_pay_record_id - 账单收费记录ID
      */
     public Integer getBillPayRecordId() {
         return billPayRecordId;
@@ -216,6 +222,24 @@ public class BillPayDetailRecord {
      */
     public void setBillPayRecordId(Integer billPayRecordId) {
         this.billPayRecordId = billPayRecordId;
+    }
+
+    /**
+     * 获取账单记录ID
+     *
+     * @return bill_record_id - 账单记录ID
+     */
+    public Integer getBillRecordId() {
+        return billRecordId;
+    }
+
+    /**
+     * 设置账单记录ID
+     *
+     * @param billRecordId 账单记录ID
+     */
+    public void setBillRecordId(Integer billRecordId) {
+        this.billRecordId = billRecordId;
     }
 
     /**
@@ -331,7 +355,7 @@ public class BillPayDetailRecord {
      *
      * @return crt_id - 创建人ID
      */
-    public String getCrtId() {
+    public Integer getCrtId() {
         return crtId;
     }
 
@@ -340,7 +364,7 @@ public class BillPayDetailRecord {
      *
      * @param crtId 创建人ID
      */
-    public void setCrtId(String crtId) {
+    public void setCrtId(Integer crtId) {
         this.crtId = crtId;
     }
 
