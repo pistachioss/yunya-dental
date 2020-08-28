@@ -32,9 +32,9 @@
        delete from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId}
     </delete>
 
-  <select id="findBindingRelation" resultType="com.yunya.feign.patient_central.domain.vo.MemberRelationVo">
-    select pmrn.id id,pmrn.org_id orgId,pmrn.patient_id patientId,pmrn.member_type_id memberTypeId,pmrn.master_card masterCard,pmrn.card_number cardNumber, pmrn.status status,pmrn.principal_amount principalAmount,pmrn.bonus_amount bonusAmount,pmrn.point point,pmrn.last_expired_time lastExpiredTime, pmrn.next_expired_time nextExpiredTime,pmrn.remarks remarks,pmrn.inservice inservice 
-    from patient_member_relation pmrn
-    where pmrn.master_card_id =#{form.masterCardId} and pmrn.secondary_card_id =#{form.secondaryCardId} and pmrn.bind_type =#{form.bindType}
+  <select id="findBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
+    select id,org_id orgId,	master_card_id masterCardId,secondary_card_id secondaryCardId,bind_type bindType,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,	upd_name updName,upd_time updTime
+    from patient_member_relation
+    where master_card_id =#{form.masterCardId} and secondary_card_id =#{form.secondaryCardId} and bind_type =#{form.bindType}
   </select>
 </mapper>

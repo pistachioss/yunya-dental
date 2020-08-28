@@ -2,10 +2,8 @@ package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
-import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
-import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
-import com.yunya.feign.patient_central.domain.model.OpenCardModel;
-import com.yunya.feign.patient_central.domain.model.MemberReturnRecordModel;
+import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.query.MemberExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
@@ -121,6 +119,23 @@ public class PatientMemberInfoController {
     public ResponseResult refundList(@RequestBody MemberReturnRecordQueryForm queryForm ){
         return ResponseUtil.success(patientMemberInfoBiz.refundList(queryForm));
     }
+
+    @CurrentUser
+    @ApiOperation("消费")
+    @PostMapping("/expend")
+    public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
+        patientMemberInfoBiz.expend(model);
+        return ResponseUtil.success();
+    }
+
+    @CurrentUser
+    @ApiOperation("消费记录")
+    @PostMapping("/expendList")
+    public ResponseResult expendList(@RequestBody MemberExpendRecordQueryForm queryForm ){
+        return ResponseUtil.success(patientMemberInfoBiz.expendList(queryForm));
+    }
+
+
 
 
 }

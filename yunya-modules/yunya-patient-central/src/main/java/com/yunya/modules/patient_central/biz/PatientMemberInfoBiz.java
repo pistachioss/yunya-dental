@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.query.MemberExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
@@ -53,6 +54,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
 
     @Autowired private MemberReturnRecordMapper memberReturnRecordMapper;
 
+    @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
+
 
 
     /**
@@ -93,9 +96,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         if (form.getPatientId() == form.getSecondaryCardId()) {
             return ResponseUtil.error("副卡人不能为患者本人！", "");
         } else {
-            MemberRelationVo memberRelationVo = this.patientMemberRelationMapper.findBindingRelation(form);
-            if (memberRelationVo != null) {
-                return ResponseUtil.error("该副卡人已存在,不能重复绑定！", memberRelationVo);
+            PatientMemberRelation MemberRelation = this.patientMemberRelationMapper.findBindingRelation(form);
+            if (MemberRelation != null) {
+                return ResponseUtil.error("该副卡人已存在,不能重复绑定！", MemberRelation);
             } else {
                 PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
                 BeanUtils.copyProperties(form, patientMemberRelation);
@@ -332,6 +335,35 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             if (organizationInfo != null) {
                 memberReturnRecordVo.setOrgName(organizationInfo.getAbbreviation());
             }
+        }
+        return new PageInfo<>(resultList);
+    }
+
+    /**
+     * 消费
+     * @param model
+     */
+    public void expend(MemberExpendRecordModel model) {
+        MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
+        BeanUtils.copyProperties(model,memberExpendRecord);
+        memberExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        memberExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberExpendRecord.setCrtName(BaseContextHandler.getName());
+        memberExpendRecordMapper.insertSelective(memberExpendRecord);
+    }
+
+    /**
+     * 消费记录
+     * @param queryForm
+     * @return
+     */
+    public PageInfo<MemberExpendRecordVo> expendList(MemberExpendRecordQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+        }
+        List<MemberExpendRecordVo> resultList = memberExpendRecordMapper.expendList(queryForm);
+        if(resultList.size()>0){
+
         }
         return new PageInfo<>(resultList);
     }
