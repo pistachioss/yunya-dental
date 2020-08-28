@@ -958,7 +958,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
 
         Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-        OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+
         SimpleDateFormat exportAppointDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String exportAppointDate = exportAppointDateFormat.format(new Date(System.currentTimeMillis()));
         // 合并行
@@ -990,8 +990,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         ExcelUtil<AppointListExportVo> appointExcelExport = new ExcelUtil<>(AppointListExportVo.class);
         appointExcelExport.setMergeRegion(mergeCells);
+        OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+        String orgName = null;
+        if (orgInfo != null) {
+            orgName = orgInfo.getName();
+        }
         // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
-        String excelName = orgInfo.getName() + "预约报表（" + exportAppointDate + "）";
+        String excelName = orgName + "预约报表（" + exportAppointDate + "）";
         appointExcelExport.exportExcel(response,appointListExportVos,excelName,excelName);
     }
 
@@ -1282,45 +1287,61 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         AppointmentListItemVo build = EntityUtils.build(appointmentVo, AppointmentListItemVo.class);
         // 查询预约医生信息
-        SysUserInfoDetail dentistInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(build.getDentistId());
-        if (dentistInfoDetail != null){
-            build.setDentistName(dentistInfoDetail.getName());
+        Integer dentistId = build.getDentistId();
+        if (dentistId != null) {
+            SysUserInfoDetail dentistInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
+            if (dentistInfoDetail != null){
+                build.setDentistName(dentistInfoDetail.getName());
+            }
         }
+
         // 查询预约助手信息
-        SysUserInfoDetail assistantInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(build.getAssistantId());
-        if (assistantInfoDetail != null){
-            build.setAssistantName(assistantInfoDetail.getName());
+        Integer assistantId = build.getAssistantId();
+        if (assistantId != null) {
+            SysUserInfoDetail assistantInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(assistantId);
+            if (assistantInfoDetail != null){
+                build.setAssistantName(assistantInfoDetail.getName());
+            }
         }
 
         // 设置患者详细信息
-        PatientTotalInfoVo patientInfo = patientCentralServiceFeign.findPatientTotalInfo(build.getPatientId());
-        if (patientInfo != null){
-            build.setAge(patientInfo.getAge());
-            try {
-                Date parse = dateFormat.parse(patientInfo.getBirthday());
-                build.setBirthday(dateFormat.format(parse));
-            } catch (ParseException e) {
-                throw new ClientServiceException("时间格式转化异常！",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-            }
-            build.setGender(patientInfo.getGender());
-            build.setMedicalNumber(patientInfo.getMedicalNumber());
-            build.setMobile(patientInfo.getMobile());
-            build.setPatientId(patientInfo.getId());
-            build.setPatientName(patientInfo.getName());
-            build.setPatientRemark(patientInfo.getRemarks());
-            build.setAllergen(patientInfo.getAllergens());
-            build.setPinyinName(patientInfo.getPinyinName());
-            // 设置会员卡图标类型
-            Integer memberTypeId = patientInfo.getMemberTypeId();
-            MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-            if (memberType != null){
-                build.setMemberIcon(String.valueOf(memberType.getIcon()));
+        Integer patientId = build.getPatientId();
+        if (patientId != null){
+            PatientTotalInfoVo patientInfo = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+            if (patientInfo != null){
+                build.setAge(patientInfo.getAge());
+                try {
+                    Date parse = dateFormat.parse(patientInfo.getBirthday());
+                    build.setBirthday(dateFormat.format(parse));
+                } catch (ParseException e) {
+                    throw new ClientServiceException("时间格式转化异常！",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+                }
+                build.setGender(patientInfo.getGender());
+                build.setMedicalNumber(patientInfo.getMedicalNumber());
+                build.setMobile(patientInfo.getMobile());
+                build.setPatientId(patientInfo.getId());
+                build.setPatientName(patientInfo.getName());
+                build.setPatientRemark(patientInfo.getRemarks());
+                build.setAllergen(patientInfo.getAllergens());
+                build.setPinyinName(patientInfo.getPinyinName());
+                // 设置会员卡图标类型
+                Integer memberTypeId = patientInfo.getMemberTypeId();
+                if (memberTypeId != null) {
+                    MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
+                    if (memberType != null){
+                        build.setMemberIcon(String.valueOf(memberType.getIcon()));
+                    }
+                }
             }
         }
+
         // 设置默认科室信息
-        DepartmentRoom departmentRoom = remoteSystemServiceFeign.findDepartmentRoomById(appointmentVo.getDeptRoomId());
-        if (departmentRoom != null){
-            build.setClinicDeptRoomName(departmentRoom.getName());
+        Integer deptRoomId = appointmentVo.getDeptRoomId();
+        if (deptRoomId != null) {
+            DepartmentRoom departmentRoom = remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
+            if (departmentRoom != null){
+                build.setClinicDeptRoomName(departmentRoom.getName());
+            }
         }
 
         // 欠费金额 服务还没做，先空着，后面补上 TODO

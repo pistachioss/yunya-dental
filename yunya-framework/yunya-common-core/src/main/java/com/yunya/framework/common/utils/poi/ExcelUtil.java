@@ -821,7 +821,7 @@ public class ExcelUtil<T> {
 
   /** 合并单元格 */
   public void mergeRegion() {
-    if (!regions.isEmpty()) {
+    if (regions != null && !regions.isEmpty()) {
       regions.forEach(cellRangeAddress -> sheet.addMergedRegion(cellRangeAddress));
     }
   }
