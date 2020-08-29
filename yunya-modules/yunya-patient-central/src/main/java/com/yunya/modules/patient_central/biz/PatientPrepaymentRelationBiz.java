@@ -2,9 +2,7 @@ package com.yunya.modules.patient_central.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
@@ -23,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -234,5 +233,55 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
             }
         }
         return new PageInfo<>(resultList);
+    }
+
+    /**
+     * 预付款消费记录
+     * @param model
+     * @return ResponseResult
+     */
+    public ResponseResult expend(PrepaidExpendRecordModel model) {
+        PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId(), model.getPatientId());
+        if(patientPrepaymentsInfo.getPrepaymentPrincipal().add(patientPrepaymentsInfo.getPrepaymentBonus()).compareTo(model.getExpendTotal()) == -1 ){ //如果本金+赠金 小于 消费金额
+            return ResponseUtil.error("预付款余额不足",patientPrepaymentsInfo);
+        }
+        spending(model,patientPrepaymentsInfo);
+        return ResponseUtil.success();
+    }
+
+    /**
+     * 消费抵扣
+     * @param model
+     * @param patientMemberInfo
+     */
+    public void spending(PrepaidExpendRecordModel model, PatientPrepaymentsInfo patientPrepaymentsInfo){
+        BigDecimal expendePrincipal = null; //消费本金
+        BigDecimal expendeBonus = null; //消费赠金
+        BigDecimal principalAmount = null; //账户本金
+        BigDecimal bonusAmount = null; //账户赠金
+        PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord(); //创建消费记录对象
+        BeanUtils.copyProperties(model,prepaidExpendRecord);
+        if(patientPrepaymentsInfo.getPrepaymentPrincipal().compareTo(model.getExpendTotal()) == -1 ) { //会员卡余额 小于 消费金额
+            //小于的情况下 依然先用本金去抵扣消费金额
+            principalAmount = patientPrepaymentsInfo.getPrepaymentPrincipal(); //获取本金
+            BigDecimal surplus = patientPrepaymentsInfo.getPrepaymentPrincipal().subtract(model.getExpendTotal()); //本金-消费总额
+            patientPrepaymentsInfo.setPrepaymentPrincipal(new BigDecimal(0)); //本金已用完
+            prepaidExpendRecord.setExpendPrincipal(principalAmount); //获取消费本金
+            bonusAmount = patientPrepaymentsInfo.getPrepaymentBonus(); //获取赠金
+            patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(surplus)); //用赠金去抵扣
+            expendeBonus = bonusAmount.subtract(patientPrepaymentsInfo.getPrepaymentBonus());//原账户赠金-抵扣后赠金余额 = 用了多少赠金
+            prepaidExpendRecord.setExpendGift(expendeBonus);//获取消费赠金
+        }else {
+            principalAmount = patientPrepaymentsInfo.getPrepaymentPrincipal();
+            patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().subtract(model.getExpendTotal()));
+            expendePrincipal = principalAmount.subtract(patientPrepaymentsInfo.getPrepaymentPrincipal());//消费金额
+            prepaidExpendRecord.setExpendPrincipal(expendePrincipal); //获取消费本金
+        }
+        patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
+        //添加消费记录
+        prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        prepaidExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
+        prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
     }
 }

@@ -1,0 +1,47 @@
+package com.yunya.feign.patient_central.domain.model;
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.ToString;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * 简单介绍:</br> 预付款消费Model
+ *
+ * @author: WY
+ * @date 2020/8/29 13:36
+ * @description:
+ * @since: 1.0.0
+ */
+
+@Data
+@ToString
+public class PrepaidExpendRecordModel implements Serializable {
+
+    /**
+     * 患者id
+     */
+    @ApiModelProperty(value = "患者id",required = true)
+    private Integer patientId;
+
+    /**
+     * 预付款卡号
+     */
+    @ApiModelProperty(value = "会员卡号",required = true)
+    private String prepaidId;
+
+    /**
+     * 消费总额
+     */
+    @ApiModelProperty(value = "消费总额",required = true)
+    private BigDecimal expendTotal;
+
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remarks;
+
+}

@@ -118,13 +118,6 @@ public class PatientMemberInfoController {
     }
 
     @CurrentUser
-    @ApiOperation("消费")
-    @PostMapping("/expend")
-    public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
-        return patientMemberInfoBiz.expend(model);
-    }
-
-    @CurrentUser
     @ApiOperation("消费记录")
     @PostMapping("/expendList")
     public ResponseResult expendList(@RequestBody MemberExpendRecordQueryForm queryForm ){

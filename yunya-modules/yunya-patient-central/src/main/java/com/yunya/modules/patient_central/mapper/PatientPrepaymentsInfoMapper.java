@@ -19,4 +19,5 @@ public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsI
      * @return PatientPrepaymentsInfo
      */
     PatientPrepaymentsInfo selectOneByCardNumber(@Param("prepaidId") String prepaidId,@Param("patientId") Integer patientId);
+
 }

@@ -6,6 +6,7 @@
 package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
@@ -87,13 +88,6 @@ public class PatientPrepaymentRelationController {
     public ResponseResult refundList(@RequestBody PrepaidMeturnRecordQueryForm queryForm ){
         return ResponseUtil.success(patientPrepaymentBiz.refundList(queryForm));
     }
-
-    /*@CurrentUser
-    @ApiOperation("消费")
-    @PostMapping("/expend")
-    public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
-        return patientMemberInfoBiz.expend(model);
-    }*/
 
     @CurrentUser
     @ApiOperation("消费记录")
