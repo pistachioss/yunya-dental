@@ -20,16 +20,8 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.util.Date;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Api(
         value = "患者信息",
@@ -118,7 +110,7 @@ public class PatientBaseInfoController {
     }
 
     @ApiOperation("根据患者id查询来访信息")
-    @GetMapping({"/VisitInfo/{id}"})
+    @GetMapping({"/visitInfo/{id}"})
     public ResponseResult findPatientVisitInfo(@PathVariable("id") Integer id) {
         return ResponseUtil.success(this.patientBaseInfoBiz.findPatientVisitInfo(id));
     }

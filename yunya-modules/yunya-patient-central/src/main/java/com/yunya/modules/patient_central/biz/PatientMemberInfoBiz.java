@@ -204,8 +204,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         patientMemberChangeLog.setOperationType(operationType);
         if (isupt != null) { //不为空就是修改
             patientMemberChangeLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientMemberChangeLog.setUptName(BaseContextHandler.getName());
-            patientMemberChangeLog.setUptTime(new Date());
+            patientMemberChangeLog.setUpdName(BaseContextHandler.getName());
+            patientMemberChangeLog.setUpdTime(new Date());
         }
 
         this.patientMemberChangeLogMapper.insertSelective(patientMemberChangeLog);
@@ -343,31 +343,51 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     /**
      * 消费
      * @param model
+     * @return ResponseResult
      */
     public ResponseResult expend(MemberExpendRecordModel model) {
         PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
         if(patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount()).compareTo(model.getExpendTotal()) == -1 ){ //如果本金+赠金 小于 消费金额
             return ResponseUtil.error("会员卡余额不足",patientMemberInfo);
-        }else{
-            if(patientMemberInfo.getPrincipalAmount().compareTo(model.getExpendTotal()) == -1 ) { //会员卡余额 小于 消费金额
-                //会员本金减去消费金额
-                BigDecimal surplus = patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal());
-                if(surplus.compareTo(new BigDecimal(0)) == -1){
+        }
+        spending(model,patientMemberInfo);
+        return ResponseUtil.success();
+    }
 
-                }
-            }else {
-                patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()));
-            }
+    /**
+     * 消费抵扣
+     * @param model
+     * @param patientMemberInfo
+     */
+    public void spending(MemberExpendRecordModel model,PatientMemberInfo patientMemberInfo){
+        BigDecimal expendePrincipal = null; //消费本金
+        BigDecimal expendeBonus = null; //消费赠金
+        BigDecimal principalAmount = null; //账户本金
+        BigDecimal bonusAmount = null; //账户赠金
+        MemberExpendRecord memberExpendRecord = new MemberExpendRecord(); //创建消费记录对象
+        BeanUtils.copyProperties(model,memberExpendRecord);
+        if(patientMemberInfo.getPrincipalAmount().compareTo(model.getExpendTotal()) == -1 ) { //会员卡余额 小于 消费金额
+            //小于的情况下 依然先用本金去抵扣消费金额
+            principalAmount = patientMemberInfo.getPrincipalAmount(); //获取本金
+            BigDecimal surplus = patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()); //本金-消费总额
+            patientMemberInfo.setPrincipalAmount(new BigDecimal(0)); //本金已用完
+            memberExpendRecord.setExpendPrincipal(principalAmount); //获取消费本金
+            bonusAmount = patientMemberInfo.getBonusAmount(); //获取赠金
+            patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(surplus)); //用赠金去抵扣
+            expendeBonus = bonusAmount.subtract(patientMemberInfo.getBonusAmount());//原账户赠金-抵扣后赠金余额 = 用了多少赠金
+            memberExpendRecord.setExpendGift(expendeBonus);//获取消费赠金
+        }else {
+            principalAmount = patientMemberInfo.getPrincipalAmount();
+            patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()));
+            expendePrincipal = principalAmount.subtract(patientMemberInfo.getPrincipalAmount());//消费金额
+            memberExpendRecord.setExpendPrincipal(expendePrincipal); //获取消费本金
         }
         patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
         //添加消费记录
-        MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
-        BeanUtils.copyProperties(model,memberExpendRecord);
         memberExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         memberExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         memberExpendRecord.setCrtName(BaseContextHandler.getName());
         memberExpendRecordMapper.insertSelective(memberExpendRecord);
-        return ResponseUtil.success();
     }
 
     /**

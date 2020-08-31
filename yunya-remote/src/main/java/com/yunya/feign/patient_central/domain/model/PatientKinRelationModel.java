@@ -5,11 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.security.PrivateKey;
 
 /**
  * 简单介绍:</br> 患者亲属关系Vo

@@ -78,20 +78,20 @@ public class PrepaidReturnRecord {
     /**
      * 更新人id
      */
-    @Column(name = "cpd_id")
-    private Integer cpdId;
+    @Column(name = "upt_id")
+    private Integer updId;
 
     /**
      * 更新人姓名
      */
-    @Column(name = "cpd_name")
-    private String cpdName;
+    @Column(name = "upd_name")
+    private String updName;
 
     /**
      * 更新时间
      */
-    @Column(name = "cpd_time")
-    private Date cpdTime;
+    @Column(name = "upd_time")
+    private Date updTime;
 
     /**
      * @return id
@@ -308,54 +308,54 @@ public class PrepaidReturnRecord {
     /**
      * 获取更新人id
      *
-     * @return cpd_id - 更新人id
+     * @return upd_id - 更新人id
      */
-    public Integer getCpdId() {
-        return cpdId;
+    public Integer getUpdId() {
+        return updId;
     }
 
     /**
      * 设置更新人id
      *
-     * @param cpdId 更新人id
+     * @param updId 更新人id
      */
-    public void setCpdId(Integer cpdId) {
-        this.cpdId = cpdId;
+    public void setUpdId(Integer updId) {
+        this.updId = updId;
     }
 
     /**
      * 获取更新人姓名
      *
-     * @return cpd_name - 更新人姓名
+     * @return Upd_name - 更新人姓名
      */
-    public String getCpdName() {
-        return cpdName;
+    public String getUpdName() {
+        return updName;
     }
 
     /**
      * 设置更新人姓名
      *
-     * @param cpdName 更新人姓名
+     * @param updName 更新人姓名
      */
-    public void setCpdName(String cpdName) {
-        this.cpdName = cpdName;
+    public void setUpdName(String updName) {
+        this.updName = updName;
     }
 
     /**
      * 获取更新时间
      *
-     * @return cpd_time - 更新时间
+     * @return upd_time - 更新时间
      */
-    public Date getCpdTime() {
-        return cpdTime;
+    public Date getUpdTime() {
+        return updTime;
     }
 
     /**
      * 设置更新时间
      *
-     * @param cpdTime 更新时间
+     * @param updTime 更新时间
      */
-    public void setCpdTime(Date cpdTime) {
-        this.cpdTime = cpdTime;
+    public void setUpdTime(Date updTime) {
+        this.updTime = updTime;
     }
 }

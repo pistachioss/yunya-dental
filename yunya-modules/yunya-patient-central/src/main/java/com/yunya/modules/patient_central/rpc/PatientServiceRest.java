@@ -1,12 +1,17 @@
 package com.yunya.modules.patient_central.rpc;
 
+import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
+import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +35,8 @@ public class PatientServiceRest {
     @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
 
     @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
+
+    @Autowired private PatientPrepaymentRelationBiz patientPrepaymentRelationBiz;
 
 
     @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
@@ -84,6 +91,20 @@ public class PatientServiceRest {
     @RequestMapping (value = "/medical/{orgId}",method = RequestMethod.GET)
     public String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId){
         return patientBaseInfoBiz.findMedicalNumberByOrgId(orgId);
+    }
+
+    @CurrentUser
+    @ApiOperation("会员卡消费")
+    @RequestMapping(value = "/member/expend", method = RequestMethod.POST)
+    public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
+        return patientMemberInfoBiz.expend(model);
+    }
+
+    @CurrentUser
+    @ApiOperation("预付款消费")
+    @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
+    public ResponseResult expend(@RequestBody PrepaidExpendRecordModel model ){
+        return patientPrepaymentRelationBiz.expend(model);
     }
 
 

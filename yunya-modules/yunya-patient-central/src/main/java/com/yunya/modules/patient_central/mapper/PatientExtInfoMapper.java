@@ -1,6 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.model.PatientExtInfoModel;
+import com.yunya.feign.patient_central.domain.vo.PatientExtInfoVo;
 import com.yunya.models.patient_central.PatientExtInfo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -23,9 +24,9 @@ public interface PatientExtInfoMapper extends Mapper<PatientExtInfo> {
     /**
      * 通过患者id查询 其他信息（标签,疾病史,过敏原）
      * @param id
-     * @return List<PatientExtInfo>
+     * @return List<PatientExtInfoVo>
      */
-    List<PatientExtInfo> patientExtInfoListByid(@Param("id") Integer id);
+    List<PatientExtInfoVo> patientExtInfoListByid(@Param("id") Integer id);
 
     /**
      * 根据id删除对于的 （标签,疾病史,过敏原） 信息

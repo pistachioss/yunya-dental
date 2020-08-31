@@ -1,6 +1,5 @@
 package com.yunya.feign.patient_central.domain.vo;
 
-import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientExpInfo;
 import com.yunya.models.patient_central.PatientExtInfo;
 import lombok.Data;
@@ -25,8 +24,8 @@ public class PatientExtendInfoVo implements Serializable {
   private PatientBaseInfoVo patientBaseInfoVo;
 
   /** 患者信息扩展表 */
-  private PatientExpInfo patientExpInfo;
+  private PatientExpInfoVo patientExpInfoVo;
 
   /** 患者其他信息表 */
-  private List<PatientExtInfo> patientExtInfoList;
+  private List<PatientExtInfoVo> patientExtInfoListVo;
 }

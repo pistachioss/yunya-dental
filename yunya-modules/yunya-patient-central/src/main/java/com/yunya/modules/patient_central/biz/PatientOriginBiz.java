@@ -7,7 +7,6 @@ import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQuery
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientOriginTreeVo;
-import com.yunya.feign.patient_central.domain.vo.OriginTypeVo;
 import com.yunya.feign.patient_central.domain.vo.PatientOriginVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;

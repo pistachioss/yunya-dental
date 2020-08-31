@@ -1,8 +1,5 @@
 package com.yunya.feign.patient_central.domain.model;
 
-import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.patient_central.PatientExpInfo;
-import com.yunya.models.patient_central.PatientExtInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;

@@ -3,7 +3,6 @@ package com.yunya.feign.patient_central.domain.vo;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -67,6 +66,5 @@ public class PatientPublicInfoVo implements Serializable {
      * 会员卡类型id
      */
     private Integer memberTypeId;
-
 
 }

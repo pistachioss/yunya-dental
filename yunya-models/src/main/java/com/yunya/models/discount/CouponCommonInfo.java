@@ -39,6 +39,12 @@ public class CouponCommonInfo {
     private Boolean isMakePhysicalCard;
 
     /**
+     * 产品编码
+     */
+    @Column(name = "coupon_code")
+    private String couponCode;
+
+    /**
      * 售出金额
      */
     @Column(name = "sold_amount")

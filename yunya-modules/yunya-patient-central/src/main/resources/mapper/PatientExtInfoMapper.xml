@@ -25,12 +25,16 @@
     id,org_id orgId,patient_id patientId,dict_item_id dictItemId,type,description,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime
   </sql>
 
+  <sql id="Insert_Column_List">
+    (org_id,patient_id,dict_item_id,type,description,remarks,crt_id,crt_name,upt_id,upd_name,upd_time)
+  </sql>
+
   <sql id="PatientExtInfoList_Column_List">
     id,org_id orgId,patient_id patientId,dict_item_id dictItemId,type type,description,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime
   </sql>
 
   <insert id="insertPatientExtInfoList" parameterType="java.util.List">
-        insert into patient_ext_info (<include refid="PatientExtInfo_Column_List"/>)
+        insert into patient_ext_info <include refid="Insert_Column_List"/>
         values 
         <foreach collection="list" item="item" index="index" separator=",">
           (#{item.orgId},
@@ -39,17 +43,15 @@
           #{item.type},
           #{item.description},
           #{item.remarks},
-          #{item.inservice},
           #{item.crtId},
           #{item.crtName},
-          #{item.crtTime},
           #{item.uptId},
           #{item.updName},
           #{item.updTime})
         </foreach>
   </insert>
 
-  <select id="patientExtInfoListByid" resultType="com.yunya.models.patient_central.PatientExtInfo">
+  <select id="patientExtInfoListByid" resultType="com.yunya.feign.patient_central.domain.vo.PatientExtInfoVo">
     select <include refid="PatientExtInfoList_Column_List"/>
     from patient_ext_info
     where patient_id = #{id}

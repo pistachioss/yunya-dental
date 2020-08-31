@@ -21,9 +21,26 @@
   </resultMap>
 
     <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.MemberExpendRecordVo">
-        select merd.id,merd.org_id orgId,	merd.member_id memberId,	merd.patient_id patientId,	merd.expend_principal expendPrincipal,	merd.expend_gift expendGift,	merd.remarks remarks,	merd.crt_id operatorId,	merd.crt_name operatorName,	merd.crt_time operatingTime,	merd.upt_id uptId,	merd.upd_name updName,	merd.upd_time updTime,pbio.name expendName
-        from member_expend_record merd join  patient_base_info pbio on merd.patient_id = pbio.id
-        where merd.member_id = #{form.memberId} and merd.patient_id = #{form.patientId}
+        SELECT
+            merd.id,
+            merd.org_id orgId,
+            merd.member_id memberId,
+            merd.patient_id patientId,
+            merd.expend_principal expendPrincipal,
+            merd.expend_gift expendGift,
+            merd.remarks remarks,
+            merd.crt_id operatorId,
+            merd.crt_name operatorName,
+            merd.crt_time operatingTime,
+            merd.upt_id uptId,
+            merd.upd_name updName,
+            merd.upd_time updTime,
+            pbio.name expendName
+        FROM
+            member_expend_record merd
+            JOIN patient_base_info pbio ON merd.patient_id = pbio.id
+        WHERE
+            merd.member_id = #{form.memberId} and merd.patient_id = #{form.patientId}
     </select>
 
 </mapper>

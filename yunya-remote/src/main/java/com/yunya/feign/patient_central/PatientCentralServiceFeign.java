@@ -1,13 +1,18 @@
 package com.yunya.feign.patient_central;
 
 
+import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.factory.PatientCentralServiceFallBackFactory;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -92,4 +97,20 @@ public interface PatientCentralServiceFeign {
      */
     @RequestMapping (value = "/api/medical/{orgId}",method = RequestMethod.GET)
     String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId);
+
+    /**
+     * 会员卡消费
+     * @param model
+     * @return ResponseResult
+     */
+    @RequestMapping(value = "/member/expend",method = RequestMethod.POST)
+    ResponseResult expend(@RequestBody MemberExpendRecordModel model );
+
+    /**
+     * 预付款消费
+     * @param model
+     * @return
+     */
+    @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
+    ResponseResult expend(@RequestBody PrepaidExpendRecordModel model );
 }

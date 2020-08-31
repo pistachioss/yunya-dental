@@ -2,7 +2,6 @@ package com.yunya.feign.patient_central.domain.form;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.ToString;
 

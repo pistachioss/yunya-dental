@@ -35,16 +35,18 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCoupon> {
-    // 折扣券类型
-    private static final Integer DISCOUNT_COUPON_TYPE = 0;
-    // 状态
-    private static final Integer FINISH = 1;
-    private static final Integer PLAN = 0;
+    // 折扣券编码类型
+    private static final String DISCOUNT_COUPON_TYPE = "ZK";
 
-    @Autowired private CouponAllocateMapper couponAllocateMapper;
-    @Autowired private CouponCommonInfoMapper couponCommonInfoMapper;
-    @Autowired private CouponCommonInfoBiz couponCommonInfoBiz;
-    @Autowired private CouponFileInfoBiz couponFileInfoBiz;
+    @Autowired
+    private CouponAllocateMapper couponAllocateMapper;
+    @Autowired
+    private CouponCommonInfoMapper couponCommonInfoMapper;
+    @Autowired
+    private CouponCommonInfoBiz couponCommonInfoBiz;
+    @Autowired
+    private CouponFileInfoBiz couponFileInfoBiz;
+
     /**
      * 新增折扣券
      *
@@ -68,6 +70,11 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         discountCoupon.setCouponId(couponCommonInfo.getId());
         discountCoupon.setUseableClinic(discountCouponForm.getUseableClinic());
         insertSelective(discountCoupon);//插入卡券信息
+
+        String num = String.format("%04d", discountCoupon.getId());
+        couponCommonInfo.setCouponCode(DISCOUNT_COUPON_TYPE + num);
+        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+
         return couponCommonInfo.getId();
     }
 
@@ -94,14 +101,14 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
-            if(discountCoupon!=null){
+            if (discountCoupon != null) {
                 discountCoupon.setUseableClinic(discountCouponForm.getUseableClinic());
                 discountCoupon.setRemark(discountCouponForm.getRemark());
                 discountCoupon.setActivationDeadline(discountCouponForm.getActivationDeadline());
                 discountCoupon.setWorkloadRate(discountCouponForm.getWorkloadRate());
                 discountCoupon.setEffectiveDays(discountCouponForm.getEffectiveDays());
                 updateSelectiveById(discountCoupon);//更新明细信息
-            }else {
+            } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
         } else {
@@ -112,7 +119,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             if (couponCommonInfoMapper.select(data).size() >= 1) {
                 data = new CouponCommonInfo();
                 data.setId(discountCouponForm.getId());
-                if(!couponCommonInfoMapper.selectOne(data).getName().equals(name)){
+                if (!couponCommonInfoMapper.selectOne(data).getName().equals(name)) {
                     throw new BaseException("折扣券名称与系统中已有折扣券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }

@@ -1,6 +1,5 @@
 package com.yunya.modules.patient_central.biz;
 
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.*;
@@ -18,11 +17,15 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
+import com.yunya.modules.patient_central.constant.WoPlatformConstants;
+import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
+import org.apache.commons.httpclient.NameValuePair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.alibaba.fastjson.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -140,7 +143,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /**
    * 添加完善患者扩展信息、其他信息
-   *
    * @param patientExtendInfoModel
    */
   public void addPatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
@@ -153,7 +155,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setUpdTime(new Date());
     this.mapper.updateByPrimaryKey(patientBaseInfo); // 完善患者基本信息  对补全信息进行更新
     PatientExpInfo patientExpInfo = new PatientExpInfo();
-    BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientBaseInfo); // 完善患者扩展信息
+    BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientExpInfo); // 完善患者扩展信息
     if (patientExpInfo.getId() == null) { // 如果用户没有扩展信息就添加扩展信息 如果有就修改
       patientExpInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientExpInfo.setCrtName(BaseContextHandler.getName());
@@ -166,23 +168,24 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
 
     List<PatientExtInfoModel> patientExtInfoList = patientExtendInfoModel.getPatientExtInfoModelList();  // 完善患者其他信息（标签、疾病史、过敏原）
-    List<PatientExtInfo> patientExtInfos = this.patientExtInfoMapper.patientExtInfoListByid(patientBaseInfo.getId());
+    List<PatientExtInfoVo> patientExtInfos = this.patientExtInfoMapper.patientExtInfoListByid(patientBaseInfo.getId());
     if (patientExtInfos.size() != 0 || patientExtInfos != null) { // 判断是否已存在信息，若存在就删除
       this.patientExtInfoMapper.deletePatientExtInfoByPatientId(patientBaseInfo.getId());
     }
-
-    List<PatientExtInfoModel> addPatientExtInfoList = new ArrayList();
-    Iterator var7 = patientExtInfoList.iterator();
-    while(var7.hasNext()) {  // 循环添加 标签、疾病史、过敏原 集合
-      PatientExtInfoModel patientExtInfoModel = (PatientExtInfoModel)var7.next();
-      patientExtInfoModel.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientExtInfoModel.setCrtName(BaseContextHandler.getName());
-      patientExtInfoModel.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientExtInfoModel.setUpdName(BaseContextHandler.getName());
-      patientExtInfoModel.setUpdTime(new Date());
-      addPatientExtInfoList.add(patientExtInfoModel);
+    if(patientExtInfoList.size() > 0){
+      List<PatientExtInfoModel> addPatientExtInfoList = new ArrayList();
+      Iterator var7 = patientExtInfoList.iterator();
+      while(var7.hasNext()) {  // 循环添加 标签、疾病史、过敏原 集合
+        PatientExtInfoModel patientExtInfoModel = (PatientExtInfoModel)var7.next();
+        patientExtInfoModel.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientExtInfoModel.setCrtName(BaseContextHandler.getName());
+        patientExtInfoModel.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientExtInfoModel.setUpdName(BaseContextHandler.getName());
+        patientExtInfoModel.setUpdTime(new Date());
+        addPatientExtInfoList.add(patientExtInfoModel);
+      }
+      this.patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
     }
-    this.patientExtInfoMapper.insertPatientExtInfoList(addPatientExtInfoList);
   }
 
   /**
@@ -199,8 +202,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     PatientOrigin patientOrigin = patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
     patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId()); //获取患者来源的父级id
     patientExtendInfoVo.setPatientBaseInfoVo(patientBaseInfoVo); //基本信息
-    patientExtendInfoVo.setPatientExpInfo(patientExpInfoMapper.selectIdByPatientId(id)); //扩展信息
-    patientExtendInfoVo.setPatientExtInfoList(patientExtInfoMapper.patientExtInfoListByid(id)); //标签
+    patientExtendInfoVo.setPatientExpInfoVo(patientExpInfoMapper.selectIdByPatientId(id)); //扩展信息
+    patientExtendInfoVo.setPatientExtInfoListVo(patientExtInfoMapper.patientExtInfoListByid(id)); //标签
     return patientExtendInfoVo;
   }
 

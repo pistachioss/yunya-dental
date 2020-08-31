@@ -1,12 +1,10 @@
 package com.yunya.models.patient_central;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
 
 @Table(name = "patient_base_info")
 public class PatientBaseInfo {
@@ -15,20 +13,18 @@ public class PatientBaseInfo {
      */
     @GeneratedValue(generator = "JDBC")
     @Id
-    @NotNull(message = "ID为空！")
     private Integer id;
 
     /**
      * 诊所ID 添加患者的组织ID
      */
     @Column(name = "org_id")
-    @NotNull(message = "诊所ID为空！")
     private Integer orgId;
 
     /**
      * 患者姓名 字符串，长度64
      */
-    @NotNull(message = "患者名称为空！")
+    @Column(name = "name")
     private String name;
 
     /**
@@ -52,15 +48,13 @@ public class PatientBaseInfo {
     /**
      * 手机号码 长度14
      */
-    @NotBlank(message = "手机号不能为空")
-    @Pattern(regexp = "^[1][3,4,5,6,7,8,9][0-9]{9}$", message = "手机号格式有误")
+    @Column(name = "mobile")
     private String mobile;
 
     /**
      * 手机号所属人 手机号所属人字典ID
      */
     @Column(name = "mobile_owner")
-    @NotNull(message = "手机号所属人为空！")
     private Integer mobileOwner;
 
     /**
@@ -72,17 +66,19 @@ public class PatientBaseInfo {
     /**
      * 性别 0-男；1-女；2-未知
      */
+    @Column(name = "gender")
     private Byte gender;
 
     /**
      * 年龄
      */
+    @Column(name = "age")
     private Integer age;
 
     /**
      * 出生日期
      */
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @Column(name = "birthday")
     private Date birthday;
 
     /**
@@ -95,17 +91,18 @@ public class PatientBaseInfo {
      * 患者来源关联ID 患者来源关联ID（员工ID/患者ID/活动ID）
      */
     @Column(name = "origin_id")
-    @NotNull(message = "患者来源关联ID为空！")
     private Integer originId;
 
     /**
      * 备注 备注
      */
+    @Column(name = "remarks")
     private String remarks;
 
     /**
      * 是否有效 是否有效
      */
+    @Column(name = "inservice")
     private Boolean inservice;
 
     /**

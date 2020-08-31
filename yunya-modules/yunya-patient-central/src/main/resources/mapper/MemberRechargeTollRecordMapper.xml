@@ -25,8 +25,8 @@
   </sql>
 
   <select id="selectMemberRechargeRecord" resultType="com.yunya.models.patient_central.MemberRechargeTollRecord">
-        select <include refid="Find_Column_List"/>
-        from member_recharge_toll_record mrtr where mrtr.recharge_record_id = #{rechargeRecordId}
+    select <include refid="Find_Column_List"/>
+    from member_recharge_toll_record mrtr where mrtr.recharge_record_id = #{rechargeRecordId}
   </select>
 
 

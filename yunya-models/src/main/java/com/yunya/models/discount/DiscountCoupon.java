@@ -10,6 +10,7 @@ public class DiscountCoupon {
      * 主键
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

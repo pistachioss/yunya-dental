@@ -11,6 +11,7 @@
         <result column="name" property="name" jdbcType="VARCHAR" />
         <result column="is_make_physical_card" property="isMakePhysicalCard" jdbcType="BIT" />
         <result column="sold_amount" property="soldAmount" jdbcType="DECIMAL" />
+        <result column="coupon_code" property="couponCode" jdbcType="VARCHAR" />
         <result column="available_sale_start_date" property="availableSaleStartDate" jdbcType="DATE" />
         <result column="available_sale_end_date" property="availableSaleEndDate" jdbcType="DATE" />
         <result column="is_inservice" property="isInservice" jdbcType="BIT" />

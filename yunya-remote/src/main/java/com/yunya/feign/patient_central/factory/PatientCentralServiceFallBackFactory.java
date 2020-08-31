@@ -2,10 +2,12 @@ package com.yunya.feign.patient_central.factory;
 
 
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientExtendInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +69,16 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
 
     @Override
     public String findMedicalNumberByOrgId(Integer orgId) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult expend(MemberExpendRecordModel model) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult expend(PrepaidExpendRecordModel model) {
         return null;
     }
 }

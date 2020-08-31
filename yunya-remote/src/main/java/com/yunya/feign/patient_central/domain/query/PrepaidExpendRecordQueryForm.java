@@ -1,6 +1,5 @@
 package com.yunya.feign.patient_central.domain.query;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -9,17 +8,17 @@ import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br> 退费记录QueryForm
+ * 简单介绍:</br> 预付款消费QueryForm
  *
  * @author: WY
- * @date 2020/8/26 15:23
+ * @date 2020/8/28 19:42
  * @description:
  * @since: 1.0.0
  */
+
 @Data
 @ToString
-@ApiModel(value = "退费记录")
-public class MemberReturnRecordQueryForm implements Serializable {
+public class PrepaidExpendRecordQueryForm implements Serializable {
 
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
@@ -33,14 +32,15 @@ public class MemberReturnRecordQueryForm implements Serializable {
     private Integer pageSize = 10;
 
     /**
-     *  会员卡
+     * 预付款卡号
      */
-    @ApiModelProperty(value = "会员卡号",required = true)
-    private String memberId;
+    @ApiModelProperty(value = "预付款卡号",required = true)
+    private String prepaidId;
 
     /**
      * 患者id
      */
     @ApiModelProperty(value = "患者id",required = true)
-    private String patientId;
+    private Integer patientId;
+
 }

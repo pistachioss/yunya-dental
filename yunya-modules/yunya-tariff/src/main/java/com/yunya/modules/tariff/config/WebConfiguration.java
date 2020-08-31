@@ -12,7 +12,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  *
  * @author chow
  */
-@Configuration("tariffWebConfig")
+@Configuration("systemWebConfig")
 @Primary
 public class WebConfiguration implements WebMvcConfigurer {
 

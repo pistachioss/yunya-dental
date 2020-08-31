@@ -27,14 +27,13 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_
 import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
 
 /**
- * 描述:
- *
- * @author GaoLuding
- * @create 2020-07-10 14:21
+ * yanlgiuxu
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon> {
+    // 兑换券编码类型
+    private static final String PACKAGE_COUPON_TYPE = "DH";
 
     @Autowired private CouponAllocateMapper couponAllocateMapper;
     @Autowired private CouponCommonInfoMapper couponCommonInfoMapper;
@@ -63,6 +62,11 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         packageCoupon.setCouponId(couponCommonInfo.getId());
         packageCoupon.setUseableClinic(packageCouponForm.getUseableClinic());
         insertSelective(packageCoupon);//插入卡券信息
+
+        String num = String.format("%04d", packageCoupon.getId());
+        couponCommonInfo.setCouponCode(PACKAGE_COUPON_TYPE + num);
+        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+
         return couponCommonInfo.getId();
 
     }

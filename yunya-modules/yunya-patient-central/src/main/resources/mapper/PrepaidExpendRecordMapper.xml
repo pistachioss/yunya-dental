@@ -16,7 +16,30 @@
     <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="cpd_name" property="cpdName" jdbcType="VARCHAR" />
-    <result column="cpd_time" property="cpdTime" jdbcType="TIMESTAMP" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+    <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.PrepaidExpendRecordVo">
+        SELECT
+            perd.id,
+            perd.org_id orgId,
+            perd.prepaid_id prepaidId,
+            perd.patient_id patientId,
+            perd.expend_principal expendPrincipal,
+            perd.expend_gift expendGift,
+            perd.remarks remarks,
+            perd.crt_id operatorId,
+            perd.crt_name operatorName,
+            perd.crt_time operatingTime,
+            perd.upt_id uptId,
+            perd.upd_name updName,
+            perd.upd_time updTime,
+            pbio.name expendName
+        FROM
+            prepaid_expend_record perd
+            JOIN patient_base_info pbio ON perd.patient_id = pbio.id
+        WHERE
+            perd.prepaid_id = #{form.prepaidId} and perd.patient_id = #{form.patientId}
+    </select>
 </mapper>

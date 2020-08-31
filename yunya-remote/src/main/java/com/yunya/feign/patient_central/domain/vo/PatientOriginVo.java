@@ -1,12 +1,9 @@
 package com.yunya.feign.patient_central.domain.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * 简单介绍:</br> 患者来源类型Vo

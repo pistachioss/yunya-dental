@@ -7,7 +7,6 @@ import com.yunya.feign.patient_central.domain.query.MemberExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
 import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.MemberReturnRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -16,8 +15,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 控制层
@@ -30,7 +27,7 @@ import java.util.List;
 
 @Api(value = "患者会员卡信息",description = "患者会员卡信息（增删查改）")
 @RestController
-@RequestMapping("PatientMember")
+@RequestMapping("patientMember")
 public class PatientMemberInfoController {
 
     /** 注入服务 */
@@ -90,7 +87,7 @@ public class PatientMemberInfoController {
 
     @CurrentUser
     @ApiOperation("充值")
-    @PostMapping("/Recharge")
+    @PostMapping("/recharge")
     public ResponseResult Recharge(@RequestBody MemberRechargeModel memberRechargeModel ){
         patientMemberInfoBiz.Recharge(memberRechargeModel);
         return ResponseUtil.success();
@@ -99,7 +96,7 @@ public class PatientMemberInfoController {
 
     @CurrentUser
     @ApiOperation("充值记录")
-    @PostMapping("/RechargeRecord")
+    @PostMapping("/rechargeRecord")
     public ResponseResult RechargeRecord(@RequestBody RechargeRecordQueryForm form ){
         return ResponseUtil.success(patientMemberInfoBiz.RechargeRecord(form));
     }
@@ -118,13 +115,6 @@ public class PatientMemberInfoController {
     @PostMapping("/refundList")
     public ResponseResult refundList(@RequestBody MemberReturnRecordQueryForm queryForm ){
         return ResponseUtil.success(patientMemberInfoBiz.refundList(queryForm));
-    }
-
-    @CurrentUser
-    @ApiOperation("消费")
-    @PostMapping("/expend")
-    public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
-        return patientMemberInfoBiz.expend(model);
     }
 
     @CurrentUser

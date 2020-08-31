@@ -14,6 +14,8 @@ import com.yunya.framework.common.utils.MD5Util;
 import com.yunya.modules.patient.tokenApi.TokenTask;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
+import org.apache.commons.httpclient.NameValuePair;
+import org.apache.commons.httpclient.methods.PostMethod;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -258,7 +260,7 @@ class YunyaPatientApplicationTests {
 
 
     @Test
-    public static void main(String[] args) throws ParseException {
+    public static void main2(String[] args) throws ParseException {
         String format = "HH:mm:ss";
         Date nowTime = new SimpleDateFormat(format).parse("09:60:00");
         Date startTime = new SimpleDateFormat(format).parse("09:20:00");
@@ -296,5 +298,74 @@ class YunyaPatientApplicationTests {
             return false;
         }
     }
+
+    @Test
+    public static void main4(String[] args) {
+        try {
+            System.out.println("----------------------------------------------------------------------");
+            String postURL ="http://192.168.19.96:8090/setPassWord";
+            PostMethod postMethod = null;
+            postMethod = new PostMethod(postURL) ;
+            postMethod.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8") ;
+        //参数设置，需要注意的就是里边不能传NULL，要传空字符串
+            NameValuePair[] data = {
+                    new NameValuePair("oldPass","123456"),
+                    new NameValuePair("newPass","123456")
+
+            };
+            postMethod.setRequestBody(data);
+
+            org.apache.commons.httpclient.HttpClient httpClient = new org.apache.commons.httpclient.HttpClient();
+            int response = httpClient.executeMethod(postMethod); // 执行POST方法
+            String result = postMethod.getResponseBodyAsString() ;
+
+            System.out.println(response);
+            System.out.println(result);
+            //return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+
+    @Test
+    public static void main(String[] args) {
+        try {
+            System.out.println("----------------------------------------------------------------------");
+            String postURL ="http://192.168.19.96:8090/person/create";
+            PostMethod postMethod = null;
+            postMethod = new PostMethod(postURL) ;
+            postMethod.setRequestHeader("Content-Type", "application/x-www-form-urlencoded;charset=utf-8") ;
+            //参数设置，需要注意的就是里边不能传NULL，要传空字符串
+
+            JSONObject object = new JSONObject();
+            object.put("name","心跳测试113");
+            String s = object.toJSONString();
+            NameValuePair[] data = {
+                    new NameValuePair("pass","123456"),
+                    new NameValuePair("person",s)
+
+            };
+            postMethod.setRequestBody(data);
+
+            org.apache.commons.httpclient.HttpClient httpClient = new org.apache.commons.httpclient.HttpClient();
+            int response = httpClient.executeMethod(postMethod); // 执行POST方法
+            String result = postMethod.getResponseBodyAsString() ;
+
+            System.out.println(response);
+            System.out.println(result);
+            System.out.println("*******************************************************");
+            JSONObject obj = JSONObject.parseObject(result);
+            JSONObject jsonObject = obj.getJSONObject("data");
+            System.out.println(jsonObject.get("id"));
+            //return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+
+
+
 
 }

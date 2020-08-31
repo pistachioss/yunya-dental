@@ -21,7 +21,7 @@ import java.util.Date;
 public class MemberExpendRecordVo implements Serializable {
 
     /**
-     * 会员充值记录id
+     * 会员消费记录id
      */
     private Integer id;
 
