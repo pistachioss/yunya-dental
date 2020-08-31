@@ -30,7 +30,7 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
     List<PatientMemberRelationVo> findMemberBindingRelation(@Param("form") PatientMemberRelationQueryForm form);
 
     /**
-     * 根据门诊id获取病历号后八位
+     * 根据门诊id获取病历号后六位
      * @param id
      * @return
      */

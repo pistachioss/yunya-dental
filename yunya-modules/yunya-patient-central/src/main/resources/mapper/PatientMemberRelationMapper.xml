@@ -37,4 +37,10 @@
     from patient_member_relation
     where master_card_id =#{form.masterCardId} and secondary_card_id =#{form.secondaryCardId} and bind_type =#{form.bindType}
   </select>
+
+  <select id="findMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
+     select id,org_id orgId,	master_card_id masterCardId,secondary_card_id secondaryCardId,bind_type bindType,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,	upd_name updName,upd_time updTime
+     from patient_member_relation
+     where master_card_id =#{form.secondaryCardId} and secondary_card_id =#{form.masterCardId} and bind_type =#{form.bindType}
+  </select>
 </mapper>

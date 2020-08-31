@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -23,7 +24,7 @@ public class MemberExpendRecordModel implements Serializable {
     /**
      * 患者id
      */
-    @ApiModelProperty(value = "患者id",required = true)
+    @ApiModelProperty(value = "患者id (就诊患者id)",required = true)
     private Integer patientId;
 
     /**
@@ -38,6 +39,23 @@ public class MemberExpendRecordModel implements Serializable {
     @ApiModelProperty(value = "消费总额",required = true)
     private BigDecimal expendTotal;
 
+    /**
+     * 就诊id
+     */
+    @ApiModelProperty(value = "就诊id")
+    private Integer treatmentRecordId;
+
+    /**
+     * 账单id
+     */
+    @ApiModelProperty(value = "账单id")
+    private Integer billRecordId;
+
+    /**
+     * 账单付款记录id
+     */
+    @ApiModelProperty(value = "账单付款记录id")
+    private Integer billPayRecordId;
     /**
      * 备注
      */

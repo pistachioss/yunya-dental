@@ -59,7 +59,7 @@
 
   <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
     select id,origin_id patientId,name,gender,mobile,crt_time crtTime
-    from patient_base_info where source_id = #{form.patientId} and origin_type = #{form.originType}
+    from patient_base_info where source_id = #{form.patientId} and origin_type = 2
     order by crtTime desc
   </select>
 

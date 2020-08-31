@@ -96,34 +96,38 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     public ResponseResult addMemberBindingRelation(MemberBindingRelationInfoModel form) {
         if (form.getPatientId() == form.getSecondaryCardId()) {
             return ResponseUtil.error("副卡人不能为患者本人！", "");
-        } else {
-            PatientMemberRelation MemberRelation = this.patientMemberRelationMapper.findBindingRelation(form);
-            if (MemberRelation != null) {
-                return ResponseUtil.error("该副卡人已存在,不能重复绑定！", MemberRelation);
-            } else {
-                PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
-                BeanUtils.copyProperties(form, patientMemberRelation);
-                if (form.getBindType() == 0) { //type为0 添加会员卡权限绑定
-                    patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-                    patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-                    patientMemberRelation.setCrtName(BaseContextHandler.getName());
-                    this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-                }
-
-                if (form.getBindType() == 1) { //type为1 添加会员卡共享值 双项绑定
-                    patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-                    patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-                    patientMemberRelation.setCrtName(BaseContextHandler.getName());
-                    this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-                    int MasterCardI = patientMemberRelation.getMasterCardId();
-                    patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
-                    patientMemberRelation.setSecondaryCardId(MasterCardI);
-                    this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-                }
-
-                return ResponseUtil.success();
-            }
         }
+        PatientMemberRelation ispatientMemberRelation = patientMemberRelationMapper.findMemberBindingRelation(form);
+        if(ispatientMemberRelation != null){
+            return ResponseUtil.error("已存在绑定关系,不能双向绑定！", ispatientMemberRelation);
+        }
+        PatientMemberRelation MemberRelation = this.patientMemberRelationMapper.findBindingRelation(form);
+        if (MemberRelation != null) {
+            return ResponseUtil.error("该副卡人已存在,不能重复绑定！", MemberRelation);
+        } else {
+            PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
+            BeanUtils.copyProperties(form, patientMemberRelation);
+            if (form.getBindType() == 0) { //type为0 添加会员卡权限绑定
+                patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+                patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+                patientMemberRelation.setCrtName(BaseContextHandler.getName());
+                this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+            }
+
+            if (form.getBindType() == 1) { //type为1 添加会员卡共享值 双项绑定
+                patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+                patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+                patientMemberRelation.setCrtName(BaseContextHandler.getName());
+                this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+                int MasterCardI = patientMemberRelation.getMasterCardId();
+                patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
+                patientMemberRelation.setSecondaryCardId(MasterCardI);
+                this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+            }
+
+            return ResponseUtil.success();
+        }
+
     }
 
     /**
@@ -151,7 +155,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     public String generateCardNumber(String Mark, String tableName, String column) {
         String number = this.mapper.generateCardNumber(Integer.parseInt(BaseContextHandler.getOrgId()), tableName, column);
         String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-        String cardNumber = Mark + "000" + suffix;
+        String orgid = String.format("%04d", Integer.parseInt(BaseContextHandler.getOrgId()));
+        String cardNumber = Mark + orgid + suffix;
         return cardNumber;
     }
 

@@ -23,13 +23,13 @@ public class PrepaidExpendRecordModel implements Serializable {
     /**
      * 患者id
      */
-    @ApiModelProperty(value = "患者id",required = true)
+    @ApiModelProperty(value = "患者id (就诊患者id)",required = true)
     private Integer patientId;
 
     /**
      * 预付款卡号
      */
-    @ApiModelProperty(value = "会员卡号",required = true)
+    @ApiModelProperty(value = "预付款卡号",required = true)
     private String prepaidId;
 
     /**
@@ -37,6 +37,24 @@ public class PrepaidExpendRecordModel implements Serializable {
      */
     @ApiModelProperty(value = "消费总额",required = true)
     private BigDecimal expendTotal;
+
+    /**
+     * 就诊id
+     */
+    @ApiModelProperty(value = "就诊id")
+    private Integer treatmentRecordId;
+
+    /**
+     * 账单id
+     */
+    @ApiModelProperty(value = "账单id")
+    private Integer billRecordId;
+
+    /**
+     * 账单付款记录id
+     */
+    @ApiModelProperty(value = "账单付款记录id")
+    private Integer billPayRecordId;
 
     /**
      * 备注

@@ -12,6 +12,9 @@
     <result column="expend_principal" property="expendPrincipal" jdbcType="DECIMAL" />
     <result column="expend_gift" property="expendGift" jdbcType="DECIMAL" />
     <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER" />
+    <result column="bill_record_id" property="billRecordId" jdbcType="INTEGER" />
+    <result column="bill_pay_record_id" property="billPayRecordId" jdbcType="INTEGER" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />

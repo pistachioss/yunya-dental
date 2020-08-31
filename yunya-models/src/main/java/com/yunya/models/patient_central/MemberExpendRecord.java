@@ -1,5 +1,7 @@
 package com.yunya.models.patient_central;
 
+import io.swagger.models.auth.In;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -82,6 +84,24 @@ public class MemberExpendRecord {
      */
     @Column(name = "upd_time")
     private Date updTime;
+
+    /**
+     * 就诊id
+     */
+    @Column(name = "treatment_record_id")
+    private Integer treatmentRecordId;
+
+    /**
+     * 账单id
+     */
+    @Column(name = "bill_record_id")
+    private Integer billRecordId;
+
+    /**
+     * 账单付款记录id
+     */
+    @Column(name = "bill_pay_record_id")
+    private Integer billPayRecordId;
 
     /**
      * @return id
@@ -311,5 +331,60 @@ public class MemberExpendRecord {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+
+    /**
+     * 获取就诊id
+     *
+     * @return treatmentRecordId - 就诊id
+     */
+    public Integer getTreatmentRecordId() {
+        return treatmentRecordId;
+    }
+
+    /**
+     * 设置就诊id
+     *
+     * @param treatmentRecordId 就诊id
+     */
+    public void setTreatmentRecordId(Integer treatmentRecordId) {
+        this.treatmentRecordId = treatmentRecordId;
+    }
+
+    /**
+     * 获取账单id
+     *
+     * @return billRecordId - 账单id
+     */
+    public Integer getBillRecordId() {
+        return billRecordId;
+    }
+
+    /**
+     * 设置账单id
+     *
+     * @param billRecordId 账单id
+     */
+    public void setBillRecordId(Integer billRecordId) {
+        this.billRecordId = billRecordId;
+    }
+
+    /**
+     * 获取账单付款记录id
+     *
+     * @return billPayRecordId - 账单付款记录id
+     */
+    public Integer getBillPayRecordId() {
+        return billPayRecordId;
+    }
+
+    /**
+     * 设置账单付款记录id
+     *
+     * @param billPayRecordId 账单付款记录id
+     */
+    public void setBillPayRecordId(Integer billPayRecordId) {
+        this.billPayRecordId = billPayRecordId;
     }
 }
