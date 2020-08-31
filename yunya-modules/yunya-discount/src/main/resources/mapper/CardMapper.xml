@@ -42,9 +42,10 @@
 
     <select id="getSumNumByCouponId" resultType="int">
         select
-            ifnull(count(`coupon_id`), 0)
+            count(`coupon_id`)
         from `card`
         where `coupon_id` = #{couponId}
+          and `org_id` != 0 and isnull(`org_id`) = 0
     </select>
 
     <insert id="insertList" parameterType="List">

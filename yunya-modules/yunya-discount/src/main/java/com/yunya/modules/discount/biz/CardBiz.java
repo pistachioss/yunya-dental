@@ -660,8 +660,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         pageInfo.setTotal(page.getTotal());
         pageInfo.setPageNum(page.getPageNum());
         return pageInfo;
-
-
     }
 
     private CardQrCodeVo checkCouponDeadline(Integer couponId, Integer type) {
@@ -835,6 +833,15 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     private RestErrorBo checkCouponAllocate(List<ClinicAllocateModel> allocateList, Integer couponId, LocalDateTime submitDate) {
         RestErrorBo errorBo = RestErrorBo.getInstance();
+        //该产品卡券已生成数量
+        int sumGenerateNum = mapper.getSumNumByCouponId(couponId);
+        //所有组织卡券总数
+        int sumAllocate = allocateList.stream().mapToInt(ClinicAllocateModel::getAllocateNum).sum();
+        if (sumGenerateNum >= 999999 || (sumGenerateNum + sumAllocate) > 999999) {
+            log.warn("【卡券生成失败】：已超过卡券最大生成数量");
+            errorBo.setError(BEYOND_CARD_LIMIT_NUM);
+            return errorBo;
+        }
         Example example = new Example(CouponAllocate.class);
         example.createCriteria().andEqualTo("couponId", couponId)
                 .andEqualTo("crtTime", submitDate);
@@ -1007,7 +1014,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         //售出结束时间
         Date saleEndDate = couponInfo.getAvailableSaleEndDate();
         Date now = new Date();
-        if (saleStartDate != null && saleEndDate != null && (now.before(saleStartDate) || now.after(saleEndDate))) {
+        if (saleStartDate != null && saleEndDate != null &&
+                (now.before(saleStartDate) || now.after(saleEndDate))) {
             log.warn("【售卖失败】卡券不在优惠券[{}]售出时间范围内", couponInfo.getId());
             errorBo.setError(SOLD_DATE_RANGE_ERROR);
             return errorBo;
