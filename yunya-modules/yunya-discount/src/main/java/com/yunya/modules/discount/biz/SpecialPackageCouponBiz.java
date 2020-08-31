@@ -31,6 +31,10 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper, SpecialPackageCoupon> {
+
+    // 套餐券编码类型
+    private static final String SPECIAL_PACKAGE_COUPON_TYPE = "TC";
+
     @Autowired
     private CouponAllocateMapper couponAllocateMapper;
     @Autowired private CouponCommonInfoMapper couponCommonInfoMapper;
@@ -60,6 +64,11 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
         specialPackageCoupon.setCouponId(couponCommonInfo.getId());
         specialPackageCoupon.setUseableClinic(specialPackageCouponForm.getUseableClinic());
         insertSelective(specialPackageCoupon);//插入卡券信息
+
+        String num = String.format("%04d", specialPackageCoupon.getId());
+        couponCommonInfo.setCouponCode(SPECIAL_PACKAGE_COUPON_TYPE + num);
+        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+
         return couponCommonInfo.getId();
     }
 

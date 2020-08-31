@@ -35,11 +35,9 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
-    // 代金券类型
-    private static final Integer RECHARGE_CARD_TYPE = 3;
-    // 状态
-    private static final Integer FINISH = 1;
-    private static final Integer PLAN = 0;
+    // 充值卡编码类型
+    private static final String RECHARGE_CARD_TYPE = "CZ";
+
 
     @Autowired private CouponAllocateMapper couponAllocateMapper;
     @Autowired private CouponCommonInfoMapper couponCommonInfoMapper;
@@ -69,6 +67,11 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
         rechargeCard.setCouponId(couponCommonInfo.getId());
         rechargeCard.setBonus(rechargeCardForm.getFaceValue().subtract(rechargeCardForm.getSoldAmount()));
         insertSelective(rechargeCard);//插入卡券信息
+
+        String num = String.format("%04d", rechargeCard.getId());
+        couponCommonInfo.setCouponCode(RECHARGE_CARD_TYPE + num);
+        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+
         return couponCommonInfo.getId();
 
     }
