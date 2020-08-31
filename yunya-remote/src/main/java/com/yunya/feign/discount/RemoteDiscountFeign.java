@@ -1,7 +1,7 @@
 package com.yunya.feign.discount;
 
 import com.yunya.feign.discount.domain.form.*;
-import com.yunya.feign.system.factory.*;
+import com.yunya.feign.discount.factory.*;
 import com.yunya.framework.common.annation.*;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.model.*;
@@ -13,7 +13,7 @@ import javax.validation.*;
 
 @FeignClient(
         name = YunyaServiceNameConstants.YUNYA_DISCOUNT,
-        fallbackFactory = RemoteSystemServiceFallBackFactory.class)
+        fallbackFactory = RemoteDiscountFallBackFactory.class)
 public interface RemoteDiscountFeign {
 
     @ApiOperation(value = "患者档案-产品管理-激活-自有平台激活")
