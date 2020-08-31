@@ -11,7 +11,7 @@ package com.yunya.modules.patient_central.constant;
 public class WoPlatformConstants {
     /** ---------------------WO平台相关常量--------------------------------- */
 
-    /** 应用Id */
+    /** 应用id */
     public static final String APPID = "D40708B670E54D2DA06B1A3974A66EA4";
 
     /** 设备序列号 */
@@ -23,6 +23,16 @@ public class WoPlatformConstants {
 
     /** 设备授权类型 1:本地库 2:云端库 */
     public static final byte TYPE = 1;
+
+    /** ---------------------WO平台人脸识别硬件信息--------------------------------- */
+
+    /** 人脸识别硬件设备
+
+    /** 人脸识别硬件ip */
+    public static final String IP = "192.168.19.96";
+
+    /** 心跳方法条用url前缀 */
+    public static final String URL = "http://" + IP + ":" + "8090";
 
     /** ---------------------患者信息--------------------------------- */
 

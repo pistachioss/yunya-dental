@@ -111,6 +111,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/src/main/resources/lib/wo-sdk.jar</systemPath>
         </dependency>
+        <!-- http访问 -->
+        <dependency>
+            <groupId>commons-httpclient</groupId>
+            <artifactId>commons-httpclient</artifactId>
+            <version>3.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

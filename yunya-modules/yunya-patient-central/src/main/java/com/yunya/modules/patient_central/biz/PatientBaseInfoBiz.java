@@ -17,11 +17,15 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
+import com.yunya.modules.patient_central.constant.WoPlatformConstants;
+import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
+import org.apache.commons.httpclient.NameValuePair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.alibaba.fastjson.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
