@@ -23,6 +23,7 @@
         <result column="link" jdbcType="VARCHAR" property="link" />
         <result column="sold_way" jdbcType="TINYINT" property="soldWay" />
         <result column="is_pay" jdbcType="TINYINT" property="pay" />
+        <result column="active_date" jdbcType="TIMESTAMP" property="activeDate"/>
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
         <result column="upd_id" jdbcType="INTEGER" property="updId" />
@@ -164,20 +165,102 @@
         group by `coupon_id`, `org_id`;
     </select>
 
-    <update id="updateSoldInfoById" parameterType="com.yunya.models.discount.Card">
-        update `card`
-        set `status`            = #{status},
-            `sold_target`       = #{soldTarget},
-            `sold_phone_number` = #{soldPhoneNumber},
-            `sold_type`         = #{soldType},
-            `is_send_text`      = #{sendText},
-            `is_sold_and_pay`   = #{soldAndPay},
-            `pay_id`            = #{payId},
-            `sale_channel_id`   = #{saleChannelId},
-            `remark`            = #{remark},
-            `sold_way`          = #{soldWay},
-            `is_pay`            = #{pay},
-            `upd_id`            = #{updId}
-        where `id` = #{id}
-    </update>
+    <select id="findByCardNumAndPass" resultType="com.yunya.feign.discount.domain.vo.CardActiveDetailVo">
+        select
+            `c`.`id`,
+            `c`.`card_number`,
+            `c`.`sold_target`,
+            `c`.`sold_phone_number`,
+            case
+                when `c`.`is_sold_and_pay` = 1 then `cci`.`sold_amount`
+                else 0
+                end              as `paidAmount`,
+            case
+                when `c`.`is_sold_and_pay` = 0 then 1
+                else 0
+                end              as `charge`,
+            case
+                when `c`.`is_sold_and_pay` = 0 then `cci`.`sold_amount`
+                else 0
+                end              as `soldAmount`
+        from `card` `c`
+             inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
+        where `c`.`card_number` = #{cardNumber}
+          and `c`.`card_password` = #{cardPassword}
+    </select>
+
+    <select id="listPatientCardsByParam" resultType="com.yunya.feign.discount.domain.bo.PatientCardBo">
+        select
+            `c`.`id`                                   as `cardId`,
+            `cci`.`id`                                 as `couponId`,
+            `cci`.`name`                               as `couponName`,
+            `c`.`card_number`,
+            `cci`.`type`                               as `couponType`,
+            `cci`.`product_type_id`,
+            `c`.`sale_channel_id`,
+            case
+                when `cci`.`type` = 2 then
+                        (select `use_way` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 2 then
+                    (select `use_way` from `special_package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                else null
+                end                                as `useWay`,
+            case
+                when `cci`.`type` = 0 then
+                    (select
+                         date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                     from `vouche_coupon`
+                     where `coupon_id` = `c`.coupon_id)
+                when `cci`.`type` = 1 then
+                    (select
+                         date_add(`c`.`active_date`, interval `effective_days` day)
+                     from `discount_coupon`
+                     where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 2 then
+                    (select
+                         date_add(`c`.`active_date`, interval `effective_days` day)
+                     from `package_coupon`
+                     where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 3 then
+                    (select
+                         date_add(`c`.`active_date`, interval `effective_days` day)
+                     from `special_package_coupon`
+                     where `coupon_id` = `c`.`coupon_id`)
+                else null
+                end                                    as `useDeadline`,
+            date_format(`c`.`active_date`, '%Y-%m-%d') as `activeDate`,
+            case
+                when `cci`.`type` = 0 then
+                        (select `is_share` from `vouche_coupon` where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 1 then
+                        (select `is_share` from `discount_coupon` where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 2 then
+                        (select `is_share` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                when `cci`.`type` = 3 then
+                    (select `is_share` from `special_package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                else null
+                end                                     as `share`
+            <if test="queryType != null and queryType == 1">
+                , `c`.`patient_id`                      as `cardOwner`
+            </if>
+        from `card` `c`
+             inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
+        where
+            <!-- 0：自有产品 1：共享产品-->
+            <if test="queryType != null and queryType == 0">
+                `c`.`patient_id` = #{patientId}
+            </if>
+            <if test="queryType != null and queryType == 1">
+                find_in_set(#{patientId}, `c`.`sharer`) and `c`.`patient_id` != #{patientId}
+            </if>
+            <if test="couponName !=null and couponName != ''">
+                and `cci`.`name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponTypeList != null and couponTypeList.size() > 0">
+                and `cci`.`type` in
+                <foreach collection="couponTypeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+    </select>
 </mapper>

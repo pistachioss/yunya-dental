@@ -18,7 +18,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Api("诊疗服务接口暴露")
+@Api(tags = "诊疗服务接口暴露")
 @RestController
 @RequestMapping("rpc")
 public class TreatmentServiceRest {

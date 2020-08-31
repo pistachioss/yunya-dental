@@ -77,4 +77,6 @@ public class BusinessConstants {
   public static Integer CARD_PASS_BIT = 6;
   /** 卡券导出文件名 */
   public static String EXPORT_CARD_FILENAME = "产品生成分配";
+  /** 优惠券有效期 */
+  public static String COUPON_ALWAYS_EFFECT = "永久有效";
 }

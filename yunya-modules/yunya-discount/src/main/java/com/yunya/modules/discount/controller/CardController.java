@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.*;
 import javax.servlet.http.*;
 import javax.validation.*;
+import javax.validation.constraints.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -77,7 +78,7 @@ public class CardController {
     @ApiOperation(value = "产品售卖--查看配给分页查询")
     @PostMapping("/coupon/sale/card/page")
     public ResponseResult<PageInfo<CardSalePageVo>> getCardSalePageVo(@Valid @RequestBody CardSaleQuery query) {
-        PageInfo<CardSalePageVo> pageInfo = cardBiz.getCardSalePageVo(query);
+        PageInfo<CardSalePageVo> pageInfo = cardBiz.getCardSalePage(query);
         return ResponseUtil.success(pageInfo);
     }
 
@@ -85,12 +86,72 @@ public class CardController {
     @PutMapping("/coupon/card/sale/{id}")
     @CurrentUser
     public ResponseResult soldCard(@PathVariable(value = "id") Integer cardId,@Valid @RequestBody CardSoldForm form) {
-        return cardBiz.cardSold(cardId, form);
+        return cardBiz.soldCard(cardId, form);
     }
 
     @ApiOperation(value = "卡券二维码页面打开")
-    @GetMapping("/coupon/card/qrcode/{id}/{data}")
-    public ResponseResult<CardQrCodeVo> cardQrCodeCheck(@PathVariable(value = "id") Integer id, @PathVariable(value = "data") String cardQrData) {
-        return null;
+    @GetMapping("/coupon/card/QRCode/init")
+    public ResponseResult<CardQrCodeVo> cardQrCodeCheck(@NotBlank @RequestParam String cardQrData) {
+        CardQrCodeVo codeVo = cardBiz.cardQrCodeCheck(cardQrData);
+        return ResponseUtil.success(codeVo);
     }
+
+    @ApiOperation(value = "取消售出")
+    @PutMapping("/coupon/card/cancel/{id}")
+    @CurrentUser
+    public ResponseResult cancelCardSold(@PathVariable(value = "id") Integer cardId, @Valid @RequestBody CancelCardSoldForm form) {
+        return cardBiz.cancelCardSold(cardId, form);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-激活-手动查询卡券详情")
+    @PostMapping("/patient/product/card/manual/detail")
+    public ResponseResult<CardActiveDetailVo> cardManualDetail(@Valid @RequestBody CardActiveQuery query) {
+        CardActiveDetailVo detail = cardBiz.getCardDetailByManual(query);
+        return ResponseUtil.success(detail);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-激活-扫码枪卡券详情")
+    @GetMapping("/patient/product/card/machine/detail")
+    public ResponseResult<CardActiveDetailVo> cardMachineDetail(@NotBlank @RequestParam String cardQrCode) {
+        CardActiveDetailVo detail = cardBiz.getCardDetailByMachine(cardQrCode);
+        return ResponseUtil.success(detail);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-激活-自有平台激活")
+    @PutMapping("/patient/{id}/product/card/owner/activation")
+    @CurrentUser
+    public ResponseResult ownActiveCard(@PathVariable(value = "id") Integer patientId, @Valid @RequestBody OwnCardActiveForm form) {
+        return cardBiz.ownActiveCard(patientId, form);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-激活-第三方平台激活")
+    @PutMapping("/patient/{id}/product/card/other/activation")
+    @CurrentUser
+    public ResponseResult otherActiveCard(@PathVariable(value = "id") Integer patientId, @Valid @RequestBody OtherCardActiveForm form) {
+        return cardBiz.otherActiveCard(patientId, form);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-配置共享人")
+    @PutMapping("/patient/{id}/product/card/{cardId}/configuration/sharer")
+    @CurrentUser
+    public ResponseResult configSharer(@PathVariable(value = "id") Integer patientId, @PathVariable(value = "cardId") Integer cardId,
+                                        @Valid @RequestBody ConfigSharerForm form) {
+        return cardBiz.configSharer(patientId, cardId, form);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-查询已配置共享人")
+    @GetMapping("/patient/product/card/{cardId}/configuration/sharer")
+    @CurrentUser
+    public ResponseResult<List<PatientCardSharerVo>> getConfiguredSharer(@PathVariable(value = "cardId") Integer cardId) {
+        List<PatientCardSharerVo> configuredSharer = cardBiz.getConfiguredSharer(cardId);
+        return ResponseUtil.success(configuredSharer);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-分页查询")
+    @PostMapping("/patient/{id}/product/card/page")
+    public ResponseResult<PageInfo<PatientCardBaseVo>> getPatientCardList(@PathVariable(value = "id") Integer patientId, @Valid @RequestBody PatientCardQuery query) {
+        PageInfo<PatientCardBaseVo> pageInfo = cardBiz.getPatientCardPage(patientId, query);
+        return ResponseUtil.success(pageInfo);
+    }
+
 }

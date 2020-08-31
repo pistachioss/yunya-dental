@@ -18,7 +18,6 @@ import java.io.*;
 @GroupSequenceProvider(CardSoldGroupSequenceProvider.class)
 public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "优惠券id", required = true)
-    @NotNull(groups = Treatment.class)
     private Integer couponId;
     @ApiModelProperty(value = "组织id", required = true)
     @NotNull
@@ -61,7 +60,5 @@ public class CardSoldForm implements Serializable {
     public interface PayViewGroup {
     }
     public interface PayNotViewGroup {
-    }
-    public interface Treatment {
     }
 }

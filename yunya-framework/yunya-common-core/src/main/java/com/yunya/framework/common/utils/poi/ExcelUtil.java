@@ -380,8 +380,9 @@ public class ExcelUtil<T> {
     style.setBottomBorderColor(IndexedColors.GREY_50_PERCENT.getIndex());
     Font dataFont = wb.createFont();
     dataFont.setFontName("Arial");
-    dataFont.setFontHeightInPoints((short) 10);
+    dataFont.setFontHeightInPoints((short) 12);
     style.setFont(dataFont);
+    style.setWrapText(true);
     styles.put("data", style);
 
     style = wb.createCellStyle();
@@ -392,8 +393,9 @@ public class ExcelUtil<T> {
     style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
     Font headerFont = wb.createFont();
     headerFont.setFontName("Arial");
-    headerFont.setFontHeightInPoints((short) 10);
+    headerFont.setFontHeightInPoints((short) 12);
     headerFont.setBold(true);
+    style.setWrapText(true);
     headerFont.setColor(IndexedColors.WHITE.getIndex());
     style.setFont(headerFont);
     styles.put("header", style);
@@ -403,7 +405,7 @@ public class ExcelUtil<T> {
     style.setVerticalAlignment(VerticalAlignment.CENTER);
     Font totalFont = wb.createFont();
     totalFont.setFontName("Arial");
-    totalFont.setFontHeightInPoints((short) 10);
+    totalFont.setFontHeightInPoints((short) 12);
     style.setFont(totalFont);
     styles.put("total", style);
     return styles;
@@ -821,7 +823,7 @@ public class ExcelUtil<T> {
 
   /** 合并单元格 */
   public void mergeRegion() {
-    if (regions != null && !regions.isEmpty()) {
+    if (StringHelper.isNotEmpty(regions)) {
       regions.forEach(cellRangeAddress -> sheet.addMergedRegion(cellRangeAddress));
     }
   }

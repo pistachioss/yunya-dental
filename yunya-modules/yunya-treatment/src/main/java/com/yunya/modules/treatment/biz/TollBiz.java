@@ -53,7 +53,7 @@ public class TollBiz {
     OrderRecord orderRecord = checkParam(model);
 
     Integer orderRecordId = model.getOrderRecordId();
-    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId);
+    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId, 5);
 
     // 开单总额
     BigDecimal totalAmount = orderRecord.getTotalAmount();

@@ -32,5 +32,5 @@ public class AccreditDiscountModel implements Serializable {
   private String remarks;
 
   /** 授权折扣详情信息 */
-  private List<AccreditDiscountDetailModel> detailModels;
+  private List<AccreditDiscountDetailModel> accreditDiscountDetailModels;
 }

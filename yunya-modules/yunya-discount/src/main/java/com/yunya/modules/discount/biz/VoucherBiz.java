@@ -32,12 +32,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
-    // 代金券类型
-    private static final Integer VOUCHER_TYPE = 0;
-    // 状态
-    private static final Integer FINISH = 1;
-    private static final Integer PLAN = 0;
-
+    // 代金券编码类型
+    private static final String VOUCHER_TYPE = "DJ";
 
     @Autowired
     private CouponAllocateMapper couponAllocateMapper;
@@ -74,6 +70,11 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         voucheCoupon.setMixedUseType(voucheCouponForm.getMixedUseType().byteValue());
         voucheCoupon.setUseableClinci(voucheCouponForm.getUseableClinci());
         insertSelective(voucheCoupon);//插入卡券信息
+
+        String num = String.format("%04d", voucheCoupon.getId());
+        couponCommonInfo.setCouponCode(VOUCHER_TYPE + num);
+        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+
         return couponCommonInfo.getId();
 
     }
