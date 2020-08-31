@@ -1,7 +1,6 @@
 package com.yunya.modules.discount.enums;
 
 public enum CardQrCodeEnum {
-
     QR_CODE_NORMAL(0, "正常"),
     QR_CODE_INVALID(1, "失效"),
     QR_CODE_EXPIRED(2, "过期"),

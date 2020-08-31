@@ -16,7 +16,7 @@ import java.time.*;
 public class Card implements Serializable {
 
     @Id
-    @GeneratedValue(generator = "JDBC")
+    @GeneratedValue(generator = "JDBC", strategy = GenerationType.IDENTITY)
     private Integer id;
 
     /**
@@ -44,7 +44,7 @@ public class Card implements Serializable {
     private Integer activeOrgId;
 
     /**
-     * 系统患者id（以后c端用）
+     * 患者id(激活卡券)
      */
     @Column(name = "patient_id")
     private Integer patientId;
@@ -134,6 +134,12 @@ public class Card implements Serializable {
      */
     @Column(name = "is_pay")
     private Integer pay;
+
+    /**
+     * 激活时间
+     */
+    @Column(name = "active_date")
+    private LocalDateTime activeDate;
 
     /**
      * 创建人

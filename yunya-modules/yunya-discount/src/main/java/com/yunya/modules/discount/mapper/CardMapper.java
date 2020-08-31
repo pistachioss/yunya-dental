@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.mapper;
 
 import com.yunya.feign.discount.domain.bo.*;
+import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.models.discount.*;
 import org.apache.ibatis.annotations.*;
 
@@ -29,5 +30,8 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
 
     int getOrgCardSoldInfoByParam(@Param("couponId") Integer couponId, @Param("orgId") Integer orgId);
 
-    void updateSoldInfoById(Card card);
+    CardActiveDetailVo findByCardNumAndPass(@Param("cardNumber") String cardNumber, @Param("cardPassword") String cardPassword);
+
+    List<PatientCardBo> listPatientCardsByParam(@Param("patientId") Integer patient, @Param("couponName") String couponName,
+                                                @Param("couponTypeList") List<Integer> couponTypeList, @Param("queryType") Integer queryType);
 }
