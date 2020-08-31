@@ -1,7 +1,6 @@
 package com.yunya.modules.treatment.controller;
 
-import com.yunya.feign.treatment.domain.form.OrderDetailForm;
-import com.yunya.feign.treatment.domain.model.OrderDetailModel;
+import com.yunya.feign.treatment.domain.form.OrderRecordForm;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -12,8 +11,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 简介: 患者就诊开单管理
@@ -95,7 +92,7 @@ public class OrderRecordController {
    * 根据开单记录ID修改订单明细并提交
    *
    * @param orderRecordId 开单记录ID
-   * @param models 开单明细
+   * @param form 开单明细
    * @return
    */
   @CurrentUser
@@ -103,8 +100,8 @@ public class OrderRecordController {
   @PutMapping("/modify/{orderRecordId}")
   public ResponseResult modifyAndCommitOrder(
       @PathVariable(value = "orderRecordId") Integer orderRecordId,
-      @RequestBody @Validated List<OrderDetailModel> models) {
-    orderRecordBiz.modifyAndCommitOrder(orderRecordId, models);
+      @RequestBody @Validated OrderRecordForm form) {
+    orderRecordBiz.modifyAndCommitOrder(orderRecordId, form);
     return ResponseUtil.success();
   }
 }

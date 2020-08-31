@@ -26,5 +26,5 @@ public class GeneralDiscountModel implements Serializable {
   private Integer memberTypeId;
 
   /** 患者卡券信息 */
-  private List<CouponDiscountInfoModel> couponInfoModels;
+  private List<CouponDiscountInfoModel> couponDiscountInfoModels;
 }

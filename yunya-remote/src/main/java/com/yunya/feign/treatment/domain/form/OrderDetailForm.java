@@ -22,6 +22,9 @@ import java.io.Serializable;
 @Data
 @ToString
 public class OrderDetailForm implements Serializable {
+  @ApiModelProperty("开单明细ID")
+  private Integer orderDetailId;
+
   @ApiModelProperty(value = "开单类型（0-价目表；1-商品；）", required = true)
   @NotNull(message = "开单类型不能为空！")
   private Byte type;

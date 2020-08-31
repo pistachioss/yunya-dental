@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.treatment.domain.form.OrderRecordForm;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
@@ -94,7 +95,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
     redisUtils.set(
-        RedisConstants.LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId, treatmentRecordId);
+        RedisConstants.LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId, treatmentRecordId, 5);
     List<OrderDetailModel> models = model.getOrderDetails();
     int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -320,11 +321,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /**
    * 修改开单明细并提交开单信息
-   *
-   * @param orderRecordId 开单记录ID
-   * @param models 开单信息
+   *  @param orderRecordId 开单记录ID
+   * @param form 开单修改信息
    */
-  public void modifyAndCommitOrder(Integer orderRecordId, List<OrderDetailModel> models) {
+  public void modifyAndCommitOrder(Integer orderRecordId, OrderRecordForm form) {
     OrderRecord orderRecord = mapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
       throw new ClientServiceException(
@@ -337,12 +337,13 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           "修改开单失败，无法修改已完成结算的账单！", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
 
+    List<OrderDetailModel> models = form.getOrderDetails();
     if (StringHelper.isEmpty(models)) {
       throw new ClientServiceException(
           "修改开单失败，请至少提交一条开单项目！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
 
-    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK, orderRecordId);
+    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK, orderRecordId, 5);
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     OrderDetail orderDetail = new OrderDetail();

@@ -765,7 +765,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
         new ExcelUtil<>(BaseTariffAssociationImportModel.class);
     List<BaseTariffAssociationImportModel> models =
         excelUtil.importExcel(excelFile.getInputStream());
-    if (null == models || models.size() == 0) {
+    if (StringHelper.isNotEmpty(models)) {
       throw new ClientServiceException(
           "导入失败,导入的价目表数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
