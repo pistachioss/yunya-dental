@@ -1,5 +1,8 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -30,6 +33,8 @@ public class TollBiz {
 
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+  /** 患者服务调用 */
+  @Autowired private PatientCentralServiceFeign patientCentralServiceFeign;
   /** 开单记录 */
   @Autowired private OrderRecordBiz orderRecordBiz;
   /** 开单明细 */
@@ -51,7 +56,6 @@ public class TollBiz {
   public void confirm(TollModel model) {
     // 参数校验
     OrderRecord orderRecord = checkParam(model);
-
     Integer orderRecordId = model.getOrderRecordId();
     redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId, 5);
 
@@ -78,8 +82,6 @@ public class TollBiz {
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
-
-    // todo 调用服务扣除对应预付款、会员卡账户余额
 
     BillRecord billRecord = new BillRecord();
     billRecord.setOrgId(orgId);
@@ -116,96 +118,24 @@ public class TollBiz {
     billPayRecord.setCrtId(userId);
     billPayRecord.setCrtName(name);
     billPayRecordBiz.insertSelective(billPayRecord);
-
     Integer billPayRecordId = billPayRecord.getId();
+    if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
+      usePrepaymentAccount(
+          prepaymentAccountModels, patientId, treatmentRecordId, billRecordId, billPayRecordId);
+    }
+    if (StringHelper.isNotEmpty(memberAccountModels)) {
+      useMemberAccount(
+          memberAccountModels, patientId, treatmentRecordId, billRecordId, billPayRecordId);
+    }
+
     saveBillPayDetailRecord(
         billPayRecordId, prepaymentAccountModels, memberAccountModels, paymentModels);
-
     orderRecord.setStatus((byte) 2);
     orderRecordBiz.updateSelectiveById(orderRecord);
-
     TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
     treatmentRecord.setStatus((byte) 4);
     treatmentRecordBiz.updateSelectiveById(treatmentRecord);
-
     redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
-  }
-
-  /**
-   * 保存账单入账明细记录
-   *
-   * @param billPayRecordId 账单收费记录ID
-   * @param prepaymentAccountModels 预付款账户列表
-   * @param memberAccountModels 会员卡账户列表
-   * @param paymentModels 其他入账方式列表
-   */
-  private void saveBillPayDetailRecord(
-      Integer billPayRecordId,
-      Set<PrepaymentAccountModel> prepaymentAccountModels,
-      Set<MemberAccountModel> memberAccountModels,
-      Set<PaymentModel> paymentModels) {
-    BillPayRecord billPayRecord = billPayRecordBiz.selectById(billPayRecordId);
-    Integer patientId = billPayRecord.getPatientId();
-    Integer treatmentRecordId = billPayRecord.getTreatmentRecordId();
-    Integer orderRecordId = billPayRecord.getOrderRecordId();
-    Integer billRecordId = billPayRecord.getBillRecordId();
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
-    if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
-      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
-      prepaymentAccountModels.forEach(
-          prepaymentAccountModel -> {
-            billPayDetailRecord.setOrgId(orgId);
-            billPayDetailRecord.setPatientId(patientId);
-            billPayDetailRecord.setTreatmentRecordId(treatmentRecordId);
-            billPayDetailRecord.setOrderRecordId(orderRecordId);
-            billPayDetailRecord.setBillRecordId(billRecordId);
-            billPayDetailRecord.setBillPayRecordId(billPayRecordId);
-            billPayDetailRecord.setAccountItemId(prepaymentAccountModel.getAccountItemId());
-            billPayDetailRecord.setAmount(prepaymentAccountModel.getAmount());
-            billPayDetailRecord.setType((byte) 0);
-            billPayDetailRecord.setCrtId(userId);
-            billPayDetailRecord.setCrtName(name);
-            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
-          });
-    }
-    if (StringHelper.isNotEmpty(memberAccountModels)) {
-      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
-      memberAccountModels.forEach(
-          memberAccountModel -> {
-            billPayDetailRecord.setOrgId(orgId);
-            billPayDetailRecord.setPatientId(patientId);
-            billPayDetailRecord.setTreatmentRecordId(treatmentRecordId);
-            billPayDetailRecord.setOrderRecordId(orderRecordId);
-            billPayDetailRecord.setBillRecordId(billRecordId);
-            billPayDetailRecord.setBillPayRecordId(billPayRecordId);
-            billPayDetailRecord.setAccountItemId(memberAccountModel.getAccountItemId());
-            billPayDetailRecord.setAmount(memberAccountModel.getAmount());
-            billPayDetailRecord.setType((byte) 1);
-            billPayDetailRecord.setCrtId(userId);
-            billPayDetailRecord.setCrtName(name);
-            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
-          });
-    }
-    if (StringHelper.isNotEmpty(paymentModels)) {
-      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
-      paymentModels.forEach(
-          paymentModel -> {
-            billPayDetailRecord.setOrgId(orgId);
-            billPayDetailRecord.setPatientId(patientId);
-            billPayDetailRecord.setTreatmentRecordId(treatmentRecordId);
-            billPayDetailRecord.setOrderRecordId(orderRecordId);
-            billPayDetailRecord.setBillRecordId(billRecordId);
-            billPayDetailRecord.setBillPayRecordId(billPayRecordId);
-            billPayDetailRecord.setAccountItemId(paymentModel.getAccountItemId());
-            billPayDetailRecord.setAmount(paymentModel.getAmount());
-            billPayDetailRecord.setType((byte) 2);
-            billPayDetailRecord.setCrtId(userId);
-            billPayDetailRecord.setCrtName(name);
-            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
-          });
-    }
   }
 
   /**
@@ -283,5 +213,146 @@ public class TollBiz {
       }
     }
     return totalAmount;
+  }
+
+  /**
+   * 保存账单入账明细记录
+   *
+   * @param billPayRecordId 账单收费记录ID
+   * @param prepaymentAccountModels 预付款账户列表
+   * @param memberAccountModels 会员卡账户列表
+   * @param paymentModels 其他入账方式列表
+   */
+  private void saveBillPayDetailRecord(
+      Integer billPayRecordId,
+      Set<PrepaymentAccountModel> prepaymentAccountModels,
+      Set<MemberAccountModel> memberAccountModels,
+      Set<PaymentModel> paymentModels) {
+    if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
+      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
+      prepaymentAccountModels.forEach(
+          prepaymentAccountModel -> {
+            setBillPayRecordValue(
+                billPayRecordId,
+                billPayDetailRecord,
+                prepaymentAccountModel.getAccountItemId(),
+                prepaymentAccountModel.getAmount());
+            billPayDetailRecord.setType((byte) 0);
+            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
+          });
+    }
+    if (StringHelper.isNotEmpty(memberAccountModels)) {
+      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
+      memberAccountModels.forEach(
+          memberAccountModel -> {
+            setBillPayRecordValue(
+                billPayRecordId,
+                billPayDetailRecord,
+                memberAccountModel.getAccountItemId(),
+                memberAccountModel.getAmount());
+            billPayDetailRecord.setType((byte) 1);
+            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
+          });
+    }
+    if (StringHelper.isNotEmpty(paymentModels)) {
+      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
+      paymentModels.forEach(
+          paymentModel -> {
+            setBillPayRecordValue(
+                billPayRecordId,
+                billPayDetailRecord,
+                paymentModel.getAccountItemId(),
+                paymentModel.getAmount());
+            billPayDetailRecord.setType((byte) 2);
+            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
+          });
+    }
+  }
+
+  /**
+   * 设置账单支付明细记录字段属性
+   *
+   * @param billPayRecordId 账单支付记录
+   * @param billPayDetailRecord 账单支付详情
+   * @param accountItemId 支付方式ID
+   * @param amount 支付金额
+   */
+  private void setBillPayRecordValue(
+      Integer billPayRecordId,
+      BillPayDetailRecord billPayDetailRecord,
+      Integer accountItemId,
+      BigDecimal amount) {
+    BillPayRecord billPayRecord = billPayRecordBiz.selectById(billPayRecordId);
+    Integer patientId = billPayRecord.getPatientId();
+    Integer treatmentRecordId = billPayRecord.getTreatmentRecordId();
+    Integer orderRecordId = billPayRecord.getOrderRecordId();
+    Integer billRecordId = billPayRecord.getBillRecordId();
+    billPayDetailRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+    billPayDetailRecord.setPatientId(patientId);
+    billPayDetailRecord.setTreatmentRecordId(treatmentRecordId);
+    billPayDetailRecord.setOrderRecordId(orderRecordId);
+    billPayDetailRecord.setBillRecordId(billRecordId);
+    billPayDetailRecord.setBillPayRecordId(billPayRecordId);
+    billPayDetailRecord.setAccountItemId(accountItemId);
+    billPayDetailRecord.setAmount(amount);
+    billPayDetailRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    billPayDetailRecord.setCrtName(BaseContextHandler.getName());
+  }
+
+  /**
+   * 使用会员账户付款
+   *
+   * @param memberAccountModels 会员账户列表
+   * @param patientId 患者ID
+   * @param treatmentRecordId 就诊记录ID
+   * @param billRecordId 账单记录ID
+   * @param billPayRecordId 账单支付记录ID
+   */
+  private void useMemberAccount(
+      Set<MemberAccountModel> memberAccountModels,
+      Integer patientId,
+      Integer treatmentRecordId,
+      Integer billRecordId,
+      Integer billPayRecordId) {
+    MemberExpendRecordModel memberExpendRecordModel = new MemberExpendRecordModel();
+    memberAccountModels.forEach(
+        memberAccountModel -> {
+          memberExpendRecordModel.setPatientId(patientId);
+          memberExpendRecordModel.setMemberId(memberAccountModel.getMemberAccountId().toString());
+          memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
+          memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+          memberExpendRecordModel.setBillRecordId(billRecordId);
+          memberExpendRecordModel.setBillPayRecordId(billPayRecordId);
+          patientCentralServiceFeign.expend(memberExpendRecordModel);
+        });
+  }
+
+  /**
+   * 使用预付款账户付款
+   *
+   * @param prepaymentAccountModels 预付款账户列表
+   * @param patientId 患者ID
+   * @param treatmentRecordId 就诊记录ID
+   * @param billRecordId 账单ID
+   * @param billPayRecordId 账单支付记录ID
+   */
+  private void usePrepaymentAccount(
+      Set<PrepaymentAccountModel> prepaymentAccountModels,
+      Integer patientId,
+      Integer treatmentRecordId,
+      Integer billRecordId,
+      Integer billPayRecordId) {
+    PrepaidExpendRecordModel prepaidExpendRecordModel = new PrepaidExpendRecordModel();
+    prepaymentAccountModels.forEach(
+        prepaymentAccountModel -> {
+          prepaidExpendRecordModel.setPatientId(patientId);
+          prepaidExpendRecordModel.setPrepaidId(
+              prepaymentAccountModel.getPrepaymentAccountId().toString());
+          prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
+          prepaidExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+          prepaidExpendRecordModel.setBillRecordId(billRecordId);
+          prepaidExpendRecordModel.setBillPayRecordId(billPayRecordId);
+          patientCentralServiceFeign.expend(prepaidExpendRecordModel);
+        });
   }
 }
