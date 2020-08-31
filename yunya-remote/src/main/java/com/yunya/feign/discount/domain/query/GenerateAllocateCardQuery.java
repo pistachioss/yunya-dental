@@ -14,8 +14,7 @@ import java.time.*;
 @Getter
 @Setter
 @ApiModel(value = "查看分配查询模型")
-public class GenerateAllocateQuery {
-
+public class GenerateAllocateCardQuery {
     @ApiModelProperty(value = "优惠券id", required = true)
     @NotNull
     private Integer couponId;
