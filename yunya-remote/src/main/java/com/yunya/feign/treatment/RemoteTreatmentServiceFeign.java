@@ -2,6 +2,8 @@ package com.yunya.feign.treatment;
 
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -67,4 +69,23 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/treatment/modify/{id}", method = RequestMethod.GET)
   void updateTreatmentRecord(@PathVariable(value = "id") Integer id);
+
+  /**
+   * 根据开单记录ID查询开单记录
+   *
+   * @param id 开单记录ID
+   * @return
+   */
+  @RequestMapping(value = "/rpc/order/one/{id}", method = RequestMethod.GET)
+  OrderRecord findOrderRecordById(@PathVariable(value = "id") Integer id);
+
+  /**
+   * 根据开单记录ID查询开单明细列表
+   *
+   * @param orderRecordId 开单记录ID
+   * @return
+   */
+  @RequestMapping(value = "/rpc/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
+  List<OrderDetail> findOrderDetailByOrderRecordId(
+      @PathVariable(value = "orderRecordId") Integer orderRecordId);
 }
