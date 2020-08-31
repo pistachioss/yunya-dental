@@ -102,6 +102,23 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return pageInfo;
     }
 
+    public List<GenerateAllocateDetailVo> getGenerateAllocateList(GenerateAllocateDetailQuery query) {
+        Example example = new Example(CouponAllocate.class);
+        example.createCriteria().andEqualTo("couponId", query.getCouponId())
+                .andEqualTo("crtTime", query.getSubmitDate());
+        List<CouponAllocate> allocateList = allocateMapper.selectByExample(example);
+        List<GenerateAllocateDetailVo> list = allocateList.stream().map(obj -> {
+            GenerateAllocateDetailVo vo = new GenerateAllocateDetailVo();
+            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(obj.getOrgId());
+            vo.setOrgId(obj.getOrgId());
+            vo.setAllocateNum(obj.getAllocateNum());
+            vo.setCouponAllocateId(obj.getId());
+            vo.setOrgName(orgInfo == null ? null : orgInfo.getName());
+            return vo;
+        }).collect(toList());
+        return list;
+    }
+
     /**
      * 生成分配
      *
@@ -127,6 +144,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(COUPON_IS_LOCKED);
             }
             log.info("【锁定成功】准备提交卡券生成分配...");
+
+            CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
+            if (coupon == null || !coupon.getIsInservice()) {
+                return ResponseUtil.error(COUPON_NOT_EXIST);
+            }
             //1. 校验优惠券分配信息
             int count = allocateMapper.countGeneratedByParam(couponId, submitDate);
             if (count > 0) {
@@ -212,7 +234,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param query query
      * @return list
      */
-    public List<ViewAllocateVo> getAllocateDetail(GenerateAllocateQuery query) {
+    public List<ViewAllocateVo> getAllocateDetail(GenerateAllocateCardQuery query) {
         //查询优惠券分配ids
         List<Integer> allocateIds = listIdsBySubmitParam(query);
         List<ViewAllocateVo> list = Lists.newArrayList();
@@ -235,7 +257,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
      * @param query query
      * @return list
      */
-    public List<ExportCardAllocateVo> getExportCardAllocateList(GenerateAllocateQuery query) {
+    public List<ExportCardAllocateVo> getExportCardAllocateList(GenerateAllocateCardQuery query) {
         //查询优惠券分配ids
         List<Integer> allocateIds = listIdsBySubmitParam(query);
         List<ExportCardAllocateVo> list = Lists.newArrayList();
@@ -867,7 +889,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         return Base64.getEncoder().encodeToString(builder.toString().getBytes());
     }
 
-    private List<Integer> listIdsBySubmitParam(GenerateAllocateQuery query) {
+    private List<Integer> listIdsBySubmitParam(GenerateAllocateCardQuery query) {
         Example example = new Example(CouponAllocate.class);
         example.createCriteria().andEqualTo("couponId", query.getCouponId())
                 .andEqualTo("crtTime", query.getSubmitDate());

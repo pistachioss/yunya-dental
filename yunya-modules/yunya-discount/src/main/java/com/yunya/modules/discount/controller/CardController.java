@@ -37,10 +37,17 @@ public class CardController {
     private CardBiz cardBiz;
 
     @ApiOperation(value = "产品生成分配分页查询")
-    @PostMapping("/coupon/allocation/generate/page")
-    public ResponseResult<PageInfo<GenerateAllocatePageVo>> getGenerateAllocateList(@Valid @RequestBody CouponAllocateQuery query) {
+    @PostMapping("/coupon/generate/allocation/page")
+    public ResponseResult<PageInfo<GenerateAllocatePageVo>> getCouponAllocatePage(@Valid @RequestBody CouponAllocateQuery query) {
         PageInfo<GenerateAllocatePageVo> pageInfo = cardBiz.getCouponAllocatePage(query);
         return ResponseUtil.success(pageInfo);
+    }
+
+    @ApiOperation(value = "产品生成分配--生成分配明细查询")
+    @PostMapping("/coupon/generate/allocation/list")
+    public ResponseResult<List<GenerateAllocateDetailVo>> getGenerateAllocateList(@Valid @RequestBody GenerateAllocateDetailQuery query) {
+        List<GenerateAllocateDetailVo> list = cardBiz.getGenerateAllocateList(query);
+        return ResponseUtil.success(list);
     }
 
     @ApiOperation(value = "产品生成分配--生成分配")
@@ -51,15 +58,15 @@ public class CardController {
     }
 
     @ApiOperation(value = "产品生成分配--查看配给")
-    @PostMapping("/coupon/generate/allocation/detail")
-    public ResponseResult<List<ViewAllocateVo>> getAllocateDetail(@Valid @RequestBody GenerateAllocateQuery query) {
+    @PostMapping("/coupon/card/generate/detail")
+    public ResponseResult<List<ViewAllocateVo>> getAllocateDetail(@Valid @RequestBody GenerateAllocateCardQuery query) {
         List<ViewAllocateVo> list = cardBiz.getAllocateDetail(query);
         return ResponseUtil.success(list);
     }
 
     @ApiOperation(value = "产品生成分配--查看配给--导出")
     @PostMapping("/coupon/generate/allocation/detail/export")
-    public void exportAllocateDetail(HttpServletResponse response, @Valid @RequestBody GenerateAllocateQuery query) throws IOException {
+    public void exportAllocateDetail(HttpServletResponse response, @Valid @RequestBody GenerateAllocateCardQuery query) throws IOException {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         String fileName = URLEncoder.encode(EXPORT_CARD_FILENAME, "UTF-8");
