@@ -23,8 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
-import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 描述:
@@ -68,9 +67,13 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
         rechargeCard.setBonus(rechargeCardForm.getFaceValue().subtract(rechargeCardForm.getSoldAmount()));
         insertSelective(rechargeCard);//插入卡券信息
 
+        if(rechargeCard.getId()<10000){//同一种卡券最多添加9999个
         String num = String.format("%04d", rechargeCard.getId());
         couponCommonInfo.setCouponCode(RECHARGE_CARD_TYPE + num);
         couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+        }else{
+            throw new BaseException("已超过系统允许新增充值卡产品的最大数量9999，不允许新增！", INSERT_MODEL);
+        }
 
         return couponCommonInfo.getId();
 
