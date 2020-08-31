@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.mapper;
 
+import com.yunya.feign.patient_central.domain.vo.PatientExpInfoVo;
 import com.yunya.models.patient_central.PatientExpInfo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -10,5 +11,5 @@ public interface PatientExpInfoMapper extends Mapper<PatientExpInfo> {
      * @param id
      * @return PatientExpInfo
      */
-    PatientExpInfo selectIdByPatientId(@Param ("id") Integer id);
+    PatientExpInfoVo selectIdByPatientId(@Param ("id") Integer id);
 }

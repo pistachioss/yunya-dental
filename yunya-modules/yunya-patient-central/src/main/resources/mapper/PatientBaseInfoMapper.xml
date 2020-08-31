@@ -52,8 +52,8 @@
 		   cast(SUM(pmi.principal_amount+pmi.bonus_amount) as decimal(15,2)) memberCardMoneySum,
 		   cast(SUM(ppi.prepayment_principal+ppi.prepayment_bonus)as decimal(15,2)) prepaymentsMoneySum
     from patient_base_info pbi
-    join patient_prepayments_info ppi on pbi.id = ppi.patient_id
-    join patient_member_info pmi      on pbi.id = pmi.patient_id
+    left join patient_prepayments_info ppi on pbi.id = ppi.patient_id
+    left join patient_member_info pmi      on pbi.id = pmi.patient_id
     where pbi.id = #{id}
   </select>
 

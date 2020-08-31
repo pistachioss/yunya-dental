@@ -43,7 +43,7 @@
   </sql>
 
   <!--根据患者id查询患者扩展信息-->
-  <select id="selectIdByPatientId" resultType="com.yunya.models.patient_central.PatientExpInfo">
+  <select id="selectIdByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientExpInfoVo">
     select <include refid="PatientExpInfo_Column_List"/> from patient_exp_info where patient_id = #{id}
   </select>
 </mapper>

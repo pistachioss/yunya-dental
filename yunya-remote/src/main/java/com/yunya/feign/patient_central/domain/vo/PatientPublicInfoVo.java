@@ -67,5 +67,4 @@ public class PatientPublicInfoVo implements Serializable {
      */
     private Integer memberTypeId;
 
-
 }
