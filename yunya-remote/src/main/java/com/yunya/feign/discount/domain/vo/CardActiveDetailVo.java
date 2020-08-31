@@ -23,8 +23,10 @@ public class CardActiveDetailVo {
     private String soldPhoneNumber;
     @ApiModelProperty(value = "已支付金额（不需要收费时候展示）")
     private BigDecimal paidAmount;
-    @ApiModelProperty(value = "卡券售出金额（需要收费时候展示）")
+    @ApiModelProperty(value = "卡券售出金额（需要收费时候展示）（充值卡的本金）")
     private BigDecimal soldAmount;
     @ApiModelProperty(value = "是否收费（0：否 1：是）")
     private Integer charge;
+    @ApiModelProperty(value = "赠金")
+    private BigDecimal bonus;
 }

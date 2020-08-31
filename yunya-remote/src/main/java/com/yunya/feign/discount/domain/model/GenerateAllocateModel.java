@@ -16,20 +16,13 @@ import java.util.*;
 @Setter
 @ApiModel(value = "生成分配卡券模型")
 public class GenerateAllocateModel {
-
     @ApiModelProperty(value = "优惠券id", required = true)
     @NotNull
     private Integer couponId;
-
-    @ApiModelProperty(value = "优惠券code", required = true)
-    @NotBlank
-    private String couponCode;
-
     @ApiModelProperty(value = "提交时间", required = true)
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private LocalDateTime submitDate;
-
     @ApiModelProperty(value = "配给集合", required = true)
     @NotEmpty
     private List<ClinicAllocateModel> allocateList;

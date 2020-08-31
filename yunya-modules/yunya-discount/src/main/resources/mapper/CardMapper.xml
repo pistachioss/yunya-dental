@@ -184,7 +184,12 @@
             case
                 when `c`.`is_sold_and_pay` = 0 then `cci`.`sold_amount`
                 else 0
-                end              as `soldAmount`
+                end              as `soldAmount`,
+            case
+                when `cci`.`type` = 4 then
+                        (select `bonus` from `recharge_card` where `coupon_id` = `c`.`coupon_id`)
+                else null
+                end              as `bonus`
         from `card` `c`
              inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
         where `c`.`card_number` = #{cardNumber}

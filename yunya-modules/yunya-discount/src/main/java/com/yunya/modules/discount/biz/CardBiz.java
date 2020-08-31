@@ -16,7 +16,6 @@ import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.biz.*;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.*;
-import com.yunya.framework.common.exception.*;
 import com.yunya.framework.common.model.*;
 import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.*;
@@ -169,7 +168,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
             }
             //3. 提交生成分配
-            errorBo = generateAllocateDetail(allocateList, couponId, submitDate, allocateModel.getCouponCode());
+            errorBo = generateAllocateDetail(allocateList, couponId, submitDate, coupon.getCouponCode());
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
@@ -468,7 +467,18 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     public CardActiveDetailVo getCardDetailByManual(CardActiveQuery query) {
         String cardPassEncode = Base64.getEncoder().encodeToString(query.getCardPassword().getBytes());
+        Example example = new Example(Card.class);
+        example.createCriteria().andEqualTo("cardNumber", query.getCardNumber())
+                .andEqualTo("cardPassword", cardPassEncode);
+        Card card = mapper.selectOneByExample(example);
+        if (card == null) {
+            return null;
+        }
+        if (!ACTIVE_PENDING.equals(card.getStatus())) {
+            return null;
+        }
         return mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode);
+
     }
 
     public CardActiveDetailVo getCardDetailByMachine(String qrCode) {
@@ -476,7 +486,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
         Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
         if (card == null) {
-            throw new ClientServiceException(CARD_NOT_EXIST.getMessage(), CARD_NOT_EXIST.getCode());
+            return null;
+        }
+        if (!ACTIVE_PENDING.equals(card.getStatus())) {
+            return null;
         }
         return mapper.findByCardNumAndPass(card.getCardNumber(), card.getCardPassword());
     }
