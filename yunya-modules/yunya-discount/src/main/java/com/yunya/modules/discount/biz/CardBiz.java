@@ -1,44 +1,58 @@
 package com.yunya.modules.discount.biz;
 
-import com.github.pagehelper.*;
-import com.google.common.base.*;
-import com.google.common.collect.*;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.yunya.feign.discount.domain.bo.*;
 import com.yunya.feign.discount.domain.form.*;
-import com.yunya.feign.discount.domain.model.*;
+import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
+import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
 import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.*;
-import com.yunya.feign.emr.domain.bo.*;
-import com.yunya.feign.patient_central.*;
-import com.yunya.feign.patient_central.domain.vo.*;
-import com.yunya.feign.system.*;
-import com.yunya.feign.system.vo.*;
-import com.yunya.framework.common.biz.*;
-import com.yunya.framework.common.constant.*;
-import com.yunya.framework.common.context.*;
-import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.model.*;
-import com.yunya.framework.common.utils.*;
-import com.yunya.framework.redis.util.*;
+import com.yunya.feign.emr.domain.bo.RestErrorBo;
+import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.constant.UserConstant;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.BeanCopierUtils;
+import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.*;
-import com.yunya.models.patient_central.*;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.discount.enums.*;
 import com.yunya.modules.discount.mapper.*;
-import lombok.extern.slf4j.*;
-import org.apache.commons.collections4.*;
-import org.apache.commons.lang3.*;
-import org.springframework.security.crypto.bcrypt.*;
-import org.springframework.stereotype.*;
-import org.springframework.transaction.annotation.*;
-import tk.mybatis.mapper.entity.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.*;
-import java.security.*;
-import java.time.*;
-import java.time.format.*;
+import javax.annotation.Resource;
+import java.security.SecureRandom;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
@@ -46,8 +60,10 @@ import static com.yunya.modules.discount.enums.CardQrCodeEnum.*;
 import static com.yunya.modules.discount.enums.CardStatusEnum.*;
 import static com.yunya.modules.discount.enums.CouponTypeEnum.*;
 import static com.yunya.modules.discount.enums.DiscountError.*;
-import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
-import static java.util.stream.Collectors.*;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.FALSE;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * 描述:
@@ -79,6 +95,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     private SalesChannelMapper salesChannelMapper;
     @Resource
     private ProductTypeMapper productTypeMapper;
+    @Resource
+    private RechargeCardMapper rechargeCardMapper;
     @Resource
     private RedisUtils redisUtils;
     @Resource(name = "customizeThreadPool")
@@ -169,7 +187,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
                 return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
             }
             //3. 提交生成分配
-            errorBo = generateAllocateDetail(allocateList, couponId, submitDate, allocateModel.getCouponCode());
+            errorBo = generateAllocateDetail(allocateList, couponId, submitDate, coupon.getCouponCode());
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
@@ -409,7 +427,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             vo.setCardQrCodeType(QR_CODE_INVALID.getCode());
             return vo;
         }
-//        boolean isMatch = new BCryptPasswordEncoder().matches(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword()), data.get(0));
         //已核销
         if (ACTIVATED.equals(card.getStatus())) {
             vo.setCardQrCodeType(QR_CODE_DESTROY.getCode());
@@ -468,7 +485,18 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
     public CardActiveDetailVo getCardDetailByManual(CardActiveQuery query) {
         String cardPassEncode = Base64.getEncoder().encodeToString(query.getCardPassword().getBytes());
-        return mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode);
+        Example example = new Example(Card.class);
+        example.createCriteria().andEqualTo("cardNumber", query.getCardNumber())
+                .andEqualTo("cardPassword", cardPassEncode);
+        Card card = mapper.selectOneByExample(example);
+        if (card == null) {
+            return null;
+        }
+        if (!ACTIVE_PENDING.equals(card.getStatus())) {
+            return null;
+        }
+        return  mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode);
+
     }
 
     public CardActiveDetailVo getCardDetailByMachine(String qrCode) {
@@ -476,7 +504,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
         Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
         if (card == null) {
-            throw new ClientServiceException(CARD_NOT_EXIST.getMessage(), CARD_NOT_EXIST.getCode());
+            return null;
+        }
+        if (!ACTIVE_PENDING.equals(card.getStatus())) {
+            return null;
         }
         return mapper.findByCardNumAndPass(card.getCardNumber(), card.getCardPassword());
     }
@@ -711,6 +742,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             example.createCriteria().andEqualTo("couponId", couponId);
             SpecialPackageCoupon specialPackageCoupon = specialPackageMapper.selectOneByExample(example);
             deadline = specialPackageCoupon.getActivationDeadline();
+        }
+        if (RECHARGE.equals(type)) {
+            example = new Example(RechargeCard.class);
+            example.createCriteria().andEqualTo("couponId", couponId);
+            RechargeCard rechargeCard = rechargeCardMapper.selectOneByExample(example);
+            deadline = rechargeCard.getRechargeDeadline();
         }
         return deadline;
     }
