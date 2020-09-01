@@ -91,7 +91,7 @@ public class TemplateBiz {
         updateEntity.setId(templateId);
         updateEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         updateEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-        medicalMapper.updateByPrimaryKeySelective(updateEntity);
+        medicalMapper.updateByPrimaryKey(updateEntity);
     }
 
     public PageInfo<MedicalTemplatePageVo> getMedicalTemplatePage(Integer categoryId, TemplateQuery query) {

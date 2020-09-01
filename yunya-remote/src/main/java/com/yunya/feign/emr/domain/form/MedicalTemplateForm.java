@@ -23,7 +23,7 @@ public class MedicalTemplateForm {
     @Size(max = 25)
     private String name;
 
-    @ApiModelProperty(value = "模板类型（0：初诊  1：复诊）", required = true, example = "0：初诊  1：复诊")
+    @ApiModelProperty(value = "模板类型（0：初诊  1：复诊）", required = true)
     @NotNull
     private Integer type;
 
@@ -32,37 +32,30 @@ public class MedicalTemplateForm {
     private String reExamination;
 
     @ApiModelProperty(value = "主诉")
-    @NotBlank
     @Size(max = 1000)
     private String chiefComplaint;
 
     @ApiModelProperty(value = "现病史")
-    @NotBlank
     @Size(max = 1000)
     private String presentIllness;
 
     @ApiModelProperty(value = "既往史")
-    @NotBlank
     @Size(max = 1000)
     private String pastHistory;
 
     @ApiModelProperty(value = "检查")
-    @NotBlank
     @Size(max = 1000)
     private String examination;
 
     @ApiModelProperty(value = "诊断")
-    @NotBlank
     @Size(max = 1000)
     private String diagnosis;
 
     @ApiModelProperty(value = "计划")
-    @NotBlank
     @Size(max = 1000)
     private String plan;
 
     @ApiModelProperty(value = "处理")
-    @NotBlank
     @Size(max = 1000)
     private String treatment;
 
