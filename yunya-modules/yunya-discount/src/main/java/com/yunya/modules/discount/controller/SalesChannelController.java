@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.modules.discount.biz.SalesChannelBiz;
 import com.yunya.models.discount.SalesChannel;
 import com.yunya.framework.common.model.ResponseResult;
@@ -20,6 +21,7 @@ import javax.validation.Valid;
 @Api(tags = "销售渠道")
 @RestController
 @RequestMapping("/sales_channel")
+@CurrentUser
 public class SalesChannelController {
     @Autowired
     private SalesChannelBiz salesChannelBiz;
