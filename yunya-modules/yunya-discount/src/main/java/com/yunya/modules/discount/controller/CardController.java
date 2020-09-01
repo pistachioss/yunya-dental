@@ -125,23 +125,23 @@ public class CardController {
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-自有平台激活")
-    @PutMapping("/patient/{id}/product/card/owner/activation")
+    @PutMapping("/patient/{patientId}/product/card/owner/activation")
     @CurrentUser
-    public ResponseResult ownActiveCard(@PathVariable(value = "id") Integer patientId, @Valid @RequestBody OwnCardActiveForm form) {
+    public ResponseResult ownActiveCard(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody OwnCardActiveForm form) {
         return cardBiz.ownActiveCard(patientId, form);
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-第三方平台激活")
-    @PutMapping("/patient/{id}/product/card/other/activation")
+    @PutMapping("/patient/{patientId}/product/card/other/activation")
     @CurrentUser
-    public ResponseResult otherActiveCard(@PathVariable(value = "id") Integer patientId, @Valid @RequestBody OtherCardActiveForm form) {
+    public ResponseResult otherActiveCard(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody OtherCardActiveForm form) {
         return cardBiz.otherActiveCard(patientId, form);
     }
 
     @ApiOperation(value = "患者档案-产品管理-配置共享人")
-    @PutMapping("/patient/{id}/product/card/{cardId}/configuration/sharer")
+    @PutMapping("/patient/{patientId}/product/card/{cardId}/configuration/sharer")
     @CurrentUser
-    public ResponseResult configSharer(@PathVariable(value = "id") Integer patientId, @PathVariable(value = "cardId") Integer cardId,
+    public ResponseResult configSharer(@PathVariable(value = "patientId") Integer patientId, @PathVariable(value = "cardId") Integer cardId,
                                         @Valid @RequestBody ConfigSharerForm form) {
         return cardBiz.configSharer(patientId, cardId, form);
     }
@@ -155,8 +155,8 @@ public class CardController {
     }
 
     @ApiOperation(value = "患者档案-产品管理-分页查询")
-    @PostMapping("/patient/{id}/product/card/page")
-    public ResponseResult<PageInfo<PatientCardBaseVo>> getPatientCardList(@PathVariable(value = "id") Integer patientId, @Valid @RequestBody PatientCardQuery query) {
+    @PostMapping("/patient/{patientId}/product/card/page")
+    public ResponseResult<PageInfo<PatientCardBaseVo>> getPatientCardList(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody PatientCardQuery query) {
         PageInfo<PatientCardBaseVo> pageInfo = cardBiz.getPatientCardPage(patientId, query);
         return ResponseUtil.success(pageInfo);
     }

@@ -79,6 +79,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
     @Resource
     private ProductTypeMapper productTypeMapper;
     @Resource
+    private RechargeCardMapper rechargeCardMapper;
+    @Resource
     private RedisUtils redisUtils;
     @Resource(name = "customizeThreadPool")
     private ExecutorService cardThreadPool;
@@ -408,7 +410,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             vo.setCardQrCodeType(QR_CODE_INVALID.getCode());
             return vo;
         }
-//        boolean isMatch = new BCryptPasswordEncoder().matches(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword()), data.get(0));
         //已核销
         if (ACTIVATED.equals(card.getStatus())) {
             vo.setCardQrCodeType(QR_CODE_DESTROY.getCode());
@@ -477,7 +478,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         if (!ACTIVE_PENDING.equals(card.getStatus())) {
             return null;
         }
-        return mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode);
+        return  mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode);
 
     }
 
@@ -724,6 +725,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
             example.createCriteria().andEqualTo("couponId", couponId);
             SpecialPackageCoupon specialPackageCoupon = specialPackageMapper.selectOneByExample(example);
             deadline = specialPackageCoupon.getActivationDeadline();
+        }
+        if (RECHARGE.equals(type)) {
+            example = new Example(RechargeCard.class);
+            example.createCriteria().andEqualTo("couponId", couponId);
+            RechargeCard rechargeCard = rechargeCardMapper.selectOneByExample(example);
+            deadline = rechargeCard.getRechargeDeadline();
         }
         return deadline;
     }
