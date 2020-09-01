@@ -155,9 +155,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     public String generateCardNumber(String Mark, String tableName, String column) {
         String number = this.mapper.generateCardNumber(Integer.parseInt(BaseContextHandler.getOrgId()), tableName, column);
         String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-        String orgid = String.format("%04d", Integer.parseInt(BaseContextHandler.getOrgId()));
-        String cardNumber = Mark + orgid + suffix;
-        return cardNumber;
+        OrganizationInfo organizationInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(Integer.parseInt(BaseContextHandler.getOrgId())); //获取门诊简称
+        if (organizationInfo != null) {
+            String cardNumber = Mark + organizationInfo.getClinicNumber() + suffix;
+            return cardNumber;
+        }
+        return null;
     }
 
     /**

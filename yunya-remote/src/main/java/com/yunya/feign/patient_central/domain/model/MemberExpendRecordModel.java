@@ -42,24 +42,24 @@ public class MemberExpendRecordModel implements Serializable {
     /**
      * 就诊id
      */
-    @ApiModelProperty(value = "就诊id")
+    @ApiModelProperty(value = "就诊id",required = true)
     private Integer treatmentRecordId;
 
     /**
      * 账单id
      */
-    @ApiModelProperty(value = "账单id")
+    @ApiModelProperty(value = "账单id",required = true)
     private Integer billRecordId;
 
     /**
      * 账单付款记录id
      */
-    @ApiModelProperty(value = "账单付款记录id")
+    @ApiModelProperty(value = "账单付款记录id",required = true)
     private Integer billPayRecordId;
     /**
      * 备注
      */
-    @ApiModelProperty(value = "备注")
+    @ApiModelProperty(value = "备注",required = false)
     private String remarks;
 
 

@@ -43,4 +43,5 @@
         <table tableName="sys_post_element" domainObjectName="SysPostElement"/>-->
         <table tableName="patient_member_change_log" domainObjectName="patientMemberChangeLog"/>
     </context>
+
 </generatorConfiguration>

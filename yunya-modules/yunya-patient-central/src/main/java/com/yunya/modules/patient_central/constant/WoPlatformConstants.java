@@ -26,8 +26,8 @@ public class WoPlatformConstants {
 
     /** ---------------------WO平台人脸识别硬件信息--------------------------------- */
 
-    /** 人脸识别硬件设备
-
+    /** 人脸识别硬件设备密码 */
+    public static final String PASS = "123456";
     /** 人脸识别硬件ip */
     public static final String IP = "192.168.19.96";
 

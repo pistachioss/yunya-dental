@@ -11,6 +11,7 @@
     <result column="pinyin_name" property="pinyinName" jdbcType="VARCHAR" />
     <result column="face_url" property="faceUrl" jdbcType="VARCHAR" />
     <result column="wo_guid" property="woGuid" jdbcType="VARCHAR" />
+    <result column="person_id" property="personId" jdbcType="VARCHAR" />
     <result column="mobile" property="mobile" jdbcType="VARCHAR" />
     <result column="mobile_owner" property="mobileOwner" jdbcType="INTEGER" />
     <result column="medical_number" property="medicalNumber" jdbcType="VARCHAR" />
@@ -33,7 +34,7 @@
   <!--患者表中的全部字段-->
   <sql id="Patient_Column_List">
     id,org_id orgId,name,pinyin_name pinyinName,face_url faceUrl,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,
-    inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,source_id sourceId
+    inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,source_id sourceId,person_id personId
   </sql>
 
     <!--根据手机号查询用户是否纯在-->

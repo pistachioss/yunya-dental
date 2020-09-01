@@ -32,4 +32,18 @@ public class PictureForm implements Serializable {
     @ApiModelProperty(value = "照片所有者（人员id）personGuid",required = true)
     private String personGuid;
 
+    /**
+     * 照片id
+     */
+    @ApiModelProperty(value = "心跳版-照片id",required = true)
+    private String faceId;
+
+    /**
+     * 患者id
+     */
+    @ApiModelProperty(value = "心跳版-患者id",required = true)
+    private Integer patientId;
+
+
+
 }
