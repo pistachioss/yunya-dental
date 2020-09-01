@@ -42,4 +42,6 @@ public interface MedicalTemplateMapper extends Mapper<MedicalTemplate> {
      * @param enable
      */
     void enableById(@Param("categoryId") Integer categoryId, @Param("templateId") Integer templateId, @Param("enable") Integer enable);
+
+    void updateContent(@Param("template") MedicalTemplate template);
 }

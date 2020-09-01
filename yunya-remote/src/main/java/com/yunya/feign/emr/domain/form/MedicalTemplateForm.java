@@ -1,13 +1,11 @@
 package com.yunya.feign.emr.domain.form;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import com.yunya.feign.emr.valid.*;
+import io.swagger.annotations.*;
+import lombok.*;
+import org.hibernate.validator.group.*;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 
 /**
  * @author xiangyang
@@ -16,6 +14,7 @@ import javax.validation.constraints.Size;
 @Setter
 @Getter
 @ApiModel(value = "修改病例模板模型")
+@GroupSequenceProvider(MedicalTempGroupSequenceProvider.class)
 public class MedicalTemplateForm {
 
     @ApiModelProperty(value = "模板名称", required = true)
@@ -29,21 +28,25 @@ public class MedicalTemplateForm {
 
     @ApiModelProperty(value = "复诊")
     @Size(max = 1000)
+    @Null(groups = FirstVisitGroupNotView.class, message = "复诊内容必须为空")
     private String reExamination;
 
     @ApiModelProperty(value = "主诉")
     @NotBlank
     @Size(max = 1000)
+    @Null(groups = FollowUpGroupNotView.class, message = "主诉内容必须为空")
     private String chiefComplaint;
 
     @ApiModelProperty(value = "现病史")
     @NotBlank
     @Size(max = 1000)
+    @Null(groups = FollowUpGroupNotView.class, message = "现病史内容必须为空")
     private String presentIllness;
 
     @ApiModelProperty(value = "既往史")
     @NotBlank
     @Size(max = 1000)
+    @Null(groups = FollowUpGroupNotView.class, message = "既往史内容必须为空")
     private String pastHistory;
 
     @ApiModelProperty(value = "检查")
@@ -69,5 +72,9 @@ public class MedicalTemplateForm {
     @ApiModelProperty(value = "处方")
     @Size(max = 1000)
     private String prescription;
+
+    public interface FirstVisitGroupNotView{}
+
+    public interface FollowUpGroupNotView{}
 
 }
