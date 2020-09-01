@@ -105,7 +105,7 @@ public class CouponAllocateController {
      * @return
      */
     @PostMapping("/findAllocateDetail")
-    @ApiOperation("根据卡券Id查询配给信息列表")
+    @ApiOperation("根据配给时间查询配给详情")
     @CurrentUser
     public ResponseResult findAllocateDetail(@RequestBody @Valid CouponAllocateVO couponAllocateVO){
         return ResponseUtil.success(couponAllocateBiz.findVODetailList(couponAllocateVO));
