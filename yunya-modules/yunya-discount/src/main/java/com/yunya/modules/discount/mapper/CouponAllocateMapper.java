@@ -18,7 +18,7 @@ public interface CouponAllocateMapper extends Mapper<CouponAllocate> {
     int  countGeneratedByParam(@Param("couponId") Integer couponId, @Param("submitDate")LocalDateTime sumitDate);
     int insertAll(List<CouponAllocateForm> list);
     List<CouponAllocateVO> findVOList(Integer id);
-    List<CouponAllocateDetailVO> findVODetailList(CouponAllocateVO couponAllocateVO);
+    List<CouponAllocateDetailVO> findVODetailList(CouponAllocateDetailForm couponAllocateDetailForm);
 
     /**
      * 更新优惠券分配信息状态

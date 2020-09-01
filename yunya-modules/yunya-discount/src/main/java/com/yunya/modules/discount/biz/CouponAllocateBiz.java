@@ -10,6 +10,7 @@ import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.models.discount.CouponAllocate;
+import com.yunya.modules.discount.form.CouponAllocateDetailForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.form.CouponAllocateForm;
 import com.yunya.modules.discount.vo.CouponAllocateDetailVO;
@@ -61,7 +62,7 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
         return list;
     }
 
-    public  List<CouponAllocateDetailVO> findVODetailList(CouponAllocateVO couponAllocateVO){
+    public  List<CouponAllocateDetailVO> findVODetailList(CouponAllocateDetailForm couponAllocateDetailForm){
 
         //获取门诊信息
         OrganizationModel organizationModel = new OrganizationModel();
@@ -70,11 +71,11 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
         Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
         clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
 
-        List<CouponAllocateDetailVO>list =  mapper.findVODetailList(couponAllocateVO);//获取配给详情
+        List<CouponAllocateDetailVO>list =  mapper.findVODetailList(couponAllocateDetailForm);//获取配给详情
         for(CouponAllocateDetailVO couponAllocateDetailVO:list){
             OrganizationInfoDetail organizationInfoDetail = clinicMap.get(couponAllocateDetailVO.getOrgId() + "");
             if(organizationInfoDetail!=null){
-                couponAllocateDetailVO.setOrgName(organizationInfoDetail.getName());//设置们正信息
+                couponAllocateDetailVO.setOrgName(organizationInfoDetail.getName());//设置门诊信息
             }else{
                 throw new BaseException("无此门诊信息", OperationCodeConstants.DATA_NOT_EXIST);
             }
