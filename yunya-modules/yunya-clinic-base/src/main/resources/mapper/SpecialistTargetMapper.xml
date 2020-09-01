@@ -31,10 +31,10 @@
     AND date_type = #{dateType}
     AND team_type = #{teamType}
     <if test="startTime != null">
-      AND #{startTime} &gt; #{date}
+      AND #{startTime} &lt; date
     </if>
     <if test="endTime != null">
-      AND #{endTime} &lt; #{date}
+      AND #{endTime} > date
     </if>
 
   </select>
