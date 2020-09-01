@@ -10,6 +10,7 @@ import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.modules.discount.biz.CardBiz;
 import com.yunya.modules.discount.biz.CouponAllocateBiz;
+import com.yunya.modules.discount.form.CouponAllocateDetailForm;
 import com.yunya.modules.discount.form.CouponAllocateForm;
 import com.yunya.modules.discount.vo.CouponAllocateVO;
 import io.swagger.annotations.Api;
@@ -105,10 +106,10 @@ public class CouponAllocateController {
      * @return
      */
     @PostMapping("/findAllocateDetail")
-    @ApiOperation("根据卡券Id查询配给信息列表")
+    @ApiOperation("根据配给时间查询配给详情")
     @CurrentUser
-    public ResponseResult findAllocateDetail(@RequestBody @Valid CouponAllocateVO couponAllocateVO){
-        return ResponseUtil.success(couponAllocateBiz.findVODetailList(couponAllocateVO));
+    public ResponseResult findAllocateDetail(@RequestBody @Valid CouponAllocateDetailForm couponAllocateDetailForm){
+        return ResponseUtil.success(couponAllocateBiz.findVODetailList(couponAllocateDetailForm));
     }
 
 }
