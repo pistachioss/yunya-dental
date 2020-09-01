@@ -1,7 +1,11 @@
 package com.yunya.modules.treatment.rpc;
 
+import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.modules.treatment.biz.OrderDetailBiz;
+import com.yunya.modules.treatment.biz.OrderRecordBiz;
 import com.yunya.modules.treatment.biz.RegisteredBiz;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
 import io.swagger.annotations.Api;
@@ -27,6 +31,10 @@ public class TreatmentServiceRest {
   @Autowired private RegisteredBiz registeredBiz;
   /** 就诊记录 */
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
+  /** 开单记录 */
+  @Autowired private OrderRecordBiz orderRecordBiz;
+  /** 开单明细 */
+  @Autowired private OrderDetailBiz orderDetailBiz;
 
   /**
    * 根据挂号记录ID查询挂号记录
@@ -80,5 +88,30 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/treatment/modify/{id}", method = RequestMethod.GET)
   public void updateTreatmentRecord(@PathVariable(value = "id") Integer id) {
     treatmentRecordBiz.modifyTreatmentRecord(id);
+  }
+
+  /**
+   * 根据开单记录ID查询开单记录
+   *
+   * @param id 开单记录ID
+   * @return
+   */
+  @RequestMapping(value = "/order/one/{id}", method = RequestMethod.GET)
+  public OrderRecord findOrderRecordById(@PathVariable(value = "id") Integer id) {
+    return orderRecordBiz.selectById(id);
+  }
+
+  /**
+   * 根据开单记录ID查询开单明细列表
+   *
+   * @param orderRecordId 开单记录ID
+   * @return
+   */
+  @RequestMapping(value = "/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
+  public List<OrderDetail> findOrderDetailByOrderRecordId(
+      @PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    OrderDetail entity = new OrderDetail();
+    entity.setOrderRecordId(orderRecordId);
+    return orderDetailBiz.selectList(entity);
   }
 }

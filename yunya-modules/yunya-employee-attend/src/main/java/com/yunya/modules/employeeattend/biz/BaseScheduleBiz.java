@@ -6,7 +6,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
-import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;

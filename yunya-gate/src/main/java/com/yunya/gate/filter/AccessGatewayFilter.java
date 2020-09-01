@@ -22,9 +22,11 @@ import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -34,9 +36,11 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import javax.validation.constraints.NotNull;
+import java.awt.*;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
@@ -86,9 +90,8 @@ public class AccessGatewayFilter implements GlobalFilter {
     ServerHttpRequest request = serverWebExchange.getRequest();
     // 获取请求uri
     String requestUri = request.getPath().pathWithinApplication().value();
-    Iterator iterator = requiredAttribute.iterator();
-    while (iterator.hasNext()) {
-      URI next = (URI) iterator.next();
+    for (Object o : requiredAttribute) {
+      URI next = (URI) o;
       if (next.getPath().startsWith(GATE_WAY_PREFIX)) {
         // 截取api后的uri
         requestUri = next.getPath().substring(GATE_WAY_PREFIX.length());
@@ -161,12 +164,17 @@ public class AccessGatewayFilter implements GlobalFilter {
   @NotNull
   private Mono<Void> setUnauthorizedResponse(ServerWebExchange exchange, String msg) {
     ServerHttpResponse originalResponse = exchange.getResponse();
-    originalResponse.setStatusCode(HttpStatus.UNAUTHORIZED);
-    originalResponse.getHeaders().add("Content-Type", "application/json;charset=UTF-8");
-    byte[] response;
-    response = JSON.toJSONString(ResponseUtil.error(401, msg)).getBytes(StandardCharsets.UTF_8);
-    DataBuffer buffer = originalResponse.bufferFactory().wrap(response);
-    return originalResponse.writeWith(Flux.just(buffer));
+    originalResponse.setStatusCode(HttpStatus.OK);
+    originalResponse.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+
+    log.error("[鉴权异常处理]请求路径:{}", exchange.getRequest().getPath());
+
+    return originalResponse.writeWith(
+        Mono.fromSupplier(
+            () -> {
+              DataBufferFactory bufferFactory = originalResponse.bufferFactory();
+              return bufferFactory.wrap(JSON.toJSONBytes(ResponseUtil.fail(401, msg, null)));
+            }));
   }
 
   /**

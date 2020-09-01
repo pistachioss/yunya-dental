@@ -36,4 +36,6 @@ public class OperationCodeConstants {
   public static final Integer DATA_EXIST = 30013;
   /** 对象属性转换异常 */
   public static final Integer BEAN_CONVERT_ERROR = 30014;
+  /** 对象新增异常 */
+  public static final Integer INSERT_MODEL = 30015;
 }

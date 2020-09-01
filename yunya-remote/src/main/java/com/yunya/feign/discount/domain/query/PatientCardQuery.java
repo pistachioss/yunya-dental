@@ -18,7 +18,7 @@ public class PatientCardQuery {
     private String couponName;
     @ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券）")
     private List<Integer> couponTypeList;
-    @ApiModelProperty(value = "查询类型（0：自有 1：共享）")
+    @ApiModelProperty(value = "查询类型（0：自有 1：共享）", required = true)
     @NotNull
     private Integer queryType;
     @ApiModelProperty(value = "页码", required = true)

@@ -1,7 +1,7 @@
 package com.yunya.framework.common.utils;
 
 import com.yunya.framework.common.constant.*;
-import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.exception.ClientServiceException;
 import org.springframework.cglib.beans.*;
 import java.io.*;
 

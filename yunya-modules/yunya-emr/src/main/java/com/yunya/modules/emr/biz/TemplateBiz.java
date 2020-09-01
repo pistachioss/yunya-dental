@@ -89,9 +89,13 @@ public class TemplateBiz {
         }
         MedicalTemplate updateEntity = EntityUtils.build(updateForm, MedicalTemplate.class);
         updateEntity.setId(templateId);
+        updateEntity.setReExamination(updateForm.getReExamination());
+        updateEntity.setChiefComplaint(updateForm.getChiefComplaint());
+        updateEntity.setPresentIllness(updateForm.getPresentIllness());
+        updateEntity.setPastHistory(updateForm.getPastHistory());
         updateEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         updateEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-        medicalMapper.updateByPrimaryKeySelective(updateEntity);
+        medicalMapper.updateContent(updateEntity);
     }
 
     public PageInfo<MedicalTemplatePageVo> getMedicalTemplatePage(Integer categoryId, TemplateQuery query) {

@@ -1,6 +1,8 @@
 package com.yunya.feign.treatment.factory;
 
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import lombok.extern.slf4j.Slf4j;
@@ -19,29 +21,36 @@ import java.util.List;
 @Slf4j
 @Component
 public class RemoteTreatmentServiceFallBackFactory implements RemoteTreatmentServiceFeign {
-    @Override
-    public Registered findRegisteredById(Integer id) {
-        return null;
-    }
+  @Override
+  public Registered findRegisteredById(Integer id) {
+    return null;
+  }
 
-    @Override
-    public List<Registered> findRegisteredList(Registered entity) {
-        return null;
-    }
+  @Override
+  public List<Registered> findRegisteredList(Registered entity) {
+    return null;
+  }
 
-    @Override
-    public TreatmentRecord findTreatmentRecordById(Integer id) {
-        return null;
-    }
+  @Override
+  public TreatmentRecord findTreatmentRecordById(Integer id) {
+    return null;
+  }
 
-    @Override
-    public List<TreatmentRecord> findTreatmentRecordList(TreatmentRecord entity) {
-        return null;
-    }
+  @Override
+  public List<TreatmentRecord> findTreatmentRecordList(TreatmentRecord entity) {
+    return null;
+  }
 
-    @Override
-    public void updateTreatmentRecord(Integer id) {
+  @Override
+  public void updateTreatmentRecord(Integer id) {}
 
-    }
-    /***/
+  @Override
+  public OrderRecord findOrderRecordById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public List<OrderDetail> findOrderDetailByOrderRecordId(Integer orderRecordId) {
+    return null;
+  }
 }

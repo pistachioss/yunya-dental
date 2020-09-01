@@ -1,6 +1,7 @@
 package com.yunya.framework.common.handler;
 
 import com.yunya.framework.common.constant.CommonConstants;
+import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.exception.auth.ClientTokenException;
 import com.yunya.framework.common.exception.auth.UserAuthException;
@@ -55,8 +56,15 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(ClientServiceException.class)
-  public ResponseResult baseExceptionHandler(
+  public ResponseResult clientServiceExceptionHandler(
       HttpServletResponse response, ClientServiceException ex) {
+    response.setStatus(200);
+    log.error(ex.getMessage(), ex);
+    return ResponseUtil.fail(ex.getStatus(), ex.getMessage(), null);
+  }
+
+  @ExceptionHandler(BaseException.class)
+  public ResponseResult baseExceptionHandler(HttpServletResponse response, BaseException ex) {
     response.setStatus(200);
     log.error(ex.getMessage(), ex);
     return ResponseUtil.fail(ex.getStatus(), ex.getMessage(), null);

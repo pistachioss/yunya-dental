@@ -34,7 +34,8 @@
             `ca`.`allocate_date`       as `allocateDate`
         from `coupon_common_info` `cci`
             inner join `coupon_allocate` `ca` on `ca`.`coupon_id` = `cci`.`id`
-        <where>
+        where
+            `cci`.`is_inservice` = 1
             <if test="couponName !=null and couponName != ''">
                 and `cci`.`name` like concat('%', #{couponName}, '%')
             </if>
@@ -44,7 +45,6 @@
                     #{item}
                 </foreach>
             </if>
-        </where>
         group by `ca`.`coupon_id`, DATE_FORMAT(`ca`.`crt_time`, '%Y-%m-%d %H:%i:%s')
         order by `ca`.`allocate_user_id` asc, `ca`.`crt_time` desc
     </select>

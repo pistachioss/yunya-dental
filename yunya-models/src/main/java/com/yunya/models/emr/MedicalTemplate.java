@@ -2,10 +2,7 @@ package com.yunya.models.emr;
 
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 /**
@@ -16,7 +13,7 @@ import java.time.LocalDateTime;
 @Data
 public class MedicalTemplate implements Serializable {
     @Id
-    @GeneratedValue(generator = "JDBC")
+    @GeneratedValue(generator = "JDBC", strategy = GenerationType.IDENTITY)
     private Integer id;
 
     /**

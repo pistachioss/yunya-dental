@@ -13,7 +13,6 @@ import com.yunya.modules.appointment.mapper.ClinicAppointNotArrivedSettingMapper
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.crypto.spec.OAEPParameterSpec;
 import java.util.Date;
 
 /**

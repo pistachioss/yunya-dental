@@ -13,7 +13,7 @@ import javax.validation.constraints.*;
 @Setter
 @ApiModel(value = "配置共享人模型")
 public class ConfigSharerForm {
-    @ApiModelProperty(value = "共享人", example = "1,2,3")
+    @ApiModelProperty(value = "共享人", example = "1,2,3", required = true)
     @NotBlank
     private String sharerIdStr;
 }

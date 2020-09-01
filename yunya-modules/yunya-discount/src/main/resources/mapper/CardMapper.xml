@@ -42,9 +42,10 @@
 
     <select id="getSumNumByCouponId" resultType="int">
         select
-            ifnull(count(`coupon_id`), 0)
+            count(`coupon_id`)
         from `card`
         where `coupon_id` = #{couponId}
+          and `org_id` != 0 and isnull(`org_id`) = 0
     </select>
 
     <insert id="insertList" parameterType="List">
@@ -106,6 +107,7 @@
         from `coupon_common_info` `cci`
              inner join `coupon_allocate` `ca` on `cci`.`id` = `ca`.`coupon_id`
         where `ca`.`org_id` = #{orgId}
+            and `cci`.`is_inservice` = 1
             and isnull(`ca`.`allocate_user_id`) = 0
             and isnull(`ca`.`allocate_date`) = 0
             <if test="couponName !=null and couponName != ''">
@@ -246,12 +248,13 @@
         from `card` `c`
              inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
         where
+            `cci`.`is_inservice` = 1
             <!-- 0：自有产品 1：共享产品-->
             <if test="queryType != null and queryType == 0">
-                `c`.`patient_id` = #{patientId}
+                and `c`.`patient_id` = #{patientId}
             </if>
             <if test="queryType != null and queryType == 1">
-                find_in_set(#{patientId}, `c`.`sharer`) and `c`.`patient_id` != #{patientId}
+                and find_in_set(#{patientId}, `c`.`sharer`) and `c`.`patient_id` != #{patientId}
             </if>
             <if test="couponName !=null and couponName != ''">
                 and `cci`.`name` like concat('%', #{couponName}, '%')

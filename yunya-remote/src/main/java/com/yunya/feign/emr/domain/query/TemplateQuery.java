@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.*;
+
 /**
  * @author xiangyang
  * @date 2020/7/29
@@ -20,9 +22,10 @@ public class TemplateQuery {
     @ApiModelProperty(value = "1：启用 0：禁用")
     private Integer enable;
 
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(value = "页码", required = true)
+    @NotNull
     private Integer pageNum;
-
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(value = "每页数量", required = true)
+    @NotNull
     private Integer pageSize;
 }
