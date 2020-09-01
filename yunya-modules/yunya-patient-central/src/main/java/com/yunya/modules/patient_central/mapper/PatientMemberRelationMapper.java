@@ -42,5 +42,5 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @param form
      * @return
      */
-    PatientMemberRelation findMemberBindingRelation(MemberBindingRelationInfoModel form);
+    PatientMemberRelation findMemberBindingRelation(@Param("form") MemberBindingRelationInfoModel form);
 }

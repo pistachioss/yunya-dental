@@ -73,4 +73,21 @@
         where `medical_template_category_id` = #{categoryId}
           and `id` = #{templateId}
     </update>
+
+    <update id="updateContent">
+        update `medical_template`
+        set `name`= #{template.name},
+            `type`= #{template.type},
+            `re_examination`= #{template.reExamination},
+            `chief_complaint`= #{template.chiefComplaint},
+            `present_illness`= #{template.presentIllness},
+            `past_history`= #{template.pastHistory},
+            `examination`= #{template.examination},
+            `diagnosis`= #{template.diagnosis},
+            `plan`= #{template.plan},
+            `treatment`= #{template.treatment},
+            `prescription`= #{template.prescription},
+            `upd_id`= #{template.updId}
+        where `id` = #{template.id}
+    </update>
 </mapper>

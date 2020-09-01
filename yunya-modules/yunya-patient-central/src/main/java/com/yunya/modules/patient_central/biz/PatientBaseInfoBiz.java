@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.alibaba.fastjson.JSONArray;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.*;
@@ -120,8 +121,20 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientBaseInfo.setCrtName(BaseContextHandler.getName());
       patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      patientBaseInfo.setWoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); // wo平台创建对应人员 返回人员Guid添加到数据库
+      //patientBaseInfo.setWoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); // wo平台创建对应人员 返回人员Guid添加到数据库
+
+      JSONObject object = new JSONObject();
+      object.put("name",patientBaseInfo.getName());
+      String person = object.toJSONString();
+      NameValuePair[] data = {
+              new NameValuePair("pass",WoPlatformConstants.PASS),
+              new NameValuePair("person",person)
+      };
+      JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/person/create", data); //调用心跳接口创建人员信息
+      JSONObject jsonData = jsonObject.getJSONObject("data");
+      patientBaseInfo.setPersonId((String) jsonData.get("id"));
       mapper.insertSelective(patientBaseInfo);
+
       this.addPatientPrepaymentsInfo(patientBaseInfo); // 添加患者时,创建预付款账户
       return this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
@@ -225,7 +238,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
     PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
-    patientBaseInfo.setWoGuid(patientWoPlatformInfoModel.getGuid());
+    //patientBaseInfo.setWoGuid(patientWoPlatformInfoModel.getGuid());
     patientBaseInfo.setName("WO平台授权人脸识别结果成功");
     mapper.updateByPrimaryKeySelective(patientBaseInfo);
   }
@@ -256,7 +269,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    *
    * @param pictureForm
    */
-  public List<PictureVo> deleteThePhoto(PictureForm pictureForm) {
+  public List<PhotoInformationVo> deleteThePhoto(PictureForm pictureForm) {
     return woPersonBiz.deleteThePhoto(pictureForm);
   }
 
@@ -270,15 +283,28 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
   /**
-   * 获取wo平台人员照片
+   * 获取人员照片
    *
    * @param patientId
    * @return List<PictureVo>
    */
-  public ResponseResult getFaceUrl(Integer patientId) {
+  public ArrayList<PhotoInformationVo> getFaceUrl(Integer patientId) {
     PatientBaseInfo patientBaseInfo = this.patientBaseInfoMapper.selectPatientById(patientId);
-    List<PictureVo> woPersonnelFaceUrl = this.woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid());
-    return woPersonnelFaceUrl.size() >= 0 && woPersonnelFaceUrl != null ? ResponseUtil.success(this.woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid())) : ResponseUtil.error("未查询到照片，请先拍照", "");
+    //List<PictureVo> woPersonnelFaceUrl = this.woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid());
+    //return woPersonnelFaceUrl.size() >= 0 && woPersonnelFaceUrl != null ? ResponseUtil.success(this.woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid())) : ResponseUtil.error("未查询到照片，请先拍照", "");
+    ArrayList<PhotoInformationVo> photoInformationVos = new ArrayList<>();
+    NameValuePair[] data = {
+            new NameValuePair("pass",WoPlatformConstants.PASS),
+            new NameValuePair("personId",patientBaseInfo.getPersonId())
+    };
+    JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/face/find", data); //调用心跳接口创建人员信息
+    JSONArray jsonData = jsonObject.getJSONArray("data");
+    if(jsonData != null){
+      for (Object jsonDatum : jsonData) {
+        photoInformationVos.add(JSONObject.parseObject(jsonDatum.toString(),PhotoInformationVo.class));
+      }
+    }
+    return photoInformationVos;
   }
 
   /**
@@ -307,7 +333,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         StringBuilder labels = new StringBuilder(16);
         StringBuilder diseases = new StringBuilder(16);
         StringBuilder allergens = new StringBuilder(16);
+        StringBuffer allergensDescriptions = new StringBuffer();
         for (PatientExtInfo extInfo : extInfos) {
+          if(extInfo.getDescription() != null){
+            allergensDescriptions.append(extInfo.getDescription());
+            allergensDescriptions.append(",");
+          }
           Byte type = extInfo.getType();
           DictionaryItem item =
                   remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
@@ -334,6 +365,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientData.setLabels(labels.toString());
         patientData.setDiseases(diseases.toString());
         patientData.setAllergens(allergens.toString());
+        patientData.setAllergensDescriptions(allergensDescriptions.toString());
       }
     }
     return patientData;

@@ -8,7 +8,7 @@ import com.yunya.feign.emr.domain.query.*;
 import com.yunya.feign.emr.domain.vo.*;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.*;
-import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.exception.*;
 import com.yunya.framework.common.utils.*;
 import com.yunya.models.emr.*;
 import com.yunya.modules.emr.enums.*;
@@ -89,9 +89,13 @@ public class TemplateBiz {
         }
         MedicalTemplate updateEntity = EntityUtils.build(updateForm, MedicalTemplate.class);
         updateEntity.setId(templateId);
+        updateEntity.setReExamination(updateForm.getReExamination());
+        updateEntity.setChiefComplaint(updateForm.getChiefComplaint());
+        updateEntity.setPresentIllness(updateForm.getPresentIllness());
+        updateEntity.setPastHistory(updateForm.getPastHistory());
         updateEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         updateEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-        medicalMapper.updateByPrimaryKey(updateEntity);
+        medicalMapper.updateContent(updateEntity);
     }
 
     public PageInfo<MedicalTemplatePageVo> getMedicalTemplatePage(Integer categoryId, TemplateQuery query) {

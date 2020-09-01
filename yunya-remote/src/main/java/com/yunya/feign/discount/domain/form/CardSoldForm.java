@@ -35,12 +35,13 @@ public class CardSoldForm implements Serializable {
     @NotNull
     private Integer sendText;
     @ApiModelProperty(value = "售出并付款")
-    @NotNull(groups = SoldAndPayViewGroup.class)
-    @Null(groups = SoldAnPayNotViewsGroup.class)
+
+    @NotNull(groups = SoldAndPayViewGroup.class, message = "售出并付款不能为空")
+    @Null(groups = SoldAnPayNotViewsGroup.class, message = "售出并付款必须为空")
     private Integer soldAndPay;
     @ApiModelProperty(value = "入账方式")
-    @NotNull(groups = PayViewGroup.class)
-    @Null(groups = PayNotViewGroup.class)
+    @NotNull(groups = PayViewGroup.class, message = "入账方式不能为空")
+    @Null(groups = PayNotViewGroup.class, message = "入账方式必须为空")
     private Integer payId;
     @ApiModelProperty(value = "备注")
     @Size(max = 150)
@@ -49,8 +50,10 @@ public class CardSoldForm implements Serializable {
     @NotNull
     private Integer saleChannelId;
     @ApiModelProperty(value = "售出方式（0:线上 1:线下）", required = true)
+    @NotNull
     private Integer soldWay;
-    @ApiModelProperty(value = "优惠券类型")
+
+    @ApiModelProperty(value = "优惠券类型", required = true)
     @NotNull
     private Integer couponType;
 

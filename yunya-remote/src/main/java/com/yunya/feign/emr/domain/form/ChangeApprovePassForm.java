@@ -21,7 +21,7 @@ public class ChangeApprovePassForm {
     @NotNull
     private Integer eventId;
 
-    @ApiModelProperty(value = "允许变更截止时间")
+    @ApiModelProperty(value = "允许变更截止时间", required = true)
     @NotNull
     private LocalDate changeDeadTime;
 }

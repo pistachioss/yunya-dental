@@ -148,6 +148,12 @@ public class PatientBaseInfo {
     private Integer sourceId;
 
     /**
+     * 新跳版-人员id
+     */
+    @Column(name = "person_id")
+    private String personId;
+
+    /**
      * 获取主键
      *
      * @return id - 主键
@@ -555,5 +561,22 @@ public class PatientBaseInfo {
      */
     public void setSourceId(Integer sourceId) {
         this.sourceId = sourceId;
+    }
+
+
+    /**
+     * 获取来源id
+     * @return personId
+     */
+    public String getPersonId() {
+        return personId;
+    }
+
+    /**
+     * 设置来源id
+     * @param personId
+     */
+    public void setPersonId(String personId) {
+        this.personId = personId;
     }
 }

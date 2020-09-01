@@ -69,6 +69,10 @@ public class PatientTotalInfoVo implements Serializable {
   /************** 患者其他信息表 **************/
   /** 过敏原 */
   private String allergens;
+
+  /** 过敏原描述 */
+  private String allergensDescriptions;
+
   /** 疾病史 */
   private String diseases;
   /** 标签 */

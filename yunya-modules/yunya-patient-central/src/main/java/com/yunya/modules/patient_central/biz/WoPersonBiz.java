@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.uniubi.sdk.api.DeviceControllerApi;
 import com.uniubi.sdk.api.FaceControllerApi;
 import com.uniubi.sdk.api.PersonControllerApi;
@@ -7,10 +8,13 @@ import com.uniubi.sdk.client.CustomTokenClient;
 import com.uniubi.sdk.model.*;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PictureModel;
+import com.yunya.feign.patient_central.domain.vo.PhotoInformationVo;
 import com.yunya.feign.patient_central.domain.vo.PictureVo;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
+import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.tokenApi.TokenTask;
+import org.apache.commons.httpclient.NameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,12 +37,15 @@ public class WoPersonBiz {
     @Autowired
     private TokenTask tokenTask;
 
+    @Autowired PatientBaseInfoBiz patientBaseInfoBiz;
+
     //人员接口控制层
     private PersonControllerApi PersonClientApi;
     //设备接口控制层
     private DeviceControllerApi DeviceApi;
     //照片接口控制层
     private FaceControllerApi FaceApi;
+
 
     /**
      * Wo平台添加人员信息
@@ -54,16 +61,21 @@ public class WoPersonBiz {
     }
 
     /**
-     * 拍照上传WO平台并获取照片URL
+     * 拍照上传
      * @param patientBaseInfo
-     * @return String
+     * @return void
      */
     public void takeAPhoto(PatientBaseInfo patientBaseInfo) {
-        DeviceRegisterModeInput input = new DeviceRegisterModeInput();
+        /*DeviceRegisterModeInput input = new DeviceRegisterModeInput();
         input.setPersonGuid(patientBaseInfo.getWoGuid());
         input.setType(WoPlatformConstants.TYPE);
         DeviceApi = new CustomTokenClient(tokenTask).DeviceClient();
-        DeviceApi.createRegisterModeUsingPOST(input, WoPlatformConstants.APPID, WoPlatformConstants.DEVICEKEY); //连接硬件设备进行人员拍照注册
+        DeviceApi.createRegisterModeUsingPOST(input, WoPlatformConstants.APPID, WoPlatformConstants.DEVICEKEY); //连接硬件设备进行人员拍照注册*/
+        NameValuePair[] data = {
+                new NameValuePair("pass",WoPlatformConstants.PASS),
+                new NameValuePair("personId",patientBaseInfo.getPersonId())
+        };
+        WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/face/takeImg", data); //调用心跳接口进行拍照注册
     }
 
     /**
@@ -71,8 +83,8 @@ public class WoPersonBiz {
      * @param pictureForm
      * @return List<PictureVo>
      */
-    public List<PictureVo> deleteThePhoto(PictureForm pictureForm) {
-        FaceApi = new CustomTokenClient(tokenTask).FaceClient();
+    public List<PhotoInformationVo> deleteThePhoto(PictureForm pictureForm) {
+       /* FaceApi = new CustomTokenClient(tokenTask).FaceClient();
         FaceApi.deleteUsingDELETE(WoPlatformConstants.APPID, pictureForm.getFaceGuid(), pictureForm.getPersonGuid()); //删除照片
         ResultPersonOutput PersonResponse = PersonClientApi.getUsingGET1(WoPlatformConstants.APPID, pictureForm.getPersonGuid()); //获取Wo平台照片路径
         List<FaceOutput> faces = PersonResponse.getData().getFaces();
@@ -87,8 +99,15 @@ public class WoPersonBiz {
                 pictureVoList.add(pictureVo);
             }
             return pictureVoList;
-        }
-        return pictureVoList;
+        }*/
+
+        NameValuePair[] data = {
+                new NameValuePair("pass",WoPlatformConstants.PASS),
+                new NameValuePair("faceId",pictureForm.getFaceId())
+        };
+        WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/face/delete", data); //调用心跳接口创建人员信息
+        ArrayList<PhotoInformationVo> faceUrl = patientBaseInfoBiz.getFaceUrl(pictureForm.getPatientId());
+        return faceUrl;
 
     }
 

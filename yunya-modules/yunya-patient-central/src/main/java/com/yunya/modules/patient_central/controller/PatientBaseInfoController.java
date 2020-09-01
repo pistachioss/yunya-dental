@@ -85,7 +85,7 @@ public class PatientBaseInfoController {
     @ApiOperation("获取照片")
     @GetMapping({"/getFaceUrl/{patientId}"})
     public ResponseResult getFaceUrl(@PathVariable("patientId") Integer patientId) {
-        return this.patientBaseInfoBiz.getFaceUrl(patientId);
+        return ResponseUtil.success(this.patientBaseInfoBiz.getFaceUrl(patientId));
     }
 
     @ApiOperation("删除照片")
@@ -107,6 +107,7 @@ public class PatientBaseInfoController {
     public ResponseResult renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
         this.patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
         return ResponseUtil.success();
+
     }
 
     @ApiOperation("根据患者id查询来访信息")
