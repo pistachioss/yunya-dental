@@ -26,9 +26,9 @@ public class CardSoldGroupSequenceProvider implements DefaultGroupSequenceProvid
                 } else {
                     defaultGroupSequence.add(CardSoldForm.PayNotViewGroup.class);
                 }
-                defaultGroupSequence.add(CardSoldForm.SaleTypeViewGroup.class);
+                defaultGroupSequence.add(CardSoldForm.SoldAndPayViewGroup.class);
             } else {
-                defaultGroupSequence.add(CardSoldForm.SaleTypeNotViewsGroup.class);
+                defaultGroupSequence.add(CardSoldForm.SoldAnPayNotViewsGroup.class);
                 defaultGroupSequence.add(CardSoldForm.PayNotViewGroup.class);
             }
         }
