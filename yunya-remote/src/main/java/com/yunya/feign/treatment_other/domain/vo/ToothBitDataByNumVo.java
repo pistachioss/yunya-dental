@@ -16,16 +16,12 @@ import java.util.Date;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("返回根尖片列表模型")
+@ApiModel("返回根尖片首页缩影uri 统计")
 @Data
 @ToString
-public class ToothBitDataVo {
-
+public class ToothBitDataByNumVo {
     @ApiModelProperty(value = "图片uri")
     private String toothBitFilm;
-
-    @ApiModelProperty(value = "主键id")
-    private Integer id;
 
     @ApiModelProperty(value = "图片上传日期")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
@@ -33,5 +29,12 @@ public class ToothBitDataVo {
 
     @ApiModelProperty(value = "图片名称")
     private String filmName;
+
+    @ApiModelProperty(value = "数量")
+    private Integer num;
+
+    @ApiModelProperty(value = "牙位id")
+    private Integer toothBit;
+
 
 }

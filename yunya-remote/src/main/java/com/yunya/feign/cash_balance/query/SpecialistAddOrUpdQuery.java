@@ -18,7 +18,7 @@ public class SpecialistAddOrUpdQuery {
     @ApiModelProperty(value = "日期类型 0月 1年",required = true)
     private Integer dateType;
     @ApiModelProperty(value = "团队类型 0个人 1门诊",required = true)
-    private Integer teamType;
+    private String teamType;
     @ApiModelProperty(value = "团队类型id",required = true)
     private Integer numId;
 }

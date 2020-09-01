@@ -6,7 +6,7 @@
       WARNING - @mbg.generated
     -->
     <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="specialized_subject_projec_namet" jdbcType="VARCHAR" property="specializedSubjectProjectName" />
+    <result column="specialized_subject_project_name" jdbcType="VARCHAR" property="specializedSubjectProjectName" />
     <result column="subitems" jdbcType="VARCHAR" property="subitems" />
     <result column="inservice" jdbcType="INTEGER" property="inservice" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
@@ -29,7 +29,7 @@
             specialized_subject_project
             (specialized_subject_project_name,subitems,crt_id,inservice)
         VALUES
-            (#{specializedSubjectProjectName},#{subitems},#{crtId},0);
+            (#{specializedSubjectProjectName},#{subitems},#{crtId},0)
   </insert>
   <update id="upd" parameterType="com.yunya.models.clinic_base.SpecializedSubjectProject">
     UPDATE
@@ -39,14 +39,25 @@
         subitems=#{subitems},
         upd_id=#{crtId}
     WHERE
-        id=#{id};
+        id=#{id}
   </update>
   <update id="del" parameterType="java.lang.Integer">
     UPDATE
         specialized_subject_project
     SET
-      inservice=1
+      inservice= 1
     WHERE
-        id=#{id};
+        id=#{id}
   </update>
+
+    <select id="findDataById" parameterType="java.lang.Integer" resultType="com.yunya.feign.cash_balance.vo.SpecializedSubjectProjectByIdVo">
+        select
+            id,
+            specialized_subject_project_name,
+            subitems
+        from
+            specialized_subject_project
+        where
+            id = #{id}
+    </select>
 </mapper>

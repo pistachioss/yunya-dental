@@ -4,12 +4,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.cash_balance.model.BusinessTargetModel;
 import com.yunya.feign.cash_balance.model.SpecialistTargetModel;
-import com.yunya.feign.cash_balance.query.BusinessAddOrUpdQuery;
-import com.yunya.feign.cash_balance.query.BusinessTargetQuery;
-import com.yunya.feign.cash_balance.query.SpecialistTargetQuery;
-import com.yunya.feign.cash_balance.vo.BusinessTargetTotalVo;
-import com.yunya.feign.cash_balance.vo.BusinessTargetVo;
-import com.yunya.feign.cash_balance.vo.SpecialistTargetVo;
+import com.yunya.feign.cash_balance.query.*;
+import com.yunya.feign.cash_balance.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.clinic_base.BusinessTarget;
@@ -29,39 +25,39 @@ public class SpecialistTargetBiz {
     private SpecialistTargetMapper specialistTargetMapper;
 
 
-    public PageInfo<SpecialistTargetVo> findspecialistTargetByPage(SpecialistTargetQuery query) {
+    public PageInfo<SpecialistTargetVo> findSpecialistTargetByPage(SpecialistTargetQuery query) {
         int completeData = 500;
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
-        List<SpecialistTargetVo> resultList = specialistTargetMapper.findspecialistTargetByPage(query);
+        List<SpecialistTargetVo> resultList = specialistTargetMapper.findSpecialistTargetByPage(query);
         for (SpecialistTargetVo complete : resultList) {
             complete.setComplete(completeData);
         }
         return new PageInfo<>(resultList);
     }
 
-    @CurrentUser
-    public void add(List<SpecialistTargetModel> model) {
-        Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
-        for (SpecialistTargetModel list : model) {
-            SpecialistTarget specialistTarget = new SpecialistTarget();
-            SpecialistTargetQuery specialistTargetQuery = new SpecialistTargetQuery();
-            BeanUtils.copyProperties(list, specialistTargetQuery);
-            BeanUtils.copyProperties(model, specialistTarget);
-            Integer i = specialistTargetMapper.specialistAddOrUpd(specialistTargetQuery);
-            if (i != null) {
-                specialistTarget.setCrtId(crtId);
-                specialistTargetMapper.add(specialistTarget);
-            } else {
-                specialistTarget.setUptId(crtId);
-                specialistTargetMapper.upd(specialistTarget);
-            }
-        }
+
+    public void add(SpecialistTarget specialistTarget) {
+        specialistTargetMapper.add(specialistTarget);
     }
 
-    public BusinessTargetTotalVo findAllData(String ids){
-        BusinessTargetTotalVo businessTargetTotalVo = specialistTargetMapper.findAllData(ids);
-        return businessTargetTotalVo;
+    public void upd(SpecialistTarget specialistTarget) {
+        specialistTargetMapper.upd(specialistTarget);
+    }
+
+    public SpecialistTargetTotalVo findAllData(BusinessTargetTotalQuery businessTargetTotalQuery){
+        SpecialistTargetTotalVo specialistTargetTotalVo = specialistTargetMapper.findAllData(businessTargetTotalQuery);
+        return specialistTargetTotalVo;
+    }
+
+
+    public SpecialistTargetByIdVo findDataById(SpecialistTargetByDataQuery specialistTargetByDataQuery){
+        SpecialistTargetByIdVo specialistTargetByIdVo = specialistTargetMapper.findDataById(specialistTargetByDataQuery);
+        return specialistTargetByIdVo;
+    }
+    public List<SpecialistTargetOrVo> specialistAddOrUpd(SpecialistAddOrUpdQuery specialistAddOrUpdQuery){
+        List<SpecialistTargetOrVo> specialistTargetOrVo = specialistTargetMapper.specialistAddOrUpd(specialistAddOrUpdQuery);
+        return specialistTargetOrVo;
     }
 }

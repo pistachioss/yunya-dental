@@ -12,6 +12,7 @@ import com.yunya.modules.clinic.base.mapper.CashBalanceMapper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -39,11 +40,8 @@ public class CashBalanceBiz {
         cashBalanceMapper.del(id);
     }
 
-    public Integer  findLastData(int orgId){
-        Integer lastData = cashBalanceMapper.findLastData(orgId);
-        if (lastData == null){
-            lastData = 0;
-        }
+    public BigDecimal  findLastData(int orgId){
+        BigDecimal lastData = cashBalanceMapper.findLastData(orgId);
         return lastData;
     }
     public CashBalanceByIdVo  findDataById(int id) {

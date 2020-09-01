@@ -59,4 +59,25 @@
     id = #{id}
   </delete>
 
+  <select id="findPhotoAndNum" parameterType="com.yunya.feign.treatment_other.domain.query.ToothBitDataByNumQuery"
+          resultType="com.yunya.feign.treatment_other.domain.vo.ToothBitDataByNumVo">
+    select
+	upload_time,
+	film_name,
+	tooth_bit_film,
+	tooth_bit,
+	COUNT(tooth_bit) as num
+    FROM
+        tooth_bit_data
+    where
+        org_id = #{orgId}
+    AND
+        patient_id = #{patientId}
+    AND
+        treatment_record_id = #{treatmentRecordId}
+    AND
+        dentist_id = #{dentistId}
+    GROUP BY
+	tooth_bit
+  </select>
 </mapper>

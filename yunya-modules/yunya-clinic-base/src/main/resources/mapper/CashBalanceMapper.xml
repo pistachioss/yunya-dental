@@ -1,24 +1,24 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.clinic.base.mapper.CashBalanceMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.CashBalance" >
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.clinic.base.mapper.CashBalanceMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.CashBalance">
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="cash_first" property="cashFirst" jdbcType="INTEGER" />
-    <result column="cash_mid" property="cashMid" jdbcType="INTEGER" />
-    <result column="cash_end" property="cashEnd" jdbcType="INTEGER" />
-    <result column="amount_deposited" property="amountDeposited" jdbcType="INTEGER" />
-    <result column="balance_adjustment" property="balanceAdjustment" jdbcType="VARCHAR" />
-    <result column="balance_adjustment_remark" property="balanceAdjustmentRemark" jdbcType="VARCHAR" />
-    <result column="uri" property="uri" jdbcType="VARCHAR" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="inservice" property="inservice" jdbcType="INTEGER" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upe_id" property="upeId" jdbcType="INTEGER" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="cash_first" jdbcType="INTEGER" property="cashFirst" />
+    <result column="cash_mid" jdbcType="INTEGER" property="cashMid" />
+    <result column="cash_end" jdbcType="INTEGER" property="cashEnd" />
+    <result column="amount_deposited" jdbcType="INTEGER" property="amountDeposited" />
+    <result column="balance_adjustment" jdbcType="VARCHAR" property="balanceAdjustment" />
+    <result column="balance_adjustment_remark" jdbcType="VARCHAR" property="balanceAdjustmentRemark" />
+    <result column="uri" jdbcType="VARCHAR" property="uri" />
+    <result column="org_id" jdbcType="INTEGER" property="orgId" />
+    <result column="inservice" jdbcType="INTEGER" property="inservice" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upe_id" jdbcType="INTEGER" property="upeId" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
   <select id="findCashListByPage" parameterType="com.yunya.feign.cash_balance.query.CashBalanceQuery" resultType="com.yunya.feign.cash_balance.vo.CashBalanceVo">
@@ -40,18 +40,13 @@
         AND #{startTime} &gt; crt_time
       </if>
       <if test="endTime != null">
-        AND #{endTime} &lt; crt_time;
+        AND #{endTime} &lt; crt_time
       </if>
   </select>
 
   <select id="findLastData" parameterType="java.lang.Integer" resultType="java.lang.Integer">
     select
-        cash_first,
-        cash_end,
-        amount_deposited,
-        balance_adjustment,
-        balance_adjustment_remark,
-        org_id
+        IFNULL(cash_end,0.00)
     from
         cash_balance
     where
@@ -67,7 +62,7 @@
         cash_balance
         (cash_first,cash_end,amount_deposited,balance_adjustment,balance_adjustment_remark,uri,org_id,crt_id,inservice)
         VALUES
-        (#{cashFirst},#{cashEnd},#{amountDeposited},#{balanceAdjustment},#{balanceAdjustmentRemark},#{uri},#{orgId},#{crtId},0);
+        (#{cashFirst},#{cashEnd},#{amountDeposited},#{balanceAdjustment},#{balanceAdjustmentRemark},#{uri},#{orgId},#{crtId},0)
   </insert>
 
   <update id="upd" parameterType="com.yunya.models.clinic_base.CashBalance">
@@ -81,7 +76,7 @@
         uri=#{uri},
         upe_id=#{crtId}
     WHERE
-        id=#{id};
+        id=#{id}
   </update>
   <update id="del" parameterType="java.lang.Integer">
     UPDATE
@@ -89,7 +84,7 @@
     SET
       inservice=1
     WHERE
-        id=#{id};
+        id=#{id}
   </update>
 
     <select id="findDataById" parameterType="java.lang.Integer" resultType="com.yunya.feign.cash_balance.vo.CashBalanceByIdVo">

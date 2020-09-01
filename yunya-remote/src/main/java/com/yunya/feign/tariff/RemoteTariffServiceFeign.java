@@ -63,7 +63,7 @@ public interface RemoteTariffServiceFeign {
   /**
    * 根据价目表分类ID查询价目表分类信息
    *
-   * @param id 价目表分类ID
+   * @param id
    * @return
    */
   @RequestMapping(value = "/rpc/base/one/{id}", method = RequestMethod.GET)
