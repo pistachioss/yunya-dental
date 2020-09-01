@@ -8,7 +8,7 @@ import com.yunya.feign.emr.domain.query.*;
 import com.yunya.feign.emr.domain.vo.*;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.*;
-import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.*;
 import com.yunya.models.emr.*;
 import com.yunya.modules.emr.enums.*;

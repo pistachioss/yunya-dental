@@ -6,7 +6,7 @@ import com.yunya.feign.system.*;
 import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.biz.*;
 import com.yunya.framework.common.constant.*;
-import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.*;
 import com.yunya.models.expand.*;
 import com.yunya.models.system.*;

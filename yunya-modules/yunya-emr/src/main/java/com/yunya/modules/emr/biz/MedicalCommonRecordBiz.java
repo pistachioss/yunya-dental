@@ -8,7 +8,7 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.*;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.*;
-import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.*;

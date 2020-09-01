@@ -2,7 +2,7 @@ package com.yunya.framework.common.handler;
 
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.BaseException;
-import com.yunya.framework.common.exception.auth.ClientServiceException;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.exception.auth.ClientTokenException;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.common.exception.auth.UserTokenException;

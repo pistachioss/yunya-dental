@@ -16,7 +16,7 @@ import com.yunya.feign.treatment.*;
 import com.yunya.framework.common.biz.*;
 import com.yunya.framework.common.constant.*;
 import com.yunya.framework.common.context.*;
-import com.yunya.framework.common.exception.*;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.*;
 import com.yunya.framework.common.utils.*;
 import com.yunya.framework.redis.util.*;
