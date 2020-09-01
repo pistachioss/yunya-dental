@@ -28,7 +28,6 @@ public class CouponCommonInfoQueryForm {
     /**
      * 产品分类ID
      */
-    @NotNull(message = "产品分类ID不能为空")
     @ApiModelProperty("产品分类ID")
     private Integer productTypeId;
 
@@ -49,14 +48,14 @@ public class CouponCommonInfoQueryForm {
      * 时间范围起始
      */
     @ApiModelProperty("时间范围起始")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date startTime;
 
     /**
      * 时间范围结束
      */
     @ApiModelProperty("时间范围结束")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date endTime;
 
 }
