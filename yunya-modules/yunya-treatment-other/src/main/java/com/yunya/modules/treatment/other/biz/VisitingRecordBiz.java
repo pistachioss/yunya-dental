@@ -137,6 +137,14 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     }
 
     /**
+     * 根据就诊ID删除随访记录
+     * @param id  就诊id
+     */
+    public void deleteVisitingRecordByTreatmentId(Integer id){
+        mapper.deleteVisitingRecordByTreatmentId(id);
+    }
+
+    /**
      * 修改随访记录
      * @param form  修改表单
      * @return 修改条数
