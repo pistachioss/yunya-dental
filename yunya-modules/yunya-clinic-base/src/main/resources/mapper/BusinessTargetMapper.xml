@@ -35,10 +35,10 @@
             AND date_type = #{dateType}
             AND team_type = #{teamType}
             <if test="startTime != null">
-              AND #{startTime} &gt; #{date}
+              AND #{startTime} &lt; date
             </if>
             <if test="endTime != null">
-              AND #{endTime} &lt; #{date}
+              AND #{endTime} > date
             </if>
   </select>
 
@@ -132,7 +132,7 @@
             GROUP BY DATE_FORMAT(date,'%Y-%m')
     </select>
 
-    <select id="findDataById" parameterType="com.yunya.feign.cash_balance.query.BusinessTargerByDataQuery" resultType="com.yunya.feign.cash_balance.vo.BusinessTargetByIdVo">
+    <select id="findDataById" parameterType="com.yunya.feign.cash_balance.query.BusinessTargetByDataQuery" resultType="com.yunya.feign.cash_balance.vo.BusinessTargetByIdVo">
 
         select
             id,
@@ -149,6 +149,10 @@
             team_type = #{teamType}
             and
             num_id = #{numId}
+
+    </select>
+
+    <select id="exportListByDate" parameterType="com.yunya.feign.cash_balance.query.BusinessTargetExportQuery" resultType="com.yunya.feign.cash_balance.vo.BusinessTargetExportVo">
 
     </select>
 </mapper>

@@ -17,7 +17,7 @@ public class BusinessTargetModel {
     @ApiModelProperty(value = "日期类型 0月 1年",required = true)
     private Integer dateType;
     @ApiModelProperty(value = "日期")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM", timezone = "GMT+8")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date date;
     @ApiModelProperty(value = "目标实收金额",required = true)
     private BigDecimal targetCash;

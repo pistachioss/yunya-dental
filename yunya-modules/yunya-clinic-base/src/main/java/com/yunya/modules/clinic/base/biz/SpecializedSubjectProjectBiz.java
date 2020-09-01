@@ -33,14 +33,12 @@ public class SpecializedSubjectProjectBiz {
         }
         List<SpecializedSubjectProjectVo> resultList = specializedSubjectProjectMapper.findSpecializedList(query);
         for (SpecializedSubjectProjectVo list:resultList) {
-            BaseTariff baseTariffById = remoteTariffServiceFeign.findBaseTariffById(Integer.valueOf(list.getSpecializedSubjectProjectName()));
             String subitems = list.getSubitems();
             String[] split = subitems.split(",");
             for (String str: split) {
                 BaseOralTariff baseOralTariffById = remoteTariffServiceFeign.findBaseOralTariffById(Integer.valueOf(str));
                 list.setSubitems(baseOralTariffById.getName());
             }
-            list.setSpecializedSubjectProjectName(baseTariffById.getName());
         }
         return new PageInfo<>(resultList);
     }

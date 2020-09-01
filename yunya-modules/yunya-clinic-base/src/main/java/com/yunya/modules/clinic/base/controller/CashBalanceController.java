@@ -76,9 +76,11 @@ public class CashBalanceController {
         //创建实体对象
         CashBalance cashBalance = new CashBalance();
         //对期间期初金额赋上个期间期末金额
+        if (lastData == null){
+            lastData = BigDecimal.ZERO;
+        }
         cashBalance.setCashFirst(lastData);
         //总价= 期初+报表期间存款-今日存款+差额调整
-
         total = lastData.add(gathering.subtract(amountDeposited).add(balanceAdjustment));
         //计算总值期末并赋值
         cashBalance.setCashEnd(total);

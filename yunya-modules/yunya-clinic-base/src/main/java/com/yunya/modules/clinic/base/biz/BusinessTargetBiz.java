@@ -2,20 +2,10 @@ package com.yunya.modules.clinic.base.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.cash_balance.model.BusinessTargetModel;
-import com.yunya.feign.cash_balance.query.BusinessAddOrUpdQuery;
-import com.yunya.feign.cash_balance.query.BusinessTargerByDataQuery;
-import com.yunya.feign.cash_balance.query.BusinessTargetQuery;
-import com.yunya.feign.cash_balance.query.BusinessTargetTotalQuery;
-import com.yunya.feign.cash_balance.vo.BusinessTargetByIdVo;
-import com.yunya.feign.cash_balance.vo.BusinessTargetOrVo;
-import com.yunya.feign.cash_balance.vo.BusinessTargetTotalVo;
-import com.yunya.feign.cash_balance.vo.BusinessTargetVo;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.feign.cash_balance.query.*;
+import com.yunya.feign.cash_balance.vo.*;
 import com.yunya.models.clinic_base.BusinessTarget;
 import com.yunya.modules.clinic.base.mapper.BusinessTargetMapper;
-import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -60,14 +50,19 @@ public class BusinessTargetBiz {
          return businessTargetTotalVo;
     }
 
-    public BusinessTargetByIdVo findDataById(BusinessTargerByDataQuery businessTargerByDataQuery){
-        BusinessTargetByIdVo businessTargetByIdVo = businessTargetMapper.findDataById(businessTargerByDataQuery);
+    public BusinessTargetByIdVo findDataById(BusinessTargetByDataQuery businessTargetByDataQuery){
+        BusinessTargetByIdVo businessTargetByIdVo = businessTargetMapper.findDataById(businessTargetByDataQuery);
         return businessTargetByIdVo;
     }
 
     public List<BusinessTargetOrVo> businessAddOrUpd(BusinessAddOrUpdQuery businessAddOrUpdQuery){
         List<BusinessTargetOrVo> businessTargetOrVo = businessTargetMapper.businessAddOrUpd(businessAddOrUpdQuery);
         return businessTargetOrVo;
+    }
+
+    public List<BusinessTargetExportVo> exportListByDate(BusinessTargetExportQuery query){
+        List<BusinessTargetExportVo> businessTargetExportVo = businessTargetMapper.exportListByDate(query);
+        return businessTargetExportVo;
     }
 
 

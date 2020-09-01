@@ -44,9 +44,9 @@
       </if>
   </select>
 
-  <select id="findLastData" parameterType="java.lang.Integer" resultType="java.lang.Integer">
+  <select id="findLastData" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
     select
-        IFNULL(cash_end,0.00)
+        cash_end
     from
         cash_balance
     where

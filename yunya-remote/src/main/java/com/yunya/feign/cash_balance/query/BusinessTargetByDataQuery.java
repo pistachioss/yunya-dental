@@ -11,7 +11,7 @@ import java.util.Date;
 @Setter
 @Getter
 @ApiModel(value = "回显公司目标")
-public class BusinessTargerByDataQuery {
+public class BusinessTargetByDataQuery {
 
     @ApiModelProperty(value = "日期")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")

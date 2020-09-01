@@ -20,7 +20,7 @@ public interface CashBalanceMapper extends Mapper<CashBalance> {
 
     void del(Integer id);
 
-    BigDecimal findLastData(int orgId);
+    BigDecimal findLastData(Integer orgId);
 
-    CashBalanceByIdVo findDataById(int id);
+    CashBalanceByIdVo findDataById(Integer id);
 }
