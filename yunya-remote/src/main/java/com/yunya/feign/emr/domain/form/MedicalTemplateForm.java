@@ -22,7 +22,7 @@ public class MedicalTemplateForm {
     @Size(max = 25)
     private String name;
 
-    @ApiModelProperty(value = "模板类型（0：初诊  1：复诊）", required = true, example = "0：初诊  1：复诊")
+    @ApiModelProperty(value = "模板类型（0：初诊  1：复诊）", required = true)
     @NotNull
     private Integer type;
 

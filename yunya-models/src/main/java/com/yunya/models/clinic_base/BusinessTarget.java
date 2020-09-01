@@ -3,6 +3,7 @@ package com.yunya.models.clinic_base;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "business_target")
@@ -14,13 +15,13 @@ public class BusinessTarget {
      * 实收金额
      */
     @Column(name = "target_cash")
-    private Integer targetCash;
+    private BigDecimal targetCash;
 
     /**
      * 目标工作量
      */
-    @Column(name = "traget_num")
-    private Integer tragetNum;
+    @Column(name = "target_num")
+    private BigDecimal targetNum;
 
     /**
      * 目标初诊人数
@@ -88,7 +89,7 @@ public class BusinessTarget {
      *
      * @return target_cash - 实收金额
      */
-    public Integer getTargetCash() {
+    public BigDecimal getTargetCash() {
         return targetCash;
     }
 
@@ -97,26 +98,26 @@ public class BusinessTarget {
      *
      * @param targetCash 实收金额
      */
-    public void setTargetCash(Integer targetCash) {
+    public void setTargetCash(BigDecimal targetCash) {
         this.targetCash = targetCash;
     }
 
     /**
      * 获取目标工作量
      *
-     * @return traget_num - 目标工作量
+     * @return target_num - 目标工作量
      */
-    public Integer getTragetNum() {
-        return tragetNum;
+    public BigDecimal getTargetNum() {
+        return targetNum;
     }
 
     /**
      * 设置目标工作量
      *
-     * @param tragetNum 目标工作量
+     * @param targetNum 目标工作量
      */
-    public void setTragetNum(Integer tragetNum) {
-        this.tragetNum = tragetNum;
+    public void setTargetNum(BigDecimal targetNum) {
+        this.targetNum = targetNum;
     }
 
     /**

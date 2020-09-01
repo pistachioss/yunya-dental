@@ -184,7 +184,12 @@
             case
                 when `c`.`is_sold_and_pay` = 0 then `cci`.`sold_amount`
                 else 0
-                end              as `soldAmount`
+                end              as `soldAmount`,
+            case
+                when `cci`.`type` = 4 then
+                        (select `bonus` from `recharge_card` where `coupon_id` = `c`.`coupon_id`)
+                else null
+                end              as `bonus`
         from `card` `c`
              inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
         where `c`.`card_number` = #{cardNumber}
@@ -247,8 +252,8 @@
             </if>
         from `card` `c`
              inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
-        where
-            `cci`.`is_inservice` = 1
+        where `cci`.`is_inservice` = 1
+            and `c`.`status` = 2
             <!-- 0：自有产品 1：共享产品-->
             <if test="queryType != null and queryType == 0">
                 and `c`.`patient_id` = #{patientId}
@@ -265,5 +270,6 @@
                     #{item}
                 </foreach>
             </if>
+        order by `activeDate` desc
     </select>
 </mapper>

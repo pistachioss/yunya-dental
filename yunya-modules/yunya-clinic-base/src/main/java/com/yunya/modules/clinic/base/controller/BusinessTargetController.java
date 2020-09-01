@@ -1,31 +1,28 @@
 package com.yunya.modules.clinic.base.controller;
 
+import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.cash_balance.form.SpecializedSubjectProjectForm;
 import com.yunya.feign.cash_balance.model.BusinessTargetModel;
-import com.yunya.feign.cash_balance.model.SpecializedSubjectProjectModel;
-import com.yunya.feign.cash_balance.query.BusinessTargetQuery;
-import com.yunya.feign.cash_balance.query.CashBalanceQuery;
-import com.yunya.feign.cash_balance.vo.BusinessTargetTotalVo;
-import com.yunya.feign.cash_balance.vo.BusinessTargetVo;
-import com.yunya.feign.cash_balance.vo.CashBalanceVo;
+import com.yunya.feign.cash_balance.query.*;
+import com.yunya.feign.cash_balance.vo.*;
+import com.yunya.feign.discount.domain.query.GenerateAllocateCardQuery;
+import com.yunya.feign.discount.domain.vo.ExportCardAllocateVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.clinic_base.SpecializedSubjectProject;
+import com.yunya.models.clinic_base.BusinessTarget;
 import com.yunya.modules.clinic.base.biz.BusinessTargetBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -65,8 +62,25 @@ public class BusinessTargetController {
      */
     @ApiOperation("添加业务目标")
     @PostMapping("/add")
+    @CurrentUser
     public ResponseResult add(@Valid @RequestBody List<BusinessTargetModel> model){
-        businessTargetBiz.add(model);
+        Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
+        for (BusinessTargetModel data : model) {
+            BusinessAddOrUpdQuery businessAddOrUpdQuery = new BusinessAddOrUpdQuery();
+            BusinessTarget businessTarget = new BusinessTarget();
+            BeanUtils.copyProperties(data, businessAddOrUpdQuery);
+            BeanUtils.copyProperties(data, businessTarget);
+            List<BusinessTargetOrVo> businessTargetOrVo = businessTargetBiz.businessAddOrUpd(businessAddOrUpdQuery);
+            if (businessTargetOrVo!=null && !businessTargetOrVo.isEmpty()) {
+                Integer id = businessTargetOrVo.get(0).getId();
+                businessTarget.setUpdId(crtId);
+                businessTarget.setId(id);
+                businessTargetBiz.upd(businessTarget);
+            } else {
+                businessTarget.setCrtId(crtId);
+                businessTargetBiz.add(businessTarget);
+            }
+        }
         return ResponseUtil.success();
     }
 
@@ -78,8 +92,32 @@ public class BusinessTargetController {
      */
     @ApiOperation("多选门诊查询结果")
     @PostMapping("/findAllData")
-    public ResponseResult findAllData(String ids){
-       BusinessTargetTotalVo businessTargetTotalVo =  businessTargetBiz.findAllData(ids);
+    public ResponseResult findAllData(@Valid @RequestBody BusinessTargetTotalQuery businessTargetTotalQuery){
+       BusinessTargetTotalVo businessTargetTotalVo =  businessTargetBiz.findAllData(businessTargetTotalQuery);
         return ResponseUtil.success(businessTargetTotalVo);
+    }
+
+    /**
+     * 回显公司目标
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("回显公司目标")
+    @PostMapping("/findDataById")
+    public ResponseResult findDataById(@Valid @RequestBody BusinessTargetByDataQuery businessTargetByDataQuery){
+        BusinessTargetByIdVo businessTargetByIdVo = businessTargetBiz.findDataById(businessTargetByDataQuery);
+        return ResponseUtil.success(businessTargetByIdVo);
+    }
+
+    @ApiOperation(value = "业务目标导出")
+    @PostMapping("/export")
+    public void exportListByDate(HttpServletResponse response, @Valid @RequestBody BusinessTargetExportQuery query) throws IOException {
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("utf-8");
+        String fileName = URLEncoder.encode("业务目标导出", "UTF-8");
+        response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
+        EasyExcel.write(response.getOutputStream(), ExportCardAllocateVo.class)
+                .sheet("sheet").doWrite(businessTargetBiz.exportListByDate(query));
     }
 }

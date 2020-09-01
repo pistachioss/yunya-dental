@@ -5,32 +5,33 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Setter
 @Getter
-@ApiModel(value = "业务目标分页查询模型")
+@ApiModel(value = "返回业务目标分页查询模型")
 public class BusinessTargetVo {
 
 
     @ApiModelProperty(value = "主键id",required = true)
     private Integer id;
     @ApiModelProperty(value = "目标实收金额",required = true)
-    private Integer targetCash;
+    private BigDecimal targetCash;
     @ApiModelProperty(value = "完成实收金额",required = true)
-    private Integer completeCash;
+    private BigDecimal completeCash;
     @ApiModelProperty(value = "目标工作量",required = true)
-    private Integer tragetNum;
+    private BigDecimal targetNum;
     @ApiModelProperty(value = "完成实收金额",required = true)
-    private Integer completeNum;
+    private BigDecimal completeNum;
     @ApiModelProperty(value = "目标初诊人数",required = true)
-    private Integer targetFirstVisit;
+    private BigDecimal targetFirstVisit;
     @ApiModelProperty(value = "完成实收金额",required = true)
-    private Integer completeFirstVisit;
+    private BigDecimal completeFirstVisit;
     @ApiModelProperty(value = "目标就诊人次",required = true)
-    private Integer targetPatientNum;
+    private BigDecimal targetPatientNum;
     @ApiModelProperty(value = "完成实收金额",required = true)
-    private Integer completePatientNum;
+    private BigDecimal completePatientNum;
     @ApiModelProperty(value = "日期",required = true)
     private Date date;
 

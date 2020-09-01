@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Setter
@@ -14,9 +15,9 @@ public class CashBalanceModel {
 
 
     @ApiModelProperty(value = "本日现金存款",required = true)
-    private int amountDeposited;
+    private BigDecimal amountDeposited;
     @ApiModelProperty(value = "差额调整",required = true)
-    private int balanceAdjustment;
+    private BigDecimal balanceAdjustment;
     @ApiModelProperty(value = "差额调整备注",required = true)
     private String balanceAdjustmentRemark;
     @ApiModelProperty(value = "图片uri",required = true)

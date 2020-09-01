@@ -2,7 +2,9 @@ package com.yunya.modules.treatment.other.controller;
 
 import com.yunya.feign.treatment_other.domain.form.ToothBitDataForm;
 import com.yunya.feign.treatment_other.domain.model.ToothBitDataModel;
+import com.yunya.feign.treatment_other.domain.query.ToothBitDataByNumQuery;
 import com.yunya.feign.treatment_other.domain.query.ToothBitDataQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothBitDataByNumVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothBitDataVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -14,10 +16,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -76,7 +75,7 @@ public class ToothBitController {
      */
     @CurrentUser
     @ApiOperation("修改牙根尖记录")
-    @PostMapping("/upd")
+    @PutMapping("/upd")
     public ResponseResult upd(@Valid @RequestBody ToothBitDataForm form){
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
         ToothBitData toothBitData = new ToothBitData();
@@ -92,10 +91,25 @@ public class ToothBitController {
      * @return
      */
     @ApiOperation("删除牙根尖记录")
-    @PostMapping("/del")
+    @DeleteMapping("/del")
     public ResponseResult upd(Integer id){
         toothBitDataBiz.del(id);
         return ResponseUtil.success();
     }
+
+    /**
+     * 根尖片首页缩影uri 统计
+     *
+     * @param
+     * @return
+     */
+    @ApiOperation("根尖片首页缩影uri 统计")
+    @PostMapping("/findPhotoAndNum")
+    public ResponseResult findPhotoAndNum(@Valid @RequestBody ToothBitDataByNumQuery query){
+        List<ToothBitDataByNumVo> toothBitDataByNumVo = toothBitDataBiz.findPhotoAndNum(query);
+        return ResponseUtil.success(toothBitDataByNumVo);
+    }
+
+
 
 }

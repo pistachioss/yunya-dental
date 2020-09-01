@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Setter
@@ -16,18 +17,18 @@ public class BusinessTargetModel {
     @ApiModelProperty(value = "日期类型 0月 1年",required = true)
     private Integer dateType;
     @ApiModelProperty(value = "日期")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM", timezone = "GMT+8")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date date;
     @ApiModelProperty(value = "目标实收金额",required = true)
-    private Integer targetCash;
+    private BigDecimal targetCash;
     @ApiModelProperty(value = "目标工作量",required = true)
-    private Integer tragetNum;
+    private BigDecimal targetNum;
     @ApiModelProperty(value = "目标初诊人数",required = true)
-    private Integer targetFirstVisit;
+    private BigDecimal targetFirstVisit;
     @ApiModelProperty(value = "目标就诊人次",required = true)
-    private Integer targetPatientNum;
+    private BigDecimal targetPatientNum;
     @ApiModelProperty(value = "团队类型 0个人 1门诊",required = true)
-    private Integer teamType;
+    private String teamType;
     @ApiModelProperty(value = "团队类型id",required = true)
     private Integer numId;
 

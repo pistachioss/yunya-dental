@@ -1,6 +1,5 @@
 package com.yunya.feign.cash_balance.vo;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
@@ -11,10 +10,8 @@ import java.util.Date;
 
 @Setter
 @Getter
-@ApiModel(value = "公司查看总业务目标分页查询模型")
-public class BusinessTargetTotalVo {
-
-
+@ApiModel(value = "导出业务目标")
+public class BusinessTargetExportVo {
     @ApiModelProperty(value = "主键id",required = true)
     private Integer id;
     @ApiModelProperty(value = "目标实收金额",required = true)
@@ -34,6 +31,5 @@ public class BusinessTargetTotalVo {
     @ApiModelProperty(value = "完成实收金额",required = true)
     private BigDecimal completePatientNum;
     @ApiModelProperty(value = "日期",required = true)
-    private String date;
-
+    private Date date;
 }

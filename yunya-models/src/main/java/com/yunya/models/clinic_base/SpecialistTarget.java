@@ -63,8 +63,8 @@ public class SpecialistTarget {
     /**
      * 修改id
      */
-    @Column(name = "upt_id")
-    private Integer uptId;
+    @Column(name = "upd_id")
+    private Integer updId;
 
     /**
      * 修改时间
@@ -183,7 +183,7 @@ public class SpecialistTarget {
     /**
      * 获取门诊id或者用户id不等
      *
-     * @return numId - 门诊id或者用户id不等
+     * @return num_id - 门诊id或者用户id不等
      */
     public Integer getNumId() {
         return numId;
@@ -192,9 +192,9 @@ public class SpecialistTarget {
     /**
      * 设置门诊id或者用户id不等
      *
-     * @param numid 门诊id或者用户id不等
+     * @param numId 门诊id或者用户id不等
      */
-    public void setNumid(Integer numId) {
+    public void setNumId(Integer numId) {
         this.numId = numId;
     }
 
@@ -239,17 +239,17 @@ public class SpecialistTarget {
      *
      * @return upt_id - 修改id
      */
-    public Integer getUptId() {
-        return uptId;
+    public Integer getUpdId() {
+        return updId;
     }
 
     /**
      * 设置修改id
      *
-     * @param uptId 修改id
+     * @param updId 修改id
      */
-    public void setUptId(Integer uptId) {
-        this.uptId = uptId;
+    public void setUpdId(Integer updId) {
+        this.updId = updId;
     }
 
     /**

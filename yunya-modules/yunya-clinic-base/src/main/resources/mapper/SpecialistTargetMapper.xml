@@ -1,62 +1,63 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.clinic.base.mapper.SpecialistTargetMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.SpecialistTarget" >
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.clinic.base.mapper.SpecialistTargetMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.SpecialistTarget">
     <!--
       WARNING - @mbg.generated
     -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="ssp_id" property="sspId" jdbcType="INTEGER" />
-    <result column="target" property="target" jdbcType="DECIMAL" />
-    <result column="date" property="date" jdbcType="TIMESTAMP" />
-    <result column="date_type" property="dateType" jdbcType="INTEGER" />
-    <result column="team_type" property="teamType" jdbcType="VARCHAR" />
-    <result column="num_id" property="numId" jdbcType="INTEGER" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="ssp_id" jdbcType="INTEGER" property="sspId" />
+    <result column="target" jdbcType="DECIMAL" property="target" />
+    <result column="date" jdbcType="TIMESTAMP" property="date" />
+    <result column="date_type" jdbcType="INTEGER" property="dateType" />
+    <result column="team_type" jdbcType="VARCHAR" property="teamType" />
+    <result column="num_id" jdbcType="INTEGER" property="numId" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
-  <select id="findspecialistTargetByPage" parameterType="com.yunya.feign.cash_balance.query.SpecializedSubjectProjectQuery" resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetVo">
+  <select id="findSpecialistTargetByPage" parameterType="com.yunya.feign.cash_balance.query.SpecializedSubjectProjectQuery" resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetVo">
     select
     id,
     ssp_id,
     target,
-    date,
+    date
     from
     specialist_target
     where
-    AND num_id = #{numId}
+    num_id = #{numId}
     AND date_type = #{dateType}
     AND team_type = #{teamType}
     <if test="startTime != null">
-      AND #{startTime} &gt; #{date}
+      AND #{startTime} &lt; date
     </if>
     <if test="endTime != null">
-      AND #{endTime} &lt; #{date}
+      AND #{endTime} > date
     </if>
 
   </select>
 
-  <select id="businessAddOrUpd" parameterType="com.yunya.feign.cash_balance.query.SpecialistAddOrUpdQuery" resultType="java.lang.Integer">
+  <select id="specialistAddOrUpd" parameterType="com.yunya.feign.cash_balance.query.SpecialistAddOrUpdQuery" resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetOrVo">
         select
             id
         from
             specialist_target
         where
-            AND date_type = #{dateType}
-            AND DATE_FORMAT(date,'%Y-%m' ) = #{date}
+            date_type = #{dateType}
+            AND DATE_FORMAT(date,'%Y-%m' ) = DATE_FORMAT(#{date},'%Y-%m' )
             AND team_type = #{teamType}
             AND num_id = #{numId}
+            limit 1
     </select>
 
-  <insert id="add" parameterType="com.yunya.models.clinic_base.SpecialistTarget" >
+  <insert id="add" parameterType="com.yunya.models.clinic_base.SpecialistTarget">
     INSERT INTO
     specialist_target
     (ssp_id,target,date_type,date,team_type,num_id,crt_id)
     VALUES
-    (#{sspId},#{target},#{dateType},#{date},#{teamType},#{numId},#{crtId});
+    (#{sspId},#{target},#{dateType},#{date},#{teamType},#{numId},#{crtId})
   </insert>
 
   <update id="upd" parameterType="com.yunya.models.clinic_base.SpecialistTarget">
@@ -69,19 +70,37 @@
     WHERE
     id= #{id}
   </update>
-  <select id="findAllData" parameterType="java.lang.String">
+  <select id="findAllData" parameterType="com.yunya.feign.cash_balance.query.SpecialistTargetTotalQuery" resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetTotalVo">
         select
-            sum(target_cash) as targetCash,
-            sum(traget_num) as tragetNum,
-            sum(target_first_visit) as targetFirstVisit,
-            sum(target_patient_num) as targetPatientNum,
+            id,
+            ssp_id,
+            sum(target) as target,
             DATE_FORMAT(date,'%Y-%m') as date
         from
-            business_target
+            specialist_target
         where
             team_type = 1
             AND
-            num_id in (#{ids})
-            GROUP BY date
+              num_id in (
+              <foreach collection="ids" index="index" item="item" separator=",">
+                  #{item}
+              </foreach>
+              )
+        GROUP BY DATE_FORMAT(date,'%Y-%m')
+    </select>
+
+    <select id="findDataById" parameterType="com.yunya.feign.cash_balance.query.SpecialistTargetByDataQuery" resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetByIdVo">
+        select
+            ssp_id,
+            target,
+            date
+        form
+            specialist_target
+        where
+            DATE_FORMAT(date,'%Y-%m') = #{date}
+            and
+            team_type = #{teamType}
+            and
+            num_id = #{numId}
     </select>
 </mapper>

@@ -5,7 +5,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
-@Table(name = "specialized_subject_projec")
+@Table(name = "specialized_subject_project")
 public class SpecializedSubjectProject {
     /**
      * 主键id
