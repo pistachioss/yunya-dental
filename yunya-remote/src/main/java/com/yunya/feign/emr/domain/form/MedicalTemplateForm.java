@@ -32,40 +32,33 @@ public class MedicalTemplateForm {
     private String reExamination;
 
     @ApiModelProperty(value = "主诉")
-    @NotBlank
     @Size(max = 1000)
     @Null(groups = FollowUpGroupNotView.class, message = "主诉内容必须为空")
     private String chiefComplaint;
 
     @ApiModelProperty(value = "现病史")
-    @NotBlank
     @Size(max = 1000)
     @Null(groups = FollowUpGroupNotView.class, message = "现病史内容必须为空")
     private String presentIllness;
 
     @ApiModelProperty(value = "既往史")
-    @NotBlank
     @Size(max = 1000)
     @Null(groups = FollowUpGroupNotView.class, message = "既往史内容必须为空")
     private String pastHistory;
 
     @ApiModelProperty(value = "检查")
-    @NotBlank
     @Size(max = 1000)
     private String examination;
 
     @ApiModelProperty(value = "诊断")
-    @NotBlank
     @Size(max = 1000)
     private String diagnosis;
 
     @ApiModelProperty(value = "计划")
-    @NotBlank
     @Size(max = 1000)
     private String plan;
 
     @ApiModelProperty(value = "处理")
-    @NotBlank
     @Size(max = 1000)
     private String treatment;
 
