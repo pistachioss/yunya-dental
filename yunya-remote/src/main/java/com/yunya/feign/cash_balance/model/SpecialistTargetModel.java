@@ -6,6 +6,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.util.Date;
 
 @Setter
@@ -20,9 +22,9 @@ public class SpecialistTargetModel {
     @ApiModelProperty(value = "专科项目id",required = true)
     private Integer sspId;
     @ApiModelProperty(value = "目标",required = true)
-    private Integer target;
+    private BigDecimal target;
     @ApiModelProperty(value = "团队类型 0个人 1门诊",required = true)
-    private Integer teamType;
+    private String teamType;
     @ApiModelProperty(value = "团队类型id",required = true)
     private Integer numId;
 }

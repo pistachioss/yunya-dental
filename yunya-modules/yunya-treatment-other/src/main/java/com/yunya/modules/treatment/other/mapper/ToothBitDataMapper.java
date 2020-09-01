@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.other.mapper;
 
+import com.yunya.feign.treatment_other.domain.query.ToothBitDataByNumQuery;
 import com.yunya.feign.treatment_other.domain.query.ToothBitDataQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothBitDataByNumVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothBitDataVo;
 import com.yunya.models.treatment_other.ToothBitData;
 import tk.mybatis.mapper.common.Mapper;
@@ -34,4 +36,11 @@ public interface  ToothBitDataMapper extends Mapper<ToothBitData> {
      * @param id
      */
     void del(Integer id);
+
+    /**
+     * 返回根尖片首页缩影uri
+     * @param query
+     */
+    List<ToothBitDataByNumVo> findPhotoAndNum(ToothBitDataByNumQuery query);
+
 }

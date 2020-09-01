@@ -1,6 +1,8 @@
 package com.yunya.modules.clinic.base.mapper;
 
 import com.yunya.feign.cash_balance.query.SpecializedSubjectProjectQuery;
+import com.yunya.feign.cash_balance.vo.SpecialistTargetByIdVo;
+import com.yunya.feign.cash_balance.vo.SpecializedSubjectProjectByIdVo;
 import com.yunya.feign.cash_balance.vo.SpecializedSubjectProjectVo;
 import com.yunya.models.clinic_base.SpecializedSubjectProject;
 import tk.mybatis.mapper.common.Mapper;
@@ -17,4 +19,8 @@ public interface SpecializedSubjectProjectMapper extends Mapper<SpecializedSubje
     void upd(SpecializedSubjectProject specializedSubjectProject);
 
     void del(Integer id);
+
+    SpecializedSubjectProjectByIdVo findDataById(Integer id);
+
+
 }

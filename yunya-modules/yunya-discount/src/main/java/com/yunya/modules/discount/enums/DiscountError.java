@@ -34,6 +34,7 @@ public enum DiscountError implements RestError {
     COUPON_NOT_ALLOW_SHARE(30026, "该优惠券不能与他人共享"),
     SHARER_NOT_ALLOW_OWNER(30027, "配置共享人不能是患者自己"),
     BEYOND_CARD_LIMIT_NUM(30028, "已超过卡券最大生成数量"),
+    CARD_NOT_SOLD(30029, "卡券未售卖"),
     ;
     private Integer code;
     private String value;

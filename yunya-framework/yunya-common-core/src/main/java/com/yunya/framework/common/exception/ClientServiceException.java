@@ -1,7 +1,5 @@
 package com.yunya.framework.common.exception;
 
-import com.yunya.framework.common.exception.BaseException;
-
 /**
  * 简介: 客户端服务异常
  *

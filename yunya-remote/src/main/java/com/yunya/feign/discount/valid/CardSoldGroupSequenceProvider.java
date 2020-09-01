@@ -19,16 +19,25 @@ public class CardSoldGroupSequenceProvider implements DefaultGroupSequenceProvid
         if (cardSoldForm != null) {
             Integer soldType = cardSoldForm.getSoldType();
             Integer soldAndPay = cardSoldForm.getSoldAndPay();
+            Integer couponType = cardSoldForm.getCouponType();
             log.info("售出类型为type：[{}]执行校验", soldType);
+            if (couponType == 4) {
+                log.info("优惠券类型：[{}]执行校验", couponType);
+                if (soldType == 0) {
+                    defaultGroupSequence.add(CardSoldForm.SoldAndPayViewGroup.class);
+                    defaultGroupSequence.add(CardSoldForm.PayViewGroup.class);
+                }
+                return defaultGroupSequence;
+            }
             if (soldType == 0) {
                 if (new Integer(1).equals(soldAndPay)) {
                     defaultGroupSequence.add(CardSoldForm.PayViewGroup.class);
                 } else {
                     defaultGroupSequence.add(CardSoldForm.PayNotViewGroup.class);
                 }
-                defaultGroupSequence.add(CardSoldForm.SaleTypeViewGroup.class);
+                defaultGroupSequence.add(CardSoldForm.SoldAndPayViewGroup.class);
             } else {
-                defaultGroupSequence.add(CardSoldForm.SaleTypeNotViewsGroup.class);
+                defaultGroupSequence.add(CardSoldForm.SoldAnPayNotViewsGroup.class);
                 defaultGroupSequence.add(CardSoldForm.PayNotViewGroup.class);
             }
         }

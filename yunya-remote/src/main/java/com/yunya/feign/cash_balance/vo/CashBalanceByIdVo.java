@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Setter
@@ -17,29 +18,29 @@ public class CashBalanceByIdVo {
     private Integer id;
 
     @ApiModelProperty(value = "今日存款",required = true)
-    private Integer amountDeposited;
+    private BigDecimal amountDeposited;
 
     @ApiModelProperty(value = "差额调整",required = true)
-    private Integer balanceAdjustment;
+    private BigDecimal balanceAdjustment;
 
     @ApiModelProperty(value = "图片uri",required = true)
-    private Integer uri;
+    private String uri;
 
     @ApiModelProperty(value = "差额调整备注",required = true)
-    private Integer balanceAdjustmentRemark;
+    private String balanceAdjustmentRemark;
 
     @ApiModelProperty(value = "结存日期",required = true)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date crtTime;
 
     @ApiModelProperty(value = "期初现金结余",required = true)
-    private Integer cashFirst;
+    private BigDecimal cashFirst;
 
     @ApiModelProperty(value = "期末现金结余",required = true)
-    private Integer cashEnd;
+    private BigDecimal cashEnd;
 
     @ApiModelProperty(value = "期间现金结余",required = true)
-    private Integer cashmid;
+    private BigDecimal cashMid;
 
 }
 

@@ -14,10 +14,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -75,7 +72,7 @@ public class PhotoServiceController {
      * @return
      */
     @ApiOperation("修改图片影像")
-    @PostMapping("/upd")
+    @PutMapping("/upd")
     @CurrentUser
     public ResponseResult upd(@Valid @RequestBody PhotoServiceForm form){
         Integer updId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -93,7 +90,7 @@ public class PhotoServiceController {
      * @return
      */
     @ApiOperation("删除图片影像记录")
-    @PostMapping("/del")
+    @DeleteMapping("/del")
     public ResponseResult upd(Integer id){
         photoServiceBiz.del(id);
         return ResponseUtil.success();

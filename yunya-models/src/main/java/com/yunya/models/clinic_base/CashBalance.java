@@ -3,6 +3,7 @@ package com.yunya.models.clinic_base;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
 
 @Table(name = "cash_balance")
@@ -14,31 +15,31 @@ public class CashBalance {
      * 期初现金
      */
     @Column(name = "cash_first")
-    private Integer cashFirst;
+    private BigDecimal cashFirst;
 
     /**
      * 期中现金
      */
     @Column(name = "cash_mid")
-    private Integer cashMid;
+    private BigDecimal cashMid;
 
     /**
      * 期末现金
      */
     @Column(name = "cash_end")
-    private Integer cashEnd;
+    private BigDecimal cashEnd;
 
     /**
      * 今日存款
      */
     @Column(name = "amount_deposited")
-    private Integer amountDeposited;
+    private BigDecimal amountDeposited;
 
     /**
      * 差额调整
      */
     @Column(name = "balance_adjustment")
-    private Integer balanceAdjustment;
+    private BigDecimal balanceAdjustment;
 
     /**
      * 差额调整备注
@@ -54,8 +55,10 @@ public class CashBalance {
     @Column(name = "org_id")
     private Integer orgId;
 
-    @Column(name = "user_id")
-    private Integer userId;
+    /**
+     * 是否启用 0启用 1删除
+     */
+    private Integer inservice;
 
     @Column(name = "crt_id")
     private Integer crtId;
@@ -68,18 +71,6 @@ public class CashBalance {
 
     @Column(name = "upd_time")
     private Date updTime;
-
-    @Column(name = "inservice")
-    private Integer inservice;
-
-
-    public Integer getInservice() {
-        return inservice;
-    }
-
-    public void setInservice(Integer inservice) {
-        this.inservice = inservice;
-    }
 
     /**
      * @return id
@@ -100,7 +91,7 @@ public class CashBalance {
      *
      * @return cash_first - 期初现金
      */
-    public Integer getCashFirst() {
+    public BigDecimal getCashFirst() {
         return cashFirst;
     }
 
@@ -109,7 +100,7 @@ public class CashBalance {
      *
      * @param cashFirst 期初现金
      */
-    public void setCashFirst(Integer cashFirst) {
+    public void setCashFirst(BigDecimal cashFirst) {
         this.cashFirst = cashFirst;
     }
 
@@ -118,7 +109,7 @@ public class CashBalance {
      *
      * @return cash_mid - 期中现金
      */
-    public Integer getCashMid() {
+    public BigDecimal getCashMid() {
         return cashMid;
     }
 
@@ -127,7 +118,7 @@ public class CashBalance {
      *
      * @param cashMid 期中现金
      */
-    public void setCashMid(Integer cashMid) {
+    public void setCashMid(BigDecimal cashMid) {
         this.cashMid = cashMid;
     }
 
@@ -136,7 +127,7 @@ public class CashBalance {
      *
      * @return cash_end - 期末现金
      */
-    public Integer getCashEnd() {
+    public BigDecimal getCashEnd() {
         return cashEnd;
     }
 
@@ -145,7 +136,7 @@ public class CashBalance {
      *
      * @param cashEnd 期末现金
      */
-    public void setCashEnd(Integer cashEnd) {
+    public void setCashEnd(BigDecimal cashEnd) {
         this.cashEnd = cashEnd;
     }
 
@@ -154,7 +145,7 @@ public class CashBalance {
      *
      * @return amount_deposited - 今日存款
      */
-    public Integer getAmountDeposited() {
+    public BigDecimal getAmountDeposited() {
         return amountDeposited;
     }
 
@@ -163,7 +154,7 @@ public class CashBalance {
      *
      * @param amountDeposited 今日存款
      */
-    public void setAmountDeposited(Integer amountDeposited) {
+    public void setAmountDeposited(BigDecimal amountDeposited) {
         this.amountDeposited = amountDeposited;
     }
 
@@ -172,7 +163,7 @@ public class CashBalance {
      *
      * @return balance_adjustment - 差额调整
      */
-    public Integer getBalanceAdjustment() {
+    public BigDecimal getBalanceAdjustment() {
         return balanceAdjustment;
     }
 
@@ -181,7 +172,7 @@ public class CashBalance {
      *
      * @param balanceAdjustment 差额调整
      */
-    public void setBalanceAdjustment(Integer balanceAdjustment) {
+    public void setBalanceAdjustment(BigDecimal balanceAdjustment) {
         this.balanceAdjustment = balanceAdjustment;
     }
 
@@ -236,17 +227,21 @@ public class CashBalance {
     }
 
     /**
-     * @return user_id
+     * 获取是否启用 0启用 1删除
+     *
+     * @return inservice - 是否启用 0启用 1删除
      */
-    public Integer getUserId() {
-        return userId;
+    public Integer getInservice() {
+        return inservice;
     }
 
     /**
-     * @param userId
+     * 设置是否启用 0启用 1删除
+     *
+     * @param inservice 是否启用 0启用 1删除
      */
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setInservice(Integer inservice) {
+        this.inservice = inservice;
     }
 
     /**

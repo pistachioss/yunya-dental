@@ -19,6 +19,8 @@ public class CouponSalePageVo implements Serializable {
     @ApiModelProperty(value = "优惠券名称")
     private String couponName;
     @ApiModelProperty(value = "产品类型")
+    private Integer couponType;
+    @ApiModelProperty(value = "产品类型")
     private String couponTypeName;
     @ApiModelProperty(value = "售出时间段")
     private String saleSegment;

@@ -10,16 +10,14 @@ import java.util.Date;
 
 @Setter
 @Getter
-@ApiModel(value = "判断添加or修改模型")
-public class BusinessAddOrUpdQuery {
+@ApiModel(value = "回显公司目标")
+public class BusinessTargetByDataQuery {
 
     @ApiModelProperty(value = "日期")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date date;
-    @ApiModelProperty(value = "日期类型 0月 1年",required = true)
-    private Integer dateType;
     @ApiModelProperty(value = "团队类型 0个人 1门诊",required = true)
-    private String teamType;
+    private Integer teamType;
     @ApiModelProperty(value = "团队类型id",required = true)
     private Integer numId;
 

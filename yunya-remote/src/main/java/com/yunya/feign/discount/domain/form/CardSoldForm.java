@@ -35,8 +35,8 @@ public class CardSoldForm implements Serializable {
     @NotNull
     private Integer sendText;
     @ApiModelProperty(value = "售出并付款")
-    @NotNull(groups = SaleTypeViewGroup.class)
-    @Null(groups = SaleTypeNotViewsGroup.class)
+    @NotNull(groups = SoldAndPayViewGroup.class)
+    @Null(groups = SoldAnPayNotViewsGroup.class)
     private Integer soldAndPay;
     @ApiModelProperty(value = "入账方式")
     @NotNull(groups = PayViewGroup.class)
@@ -50,12 +50,13 @@ public class CardSoldForm implements Serializable {
     private Integer saleChannelId;
     @ApiModelProperty(value = "售出方式（0:线上 1:线下）", required = true)
     private Integer soldWay;
-    @ApiModelProperty(value = "链接前缀")
-    private String linkPrefix;
+    @ApiModelProperty(value = "优惠券类型")
+    @NotNull
+    private Integer couponType;
 
-    public interface SaleTypeViewGroup {
+    public interface SoldAndPayViewGroup {
     }
-    public interface SaleTypeNotViewsGroup {
+    public interface SoldAnPayNotViewsGroup {
     }
     public interface PayViewGroup {
     }
