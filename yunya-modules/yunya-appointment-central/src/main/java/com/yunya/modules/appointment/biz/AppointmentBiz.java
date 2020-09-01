@@ -1122,6 +1122,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             String medicalNumber = patientData.getMedicalNumber();
             vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
             vo.setAllergen(patientData.getAllergensDescriptions());
+            vo.setPatientKind(patientData.getPatientKind());
             Integer memberTypeId = patientData.getMemberTypeId();
             if (null != memberTypeId) {
                 MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
@@ -1133,7 +1134,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
-     * 设置预约未到患者的预约信息
+     * 设置预约未到患者相关的医生、科室信息
      * @param vo 预约未到患者信息
      */
     private void setAppointmentInfo(AppointmentUnDonePatientInfoVO vo) {
