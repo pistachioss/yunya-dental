@@ -18,6 +18,9 @@ public class ResponseUtil {
   private static final Boolean NOT_PASS = false;
   private static final Integer ERROR_STATUS = 500;
   private static final String ERROR_MSG = "error";
+  private static final Integer RESULT = 1;
+  private static final Boolean SUCCESS = true;
+
 
   /**
    * 无返回数据的成功处理结果
@@ -46,6 +49,15 @@ public class ResponseUtil {
    */
   public static ResponseResult success() {
     return result(SUCCESS_STATUS, SUCCESS_MSG, null, PASS);
+  }
+
+  /**
+   * 无返回数据的成功处理结果
+   *
+   * @return
+   */
+  public static ResponseResult faceRecognitionSuccess() {
+    return result(RESULT,SUCCESS);
   }
 
   /**
@@ -101,6 +113,20 @@ public class ResponseUtil {
     responseResult.setMsg(msg);
     responseResult.setData(data);
     responseResult.setAudit(audit);
+    return responseResult;
+  }
+
+  /**
+   * 人脸识别回调成功处理结果返回
+   *
+   * @param result 状态
+   * @param success 审核状态
+   * @return
+   */
+  public static <T>ResponseResult result(Integer result,Boolean success) {
+    ResponseResult responseResult = new ResponseResult();
+    responseResult.setResult(result);
+    responseResult.setSuccess(success);
     return responseResult;
   }
 }

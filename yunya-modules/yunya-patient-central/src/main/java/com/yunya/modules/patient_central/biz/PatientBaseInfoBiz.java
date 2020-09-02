@@ -127,10 +127,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       object.put("name",patientBaseInfo.getName());
       String person = object.toJSONString();
       NameValuePair[] data = {
-              new NameValuePair("pass",WoPlatformConstants.PASS),
+              new NameValuePair("pass",redisUtils.get("PASS")),
               new NameValuePair("person",person)
       };
-      JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/person/create", data); //调用心跳接口创建人员信息
+      JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/person/create", data); //调用心跳接口创建人员信息
       JSONObject jsonData = jsonObject.getJSONObject("data");
       patientBaseInfo.setPersonId((String) jsonData.get("id"));
       mapper.insertSelective(patientBaseInfo);
@@ -237,10 +237,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param patientWoPlatformInfoModel
    */
   public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
-    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
-    //patientBaseInfo.setWoGuid(patientWoPlatformInfoModel.getGuid());
-    patientBaseInfo.setName("WO平台授权人脸识别结果成功");
-    mapper.updateByPrimaryKeySelective(patientBaseInfo);
+    if(!patientWoPlatformInfoModel.getPersonId().equals("STRANGERBABY") && !patientWoPlatformInfoModel.getPersonId().equals("IDCARD")){
+      PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneByPersonId(patientWoPlatformInfoModel.getPersonId());
+      if(patientBaseInfoVo != null){
+        System.out.println("***************************************************************************");
+        System.out.println("认证成功！");
+        System.out.println("***************************************************************************");
+        System.out.println(patientWoPlatformInfoModel.toString());
+      }
+    }
   }
 
   /**
@@ -294,10 +299,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     //return woPersonnelFaceUrl.size() >= 0 && woPersonnelFaceUrl != null ? ResponseUtil.success(this.woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid())) : ResponseUtil.error("未查询到照片，请先拍照", "");
     ArrayList<PhotoInformationVo> photoInformationVos = new ArrayList<>();
     NameValuePair[] data = {
-            new NameValuePair("pass",WoPlatformConstants.PASS),
+            new NameValuePair("pass",redisUtils.get("PASS")),
             new NameValuePair("personId",patientBaseInfo.getPersonId())
     };
-    JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/face/find", data); //调用心跳接口创建人员信息
+    JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/face/find", data); //调用心跳接口创建人员信息
     JSONArray jsonData = jsonObject.getJSONArray("data");
     if(jsonData != null){
       for (Object jsonDatum : jsonData) {
@@ -340,31 +345,36 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             allergensDescriptions.append(",");
           }
           Byte type = extInfo.getType();
-          DictionaryItem item =
-                  remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
-          switch (type) {
-            case 0:
-              if (null != item) {
-                labels.append(item.getName());
-              }
-              break;
-            case 1:
-              if (null != item) {
-                diseases.append(item.getName());
-              }
-              break;
-            case 2:
-              if (null != item) {
-                allergens.append(item.getName());
-              }
-              break;
-            default:
-              break;
+          if(extInfo.getDictItemId() != null){
+            DictionaryItem item =
+                    remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
+            switch (type) {
+              case 0:
+                if (null != item) {
+                  labels.append(item.getName());
+                }
+                break;
+              case 1:
+                if (null != item) {
+                  diseases.append(item.getName());
+                }
+                break;
+              case 2:
+                if (null != item) {
+                  allergens.append(item.getName());
+                  allergens.append(",");
+                }
+                break;
+              default:
+                break;
+            }
           }
         }
         patientData.setLabels(labels.toString());
         patientData.setDiseases(diseases.toString());
+        allergensDescriptions.deleteCharAt(allergensDescriptions.length()-1); //去掉最后的逗号
         patientData.setAllergens(allergens.toString());
+        allergensDescriptions.deleteCharAt(allergensDescriptions.length()-1);
         patientData.setAllergensDescriptions(allergensDescriptions.toString());
       }
     }
@@ -440,4 +450,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     this.patientBaseInfoMapper.updatePhoto(patientBaseInfo);
   }
 
+  /**
+   * 设置硬件ip
+   * @param model
+   */
+  public void setIp(IpModel model) {
+    redisUtils.set("PASS",model.getPass());
+    redisUtils.set("URL","http://" + model.getIp() + ":" + "8090");
+  }
 }

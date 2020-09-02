@@ -1,5 +1,7 @@
 package com.yunya.modules.patient_central.constant;
 
+import lombok.Data;
+
 /**
  * 简单介绍:</br> WO平台相关常量
  *
@@ -8,7 +10,9 @@ package com.yunya.modules.patient_central.constant;
  * @description: WO平台相关常量
  * @since: 1.0.0
  */
+@Data
 public class WoPlatformConstants {
+
     /** ---------------------WO平台相关常量--------------------------------- */
 
     /** 应用id */
@@ -28,8 +32,9 @@ public class WoPlatformConstants {
 
     /** 人脸识别硬件设备密码 */
     public static final String PASS = "123456";
+
     /** 人脸识别硬件ip */
-    public static final String IP = "192.168.19.96";
+    public static String IP;
 
     /** 心跳方法条用url前缀 */
     public static final String URL = "http://" + IP + ":" + "8090";

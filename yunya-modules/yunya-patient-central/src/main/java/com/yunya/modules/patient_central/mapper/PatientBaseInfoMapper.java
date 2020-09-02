@@ -116,4 +116,11 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
      * @param patientBaseInfo
      */
     void updatePhoto(@Param("form") PatientBaseInfo patientBaseInfo);
+
+    /**
+     * 根据人员id 查询患者信息
+     * @param personId
+     * @return PatientBaseInfo
+     */
+    PatientBaseInfoVo selectOneByPersonId(@Param("personId") String personId);
 }
