@@ -54,6 +54,9 @@ public class AppointmentUnDonePatientInfoVO implements Serializable {
   /** 患者过敏原 */
   private String allergen;
 
+  /** 患者过敏原描述 */
+  private String allergenDescription;
+
   /** 欠费 */
   private BigDecimal arrears;
 
