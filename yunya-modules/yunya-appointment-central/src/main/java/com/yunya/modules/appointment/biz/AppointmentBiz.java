@@ -1121,7 +1121,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             vo.setPatientRemark(patientData.getRemarks());
             String medicalNumber = patientData.getMedicalNumber();
             vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
-            vo.setAllergen(patientData.getAllergensDescriptions());
+            vo.setAllergenDescription(patientData.getAllergensDescriptions());
+            vo.setAllergen(patientData.getAllergens());
             vo.setPatientKind(patientData.getPatientKind());
             Integer memberTypeId = patientData.getMemberTypeId();
             if (null != memberTypeId) {
