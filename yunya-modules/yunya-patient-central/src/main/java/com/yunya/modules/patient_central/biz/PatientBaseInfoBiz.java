@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.biz;
 import com.alibaba.fastjson.JSONArray;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
+import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
@@ -18,7 +19,6 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
-import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
@@ -459,5 +459,18 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public void setIp(IpModel model) {
     redisUtils.set("PASS",model.getPass());
     redisUtils.set("URL","http://" + model.getIp() + ":" + "8090");
+  }
+
+  /**
+   * 修改设备密码
+   * @param form
+   * @return
+   */
+  public void updPass(UpdPassForm form) {
+    NameValuePair[] data = {
+            new NameValuePair("oldPass",form.getOldPass()),
+            new NameValuePair("newPass",form.getNewPass())
+    };
+    JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/setPassWord", data); //调用心跳接口修改设备密码
   }
 }

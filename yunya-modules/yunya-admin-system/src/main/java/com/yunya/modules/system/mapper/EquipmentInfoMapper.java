@@ -20,7 +20,7 @@ public interface EquipmentInfoMapper extends Mapper<EquipmentInfo> {
      * @param equipmentInfo
      * @return EquipmentInfo
      */
-    EquipmentInfoVO selectOneBySNAndId(EquipmentInfo equipmentInfo);
+    EquipmentInfoVO selectOneBySNAndId(@Param("form") EquipmentInfo equipmentInfo);
 
     /**
      * 根据门诊id查询门诊设备

@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.rpc;
 
+import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
@@ -105,6 +106,12 @@ public class PatientServiceRest {
     @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
     public ResponseResult expend(@RequestBody PrepaidExpendRecordModel model ){
         return patientPrepaymentRelationBiz.expend(model);
+    }
+
+    @ApiOperation("修改硬件设备密码")
+    @RequestMapping(value = "/updPass",method = RequestMethod.POST)
+    public void updPass(@RequestBody UpdPassForm form ){
+         patientBaseInfoBiz.updPass(form);
     }
 
 
