@@ -14,6 +14,7 @@ import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.BaseTariffCategory;
 import com.yunya.modules.clinic.base.mapper.SpecializedSubjectProjectMapper;
 import javafx.scene.Parent;
+import org.aspectj.weaver.ast.Var;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -35,9 +36,12 @@ public class SpecializedSubjectProjectBiz {
         for (SpecializedSubjectProjectVo list:resultList) {
             String subitems = list.getSubitems();
             String[] split = subitems.split(",");
+            String subitem = "";
             for (String str: split) {
                 BaseTariff baseTariffById = remoteTariffServiceFeign.findBaseTariffById(Integer.valueOf(str));
-                list.setSubitems(baseTariffById.getName());
+                subitem += ","+baseTariffById.getName();
+                String substring = subitem.substring(1);
+                list.setSubitems(substring);
             }
         }
         return new PageInfo<>(resultList);
@@ -54,11 +58,6 @@ public class SpecializedSubjectProjectBiz {
 
     public void  del(Integer id){
         specializedSubjectProjectMapper.del(id);
-    }
-
-    public SpecializedSubjectProjectByIdVo findDataById(Integer id){
-        SpecializedSubjectProjectByIdVo specializedSubjectProjectByIdVo = specializedSubjectProjectMapper.findDataById(id);
-        return specializedSubjectProjectByIdVo;
     }
 
 }

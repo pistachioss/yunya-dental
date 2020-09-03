@@ -957,6 +957,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         if (SoldTypeEnum.SOLD.equals(form.getSoldType())) {
             updateCard.setPay(TRUE.equals(form.getSoldAndPay()) ? TRUE.getCode() : FALSE.getCode());
         }
+        updateCard.setSellerId(loginUserId);
         updateCard.setUpdId(loginUserId);
         updateCard.setId(card.getId());
         //卡券二维码签名

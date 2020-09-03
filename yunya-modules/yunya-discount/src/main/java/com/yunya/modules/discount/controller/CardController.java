@@ -161,4 +161,10 @@ public class CardController {
         return ResponseUtil.success(pageInfo);
     }
 
+    @ApiOperation(value = "收费-选择优惠")
+    @PostMapping("/order/choice/coupon")
+    public ResponseResult chooseCoupon() {
+        return null;
+    }
+
 }

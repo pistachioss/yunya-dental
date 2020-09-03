@@ -20,7 +20,4 @@ public interface SpecializedSubjectProjectMapper extends Mapper<SpecializedSubje
 
     void del(Integer id);
 
-    SpecializedSubjectProjectByIdVo findDataById(Integer id);
-
-
 }

@@ -101,25 +101,4 @@ public class SpecializedSubjectProjectController {
         specializedSubjectProjectBiz.del(id);
         return ResponseUtil.success();
     }
-    /**
-     * 回显专科设置
-     *
-     * @param
-     * @return
-     */
-    @ApiOperation("回显专科设置")
-    @PostMapping("/findDataById")
-    public ResponseResult findDataById(Integer id){
-        SpecializedSubjectProjectByIdVo specializedSubjectProjectByIdVo = specializedSubjectProjectBiz.findDataById(id);
-        BaseTariff baseTariffById = remoteTariffServiceFeign.findBaseTariffById(Integer.valueOf(specializedSubjectProjectByIdVo.getSpecializedSubjectProjectName()));
-        String subitems = specializedSubjectProjectByIdVo.getSubitems();
-        String[] split = subitems.split(",");
-        for (String str: split) {
-            BaseOralTariff baseOralTariffById = remoteTariffServiceFeign.findBaseOralTariffById(Integer.valueOf(str));
-            specializedSubjectProjectByIdVo.setSubitems(baseOralTariffById.getName());
-        }
-        specializedSubjectProjectByIdVo.setSpecializedSubjectProjectName(baseTariffById.getName());
-        return ResponseUtil.success(specializedSubjectProjectByIdVo);
-    }
-
 }

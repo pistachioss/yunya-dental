@@ -9,7 +9,7 @@ import lombok.*;
  */
 @Getter
 @Setter
-@ApiModel(value = "患者共享产品分页模型")
+@ApiModel(value = "患者共享产品分页模型", parent = PatientCardBaseVo.class)
 public class PatientShareCardVo extends PatientCardBaseVo{
     @ApiModelProperty(value = "卡主")
     private String cardOwner;
