@@ -16,6 +16,6 @@ public class OwnCardActiveForm {
     @ApiModelProperty(value = "卡券id", required = true)
     @NotNull
     private Integer cardId;
-    @ApiModelProperty(value = "入账方式", required = true)
+    @ApiModelProperty(value = "入账方式")
     private Integer payId;
 }

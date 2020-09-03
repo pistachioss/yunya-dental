@@ -148,6 +148,12 @@ public class Card implements Serializable {
     private Integer crtId;
 
     /**
+     * 售出人
+     */
+    @Column(name = "seller_id")
+    private Integer sellerId;
+
+    /**
      * 创建时间
      */
     @Column(name = "crt_time")

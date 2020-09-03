@@ -25,7 +25,7 @@ public class CardSalePageVo implements Serializable {
     private String soldPhoneNumber;
     @ApiModelProperty(value = "售出类型")
     private String soldTypeName;
-    @ApiModelProperty(value = "链接")
+    @ApiModelProperty(value = "链接（卡券二维码数据）")
     private String link;
     @ApiModelProperty(value = "售卖状态")
     private String soldStatusName;
