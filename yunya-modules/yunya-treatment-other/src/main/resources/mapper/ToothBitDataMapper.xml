@@ -65,8 +65,7 @@
 	upload_time,
 	film_name,
 	tooth_bit_film,
-	tooth_bit,
-	COUNT(tooth_bit) as num
+	tooth_bit
     FROM
         tooth_bit_data
     where
@@ -77,7 +76,5 @@
         treatment_record_id = #{treatmentRecordId}
     AND
         dentist_id = #{dentistId}
-    GROUP BY
-	tooth_bit
   </select>
 </mapper>

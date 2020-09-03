@@ -17,7 +17,7 @@
     <result column="inservice" jdbcType="INTEGER" property="inservice" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
-    <result column="upe_id" jdbcType="INTEGER" property="upeId" />
+    <result column="upd_id" jdbcType="INTEGER" property="updId" />
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
@@ -37,10 +37,10 @@
     AND
       org_id = #{orgId}
       <if test="startTime != null">
-        AND #{startTime} &gt; crt_time
+        AND #{startTime} &lt;= crt_time
       </if>
       <if test="endTime != null">
-        AND #{endTime} &lt; crt_time
+        AND #{endTime} > crt_time
       </if>
   </select>
 
@@ -74,7 +74,7 @@
         balance_adjustment=#{balanceAdjustment},
         balance_adjustment_remark=#{balanceAdjustmentRemark},
         uri=#{uri},
-        upe_id=#{crtId}
+        upd_id=#{crtId}
     WHERE
         id=#{id}
   </update>

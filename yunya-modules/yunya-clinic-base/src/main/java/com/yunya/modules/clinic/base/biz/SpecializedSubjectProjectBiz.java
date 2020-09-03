@@ -36,8 +36,8 @@ public class SpecializedSubjectProjectBiz {
             String subitems = list.getSubitems();
             String[] split = subitems.split(",");
             for (String str: split) {
-                BaseOralTariff baseOralTariffById = remoteTariffServiceFeign.findBaseOralTariffById(Integer.valueOf(str));
-                list.setSubitems(baseOralTariffById.getName());
+                BaseTariff baseTariffById = remoteTariffServiceFeign.findBaseTariffById(Integer.valueOf(str));
+                list.setSubitems(baseTariffById.getName());
             }
         }
         return new PageInfo<>(resultList);
