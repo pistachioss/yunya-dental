@@ -34,7 +34,10 @@
    select ci.id,ci.name,ci.crt_time crtTime,pt.name pName,cf.path from coupon_common_info ci
     left join product_type pt on ci.product_type_id = pt.id
     left join (select MAX(crt_time),path,coupon_id from coupon_file_info group by coupon_id) cf on cf.coupon_id = ci.id
-    where ci.product_type_id = #{productTypeId} and ci.type = #{type}
+    where  ci.type = #{type}
+      <if test="productTypeId != null and productTypeId != ''">
+          and ci.product_type_id = #{productTypeId}
+      </if>
     <if test="name != null and name != ''">
       and ci.name like concat('%', #{name}, '%')
     </if>

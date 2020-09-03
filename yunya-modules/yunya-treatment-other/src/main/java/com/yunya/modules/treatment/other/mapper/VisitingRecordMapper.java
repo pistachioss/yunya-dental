@@ -32,4 +32,11 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
      */
     List<VisitingRecord> findAfterVisitingContentByPatientIdAndDate(
             @Param("query")VisitingContentAfterCurrentQuery query);
+
+    /**
+     * 根据就诊记录ID删除随访
+     * @param treatmentId 就诊记录ID
+     * @return
+     */
+    void deleteVisitingRecordByTreatmentId(@Param("treatmentId") Integer treatmentId);
 }

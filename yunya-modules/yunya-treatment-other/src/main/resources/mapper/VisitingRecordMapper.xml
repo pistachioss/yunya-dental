@@ -107,4 +107,9 @@
       </where>
   </select>
 
+  <!-- 根据就诊记录ID删除随访 -->
+  <delete id="deleteVisitingRecordByTreatmentId" parameterType="java.lang.Integer">
+    delete vr.* from visiting_record vr where vr.treatment_id = #{treatmentId}
+  </delete>
+
 </mapper>

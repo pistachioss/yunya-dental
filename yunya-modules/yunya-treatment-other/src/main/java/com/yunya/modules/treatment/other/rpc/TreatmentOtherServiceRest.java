@@ -10,10 +10,7 @@ import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -51,4 +48,15 @@ public class TreatmentOtherServiceRest {
     public List<VisitingRecordVo> findVisitingRecordByConditionRest(@RequestBody VisitingRecordQuery query) {
         return visitingRecordBiz.findVisitingRecordByConditionRest(query);
     }
+
+    /**
+     * 根据就诊记录ID删除随访
+     * @param treatmentId 就诊记录ID
+     */
+    @ApiOperation(value = "根据就诊记录ID删除随访")
+    @RequestMapping(value = "/visiting/record/delete/{treatmentId}", method = RequestMethod.GET)
+    public void deleteVisitingRecordByTreatmentIdRest(@PathVariable("treatmentId") Integer treatmentId) {
+        visitingRecordBiz.deleteVisitingRecordByTreatmentId(treatmentId);
+    }
+
 }

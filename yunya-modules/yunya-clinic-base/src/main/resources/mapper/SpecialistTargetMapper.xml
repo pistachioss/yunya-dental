@@ -14,7 +14,7 @@
     <result column="num_id" jdbcType="INTEGER" property="numId" />
     <result column="crt_id" jdbcType="INTEGER" property="crtId" />
     <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
-    <result column="upt_id" jdbcType="INTEGER" property="uptId" />
+    <result column="upt_id" jdbcType="INTEGER" property="updId" />
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
@@ -31,12 +31,11 @@
     AND date_type = #{dateType}
     AND team_type = #{teamType}
     <if test="startTime != null">
-      AND #{startTime} &lt; date
+      AND #{startTime} &lt;= date
     </if>
     <if test="endTime != null">
       AND #{endTime} > date
     </if>
-
   </select>
 
   <select id="specialistAddOrUpd" parameterType="com.yunya.feign.cash_balance.query.SpecialistAddOrUpdQuery" resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetOrVo">

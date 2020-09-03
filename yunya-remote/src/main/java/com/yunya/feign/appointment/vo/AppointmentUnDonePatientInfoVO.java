@@ -49,10 +49,13 @@ public class AppointmentUnDonePatientInfoVO implements Serializable {
   private String medicalNumber;
 
   /** 患者类型 */
-  private String patientKind;
+  private Integer patientKind;
 
   /** 患者过敏原 */
   private String allergen;
+
+  /** 患者过敏原描述 */
+  private String allergenDescription;
 
   /** 欠费 */
   private BigDecimal arrears;

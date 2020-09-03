@@ -5,8 +5,10 @@ import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.feign.treatment_other.factory.RemoteTreatmentOtherFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
+import com.yunya.models.treatment_other.VisitingRecord;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,11 +25,11 @@ import java.util.List;
 public interface RemoteTreatmentOtherFeign {
     /**
      * 插入随访记录
-     * @param model 表单
+     * @param visitingRecord 表单
      * @return 是否成功
      */
     @RequestMapping(value = "api/treatment/other/visiting/record/add",method = RequestMethod.POST)
-    Integer insertVisitingRecord(@RequestBody VisitingRecordModel model);
+    Integer insertVisitingRecord(@RequestBody VisitingRecord visitingRecord);
 
     /**
      * 根据条件查询随访记录
@@ -37,4 +39,12 @@ public interface RemoteTreatmentOtherFeign {
     @ApiOperation(value = "根据条件查询随访记录")
     @RequestMapping(value = "api/treatment/other/visiting/record/find", method = RequestMethod.POST)
     List<VisitingRecordVo> findVisitingRecordByConditionRest(@RequestBody VisitingRecordQuery query);
+
+    /**
+     * 根据就诊记录ID删除随访
+     * @param treatmentId 就诊记录ID
+     */
+    @ApiOperation(value = "根据就诊记录ID删除随访")
+    @RequestMapping(value = "api/treatment/other/visiting/record/delete/{treatmentId}", method = RequestMethod.GET)
+    void deleteVisitingRecordByTreatmentIdRest(@PathVariable("treatmentId") Integer treatmentId);
 }

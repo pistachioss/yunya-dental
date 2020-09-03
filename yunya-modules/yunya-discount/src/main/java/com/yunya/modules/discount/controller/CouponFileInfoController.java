@@ -47,7 +47,7 @@ public class CouponFileInfoController {
      * @return
      */
     @PostMapping("/findFile")
-    @ApiOperation("根据优惠券ID获取文件信息")
+    @ApiOperation("根据优惠券ID获取文件信息(只传ID即可)")
     @CurrentUser
     public ResponseResult findFile(@RequestBody @Valid FileForm fileForm){
         return ResponseUtil.success(couponFileInfoBiz.findFile(fileForm));

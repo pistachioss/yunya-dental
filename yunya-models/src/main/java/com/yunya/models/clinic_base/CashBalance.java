@@ -66,8 +66,8 @@ public class CashBalance {
     @Column(name = "crt_time")
     private Date crtTime;
 
-    @Column(name = "upe_id")
-    private Integer upeId;
+    @Column(name = "upd_id")
+    private Integer updId;
 
     @Column(name = "upd_time")
     private Date updTime;
@@ -273,17 +273,17 @@ public class CashBalance {
     }
 
     /**
-     * @return upe_id
+     * @return upd_id
      */
-    public Integer getUpeId() {
-        return upeId;
+    public Integer getupdId() {
+        return updId;
     }
 
     /**
-     * @param upeId
+     * @param updId
      */
-    public void setUpeId(Integer upeId) {
-        this.upeId = upeId;
+    public void setupdId(Integer updId) {
+        this.updId = updId;
     }
 
     /**

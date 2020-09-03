@@ -30,9 +30,6 @@ public class ToothBitDataByNumVo {
     @ApiModelProperty(value = "图片名称")
     private String filmName;
 
-    @ApiModelProperty(value = "数量")
-    private Integer num;
-
     @ApiModelProperty(value = "牙位id")
     private Integer toothBit;
 

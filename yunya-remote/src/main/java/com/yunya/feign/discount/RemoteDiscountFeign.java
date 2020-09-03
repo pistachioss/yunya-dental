@@ -17,7 +17,7 @@ import javax.validation.*;
 public interface RemoteDiscountFeign {
 
     @ApiOperation(value = "患者档案-产品管理-激活-自有平台激活")
-    @PutMapping("/patient/{id}/product/card/owner/activation")
+    @PutMapping("/patient/{patientId}/product/card/owner/activation")
     @CurrentUser
-    public ResponseResult ownActiveCard(@PathVariable(value = "id") Integer patientId, @Valid @RequestBody OwnCardActiveForm form);
+    public ResponseResult ownActiveCard(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody OwnCardActiveForm form);
 }
