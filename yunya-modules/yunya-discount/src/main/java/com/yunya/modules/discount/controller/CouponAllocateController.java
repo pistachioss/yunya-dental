@@ -56,8 +56,6 @@ public class CouponAllocateController {
             t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
             t.setUpdTime(date);
             t.setCrtTime(date);
-            t.setAllocateUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-            t.setAllocateDate(date);
         });
         return ResponseUtil.success(couponAllocateBiz.insertAll(list));
     }
