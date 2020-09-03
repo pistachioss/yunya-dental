@@ -102,7 +102,7 @@ public interface PatientCentralServiceFeign {
      * @param model
      * @return ResponseResult
      */
-    @RequestMapping(value = "/member/expend",method = RequestMethod.POST)
+    @RequestMapping(value = "/api/member/expend",method = RequestMethod.POST)
     ResponseResult expend(@RequestBody MemberExpendRecordModel model );
 
     /**
@@ -110,13 +110,13 @@ public interface PatientCentralServiceFeign {
      * @param model
      * @return
      */
-    @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
+    @RequestMapping(value = "/api/prepaid/expend",method = RequestMethod.POST)
     ResponseResult expend(@RequestBody PrepaidExpendRecordModel model );
 
     /**
      * 修改硬件设备密码
      * @param form
      */
-    @RequestMapping(value = "/updPass",method = RequestMethod.POST)
+    @RequestMapping(value = "/api/updPass",method = RequestMethod.POST)
     void updPass(@RequestBody UpdPassForm form );
 }
