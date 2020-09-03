@@ -12,6 +12,7 @@ import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
+import com.yunya.framework.common.model.IdentifyResponseResult;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
@@ -102,7 +103,7 @@ public class PatientBaseInfoController {
     @IgnoreUserToken
     @ApiOperation(value = "测试人脸识别认证返回")
     @RequestMapping(value = {"/renlianshibie"}, method = {RequestMethod.POST})
-    public ResponseResult renlianshibie(@RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
+    public IdentifyResponseResult renlianshibie(@RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
         this.patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
         return ResponseUtil.faceRecognitionSuccess();
     }

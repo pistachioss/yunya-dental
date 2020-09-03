@@ -340,11 +340,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         StringBuilder allergens = new StringBuilder(16);
         StringBuffer allergensDescriptions = new StringBuffer();
         for (PatientExtInfo extInfo : extInfos) {
-          if(extInfo.getDescription() != null){
-            allergensDescriptions.append(extInfo.getDescription());
-            allergensDescriptions.append(",");
-          }
           Byte type = extInfo.getType();
+          if(type == 2 && extInfo.getDescription()!= null){
+              allergensDescriptions.append(extInfo.getDescription());
+              allergensDescriptions.append(",");
+          }
           if(extInfo.getDictItemId() != null){
             DictionaryItem item =
                     remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
@@ -372,10 +372,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
         patientData.setLabels(labels.toString());
         patientData.setDiseases(diseases.toString());
-        allergensDescriptions.deleteCharAt(allergensDescriptions.length()-1); //去掉最后的逗号
+        allergens.deleteCharAt(allergens.length()-1); //去掉最后的逗号
         patientData.setAllergens(allergens.toString());
-        allergensDescriptions.deleteCharAt(allergensDescriptions.length()-1);
-        patientData.setAllergensDescriptions(allergensDescriptions.toString());
+        if(allergensDescriptions.length() > 0 ){
+          allergensDescriptions.deleteCharAt(allergensDescriptions.length()-1);
+          patientData.setAllergensDescriptions(allergensDescriptions.toString());
+        }
       }
     }
     return patientData;

@@ -28,6 +28,11 @@ public class EquipmentInfo {
     private String pass;
 
     /**
+     * 是否启用
+     */
+    private Boolean inservice;
+
+    /**
      * 门诊id
      */
     @Column(name = "org_id")
@@ -44,6 +49,12 @@ public class EquipmentInfo {
      */
     @Column(name = "crt_time")
     private Date crtTime;
+
+    /**
+     * 修改人id
+     */
+    @Column(name = "crt_id")
+    private Integer crtId;
 
     /**
      * 修改人id
@@ -241,5 +252,40 @@ public class EquipmentInfo {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取创建人id
+     *
+     * @return upd_time - 修改时间
+     */
+    public Integer getCrtId() {
+        return crtId;
+    }
+
+    /**
+     * 设置创建人id
+     *
+     * @param crtId 修改时间
+     */
+    public void setCrtId(Integer crtId) {
+        this.crtId = crtId;
+    }
+
+    /**
+     * 获取是否启用
+     * @return inservice
+     */
+    public Boolean getInservice() {
+        return inservice;
+    }
+
+    /**
+     * 设置是否启用
+     *
+     * @param inservice 是否启用
+     */
+    public void setInservice(Boolean inservice) {
+        this.inservice = inservice;
     }
 }

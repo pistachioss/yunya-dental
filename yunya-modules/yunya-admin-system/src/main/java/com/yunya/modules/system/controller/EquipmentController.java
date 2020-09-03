@@ -1,13 +1,17 @@
 package com.yunya.modules.system.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.EquipmentBiz;
 import com.yunya.modules.system.domain.model.EquipmentInfoModel;
+import com.yunya.modules.system.domain.query.EquipmentInfoQueryForm;
+import com.yunya.modules.system.vo.DictionaryTypeVO;
 import io.swagger.annotations.Api;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import io.swagger.annotations.ApiModelProperty;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 简单介绍:</br>
@@ -30,9 +34,26 @@ public class EquipmentController {
         this.equipmentBiz = equipmentBiz;
     }
 
-    @PostMapping(value = "新增设备")
-    public ResponseResult add(@RequestBody EquipmentInfoModel model){
-
-        return null;
+    @CurrentUser
+    @ApiModelProperty(value = "设备列表")
+    @PostMapping(value = "/findList")
+    public ResponseResult findList(@RequestBody @Validated EquipmentInfoQueryForm queryForm){
+        return ResponseUtil.success(equipmentBiz.findList(queryForm));
     }
+
+    @CurrentUser
+    @ApiModelProperty(value = "新增设备")
+    @PostMapping(value = "/add")
+    public ResponseResult add(@RequestBody @Validated EquipmentInfoModel model){
+        equipmentBiz.add(model);
+        return ResponseUtil.success();
+    }
+
+    @ApiModelProperty(value = "删除")
+    @DeleteMapping(value = "delete/{id}")
+    public ResponseResult delete(@PathVariable(value = "id") Integer id){
+        equipmentBiz.deleteById(id);
+        return ResponseUtil.success();
+    }
+
 }

@@ -52,12 +52,12 @@ public class ResponseUtil {
   }
 
   /**
-   * 无返回数据的成功处理结果
+   * 人脸识别成功后返回处理结果
    *
    * @return
    */
-  public static ResponseResult faceRecognitionSuccess() {
-    return result(RESULT,SUCCESS);
+  public static IdentifyResponseResult faceRecognitionSuccess() {
+    return identifyresult(RESULT,SUCCESS);
   }
 
   /**
@@ -123,10 +123,10 @@ public class ResponseUtil {
    * @param success 审核状态
    * @return
    */
-  public static <T>ResponseResult result(Integer result,Boolean success) {
-    ResponseResult responseResult = new ResponseResult();
-    responseResult.setResult(result);
-    responseResult.setSuccess(success);
-    return responseResult;
+  public static <T> IdentifyResponseResult identifyresult(Integer result, Boolean success) {
+    IdentifyResponseResult identifyResponseResult = new IdentifyResponseResult();
+    identifyResponseResult.setResult(result);
+    identifyResponseResult.setSuccess(success);
+    return identifyResponseResult;
   }
 }
