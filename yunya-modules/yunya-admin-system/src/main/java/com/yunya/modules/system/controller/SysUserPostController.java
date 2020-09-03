@@ -3,14 +3,15 @@ package com.yunya.modules.system.controller;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.biz.SysUserPostBiz;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.domain.model.SysUserPostModel;
+import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
 import com.yunya.modules.system.vo.SysUserPostOrgVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -50,7 +51,6 @@ public class SysUserPostController {
     return ResponseUtil.success(loginList);
   }
 
-
   /**
    * 根据用户ID获取用户可登陆组织列表
    *
@@ -62,6 +62,26 @@ public class SysUserPostController {
   public ResponseResult getUserPostList(@PathVariable Integer userId) {
     List<SysUserPostOrgVO> loginList = sysUserPostBiz.getUserPostListByUserId(userId);
     return ResponseUtil.success(loginList);
+  }
+
+  /**
+   * 根据用户ID、组织ID查询用户岗位列表
+   *
+   * @param userId 用户ID
+   * @param orgId 组织ID
+   * @return
+   */
+  @ApiOperation("根据用户ID、组织ID查询用户岗位列表")
+  @ApiImplicitParams({
+    @ApiImplicitParam(name = "orgId", value = "组织ID", required = true),
+    @ApiImplicitParam(name = "userId", value = "用户ID", required = true)
+  })
+  @GetMapping(value = "/post/list/{orgId}/{userId}", name = "根据用户ID、组织ID查询用户岗位列表")
+  public ResponseResult postInfoList(
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "userId") Integer userId) {
+    List<PostVO> resultList = sysUserPostBiz.findUserPostList(orgId, userId);
+    return ResponseUtil.success(resultList);
   }
 
   /**
