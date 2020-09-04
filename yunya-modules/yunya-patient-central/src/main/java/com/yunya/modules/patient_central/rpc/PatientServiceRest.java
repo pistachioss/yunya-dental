@@ -4,10 +4,13 @@ import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
+import com.yunya.feign.patient_central.domain.vo.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
@@ -112,6 +115,13 @@ public class PatientServiceRest {
     @RequestMapping(value = "/updPass",method = RequestMethod.POST)
     public void updPass(@RequestBody UpdPassForm form ){
          patientBaseInfoBiz.updPass(form);
+    }
+
+
+    @ApiOperation("查询会员卡绑定信息")
+    @RequestMapping(value = "/findMemberInfo",method = RequestMethod.POST)
+    public ResponseResult findMemberInfo(@RequestBody PatientMemberInfoQueryForm form ){
+        return ResponseUtil.success(patientMemberInfoBiz.findMemberInfo(form));
     }
 
 

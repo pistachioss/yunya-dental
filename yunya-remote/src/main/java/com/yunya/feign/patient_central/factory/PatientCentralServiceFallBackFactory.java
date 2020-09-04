@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.framework.common.model.ResponseResult;
@@ -86,5 +87,10 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     @Override
     public void updPass(UpdPassForm form) {
 
+    }
+
+    @Override
+    public ResponseResult findMemberInfo(PatientMemberInfoQueryForm form) {
+        return null;
     }
 }

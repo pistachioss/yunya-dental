@@ -5,10 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.*;
-import com.yunya.feign.patient_central.domain.query.MemberExpendRecordQueryForm;
-import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
-import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
+import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -66,7 +63,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     public MemberBaseInfoVo findMemberBaseInfo(Integer id) {
         MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
         if (memberBaseInfoVO != null) {
-            MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId());
+            MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId()); //获取会员卡名称
             if (memberType != null && memberType.getName() != null) {
                 memberBaseInfoVO.setMemberCardName(memberType.getName());
             }
@@ -417,5 +414,23 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
             }
         }
         return new PageInfo<>(resultList);
+    }
+
+    /**
+     * 查询会员卡绑定信息
+     * @param form
+     * @return List<MemberInfoVo>
+     */
+    public List<MemberInfoVo> findMemberInfo(PatientMemberInfoQueryForm form) {
+        List<MemberInfoVo> memberInfoVos = patientMemberRelationMapper.findMemberInfo(form);
+        if(memberInfoVos.size() > 0){
+            for (MemberInfoVo memberInfoVo : memberInfoVos) {
+                MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberInfoVo.getMemberTypeId()); //获取会员卡名称
+                if (memberType != null && memberType.getName() != null) {
+                    memberInfoVo.setMemberCardName(memberType.getName());
+                }
+            }
+        }
+        return memberInfoVos;
     }
 }

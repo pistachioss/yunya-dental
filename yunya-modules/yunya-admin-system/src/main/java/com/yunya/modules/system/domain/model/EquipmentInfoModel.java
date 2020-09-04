@@ -23,7 +23,7 @@ public class EquipmentInfoModel implements Serializable {
      * id主键
      */
     @ApiModelProperty(value = "id主键")
-    private String id;
+    private Integer id;
 
     /**
      * 设备ip地址

@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -372,8 +373,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         }
         patientData.setLabels(labels.toString());
         patientData.setDiseases(diseases.toString());
-        allergens.deleteCharAt(allergens.length()-1); //去掉最后的逗号
-        patientData.setAllergens(allergens.toString());
+        if(allergens.length() > 0){
+          allergens.deleteCharAt(allergens.length()-1); //去掉最后的逗号
+          patientData.setAllergens(allergens.toString());
+        }
         if(allergensDescriptions.length() > 0 ){
           allergensDescriptions.deleteCharAt(allergensDescriptions.length()-1);
           patientData.setAllergensDescriptions(allergensDescriptions.toString());
@@ -452,14 +455,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     this.patientBaseInfoMapper.updatePhoto(patientBaseInfo);
   }
 
-  /**
-   * 设置硬件ip
-   * @param model
-   */
-  public void setIp(IpModel model) {
-    redisUtils.set("PASS",model.getPass());
-    redisUtils.set("URL","http://" + model.getIp() + ":" + "8090");
-  }
 
   /**
    * 修改设备密码
@@ -471,6 +466,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             new NameValuePair("oldPass",form.getOldPass()),
             new NameValuePair("newPass",form.getNewPass())
     };
+    System.out.println(redisUtils.get("URL") );
     JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/setPassWord", data); //调用心跳接口修改设备密码
   }
+
 }

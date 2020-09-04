@@ -121,14 +121,6 @@ public class PatientBaseInfoController {
         return ResponseUtil.success();
     }
 
-    @IgnoreUserToken
-    @ApiOperation("设置硬件ip")
-    @PostMapping({"/setIp"})
-    public ResponseResult setIp(@RequestBody IpModel model) {
-        this.patientBaseInfoBiz.setIp(model);
-        return ResponseUtil.success();
-    }
-
     @ApiOperation("根据患者id查询来访信息")
     @GetMapping({"/patientInfo/{id}"})
     public ResponseResult patientInfo(@PathVariable("id") Integer id) {
