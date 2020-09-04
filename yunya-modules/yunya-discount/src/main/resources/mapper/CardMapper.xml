@@ -209,7 +209,7 @@
             case
                 when `cci`.`type` = 2 then
                         (select `use_way` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
-                when `cci`.`type` = 2 then
+                when `cci`.`type` = 3 then
                     (select `use_way` from `special_package_coupon` where `coupon_id` = `c`.`coupon_id`)
                 else null
                 end                                as `useWay`,

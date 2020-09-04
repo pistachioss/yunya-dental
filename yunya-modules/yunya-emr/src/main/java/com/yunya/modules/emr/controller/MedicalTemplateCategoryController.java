@@ -55,14 +55,14 @@ public class MedicalTemplateCategoryController {
 
     @ApiOperation("公司端-病历模板分类查询")
     @GetMapping("medical/template/category/all")
-    public ResponseResult<TemplateCategoryVo> getChildRecord() {
+    public ResponseResult<List<TemplateCategoryVo>> getChildRecord() {
         List<TemplateCategoryVo> list = categoryBiz.getAllCategory();
         return ResponseUtil.success(list);
     }
 
     @ApiOperation("父分类字典")
     @GetMapping("medical/template/category/parent")
-    public ResponseResult<TemplateParentCategoryVo> getParentCategory() {
+    public ResponseResult<List<TemplateParentCategoryVo>> getParentCategory() {
         return ResponseUtil.success(categoryBiz.getParentCategory());
     }
 }

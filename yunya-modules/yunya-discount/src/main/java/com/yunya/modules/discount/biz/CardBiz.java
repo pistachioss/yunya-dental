@@ -1152,8 +1152,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
         example.createCriteria().andEqualTo("cardNumber", cardNumber);
         Card card = mapper.selectOneByExample(example);
         if (card != null) {
-            log.warn("【第三方平台激活失败】卡券[{}]已存在", cardNumber);
-            errorBo.setError(CARD_IS_EXIST);
+            log.warn("【第三方平台激活失败】自有平台卡券{}不允许在地三方平台激活", cardNumber);
+            errorBo.setError(OTHER_ALLOW_ACTIVE_OWN);
             return errorBo;
         }
         return errorBo;
