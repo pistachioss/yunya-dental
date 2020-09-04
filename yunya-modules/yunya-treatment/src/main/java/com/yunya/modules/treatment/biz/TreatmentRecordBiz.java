@@ -424,8 +424,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                         visitRecord.setDeptRoomId(registered.getDeptRoomId());
                       }
                     }
-                    visitRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-                    visitRecord.setCrtName(BaseContextHandler.getName());
+                    visitRecord.setCrtId(detail.getCrtId());
+                    visitRecord.setCrtName(detail.getCrtName());
                     visitRecord.setTreatmentId(treatmentRecordId);
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(
