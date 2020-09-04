@@ -6,6 +6,7 @@ import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -43,6 +44,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+
+  /** 就诊其他信息服务调用 */
+  @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
 
   /** 就诊记录 */
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
@@ -351,6 +355,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
     if (StringHelper.isNotEmpty(orderDetails)) {
+      treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
           detail -> {
             detail.setOrderRecordId(orderRecordId);

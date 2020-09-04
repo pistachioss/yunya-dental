@@ -133,7 +133,7 @@ public class TollBiz {
     orderRecord.setStatus((byte) 2);
     orderRecordBiz.updateSelectiveById(orderRecord);
     TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
-    treatmentRecord.setStatus((byte) 4);
+    treatmentRecord.setStatus((byte) 3);
     treatmentRecordBiz.updateSelectiveById(treatmentRecord);
     redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
   }

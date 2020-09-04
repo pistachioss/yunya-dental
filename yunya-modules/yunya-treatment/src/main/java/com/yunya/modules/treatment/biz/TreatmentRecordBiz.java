@@ -387,7 +387,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     // 新增开单处置的随访
     detail.setType((byte) 0);
     List<OrderDetail> orderDetails = orderDetailMapper.select(detail);
-    if (StringHelper.isEmpty(orderDetails)) {
+    if (StringHelper.isNotEmpty(orderDetails)) {
+      treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
           orderDetail -> saveOrderDetailVisitRecord(treatmentRecordId, orderDetail));
     }
@@ -406,27 +407,29 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       if (StringHelper.isNotBlank(fellowUp)) {
         String[] nums = fellowUp.split("\\D");
         if (nums.length > 0) {
-          treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
-          VisitingRecord visitRecord = new VisitingRecord();
-          TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
-          if (null != treatmentRecord) {
-            visitRecord.setPatientId(treatmentRecord.getPatientId());
-            visitRecord.setOrgId(treatmentRecord.getOrgId());
-            visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
-            Registered registered = registeredBiz.selectById(treatmentRecord.getRegisteredId());
-            if (null != registered) {
-              visitRecord.setDentistId(registered.getDentistId());
-              visitRecord.setDeptRoomId(registered.getDeptRoomId());
-            }
-          }
-          visitRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-          visitRecord.setCrtName(BaseContextHandler.getName());
-          visitRecord.setTreatmentId(treatmentRecordId);
           Arrays.stream(nums)
+              .filter(StringHelper::isNotBlank)
               .forEach(
                   num -> {
+                    VisitingRecord visitRecord = new VisitingRecord();
+                    TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
+                    if (null != treatmentRecord) {
+                      visitRecord.setPatientId(treatmentRecord.getPatientId());
+                      visitRecord.setOrgId(treatmentRecord.getOrgId());
+                      visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
+                      Registered registered =
+                          registeredBiz.selectById(treatmentRecord.getRegisteredId());
+                      if (null != registered) {
+                        visitRecord.setDentistId(registered.getDentistId());
+                        visitRecord.setDeptRoomId(registered.getDeptRoomId());
+                      }
+                    }
+                    visitRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                    visitRecord.setCrtName(BaseContextHandler.getName());
+                    visitRecord.setTreatmentId(treatmentRecordId);
                     visitRecord.setVisitingDate(
-                        DateUtils.addDays(new Date(), Integer.parseInt(num)));
+                        DateUtils.addDays(
+                            new Date(System.currentTimeMillis()), Integer.parseInt(num)));
                     treatmentOtherFeign.insertVisitingRecord(visitRecord);
                   });
         }
