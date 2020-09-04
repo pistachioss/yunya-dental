@@ -395,7 +395,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * 保存开单处置
+   * 保存开单处置随访计划
    *
    * @param treatmentRecordId 就诊记录ID
    * @param detail 开单详情
