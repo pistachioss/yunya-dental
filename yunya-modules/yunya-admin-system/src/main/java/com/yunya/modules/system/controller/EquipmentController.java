@@ -1,20 +1,18 @@
 package com.yunya.modules.system.controller;
 
-import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.EquipmentBiz;
 import com.yunya.modules.system.domain.model.EquipmentInfoModel;
 import com.yunya.modules.system.domain.query.EquipmentInfoQueryForm;
-import com.yunya.modules.system.vo.DictionaryTypeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 硬件设备管理
  *
  * @author: WY
  * @date 2020/9/2 10:09
