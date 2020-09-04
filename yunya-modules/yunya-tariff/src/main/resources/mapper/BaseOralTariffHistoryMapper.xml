@@ -20,7 +20,7 @@
     </resultMap>
     <!-- 根据商品项目ID查询变更历史记录 -->
     <select id="selectBaseOralTariffHistoryList"
-            resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffHistoryVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffHistoryVO">
         select
             bot.id,
             bot.oral_tariff_id as oralTariffId,

@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.mapper.ClinicTariffMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.tariff.ClinicTariff">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="clinic_id" property="clinicId" jdbcType="INTEGER"/>
+        <result column="tariff_id" property="tariffId" jdbcType="INTEGER"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 根据门诊价目表ID获取门诊价目表信息 -->
+    <select id="selectClinicTariffById" resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffVO">
+        select
+            ct.id,
+            ct.clinic_id as orgId,
+            btbtc.tariffCategoryId,
+            btbtc.tariffCategoryName,
+            btbtc.tariffCategoryNumber,
+            btbtc.tariffId,
+            btbtc.`name`,
+            btbtc.englishName,
+            btbtc.`number`,
+            btbtc.unit,
+            ct.price,
+            ct.inservice
+        from clinic_tariff ct
+        left join (
+            select
+                bt.id as tariffId,
+                btc.id as tariffCategoryId,
+                btc.`name` as tariffCategoryName,
+                btc.number as tariffCategoryNumber,
+                bt.item_number as number,
+                bt.`name`,
+                bt.english_name as englishName,
+                bt.unit
+            from base_tariff bt
+            left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        ) btbtc on ct.tariff_id = btbtc.tariffId
+        where id = #{clinicTariffId}
+    </select>
+    <!-- 根据条件查询门诊价目表信息列表 -->
+    <select id="selectClinicTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffVO">
+        select
+            ct.id,
+            ct.orgId,
+            ct.tariffCategoryId,
+            ct.tariffCategoryName,
+            ct.tariffCategoryNumber,
+            ct.tariffId,
+            ct.`name`,
+            ct.englishName,
+            ct.`number`,
+            ct.unit,
+            ct.price,
+            ct.inservice
+        from 
+            (
+            select 
+                ct.id,
+                ct.clinic_id as orgId,
+                btbtc.tariffCategoryId,
+                btbtc.tariffCategoryName,
+                btbtc.tariffCategoryNumber,
+                btbtc.tariffId,
+                btbtc.`name`,
+                btbtc.pinyin,
+                btbtc.englishName,
+                btbtc.`number`,
+                btbtc.unit,
+                ct.price,
+                ct.inservice 
+            from 
+                clinic_tariff ct
+                left join (
+                select 
+                    bt.id as tariffId,
+                    btc.id as tariffCategoryId,
+                    btc.`name` as tariffCategoryName,
+                    btc.number as tariffCategoryNumber,
+                    bt.item_number as number,
+                    bt.`name`,
+                    bt.pinyin,
+                    bt.english_name as englishName,
+                    unit 
+                from
+                    base_tariff bt
+                    left join base_tariff_category btc on bt.tariff_category_id = btc.id
+                ) btbtc on ct.tariff_id = btbtc.tariffId
+            ) ct
+        <where>
+            <if test="queryForm.id != null">
+                and ct.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.orgId != null">
+                and ct.orgId = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.tariffCategoryId != null">
+                and ct.tariffCategoryId = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.tariffId != null">
+                and ct.tariffId = #{queryForm.tariffId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL( ct.name, '' ), IFNULL( ct.pinyin, '' ), IFNULL( ct.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and ct.inservice = #{queryForm.inservice}
+            </if>
+        </where>    
+    </select>
+    <!-- 根据条件查询门诊价目表导出列表 -->
+    <select id="selectClinicTariffExportList"
+            resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO">
+        select
+            ct.`number` as itemNumber,
+            ct.`name`,
+            ct.tariffCategoryNumber,
+            ct.tariffCategoryName,
+            ct.englishName,
+            ct.unit,
+            ct.price
+        from
+        (
+        select
+        ct.id,
+        ct.clinic_id as orgId,
+        btbtc.tariffCategoryId,
+        btbtc.tariffCategoryName,
+        btbtc.tariffCategoryNumber,
+        btbtc.tariffId,
+        btbtc.`name`,
+        btbtc.pinyin,
+        btbtc.englishName,
+        btbtc.`number`,
+        btbtc.unit,
+        ct.price,
+        ct.inservice
+        from
+        clinic_tariff ct
+        left join (
+        select
+        bt.id as tariffId,
+        btc.id as tariffCategoryId,
+        btc.`name` as tariffCategoryName,
+        btc.number as tariffCategoryNumber,
+        bt.item_number as number,
+        bt.`name`,
+        bt.pinyin,
+        bt.english_name as englishName,
+        unit
+        from
+        base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        ) btbtc on ct.tariff_id = btbtc.tariffId
+        ) ct
+        <where>
+            <if test="queryForm.orgId != null">
+                and ct.orgId =#{queryForm.orgId}
+            </if>
+            <if test="queryForm.tariffCategoryId != null">
+                and ct.tariffCategoryId = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.tariffId != null">
+                and ct.tariffId = #{queryForm.tariffId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
+                and CONCAT(IFNULL( ct.name, '' ), IFNULL( ct.pinyin, '' ), IFNULL( ct.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and ct.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+</mapper>

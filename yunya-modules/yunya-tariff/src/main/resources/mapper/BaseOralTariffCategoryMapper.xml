@@ -18,7 +18,7 @@
     </resultMap>
     <!-- 根据ID查询商品分类信息 -->
     <select id="selectBaseOralTariffCategoryById"
-            resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffCategoryVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffCategoryVO">
       select
         botc.id,
         botc.`name`,
@@ -29,7 +29,7 @@
     </select>
     <!-- 根据条件查询商品分类列表信息 -->
     <select id="selectBaseOralTariffCategoryList"
-            resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffCategoryVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffCategoryVO">
         select
         botc.id,
         botc.`name`,

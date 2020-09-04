@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.biz;
 
-import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.treatment.BillRecord;
 import com.yunya.modules.treatment.mapper.BillRecordMapper;

@@ -1,10 +1,10 @@
 package com.yunya.modules.tariff.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.tariff.domain.form.ClinicTariffForm;
-import com.yunya.feign.tariff.domain.form.ClinicTariffUniteDiscountForm;
-import com.yunya.feign.tariff.domain.query.ClinicTariffQueryForm;
-import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
+import com.yunya.feign.treatment.domain.form.ClinicTariffForm;
+import com.yunya.feign.treatment.domain.form.ClinicTariffUniteDiscountForm;
+import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;

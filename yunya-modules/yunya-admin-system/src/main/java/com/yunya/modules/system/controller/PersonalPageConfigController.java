@@ -24,7 +24,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Api("个人页面字段显示配置管理（新增、修改）")
+@Api(tags = "个人页面字段显示配置管理（新增、修改）")
 @RestController
 @RequestMapping("page")
 public class PersonalPageConfigController {

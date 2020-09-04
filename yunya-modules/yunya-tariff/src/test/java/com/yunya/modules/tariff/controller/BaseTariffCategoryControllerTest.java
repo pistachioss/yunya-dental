@@ -1,8 +1,8 @@
 package com.yunya.modules.tariff.controller;
 
-import com.yunya.feign.tariff.domain.form.BaseTariffCategoryForm;
-import com.yunya.feign.tariff.domain.model.BaseTariffCategoryModel;
-import com.yunya.feign.tariff.domain.query.BaseTariffCategoryQueryForm;
+import com.yunya.feign.treatment.domain.form.BaseTariffCategoryForm;
+import com.yunya.feign.treatment.domain.model.BaseTariffCategoryModel;
+import com.yunya.feign.treatment.domain.query.BaseTariffCategoryQueryForm;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;

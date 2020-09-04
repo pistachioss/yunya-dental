@@ -1,8 +1,8 @@
 package com.yunya.modules.tariff.mapper;
 
-import com.yunya.feign.tariff.domain.query.ClinicTariffQueryForm;
-import com.yunya.feign.tariff.domain.vo.ClinicTariffExportVO;
-import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
+import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.models.tariff.ClinicTariff;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.mapper.ClinicOralTariffMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.tariff.ClinicOralTariff">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="clinic_id" property="clinicId" jdbcType="INTEGER"/>
+        <result column="oral_tariff_id" property="oralTariffId" jdbcType="INTEGER"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 根据门诊商品项目ID获取门诊商品项目信息 -->
+    <select id="selectClinicOralTariffById" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
+        select
+            cot.id,
+            cot.clinic_id as orgId,
+            botbotc.oralTariffCategoryId,
+            botbotc.oralTariffCategoryName,
+            botbotc.oralTariffCategoryNumber,
+            botbotc.oralTariffId,
+            botbotc.`name`,
+            botbotc.englishName,
+            botbotc.`number`,
+            botbotc.unit,
+            cot.price,
+            cot.inservice
+        from clinic_oral_tariff cot
+        left join (
+            select
+                bot.id as oralTariffId,
+                botc.id as oralTariffCategoryId,
+                botc.`name` as oralTariffCategoryName,
+                botc.number as oralTariffCategoryNumber,
+                bot.item_number as number,
+                bot.`name`,
+                bot.english_name as englishName,
+                bot.unit
+            from base_oral_tariff bot
+            left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
+        ) botbotc on cot.oral_tariff_id = botbotc.oralTariffId
+        where id = #{clinicOralTariffId}
+    </select>
+    <!-- 根据条件查询门诊商品项目信息列表 -->
+    <select id="selectClinicOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
+        select
+        cot.id,
+        cot.orgId,
+        cot.oralTariffCategoryId,
+        cot.oralTariffCategoryName,
+        cot.oralTariffCategoryNumber,
+        cot.oralTariffId,
+        cot.`name`,
+        cot.englishName,
+        cot.`number`,
+        cot.unit,
+        cot.price,
+        cot.inservice
+        from
+        (
+        select
+        cot.id,
+        cot.clinic_id as orgId,
+        botbotc.oralTariffCategoryId,
+        botbotc.oralTariffCategoryName,
+        botbotc.oralTariffCategoryNumber,
+        botbotc.oralTariffId,
+        botbotc.`name`,
+        botbotc.pinyin,
+        botbotc.englishName,
+        botbotc.`number`,
+        botbotc.unit,
+        cot.price,
+        cot.inservice
+        from clinic_oral_tariff cot
+        left join (
+        select
+        bot.id as oralTariffId,
+        botc.id as oralTariffCategoryId,
+        botc.`name` as oralTariffCategoryName,
+        botc.number as oralTariffCategoryNumber,
+        bot.item_number as number,
+        bot.`name`,
+        bot.pinyin,
+        bot.english_name as englishName,
+        bot.unit
+        from base_oral_tariff bot
+        left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
+        ) botbotc on cot.oral_tariff_id = botbotc.oralTariffId
+        ) cot
+        <where>
+            <if test="queryForm.id != null">
+                and cot.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.orgId != null">
+                and cot.orgId = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.oralTariffCategoryId != null">
+                and cot.oralTariffCategoryId = #{queryForm.oralTariffCategoryId}
+            </if>
+            <if test="queryForm.oralTariffId != null">
+                and cot.oralTariffId = #{queryForm.oralTariffId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
+                and CONCAT(IFNULL( cot.name, '' ), IFNULL( cot.pinyin, '' ), IFNULL( cot.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and cot.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+    <!-- 根据条件查询门诊商品项目列表 -->
+    <select id="selectClinicOralTariffExportList"
+            resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffExportVO">
+        select
+        cot.`number` as itemNumber,
+        cot.`name`,
+        cot.oralTariffCategoryNumber,
+        cot.oralTariffCategoryName,
+        cot.englishName,
+        cot.unit,
+        cot.price
+        from
+        (
+        select
+        cot.id,
+        cot.clinic_id as orgId,
+        botbotc.oralTariffCategoryId,
+        botbotc.oralTariffCategoryName,
+        botbotc.oralTariffCategoryNumber,
+        botbotc.oralTariffId,
+        botbotc.`name`,
+        botbotc.pinyin,
+        botbotc.englishName,
+        botbotc.`number`,
+        botbotc.unit,
+        cot.price,
+        cot.inservice
+        from clinic_oral_tariff cot
+        left join (
+        select
+        bot.id as oralTariffId,
+        botc.id as oralTariffCategoryId,
+        botc.`name` as oralTariffCategoryName,
+        botc.number as oralTariffCategoryNumber,
+        bot.item_number as number,
+        bot.`name`,
+        bot.pinyin,
+        bot.english_name as englishName,
+        bot.unit
+        from base_oral_tariff bot
+        left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
+        ) botbotc on cot.oral_tariff_id = botbotc.oralTariffId
+        ) cot
+        <where>
+            <if test="queryForm.orgId != null">
+                and cot.orgId = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.oralTariffCategoryId != null">
+                and cot.oralTariffCategoryId = #{queryForm.oralTariffCategoryId}
+            </if>
+            <if test="queryForm.oralTariffId != null">
+                and cot.oralTariffId = #{queryForm.oralTariffId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
+                and CONCAT(IFNULL( cot.name, '' ), IFNULL( cot.pinyin, '' ), IFNULL( cot.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and cot.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+</mapper>

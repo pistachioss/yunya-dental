@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.treatment.mapper.BaseTariffCategoryMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.tariff.BaseTariffCategory">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="number" jdbcType="VARCHAR" property="number"/>
+        <result column="inservice" jdbcType="BIT" property="inservice"/>
+        <result column="crt_id" jdbcType="INTEGER" property="crtId"/>
+        <result column="crt_name" jdbcType="VARCHAR" property="crtName"/>
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
+        <result column="upd_id" jdbcType="INTEGER" property="updId"/>
+        <result column="upd_name" jdbcType="VARCHAR" property="updName"/>
+        <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
+    </resultMap>
+    <!-- 根据ID查询价目表分类信息 -->
+    <select id="selectBaseTariffCategoryById"
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffCategoryVO">
+      select
+        btc.id,
+        btc.name,
+        btc.number,
+        btc.inservice
+      from base_tariff_category btc
+      where btc.id = #{id}
+    </select>
+    <!-- 根据条件查询价目表分类列表 -->
+    <select id="selectBaseTariffCategoryList"
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffCategoryVO">
+        select
+        btc.id,
+        btc.name,
+        btc.number,
+        btc.inservice
+        from base_tariff_category btc
+        <where>
+            <if test="queryForm.id != null">
+                and btc.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
+                and CONCAT(IFNULL( btc.name, '' ), IFNULL( btc.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and btc.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+</mapper>

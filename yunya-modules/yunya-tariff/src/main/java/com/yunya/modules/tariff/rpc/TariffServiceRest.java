@@ -1,6 +1,5 @@
 package com.yunya.modules.tariff.rpc;
 
-import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
 import com.yunya.models.tariff.*;
 import com.yunya.modules.tariff.biz.*;
 import io.swagger.annotations.Api;
