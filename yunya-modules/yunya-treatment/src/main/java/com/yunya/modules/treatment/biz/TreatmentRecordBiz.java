@@ -9,8 +9,8 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.vo.TreatmentCompletedPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -21,19 +21,23 @@ import com.yunya.models.appointment.Appointment;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
+import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -57,6 +61,12 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /** 预约服务调用 */
   @Autowired private RemoteAppointmentFeign appointmentFeign;
+
+  /** 就诊其他信息服务调用 */
+  @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+
+  /** 基础价目表 */
+  @Autowired private BaseTariffBiz baseTariffBiz;
 
   /** 挂号 */
   @Autowired private RegisteredBiz registeredBiz;
@@ -374,20 +384,53 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
     treatmentRecord.setStatus((byte) 2);
     mapper.updateByPrimaryKeySelective(treatmentRecord);
+    // 新增开单处置的随访
+    detail.setType((byte) 0);
+    List<OrderDetail> orderDetails = orderDetailMapper.select(detail);
+    if (StringHelper.isEmpty(orderDetails)) {
+      orderDetails.forEach(
+          orderDetail -> saveOrderDetailVisitRecord(treatmentRecordId, orderDetail));
+    }
   }
 
   /**
-   * 根据条件查询就诊完成患者列表信息（可分页）
+   * 保存开单处置
    *
-   * @param queryForm 查询条件
-   * @return
+   * @param treatmentRecordId 就诊记录ID
+   * @param detail 开单详情
    */
-  public PageInfo<TreatmentCompletedPatientInfoVO> findTreatCompletedList(
-      TreatmentRecordQueryForm queryForm) {
-    if (queryForm.getWhetherPage()) {
-      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+  public void saveOrderDetailVisitRecord(Integer treatmentRecordId, OrderDetail detail) {
+    BaseTariff baseTariff = baseTariffBiz.selectById(detail.getBillingItemId());
+    if (null != baseTariff) {
+      String fellowUp = baseTariff.getFellowUp();
+      if (StringHelper.isNotBlank(fellowUp)) {
+        String[] nums = fellowUp.split("\\D");
+        if (nums.length > 0) {
+          treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
+          VisitingRecord visitRecord = new VisitingRecord();
+          TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
+          if (null != treatmentRecord) {
+            visitRecord.setPatientId(treatmentRecord.getPatientId());
+            visitRecord.setOrgId(treatmentRecord.getOrgId());
+            visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
+            Registered registered = registeredBiz.selectById(treatmentRecord.getRegisteredId());
+            if (null != registered) {
+              visitRecord.setDentistId(registered.getDentistId());
+              visitRecord.setDeptRoomId(registered.getDeptRoomId());
+            }
+          }
+          visitRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+          visitRecord.setCrtName(BaseContextHandler.getName());
+          visitRecord.setTreatmentId(treatmentRecordId);
+          Arrays.stream(nums)
+              .forEach(
+                  num -> {
+                    visitRecord.setVisitingDate(
+                        DateUtils.addDays(new Date(), Integer.parseInt(num)));
+                    treatmentOtherFeign.insertVisitingRecord(visitRecord);
+                  });
+        }
+      }
     }
-
-    return null;
   }
 }

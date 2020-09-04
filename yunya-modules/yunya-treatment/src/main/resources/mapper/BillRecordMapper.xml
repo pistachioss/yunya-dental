@@ -29,7 +29,7 @@
     <!-- 查询门诊某天最大的账单编号 -->
     <select id="selectBillNumberByOrgId" resultType="java.lang.String">
       SELECT
-        IFNULL( MAX( SUBSTR( bill_number, 13, 4 )), '0000' ) AS maxNum
+        IFNULL( MAX( SUBSTR( br.bill_number, 13, 4 )), '0000' ) AS maxNum
       FROM
         bill_record br
       WHERE br.org_id = #{orgId} AND DATE_FORMAT(br.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d')

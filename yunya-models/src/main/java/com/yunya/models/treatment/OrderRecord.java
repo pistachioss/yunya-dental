@@ -36,6 +36,10 @@ public class OrderRecord {
      */
     private Byte status;
 
+    /** 开单编号 */
+    @Column(name = "order_record_num")
+    private String orderRecordNum;
+
     /**
      * 订单总额
      */
@@ -158,6 +162,24 @@ public class OrderRecord {
      */
     public void setTreatmentRecordId(Integer treatmentRecordId) {
         this.treatmentRecordId = treatmentRecordId;
+    }
+
+    /**
+     * 获取订单编号
+     *
+     * @return
+     */
+    public String getOrderRecordNum() {
+        return orderRecordNum;
+    }
+
+    /**
+     * 设置开单编号
+     *
+     * @param orderRecordNum 订单编号
+     */
+    public void setOrderRecordNum(String orderRecordNum) {
+        this.orderRecordNum = orderRecordNum;
     }
 
     /**
