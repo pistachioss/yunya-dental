@@ -16,7 +16,7 @@
     </resultMap>
 
     <!-- 根据门诊商品项目ID获取门诊商品项目信息 -->
-    <select id="selectClinicOralTariffById" resultType="com.yunya.feign.tariff.domain.vo.ClinicOralTariffVO">
+    <select id="selectClinicOralTariffById" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
         select
             cot.id,
             cot.clinic_id as orgId,
@@ -47,7 +47,7 @@
         where id = #{clinicOralTariffId}
     </select>
     <!-- 根据条件查询门诊商品项目信息列表 -->
-    <select id="selectClinicOralTariffList" resultType="com.yunya.feign.tariff.domain.vo.ClinicOralTariffVO">
+    <select id="selectClinicOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">
         select
         cot.id,
         cot.orgId,
@@ -117,7 +117,7 @@
     </select>
     <!-- 根据条件查询门诊商品项目列表 -->
     <select id="selectClinicOralTariffExportList"
-            resultType="com.yunya.feign.tariff.domain.vo.ClinicOralTariffExportVO">
+            resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffExportVO">
         select
         cot.`number` as itemNumber,
         cot.`name`,

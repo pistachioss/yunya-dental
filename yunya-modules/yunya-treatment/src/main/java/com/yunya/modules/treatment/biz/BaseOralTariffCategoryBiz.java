@@ -2,10 +2,10 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.tariff.domain.form.BaseOralTariffCategoryForm;
-import com.yunya.feign.tariff.domain.model.BaseOralTariffCategoryModel;
-import com.yunya.feign.tariff.domain.query.BaseOralTariffCategoryQueryForm;
-import com.yunya.feign.tariff.domain.vo.BaseOralTariffCategoryVO;
+import com.yunya.feign.treatment.domain.form.BaseOralTariffCategoryForm;
+import com.yunya.feign.treatment.domain.model.BaseOralTariffCategoryModel;
+import com.yunya.feign.treatment.domain.query.BaseOralTariffCategoryQueryForm;
+import com.yunya.feign.treatment.domain.vo.BaseOralTariffCategoryVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;

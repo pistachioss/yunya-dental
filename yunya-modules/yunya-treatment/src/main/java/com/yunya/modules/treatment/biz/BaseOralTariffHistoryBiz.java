@@ -1,6 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
-import com.yunya.feign.tariff.domain.vo.BaseOralTariffHistoryVO;
+import com.yunya.feign.treatment.domain.vo.BaseOralTariffHistoryVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.tariff.BaseOralTariffHistory;
 import com.yunya.modules.treatment.mapper.BaseOralTariffHistoryMapper;

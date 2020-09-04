@@ -1,6 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
-import com.yunya.feign.tariff.domain.vo.BaseOralTariffHistoryVO;
+import com.yunya.feign.treatment.domain.vo.BaseOralTariffHistoryVO;
 import com.yunya.models.tariff.BaseOralTariffHistory;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

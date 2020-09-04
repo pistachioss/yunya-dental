@@ -25,7 +25,7 @@
     </resultMap>
 
     <!-- 基础价目表信息结果集（封装门诊价目表信息） -->
-    <resultMap id="BaseTariffInfoResultMap" type="com.yunya.feign.tariff.domain.vo.BaseTariffInfoVO">
+    <resultMap id="BaseTariffInfoResultMap" type="com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO">
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="tariffCategoryId" property="tariffCategoryId" jdbcType="INTEGER"/>
         <result column="tariffCategoryName" property="tariffCategoryName" jdbcType="VARCHAR"/>
@@ -58,7 +58,7 @@
         where bt.id = #{id}
     </select>
     <!-- 根据条件查询价目表列表 -->
-    <select id="selectBaseTariffList" resultType="com.yunya.feign.tariff.domain.vo.BaseTariffVO">
+    <select id="selectBaseTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseTariffVO">
         select
         bt.id,
         bt.tariff_category_id as tariffCategoryId,
@@ -90,7 +90,7 @@
         </where>
     </select>
     <!-- 根据条件查询导出价目表列表 -->
-    <select id="selectExportBaseTariffList" resultType="com.yunya.feign.tariff.domain.vo.BaseTariffExportVO">
+    <select id="selectExportBaseTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseTariffExportVO">
         select
         bt.item_number as itemNumber,
         bt.`name`,
@@ -116,7 +116,7 @@
     </select>
     <!-- 根据条件查询价目表开单关联信息列表 -->
     <select id="selectBaseTariffAssociationList"
-            resultType="com.yunya.feign.tariff.domain.vo.BaseTariffAssociationVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffAssociationVO">
         select
             bt.id,
             bt.item_number as itemNumber,
@@ -147,7 +147,7 @@
     </select>
     <!-- 根据条件查询价目表导出开单关联信息列表 -->
     <select id="selectExportBaseTariffAssociationList"
-            resultType="com.yunya.feign.tariff.domain.vo.BaseTariffAssociationExportVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffAssociationExportVO">
         select
         bt.item_number as itemNumber,
         bt.`name` as name,

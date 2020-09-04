@@ -1,7 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
-import com.yunya.feign.tariff.domain.query.BaseOralTariffCategoryQueryForm;
-import com.yunya.feign.tariff.domain.vo.BaseOralTariffCategoryVO;
+import com.yunya.feign.treatment.domain.query.BaseOralTariffCategoryQueryForm;
+import com.yunya.feign.treatment.domain.vo.BaseOralTariffCategoryVO;
 import com.yunya.models.tariff.BaseOralTariffCategory;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

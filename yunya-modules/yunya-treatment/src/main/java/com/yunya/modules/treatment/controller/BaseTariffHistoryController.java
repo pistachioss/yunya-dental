@@ -1,6 +1,6 @@
 package com.yunya.modules.treatment.controller;
 
-import com.yunya.feign.tariff.domain.vo.BaseTariffHistoryVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffHistoryVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseTariffHistoryBiz;

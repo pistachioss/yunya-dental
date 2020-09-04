@@ -1,9 +1,9 @@
 package com.yunya.modules.treatment.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.tariff.domain.form.BaseTariffAssociationForm;
-import com.yunya.feign.tariff.domain.query.BaseTariffAssociationQueryForm;
-import com.yunya.feign.tariff.domain.vo.BaseTariffAssociationVO;
+import com.yunya.feign.treatment.domain.form.BaseTariffAssociationForm;
+import com.yunya.feign.treatment.domain.query.BaseTariffAssociationQueryForm;
+import com.yunya.feign.treatment.domain.vo.BaseTariffAssociationVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseTariffBiz;

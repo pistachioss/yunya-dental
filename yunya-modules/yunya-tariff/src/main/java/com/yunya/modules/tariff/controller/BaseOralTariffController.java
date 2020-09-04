@@ -1,11 +1,11 @@
 package com.yunya.modules.tariff.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.tariff.domain.form.BaseOralTariffForm;
-import com.yunya.feign.tariff.domain.model.BaseOralTariffModel;
-import com.yunya.feign.tariff.domain.query.BaseOralTariffQueryForm;
-import com.yunya.feign.tariff.domain.vo.BaseOralTariffInfoVO;
-import com.yunya.feign.tariff.domain.vo.BaseOralTariffVO;
+import com.yunya.feign.treatment.domain.form.BaseOralTariffForm;
+import com.yunya.feign.treatment.domain.model.BaseOralTariffModel;
+import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
+import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;

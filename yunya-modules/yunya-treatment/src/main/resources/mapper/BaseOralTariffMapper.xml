@@ -23,7 +23,7 @@
     </resultMap>
 
     <!-- 商品项目信息结果集（封装门诊商品项目信息） -->
-    <resultMap id="BaseOralTariffInfoResultMap" type="com.yunya.feign.tariff.domain.vo.BaseOralTariffInfoVO">
+    <resultMap id="BaseOralTariffInfoResultMap" type="com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO">
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="oralTariffCategoryId" property="oralTariffCategoryId" jdbcType="INTEGER"/>
         <result column="oralTariffCategoryName" property="oralTariffCategoryName" jdbcType="VARCHAR"/>
@@ -56,7 +56,7 @@
         where bot.id = #{id}
     </select>
     <!-- 根据条件查询商品项目列表(不含门诊商品项目价格信息) -->
-    <select id="selectBaseOralTariffList" resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffVO">
+    <select id="selectBaseOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffVO">
         select
         bot.id,
         bot.oral_tariff_category_id as oralTariffCategoryId,
@@ -89,7 +89,7 @@
         </where>
     </select>
     <!-- 根据条件查询商品项目列表（导出用） -->
-    <select id="selectExportBaseOralTariffList" resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffExportVO">
+    <select id="selectExportBaseOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffExportVO">
         select
         bot.id,
         bot.oral_tariff_category_id as oralTariffCategoryId,

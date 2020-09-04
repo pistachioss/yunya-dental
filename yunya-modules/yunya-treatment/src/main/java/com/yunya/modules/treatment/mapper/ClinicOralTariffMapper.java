@@ -1,8 +1,8 @@
 package com.yunya.modules.treatment.mapper;
 
-import com.yunya.feign.tariff.domain.query.ClinicOralTariffQueryForm;
-import com.yunya.feign.tariff.domain.vo.ClinicOralTariffExportVO;
-import com.yunya.feign.tariff.domain.vo.ClinicOralTariffVO;
+import com.yunya.feign.treatment.domain.query.ClinicOralTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.ClinicOralTariffExportVO;
+import com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO;
 import com.yunya.models.tariff.ClinicOralTariff;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

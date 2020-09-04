@@ -1,7 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
-import com.yunya.feign.tariff.domain.query.ClinicTariffQueryForm;
-import com.yunya.feign.tariff.domain.vo.ClinicTariffVO;
+import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

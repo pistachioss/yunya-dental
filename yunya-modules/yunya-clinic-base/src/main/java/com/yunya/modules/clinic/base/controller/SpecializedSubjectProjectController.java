@@ -5,15 +5,11 @@ import com.yunya.feign.cash_balance.form.SpecializedSubjectProjectForm;
 import com.yunya.feign.cash_balance.model.SpecializedSubjectProjectModel;
 import com.yunya.feign.cash_balance.query.SpecializedSubjectProjectQuery;
 import com.yunya.feign.cash_balance.vo.SpecializedSubjectProjectVo;
-import com.yunya.feign.cash_balance.vo.SpecializedSubjectProjectByIdVo;
-import com.yunya.feign.tariff.RemoteTariffServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.clinic_base.SpecializedSubjectProject;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseTariff;
 import com.yunya.modules.clinic.base.biz.SpecializedSubjectProjectBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -38,9 +34,6 @@ public class SpecializedSubjectProjectController {
 
     @Resource
     private SpecializedSubjectProjectBiz specializedSubjectProjectBiz;
-
-    @Resource
-    private RemoteTariffServiceFeign remoteTariffServiceFeign;
 
     /**
      * 专科项目设置列表

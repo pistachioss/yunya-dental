@@ -3,18 +3,11 @@ package com.yunya.modules.clinic.base.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.cash_balance.query.SpecializedSubjectProjectQuery;
-import com.yunya.feign.cash_balance.vo.SpecialistTargetByIdVo;
-import com.yunya.feign.cash_balance.vo.SpecializedSubjectProjectByIdVo;
 import com.yunya.feign.cash_balance.vo.SpecializedSubjectProjectVo;
-import com.yunya.feign.tariff.RemoteTariffServiceFeign;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.models.clinic_base.SpecializedSubjectProject;
-import com.yunya.models.tariff.BaseOralTariff;
-import com.yunya.models.tariff.BaseOralTariffCategory;
 import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.tariff.BaseTariffCategory;
 import com.yunya.modules.clinic.base.mapper.SpecializedSubjectProjectMapper;
-import javafx.scene.Parent;
-import org.aspectj.weaver.ast.Var;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -26,7 +19,7 @@ public class SpecializedSubjectProjectBiz {
     private SpecializedSubjectProjectMapper  specializedSubjectProjectMapper;
 
     @Resource
-    private RemoteTariffServiceFeign remoteTariffServiceFeign;
+    private RemoteTreatmentServiceFeign remoteTariffServiceFeign;
 
     public PageInfo<SpecializedSubjectProjectVo> findSpecializedList(SpecializedSubjectProjectQuery query){
         if (query.getWhetherPage()) {
