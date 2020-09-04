@@ -102,7 +102,7 @@ public class TemplateController {
 
     @ApiOperation("电子病例-病例模板内容查询")
     @GetMapping("template/{categoryId}/medical/list")
-    public ResponseResult<EnableTemplateVo> getTemplateList(@PathVariable(value = "categoryId") Integer categoryId) {
+    public ResponseResult<List<EnableTemplateVo>> getTemplateList(@PathVariable(value = "categoryId") Integer categoryId) {
         List<EnableTemplateVo> list = templateBiz.getEnableMedicalTemplate(categoryId);
         return ResponseUtil.success(list);
     }

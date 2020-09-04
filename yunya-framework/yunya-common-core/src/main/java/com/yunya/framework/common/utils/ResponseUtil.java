@@ -66,7 +66,7 @@ public class ResponseUtil {
    * @param data 响应数据
    * @return
    */
-  public static ResponseResult success(Object data) {
+  public static <T> ResponseResult<T> success(T data) {
     return result(SUCCESS_STATUS, SUCCESS_MSG, data, PASS);
   }
 
