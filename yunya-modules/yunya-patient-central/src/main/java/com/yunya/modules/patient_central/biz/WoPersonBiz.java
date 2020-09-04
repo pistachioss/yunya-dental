@@ -10,6 +10,7 @@ import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.PictureModel;
 import com.yunya.feign.patient_central.domain.vo.PhotoInformationVo;
 import com.yunya.feign.patient_central.domain.vo.PictureVo;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
@@ -33,6 +34,9 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class WoPersonBiz {
+
+    @Autowired
+    private RedisUtils redisUtils;
 
     @Autowired
     private TokenTask tokenTask;
@@ -72,10 +76,10 @@ public class WoPersonBiz {
         DeviceApi = new CustomTokenClient(tokenTask).DeviceClient();
         DeviceApi.createRegisterModeUsingPOST(input, WoPlatformConstants.APPID, WoPlatformConstants.DEVICEKEY); //连接硬件设备进行人员拍照注册*/
         NameValuePair[] data = {
-                new NameValuePair("pass",WoPlatformConstants.PASS),
+                new NameValuePair("pass",redisUtils.get("PASS")),
                 new NameValuePair("personId",patientBaseInfo.getPersonId())
         };
-        WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/face/takeImg", data); //调用心跳接口进行拍照注册
+        WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/face/takeImg", data); //调用心跳接口进行拍照注册
     }
 
     /**
@@ -102,10 +106,10 @@ public class WoPersonBiz {
         }*/
 
         NameValuePair[] data = {
-                new NameValuePair("pass",WoPlatformConstants.PASS),
+                new NameValuePair("pass",redisUtils.get("PASS")),
                 new NameValuePair("faceId",pictureForm.getFaceId())
         };
-        WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/face/delete", data); //调用心跳接口创建人员信息
+        WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/face/delete", data); //调用心跳接口创建人员信息
         ArrayList<PhotoInformationVo> faceUrl = patientBaseInfoBiz.getFaceUrl(pictureForm.getPatientId());
         return faceUrl;
 

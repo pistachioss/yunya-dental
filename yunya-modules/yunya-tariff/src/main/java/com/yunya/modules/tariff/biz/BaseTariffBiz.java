@@ -736,13 +736,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
     String emr = form.getEmr();
     String attention = form.getAttention();
-    String fellowUp = "--";
+    String fellowUp = "";
     List<Integer> fellowUps = form.getFellowUps();
     if (StringHelper.isBlank(emr)) {
-      emr = "--";
+      emr = "";
     }
     if (StringHelper.isBlank(attention)) {
-      attention = "--";
+      attention = "";
     }
     if (StringHelper.isNotEmpty(fellowUps)) {
       fellowUp = fellowUps.toString();

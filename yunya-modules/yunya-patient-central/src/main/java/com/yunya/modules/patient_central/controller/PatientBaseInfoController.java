@@ -7,19 +7,18 @@ package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
-import com.yunya.feign.patient_central.domain.model.PictureModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
+import com.yunya.framework.common.model.IdentifyResponseResult;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -104,10 +103,9 @@ public class PatientBaseInfoController {
     @IgnoreUserToken
     @ApiOperation(value = "测试人脸识别认证返回")
     @RequestMapping(value = {"/renlianshibie"}, method = {RequestMethod.POST})
-    public ResponseResult renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
+    public IdentifyResponseResult renlianshibie(@RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
         this.patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
-        return ResponseUtil.success();
-
+        return ResponseUtil.faceRecognitionSuccess();
     }
 
     @ApiOperation("根据患者id查询来访信息")
@@ -122,4 +120,11 @@ public class PatientBaseInfoController {
         this.patientBaseInfoBiz.uptPhoto(patientPhotoForm);
         return ResponseUtil.success();
     }
+
+    @ApiOperation("根据患者id查询来访信息")
+    @GetMapping({"/patientInfo/{id}"})
+    public ResponseResult patientInfo(@PathVariable("id") Integer id) {
+        return ResponseUtil.success(this.patientBaseInfoBiz.findPatientTotalInfo(id));
+    }
+
 }

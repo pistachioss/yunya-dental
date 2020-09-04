@@ -284,4 +284,5 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
         prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
         prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
     }
+
 }

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.mapper.BaseOralTariffCategoryMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.tariff.BaseOralTariffCategory">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="number" property="number" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据ID查询商品分类信息 -->
+    <select id="selectBaseOralTariffCategoryById"
+            resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffCategoryVO">
+      select
+        botc.id,
+        botc.`name`,
+        botc.`number`,
+        botc.inservice
+      from base_oral_tariff_category botc
+      where botc.id = #{id}
+    </select>
+    <!-- 根据条件查询商品分类列表信息 -->
+    <select id="selectBaseOralTariffCategoryList"
+            resultType="com.yunya.feign.tariff.domain.vo.BaseOralTariffCategoryVO">
+        select
+        botc.id,
+        botc.`name`,
+        botc.`number`,
+        botc.inservice
+        from base_oral_tariff_category botc
+        <where>
+            <if test="queryForm.id != null">
+                and botc.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord !=''">
+                and CONCAT(IFNULL( botc.name, '' ), IFNULL( botc.number, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and botc.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+</mapper>
