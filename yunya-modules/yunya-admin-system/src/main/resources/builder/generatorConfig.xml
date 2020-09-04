@@ -44,6 +44,6 @@
         <table tableName="account_item" domainObjectName="AccountItem"/>
         <table tableName="clinic_account" domainObjectName="ClinicAccount"/>
         -->
-        <table tableName="account_type" domainObjectName="AccountType"/>
+        <table tableName="equipment_info" domainObjectName="EquipmentInfo"/>
     </context>
 </generatorConfiguration>

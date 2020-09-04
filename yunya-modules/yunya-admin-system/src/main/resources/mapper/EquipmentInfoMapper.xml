@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.system.mapper.EquipmentInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.system.EquipmentInfo" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="serial_number" property="serialNumber" jdbcType="VARCHAR" />
+    <result column="ip" property="ip" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="BIT" />
+    <result column="pass" property="pass" jdbcType="VARCHAR" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="Equipment_Column_List">
+    id,serial_number serialNumber, ip,pass,org_id orgId,crt_id crtId,crt_name crtName,crt_time crtTime,upd_id updId,upd_name updName,upd_time updTime,inservice
+  </sql>
+
+  <select id="selectOneBySN" resultType="com.yunya.modules.system.vo.EquipmentInfoVO">
+    select <include refid="Equipment_Column_List"/>
+    from equipment_info where serial_number =#{form.serialNumber} and ip =#{form.ip}
+  </select>
+
+  <select id="selectOneBySNAndId" resultType="com.yunya.modules.system.vo.EquipmentInfoVO">
+    select <include refid="Equipment_Column_List"/>
+    from equipment_info where serial_number =#{form.serialNumber} and ip =#{form.ip} and id != #{form.id}
+  </select>
+
+  <select id="findListByOrgId" resultType="com.yunya.modules.system.vo.EquipmentInfoVO">
+    select <include refid="Equipment_Column_List"/>
+    from equipment_info where org_id =#{orgId}
+  </select>
+</mapper>

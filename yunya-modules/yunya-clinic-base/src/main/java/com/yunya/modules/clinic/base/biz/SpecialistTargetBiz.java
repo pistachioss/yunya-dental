@@ -37,7 +37,6 @@ public class SpecialistTargetBiz {
         return new PageInfo<>(resultList);
     }
 
-
     public void add(SpecialistTarget specialistTarget) {
         specialistTargetMapper.add(specialistTarget);
     }

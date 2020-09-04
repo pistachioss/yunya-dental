@@ -142,6 +142,11 @@
     update patient_base_info set face_url = #{form.faceUrl} where id = #{form.id}
   </update>
 
+  <select id="selectOneByPersonId" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    select <include refid="Patient_Column_List"/>
+    from patient_base_info where person_id = #{personId}
+  </select>
+
 
 </mapper>
 

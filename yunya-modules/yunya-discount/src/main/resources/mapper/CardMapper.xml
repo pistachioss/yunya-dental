@@ -24,6 +24,7 @@
         <result column="sold_way" jdbcType="TINYINT" property="soldWay" />
         <result column="is_pay" jdbcType="TINYINT" property="pay" />
         <result column="active_date" jdbcType="TIMESTAMP" property="activeDate"/>
+        <result column="seller_id" jdbcType="INTEGER" property="sellerId" />
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
         <result column="upd_id" jdbcType="INTEGER" property="updId" />
