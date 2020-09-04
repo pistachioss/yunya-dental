@@ -24,8 +24,4 @@ public class ResponseResult<T> implements Serializable {
   private T data;
   /** 审核状态 */
   private Boolean audit;
-  /** 人脸识别回调返回状态 */
-  private Integer result;
-  /** 人脸识别回调返回结果 */
-  private Boolean success;
 }

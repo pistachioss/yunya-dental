@@ -7,7 +7,10 @@ package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
-import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
+import com.yunya.feign.patient_central.domain.model.PictureModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -18,9 +21,11 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.ibatis.annotations.Update;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Api(
         value = "患者信息",
@@ -103,9 +108,12 @@ public class PatientBaseInfoController {
     @IgnoreUserToken
     @ApiOperation(value = "测试人脸识别认证返回")
     @RequestMapping(value = {"/renlianshibie"}, method = {RequestMethod.POST})
-    public IdentifyResponseResult renlianshibie(@RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
+    public  Map<String,Object> renlianshibie(@RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
         this.patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
-        return ResponseUtil.faceRecognitionSuccess();
+        Map<String,Object> map = new HashMap<>();
+        map.put("result",1);
+        map.put("success",true);
+        return map;
     }
 
     @ApiOperation("根据患者id查询来访信息")
