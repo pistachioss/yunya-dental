@@ -229,41 +229,38 @@ public class TollBiz {
       Set<MemberAccountModel> memberAccountModels,
       Set<PaymentModel> paymentModels) {
     if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
-      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
       prepaymentAccountModels.forEach(
           prepaymentAccountModel -> {
-            setBillPayRecordValue(
-                billPayRecordId,
-                billPayDetailRecord,
-                prepaymentAccountModel.getAccountItemId(),
-                prepaymentAccountModel.getAmount());
-            billPayDetailRecord.setType((byte) 0);
+            BillPayDetailRecord billPayDetailRecord =
+                setBillPayRecordValue(
+                    billPayRecordId,
+                    prepaymentAccountModel.getAccountItemId(),
+                    prepaymentAccountModel.getAmount(),
+                    (byte) 0);
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
     if (StringHelper.isNotEmpty(memberAccountModels)) {
-      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
       memberAccountModels.forEach(
           memberAccountModel -> {
-            setBillPayRecordValue(
-                billPayRecordId,
-                billPayDetailRecord,
-                memberAccountModel.getAccountItemId(),
-                memberAccountModel.getAmount());
-            billPayDetailRecord.setType((byte) 1);
+            BillPayDetailRecord billPayDetailRecord =
+                setBillPayRecordValue(
+                    billPayRecordId,
+                    memberAccountModel.getAccountItemId(),
+                    memberAccountModel.getAmount(),
+                    (byte) 1);
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
     if (StringHelper.isNotEmpty(paymentModels)) {
-      BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
       paymentModels.forEach(
           paymentModel -> {
-            setBillPayRecordValue(
-                billPayRecordId,
-                billPayDetailRecord,
-                paymentModel.getAccountItemId(),
-                paymentModel.getAmount());
-            billPayDetailRecord.setType((byte) 2);
+            BillPayDetailRecord billPayDetailRecord =
+                setBillPayRecordValue(
+                    billPayRecordId,
+                    paymentModel.getAccountItemId(),
+                    paymentModel.getAmount(),
+                    (byte) 2);
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
@@ -273,16 +270,13 @@ public class TollBiz {
    * 设置账单支付明细记录字段属性
    *
    * @param billPayRecordId 账单支付记录
-   * @param billPayDetailRecord 账单支付详情
    * @param accountItemId 支付方式ID
    * @param amount 支付金额
    */
-  private void setBillPayRecordValue(
-      Integer billPayRecordId,
-      BillPayDetailRecord billPayDetailRecord,
-      Integer accountItemId,
-      BigDecimal amount) {
+  private BillPayDetailRecord setBillPayRecordValue(
+      Integer billPayRecordId, Integer accountItemId, BigDecimal amount, Byte type) {
     BillPayRecord billPayRecord = billPayRecordBiz.selectById(billPayRecordId);
+    BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
     Integer patientId = billPayRecord.getPatientId();
     Integer treatmentRecordId = billPayRecord.getTreatmentRecordId();
     Integer orderRecordId = billPayRecord.getOrderRecordId();
@@ -295,8 +289,10 @@ public class TollBiz {
     billPayDetailRecord.setBillPayRecordId(billPayRecordId);
     billPayDetailRecord.setAccountItemId(accountItemId);
     billPayDetailRecord.setAmount(amount);
+    billPayDetailRecord.setType(type);
     billPayDetailRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     billPayDetailRecord.setCrtName(BaseContextHandler.getName());
+    return billPayDetailRecord;
   }
 
   /**
