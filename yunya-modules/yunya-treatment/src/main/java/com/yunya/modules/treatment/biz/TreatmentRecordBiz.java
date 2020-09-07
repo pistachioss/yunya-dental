@@ -248,14 +248,20 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             systemServiceFeign.findSysUserEmployeeInfoByUserId(appointmentDentistId);
         vo.setAppointDentistName(null != dentistInfo ? dentistInfo.getName() : "--");
         Integer appointAssistantId = vo.getAppointAssistantId();
-        vo.setAppointAssistantId(appointAssistantId);
-        SysUserInfoDetail assistantInfo =
-            systemServiceFeign.findSysUserEmployeeInfoByUserId(appointAssistantId);
-        vo.setAppointAssistantName(null != assistantInfo ? assistantInfo.getName() : "--");
+        if (null != appointAssistantId) {
+          vo.setAppointAssistantId(appointAssistantId);
+          // todo 从缓存中查询用户信息
+          SysUserInfoDetail assistantInfo =
+              systemServiceFeign.findSysUserEmployeeInfoByUserId(appointAssistantId);
+          vo.setAppointAssistantName(null != assistantInfo ? assistantInfo.getName() : "--");
+        }
         Integer appointDeptRoomId = vo.getAppointDeptRoomId();
-        vo.setAppointDeptRoomId(appointDeptRoomId);
-        DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(appointmentId);
-        vo.setAppointDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
+        if (null != appointDeptRoomId) {
+          vo.setAppointDeptRoomId(appointDeptRoomId);
+          // todo 从缓存中查询科室信息
+          DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(appointmentId);
+          vo.setAppointDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
+        }
         vo.setAppointTime(appointment.getAppointTime());
         vo.setAppointDuration(appointment.getAppointDuration());
         vo.setAppointContent(appointment.getAppointContent());
@@ -285,6 +291,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       Integer regAssistantId = registered.getAssistantId();
       if (null != regAssistantId) {
         vo.setRegAssistantId(regAssistantId);
+        // todo 从缓存中查询用户信息
         SysUserInfoDetail regAssistantInfo =
             systemServiceFeign.findSysUserEmployeeInfoByUserId(regAssistantId);
         vo.setRegAssistantName(null != regAssistantInfo ? regAssistantInfo.getName() : "--");
@@ -293,6 +300,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       Integer regDeptRoomId = registered.getDeptRoomId();
       if (null != regDeptRoomId) {
         vo.setRegDeptRoomId(regDeptRoomId);
+        // todo 从缓存中查询科室信息
         DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(regDeptRoomId);
         vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
       }
@@ -308,6 +316,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   private void setTreatingInfo(TreatmentPatientInfoVO vo) {
     Integer treatDentistId = vo.getTreatDentistId();
+    // todo 从缓存中查询用户信息
     SysUserInfoDetail treatDentistInfo =
         systemServiceFeign.findSysUserEmployeeInfoByUserId(treatDentistId);
     vo.setTreatDentistName(null != treatDentistInfo ? treatDentistInfo.getName() : "--");
