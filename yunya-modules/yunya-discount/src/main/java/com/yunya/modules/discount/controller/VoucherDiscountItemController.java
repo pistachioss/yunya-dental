@@ -4,9 +4,11 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.PackageCouponItem;
 import com.yunya.models.discount.SpecialPackageCouponItem;
 import com.yunya.models.discount.VoucherDiscountItem;
+import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
 import com.yunya.modules.discount.biz.PackageCouponItemBiz;
 import com.yunya.modules.discount.biz.SpecialPackageCouponItemBiz;
 import com.yunya.modules.discount.biz.VoucherDiscountItemBiz;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -42,7 +45,7 @@ public class VoucherDiscountItemController {
     @Autowired private VoucherDiscountItemBiz voucherDiscountItemBiz;
     @Autowired private PackageCouponItemBiz packageCouponItemBiz;
     @Autowired private SpecialPackageCouponItemBiz specialPackageCouponItemBiz;
-
+    @Autowired private CouponCommonInfoBiz couponCommonInfoBiz;
     /**
      * 新增代金券折扣券适用项目
      *
@@ -103,6 +106,14 @@ public class VoucherDiscountItemController {
                 t.setUpdTime(date);
                 t.setCrtTime(date);
             });
+            BigDecimal saleAmount = new BigDecimal("0");
+            for(PackageCouponItemForm pi:packageCouponItemItems){
+                saleAmount = saleAmount.add(pi.getSaleAmount());
+            }
+            CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
+            couponCommonInfo.setId(packageCouponItemItems.get(0).getCouponId());
+            couponCommonInfo.setSoldAmount(saleAmount);
+            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券售出金额
         }
         return ResponseUtil.success(voucherDiscountItemBiz.savePackage(packageCouponItemItems));
     }
