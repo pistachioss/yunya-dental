@@ -48,12 +48,11 @@ public class PackageCouponForm {
     @ApiModelProperty("产品分类ID")
     private Integer productTypeId;
 
-//    /**
-//     * 售价
-//     */
-//    @NotNull(message = "售价不能为空")
-//    @ApiModelProperty("售价")
-//    private BigDecimal soldAmount;
+    /**
+     * 售价
+     */
+    @ApiModelProperty("售价")
+    private BigDecimal soldAmount;
 
     /**
      * 售出开始日期
