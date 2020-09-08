@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
@@ -348,7 +349,6 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       throw new ClientServiceException(
           "导入失败,导入的价目表数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
-
     // 初始化参数、常量
     int dataNum = 0;
     StringBuilder successMsg = new StringBuilder();
@@ -361,7 +361,6 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     String unit;
     BigDecimal price;
     OrganizationModel orgModel = new OrganizationModel();
-
     // 获取全部门诊信息
     orgModel.setTypes(new Byte[] {2});
     orgModel.setWhetherPage(false);
@@ -379,16 +378,12 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
           unit = model.getUnit();
           price = model.getPrice();
           Integer orgId = orgInfo.getId();
-
           // 校验价目表分类参数合法性
           checkCategoryParams(dataNum, failureMsg, itemNumber, categoryName, categoryNumber);
-
           // 获取价目表分类ID
           Integer categoryId = getCategoryId(categoryName, categoryNumber);
-
           // 校验价目表参数合法性
           checkItemParams(dataNum, failureMsg, itemName, itemNumber, categoryId);
-
           // 新增/更新价目表信息、门诊价目表
           addOrUpdBaseItemAndClinicItem(
               itemName, itemNumber, englishName, unit, price, categoryId, orgId);
@@ -404,16 +399,12 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
         categoryName = model.getTariffCategoryName();
         unit = model.getUnit();
         price = model.getPrice();
-
         // 校验价目表分类参数合法性
         checkCategoryParams(dataNum, failureMsg, itemNumber, categoryName, categoryNumber);
-
         // 获取价目表分类ID
         Integer categoryId = getCategoryId(categoryName, categoryNumber);
-
         // 校验价目表参数合法性
         checkItemParams(dataNum, failureMsg, itemName, itemNumber, categoryId);
-
         // 新增或更新价目表信息
         addOrUpdBaseItem(itemName, itemNumber, englishName, unit, price, categoryId);
       }
@@ -741,7 +732,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
     String emr = form.getEmr();
     String attention = form.getAttention();
-    String fellowUp = "";
+    StringBuilder fellowUp = new StringBuilder();
     List<Integer> fellowUps = form.getFellowUps();
     if (StringHelper.isBlank(emr)) {
       emr = "";
@@ -750,13 +741,11 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       attention = "";
     }
     if (StringHelper.isNotEmpty(fellowUps)) {
-      fellowUp = fellowUps.toString();
-    } else {
-      fellowUp += fellowUps.toString();
+      fellowUps.forEach(integer -> fellowUp.append(integer).append(","));
     }
     resultData.setEmr(emr);
     resultData.setAttention(attention);
-    resultData.setFellowUp(fellowUp);
+    resultData.setFellowUp(fellowUp.toString().substring(0, fellowUp.length() - 1));
     mapper.updateByPrimaryKeySelective(resultData);
   }
 

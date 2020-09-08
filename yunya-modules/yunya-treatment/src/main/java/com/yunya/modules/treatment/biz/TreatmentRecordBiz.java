@@ -155,9 +155,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     List<TreatmentPatientInfoVO> treatingList = mapper.selectTreatingList(queryForm);
     Byte status = queryForm.getTreatmentStatus();
     switch (status) {
+      case 0:
       case 1:
       case 2:
-      case 3:
         if (StringHelper.isNotEmpty(treatingList)) {
           treatingList.forEach(
               vo -> {
@@ -176,7 +176,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           treatingList = new ArrayList<>();
         }
         break;
-      case 4:
+      case 3:
         if (StringHelper.isNotEmpty(treatingList)) {
           treatingList.forEach(
               vo -> {
@@ -414,7 +414,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (null != baseTariff) {
       String fellowUp = baseTariff.getFellowUp();
       if (StringHelper.isNotBlank(fellowUp)) {
-        String[] nums = fellowUp.split("\\D");
+        String[] nums = fellowUp.split(",");
         if (nums.length > 0) {
           Arrays.stream(nums)
               .filter(StringHelper::isNotBlank)
