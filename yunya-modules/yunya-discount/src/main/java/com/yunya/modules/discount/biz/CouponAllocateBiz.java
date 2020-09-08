@@ -45,7 +45,8 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
         model.setWhetherPage(false);
         List<Integer> orgIds = new ArrayList<>();
         model.setOrgIds(orgIds);
-        model.setWorkStatus(BusinessConstants.USER_RESIGNATION_STATUS);//离职状态
+        Byte[]userStatus = {0,1,3};
+        model.setWorkStatus(userStatus);//离职状态
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
         Map<String, SysUserInfoDetail> employeesMap = new HashMap();
         employees.forEach(z -> employeesMap.put(z.getUserId() + "", z));
