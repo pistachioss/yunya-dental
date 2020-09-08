@@ -47,6 +47,6 @@ public class SysUserEmployeeModel implements Serializable {
   @ApiModelProperty("关键字（员工姓名或手机号）")
   private String keyWord;
   /** 就职状态 */
-  @ApiModelProperty("就职状态（试用: 0, 正式: 1，实习: 2, 离职:3）")
-  private Byte workStatus;
+  @ApiModelProperty("就职状态（试用: 0, 正式: 1， 离职:2;实习: 3）")
+  private Byte[] workStatus;
 }
