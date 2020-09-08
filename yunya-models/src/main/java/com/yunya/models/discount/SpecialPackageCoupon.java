@@ -31,7 +31,7 @@ public class SpecialPackageCoupon {
     private Integer effectiveDays;
 
     /**
-     * 是否可混合使用优惠 0.可以混合使用 1.跟会员卡混合使用 2.无法混合使用
+     * 是否可混合使用优惠 0.不可以共用 1.可以共用
      */
     private Integer mixable;
 
@@ -167,18 +167,18 @@ public class SpecialPackageCoupon {
     }
 
     /**
-     * 获取是否可混合使用优惠 0.可以混合使用 1.跟会员卡混合使用 2.无法混合使用
+     * 获取是否可混合使用优惠 0.不可以共用 1.可以共用
      *
-     * @return mixable - 是否可混合使用优惠 0.可以混合使用 1.跟会员卡混合使用 2.无法混合使用
+     * @return mixable - 是否可混合使用优惠 0.不可以共用 1.可以共用
      */
     public Integer getMixable() {
         return mixable;
     }
 
     /**
-     * 设置是否可混合使用优惠 0.可以混合使用 1.跟会员卡混合使用 2.无法混合使用
+     * 设置是否可混合使用优惠 0.不可以共用 1.可以共用
      *
-     * @param mixable 是否可混合使用优惠 0.可以混合使用 1.跟会员卡混合使用 2.无法混合使用
+     * @param mixable 是否可混合使用优惠 0.不可以共用 1.可以共用
      */
     public void setMixable(Integer mixable) {
         this.mixable = mixable;

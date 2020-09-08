@@ -9,6 +9,7 @@
     <result column="coupon_id" property="couponId" jdbcType="INTEGER" />
     <result column="discount_rate" property="discountRate" jdbcType="DECIMAL" />
     <result column="activation_deadline" property="activationDeadline" jdbcType="DATE" />
+    <result column="mixable" property="mixable" jdbcType="INTEGER" />
     <result column="effective_days" property="effectiveDays" jdbcType="INTEGER" />
     <result column="is_share" property="isShare" jdbcType="BIT" />
     <result column="useable_clinic" property="useableClinic" jdbcType="VARCHAR" />
