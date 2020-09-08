@@ -345,7 +345,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   public String importExcel(MultipartFile excelFile) throws Exception {
     ExcelUtil<BaseTariffImportModel> excelUtil = new ExcelUtil<>(BaseTariffImportModel.class);
     List<BaseTariffImportModel> models = excelUtil.importExcel(excelFile.getInputStream());
-    if (null == models || models.size() == 0) {
+    if (StringHelper.isEmpty(models)) {
       throw new ClientServiceException(
           "导入失败,导入的价目表数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
@@ -759,7 +759,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
         new ExcelUtil<>(BaseTariffAssociationImportModel.class);
     List<BaseTariffAssociationImportModel> models =
         excelUtil.importExcel(excelFile.getInputStream());
-    if (StringHelper.isNotEmpty(models)) {
+    if (StringHelper.isEmpty(models)) {
       throw new ClientServiceException(
           "导入失败,导入的价目表数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
     }
