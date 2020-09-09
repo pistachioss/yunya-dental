@@ -5,16 +5,16 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
-import com.yunya.feign.tariff.domain.form.BaseTariffAssociationForm;
-import com.yunya.feign.tariff.domain.form.BaseTariffForm;
-import com.yunya.feign.tariff.domain.form.ClinicItemPriceForm;
-import com.yunya.feign.tariff.domain.model.BaseTariffAssociationImportModel;
-import com.yunya.feign.tariff.domain.model.BaseTariffImportModel;
-import com.yunya.feign.tariff.domain.model.BaseTariffModel;
-import com.yunya.feign.tariff.domain.model.ClinicItemPriceModel;
-import com.yunya.feign.tariff.domain.query.BaseTariffAssociationQueryForm;
-import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
-import com.yunya.feign.tariff.domain.vo.*;
+import com.yunya.feign.treatment.domain.form.BaseTariffAssociationForm;
+import com.yunya.feign.treatment.domain.form.BaseTariffForm;
+import com.yunya.feign.treatment.domain.form.ClinicItemPriceForm;
+import com.yunya.feign.treatment.domain.model.BaseTariffAssociationImportModel;
+import com.yunya.feign.treatment.domain.model.BaseTariffImportModel;
+import com.yunya.feign.treatment.domain.model.BaseTariffModel;
+import com.yunya.feign.treatment.domain.model.ClinicItemPriceModel;
+import com.yunya.feign.treatment.domain.query.BaseTariffAssociationQueryForm;
+import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -736,13 +736,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     }
     String emr = form.getEmr();
     String attention = form.getAttention();
-    String fellowUp = "--";
+    String fellowUp = "";
     List<Integer> fellowUps = form.getFellowUps();
     if (StringHelper.isBlank(emr)) {
-      emr = "--";
+      emr = "";
     }
     if (StringHelper.isBlank(attention)) {
-      attention = "--";
+      attention = "";
     }
     if (StringHelper.isNotEmpty(fellowUps)) {
       fellowUp = fellowUps.toString();

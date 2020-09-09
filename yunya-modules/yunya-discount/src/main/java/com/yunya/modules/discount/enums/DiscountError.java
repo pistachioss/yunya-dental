@@ -29,7 +29,7 @@ public enum DiscountError implements RestError {
     CARD_BEYOND_DEADLINE(30021, "优惠券已超过有效期"),
     CARD_NOT_CHARGE(30022, "卡券未收费"),
     CARD_IS_CHARGED(30023, "卡券已收费"),
-    CARD_IS_EXIST(30024, "卡券已存在"),
+    OTHER_ALLOW_ACTIVE_OWN(30024, "自有平台卡券不允许在地三方平台激活"),
     CARD_NOT_ACTIVATED(30025, "卡券未激活"),
     COUPON_NOT_ALLOW_SHARE(30026, "该优惠券不能与他人共享"),
     SHARER_NOT_ALLOW_OWNER(30027, "配置共享人不能是患者自己"),

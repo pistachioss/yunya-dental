@@ -33,10 +33,7 @@ public class WoPlatformHeartbeat implements Serializable {
             org.apache.commons.httpclient.HttpClient httpClient = new org.apache.commons.httpclient.HttpClient();
             int response = httpClient.executeMethod(postMethod); // 执行POST方法
             String result = postMethod.getResponseBodyAsString() ;
-
-            System.out.println("*******************************************************");
             JSONObject obj = JSONObject.parseObject(result);
-            System.out.println(obj.toJSONString());
             return obj;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());

@@ -1,11 +1,11 @@
 package com.yunya.modules.tariff.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.tariff.domain.form.BaseTariffForm;
-import com.yunya.feign.tariff.domain.model.BaseTariffModel;
-import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
-import com.yunya.feign.tariff.domain.vo.BaseTariffInfoVO;
-import com.yunya.feign.tariff.domain.vo.BaseTariffVO;
+import com.yunya.feign.treatment.domain.form.BaseTariffForm;
+import com.yunya.feign.treatment.domain.model.BaseTariffModel;
+import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
-import java.util.List;
 
 /**
  * 描述: 基础价目表控制器

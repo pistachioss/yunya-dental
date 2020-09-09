@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
-import com.yunya.feign.tariff.RemoteTariffServiceFeign;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
@@ -42,10 +41,14 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   /** 系统管理服务 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
-
-  /** 价目表服务 */
-  @Autowired private RemoteTariffServiceFeign tariffServiceFeign;
-
+  /** 基础价目表 */
+  @Autowired private BaseTariffBiz baseTariffBiz;
+  /** 商品项目 */
+  @Autowired private BaseOralTariffBiz baseOralTariffBiz;
+  /** 门诊价目表 */
+  @Autowired private ClinicTariffBiz clinicTariffBiz;
+  /** 门诊商品表 */
+  @Autowired private ClinicOralTariffBiz clinicOralTariffBiz;
   /** 开单记录 */
   @Autowired private OrderRecordMapper orderRecordMapper;
 
@@ -65,7 +68,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             Integer billingItemId = vo.getBillingItemId();
             Byte type = vo.getType();
             if (1 == type) {
-              BaseOralTariff oralTariff = tariffServiceFeign.findBaseOralTariffById(billingItemId);
+              BaseOralTariff oralTariff = baseOralTariffBiz.selectById(billingItemId);
               if (null != oralTariff) {
                 vo.setBillingItemName(oralTariff.getName());
                 vo.setUnit(oralTariff.getUnit());
@@ -101,15 +104,14 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             Byte type = vo.getType();
             switch (type) {
               case 0:
-                BaseTariff tariff = tariffServiceFeign.findBaseTariffById(billingItemId);
+                BaseTariff tariff = baseTariffBiz.selectById(billingItemId);
                 if (null != tariff) {
                   vo.setBillingItemName(tariff.getName());
                   vo.setUnit(tariff.getUnit());
                 }
                 break;
               case 1:
-                BaseOralTariff oralTariff =
-                    tariffServiceFeign.findBaseOralTariffById(billingItemId);
+                BaseOralTariff oralTariff = baseOralTariffBiz.selectById(billingItemId);
                 if (null != oralTariff) {
                   vo.setBillingItemName(oralTariff.getName());
                   vo.setUnit(oralTariff.getUnit());
@@ -229,7 +231,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           case 0:
             tariff.setClinicId(orgId);
             tariff.setTariffId(itemId);
-            ClinicTariff clinicTariff = tariffServiceFeign.findClinicTariff(tariff);
+            ClinicTariff clinicTariff = clinicTariffBiz.selectOne(tariff);
             if (null != clinicTariff) {
               price = clinicTariff.getPrice();
             }
@@ -237,7 +239,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           case 1:
             oralTariff.setClinicId(orgId);
             oralTariff.setOralTariffId(itemId);
-            ClinicOralTariff clinicOralTariff = tariffServiceFeign.findClinicOralTariff(oralTariff);
+            ClinicOralTariff clinicOralTariff = clinicOralTariffBiz.selectOne(oralTariff);
             if (null != clinicOralTariff) {
               price = clinicOralTariff.getPrice();
             }

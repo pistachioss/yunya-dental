@@ -185,14 +185,20 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
             systemServiceFeign.findSysUserEmployeeInfoByUserId(appointmentDentistId);
         vo.setAppointDentistName(null != dentistInfo ? dentistInfo.getName() : "--");
         Integer appointAssistantId = vo.getAppointAssistantId();
-        vo.setAppointAssistantId(appointAssistantId);
-        SysUserInfoDetail assistantInfo =
-            systemServiceFeign.findSysUserEmployeeInfoByUserId(appointAssistantId);
-        vo.setAppointAssistantName(null != assistantInfo ? assistantInfo.getName() : "--");
+        if (null != appointAssistantId) {
+          vo.setAppointAssistantId(appointAssistantId);
+          // todo 从缓存中查询用户
+          SysUserInfoDetail assistantInfo =
+              systemServiceFeign.findSysUserEmployeeInfoByUserId(appointAssistantId);
+          vo.setAppointAssistantName(null != assistantInfo ? assistantInfo.getName() : "--");
+        }
         Integer appointDeptRoomId = vo.getAppointDeptRoomId();
-        vo.setAppointDeptRoomId(appointDeptRoomId);
-        DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(appointmentId);
-        vo.setAppointDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
+        if (null != appointDeptRoomId) {
+          vo.setAppointDeptRoomId(appointDeptRoomId);
+          // todo 从缓存中查询科室
+          DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(appointmentId);
+          vo.setAppointDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
+        }
         vo.setAppointTime(appointment.getAppointTime());
         vo.setAppointDuration(appointment.getAppointDuration());
         vo.setAppointContent(appointment.getAppointContent());

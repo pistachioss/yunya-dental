@@ -3,9 +3,11 @@ package com.yunya.modules.patient_central.biz;
 import com.alibaba.fastjson.JSONArray;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
+import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -18,7 +20,6 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
-import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
@@ -127,10 +128,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       object.put("name",patientBaseInfo.getName());
       String person = object.toJSONString();
       NameValuePair[] data = {
-              new NameValuePair("pass",WoPlatformConstants.PASS),
+              new NameValuePair("pass",redisUtils.get("PASS")),
               new NameValuePair("person",person)
       };
-      JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/person/create", data); //调用心跳接口创建人员信息
+      JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/person/create", data); //调用心跳接口创建人员信息
       JSONObject jsonData = jsonObject.getJSONObject("data");
       patientBaseInfo.setPersonId((String) jsonData.get("id"));
       mapper.insertSelective(patientBaseInfo);
@@ -237,10 +238,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param patientWoPlatformInfoModel
    */
   public void renlianshibie(PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
-    PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(2);
-    //patientBaseInfo.setWoGuid(patientWoPlatformInfoModel.getGuid());
-    patientBaseInfo.setName("WO平台授权人脸识别结果成功");
-    mapper.updateByPrimaryKeySelective(patientBaseInfo);
+    if(!patientWoPlatformInfoModel.getPersonId().equals("STRANGERBABY") && !patientWoPlatformInfoModel.getPersonId().equals("IDCARD")){
+      PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneByPersonId(patientWoPlatformInfoModel.getPersonId());
+      if(patientBaseInfoVo != null){
+        System.out.println("***************************************************************************");
+        System.out.println("认证成功！");
+        System.out.println("***************************************************************************");
+        System.out.println(patientWoPlatformInfoModel.toString());
+      }
+    }
   }
 
   /**
@@ -294,10 +300,10 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     //return woPersonnelFaceUrl.size() >= 0 && woPersonnelFaceUrl != null ? ResponseUtil.success(this.woPersonBiz.findWoPersonnelFaceUrl(patientBaseInfo.getWoGuid())) : ResponseUtil.error("未查询到照片，请先拍照", "");
     ArrayList<PhotoInformationVo> photoInformationVos = new ArrayList<>();
     NameValuePair[] data = {
-            new NameValuePair("pass",WoPlatformConstants.PASS),
+            new NameValuePair("pass",redisUtils.get("PASS")),
             new NameValuePair("personId",patientBaseInfo.getPersonId())
     };
-    JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(WoPlatformConstants.URL + "/face/find", data); //调用心跳接口创建人员信息
+    JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/face/find", data); //调用心跳接口创建人员信息
     JSONArray jsonData = jsonObject.getJSONArray("data");
     if(jsonData != null){
       for (Object jsonDatum : jsonData) {
@@ -335,37 +341,46 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         StringBuilder allergens = new StringBuilder(16);
         StringBuffer allergensDescriptions = new StringBuffer();
         for (PatientExtInfo extInfo : extInfos) {
-          if(extInfo.getDescription() != null){
-            allergensDescriptions.append(extInfo.getDescription());
-            allergensDescriptions.append(",");
-          }
           Byte type = extInfo.getType();
-          DictionaryItem item =
-                  remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
-          switch (type) {
-            case 0:
-              if (null != item) {
-                labels.append(item.getName());
-              }
-              break;
-            case 1:
-              if (null != item) {
-                diseases.append(item.getName());
-              }
-              break;
-            case 2:
-              if (null != item) {
-                allergens.append(item.getName());
-              }
-              break;
-            default:
-              break;
+          if(type == 2 && extInfo.getDescription()!= null){
+              allergensDescriptions.append(extInfo.getDescription());
+              allergensDescriptions.append(",");
+          }
+          if(extInfo.getDictItemId() != null){
+            DictionaryItem item =
+                    remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
+            switch (type) {
+              case 0:
+                if (null != item) {
+                  labels.append(item.getName());
+                }
+                break;
+              case 1:
+                if (null != item) {
+                  diseases.append(item.getName());
+                }
+                break;
+              case 2:
+                if (null != item) {
+                  allergens.append(item.getName());
+                  allergens.append(",");
+                }
+                break;
+              default:
+                break;
+            }
           }
         }
         patientData.setLabels(labels.toString());
         patientData.setDiseases(diseases.toString());
-        patientData.setAllergens(allergens.toString());
-        patientData.setAllergensDescriptions(allergensDescriptions.toString());
+        if(allergens.length() > 0){
+          allergens.deleteCharAt(allergens.length()-1); //去掉最后的逗号
+          patientData.setAllergens(allergens.toString());
+        }
+        if(allergensDescriptions.length() > 0 ){
+          allergensDescriptions.deleteCharAt(allergensDescriptions.length()-1);
+          patientData.setAllergensDescriptions(allergensDescriptions.toString());
+        }
       }
     }
     return patientData;
@@ -438,6 +453,21 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
     BeanUtils.copyProperties(patientPhotoForm, patientBaseInfo);
     this.patientBaseInfoMapper.updatePhoto(patientBaseInfo);
+  }
+
+
+  /**
+   * 修改设备密码
+   * @param form
+   * @return
+   */
+  public void updPass(UpdPassForm form) {
+    NameValuePair[] data = {
+            new NameValuePair("oldPass",form.getOldPass()),
+            new NameValuePair("newPass",form.getNewPass())
+    };
+    System.out.println(redisUtils.get("URL") );
+    JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/setPassWord", data); //调用心跳接口修改设备密码
   }
 
 }

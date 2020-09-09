@@ -98,7 +98,8 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     List<Integer> orgIds = new ArrayList<>();
     orgIds.add(Integer.valueOf(employeeScheduleCopyForm.getClinicId()));//设置门诊ID
     model.setOrgIds(orgIds);
-    model.setWorkStatus(BusinessConstants.USER_RESIGNATION_STATUS);
+    Byte[]userStatus = {0,1,3};
+    model.setWorkStatus(userStatus);//离职状态
     List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);//当前门诊下全部员工
     Map<String, SysUserInfoDetail> employeeMap = new HashMap();
     employees.forEach(z -> employeeMap.put(z.getUserId() + "", z));
@@ -263,12 +264,13 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     model.setOrgIds(orgIds);
     model.setPostIds(postNames);
     model.setKeyWord(name);
-    model.setWorkStatus(BusinessConstants.USER_RESIGNATION_STATUS);//离职状态
+    Byte[]userStatus = {0,1,3};
+
+    model.setWorkStatus(userStatus);//离职状态
     int count = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model).size();
-    model.setWhetherPage(true);
-    model.setPageNum(page);
-    model.setPageSize(size);
-//    System.out.println(remoteSystemServiceFeign.getAllPermissionInfo());
+    model.setWhetherPage(false);
+//    model.setPageNum(page);
+//    model.setPageSize(size);
     List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
     //获取门诊信息
     OrganizationModel organizationModel = new OrganizationModel();
@@ -453,7 +455,8 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     List<Integer> orgIds = new ArrayList<>();
     orgIds.add(clinicId);//设置门诊ID
     model.setOrgIds(orgIds);
-    model.setWorkStatus(BusinessConstants.USER_RESIGNATION_STATUS);
+    Byte[]userStatus = {0,1,3};
+    model.setWorkStatus(userStatus);//离职状态
     List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
     //获取门诊信息
     OrganizationModel organizationModel = new OrganizationModel();

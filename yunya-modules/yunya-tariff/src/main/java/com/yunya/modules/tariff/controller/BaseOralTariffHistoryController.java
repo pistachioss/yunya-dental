@@ -1,9 +1,8 @@
 package com.yunya.modules.tariff.controller;
 
-import com.yunya.feign.tariff.domain.vo.BaseOralTariffHistoryVO;
+import com.yunya.feign.treatment.domain.vo.BaseOralTariffHistoryVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.tariff.BaseOralTariffHistory;
 import com.yunya.modules.tariff.biz.BaseOralTariffHistoryBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

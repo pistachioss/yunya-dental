@@ -1,8 +1,8 @@
 package com.yunya.modules.tariff.mapper;
 
-import com.yunya.feign.tariff.domain.query.BaseTariffAssociationQueryForm;
-import com.yunya.feign.tariff.domain.query.BaseTariffQueryForm;
-import com.yunya.feign.tariff.domain.vo.*;
+import com.yunya.feign.treatment.domain.query.BaseTariffAssociationQueryForm;
+import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.tariff.BaseTariff;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

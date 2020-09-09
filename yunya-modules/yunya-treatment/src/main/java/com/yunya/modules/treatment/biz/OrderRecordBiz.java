@@ -6,6 +6,7 @@ import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
+import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -19,6 +20,7 @@ import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +44,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+
+  /** 就诊其他信息服务调用 */
+  @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
 
   /** 就诊记录 */
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
@@ -112,6 +117,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer orderRecordId;
     if (null == orderResult) {
       orderRecord.setOrgId(orgId);
+      String orderRecordNumber = generateOrderRecordNumber(orgId);
+      orderRecord.setOrderRecordNum(orderRecordNumber);
       orderRecord.setPatientId(treatmentRecord.getPatientId());
       orderRecord.setTotalAmount(totalAmount);
       orderRecord.setCrtId(userId);
@@ -182,6 +189,19 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           "开单失败，当前就诊记录处于正在开单状态，无法同时开单！", OperationCodeConstants.SAME_DATA_EXIST);
     }
     return treatmentRecord;
+  }
+
+  /**
+   * 生成账单编号
+   *
+   * @param orgId 组织ID
+   * @return
+   */
+  private String generateOrderRecordNumber(Integer orgId) {
+    String number = mapper.selectOrderNumberByOrgId(orgId, new Date(System.currentTimeMillis()));
+    String suffix = String.format("%04d", Integer.parseInt(number) + 1);
+    return String.format(
+        "DD%s%s%s", String.format("%04d", orgId), new DateTime().toString("yyMMdd"), suffix);
   }
 
   /**
@@ -265,28 +285,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param model 开单信息
    */
   public void submitAndCompleteOrder(OrderRecordModel model) {
-    List<OrderDetailModel> orderDetails = model.getOrderDetails();
-    if (StringHelper.isEmpty(orderDetails)) {
-      throw new ClientServiceException(
-          "开单失败，完成接诊要求至少开单一个项目！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
-    }
-
     storage(model);
     Integer treatmentRecordId = model.getTreatmentRecordId();
-    TreatmentRecord record = treatmentRecordBiz.selectById(treatmentRecordId);
-    record.setTreatEndTime(new Date(System.currentTimeMillis()));
-    record.setStatus((byte) 2);
-    record.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    record.setUpdName(BaseContextHandler.getName());
-    treatmentRecordBiz.updateSelectiveById(record);
-
-    OrderRecord entity = new OrderRecord();
-    entity.setTreatmentRecordId(treatmentRecordId);
-    OrderRecord orderRecord = mapper.selectOne(entity);
-    orderRecord.setStatus((byte) 1);
-    orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    orderRecord.setUpdName(BaseContextHandler.getName());
-    mapper.updateByPrimaryKeySelective(orderRecord);
+    treatmentRecordBiz.completeTreatment(treatmentRecordId);
   }
 
   /**
@@ -321,7 +322,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /**
    * 修改开单明细并提交开单信息
-   *  @param orderRecordId 开单记录ID
+   *
+   * @param orderRecordId 开单记录ID
    * @param form 开单修改信息
    */
   public void modifyAndCommitOrder(Integer orderRecordId, OrderRecordForm form) {
@@ -353,10 +355,14 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
     if (StringHelper.isNotEmpty(orderDetails)) {
+      treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
           detail -> {
             detail.setOrderRecordId(orderRecordId);
             orderDetailBiz.insertSelective(detail);
+            if (0 == detail.getType()) {
+              treatmentRecordBiz.saveOrderDetailVisitRecord(treatmentRecordId, detail);
+            }
           });
     }
 

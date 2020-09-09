@@ -1,15 +1,17 @@
 package com.yunya.feign.patient_central;
 
 
+import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.factory.PatientCentralServiceFallBackFactory;
-import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import io.swagger.annotations.ApiOperation;
@@ -103,7 +105,7 @@ public interface PatientCentralServiceFeign {
      * @param model
      * @return ResponseResult
      */
-    @RequestMapping(value = "/member/expend",method = RequestMethod.POST)
+    @RequestMapping(value = "/api/member/expend",method = RequestMethod.POST)
     ResponseResult expend(@RequestBody MemberExpendRecordModel model );
 
     /**
@@ -111,6 +113,21 @@ public interface PatientCentralServiceFeign {
      * @param model
      * @return
      */
-    @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
+    @RequestMapping(value = "/api/prepaid/expend",method = RequestMethod.POST)
     ResponseResult expend(@RequestBody PrepaidExpendRecordModel model );
+
+    /**
+     * 修改硬件设备密码
+     * @param form
+     */
+    @RequestMapping(value = "/api/updPass",method = RequestMethod.POST)
+    void updPass(@RequestBody UpdPassForm form );
+
+    /**
+     *  查询会员卡绑定信息
+     * @param form
+     * @return
+     */
+    @RequestMapping(value = "/findMemberInfo",method = RequestMethod.POST)
+    ResponseResult findMemberInfo(@RequestBody PatientMemberInfoQueryForm form );
 }

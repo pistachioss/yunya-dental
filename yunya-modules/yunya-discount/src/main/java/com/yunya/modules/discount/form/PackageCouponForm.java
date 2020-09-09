@@ -48,12 +48,11 @@ public class PackageCouponForm {
     @ApiModelProperty("产品分类ID")
     private Integer productTypeId;
 
-//    /**
-//     * 售价
-//     */
-//    @NotNull(message = "售价不能为空")
-//    @ApiModelProperty("售价")
-//    private BigDecimal soldAmount;
+    /**
+     * 售价
+     */
+    @ApiModelProperty("售价")
+    private BigDecimal soldAmount;
 
     /**
      * 售出开始日期
@@ -112,7 +111,7 @@ public class PackageCouponForm {
     private Integer limitCount;
 
     /**
-     * 是否可混合使用优惠 0.可以混合使用1.跟会员卡混合使用2.无法混合使用
+     * 是否可混合使用优惠 0.不可以共用 1.可以共用
      */
     @NotNull(message = "是否混合使用选项不能为空")
     private Integer mixable;

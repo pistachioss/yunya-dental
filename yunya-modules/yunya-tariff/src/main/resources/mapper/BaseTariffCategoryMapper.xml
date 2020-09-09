@@ -18,7 +18,7 @@
     </resultMap>
     <!-- 根据ID查询价目表分类信息 -->
     <select id="selectBaseTariffCategoryById"
-            resultType="com.yunya.feign.tariff.domain.vo.BaseTariffCategoryVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffCategoryVO">
       select
         btc.id,
         btc.name,
@@ -29,7 +29,7 @@
     </select>
     <!-- 根据条件查询价目表分类列表 -->
     <select id="selectBaseTariffCategoryList"
-            resultType="com.yunya.feign.tariff.domain.vo.BaseTariffCategoryVO">
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffCategoryVO">
         select
         btc.id,
         btc.name,

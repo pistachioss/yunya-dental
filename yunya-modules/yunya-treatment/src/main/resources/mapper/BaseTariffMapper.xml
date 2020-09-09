@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.mapper.BaseTariffMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.tariff.BaseTariff">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="tariff_category_id" property="tariffCategoryId" jdbcType="INTEGER"/>
+        <result column="item_number" property="itemNumber" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="pinyin" property="pinyin" jdbcType="VARCHAR"/>
+        <result column="english_name" property="englishName" jdbcType="VARCHAR"/>
+        <result column="unit" property="unit" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="adjust" property="adjust" jdbcType="BIT"/>
+        <result column="achie" property="achie" jdbcType="BIT"/>
+        <result column="emr" property="emr" jdbcType="VARCHAR"/>
+        <result column="attention" property="attention" jdbcType="VARCHAR"/>
+        <result column="fellow_up" property="fellowUp" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 基础价目表信息结果集（封装门诊价目表信息） -->
+    <resultMap id="BaseTariffInfoResultMap" type="com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="tariffCategoryId" property="tariffCategoryId" jdbcType="INTEGER"/>
+        <result column="tariffCategoryName" property="tariffCategoryName" jdbcType="VARCHAR"/>
+        <result column="tariffCategoryNumber" property="tariffCategoryNumber" jdbcType="VARCHAR"/>
+        <result column="itemNumber" property="itemNumber" jdbcType="VARCHAR"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="pinyin" property="pinyin" jdbcType="VARCHAR"/>
+        <result column="englishName" property="englishName" jdbcType="VARCHAR"/>
+        <result column="unit" property="unit" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+    </resultMap>
+
+    <!-- 根据基础价目表ID查询价目表信息 -->
+    <select id="selectBaseTariffInfoById" resultMap="BaseTariffInfoResultMap">
+        select
+            bt.id,
+            bt.tariff_category_id as tariffCategoryId,
+            btc.`name` as tariffCategoryName,
+            btc.number as tariffCategoryNumber,
+            bt.item_number as itemNumber,
+            bt.`name`,
+            bt.pinyin,
+            bt.english_name as englishName,
+            bt.unit,
+            bt.price,
+            bt.inservice
+        from base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        where bt.id = #{id}
+    </select>
+    <!-- 根据条件查询价目表列表 -->
+    <select id="selectBaseTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseTariffVO">
+        select
+        bt.id,
+        bt.tariff_category_id as tariffCategoryId,
+        btc.`name` as tariffCategoryName,
+        btc.number as tariffCategoryNumber,
+        bt.item_number as itemNumber,
+        bt.`name`,
+        bt.pinyin,
+        bt.english_name as englishName,
+        bt.unit,
+        bt.price,
+        bt.inservice
+        from base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        <where>
+            <if test="queryForm.id != null">
+                and bt.id = #{queryForm.id}
+            </if>
+            <if test="queryForm.tariffCategoryId != null">
+                and bt.tariff_category_id = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bt.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+    <!-- 根据条件查询导出价目表列表 -->
+    <select id="selectExportBaseTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseTariffExportVO">
+        select
+        bt.item_number as itemNumber,
+        bt.`name`,
+        btc.`name` as tariffCategoryName,
+        btc.number as tariffCategoryNumber,
+        bt.english_name as englishName,
+        bt.unit,
+        bt.price
+        from base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        <where>
+            <if test="queryForm.tariffCategoryId != null">
+                and bt.tariff_category_id = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bt.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+    <!-- 根据条件查询价目表开单关联信息列表 -->
+    <select id="selectBaseTariffAssociationList"
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffAssociationVO">
+        select
+            bt.id,
+            bt.item_number as itemNumber,
+            bt.`name`,
+            bt.tariff_category_id as tariffCategoryId,
+            btc.`name` as tariffCategoryName,
+            btc.number as tariffCategoryNumber,
+            bt.english_name as englishName,
+            ifnull( bt.emr, '--' ) as emr,
+            ifnull( bt.attention, '--' ) as attention,
+            ifnull( bt.fellow_up, '--' ) as fellowUp,
+            bt.inservice
+        from
+            base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        <where>
+            <if test="queryForm.tariffCategoryId != null">
+                and bt.tariff_category_id = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bt.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+    <!-- 根据条件查询价目表导出开单关联信息列表 -->
+    <select id="selectExportBaseTariffAssociationList"
+            resultType="com.yunya.feign.treatment.domain.vo.BaseTariffAssociationExportVO">
+        select
+        bt.item_number as itemNumber,
+        bt.`name` as name,
+        btc.`name` as tariffCategoryName,
+        btc.number as tariffCategoryNumber,
+        bt.english_name as englishName,
+        ifnull( bt.emr, '--' ) as emr,
+        ifnull( bt.attention, '--' ) as attention,
+        ifnull( bt.fellow_up, '--' ) as fellowUp
+        from
+        base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        <where>
+            <if test="queryForm.tariffCategoryId != null">
+                and bt.tariff_category_id = #{queryForm.tariffCategoryId}
+            </if>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL( bt.name, '' ), IFNULL( bt.item_number, '' ), IFNULL( bt.pinyin, '' )) like concat('%',
+                #{queryForm.keyWord}, '%')
+            </if>
+            <if test="queryForm.inservice != null">
+                and bt.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+</mapper>

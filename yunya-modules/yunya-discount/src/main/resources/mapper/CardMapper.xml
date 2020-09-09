@@ -24,6 +24,7 @@
         <result column="sold_way" jdbcType="TINYINT" property="soldWay" />
         <result column="is_pay" jdbcType="TINYINT" property="pay" />
         <result column="active_date" jdbcType="TIMESTAMP" property="activeDate"/>
+        <result column="seller_id" jdbcType="INTEGER" property="sellerId" />
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
         <result column="upd_id" jdbcType="INTEGER" property="updId" />
@@ -208,7 +209,7 @@
             case
                 when `cci`.`type` = 2 then
                         (select `use_way` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
-                when `cci`.`type` = 2 then
+                when `cci`.`type` = 3 then
                     (select `use_way` from `special_package_coupon` where `coupon_id` = `c`.`coupon_id`)
                 else null
                 end                                as `useWay`,

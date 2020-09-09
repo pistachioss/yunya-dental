@@ -18,7 +18,7 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
-    <select id="selectBaseTariffHistoryList" resultType="com.yunya.feign.tariff.domain.vo.BaseTariffHistoryVO">
+    <select id="selectBaseTariffHistoryList" resultType="com.yunya.feign.treatment.domain.vo.BaseTariffHistoryVO">
         select
             bth.id,
             bth.tariff_id as tariffId,
