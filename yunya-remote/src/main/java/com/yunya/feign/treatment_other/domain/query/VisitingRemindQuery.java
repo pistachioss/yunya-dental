@@ -37,8 +37,7 @@ public class VisitingRemindQuery implements Serializable {
     private Integer userId;
 
     /** 门诊id */
-    @ApiModelProperty(value = "门诊id", required = true)
-    @NotNull(message = "门诊id不能为空！")
+    @ApiModelProperty(value = "门诊id")
     private Integer orgId;
 
     /** 患者id */
@@ -66,7 +65,7 @@ public class VisitingRemindQuery implements Serializable {
     private Boolean inservice;
 
     /** 提醒状态 0-待提醒；1-提醒完成 */
-    @ApiModelProperty(value = "提醒状态 false-待提醒；true-提醒完成",required = true)
+    @ApiModelProperty(value = "提醒状态 false-待提醒；true-提醒完成")
     private Boolean status = false;
 
 
