@@ -215,14 +215,18 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 }
                 visitingRemindVos.add(build);
             });
-            // 根据患者姓名/手机号/拼音/病历号检索随访提醒内容（包括时间正序排序）
-            searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, query.getSearch(), query.getMedicalNumber());
+            // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容（包括时间正序排序）
+            searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, query.getSearch(), query.getMedicalNumber(), query.getDistentName());
         }
-        // 分页
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        if (searchVisitingRemindVo != null) {
+            // 分页
+            if (query.getWhetherPage()){
+                PageHelper.startPage(query.getPageNum(),query.getPageSize());
+            }
+            return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
+        } else {
+            return ResponseUtil.success();
         }
-        return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
     }
 
     /**
@@ -261,9 +265,13 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @param visitingRemindVos 随访提醒列表
      * @param search 患者姓名/手机号/拼音
      * @param medicalNumber 病历号
+     * @param distentName 医生名字
      * @return 检索后的列表
      */
-    private List<VisitingRemindVo> searchVisitingRemind(List<VisitingRemindVo> visitingRemindVos, String search, String medicalNumber) {
+    private List<VisitingRemindVo> searchVisitingRemind(List<VisitingRemindVo> visitingRemindVos,
+                                                        String search,
+                                                        String medicalNumber,
+                                                        String distentName) {
         // 检索随访提醒结果列表
         List<VisitingRemindVo> searchVisitingRemindVo = null;
         // 按条件检索
@@ -291,7 +299,12 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 // 按病历号检索
                 String currentMedicalNumber = visitingRemindVo.getMedicalNumber();
                 if (!StringHelper.isEmpty(currentMedicalNumber)) {
-                    result = result | visitingRemindVo.getMedicalNumber().contains(medicalNumber);
+                    result = result | currentMedicalNumber.contains(medicalNumber);
+                }
+                // 按医生名字模糊检索
+                String dentistNameStr = visitingRemindVo.getDentistName();
+                if (!StringHelper.isEmpty(dentistNameStr)) {
+                    result = result | dentistNameStr.contains(distentName);
                 }
                 return result;
             }).collect(Collectors.toList());

@@ -34,8 +34,7 @@ public class VisitingRecordQuery implements Serializable {
     private Integer pageSize = 10;
 
     /** 门诊id */
-    @ApiModelProperty(value = "门诊id", required = true)
-    @NotNull(message = "门诊id不能为空！")
+    @ApiModelProperty(value = "门诊id")
     private Integer orgId;
 
     /** 用户id */
@@ -46,9 +45,11 @@ public class VisitingRecordQuery implements Serializable {
     @ApiModelProperty(value = "患者id", hidden = true)
     private Integer patientId;
 
-    /**
-     * 随访日期
-     */
+    /** 患者名字 */
+    @ApiModelProperty(value = "患者名字")
+    private String distentName;
+
+    /** 随访日期*/
     @ApiModelProperty(value = "随访日期", required = true)
     @NotNull(message = "随访日期不能为空！")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
@@ -67,10 +68,7 @@ public class VisitingRecordQuery implements Serializable {
     private Boolean inservice;
 
     /** 随访状态 0-待随访；1-随访完成 */
-    @ApiModelProperty(value = "随访状态 false-待随访；true-随访完成", required = true)
-    private Boolean status = false;
-
-
-
+    @ApiModelProperty(value = "随访状态 false-待随访；true-随访完成")
+    private Boolean status;
 
 }

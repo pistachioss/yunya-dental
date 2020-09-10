@@ -22,6 +22,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -111,13 +112,42 @@ public class BusinessTargetController {
     }
 
     @ApiOperation(value = "业务目标导出")
-    @PostMapping("/export")
+    @PostMapping("/exportt")
     public void exportListByDate(HttpServletResponse response, @Valid @RequestBody BusinessTargetExportQuery query) throws IOException {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         String fileName = URLEncoder.encode("业务目标导出", "UTF-8");
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
-        EasyExcel.write(response.getOutputStream(), ExportCardAllocateVo.class)
-                .sheet("sheet").doWrite(businessTargetBiz.exportListByDate(query));
+        List<BusinessTargetExportVo> businessTargetExportVos = businessTargetBiz.exportListByDatee(query);
+        BigDecimal bigDecimal = new BigDecimal(500);
+        for (BusinessTargetExportVo list: businessTargetExportVos) {
+            list.setCompleteCash(bigDecimal);
+            list.setPercentCash(bigDecimal.divide(list.getTargetCash())+"%");
+            list.setCompleteFirstVisit(500);
+            list.setPercentVisit(500/list.getTargetFirstVisit()+"%");
+            list.setCompleteNum(bigDecimal);
+            list.setPercentNum(bigDecimal.divide(list.getTargetNum())+"%");
+            list.setCompletePatientNum(500);
+            list.setPercentPatientNum(500/list.getTargetPatientNum()+"%");
+        }
+        EasyExcel.write(response.getOutputStream(), BusinessTargetExportVo.class)
+                .sheet("sheet").doWrite(businessTargetExportVos);
     }
+
+    /**
+     * 根据条件业务目标导出
+     *
+     * @param response 响应
+     * @param query 查询条件
+     * @return
+     */
+    @ApiOperation("业务目标导出")
+    @PostMapping("/export")
+    public ResponseResult exportUserInfo(
+            HttpServletResponse response, @Valid @RequestBody BusinessTargetExportQuery query)
+            throws IOException {
+        businessTargetBiz.exportListByDate(response, query);
+        return ResponseUtil.success();
+    }
+
 }

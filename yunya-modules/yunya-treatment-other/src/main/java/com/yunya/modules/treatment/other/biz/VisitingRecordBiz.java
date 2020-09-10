@@ -208,58 +208,20 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 VisitingRecordVo recordVo = this.comboVisitingRecord(visitingRecordVo);
                 visitingRecordVoList.add(recordVo);
             }
-            // 按患者姓名、手机号、病历号检索
-            // 匹配姓名
-            String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
-            // 匹配手机号
-            String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
-
-            String searchQuery = query.getSearch();
-            String medicalNumberQuery = query.getMedicalNumber();
-            if (!StringHelper.isEmpty(searchQuery) || !StringHelper.isEmpty(medicalNumberQuery)){
-                searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
-                    String patientName = visitingRecordVo.getPatientName();
-                    String mobile = visitingRecordVo.getMobile();
-                    String medicalNumber = visitingRecordVo.getMedicalNumber();
-                    boolean result = false;
-                    if (searchQuery.matches(patientNameReg)){
-                        result = result | patientName.contains(searchQuery);
-                    } else if (searchQuery.matches(mobileReg)){
-                        result = result | mobile.equals(searchQuery);
-                    }
-                    if (!StringHelper.isEmpty(medicalNumber)){
-                        result = result | medicalNumber.equals(medicalNumberQuery);
-                    }
-                    return result;
-                }).collect(Collectors.toList());
-            } else {
-                searchVisitingRecordVo = visitingRecordVoList;
-            }
-            // 按随访时间排序
-            searchVisitingRecordVo = searchVisitingRecordVo.stream().sorted(
-                    Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
-                if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
-                    return -1;
-                }
-                String[] objSplit1 = obj1.trim().split(":");
-                Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
-                String[] objSplit2 = obj2.trim().split(":");
-                Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
-                if (objMinute1 < objMinute2){
-                    return -1;
-                } else if (objMinute1 > objMinute2){
-                    return 1;
-                } else {
-                    return 0;
-                }
-            })).collect(Collectors.toList());
+            // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
+            searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList,query.getSearch(),query.getMedicalNumber(),query.getDistentName());
         } else {
             return ResponseUtil.success();
         }
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        // 设置分页
+        if (searchVisitingRecordVo != null) {
+            if (query.getWhetherPage()){
+                PageHelper.startPage(query.getPageNum(),query.getPageSize());
+            }
+            return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
+        } else {
+            return ResponseUtil.success();
         }
-        return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
     }
 
     /**
@@ -472,6 +434,65 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         }
         return visitingRecordVos;
     }
+
+    /**
+     * 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
+     * @param visitingRecordVoList 检索列表
+     * @param searchStr 姓名患者/手机号
+     * @param medicalNumberStr 病历号
+     * @param distentNameStr 医生名字
+     * @return 检索并且排序之后的列表
+     */
+    private List searchAndOrder(List<VisitingRecordVo> visitingRecordVoList, String searchStr, String medicalNumberStr, String distentNameStr) {
+        List<VisitingRecordVo> searchVisitingRecordVo = null;
+        // 匹配姓名
+        String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
+        // 匹配手机号
+        String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
+        if (!StringHelper.isEmpty(searchStr) || !StringHelper.isEmpty(medicalNumberStr)){
+            searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
+                String patientName = visitingRecordVo.getPatientName();
+                String mobile = visitingRecordVo.getMobile();
+                String medicalNumber = visitingRecordVo.getMedicalNumber();
+                boolean result = false;
+                if (searchStr.matches(patientNameReg)){
+                    result = result | patientName.contains(searchStr);
+                } else if (searchStr.matches(mobileReg)){
+                    result = result | mobile.equals(searchStr);
+                }
+                if (!StringHelper.isEmpty(medicalNumber)){
+                    result = result | medicalNumber.equals(medicalNumberStr);
+                }
+                String distentName = visitingRecordVo.getDentistName();
+                if (!StringHelper.isEmpty(distentName)) {
+                    result = result | distentName.contains(distentNameStr);
+                }
+                return result;
+            }).collect(Collectors.toList());
+        } else {
+            searchVisitingRecordVo = visitingRecordVoList;
+        }
+        // 按随访时间排序
+        searchVisitingRecordVo = searchVisitingRecordVo.stream().sorted(
+                Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
+                    if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
+                        return -1;
+                    }
+                    String[] objSplit1 = obj1.trim().split(":");
+                    Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
+                    String[] objSplit2 = obj2.trim().split(":");
+                    Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
+                    if (objMinute1 < objMinute2){
+                        return -1;
+                    } else if (objMinute1 > objMinute2){
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                })).collect(Collectors.toList());
+        return searchVisitingRecordVo;
+    }
+
 
     /**
      * 格式化日期时间

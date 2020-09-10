@@ -153,6 +153,22 @@
     </select>
 
     <select id="exportListByDate" parameterType="com.yunya.feign.cash_balance.query.BusinessTargetExportQuery" resultType="com.yunya.feign.cash_balance.vo.BusinessTargetExportVo">
-
+        select
+            target_cash,
+            target_num,
+            target_first_visit,
+            target_patient_num,
+            date
+        from
+            business_target
+        where
+            #{startTime} &lt;= date
+            AND #{endTime} > date
+            <if test="teamType != null ">
+            and
+            team_type = #{teamType}
+            and
+            num_id = #{numId}
+            </if>
     </select>
 </mapper>

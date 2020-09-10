@@ -1,9 +1,7 @@
 package com.yunya.feign.appointment.domain.model;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiOperation;
 import lombok.Data;
 import lombok.ToString;
 
