@@ -46,15 +46,13 @@ public class VisitingRecordModel implements Serializable {
     /**
      * 医生ID 默认为末诊医生
      */
-    @ApiModelProperty(value = "医生ID 默认为末诊医生", required = true)
-    @NotNull(message = "医生ID不能为空!")
+    @ApiModelProperty(value = "医生ID 默认为末诊医生")
     private Integer dentistId;
 
     /**
      * 科室ID 默认末诊科室
      */
-    @ApiModelProperty(value = "科室ID", required = true)
-    @NotNull(message = "科室ID不能为空!")
+    @ApiModelProperty(value = "科室ID")
     private Integer deptRoomId;
 
     /**
