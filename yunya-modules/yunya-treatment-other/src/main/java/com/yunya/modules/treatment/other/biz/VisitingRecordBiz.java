@@ -213,10 +213,15 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         } else {
             return ResponseUtil.success();
         }
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        // 设置分页
+        if (searchVisitingRecordVo != null) {
+            if (query.getWhetherPage()){
+                PageHelper.startPage(query.getPageNum(),query.getPageSize());
+            }
+            return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
+        } else {
+            return ResponseUtil.success();
         }
-        return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
     }
 
     /**
