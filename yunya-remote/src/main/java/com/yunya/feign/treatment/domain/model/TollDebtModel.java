@@ -11,22 +11,22 @@ import java.math.BigDecimal;
 import java.util.Set;
 
 /**
- * 简介: 收费参数封装模型
+ * 简介: 收欠费参数模型
  *
  * @author: chow
- * @date: 2020/8/25 09:43
+ * @date: 2020/9/9 16:03
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("收费参数封装模型")
+@ApiModel("收欠费参数模型")
 @Data
 @ToString
-public class TollModel implements Serializable {
+public class TollDebtModel implements Serializable {
 
   /** 账单（开单）记录ID */
-  @ApiModelProperty(value = "开单记录ID ", required = true)
-  @NotNull(message = "开单记录ID不能为空！")
-  private Integer orderRecordId;
+  @ApiModelProperty(value = "账单记录ID ", required = true)
+  @NotNull(message = "账单记录ID不能为空！")
+  private Integer billRecordId;
 
   /** 普通优惠信息 */
   private GeneralDiscountModel generalDiscountModel;

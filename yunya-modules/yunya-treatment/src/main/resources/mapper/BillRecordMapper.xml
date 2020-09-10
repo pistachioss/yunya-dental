@@ -12,6 +12,7 @@
         <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER"/>
         <result column="bill_number" property="billNumber" jdbcType="VARCHAR"/>
         <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL"/>
+        <result column="privilege_type" property="privilegeType" jdbcType="TINYINT"/>
         <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
         <result column="actual_receivable_amount" property="actualReceivableAmount" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
