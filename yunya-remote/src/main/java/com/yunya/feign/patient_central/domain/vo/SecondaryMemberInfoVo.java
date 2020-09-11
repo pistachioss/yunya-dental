@@ -19,9 +19,9 @@ import java.io.Serializable;
 public class SecondaryMemberInfoVo implements Serializable {
 
     /**
-     * 门诊id
+     * 副卡人会员信息表主键id
      */
-    private Integer orgId;
+    private Integer id;
 
     /**
      * 副卡人id

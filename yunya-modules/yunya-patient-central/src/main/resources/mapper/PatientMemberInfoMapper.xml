@@ -70,11 +70,8 @@
     </select>
 
     <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.MasertMemberInfoVo">
-      select pmrn.master_card_id masterCardId,(select card_number from patient_member_info where patient_id = pmrn.master_card_id ) masterCardNumber,
-		 (select member_type_id from patient_member_info where patient_id = pmrn.master_card_id) masterCardTypeId,
-		 (select name from patient_base_info where id  = pmrn.master_card_id) name
-        from patient_member_relation pmrn
-        where pmrn.master_card_id = #{form.patientId} and pmrn.bind_type = #{form.bindType}
+     select id,patient_id masterCardId, member_type_id  masterCardTypeId,(select name from patient_base_info where id  = patient_id) masterName
+	 from patient_member_info where patient_id = #{form.patientId}
     </select>
 
 
