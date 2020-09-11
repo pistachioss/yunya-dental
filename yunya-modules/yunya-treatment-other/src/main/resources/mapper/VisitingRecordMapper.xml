@@ -27,33 +27,15 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
-  <resultMap id="VisitingRecordListVoMap" type="com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo">
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="org_id" jdbcType="INTEGER" property="orgId" />
-    <result column="treatment_id" jdbcType="INTEGER" property="treatmentId" />
-    <result column="patient_id" jdbcType="INTEGER" property="patientId" />
-    <result column="dentist_id" jdbcType="INTEGER" property="dentistId" />
-    <result column="dept_room_id" jdbcType="INTEGER" property="deptRoomId" />
-    <result column="treatment_date" jdbcType="DATE" property="treatmentDate" />
-    <result column="visiting_date" jdbcType="DATE" property="visitingDate" />
-    <result column="visiting_time" jdbcType="VARCHAR" property="visitingTime" />
-    <result column="reason" jdbcType="VARCHAR" property="reason" />
-    <result column="visiting_content" jdbcType="VARCHAR" property="visitingContent" />
-    <result column="inservice" jdbcType="BIT" property="inservice" />
-    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
-    <result column="status" jdbcType="BIT" property="status" />
-    <result column="crt_name" jdbcType="VARCHAR" property="crtName" />
-    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
-    <result column="visitingCount" jdbcType="INTEGER" property="visitingCount"/>
-  </resultMap>
+  <sql id="baseColumns">
+    vr.id,vr.org_id,vr.treatment_id,vr.patient_id,vr.dentist_id,vr.dept_room_id,vr.treatment_date,vr.visiting_date,vr.visiting_time,vr.reason,
+    vr.visiting_vontent,vr.inservice,vr.remarks,vr.status,vr.crt_id,vr.crt_name,vr.crt_time,vr.upt_id,vr.upd_name,vr.upd_time
+  </sql>
 
   <!-- 根据随访id查询随访记录（附带后续随访个数） -->
-  <select id="findVisitingRecordById" parameterType="java.lang.Integer" resultMap="VisitingRecordListVoMap">
+  <select id="findVisitingRecordById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
     SELECT
-        vr.*,
+    <include refid="baseColumns"></include>,
         ( SELECT COUNT( id ) FROM visiting_record WHERE patient_id = vr.patient_id ) AS visitingCount
     FROM
         `visiting_record` vr
@@ -62,9 +44,9 @@
   </select>
 
   <!-- 根据条件查询随访列表 -->
-  <select id="findVisitingRecordByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery" resultMap="VisitingRecordListVoMap">
+  <select id="findVisitingRecordByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery" resultMap="BaseResultMap">
     SELECT
-        vr.*,
+        <include refid="baseColumns"></include>,
         ( SELECT COUNT( id ) FROM visiting_record WHERE patient_id = vr.patient_id ) AS visitingCount
     FROM
         `visiting_record` vr
@@ -72,8 +54,14 @@
       <if test="query.orgId != null">
         vr.org_id = #{query.orgId}
       </if>
-      <if test="query.visitingDate != null">
+      <if test="query.visitingDate != null and query.searchId == 1">
+        and DATE_FORMAT(vr.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
+      </if>
+      <if test="query.visitingDate != null and query.searchId == 2">
         and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
+      </if>
+      <if test="query.searchBeginTime != null and query.searchEndTime != null">
+        and date_format(vrd.visiting_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
       </if>
       <if test="query.patientId != null">
         and vr.patient_id = #{query.patientId}
@@ -95,7 +83,7 @@
   <select id="findAfterVisitingContentByPatientIdAndDate" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery"
           resultMap="BaseResultMap">
       select
-        vr.*
+        <include refid="baseColumns"></include>
       from visiting_record vr
       <where>
         <if test="query.patientId != null and query.date != null">
@@ -109,7 +97,7 @@
 
   <!-- 根据就诊记录ID删除随访 -->
   <delete id="deleteVisitingRecordByTreatmentId" parameterType="java.lang.Integer">
-    delete vr.* from visiting_record vr where vr.treatment_id = #{treatmentId}
+    delete <include refid="baseColumns"></include> from visiting_record vr where vr.treatment_id = #{treatmentId}
   </delete>
 
 </mapper>

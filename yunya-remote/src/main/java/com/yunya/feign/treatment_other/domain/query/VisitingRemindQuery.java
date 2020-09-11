@@ -32,6 +32,17 @@ public class VisitingRemindQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
+    @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索", required = true)
+    private Integer searchId = 2;
+
+    @ApiModelProperty(value = "检索开始时间(患者档案检索用)")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date searchBeginTime;
+
+    @ApiModelProperty(value = "检索结束时间(患者档案检索用)")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date searchEndTime;
+
     /** 用户id */
     @ApiModelProperty(value = "用户id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
     private Integer userId;
@@ -51,8 +62,7 @@ public class VisitingRemindQuery implements Serializable {
     /**
      * 提醒日期
      */
-    @ApiModelProperty(value = "提醒日期", required = true)
-    @NotNull(message = "提醒日期不能为空！")
+    @ApiModelProperty(value = "提醒日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date remindDate;
 
