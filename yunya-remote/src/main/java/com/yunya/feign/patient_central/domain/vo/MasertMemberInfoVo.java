@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo;
 
+import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.ToString;
 
@@ -16,6 +17,11 @@ import java.io.Serializable;
 @Data
 @ToString
 public class MasertMemberInfoVo implements Serializable {
+
+    /**
+     *会员卡信息表主键id
+     */
+    private Integer id;
 
     /**
      * 主卡人id

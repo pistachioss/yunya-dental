@@ -129,7 +129,7 @@ public interface PatientCentralServiceFeign {
      * @param form
      * @return List<MemberInfoVo>
      */
-    @RequestMapping(value = "/findMemberInfo",method = RequestMethod.POST)
+    @RequestMapping(value = "/api/findMemberInfo",method = RequestMethod.POST)
     MemberInfoVo findMemberInfo(@RequestBody PatientMemberInfoQueryForm form);
 
 }
