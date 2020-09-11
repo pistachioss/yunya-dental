@@ -8,6 +8,7 @@ import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.SecondaryMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.framework.common.model.ResponseResult;
@@ -91,7 +92,7 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     }
 
     @Override
-    public List<MemberInfoVo>  findMemberInfo(PatientMemberInfoQueryForm form) {
+    public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
         return null;
     }
 }

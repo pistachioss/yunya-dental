@@ -7,12 +7,12 @@ import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.SecondaryMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.factory.PatientCentralServiceFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import io.swagger.annotations.ApiOperation;
@@ -130,5 +130,6 @@ public interface PatientCentralServiceFeign {
      * @return List<MemberInfoVo>
      */
     @RequestMapping(value = "/findMemberInfo",method = RequestMethod.POST)
-    List<MemberInfoVo> findMemberInfo(@RequestBody PatientMemberInfoQueryForm form);
+    MemberInfoVo findMemberInfo(@RequestBody PatientMemberInfoQueryForm form);
+
 }
