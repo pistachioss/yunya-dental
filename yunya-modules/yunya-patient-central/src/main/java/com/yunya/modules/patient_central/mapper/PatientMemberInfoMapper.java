@@ -61,5 +61,5 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @param form
      * @return MasertMemberInfoVo
      */
-    MasertMemberInfoVo selectMasertMemberInfo(PatientMemberInfoQueryForm form);
+    MasertMemberInfoVo selectMasertMemberInfo(@Param("form") PatientMemberInfoQueryForm form);
 }
