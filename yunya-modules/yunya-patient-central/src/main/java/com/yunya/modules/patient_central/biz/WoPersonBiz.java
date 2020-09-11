@@ -1,6 +1,5 @@
 package com.yunya.modules.patient_central.biz;
 
-import com.alibaba.fastjson.JSONObject;
 import com.uniubi.sdk.api.DeviceControllerApi;
 import com.uniubi.sdk.api.FaceControllerApi;
 import com.uniubi.sdk.api.PersonControllerApi;

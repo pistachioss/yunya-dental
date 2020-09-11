@@ -51,14 +51,7 @@ public class ResponseUtil {
     return result(SUCCESS_STATUS, SUCCESS_MSG, null, PASS);
   }
 
-  /**
-   * 人脸识别成功后返回处理结果
-   *
-   * @return
-   */
-  public static IdentifyResponseResult faceRecognitionSuccess() {
-    return identifyresult(RESULT,SUCCESS);
-  }
+
 
   /**
    * 有返回数据的成功处理结果
@@ -116,17 +109,5 @@ public class ResponseUtil {
     return responseResult;
   }
 
-  /**
-   * 人脸识别回调成功处理结果返回
-   *
-   * @param result 状态
-   * @param success 审核状态
-   * @return
-   */
-  public static <T> IdentifyResponseResult identifyresult(Integer result, Boolean success) {
-    IdentifyResponseResult identifyResponseResult = new IdentifyResponseResult();
-    identifyResponseResult.setResult(result);
-    identifyResponseResult.setSuccess(success);
-    return identifyResponseResult;
-  }
+
 }

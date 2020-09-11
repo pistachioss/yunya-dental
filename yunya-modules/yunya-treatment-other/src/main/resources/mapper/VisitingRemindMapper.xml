@@ -50,8 +50,14 @@
         <if test="query.orgId != null">
           and vrd.org_id = #{query.orgId}
         </if>
-        <if test="query.remindDate != null">
+        <if test="query.remindDate != null and query.searchId == 1">
+          and date_format(vrd.crt_time,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+        </if>
+        <if test="query.remindDate != null and query.searchId == 2">
           and date_format(vrd.remind_date,'%Y-%m-%d') = date_format(#{query.remindDate},'%Y-%m-%d')
+        </if>
+        <if test="query.searchBeginTime != null and query.searchEndTime != null">
+          and date_format(vrd.remind_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
         </if>
         <if test="query.inservice != null">
           and vrd.inservice = #{query.inservice}

@@ -7,10 +7,7 @@ package com.yunya.modules.patient_central.controller;
 
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
-import com.yunya.feign.patient_central.domain.model.PictureModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -115,6 +112,15 @@ public class PatientBaseInfoController {
         map.put("success",true);
         return map;
     }
+
+    @IgnoreUserToken
+    @ApiOperation(value = "测试拍照回调")
+    @RequestMapping(value = {"/takePictures"}, method = {RequestMethod.POST})
+    public ResponseResult takePictures(@RequestBody PicturesCallbackInfoModel picturesCallbackInfoModel) {
+        this.patientBaseInfoBiz.takePictures(picturesCallbackInfoModel);
+        return ResponseUtil.success();
+    }
+
 
     @ApiOperation("根据患者id查询来访信息")
     @GetMapping({"/visitInfo/{id}"})

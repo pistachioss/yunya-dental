@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
+import com.yunya.feign.patient_central.domain.vo.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.factory.PatientCentralServiceFallBackFactory;
@@ -126,8 +127,8 @@ public interface PatientCentralServiceFeign {
     /**
      *  查询会员卡绑定信息
      * @param form
-     * @return
+     * @return List<MemberInfoVo>
      */
     @RequestMapping(value = "/findMemberInfo",method = RequestMethod.POST)
-    ResponseResult findMemberInfo(@RequestBody PatientMemberInfoQueryForm form );
+    List<MemberInfoVo> findMemberInfo(@RequestBody PatientMemberInfoQueryForm form);
 }

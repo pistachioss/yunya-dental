@@ -30,23 +30,5 @@ public class EquipmentInfoQueryForm implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
-    /**
-     * id主键
-     */
-    private String id;
 
-    /**
-     * 设备ip地址
-     */
-    private String ip;
-
-    /**
-     * 设备SN号(序列号)
-     */
-    private String serialNumber;
-
-    /**
-     * 设备密码
-     */
-    private String pass;
 }

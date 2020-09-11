@@ -120,8 +120,8 @@ public class PatientServiceRest {
 
     @ApiOperation("查询会员卡绑定信息")
     @RequestMapping(value = "/findMemberInfo",method = RequestMethod.POST)
-    public ResponseResult findMemberInfo(@RequestBody PatientMemberInfoQueryForm form ){
-        return ResponseUtil.success(patientMemberInfoBiz.findMemberInfo(form));
+    public List<MemberInfoVo> findMemberInfo(@RequestBody PatientMemberInfoQueryForm form ){
+        return patientMemberInfoBiz.findMemberInfo(form);
     }
 
 
