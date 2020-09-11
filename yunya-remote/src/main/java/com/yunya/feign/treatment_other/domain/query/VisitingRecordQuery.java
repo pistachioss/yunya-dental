@@ -33,6 +33,17 @@ public class VisitingRecordQuery implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
+    @ApiModelProperty(value = "检索开始时间(患者档案检索用)")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date searchBeginTime;
+
+    @ApiModelProperty(value = "检索结束时间(患者档案检索用)")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date searchEndTime;
+
+    @ApiModelProperty(value = "检索类型：1-按随访创建时间检索；2-按随访执行时间检索，默认按随访执行时间检索", required = true)
+    private Integer searchId = 2;
+
     /** 门诊id */
     @ApiModelProperty(value = "门诊id")
     private Integer orgId;
@@ -50,8 +61,7 @@ public class VisitingRecordQuery implements Serializable {
     private String distentName;
 
     /** 随访日期*/
-    @ApiModelProperty(value = "随访日期", required = true)
-    @NotNull(message = "随访日期不能为空！")
+    @ApiModelProperty(value = "随访日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date visitingDate;
 

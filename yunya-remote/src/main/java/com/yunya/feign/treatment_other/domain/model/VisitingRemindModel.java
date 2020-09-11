@@ -38,8 +38,7 @@ public class VisitingRemindModel implements Serializable {
     /**
      * 医生ID 默认末诊医生
      */
-    @ApiModelProperty(value = "医生ID 默认末诊医生", required = true)
-    @NotNull(message = "医生ID不能为空！")
+    @ApiModelProperty(value = "医生ID 默认末诊医生")
     private Integer dentistId;
 
     /**
