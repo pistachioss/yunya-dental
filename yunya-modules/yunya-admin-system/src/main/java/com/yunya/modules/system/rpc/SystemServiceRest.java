@@ -54,6 +54,8 @@ public class SystemServiceRest {
   @Autowired private PostGroupBiz postGroupBiz;
   /** 用户（员工） */
   @Autowired private SysUserBiz sysUserBiz;
+  /** 员工 */
+  @Autowired private SysEmployeeBiz sysEmployeeBiz;
   /** 科室模版 */
   @Autowired private DepartmentRoomBiz departmentRoomBiz;
   /** 门诊科室 */
@@ -291,6 +293,19 @@ public class SystemServiceRest {
     SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
     BeanUtils.copyProperties(model, from);
     return sysUserBiz.findUserDetailInfoList(from).getList();
+  }
+
+  /**
+   * 根据用户ID查询员工信息
+   *
+   * @param userId 用户ID
+   * @return
+   */
+  @RequestMapping(value = "/employee/{userId}", method = RequestMethod.GET)
+  public SysEmployee findSysEmployeeById(@PathVariable(value = "userId") Integer userId) {
+    SysEmployee employee = new SysEmployee();
+    employee.setUserId(userId);
+    return sysEmployeeBiz.selectOne(employee);
   }
 
   /**
