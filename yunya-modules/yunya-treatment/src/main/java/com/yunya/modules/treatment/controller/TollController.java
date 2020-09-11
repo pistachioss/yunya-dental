@@ -1,11 +1,14 @@
 package com.yunya.modules.treatment.controller;
 
+import com.yunya.feign.treatment.domain.model.TollDebtModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.TollBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -22,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "就诊收费")
+@Api(tags = "收费管理（收费、收欠费）")
 @RestController
 @RequestMapping("charge")
 public class TollController {
@@ -40,7 +43,22 @@ public class TollController {
   @ApiOperation("确认收费")
   @PostMapping("/confirm")
   public ResponseResult confirmCharge(@RequestBody @Validated TollModel model) {
-    tollBiz.confirm(model);
+    tollBiz.confirmCharge(model);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 收欠费
+   *
+   * @param model 收费参数
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("收欠费")
+  @ApiImplicitParams({@ApiImplicitParam(name = "model", value = "收欠费参数模型", required = true)})
+  @PostMapping(value = "/collect/debt", name = "收欠费")
+  public ResponseResult collectDebt(@RequestBody @Validated TollDebtModel model) {
+    tollBiz.collectDebt(model);
     return ResponseUtil.success();
   }
 }
