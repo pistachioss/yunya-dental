@@ -8,7 +8,9 @@ import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -21,12 +23,11 @@ import com.yunya.models.appointment.Appointment;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.BaseTariff;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.Registered;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
+import com.yunya.modules.treatment.mapper.AssistantMatchingRecordMapper;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
@@ -76,6 +77,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /** 开单明细 */
   @Autowired private OrderDetailMapper orderDetailMapper;
+
+  /** 就诊关联助手 */
+  @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
 
   /**
    * 开始接诊
@@ -441,6 +445,81 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                             new Date(System.currentTimeMillis()), Integer.parseInt(num)));
                     treatmentOtherFeign.insertVisitingRecord(visitRecord);
                   });
+        }
+      }
+    }
+  }
+
+  /**
+   * 根据条件查询患者就诊记录列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public PageInfo<PatientTreatmentRecordVO> findPatientTreatList(
+      PatientTreatmentRecordQueryForm queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    List<PatientTreatmentRecordVO> resultList = mapper.selectPatientTreatmentRecordList(queryForm);
+    if (StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(
+          vo -> {
+            Integer orgId = vo.getOrgId();
+            // todo 从缓存中查询组织信息
+            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+            if (null != orgInfo) {
+              vo.setOrgName(orgInfo.getName());
+            }
+            Integer dentistId = vo.getDentistId();
+            // todo 从缓存中查询用户
+            SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
+            if (null != employee) {
+              vo.setDentistName(employee.getName());
+            }
+            Integer treatmentRecordId = vo.getTreatmentRecordId();
+            AssistantMatchingRecord assistantMatchingRecord = new AssistantMatchingRecord();
+            assistantMatchingRecord.setTreatmentRecordId(treatmentRecordId);
+            List<AssistantMatchingRecord> assistantMatchingRecords =
+                assistantMatchingRecordMapper.select(assistantMatchingRecord);
+            if (StringHelper.isNotEmpty(assistantMatchingRecords)) {
+              setTreatmentRecordAssistantInfo(vo, assistantMatchingRecords);
+            }
+          });
+    } else {
+      resultList = new ArrayList<>();
+    }
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 设置就诊记录助手信息
+   *
+   * @param vo 就诊记录
+   * @param assistantMatchingRecords 就诊助手列表
+   */
+  private void setTreatmentRecordAssistantInfo(
+      PatientTreatmentRecordVO vo, List<AssistantMatchingRecord> assistantMatchingRecords) {
+    for (AssistantMatchingRecord matchingRecord : assistantMatchingRecords) {
+      Integer assistantId = matchingRecord.getAssistantId();
+      // todo 从缓存中查询用户
+      SysEmployee assistant = systemServiceFeign.findSysEmployeeById(assistantId);
+      if (null != assistant) {
+        String assistantName = assistant.getName();
+        Byte type = matchingRecord.getType();
+        switch (type) {
+          case 0:
+            vo.setAssistantId1(assistantId);
+            vo.setAssistantName1(assistantName);
+            break;
+          case 1:
+            vo.setAssistantId2(assistantId);
+            vo.setAssistantName2(assistantName);
+            break;
+          default:
+            vo.setAssistantId3(assistantId);
+            vo.setAssistantName3(assistantName);
+            break;
         }
       }
     }

@@ -113,5 +113,5 @@ public class TreatmentCompletedPatientInfoVO implements Serializable {
   /** 原价合计 */
   private BigDecimal originalPrice;
   /** 账单状态 */
-  private Byte status;
+  private Byte orderStatus;
 }

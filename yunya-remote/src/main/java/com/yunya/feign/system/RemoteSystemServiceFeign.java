@@ -190,6 +190,15 @@ public interface RemoteSystemServiceFeign {
   SysUserInfoDetail findSysUserEmployeeInfoByUserId(@PathVariable(value = "userId") Integer userId);
 
   /**
+   * 根据用户ID查询员工信息
+   *
+   * @param userId  用户ID
+   * @return
+   */
+  @RequestMapping(value = "/api/employee/{userId}", method = RequestMethod.GET)
+  SysEmployee findSysEmployeeById(@PathVariable(value = "userId") Integer userId);
+
+  /**
    * 根据条件查询用户信息（含员工信息）
    *
    * @param model 查询条件
