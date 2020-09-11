@@ -29,7 +29,7 @@ public class WebConfiguration implements WebMvcConfigurer {
   /**
    * 获取当前用户信息拦截器
    *
-   * @return
+   * @return CurrentUserInfoRestInterceptor
    */
   @Bean
   CurrentUserInfoRestInterceptor getUserAuthRestInterceptor() {

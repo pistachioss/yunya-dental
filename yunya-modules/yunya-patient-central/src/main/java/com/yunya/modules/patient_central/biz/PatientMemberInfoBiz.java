@@ -292,7 +292,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
                 List<MemberRechargeTollRecord> memberRechargeTollRecordList =  memberRechargeTollRecordMapper.selectMemberRechargeRecord(rechargeRecordVo.getId());
                 StringBuilder labels = new StringBuilder(16);
                 for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
-                    AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberRechargeTollRecord.getPaymentId()); // todo 充值记录 待确认
+                    AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberRechargeTollRecord.getPaymentId());
                     if(accountItem != null){
                         labels.append(accountItem.getName());
                     }
@@ -317,7 +317,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         MemberReturnRecord memberReturnRecord = new MemberReturnRecord();
         BeanUtils.copyProperties(model,memberReturnRecord);
         memberReturnRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberReturnRecord.getReturnWayId()); // todo 充值记录 待确认
+        AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberReturnRecord.getReturnWayId());
         if(accountItem != null){
             memberReturnRecord.setReturnWayType(accountItem.getName());//获取退费方式类型名称
         }

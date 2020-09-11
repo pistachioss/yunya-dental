@@ -63,6 +63,10 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
             if(equipment != null){
                 return ResponseUtil.error("该设备已经存在,不可重复！",equipment);
             }
+            if(!model.getPass().equals(redisUtils.get("PASS"))){
+                redisUtils.set("PASS",model.getPass());
+            }
+            redisUtils.set("URL","http://" + model.getIp() + ":" + "8090");
             EquipmentInfo equipmentvo = mapper.selectByPrimaryKey(model.getId());
             equipmentInfo.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
             equipmentInfo.setUpdName(BaseContextHandler.getName());
@@ -73,10 +77,6 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
                 updPassForm.setOldPass(equipmentvo.getPass());//旧密码
                 updPassForm.setNewPass(equipmentInfo.getPass());//新密码
                 patientCentralServiceFeign.updPass(updPassForm);
-            }
-            if(!model.getPass().equals(redisUtils.get("PASS"))){
-                redisUtils.set("PASS",model.getPass());
-                redisUtils.set("URL","http://" + model.getIp() + ":" + "8090");
             }
         }
         return ResponseUtil.success();

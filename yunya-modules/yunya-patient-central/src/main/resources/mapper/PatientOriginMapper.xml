@@ -61,5 +61,4 @@
     select max(origin_type) maxtype from patient_origin
   </select>
 
-
 </mapper>
