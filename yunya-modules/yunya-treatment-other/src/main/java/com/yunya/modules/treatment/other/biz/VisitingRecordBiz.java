@@ -455,13 +455,13 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 String mobile = visitingRecordVo.getMobile();
                 String medicalNumber = visitingRecordVo.getMedicalNumber();
                 boolean result = false;
-                if (searchStr.matches(patientNameReg)){
+                if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)){
                     result = result | patientName.contains(searchStr);
-                } else if (searchStr.matches(mobileReg)){
-                    result = result | mobile.equals(searchStr);
+                } else if (searchStr.matches(mobileReg) && !StringHelper.isEmpty(mobile)){
+                    result = result | mobile.contains(searchStr);
                 }
                 if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
-                    result = result | medicalNumber.equals(medicalNumberStr);
+                    result = result | medicalNumber.contains(medicalNumberStr);
                 }
                 String distentName = visitingRecordVo.getDentistName();
                 if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {

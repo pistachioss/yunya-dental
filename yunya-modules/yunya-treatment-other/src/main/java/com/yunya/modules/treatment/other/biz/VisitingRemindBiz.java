@@ -285,15 +285,18 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             searchVisitingRemindVo = visitingRemindVos.stream().filter(visitingRemindVo -> {
                 boolean result = false;
                 if (!StringHelper.isEmpty(search)) {
-                    if (search.matches(patientNameReg)) {
+                    String patientName = visitingRemindVo.getPatientName();
+                    String mobile = visitingRemindVo.getMobile();
+                    String pinyinName = visitingRemindVo.getPinyinName();
+                    if (search.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
                         // 按名字模糊检索
-                        result = result | visitingRemindVo.getPatientName().contains(search);
-                    } else if (search.matches(mobileReg)) {
+                        result = result | patientName.contains(search);
+                    } else if (search.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
                         // 按手机检索
-                        result = result | visitingRemindVo.getMobile().contains(search);
-                    } else if (search.matches(pinyinReg)) {
+                        result = result | mobile.contains(search);
+                    } else if (search.matches(pinyinReg) && !StringHelper.isEmpty(pinyinName)) {
                         // 按拼音检索
-                        result = result | visitingRemindVo.getPinyinName().contains(search);
+                        result = result | pinyinName.contains(search);
                     }
                 }
                 // 按病历号检索
