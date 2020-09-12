@@ -24,9 +24,16 @@
     <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
   </resultMap>
 
+  <sql id="baseColumns">
+    vrd.id,vrd.org_id,vrd.patient_id,vrd.dentist_id,vrd.treatment_id,vrd.remind_date,vrd.remind_time,vrd.remind_content,vrd.remarks,vrd.status,vrd.inservice,vrd.crt_id,vrd.crt_name,vrd.crt_time,
+    vrd.upt_id,vrd.upd_name,vrd.upd_time
+  </sql>
+  
   <!-- 根据患者id、提醒日期，提醒时间查询随访提醒 -->
   <select id="findVisitingRemindByPatientIdAndDateTime" parameterType="java.util.Map" resultMap="BaseResultMap">
-     select vrd.* from visiting_remind vrd
+     select 
+     <include refid="baseColumns"></include>
+     from visiting_remind vrd
      <where>
        <if test="patientId != null">
          vrd.patient_id = #{patientId}
@@ -42,7 +49,9 @@
 
   <!-- 根据条件查询随访提醒记录 -->
   <select id="findVisitingRemindByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery" resultMap="BaseResultMap">
-      select vrd.* from visiting_remind vrd
+      select 
+      <include refid="baseColumns"></include>
+      from visiting_remind vrd
       <where>
         <if test="query.patientId != null">
           vrd.patient_id = #{query.patientId}
