@@ -298,12 +298,12 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 }
                 // 按病历号检索
                 String currentMedicalNumber = visitingRemindVo.getMedicalNumber();
-                if (!StringHelper.isEmpty(currentMedicalNumber)) {
+                if (!StringHelper.isEmpty(currentMedicalNumber) && !StringHelper.isEmpty(medicalNumber)) {
                     result = result | currentMedicalNumber.contains(medicalNumber);
                 }
                 // 按医生名字模糊检索
                 String dentistNameStr = visitingRemindVo.getDentistName();
-                if (!StringHelper.isEmpty(dentistNameStr)) {
+                if (!StringHelper.isEmpty(dentistNameStr) && !StringHelper.isEmpty(distentName)) {
                     result = result | dentistNameStr.contains(distentName);
                 }
                 return result;

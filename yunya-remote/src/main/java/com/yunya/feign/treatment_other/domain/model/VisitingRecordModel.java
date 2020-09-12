@@ -32,8 +32,7 @@ public class VisitingRecordModel implements Serializable {
     /**
      * 患者就诊ID
      */
-    @ApiModelProperty(value = "患者就诊ID", required = true)
-    @NotNull(message = "患者就诊ID不能为空!")
+    @ApiModelProperty(value = "患者就诊ID")
     private Integer treatmentId;
 
     /**

@@ -53,7 +53,7 @@ public class VisitingRecordQuery implements Serializable {
     private Integer userId;
 
     /** 患者id */
-    @ApiModelProperty(value = "患者id", hidden = true)
+    @ApiModelProperty(value = "患者id(患者档案中查询需要传入)")
     private Integer patientId;
 
     /** 患者名字 */

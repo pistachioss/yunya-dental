@@ -52,7 +52,7 @@ public class VisitingRemindQuery implements Serializable {
     private Integer orgId;
 
     /** 患者id */
-    @ApiModelProperty(value = "患者id", hidden = true)
+    @ApiModelProperty(value = "患者id(患者档案中查询需要传入)")
     private Integer patientId;
 
     /** 医生名字 */

@@ -29,7 +29,7 @@
 
   <sql id="baseColumns">
     vr.id,vr.org_id,vr.treatment_id,vr.patient_id,vr.dentist_id,vr.dept_room_id,vr.treatment_date,vr.visiting_date,vr.visiting_time,vr.reason,
-    vr.visiting_vontent,vr.inservice,vr.remarks,vr.status,vr.crt_id,vr.crt_name,vr.crt_time,vr.upt_id,vr.upd_name,vr.upd_time
+    vr.visiting_content,vr.inservice,vr.remarks,vr.status,vr.crt_id,vr.crt_name,vr.crt_time,vr.upt_id,vr.upd_name,vr.upd_time
   </sql>
 
   <!-- 根据随访id查询随访记录（附带后续随访个数） -->
@@ -61,7 +61,7 @@
         and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
       </if>
       <if test="query.searchBeginTime != null and query.searchEndTime != null">
-        and date_format(vrd.visiting_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
+        and date_format(vr.visiting_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
       </if>
       <if test="query.patientId != null">
         and vr.patient_id = #{query.patientId}

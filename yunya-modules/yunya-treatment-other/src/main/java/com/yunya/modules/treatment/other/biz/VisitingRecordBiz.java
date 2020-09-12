@@ -460,11 +460,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 } else if (searchStr.matches(mobileReg)){
                     result = result | mobile.equals(searchStr);
                 }
-                if (!StringHelper.isEmpty(medicalNumber)){
+                if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
                     result = result | medicalNumber.equals(medicalNumberStr);
                 }
                 String distentName = visitingRecordVo.getDentistName();
-                if (!StringHelper.isEmpty(distentName)) {
+                if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
                     result = result | distentName.contains(distentNameStr);
                 }
                 return result;
