@@ -25,7 +25,7 @@
   </resultMap>
 
   <sql id="baseColumns">
-    vrd.id,vrd.org_id,vrd.patient_id,vrd.dentist_id,vrd.treatment_id,vrd.remind_date,vrd.remind_time,vrd.remind_content,vrd.remarks,vrd.status,vrd.inservice,vrd.crt_id,vrd.crt_name,vrd.crt_time,
+    vrd.id,vrd.org_id,vrd.patient_id,vrd.dentist_id,vrd.treatment_id,vrd.remind_date,vrd.remind_time,vrd.remind_content,vrd.remarks,vrd.status ,vrd.inservice,vrd.crt_id,vrd.crt_name,vrd.crt_time,
     vrd.upt_id,vrd.upd_name,vrd.upd_time
   </sql>
   

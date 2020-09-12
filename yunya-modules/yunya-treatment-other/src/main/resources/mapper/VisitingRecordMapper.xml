@@ -29,7 +29,7 @@
 
   <sql id="baseColumns">
     vr.id,vr.org_id,vr.treatment_id,vr.patient_id,vr.dentist_id,vr.dept_room_id,vr.treatment_date,vr.visiting_date,vr.visiting_time,vr.reason,
-    vr.visiting_content,vr.inservice,vr.remarks,vr.status,vr.crt_id,vr.crt_name,vr.crt_time,vr.upt_id,vr.upd_name,vr.upd_time
+    vr.visiting_content,vr.inservice,vr.remarks,vr.status ,vr.crt_id,vr.crt_name,vr.crt_time,vr.upt_id,vr.upd_name,vr.upd_time
   </sql>
 
   <!-- 根据随访id查询随访记录（附带后续随访个数） -->
@@ -44,7 +44,7 @@
   </select>
 
   <!-- 根据条件查询随访列表 -->
-  <select id="findVisitingRecordByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery" resultMap="BaseResultMap">
+  <select id="findVisitingRecordByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery" resultType="com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo">
     SELECT
         <include refid="baseColumns"></include>,
         ( SELECT COUNT( id ) FROM visiting_record WHERE patient_id = vr.patient_id ) AS visitingCount

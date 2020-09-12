@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.other.mapper;
 
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
-import com.yunya.feign.treatment_other.domain.vo.VisitingContentAfterCurrentVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.models.treatment_other.VisitingRecord;
 import org.apache.ibatis.annotations.Param;

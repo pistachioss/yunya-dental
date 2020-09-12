@@ -89,6 +89,10 @@ public class VisitingRemindVo implements Serializable {
     @ApiModelProperty(value = "医生名字")
     private String dentistName;
 
+    /** 提醒状态 0-待提醒；1-提醒完成 */
+    @ApiModelProperty(value = "提醒状态 0-待提醒；1-提醒完成")
+    private Boolean status;
+
     /******************************* 患者信息 ********************************/
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")
