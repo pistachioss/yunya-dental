@@ -6,12 +6,13 @@ import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
+import com.yunya.feign.patient_central.domain.vo.MemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.SecondaryMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.factory.PatientCentralServiceFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import io.swagger.annotations.ApiOperation;
@@ -126,8 +127,9 @@ public interface PatientCentralServiceFeign {
     /**
      *  查询会员卡绑定信息
      * @param form
-     * @return
+     * @return List<MemberInfoVo>
      */
-    @RequestMapping(value = "/findMemberInfo",method = RequestMethod.POST)
-    ResponseResult findMemberInfo(@RequestBody PatientMemberInfoQueryForm form );
+    @RequestMapping(value = "/api/findMemberInfo",method = RequestMethod.POST)
+    MemberInfoVo findMemberInfo(@RequestBody PatientMemberInfoQueryForm form);
+
 }

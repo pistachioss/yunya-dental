@@ -35,7 +35,7 @@ public class EquipmentController {
     @CurrentUser
     @ApiModelProperty(value = "设备列表")
     @PostMapping(value = "/findList")
-    public ResponseResult findList(@RequestBody @Validated EquipmentInfoQueryForm queryForm){
+    public ResponseResult findList(@RequestBody EquipmentInfoQueryForm queryForm){
         return ResponseUtil.success(equipmentBiz.findList(queryForm));
     }
 

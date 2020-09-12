@@ -69,5 +69,10 @@
       from patient_member_info pmio where pmio.patient_id =#{patientId}
     </select>
 
+    <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.MasertMemberInfoVo">
+     select id,patient_id masterCardId, member_type_id  masterCardTypeId,(select name from patient_base_info where id  = patient_id) masterName
+	 from patient_member_info where patient_id = #{form.patientId}
+    </select>
+
 
 </mapper>

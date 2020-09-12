@@ -1,13 +1,13 @@
 package com.yunya.modules.patient_central.biz;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -27,7 +27,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.alibaba.fastjson.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -466,8 +465,17 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             new NameValuePair("oldPass",form.getOldPass()),
             new NameValuePair("newPass",form.getNewPass())
     };
-    System.out.println(redisUtils.get("URL") );
     JSONObject jsonObject = WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/setPassWord", data); //调用心跳接口修改设备密码
   }
 
+  /**
+   *
+   * @param patientWoPlatformInfoModel
+   */
+  public void takePictures(PicturesCallbackInfoModel picturesCallbackInfoModel) {
+    System.out.println("**************************************************************************************");
+    System.out.println(picturesCallbackInfoModel.toString());
+    System.out.println("拍照回调成功！");
+    System.out.println("**************************************************************************************");
+  }
 }

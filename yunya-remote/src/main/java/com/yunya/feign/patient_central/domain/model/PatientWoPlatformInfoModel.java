@@ -19,7 +19,7 @@ import java.io.Serializable;
 @ToString
 @ApiModel("患者硬件识别回调信息模板")
 public class PatientWoPlatformInfoModel implements Serializable {
-
+    
    /* @ApiModelProperty(value = "识别guid,唯一不重复")
     private String guid;
 
@@ -125,4 +125,8 @@ public class PatientWoPlatformInfoModel implements Serializable {
 
     @ApiModelProperty(value = "温度单位(仅口罩测温设备支 持) 1. 摄氏度 2. 华氏度")
     private String tempUnit;
+
+
+    //http://192.168.31.215:8765/api/patient/central/takePictures
+    //http://192.168.31.221:8108/central/takePictures
 }

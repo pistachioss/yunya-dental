@@ -2,7 +2,10 @@ package com.yunya.modules.patient_central.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
@@ -159,7 +162,7 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
             if (organizationInfo != null) {
                 prepaidRechargeRecordVo.setOrgName(organizationInfo.getAbbreviation());
             }
-            AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(prepaidRechargeRecordVo.getPaymentId()); // todo 充值记录 待确认
+            AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(prepaidRechargeRecordVo.getPaymentId());
             if(accountItem != null){
                 prepaidRechargeRecordVo.setPaymentName(accountItem.getName()); //获取支付方式名称
             }
@@ -181,7 +184,7 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
         PrepaidReturnRecord prepaidReturnRecord = new PrepaidReturnRecord();
         BeanUtils.copyProperties(model,prepaidReturnRecord);
         prepaidReturnRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(prepaidReturnRecord.getReturnWayId()); // todo 充值记录 待确认
+        AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(prepaidReturnRecord.getReturnWayId());
         if(accountItem != null){
             prepaidReturnRecord.setReturnWayType(accountItem.getName());//获取退费方式类型名称
         }
@@ -206,7 +209,7 @@ public class PatientPrepaymentRelationBiz extends BaseBiz<PatientPrepaymentRelat
             if (organizationInfo != null) {
                 prepaidMeturnRecordVo.setOrgName(organizationInfo.getAbbreviation());
             }
-            AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(prepaidMeturnRecordVo.getReturnWayId()); // todo 充值记录 待确认
+            AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(prepaidMeturnRecordVo.getReturnWayId());
             if(accountItem != null){
                 prepaidMeturnRecordVo.setReturnWayType(accountItem.getName()); //获取支付方式名称
             }

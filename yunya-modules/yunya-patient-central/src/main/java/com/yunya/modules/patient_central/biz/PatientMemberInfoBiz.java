@@ -292,7 +292,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
                 List<MemberRechargeTollRecord> memberRechargeTollRecordList =  memberRechargeTollRecordMapper.selectMemberRechargeRecord(rechargeRecordVo.getId());
                 StringBuilder labels = new StringBuilder(16);
                 for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
-                    AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberRechargeTollRecord.getPaymentId()); // todo 充值记录 待确认
+                    AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberRechargeTollRecord.getPaymentId());
                     if(accountItem != null){
                         labels.append(accountItem.getName());
                     }
@@ -317,7 +317,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         MemberReturnRecord memberReturnRecord = new MemberReturnRecord();
         BeanUtils.copyProperties(model,memberReturnRecord);
         memberReturnRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberReturnRecord.getReturnWayId()); // todo 充值记录 待确认
+        AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberReturnRecord.getReturnWayId());
         if(accountItem != null){
             memberReturnRecord.setReturnWayType(accountItem.getName());//获取退费方式类型名称
         }
@@ -421,16 +421,26 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
      * @param form
      * @return List<MemberInfoVo>
      */
-    public List<MemberInfoVo> findMemberInfo(PatientMemberInfoQueryForm form) {
-        List<MemberInfoVo> memberInfoVos = patientMemberRelationMapper.findMemberInfo(form);
-        if(memberInfoVos.size() > 0){
-            for (MemberInfoVo memberInfoVo : memberInfoVos) {
-                MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberInfoVo.getMemberTypeId()); //获取会员卡名称
+    public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
+        MemberInfoVo memberInfoVo = new MemberInfoVo();
+        MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
+        if(masertMemberInfoVo != null){
+            MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(masertMemberInfoVo.getMasterCardTypeId()); //获取会员卡名称
+            if (memberType != null && memberType.getName() != null) {
+                masertMemberInfoVo.setMasterMemberCardName(memberType.getName());
+            }
+        }
+        memberInfoVo.setMasertMemberInfoVo(masertMemberInfoVo);
+        List<SecondaryMemberInfoVo> secondaryMemberInfoVos = patientMemberRelationMapper.findMemberInfo(form);
+        if(secondaryMemberInfoVos.size() > 0){
+            for (SecondaryMemberInfoVo secondaryMemberInfoVo : secondaryMemberInfoVos) {
+                MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(secondaryMemberInfoVo.getSecondaryMemberTypeId()); //获取会员卡名称
                 if (memberType != null && memberType.getName() != null) {
-                    memberInfoVo.setMemberCardName(memberType.getName());
+                    secondaryMemberInfoVo.setMemberCardName(memberType.getName());
                 }
             }
         }
-        return memberInfoVos;
+        memberInfoVo.setSecondaryMemberInfoVos(secondaryMemberInfoVos);
+        return memberInfoVo;
     }
 }

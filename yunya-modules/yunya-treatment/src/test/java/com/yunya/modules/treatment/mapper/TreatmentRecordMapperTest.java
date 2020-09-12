@@ -1,0 +1,37 @@
+package com.yunya.modules.treatment.mapper;
+
+import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
+
+/**
+ * 简介: 就诊记录mapper测试
+ *
+ * @author: chow
+ * @date: 2020/9/11 13:27
+ * @description:
+ * @since: 1.0.0
+ */
+@SpringBootTest
+@RunWith(SpringRunner.class)
+public class TreatmentRecordMapperTest {
+  /** 注入对象 */
+  @Autowired private TreatmentRecordMapper treatmentRecordMapper;
+
+  @Test
+  public void findPatientTreatList() {
+    PatientTreatmentRecordQueryForm queryForm = new PatientTreatmentRecordQueryForm();
+    queryForm.setOrgIds(new int[] {21});
+    queryForm.setTreatStatus(new Byte[] {0, 2});
+    queryForm.setPatientId(11);
+    List<PatientTreatmentRecordVO> list =
+        treatmentRecordMapper.selectPatientTreatmentRecordList(queryForm);
+    System.out.println(list);
+  }
+}

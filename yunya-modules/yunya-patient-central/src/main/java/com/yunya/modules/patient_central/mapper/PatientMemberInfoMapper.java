@@ -3,11 +3,9 @@ package com.yunya.modules.patient_central.mapper;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
+import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo;
-import com.yunya.feign.patient_central.domain.vo.MemberRelationVo;
-import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
-import com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVo;
+import com.yunya.feign.patient_central.domain.vo.*;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -57,4 +55,11 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @return PatientMemberInfo
      */
     PatientMemberInfo selectOneByPatientId(@Param("patientId") Integer patientId);
+
+    /**
+     * 查询主卡人信息
+     * @param form
+     * @return MasertMemberInfoVo
+     */
+    MasertMemberInfoVo selectMasertMemberInfo(@Param("form") PatientMemberInfoQueryForm form);
 }

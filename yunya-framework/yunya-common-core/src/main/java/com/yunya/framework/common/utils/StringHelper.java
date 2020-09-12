@@ -3,8 +3,10 @@ package com.yunya.framework.common.utils;
 import cn.hutool.core.text.StrFormatter;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 字符串处理
@@ -232,10 +234,7 @@ public class StringHelper extends StringUtils {
    * @return 格式化后的文本
    */
   public static String format(String template, Object... params) {
-    if (isEmpty(params) || isEmpty(template)) {
-      return template;
-    }
-    return StrFormatter.format(template, params);
+    return isEmpty(params) || isEmpty(template) ? template : StrFormatter.format(template, params);
   }
 
   /** 下划线转驼峰命名 */
@@ -252,11 +251,7 @@ public class StringHelper extends StringUtils {
     boolean nexteCharIsUpperCase = true;
     for (int i = 0; i < str.length(); i++) {
       char c = str.charAt(i);
-      if (i > 0) {
-        preCharIsUpperCase = Character.isUpperCase(str.charAt(i - 1));
-      } else {
-        preCharIsUpperCase = false;
-      }
+      preCharIsUpperCase = i > 0 && Character.isUpperCase(str.charAt(i - 1));
 
       curreCharIsUpperCase = Character.isUpperCase(c);
 
@@ -283,14 +278,9 @@ public class StringHelper extends StringUtils {
    * @return 包含返回true
    */
   public static boolean inStringIgnoreCase(String str, String... strs) {
-    if (str != null && strs != null) {
-      for (String s : strs) {
-        if (str.equalsIgnoreCase(trim(s))) {
-          return true;
-        }
-      }
-    }
-    return false;
+    return str != null
+        && strs != null
+        && Arrays.stream(strs).anyMatch(s -> str.equalsIgnoreCase(trim(s)));
   }
 
   /**
@@ -300,7 +290,7 @@ public class StringHelper extends StringUtils {
    * @return 转换后的驼峰式命名的字符串
    */
   public static String convertToCamelCase(String name) {
-    StringBuilder result = new StringBuilder();
+    String result;
     // 快速检查
     if (name == null || name.isEmpty()) {
       // 没必要转换
@@ -311,16 +301,14 @@ public class StringHelper extends StringUtils {
     }
     // 用下划线将原始字符串分割
     String[] camels = name.split("_");
-    for (String camel : camels) {
-      // 跳过原始字符串中开头、结尾的下换线或双重下划线
-      if (camel.isEmpty()) {
-        continue;
-      }
-      // 首字母大写
-      result.append(camel.substring(0, 1).toUpperCase());
-      result.append(camel.substring(1).toLowerCase());
-    }
-    return result.toString();
+    // 跳过原始字符串中开头、结尾的下换线或双重下划线
+    result =
+        Arrays.stream(camels)
+            .filter(camel -> !camel.isEmpty())
+            // 首字母大写
+            .map(camel -> camel.substring(0, 1).toUpperCase() + camel.substring(1).toLowerCase())
+            .collect(Collectors.joining());
+    return result;
   }
 
   /** 驼峰式命名法 例如：user_name->userName */
@@ -354,11 +342,7 @@ public class StringHelper extends StringUtils {
    * @return
    */
   public static String assertNotNullOrEmpty(String target, String defaultValue) {
-    if (isNotEmpty(target)) {
-      return target;
-    } else {
-      return defaultValue;
-    }
+    return isNotEmpty(target) ? target : defaultValue;
   }
 
   /**

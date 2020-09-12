@@ -44,9 +44,10 @@
      where master_card_id =#{form.secondaryCardId} and secondary_card_id =#{form.masterCardId} and bind_type =#{form.bindType}
   </select>
 
-  <select id="findMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberInfoVo">
-     select pmrn.org_id orgId,pmrn.master_card_id masterCardId,pmrn.secondary_card_id secondaryCardId,(select card_number from patient_member_info where patient_id = pmrn.secondary_card_id ) cardNumber,(select member_type_id from patient_member_info where patient_id = pmrn.secondary_card_id ) memberTypeId,(select name from patient_base_info where id  = pmrn.secondary_card_id) name
-     from patient_member_relation pmrn
-     where pmrn.master_card_id = #{form.patientId} and pmrn.bind_type = #{form.bindType}
+  <select id="findMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.SecondaryMemberInfoVo">
+      select  pmio.id,pmrn.secondary_card_id secondaryCardId,pmio.card_number secondaryCardNumber,pmio.member_type_id secondaryMemberTypeId,
+			 pbio.name secondaryName
+      from patient_member_relation pmrn join patient_member_info pmio on pmrn.secondary_card_id = pmio.patient_id join patient_base_info pbio on pmrn.secondary_card_id = pbio.id
+      where pmrn.master_card_id = #{form.patientId} and pmrn.bind_type = #{form.bindType}
   </select>
 </mapper>
