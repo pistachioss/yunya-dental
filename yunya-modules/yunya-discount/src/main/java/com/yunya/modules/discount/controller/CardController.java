@@ -163,8 +163,8 @@ public class CardController {
 
     @ApiOperation(value = "收费-选择优惠")
     @PostMapping("/order/choice/coupon")
-    public ResponseResult chooseCoupon() {
-        return null;
+    public ResponseResult<PatientOptionalBenefitVo> chooseCoupon(@Valid @RequestBody PatientBenefitQuery query) {
+        PatientOptionalBenefitVo benefit = cardBiz.getPatientBenefit(query);
+        return ResponseUtil.success(benefit);
     }
-
 }

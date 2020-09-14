@@ -35,7 +35,6 @@ public class CardSoldForm implements Serializable {
     @NotNull
     private Integer sendText;
     @ApiModelProperty(value = "售出并付款")
-
     @NotNull(groups = SoldAndPayViewGroup.class, message = "售出并付款不能为空")
     @Null(groups = SoldAnPayNotViewsGroup.class, message = "售出并付款必须为空")
     private Integer soldAndPay;
@@ -52,7 +51,6 @@ public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "售出方式（0:线上 1:线下）", required = true)
     @NotNull
     private Integer soldWay;
-
     @ApiModelProperty(value = "优惠券类型", required = true)
     @NotNull
     private Integer couponType;

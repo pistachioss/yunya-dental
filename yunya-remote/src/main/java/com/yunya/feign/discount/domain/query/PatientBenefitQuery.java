@@ -16,4 +16,7 @@ public class PatientBenefitQuery {
     @ApiModelProperty(value = "患者id", required = true)
     @NotNull
     private Integer patientId;
+    @ApiModelProperty(value = "开单id", required = true)
+    @NotNull
+    private Integer orderId;
 }
