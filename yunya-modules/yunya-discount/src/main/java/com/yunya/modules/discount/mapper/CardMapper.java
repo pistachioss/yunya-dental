@@ -34,4 +34,6 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
 
     List<PatientCardBo> listPatientCardsByParam(@Param("patientId") Integer patient, @Param("couponName") String couponName,
                                                 @Param("couponTypeList") List<Integer> couponTypeList, @Param("queryType") Integer queryType);
+
+    List<PatientBenefitBo> listBenefitByPatientId(@Param("patientId") Integer patientId);
 }

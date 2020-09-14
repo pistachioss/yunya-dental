@@ -221,17 +221,17 @@
                      where `coupon_id` = `c`.coupon_id)
                 when `cci`.`type` = 1 then
                     (select
-                         date_add(`c`.`active_date`, interval `effective_days` day)
+                         date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
                      from `discount_coupon`
                      where `coupon_id` = `c`.`coupon_id`)
                 when `cci`.`type` = 2 then
                     (select
-                         date_add(`c`.`active_date`, interval `effective_days` day)
+                         date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
                      from `package_coupon`
                      where `coupon_id` = `c`.`coupon_id`)
                 when `cci`.`type` = 3 then
                     (select
-                         date_add(`c`.`active_date`, interval `effective_days` day)
+                         date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
                      from `special_package_coupon`
                      where `coupon_id` = `c`.`coupon_id`)
                 else null
@@ -272,5 +272,126 @@
                 </foreach>
             </if>
         order by `activeDate` desc
+    </select>
+
+    <select id="listBenefitByPatientId" resultType="com.yunya.feign.discount.domain.bo.PatientBenefitBo">
+        select
+            `temp`.`cardId`,
+            `temp`.`couponId`,
+            `temp`.`card_number`,
+            `temp`.`ownerId`,
+            `temp`.`couponName`,
+            `temp`.`couponType`,
+            `temp`.`useDeadline`,
+            `temp`.`useWay`,
+            `temp`.`mixable`,
+            `temp`.`path`
+        from (select
+                  `c`.`id`         as `cardId`,
+                  `c`.`card_number`,
+                  `c`.`patient_id` as `ownerId`,
+                  `cci`.id         as `couponId`,
+                  `cci`.`name`     as `couponName`,
+                  `cci`.`type`     as `couponType`,
+                  case
+                      when `cci`.`type` = 0 then
+                          (select `mixed_use_type` from `vouche_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      when `cci`.`type` = 1 then
+                          (select `mixable` from `discount_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      when `cci`.`type` = 2 then
+                          (select `mixable` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      when `cci`.`type` = 3 then
+                          (select `mixable` from `special_package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      else null
+                      end      as `mixable`,
+                  case
+                      when `cci`.`type` = 2 then
+                          (select `use_way` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      when `cci`.`type` = 3 then
+                          (select `use_way` from `special_package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      else null
+                      end      as `useWay`,
+                  case
+                      when `cci`.`type` = 0 then
+                          (select
+                               date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                           from `vouche_coupon`
+                           where `coupon_id` = `c`.coupon_id)
+                      when `cci`.`type` = 1 then
+                          (select
+                               date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                           from `discount_coupon`
+                           where `coupon_id` = `c`.`coupon_id`)
+                      when `cci`.`type` = 2 then
+                          (select
+                               date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                           from `package_coupon`
+                           where `coupon_id` = `c`.`coupon_id`)
+                      when `cci`.`type` = 3 then
+                          (select
+                               date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                           from `special_package_coupon`
+                           where `coupon_id` = `c`.`coupon_id`)
+                      else null
+                      end      as `useDeadline`,
+                  case
+                      when `cci`.`type` in (0, 1) then
+                          (select
+                                if(count(*) = 0, 1, 0)
+                           from `benefit_detail` `bd`
+                           where `bd`.`card_id` = `c`.`id`
+                             and `bd`.`benefit_type` = 1
+                             and `bd`.`inservice` = 0)
+                      when `cci`.`type` = 2 then
+                          (select
+                                if(isnull(sum(`bd`.`benefit_num`)) = 1,
+                                   null,
+                                   sum(`bd`.`benefit_num`)
+                                       &lt; (select sum(count)
+                                          from `package_coupon_item` `pci`
+                                          where `pci`.`coupon_id` = `cci`.`id`
+                                          group by `pci`.`coupon_id`)
+                                   )
+                          from `benefit_detail` `bd`
+                          where `bd`.`card_id` = `c`.`id`
+                            and `bd`.`benefit_type` = 1
+                            and `bd`.`inservice` = 0)
+                      when `cci`.`type` = 3 then
+                          (select
+                                if(isnull(sum(`bd`.`benefit_num`)) = 1,
+                                    null,
+                                    sum(`bd`.`benefit_num`)
+                                        &lt; (select sum(count)
+                                           from `special_package_coupon_item` `spci`
+                                           where `spci`.`coupon_id` = `cci`.`id`
+                                           group by `spci`.`coupon_id`)
+                                  )
+                          from `benefit_detail` `bd`
+                          where `bd`.`card_id` = `c`.`id`
+                            and `bd`.`benefit_type` = 1
+                            and `bd`.`inservice` = 0)
+                      else null
+                      end      as `itemUseable`,
+                  (select
+                       `cfi`.`path`
+                   from `coupon_file_info` `cfi`
+                   where `cfi`.`coupon_id` = `cci`.`id`
+                     and `cfi`.`inservice` = 1
+                     and `cfi`.`file_type` = 0
+                   ORDER BY `cfi`.`crt_time` asc
+                   LIMIT 1)        as `path`
+              from `card` `c`
+                   inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
+              where `cci`.`is_inservice` = 1
+                and `c`.`status` = 2
+                and `cci`.`type` != 4
+                and (`c`.`patient_id` = #{patientId}
+                  or (find_in_set(#{patientId}, `c`.`sharer`)))) `temp`
+        where (isnull(`temp`.`useWay`) = 1
+            and `temp`.`itemUseable` = 1
+            or (`temp`.`useWay` = 0 and isnull(`temp`.`itemUseable`) = 1
+                or (`temp`.`useWay` = 1 and
+                    (`temp`.`itemUseable` = 1 or isnull(`temp`.`itemUseable`) = 1))))
+          and `temp`.`useDeadline` >= date_format(now(), '%Y-%m-%d')
     </select>
 </mapper>

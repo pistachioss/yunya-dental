@@ -9,12 +9,15 @@ import lombok.*;
  */
 @Getter
 @Setter
-@ApiModel(value = "会员卡折扣优惠模型")
-public class MemberCardVo {
+public class PatientMemberCardVo {
     @ApiModelProperty(value = "会员卡id")
-    private Integer id;
+    private Integer memberCardId;
+    @ApiModelProperty(value = "会员卡名称")
+    private String memberCardName;
+    @ApiModelProperty(value = "会员卡卡号")
+    private String memberCardNumber;
     @ApiModelProperty(value = "卡主")
-    private String cardOwner;
+    private String owner;
     @ApiModelProperty(value = "图片路径")
     private String path;
 }
