@@ -19,6 +19,9 @@ import java.util.Date;
 @ToString
 public class VisitingContentVo implements Serializable {
 
+    /** 患者ID */
+    @ApiModelProperty(value = "患者ID")
+    private Integer patientId;
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")
     private String patientName;
