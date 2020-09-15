@@ -134,6 +134,10 @@ public class AppointmentListItemVo implements Serializable {
     @ApiModelProperty(value = "预约确认")
     private Boolean confirmStatus;
 
+    /** 预约时间 */
+    @ApiModelProperty(value = "预约时间")
+    private Date appointDate;
+
     /** 创建时间 */
     @ApiModelProperty(value = "创建时间")
     private Date crtTime;
