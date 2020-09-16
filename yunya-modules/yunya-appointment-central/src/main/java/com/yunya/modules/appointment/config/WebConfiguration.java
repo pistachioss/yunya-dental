@@ -39,53 +39,14 @@ public class WebConfiguration implements WebMvcConfigurer {
 
   @Override
   public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-    //创建fastJson消息转换器
-    List<MediaType> supportedMediaTypes = getSupportedMediaTypes();
-
     // 调用父类的配置
     WebMvcConfigurer.super.configureMessageConverters(converters);
     // 创建fastJson消息转化器
     FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
-    // 创建fastJson的配置对象
-    FastJsonConfig config = new FastJsonConfig();
-    config.setSerializerFeatures(
-            SerializerFeature.PrettyFormat,
-            SerializerFeature.WriteNullStringAsEmpty,
-            SerializerFeature.WriteNullListAsEmpty,
-            SerializerFeature.WriteMapNullValue,
-            // 禁止循环引用
-            SerializerFeature.DisableCircularReferenceDetect);
-    config.setCharset(Charset.forName("UTF-8"));
-    converter.setFastJsonConfig(config);
+    List<MediaType> supportedMediaTypes = new ArrayList<>();
+    supportedMediaTypes.add(MediaType.ALL);
     converter.setSupportedMediaTypes(supportedMediaTypes);
     converters.add(converter);
-  }
-
-  /**
-   * 消息转换器
-   * @return
-   */
-  public List<MediaType> getSupportedMediaTypes() {
-    //创建fastJson消息转换器
-    List<MediaType> supportedMediaTypes = new ArrayList<>();
-    supportedMediaTypes.add(MediaType.APPLICATION_JSON);
-    supportedMediaTypes.add(MediaType.APPLICATION_ATOM_XML);
-    supportedMediaTypes.add(MediaType.APPLICATION_FORM_URLENCODED);
-    supportedMediaTypes.add(MediaType.APPLICATION_OCTET_STREAM);
-    supportedMediaTypes.add(MediaType.APPLICATION_PDF);
-    supportedMediaTypes.add(MediaType.APPLICATION_RSS_XML);
-    supportedMediaTypes.add(MediaType.APPLICATION_XHTML_XML);
-    supportedMediaTypes.add(MediaType.APPLICATION_XML);
-    supportedMediaTypes.add(MediaType.IMAGE_GIF);
-    supportedMediaTypes.add(MediaType.IMAGE_JPEG);
-    supportedMediaTypes.add(MediaType.IMAGE_PNG);
-    supportedMediaTypes.add(MediaType.TEXT_EVENT_STREAM);
-    supportedMediaTypes.add(MediaType.TEXT_HTML);
-    supportedMediaTypes.add(MediaType.TEXT_MARKDOWN);
-    supportedMediaTypes.add(MediaType.TEXT_PLAIN);
-    supportedMediaTypes.add(MediaType.TEXT_XML);
-    supportedMediaTypes.add(MediaType.ALL);
-    return supportedMediaTypes;
   }
 
 

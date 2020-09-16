@@ -18,10 +18,10 @@ import java.util.Date;
  * @create 2020-08-11 20:08
  * @update yunya-lihuibin    2020-08-11    新建
  */
-@ApiModel(value = "根据排班开始结束日期/门诊id/医生id查询预约可视图（活动天）（患者维度）")
+@ApiModel(value = "PatientDimensionByDayQuery",description = "根据排班开始结束日期/门诊id/医生id查询预约可视图（活动天）（患者维度）")
 @Data
 @ToString
-public class AppointmentPatientDimensionByDayQuery implements Serializable {
+public class PatientDimensionByDayQuery implements Serializable {
 
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
