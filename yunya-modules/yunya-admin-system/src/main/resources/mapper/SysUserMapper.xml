@@ -133,21 +133,21 @@
         FROM
         post p
         WHERE
-        FIND_IN_SET( p.id, user_info.post_ids )) AS posts,
+        FIND_IN_SET( p.id, user_info.postIds )) AS posts,
         (
         SELECT
         GROUP_CONCAT( pg.`name` )
         FROM
         post_group pg
         WHERE
-        FIND_IN_SET( pg.id, user_info.group_ids )) AS postGroups,
+        FIND_IN_SET( pg.id, user_info.groupIds )) AS postGroups,
         (
         SELECT
         GROUP_CONCAT( c.`name` )
         FROM
         company c
         WHERE
-        FIND_IN_SET( c.id, user_info.company_ids )) AS companys
+        FIND_IN_SET( c.id, user_info.companyIds )) AS companys
         FROM
         (
         SELECT
@@ -155,9 +155,9 @@
         se.id AS employeeId,
         su.username AS username,
         se.`name` AS name,
-        sup.company_ids,
-        sup.post_ids,
-        sup.group_ids,
+        sup.company_ids as companyIds,
+        sup.post_ids as postIds,
+        sup.group_ids as groupIds,
         se.birthday,
         se.address,
         su.mobile_phone AS mobilePhone,
@@ -214,21 +214,21 @@
         FROM
         post p
         WHERE
-        FIND_IN_SET( p.id, user_info.post_ids )) AS posts,
+        FIND_IN_SET( p.id, user_info.postIds )) AS posts,
         (
         SELECT
         GROUP_CONCAT( pg.`name` )
         FROM
         post_group pg
         WHERE
-        FIND_IN_SET( pg.id, user_info.group_ids )) AS postGroups,
+        FIND_IN_SET( pg.id, user_info.groupIds )) AS postGroups,
         (
         SELECT
         GROUP_CONCAT( c.`name` )
         FROM
         company c
         WHERE
-        FIND_IN_SET( c.id, user_info.company_ids )) AS companys
+        FIND_IN_SET( c.id, user_info.companyIds )) AS companys
         FROM
         (
         SELECT
@@ -237,9 +237,9 @@
         su.username AS username,
         se.`name` AS name,
         se.pinyin as pinyin,
-        sup.company_ids,
-        sup.post_ids,
-        sup.group_ids,
+        sup.company_ids as companyIds,
+        sup.post_ids as postIds,
+        sup.group_ids as groupIds,
         se.birthday,
         se.address,
         su.mobile_phone AS mobilePhone,
@@ -290,20 +290,20 @@
             <if test="queryFrom.orgIds != null and queryFrom.orgIds.size > 0">
                 and
                 <foreach collection="queryFrom.orgIds" item="item" index="index" open="(" close=")" separator="or">
-                    FIND_IN_SET(#{item}, user_info.company_ids)
+                    FIND_IN_SET(#{item}, user_info.companyIds)
                 </foreach>
             </if>
             <if test="queryFrom.postGroupIds != null and queryFrom.postGroupIds.size > 0">
                 and
                 <foreach collection="queryFrom.postGroupIds" item="item" index="index" open="(" close=")"
                          separator="or">
-                    FIND_IN_SET(#{item}, user_info.group_ids)
+                    FIND_IN_SET(#{item}, user_info.groupIds)
                 </foreach>
             </if>
             <if test="queryFrom.postIds != null and queryFrom.postIds.size > 0">
                 and
                 <foreach collection="queryFrom.postIds" item="item" index="index" open="(" close=")" separator="or">
-                    FIND_IN_SET(#{item}, user_info.post_ids)
+                    FIND_IN_SET(#{item}, user_info.postIds)
                 </foreach>
             </if>
             <if test="queryFrom.keyWord != null and queryFrom.keyWord != ''">
