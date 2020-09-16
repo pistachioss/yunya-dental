@@ -476,7 +476,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param query 查询条件
      * @return List<AppointmentDimensionVo>
      */
-    public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(AppointmentPatientDimensionByDayQuery query) {
+    public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
         // 预约可视图列表
         List<AppointmentDimensionVo> appointmentDimensionVoList = new ArrayList<>();
         EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
@@ -546,7 +546,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param query
      * @return
      */
-    public List<AppointmentDentistDimensionVo> findAppointmentDentistDimensionByExample(AppointmentPatientDimensionByDayQuery query){
+    public List<AppointmentDentistDimensionVo> findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
         List<AppointmentDentistDimensionVo> appointmentDentistDimensionVoList = new ArrayList<>();
         // 预约医生列表
         List<AppointmentDimensionVo> appointmentDimensionVos = this.findAppointmentPatientDimensionByExample(query);
@@ -996,7 +996,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             orgName = orgInfo.getName();
         }
         // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
-        String excelName = orgName + "预约报表（" + exportAppointDate + "）";
+        String excelName = orgName + "预约报表(" + exportAppointDate + ")";
         appointExcelExport.exportExcel(response,appointListExportVos,excelName,excelName);
     }
 

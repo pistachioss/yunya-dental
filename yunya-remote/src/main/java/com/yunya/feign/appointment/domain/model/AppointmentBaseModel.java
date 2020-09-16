@@ -60,8 +60,8 @@ public class AppointmentBaseModel implements Serializable {
     private Integer appointDuration;
 
     /**预约状态  未确认-false;确认-true*/
-    @ApiModelProperty(value = "预约状态  未确认-false;确认-true")
-    private Boolean appointState;
+    @ApiModelProperty(value = "预约状态 0-预约未到，1-履约，2，取消预约，3-失约")
+    private Byte appointState;
 
     /** 医生id */
     @ApiModelProperty(value = "医生id", required = true)

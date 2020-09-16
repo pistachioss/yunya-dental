@@ -8,7 +8,7 @@ import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
 import com.yunya.feign.appointment.domain.query.AppointListExportQuery;
 import com.yunya.feign.appointment.domain.query.AppointListQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
-import com.yunya.feign.appointment.domain.query.AppointmentPatientDimensionByDayQuery;
+import com.yunya.feign.appointment.domain.query.PatientDimensionByDayQuery;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -176,7 +176,7 @@ public class AppointmentController {
   @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询)")
   @PostMapping("/find/patient/dimension")
   public ResponseResult findAppointmentPatientDimensionByDate(
-      @RequestBody @Validated AppointmentPatientDimensionByDayQuery query) {
+      @RequestBody @Validated PatientDimensionByDayQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.offsetPage(query.getPageNum(), query.getPageSize());
     }
@@ -195,7 +195,7 @@ public class AppointmentController {
   @ApiOperation(value = "根据排班开始结束日期/门诊id/医生id查询医生维度预约可视图")
   @PostMapping("/find/dentist/dimension")
   public ResponseResult findAppointmentDentistDimensionByExample(
-      @RequestBody AppointmentPatientDimensionByDayQuery query) {
+      @RequestBody PatientDimensionByDayQuery query) {
     List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample =
         appointmentBiz.findAppointmentDentistDimensionByExample(query);
     return ResponseUtil.success(appointmentDentistDimensionByExample);
