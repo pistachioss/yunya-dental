@@ -55,12 +55,21 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   @Excel(name = "性别")
   private String gender;
 
+  /** 岗位ID */
+  private String postIds;
+
   /** 员工岗位 */
   @Excel(name = "岗位")
   private String posts;
 
+  /** 员工岗位组ID */
+  private String groupIds;
+
   /** 员工岗位组 */
   private String postGroups;
+
+  /** 组织ID */
+  private String companyIds;
 
   /** 员工门诊 */
   @Excel(name = "可登陆门诊")
