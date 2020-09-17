@@ -12,7 +12,7 @@ import com.yunya.framework.common.model.*;
 public class ResponseUtil {
 
   private static final Boolean PASS = true;
-  private static final Integer SUCCESS_STATUS = 200;
+  private static final Integer SUCCESS_STATUS = 0;
   private static final String SUCCESS_MSG = "success";
 
   private static final Boolean NOT_PASS = false;
