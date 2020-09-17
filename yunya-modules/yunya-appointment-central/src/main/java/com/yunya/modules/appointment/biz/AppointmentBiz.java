@@ -293,7 +293,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         AppointmentBaseModel appointBaseModel = EntityUtils.build(form, AppointmentBaseModel.class);
         // 检查预约当天预约的医生是否排班
         Map<String, Object> dentistSchedulingConflict = this.checkScheduling(appointBaseModel);
-        if (dentistSchedulingConflict.get("errMwg") != null){
+        if (dentistSchedulingConflict.get("errMsg") != null){
             return ResponseUtil.success(dentistSchedulingConflict);
         }
         // 检查预约冲突（只检查医生预约冲突、设备预约冲突）
@@ -682,24 +682,22 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 获取排班列表
             EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
             if (employeeScheduleResult == null){
-                errMap.put("status",-1);
-                errMap.put("errMwg","员工排班服务异常！");
-                errMap.put("data",employeeScheduleResult);
+                errMap.put("errMsg","员工排班服务异常！");
+                errMap.put("errData",employeeScheduleResult);
                 return errMap;
             }
             // 预约医生没有排班，返回空
             if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
-                errMap.put("status",1);
-                errMap.put("errMwg","预约医生在预约日期当天未排班，建议排班后再新增预约！");
-                errMap.put("data",employeeScheduleResult);
+                errMap.put("errMsg","预约医生在预约日期当天未排班，建议排班后再新增预约！");
+                errMap.put("errData",employeeScheduleResult);
                 return errMap;
             }
             // 成功返回null
             return null;
+        } else {
+            errMap.put("errMsg", "预约医生id不能为空！");
+            errMap.put("errData", null);
         }
-        errMap.put("status",2);
-        errMap.put("errMwg","预约医生id不能为空！");
-        errMap.put("data",null);
         return errMap;
     }
 
@@ -745,9 +743,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     }
                 });
                 // 预约冲突返回冲突信息
-                responseMapResult.put("status",4);
-                responseMapResult.put("errMwg","患者预约冲突！");
-                responseMapResult.put("data",patientList);
+                responseMapResult.put("errMsg","患者预约冲突！");
+                responseMapResult.put("errData",patientList);
                 return responseMapResult;
             }
         }
@@ -766,9 +763,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     }
                 });
                 // 预约冲突返回冲突信息
-                responseMapResult.put("status",5);
-                responseMapResult.put("errMwg","医生预约冲突！");
-                responseMapResult.put("data",dentisList);
+                responseMapResult.put("errMsg","医生预约冲突！");
+                responseMapResult.put("errData",dentisList);
                 return responseMapResult;
             }
         }
@@ -787,9 +783,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     }
                 });
                 // 预约冲突返回冲突信息
-                responseMapResult.put("status",6);
-                responseMapResult.put("errMwg","设备预约冲突！");
-                responseMapResult.put("data",deviceList);
+                responseMapResult.put("errMsg","设备预约冲突！");
+                responseMapResult.put("errData",deviceList);
                 return responseMapResult;
             }
         }
@@ -901,9 +896,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     mapper.editCheckPatientConflict(id, appointmentForm.getPatientId(), appointStartTime, appointEndTime);
             if (!appointConflictInfoVos.isEmpty()) {
                 // 存在患者预约冲突
-                responseMapResult.put("status",4);
                 responseMapResult.put("errMsg","患者预约冲突！");
-                responseMapResult.put("data",appointConflictInfoVos);
+                responseMapResult.put("errData",appointConflictInfoVos);
                 return responseMapResult;
             }
         }
@@ -913,9 +907,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     mapper.editCheckDentistConflict(id, appointmentForm.getPatientId(), appointStartTime, appointEndTime);
             if (!appointConflictInfoVos.isEmpty()) {
                 // 存在医生预约冲突
-                responseMapResult.put("status",5);
                 responseMapResult.put("errMsg","医生预约冲突！");
-                responseMapResult.put("data",appointConflictInfoVos);
+                responseMapResult.put("errData",appointConflictInfoVos);
                 return responseMapResult;
             }
         }
@@ -925,9 +918,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     mapper.editCheckDeviceConflict(id, deviceId, appointStartTime, appointEndTime);
             if (!appointConflictInfoVos.isEmpty()) {
                 // 存在设备预约冲突
-                responseMapResult.put("status",6);
                 responseMapResult.put("errMsg","设备预约冲突！");
-                responseMapResult.put("data",appointConflictInfoVos);
+                responseMapResult.put("errData",appointConflictInfoVos);
                 return responseMapResult;
             }
         }
