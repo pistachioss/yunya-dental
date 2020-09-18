@@ -38,59 +38,58 @@ public class SpecializedSubjectProjectController {
     /**
      * 专科项目设置列表
      *
-     * @param
-     * @return
+     * @param query 专科项目设置列表
+     * @return page
      */
     @ApiOperation("专科项目设置列表")
     @PostMapping("/findSpecializedList")
-    public ResponseResult<PageInfo<SpecializedSubjectProjectVo>> findSpecializedList(@Valid @RequestBody SpecializedSubjectProjectQuery query){
+    public ResponseResult<PageInfo<SpecializedSubjectProjectVo>> findSpecializedList(@Valid @RequestBody SpecializedSubjectProjectQuery query) {
         PageInfo<SpecializedSubjectProjectVo> page = specializedSubjectProjectBiz.findSpecializedList(query);
         return ResponseUtil.success(page);
     }
 
     /**
-     * 专科项目设置列表
+     * 添加专科项目设置
      *
-     * @param
-     * @return
+     * @param model 添加专科项目设置
      */
     @CurrentUser
     @ApiOperation("添加专科项目设置")
     @PostMapping("/add")
-    public ResponseResult add(@Valid @RequestBody SpecializedSubjectProjectModel model){
+    public ResponseResult add(@Valid @RequestBody SpecializedSubjectProjectModel model) {
         Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
         SpecializedSubjectProject specializedSubjectProject = new SpecializedSubjectProject();
         specializedSubjectProject.setCrtId(crtId);
-        BeanUtils.copyProperties(model,specializedSubjectProject);
+        BeanUtils.copyProperties(model, specializedSubjectProject);
         specializedSubjectProjectBiz.add(specializedSubjectProject);
         return ResponseUtil.success();
     }
+
     /**
-     * 专科项目设置列表
+     * 修改专科项目设置
      *
-     * @param
-     * @return
+     * @param form 修改专科项目设置
      */
     @CurrentUser
     @ApiOperation("修改专科项目设置")
-    @PutMapping ("/upd")
-    public ResponseResult upd(@Valid @RequestBody SpecializedSubjectProjectForm form){
+    @PutMapping("/upd")
+    public ResponseResult upd(@Valid @RequestBody SpecializedSubjectProjectForm form) {
         Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
         SpecializedSubjectProject specializedSubjectProject = new SpecializedSubjectProject();
         specializedSubjectProject.setCrtId(crtId);
-        BeanUtils.copyProperties(form,specializedSubjectProject);
+        BeanUtils.copyProperties(form, specializedSubjectProject);
         specializedSubjectProjectBiz.upd(specializedSubjectProject);
         return ResponseUtil.success();
     }
+
     /**
-     * 专科项目设置列表
+     * 删除专科项目设置
      *
-     * @param
-     * @return
+     * @param id 删除专科项目设置
      */
     @ApiOperation("删除专科项目设置")
     @DeleteMapping("/del")
-    public ResponseResult del(Integer id){
+    public ResponseResult del(Integer id) {
         specializedSubjectProjectBiz.del(id);
         return ResponseUtil.success();
     }

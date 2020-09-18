@@ -2,7 +2,6 @@ package com.yunya.modules.clinic.base.controller;
 
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.cash_balance.model.BusinessTargetModel;
 import com.yunya.feign.cash_balance.model.SpecialistTargetModel;
 import com.yunya.feign.cash_balance.query.*;
 import com.yunya.feign.cash_balance.vo.*;
@@ -10,7 +9,6 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.clinic_base.BusinessTarget;
 import com.yunya.models.clinic_base.SpecialistTarget;
 import com.yunya.modules.clinic.base.biz.SpecialistTargetBiz;
 import io.swagger.annotations.Api;
@@ -30,9 +28,8 @@ import java.util.List;
  * 简介: 专科数量目标
  *
  * @author: Zkq
- * @date: 2020/8/20 14:53
- * @description:
- * @since: 1.0.0
+ * @date: 2020/8/20
+ * @description: 专科数量目标
  */
 @Api(tags = "专科数量目标增删改查")
 @RestController
@@ -45,12 +42,12 @@ public class SpecialistTargetController {
     /**
      * 业务目标分页列表
      *
-     * @param
-     * @return
+     * @param query 专科数量目标分页查询模型
+     * @return page
      */
     @ApiOperation("业务目标模块列表")
     @PostMapping("/findSpecialistTargetByPage")
-    public ResponseResult<PageInfo<SpecialistTargetVo>> findSpecialistTargetByPage(@Valid @RequestBody SpecialistTargetQuery query){
+    public ResponseResult<PageInfo<SpecialistTargetVo>> findSpecialistTargetByPage(@Valid @RequestBody SpecialistTargetQuery query) {
         PageInfo<SpecialistTargetVo> page = specialistTargetBiz.findSpecialistTargetByPage(query);
         return ResponseUtil.success(page);
     }
@@ -58,13 +55,12 @@ public class SpecialistTargetController {
     /**
      * 添加业务目标
      *
-     * @param
-     * @return
+     * @param model 添加专科数量目标
      */
     @ApiOperation("添加业务目标")
     @PostMapping("/add")
     @CurrentUser
-    public ResponseResult add(@Valid @RequestBody List<SpecialistTargetModel> model){
+    public ResponseResult add(@Valid @RequestBody List<SpecialistTargetModel> model) {
         Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
         for (SpecialistTargetModel data : model) {
             SpecialistAddOrUpdQuery specialistAddOrUpdQuery = new SpecialistAddOrUpdQuery();
@@ -88,13 +84,13 @@ public class SpecialistTargetController {
     /**
      * 多选门诊查询结果
      *
-     * @param
-     * @return
+     * @param businessTargetTotalQuery 根据门诊id获取列表
+     * @return specialistTargetTotalVo
      */
     @ApiOperation("多选门诊查询结果")
     @PostMapping("/findAllData")
-    public ResponseResult findAllData(@Valid @RequestBody BusinessTargetTotalQuery businessTargetTotalQuery){
-        SpecialistTargetTotalVo specialistTargetTotalVo =  specialistTargetBiz.findAllData(businessTargetTotalQuery);
+    public ResponseResult<SpecialistTargetTotalVo> findAllData(@Valid @RequestBody BusinessTargetTotalQuery businessTargetTotalQuery) {
+        SpecialistTargetTotalVo specialistTargetTotalVo = specialistTargetBiz.findAllData(businessTargetTotalQuery);
         specialistTargetTotalVo.setComplete(new BigDecimal(500));
         return ResponseUtil.success(specialistTargetTotalVo);
     }
@@ -102,12 +98,12 @@ public class SpecialistTargetController {
     /**
      * 回显专科目标设置记录
      *
-     * @param
-     * @return
+     * @param specialistTargetByDataQuery 回显专科目标
+     * @return specialistTargetByIdVo
      */
     @ApiOperation("回显专科目标设置记录")
     @PostMapping("/findDataById")
-    public ResponseResult findDataById(SpecialistTargetByDataQuery specialistTargetByDataQuery){
+    public ResponseResult<SpecialistTargetByIdVo> findDataById(SpecialistTargetByDataQuery specialistTargetByDataQuery) {
         SpecialistTargetByIdVo specialistTargetByIdVo = specialistTargetBiz.findDataById(specialistTargetByDataQuery);
         return ResponseUtil.success(specialistTargetByIdVo);
     }

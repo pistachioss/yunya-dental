@@ -13,26 +13,40 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.util.List;
 
+/**
+ * 简介: 专科项目设置管理
+ *
+ * @author: Zkq
+ * @date: 2020/8/20 14:53
+ * @description:
+ * @since: 1.0.0
+ */
 @Service
 public class SpecializedSubjectProjectBiz {
     @Resource
-    private SpecializedSubjectProjectMapper  specializedSubjectProjectMapper;
+    private SpecializedSubjectProjectMapper specializedSubjectProjectMapper;
 
     @Resource
     private RemoteTreatmentServiceFeign remoteTariffServiceFeign;
 
-    public PageInfo<SpecializedSubjectProjectVo> findSpecializedList(SpecializedSubjectProjectQuery query){
+    /**
+     * 专科项目设置列表
+     *
+     * @param query 专科项目设置列表
+     * @return resultList
+     */
+    public PageInfo<SpecializedSubjectProjectVo> findSpecializedList(SpecializedSubjectProjectQuery query) {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
         List<SpecializedSubjectProjectVo> resultList = specializedSubjectProjectMapper.findSpecializedList(query);
-        for (SpecializedSubjectProjectVo list:resultList) {
+        for (SpecializedSubjectProjectVo list : resultList) {
             String subitems = list.getSubitems();
             String[] split = subitems.split(",");
             String subitem = "";
-            for (String str: split) {
+            for (String str : split) {
                 BaseTariff baseTariffById = remoteTariffServiceFeign.findBaseTariffById(Integer.valueOf(str));
-                subitem += ","+baseTariffById.getName();
+                subitem += "," + baseTariffById.getName();
                 String substring = subitem.substring(1);
                 list.setSubitems(substring);
             }
@@ -40,16 +54,30 @@ public class SpecializedSubjectProjectBiz {
         return new PageInfo<>(resultList);
     }
 
-    public void  add(SpecializedSubjectProject specializedSubjectProject){
-
+    /**
+     * 添加专科项目设置
+     *
+     * @param specializedSubjectProject 专科项目设置列表
+     */
+    public void add(SpecializedSubjectProject specializedSubjectProject) {
         specializedSubjectProjectMapper.add(specializedSubjectProject);
     }
 
-    public void  upd(SpecializedSubjectProject specializedSubjectProject){
+    /**
+     * 修改专科项目设置
+     *
+     * @param specializedSubjectProject 修改专科项目设置
+     */
+    public void upd(SpecializedSubjectProject specializedSubjectProject) {
         specializedSubjectProjectMapper.upd(specializedSubjectProject);
     }
 
-    public void  del(Integer id){
+    /**
+     * 删除专科项目设置
+     *
+     * @param id 通过id删除数据
+     */
+    public void del(Integer id) {
         specializedSubjectProjectMapper.del(id);
     }
 

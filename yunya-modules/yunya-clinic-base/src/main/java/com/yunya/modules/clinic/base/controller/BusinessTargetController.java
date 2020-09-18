@@ -5,8 +5,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.cash_balance.model.BusinessTargetModel;
 import com.yunya.feign.cash_balance.query.*;
 import com.yunya.feign.cash_balance.vo.*;
-import com.yunya.feign.discount.domain.query.GenerateAllocateCardQuery;
-import com.yunya.feign.discount.domain.vo.ExportCardAllocateVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -27,7 +25,7 @@ import java.net.URLEncoder;
 import java.util.List;
 
 /**
- * 简介: 现金模块管理
+ * 简介: 公司业务目标
  *
  * @author: Zkq
  * @date: 2020/8/20 14:53
@@ -45,12 +43,12 @@ public class BusinessTargetController {
     /**
      * 业务目标分页列表
      *
-     * @param
-     * @return
+     * @param query 业务目标分页查询模型
+     * @return page
      */
     @ApiOperation("业务目标模块列表")
     @PostMapping("/findBusinessTargetByPage")
-    public ResponseResult<PageInfo<BusinessTargetVo>> findBusinessTargetByPage(@Valid @RequestBody BusinessTargetQuery query){
+    public ResponseResult<PageInfo<BusinessTargetVo>> findBusinessTargetByPage(@Valid @RequestBody BusinessTargetQuery query) {
         PageInfo<BusinessTargetVo> page = businessTargetBiz.findBusinessTargetByPage(query);
         return ResponseUtil.success(page);
     }
@@ -58,13 +56,12 @@ public class BusinessTargetController {
     /**
      * 添加业务目标
      *
-     * @param
-     * @return
+     * @param model 添加业务目标
      */
     @ApiOperation("添加业务目标")
     @PostMapping("/add")
     @CurrentUser
-    public ResponseResult add(@Valid @RequestBody List<BusinessTargetModel> model){
+    public ResponseResult add(@Valid @RequestBody List<BusinessTargetModel> model) {
         Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
         for (BusinessTargetModel data : model) {
             BusinessAddOrUpdQuery businessAddOrUpdQuery = new BusinessAddOrUpdQuery();
@@ -72,7 +69,7 @@ public class BusinessTargetController {
             BeanUtils.copyProperties(data, businessAddOrUpdQuery);
             BeanUtils.copyProperties(data, businessTarget);
             List<BusinessTargetOrVo> businessTargetOrVo = businessTargetBiz.businessAddOrUpd(businessAddOrUpdQuery);
-            if (businessTargetOrVo!=null && !businessTargetOrVo.isEmpty()) {
+            if (businessTargetOrVo != null && !businessTargetOrVo.isEmpty()) {
                 Integer id = businessTargetOrVo.get(0).getId();
                 businessTarget.setUpdId(crtId);
                 businessTarget.setId(id);
@@ -88,31 +85,31 @@ public class BusinessTargetController {
     /**
      * 多选门诊查询结果
      *
-     * @param
-     * @return
+     * @param businessTargetTotalQuery 根据门诊id获取列表
+     * @return businessTargetTotalVo
      */
     @ApiOperation("多选门诊查询结果")
     @PostMapping("/findAllData")
-    public ResponseResult findAllData(@Valid @RequestBody BusinessTargetTotalQuery businessTargetTotalQuery){
-       BusinessTargetTotalVo businessTargetTotalVo =  businessTargetBiz.findAllData(businessTargetTotalQuery);
+    public ResponseResult<BusinessTargetTotalVo> findAllData(@Valid @RequestBody BusinessTargetTotalQuery businessTargetTotalQuery) {
+        BusinessTargetTotalVo businessTargetTotalVo = businessTargetBiz.findAllData(businessTargetTotalQuery);
         return ResponseUtil.success(businessTargetTotalVo);
     }
 
     /**
      * 回显公司目标
      *
-     * @param
-     * @return
+     * @param businessTargetByDataQuery 回显公司目标
+     * @return businessTargetByIdVo
      */
     @ApiOperation("回显公司目标")
     @PostMapping("/findDataById")
-    public ResponseResult findDataById(@Valid @RequestBody BusinessTargetByDataQuery businessTargetByDataQuery){
+    public ResponseResult<BusinessTargetByIdVo> findDataById(@Valid @RequestBody BusinessTargetByDataQuery businessTargetByDataQuery) {
         BusinessTargetByIdVo businessTargetByIdVo = businessTargetBiz.findDataById(businessTargetByDataQuery);
         return ResponseUtil.success(businessTargetByIdVo);
     }
 
     @ApiOperation(value = "业务目标导出")
-    @PostMapping("/exportt")
+    @PostMapping("/export")
     public void exportListByDate(HttpServletResponse response, @Valid @RequestBody BusinessTargetExportQuery query) throws IOException {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
@@ -120,15 +117,15 @@ public class BusinessTargetController {
         response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
         List<BusinessTargetExportVo> businessTargetExportVos = businessTargetBiz.exportListByDatee(query);
         BigDecimal bigDecimal = new BigDecimal(500);
-        for (BusinessTargetExportVo list: businessTargetExportVos) {
+        for (BusinessTargetExportVo list : businessTargetExportVos) {
             list.setCompleteCash(bigDecimal);
-            list.setPercentCash(bigDecimal.divide(list.getTargetCash())+"%");
+            list.setPercentCash(bigDecimal.divide(list.getTargetCash(), 2) + "%");
             list.setCompleteFirstVisit(500);
-            list.setPercentVisit(500/list.getTargetFirstVisit()+"%");
+            list.setPercentVisit(500 / list.getTargetFirstVisit() + "%");
             list.setCompleteNum(bigDecimal);
-            list.setPercentNum(bigDecimal.divide(list.getTargetNum())+"%");
+            list.setPercentNum(bigDecimal.divide(list.getTargetNum(), 2) + "%");
             list.setCompletePatientNum(500);
-            list.setPercentPatientNum(500/list.getTargetPatientNum()+"%");
+            list.setPercentPatientNum(500 / list.getTargetPatientNum() + "%");
         }
         EasyExcel.write(response.getOutputStream(), BusinessTargetExportVo.class)
                 .sheet("sheet").doWrite(businessTargetExportVos);
@@ -138,8 +135,7 @@ public class BusinessTargetController {
      * 根据条件业务目标导出
      *
      * @param response 响应
-     * @param query 查询条件
-     * @return
+     * @param query    查询条件
      */
     @ApiOperation("业务目标导出")
     @PostMapping("/export")
