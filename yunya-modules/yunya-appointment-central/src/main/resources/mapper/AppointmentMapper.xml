@@ -45,6 +45,7 @@
             <result column="appoint_content" jdbcType="VARCHAR" property="appointContent"/>
             <result column="appoint_date" jdbcType="DATE" property="appointDate"/>
             <result column="appoint_time" jdbcType="VARCHAR" property="appointTime"/>
+            <result column="appoint_duration" jdbcType="INTEGER" property="appointDuration"/>
         </collection>
     </resultMap>
 
@@ -287,6 +288,7 @@
       a.appoint_content,
       a.appoint_date,
       a.appoint_time,
+      a.appoint_duration,
        (select COUNT(*) as num from appointment a1
           where
             a1.dentist_id = a.dentist_id

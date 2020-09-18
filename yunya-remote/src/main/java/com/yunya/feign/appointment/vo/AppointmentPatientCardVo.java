@@ -57,5 +57,9 @@ public class AppointmentPatientCardVo implements Serializable {
     @ApiModelProperty(value = "预约时间段")
     private String appointTime;
 
+    /** 预约时长 */
+    @ApiModelProperty(value = "预约时长")
+    private Integer appointDuration;
+
 
 }
