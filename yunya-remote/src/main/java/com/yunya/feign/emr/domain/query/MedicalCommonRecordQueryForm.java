@@ -20,6 +20,12 @@ public class MedicalCommonRecordQueryForm {
   @NotNull(message = "患者ID不能为空")
   private Integer patientId;
 
-  @ApiModelProperty("ID")
+  @ApiModelProperty("病历ID")
   private Integer id;
+
+  /**
+   * 就诊ID
+   */
+  @ApiModelProperty("就诊ID")
+  private Integer treatmentId;
 }

@@ -37,6 +37,9 @@
       <if test="id != null" >
         and id = #{id}
       </if>
+		<if test="treatmentId != null" >
+			and treatment_id = #{treatmentId}
+		</if>
     </where>
     order by crt_time desc
   </select>
