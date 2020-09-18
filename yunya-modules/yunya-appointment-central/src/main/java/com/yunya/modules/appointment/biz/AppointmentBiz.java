@@ -479,8 +479,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<AppointmentDimensionVo> appointmentDimensionVoList = new ArrayList<>();
         EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        employeeScheduleQueryForm.setStartDate(simpleDateFormat.format(query.getStartDate()));
-        employeeScheduleQueryForm.setEndDate(simpleDateFormat.format(query.getEndDate()));
+        String startDateStr = simpleDateFormat.format(query.getStartDate());
+        String endDateStr = simpleDateFormat.format(query.getEndDate());
+        employeeScheduleQueryForm.setStartDate(startDateStr);
+        employeeScheduleQueryForm.setEndDate(endDateStr);
         employeeScheduleQueryForm.setClinicId(query.getOrgId());
         employeeScheduleQueryForm.setUserId(query.getDentistId());
         // 查询当前天有排班的员工列表
@@ -545,12 +547,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param query
      * @return
      */
-    public List<AppointmentDentistDimensionVo> findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
+    public ResponseResult<List<AppointmentDentistDimensionVo>> findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
         List<AppointmentDentistDimensionVo> appointmentDentistDimensionVoList = new ArrayList<>();
         // 预约医生列表
         List<AppointmentDimensionVo> appointmentDimensionVos = this.findAppointmentPatientDimensionByExample(query);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
+        if (StringHelper.isEmpty(appointmentDimensionVos)) {
+            return ResponseUtil.success("数据不存在",OperationCodeConstants.DATA_NOT_EXIST);
+        }
         // 根据大医生id查询相关助手信息并且设置助手信息
         appointmentDimensionVos.forEach(appointmentDimensionVo -> {
             // 组合患者预约维度信息（预约患者信息+医生排班信息）
@@ -571,7 +575,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             return 0;
         });
-        return appointmentDentistDimensionVoList;
+        return ResponseUtil.success(appointmentDentistDimensionVoList);
     }
 
     /**

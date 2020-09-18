@@ -196,9 +196,7 @@ public class AppointmentController {
   @PostMapping("/find/dentist/dimension")
   public ResponseResult findAppointmentDentistDimensionByExample(
       @RequestBody PatientDimensionByDayQuery query) {
-    List<AppointmentDentistDimensionVo> appointmentDentistDimensionByExample =
-        appointmentBiz.findAppointmentDentistDimensionByExample(query);
-    return ResponseUtil.success(appointmentDentistDimensionByExample);
+    return appointmentBiz.findAppointmentDentistDimensionByExample(query);
   }
 
   /**
