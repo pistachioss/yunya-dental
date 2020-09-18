@@ -47,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -547,8 +548,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param query
      * @return
      */
-    public ResponseResult<List<AppointmentDentistDimensionVo>> findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
+    public ResponseResult findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
         List<AppointmentDentistDimensionVo> appointmentDentistDimensionVoList = new ArrayList<>();
+        // 校验检索日期
+        long startTime = query.getStartDate().getTime();
+        long endTime = query.getEndDate().getTime();
+        if (startTime > endTime) {
+            // 返回 “ 开始日期不能大于结束日期” 提示
+            return ResponseUtil.fail(AppointmentError.START_DATE_AFTER_END_DATE.getCode(),
+                    AppointmentError.START_DATE_AFTER_END_DATE.getMessage(),null);
+        }
         // 预约医生列表
         List<AppointmentDimensionVo> appointmentDimensionVos = this.findAppointmentPatientDimensionByExample(query);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -575,7 +584,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             return 0;
         });
-        return ResponseUtil.success(appointmentDentistDimensionVoList);
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        PageInfo<List<AppointmentDentistDimensionVo>> pageInfo = new PageInfo(appointmentDentistDimensionVoList);
+        return ResponseUtil.success(pageInfo);
     }
 
     /**

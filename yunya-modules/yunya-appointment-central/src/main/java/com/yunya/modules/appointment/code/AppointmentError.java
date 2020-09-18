@@ -10,6 +10,7 @@ import com.yunya.framework.common.constant.PreFixCode;
  **/
 public enum AppointmentError {
     DATA_FROM_MODEL_EXP(01,"对象转换实体异常"),
+    START_DATE_AFTER_END_DATE(02,"开始日期不能大于结束日期"),
     APPOINTMENT_FAIL(10,"患者预约失败"),
     APPOINTMENT_SPLIT_FAIL(11,"预约分解失败"),
     OPERATION_RECORD_FAIL(12,"预约操作记录添加失败"),
