@@ -56,26 +56,31 @@ public class PatientVisitInfoVo implements Serializable {
     /**
      * 初诊日期
      */
-
+    private String firstVisitDate;
     /**
      * 末诊日期
      */
+    private String lastVisitDate;
 
     /**
      * 初诊医生
      */
+    private String firstVisitDoctors;
 
     /**
      * 末诊医生
      */
+    private String lastVisitDoctors;
 
     /**
      * 初诊门诊
      */
+    private String firstVisitOutpatient;
 
     /**
      * 末诊门诊
      */
+    private String lastVisitOutpatient;
 
     /**
      * 会员卡类型id

@@ -218,15 +218,4 @@ public class PatientBaseInfoController {
     this.patientBaseInfoBiz.uptPhoto(patientPhotoForm);
     return ResponseUtil.success();
   }
-
-  /**
-   * 根据患者id查询来访信息
-   * @param id 患者id
-   * @return ResponseResult
-   */
-  @ApiOperation("根据患者id查询来访信息")
-  @GetMapping("/patientInfo/{id}")
-  public ResponseResult patientInfo(@PathVariable("id") Integer id) {
-    return ResponseUtil.success(this.patientBaseInfoBiz.findPatientTotalInfo(id));
-  }
 }

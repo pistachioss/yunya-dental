@@ -261,8 +261,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 标签
     List<PatientExtInfoVo> patientExtInfoVos = patientExtInfoMapper.patientExtInfoListByid(id);
     if (!StringHelper.isEmpty(patientExtInfoVos)) {
-      patientExtendInfoVo.setPatientExtInfoListVo(patientExtInfoVos);
+      for (PatientExtInfoVo patientExtInfoVo : patientExtInfoVos) {
+        DictionaryItem dictionaryItem = remoteSystemServiceFeign.findDictionaryItemById(patientExtInfoVo.getDictItemId());
+        if (dictionaryItem != null){
+          patientExtInfoVo.setDictItemName(dictionaryItem.getName());
+        }
+      }
     }
+    patientExtendInfoVo.setPatientExtInfoListVo(patientExtInfoVos);
     return ResponseUtil.success(patientExtendInfoVo);
   }
 
