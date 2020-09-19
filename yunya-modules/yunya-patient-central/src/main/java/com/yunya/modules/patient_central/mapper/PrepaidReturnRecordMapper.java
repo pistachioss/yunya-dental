@@ -8,11 +8,14 @@ import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
+/**
+ * @author WY
+ */
 public interface PrepaidReturnRecordMapper extends Mapper<PrepaidReturnRecord> {
 
     /**
      * 根据患者id和预付款卡号 查询退款信息
-     * @param form
+     * @param form 预付款退费记录列表
      * @return PrepaidMeturnRecordVo
      */
     List<PrepaidMeturnRecordVo> refundList(@Param("form") PrepaidMeturnRecordQueryForm form);

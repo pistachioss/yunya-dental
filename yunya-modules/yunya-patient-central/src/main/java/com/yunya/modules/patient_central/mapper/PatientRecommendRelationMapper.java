@@ -7,6 +7,9 @@ import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
+/**
+ * @author WY
+ */
 public interface PatientRecommendRelationMapper extends Mapper<PatientRecommendRelation> {
 
 }

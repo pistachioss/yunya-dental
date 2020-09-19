@@ -31,7 +31,7 @@ public class PatientRecommendRelationBiz extends BaseBiz<PatientRecommendRelatio
 
     /**
      * 查询患者推荐关系
-     * @param form
+     * @param form 患者推荐关系QueryForm
      * @return List<PatientRecommendRelationVo>
      */
     public PageInfo<PatientRecommendRelationVo> findList(PatientRecommendRelationQueryForm form) {
@@ -44,7 +44,7 @@ public class PatientRecommendRelationBiz extends BaseBiz<PatientRecommendRelatio
 
     /**
      * 根据id查询患者推荐关系拓展图
-     * @param form
+     * @param form 患者关系推荐图
      * @return List<PatientRecommendRelationVo>
      */
     public List<PatientRecommendRelationVo> findRecommendRelationById(PatientRecommendRelationChartQueryForm form) {

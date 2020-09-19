@@ -9,16 +9,16 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 简单介绍:</br> 新增患者基本信息+扩展信息+其他信息 参数模板
+ * 简单介绍:</br> 患者基本信息+扩展信息+其他信息 参数模板
  *
  * @author: WY
  * @date 2020/7/28 11:13
- * @description:  增患者基本信息+扩展信息+其他信息
+ * @description:  者基本信息+扩展信息+其他信息
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("新增患者基本信息+扩展信息+其他信息")
+@ApiModel("患者基本信息+扩展信息+其他信息")
 public class PatientExtendInfoModel implements Serializable {
 
     /**

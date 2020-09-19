@@ -8,7 +8,7 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 患者会员卡关联关系
  *
  * @author: WY
  * @date 2020/7/30 15:31

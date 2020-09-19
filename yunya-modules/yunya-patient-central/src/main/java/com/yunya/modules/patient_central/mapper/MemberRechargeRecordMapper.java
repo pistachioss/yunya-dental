@@ -4,15 +4,20 @@ import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.RechargeRecordVo;
 import com.yunya.models.patient_central.MemberRechargeRecord;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
+/**
+ * @author WY
+ */
+@Repository
 public interface MemberRechargeRecordMapper extends Mapper<MemberRechargeRecord> {
 
     /**
      * 充值记录
-     * @param form
+     * @param form 充值记录QueryForm
      * @return RechargeRecordVo
      */
     List<RechargeRecordVo> RechargeRecord(@Param("form") RechargeRecordQueryForm form);

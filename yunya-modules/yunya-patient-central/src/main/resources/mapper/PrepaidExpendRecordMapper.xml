@@ -23,6 +23,7 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
 
+    <!-- 查询预付款消费记录 -->
     <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.PrepaidExpendRecordVo">
         SELECT
             perd.id,

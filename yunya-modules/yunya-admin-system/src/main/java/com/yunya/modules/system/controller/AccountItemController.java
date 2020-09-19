@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.domain.vo.PatientVisitInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -38,11 +39,11 @@ public class AccountItemController {
    * 根据ID查询入账方式
    *
    * @param id 入账方式ID
-   * @return
+   * @return ResponseResult<PatientVisitInfoVo>
    */
   @ApiOperation("根据ID查询入账方式")
   @GetMapping("/item/one/{id}")
-  public ResponseResult findById(@PathVariable("id") Integer id) {
+  public ResponseResult<AccountItemVO> findById(@PathVariable("id") Integer id) {
     AccountItemVO resultData = accountItemBiz.findById(id);
     return ResponseUtil.success(resultData);
   }

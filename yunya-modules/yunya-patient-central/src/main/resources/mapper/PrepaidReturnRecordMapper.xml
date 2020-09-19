@@ -1,32 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.PrepaidReturnRecordMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PrepaidReturnRecord" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="prepaid_id" property="prepaidId" jdbcType="VARCHAR" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="return_principal_amount" property="returnPrincipalAmount" jdbcType="DECIMAL" />
-    <result column="return_gift_amount" property="returnGiftAmount" jdbcType="DECIMAL" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="return_way_id" property="returnWayId" jdbcType="INTEGER" />
-    <result column="return_way_type" property="returnWayType" jdbcType="VARCHAR" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.patient_central.mapper.PrepaidReturnRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PrepaidReturnRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="prepaid_id" property="prepaidId" jdbcType="VARCHAR"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="return_principal_amount" property="returnPrincipalAmount" jdbcType="DECIMAL"/>
+        <result column="return_gift_amount" property="returnGiftAmount" jdbcType="DECIMAL"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="return_way_id" property="returnWayId" jdbcType="INTEGER"/>
+        <result column="return_way_type" property="returnWayType" jdbcType="VARCHAR"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
-  <sql id="Column_List">
+    <sql id="Column_List">
         mrrd.id,mrrd.org_id orgId,mrrd.member_id memberId,mrrd.patient_id patientId,mrrd.return_principal_amount returnPrincipalAmount,	mrrd.return_gift_amount returnGiftAmount,mrrd.remarks,mrrd.return_way_id returnWayId,mrrd.return_way_type returnWayType,	mrrd.crt_id crtId,mrrd.crt_name crtName,mrrd.crt_time crtTime,mrrd.upd_id updId,mrrd.upd_name updName,mrrd.upd_time updTime
-  </sql>
+    </sql>
 
-  <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.PrepaidMeturnRecordVo">
+    <!-- 根据患者id和预付款卡号 查询退款信息 -->
+    <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.PrepaidMeturnRecordVo">
       SELECT
         id,
         crt_time operatingTime,

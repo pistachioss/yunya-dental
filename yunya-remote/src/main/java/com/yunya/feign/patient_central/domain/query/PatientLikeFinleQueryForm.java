@@ -13,7 +13,7 @@ import java.io.Serializable;
  *
  * @author: WY
  * @date 2020/7/31 13:02
- * @description: 根据患者属性进行查询
+ * @description:
  * @since: 1.0.0
  */
 @Data

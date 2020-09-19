@@ -8,10 +8,13 @@ import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
+/**
+ * @author WY
+ */
 public interface PrepaidRechargeRecordMapper extends Mapper<PrepaidRechargeRecord> {
     /**
      * 预付款充值记录查询
-     * @param form
+     * @param form 充值记录queryForm
      * @return List<PrepaidRechargeRecordVo>
      */
     List<PrepaidRechargeRecordVo> RechargeRecord(@Param("form") PrepaidRechargeRecordQueryForm form);

@@ -8,7 +8,7 @@ import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 充值记录queryForm
  *
  * @author: WY
  * @date 2020/8/22 15:07

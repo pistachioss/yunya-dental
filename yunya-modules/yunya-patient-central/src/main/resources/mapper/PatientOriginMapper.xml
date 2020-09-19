@@ -1,64 +1,76 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.PatientOriginMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientOrigin" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="parent_id" property="parentId" jdbcType="INTEGER" />
-    <result column="name" property="name" jdbcType="VARCHAR" />
-    <result column="qr_code_path" property="qrCodePath" jdbcType="VARCHAR" />
-    <result column="allow_operate" property="allowOperate" jdbcType="BIT" />
-    <result column="time_limit" property="timeLimit" jdbcType="TINYINT" />
-    <result column="limit_start_date" property="limitStartDate" jdbcType="TIMESTAMP" />
-    <result column="limit_end_date" property="limitEndDate" jdbcType="TIMESTAMP" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientOriginMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientOrigin">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="parent_id" property="parentId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="qr_code_path" property="qrCodePath" jdbcType="VARCHAR"/>
+        <result column="allow_operate" property="allowOperate" jdbcType="BIT"/>
+        <result column="time_limit" property="timeLimit" jdbcType="TINYINT"/>
+        <result column="limit_start_date" property="limitStartDate" jdbcType="TIMESTAMP"/>
+        <result column="limit_end_date" property="limitEndDate" jdbcType="TIMESTAMP"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
-  <sql id="PatientOrigin_Column_List">
-    po.id id,po.parent_id parentId,po.name name,po.origin_type originType,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
-    po.limit_end_date limitEndDate,po.inservice inservice,po.crt_id crtId,po.crt_name crtName,po.crt_time crtTime,po.upt_id uptId,po.upd_name updName,po.upd_time updTime
-  </sql>
+    <sql id="PatientOrigin_Column_List">
+        po.id id,po.parent_id parentId,po.name name,po.origin_type originType,po.qr_code_path qrCodePath,po.allow_operate allowOperate,po.time_limit timeLimit,po.limit_start_date limitStartDate,
+        po.limit_end_date limitEndDate,po.inservice inservice,po.crt_id crtId,po.crt_name crtName,po.crt_time crtTime,po.upt_id uptId,po.upd_name updName,po.upd_time updTime
+    </sql>
 
-  <select id="findPatientOriginByParentId" resultType="com.yunya.models.patient_central.PatientOrigin">
-    select <include refid="PatientOrigin_Column_List"/>
-    from patient_origin po
-    where po.id = #{parentId}
-  </select>
+    <!-- 根据父ID查询患者来源 -->
+    <select id="findPatientOriginByParentId" resultType="com.yunya.models.patient_central.PatientOrigin">
+        select
+        <include refid="PatientOrigin_Column_List"/>
+        from patient_origin po
+        where po.id = #{parentId}
+    </select>
 
-  <select id="findAll" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
-    select <include refid="PatientOrigin_Column_List"/>
-    from patient_origin po order by po.crt_time desc
-  </select>
+    <!-- 查询患者来源集合 -->
+    <select id="findAll" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
+        select
+        <include refid="PatientOrigin_Column_List"/>
+        from patient_origin po order by po.crt_time desc
+    </select>
 
-  <select id="findPatientOriginByName" resultType="com.yunya.models.patient_central.PatientOrigin">
-    select <include refid="PatientOrigin_Column_List"/>
-    from patient_origin po where po.name = #{name}
-  </select>
+    <!-- 根据患者来源名称查询是否已经存在 -->
+    <select id="findPatientOriginByName" resultType="com.yunya.models.patient_central.PatientOrigin">
+        select
+        <include refid="PatientOrigin_Column_List"/>
+        from patient_origin po where po.name = #{name}
+    </select>
 
-  <select id="findPatientOriginByTypt" resultType="com.yunya.models.patient_central.PatientOrigin">
-    select <include refid="PatientOrigin_Column_List"/>
-    from patient_origin po where po.origin_type = #{from.originType} and po.parent_id != 0
-  </select>
+    <!-- 根据患者来源type和 name 模糊查询 -->
+    <select id="findPatientOriginByTypt" resultType="com.yunya.models.patient_central.PatientOrigin">
+        select
+        <include refid="PatientOrigin_Column_List"/>
+        from patient_origin po where po.origin_type = #{from.originType} and po.parent_id != 0
+    </select>
 
-  <select id="originalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginVo">
-    select po.id,po.name,po.origin_type originType from patient_origin po where po.parent_id = 0 and po.inservice = 1;
-  </select>
+    <!-- 查询父级患者来源 -->
+    <select id="originalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginVo">
+        select po.id,po.name,po.origin_type originType from patient_origin po where po.parent_id = 0 and po.inservice = 1;
+    </select>
 
-  <select id="selectOriginalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
-    select <include refid="PatientOrigin_Column_List"/>
-    from patient_origin po where po.name != '员工介绍' and po.name != '老患者介绍'
-  </select>
+    <!-- 查询患者来源类型 -->
+    <select id="selectOriginalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
+        select
+        <include refid="PatientOrigin_Column_List"/>
+        from patient_origin po where po.name != '员工介绍' and po.name != '老患者介绍'
+    </select>
 
-  <select id="selectTypeMaximum" resultType="java.lang.Integer">
-    select max(origin_type) maxtype from patient_origin
-  </select>
+    <!-- 查询患者来源type最大值（id最大的） -->
+    <select id="selectTypeMaximum" resultType="java.lang.Integer">
+        select max(origin_type) maxtype from patient_origin
+    </select>
 
 </mapper>
