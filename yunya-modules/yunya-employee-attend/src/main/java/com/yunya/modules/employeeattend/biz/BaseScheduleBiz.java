@@ -40,6 +40,8 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
     private EmployeeScheduleBiz employeeScheduleBiz;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+    private static final Integer SIZE = 2;
     /**
      * 新增班次
      *
@@ -79,7 +81,7 @@ public class BaseScheduleBiz extends BaseBiz<BaseScheduleMapper, BaseSchedule> {
         String name = baseSchedule.getName();
         if (StringUtils.isNotBlank(name)) {
             data.setName(name);
-            if (mapper.select(data).size() >= 2) {
+            if (mapper.select(data).size() >= SIZE) {
                 throw new ClientServiceException("修改失败",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
         }
