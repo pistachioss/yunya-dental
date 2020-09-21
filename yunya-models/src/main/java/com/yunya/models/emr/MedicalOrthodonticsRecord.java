@@ -178,16 +178,16 @@ public class MedicalOrthodonticsRecord {
     private Byte oralHygiene;
 
     /**
-     * 舌头状态 0：正常，1：舌肌松弛，
+     * 舌头状态 0：正常，1：舌肌松弛，2 前伸
      */
-    @ApiModelProperty("舌头状态 0：正常，1：舌肌松弛，")
+    @ApiModelProperty("舌头状态 0：正常，1：舌肌松弛，2 前伸")
     @Column(name = "tongue_status")
     private String tongueStatus;
 
     /**
-     * 舌头功能 0： 前伸，1：侧方吐舌
+     * 侧方吐舌 0：否 ，1：是
      */
-    @ApiModelProperty("头功能 0： 前伸，1：侧方吐舌")
+    @ApiModelProperty("侧方吐舌 0：否 ，1：是")
     @Column(name = "tongue_function")
     private String tongueFunction;
 
