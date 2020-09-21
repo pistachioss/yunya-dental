@@ -4,7 +4,9 @@ package com.yunya.feign.patient_central.factory;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberInfoVo;
@@ -77,7 +79,17 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     }
 
     @Override
+    public ResponseResult recharge(MemberRechargeModel memberRechargeModel) {
+        return null;
+    }
+
+    @Override
     public ResponseResult expend(MemberExpendRecordModel model) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult recharge(PrepaidRechargeModel memberRechargeModel) {
         return null;
     }
 

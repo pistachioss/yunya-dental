@@ -2,7 +2,9 @@ package com.yunya.modules.patient_central.rpc;
 
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.MemberInfoVo;
@@ -11,6 +13,7 @@ import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
@@ -98,10 +101,26 @@ public class PatientServiceRest {
     }
 
     @CurrentUser
+    @ApiOperation("会员卡充值")
+    @RequestMapping(value = "/patientMember/recharge", method = RequestMethod.POST)
+    public ResponseResult recharge(@RequestBody MemberRechargeModel memberRechargeModel) {
+        patientMemberInfoBiz.recharge(memberRechargeModel);
+        return ResponseUtil.success();
+    }
+
+    @CurrentUser
     @ApiOperation("会员卡消费")
     @RequestMapping(value = "/member/expend", method = RequestMethod.POST)
     public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
         return patientMemberInfoBiz.expend(model);
+    }
+
+    @CurrentUser
+    @ApiOperation("预付款充值")
+    @RequestMapping(value = "/prepayment/recharge", method = RequestMethod.POST)
+    public ResponseResult recharge(@RequestBody PrepaidRechargeModel memberRechargeModel) {
+        this.patientPrepaymentRelationBiz.recharge(memberRechargeModel);
+        return ResponseUtil.success();
     }
 
     @CurrentUser
