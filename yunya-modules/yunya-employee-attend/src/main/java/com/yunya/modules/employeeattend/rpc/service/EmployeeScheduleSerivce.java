@@ -46,7 +46,8 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
    * @return
    */
   public EmployeeScheduleResultVO findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+    //注意月份是MM
+    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
     String startDateString = employeeScheduleQueryForm.getStartDate();
     String endDateString = employeeScheduleQueryForm.getEndDate();
     Date startDate = null;
@@ -68,10 +69,9 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
       } catch (ParseException e) {
         throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
       }
-//      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
     }
 
-    // 请求参数
+    //请求参数
     List<Integer> postNames = employeeScheduleQueryForm.getPostNames();
     Integer page = employeeScheduleQueryForm.getPage();
     Integer size = employeeScheduleQueryForm.getSize();
@@ -87,14 +87,17 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     }
     //获取员工信息
     SysUserEmployeeModel model = new SysUserEmployeeModel();
-    model.setWhetherPage(false);//查询总数不分页
+    //查询总数不分页
+    model.setWhetherPage(false);
     List<Integer> orgIds = new ArrayList<>();
-    orgIds.add(clinicId);//设置门诊ID
+    //设置门诊ID
+    orgIds.add(clinicId);
     model.setOrgIds(orgIds);
     model.setPostIds(postNames);
     model.setKeyWord(name);
     Byte[]userStatus = {0,1,3};
-    model.setWorkStatus(userStatus);//离职状态
+    //离职状态
+    model.setWorkStatus(userStatus);
     model.setUserId(formuserId);
 
     int count = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model).size();
@@ -140,8 +143,8 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
             String simtime = dateFormat.format(startTime) + "-" + dateFormat.format(endTime);
             workDayData.setStime(simtime);
             workDayData.setType(employeeScheduleVO.getType());
-//            clinicMap.get(employeeScheduleVO.getClinicId() + "").getName() //门诊名称
-            workDayData.setName( ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());//班次名称
+            //班次名称
+            workDayData.setName( ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());
             workDayData.setDate(employeeScheduleVO.getWorkDate());
             workDayData.setCompClinId(employeeScheduleVO.getClinicId());
             num = num+1;
