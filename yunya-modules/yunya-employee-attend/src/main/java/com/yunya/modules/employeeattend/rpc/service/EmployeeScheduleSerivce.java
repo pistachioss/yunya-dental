@@ -101,7 +101,6 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     model.setUserId(formuserId);
 
     int count = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model).size();
-//    System.out.println(remoteSystemServiceFeign.getAllPermissionInfo());
     List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
     //获取门诊信息
     OrganizationModel organizationModel = new OrganizationModel();
