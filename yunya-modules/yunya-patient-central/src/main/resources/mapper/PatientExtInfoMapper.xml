@@ -35,7 +35,7 @@
 
   <insert id="insertPatientExtInfoList" parameterType="java.util.List">
         insert into patient_ext_info <include refid="Insert_Column_List"/>
-        values 
+        values
         <foreach collection="list" item="item" index="index" separator=",">
           (#{item.orgId},
           #{item.patientId},
@@ -51,16 +51,19 @@
         </foreach>
   </insert>
 
+  <!-- 循环添加患者其他信息（标签,疾病史,过敏原） -->
   <select id="patientExtInfoListByid" resultType="com.yunya.feign.patient_central.domain.vo.PatientExtInfoVo">
     select <include refid="PatientExtInfoList_Column_List"/>
     from patient_ext_info
     where patient_id = #{id}
   </select>
 
+  <!-- 根据id删除对于的 （标签,疾病史,过敏原） 信息 -->
   <delete id="deletePatientExtInfoByPatientId" >
     delete from patient_ext_info where patient_id = #{id}
   </delete>
 
+  <!-- 通过患者id查询标签信息 -->
   <select id="selectListByPatientId" resultType="com.yunya.models.patient_central.PatientExtInfo">
     select <include refid="PatientExtInfo_Column_List"/>
     from patient_ext_info where patient_id = #{patientId} and type = #{type}

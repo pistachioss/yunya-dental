@@ -8,12 +8,15 @@ import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
+/**
+ * @author WY
+ */
 public interface PrepaidExpendRecordMapper extends Mapper<PrepaidExpendRecord> {
 
     /**
      * 查询预付款消费记录
-     * @param queryForm
-     * @return
+     * @param queryForm 预付款消费QueryForm
+     * @return List<PrepaidExpendRecordVo>
      */
     List<PrepaidExpendRecordVo> expendList(@Param("form") PrepaidExpendRecordQueryForm queryForm);
 }

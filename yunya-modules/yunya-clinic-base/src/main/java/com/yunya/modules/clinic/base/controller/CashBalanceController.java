@@ -41,12 +41,12 @@ public class CashBalanceController {
     /**
      * 查询现金结存列表
      *
-     * @param
-     * @return
+     * @param query 现金结存分页查询模型
+     * @return page
      */
     @ApiOperation("查询现金结存列表")
     @PostMapping("/findCycleList")
-    public ResponseResult <PageInfo<CashBalanceVo>> findCashBalance(@Valid @RequestBody CashBalanceQuery query){
+    public ResponseResult<PageInfo<CashBalanceVo>> findCashBalance(@Valid @RequestBody CashBalanceQuery query) {
         PageInfo<CashBalanceVo> page = cashBalanceBiz.findCashListByPage(query);
         return ResponseUtil.success(page);
     }
@@ -54,13 +54,12 @@ public class CashBalanceController {
     /**
      * 添加现金结存
      *
-     * @param
-     * @return
+     * @param model 现金结存添加模型
      */
     @CurrentUser
     @ApiOperation("添加现金结存")
     @PostMapping("/add")
-    public ResponseResult add(@Valid @RequestBody CashBalanceModel model){
+    public ResponseResult add(@Valid @RequestBody CashBalanceModel model) {
         //报表期间存款
         BigDecimal gathering = new BigDecimal(500);
         //总价
@@ -76,7 +75,7 @@ public class CashBalanceController {
         //创建实体对象
         CashBalance cashBalance = new CashBalance();
         //对期间期初金额赋上个期间期末金额
-        if (lastData == null){
+        if (lastData == null) {
             lastData = BigDecimal.ZERO;
         }
         cashBalance.setCashFirst(lastData);
@@ -85,7 +84,7 @@ public class CashBalanceController {
         //计算总值期末并赋值
         cashBalance.setCashEnd(total);
         //映射两个实体
-        BeanUtils.copyProperties(model,cashBalance);
+        BeanUtils.copyProperties(model, cashBalance);
         //赋值当前登录人
         cashBalance.setCrtId(crtId);
         //通过实体添加数据
@@ -96,13 +95,12 @@ public class CashBalanceController {
     /**
      * 修改现金结存
      *
-     * @param
-     * @return
+     * @param form 现金结存修改模型
      */
     @CurrentUser
     @ApiOperation("修改现金结存")
     @PutMapping("/upd")
-    public ResponseResult upd(@Valid @RequestBody CashBalanceForm form){
+    public ResponseResult upd(@Valid @RequestBody CashBalanceForm form) {
 
         //报表期间存款
         BigDecimal gathering = new BigDecimal(500);
@@ -123,33 +121,33 @@ public class CashBalanceController {
         //计算总值期末并赋值
         cashBalance.setCashEnd(total);
         //映射两个实体
-        BeanUtils.copyProperties(form,cashBalance);
+        BeanUtils.copyProperties(form, cashBalance);
         //赋值当前登录人
         cashBalance.setCrtId(crtId);
         cashBalanceBiz.upd(cashBalance);
         return ResponseUtil.success();
     }
+
     /**
      * 删除现金结存
      *
-     * @param
-     * @return
+     * @param id id
      */
     @ApiOperation("删除现金结存")
     @DeleteMapping("/del")
-    public ResponseResult del(Integer id){
+    public ResponseResult del(Integer id) {
         cashBalanceBiz.del(id);
         return ResponseUtil.success();
     }
+
     /**
      * 回显现金结存记录
      *
-     * @param
-     * @return
+     * @param id 回显现金结存记录
      */
     @ApiOperation("回显现金结存记录")
     @PostMapping("/findDataById")
-    public ResponseResult findDataById(Integer id){
+    public ResponseResult findDataById(Integer id) {
         CashBalanceByIdVo cashBalanceByIdVo = cashBalanceBiz.findDataById(id);
         return ResponseUtil.success(cashBalanceByIdVo);
     }

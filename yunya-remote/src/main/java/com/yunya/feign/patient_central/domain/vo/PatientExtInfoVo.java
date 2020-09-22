@@ -41,6 +41,11 @@ public class PatientExtInfoVo implements Serializable {
     private Integer dictItemId;
 
     /**
+     * 疾病史 or 过敏原 姓名
+     */
+    private String dictItemName;
+
+    /**
      * 数据类型 0-标签；1-疾病史；2-过敏原
      */
     private Byte type;

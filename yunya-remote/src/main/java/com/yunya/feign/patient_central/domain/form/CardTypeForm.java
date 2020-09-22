@@ -8,7 +8,7 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 会员卡类型修改Form
  *
  * @author: WY
  * @date 2020/8/14 20:48
@@ -17,7 +17,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-@ApiModel(value = "会员卡类型修改")
+@ApiModel(value = "会员卡类型修改Form")
 public class CardTypeForm implements Serializable {
 
     /**

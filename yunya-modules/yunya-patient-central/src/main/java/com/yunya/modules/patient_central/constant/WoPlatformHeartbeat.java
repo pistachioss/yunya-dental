@@ -31,7 +31,8 @@ public class WoPlatformHeartbeat implements Serializable {
             //参数设置，需要注意的就是里边不能传NULL，要传空字符串
             postMethod.setRequestBody(data);
             org.apache.commons.httpclient.HttpClient httpClient = new org.apache.commons.httpclient.HttpClient();
-            int response = httpClient.executeMethod(postMethod); // 执行POST方法
+            // 执行POST方法
+            int response = httpClient.executeMethod(postMethod);
             String result = postMethod.getResponseBodyAsString() ;
             JSONObject obj = JSONObject.parseObject(result);
             return obj;

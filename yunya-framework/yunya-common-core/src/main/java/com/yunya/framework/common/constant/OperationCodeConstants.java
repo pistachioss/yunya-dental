@@ -38,4 +38,6 @@ public class OperationCodeConstants {
   public static final Integer BEAN_CONVERT_ERROR = 30014;
   /** 对象新增异常 */
   public static final Integer INSERT_MODEL = 30015;
+  /** 余额不足 */
+  public static final Integer BALANCE_INSUFFICIENT = 30016;
 }

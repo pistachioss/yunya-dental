@@ -8,7 +8,7 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br> 患者亲属关系Vo
+ * 简单介绍:</br> 患者亲属关系Model
  *
  * @author: WY
  * @date 2020/7/29 10:13

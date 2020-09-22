@@ -1,40 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.PatientPrepaymentRelationMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientPrepaymentRelation" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="master_card_id" property="masterCardId" jdbcType="INTEGER" />
-    <result column="secondary_card_id" property="secondaryCardId" jdbcType="INTEGER" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientPrepaymentRelationMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientPrepaymentRelation">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="master_card_id" property="masterCardId" jdbcType="INTEGER"/>
+        <result column="secondary_card_id" property="secondaryCardId" jdbcType="INTEGER"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
     <sql id="Column_List">
       pprn.id id,pprn.org_id orgId,pprn.master_card_id masterCardId,pprn.secondary_card_id secondaryCardId,pprn.remarks remarks,pprn.inservice inservice,pprn.crt_id crtId,pprn.crt_name crtName,
 	  pprn.crt_time crtTime,pprn.upt_id uptId,pprn.upd_name updName, pprn.upd_time updTime
     </sql>
 
-  <select id="findPrepaymentLinkList" resultType="com.yunya.feign.patient_central.domain.vo.PatientPrepaymentRelationVo">
-    select  id,	org_id orgId,	master_card_id masterCardId,	secondary_card_id secondaryCardId,	remarks remarks,inservice inservice from patient_prepayment_relation   where master_card_id = #{id}
-  </select>
+    <!-- 查询预付款关联 -->
+    <select id="findPrepaymentLinkList"
+            resultType="com.yunya.feign.patient_central.domain.vo.PatientPrepaymentRelationVo">
+        select  id,	org_id orgId,	master_card_id masterCardId,	secondary_card_id secondaryCardId,	remarks remarks,inservice inservice
+        from patient_prepayment_relation
+        where master_card_id = #{masterCardId}
+    </select>
 
-  <delete id="deletePrepaymentRelation">
-    delete from  patient_prepayment_relation where master_card_id = #{form.secondaryCardId} and secondary_card_id = #{form.masterCardId}
-  </delete>
+    <!-- 预付款关联删除 -->
+    <delete id="deletePrepaymentRelation">
+        delete from  patient_prepayment_relation
+        where master_card_id = #{form.secondaryCardId} and secondary_card_id = #{form.masterCardId}
+    </delete>
 
-  <select id="findBindingRelation" resultType="com.yunya.models.patient_central.PatientPrepaymentRelation">
-    select <include refid="Column_List"/>
-    from patient_prepayment_relation pprn where pprn.master_card_id = #{form.masterCardId} and pprn.secondary_card_id = #{form.secondaryCardId}
-  </select>
+    <!-- 绑定关系查询 -->
+    <select id="findBindingRelation" resultType="com.yunya.models.patient_central.PatientPrepaymentRelation">
+        select
+        <include refid="Column_List"/>
+        from patient_prepayment_relation pprn
+        where pprn.master_card_id = #{form.masterCardId} and pprn.secondary_card_id = #{form.secondaryCardId}
+    </select>
 
 </mapper>

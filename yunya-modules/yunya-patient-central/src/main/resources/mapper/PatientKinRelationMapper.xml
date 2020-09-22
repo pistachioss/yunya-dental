@@ -25,6 +25,7 @@
 	pbi.gender gender,pbi.mobile mobile,pkr.remarks,pkr.crt_time crtTime
   </sql>
 
+  <!-- 根据患者id查询 患者亲属列表 -->
   <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientKinRelationVo">
     select <include refid="PatientKinRelationVo_Column_List"/>
     from patient_kin_relation pkr join patient_base_info pbi on pkr.linked_patient_id = pbi.id
@@ -32,6 +33,7 @@
     order by crtTime desc
   </select>
 
+  <!-- 根据患者id 和推荐人id 查询推荐关系是否已经存在 -->
   <select id="findPatientKinRelation" resultType="com.yunya.models.patient_central.PatientKinRelation">
     select pkr.id id,pkr.org_id orgId,pkr.patient_id patientId,pkr.linked_patient_id linkedPatientId,pkr.kinship_id kinshipId,pkr.remarks remarks,pkr.inservice inservice,
            pkr.crt_id crtId,pkr.crt_name crtName,pkr.crt_time crtTime,pkr.upt_id uptId,pkr.upd_name updName,pkr.upd_time updTime

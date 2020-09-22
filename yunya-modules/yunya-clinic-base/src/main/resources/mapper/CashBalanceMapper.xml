@@ -1,50 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.yunya.modules.clinic.base.mapper.CashBalanceMapper">
-  <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.CashBalance">
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" jdbcType="INTEGER" property="id" />
-    <result column="cash_first" jdbcType="INTEGER" property="cashFirst" />
-    <result column="cash_mid" jdbcType="INTEGER" property="cashMid" />
-    <result column="cash_end" jdbcType="INTEGER" property="cashEnd" />
-    <result column="amount_deposited" jdbcType="INTEGER" property="amountDeposited" />
-    <result column="balance_adjustment" jdbcType="VARCHAR" property="balanceAdjustment" />
-    <result column="balance_adjustment_remark" jdbcType="VARCHAR" property="balanceAdjustmentRemark" />
-    <result column="uri" jdbcType="VARCHAR" property="uri" />
-    <result column="org_id" jdbcType="INTEGER" property="orgId" />
-    <result column="inservice" jdbcType="INTEGER" property="inservice" />
-    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
-    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
-    <result column="upd_id" jdbcType="INTEGER" property="updId" />
-    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
-  </resultMap>
+    <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.CashBalance">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="cash_first" jdbcType="INTEGER" property="cashFirst"/>
+        <result column="cash_mid" jdbcType="INTEGER" property="cashMid"/>
+        <result column="cash_end" jdbcType="INTEGER" property="cashEnd"/>
+        <result column="amount_deposited" jdbcType="INTEGER" property="amountDeposited"/>
+        <result column="balance_adjustment" jdbcType="VARCHAR" property="balanceAdjustment"/>
+        <result column="balance_adjustment_remark" jdbcType="VARCHAR" property="balanceAdjustmentRemark"/>
+        <result column="uri" jdbcType="VARCHAR" property="uri"/>
+        <result column="org_id" jdbcType="INTEGER" property="orgId"/>
+        <result column="inservice" jdbcType="INTEGER" property="inservice"/>
+        <result column="crt_id" jdbcType="INTEGER" property="crtId"/>
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
+        <result column="upd_id" jdbcType="INTEGER" property="updId"/>
+        <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
+    </resultMap>
 
-  <select id="findCashListByPage" parameterType="com.yunya.feign.cash_balance.query.CashBalanceQuery" resultType="com.yunya.feign.cash_balance.vo.CashBalanceVo">
-    select
-      id,
-      crt_time,
-      cash_first,
-      cash_end,
-      amount_deposited,
-      balance_adjustment,
-      crt_id
-    from
+    <!--  查询现金模块列表模板  -->
+    <select id="findCashListByPage" parameterType="com.yunya.feign.cash_balance.query.CashBalanceQuery"
+            resultType="com.yunya.feign.cash_balance.vo.CashBalanceVo">
+        select
+        id,
+        crt_time,
+        cash_first,
+        cash_end,
+        amount_deposited,
+        balance_adjustment,
+        crt_id
+        from
         cash_balance
-    where
+        where
         inservice = 0
-    AND
-      org_id = #{orgId}
-      <if test="startTime != null">
-        AND #{startTime} &lt;= crt_time
-      </if>
-      <if test="endTime != null">
-        AND #{endTime} > crt_time
-      </if>
-  </select>
+        AND
+        org_id = #{orgId}
+        <if test="startTime != null">
+            AND #{startTime} &lt;= crt_time
+        </if>
+        <if test="endTime != null">
+            AND #{endTime} > crt_time
+        </if>
+    </select>
 
-  <select id="findLastData" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
+    <!--    查询上一天期末金额-->
+    <select id="findLastData" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
     select
         cash_end
     from
@@ -57,7 +60,8 @@
     limit 1
   </select>
 
-  <insert id="add" parameterType="com.yunya.models.clinic_base.CashBalance">
+    <!--  添加现金模块列表模板  -->
+    <insert id="add" parameterType="com.yunya.models.clinic_base.CashBalance">
         INSERT INTO
         cash_balance
         (cash_first,cash_end,amount_deposited,balance_adjustment,balance_adjustment_remark,uri,org_id,crt_id,inservice)
@@ -65,7 +69,8 @@
         (#{cashFirst},#{cashEnd},#{amountDeposited},#{balanceAdjustment},#{balanceAdjustmentRemark},#{uri},#{orgId},#{crtId},0)
   </insert>
 
-  <update id="upd" parameterType="com.yunya.models.clinic_base.CashBalance">
+    <!--  修改现金模块列表模板  -->
+    <update id="upd" parameterType="com.yunya.models.clinic_base.CashBalance">
     UPDATE
         cash_balance
     SET
@@ -78,7 +83,8 @@
     WHERE
         id=#{id}
   </update>
-  <update id="del" parameterType="java.lang.Integer">
+    <!--  逻辑删  -->
+    <update id="del" parameterType="java.lang.Integer">
     UPDATE
         cash_balance
     SET
@@ -86,8 +92,9 @@
     WHERE
         id=#{id}
   </update>
-
-    <select id="findDataById" parameterType="java.lang.Integer" resultType="com.yunya.feign.cash_balance.vo.CashBalanceByIdVo">
+    <!--根据id查询详情-->
+    <select id="findDataById" parameterType="java.lang.Integer"
+            resultType="com.yunya.feign.cash_balance.vo.CashBalanceByIdVo">
 
         select
             id,

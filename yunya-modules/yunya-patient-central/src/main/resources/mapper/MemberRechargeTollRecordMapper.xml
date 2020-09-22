@@ -1,33 +1,35 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.MemberRechargeTollRecordMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.MemberRechargeTollRecord" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="recharge_record_id" property="rechargeRecordId" jdbcType="INTEGER" />
-    <result column="payment_id" property="paymentId" jdbcType="INTEGER" />
-    <result column="credit_amount" property="creditAmount" jdbcType="DECIMAL" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.patient_central.mapper.MemberRechargeTollRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.MemberRechargeTollRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="recharge_record_id" property="rechargeRecordId" jdbcType="INTEGER"/>
+        <result column="payment_id" property="paymentId" jdbcType="INTEGER"/>
+        <result column="credit_amount" property="creditAmount" jdbcType="DECIMAL"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
-  <sql id="Find_Column_List">
-    mrtr.id,mrtr.org_id orgid,mrtr.recharge_record_id rechargeRecordId,	mrtr.payment_id paymentId, mrtr.credit_amount creditAmount,	mrtr.remarks remarks,	mrtr.inservice inservice,	mrtr.crt_id crtId,	mrtr.crt_name crtName,	mrtr.crt_time crtTime,	mrtr.upt_id uptId, mrtr.upd_name updName, mrtr.upd_time updTime
-  </sql>
+    <sql id="Find_Column_List">
+        mrtr.id,mrtr.org_id orgid,mrtr.recharge_record_id rechargeRecordId,	mrtr.payment_id paymentId, mrtr.credit_amount creditAmount,	mrtr.remarks remarks,	mrtr.inservice inservice,	mrtr.crt_id crtId,	mrtr.crt_name crtName,	mrtr.crt_time crtTime,	mrtr.upt_id uptId, mrtr.upd_name updName, mrtr.upd_time updTime
+    </sql>
 
-  <select id="selectMemberRechargeRecord" resultType="com.yunya.models.patient_central.MemberRechargeTollRecord">
-    select <include refid="Find_Column_List"/>
-    from member_recharge_toll_record mrtr where mrtr.recharge_record_id = #{rechargeRecordId}
-  </select>
+    <!-- 充值记录-获取支付方式 -->
+    <select id="selectMemberRechargeRecord" resultType="com.yunya.models.patient_central.MemberRechargeTollRecord">
+        select
+        <include refid="Find_Column_List"/>
+        from member_recharge_toll_record mrtr where mrtr.recharge_record_id = #{rechargeRecordId}
+    </select>
 
 
 </mapper>

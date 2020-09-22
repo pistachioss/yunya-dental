@@ -1,151 +1,181 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientBaseInfo" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="name" property="name" jdbcType="VARCHAR" />
-    <result column="pinyin_name" property="pinyinName" jdbcType="VARCHAR" />
-    <result column="face_url" property="faceUrl" jdbcType="VARCHAR" />
-    <result column="wo_guid" property="woGuid" jdbcType="VARCHAR" />
-    <result column="person_id" property="personId" jdbcType="VARCHAR" />
-    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
-    <result column="mobile_owner" property="mobileOwner" jdbcType="INTEGER" />
-    <result column="medical_number" property="medicalNumber" jdbcType="VARCHAR" />
-    <result column="gender" property="gender" jdbcType="TINYINT" />
-    <result column="age" property="age" jdbcType="INTEGER" />
-    <result column="birthday" property="birthday" jdbcType="DATE" />
-    <result column="origin_type" property="originType" jdbcType="INTEGER" />
-    <result column="origin_id" property="originId" jdbcType="INTEGER" />
-    <result column="source_id" property="sourceId" jdbcType="INTEGER" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientBaseInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="pinyin_name" property="pinyinName" jdbcType="VARCHAR"/>
+        <result column="face_url" property="faceUrl" jdbcType="VARCHAR"/>
+        <result column="wo_guid" property="woGuid" jdbcType="VARCHAR"/>
+        <result column="person_id" property="personId" jdbcType="VARCHAR"/>
+        <result column="mobile" property="mobile" jdbcType="VARCHAR"/>
+        <result column="mobile_owner" property="mobileOwner" jdbcType="INTEGER"/>
+        <result column="medical_number" property="medicalNumber" jdbcType="VARCHAR"/>
+        <result column="gender" property="gender" jdbcType="TINYINT"/>
+        <result column="age" property="age" jdbcType="INTEGER"/>
+        <result column="birthday" property="birthday" jdbcType="DATE"/>
+        <result column="origin_type" property="originType" jdbcType="INTEGER"/>
+        <result column="origin_id" property="originId" jdbcType="INTEGER"/>
+        <result column="source_id" property="sourceId" jdbcType="INTEGER"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
-  <!--患者表中的全部字段-->
-  <sql id="Patient_Column_List">
-    id,org_id orgId,name,pinyin_name pinyinName,face_url faceUrl,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,
-    inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,source_id sourceId,person_id personId
-  </sql>
+    <!--患者表中的全部字段-->
+    <sql id="Patient_Column_List">
+        id,org_id orgId,name,pinyin_name pinyinName,face_url faceUrl,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,
+        inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,source_id sourceId,person_id personId
+    </sql>
 
     <!--根据手机号查询用户是否纯在-->
-  <select id="findUserExists" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
-        select <include refid="Patient_Column_List"/>
+    <select id="findUserExists" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
         from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
-  </select>
+    </select>
 
-  <select id="findUserExistsByMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
-    select <include refid="Patient_Column_List"/> from patient_base_info where mobile = #{mobile}
-  </select>
+    <!-- 查询手机号是否纯在 -->
+    <select id="findUserExistsByMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where mobile = #{mobile}
+    </select>
 
-  <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo">
-    select pbi.face_url faceUrl,pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
-		   pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
-		   cast(SUM(pmi.principal_amount+pmi.bonus_amount) as decimal(15,2)) memberCardMoneySum,
-		   cast(SUM(ppi.prepayment_principal+ppi.prepayment_bonus)as decimal(15,2)) prepaymentsMoneySum
-    from patient_base_info pbi
-    left join patient_prepayments_info ppi on pbi.id = ppi.patient_id
-    left join patient_member_info pmi      on pbi.id = pmi.patient_id
-    where pbi.id = #{id}
-  </select>
+    <!-- 通过用户id查询患者公共字段 -->
+    <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo">
+        select pbi.face_url faceUrl,pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
+               pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
+               cast(IFNULL(SUM(pmi.principal_amount+pmi.bonus_amount),0) as decimal(15,2)) memberCardMoneySum,
+               cast(IFNULL(SUM(ppi.prepayment_principal+ppi.prepayment_bonus),0) as decimal(15,2)) prepaymentsMoneySum
+        from patient_base_info pbi
+        left join patient_prepayments_info ppi on pbi.id = ppi.patient_id
+        left join patient_member_info pmi      on pbi.id = pmi.patient_id
+        where pbi.id = #{id}
+    </select>
 
-  <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
-    select id,origin_id patientId,name,gender,mobile,crt_time crtTime
-    from patient_base_info where source_id = #{form.patientId} and origin_type = 2
-    order by crtTime desc
-  </select>
+    <!-- 查询推荐关系 -->
+    <select id="selectListByPatientId"
+            resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
+        select pbio.id,pbio.origin_id patientId,pbio.name,pbio.gender,pbio.mobile,pbio.crt_time crtTime
+        from patient_base_info pbio
+        where pbio.source_id = #{form.patientId} and pbio.origin_type = 2
+        order by pbio.crtTime desc
+    </select>
 
-  <select id="findRecommendRelationById" resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
-    select id,origin_id patientId,name,gender,mobile,crt_time crtTime
-    from patient_base_info where origin_id = #{form.patientId} and origin_type = #{form.originType}
-    order by crtTime desc
-  </select>
+    <!-- 根据id查询患者推荐关系拓展图 -->
+    <select id="findRecommendRelationById"
+            resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
+        select pbio.id,pbio.origin_id patientId,pbio.name,pbio.gender,pbio.mobile,pbio.crt_time crtTime
+        from patient_base_info pbio
+        where pbio.origin_id = #{form.patientId} and pbio.origin_type = #{form.originType}
+        order by pbio.crtTime desc
+    </select>
 
-  <select id="findPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
-    select <include refid="Patient_Column_List"/>
-    from patient_base_info where CONCAT(IFNULL(name,''), IFNULL(medical_number,''),IFNULL(pinyin_name,''),IFNULL(mobile,'')) like CONCAT(CONCAT('%',#{form.condition}),'%')
-  </select>
+    <!-- 根据姓名/手机号/姓名拼音模糊查询患者 -->
+    <select id="findPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where concat(IFNULL(name,''),
+        IFNULL(medical_number,''),IFNULL(pinyin_name,''),IFNULL(mobile,'')) like
+        concat(concat('%',#{form.condition}),'%')
+    </select>
 
-  <select id="selectPatientInfoByIdList" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
-    select <include refid="Patient_Column_List"/>
-    from patient_base_info where id in
-    <foreach collection="ids" item="id" open="(" close=")" separator=",">
-      #{id}
-    </foreach>
-  </select>
+    <!-- 根据患者id集合查询患者list -->
+    <select id="selectPatientInfoByIdList" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where id in
+        <foreach collection="ids" item="id" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
 
-  <select id="selectPatientById" resultType="com.yunya.models.patient_central.PatientBaseInfo">
-    select <include refid="Patient_Column_List"/>
-    from patient_base_info where id = #{id}
-  </select>
+    <!-- 根据患者id查询患者信息 -->
+    <select id="selectPatientById" resultType="com.yunya.models.patient_central.PatientBaseInfo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where id = #{id}
+    </select>
 
-  <select id="selectPatientInfoByNameAndMobileAndOrgId" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
-    select <include refid="Patient_Column_List"/>
-    from patient_base_info where name = #{form.name} and mobile = #{form.mobile} and org_id = #{form.orgId}
-  </select>
+    <!-- 根据患者姓名、手机号、门诊号 查询患者信息 -->
+    <select id="selectPatientInfoByNameAndMobileAndOrgId"
+            resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where name = #{form.name} and mobile = #{form.mobile} and org_id = #{form.orgId}
+    </select>
 
-  <select id="selectPatientDataById"
+    <!-- 根据患者ID查询患者全部信息 -->
+    <select id="selectPatientDataById"
             resultType="com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo">
-    select
-      pbi.id,
-      pbi.org_id as orgId,
-      pbi.`name`,
-      pbi.pinyin_name as pinyinName,
-      pbi.mobile,
-      pbi.medical_number as medicalNumber,
-      pbi.gender,
-      pbi.age,
-      pbi.birthday,
-      pbi.remarks,
-      pei.patient_kind as patientKind,
-      pei.useful_phone as usefulPhone,
-      pei.identity,
-      pei.profession,
-      pei.heredity,
-      pei.other_health as otherHealth,
-      pmi.member_type_id as memberTypeId
-    from patient_base_info pbi
-    left join patient_exp_info pei on pbi.id = pei.patient_id
-    left join patient_member_info pmi on pbi.id = pmi.patient_id
-    where pbi.id = #{id}
-  </select>
+        select
+          pbi.id,
+          pbi.org_id as orgId,
+          pbi.`name`,
+          pbi.pinyin_name as pinyinName,
+          pbi.mobile,
+          pbi.medical_number as medicalNumber,
+          pbi.gender,
+          pbi.age,
+          pbi.birthday,
+          pbi.remarks,
+          pei.patient_kind as patientKind,
+          pei.useful_phone as usefulPhone,
+          pei.identity,
+          pei.profession,
+          pei.heredity,
+          pei.other_health as otherHealth,
+          pmi.member_type_id as memberTypeId
+        from patient_base_info pbi
+        left join patient_exp_info pei on pbi.id = pei.patient_id
+        left join patient_member_info pmi on pbi.id = pmi.patient_id
+        where pbi.id = #{id}
+    </select>
 
-  <select id="findPatientVisitInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientVisitInfoVo">
+    <!-- 根据患者id查询患者回访所需信息 -->
+    <select id="findPatientVisitInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientVisitInfoVo">
     select pbi.id patientId,pbi.name,pbi.gender,pbi.age,pbi.mobile,pbi.medical_number medicalNumber,peio.patient_kind patientKind
     from patient_base_info pbi left join patient_exp_info peio on pbi.id = peio.patient_id
     where pbi.id = #{id}
-  </select>
+    </select>
 
-  <select id="findMedicalNumberByOrgId" resultType="java.lang.String">
-    SELECT
-    IFNULL( MAX( SUBSTR( medical_number, 10, 6 )), '000000' ) AS maxNum
-    FROM
-    patient_base_info
-    WHERE org_id = #{orgId}
-  </select>
+    <!-- 根据门诊id获取病历号后六位 -->
+    <select id="findMedicalNumberByOrgId" resultType="java.lang.String">
+        SELECT
+        IFNULL( MAX( SUBSTR( medical_number, 10, 6 )), '000000' ) AS maxNum
+        FROM
+        patient_base_info
+        WHERE org_id = #{orgId}
+    </select>
 
-  <select id="selectOneById" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
-    select <include refid="Patient_Column_List"/>
-    from patient_base_info where id = #{id}
-  </select>
+    <!-- 根据患者id查询患者信息 -->
+    <select id="selectOneById" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where id = #{id}
+    </select>
 
-  <update id="updatePhoto">
-    update patient_base_info set face_url = #{form.faceUrl} where id = #{form.id}
-  </update>
+    <!-- 修改患者头像 -->
+    <update id="updatePhoto">
+        update patient_base_info set face_url = #{form.faceUrl} where id = #{form.id}
+    </update>
 
-  <select id="selectOneByPersonId" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
-    select <include refid="Patient_Column_List"/>
-    from patient_base_info where person_id = #{personId}
-  </select>
+    <!-- 根据人员id 查询患者信息 -->
+    <select id="selectOneByPersonId" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where person_id = #{personId}
+    </select>
 
 
 </mapper>

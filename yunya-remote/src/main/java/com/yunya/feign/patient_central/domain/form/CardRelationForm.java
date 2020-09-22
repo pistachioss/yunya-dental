@@ -8,11 +8,11 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 会员卡关系删除
  *
  * @author: WY
  * @date 2020/8/14 15:08
- * @description:
+ * @description: 会员卡关系删除
  * @since: 1.0.0
  */
 
