@@ -43,9 +43,9 @@ public class VisitingRemindQuery implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date searchEndTime;
 
-    /** 用户id */
-    @ApiModelProperty(value = "用户id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
-    private Integer userId;
+    /** 医生id */
+    @ApiModelProperty(value = "医生id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
+    private Integer dentistId;
 
     /** 门诊id */
     @ApiModelProperty(value = "门诊id")

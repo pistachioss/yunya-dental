@@ -130,4 +130,7 @@ public class MedicalCommonRecordModel {
 
   @ApiModelProperty("审批操作截止时间，首次新增病历不传该字段 通过审批操作来添加病历 才传该字段")
   private String deadTime;
+
+  @ApiModelProperty("主治医生姓名")
+  private String majorDentistName;
 }

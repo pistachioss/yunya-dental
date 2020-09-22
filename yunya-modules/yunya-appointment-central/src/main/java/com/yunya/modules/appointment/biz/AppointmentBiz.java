@@ -548,7 +548,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return
      */
     public ResponseResult findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
-        List<AppointmentDentistDimensionVo> appointmentDentistDimensionVoList = new ArrayList<>();
+        List<AppointmentDimensionVo> appointmentDentistDimensionVoList = new ArrayList<>();
         // 校验检索日期
         long startTime = query.getStartDate().getTime();
         long endTime = query.getEndDate().getTime();
@@ -566,18 +566,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 根据大医生id查询相关助手信息并且设置助手信息
         appointmentDimensionVos.forEach(appointmentDimensionVo -> {
             // 组合患者预约维度信息（预约患者信息+医生排班信息）
-            AppointmentDentistDimensionVo appointDentistDimensionVo = this.combinationDentistDimensionVo(query.getOrgId(), appointmentDimensionVo);
+            AppointmentDimensionVo appointmentDimensionItem = this.combinationDentistDimensionVo(query.getOrgId(), appointmentDimensionVo);
             // 最后将分解之后的整个大医生+助手放入到视图模型中
-            appointmentDentistDimensionVoList.add(appointDentistDimensionVo);
+            appointmentDentistDimensionVoList.add(appointmentDimensionItem);
         });
 
         // 按患者数量对医生降序排序
         Collections.sort(appointmentDentistDimensionVoList, (o1, o2) -> {
-            if (o1.getAppointmentDentistInfoVo().getPatientNum() != null && o2.getAppointmentDentistInfoVo().getPatientNum() != null){
-                if (o1.getAppointmentDentistInfoVo().getPatientNum() > o2.getAppointmentDentistInfoVo().getPatientNum()) {
+            if (o1.getPatientNum() != null && o2.getPatientNum() != null){
+                if (o1.getPatientNum() > o2.getPatientNum()) {
                     return -1;
                 }
-                if (o1.getAppointmentDentistInfoVo().getPatientNum() < o2.getAppointmentDentistInfoVo().getPatientNum()) {
+                if (o1.getPatientNum() < o2.getPatientNum()) {
                     return 1;
                 }
             }
@@ -586,7 +586,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
-        PageInfo<List<AppointmentDentistDimensionVo>> pageInfo = new PageInfo(appointmentDentistDimensionVoList);
+        PageInfo<List<AppointmentDimensionVo>> pageInfo = new PageInfo(appointmentDentistDimensionVoList);
         return ResponseUtil.success(pageInfo);
     }
 
@@ -1170,7 +1170,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appointmentDimensionVo 患者信息视图信息
      * @return AppointmentDentistDimensionVo
      */
-    private AppointmentDentistDimensionVo combinationDentistDimensionVo(Integer orgId,AppointmentDimensionVo appointmentDimensionVo) {
+    private AppointmentDimensionVo combinationDentistDimensionVo(Integer orgId,AppointmentDimensionVo appointmentDimensionVo) {
         // 患者信息列表
         List<AppointmentDimensionVo> assistantInfoList = new ArrayList<>();
         AppointmentDimensionVo assistantSplitVo = EntityUtils.build(appointmentDimensionVo, AppointmentDimensionVo.class);
@@ -1185,13 +1185,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 splitQuery.setOrgId(orgId);
                 // 设置预约时间
                 splitQuery.setAppointDate(appointmentDimensionVo.getCurrentDate());
-
                 // 查询本次预约相关的分解助手信息
                 List<AppointmentSplitVo> appointSplitVo = appointmentSplitBiz.findAppointmentSplitByExample(splitQuery);
-
                 // 设置分解助手的患者预约信息
                 List<AppointmentPatientCardVo> appointmentPatientCardVos = new ArrayList<>();
-
                 if (appointSplitVo != null && !appointSplitVo.isEmpty()){
                     for (int index = 0; index < appointSplitVo.size(); index++){
 
@@ -1214,19 +1211,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 appointmentPatientCardVos.add(appointmentPatientCardVo);
             });
         }
-
         // 将分解之后的助手信息放入助手集合中
         assistantInfoList.add(assistantSplitVo);
         // 对助手信息进行排序   按患者数量排序
         List<AppointmentDimensionVo> sortByDescList = assistantInfoList.stream().sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
-
-        AppointmentDentistDimensionVo appointDentistDimensionVo = new AppointmentDentistDimensionVo();
-        // 将大医生信息设置到医生维度信息模板中
-        appointDentistDimensionVo.setAppointmentDentistInfoVo(appointmentDimensionVo);
-        // 将分解的助手列表设置到分解信息列表中
-        appointDentistDimensionVo.setAppointmentAssistants(sortByDescList);
-
-        return appointDentistDimensionVo;
+        appointmentDimensionVo.setAppointmentAssistants(sortByDescList);
+        return appointmentDimensionVo;
     }
 
     /**
