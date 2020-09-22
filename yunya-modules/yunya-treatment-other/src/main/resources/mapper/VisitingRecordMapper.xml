@@ -70,7 +70,7 @@
         and vr.inservice = #{query.inservice}
       </if>
       <if test="query.userId != null">
-        and vr.crt_id = #{query.userId}
+        and vr.dentist_id = #{query.dentistId}
       </if>
       <if test="query.status != null">
         and vr.status = #{query.status}
