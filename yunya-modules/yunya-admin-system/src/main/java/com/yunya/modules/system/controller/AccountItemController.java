@@ -1,7 +1,6 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.vo.PatientVisitInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;

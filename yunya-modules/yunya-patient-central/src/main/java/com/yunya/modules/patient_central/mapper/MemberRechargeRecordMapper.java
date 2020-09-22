@@ -1,7 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.RechargeRecordVo;
+import com.yunya.feign.patient_central.domain.vo.web.RechargeRecordVo;
 import com.yunya.models.patient_central.MemberRechargeRecord;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

@@ -1,7 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
-import com.yunya.feign.patient_central.domain.vo.PatientPrepaymentRelationVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentRelationVo;
 import com.yunya.models.patient_central.PatientPrepaymentRelation;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

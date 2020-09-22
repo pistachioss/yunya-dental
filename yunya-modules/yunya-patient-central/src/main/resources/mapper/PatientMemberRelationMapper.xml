@@ -50,7 +50,7 @@
     </select>
 
     <!-- 查询会员卡绑定信息 -->
-    <select id="findMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.SecondaryMemberInfoVo">
+    <select id="findMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo">
       select  pmio.id,pmrn.secondary_card_id secondaryCardId,pmio.card_number secondaryCardNumber,pmio.member_type_id secondaryMemberTypeId,
 			 pbio.name secondaryName
       from patient_member_relation pmrn join patient_member_info pmio on pmrn.secondary_card_id = pmio.patient_id join patient_base_info pbio on pmrn.secondary_card_id = pbio.id

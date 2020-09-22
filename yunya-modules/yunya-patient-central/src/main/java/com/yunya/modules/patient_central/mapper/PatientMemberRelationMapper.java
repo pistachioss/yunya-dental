@@ -2,7 +2,7 @@ package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
-import com.yunya.feign.patient_central.domain.vo.SecondaryMemberInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
 import com.yunya.models.patient_central.PatientMemberRelation;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

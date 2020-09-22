@@ -1,8 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
-import com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientMemberChangeLogVo;
 import com.yunya.models.patient_central.PatientMemberChangeLog;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
 

@@ -38,21 +38,21 @@
     </sql>
 
     <!--根据手机号查询用户是否纯在-->
-    <select id="findUserExists" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    <select id="findUserExists" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
     </select>
 
     <!-- 查询手机号是否纯在 -->
-    <select id="findUserExistsByMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    <select id="findUserExistsByMobile" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where mobile = #{mobile}
     </select>
 
     <!-- 通过用户id查询患者公共字段 -->
-    <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.PatientPublicInfoVo">
+    <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo">
         select pbi.face_url faceUrl,pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
                pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
                cast(IFNULL(SUM(pmi.principal_amount+pmi.bonus_amount),0) as decimal(15,2)) memberCardMoneySum,
@@ -65,7 +65,7 @@
 
     <!-- 查询推荐关系 -->
     <select id="selectListByPatientId"
-            resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientRecommendRelationVo">
         select pbio.id,pbio.origin_id patientId,pbio.name,pbio.gender,pbio.mobile,pbio.crt_time crtTime
         from patient_base_info pbio
         where pbio.source_id = #{form.patientId} and pbio.origin_type = 2
@@ -74,7 +74,7 @@
 
     <!-- 根据id查询患者推荐关系拓展图 -->
     <select id="findRecommendRelationById"
-            resultType="com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo">
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientRecommendRelationVo">
         select pbio.id,pbio.origin_id patientId,pbio.name,pbio.gender,pbio.mobile,pbio.crt_time crtTime
         from patient_base_info pbio
         where pbio.origin_id = #{form.patientId} and pbio.origin_type = #{form.originType}
@@ -82,7 +82,7 @@
     </select>
 
     <!-- 根据姓名/手机号/姓名拼音模糊查询患者 -->
-    <select id="findPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    <select id="findPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where concat(IFNULL(name,''),
@@ -91,7 +91,7 @@
     </select>
 
     <!-- 根据患者id集合查询患者list -->
-    <select id="selectPatientInfoByIdList" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    <select id="selectPatientInfoByIdList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where id in
@@ -109,7 +109,7 @@
 
     <!-- 根据患者姓名、手机号、门诊号 查询患者信息 -->
     <select id="selectPatientInfoByNameAndMobileAndOrgId"
-            resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where name = #{form.name} and mobile = #{form.mobile} and org_id = #{form.orgId}
@@ -117,7 +117,7 @@
 
     <!-- 根据患者ID查询患者全部信息 -->
     <select id="selectPatientDataById"
-            resultType="com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo">
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo">
         select
           pbi.id,
           pbi.org_id as orgId,
@@ -143,7 +143,7 @@
     </select>
 
     <!-- 根据患者id查询患者回访所需信息 -->
-    <select id="findPatientVisitInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientVisitInfoVo">
+    <select id="findPatientVisitInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientVisitInfoVo">
     select pbi.id patientId,pbi.name,pbi.gender,pbi.age,pbi.mobile,pbi.medical_number medicalNumber,peio.patient_kind patientKind
     from patient_base_info pbi left join patient_exp_info peio on pbi.id = peio.patient_id
     where pbi.id = #{id}
@@ -159,7 +159,7 @@
     </select>
 
     <!-- 根据患者id查询患者信息 -->
-    <select id="selectOneById" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    <select id="selectOneById" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where id = #{id}
@@ -171,10 +171,38 @@
     </update>
 
     <!-- 根据人员id 查询患者信息 -->
-    <select id="selectOneByPersonId" resultType="com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo">
+    <select id="selectOneByPersonId" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where person_id = #{personId}
+    </select>
+
+    <!-- app端模糊查询 -->
+    <select id="appFindPatientByNameAndMobile" resultType="com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo">
+        select pbio.id,pbio.name,pbio.age,pbio.mobile,pbio.gender
+        from patient_base_info pbio
+        where concat(IFNULL(name,''),
+        IFNULL(pbio.medical_number,''),IFNULL(pbio.pinyin_name,''),IFNULL(pbio.mobile,'')) like
+        concat(concat('%',#{form.condition}),'%')
+    </select>
+
+    <!-- app端患者档案查询 -->
+    <select id="appPatientArchives" resultType="com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo">
+        select pbio.id,pbio.name,pbio.age,pbio.mobile,pbio.gender,pmio.member_type_id memberTypeId,pmio.principal_amount principalAmount,pmio.bonus_amount bonusAmount
+        from patient_base_info pbio left join patient_member_info pmio on pbio.id = pmio.patient_id
+        where pbio.id =#{patientId}
+    </select>
+
+    <select id="findUserExistsList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
+    </select>
+
+    <select id="findUserExistsByMobileList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
+        select
+        <include refid="Patient_Column_List"/>
+        from patient_base_info where mobile = #{mobile}
     </select>
 
 

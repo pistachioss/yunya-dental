@@ -24,7 +24,7 @@
   </resultMap>
 
     <!-- 查询预付款消费记录 -->
-    <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.PrepaidExpendRecordVo">
+    <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.web.PrepaidExpendRecordVo">
         SELECT
             perd.id,
             perd.org_id orgId,

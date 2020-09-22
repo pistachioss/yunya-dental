@@ -33,7 +33,7 @@
     </sql>
 
     <!-- 变更记录 -->
-    <select id="changeLog" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberChangeLogVo">
+    <select id="changeLog" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientMemberChangeLogVo">
         select
         <include refid="Find_Column_List"/>
         from patient_member_change_log pmcl

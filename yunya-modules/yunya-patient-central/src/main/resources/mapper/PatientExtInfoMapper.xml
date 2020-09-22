@@ -52,7 +52,7 @@
   </insert>
 
   <!-- 循环添加患者其他信息（标签,疾病史,过敏原） -->
-  <select id="patientExtInfoListByid" resultType="com.yunya.feign.patient_central.domain.vo.PatientExtInfoVo">
+  <select id="patientExtInfoListByid" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientExtInfoVo">
     select <include refid="PatientExtInfoList_Column_List"/>
     from patient_ext_info
     where patient_id = #{id}

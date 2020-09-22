@@ -26,7 +26,7 @@
   </sql>
 
   <!-- 根据患者id查询 患者亲属列表 -->
-  <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.PatientKinRelationVo">
+  <select id="selectListByPatientId" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientKinRelationVo">
     select <include refid="PatientKinRelationVo_Column_List"/>
     from patient_kin_relation pkr join patient_base_info pbi on pkr.linked_patient_id = pbi.id
     where pkr.patient_id = #{id}
