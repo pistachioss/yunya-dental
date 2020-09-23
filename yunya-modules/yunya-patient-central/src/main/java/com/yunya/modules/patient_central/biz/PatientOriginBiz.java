@@ -5,9 +5,9 @@ import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
 import com.yunya.feign.patient_central.domain.query.OriginTypeQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientAndStaffListInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientOriginTreeVo;
-import com.yunya.feign.patient_central.domain.vo.PatientOriginVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginTreeVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -70,7 +70,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     if (patientOrigin.getParentId() == null) {
       Integer maxiType = mapper.selectTypeMaximum();
       if (maxiType >= 0) { // 查询患者来源type字典最大值
-        patientOrigin.setOriginType(maxiType);
+        patientOrigin.setOriginType(maxiType+1);
         patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setCrtName(BaseContextHandler.getName());
         mapper.insertSelective(patientOrigin);

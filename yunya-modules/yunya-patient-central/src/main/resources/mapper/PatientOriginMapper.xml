@@ -36,7 +36,7 @@
     </select>
 
     <!-- 查询患者来源集合 -->
-    <select id="findAll" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
+    <select id="findAll" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo">
         select
         <include refid="PatientOrigin_Column_List"/>
         from patient_origin po order by po.crt_time desc
@@ -57,12 +57,12 @@
     </select>
 
     <!-- 查询父级患者来源 -->
-    <select id="originalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginVo">
+    <select id="originalType" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo">
         select po.id,po.name,po.origin_type originType from patient_origin po where po.parent_id = 0 and po.inservice = 1;
     </select>
 
     <!-- 查询患者来源类型 -->
-    <select id="selectOriginalType" resultType="com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo">
+    <select id="selectOriginalType" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo">
         select
         <include refid="PatientOrigin_Column_List"/>
         from patient_origin po where po.name != '员工介绍' and po.name != '老患者介绍'
@@ -71,6 +71,11 @@
     <!-- 查询患者来源type最大值（id最大的） -->
     <select id="selectTypeMaximum" resultType="java.lang.Integer">
         select max(origin_type) maxtype from patient_origin
+    </select>
+    <!-- 根据患者来源type查询患者来源名称 -->
+    <select id="getTypeName" resultType="com.yunya.models.patient_central.PatientOrigin">
+        select <include refid="PatientOrigin_Column_List"/>
+        from  patient_origin po where po.origin_type =#{originType} and parent_id = 0;
     </select>
 
 </mapper>

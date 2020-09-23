@@ -9,7 +9,7 @@ import com.yunya.feign.emr.domain.model.*;
 import com.yunya.feign.emr.domain.query.*;
 import com.yunya.feign.emr.domain.vo.*;
 import com.yunya.feign.patient_central.*;
-import com.yunya.feign.patient_central.domain.vo.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.system.*;
 import com.yunya.feign.system.vo.*;
 import com.yunya.feign.treatment.*;

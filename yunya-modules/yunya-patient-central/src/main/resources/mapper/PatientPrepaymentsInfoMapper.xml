@@ -27,7 +27,7 @@
     </sql>
 
     <!-- 根据患者id患者预付款基本信息查询 -->
-    <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientPrepaymentsInfoVo">
+    <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo">
         select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,
         CAST(IFNULL(SUM(ppio.prepayment_principal+ppio.prepayment_bonus),0) AS decimal(15,2)) prepaymentMoneySum,ppio.prepayment_bonus prepaymentBonus
         from patient_prepayments_info ppio

@@ -34,7 +34,7 @@
     </sql>
 
     <!-- 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）) -->
-    <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo">
+    <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo">
       select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,bonus_amount bonusAmount,
            member_type_id memberTypeId,crt_time crtTime
       from patient_member_info where patient_id =#{id}
@@ -42,7 +42,7 @@
 
     <!-- 查询会员卡关联关系 -->
     <select id="findMemberBindingRelation"
-            resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVo">
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo">
       select pmr.id bindId,(select name from patient_base_info  where id = pmr.secondary_card_id )name,pmr.master_card_id masterCardId,pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType
       from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
       where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
@@ -80,7 +80,7 @@
     </select>
 
     <!-- 查询主卡人信息 -->
-    <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.MasertMemberInfoVo">
+    <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo">
         select id,patient_id masterCardId, member_type_id masterCardTypeId,(select name from patient_base_info where id
         = patient_id) masterName,card_number masterCardNumber
         from patient_member_info where patient_id = #{form.patientId}

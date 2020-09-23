@@ -3,7 +3,7 @@ package com.yunya.modules.treatment.other.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.vo.PatientTotalInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;

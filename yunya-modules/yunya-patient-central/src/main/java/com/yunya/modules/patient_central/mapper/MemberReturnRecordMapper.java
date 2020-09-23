@@ -1,7 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.MemberReturnRecordVo;
+import com.yunya.feign.patient_central.domain.vo.web.MemberReturnRecordVo;
 import com.yunya.models.patient_central.MemberReturnRecord;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

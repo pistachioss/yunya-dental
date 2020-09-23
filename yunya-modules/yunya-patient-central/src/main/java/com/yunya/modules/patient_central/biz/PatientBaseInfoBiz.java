@@ -8,8 +8,12 @@ import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.vo.*;
+import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
+import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -135,10 +139,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     // patientBaseInfo.setWoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); //
     // wo平台创建对应人员 返回人员Guid添加到数据库
-
-    JSONObject object = new JSONObject();
-    object.put("name", patientBaseInfo.getName());
-    String person = object.toJSONString();
+    /*String person = object.toJSONString();
     NameValuePair[] data = {
       new NameValuePair("pass", redisUtils.get("PASS")), new NameValuePair("person", person)
     };
@@ -146,8 +147,16 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     JSONObject jsonObject =
         WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/person/create", data);
     JSONObject jsonData = jsonObject.getJSONObject("data");
-    patientBaseInfo.setPersonId((String) jsonData.get("id"));
+    patientBaseInfo.setPersonId((String) jsonData.get("id"));*/
     mapper.insertSelective(patientBaseInfo);
+    JSONObject object = new JSONObject();
+    object.put("taskNo", "");
+    object.put("interfaceName", "person/create");
+    object.put("result", true);
+    PersonModel person = new PersonModel();
+    person.setName(patientBaseInfo.getName());
+    object.put("person", person);
+    redisUtils.set("object", object);
     // 添加患者时,创建预付款账户
     this.addPatientPrepaymentsInfo(patientBaseInfo);
     return this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
@@ -251,8 +260,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     // 获取患者来源的父级id
     patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
+    // 获取患者来源name
     // 基本信息
-    patientExtendInfoVo.setPatientBaseInfoVo(patientBaseInfoVo);
+    patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
     // 扩展信息
     PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectIdByPatientId(id);
     if (patientExpInfoVo != null) {
@@ -262,14 +272,75 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     List<PatientExtInfoVo> patientExtInfoVos = patientExtInfoMapper.patientExtInfoListByid(id);
     if (!StringHelper.isEmpty(patientExtInfoVos)) {
       for (PatientExtInfoVo patientExtInfoVo : patientExtInfoVos) {
-        DictionaryItem dictionaryItem = remoteSystemServiceFeign.findDictionaryItemById(patientExtInfoVo.getDictItemId());
-        if (dictionaryItem != null){
-          patientExtInfoVo.setDictItemName(dictionaryItem.getName());
+        if (patientExtInfoVo.getDictItemId() != null) {
+          DictionaryItem dictionaryItem =
+              remoteSystemServiceFeign.findDictionaryItemById(patientExtInfoVo.getDictItemId());
+          if (dictionaryItem != null) {
+            patientExtInfoVo.setDictItemName(dictionaryItem.getName());
+          }
         }
       }
     }
     patientExtendInfoVo.setPatientExtInfoListVo(patientExtInfoVos);
     return ResponseUtil.success(patientExtendInfoVo);
+  }
+
+  /**
+   * 获取 来源名称 推荐人名称 推荐来源名称
+   *
+   * @param patientBaseInfoVo
+   * @return
+   */
+  private PatientBaseInfoVo getTypeName(PatientBaseInfoVo patientBaseInfoVo) {
+    PatientOrigin patientOrigin =
+        patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
+    if (patientOrigin != null) {
+      patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
+    }
+    if (patientBaseInfoVo.getOriginId() != null) {
+      switch (patientBaseInfoVo.getOriginType()) {
+        //查询员工
+        case 1:
+          SysUserEmployeeModel model = new SysUserEmployeeModel();
+          if (patientBaseInfoVo.getSourceId() != null){
+            model.setUserId(patientBaseInfoVo.getSourceId());
+            model.setWhetherPage(false);
+            List<SysUserInfoDetail> list =
+                    remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            if (!StringHelper.isEmpty(list)) {
+              patientBaseInfoVo.setOriginName(list.get(0).getName());
+            }
+          }
+          break;
+          //查询患者
+        case 2:
+          if (patientBaseInfoVo.getSourceId() != null){
+            PatientBaseInfo patientBaseInfo =
+                    patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
+            if (patientBaseInfo != null) {
+              patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
+            }
+          }
+          break;
+        default:
+          if (patientBaseInfoVo.getOriginId() != null){
+            PatientOrigin activity =
+                    patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
+            if (activity != null) {
+              patientBaseInfoVo.setOriginName(activity.getName());
+            }
+          }
+          break;
+      }
+    }
+    // 根据ID查询字典明细
+    DictionaryItem dictionaryItem =
+        remoteSystemServiceFeign.findDictionaryItemById(patientBaseInfoVo.getMobileOwner());
+    if (dictionaryItem != null) {
+      //手机号所属名称
+      patientBaseInfoVo.setMobileOwnerName(dictionaryItem.getName());
+    }
+    return patientBaseInfoVo;
   }
 
   /**
@@ -279,7 +350,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return List<PatientBaseInfoVo>
    */
   public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
-    return patientBaseInfoMapper.findPatientByNameAndMobile(form);
+    List<PatientBaseInfoVo> patientByNameAndMobile =
+        patientBaseInfoMapper.findPatientByNameAndMobile(form);
+    return patientByNameAndMobile;
   }
 
   /**
@@ -550,5 +623,121 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     System.out.println("拍照回调成功！");
     System.out.println(
         "**************************************************************************************");
+  }
+
+  /**
+   * 根据姓名/病例编号/手机号/姓名拼音模糊查询患者
+   *
+   * @param form 患者模糊查询模板
+   * @return List<PatientBaseInfoVo>
+   */
+  public List<AppPatientBaseInfoVo> appFindPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
+    List<AppPatientBaseInfoVo> appPatientBaseInfoVos =
+        patientBaseInfoMapper.appFindPatientByNameAndMobile(form);
+    if (!StringHelper.isEmpty(appPatientBaseInfoVos)) {
+      Byte[] str = {0, 1};
+      int age = 14;
+      for (AppPatientBaseInfoVo appPatientBaseInfoVo : appPatientBaseInfoVos) {
+        // 设置患者的类型(未成年男性0，成年男性1，未成年女性2，成年女性3)
+        Integer integer = appPatientBaseInfoVo.getAge();
+        if (integer != null) {
+          // 未成年男性0
+          Byte gender = appPatientBaseInfoVo.getGender();
+          if (integer < age && str[0].equals(gender)) {
+            appPatientBaseInfoVo.setPatientKind(0);
+          }
+          // 成年男性1
+          if (integer >= age && str[0].equals(gender)) {
+            appPatientBaseInfoVo.setPatientKind(1);
+          }
+          // 未成年女性2
+          if (integer < age && str[1].equals(gender)) {
+            appPatientBaseInfoVo.setPatientKind(2);
+          }
+          // 成年女性3
+          if (integer >= age && str[1].equals(gender)) {
+            appPatientBaseInfoVo.setPatientKind(3);
+          }
+        } else {
+          // 年龄为空，性别为男 4
+          if (str[0].equals(appPatientBaseInfoVo.getGender())) {
+            appPatientBaseInfoVo.setPatientKind(4);
+          } else {
+            // 年龄为空，性别为女 5
+            appPatientBaseInfoVo.setPatientKind(5);
+          }
+        }
+      }
+    }
+    return appPatientBaseInfoVos;
+  }
+
+  /**
+   * app端患者档案查询
+   * @param patientId 患者id
+   * @return AppPatientArchivesVo
+   */
+  public AppPatientArchivesVo patientArchives(Integer patientId) {
+    AppPatientArchivesVo appPatientArchivesVo = patientBaseInfoMapper.appPatientArchives(patientId);
+    if (appPatientArchivesVo != null){
+      // 获取会员卡名称
+      if (appPatientArchivesVo.getMemberTypeId() != null){
+        MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(appPatientArchivesVo.getMemberTypeId());
+        if (memberType != null && memberType.getName() != null) {
+          appPatientArchivesVo.setMemberCardName(memberType.getName());
+        }
+        Byte[] str = {0, 1};
+        int age = 14;
+          // 设置患者的类型(未成年男性0，成年男性1，未成年女性2，成年女性3)
+          Integer integer = appPatientArchivesVo.getAge();
+          if (integer != null) {
+            // 未成年男性0
+            Byte gender = appPatientArchivesVo.getGender();
+            if (integer < age && str[0].equals(gender)) {
+              appPatientArchivesVo.setPatientKind(0);
+            }
+            // 成年男性1
+            if (integer >= age && str[0].equals(gender)) {
+              appPatientArchivesVo.setPatientKind(1);
+            }
+            // 未成年女性2
+            if (integer < age && str[1].equals(gender)) {
+              appPatientArchivesVo.setPatientKind(2);
+            }
+            // 成年女性3
+            if (integer >= age && str[1].equals(gender)) {
+              appPatientArchivesVo.setPatientKind(3);
+            }
+          } else {
+            // 年龄为空，性别为男 4
+            if (str[0].equals(appPatientArchivesVo.getGender())) {
+              appPatientArchivesVo.setPatientKind(4);
+            } else {
+              // 年龄为空，性别为女 5
+              appPatientArchivesVo.setPatientKind(5);
+          }
+        }
+      }
+    }
+    return appPatientArchivesVo;
+  }
+
+  /**
+   * 查询患者是否存在
+   * @param patientBaseInfoQueryForm 患者信息查询QueryFrom
+   * @return ResponseResult
+   */
+  public ResponseResult appFindUserExists(PatientBaseInfoQueryForm patientBaseInfoQueryForm) {
+    List<PatientBaseInfoVo> patientBaseInfoVos;
+    patientBaseInfoVos = patientBaseInfoMapper.findUserExistsList(patientBaseInfoQueryForm);
+    if (!StringHelper.isEmpty(patientBaseInfoVos)) {
+      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"添加失败,该用户已存在", patientBaseInfoVos);
+    }
+    List<PatientBaseInfoVo> patientBaseInfoVoList =
+            patientBaseInfoMapper.findUserExistsByMobileList(patientBaseInfoQueryForm.getMobile());
+    if (!StringHelper.isEmpty(patientBaseInfoVoList)) {
+      return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "该手机号已存在", patientBaseInfoVoList);
+    }
+    return ResponseUtil.success();
   }
 }

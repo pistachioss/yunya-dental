@@ -1,7 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
-import com.yunya.feign.patient_central.domain.vo.PatientOriginInfoVo;
-import com.yunya.feign.patient_central.domain.vo.PatientOriginVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientOriginVo;
 import com.yunya.models.patient_central.PatientOrigin;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
@@ -58,4 +58,11 @@ public interface PatientOriginMapper extends Mapper<PatientOrigin> {
      * @return
      */
     Integer selectTypeMaximum();
+
+    /**
+     * 根据来源type查询
+     * @param originType 患者来源type
+     * @return PatientOrigin
+     */
+    PatientOrigin getTypeName(@Param("originType") Integer originType);
 }

@@ -27,7 +27,7 @@
     </sql>
 
     <!-- 根据患者id和预付款卡号 查询退款信息 -->
-    <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.PrepaidMeturnRecordVo">
+    <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.web.PrepaidMeturnRecordVo">
       SELECT
         id,
         crt_time operatingTime,

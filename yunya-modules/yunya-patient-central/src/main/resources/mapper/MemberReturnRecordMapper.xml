@@ -27,7 +27,7 @@
     </sql>
 
     <!-- 根据患者id和会员卡号 查询退费记录 -->
-    <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.MemberReturnRecordVo">
+    <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberReturnRecordVo">
       SELECT
         id,
         crt_time operatingTime,

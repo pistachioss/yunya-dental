@@ -40,4 +40,6 @@ public class OperationCodeConstants {
   public static final Integer INSERT_MODEL = 30015;
   /** 余额不足 */
   public static final Integer BALANCE_INSUFFICIENT = 30016;
+  /** 查询结果为空 */
+  public static final Integer RETURN_MOBILE_ISNULL = 30017;
 }

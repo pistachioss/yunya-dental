@@ -6,7 +6,7 @@ import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.*;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;

@@ -26,7 +26,7 @@
 
     <!-- 查询预付款关联 -->
     <select id="findPrepaymentLinkList"
-            resultType="com.yunya.feign.patient_central.domain.vo.PatientPrepaymentRelationVo">
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentRelationVo">
         select  id,	org_id orgId,	master_card_id masterCardId,	secondary_card_id secondaryCardId,	remarks remarks,inservice inservice
         from patient_prepayment_relation
         where master_card_id = #{masterCardId}

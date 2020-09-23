@@ -3,7 +3,9 @@ package com.yunya.modules.patient_central.mapper;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.*;
+import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
+import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import org.apache.ibatis.annotations.Param;
@@ -139,4 +141,32 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @return PatientBaseInfo
    */
   PatientBaseInfoVo selectOneByPersonId(@Param("personId") String personId);
+
+  /**
+   * App端模糊查询患者信息
+   * @param form
+   * @return List<AppPatientBaseInfoVo>
+   */
+  List<AppPatientBaseInfoVo> appFindPatientByNameAndMobile(@Param("form") PatientLikeFinleQueryForm form);
+
+  /**
+   * App端患者档案
+   * @param patientId 患者id
+   * @return AppPatientArchivesVo
+   */
+  AppPatientArchivesVo appPatientArchives(@Param("patientId") Integer patientId);
+
+  /**
+   * 查询判断手机号是否已经存在
+   * @param patientBaseInfoQueryForm 患者信息查询参数模型
+   * @return List<PatientBaseInfoVo>
+   */
+  List<PatientBaseInfoVo> findUserExistsList(@Param("form") PatientBaseInfoQueryForm patientBaseInfoQueryForm);
+
+  /**
+   * app端查询手机号是否已经存在
+   * @param mobile
+   * @return
+   */
+  List<PatientBaseInfoVo> findUserExistsByMobileList(@Param("mobile") String mobile);
 }

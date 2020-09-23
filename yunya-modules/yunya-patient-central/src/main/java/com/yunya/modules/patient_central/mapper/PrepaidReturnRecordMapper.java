@@ -1,7 +1,7 @@
 package com.yunya.modules.patient_central.mapper;
 
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PrepaidMeturnRecordVo;
+import com.yunya.feign.patient_central.domain.vo.web.PrepaidMeturnRecordVo;
 import com.yunya.models.patient_central.PrepaidReturnRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

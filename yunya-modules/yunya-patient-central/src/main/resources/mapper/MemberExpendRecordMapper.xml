@@ -24,7 +24,7 @@
     </resultMap>
 
     <!-- 消费记录 条件（消费者id（患者），会员卡号） -->
-    <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.MemberExpendRecordVo">
+    <select id="expendList" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberExpendRecordVo">
         SELECT
             merd.id,
             merd.org_id orgId,

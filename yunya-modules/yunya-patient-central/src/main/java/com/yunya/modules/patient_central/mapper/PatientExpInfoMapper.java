@@ -1,6 +1,6 @@
 package com.yunya.modules.patient_central.mapper;
 
-import com.yunya.feign.patient_central.domain.vo.PatientExpInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientExpInfoVo;
 import com.yunya.models.patient_central.PatientExpInfo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
