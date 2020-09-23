@@ -30,8 +30,8 @@
       cas.remarks
     from clinic_appointment_setting cas
     <where>
-      <if test="query.userId != null">
-        cas.user_id = #{query.userId}
+      <if test="userId != null">
+        cas.user_id = #{userId}
       </if>
     </where>
   </select>

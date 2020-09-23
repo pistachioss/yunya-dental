@@ -16,6 +16,7 @@ import com.yunya.modules.appointment.mapper.ClinicAppointmentSettingMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -41,9 +42,8 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
             throw new ClientServiceException("预约单位设置错误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         ClinicAppointmentSetting build = EntityUtils.build(form, ClinicAppointmentSetting.class);
-        AppointSettingQuery query = new AppointSettingQuery();
-        query.setUserId(form.getUserId());
-        AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(query);
+        Integer userId = form.getUserId();
+        AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(userId);
         // 如果已经存在用户设置，则进行修改设置操作，否则进行新增操作
         if (appointSettingVo != null){
             build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -65,11 +65,11 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
 
     /**
      * 根据条件查询预约设置
-     * @param query
+     * @param userId
      * @return
      */
-    public AppointSettingVo findAppointSettingByUserId(AppointSettingQuery query){
-        AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(query);
+    public AppointSettingVo findAppointSettingByUserId(Integer userId){
+        AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(userId);
         return appointSettingVo;
     }
 
