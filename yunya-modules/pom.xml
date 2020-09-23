@@ -22,7 +22,6 @@
         <module>yunya-employee-attend</module>
         <module>yunya-emr</module>
         <module>yunya-patient-central</module>
-        <module>yunya-tariff</module>
         <module>yunya-treatment</module>
         <module>yunya-treatment-other</module>
     </modules>

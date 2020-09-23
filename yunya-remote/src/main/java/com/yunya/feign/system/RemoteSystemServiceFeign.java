@@ -34,7 +34,7 @@ public interface RemoteSystemServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api/user/validate", method = RequestMethod.POST)
-  UserInfo validate(@RequestBody JwtRequestFrom jwtRequestFrom);
+  FrontUserInfoVO validate(@RequestBody JwtRequestFrom jwtRequestFrom);
 
   /**
    * 根据ID查询品牌

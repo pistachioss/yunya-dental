@@ -1,6 +1,6 @@
 package com.yunya.auth.domain;
 
-import com.yunya.feign.system.vo.UserInfo;
+import com.yunya.feign.system.vo.FrontUserInfoVO;
 import lombok.Data;
 import lombok.ToString;
 
@@ -19,5 +19,5 @@ public class UserAuthResponse implements Serializable {
   /** token */
   private final String token;
   /** 用户信息 */
-  private final UserInfo userInfo;
+  private final FrontUserInfoVO userInfo;
 }
