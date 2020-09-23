@@ -261,13 +261,14 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
    * @return
    */
   public int updateMedicalApproval(MedicalCommonRecordForm medicalCommonRecordForm) {
-    if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID())) && !medicalCommonRecordForm.getMajorDentistId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
+    //判断修改人是否为当前病历的创建人
+    if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID())) && !medicalCommonRecordForm.getMajorDentistId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
       throw new ClientServiceException("创建者或主治医生才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
     }
     MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
     BeanUtils.copyProperties(medicalCommonRecordForm, medicalcopy);
-
-    JSONArray jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getExamination());//转化四个和牙位有关的字段信息
+  //转化四个和牙位有关的字段信息
+    JSONArray jsonArray = (JSONArray) JSONArray.toJSON(medicalCommonRecordForm.getExamination());
     if (medicalCommonRecordForm.getExamination() != null) {
       medicalcopy.setExamination(jsonArray.toJSONString());
     }
