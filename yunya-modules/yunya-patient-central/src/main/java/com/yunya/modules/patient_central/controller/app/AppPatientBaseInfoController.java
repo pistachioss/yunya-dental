@@ -1,6 +1,7 @@
 package com.yunya.modules.patient_central.controller.app;
 
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
+import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
@@ -74,7 +75,6 @@ public class AppPatientBaseInfoController {
         return ResponseUtil.success(appPatientBaseInfoVos);
     }
 
-
     /**
      * 患者档案
      * @param patientId 患者id
@@ -85,6 +85,21 @@ public class AppPatientBaseInfoController {
     public ResponseResult patientArchives(@PathVariable(value = "patientId") Integer patientId) {
         AppPatientArchivesVo appPatientArchivesVo = this.patientBaseInfoBiz.patientArchives(patientId);
         return ResponseUtil.success(appPatientArchivesVo);
+    }
+
+
+    /**
+     * 修改患者信息
+     * @param patientExtendInfoModel 基本信息+扩展信息+其他信息 参数模板
+     * @return ResponseResult
+     */
+    @CurrentUser
+    @ApiOperation("修改患者信息")
+    @PostMapping("/updatePatientInfo")
+    public ResponseResult updatePatientInfo(
+            @RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel) {
+        this.patientBaseInfoBiz.updatePatientInfo(patientExtendInfoModel);
+        return ResponseUtil.success();
     }
 
 
