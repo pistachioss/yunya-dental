@@ -70,7 +70,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     if (patientOrigin.getParentId() == null) {
       Integer maxiType = mapper.selectTypeMaximum();
       if (maxiType >= 0) { // 查询患者来源type字典最大值
-        patientOrigin.setOriginType(maxiType);
+        patientOrigin.setOriginType(maxiType+1);
         patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setCrtName(BaseContextHandler.getName());
         mapper.insertSelective(patientOrigin);

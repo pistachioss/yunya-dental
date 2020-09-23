@@ -62,7 +62,6 @@ public class AppPatientBaseInfoController {
         return this.patientBaseInfoBiz.appFindUserExists(patientBaseInfoQueryForm);
     }
 
-
     /**
      * app端  姓名/病例编号/手机号/姓名拼音模糊查询患者
      * @param patientBaseInfoQueryForm 患者模糊查询模板

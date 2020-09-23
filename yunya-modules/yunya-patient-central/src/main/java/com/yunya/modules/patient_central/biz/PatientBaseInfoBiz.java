@@ -139,15 +139,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     // patientBaseInfo.setWoGuid(woPersonBiz.addWoPersonInput(patientBaseInfo.getName())); //
     // wo平台创建对应人员 返回人员Guid添加到数据库
-
-    JSONObject object = new JSONObject();
-    object.put("taskNo", "");
-    object.put("interfaceName", "person/create");
-    object.put("result", true);
-    PersonModel person = new PersonModel();
-    person.setName(patientBaseInfo.getName());
-    object.put("person", person);
-    redisUtils.set("object", object);
     /*String person = object.toJSONString();
     NameValuePair[] data = {
       new NameValuePair("pass", redisUtils.get("PASS")), new NameValuePair("person", person)
@@ -158,6 +149,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     JSONObject jsonData = jsonObject.getJSONObject("data");
     patientBaseInfo.setPersonId((String) jsonData.get("id"));*/
     mapper.insertSelective(patientBaseInfo);
+    JSONObject object = new JSONObject();
+    object.put("taskNo", "");
+    object.put("interfaceName", "person/create");
+    object.put("result", true);
+    PersonModel person = new PersonModel();
+    person.setName(patientBaseInfo.getName());
+    object.put("person", person);
+    redisUtils.set("object", object);
     // 添加患者时,创建预付款账户
     this.addPatientPrepaymentsInfo(patientBaseInfo);
     return this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
@@ -299,38 +298,46 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
     }
     if (patientBaseInfoVo.getOriginId() != null) {
-      switch (patientBaseInfoVo.getOriginId()) {
+      switch (patientBaseInfoVo.getOriginType()) {
+        //查询员工
         case 1:
           SysUserEmployeeModel model = new SysUserEmployeeModel();
-          model.setUserId(patientBaseInfoVo.getSourceId());
-          List<SysUserInfoDetail> list =
-              remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-          if (!StringHelper.isEmpty(list)) {
-            patientBaseInfoVo.setOriginName(list.get(0).getName());
+          if (patientBaseInfoVo.getSourceId() != null){
+            model.setUserId(patientBaseInfoVo.getSourceId());
+            model.setWhetherPage(false);
+            List<SysUserInfoDetail> list =
+                    remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            if (!StringHelper.isEmpty(list)) {
+              patientBaseInfoVo.setOriginName(list.get(0).getName());
+            }
           }
           break;
+          //查询患者
         case 2:
-          PatientBaseInfo patientBaseInfo =
-              patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
-          if (patientBaseInfo != null) {
-            patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
-          }
-          break;
-        case 3:
-        case 4:
-          PatientOrigin activity =
-              patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
-          if (activity != null) {
-            patientBaseInfoVo.setOriginName(activity.getName());
+          if (patientBaseInfoVo.getSourceId() != null){
+            PatientBaseInfo patientBaseInfo =
+                    patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
+            if (patientBaseInfo != null) {
+              patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
+            }
           }
           break;
         default:
+          if (patientBaseInfoVo.getOriginId() != null){
+            PatientOrigin activity =
+                    patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
+            if (activity != null) {
+              patientBaseInfoVo.setOriginName(activity.getName());
+            }
+          }
           break;
       }
     }
+    // 根据ID查询字典明细
     DictionaryItem dictionaryItem =
         remoteSystemServiceFeign.findDictionaryItemById(patientBaseInfoVo.getMobileOwner());
     if (dictionaryItem != null) {
+      //手机号所属名称
       patientBaseInfoVo.setMobileOwnerName(dictionaryItem.getName());
     }
     return patientBaseInfoVo;
@@ -724,12 +731,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     List<PatientBaseInfoVo> patientBaseInfoVos;
     patientBaseInfoVos = patientBaseInfoMapper.findUserExistsList(patientBaseInfoQueryForm);
     if (!StringHelper.isEmpty(patientBaseInfoVos)) {
-      return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"添加失败,该用户已存在", patientBaseInfoVos);
+      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"添加失败,该用户已存在", patientBaseInfoVos);
     }
     List<PatientBaseInfoVo> patientBaseInfoVoList =
             patientBaseInfoMapper.findUserExistsByMobileList(patientBaseInfoQueryForm.getMobile());
     if (!StringHelper.isEmpty(patientBaseInfoVoList)) {
-      return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "该手机号已存在", patientBaseInfoVoList);
+      return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "该手机号已存在", patientBaseInfoVoList);
     }
     return ResponseUtil.success();
   }
