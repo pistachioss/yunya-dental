@@ -15,8 +15,8 @@ public interface ClinicAppointmentSettingMapper extends Mapper<ClinicAppointment
 
     /**
      * 根据条件查询预约设置
-     * @param query  查询条件
+     * @param userId  查询条件
      * @return
      */
-    AppointSettingVo selectAppointSettingByExample(@Param("query") AppointSettingQuery query);
+    AppointSettingVo selectAppointSettingByExample(@Param("userId") Integer userId);
 }
