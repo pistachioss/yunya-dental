@@ -11,7 +11,6 @@ import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
@@ -19,7 +18,9 @@ import com.yunya.models.appointment.Appointment;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.treatment.Registered;
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.RegisteredMapper;
+import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简介: 患者挂号业务层
@@ -49,6 +52,9 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
   /** 预约服务调用 */
   @Autowired private RemoteAppointmentFeign appointmentFeign;
 
+  /** 就诊记录 */
+  @Autowired private TreatmentRecordMapper treatmentRecordMapper;
+
   /**
    * 新增患者挂号
    *
@@ -62,20 +68,18 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       Appointment appointment = appointmentFeign.findAppointmentById(appointmentId);
       if (null != appointment) {
         if (appointment.getAppointStatus() == 1) {
-          throw new ClientServiceException(
-              "挂号失败，当前预约已被挂号，请勿重复挂号！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+          throw new ClientServiceException("挂号失败，当前预约已被挂号，请勿重复挂号！", PARAMETERS_IS_ILLEGAL);
         }
         appointment.setAppointStatus((byte) 1);
         appointmentFeign.updateAppointment(appointment);
-        entity.setFirstVisit(appointment.getAppointType());
       }
-    } else {
-      Integer patientId = model.getPatientId();
-      PatientTotalInfoVo patientData = patientCentralServiceFeign.findPatientTotalInfo(patientId);
-      if (null != patientData) {
-        String medicalNumber = patientData.getMedicalNumber();
-        entity.setFirstVisit(StringHelper.isNotBlank(medicalNumber) ? (byte) 1 : (byte) 0);
-      }
+    }
+    Integer patientId = model.getPatientId();
+    TreatmentRecord treatmentrecord = new TreatmentRecord();
+    treatmentrecord.setPatientId(patientId);
+    int count = treatmentRecordMapper.selectCount(treatmentrecord);
+    if (count > 1) {
+      entity.setFirstVisit((byte) 1);
     }
     entity.setRegTime(new Date(System.currentTimeMillis()));
     entity.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
@@ -92,14 +96,12 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
   public void cancelRegistered(Integer id) {
     Registered resultData = mapper.selectByPrimaryKey(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "取消挂号失败！ID为'" + id + "'的患者挂号记录不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("取消挂号失败！ID为'" + id + "'的患者挂号记录不存在！", QUERY_RESULT_INVALID);
     }
 
     Byte status = resultData.getStatus();
     if (status != 0) {
-      throw new ClientServiceException(
-          "取消挂号失败！ID为'" + id + "'的患者挂号处于就诊中，无法取消！！", OperationCodeConstants.OBJECT_EDIT_FAIL);
+      throw new ClientServiceException("取消挂号失败！ID为'" + id + "'的患者挂号处于就诊中，无法取消！！", OBJECT_EDIT_FAIL);
     }
 
     Integer appointmentId = resultData.getAppointmentId();
