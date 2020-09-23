@@ -8,7 +8,7 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> Wo平台照片删除Form
  *
  * @author: WY
  * @date 2020/8/11 13:39

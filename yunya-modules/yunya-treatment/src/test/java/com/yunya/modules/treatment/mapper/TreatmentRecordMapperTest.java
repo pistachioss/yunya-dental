@@ -28,6 +28,7 @@ public class TreatmentRecordMapperTest {
   public void findPatientTreatList() {
     PatientTreatmentRecordQueryForm queryForm = new PatientTreatmentRecordQueryForm();
     queryForm.setOrgIds(new Integer[] {21});
+
     queryForm.setTreatStatus(new Byte[] {0, 2});
     queryForm.setPatientId(11);
     List<PatientTreatmentRecordVO> list =

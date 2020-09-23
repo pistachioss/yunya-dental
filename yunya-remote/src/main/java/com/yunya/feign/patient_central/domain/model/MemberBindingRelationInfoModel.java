@@ -7,11 +7,11 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 会员卡关联关系
  *
  * @author: WY
  * @date 2020/7/30 17:49
- * @description:
+ * @description: 会员卡关联关系
  * @since: 1.0.0
  */
 @Data

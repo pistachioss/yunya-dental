@@ -48,9 +48,9 @@ public class VisitingRecordQuery implements Serializable {
     @ApiModelProperty(value = "门诊id")
     private Integer orgId;
 
-    /** 用户id */
-    @ApiModelProperty(value = "用户id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
-    private Integer userId;
+    /** 医生id */
+    @ApiModelProperty(value = "医生id(用户岗位只有医生的时候必传，其他情况不传)", notes = "权限控制")
+    private Integer dentistId;
 
     /** 患者id */
     @ApiModelProperty(value = "患者id(患者档案中查询需要传入)")

@@ -1,40 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientPrepaymentsInfo" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="prepayment_number" property="prepaymentNumber" jdbcType="VARCHAR" />
-    <result column="prepayment_principal" property="prepaymentPrincipal" jdbcType="DECIMAL" />
-    <result column="prepayment_bonus" property="prepaymentBonus" jdbcType="DECIMAL" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientPrepaymentsInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="prepayment_number" property="prepaymentNumber" jdbcType="VARCHAR"/>
+        <result column="prepayment_principal" property="prepaymentPrincipal" jdbcType="DECIMAL"/>
+        <result column="prepayment_bonus" property="prepaymentBonus" jdbcType="DECIMAL"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
     <sql id="Column_List">
       ppio.id,ppio.org_id orgId,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.prepayment_principal prepaymentPrincipal,ppio.prepayment_bonus prepaymentBonus,
       ppio.remarks,ppio.inservice,ppio.crt_id crtId,ppio.crt_name crtName,ppio.crt_time crtTime,ppio.upt_id uptId,ppio.upd_name updName,ppio.upd_time updTime
     </sql>
 
-  <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.PatientPrepaymentsInfoVo">
-    select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,
-    CAST(SUM(ppio.prepayment_principal+ppio.prepayment_bonus) AS decimal(15,2)) prepaymentMoneySum,ppio.prepayment_bonus prepaymentBonus
-    from patient_prepayments_info ppio where ppio.patient_id = #{id}
-  </select>
+    <!-- 根据患者id患者预付款基本信息查询 -->
+    <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo">
+        select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,
+        CAST(IFNULL(SUM(ppio.prepayment_principal+ppio.prepayment_bonus),0) AS decimal(15,2)) prepaymentMoneySum,ppio.prepayment_bonus prepaymentBonus
+        from patient_prepayments_info ppio
+        where ppio.patient_id = #{id}
+    </select>
 
-  <select id="selectOneByCardNumber" resultType="com.yunya.models.patient_central.PatientPrepaymentsInfo">
-    select <include refid="Column_List"/>
-    from patient_prepayments_info ppio where ppio.prepayment_number = #{prepaidId} and ppio.patient_id = #{patientId}
-  </select>
+    <!-- 根据预付款卡号和患者id查询预付款信息 -->
+    <select id="selectOneByCardNumber" resultType="com.yunya.models.patient_central.PatientPrepaymentsInfo">
+        select
+        <include refid="Column_List"/>
+        from patient_prepayments_info ppio
+        where ppio.prepayment_number = #{prepaidId} and ppio.patient_id =#{patientId}
+    </select>
 
 </mapper>

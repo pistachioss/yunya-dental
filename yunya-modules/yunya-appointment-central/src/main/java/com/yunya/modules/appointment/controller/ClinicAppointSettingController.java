@@ -75,8 +75,8 @@ public class ClinicAppointSettingController {
      */
     @ApiOperation(value = "根据条件查询预约显示设置")
     @GetMapping("/find")
-    public ResponseResult findAppointSettingByExample(@RequestBody @Validated AppointSettingQuery query){
-        AppointSettingVo appointSettingVo = clinicAppointSettingBiz.findAppointSettingByUserId(query);
+    public ResponseResult findAppointSettingByExample(Integer userId){
+        AppointSettingVo appointSettingVo = clinicAppointSettingBiz.findAppointSettingByUserId(userId);
         return ResponseUtil.success(appointSettingVo);
     }
 

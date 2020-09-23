@@ -6,6 +6,9 @@ import com.yunya.feign.emr.domain.form.MedicalCommonRecordForm;
 import com.yunya.feign.emr.domain.query.MedicalCommonRecordQueryForm;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -21,9 +24,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author 杨柳絮
@@ -39,7 +40,8 @@ public class MedicalCommonRecordController {
 
   @Autowired
   private MedicalCommonRecordBiz medicalCommonRecordBiz;
-
+  @Autowired
+  private RemoteSystemServiceFeign remoteSystemServiceFeign;
   /**
    * 新增普通电子病历
    *
@@ -68,12 +70,25 @@ public class MedicalCommonRecordController {
     MedicalCommonRecord medicalCommonRecord = new MedicalCommonRecord();
     BeanUtils.copyProperties(model, medicalCommonRecord);
     List<MedicalCommonRecord> list = medicalCommonRecordBiz.findList(medicalCommonRecord);
+
+    //获取员工信息
+    SysUserEmployeeModel sysUserEmployeeModel = new SysUserEmployeeModel();
+    //查询总数不分页
+    sysUserEmployeeModel.setWhetherPage(false);
+
+    List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(sysUserEmployeeModel);
+    Map<String, SysUserInfoDetail> employeeMap = new HashMap();
+    employees.forEach(z -> employeeMap.put(z.getUserId() + "", z));
+
     List<MedicalCommonRecordModel> reList = new ArrayList<>();
     List<ExaminationsVO> list1 = null;
     JSONArray jsonArray = null;
-    for (MedicalCommonRecord medical : list) {//处理和牙位有关字段的转换
+    //处理和牙位有关字段的转换
+    for (MedicalCommonRecord medical : list) {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
+      medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
+
       if (medical.getExamination() != null) {
         jsonArray = JSONArray.parseArray(medical.getExamination());
         list1 = jsonArray.toJavaList(ExaminationsVO.class);

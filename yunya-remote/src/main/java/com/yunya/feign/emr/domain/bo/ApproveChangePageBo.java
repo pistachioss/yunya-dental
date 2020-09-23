@@ -1,7 +1,7 @@
 package com.yunya.feign.emr.domain.bo;
 
 import com.google.common.collect.*;
-import com.yunya.feign.patient_central.domain.vo.*;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import lombok.*;
 
 import java.util.*;

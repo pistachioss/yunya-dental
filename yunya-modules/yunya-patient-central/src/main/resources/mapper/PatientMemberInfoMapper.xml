@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.PatientMemberInfoMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientMemberInfo" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="member_type_id" property="memberTypeId" jdbcType="INTEGER" />
-    <result column="master_card" property="masterCard" jdbcType="BIT" />
-    <result column="card_number" property="cardNumber" jdbcType="VARCHAR" />
-    <result column="status" property="status" jdbcType="TINYINT" />
-    <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL" />
-    <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL" />
-    <result column="point" property="point" jdbcType="INTEGER" />
-    <result column="last_expired_time" property="lastExpiredTime" jdbcType="TIMESTAMP" />
-    <result column="next_expired_time" property="nextExpiredTime" jdbcType="TIMESTAMP" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientMemberInfoMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientMemberInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="member_type_id" property="memberTypeId" jdbcType="INTEGER"/>
+        <result column="master_card" property="masterCard" jdbcType="BIT"/>
+        <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL"/>
+        <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL"/>
+        <result column="point" property="point" jdbcType="INTEGER"/>
+        <result column="last_expired_time" property="lastExpiredTime" jdbcType="TIMESTAMP"/>
+        <result column="next_expired_time" property="nextExpiredTime" jdbcType="TIMESTAMP"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
     <sql id="Find_Colum_List">
       pmio.id id,pmio.org_id orgId,pmio.patient_id patientId,pmio.member_type_id memberTypeId,pmio.master_card masterCard,pmio.card_number cardNumber,
@@ -33,18 +33,22 @@
       pmio.next_expired_time nextExpiredTime,pmio.remarks remarks,pmio.inservice inservice
     </sql>
 
-    <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.MemberBaseInfoVo">
+    <!-- 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）) -->
+    <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo">
       select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,bonus_amount bonusAmount,
            member_type_id memberTypeId,crt_time crtTime
       from patient_member_info where patient_id =#{id}
     </select>
 
-    <select id="findMemberBindingRelation" resultType="com.yunya.feign.patient_central.domain.vo.PatientMemberRelationVo">
+    <!-- 查询会员卡关联关系 -->
+    <select id="findMemberBindingRelation"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientMemberRelationVo">
       select pmr.id bindId,(select name from patient_base_info  where id = pmr.secondary_card_id )name,pmr.master_card_id masterCardId,pmr.secondary_card_id secondaryCardId,pmr.bind_type bindType
       from patient_member_relation pmr join patient_base_info pbi on pmr.master_card_id = pbi.id
       where pmr.master_card_id = #{form.patientId} and bind_type = #{form.bindType}
     </select>
 
+    <!-- 根据门诊id获取病历号后六位 -->
     <select id="generateCardNumber" resultType="java.lang.String">
       select
       IFNULL( MAX( substr( ${memberNo}, 6, 6 )), '000000' ) as maxnum
@@ -54,24 +58,32 @@
       org_id = #{orgId}
     </select>
 
+    <!-- 根据会员卡号查询 -->
     <select id="selectOneByCardNumber" resultType="com.yunya.models.patient_central.PatientMemberInfo">
-        select<include refid="Find_Colum_List"/>
+        select
+        <include refid="Find_Colum_List"/>
         from patient_member_info pmio where pmio.card_number = #{cardNumber}
     </select>
 
+    <!-- 通过会员卡号和患者id查询会员卡信息 -->
     <select id="selectCardNumber" resultType="com.yunya.models.patient_central.PatientMemberInfo">
-      select <include refid="Find_Colum_List"/>
-      from patient_member_info pmio where pmio.card_number = #{memberId} and pmio.patient_id =#{patientId}
+        select
+        <include refid="Find_Colum_List"/>
+        from patient_member_info pmio where pmio.card_number = #{memberId} and pmio.patient_id =#{patientId}
     </select>
 
+    <!-- 通过患者id查询会员卡全部信息 -->
     <select id="selectOneByPatientId" resultType="com.yunya.models.patient_central.PatientMemberInfo">
-      select <include refid="Find_Colum_List"/>
-      from patient_member_info pmio where pmio.patient_id =#{patientId}
+        select
+        <include refid="Find_Colum_List"/>
+        from patient_member_info pmio where pmio.patient_id =#{patientId}
     </select>
 
-    <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.MasertMemberInfoVo">
-     select id,patient_id masterCardId, member_type_id  masterCardTypeId,(select name from patient_base_info where id  = patient_id) masterName,card_number masterCardNumber
-	 from patient_member_info where patient_id = #{form.patientId}
+    <!-- 查询主卡人信息 -->
+    <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo">
+        select id,patient_id masterCardId, member_type_id masterCardTypeId,(select name from patient_base_info where id
+        = patient_id) masterName,card_number masterCardNumber
+        from patient_member_info where patient_id = #{form.patientId}
     </select>
 
 

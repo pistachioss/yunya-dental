@@ -1,53 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.patient_central.mapper.PatientMemberRelationMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientMemberRelation" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="master_card_id" property="masterCardId" jdbcType="INTEGER" />
-    <result column="secondary_card_id" property="secondaryCardId" jdbcType="INTEGER" />
-    <result column="bind_type" property="bindType" jdbcType="TINYINT" />
-    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientMemberRelationMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientMemberRelation">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="master_card_id" property="masterCardId" jdbcType="INTEGER"/>
+        <result column="secondary_card_id" property="secondaryCardId" jdbcType="INTEGER"/>
+        <result column="bind_type" property="bindType" jdbcType="TINYINT"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
+    <!-- 根据患者id 查询患者是否有会员卡关联关系 -->
     <select id="FindMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
       select id from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
     </select>
 
+    <!-- 根据患者id删除 -->
     <delete id="deleteByPatientId">
       delete from patient_member_relation where master_card_id = #{form.patientId} and bind_type = #{form.bindType}
     </delete>
 
+    <!-- 删除关系 -->
     <delete id="deleteMemberRelation">
        delete from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId}
     </delete>
 
-  <select id="findBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
+    <!-- 查询关联关系是否已经存在 -->
+    <select id="findBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
     select id,org_id orgId,	master_card_id masterCardId,secondary_card_id secondaryCardId,bind_type bindType,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,	upd_name updName,upd_time updTime
     from patient_member_relation
     where master_card_id =#{form.masterCardId} and secondary_card_id =#{form.secondaryCardId} and bind_type =#{form.bindType}
-  </select>
+    </select>
 
-  <select id="findMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
+    <!-- 查询当前患者是否已是副卡人的副卡人 -->
+    <select id="findMemberBindingRelation" resultType="com.yunya.models.patient_central.PatientMemberRelation">
      select id,org_id orgId,	master_card_id masterCardId,secondary_card_id secondaryCardId,bind_type bindType,remarks,inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,	upd_name updName,upd_time updTime
      from patient_member_relation
      where master_card_id =#{form.secondaryCardId} and secondary_card_id =#{form.masterCardId} and bind_type =#{form.bindType}
-  </select>
+    </select>
 
-  <select id="findMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.SecondaryMemberInfoVo">
+    <!-- 查询会员卡绑定信息 -->
+    <select id="findMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo">
       select  pmio.id,pmrn.secondary_card_id secondaryCardId,pmio.card_number secondaryCardNumber,pmio.member_type_id secondaryMemberTypeId,
 			 pbio.name secondaryName
       from patient_member_relation pmrn join patient_member_info pmio on pmrn.secondary_card_id = pmio.patient_id join patient_base_info pbio on pmrn.secondary_card_id = pbio.id
       where pmrn.master_card_id = #{form.patientId} and pmrn.bind_type = #{form.bindType}
-  </select>
+    </select>
 </mapper>

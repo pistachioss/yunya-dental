@@ -1,14 +1,16 @@
 package com.yunya.feign.patient_central.domain.model;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简单介绍:</br> 预付款充值
+ * 简单介绍:</br> 预付款充值Model
  *
  * @author: WY
  * @date 2020/8/22 13:57
@@ -17,6 +19,7 @@ import java.math.BigDecimal;
  */
 @Data
 @ToString
+@ApiModel(value = "预付款充值Model")
 public class PrepaidRechargeModel implements Serializable {
 
     /**

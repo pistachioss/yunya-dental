@@ -9,11 +9,11 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 患者关系推荐图
  *
  * @author: WY
  * @date 2020/7/30 9:36
- * @description:
+ * @description: 患者关系推荐图 QueryForm
  * @since: 1.0.0
  */
 @Data

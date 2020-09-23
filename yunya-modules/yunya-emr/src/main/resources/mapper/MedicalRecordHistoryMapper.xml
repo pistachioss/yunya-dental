@@ -11,15 +11,15 @@
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
     <result column="major_dentist_id" property="majorDentistId" jdbcType="INTEGER" />
     <result column="major_dentist_name" property="majorDentistName" jdbcType="VARCHAR" />
-    <result column="chief_complaint" property="chiefComplaint" jdbcType="VARCHAR" />
-    <result column="present_illness" property="presentIllness" jdbcType="VARCHAR" />
-    <result column="past_history" property="pastHistory" jdbcType="VARCHAR" />
-    <result column="re_examination" property="reExamination" jdbcType="VARCHAR" />
-    <result column="examination" property="examination" jdbcType="VARCHAR" />
-    <result column="diagnosis" property="diagnosis" jdbcType="VARCHAR" />
-    <result column="plan" property="plan" jdbcType="VARCHAR" />
-    <result column="treatment" property="treatment" jdbcType="VARCHAR" />
-    <result column="prescription" property="prescription" jdbcType="VARCHAR" />
+    <result column="chief_complaint" property="chiefComplaint" jdbcType="LONGVARCHAR" />
+    <result column="present_illness" property="presentIllness" jdbcType="LONGVARCHAR" />
+    <result column="past_history" property="pastHistory" jdbcType="LONGVARCHAR" />
+    <result column="re_examination" property="reExamination" jdbcType="LONGVARCHAR" />
+    <result column="examination" property="examination" jdbcType="LONGVARCHAR" />
+    <result column="diagnosis" property="diagnosis" jdbcType="LONGVARCHAR" />
+    <result column="plan" property="plan" jdbcType="LONGVARCHAR" />
+    <result column="treatment" property="treatment" jdbcType="LONGVARCHAR" />
+    <result column="prescription" property="prescription" jdbcType="LONGVARCHAR" />
     <result column="type" property="type" jdbcType="BIT" />
     <result column="status" property="status" jdbcType="TINYINT" />
     <result column="approval_time" property="approvalTime" jdbcType="TIMESTAMP" />

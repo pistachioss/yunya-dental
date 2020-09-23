@@ -47,9 +47,9 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
     private CouponFileInfoBiz couponFileInfoBiz;
 
     /**
-     * 新增折扣券
-     *
+     *  新增折扣券
      * @param discountCouponForm
+     * @return
      */
     public Integer saveDiscountCoupon(DiscountCouponForm discountCouponForm) {
         CouponCommonInfo data = new CouponCommonInfo();

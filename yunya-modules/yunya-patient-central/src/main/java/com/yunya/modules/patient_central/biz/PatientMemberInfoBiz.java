@@ -6,13 +6,15 @@ import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
-import com.yunya.feign.patient_central.domain.vo.*;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
@@ -38,409 +40,496 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, PatientMemberInfo> {
 
-    @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
+  /** 注入会员卡Mapper */
+  @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
+  /** 注入会员绑定关系Mapper */
+  @Autowired private PatientMemberRelationMapper patientMemberRelationMapper;
+  /** 注入会员变更记录Mapper */
+  @Autowired private PatientMemberChangeLogMapper patientMemberChangeLogMapper;
+  /** 注入系统feign对象 */
+  @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  /** 注入会员充值Mapper */
+  @Autowired private MemberRechargeRecordMapper memberRechargeRecordMapper;
+  /** 注入会员充值明细Mapper */
+  @Autowired private MemberRechargeTollRecordMapper memberRechargeTollRecordMapper;
+  /** 注入会员退费Mapper */
+  @Autowired private MemberReturnRecordMapper memberReturnRecordMapper;
+  /** 注入会员消费记录Mapper */
+  @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
 
-    @Autowired private PatientMemberRelationMapper patientMemberRelationMapper;
-
-    @Autowired private PatientMemberChangeLogMapper patientMemberChangeLogMapper;
-
-    @Autowired private RemoteSystemServiceFeign remoteSystemServiceFeign;
-
-    @Autowired private MemberRechargeRecordMapper memberRechargeRecordMapper;
-
-    @Autowired private MemberRechargeTollRecordMapper memberRechargeTollRecordMapper;
-
-    @Autowired private MemberReturnRecordMapper memberReturnRecordMapper;
-
-    @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
-
-
-
-    /**
-     * 根据患者id查询会员基本信息
-     * @return MemberBaseInfoVO
-     */
-    public MemberBaseInfoVo findMemberBaseInfo(Integer id) {
-        MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
-        if (memberBaseInfoVO != null) {
-            MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId()); //获取会员卡名称
-            if (memberType != null && memberType.getName() != null) {
-                memberBaseInfoVO.setMemberCardName(memberType.getName());
-            }
-        }
-
-        return memberBaseInfoVO;
+  /**
+   * 根据患者id查询会员基本信息
+   * @param id 患者id
+   * @return MemberBaseInfoVo
+   */
+  public MemberBaseInfoVo findMemberBaseInfo(Integer id) {
+    MemberBaseInfoVo memberBaseInfoVO = this.patientMemberInfoMapper.findMemberBaseInfo(id);
+    if (memberBaseInfoVO != null) {
+      // 获取会员卡名称
+      MemberType memberType =
+          this.remoteSystemServiceFeign.findMemberTypeById(memberBaseInfoVO.getMemberTypeId());
+      if (memberType != null && memberType.getName() != null) {
+        memberBaseInfoVO.setMemberCardName(memberType.getName());
+      }
     }
 
-    /**
-     * 查询会员卡关联关系
-     * @param form
-     * @return List<PatientMemberRelationVO>
-     */
-    public MemberRelationVo findMemberBindingRelation(PatientMemberRelationQueryForm form) {
-        MemberRelationVo memberRelationVO = new MemberRelationVo();
-        form.setBindType(0);
-        memberRelationVO.setMemberRelationList(this.patientMemberInfoMapper.findMemberBindingRelation(form));
-        form.setBindType(1);
-        memberRelationVO.setMemberBalanceRelationList(this.patientMemberInfoMapper.findMemberBindingRelation(form));
-        return memberRelationVO;
+    return memberBaseInfoVO;
+  }
+
+  /**
+   * 查询会员卡关联关系
+   *
+   * @param form 患者会员卡关联关系
+   * @return List<PatientMemberRelationVO>
+   */
+  public MemberRelationVo findMemberBindingRelation(PatientMemberRelationQueryForm form) {
+    MemberRelationVo memberRelationVO = new MemberRelationVo();
+    form.setBindType(0);
+    memberRelationVO.setMemberRelationList(
+        this.patientMemberInfoMapper.findMemberBindingRelation(form));
+    form.setBindType(1);
+    memberRelationVO.setMemberBalanceRelationList(
+        this.patientMemberInfoMapper.findMemberBindingRelation(form));
+    return memberRelationVO;
+  }
+
+  /**
+   * 添加会员卡关联关系
+   *
+   * @param form 会员卡关联关系
+   * @return ResponseResult
+   */
+  public ResponseResult addMemberBindingRelation(MemberBindingRelationInfoModel form) {
+    if (form.getPatientId().equals(form.getSecondaryCardId())) {
+      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "副卡人不能为患者本人！", "");
+    }
+    PatientMemberRelation isPatientMemberRelation =
+        patientMemberRelationMapper.findMemberBindingRelation(form);
+    if (isPatientMemberRelation != null) {
+      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "已存在绑定关系,不能双向绑定！", isPatientMemberRelation);
+    }
+    PatientMemberRelation MemberRelation =
+        this.patientMemberRelationMapper.findBindingRelation(form);
+    if (MemberRelation != null) {
+      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST, "该副卡人已存在,不能重复绑定！", MemberRelation);
+    } else {
+      PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
+      BeanUtils.copyProperties(form, patientMemberRelation);
+      // type为0 添加会员卡权限绑定
+      if (form.getBindType() == 0) {
+        patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientMemberRelation.setCrtName(BaseContextHandler.getName());
+        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+      }
+      // type为1 添加会员卡共享值 双项绑定
+      if (form.getBindType() == 1) {
+        patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientMemberRelation.setCrtName(BaseContextHandler.getName());
+        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+        int masterCardI = patientMemberRelation.getMasterCardId();
+        patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
+        patientMemberRelation.setSecondaryCardId(masterCardI);
+        this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
+      }
+
+      return ResponseUtil.success();
+    }
+  }
+
+  /**
+   * 开卡
+   *
+   * @param openCardModel 开卡Model
+   */
+  public void addMemberCard(OpenCardModel openCardModel) {
+    PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
+    patientMemberInfo.setPatientId(openCardModel.getPatientId());
+    patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
+    patientMemberInfo.setCardNumber(
+        this.generateCardNumber("H", "patient_member_info", "card_number"));
+    patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientMemberInfo.setCrtName(BaseContextHandler.getName());
+    this.patientMemberInfoMapper.insertSelective(patientMemberInfo);
+    this.cardLog(patientMemberInfo, "开卡", "");
+  }
+
+  /**
+   * 生产会员卡号
+   *
+   * @param mark 会员号标识 H：会员卡，Y：预付款
+   * @param tableName 数据库表名
+   * @param column 表中列的名称
+   * @return String 卡号
+   */
+  public String generateCardNumber(String mark, String tableName, String column) {
+    String number = this.mapper.generateCardNumber(Integer.parseInt(BaseContextHandler.getOrgId()), tableName, column);
+    String suffix = String.format("%06d", Integer.parseInt(number) + 1);
+    // 获取门诊简称
+    OrganizationInfo organizationInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    if (organizationInfo != null) {
+      return mark + organizationInfo.getClinicNumber() + suffix;
+    }
+    return null;
+  }
+
+  /**
+   * 根据关联类型删除关系
+   *
+   * @param cardRelationForm 会员卡关系删除Form
+   */
+  public void deleteRelationById(CardRelationForm cardRelationForm) {
+    // 权限绑定 单项删除
+    if (cardRelationForm.getBindType() == 0) {
+      this.patientMemberRelationMapper.deleteByPrimaryKey(cardRelationForm.getId());
+    }
+    // 共享值绑定 双项删除
+    if (cardRelationForm.getBindType() == 1) {
+      PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
+      patientMemberRelation.setId(cardRelationForm.getId());
+      PatientMemberRelation memberRelation = this.patientMemberRelationMapper.selectOne(patientMemberRelation);
+      if (memberRelation != null){
+        this.patientMemberRelationMapper.deleteMemberRelation(memberRelation.getSecondaryCardId(), memberRelation.getMasterCardId());
+        this.patientMemberRelationMapper.delete(memberRelation);
+      }
+    }
+  }
+
+  /**
+   * 开卡日志
+   *
+   * @param patientMemberInfo 患者会员信息
+   * @param operationType 标识：开卡 or 变更
+   * @param isUpd 是否修改
+   */
+  public void cardLog(PatientMemberInfo patientMemberInfo, String operationType, String isUpd) {
+    // 会员卡记录日志
+    PatientMemberChangeLog patientMemberChangeLog = new PatientMemberChangeLog();
+    patientMemberChangeLog.setCardNumber(patientMemberInfo.getCardNumber());
+    MemberType memberType =
+        this.remoteSystemServiceFeign.findMemberTypeById(patientMemberInfo.getMemberTypeId());
+    if (memberType != null) {
+      patientMemberChangeLog.setMemberCardName(memberType.getName());
     }
 
-    /**
-     * 添加会员卡关联关系
-     * @param form
-     */
-    public ResponseResult addMemberBindingRelation(MemberBindingRelationInfoModel form) {
-        if (form.getPatientId() == form.getSecondaryCardId()) {
-            return ResponseUtil.error("副卡人不能为患者本人！", "");
-        }
-        PatientMemberRelation ispatientMemberRelation = patientMemberRelationMapper.findMemberBindingRelation(form);
-        if(ispatientMemberRelation != null){
-            return ResponseUtil.error("已存在绑定关系,不能双向绑定！", ispatientMemberRelation);
-        }
-        PatientMemberRelation MemberRelation = this.patientMemberRelationMapper.findBindingRelation(form);
-        if (MemberRelation != null) {
-            return ResponseUtil.error("该副卡人已存在,不能重复绑定！", MemberRelation);
-        } else {
-            PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
-            BeanUtils.copyProperties(form, patientMemberRelation);
-            if (form.getBindType() == 0) { //type为0 添加会员卡权限绑定
-                patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-                patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-                patientMemberRelation.setCrtName(BaseContextHandler.getName());
-                this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-            }
-
-            if (form.getBindType() == 1) { //type为1 添加会员卡共享值 双项绑定
-                patientMemberRelation.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-                patientMemberRelation.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-                patientMemberRelation.setCrtName(BaseContextHandler.getName());
-                this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-                int MasterCardI = patientMemberRelation.getMasterCardId();
-                patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
-                patientMemberRelation.setSecondaryCardId(MasterCardI);
-                this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
-            }
-
-            return ResponseUtil.success();
-        }
-
+    patientMemberChangeLog.setPatientId(patientMemberInfo.getPatientId());
+    patientMemberChangeLog.setMemberTypeId(patientMemberInfo.getMemberTypeId());
+    patientMemberChangeLog.setOrgId(patientMemberInfo.getOrgId());
+    // 获取门诊简称
+    OrganizationInfo organizationInfo =
+        this.remoteSystemServiceFeign.findOrgInfoByOrgId(patientMemberInfo.getOrgId());
+    if (organizationInfo != null) {
+      patientMemberChangeLog.setOrgName(organizationInfo.getAbbreviation());
     }
 
-    /**
-     * 开卡
-     * @param openCardModel
-     * @return
-     */
-    public void addMemberCard(OpenCardModel openCardModel) {
-        PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
-        patientMemberInfo.setPatientId(openCardModel.getPatientId());
-        patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
-        patientMemberInfo.setCardNumber(this.generateCardNumber("H", "patient_member_info", "card_number"));
-        patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientMemberInfo.setCrtName(BaseContextHandler.getName());
-        this.patientMemberInfoMapper.insertSelective(patientMemberInfo);
-        this.CardLog(patientMemberInfo, "开卡", "");
+    patientMemberChangeLog.setOperatorId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientMemberChangeLog.setOperatorName(BaseContextHandler.getName());
+    patientMemberChangeLog.setOperatingTime(new Date());
+    patientMemberChangeLog.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientMemberChangeLog.setCrtName(BaseContextHandler.getName());
+    patientMemberChangeLog.setOperationType(operationType);
+    // 不为空就是修改
+    if (isUpd != null) {
+      patientMemberChangeLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientMemberChangeLog.setUpdName(BaseContextHandler.getName());
+      patientMemberChangeLog.setUpdTime(new Date());
     }
 
-    /**
-     * 生产会员卡号
-     * @param openCardModel
-     * @return Integer
-     */
-    public String generateCardNumber(String Mark, String tableName, String column) {
-        String number = this.mapper.generateCardNumber(Integer.parseInt(BaseContextHandler.getOrgId()), tableName, column);
-        String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-        OrganizationInfo organizationInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(Integer.parseInt(BaseContextHandler.getOrgId())); //获取门诊简称
+    this.patientMemberChangeLogMapper.insertSelective(patientMemberChangeLog);
+  }
+
+  /**
+   * 修改会员卡类型
+   *
+   * @param form 会员卡类型修改Form
+   */
+  public void changeType(CardTypeForm form) {
+    PatientMemberInfo patientMember =
+        this.patientMemberInfoMapper.selectOneByCardNumber(form.getCardNumber());
+    patientMember.setMemberTypeId(form.getMemberTypeId());
+    patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientMember.setUpdName(BaseContextHandler.getName());
+    patientMember.setUpdTime(new Date());
+    patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    this.mapper.updateByPrimaryKeySelective(patientMember);
+    this.cardLog(patientMember, "变更", "更新");
+  }
+
+  /**
+   * 变更记录
+   *
+   * @param cardNumber 会员卡号
+   * @return List<PatientMemberChangeLogVo>
+   */
+  public List<PatientMemberChangeLogVo> changeLog(String cardNumber) {
+    return this.patientMemberChangeLogMapper.changeLog(cardNumber);
+  }
+
+  /**
+   * 充值
+   *
+   * @param model 会员卡充值Model
+   */
+  public void recharge(MemberRechargeModel model) {
+    // 查询会员余额 余额增加
+    PatientMemberInfo patientMemberInfo =
+        patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
+    if (patientMemberInfo != null) {
+      patientMemberInfo.setPrincipalAmount(
+          patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
+      patientMemberInfo.setBonusAmount(
+          patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
+      patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+    }
+    // 添加会员卡充值记
+    MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+    BeanUtils.copyProperties(model, memberRechargeRecord);
+    memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+    memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+    // 添加会员卡充值收费记录
+    if (!StringHelper.isEmpty(model.getAccountedWayModelList())) {
+      for (AccountedWayModel accountedWayModel : model.getAccountedWayModelList()) {
+        MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
+        BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
+        memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
+        memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+        memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
+      }
+    }
+  }
+
+  /**
+   * 充值记录
+   *
+   * @param form 充值记录QueryForm
+   * @return PageInfo<RechargeRecordVo>
+   */
+  public PageInfo<RechargeRecordVo> rechargeRecord(RechargeRecordQueryForm form) {
+    if (form.getWhetherPage()) {
+      PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    }
+    form.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form);
+    if (!StringHelper.isEmpty(resultList)) {
+      for (RechargeRecordVo rechargeRecordVo : resultList) {
+        // 获取门诊简称
+        OrganizationInfo organizationInfo =
+            remoteSystemServiceFeign.findOrgInfoByOrgId(rechargeRecordVo.getOrgId());
         if (organizationInfo != null) {
-            String cardNumber = Mark + organizationInfo.getClinicNumber() + suffix;
-            return cardNumber;
+          rechargeRecordVo.setOrgName(organizationInfo.getAbbreviation());
         }
-        return null;
+        List<MemberRechargeTollRecord> memberRechargeTollRecordList =
+            memberRechargeTollRecordMapper.selectMemberRechargeRecord(rechargeRecordVo.getId());
+        StringBuilder labels = new StringBuilder(16);
+        if (!StringHelper.isEmpty(memberRechargeTollRecordList)) {
+          for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
+            AccountItem accountItem =
+                remoteSystemServiceFeign.findAccountItemById(
+                    memberRechargeTollRecord.getPaymentId());
+            if (accountItem != null) {
+              labels.append(accountItem.getName());
+            }
+          }
+        }
+        rechargeRecordVo.setPayment(labels.toString());
+      }
+    }
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 退费
+   *
+   * @param model 会员卡退费Model
+   */
+  public void refund(MemberReturnRecordModel model) {
+    // 查询会员余额 退减余额和赠金
+    PatientMemberInfo patientMemberInfo =
+        patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
+    if (patientMemberInfo != null) {
+      patientMemberInfo.setPrincipalAmount(
+          patientMemberInfo.getPrincipalAmount().subtract(model.getReturnPrincipalAmount()));
+      patientMemberInfo.setBonusAmount(
+          patientMemberInfo.getBonusAmount().subtract(model.getReturnGiftAmount()));
+      patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
     }
 
-    /**
-     * 根据关联类型删除关系
-     * @param id
-     */
-    public void deleteRelationById(CardRelationForm cardRelationForm) {
-        if (cardRelationForm.getBindType() == 0) { //权限绑定 单项删除
-            this.patientMemberRelationMapper.deleteByPrimaryKey(cardRelationForm.getId());
-        }
-
-        if (cardRelationForm.getBindType() == 1) { //共享值绑定 双项删除
-            PatientMemberRelation patientMemberRelation = new PatientMemberRelation();
-            patientMemberRelation.setId(cardRelationForm.getId());
-            PatientMemberRelation MemberRelation = (PatientMemberRelation)this.patientMemberRelationMapper.selectOne(patientMemberRelation);
-            this.patientMemberRelationMapper.deleteMemberRelation(MemberRelation.getSecondaryCardId(), MemberRelation.getMasterCardId());
-            this.patientMemberRelationMapper.delete(MemberRelation);
-        }
-
+    // 添加会员卡退费记录
+    MemberReturnRecord memberReturnRecord = new MemberReturnRecord();
+    BeanUtils.copyProperties(model, memberReturnRecord);
+    memberReturnRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    AccountItem accountItem =
+        remoteSystemServiceFeign.findAccountItemById(memberReturnRecord.getReturnWayId());
+    if (accountItem != null) {
+      // 获取退费方式类型名称
+      memberReturnRecord.setReturnWayType(accountItem.getName());
     }
+    memberReturnRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    memberReturnRecord.setCrtName(BaseContextHandler.getName());
+    memberReturnRecordMapper.insertSelective(memberReturnRecord);
+  }
 
-    /**
-     * 开卡日志
-     * @param patientMemberInfo
-     * @param operationType
-     * @param isupt
-     */
-    public void CardLog(PatientMemberInfo patientMemberInfo, String operationType, String isupt) {
-        PatientMemberChangeLog patientMemberChangeLog = new PatientMemberChangeLog(); //会员卡记录日志
-        patientMemberChangeLog.setCardNumber(patientMemberInfo.getCardNumber());
-        MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(patientMemberInfo.getMemberTypeId());
-        if (memberType.getName() != null) {
-            patientMemberChangeLog.setMemberCardName(memberType.getName());
-        }
-
-        patientMemberChangeLog.setPatientId(patientMemberInfo.getPatientId());
-        patientMemberChangeLog.setMemberTypeId(patientMemberInfo.getMemberTypeId());
-        patientMemberChangeLog.setOrgId(patientMemberInfo.getOrgId());
-        OrganizationInfo organizationInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(patientMemberInfo.getOrgId()); //获取门诊简称
+  /**
+   * 退费记录列表
+   *
+   * @param form 退费记录QueryForm
+   * @return PageInfo<MemberReturnRecordVo>
+   */
+  public PageInfo<MemberReturnRecordVo> refundList(MemberReturnRecordQueryForm form) {
+    if (form.getWhetherPage()) {
+      PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    }
+    List<MemberReturnRecordVo> resultList = memberReturnRecordMapper.refundList(form);
+    if (!StringHelper.isEmpty(resultList)) {
+      for (MemberReturnRecordVo memberReturnRecordVo : resultList) {
+        // 获取门诊简称
+        OrganizationInfo organizationInfo =
+            remoteSystemServiceFeign.findOrgInfoByOrgId(memberReturnRecordVo.getOrgId());
         if (organizationInfo != null) {
-            patientMemberChangeLog.setOrgName(organizationInfo.getAbbreviation());
+          memberReturnRecordVo.setOrgName(organizationInfo.getAbbreviation());
         }
-
-        patientMemberChangeLog.setOperatorId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientMemberChangeLog.setOperatorName(BaseContextHandler.getName());
-        patientMemberChangeLog.setOperatingTime(new Date());
-        patientMemberChangeLog.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientMemberChangeLog.setCrtName(BaseContextHandler.getName());
-        patientMemberChangeLog.setOperationType(operationType);
-        if (isupt != null) { //不为空就是修改
-            patientMemberChangeLog.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-            patientMemberChangeLog.setUpdName(BaseContextHandler.getName());
-            patientMemberChangeLog.setUpdTime(new Date());
-        }
-
-        this.patientMemberChangeLogMapper.insertSelective(patientMemberChangeLog);
+      }
     }
+    return new PageInfo<>(resultList);
+  }
 
-    /**
-     * 修改会员卡类型
-     * @param form
-     */
-    public void changeType(CardTypeForm form) {
-        PatientMemberInfo patientMember = this.patientMemberInfoMapper.selectOneByCardNumber(form.getCardNumber());
-        patientMember.setMemberTypeId(form.getMemberTypeId());
-        patientMember.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-        patientMember.setUpdName(BaseContextHandler.getName());
-        patientMember.setUpdTime(new Date());
-        patientMember.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        ((PatientMemberInfoMapper)this.mapper).updateByPrimaryKeySelective(patientMember);
-        this.CardLog(patientMember, "变更", "更新");
+  /**
+   * 消费
+   *
+   * @param model 消费记录Model
+   * @return ResponseResult
+   */
+  public ResponseResult expend(MemberExpendRecordModel model) {
+    PatientMemberInfo patientMemberInfo =
+        patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
+    if (patientMemberInfo != null) {
+      BigDecimal num =
+          patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount());
+      // 如果本金+赠金 小于 消费金额
+      if (num.compareTo(model.getExpendTotal()) < 0) {
+        return ResponseUtil.fail(
+            OperationCodeConstants.BALANCE_INSUFFICIENT, "会员卡余额不足", patientMemberInfo);
+      }
+      spending(model, patientMemberInfo);
     }
+    return ResponseUtil.success();
+  }
 
-    /**
-     * 变更记录
-     * @param cardNumber
-     * @return
-     */
-    public List<PatientMemberChangeLogVo> changeLog(String cardNumber) {
-        return this.patientMemberChangeLogMapper.changeLog(cardNumber);
+  /**
+   * 消费抵扣
+   *
+   * @param model 消费记录Model
+   * @param patientMemberInfo 会员卡信息
+   */
+  public void spending(MemberExpendRecordModel model, PatientMemberInfo patientMemberInfo) {
+    // 消费本金
+    BigDecimal costPrincipal;
+    // 消费赠金
+    BigDecimal costBonus;
+    // 账户本金
+    BigDecimal principalAmount;
+    // 账户赠金
+    BigDecimal bonusAmount;
+    // 创建消费记录对象
+    MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
+    BeanUtils.copyProperties(model, memberExpendRecord);
+    // 会员卡余额 小于 消费金额
+    if (patientMemberInfo.getPrincipalAmount().compareTo(model.getExpendTotal()) < 0) {
+      // 小于的情况下 依然先用本金去抵扣消费金额
+      // 获取本金
+      principalAmount = patientMemberInfo.getPrincipalAmount();
+      // 本金-消费总额
+      BigDecimal surplus = patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal());
+      // 本金已用完
+      patientMemberInfo.setPrincipalAmount(new BigDecimal(0));
+      // 获取消费本金
+      memberExpendRecord.setExpendPrincipal(principalAmount);
+      // 获取赠金
+      bonusAmount = patientMemberInfo.getBonusAmount();
+      // 用赠金去抵扣
+      patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(surplus));
+      // 原账户赠金-抵扣后赠金余额 = 用了多少赠金
+      costBonus = bonusAmount.subtract(patientMemberInfo.getBonusAmount());
+      // 获取消费赠金
+      memberExpendRecord.setExpendGift(costBonus);
+    } else {
+      principalAmount = patientMemberInfo.getPrincipalAmount();
+      patientMemberInfo.setPrincipalAmount(
+          patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()));
+      costPrincipal = principalAmount.subtract(patientMemberInfo.getPrincipalAmount()); // 消费金额
+      memberExpendRecord.setExpendPrincipal(costPrincipal); // 获取消费本金
     }
+    patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+    // 添加消费记录
+    memberExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    memberExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    memberExpendRecord.setCrtName(BaseContextHandler.getName());
+    memberExpendRecordMapper.insertSelective(memberExpendRecord);
+  }
 
-    /**
-     * 充值
-     * @param memberRechargeModel
-     */
-    public void Recharge(MemberRechargeModel model) {
-        //查询会员余额 余额增加
-        PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(model.getMemberId(),model.getPatientId());
-        patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
-        patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
-        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
-        //添加会员卡充值记
-        MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
-        BeanUtils.copyProperties(model,memberRechargeRecord);
-        memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        memberRechargeRecord.setCrtName(BaseContextHandler.getName());
-        memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
-        //添加会员卡充值收费记录
-        if(model.getAccountedWayModelList().size()>0){
-            for (AccountedWayModel accountedWayModel : model.getAccountedWayModelList()) {
-                MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
-                BeanUtils.copyProperties(accountedWayModel,memberRechargeTollRecord);
-                memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-                memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
-                memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-                memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
-                memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
-            }
-        }
-
+  /**
+   * 消费记录
+   *
+   * @param queryForm 消费记录查询QueryForm
+   * @return PageInfo<MemberExpendRecordVo>
+   */
+  public PageInfo<MemberExpendRecordVo> expendList(MemberExpendRecordQueryForm queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-
-    /**
-     * 充值记录
-     * @param cardNumber
-     * @return
-     */
-    public PageInfo<RechargeRecordVo> RechargeRecord(RechargeRecordQueryForm form) {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    List<MemberExpendRecordVo> resultList = memberExpendRecordMapper.expendList(queryForm);
+    if (!StringHelper.isEmpty(resultList)) {
+      for (MemberExpendRecordVo memberExpendRecordVo : resultList) {
+        // 获取门诊简称
+        OrganizationInfo organizationInfo =
+            remoteSystemServiceFeign.findOrgInfoByOrgId(memberExpendRecordVo.getOrgId());
+        if (organizationInfo != null) {
+          memberExpendRecordVo.setOrgName(organizationInfo.getAbbreviation());
         }
-        form.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        List<RechargeRecordVo> resultList = memberRechargeRecordMapper.RechargeRecord(form);
-        if(resultList.size()>0){
-            for (RechargeRecordVo rechargeRecordVo : resultList) {
-                OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(rechargeRecordVo.getOrgId());//获取门诊简称
-                if (organizationInfo != null) {
-                    rechargeRecordVo.setOrgName(organizationInfo.getAbbreviation());
-                }
-                List<MemberRechargeTollRecord> memberRechargeTollRecordList =  memberRechargeTollRecordMapper.selectMemberRechargeRecord(rechargeRecordVo.getId());
-                StringBuilder labels = new StringBuilder(16);
-                for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
-                    AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberRechargeTollRecord.getPaymentId());
-                    if(accountItem != null){
-                        labels.append(accountItem.getName());
-                    }
-                }
-                rechargeRecordVo.setPayment(labels.toString());
-            }
-        }
-        return new PageInfo<>(resultList);
+      }
     }
+    return new PageInfo<>(resultList);
+  }
 
-    /**
-     * 退费
-     * @param form
-     */
-    public void refund(MemberReturnRecordModel model) {
-        //查询会员余额 退减余额和赠金
-        PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(model.getMemberId(),model.getPatientId());
-        patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().subtract(model.getReturnPrincipalAmount()));
-        patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().subtract(model.getReturnGiftAmount()));
-        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
-        //添加会员卡退费记录
-        MemberReturnRecord memberReturnRecord = new MemberReturnRecord();
-        BeanUtils.copyProperties(model,memberReturnRecord);
-        memberReturnRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        AccountItem accountItem = remoteSystemServiceFeign.findAccountItemById(memberReturnRecord.getReturnWayId());
-        if(accountItem != null){
-            memberReturnRecord.setReturnWayType(accountItem.getName());//获取退费方式类型名称
-        }
-        memberReturnRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        memberReturnRecord.setCrtName(BaseContextHandler.getName());
-        memberReturnRecordMapper.insertSelective(memberReturnRecord);
+  /**
+   * 查询会员卡绑定信息
+   *
+   * @param form 查询患者会员信息form
+   * @return List<MemberInfoVo>
+   */
+  public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
+    MemberInfoVo memberInfoVo = new MemberInfoVo();
+    MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
+    if (masertMemberInfoVo != null) {
+      // 获取会员卡名称
+      MemberType memberType =
+          this.remoteSystemServiceFeign.findMemberTypeById(
+              masertMemberInfoVo.getMasterCardTypeId());
+      if (memberType != null) {
+        masertMemberInfoVo.setMasterMemberCardName(memberType.getName());
+      }
     }
-
-    /**
-     * 退费记录列表
-     * @param queryForm
-     * @return MemberReturnRecordVo
-     */
-    public PageInfo<MemberReturnRecordVo> refundList(MemberReturnRecordQueryForm form) {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    memberInfoVo.setMasertMemberInfoVo(masertMemberInfoVo);
+    List<SecondaryMemberInfoVo> secondaryMemberInfoVos =
+        patientMemberRelationMapper.findMemberInfo(form);
+    if (!StringHelper.isEmpty(secondaryMemberInfoVos)) {
+      for (SecondaryMemberInfoVo secondaryMemberInfoVo : secondaryMemberInfoVos) {
+        // 获取会员卡名称
+        MemberType memberType =
+            this.remoteSystemServiceFeign.findMemberTypeById(
+                secondaryMemberInfoVo.getSecondaryMemberTypeId());
+        if (memberType != null) {
+          secondaryMemberInfoVo.setMemberCardName(memberType.getName());
         }
-        List<MemberReturnRecordVo> resultList =  memberReturnRecordMapper.refundList(form);
-        for (MemberReturnRecordVo memberReturnRecordVo : resultList) {
-            OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(memberReturnRecordVo.getOrgId());//获取门诊简称
-            if (organizationInfo != null) {
-                memberReturnRecordVo.setOrgName(organizationInfo.getAbbreviation());
-            }
-        }
-        return new PageInfo<>(resultList);
+      }
     }
-
-    /**
-     * 消费
-     * @param model
-     * @return ResponseResult
-     */
-    public ResponseResult expend(MemberExpendRecordModel model) {
-        PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
-        if(patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount()).compareTo(model.getExpendTotal()) == -1 ){ //如果本金+赠金 小于 消费金额
-            return ResponseUtil.error("会员卡余额不足",patientMemberInfo);
-        }
-        spending(model,patientMemberInfo);
-        return ResponseUtil.success();
-    }
-
-    /**
-     * 消费抵扣
-     * @param model
-     * @param patientMemberInfo
-     */
-    public void spending(MemberExpendRecordModel model,PatientMemberInfo patientMemberInfo){
-        BigDecimal expendePrincipal = null; //消费本金
-        BigDecimal expendeBonus = null; //消费赠金
-        BigDecimal principalAmount = null; //账户本金
-        BigDecimal bonusAmount = null; //账户赠金
-        MemberExpendRecord memberExpendRecord = new MemberExpendRecord(); //创建消费记录对象
-        BeanUtils.copyProperties(model,memberExpendRecord);
-        if(patientMemberInfo.getPrincipalAmount().compareTo(model.getExpendTotal()) == -1 ) { //会员卡余额 小于 消费金额
-            //小于的情况下 依然先用本金去抵扣消费金额
-            principalAmount = patientMemberInfo.getPrincipalAmount(); //获取本金
-            BigDecimal surplus = patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()); //本金-消费总额
-            patientMemberInfo.setPrincipalAmount(new BigDecimal(0)); //本金已用完
-            memberExpendRecord.setExpendPrincipal(principalAmount); //获取消费本金
-            bonusAmount = patientMemberInfo.getBonusAmount(); //获取赠金
-            patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(surplus)); //用赠金去抵扣
-            expendeBonus = bonusAmount.subtract(patientMemberInfo.getBonusAmount());//原账户赠金-抵扣后赠金余额 = 用了多少赠金
-            memberExpendRecord.setExpendGift(expendeBonus);//获取消费赠金
-        }else {
-            principalAmount = patientMemberInfo.getPrincipalAmount();
-            patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().subtract(model.getExpendTotal()));
-            expendePrincipal = principalAmount.subtract(patientMemberInfo.getPrincipalAmount());//消费金额
-            memberExpendRecord.setExpendPrincipal(expendePrincipal); //获取消费本金
-        }
-        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
-        //添加消费记录
-        memberExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        memberExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        memberExpendRecord.setCrtName(BaseContextHandler.getName());
-        memberExpendRecordMapper.insertSelective(memberExpendRecord);
-    }
-
-    /**
-     * 消费记录
-     * @param queryForm
-     * @return MemberExpendRecordVo
-     */
-    public PageInfo<MemberExpendRecordVo> expendList(MemberExpendRecordQueryForm queryForm) {
-        if (queryForm.getWhetherPage()) {
-            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
-        }
-        List<MemberExpendRecordVo> resultList = memberExpendRecordMapper.expendList(queryForm);
-        if(resultList.size()>0){
-            for (MemberExpendRecordVo memberExpendRecordVo : resultList) {
-                OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(memberExpendRecordVo.getOrgId());//获取门诊简称
-                if (organizationInfo != null) {
-                    memberExpendRecordVo.setOrgName(organizationInfo.getAbbreviation());
-                }
-            }
-        }
-        return new PageInfo<>(resultList);
-    }
-
-    /**
-     * 查询会员卡绑定信息
-     * @param form
-     * @return List<MemberInfoVo>
-     */
-    public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
-        MemberInfoVo memberInfoVo = new MemberInfoVo();
-        MasertMemberInfoVo masertMemberInfoVo = patientMemberInfoMapper.selectMasertMemberInfo(form);
-        if(masertMemberInfoVo != null){
-            MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(masertMemberInfoVo.getMasterCardTypeId()); //获取会员卡名称
-            if (memberType != null && memberType.getName() != null) {
-                masertMemberInfoVo.setMasterMemberCardName(memberType.getName());
-            }
-        }
-        memberInfoVo.setMasertMemberInfoVo(masertMemberInfoVo);
-        List<SecondaryMemberInfoVo> secondaryMemberInfoVos = patientMemberRelationMapper.findMemberInfo(form);
-        if(secondaryMemberInfoVos.size() > 0){
-            for (SecondaryMemberInfoVo secondaryMemberInfoVo : secondaryMemberInfoVos) {
-                MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(secondaryMemberInfoVo.getSecondaryMemberTypeId()); //获取会员卡名称
-                if (memberType != null && memberType.getName() != null) {
-                    secondaryMemberInfoVo.setMemberCardName(memberType.getName());
-                }
-            }
-        }
-        memberInfoVo.setSecondaryMemberInfoVos(secondaryMemberInfoVos);
-        return memberInfoVo;
-    }
+    memberInfoVo.setSecondaryMemberInfoVos(secondaryMemberInfoVos);
+    return memberInfoVo;
+  }
 }

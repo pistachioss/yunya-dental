@@ -9,7 +9,7 @@ import com.uniubi.sdk.client.UniUbiClient;
 import com.uniubi.sdk.model.DeviceOutput;
 import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.uniubi.sdk.model.ResultPageResultBeanAuthOutput;
-import com.yunya.feign.patient_central.domain.vo.PatientBaseInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.framework.common.utils.MD5Util;
 import com.yunya.modules.patient.tokenApi.TokenTask;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;

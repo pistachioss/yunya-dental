@@ -4,7 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationChartQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientRecommendRelationQueryForm;
-import com.yunya.feign.patient_central.domain.vo.PatientRecommendRelationVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientRecommendRelationVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.patient_central.PatientRecommendRelation;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
@@ -31,7 +31,7 @@ public class PatientRecommendRelationBiz extends BaseBiz<PatientRecommendRelatio
 
     /**
      * 查询患者推荐关系
-     * @param form
+     * @param form 患者推荐关系QueryForm
      * @return List<PatientRecommendRelationVo>
      */
     public PageInfo<PatientRecommendRelationVo> findList(PatientRecommendRelationQueryForm form) {
@@ -44,7 +44,7 @@ public class PatientRecommendRelationBiz extends BaseBiz<PatientRecommendRelatio
 
     /**
      * 根据id查询患者推荐关系拓展图
-     * @param form
+     * @param form 患者关系推荐图
      * @return List<PatientRecommendRelationVo>
      */
     public List<PatientRecommendRelationVo> findRecommendRelationById(PatientRecommendRelationChartQueryForm form) {
