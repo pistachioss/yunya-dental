@@ -1,56 +1,77 @@
 package com.yunya.models.treatment;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
-@Table(name = "bill_pay_record")
-public class BillPayRecord {
+@Table(name = "bill_refund_record")
+public class BillRefundRecord {
+    /**
+     * 退费记录ID
+     */
     @Id
     @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
-     * 组织id
+     * 组织ID
      */
     @Column(name = "org_id")
     private Integer orgId;
 
     /**
-     * 患者id
+     * 患者ID
      */
     @Column(name = "patient_id")
     private Integer patientId;
 
     /**
-     * 就诊记录id
+     * 就诊记录ID
      */
     @Column(name = "treatment_record_id")
     private Integer treatmentRecordId;
 
     /**
-     * 开单记录id
+     * 开单记录ID
      */
     @Column(name = "order_record_id")
     private Integer orderRecordId;
 
     /**
-     * 账单记录ID
+     * 退款总额
      */
-    @Column(name = "bill_record_id")
-    private Integer billRecordId;
+    @Column(name = "total_refund_amount")
+    private BigDecimal totalRefundAmount;
 
     /**
-     * 本次收费合计金额
+     * 退费原因
      */
-    @Column(name = "received_amount")
-    private BigDecimal receivedAmount;
+    private String reason;
 
     /**
-     * 仍欠费金额
+     * 退费状态
      */
-    @Column(name = "still_owe_amount")
-    private BigDecimal stillOweAmount;
+    private Byte status;
+
+    /**
+     * 审核人ID
+     */
+    @Column(name = "approver_id")
+    private Integer approverId;
+
+    /**
+     * 退费凭证(多个用法逗号隔开)
+     */
+    @Column(name = "refund_certificate")
+    private String refundCertificate;
+
+    /**
+     * 备注
+     */
+    private String remark;
 
     /**
      * 是否有效
@@ -58,19 +79,19 @@ public class BillPayRecord {
     private Boolean inservice;
 
     /**
-     * 收款人id
+     * 创建人ID
      */
     @Column(name = "crt_id")
     private Integer crtId;
 
     /**
-     * 收款人姓名
+     * 创建人姓名
      */
     @Column(name = "crt_name")
     private String crtName;
 
     /**
-     * 收款时间
+     * 创建时间
      */
     @Column(name = "crt_time")
     private Date crtTime;
@@ -94,143 +115,201 @@ public class BillPayRecord {
     private Date updTime;
 
     /**
-     * @return id
+     * 获取退费记录ID
+     *
+     * @return id - 退费记录ID
      */
     public Integer getId() {
         return id;
     }
 
     /**
-     * @param id
+     * 设置退费记录ID
+     *
+     * @param id 退费记录ID
      */
     public void setId(Integer id) {
         this.id = id;
     }
 
     /**
-     * 获取组织id
+     * 获取组织ID
      *
-     * @return org_id - 组织id
+     * @return org_id - 组织ID
      */
     public Integer getOrgId() {
         return orgId;
     }
 
     /**
-     * 设置组织id
+     * 设置组织ID
      *
-     * @param orgId 组织id
+     * @param orgId 组织ID
      */
     public void setOrgId(Integer orgId) {
         this.orgId = orgId;
     }
 
     /**
-     * 获取患者id
+     * 获取患者ID
      *
-     * @return patient_id - 患者id
+     * @return patient_id - 患者ID
      */
     public Integer getPatientId() {
         return patientId;
     }
 
     /**
-     * 设置患者id
+     * 设置患者ID
      *
-     * @param patientId 患者id
+     * @param patientId 患者ID
      */
     public void setPatientId(Integer patientId) {
         this.patientId = patientId;
     }
 
     /**
-     * 获取就诊记录id
+     * 获取就诊记录ID
      *
-     * @return treatment_id - 就诊记录id
+     * @return treatment_record_id - 就诊记录ID
      */
     public Integer getTreatmentRecordId() {
         return treatmentRecordId;
     }
 
     /**
-     * 设置就诊记录id
+     * 设置就诊记录ID
      *
-     * @param treatmentRecordId 就诊记录id
+     * @param treatmentRecordId 就诊记录ID
      */
     public void setTreatmentRecordId(Integer treatmentRecordId) {
         this.treatmentRecordId = treatmentRecordId;
     }
 
     /**
-     * 获取开单记录id
+     * 获取开单记录ID
      *
-     * @return order_record_id - 开单记录id
+     * @return order_record_id - 开单记录ID
      */
     public Integer getOrderRecordId() {
         return orderRecordId;
     }
 
     /**
-     * 设置开单记录id
+     * 设置开单记录ID
      *
-     * @param orderRecordId 开单记录id
+     * @param orderRecordId 开单记录ID
      */
     public void setOrderRecordId(Integer orderRecordId) {
         this.orderRecordId = orderRecordId;
     }
 
     /**
-     * 获取账单记录ID
+     * 获取退款总额
      *
-     * @return bill_record_id - 账单记录ID
+     * @return total_refund_amount - 退款总额
      */
-    public Integer getBillRecordId() {
-        return billRecordId;
+    public BigDecimal getTotalRefundAmount() {
+        return totalRefundAmount;
     }
 
     /**
-     * 设置账单记录ID
+     * 设置退款总额
      *
-     * @param billRecordId 账单记录ID
+     * @param totalRefundAmount 退款总额
      */
-    public void setBillRecordId(Integer billRecordId) {
-        this.billRecordId = billRecordId;
+    public void setTotalRefundAmount(BigDecimal totalRefundAmount) {
+        this.totalRefundAmount = totalRefundAmount;
     }
 
     /**
-     * 获取本次收费合计金额
+     * 获取退费原因
      *
-     * @return received_amount - 本次收费合计金额
+     * @return reason - 退费原因
      */
-    public BigDecimal getReceivedAmount() {
-        return receivedAmount;
+    public String getReason() {
+        return reason;
     }
 
     /**
-     * 设置本次收费合计金额
+     * 设置退费原因
      *
-     * @param receivedAmount 本次收费合计金额
+     * @param reason 退费原因
      */
-    public void setReceivedAmount(BigDecimal receivedAmount) {
-        this.receivedAmount = receivedAmount;
+    public void setReason(String reason) {
+        this.reason = reason;
     }
 
     /**
-     * 获取仍欠费金额
+     * 获取退费状态
      *
-     * @return still_owe - 仍欠费金额
+     * @return status - 退费状态
      */
-    public BigDecimal getStillOweAmount() {
-        return stillOweAmount;
+    public Byte getStatus() {
+        return status;
     }
 
     /**
-     * 设置仍欠费金额
+     * 设置退费状态
      *
-     * @param stillOweAmount 仍欠费金额
+     * @param status 退费状态
      */
-    public void setStillOweAmount(BigDecimal stillOweAmount) {
-        this.stillOweAmount = stillOweAmount;
+    public void setStatus(Byte status) {
+        this.status = status;
+    }
+
+    /**
+     * 获取审核人ID
+     *
+     * @return approver_id - 审核人ID
+     */
+    public Integer getApproverId() {
+        return approverId;
+    }
+
+    /**
+     * 设置审核人ID
+     *
+     * @param approverId 审核人ID
+     */
+    public void setApproverId(Integer approverId) {
+        this.approverId = approverId;
+    }
+
+    /**
+     * 获取退费凭证(多个用法逗号隔开)
+     *
+     * @return refund_certificate - 退费凭证(多个用法逗号隔开)
+     */
+    public String getRefundCertificate() {
+        return refundCertificate;
+    }
+
+    /**
+     * 设置退费凭证(多个用法逗号隔开)
+     *
+     * @param refundCertificate 退费凭证(多个用法逗号隔开)
+     */
+    public void setRefundCertificate(String refundCertificate) {
+        this.refundCertificate = refundCertificate;
+    }
+
+    /**
+     * 获取备注
+     *
+     * @return remark - 备注
+     */
+    public String getRemark() {
+        return remark;
+    }
+
+    /**
+     * 设置备注
+     *
+     * @param remark 备注
+     */
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     /**
@@ -252,54 +331,54 @@ public class BillPayRecord {
     }
 
     /**
-     * 获取收款人id
+     * 获取创建人ID
      *
-     * @return crt_id - 收款人id
+     * @return crt_id - 创建人ID
      */
     public Integer getCrtId() {
         return crtId;
     }
 
     /**
-     * 设置收款人id
+     * 设置创建人ID
      *
-     * @param crtId 收款人id
+     * @param crtId 创建人ID
      */
     public void setCrtId(Integer crtId) {
         this.crtId = crtId;
     }
 
     /**
-     * 获取收款人姓名
+     * 获取创建人姓名
      *
-     * @return crt_name - 收款人姓名
+     * @return crt_name - 创建人姓名
      */
     public String getCrtName() {
         return crtName;
     }
 
     /**
-     * 设置收款人姓名
+     * 设置创建人姓名
      *
-     * @param crtName 收款人姓名
+     * @param crtName 创建人姓名
      */
     public void setCrtName(String crtName) {
         this.crtName = crtName;
     }
 
     /**
-     * 获取收款时间
+     * 获取创建时间
      *
-     * @return crt_time - 收款时间
+     * @return crt_time - 创建时间
      */
     public Date getCrtTime() {
         return crtTime;
     }
 
     /**
-     * 设置收款时间
+     * 设置创建时间
      *
-     * @param crtTime 收款时间
+     * @param crtTime 创建时间
      */
     public void setCrtTime(Date crtTime) {
         this.crtTime = crtTime;

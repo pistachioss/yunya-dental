@@ -1,17 +1,21 @@
 package com.yunya.models.treatment;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
-@Table(name = "bill_pay_record")
-public class BillPayRecord {
+@Table(name = "order_detail_pay_record")
+public class OrderDetailPayRecord {
+    /**
+     * 主键ID
+     */
     @Id
-    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
-     * 组织id
+     * 组织ID
      */
     @Column(name = "org_id")
     private Integer orgId;
@@ -23,16 +27,22 @@ public class BillPayRecord {
     private Integer patientId;
 
     /**
-     * 就诊记录id
+     * 就诊记录ID
      */
     @Column(name = "treatment_record_id")
     private Integer treatmentRecordId;
 
     /**
-     * 开单记录id
+     * 订单记录id
      */
     @Column(name = "order_record_id")
     private Integer orderRecordId;
+
+    /**
+     * 订单明细ID
+     */
+    @Column(name = "order_detail_id")
+    private Integer orderDetailId;
 
     /**
      * 账单记录ID
@@ -41,16 +51,28 @@ public class BillPayRecord {
     private Integer billRecordId;
 
     /**
-     * 本次收费合计金额
+     * 项目应收
+     */
+    @Column(name = "receivable_amount")
+    private BigDecimal receivableAmount;
+
+    /**
+     * 优惠金额
+     */
+    @Column(name = "privilege_amount")
+    private BigDecimal privilegeAmount;
+
+    /**
+     * 实际应收
+     */
+    @Column(name = "actual_receivable")
+    private BigDecimal actualReceivable;
+
+    /**
+     * 已收金额
      */
     @Column(name = "received_amount")
     private BigDecimal receivedAmount;
-
-    /**
-     * 仍欠费金额
-     */
-    @Column(name = "still_owe_amount")
-    private BigDecimal stillOweAmount;
 
     /**
      * 是否有效
@@ -58,25 +80,25 @@ public class BillPayRecord {
     private Boolean inservice;
 
     /**
-     * 收款人id
+     * 创建人ID
      */
     @Column(name = "crt_id")
     private Integer crtId;
 
     /**
-     * 收款人姓名
+     * 创建人ID
      */
     @Column(name = "crt_name")
     private String crtName;
 
     /**
-     * 收款时间
+     * 创建时间
      */
     @Column(name = "crt_time")
     private Date crtTime;
 
     /**
-     * 更新人ID
+     * 更新人id
      */
     @Column(name = "upd_id")
     private Integer updId;
@@ -88,38 +110,42 @@ public class BillPayRecord {
     private String updName;
 
     /**
-     * 更新时间
+     * 修改时间
      */
     @Column(name = "upd_time")
     private Date updTime;
 
     /**
-     * @return id
+     * 获取主键ID
+     *
+     * @return id - 主键ID
      */
     public Integer getId() {
         return id;
     }
 
     /**
-     * @param id
+     * 设置主键ID
+     *
+     * @param id 主键ID
      */
     public void setId(Integer id) {
         this.id = id;
     }
 
     /**
-     * 获取组织id
+     * 获取组织ID
      *
-     * @return org_id - 组织id
+     * @return org_id - 组织ID
      */
     public Integer getOrgId() {
         return orgId;
     }
 
     /**
-     * 设置组织id
+     * 设置组织ID
      *
-     * @param orgId 组织id
+     * @param orgId 组织ID
      */
     public void setOrgId(Integer orgId) {
         this.orgId = orgId;
@@ -144,39 +170,57 @@ public class BillPayRecord {
     }
 
     /**
-     * 获取就诊记录id
+     * 获取就诊记录ID
      *
-     * @return treatment_id - 就诊记录id
+     * @return treatment_record_id - 就诊记录ID
      */
     public Integer getTreatmentRecordId() {
         return treatmentRecordId;
     }
 
     /**
-     * 设置就诊记录id
+     * 设置就诊记录ID
      *
-     * @param treatmentRecordId 就诊记录id
+     * @param treatmentRecordId 就诊记录ID
      */
     public void setTreatmentRecordId(Integer treatmentRecordId) {
         this.treatmentRecordId = treatmentRecordId;
     }
 
     /**
-     * 获取开单记录id
+     * 获取订单记录id
      *
-     * @return order_record_id - 开单记录id
+     * @return order_record_id - 订单记录id
      */
     public Integer getOrderRecordId() {
         return orderRecordId;
     }
 
     /**
-     * 设置开单记录id
+     * 设置订单记录id
      *
-     * @param orderRecordId 开单记录id
+     * @param orderRecordId 订单记录id
      */
     public void setOrderRecordId(Integer orderRecordId) {
         this.orderRecordId = orderRecordId;
+    }
+
+    /**
+     * 获取订单明细ID
+     *
+     * @return order_detail_id - 订单明细ID
+     */
+    public Integer getOrderDetailId() {
+        return orderDetailId;
+    }
+
+    /**
+     * 设置订单明细ID
+     *
+     * @param orderDetailId 订单明细ID
+     */
+    public void setOrderDetailId(Integer orderDetailId) {
+        this.orderDetailId = orderDetailId;
     }
 
     /**
@@ -198,39 +242,75 @@ public class BillPayRecord {
     }
 
     /**
-     * 获取本次收费合计金额
+     * 获取项目应收
      *
-     * @return received_amount - 本次收费合计金额
+     * @return receivable_amount - 项目应收
+     */
+    public BigDecimal getReceivableAmount() {
+        return receivableAmount;
+    }
+
+    /**
+     * 设置项目应收
+     *
+     * @param receivableAmount 项目应收
+     */
+    public void setReceivableAmount(BigDecimal receivableAmount) {
+        this.receivableAmount = receivableAmount;
+    }
+
+    /**
+     * 获取优惠金额
+     *
+     * @return privilege_amount - 优惠金额
+     */
+    public BigDecimal getPrivilegeAmount() {
+        return privilegeAmount;
+    }
+
+    /**
+     * 设置优惠金额
+     *
+     * @param privilegeAmount 优惠金额
+     */
+    public void setPrivilegeAmount(BigDecimal privilegeAmount) {
+        this.privilegeAmount = privilegeAmount;
+    }
+
+    /**
+     * 获取实际应收
+     *
+     * @return actual_receivable - 实际应收
+     */
+    public BigDecimal getActualReceivable() {
+        return actualReceivable;
+    }
+
+    /**
+     * 设置实际应收
+     *
+     * @param actualReceivable 实际应收
+     */
+    public void setActualReceivable(BigDecimal actualReceivable) {
+        this.actualReceivable = actualReceivable;
+    }
+
+    /**
+     * 获取已收金额
+     *
+     * @return received_amount - 已收金额
      */
     public BigDecimal getReceivedAmount() {
         return receivedAmount;
     }
 
     /**
-     * 设置本次收费合计金额
+     * 设置已收金额
      *
-     * @param receivedAmount 本次收费合计金额
+     * @param receivedAmount 已收金额
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;
-    }
-
-    /**
-     * 获取仍欠费金额
-     *
-     * @return still_owe - 仍欠费金额
-     */
-    public BigDecimal getStillOweAmount() {
-        return stillOweAmount;
-    }
-
-    /**
-     * 设置仍欠费金额
-     *
-     * @param stillOweAmount 仍欠费金额
-     */
-    public void setStillOweAmount(BigDecimal stillOweAmount) {
-        this.stillOweAmount = stillOweAmount;
     }
 
     /**
@@ -252,72 +332,72 @@ public class BillPayRecord {
     }
 
     /**
-     * 获取收款人id
+     * 获取创建人ID
      *
-     * @return crt_id - 收款人id
+     * @return crt_id - 创建人ID
      */
     public Integer getCrtId() {
         return crtId;
     }
 
     /**
-     * 设置收款人id
+     * 设置创建人ID
      *
-     * @param crtId 收款人id
+     * @param crtId 创建人ID
      */
     public void setCrtId(Integer crtId) {
         this.crtId = crtId;
     }
 
     /**
-     * 获取收款人姓名
+     * 获取创建人ID
      *
-     * @return crt_name - 收款人姓名
+     * @return crt_name - 创建人ID
      */
     public String getCrtName() {
         return crtName;
     }
 
     /**
-     * 设置收款人姓名
+     * 设置创建人ID
      *
-     * @param crtName 收款人姓名
+     * @param crtName 创建人ID
      */
     public void setCrtName(String crtName) {
         this.crtName = crtName;
     }
 
     /**
-     * 获取收款时间
+     * 获取创建时间
      *
-     * @return crt_time - 收款时间
+     * @return crt_time - 创建时间
      */
     public Date getCrtTime() {
         return crtTime;
     }
 
     /**
-     * 设置收款时间
+     * 设置创建时间
      *
-     * @param crtTime 收款时间
+     * @param crtTime 创建时间
      */
     public void setCrtTime(Date crtTime) {
         this.crtTime = crtTime;
     }
 
     /**
-     * 获取更新人ID
+     * 获取更新人id
      *
-     * @return upd_id - 更新人ID
+     * @return upd_id - 更新人id
      */
     public Integer getUpdId() {
         return updId;
     }
 
     /**
-     * 设置更新人ID
+     * 设置更新人id
      *
-     * @param updId 更新人ID
+     * @param updId 更新人id
      */
     public void setUpdId(Integer updId) {
         this.updId = updId;
@@ -342,18 +422,18 @@ public class BillPayRecord {
     }
 
     /**
-     * 获取更新时间
+     * 获取修改时间
      *
-     * @return upd_time - 更新时间
+     * @return upd_time - 修改时间
      */
     public Date getUpdTime() {
         return updTime;
     }
 
     /**
-     * 设置更新时间
+     * 设置修改时间
      *
-     * @param updTime 更新时间
+     * @param updTime 修改时间
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;

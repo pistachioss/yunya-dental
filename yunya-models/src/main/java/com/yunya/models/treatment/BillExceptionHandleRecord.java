@@ -1,56 +1,54 @@
 package com.yunya.models.treatment;
 
-import java.math.BigDecimal;
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
-@Table(name = "bill_pay_record")
-public class BillPayRecord {
+@Table(name = "bill_exception_handle_record")
+public class BillExceptionHandleRecord {
+    /**
+     * 主键ID
+     */
     @Id
     @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
-     * 组织id
+     * 组织ID
      */
     @Column(name = "org_id")
     private Integer orgId;
 
     /**
-     * 患者id
+     * 患者ID
      */
     @Column(name = "patient_id")
     private Integer patientId;
 
     /**
-     * 就诊记录id
+     * 就诊记录ID
      */
     @Column(name = "treatment_record_id")
     private Integer treatmentRecordId;
 
     /**
-     * 开单记录id
+     * 操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      */
-    @Column(name = "order_record_id")
-    private Integer orderRecordId;
+    @Column(name = "handle_record_id")
+    private Integer handleRecordId;
 
     /**
-     * 账单记录ID
+     * 操作类型（0-收费方式调整；1-撤销收费；2-修改账单；3-账单退费）
      */
-    @Column(name = "bill_record_id")
-    private Integer billRecordId;
+    @Column(name = "operate_type")
+    private Byte operateType;
 
     /**
-     * 本次收费合计金额
+     * 操作备注
      */
-    @Column(name = "received_amount")
-    private BigDecimal receivedAmount;
-
-    /**
-     * 仍欠费金额
-     */
-    @Column(name = "still_owe_amount")
-    private BigDecimal stillOweAmount;
+    private String remark;
 
     /**
      * 是否有效
@@ -58,19 +56,19 @@ public class BillPayRecord {
     private Boolean inservice;
 
     /**
-     * 收款人id
+     * 创建人ID
      */
     @Column(name = "crt_id")
     private Integer crtId;
 
     /**
-     * 收款人姓名
+     * 创建人姓名
      */
     @Column(name = "crt_name")
     private String crtName;
 
     /**
-     * 收款时间
+     * 创建时间
      */
     @Column(name = "crt_time")
     private Date crtTime;
@@ -94,143 +92,129 @@ public class BillPayRecord {
     private Date updTime;
 
     /**
-     * @return id
+     * 获取主键ID
+     *
+     * @return id - 主键ID
      */
     public Integer getId() {
         return id;
     }
 
     /**
-     * @param id
+     * 设置主键ID
+     *
+     * @param id 主键ID
      */
     public void setId(Integer id) {
         this.id = id;
     }
 
     /**
-     * 获取组织id
+     * 获取组织ID
      *
-     * @return org_id - 组织id
+     * @return org_id - 组织ID
      */
     public Integer getOrgId() {
         return orgId;
     }
 
     /**
-     * 设置组织id
+     * 设置组织ID
      *
-     * @param orgId 组织id
+     * @param orgId 组织ID
      */
     public void setOrgId(Integer orgId) {
         this.orgId = orgId;
     }
 
     /**
-     * 获取患者id
+     * 获取患者ID
      *
-     * @return patient_id - 患者id
+     * @return patient_id - 患者ID
      */
     public Integer getPatientId() {
         return patientId;
     }
 
     /**
-     * 设置患者id
+     * 设置患者ID
      *
-     * @param patientId 患者id
+     * @param patientId 患者ID
      */
     public void setPatientId(Integer patientId) {
         this.patientId = patientId;
     }
 
     /**
-     * 获取就诊记录id
+     * 获取就诊记录ID
      *
-     * @return treatment_id - 就诊记录id
+     * @return treatment_record_id - 获取就诊记录ID
      */
     public Integer getTreatmentRecordId() {
         return treatmentRecordId;
     }
 
     /**
-     * 设置就诊记录id
+     * 设置就诊记录ID
      *
-     * @param treatmentRecordId 就诊记录id
+     * @param treatmentRecordId 就诊记录ID
      */
     public void setTreatmentRecordId(Integer treatmentRecordId) {
         this.treatmentRecordId = treatmentRecordId;
     }
 
     /**
-     * 获取开单记录id
+     * 获取操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      *
-     * @return order_record_id - 开单记录id
+     * @return handle_record_id - 操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      */
-    public Integer getOrderRecordId() {
-        return orderRecordId;
+    public Integer getHandleRecordId() {
+        return handleRecordId;
     }
 
     /**
-     * 设置开单记录id
+     * 设置操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      *
-     * @param orderRecordId 开单记录id
+     * @param handleRecordId 操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      */
-    public void setOrderRecordId(Integer orderRecordId) {
-        this.orderRecordId = orderRecordId;
+    public void setHandleRecordId(Integer handleRecordId) {
+        this.handleRecordId = handleRecordId;
     }
 
     /**
-     * 获取账单记录ID
+     * 获取操作类型（0-收费方式调整；1-撤销收费；2-修改账单；3-账单退费）
      *
-     * @return bill_record_id - 账单记录ID
+     * @return operate_type - 操作类型（0-收费方式调整；1-撤销收费；2-修改账单；3-账单退费）
      */
-    public Integer getBillRecordId() {
-        return billRecordId;
+    public Byte getOperateType() {
+        return operateType;
     }
 
     /**
-     * 设置账单记录ID
+     * 设置操作类型（0-收费方式调整；1-撤销收费；2-修改账单；3-账单退费）
      *
-     * @param billRecordId 账单记录ID
+     * @param operateType 操作类型（0-收费方式调整；1-撤销收费；2-修改账单；3-账单退费）
      */
-    public void setBillRecordId(Integer billRecordId) {
-        this.billRecordId = billRecordId;
+    public void setOperateType(Byte operateType) {
+        this.operateType = operateType;
     }
 
     /**
-     * 获取本次收费合计金额
+     * 获取操作备注
      *
-     * @return received_amount - 本次收费合计金额
+     * @return remark - 操作备注
      */
-    public BigDecimal getReceivedAmount() {
-        return receivedAmount;
+    public String getRemark() {
+        return remark;
     }
 
     /**
-     * 设置本次收费合计金额
+     * 设置操作备注
      *
-     * @param receivedAmount 本次收费合计金额
+     * @param remark 操作备注
      */
-    public void setReceivedAmount(BigDecimal receivedAmount) {
-        this.receivedAmount = receivedAmount;
-    }
-
-    /**
-     * 获取仍欠费金额
-     *
-     * @return still_owe - 仍欠费金额
-     */
-    public BigDecimal getStillOweAmount() {
-        return stillOweAmount;
-    }
-
-    /**
-     * 设置仍欠费金额
-     *
-     * @param stillOweAmount 仍欠费金额
-     */
-    public void setStillOweAmount(BigDecimal stillOweAmount) {
-        this.stillOweAmount = stillOweAmount;
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     /**
@@ -252,54 +236,54 @@ public class BillPayRecord {
     }
 
     /**
-     * 获取收款人id
+     * 获取创建人ID
      *
-     * @return crt_id - 收款人id
+     * @return crt_id - 创建人ID
      */
     public Integer getCrtId() {
         return crtId;
     }
 
     /**
-     * 设置收款人id
+     * 设置创建人ID
      *
-     * @param crtId 收款人id
+     * @param crtId 创建人ID
      */
     public void setCrtId(Integer crtId) {
         this.crtId = crtId;
     }
 
     /**
-     * 获取收款人姓名
+     * 获取创建人姓名
      *
-     * @return crt_name - 收款人姓名
+     * @return crt_name - 创建人姓名
      */
     public String getCrtName() {
         return crtName;
     }
 
     /**
-     * 设置收款人姓名
+     * 设置创建人姓名
      *
-     * @param crtName 收款人姓名
+     * @param crtName 创建人姓名
      */
     public void setCrtName(String crtName) {
         this.crtName = crtName;
     }
 
     /**
-     * 获取收款时间
+     * 获取创建时间
      *
-     * @return crt_time - 收款时间
+     * @return crt_time - 创建时间
      */
     public Date getCrtTime() {
         return crtTime;
     }
 
     /**
-     * 设置收款时间
+     * 设置创建时间
      *
-     * @param crtTime 收款时间
+     * @param crtTime 创建时间
      */
     public void setCrtTime(Date crtTime) {
         this.crtTime = crtTime;
