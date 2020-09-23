@@ -16,7 +16,6 @@ import com.yunya.feign.treatment.domain.query.BaseTariffAssociationQueryForm;
 import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
@@ -40,6 +39,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 描述: 基础价目表业务层
@@ -127,8 +128,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     BaseTariffCategory tariffCategory = baseTariffCategoryMapper.selectByPrimaryKey(categoryId);
     if (null == tariffCategory) {
       throw new ClientServiceException(
-          "新增失败，ID为'" + categoryId + "'的价目表分类不存在，请选择正确的价目表分类！",
-          OperationCodeConstants.QUERY_RESULT_INVALID);
+          "新增失败，ID为'" + categoryId + "'的价目表分类不存在，请选择正确的价目表分类！", QUERY_RESULT_INVALID);
     }
 
     BaseTariff entity = new BaseTariff();
@@ -136,8 +136,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     entity.setName(name);
     int count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增失败，价目表名称'" + name + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增失败，价目表名称'" + name + "'已存在！", NAME_IS_OCCUPIED);
     }
 
     entity = new BaseTariff();
@@ -145,15 +144,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     entity.setItemNumber(number);
     count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增失败，价目表编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增失败，价目表编号'" + number + "'已存在！", NAME_IS_OCCUPIED);
     }
 
     String categoryNumber = tariffCategory.getNumber().substring(0, 3);
     String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
-      throw new ClientServiceException(
-          "新增失败，价目表编号前3位与价目表分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("新增失败，价目表编号前3位与价目表分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
     }
 
     BeanUtils.copyProperties(model, entity);
@@ -225,8 +222,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   public void modify(Integer id, BaseTariffForm form) {
     BaseTariffInfoVO resultData = findBaseTariffInfoById(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "修改失败，ID为'" + id + "的价目表不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改失败，ID为'" + id + "的价目表不存在！", QUERY_RESULT_INVALID);
     }
     String resultDataName = resultData.getName();
     String resultDataItemNumber = resultData.getItemNumber();
@@ -238,8 +234,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       entity.setName(name);
       int count = mapper.selectCount(entity);
       if (count > 0) {
-        throw new ClientServiceException(
-            "修改失败，名称为'" + name + "'的价目表已存在！", OperationCodeConstants.OBJECT_EDIT_FAIL);
+        throw new ClientServiceException("修改失败，名称为'" + name + "'的价目表已存在！", OBJECT_EDIT_FAIL);
       }
     }
     String number = form.getItemNumber();
@@ -248,15 +243,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       entity.setItemNumber(number);
       int count = mapper.selectCount(entity);
       if (count > 0) {
-        throw new ClientServiceException(
-            "修改失败，价目表编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
+        throw new ClientServiceException("修改失败，价目表编号'" + number + "'已存在！", NAME_IS_OCCUPIED);
       }
     }
     String categoryNumber = resultDataTariffCategoryNumber.substring(0, 3);
     String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
-      throw new ClientServiceException(
-          "修改失败，价目表编号前3位与价目表分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("修改失败，价目表编号前3位与价目表分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
     }
 
     BeanUtils.copyProperties(form, entity);
@@ -326,8 +319,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     entity.setTariffId(TariffId);
     Long count = clinicTariffBiz.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "价目表删除失败，ID为" + TariffId + "'的价目表已被关联！", OperationCodeConstants.DELETE_NOT_ALLOW);
+      throw new ClientServiceException("价目表删除失败，ID为" + TariffId + "'的价目表已被关联！", DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(TariffId);
     BaseTariffHistory historyEntity = new BaseTariffHistory();
@@ -345,8 +337,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     ExcelUtil<BaseTariffImportModel> excelUtil = new ExcelUtil<>(BaseTariffImportModel.class);
     List<BaseTariffImportModel> models = excelUtil.importExcel(excelFile.getInputStream());
     if (StringHelper.isEmpty(models)) {
-      throw new ClientServiceException(
-          "导入失败,导入的价目表数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+      throw new ClientServiceException("导入失败,导入的价目表数据不能为空！", PARAM_NOT_ALLOW_EMPTY);
     }
     // 初始化参数、常量
     int dataNum = 0;
@@ -566,8 +557,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
             .append("'与系统中该价目表编号'")
             .append(resultItemNumber)
             .append("'不一致！");
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
       }
     }
 
@@ -586,8 +576,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
             .append("'与系统中该价目表名称'")
             .append(itemResultName)
             .append("'不一致！");
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+        throw new ClientServiceException(failureMsg.toString(), PARAM_NOT_ALLOW_EMPTY);
       }
     }
   }
@@ -644,8 +633,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
           .append("'与价目表分类编号前3位'")
           .append(categoryStr)
           .append("'不同！");
-      throw new ClientServiceException(
-          failureMsg.toString(), OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
     }
 
     BaseTariffCategory categoryEntity;
@@ -664,8 +652,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
             .append("'与系统中该价目表分类名称'")
             .append(categoryResultName)
             .append("'不一致！");
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
       }
     }
 
@@ -683,8 +670,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
             .append("'与系统中该价目表分类编号'")
             .append(categoryResultNumber)
             .append("'不一致！");
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
       }
     }
   }
@@ -726,8 +712,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   public void modifyTariffAssociation(Integer id, BaseTariffAssociationForm form) {
     BaseTariff resultData = mapper.selectByPrimaryKey(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "修改失败，ID为'" + id + "的价目表不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改失败，ID为'" + id + "的价目表不存在！", QUERY_RESULT_INVALID);
     }
     String emr = form.getEmr();
     String attention = form.getAttention();
@@ -759,8 +744,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     List<BaseTariffAssociationImportModel> models =
         excelUtil.importExcel(excelFile.getInputStream());
     if (StringHelper.isEmpty(models)) {
-      throw new ClientServiceException(
-          "导入失败,导入的价目表数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+      throw new ClientServiceException("导入失败,导入的价目表数据不能为空！", PARAM_NOT_ALLOW_EMPTY);
     }
 
     int dataNum = 0;
@@ -801,8 +785,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
             .append("的开单项目分类！")
             .append("数据序号为：")
             .append(dataNum);
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.QUERY_RESULT_INVALID);
+        throw new ClientServiceException(failureMsg.toString(), QUERY_RESULT_INVALID);
       }
 
       tariff = new BaseTariff();
@@ -820,8 +803,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
             .append("的开单项目！")
             .append("数据序号为:")
             .append(dataNum);
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.QUERY_RESULT_INVALID);
+        throw new ClientServiceException(failureMsg.toString(), QUERY_RESULT_INVALID);
       }
 
       tariffResult.setEmr(emr);

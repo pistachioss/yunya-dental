@@ -7,7 +7,6 @@ import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
@@ -26,6 +25,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
 
 /**
  * 简介: 开单明细业务层（开单明细列表查询、添加商品、删除开单明细）
@@ -143,8 +145,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     Integer orderRecordId = model.getOrderRecordId();
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
-      throw new ClientServiceException(
-          "添加商品失败，传入参数有误，为查询到与之匹配的开单记录！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+      throw new ClientServiceException("添加商品失败，传入参数有误，为查询到与之匹配的开单记录！", PARAM_NOT_ALLOW_EMPTY);
     }
 
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
@@ -275,14 +276,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       switch (sourceType) {
         case 0:
           if (!BusinessConstants.ORDER_UN_LOCK_STATUS.equals(status)) {
-            throw new ClientServiceException(
-                "删除开单明细失败，当前账单已锁定或已结账，无法删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
+            throw new ClientServiceException("删除开单明细失败，当前账单已锁定或已结账，无法删除！", DELETE_NOT_ALLOW);
           }
           break;
         case 1:
           if (BusinessConstants.ORDER_FINISH_STATUS.equals(status)) {
-            throw new ClientServiceException(
-                "删除开单明细失败，当前账单已结账，无法删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
+            throw new ClientServiceException("删除开单明细失败，当前账单已结账，无法删除！", DELETE_NOT_ALLOW);
           }
           break;
         default:

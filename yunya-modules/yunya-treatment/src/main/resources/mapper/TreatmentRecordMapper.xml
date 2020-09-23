@@ -35,7 +35,8 @@
         tr.appointment_id as appointmentId,
         tr.registered_id as registeredId,
         tr.dentist_id as treatDentistId,
-        tr.treat_start_time as treatStartTime,
+        DATE_FORMAT(tr.treat_start_time, '%H:%m') as treatStartTime,
+        DATE_FORMAT(tr.treat_end_time, '%H:%m') as treatEndTime,
         tr.medical_record_completed as medicalRecordCompleted
         from treatment_record tr
         <where>
@@ -99,5 +100,6 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY tr.treat_start_time DESC
     </select>
 </mapper>

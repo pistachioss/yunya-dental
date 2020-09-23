@@ -1,28 +1,41 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.treatment.BillPayDetailRecord" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER" />
-    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
-    <result column="bill_record_id" property="billRecordId" jdbcType="INTEGER" />
-    <result column="bill_pay_record_id" property="billPayRecordId" jdbcType="INTEGER" />
-    <result column="type" property="type" jdbcType="TINYINT" />
-    <result column="account_item_id" property="accountItemId" jdbcType="INTEGER" />
-    <result column="amount" property="amount" jdbcType="DECIMAL" />
-    <result column="transaction_number" property="transactionNumber" jdbcType="VARCHAR" />
-    <result column="status" property="status" jdbcType="TINYINT" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.treatment.BillPayDetailRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER"/>
+        <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER"/>
+        <result column="bill_record_id" property="billRecordId" jdbcType="INTEGER"/>
+        <result column="bill_pay_record_id" property="billPayRecordId" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="account_item_id" property="accountItemId" jdbcType="INTEGER"/>
+        <result column="amount" property="amount" jdbcType="DECIMAL"/>
+        <result column="transaction_number" property="transactionNumber" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据收费记录ID查询收费明细列表 -->
+    <select id="selectBillPayDetailRecord"
+            resultType="com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO">
+        select
+            billPayRecordId,
+            billPayDetailRecordId,
+            accountItemId,
+            amount
+        from
+            bill_pay_detail_record bpdr
+        where bpdr.inservice = 1 and bpdr.bill_pay_record_id = #{billPayRecordId}
+    </select>
 </mapper>

@@ -7,7 +7,6 @@ import com.yunya.feign.treatment.domain.model.BaseTariffCategoryModel;
 import com.yunya.feign.treatment.domain.query.BaseTariffCategoryQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseTariffCategoryVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.tariff.BaseTariff;
@@ -19,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 描述: 价目表分类业务层
@@ -74,16 +73,14 @@ public class BaseTariffCategoryBiz extends BaseBiz<BaseTariffCategoryMapper, Bas
     entity.setName(name);
     int count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增失败，名称为'" + name + "'的价目表分类已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增失败，名称为'" + name + "'的价目表分类已存在", NAME_IS_OCCUPIED);
     }
     String number = model.getNumber();
     entity = new BaseTariffCategory();
     entity.setNumber(number);
     count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增失败，编号为'" + number + "'的价目表分类已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增失败，编号为'" + number + "'的价目表分类已存在", NAME_IS_OCCUPIED);
     }
     entity.setName(name);
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -100,8 +97,7 @@ public class BaseTariffCategoryBiz extends BaseBiz<BaseTariffCategoryMapper, Bas
   public void modify(Integer id, BaseTariffCategoryForm form) {
     BaseTariffCategory resultData = mapper.selectByPrimaryKey(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "修改失败，ID为'" + id + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改失败，ID为'" + id + "'的数据不存在", QUERY_RESULT_INVALID);
     }
 
     String resultName = resultData.getName();
@@ -123,8 +119,7 @@ public class BaseTariffCategoryBiz extends BaseBiz<BaseTariffCategoryMapper, Bas
       resultData.setNumber(number);
       int count = mapper.selectCount(resultData);
       if (count > 0) {
-        throw new ClientServiceException(
-            "修改失败，编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
+        throw new ClientServiceException("修改失败，编号'" + number + "'已存在！", NAME_IS_OCCUPIED);
       }
     }
 
@@ -147,8 +142,7 @@ public class BaseTariffCategoryBiz extends BaseBiz<BaseTariffCategoryMapper, Bas
     entity.setTariffCategoryId(id);
     Long count = baseTariffBiz.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "删除失败，ID为'" + id + "'的价目表分类已被管理！", OperationCodeConstants.DELETE_NOT_ALLOW);
+      throw new ClientServiceException("删除失败，ID为'" + id + "'的价目表分类已被管理！", DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
   }

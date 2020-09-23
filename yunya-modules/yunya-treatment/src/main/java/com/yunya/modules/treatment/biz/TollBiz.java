@@ -4,9 +4,6 @@ import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.treatment.domain.model.*;
-import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
@@ -18,6 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Set;
+
+import static com.yunya.framework.common.constant.BusinessConstants.ORDER_LOCK_STATUS;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK;
 
 /**
  * 简介: 就诊收费业务层
@@ -68,7 +71,7 @@ public class TollBiz {
     checkTotalChargeWithActualReceivedAmount(
         totalCharge, actualReceivableAmount, outstandingAmount);
     Integer orderRecordId = model.getOrderRecordId();
-    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId, 5);
+    redisUtils.set(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId, 5);
 
     Integer patientId = orderRecord.getPatientId();
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
@@ -103,10 +106,10 @@ public class TollBiz {
     billPayRecord.setBillRecordId(billRecordId);
     if (totalCharge.compareTo(actualReceivableAmount) >= 0) {
       billPayRecord.setReceivedAmount(actualReceivableAmount);
-      billPayRecord.setStillOwe(BigDecimal.valueOf(0));
+      billPayRecord.setStillOweAmount(BigDecimal.valueOf(0));
     } else {
       billPayRecord.setReceivedAmount(totalCharge);
-      billPayRecord.setStillOwe(actualReceivableAmount.subtract(totalCharge));
+      billPayRecord.setStillOweAmount(actualReceivableAmount.subtract(totalCharge));
     }
     billPayRecord.setCrtId(userId);
     billPayRecord.setCrtName(name);
@@ -128,7 +131,7 @@ public class TollBiz {
     TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
     treatmentRecord.setStatus((byte) 3);
     treatmentRecordBiz.updateSelectiveById(treatmentRecord);
-    redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+    redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
   }
 
   /**
@@ -141,31 +144,25 @@ public class TollBiz {
     Integer orderRecordId = model.getOrderRecordId();
     OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
     if (null == orderRecord) {
-      throw new ClientServiceException(
-          "收费失败，当前未选择正确的就诊记录或传入参数有误！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收费失败，当前未选择正确的就诊记录或传入参数有误！", PARAMETERS_IS_ILLEGAL);
     }
     Byte status = orderRecord.getStatus();
-    if (!status.equals(BusinessConstants.ORDER_LOCK_STATUS)) {
-      throw new ClientServiceException(
-          "收费失败，当前账单处于解锁状态或收费完成状态，暂不能进行收费！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+    if (!status.equals(ORDER_LOCK_STATUS)) {
+      throw new ClientServiceException("收费失败，当前账单处于解锁状态或收费完成状态，暂不能进行收费！", PARAMETERS_IS_ILLEGAL);
     }
-    String resultRecordId =
-        redisUtils.get(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
+    String resultRecordId = redisUtils.get(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
     if (StringHelper.isNotBlank(resultRecordId)) {
-      throw new ClientServiceException(
-          "收费失败，当前账单正在修改！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收费失败，当前账单正在修改！", PARAMETERS_IS_ILLEGAL);
     }
     GeneralDiscountModel generalDiscountModel = model.getGeneralDiscountModel();
     AccreditDiscountModel accreditDiscountModel = model.getAccreditDiscountModel();
     if (null != generalDiscountModel && null != accreditDiscountModel) {
-      throw new ClientServiceException(
-          "收费失败，优惠与授权折扣不能同时使用！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收费失败，优惠与授权折扣不能同时使用！", PARAMETERS_IS_ILLEGAL);
     }
     InvoiceModel invoiceModel = model.getInvoiceModel();
     if (invoiceModel.getInvoice()) {
       if (StringHelper.isBlank(invoiceModel.getInvoiceNumber())) {
-        throw new ClientServiceException(
-            "收费失败，未填写发票编号！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException("收费失败，未填写发票编号！", PARAMETERS_IS_ILLEGAL);
       }
     }
     return orderRecord;
@@ -226,6 +223,8 @@ public class TollBiz {
                     prepaymentAccountModel.getAccountItemId(),
                     prepaymentAccountModel.getAmount(),
                     (byte) 0);
+            billPayDetailRecord.setRemark(
+                prepaymentAccountModel.getPrepaymentAccountId().toString());
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
@@ -238,6 +237,7 @@ public class TollBiz {
                     memberAccountModel.getAccountItemId(),
                     memberAccountModel.getAmount(),
                     (byte) 1);
+            billPayDetailRecord.setRemark(memberAccountModel.getMemberAccountId().toString());
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
@@ -456,13 +456,18 @@ public class TollBiz {
       AccreditDiscountModel accreditDiscountModel) {
     BillRecord billRecordResult = billRecordBiz.selectById(billRecordId);
     if (null == billRecordResult) {
-      throw new ClientServiceException(
-          "当前账单不存在，请选择正确的账单进行收欠费操作！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("当前账单不存在，请选择正确的账单进行收欠费操作！", QUERY_RESULT_INVALID);
     }
     if (null != generalDiscountModel && null != accreditDiscountModel) {
-      throw new ClientServiceException(
-          "收欠费失败，优惠与授权折扣不能同时使用！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收欠费失败，优惠与授权折扣不能同时使用！", PARAMETERS_IS_ILLEGAL);
     }
+    Byte privilegeType = billRecordResult.getPrivilegeType();
+    if (null != generalDiscountModel || null != accreditDiscountModel) {
+      if (0 != privilegeType) {
+        throw new ClientServiceException("收欠费失败，当前账单已使用优惠，不能继续使用优惠！", PARAMETERS_IS_ILLEGAL);
+      }
+    }
+
     return billRecordResult;
   }
 
@@ -481,8 +486,7 @@ public class TollBiz {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
     if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
-      throw new ClientServiceException(
-          "收欠费失败，请输入正确的入账金额！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收欠费失败，请输入正确的入账金额！", PARAMETERS_IS_ILLEGAL);
     }
     return totalCharge;
   }
@@ -497,8 +501,7 @@ public class TollBiz {
   private void checkTotalChargeWithActualReceivedAmount(
       BigDecimal totalCharge, BigDecimal actualReceivedAmount, BigDecimal outstandingAmount) {
     if (totalCharge.add(outstandingAmount).compareTo(actualReceivedAmount) != 0) {
-      throw new ClientServiceException(
-          "入账方式金额与挂账金额之和不等于剩余应付金额合计！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("入账方式金额与挂账金额之和不等于剩余应付金额合计！", PARAMETERS_IS_ILLEGAL);
     }
   }
 
@@ -509,8 +512,7 @@ public class TollBiz {
    */
   private void checkCollectDebtAvailable(BigDecimal debtAmount) {
     if (BigDecimal.valueOf(0).compareTo(debtAmount) >= 0) {
-      throw new ClientServiceException(
-          "收欠费失败，当前账单已全部结清，无法进行收欠费操作！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收欠费失败，当前账单已全部结清，无法进行收欠费操作！", PARAMETERS_IS_ILLEGAL);
     }
   }
 
@@ -523,8 +525,7 @@ public class TollBiz {
   private void checkDiscountAvailable(
       GeneralDiscountModel generalDiscountModel, AccreditDiscountModel accreditDiscountModel) {
     if (null != generalDiscountModel || null != accreditDiscountModel) {
-      throw new ClientServiceException(
-          "收欠费失败，已完成结算的账单，无法继续使用优惠", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收欠费失败，已完成结算的账单，无法继续使用优惠", PARAMETERS_IS_ILLEGAL);
     }
   }
 
@@ -598,7 +599,7 @@ public class TollBiz {
     billPayRecord.setOrderRecordId(billRecord.getOrderRecordId());
     billPayRecord.setBillRecordId(billRecordId);
     billPayRecord.setReceivedAmount(totalCharge);
-    billPayRecord.setStillOwe(debtAmount.subtract(totalCharge));
+    billPayRecord.setStillOweAmount(debtAmount.subtract(totalCharge));
     billPayRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     billPayRecord.setCrtName(BaseContextHandler.getName());
     return billPayRecord;

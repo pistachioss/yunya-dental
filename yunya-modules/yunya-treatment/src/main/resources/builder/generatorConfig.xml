@@ -26,8 +26,6 @@
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
 
-        <table tableName="bill_record" domainObjectName="BillRecord"/>
-        <table tableName="bill_pay_record" domainObjectName="BillPayRecord"/>
-        <table tableName="bill_pay_detail_record" domainObjectName="BillPayDetailRecord"/>
+        <table tableName="order_detail_pay_record" domainObjectName="OrderDetailPayRecord"/>
     </context>
 </generatorConfiguration>

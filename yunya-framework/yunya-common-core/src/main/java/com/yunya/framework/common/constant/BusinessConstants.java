@@ -37,6 +37,11 @@ public class BusinessConstants {
   public static final Byte MEDICAL_TYPE = 2;
   /** 其他类型 */
   public static final Byte OTHER_TYPE = 3;
+  /*************************** 默认支付方式 ****************************/
+  /** 会员卡支付方式ID */
+  public static final Integer ACCOUNT_ITEM_OF_MEMBER = 60;
+  /** 预付款支付方式ID */
+  public static final Integer ACCOUNT_ITEM_OF_PREPARE = 61;
 
   /** -------------------------用户、员工信息相关常量--------------------------- */
 
