@@ -6,7 +6,6 @@ import com.yunya.auth.utils.JwtTokenUtil;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.JwtRequestFrom;
 import com.yunya.feign.system.vo.FrontUserInfoVO;
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.common.utils.jwt.JWTInfo;
@@ -15,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import static com.yunya.framework.common.constant.BusinessConstants.ADMIN_ACCOUNT;
+import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNATION_STATUS;
 
 /**
  * 简单介绍: 用户鉴权接口实现
@@ -73,9 +75,8 @@ public class UserAuthServiceImpl implements UserAuthService {
    */
   private void checkUserInfo(FrontUserInfoVO userInfo) {
     // 管理员账号
-    if (null != userInfo.getId()
-        && !BusinessConstants.ADMIN_ACCOUNT.equals(userInfo.getUsername())) {
-      if (BusinessConstants.USER_RESIGNATION_STATUS.equals(userInfo.getWorkStatus())) {
+    if (null != userInfo.getId() && !ADMIN_ACCOUNT.equals(userInfo.getUsername())) {
+      if (USER_RESIGNATION_STATUS.equals(userInfo.getWorkStatus())) {
         throw new UserAuthException("当前员工已离职，账号无法登陆！");
       }
     }
