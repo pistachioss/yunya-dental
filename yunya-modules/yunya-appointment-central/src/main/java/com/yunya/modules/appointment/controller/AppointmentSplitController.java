@@ -59,7 +59,7 @@ public class AppointmentSplitController {
     @PostMapping("/add/check")
     @CurrentUser
     public ResponseResult addAppointSplitCheck(@RequestBody @Validated AppointSplitCheckForm form){
-        List<AppointmentSplit> splits = appointSpitBiz.appointSplitCheck(form.getAppointDuration(), form.getSplitList());
+        List<AppointmentSplit> splits = appointSpitBiz.appointSplitCheck(form.getAppointDate(),form.getAppointDuration(), form.getSplitList());
         if (splits == null || splits.isEmpty()){
             return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL,"时长分解有误！",null);
         }
