@@ -79,7 +79,9 @@
     apt.confirm_status as confirmStatus,
     apt.appoint_status as appointStatus,
     apt.remarks,
-    apt.inservice
+    apt.inservice,
+    apt.crt_time as crtTime,
+    apt.crt_name as crtName
   </sql>
 
     <!-- 根据设备id，预约开始时间，预约结束时间查询所有预约列表 -->
