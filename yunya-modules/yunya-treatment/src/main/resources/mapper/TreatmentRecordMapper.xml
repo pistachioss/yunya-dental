@@ -35,8 +35,8 @@
         tr.appointment_id as appointmentId,
         tr.registered_id as registeredId,
         tr.dentist_id as treatDentistId,
-        DATE_FORMAT(tr.treat_start_time, '%H:%m') as treatStartTime,
-        DATE_FORMAT(tr.treat_end_time, '%H:%m') as treatEndTime,
+        DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
+        DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
         tr.medical_record_completed as medicalRecordCompleted
         from treatment_record tr
         <where>
