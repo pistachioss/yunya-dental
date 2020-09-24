@@ -193,7 +193,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param orgId 组织ID
    * @return
    */
-  private String generateOrderRecordNumber(Integer orgId) {
+  public String generateOrderRecordNumber(Integer orgId) {
     String number = mapper.selectOrderNumberByOrgId(orgId, new Date(System.currentTimeMillis()));
     String suffix = String.format("%04d", Integer.parseInt(number) + 1);
     return String.format(
