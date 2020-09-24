@@ -16,11 +16,13 @@ import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import com.yunya.feign.employee_attend.vo.UserWorkVO;
+import com.yunya.feign.employee_attend.vo.WorkDayVO;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
@@ -89,6 +91,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 预约修改服务 */
     @Autowired
     private AppointmentModifyRecordBiz appointmentModifyRecordBiz;
+
+    /** 患者就诊服务 */
+    @Autowired
+    private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
 
     /** 注入redis缓冲服务 */
     @Autowired
@@ -168,6 +174,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 splitModel.setAppointDuration(build.getAppointDuration());
                 splitModel.setAppointmentId(build.getId());
                 splitModel.setOrgId(build.getOrgId());
+                splitModel.setAppointDate(form.getAppointDate());
                 Integer splitResult = appointmentSplitBiz.insertAppointSplit(splitModel);
                 if (splitResult == null || splitResult <= 0){
                     throw new ClientServiceException( AppointmentError.APPOINTMENT_SPLIT_FAIL.getMessage(),AppointmentError.APPOINTMENT_SPLIT_FAIL.getCode());
@@ -492,9 +499,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 组合医生和预约信息
         List<UserWorkVO> shiftWorkDatas = scheduleResultVO.getShiftWorkDatas();
+        Integer orgId = query.getOrgId();
+        Date startDate = query.getStartDate();
+        Date endDate = query.getEndDate();
         shiftWorkDatas.forEach(userWorkVO -> {
             // 组合预约医生和患者信息（患者维度）
-            List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(query.getOrgId(), query.getStartDate(), query.getEndDate(), userWorkVO);
+            List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(orgId, startDate, endDate, userWorkVO);
             // 将预约信息放入预约可视图列表
             if (dimensionVoList != null && !dimensionVoList.isEmpty()){
                 dimensionVoList.forEach(dimensionVo -> appointmentDimensionVoList.add(dimensionVo));
@@ -561,7 +571,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<AppointmentDimensionVo> appointmentDimensionVos = this.findAppointmentPatientDimensionByExample(query);
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         if (StringHelper.isEmpty(appointmentDimensionVos)) {
-            return ResponseUtil.success("数据不存在",OperationCodeConstants.DATA_NOT_EXIST);
+            return ResponseUtil.fail(AppointmentError.DENTIST_NOT_SCHEDULE.getCode(),AppointmentError.DENTIST_NOT_SCHEDULE.getMessage(),null);
         }
         // 根据大医生id查询相关助手信息并且设置助手信息
         appointmentDimensionVos.forEach(appointmentDimensionVo -> {
@@ -1164,6 +1174,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
     }
 
+
     /**
      * 组合患者预约医生维度信息（预约患者信息+医生排班信息）
      * @param orgId 门诊id
@@ -1171,6 +1182,109 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return AppointmentDentistDimensionVo
      */
     private AppointmentDimensionVo combinationDentistDimensionVo(Integer orgId,AppointmentDimensionVo appointmentDimensionVo) {
+        // 取出患者信息
+        List<AppointmentPatientCardVo> patientCardVos = appointmentDimensionVo.getAppointmentPatientCardVos();
+
+        if (!StringHelper.isEmpty(patientCardVos)) {
+            // 查询预约分解信息
+            AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
+            // 根据患者信息中的预约医生ID和助手ID填充医生和助手基础信息
+            patientCardVos.forEach(appointmentPatientCardVo -> {
+                // 设置预约id
+                splitQuery.setAppointmentId(appointmentPatientCardVo.getId());
+                // 设置门诊id
+                splitQuery.setOrgId(orgId);
+                // 设置预约时间
+                splitQuery.setAppointDate(appointmentDimensionVo.getCurrentDate());
+                // 查询本次预约相关的分解助手信息
+                List<AppointmentSplitVo> appointSplitVo = appointmentSplitBiz.findAppointmentSplitByExample(splitQuery);
+                if (!StringHelper.isEmpty(appointSplitVo)) {
+                    // 助手预约信息列表
+                    List<AppointmentDimensionVo> assistantAppointList = new ArrayList<>();
+                    appointSplitVo.forEach(appointmentSplitVo -> {
+                        // 设置医生维度大医生下的预约助手相关信息（助手排班、助手分解到的患者信息）
+                        AppointmentDimensionVo assistantPatientInfo = this.setAppointAssistantInfo(appointmentPatientCardVo, appointmentSplitVo);
+                        // 将助手信息放入助手预约信息列表中
+                        assistantAppointList.add(assistantPatientInfo);
+                    });
+                    // 将助手预约信息设置到医生维度信息实体中
+                    appointmentDimensionVo.setAppointmentAssistants(assistantAppointList);
+                }
+            });
+        }
+        return appointmentDimensionVo;
+    }
+
+    /**
+     * 设置医生维度大医生下的预约助手相关信息（助手排班、助手分解到的患者信息）
+     * @param appointmentPatientCardVo  大医生下的患者卡信息
+     * @param appointmentSplitVo  大医生下患者预约相关的预约分解
+     * @return 医生维度视图模型
+     */
+    private AppointmentDimensionVo setAppointAssistantInfo(AppointmentPatientCardVo appointmentPatientCardVo,AppointmentSplitVo appointmentSplitVo) {
+        // 通过feign查询助手详细信息
+        SysUserInfoDetail assistantDetailInfo = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(appointmentSplitVo.getAssistantId());
+        // 助手患者信息
+        if (null != assistantDetailInfo) {
+            // 助手患者信息列表
+            List<AppointmentPatientCardVo> assistantPatientCardList = new ArrayList<>();
+            // 医生维度列表模型
+            AppointmentDimensionVo  assistantPatientInfo = new AppointmentDimensionVo();
+            // 设置助手ID
+            assistantPatientInfo.setDentistId(assistantDetailInfo.getUserId());
+            // 设置助手名字
+            assistantPatientInfo.setName(assistantDetailInfo.getName());
+
+            // 助手患者信息模型
+            AppointmentPatientCardVo assistantPatientCardInfo = EntityUtils.build(appointmentPatientCardVo, AppointmentPatientCardVo.class);
+            String[] splitStartTimeArr = appointmentSplitVo.getSplitStartTime().split(":");
+            String[] splitEndTimeArr = appointmentSplitVo.getSplitEndTime().split(":");
+            // 设置预约时间段
+            Integer startMinute = Integer.valueOf(splitStartTimeArr[0]) * 60 + Integer.valueOf(splitStartTimeArr[1]);
+            Integer endMinute = Integer.valueOf(splitEndTimeArr[0]) * 60 + Integer.valueOf(splitEndTimeArr[1]);
+            assistantPatientCardInfo.setAppointDuration(endMinute-startMinute);
+            // 助手预约时间
+            assistantPatientCardInfo.setAppointTime(appointmentSplitVo.getSplitStartTime());
+            // 将助手患者信息设置到患者信息列表中
+            assistantPatientCardList.add(assistantPatientCardInfo);
+            // 将患者信息列表设置到医生维度信息实体中
+            assistantPatientInfo.setAppointmentPatientCardVos(assistantPatientCardList);
+
+            // 设置助手排班信息
+            EmployeeScheduleQueryForm scheduleQueryForm = new EmployeeScheduleQueryForm();
+            scheduleQueryForm.setUserId(assistantDetailInfo.getUserId());
+            scheduleQueryForm.setName(assistantDetailInfo.getName());
+            Date appointDate = appointmentPatientCardVo.getAppointDate();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String format = dateFormat.format(appointDate);
+            scheduleQueryForm.setStartDate(format);
+            scheduleQueryForm.setEndDate(format);
+            // 查询助手排班信息，查询预约当天助手排班
+            EmployeeScheduleResultVO employeeScheduleResultVO = this.employeeAttendServiceFeign.findList(scheduleQueryForm);
+            if (employeeScheduleResultVO.getCount() > 0) {
+                List<UserWorkVO> shiftWorkDatas = employeeScheduleResultVO.getShiftWorkDatas();
+                if (!StringHelper.isEmpty(shiftWorkDatas)) {
+                    List<WorkDayVO> days = shiftWorkDatas.get(0).getDays();
+                    assistantPatientInfo.setDentistScheduleVos(days);
+                }
+            }
+            return assistantPatientInfo;
+        }
+        return null;
+    }
+
+
+
+
+
+    /**
+     * 组合患者预约医生维度信息（预约患者信息+医生排班信息）
+     * @param orgId 门诊id
+     * @param appointmentDimensionVo 患者信息视图信息
+     * @return AppointmentDentistDimensionVo
+     */
+    @Deprecated
+    private AppointmentDimensionVo combinationDentistDimensionVo_Master(Integer orgId,AppointmentDimensionVo appointmentDimensionVo) {
         // 患者信息列表
         List<AppointmentDimensionVo> assistantInfoList = new ArrayList<>();
         AppointmentDimensionVo assistantSplitVo = EntityUtils.build(appointmentDimensionVo, AppointmentDimensionVo.class);
@@ -1190,8 +1304,30 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 // 设置分解助手的患者预约信息
                 List<AppointmentPatientCardVo> appointmentPatientCardVos = new ArrayList<>();
                 if (appointSplitVo != null && !appointSplitVo.isEmpty()){
-                    for (int index = 0; index < appointSplitVo.size(); index++){
+                    AppointmentDimensionVo assistentPatientInfo = new AppointmentDimensionVo();
+                    appointSplitVo.forEach(appointmentSplitVo -> {
+                        AppointmentPatientCardVo assistentPatientCardInfo = appointmentPatientCardVo;
+                        // 设置助手id
+                        assistentPatientInfo.setDentistId(appointmentSplitVo.getAssistantId());
+                        // 通过feign查询助手详细信息
+                        SysUserInfoDetail assistantDetailInfo = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(appointmentSplitVo.getAssistantId());
+                        if (assistantDetailInfo != null){
+                            // 设置助手名字
+                            assistentPatientInfo.setName(assistantDetailInfo.getName());
+                            String splitStartTime = appointmentSplitVo.getSplitStartTime();
+                            String splitEndTime = appointmentSplitVo.getSplitEndTime();
+                            // 助手预约时间段
+                            String splitTime = splitStartTime + "-" + splitEndTime;
+                            assistentPatientCardInfo.setAppointTime(splitTime);
+                        }
+                        // 将助手的患者信息放入列表
+                        appointmentPatientCardVos.add(assistentPatientCardInfo);
+                    });
+                    // 设置助手信息所有患者信息
+                    assistentPatientInfo.setAppointmentPatientCardVos(appointmentPatientCardVos);
 
+                    assistantInfoList.add(assistentPatientInfo);
+                    /*for (int index = 0; index < appointSplitVo.size(); index++){
                         AppointmentSplitVo appointmentSplitVo = appointSplitVo.get(index);
                         // 设置助手id
                         assistantSplitVo.setDentistId(appointmentSplitVo.getAssistantId());
@@ -1206,13 +1342,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                             String splitTime = splitStartTime + "-" + splitEndTime;
                             appointmentPatientCardVo.setAppointTime(splitTime);
                         }
-                    }
+                    }*/
                 }
-                appointmentPatientCardVos.add(appointmentPatientCardVo);
+//                appointmentPatientCardVos.add(appointmentPatientCardVo);
             });
         }
         // 将分解之后的助手信息放入助手集合中
-        assistantInfoList.add(assistantSplitVo);
+//        assistantInfoList.add(assistantSplitVo);
+        assistantSplitVo.setAppointmentAssistants(assistantInfoList);
         // 对助手信息进行排序   按患者数量排序
         List<AppointmentDimensionVo> sortByDescList = assistantInfoList.stream().sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
         appointmentDimensionVo.setAppointmentAssistants(sortByDescList);

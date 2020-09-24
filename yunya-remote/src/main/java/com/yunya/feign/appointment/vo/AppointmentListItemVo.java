@@ -1,5 +1,6 @@
 package com.yunya.feign.appointment.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiModel;
@@ -136,6 +137,7 @@ public class AppointmentListItemVo implements Serializable {
 
     /** 预约日期 */
     @ApiModelProperty(value = "预约日期")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date appointDate;
 
     /** 创建时间 */
