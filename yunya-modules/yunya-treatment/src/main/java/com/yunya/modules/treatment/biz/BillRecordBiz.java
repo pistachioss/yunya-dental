@@ -39,7 +39,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   /** 系统服务 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 开单记录 */
-  @Autowired private OrderRecordMapper orderRecordMapper;
+  @Autowired private OrderRecordBiz orderRecordBiz;
   /** 开单详情 */
   @Autowired private OrderDetailBiz orderDetailBiz;
   /** 账单支付记录 */
@@ -340,6 +340,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     exceptionHandleRecord.setCrtName(name);
     billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
 
+    // todo 将优惠置为不可用
+
     Integer handleRecordId = exceptionHandleRecord.getId();
     BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
     handleDetailRecord.setBillHandleRecordId(handleRecordId);
@@ -354,21 +356,37 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
           billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
         });
 
-    // todo 将优惠置为不可用
-
     OrderRecord orderRecord = new OrderRecord();
     orderRecord.setId(orderRecordId);
     orderRecord.setInservice(false);
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
-    orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
+    orderRecordBiz.updateSelectiveById(orderRecord);
 
     billRecord.setInservice(false);
     billRecord.setUpdId(userId);
     billRecord.setUpdName(name);
     mapper.updateByPrimaryKeySelective(billRecord);
 
+    List<OrderDetail> orderDetails =
+        orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, detailModels);
+    BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
+    orderRecord.setId(null);
+    orderRecord.setPatientId(patientId);
+    orderRecord.setTreatmentRecordId(treatmentRecordId);
+    String orderRecordNumber = orderRecordBiz.generateOrderRecordNumber(orgId);
+    orderRecord.setOrderRecordNum(orderRecordNumber);
+    orderRecord.setTotalAmount(totalAmount);
+    orderRecord.setInservice(true);
+    orderRecord.setCrtId(userId);
+    orderRecord.setCrtName(name);
+    orderRecordBiz.insertSelective(orderRecord);
 
+    orderRecordId = orderRecord.getId();
+    for (OrderDetail detail : orderDetails) {
+      detail.setOrderRecordId(orderRecordId);
+      orderDetailBiz.insertSelective(detail);
+    }
   }
 
   /**
