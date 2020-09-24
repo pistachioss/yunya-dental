@@ -245,6 +245,7 @@
         su.mobile_phone AS mobilePhone,
         su.email,
         su.gender,
+        su.gender as genderValue,
         su.description,
         se.province,
         se.city,

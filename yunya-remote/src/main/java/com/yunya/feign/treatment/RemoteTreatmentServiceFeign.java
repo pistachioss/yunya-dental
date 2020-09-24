@@ -126,6 +126,16 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/registered/one/{id}", method = RequestMethod.GET)
   Registered findRegisteredById(@PathVariable(value = "id") Integer id);
+
+  /**
+   * 根据挂号对象查询挂号信息
+   *
+   * @param entity 挂号对象
+   * @return Registered
+   */
+  @RequestMapping(value = "/registered/example", method = RequestMethod.POST)
+  Registered findRegisteredByExample(@RequestBody Registered entity);
+
   /**
    * 根据条件查询挂号记录列表
    *
@@ -143,6 +153,15 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/treatment/one/{id}", method = RequestMethod.GET)
   TreatmentRecord findTreatmentRecordById(@PathVariable(value = "id") Integer id);
+
+  /**
+   * 根据条件查询就诊记录信息
+   *
+   * @param entity 就诊记录
+   * @return
+   */
+  @RequestMapping(value = "/treatment/example", method = RequestMethod.POST)
+  TreatmentRecord findTreatmentRecordByExample(@RequestBody TreatmentRecord entity);
 
   /**
    * 根据条件查询就诊记录列表

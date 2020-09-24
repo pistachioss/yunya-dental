@@ -49,8 +49,8 @@ public class BillPayRecord {
     /**
      * 仍欠费金额
      */
-    @Column(name = "still_owe")
-    private BigDecimal stillOwe;
+    @Column(name = "still_owe_amount")
+    private BigDecimal stillOweAmount;
 
     /**
      * 是否有效
@@ -220,17 +220,17 @@ public class BillPayRecord {
      *
      * @return still_owe - 仍欠费金额
      */
-    public BigDecimal getStillOwe() {
-        return stillOwe;
+    public BigDecimal getStillOweAmount() {
+        return stillOweAmount;
     }
 
     /**
      * 设置仍欠费金额
      *
-     * @param stillOwe 仍欠费金额
+     * @param stillOweAmount 仍欠费金额
      */
-    public void setStillOwe(BigDecimal stillOwe) {
-        this.stillOwe = stillOwe;
+    public void setStillOweAmount(BigDecimal stillOweAmount) {
+        this.stillOweAmount = stillOweAmount;
     }
 
     /**

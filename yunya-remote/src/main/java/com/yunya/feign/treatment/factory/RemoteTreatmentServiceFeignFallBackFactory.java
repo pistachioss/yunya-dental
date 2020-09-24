@@ -79,12 +79,22 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
+  public Registered findRegisteredByExample(Registered entity) {
+    return null;
+  }
+
+  @Override
   public List<Registered> findRegisteredList(Registered entity) {
     return null;
   }
 
   @Override
   public TreatmentRecord findTreatmentRecordById(Integer id) {
+    return null;
+  }
+
+  @Override
+  public TreatmentRecord findTreatmentRecordByExample(TreatmentRecord entity) {
     return null;
   }
 

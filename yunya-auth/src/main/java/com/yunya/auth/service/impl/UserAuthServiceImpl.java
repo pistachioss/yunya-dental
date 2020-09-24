@@ -5,8 +5,7 @@ import com.yunya.auth.service.UserAuthService;
 import com.yunya.auth.utils.JwtTokenUtil;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.JwtRequestFrom;
-import com.yunya.feign.system.vo.UserInfo;
-import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.feign.system.vo.FrontUserInfoVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.common.utils.jwt.JWTInfo;
@@ -15,6 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import static com.yunya.framework.common.constant.BusinessConstants.ADMIN_ACCOUNT;
+import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNATION_STATUS;
 
 /**
  * 简单介绍: 用户鉴权接口实现
@@ -48,7 +50,7 @@ public class UserAuthServiceImpl implements UserAuthService {
   @Override
   public UserAuthResponse login(JwtRequestFrom paramForm) throws Exception {
     // 调用远程服务获取用户信息
-    UserInfo userInfo = systemServiceFeign.validate(paramForm);
+    FrontUserInfoVO userInfo = systemServiceFeign.validate(paramForm);
     checkUserInfo(userInfo);
     String userId = userInfo.getId();
     if (!StringUtils.isEmpty(userId)) {
@@ -71,11 +73,10 @@ public class UserAuthServiceImpl implements UserAuthService {
    *
    * @param userInfo 用户信息
    */
-  private void checkUserInfo(UserInfo userInfo) {
-    /** 管理员账号 */
-    if (null != userInfo.getId()
-        && !BusinessConstants.ADMIN_ACCOUNT.equals(userInfo.getUsername())) {
-      if (BusinessConstants.USER_RESIGNATION_STATUS.equals(userInfo.getWorkStatus())) {
+  private void checkUserInfo(FrontUserInfoVO userInfo) {
+    // 管理员账号
+    if (null != userInfo.getId() && !ADMIN_ACCOUNT.equals(userInfo.getUsername())) {
+      if (USER_RESIGNATION_STATUS.equals(userInfo.getWorkStatus())) {
         throw new UserAuthException("当前员工已离职，账号无法登陆！");
       }
     }
@@ -91,7 +92,7 @@ public class UserAuthServiceImpl implements UserAuthService {
   @Override
   public UserAuthResponse refresh(String oldToken) throws Exception {
     // 获取缓存中的用户信息
-    UserInfo userInfo = redisUtils.get(USER_TOKEN + oldToken, UserInfo.class);
+    FrontUserInfoVO userInfo = redisUtils.get(USER_TOKEN + oldToken, FrontUserInfoVO.class);
     if (null == userInfo) {
       throw new UserAuthException("当前token已失效，请重新登陆！");
     }
@@ -123,7 +124,7 @@ public class UserAuthServiceImpl implements UserAuthService {
   @Override
   public void logout(String token) {
     // 从缓存中获取用户
-    UserInfo userInfo = redisUtils.get(USER_TOKEN + token, UserInfo.class);
+    FrontUserInfoVO userInfo = redisUtils.get(USER_TOKEN + token, FrontUserInfoVO.class);
     if (null != userInfo) {
       // todo 记录登出信息
       // 从缓存中移除用户的token、用户信息

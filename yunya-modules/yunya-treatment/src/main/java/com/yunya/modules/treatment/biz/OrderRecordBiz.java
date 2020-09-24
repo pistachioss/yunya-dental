@@ -8,9 +8,6 @@ import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
@@ -29,6 +26,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 
 /**
  * 简介: 患者就诊开单业务层
@@ -99,8 +100,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer treatmentRecordId = model.getTreatmentRecordId();
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
-    redisUtils.set(
-        RedisConstants.LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId, treatmentRecordId, 5);
+    redisUtils.set(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId, treatmentRecordId, 5);
     List<OrderDetailModel> models = model.getOrderDetails();
     int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -159,7 +159,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     treatmentRecord.setUpdId(userId);
     treatmentRecord.setUpdName(name);
     treatmentRecordBiz.updateSelectiveById(treatmentRecord);
-    redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
+    redisUtils.delete(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
   }
 
   /**
@@ -171,22 +171,18 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   private TreatmentRecord checkOrderParam(Integer treatmentRecordId) {
     TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
     if (null == treatmentRecord) {
-      throw new ClientServiceException(
-          "开单失败，当前未选择就诊记录或传入参数有误！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("开单失败，当前未选择就诊记录或传入参数有误！", PARAMETERS_IS_ILLEGAL);
     }
 
     Byte status = treatmentRecord.getStatus();
-    if (!status.equals(BusinessConstants.TREATMENT_PROCESSING_STATUS)
-        && !status.equals(BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS)) {
-      throw new ClientServiceException(
-          "开单失败，当前就诊处于开单完成或结算状态，无法重复开单！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+    if (!status.equals(TREATMENT_PROCESSING_STATUS)
+        && !status.equals(TREATMENT_PROCESS_ORDER_STATUS)) {
+      throw new ClientServiceException("开单失败，当前就诊处于开单完成或结算状态，无法重复开单！", PARAMETERS_IS_ILLEGAL);
     }
 
-    String recordId =
-        redisUtils.get(RedisConstants.LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
+    String recordId = redisUtils.get(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
     if (StringHelper.isNotBlank(recordId)) {
-      throw new ClientServiceException(
-          "开单失败，当前就诊记录处于正在开单状态，无法同时开单！", OperationCodeConstants.SAME_DATA_EXIST);
+      throw new ClientServiceException("开单失败，当前就诊记录处于正在开单状态，无法同时开单！", SAME_DATA_EXIST);
     }
     return treatmentRecord;
   }
@@ -231,8 +227,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     }
     if (null != assistantId2) {
       if (assistantId2.equals(assistantId1)) {
-        throw new ClientServiceException(
-            "开单失败，助手2与助手1不能是同一个人！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException("开单失败，助手2与助手1不能是同一个人！", PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 1);
       addAssistantMatchingRecord(assistantId2, matchingRecord);
@@ -242,8 +237,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     }
     if (null != assistantId3) {
       if (assistantId3.equals(assistantId1) || assistantId3.equals(assistantId2)) {
-        throw new ClientServiceException(
-            "开单失败，巡回与助手1或助手2不能是同一个人！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException("开单失败，巡回与助手1或助手2不能是同一个人！", PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 2);
       addAssistantMatchingRecord(assistantId3, matchingRecord);
@@ -296,22 +290,20 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param orderRecordId 开单记录ID
    */
   public void unlockOrder(Integer orderRecordId) {
-    String recordId = redisUtils.get(RedisConstants.LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+    String recordId = redisUtils.get(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     if (StringHelper.isNotBlank(recordId)) {
-      throw new ClientServiceException(
-          "解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", OperationCodeConstants.SAME_DATA_EXIST);
+      throw new ClientServiceException("解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", SAME_DATA_EXIST);
     }
 
     OrderRecord orderRecord = mapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
       throw new ClientServiceException(
-          "解锁失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", OperationCodeConstants.DATA_NOT_EXIST);
+          "解锁失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", DATA_NOT_EXIST);
     }
 
     Byte status = orderRecord.getStatus();
-    if (BusinessConstants.ORDER_FINISH_STATUS.equals(status)) {
-      throw new ClientServiceException(
-          "解锁失败，无法解锁已经完成结算的账单！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+    if (ORDER_FINISH_STATUS.equals(status)) {
+      throw new ClientServiceException("解锁失败，无法解锁已经完成结算的账单！", PARAMETERS_IS_ILLEGAL);
     }
 
     orderRecord.setStatus((byte) 0);
@@ -330,22 +322,20 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     OrderRecord orderRecord = mapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
       throw new ClientServiceException(
-          "修改开单失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", OperationCodeConstants.SAME_DATA_EXIST);
+          "修改开单失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", SAME_DATA_EXIST);
     }
 
     Byte status = orderRecord.getStatus();
-    if (BusinessConstants.ORDER_FINISH_STATUS.equals(status)) {
-      throw new ClientServiceException(
-          "修改开单失败，无法修改已完成结算的账单！", OperationCodeConstants.OBJECT_EDIT_FAIL);
+    if (ORDER_FINISH_STATUS.equals(status)) {
+      throw new ClientServiceException("修改开单失败，无法修改已完成结算的账单！", OBJECT_EDIT_FAIL);
     }
 
     List<OrderDetailModel> models = form.getOrderDetails();
     if (StringHelper.isEmpty(models)) {
-      throw new ClientServiceException(
-          "修改开单失败，请至少提交一条开单项目！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+      throw new ClientServiceException("修改开单失败，请至少提交一条开单项目！", PARAM_NOT_ALLOW_EMPTY);
     }
 
-    redisUtils.set(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK, orderRecordId, 5);
+    redisUtils.set(LOCK_ORDER_PROCESSING_UNLOCK, orderRecordId, 5);
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     OrderDetail orderDetail = new OrderDetail();
@@ -372,6 +362,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     orderRecord.setUpdName(BaseContextHandler.getName());
     mapper.updateByPrimaryKeySelective(orderRecord);
-    redisUtils.delete(RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
+    redisUtils.delete(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
   }
 }

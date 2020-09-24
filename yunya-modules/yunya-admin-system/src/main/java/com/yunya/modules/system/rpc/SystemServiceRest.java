@@ -1,9 +1,9 @@
 package com.yunya.modules.system.rpc;
 
 import com.yunya.feign.system.form.*;
+import com.yunya.feign.system.vo.FrontUserInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
-import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
@@ -76,7 +76,7 @@ public class SystemServiceRest {
    * @return UserInfoVO
    */
   @RequestMapping(value = "/user/validate", method = RequestMethod.POST)
-  public UserInfo validate(@RequestBody Map<String, String> params) {
+  public FrontUserInfoVO validate(@RequestBody Map<String, String> params) {
     return permissionService.validate(params.get("username"), params.get("password"));
   }
 

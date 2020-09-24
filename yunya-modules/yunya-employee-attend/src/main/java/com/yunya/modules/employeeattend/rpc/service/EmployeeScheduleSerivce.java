@@ -106,7 +106,7 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     OrganizationModel organizationModel = new OrganizationModel();
     organizationModel.setWhetherPage(false);
     List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
-    Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
+    Map<String, OrganizationInfoDetail> clinicMap = new HashMap(16);
     clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
 
     Calendar calendar = Calendar.getInstance();

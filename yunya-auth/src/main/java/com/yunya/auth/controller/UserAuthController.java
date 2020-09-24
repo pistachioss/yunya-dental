@@ -41,7 +41,7 @@ public class UserAuthController {
    */
   @ApiOperation("登陆")
   @PostMapping("/token")
-  public ResponseResult createAuthenticationToken(
+  public ResponseResult<UserAuthResponse> createAuthenticationToken(
       @RequestBody @Validated JwtRequestFrom paramForm) throws Exception {
     log.info(paramForm.getUsername() + " require logging...");
     UserAuthResponse loginUser = userAuthService.login(paramForm);
@@ -57,7 +57,7 @@ public class UserAuthController {
    */
   @ApiOperation("token刷新")
   @GetMapping("/refresh")
-  public ResponseResult refreshAndGetAuthenticationToken(HttpServletRequest request)
+  public ResponseResult<UserAuthResponse> refreshAndGetAuthenticationToken(HttpServletRequest request)
       throws Exception {
     // 获取请求头携带的token
     String token = request.getHeader(tokenHeader);

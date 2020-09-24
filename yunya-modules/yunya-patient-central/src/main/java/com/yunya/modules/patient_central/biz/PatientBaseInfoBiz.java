@@ -25,6 +25,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.MemberType;
+import com.yunya.modules.patient_central.constant.WoPlatformConstants;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
@@ -150,13 +151,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setPersonId((String) jsonData.get("id"));*/
     mapper.insertSelective(patientBaseInfo);
     JSONObject object = new JSONObject();
-    object.put("taskNo", "");
+    object.put("taskNo", "personCreate");
     object.put("interfaceName", "person/create");
     object.put("result", true);
     PersonModel person = new PersonModel();
     person.setName(patientBaseInfo.getName());
     object.put("person", person);
-    redisUtils.set("object", object);
+    redisUtils.set("createPatientId",patientBaseInfo.getId());
+    redisUtils.set("taskNo", "personCreate");
+    redisUtils.set(WoPlatformConstants.SN, object);
     // 添加患者时,创建预付款账户
     this.addPatientPrepaymentsInfo(patientBaseInfo);
     return this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
@@ -393,7 +396,17 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public void takeAPhoto(Integer id) {
     PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(id);
-    woPersonBiz.takeAPhoto(patientBaseInfo);
+    if (patientBaseInfo != null){
+      JSONObject object = new JSONObject();
+      object.put("taskNo", "faceTakeImg");
+      object.put("interfaceName", "face/takeImg");
+      object.put("personId",patientBaseInfo.getPersonId());
+      object.put("result", true);
+      redisUtils.set("taskNo", "faceTakeImg");
+      redisUtils.set("createPatientId",patientBaseInfo.getId());
+      redisUtils.set(WoPlatformConstants.SN, object);
+      woPersonBiz.takeAPhoto(patientBaseInfo);
+    }
   }
 
   /**
@@ -739,5 +752,18 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "该手机号已存在", patientBaseInfoVoList);
     }
     return ResponseUtil.success();
+  }
+
+  /**
+   * 修改患者信息
+   * @param patientExtendInfoModel 患者信息
+   */
+  public void updatePatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
+    PatientBaseInfoModel patientBaseInfoModel = patientExtendInfoModel.getPatientBaseInfoModel();
+    if (patientBaseInfoModel != null){
+      PatientBaseInfo patientBaseInfo =new PatientBaseInfo();
+      BeanUtils.copyProperties(patientBaseInfoModel,patientBaseInfo);
+      patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
+    }
   }
 }

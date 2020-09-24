@@ -39,6 +39,8 @@ public class WoPlatformConstants {
     /** 心跳方法条用url前缀 */
     public static final String URL = "http://" + IP + ":" + "8090";
 
+    public static final String SN = "84E0F4246B261501";
+
     /** ---------------------患者信息--------------------------------- */
 
     /** 员工来源类型 */

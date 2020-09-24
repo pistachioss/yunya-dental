@@ -1,5 +1,6 @@
 package com.yunya.modules.system.rpc.service;
 
+import com.yunya.feign.system.vo.FrontUserInfoVO;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.modules.system.biz.SysUserBiz;
 import org.springframework.beans.BeanUtils;
@@ -33,8 +34,8 @@ public class PermissionService {
    * @param password 密码
    * @return
    */
-  public UserInfo validate(String username, String password) {
-    UserInfo userInfo = new UserInfo();
+  public FrontUserInfoVO validate(String username, String password) {
+    FrontUserInfoVO userInfo = new FrontUserInfoVO();
     UserInfo info = sysUserBiz.findUserInfoByUserName(username);
     if (null != info) {
       if (encoder.matches(password, info.getPassword())) {
