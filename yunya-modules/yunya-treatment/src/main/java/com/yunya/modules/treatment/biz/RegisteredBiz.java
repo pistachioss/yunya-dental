@@ -78,7 +78,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     TreatmentRecord treatmentrecord = new TreatmentRecord();
     treatmentrecord.setPatientId(patientId);
     int count = treatmentRecordMapper.selectCount(treatmentrecord);
-    if (count > 1) {
+    if (count >= 1) {
       entity.setFirstVisit((byte) 1);
     }
     entity.setRegTime(new Date(System.currentTimeMillis()));

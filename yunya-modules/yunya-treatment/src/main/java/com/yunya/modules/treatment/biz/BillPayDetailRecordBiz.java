@@ -157,16 +157,16 @@ public class BillPayDetailRecordBiz
 
     Integer exceptionHandleRecordId = exceptionHandleRecord.getId();
     BillExceptionHandleDetailRecord handleDetail = new BillExceptionHandleDetailRecord();
+    handleDetail.setBillHandleRecordId(exceptionHandleRecordId);
+    handleDetail.setCrtId(userId);
+    handleDetail.setCrtName(name);
     billPayDetailRecords.forEach(
         record -> {
           record.setInservice(false);
           record.setUpdId(userId);
           record.setUpdName(name);
           mapper.updateByPrimaryKeySelective(record);
-          handleDetail.setBillHandleRecordId(exceptionHandleRecordId);
           handleDetail.setAssociatRecordId(record.getId());
-          handleDetail.setCrtId(userId);
-          handleDetail.setCrtName(name);
           billExceptionHandleDetailRecordMapper.insertSelective(handleDetail);
         });
 
@@ -220,17 +220,16 @@ public class BillPayDetailRecordBiz
     BillPayDetailRecord entity = new BillPayDetailRecord();
     entity.setBillPayRecordId(billPayRecordId);
     entity.setInservice(true);
+    List<BillPayDetailRecord> billPayDetailRecords = mapper.select(entity);
     paymentModels.forEach(
-        model -> {
-          Integer accountItemId = model.getAccountItemId();
-          entity.setAccountItemId(accountItemId);
-          BigDecimal amount = model.getAmount();
-          entity.setAmount(amount);
-          BillPayDetailRecord result = mapper.selectOne(entity);
-          if (null != result) {
-            detailRecords.add(entity);
-          }
-        });
+        model ->
+            billPayDetailRecords.stream()
+                .filter(
+                    record ->
+                        model.getAccountItemId().equals(record.getAccountItemId())
+                            && model.getAmount().equals(record.getAmount()))
+                .map(record -> entity)
+                .forEach(detailRecords::add));
     if (detailRecords.size() == paymentModels.size()) {
       throw new ClientServiceException("调整账单入账方式失败，当前入账方式或入账金额未作任何修改！", PARAMETERS_IS_ILLEGAL);
     }

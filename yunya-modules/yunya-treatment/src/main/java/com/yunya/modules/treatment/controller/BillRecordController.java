@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.controller;
 
+import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.BillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -62,6 +63,21 @@ public class BillRecordController {
   @PostMapping(value = "/refund", name = "账单退费")
   public ResponseResult billRefund(@RequestBody @Validated BillRefundModel model) {
     billRecordBiz.refund(model);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 调整账单
+   *
+   * @param model 账单调整参数封装
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("调整账单")
+  @ApiImplicitParams({@ApiImplicitParam(name = "model", value = "账单调整参数模型", required = true)})
+  @PostMapping(value = "/adjust", name = "调整账单")
+  public ResponseResult adjustBill(@RequestBody @Validated BillAdjustDetailModel model) {
+    billRecordBiz.adjust(model);
     return ResponseUtil.success();
   }
 }
