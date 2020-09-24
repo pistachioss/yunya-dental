@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.treatment.domain.form.OrderRecordForm;
+import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
@@ -12,11 +13,8 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.treatment.AssistantMatchingRecord;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.TreatmentRecord;
-import com.yunya.modules.treatment.mapper.OrderRecordMapper;
+import com.yunya.models.treatment.*;
+import com.yunya.modules.treatment.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,18 +43,22 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
-
   /** 就诊其他信息服务调用 */
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
-
   /** 就诊记录 */
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
-
   /** 开单详情 */
   @Autowired private OrderDetailBiz orderDetailBiz;
-
   /** 助手匹配 */
   @Autowired private AssistantMatchingRecordBiz matchingRecordBiz;
+  /** 账单记录 */
+  @Autowired private BillRecordMapper billRecordMapper;
+  /** 账单支付记录 */
+  @Autowired private BillPayRecordMapper billPayRecordMapper;
+  /** 账单异常处理记录 */
+  @Autowired private BillExceptionHandleRecordMapper billExceptionHandleRecordMapper;
+  /** 账单异常处理详情记录 */
+  @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
 
   /**
    * 根据就诊ID查询开单详情信息
@@ -193,7 +195,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param orgId 组织ID
    * @return
    */
-  public String generateOrderRecordNumber(Integer orgId) {
+  private String generateOrderRecordNumber(Integer orgId) {
     String number = mapper.selectOrderNumberByOrgId(orgId, new Date(System.currentTimeMillis()));
     String suffix = String.format("%04d", Integer.parseInt(number) + 1);
     return String.format(
@@ -363,5 +365,127 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setUpdName(BaseContextHandler.getName());
     mapper.updateByPrimaryKeySelective(orderRecord);
     redisUtils.delete(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
+  }
+
+  /**
+   * 调整已收费账单信息
+   *
+   * @param model 参数信息
+   */
+  public void adjust(BillAdjustDetailModel model) {
+    Integer billRecordId = model.getBillRecordId();
+    BillRecord entity = new BillRecord();
+    entity.setId(billRecordId);
+    entity.setInservice(true);
+    BillRecord billRecord = billRecordMapper.selectOne(entity);
+    if (null == billRecord) {
+      throw new ClientServiceException("调整账单失败，请选择正确的就诊记录进行账单调整！", PARAMETERS_IS_ILLEGAL);
+    }
+
+    BillPayRecord billPayRecord = new BillPayRecord();
+    billPayRecord.setBillRecordId(billRecordId);
+    billPayRecord.setInservice(true);
+    int billPayRecordCount = billPayRecordMapper.selectCount(billPayRecord);
+    if (billPayRecordCount > 0) {
+      throw new ClientServiceException("调整账单失败，当前账单存在为撤销的支付记录！", PARAMETERS_IS_ILLEGAL);
+    }
+
+    Integer orderRecordId = billRecord.getOrderRecordId();
+    OrderDetail orderDetail = new OrderDetail();
+    orderDetail.setOrderRecordId(orderRecordId);
+    orderDetail.setInservice(true);
+    List<OrderDetail> orderDetailsData = orderDetailBiz.selectList(orderDetail);
+    List<OrderDetailModel> detailModels = model.getOrderDetailModels();
+    if (orderDetailsData.size() == detailModels.size()) {
+      compareOrderDetails(orderDetailsData, detailModels);
+    }
+
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    Integer patientId = billRecord.getPatientId();
+    Integer treatmentRecordId = billRecord.getTreatmentRecordId();
+
+    BillExceptionHandleRecord exceptionHandleRecord = new BillExceptionHandleRecord();
+    exceptionHandleRecord.setOrgId(orgId);
+    exceptionHandleRecord.setPatientId(patientId);
+    exceptionHandleRecord.setTreatmentRecordId(treatmentRecordId);
+    exceptionHandleRecord.setHandleRecordId(billRecordId);
+    exceptionHandleRecord.setOperateType((byte) 2);
+    exceptionHandleRecord.setRemark(model.getRemark());
+    exceptionHandleRecord.setCrtId(userId);
+    exceptionHandleRecord.setCrtName(name);
+    billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
+
+    // todo 将优惠置为不可用
+
+    Integer handleRecordId = exceptionHandleRecord.getId();
+    BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
+    handleDetailRecord.setBillHandleRecordId(handleRecordId);
+    handleDetailRecord.setCrtId(userId);
+    handleDetailRecord.setCrtName(name);
+    orderDetailsData.forEach(
+        detail -> {
+          detail.setInservice(false);
+          detail.setUpdId(userId);
+          detail.setUptName(name);
+          handleDetailRecord.setAssociatRecordId(detail.getId());
+          billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
+        });
+
+    OrderRecord orderRecord = new OrderRecord();
+    orderRecord.setId(orderRecordId);
+    orderRecord.setInservice(false);
+    orderRecord.setUpdId(userId);
+    orderRecord.setUpdName(name);
+    mapper.updateByPrimaryKeySelective(orderRecord);
+
+    billRecord.setInservice(false);
+    billRecord.setUpdId(userId);
+    billRecord.setUpdName(name);
+    billRecordMapper.updateByPrimaryKeySelective(billRecord);
+
+    List<OrderDetail> orderDetails =
+        orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, detailModels);
+    BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
+    orderRecord.setId(null);
+    orderRecord.setPatientId(patientId);
+    orderRecord.setTreatmentRecordId(treatmentRecordId);
+    String orderRecordNumber = generateOrderRecordNumber(orgId);
+    orderRecord.setOrderRecordNum(orderRecordNumber);
+    orderRecord.setTotalAmount(totalAmount);
+    orderRecord.setInservice(true);
+    orderRecord.setCrtId(userId);
+    orderRecord.setCrtName(name);
+    mapper.insertSelective(orderRecord);
+
+    orderRecordId = orderRecord.getId();
+    for (OrderDetail detail : orderDetails) {
+      detail.setOrderRecordId(orderRecordId);
+      orderDetailBiz.insertSelective(detail);
+    }
+  }
+
+  /**
+   * 比较调整开单明细与数据库开单明细
+   *
+   * @param orderDetailsData 数据库开单明细
+   * @param detailModels 调整开单明细
+   */
+  private void compareOrderDetails(
+      List<OrderDetail> orderDetailsData, List<OrderDetailModel> detailModels) {
+    List<OrderDetail> details = new ArrayList<>();
+    orderDetailsData.forEach(
+        detail ->
+            detailModels.stream()
+                .filter(
+                    model ->
+                        detail.getBillingItemId().equals(model.getBillingItemId())
+                            && detail.getQuantity().equals(model.getQuantity()))
+                .map(model -> detail)
+                .forEachOrdered(details::add));
+    if (detailModels.size() == details.size()) {
+      throw new ClientServiceException("调整账单失败，当前账单开单明细的项目与数量未发生任何变动！", PARAMETERS_IS_ILLEGAL);
+    }
   }
 }

@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller;
 
 import com.yunya.feign.treatment.domain.form.OrderRecordForm;
+import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -8,6 +9,8 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.OrderRecordBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -102,6 +105,21 @@ public class OrderRecordController {
       @PathVariable(value = "orderRecordId") Integer orderRecordId,
       @RequestBody @Validated OrderRecordForm form) {
     orderRecordBiz.modifyAndCommitOrder(orderRecordId, form);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 调整账单
+   *
+   * @param model 账单调整参数封装
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("调整账单")
+  @ApiImplicitParams({@ApiImplicitParam(name = "model", value = "账单调整参数模型", required = true)})
+  @PostMapping(value = "/adjust", name = "调整账单")
+  public ResponseResult adjustBill(@RequestBody @Validated BillAdjustDetailModel model) {
+    orderRecordBiz.adjust(model);
     return ResponseUtil.success();
   }
 }
