@@ -185,7 +185,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     public ResponseResult findVisitingRecordById(Integer id){
         VisitingRecordVo visitingRecordVo = mapper.findVisitingRecordById(id);
         if (visitingRecordVo == null){
-            return ResponseUtil.success();
+            return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有数据",null);
         }
         visitingRecordVo = this.comboVisitingRecord(visitingRecordVo);
         return ResponseUtil.success(visitingRecordVo);

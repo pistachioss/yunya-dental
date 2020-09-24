@@ -133,7 +133,7 @@ public interface RemoteTreatmentServiceFeign {
    * @param entity 挂号对象
    * @return Registered
    */
-  @RequestMapping(value = "/registered/example", method = RequestMethod.POST)
+  @RequestMapping(value = "/rpc/registered/example", method = RequestMethod.POST)
   Registered findRegisteredByExample(@RequestBody Registered entity);
 
   /**
@@ -160,7 +160,7 @@ public interface RemoteTreatmentServiceFeign {
    * @param entity 就诊记录
    * @return
    */
-  @RequestMapping(value = "/treatment/example", method = RequestMethod.POST)
+  @RequestMapping(value = "/rpc/treatment/example", method = RequestMethod.POST)
   TreatmentRecord findTreatmentRecordByExample(@RequestBody TreatmentRecord entity);
 
   /**

@@ -39,6 +39,8 @@ import com.yunya.models.appointment.AppointmentOperateRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.treatment.Registered;
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -606,7 +608,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return 返回预约视图
      */
     public AppointmentVo findAppointmentById(Integer id){
-        return mapper.findAppointmentById(id);
+        AppointmentVo appointmentVo = mapper.findAppointmentById(id);
+        PatientBaseInfo patientBaseInfo = this.patientCentralServiceFeign.findPatientInfoById(appointmentVo.getPatientId());
+        if (null != patientBaseInfo) {
+            // 设置患者名字
+            String name = patientBaseInfo.getName();
+            appointmentVo.setPatientName(name);
+        }
+        return appointmentVo;
     }
 
     /**
@@ -1245,6 +1254,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             assistantPatientCardInfo.setAppointDuration(endMinute-startMinute);
             // 助手预约时间
             assistantPatientCardInfo.setAppointTime(appointmentSplitVo.getSplitStartTime());
+            // 查询患者就诊流程的状态
+            Byte aByte = this.setStation(appointmentPatientCardVo.getId(), appointmentPatientCardVo.getPatientId());
+            // 设置患者就诊流程的状态 0-待挂号状态；1-就诊中状态；2-就诊完成状态
+            assistantPatientCardInfo.setStation(aByte);
             // 将助手患者信息设置到患者信息列表中
             assistantPatientCardList.add(assistantPatientCardInfo);
             // 将患者信息列表设置到医生维度信息实体中
@@ -1271,6 +1284,41 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             return assistantPatientInfo;
         }
         return null;
+    }
+
+    /**
+     * 设置患者就诊流程的状态
+     * @return 返回就诊状态 0-待挂号状态；1-就诊中状态；2-就诊完成状态
+     */
+    private Byte setStation(Integer appointId, Integer patientId) {
+        Registered registered = new Registered();
+        registered.setAppointmentId(appointId);
+        registered.setPatientId(patientId);
+        // 查询挂号患者信息
+        Registered registeredByExample = this.remoteTreatmentServiceFeign.findRegisteredByExample(registered);
+
+        if (null != registeredByExample) {
+            TreatmentRecord treatmentRecord = new TreatmentRecord();
+            treatmentRecord.setAppointmentId(appointId);
+            treatmentRecord.setPatientId(patientId);
+            treatmentRecord.setRegisteredId(registeredByExample.getId());
+            // 查询患者就诊信息
+            TreatmentRecord treatmentRecordByExample = this.remoteTreatmentServiceFeign.findTreatmentRecordByExample(treatmentRecord);
+            byte splitStatus = 2;
+            if (null != treatmentRecord) {
+                // 诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)
+                Byte type = treatmentRecord.getType();
+                // 诊疗状态为 “0-接诊中;1-已开单”时返回 1(就诊中状态)
+                if (type < splitStatus) {
+                    return 1;
+                } else if (type >= splitStatus) {
+                    // 诊疗状态为 “2-接诊完成3-已结账”时返回 2(就诊完成状态)
+                    return 2;
+                }
+            }
+        }
+        // 如果没有挂号信息则设置患者就诊状态为 0-待挂号
+        return 0;
     }
 
 
