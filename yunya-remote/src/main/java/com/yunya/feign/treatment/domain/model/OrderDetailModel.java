@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.io.Serializable;
 
 /**
  * 简介: 开单详情参数模型
@@ -20,7 +21,7 @@ import javax.validation.constraints.Size;
 @ApiModel("开单详情参数模型")
 @Data
 @ToString
-public class OrderDetailModel {
+public class OrderDetailModel implements Serializable {
 
   @ApiModelProperty(value = "开单类型（0-价目表；1-商品；）", required = true)
   @NotNull(message = "开单类型不能为空！")

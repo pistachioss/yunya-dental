@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
@@ -27,7 +28,7 @@ public class BillRefundModel implements Serializable {
   @NotNull(message = "就诊记录ID")
   private Integer treatmentRecordId;
   /** 退费订单明细列表 */
-  @Size(min = 1, message = "退费订单明细列表不能为空！")
+  @NotEmpty(message = "退费订单明细列表不能为空")
   private List<RefundOrderDetailModel> refundOrderDetailModels;
   /** 退费会员账户信息 */
   private MemberRefundModel memberRefundModel;
