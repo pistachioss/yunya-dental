@@ -224,7 +224,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     exceptionHandleRecord.setOrgId(orgId);
     exceptionHandleRecord.setPatientId(patientId);
     exceptionHandleRecord.setTreatmentRecordId(treatmentRecordId);
-    exceptionHandleRecord.setHandleRecordId(billRecordId);
+    exceptionHandleRecord.setHandledRecordId(billRecordId);
     exceptionHandleRecord.setOperateType((byte) 3);
     exceptionHandleRecord.setCrtId(userId);
     exceptionHandleRecord.setCrtName(name);
@@ -233,7 +233,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     Integer exceptionHandleRecordId = exceptionHandleRecord.getId();
     BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
     handleDetailRecord.setBillHandleRecordId(exceptionHandleRecordId);
-    handleDetailRecord.setAssociatRecordId(billRefundRecordId);
+    handleDetailRecord.setAssociateRecordId(billRefundRecordId);
     handleDetailRecord.setCrtId(userId);
     handleDetailRecord.setCrtName(name);
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);

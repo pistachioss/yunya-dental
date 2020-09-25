@@ -69,7 +69,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     handleRecord.setOrgId(orgId);
     handleRecord.setPatientId(patientId);
     handleRecord.setTreatmentRecordId(treatmentRecordId);
-    handleRecord.setHandleRecordId(billPayRecordId);
+    handleRecord.setHandledRecordId(billPayRecordId);
     handleRecord.setOperateType((byte) 1);
     handleRecord.setCrtId(userId);
     handleRecord.setCrtName(name);
@@ -78,7 +78,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     Integer handleRecordId = handleRecord.getId();
     BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
     handleDetailRecord.setBillHandleRecordId(handleRecordId);
-    handleDetailRecord.setAssociatRecordId(billPayRecordId);
+    handleDetailRecord.setAssociateRecordId(billPayRecordId);
     handleDetailRecord.setCrtId(userId);
     handleDetailRecord.setCrtName(name);
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);

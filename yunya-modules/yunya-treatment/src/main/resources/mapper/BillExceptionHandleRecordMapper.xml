@@ -9,7 +9,7 @@
         <result column="org_id" property="orgId" jdbcType="INTEGER"/>
         <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
         <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER"/>
-        <result column="handle_record_id" property="handleRecordId" jdbcType="INTEGER"/>
+        <result column="handled_record_id" property="handledRecordId" jdbcType="INTEGER"/>
         <result column="operate_type" property="operateType" jdbcType="TINYINT"/>
         <result column="remark" property="remark" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>

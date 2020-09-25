@@ -410,7 +410,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     exceptionHandleRecord.setOrgId(orgId);
     exceptionHandleRecord.setPatientId(patientId);
     exceptionHandleRecord.setTreatmentRecordId(treatmentRecordId);
-    exceptionHandleRecord.setHandleRecordId(billRecordId);
+    exceptionHandleRecord.setHandledRecordId(treatmentRecordId);
     exceptionHandleRecord.setOperateType((byte) 2);
     exceptionHandleRecord.setRemark(model.getRemark());
     exceptionHandleRecord.setCrtId(userId);
@@ -429,7 +429,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           detail.setInservice(false);
           detail.setUpdId(userId);
           detail.setUptName(name);
-          handleDetailRecord.setAssociatRecordId(detail.getId());
+          handleDetailRecord.setAssociateRecordId(detail.getId());
           billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
         });
 
