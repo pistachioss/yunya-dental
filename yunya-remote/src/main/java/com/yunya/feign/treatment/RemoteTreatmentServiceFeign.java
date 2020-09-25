@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 云牙价目表、就诊服务接口调用
@@ -67,7 +69,7 @@ public interface RemoteTreatmentServiceFeign {
   /**
    * 根据价目表分类ID查询价目表分类信息
    *
-   * @param id
+   * @param id 价目表分类ID
    * @return
    */
   @RequestMapping(value = "/rpc/base/one/{id}", method = RequestMethod.GET)
@@ -162,6 +164,15 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/treatment/example", method = RequestMethod.POST)
   TreatmentRecord findTreatmentRecordByExample(@RequestBody TreatmentRecord entity);
+
+  /**
+   * 根据就诊记录ID列表查询就诊记录列表
+   *
+   * @param ids 就诊记录ID列表
+   * @return
+   */
+  @RequestMapping(value = "/rpc/treatment/section", method = RequestMethod.POST)
+  List<TreatmentRecord> findTreatmentRecordByIds(@RequestBody @NotEmpty Set<Integer> ids);
 
   /**
    * 根据条件查询就诊记录列表

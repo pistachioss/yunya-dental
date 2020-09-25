@@ -9,7 +9,9 @@ import com.yunya.models.treatment.TreatmentRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 就诊、价目表服务调用降级处理
@@ -95,6 +97,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
 
   @Override
   public TreatmentRecord findTreatmentRecordByExample(TreatmentRecord entity) {
+    return null;
+  }
+
+  @Override
+  public List<TreatmentRecord> findTreatmentRecordByIds(@NotEmpty Set<Integer> ids) {
     return null;
   }
 

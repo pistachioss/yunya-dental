@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
+import java.util.Set;
 
 public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
 
@@ -29,4 +30,12 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    */
   List<PatientTreatmentRecordVO> selectPatientTreatmentRecordList(
       @Param("queryForm") PatientTreatmentRecordQueryForm queryForm);
+
+  /**
+   * 根据就诊记录ID列表查询就诊记录列表
+   *
+   * @param ids 就诊记录ID
+   * @return
+   */
+  List<TreatmentRecord> selectByIds(@Param("ids") Set<Integer> ids);
 }
