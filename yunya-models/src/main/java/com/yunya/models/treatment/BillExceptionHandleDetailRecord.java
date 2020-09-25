@@ -22,8 +22,8 @@ public class BillExceptionHandleDetailRecord {
     /**
      * 被处理数据记录ID
      */
-    @Column(name = "associat_record_id")
-    private Integer associatRecordId;
+    @Column(name = "associate_record_id")
+    private Integer associateRecordId;
 
     /**
      * 是否有效
@@ -105,19 +105,19 @@ public class BillExceptionHandleDetailRecord {
     /**
      * 获取被处理数据记录ID
      *
-     * @return associat_record_id - 被处理数据记录ID
+     * @return associate_record_id - 被处理数据记录ID
      */
-    public Integer getAssociatRecordId() {
-        return associatRecordId;
+    public Integer getAssociateRecordId() {
+        return associateRecordId;
     }
 
     /**
      * 设置被处理数据记录ID
      *
-     * @param associatRecordId 被处理数据记录ID
+     * @param associateRecordId 被处理数据记录ID
      */
-    public void setAssociatRecordId(Integer associatRecordId) {
-        this.associatRecordId = associatRecordId;
+    public void setAssociateRecordId(Integer associateRecordId) {
+        this.associateRecordId = associateRecordId;
     }
 
     /**
