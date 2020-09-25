@@ -36,6 +36,6 @@
             amount
         from
             bill_pay_detail_record bpdr
-        where bpdr.inservice = 1 and bpdr.bill_pay_record_id = #{billPayRecordId}
+        where bpdr.inservice = #{inservice} and bpdr.bill_pay_record_id = #{billPayRecordId}
     </select>
 </mapper>

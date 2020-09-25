@@ -102,7 +102,26 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     }
     resultData.setBillPayRecords(billPayRecords);
     // 账单异常记录
-    List<BillHandleRecordVO> billHandleRecords = new ArrayList<>();
+    BillRecord entity = new BillRecord();
+    entity.setOrderRecordId(orderRecordId);
+    entity.setInservice(true);
+    BillRecord billRecord = mapper.selectOne(entity);
+    Integer treatmentRecordId = billRecord.getTreatmentRecordId();
+    List<BillHandleRecordVO> billHandleRecords =
+        billExceptionHandleRecordMapper.selectBillExceptionHandleRecord(treatmentRecordId);
+    if (StringHelper.isNotEmpty(billHandleRecords)) {
+      billHandleRecords.forEach(
+          handleRecord -> {
+            Integer orgId = handleRecord.getOrgId();
+            // todo 从缓存中查询诊所信息
+            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+            if (null != orgInfo) {
+              handleRecord.setOrgName(orgInfo.getAbbreviation());
+            }
+          });
+    } else {
+      billHandleRecords = new ArrayList<>();
+    }
     resultData.setBillHandleRecords(billHandleRecords);
     return resultData;
   }
@@ -205,7 +224,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     exceptionHandleRecord.setOrgId(orgId);
     exceptionHandleRecord.setPatientId(patientId);
     exceptionHandleRecord.setTreatmentRecordId(treatmentRecordId);
-    exceptionHandleRecord.setHandleRecordId(billRecordId);
+    exceptionHandleRecord.setHandledRecordId(billRecordId);
     exceptionHandleRecord.setOperateType((byte) 3);
     exceptionHandleRecord.setCrtId(userId);
     exceptionHandleRecord.setCrtName(name);
@@ -214,7 +233,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     Integer exceptionHandleRecordId = exceptionHandleRecord.getId();
     BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
     handleDetailRecord.setBillHandleRecordId(exceptionHandleRecordId);
-    handleDetailRecord.setAssociatRecordId(billRefundRecordId);
+    handleDetailRecord.setAssociateRecordId(billRefundRecordId);
     handleDetailRecord.setCrtId(userId);
     handleDetailRecord.setCrtName(name);
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);

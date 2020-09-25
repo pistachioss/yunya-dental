@@ -110,7 +110,7 @@ public class MedicalApprovalController {
         return ResponseUtil.success(page);
     }
 
-    @ApiOperation("病历变更审核分页查询")
+    @ApiOperation("公司端-病历变更审核分页查询")
     @PostMapping("medical/change/audit/page")
     @CurrentUser
     public ResponseResult<PageInfo<MedicalChangeApprovePageVo>> getDraftAuditPage(@Valid @RequestBody ChangeApproveQuery query) {

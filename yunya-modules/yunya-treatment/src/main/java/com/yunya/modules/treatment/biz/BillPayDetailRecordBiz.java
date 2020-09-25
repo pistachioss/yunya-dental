@@ -76,7 +76,21 @@ public class BillPayDetailRecordBiz
         resultData.setBillPayRecordId(billPayRecordId);
         resultData.setReceivedAmount(billPayRecord.getReceivedAmount());
       }
-      List<BillPayDetailRecordVO> detailRecords = mapper.selectBillPayDetailRecord(billPayRecordId);
+      List<BillPayDetailRecordVO> detailRecords =
+          mapper.selectBillPayDetailRecord(billPayRecordId, true);
+      if (StringHelper.isNotEmpty(detailRecords)) {
+        detailRecords.forEach(
+            detailRecord -> {
+              Integer accountItemId = detailRecord.getAccountItemId();
+              // todo 从缓存中查询支付方式
+              AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
+              if (null != accountItem) {
+                detailRecord.setAccountItemName(accountItem.getName());
+              }
+            });
+      } else {
+        detailRecords = new ArrayList<>();
+      }
       resultData.setBillPayDetailRecords(detailRecords);
     }
     return resultData;
@@ -90,7 +104,8 @@ public class BillPayDetailRecordBiz
    */
   public List<BillPayDetailRecordVO> findBillPayDetailRecordByBillPayRecordId(
       Integer billPayRecordId) {
-    List<BillPayDetailRecordVO> resultList = mapper.selectBillPayDetailRecord(billPayRecordId);
+    List<BillPayDetailRecordVO> resultList =
+        mapper.selectBillPayDetailRecord(billPayRecordId, true);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
@@ -148,7 +163,7 @@ public class BillPayDetailRecordBiz
     exceptionHandleRecord.setOrgId(orgId);
     exceptionHandleRecord.setPatientId(patientId);
     exceptionHandleRecord.setTreatmentRecordId(treatmentRecordId);
-    exceptionHandleRecord.setHandleRecordId(billPayRecordId);
+    exceptionHandleRecord.setHandledRecordId(billPayRecordId);
     exceptionHandleRecord.setOperateType((byte) 0);
     exceptionHandleRecord.setRemark(form.getRemark());
     exceptionHandleRecord.setCrtId(userId);
@@ -166,7 +181,7 @@ public class BillPayDetailRecordBiz
           record.setUpdId(userId);
           record.setUpdName(name);
           mapper.updateByPrimaryKeySelective(record);
-          handleDetail.setAssociatRecordId(record.getId());
+          handleDetail.setAssociateRecordId(record.getId());
           billExceptionHandleDetailRecordMapper.insertSelective(handleDetail);
         });
 

@@ -29,8 +29,8 @@ public class MedicalChangeApprovePageVo {
     @ApiModelProperty(value = "申请时间")
     private LocalDate applyTypeDate;
 
-    @ApiModelProperty(value = "申请类型")
-    private String applyTypeName;
+    @ApiModelProperty(value = "申请类型（0：新增，1：修改）")
+    private Integer applyType;
 
     @ApiModelProperty(value = "申请医生")
     private String applyDentistName;
@@ -41,8 +41,8 @@ public class MedicalChangeApprovePageVo {
     @ApiModelProperty(value = "允许变更截止时间")
     private LocalDate changeDeadTime;
 
-    @ApiModelProperty(value = "审核状态")
-    private String approveStatus;
+    @ApiModelProperty(value = "审核状态（0：待审批  1：同意 2：拒绝）")
+    private Integer approveStatus;
 
     @ApiModelProperty(value = "拒绝原因")
     private String rejectReason;

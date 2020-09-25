@@ -131,6 +131,9 @@ public class TreatmentPatientInfoVO implements Serializable {
   /** 挂号科室名称 */
   @ApiModelProperty("挂号科室名称")
   private String regDeptRoomName;
+  /** 挂号日期 */
+  @ApiModelProperty("挂号日期")
+  private String regDate;
   /** 挂号时间 */
   @ApiModelProperty("挂号时间")
   private String regTime;
@@ -141,6 +144,9 @@ public class TreatmentPatientInfoVO implements Serializable {
   /** 接诊医生姓名 */
   @ApiModelProperty("接诊医生姓名")
   private String treatDentistName;
+  /** 就诊日期 */
+  @ApiModelProperty("就诊日期")
+  private String treatDate;
   /** 开始接诊时间 */
   @ApiModelProperty("开始接诊时间")
   private String treatStartTime;

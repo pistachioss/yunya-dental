@@ -35,10 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS;
@@ -144,6 +141,16 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     return String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber()))
         + new DateTime().toString("yyMMdd")
         + suffix;
+  }
+
+  /**
+   * 根据就诊记录ID列表查询就诊记录列表
+   *
+   * @param ids 就诊记录ID列表
+   * @return
+   */
+  public List<TreatmentRecord> selectByIds(Set<Integer> ids) {
+    return mapper.selectByIds(ids);
   }
 
   /**
@@ -309,6 +316,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(regDeptRoomId);
         vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
       }
+      vo.setRegDate(new DateTime(registered.getCrtTime()).toString("yyyy-MM-dd"));
       vo.setRegTime(new DateTime(registered.getRegTime()).toString("HH:mm"));
       vo.setFirstVisit(registered.getFirstVisit());
     }

@@ -22,6 +22,7 @@ public enum EmrError implements RestError {
     TREATMENT_NOT_EXIST(30015,"就诊记录不存在"),
     NORMAL_MEDICAL_NO_PERMISSION(30016,"普通病例不允许审批"),
     MEDICAL_STATUS_ERROR(30017,"电子病例审核状态异常"),
+    CHANGE_PENDING_NOT_REPEAT_SUBMIT(30018, "该病历已申请过修改且处于待审核状态，请勿重复申请！"),
     ;
     private final Integer code;
     private final String message;

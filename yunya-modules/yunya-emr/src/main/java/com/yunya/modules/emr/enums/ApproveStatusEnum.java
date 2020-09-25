@@ -7,7 +7,7 @@ import java.util.*;
  */
 
 public enum ApproveStatusEnum {
-    APPROVE_PENDING(0, "0：待审批"),
+    APPROVE_PENDING(0, "待审批"),
     AUDIT_PASS(1, "同意"),
     AUDIT_REJECT(2, "拒绝"),
     ;

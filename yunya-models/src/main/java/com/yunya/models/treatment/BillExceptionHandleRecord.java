@@ -36,8 +36,8 @@ public class BillExceptionHandleRecord {
     /**
      * 操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      */
-    @Column(name = "handle_record_id")
-    private Integer handleRecordId;
+    @Column(name = "handled_record_id")
+    private Integer handledRecordId;
 
     /**
      * 操作类型（0-收费方式调整；1-撤销收费；2-修改账单；3-账单退费）
@@ -166,19 +166,19 @@ public class BillExceptionHandleRecord {
     /**
      * 获取操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      *
-     * @return handle_record_id - 操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
+     * @return handled_record_id - 操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      */
-    public Integer getHandleRecordId() {
-        return handleRecordId;
+    public Integer getHandledRecordId() {
+        return handledRecordId;
     }
 
     /**
      * 设置操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      *
-     * @param handleRecordId 操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
+     * @param handledRecordId 操作对象记录ID（与操作类型相关，operate_type-0，该ID为收费方式记录ID）
      */
-    public void setHandleRecordId(Integer handleRecordId) {
-        this.handleRecordId = handleRecordId;
+    public void setHandledRecordId(Integer handledRecordId) {
+        this.handledRecordId = handledRecordId;
     }
 
     /**

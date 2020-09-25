@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 /**
@@ -16,9 +17,9 @@ import javax.validation.constraints.Size;
 @Setter
 @ApiModel(value = "病例变更申请对象模型")
 public class ChangeMedicalApplyModel {
-
-    @ApiModelProperty(value = "申请变更基础信息（申请新增变更eventId需传入就诊Id，申请修改变更eventId需传入电子病例Id），变更申请不需要传审批人id")
-    private ApplyBaseModel applyBase;
+    @ApiModelProperty(value = "事件ID", required = true)
+    @NotNull
+    private Integer eventId;
 
     @ApiModelProperty(value = "申请原因", required = true)
     @Size(max = 150)

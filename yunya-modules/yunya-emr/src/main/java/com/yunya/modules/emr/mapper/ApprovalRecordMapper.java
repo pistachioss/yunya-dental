@@ -45,6 +45,13 @@ public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<Ap
     ApprovalRecord findMedicalChangeRecord(@Param("medicalId") Integer medicalId);
 
     /**
+     * 查询病例变更申请记录数
+     * @param eventId
+     * @return int
+     */
+    int countMedicalChange(@Param("eventId") Integer eventId, @Param("applyType") Integer applyType);
+
+    /**
      * 根据条件查询就诊审批记录
      * @param treatmentId
      * @param eventType
