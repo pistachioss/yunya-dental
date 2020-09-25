@@ -35,6 +35,7 @@
         tr.appointment_id as appointmentId,
         tr.registered_id as registeredId,
         tr.dentist_id as treatDentistId,
+        DATE_FORMAT(tr.crt_time, '%Y-%m-%d') as treatDate,
         DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
         DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
         tr.medical_record_completed as medicalRecordCompleted

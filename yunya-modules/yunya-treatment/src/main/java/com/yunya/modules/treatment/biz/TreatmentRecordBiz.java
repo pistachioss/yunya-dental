@@ -309,6 +309,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(regDeptRoomId);
         vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
       }
+      vo.setRegDate(new DateTime(registered.getCrtTime()).toString("yyyy-MM-dd"));
       vo.setRegTime(new DateTime(registered.getRegTime()).toString("HH:mm"));
       vo.setFirstVisit(registered.getFirstVisit());
     }
