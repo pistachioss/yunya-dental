@@ -39,6 +39,7 @@ import com.yunya.models.appointment.AppointmentOperateRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.appointment.code.AppointmentError;
@@ -97,6 +98,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 患者就诊服务 */
     @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+
+    /** 门诊设备服务 */
+    @Autowired
+    private ClinicDeviceItemBiz clinicDeviceItemBiz;
 
     /** 注入redis缓冲服务 */
     @Autowired
@@ -1359,10 +1364,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return 0;
     }
 
-
-
-
-
     /**
      * 组合患者预约医生维度信息（预约患者信息+医生排班信息）
      * @param orgId 门诊id
@@ -1413,7 +1414,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     assistentPatientInfo.setAppointmentPatientCardVos(appointmentPatientCardVos);
 
                     assistantInfoList.add(assistentPatientInfo);
-                    /*for (int index = 0; index < appointSplitVo.size(); index++){
+                    for (int index = 0; index < appointSplitVo.size(); index++){
                         AppointmentSplitVo appointmentSplitVo = appointSplitVo.get(index);
                         // 设置助手id
                         assistantSplitVo.setDentistId(appointmentSplitVo.getAssistantId());
@@ -1428,13 +1429,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                             String splitTime = splitStartTime + "-" + splitEndTime;
                             appointmentPatientCardVo.setAppointTime(splitTime);
                         }
-                    }*/
+                    }
                 }
-//                appointmentPatientCardVos.add(appointmentPatientCardVo);
+                appointmentPatientCardVos.add(appointmentPatientCardVo);
             });
         }
         // 将分解之后的助手信息放入助手集合中
-//        assistantInfoList.add(assistantSplitVo);
+        assistantInfoList.add(assistantSplitVo);
         assistantSplitVo.setAppointmentAssistants(assistantInfoList);
         // 对助手信息进行排序   按患者数量排序
         List<AppointmentDimensionVo> sortByDescList = assistantInfoList.stream().sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
@@ -1563,6 +1564,63 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 欠费金额 服务还没做，先空着，后面补上 TODO
 
         return build;
+    }
+
+    /**
+     * 根据条件查询患者预约信息（患者档案-预约信息;查看详细-预约信息）用
+     * @param query 查询条件
+     * @return 预约列表
+     */
+    public ResponseResult findAppointPatientRecord(AppointPatientRecordQuery query) {
+        Date startDate = query.getStartDate();
+        Date endDate = query.getEndDate();
+        if (null != startDate && null != endDate) {
+            long startDateTime = startDate.getTime();
+            long endDateTime = endDate.getTime();
+            if (startDateTime > endDateTime) {
+                return ResponseUtil.fail(AppointmentError.START_DATE_AFTER_END_DATE.getCode(),AppointmentError.START_DATE_AFTER_END_DATE.getMessage(),null);
+            }
+        }
+        // 查询患者预约信息
+        List<AppointPatientRecordVo> appointPatientRecord = mapper.findAppointPatientRecord(query);
+        appointPatientRecord.forEach(appointPatientRecordVo -> {
+            // 设置医生名字
+            Integer dentistId = appointPatientRecordVo.getDentistId();
+            SysEmployee dentistInfo = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+            if (null != dentistInfo) {
+                appointPatientRecordVo.setDentistName(dentistInfo.getName());
+            }
+            // 设置助手名字
+            Integer assistantId = appointPatientRecordVo.getAssistantId();
+            SysEmployee assistantInfo = this.remoteSystemServiceFeign.findSysEmployeeById(assistantId);
+            if (null != assistantInfo) {
+                appointPatientRecordVo.setAssistantName(assistantInfo.getName());
+            }
+            // 设置门诊名称
+            Integer orgId = appointPatientRecordVo.getOrgId();
+            OrganizationInfo orgInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+            if (null != orgInfo) {
+                appointPatientRecordVo.setOrgName(orgInfo.getName());
+            }
+            // 设置科室名称
+            Integer deptRoomId = appointPatientRecordVo.getDeptRoomId();
+            DepartmentRoom departmentRoomInfo = this.remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
+            if (null != departmentRoomInfo) {
+                appointPatientRecordVo.setDeptRoomName(departmentRoomInfo.getName());
+            }
+            // 设置设备编号
+            Integer clinicDeviceItemId = appointPatientRecordVo.getClinicDeviceItemId();
+            DeviceItemVo deviceItemVo = this.clinicDeviceItemBiz.selectDeviceItemById(clinicDeviceItemId);
+            if (null != deviceItemVo) {
+                appointPatientRecordVo.setClinicDeviceItemNumber(deviceItemVo.getNumber());
+            }
+
+        });
+        // 设置分页
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
     }
 
 }

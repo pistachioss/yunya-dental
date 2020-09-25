@@ -1,12 +1,10 @@
 package com.yunya.modules.appointment.mapper;
 
+import com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
-import com.yunya.feign.appointment.vo.AppointmentDimensionVo;
-import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
-import com.yunya.feign.appointment.vo.AppointmentVo;
+import com.yunya.feign.appointment.vo.*;
 import com.yunya.models.appointment.Appointment;
-import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -161,5 +159,12 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return 患者列表
    */
   List<Appointment> findAppointmentByPatientId(@Param("patientId") Integer patientId);
+
+  /**
+   * 根据条件查询患者预约信息（患者档案-预约信息）用
+   * @param query 查询条件
+   * @return 患者列表
+   */
+  List<AppointPatientRecordVo> findAppointPatientRecord(AppointPatientRecordQuery query);
 
 }

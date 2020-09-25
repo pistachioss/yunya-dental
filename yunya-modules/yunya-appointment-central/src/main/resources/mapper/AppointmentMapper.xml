@@ -351,5 +351,37 @@
         where a.patient_id = #{patientId}
     </select>
 
+    <!-- 根据条件查询患者预约信息（患者档案-预约信息）用 -->
+    <select id="findAppointPatientRecord" parameterType="com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery"
+            resultType="com.yunya.feign.appointment.vo.AppointPatientRecordVo">
+        SELECT
+            a.id,
+            a.patient_id AS patientId,
+            a.org_id AS orgId,
+            a.dentist_id AS dentistId,
+            a.assistant_id AS assistantId,
+            a.appoint_duration AS appointDuration,
+            a.appoint_date AS appointDate,
+            a.appoint_time AS appointTime,
+            a.appoint_content AS appointContent,
+            a.confirm_status AS confirmStatus,
+            a.appoint_status AS appointStatus,
+            a.dept_room_id AS deptRoomId,
+            a.clinic_device_item_id AS clinicDeviceItemId
+        FROM
+            appointment a
+        <where>
+            <if test="patientId != null">
+                a.patient_id = #{patientId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                and DATE_FORMAT(a.appoint_date,'%y-%M-%d') BETWEEN DATE_FORMAT(#{startDate},'%y-%M-%d') and DATE_FORMAT(#{endDate},'%y-%M-%d')
+            </if>
+            <if test="orgId != null">
+                a.org_id = #{orgId}
+            </if>
+        </where>
+    </select>
+
 
 </mapper>
