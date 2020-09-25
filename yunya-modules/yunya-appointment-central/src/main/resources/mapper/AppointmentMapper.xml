@@ -36,7 +36,7 @@
     <resultMap id="appointmentDimensionColumn" type="com.yunya.feign.appointment.vo.AppointmentDimensionVo">
         <result column="dentist_id" jdbcType="INTEGER" property="dentistId"/>
         <result column="patientNum" jdbcType="INTEGER" property="patientNum"/>
-        <result column="currentDate" jdbcType="DATE" property="currentDate"/>
+<!--        <result column="currentDate" jdbcType="DATE" property="currentDate"/>-->
         <collection property="appointmentPatientCardVos"
                     ofType="com.yunya.feign.appointment.vo.AppointmentPatientCardVo">
             <id column="id" jdbcType="INTEGER" property="id"/>
@@ -285,7 +285,7 @@
     select
       a.id,
       a.dentist_id,
-      a.appoint_date as currentDate,
+--       a.appoint_date as currentDate,
       a.patient_id,
       a.appoint_type,
       a.appoint_content,
@@ -293,17 +293,18 @@
       a.appoint_time,
       a.appoint_duration,
       a.confirm_status,
-       (select COUNT(*) as num from appointment a1
+       (select COUNT(a1.id) as num from appointment a1
           where
             a1.dentist_id = a.dentist_id
             and a1.inservice = 1
-            and a1.appoint_date = a.appoint_date
-						and a1.org_id = a.org_id) as patientNum
+            and a1.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+			and a1.org_id = a.org_id
+			and a1.appoint_status = a.appoint_status) as patientNum
     from appointment a
     where
       a.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
       and a.inservice = 1
-      and a.appoint_status = 0
+      and a.appoint_status &lt;&gt; 3
       and a.dentist_id = #{dentistId}
       and a.org_id = #{orgId}
   </select>

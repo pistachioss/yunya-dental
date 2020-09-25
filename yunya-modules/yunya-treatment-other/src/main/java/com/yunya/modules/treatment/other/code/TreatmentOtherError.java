@@ -14,6 +14,12 @@ public enum TreatmentOtherError {
     /** 02-开始日期不能大于结束日期 */
     START_DATE_AFTER_END_DATE(02,"开始日期不能大于结束日期"),
 
+    /** 10-新增随访失败*/
+    INSERT_VISITING_RECORD_ERR(10,"新增随访失败"),
+
+    /** 20-该条记录不允许编辑*/
+    EDIT_NOT_ALLOWED(20,"该条记录正在被修改中,不允许编辑"),
+
 
     /** 30-员工排班服务异常 */
     SCHEDULE_SERVER_ERR(30,"员工排班服务异常"),

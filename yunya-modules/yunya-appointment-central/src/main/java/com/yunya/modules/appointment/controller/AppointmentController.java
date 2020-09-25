@@ -178,7 +178,7 @@ public class AppointmentController {
   public ResponseResult findAppointmentPatientDimensionByDate(
       @RequestBody @Validated PatientDimensionByDayQuery query) {
     if (query.getWhetherPage()) {
-      PageHelper.offsetPage(query.getPageNum(), query.getPageSize());
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
