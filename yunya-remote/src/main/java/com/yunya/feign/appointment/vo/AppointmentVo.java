@@ -1,6 +1,7 @@
 package com.yunya.feign.appointment.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -8,6 +9,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 预约列表视图模型
@@ -167,4 +169,8 @@ public class AppointmentVo implements Serializable {
      */
     @ApiModelProperty(value = "创建人")
     private String crtName;
+
+    /** 时长分解列表 */
+    @ApiModelProperty(value = "时长分解列表")
+    private List<AppointmentSplitVo> splitList;
 }

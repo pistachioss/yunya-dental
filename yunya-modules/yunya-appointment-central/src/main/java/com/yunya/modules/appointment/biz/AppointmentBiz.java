@@ -388,6 +388,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (splitList != null && !splitList.isEmpty()){
 
             AppointmentSplitForm splitForm = new AppointmentSplitForm();
+            splitForm.setAppointDate(appointmentForm.getAppointDate());
             splitForm.setSplitList(appointmentForm.getSplitList());
             splitForm.setOrgId(appointmentForm.getOrgId());
             splitForm.setAppointDuration(appointmentForm.getAppointDuration());
@@ -615,6 +616,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             String name = patientBaseInfo.getName();
             appointmentVo.setPatientName(name);
         }
+        // 查询预约分解信息
+        AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
+        splitQuery.setAppointmentId(appointmentVo.getId());
+        splitQuery.setAppointDate(appointmentVo.getAppointDate());
+        splitQuery.setOrgId(appointmentVo.getOrgId());
+        List<AppointmentSplitVo> splitVos = this.appointmentSplitBiz.findAppointmentSplitByExample(splitQuery);
+        appointmentVo.setSplitList(splitVos);
+
         return appointmentVo;
     }
 
@@ -1193,33 +1202,62 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private AppointmentDimensionVo combinationDentistDimensionVo(Integer orgId,AppointmentDimensionVo appointmentDimensionVo) {
         // 取出患者信息
         List<AppointmentPatientCardVo> patientCardVos = appointmentDimensionVo.getAppointmentPatientCardVos();
-
         if (!StringHelper.isEmpty(patientCardVos)) {
             // 查询预约分解信息
             AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
             // 根据患者信息中的预约医生ID和助手ID填充医生和助手基础信息
-            patientCardVos.forEach(appointmentPatientCardVo -> {
+            for(int index = 0; index < patientCardVos.size(); index++) {
+                AppointmentPatientCardVo appointmentPatientCardVo = patientCardVos.get(index);
+                // 分解的预约是否有大医生,如果有则flag=true不删除大医生下的预约，如果没有则flag=false删除大医生下的预约
+                // 防止被分解掉的且没有分解到大医生身上的预约显示到大医生下
+                boolean flag = true;
                 // 设置预约id
                 splitQuery.setAppointmentId(appointmentPatientCardVo.getId());
                 // 设置门诊id
                 splitQuery.setOrgId(orgId);
                 // 设置预约时间
-                splitQuery.setAppointDate(appointmentDimensionVo.getCurrentDate());
+                splitQuery.setAppointDate(appointmentPatientCardVo.getAppointDate());
                 // 查询本次预约相关的分解助手信息
                 List<AppointmentSplitVo> appointSplitVo = appointmentSplitBiz.findAppointmentSplitByExample(splitQuery);
                 if (!StringHelper.isEmpty(appointSplitVo)) {
                     // 助手预约信息列表
                     List<AppointmentDimensionVo> assistantAppointList = new ArrayList<>();
-                    appointSplitVo.forEach(appointmentSplitVo -> {
+                    for(AppointmentSplitVo appointmentSplitVo : appointSplitVo) {
+                        // 判断预约是否有分解到大医生
+                        Integer assistantId = appointmentSplitVo.getAssistantId();
+                        Integer dentistId = appointmentDimensionVo.getDentistId();
+                        flag = flag & (assistantId.equals(dentistId));
+
                         // 设置医生维度大医生下的预约助手相关信息（助手排班、助手分解到的患者信息）
                         AppointmentDimensionVo assistantPatientInfo = this.setAppointAssistantInfo(appointmentPatientCardVo, appointmentSplitVo);
+                        // 设置预约助手下的患者数量，没循环一次加1
+                        Integer patientNum = assistantPatientInfo.getPatientNum();
+                        patientNum = (null == patientNum ? 0 : patientNum);
+                        assistantPatientInfo.setPatientNum(++patientNum);
                         // 将助手信息放入助手预约信息列表中
                         assistantAppointList.add(assistantPatientInfo);
-                    });
+                    }
                     // 将助手预约信息设置到医生维度信息实体中
                     appointmentDimensionVo.setAppointmentAssistants(assistantAppointList);
                 }
-            });
+                // 如果有则flag=true不删除大医生下的预约，如果没有则flag=false删除大医生下的预约
+                if (!flag) {
+                    // 移除没有分解到大医生身上的预约
+                    patientCardVos.remove(index);
+                    // 大医生下的患者数量-1
+                    Integer patientNum = appointmentDimensionVo.getPatientNum();
+                    // 如果patientNum=null 则返回0，否则返回patientNum
+                    patientNum = (null == patientNum ? 0 : patientNum);
+                    // 如果patientNum<=0 则返回0， 否则patientNum-1之后再返回
+                    patientNum = (patientNum <= 0 ? 0 : --patientNum);
+                    appointmentDimensionVo.setPatientNum(patientNum);
+                } else {
+                    // 获取大医生下患者当前处于哪个就诊状态
+                    Byte aByte = this.getTreatmentStation(appointmentPatientCardVo.getId(), appointmentPatientCardVo.getPatientId());
+                    // 设置大医生下所有的患者就诊状态
+                    appointmentPatientCardVo.setStation(aByte);
+                }
+            }
         }
         return appointmentDimensionVo;
     }
@@ -1254,9 +1292,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             assistantPatientCardInfo.setAppointDuration(endMinute-startMinute);
             // 助手预约时间
             assistantPatientCardInfo.setAppointTime(appointmentSplitVo.getSplitStartTime());
-            // 查询患者就诊流程的状态
-            Byte aByte = this.setStation(appointmentPatientCardVo.getId(), appointmentPatientCardVo.getPatientId());
-            // 设置患者就诊流程的状态 0-待挂号状态；1-就诊中状态；2-就诊完成状态
+            // 查询助手下患者就诊流程的状态
+            Byte aByte = this.getTreatmentStation(appointmentPatientCardVo.getId(), appointmentPatientCardVo.getPatientId());
+            // 设置助手下患者就诊流程的状态 0-待挂号状态；1-就诊中状态；2-就诊完成状态
             assistantPatientCardInfo.setStation(aByte);
             // 将助手患者信息设置到患者信息列表中
             assistantPatientCardList.add(assistantPatientCardInfo);
@@ -1290,7 +1328,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * 设置患者就诊流程的状态
      * @return 返回就诊状态 0-待挂号状态；1-就诊中状态；2-就诊完成状态
      */
-    private Byte setStation(Integer appointId, Integer patientId) {
+    private Byte getTreatmentStation(Integer appointId, Integer patientId) {
         Registered registered = new Registered();
         registered.setAppointmentId(appointId);
         registered.setPatientId(patientId);
@@ -1305,13 +1343,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 查询患者就诊信息
             TreatmentRecord treatmentRecordByExample = this.remoteTreatmentServiceFeign.findTreatmentRecordByExample(treatmentRecord);
             byte splitStatus = 2;
-            if (null != treatmentRecord) {
+            if (null != treatmentRecordByExample) {
                 // 诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)
-                Byte type = treatmentRecord.getType();
+                Byte type = treatmentRecordByExample.getStatus();
                 // 诊疗状态为 “0-接诊中;1-已开单”时返回 1(就诊中状态)
                 if (type < splitStatus) {
                     return 1;
-                } else if (type >= splitStatus) {
+                } else {
                     // 诊疗状态为 “2-接诊完成3-已结账”时返回 2(就诊完成状态)
                     return 2;
                 }

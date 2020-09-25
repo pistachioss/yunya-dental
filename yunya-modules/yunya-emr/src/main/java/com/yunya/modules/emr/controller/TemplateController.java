@@ -6,18 +6,29 @@ import com.yunya.feign.emr.domain.form.MedicalTemplateForm;
 import com.yunya.feign.emr.domain.model.GeneralTemplateModel;
 import com.yunya.feign.emr.domain.model.MedicalTemplateModel;
 import com.yunya.feign.emr.domain.query.TemplateQuery;
-import com.yunya.feign.emr.domain.vo.*;
+import com.yunya.feign.emr.domain.vo.EnableTemplateVo;
+import com.yunya.feign.emr.domain.vo.GeneralTemplatePageVo;
+import com.yunya.feign.emr.domain.vo.MedicalDetailDetailVo;
+import com.yunya.feign.emr.domain.vo.MedicalTemplatePageVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.emr.biz.TemplateBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.*;
+import java.util.List;
 
 /**
  * @author xiangyang
@@ -100,10 +111,20 @@ public class TemplateController {
         return ResponseUtil.success(result);
     }
 
-    @ApiOperation("电子病例-病例模板内容查询")
+    /**
+     * 电子病例-病例模板内容查询（无条件查询）
+     * @param categoryId categoryId
+     * @param type type（0：初复诊（0：初诊 1：复诊））
+     * @return Response
+     */
+    @ApiOperation("电子病例-病例模板内容查询（无条件查询）")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="categoryId", value="分类id",dataType = "integer", required=true),
+            @ApiImplicitParam(name="type", value="初复诊（0：初诊 1：复诊）", dataType = "integer")
+    })
     @GetMapping("template/{categoryId}/medical/list")
-    public ResponseResult<List<EnableTemplateVo>> getTemplateList(@PathVariable(value = "categoryId") Integer categoryId) {
-        List<EnableTemplateVo> list = templateBiz.getEnableMedicalTemplate(categoryId);
+    public ResponseResult<List<EnableTemplateVo>> getTemplateList(@PathVariable(value = "categoryId") Integer categoryId, @RequestParam Integer type) {
+        List<EnableTemplateVo> list = templateBiz.getEnableMedicalTemplate(categoryId, type);
         return ResponseUtil.success(list);
     }
 

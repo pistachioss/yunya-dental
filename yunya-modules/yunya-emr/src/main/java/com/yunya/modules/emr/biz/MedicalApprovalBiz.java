@@ -1,49 +1,106 @@
 package com.yunya.modules.emr.biz;
 
-import com.github.pagehelper.*;
-import com.google.common.base.*;
-import com.google.common.collect.*;
-import com.yunya.feign.emr.domain.bo.*;
-import com.yunya.feign.emr.domain.form.*;
-import com.yunya.feign.emr.domain.model.*;
-import com.yunya.feign.emr.domain.query.*;
-import com.yunya.feign.emr.domain.vo.*;
-import com.yunya.feign.patient_central.*;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.yunya.feign.emr.domain.bo.ApproveChangePageBo;
+import com.yunya.feign.emr.domain.bo.ApprovePageBo;
+import com.yunya.feign.emr.domain.bo.AuditMedicalBo;
+import com.yunya.feign.emr.domain.bo.MedicalTreatmentBo;
+import com.yunya.feign.emr.domain.bo.RestErrorBo;
+import com.yunya.feign.emr.domain.form.ChangeApprovePassForm;
+import com.yunya.feign.emr.domain.form.ChangeApproveRejectForm;
+import com.yunya.feign.emr.domain.form.MedicalApprovePassForm;
+import com.yunya.feign.emr.domain.form.MedicalApproveRejectForm;
+import com.yunya.feign.emr.domain.model.ApplyBaseModel;
+import com.yunya.feign.emr.domain.model.ChangeMedicalApplyModel;
+import com.yunya.feign.emr.domain.model.DraftMedicalApplyModel;
+import com.yunya.feign.emr.domain.query.ChangeApproveQuery;
+import com.yunya.feign.emr.domain.query.MedicalApproveQuery;
+import com.yunya.feign.emr.domain.vo.MedicalApplyPageVo;
+import com.yunya.feign.emr.domain.vo.MedicalApprovePageVo;
+import com.yunya.feign.emr.domain.vo.MedicalChangeApplyPageVo;
+import com.yunya.feign.emr.domain.vo.MedicalChangeApprovePageVo;
+import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
-import com.yunya.feign.system.*;
-import com.yunya.feign.system.vo.*;
-import com.yunya.feign.treatment.*;
-import com.yunya.framework.common.biz.*;
-import com.yunya.framework.common.constant.*;
-import com.yunya.framework.common.context.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.model.*;
-import com.yunya.framework.common.utils.*;
-import com.yunya.framework.redis.util.*;
-import com.yunya.models.emr.*;
-import com.yunya.models.treatment.*;
-import com.yunya.modules.emr.enums.*;
-import com.yunya.modules.emr.mapper.*;
-import lombok.extern.slf4j.*;
-import org.apache.commons.collections4.*;
-import org.apache.commons.lang3.*;
-import org.springframework.stereotype.*;
-import org.springframework.transaction.annotation.*;
-import tk.mybatis.mapper.entity.*;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.emr.ApprovalRecord;
+import com.yunya.models.emr.MedicalCommonRecord;
+import com.yunya.models.treatment.Registered;
+import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.modules.emr.mapper.ApprovalRecordMapper;
+import com.yunya.modules.emr.mapper.MedicalCommonRecordMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
-import javax.annotation.*;
-import java.time.*;
+import javax.annotation.Resource;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.yunya.framework.common.constant.BusinessConstants.*;
-import static com.yunya.modules.emr.constant.EmrError.*;
-import static com.yunya.modules.emr.enums.ApplyTypeEnum.*;
-import static com.yunya.modules.emr.enums.ApproveStatusEnum.*;
-import static com.yunya.modules.emr.enums.EventTypeEnum.*;
-import static java.util.stream.Collectors.*;
+import static com.yunya.framework.common.constant.BusinessConstants.HOUR_GAP;
+import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
+import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_AUDIT_PENDING_STATUS;
+import static com.yunya.framework.common.constant.BusinessConstants.NORMAL_MEDICAL_STATUS;
+import static com.yunya.modules.emr.enums.EmrError.APPLY_APPROVE_PENDING;
+import static com.yunya.modules.emr.enums.EmrError.AUDIT_IS_PASS;
+import static com.yunya.modules.emr.enums.EmrError.AUDIT_PENDING;
+import static com.yunya.modules.emr.enums.EmrError.CHANGE_APPLY_REJECTED;
+import static com.yunya.modules.emr.enums.EmrError.CHANGE_PENDING_NOT_REPEAT_SUBMIT;
+import static com.yunya.modules.emr.enums.EmrError.DATA_IS_EXISTED;
+import static com.yunya.modules.emr.enums.EmrError.KEY_IS_LOCKED;
+import static com.yunya.modules.emr.enums.EmrError.MEDICAL_ALREADY_AUDITED;
+import static com.yunya.modules.emr.enums.EmrError.MEDICAL_IS_EXIST;
+import static com.yunya.modules.emr.enums.EmrError.MEDICAL_STATUS_ERROR;
+import static com.yunya.modules.emr.enums.EmrError.MODIFY_APPLY_TIMEOUT;
+import static com.yunya.modules.emr.enums.EmrError.NORMAL_MEDICAL_NO_PERMISSION;
+import static com.yunya.modules.emr.enums.EmrError.NOT_NEED_APPLY;
+import static com.yunya.modules.emr.enums.EmrError.NO_ALLOW_REPEAT_APPLY;
+import static com.yunya.modules.emr.enums.EmrError.NO_AUTH_MODIFY_MED;
+import static com.yunya.modules.emr.enums.EmrError.NO_PERMISSION_OPERATION;
+import static com.yunya.modules.emr.enums.EmrError.OK;
+import static com.yunya.modules.emr.enums.EmrError.REJECTED_NO_NEED_APPLY;
+import static com.yunya.modules.emr.enums.EmrError.TREATMENT_NOT_EXIST;
+import static com.yunya.modules.emr.enums.ApplyTypeEnum.ADD;
+import static com.yunya.modules.emr.enums.ApplyTypeEnum.UPDATE;
+import static com.yunya.modules.emr.enums.ApproveStatusEnum.APPROVE_PENDING;
+import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_PASS;
+import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_REJECT;
+import static com.yunya.modules.emr.enums.EventTypeEnum.DRAFT_AUDIT;
+import static com.yunya.modules.emr.enums.EventTypeEnum.MEDICAL_CHANGE_AUDIT;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 /**
  * @author xiangyang
@@ -214,8 +271,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     public ResponseResult applyAddChangeCase(ChangeMedicalApplyModel changeModel) {
         boolean locked = false;
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
-        Integer eventId = changeModel.getApplyBase().getEventId();
-        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHANGE_APPLY_NS, String.valueOf(changeModel.getApplyBase().getEventId()));
+        Integer eventId = changeModel.getEventId();
+        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHANGE_APPLY_NS, String.valueOf(eventId));
         String lockVal = BaseContextHandler.getUserID();
         log.info("新增病例变更申请开始提交：{}", eventId);
         try {
@@ -230,7 +287,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             //2. 检查登录人权限
             List<String> permission = getPostPermission(loginUserId);
             if (!(permission.contains("助手") || permission.contains("医生"))) {
-                log.warn("【申请失败】：无权限操作");
+                log.warn("【申请变更新增失败】：无权限操作");
                 return ResponseUtil.error(NO_PERMISSION_OPERATION);
             }
             //检查就诊信息（权限，时间）
@@ -241,16 +298,22 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             //3. 检查电子病例
             MedicalCommonRecord medical = findByTreatmentId(eventId);
             if (medical != null) {
-                log.warn("【申请失败】：就诊记录已生成电子病例：[{}]", medical.getId());
+                log.warn("【申请变更新增失败】：就诊记录已生成电子病例：[{}]", medical.getId());
                 return ResponseUtil.error(MEDICAL_IS_EXIST);
+            }
+            //检查变更申请记录，申请未通过时，不可多次重复申请变更
+            int applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
+            if (applyCount > 0) {
+                log.warn("【申请变更新增失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
+                return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
             }
             //4. 检查变更审批
             if (isExistChangeToAudit(eventId)) {
-                log.warn("【申请失败】：审核状态异常，申请已在待审批：[{}]", eventId);
+                log.warn("【申请变更新增失败】：审核状态异常，申请已在待审批：[{}]", eventId);
                 return ResponseUtil.error(APPLY_APPROVE_PENDING);
             }
             //5. 新增变更提交申请
-            constructCreateEntity(changeModel.getApplyBase(), MEDICAL_CHANGE_AUDIT.getCode(), ADD.getCode(), changeModel.getApplyReason());
+            constructCreateEntity(buildApplyBaseModel(changeModel, loginUserId), MEDICAL_CHANGE_AUDIT.getCode(), ADD.getCode(), changeModel.getApplyReason());
             return ResponseUtil.error(OK);
         } finally {
             if (locked) {
@@ -269,8 +332,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         boolean locked = false;
         Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
         String lockVal = BaseContextHandler.getUserID();
-        Integer eventId = changeModel.getApplyBase().getEventId();
-        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHANGE_APPLY_NS, String.valueOf(changeModel.getApplyBase().getEventId()));
+        Integer eventId = changeModel.getEventId();
+        String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHANGE_APPLY_NS, String.valueOf(eventId));
         log.info("修改病例变更申请开始提交：{}", eventId);
         try {
             // 1. 锁定就诊变更申请
@@ -283,39 +346,49 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             //2. 检查登录人权限
             List<String> permission = getPostPermission(loginUserId);
             if (!(permission.contains("助手") || permission.contains("医生"))) {
-                log.warn("【申请失败】：无权限操作");
+                log.warn("【申请变更修改失败】：无权限操作");
                 return ResponseUtil.error(NO_PERMISSION_OPERATION);
             }
             //3. 检查电子病历
             MedicalCommonRecord medical = medicalMapper.selectByPrimaryKey(eventId);
             if (medical == null || !loginUserId.equals(medical.getCrtId())) {
-                log.warn("【申请失败】：无权限申请修改此病历，请联系新增病历医生申请修改！");
+                log.warn("【申请变更修改失败】：无权限申请修改此病历，请联系新增病历医生申请修改！");
                 return ResponseUtil.error(NO_AUTH_MODIFY_MED);
+            }
+            //检查变更申请记录，申请未通过时，不可多次重复申请变更
+            int applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
+            if (applyCount > 0) {
+                log.warn("【申请变更修改失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
+                return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
             }
             //4. 检查病历审批
             if (loginUserId.equals(medical.getMajorDentistId())) {
-
+                //检查就诊信息（权限，时间）
+                RestErrorBo restErrorBo = checkTreatmentInfo(medical.getTreatmentId());
+                if (restErrorBo.getError() != null) {
+                    return ResponseUtil.error(restErrorBo.getError());
+                }
             } else {
                 ApprovalRecord newestDraft = mapper.findNewestDraft(eventId);
                 if (newestDraft == null || !loginUserId.equals(newestDraft.getProposerId())) {
-                    log.warn("【申请失败】：无权限申请修改此病历，请联系新增病历医生申请修改！");
+                    log.warn("【申请变更修改失败】：无权限申请修改此病历，请联系新增病历医生申请修改！");
                     return ResponseUtil.error(NO_AUTH_MODIFY_MED);
                 }
                 //待审核草稿不能申请变更
                 if (APPROVE_PENDING.equals(newestDraft.getStatus())) {
-                    log.warn("【申请失败】：电子病例[{}]状态异常，待审核状态不能变更申请", eventId);
+                    log.warn("【申请变更修改失败】：电子病例[{}]状态异常，待审核状态不能变更申请", eventId);
                     return ResponseUtil.error(AUDIT_PENDING);
                 }
                 if (AUDIT_REJECT.equals(newestDraft.getStatus())) {
                     //校验最新拒绝审批时间
                     if (!judgeRejectTimeout(newestDraft.getApproveTime())) {
-                        log.warn("【申请失败】：电子病历[{}]可以直接修改，无需申请", eventId);
+                        log.warn("【申请变更修改失败】：电子病历[{}]可以直接修改，无需申请", eventId);
                         return ResponseUtil.error(REJECTED_NO_NEED_APPLY);
                     }
                 }
             }
             //5. 提交修改变更申请
-            constructCreateEntity(changeModel.getApplyBase(), MEDICAL_CHANGE_AUDIT.getCode(), UPDATE.getCode(), changeModel.getApplyReason());
+            constructCreateEntity(buildApplyBaseModel(changeModel, loginUserId), MEDICAL_CHANGE_AUDIT.getCode(), UPDATE.getCode(), changeModel.getApplyReason());
             return ResponseUtil.error(OK);
         } finally {
             if (locked) {
@@ -485,7 +558,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, submitTime, loginUserId, DRAFT_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(loginUserApproveList)) {
                 //查询登录人草稿审批的患者ids映射
-                AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(loginUserApproveList, loginUserId);
+                AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(loginUserApproveList);
                 //根据查询关键字获取电子病例ids集合
                 List<Integer> medicalIds = getQueryMedicalIdsAndSetBo(auditMedicalBo, loginUserId, keyword, approveBo);
                 //根据电子病例Ids和病例提交时间查询审批数据
@@ -512,7 +585,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         Page<ApprovalRecord> page = new Page<>();
         //关键字模糊查询条件为空，先查审批相关信息
         if (StringUtils.isBlank(keyword)) {
-            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+            page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
             //查询变更审批数据
             list = mapper.listMedicalByParam(null, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(list)) {
@@ -533,7 +606,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 eventIds.addAll(medicalIds);
                 //根据电子病例Ids和病例提交时间查询审批数据
                 if (CollectionUtils.isNotEmpty(medicalIds)) {
-                    PageHelper.startPage(query.getPageNum(), query.getPageSize());
+                    page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
                     list = mapper.listMedicalByParam(eventIds, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
                 }
             }
@@ -585,16 +658,15 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
      * 查询登录人草稿审批的患者ids
      *
      * @param list        源数据
-     * @param loginUserId 登录人
      * @return 患者ids
      */
-    public AuditMedicalBo getDraftPatientIdsByApplyType(List<ApprovalRecord> list, Integer loginUserId) {
+    public AuditMedicalBo getDraftPatientIdsByApplyType(List<ApprovalRecord> list) {
         AuditMedicalBo bo = AuditMedicalBo.getInstance();
         //审批结果的所有电子病例id集合
         List<Integer> medicalIds = list.stream().map(ApprovalRecord::getEventId).collect(toList());
         if (CollectionUtils.isNotEmpty(medicalIds)) {
             //根据审批的事件Ids查询电子病例信息集合
-            List<MedicalCommonRecord> commonRecords = findByMedicalIds(medicalIds, loginUserId);
+            List<MedicalCommonRecord> commonRecords = findByMedicalIds(medicalIds);
             //患者ids
             List<Integer> patientIds = commonRecords.stream().map(MedicalCommonRecord::getPatientId).collect(toList());
             //就诊ids
@@ -653,12 +725,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         return medicalIds;
     }
 
-    private List<MedicalApplyPageVo> assembleDraftApplyVos(ApprovePageBo draftApllyBo) {
+    private List<MedicalApplyPageVo> assembleDraftApplyVos(ApprovePageBo draftApplyBo) {
         //查询的审批结果
-        List<ApprovalRecord> auditList = draftApllyBo.getAuditList();
+        List<ApprovalRecord> auditList = draftApplyBo.getAuditList();
         //查询的患者信息映射
-        Map<Integer, PatientBaseInfoVo> patientInfoMap = draftApllyBo.getPatientInfoMap();
-        Map<Integer, MedicalTreatmentBo> treatmentBoMap = draftApllyBo.getTreatmentBoMap();
+        Map<Integer, PatientBaseInfoVo> patientInfoMap = draftApplyBo.getPatientInfoMap();
+        Map<Integer, MedicalTreatmentBo> treatmentBoMap = draftApplyBo.getTreatmentBoMap();
         //返回Vo集合
         List<MedicalApplyPageVo> resultList = Lists.newArrayListWithExpectedSize(auditList.size());
         //取出所有审批人id（主治医生id）
@@ -674,13 +746,14 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             MedicalApplyPageVo vo = new MedicalApplyPageVo();
             vo.setId(obj.getId());
             vo.setEventId(obj.getEventId());
+            vo.setPatientId(patientInfo == null ? null : patientInfo.getId());
             vo.setPatientName(patientInfo == null ? null : patientInfo.getName());
             vo.setMedicalNum(patientInfo == null ? null : patientInfo.getMedicalNumber());
             vo.setTreatmentClinicName(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentClinicName());
             vo.setMajorDentistName(majorDoctorInfo == null ? null : majorDoctorInfo.getName());
             vo.setTreatmentDate(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentDate());
             vo.setSubmitTime(obj.getCrtTime());
-            vo.setApproveStatus(ApproveStatusEnum.getValue(obj.getStatus()));
+            vo.setApproveStatus(obj.getStatus());
             vo.setRejectReason(obj.getApproveReason());
             vo.setModifyDeadTime(Objects.equals(AUDIT_REJECT.getCode(), obj.getStatus()) ? obj.getApproveTime().plusDays(1) : null);
             resultList.add(vo);
@@ -693,6 +766,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         List<ApprovalRecord> auditList = draftApproveBo.getAuditList();
         //查询的患者信息映射
         Map<Integer, PatientBaseInfoVo> patientInfoMap = draftApproveBo.getPatientInfoMap();
+        //电子病例--查询的就诊集合
+        Map<Integer, MedicalTreatmentBo> treatmentBoMap = draftApproveBo.getTreatmentBoMap();
         List<MedicalApprovePageVo> resultList = Lists.newArrayListWithExpectedSize(auditList.size());
         //取出所有申请人Id（助手医生id）
         Set<Integer> proposerIds = auditList.stream().map(ApprovalRecord::getProposerId).collect(toSet());
@@ -701,18 +776,20 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         auditList.forEach(obj -> {
             //电子病例对应的患者信息
             PatientBaseInfoVo patientInfo = patientInfoMap.get(obj.getEventId());
+            MedicalTreatmentBo medicalTreatmentBo = treatmentBoMap.get(obj.getEventId());
             //助理医生信息
-            SysUserInfoDetail assistantDoctorInfo = doctorInfoMap.get(obj.getApproverId());
+            SysUserInfoDetail assistantDoctorInfo = doctorInfoMap.get(obj.getProposerId());
             MedicalApprovePageVo vo = new MedicalApprovePageVo();
             vo.setId(obj.getId());
             vo.setEventId(obj.getEventId());
+            vo.setPatientId(patientInfo == null ? null : patientInfo.getId());
             vo.setPatientName(patientInfo == null ? null : patientInfo.getName());
             vo.setMedicalNum(patientInfo == null ? null : patientInfo.getMedicalNumber());
-            vo.setTreatmentClinicName(null);
+            vo.setTreatmentClinicName(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentClinicName());
             vo.setAssistantDentistName(assistantDoctorInfo == null ? null : assistantDoctorInfo.getName());
-            vo.setTreatmentDate(null);
+            vo.setTreatmentDate(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentDate());
             vo.setSubmitTime(obj.getCrtTime());
-            vo.setApproveStatus(ApproveStatusEnum.getValue(obj.getStatus()));
+            vo.setApproveStatus(obj.getStatus());
             vo.setRejectReason(obj.getApproveReason());
             resultList.add(vo);
         });
@@ -744,13 +821,14 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             MedicalChangeApplyPageVo vo = new MedicalChangeApplyPageVo();
             vo.setId(obj.getId());
             vo.setEventId(obj.getEventId());
+            vo.setPatientId(patientBaseInfoVo == null ? null : patientBaseInfoVo.getId());
             vo.setPatientName(patientBaseInfoVo == null ? null : patientBaseInfoVo.getName());
             vo.setMedicalNum(patientBaseInfoVo == null ? null : patientBaseInfoVo.getMedicalNumber());
             vo.setTreatmentClinicName(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentClinicName());
             vo.setTreatmentDate(medicalTreatmentBo == null ? null : medicalTreatmentBo.getTreatmentDate());
-            vo.setApplyTypeName(ApplyTypeEnum.getValue(obj.getApplyType()));
+            vo.setApplyType(obj.getApplyType());
             vo.setApplyReason(obj.getApplyReason());
-            vo.setApproveStatus(ApproveStatusEnum.getValue(obj.getStatus()));
+            vo.setApproveStatus(obj.getStatus());
             vo.setChangeDeadTime(obj.getDeadTime());
             vo.setRejectReason(obj.getApproveReason());
             resultList.add(vo);
@@ -781,11 +859,11 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setPatientName(patientBaseInfoVo == null ? null : patientBaseInfoVo.getName());
             vo.setMedicalNum(patientBaseInfoVo == null ? null : patientBaseInfoVo.getMedicalNumber());
             vo.setApplyTypeDate(LocalDate.of(obj.getCrtTime().getYear(), obj.getCrtTime().getMonth(), obj.getCrtTime().getDayOfMonth()));
-            vo.setApplyTypeName(ApplyTypeEnum.getValue(obj.getApplyType()));
+            vo.setApplyType(obj.getApplyType());
             vo.setApplyDentistName(applyDentist == null ? null : applyDentist.getName());
             vo.setApplyReason(obj.getApplyReason());
             vo.setChangeDeadTime(obj.getDeadTime());
-            vo.setApproveStatus(ApproveStatusEnum.getValue(obj.getStatus()));
+            vo.setApproveStatus(obj.getStatus());
             vo.setRejectReason(obj.getApproveReason());
             resultList.add(vo);
         });
@@ -795,11 +873,20 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     private Map<Integer, SysUserInfoDetail> generateUserMap(Set<Integer> userIds) {
         Map<Integer, SysUserInfoDetail> userInfoMap = Maps.newHashMapWithExpectedSize(userIds.size());
         //查询所有主治医师信息 存入映射
-        userIds.stream().filter(doctorId -> !userInfoMap.containsKey(doctorId)).forEach(doctorId -> {
+        userIds.stream().forEach(doctorId -> {
             SysUserInfoDetail doctorInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(doctorId);
-            userInfoMap.put(doctorId, doctorInfo);
+            if (doctorInfo != null) {
+                userInfoMap.put(doctorId, doctorInfo);
+            }
         });
         return userInfoMap;
+    }
+
+    private ApplyBaseModel buildApplyBaseModel(ChangeMedicalApplyModel changeModel, Integer loginUserId) {
+        ApplyBaseModel applyBase = new ApplyBaseModel();
+        applyBase.setEventId(changeModel.getEventId());
+        applyBase.setProposerId(loginUserId);
+        return applyBase;
     }
 
     /**
@@ -850,9 +937,9 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         return medicalMapper.selectOneByExample(example);
     }
 
-    private List<MedicalCommonRecord> findByMedicalIds(List<Integer> medicalIds, Integer loginUserId) {
+    private List<MedicalCommonRecord> findByMedicalIds(List<Integer> medicalIds) {
         Example example = new Example(MedicalCommonRecord.class);
-        example.createCriteria().andIn("id", medicalIds).andEqualTo("crtId", loginUserId);
+        example.createCriteria().andIn("id", medicalIds);
         return medicalMapper.selectByExample(example);
     }
 
@@ -931,7 +1018,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         Map<Integer, PatientBaseInfoVo> patientInfoMap = Maps.newHashMap();
         Map<Integer, MedicalTreatmentBo> treatmentInfoMap = Maps.newHashMap();
         //查询登录人草稿审批的患者ids映射
-        AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(list, loginUserId);
+        AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(list);
         if (CollectionUtils.isNotEmpty(auditMedicalBo.getPatientIds())) {
             //调用患者接口服务，查询条件下的所有患者信息
             List<PatientBaseInfoVo> filterPatientList = patientFeign.findPatientInfoByIds(auditMedicalBo.getPatientIds());
@@ -945,7 +1032,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             //构建就诊映射
             auditMedicalBo.getTreatmentMap().forEach((k,v) -> treatmentInfoMap.put(k, treatmentMap.get(v)));
             //构建bo
-            pageBo.assignMember(patientInfoMap  , treatmentInfoMap);
+            pageBo.assignMember(patientInfoMap, treatmentInfoMap);
         }
     }
 
@@ -963,18 +1050,22 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 continue;
             }
             MedicalTreatmentBo bo = MedicalTreatmentBo.getInstance();
-            //查询挂号
-            Registered register = treatmentFeign.findRegisteredById(treatment.getRegisteredId());
-            if (register != null) {
-                //查询助手
-                SysUserInfoDetail assistant = systemServiceFeign.findSysUserEmployeeInfoByUserId(register.getAssistantId());
-                bo.setAssistantDentistName(assistant == null ? null : assistant.getName());
+            if (treatment.getRegisteredId() != null) {
+                //查询挂号
+                Registered register = treatmentFeign.findRegisteredById(treatment.getRegisteredId());
+                if (register != null && register.getAssistantId() != null) {
+                    //查询助手
+                    SysUserInfoDetail assistant = systemServiceFeign.findSysUserEmployeeInfoByUserId(register.getAssistantId());
+                    bo.setAssistantDentistName(assistant == null ? null : assistant.getName());
+                }
             }
-            //查询就诊门诊
-            OrganizationInfo clinic = systemServiceFeign.findOrgInfoByOrgId(treatment.getOrgId());
-            bo.setTreatmentDate(treatment.getTreatEndTime() == null ? null : treatment.getTreatEndTime().toInstant()
+            if (treatment.getOrgId() != null) {
+                //查询就诊门诊
+                OrganizationInfo clinic = systemServiceFeign.findOrgInfoByOrgId(treatment.getOrgId());
+                bo.setTreatmentClinicName(clinic == null ? null : clinic.getName());
+            }
+            bo.setTreatmentDate(treatment.getTreatStartTime() == null ? null : treatment.getTreatStartTime().toInstant()
                     .atOffset(ZoneOffset.ofHours(8)).toLocalDate());
-            bo.setTreatmentClinicName(clinic == null ? null : clinic.getName());
             bo.setTreatmentId(treatmentId);
             bo.setPatientId(treatment.getPatientId());
             medTreatMedicalBos.add(bo);
@@ -1055,7 +1146,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 }
             } else {
                 //查询登录人草稿审批的患者ids映射
-                AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(approveList, loginUserId);
+                AuditMedicalBo auditMedicalBo = getDraftPatientIdsByApplyType(approveList);
                 //根据查询关键字获取电子病例ids集合
                 eventIds = getQueryMedicalIdsAndSetBo(auditMedicalBo, loginUserId, keyword, pageBo);
             }
@@ -1090,17 +1181,17 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         return false;
     }
 
-    private RestErrorBo checkTreatmentInfo(Integer eventId) {
+    private RestErrorBo checkTreatmentInfo(Integer treatmentId) {
         RestErrorBo errorBo = RestErrorBo.getInstance();
         //查询就诊信息（就诊时间是否在当天）
-        TreatmentRecord treatment = treatmentFeign.findTreatmentRecordById(eventId);
+        TreatmentRecord treatment = treatmentFeign.findTreatmentRecordById(treatmentId);
         if (treatment == null) {
-            log.warn("【申请失败】：就诊记录[{}]不存在", eventId);
+            log.warn("【申请失败】：就诊记录[{}]不存在", treatmentId);
             errorBo.setError(TREATMENT_NOT_EXIST);
             return errorBo;
         }
-        if (!checkTreatDateIsBeforeNow(treatment.getTreatEndTime())) {
-            log.warn("【申请失败】：电子病历[{}]不需要申请修改，可以直接修改此病历！", eventId);
+        if (!checkTreatDateIsBeforeNow(treatment.getTreatStartTime())) {
+            log.warn("【申请失败】：电子病历[{}]不需要申请修改，可以直接修改此病历！", treatmentId);
             errorBo.setError(NOT_NEED_APPLY);
             return errorBo;
         }

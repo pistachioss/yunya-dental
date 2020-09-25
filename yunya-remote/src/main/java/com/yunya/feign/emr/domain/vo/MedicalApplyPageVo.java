@@ -21,6 +21,9 @@ public class MedicalApplyPageVo {
     @ApiModelProperty(value = "电子病例Id")
     private Integer eventId;
 
+    @ApiModelProperty(value = "患者id")
+    private Integer patientId;
+
     @ApiModelProperty(value = "患者姓名")
     private String patientName;
 
@@ -36,12 +39,12 @@ public class MedicalApplyPageVo {
     @ApiModelProperty(value = "就诊日期")
     private LocalDate treatmentDate;
 
-    @ApiModelProperty(value = "草稿病例提交时间", example = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    @ApiModelProperty(value = "草稿病例提交时间", example = "yyyy-MM-dd HH:mm")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private LocalDateTime submitTime;
 
-    @ApiModelProperty(value = "审核状态")
-    private String approveStatus;
+    @ApiModelProperty(value = "审核状态（0：待审批  1：同意 2：拒绝）")
+    private Integer approveStatus;
 
     @ApiModelProperty(value = "拒绝原因")
     private String rejectReason;

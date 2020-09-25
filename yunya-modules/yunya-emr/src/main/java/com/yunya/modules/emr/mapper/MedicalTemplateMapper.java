@@ -28,12 +28,12 @@ public interface MedicalTemplateMapper extends Mapper<MedicalTemplate> {
 
     /**
      * 根据内容模糊查询
-     * @param keyword
-     * @param categoryId
-     * @return
+     * @param keyword keyword
+     * @param categoryId categoryId
+     * @return List
      */
     List<MedicalTemplate> listByKeyword(@Param("keyword") String keyword, @Param("categoryId")Integer categoryId
-            , @Param("enable") Integer enable);
+            , @Param("enable") Integer enable, @Param("type") Integer type);
 
     /**
      * 启用禁用模板

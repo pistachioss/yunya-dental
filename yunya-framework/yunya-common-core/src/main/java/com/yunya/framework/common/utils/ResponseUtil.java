@@ -86,6 +86,12 @@ public class ResponseUtil {
     return result(ERROR_STATUS, msg, data,NOT_PASS);
   }
 
+  /**
+   * 无数据错误返回
+   * @param error error
+   * @param param 格式化数据
+   * @return ResponseResult
+   */
   public static ResponseResult error (RestError error, Object...param){
     return result(error.getCode(), String.format(error.getMessage(), param), null, NOT_PASS);
   }

@@ -17,6 +17,7 @@ import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -77,22 +78,18 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         if (splits.isEmpty()){
             throw new ClientServiceException("时长分解有误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        splits.forEach(appointmentSplit -> {
-            AppointmentSplit hasAppointSplit = mapper.selectByPrimaryKey(appointmentSplit.getId());
-            if (hasAppointSplit != null){
-                appointmentSplit.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
-                appointmentSplit.setUpdName(BaseContextHandler.getName());
-                appointmentSplit.setUpdTime(new Date(System.currentTimeMillis()));
-                int result = mapper.updateByPrimaryKeySelective(appointmentSplit);
-                if (result <= 0){
-                    throw new ClientServiceException("修改时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
-                }
-            } else {
-                // 如果不存在时长分解，则直接插入
-                mapper.insertSelective(appointmentSplit);
-            }
+        // 先删除该条预约相关的分解记录
+        AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
+        splitQuery.setOrgId(form.getOrgId());
+        splitQuery.setAppointDate(form.getAppointDate());
+        splitQuery.setAppointmentId(form.getAppointmentId());
+        List<AppointmentSplitVo> appointmentSplitVoList = mapper.findAppointmentSplitByExample(splitQuery);
+        appointmentSplitVoList.forEach(appointmentSplitVo -> {
+            mapper.deleteByPrimaryKey(appointmentSplitVo.getId());
         });
-        return 1;
+        // 再重新插入修改之后的分解
+        int result = mapper.insertAppointmentSplit(splits);
+        return result;
     }
 
     /**
