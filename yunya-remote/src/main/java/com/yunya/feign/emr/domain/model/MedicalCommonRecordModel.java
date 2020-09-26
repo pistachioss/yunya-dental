@@ -29,6 +29,12 @@ public class MedicalCommonRecordModel {
   private Integer treatmentId;
 
   /**
+   * 就诊ID
+   */
+  @ApiModelProperty("就诊时间")
+  private Date treatmentTime;
+
+  /**
    * 患者ID
    */
   @ApiModelProperty("患者ID")
