@@ -46,7 +46,7 @@ public class SysUserPostController {
    */
   @ApiOperation("获取用户可登陆组织列表(用户登陆)")
   @GetMapping("/list/{userId}")
-  public ResponseResult getUserLoginList(@PathVariable Integer userId) {
+  public ResponseResult<List<SysUserLoginOrgVO>> getUserLoginList(@PathVariable Integer userId) {
     List<SysUserLoginOrgVO> loginList = sysUserPostBiz.getUserLoginListByUserId(userId);
     return ResponseUtil.success(loginList);
   }
@@ -59,7 +59,7 @@ public class SysUserPostController {
    */
   @ApiOperation("获取用户可登陆组织列表(员工信息管理用)")
   @GetMapping("/userPostlist/{userId}")
-  public ResponseResult getUserPostList(@PathVariable Integer userId) {
+  public ResponseResult<List<SysUserPostOrgVO>> getUserPostList(@PathVariable Integer userId) {
     List<SysUserPostOrgVO> loginList = sysUserPostBiz.getUserPostListByUserId(userId);
     return ResponseUtil.success(loginList);
   }
@@ -77,7 +77,7 @@ public class SysUserPostController {
     @ApiImplicitParam(name = "userId", value = "用户ID", required = true)
   })
   @GetMapping(value = "/post/list/{orgId}/{userId}", name = "根据用户ID、组织ID查询用户岗位列表")
-  public ResponseResult postInfoList(
+  public ResponseResult<List<PostVO>> postInfoList(
       @PathVariable(value = "orgId") Integer orgId,
       @PathVariable(value = "userId") Integer userId) {
     List<PostVO> resultList = sysUserPostBiz.findUserPostList(orgId, userId);
