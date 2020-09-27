@@ -92,7 +92,6 @@ import static com.yunya.modules.emr.enums.EmrError.NORMAL_MEDICAL_NO_PERMISSION;
 import static com.yunya.modules.emr.enums.EmrError.NOT_NEED_APPLY;
 import static com.yunya.modules.emr.enums.EmrError.NO_AUTH_MODIFY_MED;
 import static com.yunya.modules.emr.enums.EmrError.NO_PERMISSION_OPERATION;
-import static com.yunya.modules.emr.enums.EmrError.OK;
 import static com.yunya.modules.emr.enums.EmrError.REJECTED_NO_NEED_APPLY;
 import static com.yunya.modules.emr.enums.EmrError.TREATMENT_NOT_EXIST;
 import static com.yunya.modules.emr.enums.EventTypeEnum.DRAFT_AUDIT;
@@ -248,7 +247,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
             //6.草稿病例提交申请
             constructCreateEntity(draftModel.getApplyBase(), DRAFT_AUDIT.getCode(), UPDATE.getCode(), null);
-            return ResponseUtil.error(OK);
+            return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -309,7 +308,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
             //5. 新增变更提交申请
             constructCreateEntity(buildApplyBaseModel(changeModel, loginUserId), MEDICAL_CHANGE_AUDIT.getCode(), ADD.getCode(), changeModel.getApplyReason());
-            return ResponseUtil.error(OK);
+            return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -388,7 +387,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
             //5. 提交修改变更申请
             constructCreateEntity(buildApplyBaseModel(changeModel, loginUserId), MEDICAL_CHANGE_AUDIT.getCode(), UPDATE.getCode(), changeModel.getApplyReason());
-            return ResponseUtil.error(OK);
+            return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
