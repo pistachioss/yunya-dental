@@ -839,7 +839,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setChangeDeadTime(obj.getDeadTime());
             vo.setRejectReason(obj.getApproveReason());
             //新时间是否大于审批时间
-            int result = obj.getUpdTime().toLocalDate().compareTo(obj.getApproveTime().toLocalDate());
+            int result = obj.getUpdTime().compareTo(obj.getApproveTime());
             vo.setWhetherOperate(result > 0 ? TRUE.getCode() : FALSE.getCode());
             resultList.add(vo);
         });

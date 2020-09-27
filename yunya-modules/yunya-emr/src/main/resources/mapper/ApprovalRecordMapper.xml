@@ -133,6 +133,7 @@
             `ar1`.`approve_time`,
             `ar1`.`dead_time`,
             `ar1`.`status`,
+            `ar1`.`upd_time`,
             `ar1`.`crt_time`
         from `approval_record` `ar1`
         where
