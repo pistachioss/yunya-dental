@@ -1,5 +1,8 @@
 package com.yunya.modules.system.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.form.EmployeeInfoQueryForm;
+import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -62,6 +65,21 @@ public class SysUserPostController {
   public ResponseResult<List<SysUserPostOrgVO>> getUserPostList(@PathVariable Integer userId) {
     List<SysUserPostOrgVO> loginList = sysUserPostBiz.getUserPostListByUserId(userId);
     return ResponseUtil.success(loginList);
+  }
+
+  /**
+   * 根据条件查询员工信息
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件查询用户信息")
+  @ApiImplicitParams({@ApiImplicitParam(name = "queryForm", value = "员工信息查询参数", required = true)})
+  @PostMapping(value = "/employee/list", name = "根据条件查询用户信息")
+  public ResponseResult<PageInfo<EmployeeInfoVO>> findEmployeeByExample(
+      @RequestBody EmployeeInfoQueryForm queryForm) {
+    PageInfo<EmployeeInfoVO> resultList = sysUserPostBiz.findEmployeeList(queryForm);
+    return ResponseUtil.success(resultList);
   }
 
   /**

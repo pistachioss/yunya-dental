@@ -1,5 +1,9 @@
 package com.yunya.modules.system.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.form.EmployeeInfoQueryForm;
+import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -119,6 +123,20 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
    */
   public void remove(Integer userPostId) {
     mapper.deleteByPrimaryKey(userPostId);
+  }
+
+  /**
+   * 根据条件查询用户信息
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public PageInfo<EmployeeInfoVO> findEmployeeList(EmployeeInfoQueryForm queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    List<EmployeeInfoVO> resultList = mapper.selectEmployeeList(queryForm);
+    return new PageInfo<>(resultList);
   }
 
   /**
