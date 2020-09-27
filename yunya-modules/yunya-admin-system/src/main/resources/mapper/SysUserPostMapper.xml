@@ -55,7 +55,7 @@
         se.gender,
         se.mobile_phone AS mobilePhone,
         sup.company_id AS orgId,
-        cei.abbreviation AS orgName,
+        IFNULL( cei.abbreviation, '公司' ) AS orgName,
         sup.group_id AS postGroupId,
         pg.`name` AS postGroupName,
         sup.post_id AS postId,
