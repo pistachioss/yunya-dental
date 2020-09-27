@@ -12,6 +12,7 @@ import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -151,6 +152,37 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   public List<TreatmentRecord> selectByIds(Set<Integer> ids) {
     return mapper.selectByIds(ids);
+  }
+
+  /**
+   * 根据就诊记录ID查询就诊信息
+   *
+   * @param id 就诊记录ID
+   * @return
+   */
+  public TreatmentRecordVO findTreatmentInfoById(Integer id) {
+    TreatmentRecordVO resultData = mapper.selectTreatmentInfoById(id);
+    if (null != resultData) {
+      Integer orgId = resultData.getOrgId();
+      // todo 从缓存中查询组织
+      OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+      if (null != organizationInfo) {
+        resultData.setOrgName(organizationInfo.getAbbreviation());
+      }
+      Integer patientId = resultData.getPatientId();
+      // todo 从缓存中查询患者
+      PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
+      if (null != patientBaseInfo) {
+        resultData.setPatientName(patientBaseInfo.getName());
+      }
+      Integer dentistId = resultData.getDentistId();
+      // todo 从缓存中查询员工
+      SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
+      if (null != employee) {
+        resultData.setDentistName(employee.getName());
+      }
+    }
+    return resultData;
   }
 
   /**

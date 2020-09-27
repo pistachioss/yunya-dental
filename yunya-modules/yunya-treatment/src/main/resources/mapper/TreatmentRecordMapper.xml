@@ -25,6 +25,7 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+
     <!-- 根据条件查询就诊中患者信息列表 -->
     <select id="selectTreatingList" resultType="com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO">
         select
@@ -58,6 +59,28 @@
             </if>
             order by tr.id desc
         </where>
+    </select>
+    <!-- 根据就诊记录ID查询就诊信息 -->
+    <select id="selectTreatmentInfoById" resultType="com.yunya.feign.treatment.domain.vo.TreatmentRecordVO">
+        select
+            tr.id as id,
+            tr.org_id as orgId,
+            tr.patient_id as patientId,
+            tr.appointment_id as appointmentId,
+            tr.registered_id as registeredId,
+            tr.dentist_id as dentistId,
+            tr.type as firstVisit,
+            tr.status as status,
+            DATE_FORMAT(tr.crt_time, '%Y-%m-%d') as treatDate,
+            DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
+            DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
+            tr.medical_record_completed as medicalRecordCompleted,
+            tr.remarks,
+            tr.inservice
+        from
+            treatment_record tr
+        where
+            tr.id = #{id}
     </select>
     <!-- 根据条件查询患者就诊记录列表 -->
     <select id="selectPatientTreatmentRecordList"

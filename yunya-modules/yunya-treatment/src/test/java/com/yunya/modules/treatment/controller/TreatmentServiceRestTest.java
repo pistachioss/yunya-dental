@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.controller;
 
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.rpc.TreatmentServiceRest;
 import org.junit.Test;
@@ -20,11 +22,19 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 public class TreatmentServiceRestTest {
 
+  @Autowired private TreatmentRecordController treatmentRecordController;
+
   @Autowired private TreatmentServiceRest treatmentServiceRest;
 
   @Test
   public void findOne() {
     TreatmentRecord record = treatmentServiceRest.findTreatmentRecordById(919);
     System.out.println(record);
+  }
+
+  @Test
+  public void testFindTreatInfo() {
+    ResponseResult<TreatmentRecordVO> result = treatmentRecordController.findById(919);
+    System.out.println(result);
   }
 }
