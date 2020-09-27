@@ -17,46 +17,43 @@ import java.util.List;
 @Data
 public class EmployeeScheduleQueryForm {
 
-  /**
-   * 医生或助手id
-   */
-  @ApiModelProperty("医生或助手id")
-  private Integer userId;
-  /**
-   * 姓名
-   */
-  @ApiModelProperty("姓名")
-  private String name;
+    /**
+     * 医生或助手id
+     */
+    @ApiModelProperty("医生或助手id")
+    private Integer userId;
+    /**
+     * 姓名
+     */
+    @ApiModelProperty("姓名")
+    private String name;
+    /**
+     * 岗位ID列表
+     */
+    @ApiModelProperty("岗位ID列表")
+    private List<Integer> postNames;
+    /**
+     * 门诊ID
+     */
+    @ApiModelProperty("门诊ID")
+    private Integer clinicId;
+    /**
+     * 开始时间
+     */
+    @ApiModelProperty("开始时间")
+    @NotNull(message = "开始时间不能为空")
+    private String startDate;
 
-  /**
-   * 岗位ID列表
-   */
-  @ApiModelProperty("岗位ID列表")
-  private List<Integer> postNames;
+    /**
+     * 截止时间
+     */
+    @ApiModelProperty("截止时间")
+    private String endDate;
 
-  /**
-   * 门诊ID
-   */
-  @ApiModelProperty("门诊ID")
-  private Integer clinicId;
+    @ApiModelProperty("页数")
+    private Integer page = 1;
 
-  /**
-   * 开始时间
-   */
-  @ApiModelProperty("开始时间")
-  @NotNull(message = "开始时间不能为空")
-  private String startDate;
-
-  /**
-   * 截止时间
-   */
-  @ApiModelProperty("截止时间")
-  private String endDate;
-
-  @ApiModelProperty("页数")
-  private Integer page = 1;
-
-  @ApiModelProperty("每页个数")
-  private Integer size = 10;
+    @ApiModelProperty("每页个数")
+    private Integer size = 10;
 
 }
