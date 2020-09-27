@@ -841,7 +841,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             if (obj.getApproveTime() != null) {
                 //新时间是否大于审批时间
                 int result = obj.getUpdTime().compareTo(obj.getApproveTime());
-                vo.setWhetherOperate(result > 0 ? TRUE.getCode() : FALSE.getCode());
+                vo.setWhetherOperated(result > 0 ? TRUE.getCode() : FALSE.getCode());
             }
             resultList.add(vo);
         });

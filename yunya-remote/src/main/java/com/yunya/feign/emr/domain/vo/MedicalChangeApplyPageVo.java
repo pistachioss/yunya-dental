@@ -51,5 +51,5 @@ public class MedicalChangeApplyPageVo {
     private String rejectReason;
 
     @ApiModelProperty(value = "是否操作过（0：否  1：是）")
-    private Integer whetherOperate;
+    private Integer whetherOperated;
 }
