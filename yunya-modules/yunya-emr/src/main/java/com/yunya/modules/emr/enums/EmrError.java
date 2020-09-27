@@ -3,7 +3,6 @@ package com.yunya.modules.emr.enums;
 import com.yunya.framework.common.model.*;
 
 public enum EmrError implements RestError {
-    OK(200, "ok"),
     NO_PERMISSION_OPERATION(30001, "无权限操作"),
     KEY_IS_LOCKED(30002, "草稿病例已被锁定，无法提交"),
     APPLY_APPROVE_PENDING(30003, "申请正在审批中，请勿重复申请"),
