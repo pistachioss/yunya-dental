@@ -1,5 +1,6 @@
 package com.yunya.feign.appointment.domain.form;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -9,6 +10,7 @@ import lombok.ToString;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,6 +24,12 @@ import java.util.List;
 @Data
 @ToString
 public class AppointSplitCheckForm implements Serializable {
+
+    /** 预约日期 */
+    @ApiModelProperty(value = "预约日期",required = true)
+    @NotNull(message = "预约日期不能为空")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date appointDate;
 
     /** 预约总时长 */
     @ApiModelProperty(value = "预约总时长",required = true)

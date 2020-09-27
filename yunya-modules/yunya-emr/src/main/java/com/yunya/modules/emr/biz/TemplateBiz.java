@@ -100,7 +100,7 @@ public class TemplateBiz {
 
     public PageInfo<MedicalTemplatePageVo> getMedicalTemplatePage(Integer categoryId, TemplateQuery query) {
         Page<MedicalTemplate> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-        medicalMapper.listByKeyword(query.getKeyword(), categoryId, query.getEnable());
+        medicalMapper.listByKeyword(query.getKeyword(), categoryId, query.getEnable(), null);
         List<MedicalTemplatePageVo> list = Lists.newArrayListWithExpectedSize(page.size());
         list = EntityUtils.build(page.getResult(), MedicalTemplatePageVo.class);
         list.forEach(obj -> {
@@ -110,7 +110,7 @@ public class TemplateBiz {
         return new PageInfo<>(list);
     }
 
-    public List<EnableTemplateVo> getEnableMedicalTemplate(Integer categoryId) {
+    public List<EnableTemplateVo> getEnableMedicalTemplate(Integer categoryId, Integer type) {
         List<EnableTemplateVo> result = Lists.newArrayList();
         List<GeneralTemplate> generalTemps = generalMapper.listByKeyword(null, categoryId, BusinessConstants.ENABLE_NUM);
         if (CollectionUtils.isNotEmpty(generalTemps)) {
@@ -122,7 +122,7 @@ public class TemplateBiz {
             }).collect(toList());
             return result;
         }
-        List<MedicalTemplate> medicalTemps = medicalMapper.listByKeyword(null, categoryId, BusinessConstants.ENABLE_NUM);
+        List<MedicalTemplate> medicalTemps = medicalMapper.listByKeyword(null, categoryId, BusinessConstants.ENABLE_NUM, type);
         if (CollectionUtils.isNotEmpty(medicalTemps)) {
             result = medicalTemps.stream().map(obj -> {
                 EnableTemplateVo vo = new EnableTemplateVo();
@@ -137,8 +137,7 @@ public class TemplateBiz {
 
     public MedicalDetailDetailVo getMedicalTemplateDetail(Integer templateId) {
         MedicalTemplate entity = medicalMapper.selectByPrimaryKey(templateId);
-        MedicalDetailDetailVo detail = EntityUtils.build(entity, MedicalDetailDetailVo.class);
-        return detail;
+        return EntityUtils.build(entity, MedicalDetailDetailVo.class);
     }
 
     private void checkTemp(Integer categoryId, Integer templateId, Mapper mapper, Class<?> clazz) {

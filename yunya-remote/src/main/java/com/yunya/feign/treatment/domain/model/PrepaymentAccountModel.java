@@ -27,8 +27,8 @@ public class PrepaymentAccountModel implements Serializable {
   @NotNull(message = "预付款账户ID不能为空！")
   private Integer prepaymentAccountId;
 
-  @ApiModelProperty(value = "入账方式ID", required = true)
-  @NotNull(message = "入账方式ID不能为空！")
+  @ApiModelProperty(value = "预付款入账方式ID", required = true)
+  @NotNull(message = "预付款入账方式ID不能为空！")
   private Integer accountItemId;
   /** 支付金额 */
   @ApiModelProperty(value = "支付金额", required = true)

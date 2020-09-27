@@ -33,7 +33,7 @@
   </sql>
 
   <!-- 根据随访id查询随访记录（附带后续随访个数） -->
-  <select id="findVisitingRecordById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+  <select id="findVisitingRecordById" parameterType="java.lang.Integer" resultType="com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo">
     SELECT
     <include refid="baseColumns"></include>,
         ( SELECT COUNT( id ) FROM visiting_record WHERE patient_id = vr.patient_id ) AS visitingCount
@@ -69,7 +69,7 @@
       <if test="query.inservice != null">
         and vr.inservice = #{query.inservice}
       </if>
-      <if test="query.userId != null">
+      <if test="query.dentistId != null">
         and vr.dentist_id = #{query.dentistId}
       </if>
       <if test="query.status != null">

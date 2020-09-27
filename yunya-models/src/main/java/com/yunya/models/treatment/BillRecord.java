@@ -1,8 +1,11 @@
 package com.yunya.models.treatment;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "bill_record")
 public class BillRecord {
@@ -68,7 +71,7 @@ public class BillRecord {
     private BigDecimal actualReceivableAmount;
 
     /**
-     * 已收金额（本次收费总额）
+     * 已收金额（本单收费总额）
      */
     @Column(name = "received_amount")
     private BigDecimal receivedAmount;
@@ -312,18 +315,18 @@ public class BillRecord {
     }
 
     /**
-     * 获取已收金额（本次收费总额）
+     * 获取已收金额（本单收费总额）
      *
-     * @return received_amount - 已收金额（本次收费总额）
+     * @return received_amount - 已收金额（本单收费总额）
      */
     public BigDecimal getReceivedAmount() {
         return receivedAmount;
     }
 
     /**
-     * 设置已收金额（本次收费总额）
+     * 设置已收金额（本单收费总额）
      *
-     * @param receivedAmount 已收金额（本次收费总额）
+     * @param receivedAmount 已收金额（本单收费总额）
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;

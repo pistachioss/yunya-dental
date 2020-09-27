@@ -1,7 +1,6 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.model.SysUserPostModel;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -31,6 +30,12 @@ public class UserPostControllerTest {
     entity.setPostId(33);
     entity.setUserId(521);
     ResponseResult result = sysUserPostController.add(entity);
+    System.out.println(result);
+  }
+
+  @Test
+  public void testFindUserPostList() {
+    ResponseResult result = sysUserPostController.postInfoList(42, 514);
     System.out.println(result);
   }
 }

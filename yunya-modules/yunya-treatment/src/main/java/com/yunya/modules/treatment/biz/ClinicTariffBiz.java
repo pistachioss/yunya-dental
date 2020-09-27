@@ -12,7 +12,6 @@ import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
@@ -31,6 +30,10 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 
 /**
  * 描述: 门诊价目表业务层
@@ -59,7 +62,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     if (null != resultData) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
       if (StringHelper.isNotEmpty(memberTypes)) {
-        HashMap<Integer, Object> memberPrices = new HashMap<>(16);
+        Map<Integer, Object> memberPrices = new HashMap<>(16);
         setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, resultData);
       }
     }
@@ -83,7 +86,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
         Integer orgId = queryForm.getOrgId();
         resultList.forEach(
             tariffVO -> {
-              HashMap<Integer, Object> memberPrices = new HashMap<>(16);
+              Map<Integer, Object> memberPrices = new HashMap<>(16);
               setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
             });
       }
@@ -100,16 +103,16 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    * @param tariffVO 门诊价目表信息
    */
   private void setClinicTariffMemberPrice(
-      HashMap<Integer, Object> memberPrices,
+      Map<Integer, Object> memberPrices,
       List<MemberType> memberTypes,
       Integer orgId,
       ClinicTariffVO tariffVO) {
+    ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
+    clinicTariffMemberPrice.setClinicId(orgId);
+    clinicTariffMemberPrice.setTariffId(tariffVO.getTariffId());
     for (MemberType memberType : memberTypes) {
       Integer memberTypeId;
       BigDecimal memberPrice;
-      ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
-      clinicTariffMemberPrice.setClinicId(orgId);
-      clinicTariffMemberPrice.setTariffId(tariffVO.getTariffId());
       clinicTariffMemberPrice.setMemberTypeId(memberType.getId());
       ClinicTariffMemberPrice memberPriceResult =
           clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
@@ -138,8 +141,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   public void modify(Integer id, ClinicTariffForm form) {
     ClinicTariff resultData = mapper.selectByPrimaryKey(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "修改失败，ID为'" + id + "'的门诊价目表不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改失败，ID为'" + id + "'的门诊价目表不存在！", QUERY_RESULT_INVALID);
     }
     BigDecimal resultDataPrice = resultData.getPrice();
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -154,8 +156,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     mapper.updateByPrimaryKeySelective(resultData);
     List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
     if (StringHelper.isEmpty(memberPrices)) {
-      throw new ClientServiceException(
-          "修改失败，门诊价目表会员卡价格不能为空！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("修改失败，门诊价目表会员卡价格不能为空！", PARAMETERS_IS_ILLEGAL);
     }
     ClinicTariffMemberPrice clinicTariffMemberPrice;
     ClinicTariffMemberPrice resultClinicTariffMemberPrice;
@@ -194,8 +195,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   public void switchClinicTariff(Integer id) {
     ClinicTariff resultData = mapper.selectByPrimaryKey(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "更新失败，ID为'" + id + "'的门诊价目表不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("更新失败，ID为'" + id + "'的门诊价目表不存在！", QUERY_RESULT_INVALID);
     }
     resultData.setInservice(!resultData.getInservice());
     resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -212,13 +212,11 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   public void uniteMemberDiscount(ClinicTariffUniteDiscountForm form) {
     List<Integer> clinicTariffIds = form.getClinicTariffIds();
     if (StringHelper.isEmpty(clinicTariffIds)) {
-      throw new ClientServiceException(
-          "统一设置门诊价目表折扣失败，当前未选择任何门诊价目表项目！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("统一设置门诊价目表折扣失败，当前未选择任何门诊价目表项目！", PARAMETERS_IS_ILLEGAL);
     }
     List<MemberUniteDiscountForm> memberUniteDiscountForms = form.getMemberUniteDiscountForms();
     if (StringHelper.isEmpty(memberUniteDiscountForms)) {
-      throw new ClientServiceException(
-          "统一设置门诊价目表折扣失败,当前未选择任何会员卡类型", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("统一设置门诊价目表折扣失败,当前未选择任何会员卡类型", PARAMETERS_IS_ILLEGAL);
     }
 
     Integer orgId = form.getOrgId();

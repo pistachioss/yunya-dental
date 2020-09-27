@@ -29,7 +29,7 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
    * @return
    */
   @Override
-  public UserInfo validate(JwtRequestFrom jwtRequestFrom) {
+  public FrontUserInfoVO validate(JwtRequestFrom jwtRequestFrom) {
     return null;
   }
 

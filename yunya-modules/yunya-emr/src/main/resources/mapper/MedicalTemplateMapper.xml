@@ -63,6 +63,9 @@
             <if test="enable != null">
                 and `enable` = #{enable}
             </if>
+            <if test="type != null">
+                and `type` = #{type}
+            </if>
         order by `enable` desc, `crt_time` desc
     </select>
 

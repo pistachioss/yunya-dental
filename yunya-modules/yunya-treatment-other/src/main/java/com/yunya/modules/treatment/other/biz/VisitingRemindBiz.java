@@ -13,6 +13,7 @@ import com.yunya.feign.treatment_other.domain.vo.VisitingRemindContentVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRemindVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -151,7 +152,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     public ResponseResult findVisitingRemindById(Integer id){
         VisitingRemind visitingRemind = mapper.selectByPrimaryKey(id);
         if (visitingRemind == null) {
-            return ResponseUtil.success();
+            return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有数据",null);
         }
         VisitingRemindContentVo build = EntityUtils.build(visitingRemind, VisitingRemindContentVo.class);
         if (id != null){

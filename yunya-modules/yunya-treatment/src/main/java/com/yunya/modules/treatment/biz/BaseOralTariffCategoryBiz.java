@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 描述: 商品分类业务层
@@ -75,16 +75,14 @@ public class BaseOralTariffCategoryBiz
     entity.setName(name);
     int count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增失败，名称为'" + name + "'的商品分类已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增失败，名称为'" + name + "'的商品分类已存在", NAME_IS_OCCUPIED);
     }
     String number = model.getNumber();
     entity = new BaseOralTariffCategory();
     entity.setNumber(number);
     count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增失败，编号为'" + number + "'的商品分类已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增失败，编号为'" + number + "'的商品分类已存在", NAME_IS_OCCUPIED);
     }
     entity.setName(name);
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -101,8 +99,7 @@ public class BaseOralTariffCategoryBiz
   public void modify(Integer id, BaseOralTariffCategoryForm form) {
     BaseOralTariffCategory resultData = mapper.selectByPrimaryKey(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "修改失败，ID为'" + id + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改失败，ID为'" + id + "'的数据不存在", QUERY_RESULT_INVALID);
     }
 
     String resultDataName = resultData.getName();
@@ -149,8 +146,7 @@ public class BaseOralTariffCategoryBiz
     entity.setOralTariffCategoryId(id);
     Long count = baseOralTariffBiz.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "删除失败，ID为'" + id + "'的商品分类已被管理！", OperationCodeConstants.DELETE_NOT_ALLOW);
+      throw new ClientServiceException("删除失败，ID为'" + id + "'的商品分类已被管理！", DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
   }

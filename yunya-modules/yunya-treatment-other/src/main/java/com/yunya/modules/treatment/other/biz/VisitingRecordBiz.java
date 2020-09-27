@@ -33,6 +33,7 @@ import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.models.treatment_other.VisitingRecord;
+import com.yunya.modules.treatment.other.code.TreatmentOtherError;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -106,7 +107,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 build.setCrtTime(new Date(System.currentTimeMillis()));
                 int result = mapper.insertSelective(build);
                 if (result <= 0){
-                    return ResponseUtil.success("新增随访失败！");
+                    return ResponseUtil.fail(TreatmentOtherError.INSERT_VISITING_RECORD_ERR.getCode(),
+                            TreatmentOtherError.INSERT_VISITING_RECORD_ERR.getMessage(),null);
                 }
             }
             return ResponseUtil.success();
@@ -121,7 +123,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     public ResponseResult deleteVisitingRecord(Integer id){
         VisitingRecord visitingRecord = mapper.selectByPrimaryKey(id);
         if (visitingRecord == null){
-            return ResponseUtil.success("记录不存在！");
+            return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"记录不存在！",null);
         }
         String lockStr = redisUtils.get(RedisConstants.LOCK_VISITING_RECORD);
         if (StringHelper.isEmpty(lockStr)) {
@@ -133,7 +135,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             }
             return ResponseUtil.success();
         }
-        return ResponseUtil.success("该条记录正在编辑中，不能删除！");
+        return ResponseUtil.fail(OperationCodeConstants.DELETE_NOT_ALLOW,"该条记录正在编辑中，不能删除！",null);
     }
 
     /**
@@ -154,7 +156,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         String lockIdStr = redisUtils.get(RedisConstants.LOCK_VISITING_RECORD);
         VisitingRecord visitingRecord = mapper.selectByPrimaryKey(Integer.valueOf(updateId));
         if (visitingRecord == null){
-            return ResponseUtil.success("记录不存在！");
+            return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"记录不存在！",null);
         }
 
         // 检测随访记录是否有其他人在修改
@@ -172,7 +174,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 redisUtils.unlock(RedisConstants.LOCK_VISITING_RECORD,updateId);
             }
         } else {
-            return ResponseUtil.success("该条记录正在被修改中！");
+            return ResponseUtil.fail(TreatmentOtherError.EDIT_NOT_ALLOWED.getCode(),TreatmentOtherError.EDIT_NOT_ALLOWED.getMessage(),null);
         }
         return ResponseUtil.success();
     }
@@ -185,7 +187,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     public ResponseResult findVisitingRecordById(Integer id){
         VisitingRecordVo visitingRecordVo = mapper.findVisitingRecordById(id);
         if (visitingRecordVo == null){
-            return ResponseUtil.success();
+            return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有数据",null);
         }
         visitingRecordVo = this.comboVisitingRecord(visitingRecordVo);
         return ResponseUtil.success(visitingRecordVo);

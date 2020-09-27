@@ -7,6 +7,8 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.domain.model.SysUserPostModel;
+import com.yunya.modules.system.mapper.PostGroupMapper;
+import com.yunya.modules.system.mapper.PostMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
@@ -33,6 +35,10 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
 
   /** 注入对象 */
   @Autowired private SysUserPostMapper sysUserPostMapper;
+
+  @Autowired private PostGroupMapper postGroupMapper;
+
+  @Autowired private PostMapper postMapper;
 
   /**
    * 新增用户可登录组织信息

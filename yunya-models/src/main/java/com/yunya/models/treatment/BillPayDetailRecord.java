@@ -1,8 +1,10 @@
 package com.yunya.models.treatment;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "bill_pay_detail_record")
 public class BillPayDetailRecord {
@@ -74,6 +76,11 @@ public class BillPayDetailRecord {
      * 交易状态
      */
     private Byte status;
+
+    /**
+     * 备注信息信息
+     * */
+    private String remark;
 
     /**
      * 是否有效
@@ -330,6 +337,24 @@ public class BillPayDetailRecord {
      */
     public void setStatus(Byte status) {
         this.status = status;
+    }
+
+    /**
+     * 获取备注信息
+     *
+     * @return remark
+     */
+    public String getRemark() {
+        return remark;
+    }
+
+    /**
+     * 设置备注信息
+     *
+     * @param remark 备注信息
+     */
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     /**

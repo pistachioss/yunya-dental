@@ -35,4 +35,18 @@
         bill_record br
       WHERE br.org_id = #{orgId} AND DATE_FORMAT(br.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d')
     </select>
+    <!-- 根据开单记录ID查询订单支付记录列表信息 -->
+    <select id="selectBillPayRecord" resultType="com.yunya.feign.treatment.domain.vo.BillPayRecordVO">
+      SELECT
+        bpr.id AS billPayRecordId,
+        DATE_FORMAT( bpr.crt_time, '%Y-%m-%d' ) AS chargeDate,
+        bpr.org_id AS orgId,
+        bpr.received_amount AS receivedAmount,
+        bpr.still_owe_amount AS stillOweAmount,
+        bpr.crt_id AS payeeId,
+        bpr.crt_name AS payeeName
+      FROM
+        bill_pay_record bpr
+      WHERE bpr.inservice = 1 and bpr.order_record_id = #{orderRecordId}
+    </select>
 </mapper>

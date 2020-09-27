@@ -41,6 +41,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+
 /**
  * 描述: 商品项目业务层
  *
@@ -153,8 +155,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     String categoryNumber = oralTariffCategory.getNumber().substring(0, 3);
     String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
-      throw new ClientServiceException(
-          "新增失败，商品项目编号前3位与商品分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("新增失败，商品项目编号前3位与商品分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
     }
 
     Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -265,8 +266,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     String categoryNumber = resultDataOralTariffCategoryNumber.substring(0, 3);
     String itemNumber = number.substring(0, 3);
     if (!categoryNumber.equals(itemNumber)) {
-      throw new ClientServiceException(
-          "修改失败，商品项目编号前3位与商品分类编号前3位不同！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("修改失败，商品项目编号前3位与商品分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
     }
 
     BeanUtils.copyProperties(form, entity);
@@ -338,7 +338,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     Long count = clinicOralTariffBiz.selectCount(entity);
     if (count > 0) {
       throw new ClientServiceException(
-          "商品项目删除失败，ID为" + oralTariffId + "'的商品项目已被关联！", OperationCodeConstants.DELETE_NOT_ALLOW);
+          "商品项目删除失败，ID为" + oralTariffId + "'的商品项目已被关联！", DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(oralTariffId);
     BaseOralTariffHistory historyEntity = new BaseOralTariffHistory();
@@ -357,8 +357,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
         new ExcelUtil<>(BaseOralTariffImportModel.class);
     List<BaseOralTariffImportModel> models = excelUtil.importExcel(excelFile.getInputStream());
     if (null == models || models.size() == 0) {
-      throw new ClientServiceException(
-          "导入失败,导入的商品项目数据不能为空！", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+      throw new ClientServiceException("导入失败,导入的商品项目数据不能为空！", PARAM_NOT_ALLOW_EMPTY);
     }
 
     // 初始化参数、常量
@@ -587,8 +586,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
             .append("'与系统中该商品项目编号'")
             .append(resultItemNumber)
             .append("'不一致！");
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
       }
     }
 
@@ -607,8 +605,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
             .append("'与系统中该商品项目名称'")
             .append(itemResultName)
             .append("'不一致！");
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+        throw new ClientServiceException(failureMsg.toString(), PARAM_NOT_ALLOW_EMPTY);
       }
     }
   }
@@ -664,8 +661,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
           .append("'与商品分类编号前3位'")
           .append(categoryStr)
           .append("'不同！");
-      throw new ClientServiceException(
-          failureMsg.toString(), OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
     }
 
     BaseOralTariffCategory categoryEntity;
@@ -684,8 +680,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
             .append("'与系统中该商品分类名称'")
             .append(categoryResultName)
             .append("'不一致！");
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
       }
     }
 
@@ -703,8 +698,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
             .append("'与系统中该商品分类编号'")
             .append(categoryResultNumber)
             .append("'不一致！");
-        throw new ClientServiceException(
-            failureMsg.toString(), OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
       }
     }
   }

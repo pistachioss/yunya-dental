@@ -50,6 +50,14 @@ public class AppointmentPatientCardVo implements Serializable {
     @ApiModelProperty(value = "预约内容")
     private String appointContent;
 
+    /** 预约确认 0(false)-未确认；1(true)-确认 */
+    @ApiModelProperty(value = "预约确认 0(false)-未确认；1(true)-确认")
+    private Boolean confirmStatus;
+
+    /** 患者流程节点 0-待挂号状态；1-就诊中状态；2-就诊完成状态 */
+    @ApiModelProperty(value = "患者流程节点 0-待挂号状态；1-就诊中状态；2-就诊完成状态")
+    private Byte station;
+
     /** 预约日期 */
     @ApiModelProperty(value = "预约日期")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")

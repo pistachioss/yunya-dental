@@ -5,10 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointStatusForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
-import com.yunya.feign.appointment.domain.query.AppointListExportQuery;
-import com.yunya.feign.appointment.domain.query.AppointListQuery;
-import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
-import com.yunya.feign.appointment.domain.query.PatientDimensionByDayQuery;
+import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -155,6 +152,17 @@ public class AppointmentController {
   }
 
   /**
+   * 根据条件查询患者预约（患者档案-预约信息；查看详细-预约信息）用
+   * @param query 查询条件
+   * @return 预约列表
+   */
+  @ApiOperation(value = "根据条件查询患者预约（患者档案-预约信息；查看详细-预约信息）用")
+  @GetMapping("/find/patient/record")
+  public ResponseResult findAppointPatientRecord(@Validated AppointPatientRecordQuery query) {
+    return appointmentBiz.findAppointPatientRecord(query);
+  }
+
+  /**
    * 根据id查询预约
    *
    * @param id 预约id
@@ -178,7 +186,7 @@ public class AppointmentController {
   public ResponseResult findAppointmentPatientDimensionByDate(
       @RequestBody @Validated PatientDimensionByDayQuery query) {
     if (query.getWhetherPage()) {
-      PageHelper.offsetPage(query.getPageNum(), query.getPageSize());
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);

@@ -14,8 +14,6 @@ import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
@@ -37,10 +35,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+
+import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
+import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简介: 就诊记录管理业务层
@@ -91,13 +90,12 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     record.setRegisteredId(regId);
     int count = mapper.selectCount(record);
     if (count > 0) {
-      throw new ClientServiceException("接诊失败，该挂号已被接诊，无法再次接诊！", OperationCodeConstants.DATA_EXIST);
+      throw new ClientServiceException("接诊失败，该挂号已被接诊，无法再次接诊！", DATA_EXIST);
     }
 
     Registered regResult = registeredBiz.selectById(regId);
     if (null == regResult || !regResult.getInservice()) {
-      throw new ClientServiceException(
-          "接诊失败，您当前未选择接诊患者或传入参数有误！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("接诊失败，您当前未选择接诊患者或传入参数有误！", QUERY_RESULT_INVALID);
     }
 
     TreatmentRecord entity = new TreatmentRecord();
@@ -143,6 +141,16 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     return String.format("%03d", Integer.parseInt(orgInfo.getClinicNumber()))
         + new DateTime().toString("yyMMdd")
         + suffix;
+  }
+
+  /**
+   * 根据就诊记录ID列表查询就诊记录列表
+   *
+   * @param ids 就诊记录ID列表
+   * @return
+   */
+  public List<TreatmentRecord> selectByIds(Set<Integer> ids) {
+    return mapper.selectByIds(ids);
   }
 
   /**
@@ -308,7 +316,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(regDeptRoomId);
         vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
       }
-      vo.setRegTime(String.valueOf(registered.getRegTime()));
+      vo.setRegDate(new DateTime(registered.getCrtTime()).toString("yyyy-MM-dd"));
+      vo.setRegTime(new DateTime(registered.getRegTime()).toString("HH:mm"));
       vo.setFirstVisit(registered.getFirstVisit());
     }
   }
@@ -369,28 +378,24 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   public void completeTreatment(Integer treatmentRecordId) {
     TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
     if (null == treatmentRecord) {
-      throw new ClientServiceException(
-          "结束治疗失败，传入参数有误，未查询到相关就诊记录！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("结束治疗失败，传入参数有误，未查询到相关就诊记录！", PARAMETERS_IS_ILLEGAL);
     }
     Byte status = treatmentRecord.getStatus();
-    if (!status.equals(BusinessConstants.TREATMENT_PROCESSING_STATUS)
-        && !status.equals(BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS)) {
-      throw new ClientServiceException(
-          "结束治疗失败，当前就诊已完成或已结账！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+    if (!status.equals(TREATMENT_PROCESSING_STATUS)
+        && !status.equals(TREATMENT_PROCESS_ORDER_STATUS)) {
+      throw new ClientServiceException("结束治疗失败，当前就诊已完成或已结账！", PARAMETERS_IS_ILLEGAL);
     }
     OrderRecord order = new OrderRecord();
     order.setTreatmentRecordId(treatmentRecordId);
     OrderRecord orderRecord = orderRecordMapper.selectOne(order);
     if (null == orderRecord) {
-      throw new ClientServiceException(
-          "结束治疗失败，传入参数有误，未查询到相关开单记录！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("结束治疗失败，传入参数有误，未查询到相关开单记录！", PARAMETERS_IS_ILLEGAL);
     }
     OrderDetail detail = new OrderDetail();
     detail.setTreatmentRecordId(treatmentRecordId);
     int count = orderDetailMapper.selectCount(detail);
     if (count <= 0) {
-      throw new ClientServiceException(
-          "结束治疗失败,当前就诊未进行开单，请至少开单一个项目！", OperationCodeConstants.DATA_NOT_EXIST);
+      throw new ClientServiceException("结束治疗失败,当前就诊未进行开单，请至少开单一个项目！", DATA_NOT_EXIST);
     }
     orderRecord.setStatus((byte) 1);
     orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
@@ -469,7 +474,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             // todo 从缓存中查询组织信息
             OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
             if (null != orgInfo) {
-              vo.setOrgName(orgInfo.getName());
+              vo.setOrgName(orgInfo.getAbbreviation());
             }
             Integer dentistId = vo.getDentistId();
             // todo 从缓存中查询用户

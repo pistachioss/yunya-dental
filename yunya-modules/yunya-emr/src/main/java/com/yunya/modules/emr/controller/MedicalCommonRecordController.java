@@ -9,12 +9,14 @@ import com.yunya.feign.emr.domain.vo.ExaminationsVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.emr.MedicalCommonRecord;
 
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.emr.biz.MedicalCommonRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -42,6 +44,8 @@ public class MedicalCommonRecordController {
   private MedicalCommonRecordBiz medicalCommonRecordBiz;
   @Autowired
   private RemoteSystemServiceFeign remoteSystemServiceFeign;
+  @Autowired
+  private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
   /**
    * 新增普通电子病历
    *
@@ -77,12 +81,15 @@ public class MedicalCommonRecordController {
     sysUserEmployeeModel.setWhetherPage(false);
 
     List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(sysUserEmployeeModel);
-    Map<String, SysUserInfoDetail> employeeMap = new HashMap();
+    Map<String, SysUserInfoDetail> employeeMap = new HashMap(16);
     employees.forEach(z -> employeeMap.put(z.getUserId() + "", z));
 
     List<MedicalCommonRecordModel> reList = new ArrayList<>();
     List<ExaminationsVO> list1 = null;
     JSONArray jsonArray = null;
+
+    HashSet<Integer> hs=new HashSet();
+
     //处理和牙位有关字段的转换
     for (MedicalCommonRecord medical : list) {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
@@ -110,6 +117,18 @@ public class MedicalCommonRecordController {
         medicalCommonRecordModel.setTreatment(list1);
       }
       reList.add(medicalCommonRecordModel);
+      //获取就诊ID列表
+      hs.add(medical.getTreatmentId());
+    }
+    if(hs.size()>0){
+      //获取就诊列表
+      List<TreatmentRecord> tLists = remoteTreatmentServiceFeign.findTreatmentRecordByIds(hs);
+      Map<String, TreatmentRecord> tListsMap = new HashMap(16);
+      tLists.forEach(z -> tListsMap.put(z.getId() + "", z));
+      //赋予就诊时间
+      for(MedicalCommonRecordModel medicalModel : reList){
+        medicalModel.setTreatmentTime(tListsMap.get(medicalModel.getTreatmentId().toString()).getTreatStartTime());
+      }
     }
     return ResponseUtil.success(reList);
   }

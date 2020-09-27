@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.treatment.BillExceptionHandleRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER"/>
+        <result column="handled_record_id" property="handledRecordId" jdbcType="INTEGER"/>
+        <result column="operate_type" property="operateType" jdbcType="TINYINT"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据就诊记录ID查询该就诊相关异常处理记录 -->
+    <select id="selectBillExceptionHandleRecord"
+            resultType="com.yunya.feign.treatment.domain.vo.BillHandleRecordVO">
+        select
+            behr.id as billHandleRecordId,
+            DATE_FORMAT(behr.crt_time, '%Y-%m-%d') as handleDate,
+            behr.org_id as orgId,
+            behr.crt_id as operatorId,
+            behr.crt_name as operatorName,
+            behr.operate_type as operateType
+        from
+            bill_exception_handle_record behr
+        where behr.treatment_record_id = #{treatmentRecordId}
+    </select>
+</mapper>

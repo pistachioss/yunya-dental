@@ -77,6 +77,11 @@ public class VisitingContentVo implements Serializable {
     private String visitingContent;
 
     /**
+     * 随访状态 0-待随访（默认）；1-随访完成
+     */
+    private Boolean status;
+
+    /**
      * 是否启用 0-不启用；1-启用
      */
     @ApiModelProperty(value = "是否启用 0-不启用；1-启用")

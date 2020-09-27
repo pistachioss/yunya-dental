@@ -9,6 +9,7 @@ import com.yunya.modules.treatment.biz.OrderDetailBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,7 +36,7 @@ public class OrderDetailController {
    * @param orderRecordId 开单记录ID
    * @return
    */
-  @ApiOperation("根据账单（开单）记录ID查询商品开单详情列表")
+  @ApiOperation("根据开单记录ID查询商品开单详情列表")
   @GetMapping("/goods/list/{orderRecordId}")
   public ResponseResult findGoodsList(
       @PathVariable(value = "orderRecordId") Integer orderRecordId) {
@@ -49,7 +50,7 @@ public class OrderDetailController {
    * @param orderRecordId 开单记录ID
    * @return
    */
-  @ApiOperation("根据账单（开单）记录ID查询开单详情列表")
+  @ApiOperation("根据开单记录ID查询开单详情列表")
   @GetMapping("/list/{orderRecordId}")
   public ResponseResult findList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
     List<OrderDetailVO> resultList = orderDetailBiz.findOrderDetailVOList(orderRecordId);
@@ -65,7 +66,7 @@ public class OrderDetailController {
   @CurrentUser
   @ApiOperation("添加商品（收费界面用）")
   @PostMapping("/add/goods")
-  public ResponseResult addGoods(@RequestBody GoodsDetailModel model) {
+  public ResponseResult addGoods(@RequestBody @Validated GoodsDetailModel model) {
     orderDetailBiz.addAndUpdGoodDetail(model);
     return ResponseUtil.success();
   }

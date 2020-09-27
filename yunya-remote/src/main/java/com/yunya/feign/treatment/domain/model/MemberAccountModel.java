@@ -22,9 +22,9 @@ import java.math.BigDecimal;
 @ToString
 public class MemberAccountModel {
 
-  /** 预付款账户ID */
-  @ApiModelProperty(value = "预付款账户ID", required = true)
-  @NotNull(message = "预付款账户ID不能为空！")
+  /** 会员卡账户ID */
+  @ApiModelProperty(value = "会员卡账户ID", required = true)
+  @NotNull(message = "会员卡账户ID不能为空！")
   private Integer memberAccountId;
 
   @ApiModelProperty(value = "入账方式ID", required = true)

@@ -53,7 +53,10 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
 
   /** 性别: 0, 男; 1, 女 */
   @Excel(name = "性别")
-  private String gender;
+  private String genderValue;
+
+  /** 性别0-男；1-女 */
+  private Byte gender;
 
   /** 岗位ID */
   private String postIds;

@@ -17,6 +17,7 @@ import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -45,7 +46,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
-        List<AppointmentSplit> splits = this.checkSplit(splitModel.getAppointmentId(),splitModel.getAppointDuration(),splitList);
+        List<AppointmentSplit> splits = this.checkSplit(splitModel.getAppointDate(),splitModel.getAppointmentId(),splitModel.getAppointDuration(),splitList);
         if (splits.isEmpty()){
             throw new ClientServiceException("时长分解有误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
@@ -73,26 +74,22 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
-        List<AppointmentSplit> splits = this.checkSplit(form.getAppointmentId(), form.getAppointDuration(), splitList);
+        List<AppointmentSplit> splits = this.checkSplit(form.getAppointDate(),form.getAppointmentId(), form.getAppointDuration(), splitList);
         if (splits.isEmpty()){
             throw new ClientServiceException("时长分解有误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        splits.forEach(appointmentSplit -> {
-            AppointmentSplit hasAppointSplit = mapper.selectByPrimaryKey(appointmentSplit.getId());
-            if (hasAppointSplit != null){
-                appointmentSplit.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
-                appointmentSplit.setUpdName(BaseContextHandler.getName());
-                appointmentSplit.setUpdTime(new Date(System.currentTimeMillis()));
-                int result = mapper.updateByPrimaryKeySelective(appointmentSplit);
-                if (result <= 0){
-                    throw new ClientServiceException("修改时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
-                }
-            } else {
-                // 如果不存在时长分解，则直接插入
-                mapper.insertSelective(appointmentSplit);
-            }
+        // 先删除该条预约相关的分解记录
+        AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
+        splitQuery.setOrgId(form.getOrgId());
+        splitQuery.setAppointDate(form.getAppointDate());
+        splitQuery.setAppointmentId(form.getAppointmentId());
+        List<AppointmentSplitVo> appointmentSplitVoList = mapper.findAppointmentSplitByExample(splitQuery);
+        appointmentSplitVoList.forEach(appointmentSplitVo -> {
+            mapper.deleteByPrimaryKey(appointmentSplitVo.getId());
         });
-        return 1;
+        // 再重新插入修改之后的分解
+        int result = mapper.insertAppointmentSplit(splits);
+        return result;
     }
 
     /**
@@ -101,8 +98,8 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @param splitList 分解列表
      * @return  分解列表
      */
-    public List<AppointmentSplit> appointSplitCheck(Integer appointDuration, List<AppointmentSplitBaseInfo> splitList){
-        return this.checkSplit(null, appointDuration, splitList);
+    public List<AppointmentSplit> appointSplitCheck(Date appointDate ,Integer appointDuration, List<AppointmentSplitBaseInfo> splitList){
+        return this.checkSplit(appointDate,null, appointDuration, splitList);
     }
 
 
@@ -112,12 +109,12 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @return  成功返回AppointmentSplit;  失败返回null（分解开始时间不早于结束分解时间）
      * @throws ParseException
      */
-    private AppointmentSplit formToEntity(AppointmentSplitBaseInfo appointmentSplitBaseInfo) {
+    private AppointmentSplit formToEntity(Date appointDate,AppointmentSplitBaseInfo appointmentSplitBaseInfo) {
         String splitStartTimeStr = appointmentSplitBaseInfo.getSplitStartTime();
         String splitEndTimeStr = appointmentSplitBaseInfo.getSplitEndTime();
         // 获取当前年月日
         SimpleDateFormat yearMonthDayFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String yearMonthDay = yearMonthDayFormat.format(new Date(System.currentTimeMillis()));
+        String yearMonthDay = yearMonthDayFormat.format(appointDate);
         // 拼接开始分解时间 yyyy-MM-dd HH:mm
         String startTime = yearMonthDay + " " + splitStartTimeStr;
         // 拼接结束分解时间 yyyy-MM-dd HH:mm
@@ -156,7 +153,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @param splitList  时长分解列表
      * @return  时长分解符合条件返回List<AppointmentSplit>实体列表；否则返回null
      */
-    private List<AppointmentSplit> checkSplit(Integer appointId,Integer appointDuration, List<? extends AppointmentSplitBaseInfo> splitList) {
+    private List<AppointmentSplit> checkSplit(Date appointDate, Integer appointId,Integer appointDuration, List<? extends AppointmentSplitBaseInfo> splitList) {
         List<AppointmentSplit> splits = new ArrayList<>();
         if(splitList == null || splitList.isEmpty()){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
@@ -164,7 +161,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
 
         splitList.forEach(appointmentSplitBase -> {
             // 将appointmentSplitBase表单转化为AppointmentSplit实体
-            AppointmentSplit appointmentSplit = formToEntity(appointmentSplitBase);
+            AppointmentSplit appointmentSplit = formToEntity(appointDate,appointmentSplitBase);
             // 如果分解开始时间不早于结束分解时间 返回错误信息
             if (null == appointmentSplit){
                 throw new ClientServiceException("分解开始时长不能大于分解结束时长！", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);

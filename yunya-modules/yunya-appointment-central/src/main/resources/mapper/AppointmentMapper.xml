@@ -36,7 +36,7 @@
     <resultMap id="appointmentDimensionColumn" type="com.yunya.feign.appointment.vo.AppointmentDimensionVo">
         <result column="dentist_id" jdbcType="INTEGER" property="dentistId"/>
         <result column="patientNum" jdbcType="INTEGER" property="patientNum"/>
-        <result column="currentDate" jdbcType="DATE" property="currentDate"/>
+<!--        <result column="currentDate" jdbcType="DATE" property="currentDate"/>-->
         <collection property="appointmentPatientCardVos"
                     ofType="com.yunya.feign.appointment.vo.AppointmentPatientCardVo">
             <id column="id" jdbcType="INTEGER" property="id"/>
@@ -46,6 +46,7 @@
             <result column="appoint_date" jdbcType="DATE" property="appointDate"/>
             <result column="appoint_time" jdbcType="VARCHAR" property="appointTime"/>
             <result column="appoint_duration" jdbcType="INTEGER" property="appointDuration"/>
+            <result column="confirm_status" jdbcType="INTEGER" property="confirmStatus"/>
         </collection>
     </resultMap>
 
@@ -78,7 +79,9 @@
     apt.confirm_status as confirmStatus,
     apt.appoint_status as appointStatus,
     apt.remarks,
-    apt.inservice
+    apt.inservice,
+    apt.crt_time as crtTime,
+    apt.crt_name as crtName
   </sql>
 
     <!-- 根据设备id，预约开始时间，预约结束时间查询所有预约列表 -->
@@ -282,23 +285,26 @@
     select
       a.id,
       a.dentist_id,
-      a.appoint_date as currentDate,
+--       a.appoint_date as currentDate,
       a.patient_id,
       a.appoint_type,
       a.appoint_content,
       a.appoint_date,
       a.appoint_time,
       a.appoint_duration,
-       (select COUNT(*) as num from appointment a1
+      a.confirm_status,
+       (select COUNT(a1.id) as num from appointment a1
           where
             a1.dentist_id = a.dentist_id
             and a1.inservice = 1
-            and a1.appoint_date = a.appoint_date) as patientNum
+            and a1.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
+			and a1.org_id = a.org_id
+			and a1.appoint_status = a.appoint_status) as patientNum
     from appointment a
     where
       a.appoint_date between DATE_FORMAT(#{startDate},'%Y-%m-%d') and DATE_FORMAT(#{endDate},'%Y-%m-%d')
       and a.inservice = 1
-      and a.appoint_status = 0
+      and a.appoint_status &lt;&gt; 3
       and a.dentist_id = #{dentistId}
       and a.org_id = #{orgId}
   </select>
@@ -343,6 +349,38 @@
         select a.*
         from appointment a
         where a.patient_id = #{patientId}
+    </select>
+
+    <!-- 根据条件查询患者预约信息（患者档案-预约信息）用 -->
+    <select id="findAppointPatientRecord" parameterType="com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery"
+            resultType="com.yunya.feign.appointment.vo.AppointPatientRecordVo">
+        SELECT
+            a.id,
+            a.patient_id AS patientId,
+            a.org_id AS orgId,
+            a.dentist_id AS dentistId,
+            a.assistant_id AS assistantId,
+            a.appoint_duration AS appointDuration,
+            a.appoint_date AS appointDate,
+            a.appoint_time AS appointTime,
+            a.appoint_content AS appointContent,
+            a.confirm_status AS confirmStatus,
+            a.appoint_status AS appointStatus,
+            a.dept_room_id AS deptRoomId,
+            a.clinic_device_item_id AS clinicDeviceItemId
+        FROM
+            appointment a
+        <where>
+            <if test="patientId != null">
+                a.patient_id = #{patientId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                and DATE_FORMAT(a.appoint_date,'%y-%M-%d') BETWEEN DATE_FORMAT(#{startDate},'%y-%M-%d') and DATE_FORMAT(#{endDate},'%y-%M-%d')
+            </if>
+            <if test="orgId != null">
+                a.org_id = #{orgId}
+            </if>
+        </where>
     </select>
 
 

@@ -35,7 +35,9 @@
         tr.appointment_id as appointmentId,
         tr.registered_id as registeredId,
         tr.dentist_id as treatDentistId,
-        tr.treat_start_time as treatStartTime,
+        DATE_FORMAT(tr.crt_time, '%Y-%m-%d') as treatDate,
+        DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
+        DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
         tr.medical_record_completed as medicalRecordCompleted
         from treatment_record tr
         <where>
@@ -61,19 +63,19 @@
     <select id="selectPatientTreatmentRecordList"
             resultType="com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO">
         SELECT
-            tr.id AS treatmentRecordId,
-            tr.org_id AS orgId,
-            DATE_FORMAT( tr.treat_start_time, '%Y-%m-%d' ) AS treatmentDate,
-            tr.dentist_id AS dentistId,
-            tr.type AS firstVisit,
-            tr.`status` AS treatmentStatus,
-            ord.id as orderRecordId,
-            ord.total_amount as originalPrice,
-            br.id as billRecordId,
-            br.actual_receivable_amount as actualReceivableAmount,
-            br.debt_amount as debtAmount
+        tr.id AS treatmentRecordId,
+        tr.org_id AS orgId,
+        DATE_FORMAT( tr.treat_start_time, '%Y-%m-%d' ) AS treatmentDate,
+        tr.dentist_id AS dentistId,
+        tr.type AS firstVisit,
+        tr.`status` AS treatmentStatus,
+        ord.id as orderRecordId,
+        ord.total_amount as originalPrice,
+        br.id as billRecordId,
+        br.actual_receivable_amount as actualReceivableAmount,
+        br.debt_amount as debtAmount
         FROM
-            treatment_record tr
+        treatment_record tr
         LEFT JOIN order_record ord on ord.inservice = 1 and tr.id = ord.treatment_record_id
         LEFT JOIN bill_record br on br.inservice = 1 and tr.id = br.treatment_record_id
         <where>
@@ -99,5 +101,17 @@
                 </foreach>
             </if>
         </where>
+        ORDER BY tr.treat_start_time DESC
+    </select>
+    <!-- 根据就诊记录ID列表查询就诊记录列表 -->
+    <select id="selectByIds" resultMap="BaseResultMap">
+        select
+        *
+        from treatment_record
+        where
+        id in
+        <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
     </select>
 </mapper>

@@ -21,7 +21,7 @@ import java.util.List;
 @ApiModel(value = "预约可视图模型（患者维度）")
 @Data
 @ToString
-public class AppointmentDimensionVo implements Serializable {
+public class  AppointmentDimensionVo implements Serializable {
 
     /** 医生id */
     @ApiModelProperty(value = "医生id")

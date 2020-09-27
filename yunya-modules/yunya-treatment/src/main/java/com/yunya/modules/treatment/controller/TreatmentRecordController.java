@@ -58,7 +58,8 @@ public class TreatmentRecordController {
    */
   @ApiOperation("根据条件查询就诊患者列表信息（可分页）")
   @PostMapping("/list")
-  public ResponseResult findTreatList(@RequestBody @Validated TreatmentRecordQueryForm queryForm) {
+  public ResponseResult<PageInfo<TreatmentPatientInfoVO>> findTreatList(
+      @RequestBody @Validated TreatmentRecordQueryForm queryForm) {
     PageInfo<TreatmentPatientInfoVO> resultList = treatmentRecordBiz.findTreatList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -87,12 +88,12 @@ public class TreatmentRecordController {
    * 根据条件查询患者就诊记录列表
    *
    * @param queryForm 查询条件
-   * @return
+   * @return resultList
    */
   @ApiOperation("根据条件查询患者就诊记录列表(患者档案就诊列表)")
   @ApiImplicitParam(name = "queryFrom", value = "患者就诊记录列表查询参数模型", required = true)
   @PostMapping(value = "/patient/list", name = "患者就诊记录列表")
-  public ResponseResult treatmentRecordBiz(
+  public ResponseResult<PageInfo<PatientTreatmentRecordVO>> treatmentRecordBiz(
       @RequestBody @Validated PatientTreatmentRecordQueryForm queryForm) {
     PageInfo<PatientTreatmentRecordVO> resultList =
         treatmentRecordBiz.findPatientTreatList(queryForm);

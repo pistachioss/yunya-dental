@@ -10,7 +10,9 @@ import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotEmpty;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 价目表、诊疗服务接口暴露
@@ -171,6 +173,17 @@ public class TreatmentServiceRest {
   }
 
   /**
+   * 根据挂号对象查询挂号信息
+   *
+   * @param entity 挂号对象
+   * @return Registered
+   */
+  @RequestMapping(value = "/registered/example", method = RequestMethod.POST)
+  public Registered findRegisteredByExample(@RequestBody Registered entity) {
+    return registeredBiz.selectOne(entity);
+  }
+
+  /**
    * 根据条件查询挂号记录列表
    *
    * @param entity 挂号记录
@@ -190,6 +203,28 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/treatment/one/{id}", method = RequestMethod.GET)
   public TreatmentRecord findTreatmentRecordById(@PathVariable(value = "id") Integer id) {
     return treatmentRecordBiz.selectById(id);
+  }
+
+  /**
+   * 根据就诊记录ID列表查询就诊记录列表
+   *
+   * @param ids 就诊记录ID列表
+   * @return
+   */
+  @RequestMapping(value = "/treatment/section", method = RequestMethod.POST)
+  public List<TreatmentRecord> findTreatmentRecordByIds(@RequestBody @NotEmpty Set<Integer> ids) {
+    return treatmentRecordBiz.selectByIds(ids);
+  }
+
+  /**
+   * 根据条件查询就诊记录信息
+   *
+   * @param entity 就诊记录
+   * @return
+   */
+  @RequestMapping(value = "/treatment/example", method = RequestMethod.POST)
+  public TreatmentRecord findTreatmentRecordByExample(@RequestBody TreatmentRecord entity) {
+    return treatmentRecordBiz.selectOne(entity);
   }
 
   /**
