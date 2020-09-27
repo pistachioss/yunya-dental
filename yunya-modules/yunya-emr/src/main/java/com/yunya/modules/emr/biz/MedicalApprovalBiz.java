@@ -32,10 +32,8 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -83,6 +81,7 @@ import static com.yunya.modules.emr.enums.EmrError.AUDIT_PENDING;
 import static com.yunya.modules.emr.enums.EmrError.CHANGE_APPLY_REJECTED;
 import static com.yunya.modules.emr.enums.EmrError.CHANGE_PENDING_NOT_REPEAT_SUBMIT;
 import static com.yunya.modules.emr.enums.EmrError.DATA_IS_EXISTED;
+import static com.yunya.modules.emr.enums.EmrError.DEADLINE_BEYOND_NOW;
 import static com.yunya.modules.emr.enums.EmrError.KEY_IS_LOCKED;
 import static com.yunya.modules.emr.enums.EmrError.MEDICAL_ALREADY_AUDITED;
 import static com.yunya.modules.emr.enums.EmrError.MEDICAL_IS_EXIST;
@@ -96,6 +95,7 @@ import static com.yunya.modules.emr.enums.EmrError.REJECTED_NO_NEED_APPLY;
 import static com.yunya.modules.emr.enums.EmrError.TREATMENT_NOT_EXIST;
 import static com.yunya.modules.emr.enums.EventTypeEnum.DRAFT_AUDIT;
 import static com.yunya.modules.emr.enums.EventTypeEnum.MEDICAL_CHANGE_AUDIT;
+import static com.yunya.modules.emr.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -172,6 +172,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     log.warn("【 新增草稿病例申请失败】：病例[{}]申请已超过变更截止时间", eventId);
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
+                updateChangeTime(draftModel.getId());
             }
             //6. 提交申请新增草稿
             constructCreateEntity(draftModel.getApplyBase(), DRAFT_AUDIT.getCode(), ADD.getCode(), null);
@@ -235,6 +236,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 }
              //5. 检查变更病例
             } else {
+                ApprovalRecord newestDraft = mapper.findNewestDraft(eventId);
+                //待审核草稿不能申请变更
+                if (APPROVE_PENDING.equals(newestDraft.getStatus())) {
+                    log.warn("【修改草稿病例申请失败】：电子病例[{}]状态异常，待审核状态不能申请", eventId);
+                    return ResponseUtil.error(AUDIT_PENDING);
+                }
                 if (!AUDIT_PASS.equals(record.getStatus())) {
                     log.warn("【修改草稿病例申请失败】：申请变更病例[{}]被拒绝", eventId);
                     return ResponseUtil.error(CHANGE_APPLY_REJECTED);
@@ -244,6 +251,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     log.warn("【修改草稿病例申请失败】：病例[{}]申请已超过变更截止时间", eventId);
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
+                updateChangeTime(draftModel.getId());
             }
             //6.草稿病例提交申请
             constructCreateEntity(draftModel.getApplyBase(), DRAFT_AUDIT.getCode(), UPDATE.getCode(), null);
@@ -454,7 +462,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         LocalDate changeDeadTime = passForm.getChangeDeadTime();
         LocalDate now = LocalDate.now();
         if (now.isAfter(changeDeadTime)) {
-            throw new ClientServiceException("选择的允许变更截止时间不能早于操作当天时间", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            log.warn("【审批通过失败】：选择的允许变更截止时间不能早于操作当天时间");
+            return ResponseUtil.error(DEADLINE_BEYOND_NOW);
         }
         // 检查审批状态
         ApprovalRecord approvalRecord = mapper.selectByPrimaryKey(approveId);
@@ -829,6 +838,9 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setApproveStatus(obj.getStatus());
             vo.setChangeDeadTime(obj.getDeadTime());
             vo.setRejectReason(obj.getApproveReason());
+            //新时间是否大于审批时间
+            int result = obj.getUpdTime().toLocalDate().compareTo(obj.getApproveTime().toLocalDate());
+            vo.setWhetherOperate(result > 0 ? TRUE.getCode() : FALSE.getCode());
             resultList.add(vo);
         });
         return resultList;
@@ -906,6 +918,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         record.setDeadTime(deadTime);
         record.setStatus(status);
         record.setUpdId(loginUserId);
+        record.setUpdTime(now);
         mapper.updateByPrimaryKeySelective(record);
     }
 
@@ -1210,5 +1223,16 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             return errorBo;
         }
         return errorBo;
+    }
+
+    /**
+     * 当新增病例和修改病例时，更新申请变更的更新时间
+     * @param id
+     */
+    private void updateChangeTime(Integer id) {
+        ApprovalRecord approvalRecord = new ApprovalRecord();
+        approvalRecord.setId(id);
+        approvalRecord.setUpdTime(LocalDateTime.now());
+        mapper.updateByPrimaryKeySelective(approvalRecord);
     }
 }
