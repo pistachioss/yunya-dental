@@ -240,6 +240,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             applyBase.setProposerId(medicalcopy.getCrtId());
             applyBase.setApproverId(medicalcopy.getMajorDentistId());
             draftMedicalApplyModel.setApplyBase(applyBase);
+            draftMedicalApplyModel.setId(medicalCommonRecordForm.getApprovalId());
             medicalApprovalBiz.applyUpdateDraftCase(draftMedicalApplyModel);
         }
         //插入常用词条使用频率
