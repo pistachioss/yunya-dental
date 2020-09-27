@@ -291,20 +291,20 @@
             <if test="queryFrom.orgIds != null and queryFrom.orgIds.size > 0">
                 and
                 <foreach collection="queryFrom.orgIds" item="item" index="index" open="(" close=")" separator="or">
-                    FIND_IN_SET(#{item}, user_info.companyIds)
+                    user_info.companyIds = #{item}
                 </foreach>
             </if>
             <if test="queryFrom.postGroupIds != null and queryFrom.postGroupIds.size > 0">
                 and
                 <foreach collection="queryFrom.postGroupIds" item="item" index="index" open="(" close=")"
                          separator="or">
-                    FIND_IN_SET(#{item}, user_info.groupIds)
+                    user_info.groupIds = #{item}
                 </foreach>
             </if>
             <if test="queryFrom.postIds != null and queryFrom.postIds.size > 0">
                 and
                 <foreach collection="queryFrom.postIds" item="item" index="index" open="(" close=")" separator="or">
-                    FIND_IN_SET(#{item}, user_info.postIds)
+                    user_info.postIds = #{item}
                 </foreach>
             </if>
             <if test="queryFrom.keyWord != null and queryFrom.keyWord != ''">
