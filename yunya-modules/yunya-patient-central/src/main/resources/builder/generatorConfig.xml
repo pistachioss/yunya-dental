@@ -41,7 +41,7 @@
         <table tableName="sys_menu" domainObjectName="SysMenu"/>
         <table tableName="sys_user_post" domainObjectName="SysUserPost"/>
         <table tableName="sys_post_element" domainObjectName="SysPostElement"/>-->
-        <table tableName="patient_member_change_log" domainObjectName="patientMemberChangeLog"/>
+        <table tableName="patient_img" domainObjectName="patientImg"/>
     </context>
 
 </generatorConfiguration>

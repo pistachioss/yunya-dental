@@ -1,5 +1,7 @@
 package com.yunya.modules.system.mapper;
 
+import com.yunya.feign.system.form.EmployeeInfoQueryForm;
+import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
@@ -32,6 +34,14 @@ public interface SysUserPostMapper extends Mapper<SysUserPost> {
       @Param("userId") Integer userId,
       @Param("orgId") Integer orgId,
       @Param("postId") Integer postId);
+
+  /**
+   * 根据条件查询员工信息列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  List<EmployeeInfoVO> selectEmployeeList(@Param("queryForm") EmployeeInfoQueryForm queryForm);
 
   /**
    * 根据用户ID查询全部可登陆组织

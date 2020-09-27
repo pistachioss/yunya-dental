@@ -26,6 +26,9 @@ public class MedicalCommonRecordForm {
   @NotNull(message = "就诊ID不能为空")
   private Integer treatmentId;
 
+  @ApiModelProperty("审批ID")
+  private Integer approvalId;
+
   /**
    * 患者ID
    */

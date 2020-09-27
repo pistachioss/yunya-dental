@@ -231,7 +231,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
      * @param employeeScheduleQueryForm
      * @return
      */
-    public Map<String, Object> findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
+    public JSONArray findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
         //注意月份是MM
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String startDateString = employeeScheduleQueryForm.getStartDate();
@@ -255,7 +255,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             } catch (ParseException e) {
                 throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
             }
-//      endDate = new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
         }
 
         // 请求参数
@@ -266,7 +265,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         Integer clinicId = employeeScheduleQueryForm.getClinicId();
         //获取班次信息
         List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicId(null);
-        Map<String, ClinicScheduleVO> ClinicScheduleMap = new HashMap();
+        Map<String, ClinicScheduleVO> ClinicScheduleMap = new HashMap(16);
         ClinicSchedules.forEach(x -> ClinicScheduleMap.put(x.getScheduleId() + "", x));
         if (postNames == null || postNames.size() == 0) {
             postNames = null;
@@ -280,18 +279,17 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         model.setPostIds(postNames);
         model.setKeyWord(name);
         Byte[] userStatus = {0, 1, 3};
-
-        model.setWorkStatus(userStatus);//离职状态
+        //离职状态
+        model.setWorkStatus(userStatus);
         int count = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model).size();
         model.setWhetherPage(false);
-//    model.setPageNum(page);
-//    model.setPageSize(size);
+
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
         //获取门诊信息
         OrganizationModel organizationModel = new OrganizationModel();
         organizationModel.setWhetherPage(false);
         List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
-        Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
+        Map<String, OrganizationInfoDetail> clinicMap = new HashMap(16);
         clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
 
         Calendar calendar = Calendar.getInstance();
@@ -343,10 +341,10 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             shiftWorkDatas.add(userWorkMap);
             calendar.add(Calendar.DATE, -days);
         }
-        Map<String, Object> result = new HashMap();
-        result.put("data", shiftWorkDatas);
-        result.put("total", count);
-        return result;
+//        Map<String, Object> result = new HashMap(16);
+//        result.put("data", shiftWorkDatas);
+//        result.put("total", count);
+        return shiftWorkDatas;
     }
 
     /**
@@ -381,7 +379,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
         EmployeeSchedule employeeSchedule = new EmployeeSchedule();
         employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date date = null;
         try {
             date = simpleDateFormat.parse(employeeScheduleForm.getWorkDate());
@@ -402,7 +400,10 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                     if (endTime.before(oldShift.getFirstStartTime()) ||
                             endTime.equals(oldShift.getFirstStartTime()) ||
                             startTime.equals(oldShift.getSecondEndTime()) ||
-                            startTime.after(oldShift.getSecondEndTime())) {
+                            startTime.after(oldShift.getSecondEndTime())||
+                            startTime.equals(oldShift.getFirstStartTime()) ||
+                            endTime.equals(oldShift.getSecondEndTime())
+                            ) {
                         flag = true;
                     } else {
                         flag = false;

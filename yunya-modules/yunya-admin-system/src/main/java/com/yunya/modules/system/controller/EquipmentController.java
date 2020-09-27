@@ -11,6 +11,8 @@ import io.swagger.annotations.ApiModelProperty;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * 简单介绍:</br> 硬件设备管理
  *
@@ -42,8 +44,8 @@ public class EquipmentController {
     @CurrentUser
     @ApiModelProperty(value = "新增设备")
     @PostMapping(value = "/add")
-    public ResponseResult add(@RequestBody @Validated EquipmentInfoModel model){
-        equipmentBiz.add(model);
+    public ResponseResult add(@RequestBody @Validated EquipmentInfoModel model, HttpServletRequest request){
+        equipmentBiz.add(model,request);
         return ResponseUtil.success();
     }
 

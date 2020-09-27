@@ -31,5 +31,4 @@ public class TaskProcessingModel implements Serializable {
     /** 任务编号 */
     private String interfaceName;
 
-
 }

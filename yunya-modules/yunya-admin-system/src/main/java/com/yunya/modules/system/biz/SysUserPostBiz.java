@@ -1,5 +1,9 @@
 package com.yunya.modules.system.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.form.EmployeeInfoQueryForm;
+import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -7,6 +11,8 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.domain.model.SysUserPostModel;
+import com.yunya.modules.system.mapper.PostGroupMapper;
+import com.yunya.modules.system.mapper.PostMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
@@ -33,6 +39,10 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
 
   /** 注入对象 */
   @Autowired private SysUserPostMapper sysUserPostMapper;
+
+  @Autowired private PostGroupMapper postGroupMapper;
+
+  @Autowired private PostMapper postMapper;
 
   /**
    * 新增用户可登录组织信息
@@ -113,6 +123,20 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
    */
   public void remove(Integer userPostId) {
     mapper.deleteByPrimaryKey(userPostId);
+  }
+
+  /**
+   * 根据条件查询用户信息
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public PageInfo<EmployeeInfoVO> findEmployeeList(EmployeeInfoQueryForm queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    List<EmployeeInfoVO> resultList = mapper.selectEmployeeList(queryForm);
+    return new PageInfo<>(resultList);
   }
 
   /**

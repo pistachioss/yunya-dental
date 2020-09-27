@@ -8,6 +8,7 @@ import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.models.patient_central.PatientImg;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
@@ -169,4 +170,11 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @return
    */
   List<PatientBaseInfoVo> findUserExistsByMobileList(@Param("mobile") String mobile);
+
+
+  /**
+   * 根据患者id 清空患者头像
+   * @param id 患者id
+   */
+  void updateFaceUrlById(@Param("id") Integer id);
 }

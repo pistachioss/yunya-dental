@@ -3,10 +3,9 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.framework.common.utils.UUIDUtils;
 import com.yunya.models.system.SysElement;
@@ -28,6 +27,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
 
 /**
  * 简单介绍:</br> 系统菜单按钮业务层
@@ -64,11 +66,11 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
     String s = "列表";
     SysElement sysElement = EntityUtils.build(resource, SysElement.class);
     if (resource.getName().contains(s)) {
-      sysElement.setType(BusinessConstants.RESOURCE_TYPE_URI);
-      resource.setType(BusinessConstants.RESOURCE_TYPE_URI);
+      sysElement.setType(RESOURCE_TYPE_URI);
+      resource.setType(RESOURCE_TYPE_URI);
     } else {
-      sysElement.setType(BusinessConstants.RESOURCE_TYPE_BTN);
-      resource.setType(BusinessConstants.RESOURCE_TYPE_BTN);
+      sysElement.setType(RESOURCE_TYPE_BTN);
+      resource.setType(RESOURCE_TYPE_BTN);
     }
 
     SysElement resultData = mapper.selectOne(sysElement);
@@ -105,8 +107,8 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
     SysResourceAuthority entity = new SysResourceAuthority();
     entity.setResourceId(id);
     List<SysResourceAuthority> authorities = sysResourceAuthorityBiz.selectList(entity);
-    if (authorities.size() > 0) {
-      throw new ClientServiceException("该权限已被关联，不允许被删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
+    if (StringHelper.isNotEmpty(authorities)) {
+      throw new ClientServiceException("该权限已被关联，不允许被删除！", DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
   }
@@ -148,7 +150,7 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
    */
   private ArrayList<SysElement> getPostElementResourceAuthorityList(List<PostVO> posts) {
     ArrayList<SysElement> elements = new ArrayList<>();
-    if (posts.size() > 0) {
+    if (StringHelper.isNotEmpty(posts)) {
       Set<SysResourceAuthorityVO> hashSet = new HashSet<>();
       // 获取岗位的菜单权限列表
       ResourceAuthorityForm form = new ResourceAuthorityForm();
@@ -192,7 +194,7 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
    */
   private List<SysElementTreeVO> initTree(List<SysElement> sysElements) {
     ArrayList<SysElementTreeVO> trees = new ArrayList<>();
-    if (sysElements.size() > 0) {
+    if (StringHelper.isNotEmpty(sysElements)) {
       SysElementTreeVO node;
       for (SysElement vo : sysElements) {
         node = new SysElementTreeVO();
@@ -200,6 +202,6 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
         trees.add(node);
       }
     }
-    return TreeUtil.buildByRecursive(trees, BusinessConstants.DEFAULT_PARENT_ID);
+    return TreeUtil.buildByRecursive(trees, DEFAULT_PARENT_ID);
   }
 }

@@ -5,12 +5,14 @@ import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +50,20 @@ public class TreatmentRecordController {
   public ResponseResult startTreatment(@PathVariable(value = "regId") Integer regId) {
     treatmentRecordBiz.startTreatment(regId);
     return ResponseUtil.success();
+  }
+
+  /**
+   * 根据就诊记录ID查询就诊记录信息
+   *
+   * @param id 就诊记录ID
+   * @return
+   */
+  @ApiOperation("根据就诊记录ID查询就诊记录信息")
+  @ApiImplicitParams({@ApiImplicitParam(name = "id", value = "就诊记录ID", required = true)})
+  @GetMapping(value = "/one/{id}", name = "根据就诊ID查询就诊记录信息")
+  public ResponseResult<TreatmentRecordVO> findById(@PathVariable(value = "id") Integer id) {
+    TreatmentRecordVO resultData = treatmentRecordBiz.findTreatmentInfoById(id);
+    return ResponseUtil.success(resultData);
   }
 
   /**
