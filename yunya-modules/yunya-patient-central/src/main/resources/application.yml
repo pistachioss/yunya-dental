@@ -1,6 +1,9 @@
 server:
   port: 8108
 
+var:
+  port: 8765
+
 logging:
   level:
     #        tk.mybatis: DEBUG

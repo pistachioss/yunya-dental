@@ -154,4 +154,12 @@ public interface PatientCentralServiceFeign {
     @RequestMapping(value = "/api/findMemberInfo",method = RequestMethod.POST)
     MemberInfoVo findMemberInfo(@RequestBody PatientMemberInfoQueryForm form);
 
+    /**
+     * 获取端口号
+     * @return portNumberGet
+     */
+    @RequestMapping(value = "/api/portNumberGet",method = RequestMethod.GET)
+    String portNumberGet();
+
+
 }

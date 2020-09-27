@@ -4,16 +4,22 @@ import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
 import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
+import com.yunya.modules.system.domain.query.EquipmentInfoQueryForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
+import com.yunya.modules.system.mapper.EquipmentInfoMapper;
 import com.yunya.modules.system.rpc.service.PermissionService;
 import com.yunya.modules.system.vo.ClinicAccountItemVO;
 import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -68,6 +74,8 @@ public class SystemServiceRest {
   @Autowired private AccountItemBiz accountItemBiz;
   /** 门诊入账方式 */
   @Autowired private ClinicAccountItemBiz clinicAccountItemBiz;
+  /** 人脸识别设备信息 */
+  @Autowired private EquipmentBiz equipmentBiz;
 
   /**
    * 根据用户名、密码查询用户信息
@@ -441,4 +449,15 @@ public class SystemServiceRest {
       @RequestBody ClinicAccountItemQueryForm queryForm) {
     return clinicAccountItemBiz.findList(queryForm).getList();
   }
+
+  /**
+   * 获取设备信息
+   * @return EquipmentInfo
+   */
+  @ApiModelProperty(value = "获取设备信息")
+  @RequestMapping(value = "/equipmentInfoOne",method = RequestMethod.GET)
+  public EquipmentInfo equipmentInfoOne(){
+    return equipmentBiz.findEquipmentInfoVO();
+  }
+
 }

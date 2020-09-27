@@ -3,10 +3,14 @@ package com.yunya.modules.system.mapper;
 import com.yunya.models.system.EquipmentInfo;
 import com.yunya.modules.system.vo.EquipmentInfoVO;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
 
+@Service
+@Transactional(rollbackFor = Exception.class)
 public interface EquipmentInfoMapper extends Mapper<EquipmentInfo> {
     /**
      * 通过设备号 和 IP地址 查询设备信息

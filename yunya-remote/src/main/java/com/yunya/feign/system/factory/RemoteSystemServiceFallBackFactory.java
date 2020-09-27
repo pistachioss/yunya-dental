@@ -229,4 +229,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
    */
   @Override
   public void saveLog(LogInfo log) {}
+
+  @Override
+  public EquipmentInfo equipmentInfoOne() {
+    return null;
+  }
 }

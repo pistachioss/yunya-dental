@@ -95,33 +95,8 @@ public class WoPersonBiz {
    * @return List<PictureVo>
    */
   public List<PhotoInformationVo> deleteThePhoto(PictureForm pictureForm) {
-    /* FaceApi = new CustomTokenClient(tokenTask).FaceClient();
-    FaceApi.deleteUsingDELETE(WoPlatformConstants.APPID, pictureForm.getFaceGuid(), pictureForm.getPersonGuid()); //删除照片
-    ResultPersonOutput PersonResponse = PersonClientApi.getUsingGET1(WoPlatformConstants.APPID, pictureForm.getPersonGuid()); //获取Wo平台照片路径
-    List<FaceOutput> faces = PersonResponse.getData().getFaces();
-    List<PictureVo> pictureVoList = new ArrayList<>();
-    if (faces.size() > 0) {
-        for (FaceOutput face : faces) {
-            PictureVo pictureVo = new PictureVo();
-            pictureVo.setPersonGuid(face.getPersonGuid());
-            pictureVo.setFaceGuid(face.getGuid());
-            pictureVo.setFaceUrl(face.getFaceUrl());
-            pictureVo.setCreateTime(face.getCreateTime());
-            pictureVoList.add(pictureVo);
-        }
-        return pictureVoList;
-    }*/
 
-    NameValuePair[] data = {
-      new NameValuePair("pass", redisUtils.get("PASS")),
-      new NameValuePair("faceId", pictureForm.getFaceId())
-    };
-    // 调用心跳接口创建人员信息
-    WoPlatformHeartbeat.httpPostHeartbeatAccess(
-        redisUtils.get("URL") + "/face/delete", data);
-    ArrayList<PhotoInformationVo> faceUrl =
-        patientBaseInfoBiz.getFaceUrl(pictureForm.getPatientId());
-    return faceUrl;
+    return null;
   }
 
   /**

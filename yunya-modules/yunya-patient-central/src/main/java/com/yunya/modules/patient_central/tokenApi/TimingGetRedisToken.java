@@ -35,7 +35,7 @@ public class TimingGetRedisToken implements Serializable {
     }
 
 
-    @Scheduled(cron = "0 0 0/20 * * ?")
+    //@Scheduled(cron = "0 0 0/20 * * ?")
     public String getRedisToken() throws IOException {
         String url ="http://wo-api.uni-ubi.com/v1/"+WoPlatformConstants.APPID+"/auth";
         long timestamp = System.currentTimeMillis();

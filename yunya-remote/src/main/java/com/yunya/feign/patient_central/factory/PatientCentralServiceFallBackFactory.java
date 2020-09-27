@@ -106,4 +106,9 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
     public MemberInfoVo findMemberInfo(PatientMemberInfoQueryForm form) {
         return null;
     }
+
+    @Override
+    public String portNumberGet() {
+        return null;
+    }
 }

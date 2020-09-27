@@ -193,17 +193,24 @@
         where pbio.id =#{patientId}
     </select>
 
+    <!-- 查询判断手机号是否已经存在 -->
     <select id="findUserExistsList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
     </select>
 
+    <!-- app端查询手机号是否已经存在 -->
     <select id="findUserExistsByMobileList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where mobile = #{mobile}
     </select>
+
+    <!-- 根据患者id 清空患者头像 -->
+    <update id="updateFaceUrlById">
+        update patient_base_info set face_url = null where id =#{id}
+    </update>
 
 
 </mapper>

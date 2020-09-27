@@ -162,7 +162,7 @@ public class PatientBaseInfoVo implements Serializable {
     private Integer sourceId;
 
     /**
-     * 原来父级id
+     * 来源父级id
      */
     private Integer sourceParentId;
 
