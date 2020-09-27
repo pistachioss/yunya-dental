@@ -20,7 +20,13 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
-
+    <!-- 校验用户在统一组织，同一部门，同一岗位下是否唯一 -->
+    <select id="checkUserOrgDeptPostUnique" resultType="java.lang.Integer">
+      select
+        count(1)
+      from sys_user_post
+      where user_id = #{userId} and company_id = #{orgId} and department_id = #{orgDeptId} and post_id = #{postId}
+    </select>
     <!-- 校验组织部门下是否存在同一员工 -->
     <select id="checkOrgDeptUnique" resultType="java.lang.Integer">
       select
