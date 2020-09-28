@@ -32,6 +32,8 @@ public class BillExceptionHandleRecordBiz
   @Autowired private BillExceptionHandleDetailRecordBiz billExceptionHandleDetailRecordBiz;
   /** 账单支付记录详情 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
+  /** 账单退费 */
+  @Autowired private BillRefundRecordBiz billRefundRecordBiz;
 
   /**
    * 根据账单异常处理记录查询处理详情
@@ -75,6 +77,7 @@ public class BillExceptionHandleRecordBiz
         break;
         // 账单退费
       case 3:
+        resultMap = billRefundRecordBiz.findBillRefundRecordInfo(billHandleRecordId);
         break;
       default:
         break;
