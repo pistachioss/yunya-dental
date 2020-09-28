@@ -513,6 +513,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
               masertMemberInfoVo.getMasterCardTypeId());
       if (memberType != null) {
         masertMemberInfoVo.setMasterMemberCardName(memberType.getName());
+        masertMemberInfoVo.setRate(memberType.getRate());
       }
     }
     memberInfoVo.setMasertMemberInfoVo(masertMemberInfoVo);
