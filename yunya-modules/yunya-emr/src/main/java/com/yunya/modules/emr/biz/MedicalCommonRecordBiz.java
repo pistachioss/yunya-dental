@@ -54,7 +54,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             } catch (Exception e) {
                 throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
             }
-            if (date.before(now)) {//如果参数有审批时间(代表是就诊24小时后 通过申请来新增病历) 且审批截止时间超过当前时间 不可进行审批
+            //如果参数有审批时间(代表是就诊24小时后 通过申请来新增病历) 且审批截止时间超过当前时间 不可进行审批
+            if (date.before(now)) {
                 throw new ClientServiceException("超过审批时间", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
         }
@@ -88,28 +89,35 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         Instant instant = treatmentRecord.getTreatStartTime().toInstant();
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
-        if (model.getDeadTime() == null && LocalDateTime.now().isAfter(LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MAX))) {//false处为判断当前时间是否超过就诊当天24点
-            throw new ClientServiceException("超过就诊当天24点", OperationCodeConstants.OBJECT_EDIT_FAIL);
+        //false处为判断当前时间是否超过就诊当天24点
+        if(model.getTime()==null){
+            if (model.getDeadTime() == null && LocalDateTime.now().isAfter(LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MAX))) {
+                throw new ClientServiceException("超过就诊当天24点", OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
         }
-
         int result = mapper.insertMedical(medicalCommonRecord);
-        if (result > 0 && medicalCommonRecord.getStatus() == 0) {//主治医生新增病历时，历史表中同步插入一条数据
+        //主治医生新增病历时，历史表中同步插入一条数据
+        if (result > 0 && medicalCommonRecord.getStatus() == 0) {
             medicalRecordHistoryBiz.insertMedicalHistory(medicalCommonRecord);
         }
-        if (result > 0 && medicalCommonRecord.getStatus() == 1) {//助手新增病历时，审核表中同步插入一条数据
+        //助手新增病历时，审核表中同步插入一条数据
+        if (result > 0 && medicalCommonRecord.getStatus() == 1) {
             DraftMedicalApplyModel draftMedicalApplyModel = new DraftMedicalApplyModel();
             ApplyBaseModel applyBase = new ApplyBaseModel();
             applyBase.setEventId(medicalCommonRecord.getId());
             applyBase.setProposerId(medicalCommonRecord.getCrtId());
             applyBase.setApproverId(medicalCommonRecord.getMajorDentistId());
             draftMedicalApplyModel.setApplyBase(applyBase);
+            draftMedicalApplyModel.setId(model.getApprovalId());
             ResponseResult responseResult = medicalApprovalBiz.applyAddDraftCase(draftMedicalApplyModel);
             if (responseResult.getStatus() != 200) {
                 return responseResult;
             }
         }
-        remoteTreatmentServiceFeign.updateTreatmentRecord(model.getTreatmentId());//修改就诊记录病历书写状态
-        if (model.getMedicalGeneralNumList() != null && model.getMedicalGeneralNumList().size() > 0) {//插入常用词条使用频率
+        //修改就诊记录病历书写状态
+        remoteTreatmentServiceFeign.updateTreatmentRecord(model.getTreatmentId());
+        //插入常用词条使用频率
+        if (model.getMedicalGeneralNumList() != null && model.getMedicalGeneralNumList().size() > 0) {
             List<MedicalGeneralNum> numList = new ArrayList<>();
             for (MedicalGeneralNumVO m : model.getMedicalGeneralNumList()) {
                 MedicalGeneralNum medicalGeneralNum = new MedicalGeneralNum();
@@ -135,7 +143,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
      * @return
      */
     public int updateMedical(MedicalCommonRecordForm medicalCommonRecordForm) {
-        if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
+        //判断修改人是否为当前病历的创建人
+        if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
             throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
         MedicalCommonRecord medicalcopy = new MedicalCommonRecord();

@@ -26,7 +26,7 @@ public class PersonalPageFieldVO implements Serializable {
   /** 字段排序 */
   private Integer orderNum;
   /** 是否默认 */
-  private Boolean isDefault;
+  private Boolean defaultValue;
   /** 是否启用 */
   private Boolean inservice;
 }

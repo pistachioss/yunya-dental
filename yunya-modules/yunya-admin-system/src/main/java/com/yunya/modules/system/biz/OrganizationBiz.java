@@ -30,6 +30,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
+
 /**
  * 简单介绍:</br> 组织业务层
  *
@@ -117,8 +119,7 @@ public class OrganizationBiz {
     entity.setName(name);
     Company result = companyMapper.selectOne(entity);
     if (null != result) {
-      throw new ClientServiceException(
-          "新增组织'" + name + "'失败，该组织名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增组织'" + name + "'失败，该组织名称已存在", NAME_IS_OCCUPIED);
     }
     Byte type = resource.getType();
     Company company = EntityUtils.build(resource, Company.class);
@@ -149,8 +150,7 @@ public class OrganizationBiz {
       entity.setName(companyName);
       int result = companyMapper.selectCount(entity);
       if (result > 0) {
-        throw new ClientServiceException(
-            "修改组织'" + companyName + "'失败，该组织名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+        throw new ClientServiceException("修改组织'" + companyName + "'失败，该组织名称已存在", NAME_IS_OCCUPIED);
       }
       company.setName(companyName);
     }
@@ -196,7 +196,7 @@ public class OrganizationBiz {
         int result = clinicExtInfoMapper.selectCount(info);
         if (result > 0) {
           throw new ClientServiceException(
-              "修改组织简称'" + abbreviation + "'失败，该简称名称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+              "修改组织简称'" + abbreviation + "'失败，该简称名称已存在", NAME_IS_OCCUPIED);
         }
         clinicExtInfo.setAbbreviation(abbreviation);
       }
@@ -208,7 +208,7 @@ public class OrganizationBiz {
         int result = clinicExtInfoMapper.selectCount(info);
         if (result > 0) {
           throw new ClientServiceException(
-              "修改组织编号'" + clinicNumber + "'失败，该组织编号已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+              "修改组织编号'" + clinicNumber + "'失败，该组织编号已存在", NAME_IS_OCCUPIED);
         }
         clinicExtInfo.setAbbreviation(clinicNumber);
       }
@@ -260,8 +260,7 @@ public class OrganizationBiz {
     clinicExtInfo.setAbbreviation(abbreviation);
     int result = clinicExtInfoMapper.selectCount(clinicExtInfo);
     if (result > 0) {
-      throw new ClientServiceException(
-          "添加医疗机构'" + name + "'该门诊简称已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("添加医疗机构'" + name + "'该门诊简称已存在", NAME_IS_OCCUPIED);
     }
 
     String clinicNumber = resource.getClinicNumber();
@@ -273,8 +272,7 @@ public class OrganizationBiz {
     clinicExtInfo.setClinicNumber(clinicNumber);
     result = clinicExtInfoMapper.selectCount(clinicExtInfo);
     if (result > 0) {
-      throw new ClientServiceException(
-          "添加医疗机构'" + name + "'该门诊编号已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("添加医疗机构'" + name + "'该门诊编号已存在", NAME_IS_OCCUPIED);
     }
 
     Byte[] brandIds = resource.getBrandIds();
@@ -296,8 +294,14 @@ public class OrganizationBiz {
     if (MEDICAL_TYPE.equals(organizationType)) {
       checkParams(resource);
       ClinicExtInfo clinicExtInfo = new ClinicExtInfo();
+      String clinicNumber = resource.getClinicNumber();
+      clinicExtInfo.setClinicNumber(clinicNumber);
+      ClinicExtInfo extInfo = clinicExtInfoMapper.selectOne(clinicExtInfo);
+      if (null != extInfo) {
+        throw new ClientServiceException("添加医疗机构失败，门诊编号已经存在！", NAME_IS_OCCUPIED);
+      }
       clinicExtInfo.setCompanyId(organizationId);
-      clinicExtInfo.setClinicNumber(resource.getClinicNumber());
+      clinicExtInfo.setClinicNumber(clinicNumber);
       String brands = StringUtils.join(resource.getBrandIds(), ",");
       clinicExtInfo.setBrandIds(brands);
       clinicExtInfo.setAbbreviation(resource.getAbbreviation());

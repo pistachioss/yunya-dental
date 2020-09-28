@@ -49,4 +49,7 @@ public class MedicalChangeApplyPageVo {
 
     @ApiModelProperty(value = "拒绝原因")
     private String rejectReason;
+
+    @ApiModelProperty(value = "是否操作过（0：否  1：是）")
+    private Integer whetherOperated;
 }

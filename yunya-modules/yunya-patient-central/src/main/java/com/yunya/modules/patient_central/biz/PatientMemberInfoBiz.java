@@ -513,6 +513,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
               masertMemberInfoVo.getMasterCardTypeId());
       if (memberType != null) {
         masertMemberInfoVo.setMasterMemberCardName(memberType.getName());
+        masertMemberInfoVo.setRate(memberType.getRate());
       }
     }
     memberInfoVo.setMasertMemberInfoVo(masertMemberInfoVo);
@@ -524,6 +525,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         MemberType memberType =
             this.remoteSystemServiceFeign.findMemberTypeById(
                 secondaryMemberInfoVo.getSecondaryMemberTypeId());
+                secondaryMemberInfoVo.setRate(memberType.getRate());
         if (memberType != null) {
           secondaryMemberInfoVo.setMemberCardName(memberType.getName());
         }

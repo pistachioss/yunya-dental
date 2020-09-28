@@ -27,10 +27,22 @@ public class BillRefundPayDetailRecord {
     private Integer accountItemId;
 
     /**
-     * 退费支付金额
+     * 退费支付金额合计
      */
     @Column(name = "refund_pay_amount")
     private BigDecimal refundPayAmount;
+
+    /**
+     * 退费本金
+     */
+    @Column(name = "principal_amount")
+    private BigDecimal principalAmount;
+
+    /**
+     * 退费赠金
+     */
+    @Column(name = "gift_amount")
+    private BigDecimal giftAmount;
 
     /**
      * 备注
@@ -149,6 +161,42 @@ public class BillRefundPayDetailRecord {
     public void setRefundPayAmount(BigDecimal refundPayAmount) {
         this.refundPayAmount = refundPayAmount;
     }
+
+    /**
+     * 获取退费本金
+     *
+     * @return principalAmount
+     */
+    public BigDecimal getPrincipalAmount() {
+        return principalAmount;
+    }
+
+    /**
+     * 设置退费赠金
+     *
+     * @param principalAmount 退费本金
+     */
+    public void setPrincipalAmount(BigDecimal principalAmount) {
+        this.principalAmount = principalAmount;
+    }
+
+    /**
+     * 获取退费赠金
+     *
+     * @return giftAmount
+     */
+    public BigDecimal getGiftAmount() {
+          return giftAmount;
+      }
+
+    /**
+     * 设置退费赠金
+     *
+     * @param giftAmount 退费赠金
+     */
+      public void setGiftAmount(BigDecimal giftAmount) {
+          this.giftAmount = giftAmount;
+      }
 
     /**
      * 获取备注
