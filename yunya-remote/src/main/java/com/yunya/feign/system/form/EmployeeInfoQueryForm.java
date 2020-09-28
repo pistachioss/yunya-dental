@@ -29,11 +29,15 @@ public class EmployeeInfoQueryForm implements Serializable {
   @Min(message = "最小值", value = 1)
   private Integer pageSize = 10;
   /** 用户ID列表 */
+  @ApiModelProperty("用户ID列表")
   private Integer[] userIds;
   /** 组织ID列表 */
+  @ApiModelProperty("组织ID列表")
   private Integer[] orgIds;
   /** 岗位组ID列表 */
+  @ApiModelProperty("岗位组ID列表")
   private Integer[] postGroupIds;
   /** 岗位ID列表 */
+  @ApiModelProperty("岗位ID列表")
   private Integer[] postIds;
 }

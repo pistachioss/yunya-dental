@@ -86,7 +86,7 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         result = EntityUtils.build(config, ClinicEmployeeConfigRes.class);
         SysUserInfoDetail assistantEmployee = systemServiceFeign.findSysUserEmployeeInfoByUserId(employeeId);
         //查询科室信息
-        DepartmentRoom room = systemServiceFeign.findDepartmentRoomById(result.getClinicDepartmentRoomId());
+        DepartmentRoom room = result.getClinicDepartmentRoomId() == null ? null : systemServiceFeign.findDepartmentRoomById(result.getClinicDepartmentRoomId());
         result.setAssistantName(assistantEmployee == null ? null : assistantEmployee.getName());
         result.setClinicDepartmentRoomName(room == null ? null : room.getName());
         return result;

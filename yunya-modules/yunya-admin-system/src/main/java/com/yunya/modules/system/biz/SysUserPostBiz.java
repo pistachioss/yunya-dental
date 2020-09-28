@@ -5,14 +5,11 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.form.EmployeeInfoQueryForm;
 import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.domain.model.SysUserPostModel;
-import com.yunya.modules.system.mapper.PostGroupMapper;
-import com.yunya.modules.system.mapper.PostMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.PostVO;
 import com.yunya.modules.system.vo.SysUserLoginOrgVO;
@@ -24,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
+import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DATA_EXIST;
 
 /**
  * 简单介绍:</br> 用户可登陆组织业务层
@@ -40,10 +40,6 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
   /** 注入对象 */
   @Autowired private SysUserPostMapper sysUserPostMapper;
 
-  @Autowired private PostGroupMapper postGroupMapper;
-
-  @Autowired private PostMapper postMapper;
-
   /**
    * 新增用户可登录组织信息
    *
@@ -51,7 +47,9 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
    */
   public void add(SysUserPostModel resource) {
     Integer userId = resource.getUserId();
-    checkUserOrgDeptUnique(userId, resource.getDepartmentId());
+    // checkUserOrgDeptUnique(userId, resource.getDepartmentId());
+    checkUserOrgDeptPostUnique(
+        userId, resource.getCompanyId(), resource.getDepartmentId(), resource.getPostId());
     checkUserOrgPostUnique(userId, resource.getCompanyId(), resource.getPostId());
     SysUserPost entity = new SysUserPost();
     BeanUtils.copyProperties(resource, entity);
@@ -59,6 +57,23 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
     mapper.insertSelective(entity);
+  }
+
+  /**
+   * 校验用户在统一组织，同一部门，同一岗位下是否唯一
+   *
+   * @param userId 用户ID
+   * @param companyId 组织ID
+   * @param departmentId 组织部门ID
+   * @param postId 岗位ID
+   */
+  private void checkUserOrgDeptPostUnique(
+      Integer userId, Integer companyId, Integer departmentId, Integer postId) {
+    Integer postCount =
+        sysUserPostMapper.checkUserOrgDeptPostUnique(userId, companyId, departmentId, postId);
+    if (postCount > 0) {
+      throw new ClientServiceException("同一组织同一部门同一岗位下不能添加同一员工", SAME_DATA_EXIST);
+    }
   }
 
   /**
@@ -71,7 +86,7 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
   private void checkUserOrgPostUnique(Integer userId, Integer companyId, Integer postId) {
     Integer postCount = sysUserPostMapper.checkOrgPostUnique(userId, companyId, postId);
     if (postCount > 0) {
-      throw new ClientServiceException("同一组织同一岗位下不能添加同一员工", OperationCodeConstants.SAME_DATA_EXIST);
+      throw new ClientServiceException("同一组织同一岗位下不能添加同一员工", SAME_DATA_EXIST);
     }
   }
 
@@ -84,7 +99,7 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
   private void checkUserOrgDeptUnique(Integer userId, Integer departmentId) {
     Integer deptCount = sysUserPostMapper.checkOrgDeptUnique(userId, departmentId);
     if (deptCount > 0) {
-      throw new ClientServiceException("同一组织同一部门下不能添加同一员工", OperationCodeConstants.SAME_DATA_EXIST);
+      throw new ClientServiceException("同一组织同一部门下不能添加同一员工", SAME_DATA_EXIST);
     }
   }
 
@@ -98,11 +113,17 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
     SysUserPost sysUserPost = mapper.selectByPrimaryKey(userPostId);
     if (null == sysUserPost) {
       throw new ClientServiceException(
-          "修改用户可登陆组织失败，ID为'" + userPostId + "'数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改用户可登陆组织失败，ID为'" + userPostId + "'数据不存在", QUERY_RESULT_INVALID);
     }
-    if (!sysUserPost.getDepartmentId().equals(form.getOrgDeptId())) {
+    if (!sysUserPost.getDepartmentId().equals(form.getOrgDeptId())
+        || !sysUserPost.getPostId().equals(form.getPostId())
+        || !sysUserPost.getCompanyId().equals(form.getOrgId())) {
+      checkUserOrgDeptPostUnique(
+          sysUserPost.getUserId(), form.getOrgId(), form.getOrgDeptId(), form.getPostId());
+    }
+    /*if (!sysUserPost.getDepartmentId().equals(form.getOrgDeptId())) {
       checkUserOrgDeptUnique(sysUserPost.getUserId(), form.getOrgDeptId());
-    }
+    }*/
     if (!sysUserPost.getPostId().equals(form.getPostId())
         || !sysUserPost.getCompanyId().equals(form.getOrgId())) {
       checkUserOrgPostUnique(sysUserPost.getUserId(), form.getOrgId(), form.getPostId());
@@ -110,6 +131,7 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
     sysUserPost.setDepartmentId(form.getOrgDeptId());
     sysUserPost.setCompanyId(form.getOrgId());
     sysUserPost.setPostId(form.getPostId());
+    sysUserPost.setGroupId(form.getPostGroupId());
     sysUserPost.setUserId(Integer.valueOf(BaseContextHandler.getUserID()));
     sysUserPost.setUpdName(BaseContextHandler.getName());
     sysUserPost.setUpdTime(new Date(System.currentTimeMillis()));

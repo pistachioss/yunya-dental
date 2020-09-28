@@ -12,6 +12,22 @@ import tk.mybatis.mapper.common.Mapper;
 import java.util.List;
 
 public interface SysUserPostMapper extends Mapper<SysUserPost> {
+
+  /**
+   * 校验用户在统一组织，同一部门，同一岗位下是否唯一
+   *
+   * @param userId 用户ID
+   * @param orgId 组织ID
+   * @param orgDeptId 组织部门ID
+   * @param postId 岗位ID
+   * @return
+   */
+  Integer checkUserOrgDeptPostUnique(
+      @Param("userId") Integer userId,
+      @Param("orgId") Integer orgId,
+      @Param("orgDeptId") Integer orgDeptId,
+      @Param("postId") Integer postId);
+
   /**
    * 校验同一组织部门下员工是否重复
    *
