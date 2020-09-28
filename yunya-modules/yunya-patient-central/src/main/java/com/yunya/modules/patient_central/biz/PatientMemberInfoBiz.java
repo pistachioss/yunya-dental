@@ -525,6 +525,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         MemberType memberType =
             this.remoteSystemServiceFeign.findMemberTypeById(
                 secondaryMemberInfoVo.getSecondaryMemberTypeId());
+                secondaryMemberInfoVo.setRate(memberType.getRate());
         if (memberType != null) {
           secondaryMemberInfoVo.setMemberCardName(memberType.getName());
         }
