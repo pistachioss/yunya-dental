@@ -6,11 +6,7 @@ import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.redis.util.RedisUtils;
-import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.modules.patient_central.biz.InformationCallbackBiz;
-import com.yunya.modules.patient_central.constant.WoPlatformConstants;
-import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -32,7 +27,7 @@ import java.util.Map;
  */
 @Api(value = "回调中心", description = "回调中心控制层")
 @RestController
-@RequestMapping("callback")
+@RequestMapping("/callback")
 public class InformationCallbackController {
 
   /** 回调中心业务层 */
@@ -51,6 +46,21 @@ public class InformationCallbackController {
   public Map<String, Object> getCallback(@RequestBody CallbackModel callbackModel) {
     System.out.println("******************************心跳回调**************************************");
     System.out.println(callbackModel.getDeviceKey());
+    return informationCallbackBiz.heartbeatCallback(callbackModel);
+
+  }
+
+  /**
+   * 心跳回调
+   *
+   * @param callbackModel
+   * @return Boolean
+   */
+  @ApiOperation(value = "心跳回调")
+  @IgnoreUserToken
+  @RequestMapping(value = "/heartbeatCallbackPaizhao", method = {RequestMethod.POST})
+  public Map<String, Object> heartbeatCallbackPaizhao(@RequestBody CallbackModel callbackModel) {
+    System.out.println("******************************回调拍照**************************************");
     return informationCallbackBiz.heartbeatCallback(callbackModel);
 
   }
