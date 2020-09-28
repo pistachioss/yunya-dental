@@ -30,10 +30,8 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.framework.common.utils.page.Page;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.framework.common.utils.page.Paging;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
@@ -46,6 +44,8 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
+import com.yunya.modules.appointment.util.pageUtil.PageUtil;
+import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
@@ -383,6 +384,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             throw new ClientServiceException("无效预约，不能进行编辑！",OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
 
+        // 查询修改前的预约信息，方便做操作记录使用
+        Appointment appointment = mapper.selectByPrimaryKey(appointmentForm.getId());
+
         int num = mapper.updateByPrimaryKeySelective(appointEntity);
         if (num <= 0){
             throw new ClientServiceException("编辑预约失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
@@ -405,8 +409,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 throw new ClientServiceException("时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
         }
+
         // 生成修改预约操作记录
-        appointOperateRecordBiz.saveAppointOperationRecord(appointEntity,appointmentForm);
+        appointOperateRecordBiz.saveAppointOperationRecord(appointment,appointmentForm);
         return ResponseUtil.success();
     }
 
@@ -514,7 +519,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Date endDate = query.getEndDate();
         shiftWorkDatas.forEach(userWorkVO -> {
             // 组合预约医生和患者信息（患者维度）
-            List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(orgId, startDate, endDate, userWorkVO);
+            List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(query,orgId, startDate, endDate, userWorkVO);
             // 将预约信息放入预约可视图列表
             if (dimensionVoList != null && !dimensionVoList.isEmpty()){
                 dimensionVoList.forEach(dimensionVo -> appointmentDimensionVoList.add(dimensionVo));
@@ -603,8 +608,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             return 0;
         });
-        Paging paging = new Paging(query.getPageNum(),query.getPageSize());
-        return ResponseUtil.success(paging.getPageData(appointmentDentistDimensionVoList));
+
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        PageUtil paging = new PageUtil(query.getPageNum(),query.getPageSize());
+        Page pageAssistantData = paging.getPageAssistantData(appointmentDentistDimensionVoList);
+        return ResponseUtil.success(pageAssistantData);
     }
 
     /**
@@ -1450,7 +1460,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param dentistWorkSchedule 排班表
      * @return  预约可视图vo
      */
-    private List<AppointmentDimensionVo> combinationPatientDimensionVo(Integer orgId, Date startDate, Date endDate,UserWorkVO dentistWorkSchedule){
+    private List<AppointmentDimensionVo> combinationPatientDimensionVo(PatientDimensionByDayQuery query, Integer orgId, Date startDate, Date endDate,UserWorkVO dentistWorkSchedule){
         List<AppointmentDimensionVo> appointmentDimensionVoList = new LinkedList<>();
 
         Integer userId = dentistWorkSchedule.getCompEmpId();
@@ -1580,6 +1590,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 return ResponseUtil.fail(AppointmentError.START_DATE_AFTER_END_DATE.getCode(),AppointmentError.START_DATE_AFTER_END_DATE.getMessage(),null);
             }
         }
+        // 设置分页
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
         // 查询患者预约信息
         List<AppointPatientRecordVo> appointPatientRecord = mapper.findAppointPatientRecord(query);
         appointPatientRecord.forEach(appointPatientRecordVo -> {
@@ -1615,10 +1629,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
 
         });
-        // 设置分页
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
-        }
+
         return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
     }
 

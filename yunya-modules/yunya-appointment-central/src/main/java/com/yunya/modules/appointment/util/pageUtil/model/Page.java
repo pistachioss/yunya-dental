@@ -1,6 +1,4 @@
-package com.yunya.framework.common.utils.page;
-
-import org.apache.poi.ss.formula.functions.T;
+package com.yunya.modules.appointment.util.pageUtil.model;
 
 import java.util.List;
 
@@ -30,7 +28,7 @@ public class  Page<T> {
     /**
      * 总列表
      */
-    private List<List<T>> list;
+    private List<T> list;
 
     public int getPageNum() {
         return pageNum;
@@ -64,11 +62,11 @@ public class  Page<T> {
         this.total = total;
     }
 
-    public List<List<T>> getList() {
+    public List<T> getList() {
         return list;
     }
 
-    public void setList(List<List<T>> list) {
+    public void setList(List<T> list) {
         this.list = list;
     }
 }
