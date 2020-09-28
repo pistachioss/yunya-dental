@@ -77,7 +77,7 @@ public class AppointOperationController {
      */
     @ApiOperation(value = "条件查询预约操作记录")
     @GetMapping("/find")
-    public ResponseResult findAppointOperationRecordAll(@RequestBody @Validated AppointOperationQuery query){
+    public ResponseResult findAppointOperationRecordAll(AppointOperationQuery query){
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }

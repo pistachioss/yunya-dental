@@ -41,6 +41,9 @@ public class MedicalCommonRecordModel {
   @NotNull(message = "患者ID不能为空")
   private Integer patientId;
 
+  @ApiModelProperty("审批ID")
+  private Integer approvalId;
+
   /**
    * 主治医生ID
    */

@@ -379,7 +379,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
         EmployeeSchedule employeeSchedule = new EmployeeSchedule();
         employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date date = null;
         try {
             date = simpleDateFormat.parse(employeeScheduleForm.getWorkDate());
@@ -400,7 +400,10 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                     if (endTime.before(oldShift.getFirstStartTime()) ||
                             endTime.equals(oldShift.getFirstStartTime()) ||
                             startTime.equals(oldShift.getSecondEndTime()) ||
-                            startTime.after(oldShift.getSecondEndTime())) {
+                            startTime.after(oldShift.getSecondEndTime())||
+                            startTime.equals(oldShift.getFirstStartTime()) ||
+                            endTime.equals(oldShift.getSecondEndTime())
+                            ) {
                         flag = true;
                     } else {
                         flag = false;

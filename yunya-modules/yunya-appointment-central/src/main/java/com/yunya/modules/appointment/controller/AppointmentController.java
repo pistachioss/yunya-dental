@@ -11,6 +11,7 @@ import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.page.Paging;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
@@ -101,7 +102,8 @@ public class AppointmentController {
   @CurrentUser
   public ResponseResult editAppointmentContinueSave(
       @RequestBody @Validated AppointmentBaseForm appointmentForm) {
-    return ResponseUtil.success(appointmentBiz.continueUpdateAppointment(appointmentForm));
+    ResponseResult responseResult = this.appointmentBiz.continueUpdateAppointment(appointmentForm);
+    return responseResult;
   }
 
   /**
@@ -185,13 +187,10 @@ public class AppointmentController {
   @PostMapping("/find/patient/dimension")
   public ResponseResult findAppointmentPatientDimensionByDate(
       @RequestBody @Validated PatientDimensionByDayQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(), query.getPageSize());
-    }
     List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
-    PageInfo<AppointmentDimensionVo> pageInfo = new PageInfo<>(appointmentDimensionVos);
-    return ResponseUtil.success(pageInfo);
+    Paging paging = new Paging(query.getPageNum(),query.getPageSize());
+    return ResponseUtil.success(paging.getPageData(appointmentDimensionVos));
   }
 
   /**
