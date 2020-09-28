@@ -3,7 +3,6 @@ package com.yunya.modules.emr.enums;
 import com.yunya.framework.common.model.*;
 
 public enum EmrError implements RestError {
-    OK(200, "ok"),
     NO_PERMISSION_OPERATION(30001, "无权限操作"),
     KEY_IS_LOCKED(30002, "草稿病例已被锁定，无法提交"),
     APPLY_APPROVE_PENDING(30003, "申请正在审批中，请勿重复申请"),
@@ -22,6 +21,7 @@ public enum EmrError implements RestError {
     NORMAL_MEDICAL_NO_PERMISSION(30016,"普通病例不允许审批"),
     MEDICAL_STATUS_ERROR(30017,"电子病例审核状态异常"),
     CHANGE_PENDING_NOT_REPEAT_SUBMIT(30018, "该病历已申请过修改且处于待审核状态，请勿重复申请！"),
+    DEADLINE_BEYOND_NOW(30019, "选择的允许变更截止时间不能早于操作当天时间"),
     ;
     private final Integer code;
     private final String message;

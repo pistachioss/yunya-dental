@@ -4,6 +4,7 @@ import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
 import com.yunya.models.treatment.TreatmentRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -21,6 +22,14 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    */
   List<TreatmentPatientInfoVO> selectTreatingList(
       @Param("queryForm") TreatmentRecordQueryForm queryForm);
+
+  /**
+   * 根据就诊记录ID查询就诊信息
+   *
+   * @param id 就诊记录ID
+   * @return
+   */
+  TreatmentRecordVO selectTreatmentInfoById(@Param("id") Integer id);
 
   /**
    * 根据条件查询患者就诊记录列表

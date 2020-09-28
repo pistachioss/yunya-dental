@@ -1,5 +1,8 @@
 package com.yunya.modules.system.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.form.EmployeeInfoQueryForm;
+import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.system.domain.model.SysUserPostModel;
 import org.junit.Test;
@@ -36,6 +39,16 @@ public class UserPostControllerTest {
   @Test
   public void testFindUserPostList() {
     ResponseResult result = sysUserPostController.postInfoList(42, 514);
+    System.out.println(result);
+  }
+
+  @Test
+  public void findPost() {
+    EmployeeInfoQueryForm form = new EmployeeInfoQueryForm();
+    form.setOrgIds(new Integer[] {35});
+    form.setPostGroupIds(new Integer[] {3});
+    ResponseResult<PageInfo<EmployeeInfoVO>> result =
+        sysUserPostController.findEmployeeByExample(form);
     System.out.println(result);
   }
 }

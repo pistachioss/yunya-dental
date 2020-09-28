@@ -285,35 +285,35 @@
         ) sup ON su.id = sup.user_id
         ) user_info
         <where>
-            <if test="queryFrom.userId != null">
-                and user_info.userId = #{queryFrom.userId}
+            <if test="queryForm.userId != null">
+                and user_info.userId = #{queryForm.userId}
             </if>
-            <if test="queryFrom.orgIds != null and queryFrom.orgIds.size > 0">
+            <if test="queryForm.orgIds != null and queryForm.orgIds.size > 0">
                 and
-                <foreach collection="queryFrom.orgIds" item="item" index="index" open="(" close=")" separator="or">
+                <foreach collection="queryForm.orgIds" item="item" index="index" open="(" close=")" separator="or">
                     FIND_IN_SET(#{item}, user_info.companyIds)
                 </foreach>
             </if>
-            <if test="queryFrom.postGroupIds != null and queryFrom.postGroupIds.size > 0">
+            <if test="queryForm.postGroupIds != null and queryForm.postGroupIds.size > 0">
                 and
-                <foreach collection="queryFrom.postGroupIds" item="item" index="index" open="(" close=")"
+                <foreach collection="queryForm.postGroupIds" item="item" index="index" open="(" close=")"
                          separator="or">
                     FIND_IN_SET(#{item}, user_info.groupIds)
                 </foreach>
             </if>
-            <if test="queryFrom.postIds != null and queryFrom.postIds.size > 0">
+            <if test="queryForm.postIds != null and queryForm.postIds.size > 0">
                 and
-                <foreach collection="queryFrom.postIds" item="item" index="index" open="(" close=")" separator="or">
+                <foreach collection="queryForm.postIds" item="item" index="index" open="(" close=")" separator="or">
                     FIND_IN_SET(#{item}, user_info.postIds)
                 </foreach>
             </if>
-            <if test="queryFrom.keyWord != null and queryFrom.keyWord != ''">
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
                 and CONCAT(IFNULL(user_info.name, ''), IFNULL(user_info.mobilePhone, ''), IFNULL(user_info.pinyin, ''))
-                like concat('%', #{queryFrom.keyWord} ,'%')
+                like concat('%', #{queryForm.keyWord} ,'%')
             </if>
-            <if test="queryFrom.workStatus != null and queryFrom.workStatus.length > 0">
+            <if test="queryForm.workStatus != null and queryForm.workStatus.length > 0">
                 and user_info.workStatus in
-                <foreach collection="queryFrom.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                <foreach collection="queryForm.workStatus" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>

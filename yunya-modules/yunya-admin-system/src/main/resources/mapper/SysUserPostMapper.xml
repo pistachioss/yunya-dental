@@ -46,7 +46,53 @@
         left join clinic_ext_info cei on sup.company_id = cei.company_id
         where sup.user_id = #{userId}
     </select>
-
+    <!-- 根据条件查询员工信息列表 -->
+    <select id="selectEmployeeList" resultType="com.yunya.feign.system.vo.EmployeeInfoVO">
+        SELECT DISTINCT
+        sup.user_id AS userId,
+        se.id AS employeeId,
+        se.`name` AS name,
+        se.gender,
+        se.mobile_phone AS mobilePhone,
+        sup.company_id AS orgId,
+        cei.abbreviation AS orgName,
+        sup.group_id AS postGroupId,
+        pg.`name` AS postGroupName,
+        sup.post_id AS postId,
+        p.`name` AS postName
+        FROM
+        sys_user_post sup
+        LEFT JOIN sys_employee se ON sup.user_id = se.user_id
+        LEFT JOIN clinic_ext_info cei ON sup.company_id = cei.company_id
+        LEFT JOIN post_group pg ON sup.group_id = pg.id
+        LEFT JOIN post p ON sup.post_id = p.id
+        <where>
+            <if test="queryForm.userIds != null and queryForm.userIds.length > 0">
+                and sup.user_id in
+                <foreach collection="queryForm.userIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.orgIds != null and queryForm.orgIds.length > 0">
+                and sup.company_id in
+                <foreach collection="queryForm.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.postGroupIds != null and queryForm.postGroupIds.length > 0">
+                and sup.group_id in
+                <foreach collection="queryForm.postGroupIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.postIds != null and queryForm.postIds.length > 0">
+                and sup.post_id in
+                <foreach collection="queryForm.postIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
     <!-- 根据组织ID、用户ID查询岗位列表(员工管理-可登录组织列表) -->
     <select id="selectUserPostListByUserId" resultType="com.yunya.modules.system.vo.SysUserPostOrgVO">
         select
@@ -81,5 +127,4 @@
         where
             sup.company_id = #{orgId} and sup.user_id = #{userId}
     </select>
-
 </mapper>

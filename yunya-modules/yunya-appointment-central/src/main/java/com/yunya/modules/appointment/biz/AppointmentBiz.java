@@ -30,8 +30,10 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.page.Page;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.page.Paging;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
@@ -601,11 +603,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             return 0;
         });
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
-        }
-        PageInfo<List<AppointmentDimensionVo>> pageInfo = new PageInfo(appointmentDentistDimensionVoList);
-        return ResponseUtil.success(pageInfo);
+        Paging paging = new Paging(query.getPageNum(),query.getPageSize());
+        return ResponseUtil.success(paging.getPageData(appointmentDentistDimensionVoList));
     }
 
     /**
