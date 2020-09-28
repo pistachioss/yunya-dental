@@ -27,7 +27,7 @@
             pgc.field_name as fieldName,
             pgc.hide,
             pgc.order_num as orderNum,
-            pgc.is_default as isDefault,
+            pgc.is_default as defaultValue,
             pgc.inservice
         from personal_page_config pgc
         where pgc.user_id = #{userId} and pgc.page_name = #{pageName}

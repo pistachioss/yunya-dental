@@ -123,11 +123,18 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         EnableChooseEmployeeRes configRes = new EnableChooseEmployeeRes();
         BeanCopier copier = BeanCopier.create(ClinicEmployeeConfig.class, EnableChooseEmployeeRes.class, false);
         copier.copy(config, configRes, null);
-        SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(config.getEmployeeId());
-        SysUserInfoDetail assist = systemServiceFeign.findSysUserEmployeeInfoByUserId(config.getAssistantEmployeeId());
-        configRes.setAssistantName(assist == null ? null : assist.getUsername());
-        configRes.setEmployeeName(employee == null ? null : employee.getUsername());
-        //TODO 科室
+        if (config.getEmployeeId() != null) {
+            SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(config.getEmployeeId());
+            configRes.setEmployeeName(employee == null ? null : employee.getUsername());
+        }
+        if (config.getAssistantEmployeeId() != null) {
+            SysUserInfoDetail assist = systemServiceFeign.findSysUserEmployeeInfoByUserId(config.getAssistantEmployeeId());
+            configRes.setAssistantName(assist == null ? null : assist.getUsername());
+        }
+        if (config.getClinicDepartmentRoomId() != null) {
+            DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(config.getClinicDepartmentRoomId());
+            configRes.setClinicDepartmentRoomName(departmentRoom == null ? null : departmentRoom.getName());
+        }
         return configRes;
     }
 
