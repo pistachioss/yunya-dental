@@ -11,10 +11,11 @@ import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.common.utils.page.Paging;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
+import com.yunya.modules.appointment.util.pageUtil.PageUtil;
+import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -187,10 +188,13 @@ public class AppointmentController {
   @PostMapping("/find/patient/dimension")
   public ResponseResult findAppointmentPatientDimensionByDate(
       @RequestBody @Validated PatientDimensionByDayQuery query) {
+
     List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
-    Paging paging = new Paging(query.getPageNum(),query.getPageSize());
-    return ResponseUtil.success(paging.getPageData(appointmentDimensionVos));
+    // 分页
+    PageUtil pageUtil = new PageUtil(query.getPageNum(),query.getPageSize());
+    Page paging = pageUtil.getPaging(appointmentDimensionVos);
+    return ResponseUtil.success(paging);
   }
 
   /**
