@@ -90,10 +90,11 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         ZoneId zoneId = ZoneId.systemDefault();
         LocalDateTime localDateTime = instant.atZone(zoneId).toLocalDateTime();
         //false处为判断当前时间是否超过就诊当天24点
-        if (model.getDeadTime() == null && LocalDateTime.now().isAfter(LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MAX))) {
-            throw new ClientServiceException("超过就诊当天24点", OperationCodeConstants.OBJECT_EDIT_FAIL);
+        if(model.getTime()==null){
+            if (model.getDeadTime() == null && LocalDateTime.now().isAfter(LocalDateTime.of(localDateTime.toLocalDate(), LocalTime.MAX))) {
+                throw new ClientServiceException("超过就诊当天24点", OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
         }
-
         int result = mapper.insertMedical(medicalCommonRecord);
         //主治医生新增病历时，历史表中同步插入一条数据
         if (result > 0 && medicalCommonRecord.getStatus() == 0) {
@@ -142,7 +143,8 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
      * @return
      */
     public int updateMedical(MedicalCommonRecordForm medicalCommonRecordForm) {
-        if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {//判断修改人是否为当前病历的创建人
+        //判断修改人是否为当前病历的创建人
+        if (!medicalCommonRecordForm.getCrtId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
             throw new ClientServiceException("创建者才能修改病历", OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
         MedicalCommonRecord medicalcopy = new MedicalCommonRecord();
