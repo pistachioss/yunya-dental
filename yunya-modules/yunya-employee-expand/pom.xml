@@ -94,6 +94,12 @@
             <groupId>com.yunya</groupId>
             <artifactId>yunya-remote</artifactId>
             <version>1.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>tk.mybatis</groupId>
+                    <artifactId>mapper</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- swagger -->
