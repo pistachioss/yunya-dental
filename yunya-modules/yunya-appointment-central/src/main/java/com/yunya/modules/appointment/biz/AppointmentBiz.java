@@ -1040,7 +1040,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
         String excelName = orgName + "预约报表(" + exportAppointDate + ")";
-        appointExcelExport.exportExcel(response,appointListExportVos,excelName,excelName);
+        appointExcelExport.exportExcel(response,appointListExportVos,excelName);
     }
 
     /**

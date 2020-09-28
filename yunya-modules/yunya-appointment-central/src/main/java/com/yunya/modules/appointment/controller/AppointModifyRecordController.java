@@ -90,7 +90,7 @@ public class AppointModifyRecordController {
      * @return
      */
     @ApiOperation(value = "根据条件查询预约修改记录")
-    @GetMapping("/find")
+    @PostMapping("/find")
     public ResponseResult findApointModifyRecordByExample(@RequestBody @Validated AppointModifyRecordQuery query){
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageNum());
