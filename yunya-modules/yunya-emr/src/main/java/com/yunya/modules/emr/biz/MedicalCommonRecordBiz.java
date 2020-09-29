@@ -234,7 +234,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
         }
 
         int re = 0;
-        if(medicalCommonRecordForm.getStatus() == 3){
+        if(medicalCommonRecordForm.getStatus() == 2 || medicalCommonRecordForm.getStatus() == 3){
             medicalcopy.setStatus(1);
         }
         re = mapper.updateByPrimaryKey(medicalcopy);
