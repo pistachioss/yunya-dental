@@ -603,7 +603,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
         } else {
             //查询变更审批数据
-            List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, null, null, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
+            List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(loginUserApproveList)) {
                 //构建就诊和电子病例的信息
                 List<Integer> treatmentIds = buildChangeMapOfKeyword(loginUserApproveList, ADD.getCode(), keyword, null, approveBo);
@@ -614,7 +614,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 //根据电子病例Ids和病例提交时间查询审批数据
                 if (CollectionUtils.isNotEmpty(eventIds)) {
                     page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-                    list = mapper.listMedicalByParam(eventIds, null, null, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
+                    list = mapper.listMedicalByParam(eventIds, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
                 }
             }
         }
