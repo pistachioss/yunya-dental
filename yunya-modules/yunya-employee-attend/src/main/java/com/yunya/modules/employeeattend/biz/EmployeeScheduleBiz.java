@@ -272,9 +272,14 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
         //获取员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
-        model.setWhetherPage(false);//查询总数不分页
+        if(employeeScheduleQueryForm.getUserId()!=null){
+            model.setUserId(employeeScheduleQueryForm.getUserId());
+        }
+        //查询总数不分页
+        model.setWhetherPage(false);
         List<Integer> orgIds = new ArrayList<>();
-        orgIds.add(clinicId);//设置门诊ID
+        //设置门诊ID
+        orgIds.add(clinicId);
         model.setOrgIds(orgIds);
         model.setPostIds(postNames);
         model.setKeyWord(name);
