@@ -115,7 +115,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     PatientBaseInfoVo userExistsByMobile =
         patientBaseInfoMapper.findUserExistsByMobile(patientBaseInfoQueryForm.getMobile());
     if (userExistsByMobile != null) {
-      return ResponseUtil.fail(OperationCodeConstants.DATA_EXIST, "该手机号已存在", userExistsByMobile);
+      return ResponseUtil.fail(OperationCodeConstants.PHONE_EXIST, "该手机号已存在", userExistsByMobile);
     }
     return ResponseUtil.success();
   }
