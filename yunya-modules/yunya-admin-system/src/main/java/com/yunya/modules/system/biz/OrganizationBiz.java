@@ -5,17 +5,16 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TreeUtil;
-import com.yunya.models.system.ClinicExtInfo;
-import com.yunya.models.system.Company;
-import com.yunya.models.system.SysUserPost;
+import com.yunya.models.system.*;
 import com.yunya.modules.system.domain.form.OrganizationForm;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
-import com.yunya.modules.system.mapper.ClinicExtInfoMapper;
+import com.yunya.modules.system.mapper.ClinicAccountItemMapper;
+import com.yunya.modules.system.mapper.ClinicDepartmentRoomMapper;
 import com.yunya.modules.system.mapper.CompanyMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
@@ -30,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简单介绍:</br> 组织业务层
@@ -44,13 +43,16 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS
 @Transactional(rollbackFor = Exception.class)
 public class OrganizationBiz {
 
-  /** 注入对象 */
+  /** 组织信息 */
   @Autowired private CompanyMapper companyMapper;
-
-  @Autowired private ClinicExtInfoMapper clinicExtInfoMapper;
-
+  /** 组织扩展信息 */
+  @Autowired private ClinicExtInfoBiz clinicExtInfoBiz;
+  /** 员工可登陆组织、岗位配置 */
   @Autowired private SysUserPostMapper sysUserPostMapper;
-
+  /** 门诊支付方式配置 */
+  @Autowired private ClinicAccountItemMapper clinicAccountItemMapper;
+  /** 门诊科室配置 */
+  @Autowired private ClinicDepartmentRoomMapper clinicDepartmentRoomMapper;
   /** 医疗机构类型 */
   private final Byte MEDICAL_TYPE = BusinessConstants.MEDICAL_TYPE;
 
@@ -140,8 +142,7 @@ public class OrganizationBiz {
     Company company = companyMapper.selectByPrimaryKey(id);
     if (null == company) {
       throw new ClientServiceException(
-          "修改组织信息失败，名称为'" + resource.getName() + "'的数据不存在",
-          OperationCodeConstants.QUERY_RESULT_INVALID);
+          "修改组织信息失败，名称为'" + resource.getName() + "'的数据不存在", QUERY_RESULT_INVALID);
     }
     String companyName = resource.getName();
     // 名称有修改，校验名称是否重复
@@ -188,12 +189,12 @@ public class OrganizationBiz {
     if (companyType.equals(resource.getType()) && MEDICAL_TYPE.equals(companyType)) {
       ClinicExtInfo entity = new ClinicExtInfo();
       entity.setCompanyId(id);
-      ClinicExtInfo clinicExtInfo = clinicExtInfoMapper.selectOne(entity);
+      ClinicExtInfo clinicExtInfo = clinicExtInfoBiz.selectOne(entity);
       if (!clinicExtInfo.getAbbreviation().equals(resource.getAbbreviation())) {
         String abbreviation = resource.getAbbreviation();
         ClinicExtInfo info = new ClinicExtInfo();
         info.setAbbreviation(abbreviation);
-        int result = clinicExtInfoMapper.selectCount(info);
+        Long result = clinicExtInfoBiz.selectCount(info);
         if (result > 0) {
           throw new ClientServiceException(
               "修改组织简称'" + abbreviation + "'失败，该简称名称已存在", NAME_IS_OCCUPIED);
@@ -205,7 +206,7 @@ public class OrganizationBiz {
         String clinicNumber = resource.getClinicNumber();
         ClinicExtInfo info = new ClinicExtInfo();
         info.setClinicNumber(clinicNumber);
-        int result = clinicExtInfoMapper.selectCount(info);
+        Long result = clinicExtInfoBiz.selectCount(info);
         if (result > 0) {
           throw new ClientServiceException(
               "修改组织编号'" + clinicNumber + "'失败，该组织编号已存在", NAME_IS_OCCUPIED);
@@ -218,7 +219,7 @@ public class OrganizationBiz {
       clinicExtInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       clinicExtInfo.setUpdName(BaseContextHandler.getName());
       clinicExtInfo.setUpdTime(new Date(System.currentTimeMillis()));
-      clinicExtInfoMapper.updateByPrimaryKeySelective(clinicExtInfo);
+      clinicExtInfoBiz.updateSelectiveById(clinicExtInfo);
     }
   }
 
@@ -234,13 +235,13 @@ public class OrganizationBiz {
       // 判断该医疗机构是否被使用
       ClinicExtInfo entity = new ClinicExtInfo();
       entity.setCompanyId(id);
-      ClinicExtInfo clinicExtInfo = clinicExtInfoMapper.selectOne(entity);
+      ClinicExtInfo clinicExtInfo = clinicExtInfoBiz.selectOne(entity);
       if (StringUtils.isNotBlank(clinicExtInfo.getTel())
           || StringUtils.isNotEmpty(clinicExtInfo.getChairQuantity().toString())) {
         throw new ClientServiceException(
-            "修改组织'" + companyName + "'类型失败，该组织机构已关联其他数据", OperationCodeConstants.OBJECT_EDIT_FAIL);
+            "修改组织'" + companyName + "'类型失败，该组织机构已关联其他数据", OBJECT_EDIT_FAIL);
       }
-      clinicExtInfoMapper.delete(clinicExtInfo);
+      clinicExtInfoBiz.delete(clinicExtInfo);
     }
   }
 
@@ -253,32 +254,29 @@ public class OrganizationBiz {
     String name = resource.getName();
     String abbreviation = resource.getAbbreviation();
     if (StringUtils.isBlank(abbreviation)) {
-      throw new ClientServiceException(
-          "添加医疗机构'" + name + "'门诊简称为空", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+      throw new ClientServiceException("添加医疗机构'" + name + "'门诊简称为空", PARAM_NOT_ALLOW_EMPTY);
     }
     ClinicExtInfo clinicExtInfo = new ClinicExtInfo();
     clinicExtInfo.setAbbreviation(abbreviation);
-    int result = clinicExtInfoMapper.selectCount(clinicExtInfo);
+    Long result = clinicExtInfoBiz.selectCount(clinicExtInfo);
     if (result > 0) {
       throw new ClientServiceException("添加医疗机构'" + name + "'该门诊简称已存在", NAME_IS_OCCUPIED);
     }
 
     String clinicNumber = resource.getClinicNumber();
     if (StringUtils.isBlank(clinicNumber)) {
-      throw new ClientServiceException(
-          "添加医疗机构'" + name + "'门诊编号为空", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+      throw new ClientServiceException("添加医疗机构'" + name + "'门诊编号为空", PARAM_NOT_ALLOW_EMPTY);
     }
     clinicExtInfo = new ClinicExtInfo();
     clinicExtInfo.setClinicNumber(clinicNumber);
-    result = clinicExtInfoMapper.selectCount(clinicExtInfo);
+    result = clinicExtInfoBiz.selectCount(clinicExtInfo);
     if (result > 0) {
       throw new ClientServiceException("添加医疗机构'" + name + "'该门诊编号已存在", NAME_IS_OCCUPIED);
     }
 
     Byte[] brandIds = resource.getBrandIds();
-    if (brandIds.length <= 0) {
-      throw new ClientServiceException(
-          "添加医疗机构'" + name + "'门诊品牌为空", OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+    if (StringHelper.isEmpty(brandIds)) {
+      throw new ClientServiceException("添加医疗机构'" + name + "'门诊品牌为空", PARAM_NOT_ALLOW_EMPTY);
     }
   }
 
@@ -296,7 +294,7 @@ public class OrganizationBiz {
       ClinicExtInfo clinicExtInfo = new ClinicExtInfo();
       String clinicNumber = resource.getClinicNumber();
       clinicExtInfo.setClinicNumber(clinicNumber);
-      ClinicExtInfo extInfo = clinicExtInfoMapper.selectOne(clinicExtInfo);
+      ClinicExtInfo extInfo = clinicExtInfoBiz.selectOne(clinicExtInfo);
       if (null != extInfo) {
         throw new ClientServiceException("添加医疗机构失败，门诊编号已经存在！", NAME_IS_OCCUPIED);
       }
@@ -304,10 +302,12 @@ public class OrganizationBiz {
       clinicExtInfo.setClinicNumber(clinicNumber);
       String brands = StringUtils.join(resource.getBrandIds(), ",");
       clinicExtInfo.setBrandIds(brands);
-      clinicExtInfo.setAbbreviation(resource.getAbbreviation());
+      String abbreviation = resource.getAbbreviation();
+
+      clinicExtInfo.setAbbreviation(abbreviation);
       clinicExtInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       clinicExtInfo.setCrtName(BaseContextHandler.getName());
-      clinicExtInfoMapper.insertSelective(clinicExtInfo);
+      clinicExtInfoBiz.insertSelective(clinicExtInfo);
     }
   }
 
@@ -319,15 +319,27 @@ public class OrganizationBiz {
   public void deleteOrganization(Integer organizationId) {
     Company company = new Company();
     company.setParentId(organizationId);
-    List<Company> companies = companyMapper.select(company);
+    int companyCount = companyMapper.selectCount(company);
     SysUserPost sysUserPost = new SysUserPost();
     sysUserPost.setCompanyId(organizationId);
-    List<SysUserPost> userPosts = sysUserPostMapper.select(sysUserPost);
-    if (companies.size() > 0 || userPosts.size() > 0) {
+    int userPostCount = sysUserPostMapper.selectCount(sysUserPost);
+    ClinicAccountItem clinicAccountItem = new ClinicAccountItem();
+    clinicAccountItem.setCompanyId(organizationId);
+    int clinicAccountItemCount = clinicAccountItemMapper.selectCount(clinicAccountItem);
+    ClinicDepartmentRoom clinicDeptRoom = new ClinicDepartmentRoom();
+    clinicDeptRoom.setCompanyId(organizationId);
+    int clinicDeptRoomCount = clinicDepartmentRoomMapper.selectCount(clinicDeptRoom);
+    if (companyCount > 0
+        || userPostCount > 0
+        || clinicAccountItemCount > 0
+        || clinicDeptRoomCount > 0) {
       throw new ClientServiceException(
-          "删除ID为'" + organizationId + "'的组织失败，该组织已被使用", OperationCodeConstants.DELETE_NOT_ALLOW);
+          "删除ID为'" + organizationId + "'的组织失败，该组织已被使用", DELETE_NOT_ALLOW);
     }
     companyMapper.deleteByPrimaryKey(organizationId);
+    ClinicExtInfo extInfo = new ClinicExtInfo();
+    extInfo.setCompanyId(organizationId);
+    clinicExtInfoBiz.delete(extInfo);
   }
 
   /**
@@ -343,14 +355,21 @@ public class OrganizationBiz {
     return findList(form).getList();
   }
 
+  /**
+   * 更新组织信用代码
+   *
+   * @param companyId 组织ID
+   * @param creditCode 信用代码
+   */
   public void updateCompanyCredit(Integer companyId, String creditCode) {
     Company company = companyMapper.selectByPrimaryKey(companyId);
     if (null == company) {
       throw new ClientServiceException(
-          String.format("修改医疗机构信息，门诊ID:%d的数据不存在", companyId),
-          OperationCodeConstants.DATA_NOT_EXIST);
+          String.format("修改医疗机构信息，门诊ID:%d的数据不存在", companyId), DATA_NOT_EXIST);
     }
     company.setCreditCode(creditCode);
+    company.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+    company.setUpdName(BaseContextHandler.getName());
     company.setUpdTime(new Date());
     companyMapper.updateByPrimaryKeySelective(company);
   }
