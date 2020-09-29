@@ -32,6 +32,9 @@ public enum AppointmentError {
     /** 18-医生在当前日期下没有排班 */
     DENTIST_NOT_SCHEDULE(18,"医生在当前日期下没有排班"),
 
+    /** 20-公司信息不存在，请正确配置公司信息后再试 */
+    ORG_INFO_NOT_EXIST(20,"公司信息不存在，请正确配置公司信息后再试"),
+
     /** 30-员工排班服务异常 */
     SCHEDULE_SERVER_ERR(30,"员工排班服务异常"),
     ;

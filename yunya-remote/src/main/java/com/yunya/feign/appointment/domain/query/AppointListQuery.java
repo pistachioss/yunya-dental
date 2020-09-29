@@ -56,5 +56,9 @@ public class AppointListQuery implements Serializable {
     @ApiModelProperty(value = "预约医生姓名")
     private String dentistName;
 
+    /** 组织ID */
+    @ApiModelProperty(value = "组织ID")
+    private Integer orgId;
+
 
 }
