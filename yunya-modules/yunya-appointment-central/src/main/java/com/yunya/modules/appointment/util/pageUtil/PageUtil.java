@@ -4,6 +4,7 @@ import com.yunya.modules.appointment.util.pageUtil.model.AssistantPageModel;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -108,7 +109,10 @@ public class PageUtil<T> {
                         assistantList.add(assistantVo);
                     }
                 }
-                appointmentDimensionVo.setAppointmentAssistants(assistantList);
+                // 对助手的预约患者数排序(降序)
+                List<AppointmentDimensionVo> orderList = assistantList.stream().sorted(
+                        Comparator.comparing(AppointmentDimensionVo::getPatientNum).reversed()).collect(Collectors.toList());
+                appointmentDimensionVo.setAppointmentAssistants(orderList);
                 // 将助手加入分解结果列表中
                 result.add(appointmentDimensionVo);
             }
