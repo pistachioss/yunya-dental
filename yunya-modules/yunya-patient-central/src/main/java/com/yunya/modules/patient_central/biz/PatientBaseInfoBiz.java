@@ -128,36 +128,40 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public PatientBaseInfoVo addPatient(PatientBaseInfoModel patientBaseInfoModel) {
     PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
     BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
-
-    PatientOrigin patientOrigin =
-        this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
-    if (patientOrigin != null) {
-      patientBaseInfo.setOriginType(patientOrigin.getOriginType());
+    //患者id不为空表明,是修改操作
+    if (StringHelper.isNotNull(patientBaseInfoModel.getId())){
+      patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
+      return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
+      PatientOrigin patientOrigin =
+              this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+      if (patientOrigin != null) {
+        patientBaseInfo.setOriginType(patientOrigin.getOriginType());
+      }
 
-    patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-    patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-    patientBaseInfo.setCrtName(BaseContextHandler.getName());
-    patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    mapper.insertSelective(patientBaseInfo);
+      patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+      patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientBaseInfo.setCrtName(BaseContextHandler.getName());
+      patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      mapper.insertSelective(patientBaseInfo);
 
-    // 创建硬件任务 创建人员
-    JSONObject object = new JSONObject();
-    object.put("taskNo", "personCreate");
-    object.put("interfaceName", "person/create");
-    object.put("result", true);
-    PersonModel person = new PersonModel();
-    person.setName(patientBaseInfo.getName());
-    object.put("person", person);
-    redisUtils.set("patientId",patientBaseInfo.getId());
+      /*// 创建硬件任务 创建人员
+      JSONObject object = new JSONObject();
+      object.put("taskNo", "personCreate");
+      object.put("interfaceName", "person/create");
+      object.put("result", true);
+      PersonModel person = new PersonModel();
+      person.setName(patientBaseInfo.getName());
+      object.put("person", person);
+      redisUtils.set("patientId",patientBaseInfo.getId());
 
-    if ( StringHelper.isNotNull(informationCallbackBiz.getSN()) ){
-      redisUtils.set(informationCallbackBiz.getSN(), object);
-    }
+      if ( StringHelper.isNotNull(informationCallbackBiz.getSN()) ){
+        redisUtils.set(informationCallbackBiz.getSN(), object);
+      }*/
 
-    // 添加患者时,创建预付款账户
-    this.addPatientPrepaymentsInfo(patientBaseInfo);
-    return this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+      // 添加患者时,创建预付款账户
+      this.addPatientPrepaymentsInfo(patientBaseInfo);
+      return this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
   }
 
   /**
