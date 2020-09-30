@@ -129,7 +129,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     }
 
     List<WaitingPatientInfoVO> registeredList = mapper.selectRegisteredList((byte) 0, queryForm);
-    if (registeredList.size() > 0) {
+    if (StringHelper.isNotEmpty(registeredList)) {
       registeredList.forEach(
           vo -> {
             // 设置候诊患者个人信息
