@@ -1,11 +1,13 @@
 package com.yunya.modules.appointment.mapper;
 
+import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
 import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
 import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Date;
 import java.util.List;
 
 public interface AppointmentSplitMapper extends Mapper<AppointmentSplit> {

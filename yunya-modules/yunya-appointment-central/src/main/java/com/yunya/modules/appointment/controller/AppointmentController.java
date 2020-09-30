@@ -119,9 +119,8 @@ public class AppointmentController {
   @CurrentUser
   public ResponseResult updateAppointStatus(
       @PathVariable("id") Integer id, @RequestBody @Validated AppointStatusForm form) {
-    Appointment appointment =
-        appointmentBiz.updateAppointStatus(id, form.getAppointStatus(), form.getRemarks());
-    return ResponseUtil.success(appointment);
+    ResponseResult responseResult = appointmentBiz.updateAppointStatus(id, form.getAppointStatus(), form.getRemarks());
+    return responseResult;
   }
 
   /**
@@ -150,8 +149,8 @@ public class AppointmentController {
   @PutMapping("/confirm/{id}")
   @CurrentUser
   public ResponseResult appointConfirm(@PathVariable("id") Integer id) {
-    Integer result = appointmentBiz.confirmAppointment(id);
-    return ResponseUtil.success();
+    ResponseResult responseResult = appointmentBiz.confirmAppointment(id);
+    return responseResult;
   }
 
   /**
