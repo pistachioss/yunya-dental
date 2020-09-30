@@ -1,6 +1,9 @@
 package com.yunya.modules.treatment.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
+import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
+import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,5 +36,17 @@ public class RegisteredControllerTest {
     model.setDeptRoomId(3);
     ResponseResult result = registeredController.add(model);
     System.out.println(result);
+  }
+
+  @Test
+  public void findList() {
+    RegisteredQueryForm form = new RegisteredQueryForm();
+    form.setCurrentDate("2020-09-29");
+    form.setDentistId(526);
+    form.setOrgId(35);
+    form.setInservice(true);
+    form.setWhetherPage(false);
+    ResponseResult<PageInfo<WaitingPatientInfoVO>> list = registeredController.findList(form);
+    System.out.println(list);
   }
 }

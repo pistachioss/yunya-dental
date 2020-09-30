@@ -1,23 +1,13 @@
 package com.yunya.modules.system.rpc;
 
 import com.yunya.feign.system.form.*;
-import com.yunya.feign.system.vo.FrontUserInfoVO;
-import com.yunya.feign.system.vo.OrganizationInfo;
-import com.yunya.feign.system.vo.SysUserInfoDetail;
-import com.yunya.feign.system.vo.UserInfo;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.feign.system.vo.*;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
 import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
-import com.yunya.modules.system.domain.query.EquipmentInfoQueryForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
-import com.yunya.modules.system.mapper.EquipmentInfoMapper;
 import com.yunya.modules.system.rpc.service.PermissionService;
-import com.yunya.modules.system.vo.ClinicAccountItemVO;
-import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;

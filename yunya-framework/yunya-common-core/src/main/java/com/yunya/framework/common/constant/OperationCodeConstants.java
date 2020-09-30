@@ -42,4 +42,6 @@ public class OperationCodeConstants {
   public static final Integer BALANCE_INSUFFICIENT = 30016;
   /** 查询结果为空 */
   public static final Integer RETURN_MOBILE_ISNULL = 30017;
+  /** 手机号已存在 */
+  public static final Integer PHONE_EXIST = 30018;
 }
