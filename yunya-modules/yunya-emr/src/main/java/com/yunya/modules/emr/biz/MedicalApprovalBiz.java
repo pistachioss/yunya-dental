@@ -606,13 +606,13 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(loginUserApproveList)) {
                 //构建就诊和电子病例的信息
-                List<Integer> treatmentIds = buildChangeMapOfKeyword(loginUserApproveList, ADD.getCode(), keyword, loginUserId, approveBo);
+                List<Integer> treatmentIds = buildChangeMapOfKeyword(loginUserApproveList, ADD.getCode(), keyword, null, approveBo);
                 List<Integer> medicalIds = buildChangeMapOfKeyword(loginUserApproveList, UPDATE.getCode(), keyword, loginUserId, approveBo);
                 List<Integer> eventIds = Lists.newArrayListWithCapacity(treatmentIds.size() + medicalIds.size());
                 eventIds.addAll(treatmentIds);
                 eventIds.addAll(medicalIds);
                 //根据电子病例Ids和病例提交时间查询审批数据
-                if (CollectionUtils.isNotEmpty(medicalIds)) {
+                if (CollectionUtils.isNotEmpty(eventIds)) {
                     page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
                     list = mapper.listMedicalByParam(eventIds, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
                 }
@@ -973,8 +973,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
     private List<MedicalCommonRecord> findByPatientIds(List<Integer> patientIds, Integer loginUserId) {
         Example example = new Example(MedicalCommonRecord.class);
-        example.createCriteria().andIn("patientId", patientIds)
-                .andEqualTo("crtId", loginUserId);
+        example.createCriteria().andIn("patientId", patientIds);
         return medicalMapper.selectByExample(example);
     }
 
@@ -1169,7 +1168,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     //筛选过滤患者集合对应的就诊映射
                     Map<Integer, MedicalTreatmentBo> treatmentFilterMap = treatmentMap.values().stream().filter(obj -> patientMap.get(obj.getPatientId()) != null)
                             .collect(toMap(MedicalTreatmentBo::getTreatmentId, Function.identity()));
-                    pageBo.setTrePatientInfoMap(patientMap);
+                    //构建患者映射 <treatmentId, PatientBaseInfoVo>
+                    Map<Integer, PatientBaseInfoVo> trePatientMap = Maps.newHashMap();
+                    treatmentMap.forEach((k,v) -> {
+                        trePatientMap.put(k, patientMap.get(v.getPatientId()));
+                    });
+                    pageBo.setTrePatientInfoMap(trePatientMap);
                     pageBo.setTreTreatmentBoMap(treatmentFilterMap);
                     eventIds.addAll(treatmentFilterMap.keySet());
                 }

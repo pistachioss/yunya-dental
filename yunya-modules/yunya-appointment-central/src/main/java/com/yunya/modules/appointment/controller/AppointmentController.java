@@ -135,7 +135,7 @@ public class AppointmentController {
   @DeleteMapping("/delete/appoint/{id}")
   @CurrentUser
   public ResponseResult AppointmentCancel(
-      @PathVariable("id") Integer id, @RequestBody @Validated AppointmentCancelCauseForm form) {
+      @PathVariable("id") Integer id, @Validated AppointmentCancelCauseForm form) {
     ResponseResult responseResult = appointmentBiz.appointmentCancel(id, form);
     return responseResult;
   }
