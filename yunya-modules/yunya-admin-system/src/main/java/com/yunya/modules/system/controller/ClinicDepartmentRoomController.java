@@ -43,6 +43,7 @@ public class ClinicDepartmentRoomController {
    * @param deptRoomId 科室模板ID
    * @return
    */
+  @CurrentUser
   @ApiOperation("一键添加门诊科室")
   @GetMapping("/clinic/batch/{deptRoomId}")
   public ResponseResult oneClickAdd(@PathVariable(value = "deptRoomId") Integer deptRoomId) {
