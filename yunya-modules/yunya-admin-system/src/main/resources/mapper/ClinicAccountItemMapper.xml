@@ -17,28 +17,42 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
     <!-- 根据ID查询门诊入账方式 -->
-    <select id="selectById" resultType="com.yunya.modules.system.vo.ClinicAccountItemVO">
-      select
+    <select id="selectById" resultType="com.yunya.feign.system.vo.ClinicAccountItemVO">
+        SELECT
         cai.id,
-        cai.company_id as orgId,
-        ifnull( cei.abbreviation, '公司' ) as orgName,
-        cai.account_item_id as accountItemId,
-        ai.name as accountItemName,
+        ifnull(cai.company_id, cei.company_id) AS orgId,
+        ifnull( cei.abbreviation, '公司' ) AS orgName,
+        ai.accountTypeId,
+        ai.accountTypeName,
+        ifnull(cai.account_item_id, ai.accountItemId) AS accountItemId,
+        ai.accountItemName,
         ai.type,
-        cai.inservice
-      from clinic_account_item cai
-      left join account_item ai on cai.account_item_id = ai.id
-      left join clinic_ext_info cei on cai.company_id = cei.company_id
-      where cai.id = #{id}
+        ifnull(cai.inservice, 1) as inservice
+        FROM
+        clinic_account_item cai
+        LEFT JOIN (
+        SELECT
+        ai.id AS accountItemId,
+        ai.`name` AS accountItemName,
+        ai.type,
+        a.id AS accountTypeId,
+        a.`name` AS accountTypeName
+        FROM
+        account_item ai
+        LEFT JOIN account_type a ON ai.account_type_id = a.id
+        ) ai ON cai.account_item_id = ai.accountItemId
+        LEFT JOIN clinic_ext_info cei ON cai.company_id = cei.company_id
+        WHERE cai.id = #{id}
     </select>
     <!-- 根据条件查询组织入账方式列表 -->
-    <select id="selectClinicAccountItemList" resultType="com.yunya.modules.system.vo.ClinicAccountItemVO">
+    <select id="selectClinicAccountItemList" resultType="com.yunya.feign.system.vo.ClinicAccountItemVO">
         SELECT
         cai.id,
         cai.orgId,
         cai.orgName,
         cai.accountItemId,
         cai.accountTypeId,
+        cai.accountTypeName,
         cai.accountItemName,
         cai.type,
         cai.inservice
@@ -46,16 +60,27 @@
         (
         SELECT
         cai.id,
-        cai.company_id AS orgId,
+        ifnull(cai.company_id, cei.company_id) AS orgId,
         ifnull( cei.abbreviation, '公司' ) AS orgName,
-        cai.account_item_id AS accountItemId,
-        ai.account_type_id AS accountTypeId,
-        ai.`name` AS accountItemName,
+        ai.accountTypeId,
+        ai.accountTypeName,
+        ifnull(cai.account_item_id, ai.accountItemId) AS accountItemId,
+        ai.accountItemName,
         ai.type,
-        cai.inservice
+        ifnull(cai.inservice, 1) as inservice
         FROM
         clinic_account_item cai
-        LEFT JOIN account_item ai ON cai.account_item_id = ai.id
+        LEFT JOIN (
+        SELECT
+        ai.id AS accountItemId,
+        ai.`name` AS accountItemName,
+        ai.type,
+        a.id AS accountTypeId,
+        a.`name` AS accountTypeName
+        FROM
+        account_item ai
+        LEFT JOIN account_type a ON ai.account_type_id = a.id
+        ) ai ON cai.account_item_id = ai.accountItemId
         LEFT JOIN clinic_ext_info cei ON cai.company_id = cei.company_id
         ) cai
         <where>
@@ -75,5 +100,49 @@
                 and cai.inservice = #{queryForm.inservice}
             </if>
         </where>
+    </select>
+    <!-- 根据条件查询支付方式信息在门诊的状态 -->
+    <select id="selectClinicAccountItem" resultType="com.yunya.feign.system.vo.ClinicAccountItemVO">
+        SELECT
+            a.id AS accountTypeId,
+            a.`name` AS accountTypeName,
+            ai.id AS accountItemId,
+            ai.`name` AS accountItemName,
+            ai.type,
+            cai.id,
+            IFNULL( cai.inservice, 1 ) as inservice
+        FROM
+            account_item ai
+            LEFT JOIN account_type a ON ai.account_type_id = a.id
+            LEFT JOIN clinic_account_item cai ON cai.company_id = #{orgId}
+            AND ai.id = cai.account_item_id
+        WHERE
+            ai.id = #{accountItemId}
+    </select>
+    <!-- 根据条件查询门诊支付方式 -->
+    <select id="selectAccountItemVO" resultType="com.yunya.feign.system.vo.AccountItemVO">
+        SELECT
+            cai.id,
+            ai.accountTypeId,
+            ai.accountTypeName,
+            IFNULL(cai.account_item_id, ai.accountItemId) AS accountItemId,
+            ai.accountItemName,
+            ai.type,
+            IFNULL( cai.inservice, 1 ) AS inservice
+        FROM
+            clinic_account_item cai
+            LEFT JOIN (
+            SELECT
+                ai.id AS accountItemId,
+                ai.`name` AS accountItemName,
+                ai.type,
+                a.id AS accountTypeId,
+                a.`name` AS accountTypeName
+            FROM
+                account_item ai
+                LEFT JOIN account_type a ON ai.account_type_id = a.id
+            ) ai ON cai.account_item_id = ai.accountItemId
+        WHERE  cai.inservice = #{inservice} and
+            cai.account_item_id = #{accountItemId} and cai.company_id = #{orgId}
     </select>
 </mapper>

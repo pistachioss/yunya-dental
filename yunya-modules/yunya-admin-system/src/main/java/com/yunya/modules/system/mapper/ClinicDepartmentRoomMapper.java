@@ -1,8 +1,9 @@
 package com.yunya.modules.system.mapper;
 
+import com.yunya.feign.system.vo.ClinicDepartmentRoomVO;
+import com.yunya.feign.system.vo.DeptRoomVO;
 import com.yunya.models.system.ClinicDepartmentRoom;
 import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
-import com.yunya.modules.system.vo.ClinicDepartmentRoomVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -26,4 +27,27 @@ public interface ClinicDepartmentRoomMapper extends Mapper<ClinicDepartmentRoom>
    * @return
    */
   ClinicDepartmentRoomVO selectByClinicDeptRoomId(@Param("id") Integer id);
+
+  /**
+   * 查询某个科室在门诊的配置列表
+   *
+   * @param orgId 诊所ID
+   * @param deptRoomId 科室ID
+   * @return
+   */
+  ClinicDepartmentRoomVO selectClinicDeptRoom(
+      @Param("orgId") Integer orgId, @Param("deptRoomId") Integer deptRoomId);
+
+  /**
+   * 查询门诊可用科室
+   *
+   * @param orgId 组织ID
+   * @param departmentRoomId 科室ID
+   * @param inservice 是否启用
+   * @return
+   */
+  DeptRoomVO selectDeptRoomVO(
+      @Param("orgId") Integer orgId,
+      @Param("departmentRoomId") Integer departmentRoomId,
+      @Param("inservice") boolean inservice);
 }

@@ -1,14 +1,18 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.form.ClinicAccountItemConfigureQueryForm;
+import com.yunya.feign.system.vo.ClinicAccountItemListVO;
+import com.yunya.feign.system.vo.ClinicAccountItemVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicAccountItemBiz;
 import com.yunya.modules.system.domain.model.ClinicAccountItemModel;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
-import com.yunya.modules.system.vo.ClinicAccountItemVO;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -39,10 +43,25 @@ public class ClinicAccountItemController {
    * @param id 门诊入账方式ID
    * @return
    */
-  @ApiOperation("根据ID查询门诊入账方式")
+  @ApiOperation("根据门诊入账方式ID查询门诊入账方式")
   @GetMapping("/clinic/one/{id}")
-  public ResponseResult findById(@PathVariable("id") Integer id) {
+  public ResponseResult<ClinicAccountItemVO> findById(@PathVariable(value = "id") Integer id) {
     ClinicAccountItemVO resultData = clinicAccountItemBiz.findById(id);
+    return ResponseUtil.success(resultData);
+  }
+
+  /**
+   * 根据门诊ID查询门诊可用的支付方式列表
+   *
+   * @param orgId 诊所ID
+   * @return
+   */
+  @ApiOperation("根据门诊ID查询门诊可用的支付方式列表")
+  @ApiImplicitParams({@ApiImplicitParam(name = "orgId", value = "组织ID", required = true)})
+  @GetMapping(value = "/clinic/list/{orgId}", name = "根据门诊ID查询门诊可用的支付方式列表")
+  public ResponseResult<ClinicAccountItemListVO> clinicAccountItemList(
+      @PathVariable(value = "orgId") Integer orgId) {
+    ClinicAccountItemListVO resultData = clinicAccountItemBiz.findClinicAccountItemList(orgId);
     return ResponseUtil.success(resultData);
   }
 
@@ -54,8 +73,24 @@ public class ClinicAccountItemController {
    */
   @ApiOperation("根据条件查询门诊入账方式列表(可分页)")
   @PostMapping("/clinic/list")
-  public ResponseResult findList(@RequestBody ClinicAccountItemQueryForm queryForm) {
+  public ResponseResult<PageInfo<ClinicAccountItemVO>> findList(
+      @RequestBody ClinicAccountItemQueryForm queryForm) {
     PageInfo<ClinicAccountItemVO> resultList = clinicAccountItemBiz.findList(queryForm);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件查询门诊支付方式配置列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件查询门诊支付方式配置列表")
+  @ApiImplicitParams({@ApiImplicitParam(name = "queryForm", value = "查询条件", required = true)})
+  @PostMapping(value = "/clinic/configure", name = "查询条件")
+  public ResponseResult<PageInfo<ClinicAccountItemVO>> configureClinicAccountItem(
+      @RequestBody ClinicAccountItemConfigureQueryForm queryForm) {
+    PageInfo<ClinicAccountItemVO> resultList = clinicAccountItemBiz.configure(queryForm);
     return ResponseUtil.success(resultList);
   }
 
@@ -98,6 +133,26 @@ public class ClinicAccountItemController {
   @GetMapping("/clinic/{id}")
   public ResponseResult switchClinicAccountItem(@PathVariable("id") Integer id) {
     clinicAccountItemBiz.switchClinicAccountItem(id);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 设置支付方式在门诊是否可用
+   *
+   * @param orgId 组织ID
+   * @param accountItemId 支付方式ID
+   * @return
+   */
+  @ApiOperation("设置支付方式在门诊是否可用")
+  @ApiImplicitParams({
+    @ApiImplicitParam(name = "orgId", value = "组织ID", required = true),
+    @ApiImplicitParam(name = "accountItemId", value = "支付方式ID", required = true)
+  })
+  @GetMapping(value = "/switch/item/{orgId}/{accountItemId}", name = "设置支付方式在门诊是否可用")
+  public ResponseResult switchClinicAccountItem(
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "accountItemId") Integer accountItemId) {
+    clinicAccountItemBiz.switchClinicAccountItem(orgId, accountItemId);
     return ResponseUtil.success();
   }
 }

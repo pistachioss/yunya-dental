@@ -1,8 +1,9 @@
 package com.yunya.modules.system.mapper;
 
+import com.yunya.feign.system.vo.AccountItemVO;
 import com.yunya.models.system.ClinicAccountItem;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
-import com.yunya.modules.system.vo.ClinicAccountItemVO;
+import com.yunya.feign.system.vo.ClinicAccountItemVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -26,4 +27,27 @@ public interface ClinicAccountItemMapper extends Mapper<ClinicAccountItem> {
    */
   List<ClinicAccountItemVO> selectClinicAccountItemList(
       @Param("queryForm") ClinicAccountItemQueryForm queryForm);
+
+  /**
+   * 根据条件查询门诊支付方式信息
+   *
+   * @param orgId 组织ID
+   * @param accountItemId 支付方式ID
+   * @return
+   */
+  ClinicAccountItemVO selectClinicAccountItem(
+      @Param("orgId") Integer orgId, @Param("accountItemId") Integer accountItemId);
+
+  /**
+   * 根据条件查询门诊支付方式
+   *
+   * @param orgId 组织ID
+   * @param accountItemId 支付方式ID
+   * @param inservice 是否启用
+   * @return
+   */
+  AccountItemVO selectAccountItemVO(
+      @Param("orgId") Integer orgId,
+      @Param("accountItemId") Integer accountItemId,
+      @Param("inservice") boolean inservice);
 }

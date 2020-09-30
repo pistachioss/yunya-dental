@@ -22,11 +22,9 @@ import java.io.Serializable;
 public class ClinicAccountItemQueryForm implements Serializable {
   @ApiModelProperty(value = "是否分页,默认分页")
   private Boolean whetherPage = true;
-
   @ApiModelProperty("页码，默认第1页")
   @Min(message = "最小值", value = 1)
   private Integer pageNum = 1;
-
   @ApiModelProperty("每页显示数量，默认显示10条")
   @Min(message = "最小值", value = 1)
   private Integer pageSize = 10;
