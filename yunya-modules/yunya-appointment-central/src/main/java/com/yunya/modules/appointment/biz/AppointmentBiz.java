@@ -36,6 +36,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
+import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
@@ -53,6 +54,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -126,7 +128,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 插入预约
             Integer index = mapper.insertAppointment(appointmentEntity);
             if (index <= 0){
-                throw new ClientServiceException(AppointmentError.APPOINTMENT_FAIL.getMessage(),AppointmentError.APPOINTMENT_FAIL.getCode());
+                return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
             }
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             // 添加预约时长分解
@@ -138,7 +140,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 model.setAppointDuration(appointmentEntity.getAppointDuration());
                 Integer splitResult = appointmentSplitBiz.insertAppointSplit(model);
                 if (splitResult == null || splitResult <= 0){
-                    throw new ClientServiceException(AppointmentError.APPOINTMENT_SPLIT_FAIL.getMessage(),AppointmentError.APPOINTMENT_SPLIT_FAIL.getCode());
+                    return ResponseUtil.fail(AppointmentError.APPOINTMENT_SPLIT_FAIL.getCode(), AppointmentError.APPOINTMENT_SPLIT_FAIL.getMessage(),null);
                 }
             }
             // 插入预约操作记录(添加)
@@ -147,14 +149,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             operationModel.setOperateType((byte) 0);
             Integer appointmentOperateRecord = appointOperateRecordBiz.insertAppointmentOperateRecord(operationModel);
             if (appointmentOperateRecord <= 0 ){
-                throw new ClientServiceException(AppointmentError.OPERATION_RECORD_FAIL.getMessage(),AppointmentError.OPERATION_RECORD_FAIL.getCode());
+                return ResponseUtil.fail(AppointmentError.OPERATION_RECORD_FAIL.getCode(),AppointmentError.OPERATION_RECORD_FAIL.getMessage(),null);
             }
             // 如果添加预约成功，则返回预约成功信息
             return ResponseUtil.success();
         }
 
         // 如果预约有冲突返回冲突的预约
-        return ResponseUtil.success(appointConflictResult);
+        return appointConflictResult;
     }
 
     /**
@@ -178,7 +180,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 splitModel.setAppointDate(form.getAppointDate());
                 Integer splitResult = appointmentSplitBiz.insertAppointSplit(splitModel);
                 if (splitResult == null || splitResult <= 0){
-                    throw new ClientServiceException( AppointmentError.APPOINTMENT_SPLIT_FAIL.getMessage(),AppointmentError.APPOINTMENT_SPLIT_FAIL.getCode());
+                    return ResponseUtil.fail(AppointmentError.APPOINTMENT_SPLIT_FAIL.getCode(),AppointmentError.APPOINTMENT_SPLIT_FAIL.getMessage(),null);
                 }
             }
             // 判断预约是否添加成功
@@ -202,20 +204,20 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param appointState 预约状态 0-预约未到，1-履约，2，取消预约，3-失约
      * @return Appointment
      */
-    public Appointment updateAppointStatus(Integer id, Byte appointState, String remarks) {
+    public ResponseResult updateAppointStatus(Integer id, Byte appointState, String remarks) {
         Appointment appointment = mapper.selectByPrimaryKey(id);
         if (appointment == null){
-            throw new ClientServiceException("预约不存在！",OperationCodeConstants.DATA_NOT_EXIST);
+            return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
         }
 
         // 预约未到以外的情况不能编辑预约
         if (appointment.getAppointStatus() != 0){
-            throw new ClientServiceException("【预约未到】以外的情况不允许编辑预约！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            return ResponseUtil.fail(AppointmentError.APPOINT_NOT_ALLOW_EDIT_1.getCode(),AppointmentError.APPOINT_NOT_ALLOW_EDIT_1.getMessage(),null);
         }
 
         // inservice 无效时预约不可以编辑
         if (!appointment.getInservice()){
-            throw new ClientServiceException("无效预约，不能进行编辑！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            return ResponseUtil.fail(AppointmentError.APPOINT_INVALID_NOT_ALLOW_EDIT.getCode(),AppointmentError.APPOINT_INVALID_NOT_ALLOW_EDIT.getMessage(),null);
         }
 
         appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -259,7 +261,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             model.setRemarks(remarks);
             appointOperateRecordBiz.insertAppointmentOperateRecord(model);
         }
-        return appointment;
+        return ResponseUtil.success(appointment);
     }
 
 
@@ -271,8 +273,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     public ResponseResult appointmentCancel(Integer id, AppointmentCancelCauseForm form){
         Appointment appointment = mapper.selectByPrimaryKey(id);
+        // 预约不存在的情况
         if (appointment == null){
-            throw new ClientServiceException("预约数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
+            return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
         }
         appointment.setInservice(false);
         appointment.setRemarks(form.getCause());
@@ -281,7 +284,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointment.setUpdTime(new Date(System.currentTimeMillis()));
         int result = mapper.updateByPrimaryKeySelective(appointment);
         if (result <= 0){
-            throw new ClientServiceException("取消预约失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            return ResponseUtil.fail(AppointmentError.APPOINT_CANCEL_FAIL.getCode(),AppointmentError.APPOINT_CANCEL_FAIL.getMessage(),null);
         }
 
         AppointOperationModel record = new AppointOperationModel();
@@ -318,21 +321,21 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointment.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
             Appointment beforeModifyAppoints = mapper.selectByPrimaryKey(appointment.getId());
             if (beforeModifyAppoints == null){
-                throw new ClientServiceException("已经存在相同的预约！",OperationCodeConstants.SAME_DATA_EXIST);
+                return ResponseUtil.fail(AppointmentError.APPOINT_EXIST.getCode(),AppointmentError.APPOINT_EXIST.getMessage(),null);
             }
             // 预约未到以外的情况不能编辑预约
             if (appointment.getAppointStatus() != 0){
-                throw new ClientServiceException("【预约未到】以外的情况不允许编辑预约！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                return ResponseUtil.fail(AppointmentError.APPOINT_NOT_ALLOW_EDIT_1.getCode(),AppointmentError.APPOINT_NOT_ALLOW_EDIT_1.getMessage(),null);
             }
             // inservice 无效时预约不可以编辑
             if (!appointment.getInservice()){
-                throw new ClientServiceException("无效预约，不能进行编辑！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                return ResponseUtil.fail(AppointmentError.APPOINT_INVALID_NOT_ALLOW_EDIT.getCode(),AppointmentError.APPOINT_INVALID_NOT_ALLOW_EDIT.getMessage(),null);
             }
             // 生成修改预约操作记录
             appointOperateRecordBiz.saveAppointOperationRecord(beforeModifyAppoints,form);
             int num = mapper.updateByPrimaryKeySelective(appointment);
             if (num <= 0){
-                throw new ClientServiceException("编辑预约失败！", OperationCodeConstants.OBJECT_EDIT_FAIL);
+                return ResponseUtil.fail(AppointmentError.CREATE_OPERATION_RECORD_FAIL.getCode(),AppointmentError.CREATE_OPERATION_RECORD_FAIL.getMessage(),null);
             }
             // 修改时长分解
             List<AppointmentSplitUpdateBaseInfo> splitList = form.getSplitList();
@@ -344,7 +347,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 splitForm.setAppointmentId(appointment.getId());
                 Integer splitResult = appointmentSplitBiz.updateAppointSplit(splitForm);
                 if (splitResult == null || splitResult <= 0){
-                    throw new ClientServiceException("时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                    return ResponseUtil.fail(AppointmentError.APPOINTMENT_SPLIT_FAIL.getCode(),AppointmentError.APPOINTMENT_SPLIT_FAIL.getMessage(),null);
                 }
             }
             return ResponseUtil.success();
@@ -367,12 +370,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 预约未到以外的情况不能编辑预约
         if (appointEntity.getAppointStatus() != 0){
-            throw new ClientServiceException("【预约未到】以外的情况不允许编辑预约！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            return ResponseUtil.fail(AppointmentError.APPOINT_NOT_ALLOW_EDIT_1.getCode(),AppointmentError.APPOINT_NOT_ALLOW_EDIT_1.getMessage(),null);
         }
 
         // inservice 无效时预约不可以编辑
         if (!appointEntity.getInservice()){
-            throw new ClientServiceException("无效预约，不能进行编辑！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            return ResponseUtil.fail(AppointmentError.APPOINT_INVALID_NOT_ALLOW_EDIT.getCode(),AppointmentError.APPOINT_INVALID_NOT_ALLOW_EDIT.getMessage(),null);
         }
 
         // 查询修改前的预约信息，方便做操作记录使用
@@ -380,7 +383,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         int num = mapper.updateByPrimaryKeySelective(appointEntity);
         if (num <= 0){
-            throw new ClientServiceException("编辑预约失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+            return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
 
         // 保存预约更新被修改的日期、医生
@@ -397,7 +400,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             splitForm.setAppointmentId(appointmentForm.getId());
             Integer splitResult = appointmentSplitBiz.updateAppointSplit(splitForm);
             if (splitResult == null || splitResult <= 0){
-                throw new ClientServiceException("时长分解失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                return ResponseUtil.fail(AppointmentError.APPOINTMENT_SPLIT_FAIL.getCode(),AppointmentError.APPOINTMENT_SPLIT_FAIL.getMessage(),null);
             }
         }
 
@@ -638,11 +641,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param id  预约id
      * @return 返回结果
      */
-    public Integer confirmAppointment(Integer id){
+    public ResponseResult confirmAppointment(Integer id){
         Appointment appointment = mapper.selectByPrimaryKey(id);
         AppointOperationModel appointOperationModel = new AppointOperationModel();
         if (appointment == null){
-            throw new ClientServiceException("预约数据不存在！",OperationCodeConstants.DATA_NOT_EXIST);
+            return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
         }
         appointOperationModel.setBeforeOperation(appointment.getConfirmStatus()?"确认":"未确认");
         appointment.setConfirmStatus(true);
@@ -656,9 +659,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointOperationModel.setOrgId(Integer.valueOf(BaseContextHandler.getUserID()));
             appointOperationModel.setAfterOperation(appointment.getConfirmStatus()?"确认":"未确认");
             appointOperationModel.setRemarks("确认预约");
-            return appointOperateRecordBiz.insertAppointmentOperateRecord(appointOperationModel);
+            Integer recordResult = appointOperateRecordBiz.insertAppointmentOperateRecord(appointOperationModel);
+            if (recordResult > 0) {
+                return ResponseUtil.success();
+            }
         }
-        return result;
+        return ResponseUtil.fail(AppointmentError.APPOINT_CONFIRM.getCode(),AppointmentError.APPOINT_CONFIRM.getMessage(),null);
     }
 
     /**
@@ -712,20 +718,21 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private ResponseResult checkScheduling(AppointmentBaseModel appointmentBaseModel){
         // 获取预约医生Id
         Integer dentistId = appointmentBaseModel.getDentistId();
+        // 获取分解列表
+        List<AppointmentSplitBaseInfo> splitList = appointmentBaseModel.getSplitList();
+        EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String startDateStr = sdf.format(appointmentBaseModel.getAppointDate());
+        employeeScheduleQueryForm.setStartDate(startDateStr);
+        employeeScheduleQueryForm.setClinicId(appointmentBaseModel.getOrgId());
+        // 将排班结束日期退后一天
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(appointmentBaseModel.getAppointDate());
+        calendar.add(Calendar.DAY_OF_MONTH,1);
+        String endDateStr = sdf.format(calendar.getTime());
+        employeeScheduleQueryForm.setEndDate(endDateStr);
         if (dentistId != null){
-            EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
-
             employeeScheduleQueryForm.setUserId(dentistId);
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            String startDateStr = sdf.format(appointmentBaseModel.getAppointDate());
-            employeeScheduleQueryForm.setStartDate(startDateStr);
-            employeeScheduleQueryForm.setClinicId(appointmentBaseModel.getOrgId());
-            // 将排班结束日期退后一天
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(appointmentBaseModel.getAppointDate());
-            calendar.add(Calendar.DAY_OF_MONTH,1);
-            String endDateStr = sdf.format(calendar.getTime());
-            employeeScheduleQueryForm.setEndDate(endDateStr);
             // 获取排班列表
             EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
             if (employeeScheduleResult == null){
@@ -735,11 +742,26 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
                 return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),employeeScheduleResult);
             }
-            // 成功返回null
-            return null;
         }
-        // 医生ID不存在
-        return ResponseUtil.fail(AppointmentError.DENTIST_NOT_ID.getCode(),AppointmentError.DENTIST_NOT_ID.getMessage(),null);
+        // 检查分解的助手是否排班
+        if (!StringHelper.isEmpty(splitList)) {
+            for (AppointmentSplitBaseInfo baseInfo : splitList) {
+                Integer assistantId = baseInfo.getAssistantId();
+                employeeScheduleQueryForm.setUserId(assistantId);
+                // 获取排班列表
+                EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
+                if (employeeScheduleResult == null){
+                    return ResponseUtil.fail(AppointmentError.SCHEDULE_SERVER_ERR.getCode(),AppointmentError.SCHEDULE_SERVER_ERR.getMessage(),employeeScheduleResult);
+                }
+                // 预约助手没有排班，返回空
+                if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
+                    return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),employeeScheduleResult);
+                }
+            }
+
+        }
+        // 成功返回null
+        return null;
     }
 
     /**
@@ -753,6 +775,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Integer patientId = appointmentForm.getPatientId();
         Integer dentistId = appointmentForm.getDentistId();
         Integer deviceId = appointmentForm.getClinicDeviceItemId();
+        Integer assistantId = appointmentForm.getAssistantId();
+        // 获取预约分解的助手列表
+        List<AppointmentSplitBaseInfo> splitList = appointmentForm.getSplitList();
         Date appointDate = appointmentForm.getAppointDate();
         // 转换字符串预约时间为Date类型
         String appointTimeStr = appointmentForm.getAppointTime();
@@ -805,6 +830,46 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 // 预约冲突返回冲突信息
                 return ResponseUtil.fail(AppointmentError.APPOINT_DENTIST_EXIST.getCode(),
                         AppointmentError.APPOINT_DENTIST_EXIST.getMessage(),
+                        dentisList);
+            }
+        }
+
+        // 判断助手预约是否存在冲突
+        if (assistantId != null){
+            List<AppointConflictInfoVo> dentisList = mapper.findAppointListByAssistantIdAndAppointStartTimeAndAppointEndTime(
+                    assistantId, appointStartTime, appointEndTime);
+            if (!StringHelper.isEmpty(dentisList)){
+                dentisList.forEach(appointConflictInfoVo -> {
+                    OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
+                    if (organizatioinInfo != null){
+                        appointConflictInfoVo.setClinicName(organizatioinInfo.getName());
+                        appointConflictInfoVo.setClinicNumber(organizatioinInfo.getClinicNumber());
+                        appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
+                    }
+                });
+                // 预约助手冲突返回冲突信息
+                return ResponseUtil.fail(AppointmentError.APPOINT_ASSISTANT_EXIST.getCode(),
+                        AppointmentError.APPOINT_ASSISTANT_EXIST.getMessage(),
+                        dentisList);
+            }
+        }
+
+        // 判断预约分解助手是否冲突
+        if (!StringHelper.isEmpty(splitList)){
+            List<AppointConflictInfoVo> dentisList = mapper.findByIdAndStartTimeAndEndTime(
+                    assistantId, appointStartTime, appointEndTime);
+            if (!StringHelper.isEmpty(dentisList)){
+                dentisList.forEach(appointConflictInfoVo -> {
+                    OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
+                    if (organizatioinInfo != null){
+                        appointConflictInfoVo.setClinicName(organizatioinInfo.getName());
+                        appointConflictInfoVo.setClinicNumber(organizatioinInfo.getClinicNumber());
+                        appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
+                    }
+                });
+                // 预约分解助手冲突返回冲突信息
+                return ResponseUtil.fail(AppointmentError.SPLIT_ASSISTANT_EXIST.getCode(),
+                        AppointmentError.SPLIT_ASSISTANT_EXIST.getMessage(),
                         dentisList);
             }
         }
@@ -907,6 +972,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Integer patientId = appointmentForm.getPatientId();
         Integer dentistId = appointmentForm.getDentistId();
         Integer deviceId = appointmentForm.getClinicDeviceItemId();
+        Integer assistantId = appointmentForm.getAssistantId();
+        // 预约分解列表
+        List<AppointmentSplitUpdateBaseInfo> splitList = appointmentForm.getSplitList();
         Date appointDate = appointmentForm.getAppointDate();
         // 转换字符串预约时间为Date类型
         String appointTimeStr = appointmentForm.getAppointTime();
@@ -941,7 +1009,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 判断医生预约是否存在冲突
         if (dentistId != null) {
             List<AppointConflictInfoVo> appointConflictInfoVos =
-                    mapper.editCheckDentistConflict(id, appointmentForm.getPatientId(), appointStartTime, appointEndTime);
+                    mapper.editCheckDentistConflict(id, appointmentForm.getDentistId(), appointStartTime, appointEndTime);
             if (!appointConflictInfoVos.isEmpty()) {
                 // 存在医生预约冲突
                 return ResponseUtil.fail(AppointmentError.APPOINT_DENTIST_EXIST.getCode(),
@@ -949,6 +1017,30 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                         appointConflictInfoVos);
             }
         }
+        // 判断助手预约是否存在冲突
+        if (assistantId != null) {
+            List<AppointConflictInfoVo> appointConflictInfoVos =
+                    mapper.editCheckDentistConflict(id, appointmentForm.getAssistantId(), appointStartTime, appointEndTime);
+            if (!appointConflictInfoVos.isEmpty()) {
+                // 存在医生预约冲突
+                return ResponseUtil.fail(AppointmentError.APPOINT_ASSISTANT_EXIST.getCode(),
+                        AppointmentError.APPOINT_ASSISTANT_EXIST.getMessage(),
+                        appointConflictInfoVos);
+            }
+        }
+
+        // 判断预约分解助手是否冲突
+        if (!StringHelper.isEmpty(splitList)){
+            List<AppointConflictInfoVo> dentisList = mapper.findByIdAndStartTimeAndEndTime(
+                    assistantId, appointStartTime, appointEndTime);
+            if (!StringHelper.isEmpty(dentisList)){
+                // 预约分解助手冲突返回冲突信息
+                return ResponseUtil.fail(AppointmentError.SPLIT_ASSISTANT_EXIST.getCode(),
+                        AppointmentError.SPLIT_ASSISTANT_EXIST.getMessage(),
+                        dentisList);
+            }
+        }
+
         // 判断设备预约是否存在冲突
         if (deviceId != null) {
             List<AppointConflictInfoVo> appointConflictInfoVos =
@@ -1354,8 +1446,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             String[] splitStartTimeArr = appointmentSplitVo.getSplitStartTime().split(":");
             String[] splitEndTimeArr = appointmentSplitVo.getSplitEndTime().split(":");
             // 设置预约时间段
-            Integer startMinute = Integer.parseInt(splitStartTimeArr[0]) * 60 + Integer.parseInt(splitStartTimeArr[1]);
-            Integer endMinute = Integer.parseInt(splitEndTimeArr[0]) * 60 + Integer.parseInt(splitEndTimeArr[1]);
+            Integer startMinute = Integer.valueOf(splitStartTimeArr[0]) * 60 + Integer.valueOf(splitStartTimeArr[1]);
+            Integer endMinute = Integer.valueOf(splitEndTimeArr[0]) * 60 + Integer.valueOf(splitEndTimeArr[1]);
             assistantPatientCardInfo.setAppointDuration(endMinute-startMinute);
             // 助手预约时间
             assistantPatientCardInfo.setAppointTime(appointmentSplitVo.getSplitStartTime());

@@ -53,6 +53,19 @@ public interface AppointmentMapper extends Mapper<Appointment> {
       @Param("appointEndTime") Date appointEndTime);
 
   /**
+   * 根据助手id，预约开始时间，预约结束时间查询所有预约列表
+   *
+   * @param assistantId 医生id
+   * @param appointStartTime 预约开始时间
+   * @param appointEndTime 预约结束时间
+   * @return 预约冲突信息
+   */
+  List<AppointConflictInfoVo> findAppointListByAssistantIdAndAppointStartTimeAndAppointEndTime(
+          @Param("assistantId") Integer assistantId,
+          @Param("appointStartTime") Date appointStartTime,
+          @Param("appointEndTime") Date appointEndTime);
+
+  /**
    * 根据条件查询预约列表
    *
    * @param query 条件查询参数
@@ -97,6 +110,21 @@ public interface AppointmentMapper extends Mapper<Appointment> {
       @Param("dentistId") Integer dentistId,
       @Param("appointStartTime") Date appointStartTime,
       @Param("appointEndTime") Date appointEndTime);
+
+  /**
+   * 编辑预约检查助手预约冲突（排除自身）
+   *
+   * @param id
+   * @param assistantId
+   * @param appointStartTime
+   * @param appointEndTime
+   * @return
+   */
+  List<AppointConflictInfoVo> editCheckAssistantConflict(
+          @Param("id") Integer id,
+          @Param("assistantId") Integer assistantId,
+          @Param("appointStartTime") Date appointStartTime,
+          @Param("appointEndTime") Date appointEndTime);
 
   /**
    * 编辑预约检查设备预约冲突（排除自身）
@@ -166,5 +194,17 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return 患者列表
    */
   List<AppointPatientRecordVo> findAppointPatientRecord(AppointPatientRecordQuery query);
+
+  /**
+   * 根据分解助手ID、开始分解日期、结束分解日期查询列表
+   * @param assistantId 助手ID
+   * @param startTime 分解开始时间
+   * @param endTime  分解结束时间
+   * @return 对象列表
+   */
+  List<AppointConflictInfoVo> findByIdAndStartTimeAndEndTime(
+          @Param("assistantId") Integer assistantId,
+          @Param("startTime") Date startTime,
+          @Param("endTime") Date endTime);
 
 }
