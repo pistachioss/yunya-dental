@@ -17,6 +17,9 @@ import com.yunya.feign.employee_attend.form.EmployeeScheduleQueryForm;
 import com.yunya.feign.employee_attend.vo.EmployeeScheduleResultVO;
 import com.yunya.feign.employee_attend.vo.UserWorkVO;
 import com.yunya.feign.employee_attend.vo.WorkDayVO;
+import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
+import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
+import com.yunya.feign.expand.model.response.EnableEmployeeRes;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -36,7 +39,6 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
-import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
@@ -47,6 +49,7 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +57,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -102,6 +104,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 门诊设备服务 */
     @Autowired
     private ClinicDeviceItemBiz clinicDeviceItemBiz;
+
+    /** 门诊员工设置服务 */
+    @Autowired
+    private RemoteClinicEmployeeConfigFeign clinicEmployeeConfigFeign;
 
     /** 注入redis缓冲服务 */
     @Autowired
@@ -423,6 +429,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointmentQuery.setAppointType(query.getAppointType());
         appointmentQuery.setOrgId(query.getOrgId());
         List<AppointmentVo> appointmentVos = mapper.findAppointmentByExample(appointmentQuery);
+
+
         // 设置预约医生/助手信息
         appointmentVos.forEach(appointmentVo -> {
             // 组合预约列表信息
@@ -512,17 +520,31 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 组合医生和预约信息
         List<UserWorkVO> shiftWorkDatas = scheduleResultVO.getShiftWorkDatas();
+
+        // 获取可预约的医生
+        EnableEmployeeRes enableEmployeeList = this.clinicEmployeeConfigFeign.getEnableEmployeeList(query.getOrgId());
+        List<EnableChooseEmployeeRes> enableAppointList = enableEmployeeList.getEnableAppointList();
+        Integer[] appointIds = new Integer[enableAppointList.size()];
+        if (!StringHelper.isEmpty(enableAppointList)) {
+            for (int index = 0; index < enableAppointList.size();index++) {
+                appointIds[index] = enableAppointList.get(index).getEmployeeId();
+            }
+        }
+        List<Integer> appointIdList = Arrays.asList(appointIds);
+        // 过滤出可预约医生的排班信息
+        List<UserWorkVO> filterAppointIds = shiftWorkDatas.stream().filter(userWorkVO -> appointIdList.contains(userWorkVO.getCompEmpId())).collect(Collectors.toList());
+
         Integer orgId = query.getOrgId();
         Date startDate = query.getStartDate();
         Date endDate = query.getEndDate();
-        shiftWorkDatas.forEach(userWorkVO -> {
+        for (UserWorkVO userWorkVO : filterAppointIds) {
             // 组合预约医生和患者信息（患者维度）
             List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(query,orgId, startDate, endDate, userWorkVO);
             // 将预约信息放入预约可视图列表
             if (!dimensionVoList.isEmpty()){
                 dimensionVoList.forEach(dimensionVo -> appointmentDimensionVoList.add(dimensionVo));
             }
-        });
+        }
 
         // 按患者预约数量升序排列
         // 按照患者数量排序
