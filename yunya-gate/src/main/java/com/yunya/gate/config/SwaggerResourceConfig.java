@@ -11,7 +11,6 @@ import springfox.documentation.swagger.web.SwaggerResource;
 import springfox.documentation.swagger.web.SwaggerResourcesProvider;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 
@@ -38,7 +37,7 @@ public class SwaggerResourceConfig implements SwaggerResourcesProvider {
                         String title = route.getId();
                         try {
                             title = "[ " + route.getMetadata().get("title").toString() + " ] ";
-                        } catch (Exception e) {
+                        } catch (Exception ignored) {
                         }
                         resources.add(swaggerResource(title + route.getId(),
                                 predicateDefinition.getArgs().get(NameUtils.GENERATED_NAME_PREFIX + "0")

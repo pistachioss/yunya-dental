@@ -1,8 +1,6 @@
 package com.yunya.modules.system.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -18,6 +16,9 @@ import javax.annotation.Resource;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+
+import static com.yunya.framework.common.constant.BusinessConstants.CLINIC_BUSINESS_PATTER;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简单介绍:</br> 医疗机构扩展信息控制层
@@ -55,8 +56,7 @@ public class ClinicExtInfoBiz extends BaseBiz<ClinicExtInfoMapper, ClinicExtInfo
     entity.setCompanyId(companyId);
     ClinicExtInfo extInfo = mapper.selectOne(entity);
     if (null == extInfo) {
-      throw new ClientServiceException(
-          "修改失败，ID为'" + companyId + "'的诊所不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改失败，ID为'" + companyId + "'的诊所不存在！", QUERY_RESULT_INVALID);
     }
     // 校验信用代码
     String creditCode = form.getCreditCode();
@@ -81,35 +81,11 @@ public class ClinicExtInfoBiz extends BaseBiz<ClinicExtInfoMapper, ClinicExtInfo
   private void judgeBusinessTime(String startBusinessTime, String endBusinessTime) {
     if (StringUtils.isNotBlank(startBusinessTime) && StringUtils.isNotBlank(endBusinessTime)) {
       LocalTime startTime =
-          LocalTime.parse(
-              startBusinessTime,
-              DateTimeFormatter.ofPattern(BusinessConstants.CLINIC_BUSINESS_PATTER));
+          LocalTime.parse(startBusinessTime, DateTimeFormatter.ofPattern(CLINIC_BUSINESS_PATTER));
       LocalTime endTime =
-          LocalTime.parse(
-              endBusinessTime,
-              DateTimeFormatter.ofPattern(BusinessConstants.CLINIC_BUSINESS_PATTER));
+          LocalTime.parse(endBusinessTime, DateTimeFormatter.ofPattern(CLINIC_BUSINESS_PATTER));
       if (startTime.isAfter(endTime)) {
-        throw new ClientServiceException(
-            "结束时间不可以小于等于开始时间", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
-      }
-    }
-  }
-
-  /**
-   * 校验医疗机构简称是否重复
-   *
-   * @param formAbbreviation 请求参数
-   * @param dataAbbreviation 当前数据简称
-   */
-  private void checkClinicExtInfoAbbreviation(String formAbbreviation, String dataAbbreviation) {
-    if (!dataAbbreviation.equals(formAbbreviation)) {
-      ClinicExtInfo info = new ClinicExtInfo();
-      info.setAbbreviation(formAbbreviation);
-      ClinicExtInfo result = mapper.selectOne(info);
-      if (null != result) {
-        throw new ClientServiceException(
-            "修改医疗机构简称'" + formAbbreviation + "'失败，该简称名称已存在",
-            OperationCodeConstants.NAME_IS_OCCUPIED);
+        throw new ClientServiceException("结束时间不可以小于等于开始时间", PARAMETERS_IS_ILLEGAL);
       }
     }
   }

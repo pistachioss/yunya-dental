@@ -1,4 +1,4 @@
-package com.yunya.modules.treatment.controller;
+package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
@@ -68,7 +68,7 @@ public class RegisteredController {
    */
   @ApiOperation("根据条件查询门诊候诊中患者列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody @Validated RegisteredQueryForm queryForm) {
+  public ResponseResult<PageInfo<WaitingPatientInfoVO>> findList(@RequestBody @Validated RegisteredQueryForm queryForm) {
     PageInfo<WaitingPatientInfoVO> resultList = registeredBiz.findRegisteredList(queryForm);
     return ResponseUtil.success(resultList);
   }

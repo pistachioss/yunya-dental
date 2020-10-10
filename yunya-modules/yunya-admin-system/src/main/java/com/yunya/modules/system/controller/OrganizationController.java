@@ -118,7 +118,7 @@ public class OrganizationController {
    * @param id 组织ID
    * @return
    */
-  @ApiOperation("删除组织")
+  @ApiOperation("根据组织ID删除组织")
   @ApiImplicitParam(
       name = "id",
       value = "组织ID",
@@ -126,7 +126,7 @@ public class OrganizationController {
       required = true,
       paramType = "path")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult deleteOrganization(@PathVariable Integer id) {
+  public ResponseResult deleteOrganization(@PathVariable(value = "id") Integer id) {
     organizationBiz.deleteOrganization(id);
     return ResponseUtil.success();
   }

@@ -1,4 +1,4 @@
-package com.yunya.modules.treatment.controller;
+package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;

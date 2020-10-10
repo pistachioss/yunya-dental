@@ -68,8 +68,6 @@
         and DATE_FORMAT(split.split_start_time,'%Y-%m-%d') = DATE_FORMAT(#{query.appointDate},'%Y-%m-%d')
       </if>
     </where>
-
-
   </select>
 
 </mapper>

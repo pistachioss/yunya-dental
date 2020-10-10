@@ -12,6 +12,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.ClinicAppointmentSetting;
+import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ClinicAppointmentSettingMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +40,7 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
     public ResponseResult editOrAddSetting(AppointSettingForm form){
 
         if (form.getAppointUnit() > 30 || form.getAppointUnit() < 5){
-            throw new ClientServiceException("预约单位设置错误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_UNIT.getCode(),AppointmentError.APPOINT_SETTING_UNIT.getMessage(),null);
         }
         ClinicAppointmentSetting build = EntityUtils.build(form, ClinicAppointmentSetting.class);
         Integer userId = form.getUserId();
@@ -51,13 +52,13 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
             build.setUpdTime(new Date(System.currentTimeMillis()));
             int result = mapper.updateByPrimaryKeySelective(build);
             if (result <= 0 ){
-                throw new ClientServiceException("修改预约设置失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_FAIL.getCode(),AppointmentError.APPOINT_SETTING_FAIL.getMessage(),null);
             }
         } else {
             build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
             int result = mapper.insertSelective(build);
             if (result <= 0 ){
-                throw new ClientServiceException("新增预约设置失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_FAIL.getCode(),AppointmentError.APPOINT_SETTING_FAIL.getMessage(),null);
             }
         }
         return ResponseUtil.success();
