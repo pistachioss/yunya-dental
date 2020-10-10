@@ -10,6 +10,7 @@ import com.google.common.collect.Maps;
 import com.yunya.feign.emr.domain.bo.ApproveChangePageBo;
 import com.yunya.feign.emr.domain.bo.ApprovePageBo;
 import com.yunya.feign.emr.domain.bo.AuditMedicalBo;
+import com.yunya.feign.emr.domain.bo.ChangeCountBo;
 import com.yunya.feign.emr.domain.bo.MedicalTreatmentBo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.emr.domain.form.ChangeApprovePassForm;
@@ -79,6 +80,7 @@ import static com.yunya.modules.emr.enums.EmrError.APPROVE_RECORD_NOT_EXIST;
 import static com.yunya.modules.emr.enums.EmrError.AUDIT_IS_PASS;
 import static com.yunya.modules.emr.enums.EmrError.AUDIT_PENDING;
 import static com.yunya.modules.emr.enums.EmrError.CHANGE_APPLY_REJECTED;
+import static com.yunya.modules.emr.enums.EmrError.CHANGE_PASS_NOT_REPEAT_SUBMIT;
 import static com.yunya.modules.emr.enums.EmrError.CHANGE_PENDING_NOT_REPEAT_SUBMIT;
 import static com.yunya.modules.emr.enums.EmrError.DATA_IS_EXISTED;
 import static com.yunya.modules.emr.enums.EmrError.DEADLINE_BEYOND_NOW;
@@ -304,10 +306,16 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 return ResponseUtil.error(MEDICAL_IS_EXIST);
             }
             //检查变更申请记录，申请未通过时，不可多次重复申请变更
-            int applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
-            if (applyCount > 0) {
-                log.warn("【申请变更新增失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
-                return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
+            ChangeCountBo  applyCount = mapper.countMedicalChange(eventId, ADD.getCode());
+            if (applyCount != null) {
+                if (applyCount.getPendingCount() > 0) {
+                    log.warn("【申请变更新增失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
+                    return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
+                }
+                if (applyCount.getPassCount() > 0) {
+                    log.warn("【申请变更新增失败】：该病历已申请过修改且处于审核通过状态，请勿重复申请！");
+                    return ResponseUtil.error(CHANGE_PASS_NOT_REPEAT_SUBMIT);
+                }
             }
             //4. 检查变更审批
             if (isExistChangeToAudit(eventId)) {
@@ -362,10 +370,16 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 return ResponseUtil.error(AUDIT_PENDING);
             }
             //检查变更申请记录，申请未通过时，不可多次重复申请变更
-            int applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
-            if (applyCount > 0) {
-                log.warn("【申请变更修改失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
-                return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
+            ChangeCountBo  applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
+            if (applyCount != null) {
+                if (applyCount.getPendingCount() > 0) {
+                    log.warn("【申请变更修改失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
+                    return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
+                }
+                if (applyCount.getPassCount() > 0) {
+                    log.warn("【申请变更修改失败】：该病历已申请过修改且处于审核通过状态，请勿重复申请！");
+                    return ResponseUtil.error(CHANGE_PASS_NOT_REPEAT_SUBMIT);
+                }
             }
             //4. 检查病历审批
             if (loginUserId.equals(medical.getMajorDentistId())) {

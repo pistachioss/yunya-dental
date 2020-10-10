@@ -1,6 +1,7 @@
 package com.yunya.modules.emr.mapper;
 
 
+import com.yunya.feign.emr.domain.bo.ChangeCountBo;
 import com.yunya.models.emr.*;
 import org.apache.ibatis.annotations.*;
 
@@ -49,7 +50,7 @@ public interface ApprovalRecordMapper extends tk.mybatis.mapper.common.Mapper<Ap
      * @param eventId
      * @return int
      */
-    int countMedicalChange(@Param("eventId") Integer eventId, @Param("applyType") Integer applyType);
+    ChangeCountBo countMedicalChange(@Param("eventId") Integer eventId, @Param("applyType") Integer applyType);
 
     /**
      * 根据条件查询就诊审批记录
