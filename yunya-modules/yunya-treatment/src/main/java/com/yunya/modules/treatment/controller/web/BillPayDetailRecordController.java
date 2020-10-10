@@ -1,4 +1,4 @@
-package com.yunya.modules.treatment.controller;
+package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;

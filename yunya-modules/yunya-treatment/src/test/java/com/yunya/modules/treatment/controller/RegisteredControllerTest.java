@@ -5,6 +5,7 @@ import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.modules.treatment.controller.web.RegisteredController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
