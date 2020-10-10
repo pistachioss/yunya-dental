@@ -2,9 +2,11 @@ package com.yunya.models.discount;
 
 import lombok.Data;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 @Data
 @Table(name = "special_package_coupon_item")
 public class SpecialPackageCouponItem {
@@ -51,8 +53,8 @@ public class SpecialPackageCouponItem {
     /**
      * 单个明细工作量
      */
-    @Column(name = "workload_rate")
-    private Integer workloadRate;
+    @Column(name = "workload_load")
+    private BigDecimal workloadLoad;
 
     /**
      * 创建人

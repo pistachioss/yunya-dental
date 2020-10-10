@@ -26,6 +26,11 @@ public enum  UseWayEnum {
         return value;
     }
 
+    /**
+     * 根据code获取value
+     * @param code code
+     * @return value
+     */
     public static String getValue(Integer code)
     {
         if(code != null)

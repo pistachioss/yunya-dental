@@ -13,6 +13,8 @@ import java.time.*;
 @Getter
 @Setter
 public class PatientPackageVo implements Serializable {
+    @ApiModelProperty(value = "优惠券id")
+    private Integer couponId;
     @ApiModelProperty(value = "卡券id")
     private Integer cardId;
     @ApiModelProperty(value = "卡号")
