@@ -463,15 +463,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                 if (!StringHelper.isEmpty(query.getSearch())){
                                     // 检索值
                                     String search = query.getSearch();
+                                    String mobile = appointmentListItemVo.getMobile();
+                                    String patientName = appointmentListItemVo.getPatientName();
+                                    String pinyinName = appointmentListItemVo.getPinyinName();
                                     // 按姓名检索
-                                    if (search.matches(patientNameReg)){
-                                        result = result | appointmentListItemVo.getPatientName().contains(search);
-                                    } else if (search.matches(mobileReg)) {
+                                    if (search.matches(patientNameReg) && !StringHelper.isEmpty(patientName)){
+                                        result = result | patientName.contains(search);
+                                    } else if (search.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
                                         // 按手机号检索
-                                        result = result |  appointmentListItemVo.getMobile().equals(search);
-                                    } else if (search.matches(pinyinNameReg)){
+                                        result = result |  mobile.equals(search);
+                                    } else if (search.matches(pinyinNameReg) && !StringHelper.isEmpty(pinyinName)){
                                         // 按拼音名字检索
-                                        result = result |  appointmentListItemVo.getPinyinName().contains(search);
+                                        result = result |  pinyinName.contains(search);
                                     }
                                 }
                                 return result;
