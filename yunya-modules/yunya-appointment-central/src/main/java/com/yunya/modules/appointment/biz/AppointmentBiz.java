@@ -132,7 +132,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             // 添加预约时长分解
-            if (form.getSplitList() != null || !splitList.isEmpty()){
+            if (form.getSplitList() != null && !splitList.isEmpty()){
                 AppointmentSplitModel model = new AppointmentSplitModel();
                 model.setSplitList(form.getSplitList());
                 model.setOrgId(appointmentEntity.getOrgId());
