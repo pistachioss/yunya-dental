@@ -105,7 +105,7 @@ public class PatientBaseInfoModel implements Serializable {
     /**
      * 患者来源类型 患者来源分类ID
      */
-    @ApiModelProperty(value = "患者来源分类ID")
+    @ApiModelProperty(value = "患者来源分类ID",required = true)
     private Integer originType;
 
     /**
