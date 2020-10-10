@@ -1,5 +1,6 @@
 package com.yunya.modules.emr.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -159,19 +160,20 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
             //4. 检查草稿电子病例审批信息
             if (isExistDraftApply(eventId)) {
-                log.warn("【 新增草稿病例申请失败】：病例[{}]病例已申请审批", eventId);
+                log.warn("【新增草稿病例申请失败】：病例[{}]病例已申请审批", eventId);
                 return ResponseUtil.error(DATA_IS_EXISTED);
             }
             //5. 检查新增变更
             ApprovalRecord treatmentRecord = mapper.findTreatmentRecord(medical.getTreatmentId());
             if (treatmentRecord != null) {
+                log.info("【新增草稿病例申请】就诊审核记录，详情：{}", JSONObject.toJSONString(treatmentRecord));
                 if (!loginUserId.equals(treatmentRecord.getProposerId())) {
-                    log.warn("【 新增草稿病例申请失败】：无权限申请");
+                    log.warn("【新增草稿病例申请失败】：无权限申请");
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
                 //是否超过截止时间
                 if (isTimeOutOfDead(treatmentRecord)) {
-                    log.warn("【 新增草稿病例申请失败】：病例[{}]申请已超过变更截止时间", eventId);
+                    log.warn("【新增草稿病例申请失败】：病例[{}]申请已超过变更截止时间", eventId);
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
                 updateChangeTime(draftModel.getId());

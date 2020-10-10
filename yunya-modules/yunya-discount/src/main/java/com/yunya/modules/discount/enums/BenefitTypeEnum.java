@@ -1,16 +1,26 @@
 package com.yunya.modules.discount.enums;
 
-import java.util.*;
+import java.util.Objects;
 
-public enum SoldWayEnum {
-    ON_LINE(0, "线上"),
-    OFF_LINE(1, "线下"),
+/**
+ * @author xiangyang
+ * @date 2020/9/17
+ */
+public enum BenefitTypeEnum {
+    /**
+     * 会员卡优惠
+     */
+    MEMBER_TYPE(0, "会员卡优惠"),
+    /**
+     * 优惠券优惠
+     */
+    COUPON_TYPE(1, "优惠券优惠"),
     ;
 
     private Integer code;
     private String value;
 
-    SoldWayEnum(Integer code, String value) {
+    BenefitTypeEnum(Integer code, String value) {
         this.code = code;
         this.value = value;
     }
@@ -31,11 +41,11 @@ public enum SoldWayEnum {
     {
         if(code != null)
         {
-            for(SoldWayEnum soldWayEnum : values())
+            for(BenefitTypeEnum useWayEnum : values())
             {
-                if(Objects.equals(soldWayEnum.getCode(), code))
+                if(Objects.equals(useWayEnum.getCode(), code))
                 {
-                    return soldWayEnum.getValue();
+                    return useWayEnum.getValue();
                 }
             }
         }

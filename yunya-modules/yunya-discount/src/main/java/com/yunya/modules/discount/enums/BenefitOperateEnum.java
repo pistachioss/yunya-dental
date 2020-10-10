@@ -1,16 +1,17 @@
 package com.yunya.modules.discount.enums;
 
-import java.util.*;
+import java.util.Objects;
 
-public enum SoldWayEnum {
-    ON_LINE(0, "线上"),
-    OFF_LINE(1, "线下"),
+public enum BenefitOperateEnum {
+    CHARGE(1, "收费"),
+    modify_bill(2, "撤销账单"),
+
     ;
 
     private Integer code;
     private String value;
 
-    SoldWayEnum(Integer code, String value) {
+    BenefitOperateEnum(Integer code, String value) {
         this.code = code;
         this.value = value;
     }
@@ -31,11 +32,11 @@ public enum SoldWayEnum {
     {
         if(code != null)
         {
-            for(SoldWayEnum soldWayEnum : values())
+            for(BenefitOperateEnum benefitOperateEnum : values())
             {
-                if(Objects.equals(soldWayEnum.getCode(), code))
+                if(Objects.equals(benefitOperateEnum.getCode(), code))
                 {
-                    return soldWayEnum.getValue();
+                    return benefitOperateEnum.getValue();
                 }
             }
         }

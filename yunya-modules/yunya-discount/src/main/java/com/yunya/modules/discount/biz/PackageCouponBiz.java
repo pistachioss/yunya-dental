@@ -1,21 +1,17 @@
 package com.yunya.modules.discount.biz;
 
+import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.BaseException;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.CouponFileInfo;
 import com.yunya.models.discount.PackageCoupon;
-import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.modules.discount.form.PackageCouponForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import com.yunya.modules.discount.mapper.PackageCouponMapper;
-import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.exception.BaseException;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.modules.discount.constant.ExceptionCode;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
