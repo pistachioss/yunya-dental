@@ -8,9 +8,10 @@ import org.springframework.data.redis.core.*;
 import org.springframework.data.redis.core.types.*;
 import org.springframework.stereotype.*;
 
-import javax.annotation.*;
-import java.nio.charset.*;
-import java.util.concurrent.*;
+import javax.annotation.Resource;
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Redis工具类
@@ -150,6 +151,15 @@ public class RedisUtils {
    */
   private <T> T fromJson(String json, Class<T> clazz) {
     return JSON.parseObject(json, clazz);
+  }
+
+  /**
+   * 模糊查询key*
+   * @param key [pattern]
+   * @return set
+   */
+  public Set<String> keys(String key){
+    return redisTemplate.keys(key);
   }
 
   /**

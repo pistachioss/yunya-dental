@@ -69,7 +69,7 @@
         select pbio.id,pbio.origin_id patientId,pbio.name,pbio.gender,pbio.mobile,pbio.crt_time crtTime
         from patient_base_info pbio
         where pbio.source_id = #{form.patientId} and pbio.origin_type = 2
-        order by pbio.crtTime desc
+        order by pbio.crt_time desc
     </select>
 
     <!-- 根据id查询患者推荐关系拓展图 -->

@@ -98,14 +98,10 @@
         order by `approve_time` desc limit 1
     </select>
 
-    <select id="countMedicalChange" resultType="int">
+    <select id="countMedicalChange" resultType="com.yunya.feign.emr.domain.bo.ChangeCountBo">
         select
-            case
-                when status = 0
-                    then count(*)
-                when status = 1 and dead_time >= date_format(now(), '%%Y-%m-%d') then
-                    count(*)
-                else 0 end
+            sum(status = 0)                                                 as pendingCount,
+            sum(status = 1 and dead_time >= date_format(now(), '%Y-%m-%d')) as passCount
         from `approval_record`
         where `event_id` = #{eventId}
           and `event_type` = 1

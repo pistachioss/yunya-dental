@@ -1,8 +1,10 @@
 package com.yunya.models.discount;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "package_coupon_item")
 public class PackageCouponItem {
@@ -49,8 +51,8 @@ public class PackageCouponItem {
     /**
      * 单个明细工作量
      */
-    @Column(name = "workload_rate")
-    private Integer workloadRate;
+    @Column(name = "workload_load")
+    private BigDecimal workloadLoad;
 
     /**
      * 创建人
@@ -210,19 +212,19 @@ public class PackageCouponItem {
     /**
      * 获取单个明细工作量
      *
-     * @return workload_rate - 单个明细工作量
+     * @return workload_load - 单个明细工作量
      */
-    public Integer getWorkloadRate() {
-        return workloadRate;
+    public BigDecimal getWorkloadLoad() {
+        return workloadLoad;
     }
 
     /**
      * 设置单个明细工作量
      *
-     * @param workloadRate 单个明细工作量
+     * @param workloadLoad 单个明细工作量
      */
-    public void setWorkloadRate(Integer workloadRate) {
-        this.workloadRate = workloadRate;
+    public void setWorkloadLoad(BigDecimal workloadLoad) {
+        this.workloadLoad = workloadLoad;
     }
 
     /**

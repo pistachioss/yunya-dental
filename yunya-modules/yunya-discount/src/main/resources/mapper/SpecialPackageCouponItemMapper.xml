@@ -11,7 +11,7 @@
     <result column="item_id" property="itemId" jdbcType="INTEGER" />
     <result column="count" property="count" jdbcType="INTEGER" />
     <result column="package_unit_price" property="packageUnitPrice" jdbcType="DECIMAL" />
-    <result column="workload_rate" property="workloadRate" jdbcType="INTEGER" />
+    <result column="workload_load" property="workloadLoad" jdbcType="DECIMAL" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="upd_id" property="updId" jdbcType="INTEGER" />

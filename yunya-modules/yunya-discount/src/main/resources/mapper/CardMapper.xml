@@ -379,7 +379,26 @@
                      and `cfi`.`inservice` = 1
                      and `cfi`.`file_type` = 0
                    ORDER BY `cfi`.`crt_time` asc
-                   LIMIT 1)        as `path`
+                   LIMIT 1)        as `path`,
+                  case
+                      when `cci`.`type` = 0 then
+                          (select count(*)
+                           from `vouche_coupon` `vc`
+                           where `vc`.`coupon_id` = `c`.`id` and find_in_set(#{orgId}, `vc`.`useable_clinci`))
+                      when `cci`.`type` = 1 then
+                          (select count(*)
+                           from `discount_coupon` `dc`
+                           where `dc`.`coupon_id` = `c`.`id` and find_in_set(#{orgId}, `dc`.`useable_clinic`))
+                      when `cci`.`type` = 2 then
+                          (select count(*)
+                           from `package_coupon` `pc`
+                           where `pc`.`coupon_id` = `c`.`id` and find_in_set(#{orgId}, `pc`.`useable_clinic`))
+                      when `cci`.`type` = 3 then
+                          (select count(*)
+                           from `special_package_coupon` `spc`
+                           where `spc`.`coupon_id` = `c`.`id` and find_in_set(#{orgId}, `spc`.`useable_clinic`))
+                      else null
+                      end          as `useClinicCount`
               from `card` `c`
                    inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
               where `cci`.`is_inservice` = 1
@@ -392,6 +411,83 @@
             or (`temp`.`useWay` = 0 and isnull(`temp`.`itemUseable`) = 1
                 or (`temp`.`useWay` = 1 and
                     (`temp`.`itemUseable` = 1 or isnull(`temp`.`itemUseable`) = 1))))
+          and `temp`.`useClinicCount` > 0
           and `temp`.`useDeadline` >= date_format(now(), '%Y-%m-%d')
+    </select>
+
+    <select id="getUseClinicIdStr" resultType="com.yunya.feign.discount.domain.bo.UseClinicBo">
+        select
+            case
+                when cci.type = 0 then
+                    (
+                        select
+                            vc.useable_clinci
+                        from vouche_coupon vc
+                        where vc.coupon_id = cci.id
+                    )
+                when cci.type = 1 then
+                    (
+                        select
+                            dc.useable_clinic
+                        from discount_coupon dc
+                        where dc.coupon_id = cci.id
+                    )
+                when cci.type = 2 then
+                    (
+                        select
+                            pc.useable_clinic
+                        from package_coupon pc
+                        where pc.coupon_id = cci.id
+                    )
+                when cci.type = 3 then
+                    (
+                        select
+                            spc.useable_clinic
+                        from special_package_coupon spc
+                        where spc.coupon_id = cci.id
+                    )
+                else
+                    null
+                end as useClinicId
+        from coupon_common_info cci
+        where cci.id in
+            <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+          and cci.is_inservice = 1;
+    </select>
+
+    <select id="getLimitCountByParam" resultType="com.yunya.feign.discount.domain.bo.UseClinicBo">
+        select
+            cci.id   as couponid,
+            cci.name as couponname,
+            case
+                when cci.type = 0 then
+                    (
+                        select
+                            vc.limit_count
+                        from vouche_coupon vc
+                        where vc.coupon_id = cci.id
+                    )
+                when cci.type = 2 then
+                    (
+                        select
+                            pc.limit_count
+                        from package_coupon pc
+                        where pc.coupon_id = cci.id
+                    )
+                when cci.type = 3 then
+                    (
+                        select
+                            spc.limit_count
+                        from special_package_coupon spc
+                        where spc.coupon_id = cci.id
+                    )
+                else
+                    null
+                end  as limitcount
+        from coupon_common_info cci
+        where cci.id = #{couponId}
+          and cci.is_inservice = 1;
     </select>
 </mapper>

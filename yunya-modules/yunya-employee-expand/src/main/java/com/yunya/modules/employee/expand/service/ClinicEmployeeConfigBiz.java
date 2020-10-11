@@ -125,11 +125,11 @@ public class ClinicEmployeeConfigBiz extends BaseBiz<ClinicEmployeeConfigMapper,
         copier.copy(config, configRes, null);
         if (config.getEmployeeId() != null) {
             SysUserInfoDetail employee = systemServiceFeign.findSysUserEmployeeInfoByUserId(config.getEmployeeId());
-            configRes.setEmployeeName(employee == null ? null : employee.getUsername());
+            configRes.setEmployeeName(employee == null ? null : employee.getName());
         }
         if (config.getAssistantEmployeeId() != null) {
             SysUserInfoDetail assist = systemServiceFeign.findSysUserEmployeeInfoByUserId(config.getAssistantEmployeeId());
-            configRes.setAssistantName(assist == null ? null : assist.getUsername());
+            configRes.setAssistantName(assist == null ? null : assist.getName());
         }
         if (config.getClinicDepartmentRoomId() != null) {
             DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(config.getClinicDepartmentRoomId());
