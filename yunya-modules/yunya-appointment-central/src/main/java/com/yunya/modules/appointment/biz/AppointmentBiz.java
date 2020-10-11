@@ -1656,6 +1656,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                         appointmentPatientCardVo.setAge(patientInfo.getAge());
                         appointmentPatientCardVo.setGender(patientInfo.getGender());
                         appointmentPatientCardVo.setName(patientInfo.getName());
+                        // 获取大医生下患者当前处于哪个就诊状态
+                        Byte aByte = this.getTreatmentStation(appointmentPatientCardVo.getId(), appointmentPatientCardVo.getPatientId());
+                        // 设置大医生下所有的患者就诊状态
+                        appointmentPatientCardVo.setStation(aByte);
                     }
                 });
                 appointmentDimensionVoList.add(appointmentDimensionVo);
