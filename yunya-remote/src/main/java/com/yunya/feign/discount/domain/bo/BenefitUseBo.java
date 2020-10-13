@@ -23,7 +23,6 @@ public class BenefitUseBo {
         BenefitUseBo benefitBo = new BenefitUseBo();
         benefitBo.setExchangeBenefitBos(Lists.newArrayList());
         benefitBo.setPackageBenefitBos(Lists.newArrayList());
-        benefitBo.setDiscountBenefitBos(new PatientUseBenefitBo());
         benefitBo.setVoucherBenefitBos(Lists.newArrayList());
         return benefitBo;
     }

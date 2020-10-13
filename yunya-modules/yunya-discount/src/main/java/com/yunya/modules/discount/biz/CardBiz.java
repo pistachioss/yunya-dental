@@ -10,6 +10,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.yunya.feign.discount.domain.bo.AllocateNumBo;
 import com.yunya.feign.discount.domain.bo.BenefitUseBo;
+import com.yunya.feign.discount.domain.bo.CouponItemUseBo;
 import com.yunya.feign.discount.domain.bo.CouponSaleBo;
 import com.yunya.feign.discount.domain.bo.GenerateAllocatePageBo;
 import com.yunya.feign.discount.domain.bo.ItemBenefitUseDetailBo;
@@ -150,36 +151,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.BusinessConstants.CARD_PASS_BIT;
-import static com.yunya.framework.common.constant.BusinessConstants.COUPON_ALWAYS_EFFECT;
-import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
-import static com.yunya.modules.discount.enums.BenefitTypeEnum.COUPON_TYPE;
-import static com.yunya.modules.discount.enums.BenefitTypeEnum.MEMBER_TYPE;
-import static com.yunya.modules.discount.enums.CardQrCodeEnum.QR_CODE_DESTROY;
-import static com.yunya.modules.discount.enums.CardQrCodeEnum.QR_CODE_EXPIRED;
-import static com.yunya.modules.discount.enums.CardQrCodeEnum.QR_CODE_INVALID;
-import static com.yunya.modules.discount.enums.CardQrCodeEnum.QR_CODE_NORMAL;
-import static com.yunya.modules.discount.enums.CardQrCodeEnum.QR_CODE_OTHER;
-import static com.yunya.modules.discount.enums.CardStatusEnum.ACTIVATED;
-import static com.yunya.modules.discount.enums.CardStatusEnum.ACTIVE_PENDING;
-import static com.yunya.modules.discount.enums.CardStatusEnum.SALE_PENDING;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.DISCOUNT;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.EXCHANGE;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.MEMBER_CARD;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.RECHARGE;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.SPECIAL_PACKAGE;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.VOUCHER;
-import static com.yunya.modules.discount.enums.RangTypeEnum.SELECT_ALL;
-import static com.yunya.modules.discount.enums.RangTypeEnum.SELECT_ITEM_CATEGORY;
-import static com.yunya.modules.discount.enums.RangTypeEnum.SELECT_ITEM_DETAIL;
-import static com.yunya.modules.discount.enums.TrueFalseEnum.FALSE;
-import static com.yunya.modules.discount.enums.TrueFalseEnum.TRUE;
-import static java.util.stream.Collectors.counting;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
+import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.modules.discount.enums.BenefitTypeEnum.*;
+import static com.yunya.modules.discount.enums.CardQrCodeEnum.*;
+import static com.yunya.modules.discount.enums.CardStatusEnum.*;
+import static com.yunya.modules.discount.enums.CouponTypeEnum.*;
+import static com.yunya.modules.discount.enums.RangTypeEnum.*;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
+import static java.util.stream.Collectors.*;
 
 /**
  * 描述:
@@ -839,21 +818,34 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
-		//锁定患者选择的优惠信息
-		errorBo = lockedBenefitByPatient(form);
-		if (errorBo.getError() != null) {
-			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+		try {
+			//锁定患者选择的优惠信息
+			errorBo = lockedBenefitByPatient(form);
+			if (errorBo.getError() != null) {
+				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+			}
+			//获取订单明细
+			List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
+			if (CollectionUtils.isEmpty(orderDetails)) {
+				return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
+			}
+
+			//订单项目集合转换bo对象
+			List<OrderItemUseBo> orderItemBos = this.assignedItemVos(orderDetails);
+			calculateBenefit(form, benefitVo, orderItemBos);
+			return ResponseUtil.success(orderItemBos);
+		} catch (Exception e) {
+			Set<String> keys = redisUtils.keys(RedisConstants.LOCK_CHOICE_CARD + "*");
+			log.warn("【选择优惠】优惠选择发生异常，解除卡券锁定{}", keys);
+			if (CollectionUtils.isNotEmpty(keys)) {
+				for (String lockKey : keys) {
+					String lockVal = String.valueOf(patientId);
+					// 释放患者取消选择的卡券的锁
+					redisUtils.unlock(lockKey, lockVal);
+				}
+			}
+			throw e;
 		}
-		//获取订单明细
-		List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
-		if (CollectionUtils.isNotEmpty(orderDetails)) {
-			return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
-		}
-		//订单项目集合转换bo对象
-		List<OrderItemUseBo> orderItemBos = this.assignedItemVos(orderDetails);
-		calculateBenefit(form, benefitVo, orderItemBos);
-		;
-		return ResponseUtil.success(orderItemBos);
 	}
 
 	/**
@@ -862,10 +854,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form form
 	 * @return res
 	 */
-	public ResponseResult choiceBenefit(PatientChooseBenefitForm form) {
+	public ResponseResult<PatientOrderBenefitVo> choiceBenefit(PatientChooseBenefitForm form) {
 		ResponseResult<List<OrderItemUseBo>> responseResult = choiceBenefitBo(form);
 		if (!FALSE.equals(responseResult.getStatus())) {
-			return responseResult;
+			return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
 		}
 		PatientOrderBenefitVo result = transformBenefitInfo(responseResult.getData());
 		return ResponseUtil.success(result);
@@ -986,7 +978,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 */
 	private PatientOrderBenefitVo transformBenefitInfo(List<OrderItemUseBo> orderItemBos) {
 		PatientOrderBenefitVo result = new PatientOrderBenefitVo();
-		BigDecimal totalBenefitAmount = orderItemBos.stream().map(OrderItemUseBo::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+		BigDecimal totalBenefitAmount = orderItemBos.stream().filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 		result.setBenefitTotalAmount(totalBenefitAmount);
 		List<PatientItemBenefitVo> itemList = orderItemBos.stream().filter(obj -> CollectionUtils.isNotEmpty(obj.getItemUseBenefitBos()))
 				.map(obj -> {
@@ -1015,10 +1008,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 */
 	private void setUpSingleBenefitInfoForOrder(OrderItemUseBo orderItem, Integer orgId, List<PatientUseBenefitBo> benefitBos) {
 		for (PatientUseBenefitBo benefitBo : benefitBos) {
-			//优惠券单次账单使用次数限制
-			if (benefitBo.getLimitCount() <= 0) {
-				break;
-			}
 			//订单项目id对应的可用的优惠券信息
 			ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
 			if (benefitUseDetailBo != null) {
@@ -1036,8 +1025,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 						benefitAmount = receivableAmount.compareTo(packageUnitPrice) > 0 ? receivableAmount.subtract(packageUnitPrice) : BigDecimal.valueOf(0);
 						//个体项目设置优惠相关信息
 						buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, TRUE.getCode());
-						//同步更新相同优惠券的限制使用次数
-						syncUpdateLimitCount(benefitBos, benefitBo);
 						break;
 					}
 					if (DISCOUNT.equals(couponType)) {
@@ -1058,28 +1045,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							benefitAmount = receivableAmount.compareTo(benefitBo.getFace()) >= 0 ? benefitBo.getFace() : receivableAmount;
 							//个体项目设置优惠相关信息
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, TRUE.getCode());
-							//同步更新相同优惠券的限制使用次数
-							syncUpdateLimitCount(benefitBos, benefitBo);
 						}
 					}
 				}
 			}
 		}
-	}
-
-	/**
-	 * 同步更新相同优惠券的限制使用次数
-	 *
-	 * @param benefitBos 患者选择所有优惠券
-	 * @param benefitBo  当前订单项目正在使用的优惠券
-	 */
-	private void syncUpdateLimitCount(List<PatientUseBenefitBo> benefitBos, PatientUseBenefitBo benefitBo) {
-		//同步更新相同优惠券的限制使用次数
-		List<PatientUseBenefitBo> sameCouponList = benefitBos.stream().filter(obj -> benefitBo.getCouponId().equals(obj.getCouponId())).collect(toList());
-		sameCouponList.forEach(obj -> {
-			//使用后 优惠券单次使用次数减1
-			benefitBo.setLimitCount(benefitBo.getLimitCount() - 1);
-		});
 	}
 
 	/**
@@ -1129,9 +1099,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private int setUpMultiItemForOrder(List<PatientUseBenefitBo> benefitBos, OrderItemUseBo orderItem, Integer orgId,
 	                                   Integer itemIndex) {
 		for (PatientUseBenefitBo benefitBo : benefitBos) {
-			if (benefitBo.getLimitCount() <= 0) {
-				break;
-			}
 			if (TRUE.equals(orderItem.getPreMixAble()) && TRUE.equals(benefitBo.getMixable())) {
 				//订单项目id对应的可用的优惠券信息
 				ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
@@ -1152,8 +1119,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							//是否可共用
 							orderItem.setPreMixAble(benefitBo.getMixable());
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
-							//同步更新相同优惠券的限制使用次数
-							syncUpdateLimitCount(benefitBos, benefitBo);
 							return TRUE.getCode();
 						}
 						if (DISCOUNT.equals(couponType)) {
@@ -1179,8 +1144,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 								//是否可共用
 								orderItem.setPreMixAble(benefitBo.getMixable());
 								buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
-								//同步更新相同优惠券的限制使用次数
-								syncUpdateLimitCount(benefitBos, benefitBo);
 								return TRUE.getCode();
 							}
 						}
@@ -1228,21 +1191,21 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 			if (EXCHANGE.equals(benefitBo.getCouponType())) {
 				//校验兑换券价目是否可用优惠并赋值
-				if (checkExchangeAndSetUsable(FALSE.getCode(), itemMap, benefitBo)) {
+				if (checkExchangeAndSetUsable(FALSE.getCode(), itemMap, benefitBo, EXCHANGE.getCode())) {
 					continue;
 				}
 				//校验兑换券商品是否可用优惠并赋值
-				if (checkExchangeAndSetUsable(TRUE.getCode(), itemMap, benefitBo)) {
+				if (checkExchangeAndSetUsable(TRUE.getCode(), itemMap, benefitBo, EXCHANGE.getCode())) {
 					continue;
 				}
 			}
 			if (SPECIAL_PACKAGE.equals(benefitBo.getCouponType())) {
 				//校验套餐券价目是否可用优惠并赋值
-				if (checkPackageAndSetUsable(FALSE.getCode(), itemMap, benefitBo)) {
+				if (checkPackageAndSetUsable(FALSE.getCode(), itemMap, benefitBo, SPECIAL_PACKAGE.getCode())) {
 					continue;
 				}
 				//校验套餐券商品是否可用优惠并赋值
-				checkPackageAndSetUsable(TRUE.getCode(), itemMap, benefitBo);
+				checkPackageAndSetUsable(TRUE.getCode(), itemMap, benefitBo, SPECIAL_PACKAGE.getCode());
 			}
 		}
 		//排序（截止时间 asc）
@@ -1253,34 +1216,43 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return benefitBoConvertVo(patientId, benefitBos);
 	}
 
-	private boolean checkPackageAndSetUsable(Integer itemType, Map<Integer, Set<Integer>> itemMap, PatientBenefitBo benefitBo) {
+	private boolean checkPackageAndSetUsable(Integer itemType, Map<Integer, Set<Integer>> itemMap, PatientBenefitBo benefitBo,
+	                                         Integer couponType) {
 		//订单项目明细
 		Set<Integer> orderItemIds = itemMap.get(itemType);
 		//查询套餐券优惠项目ids
 		List<SpecialPackageCouponItem> items = getPackageItemInfo(benefitBo.getCouponId(), itemType);
 		Set<Integer> itemIds = items.stream().map(SpecialPackageCouponItem::getItemId).collect(toSet());
+		//查询卡券使用数量信息
+		List<CouponItemUseBo> list = mapper.getCouponItemUseInfo(benefitBo.getCouponId(), benefitBo.getCardId(), itemType, couponType);
 		//设置优惠券是否可以作用订单项目
-		setItemUsableStatus(itemIds, orderItemIds, benefitBo);
-		return setItemUsableStatus(itemIds, orderItemIds, benefitBo);
+		return setItemUsableStatus(itemIds, orderItemIds, benefitBo, list);
 	}
 
-	private boolean checkExchangeAndSetUsable(Integer itemType, Map<Integer, Set<Integer>> itemMap, PatientBenefitBo benefitBo) {
+	private boolean checkExchangeAndSetUsable(Integer itemType, Map<Integer, Set<Integer>> itemMap, PatientBenefitBo benefitBo,
+	                                          Integer couponType) {
 		//订单项目明细
 		Set<Integer> orderItemIds = itemMap.get(itemType);
 		//查询套餐券优惠项目ids
 		List<PackageCouponItem> items = getExchangeItemInfo(benefitBo.getCouponId(), itemType);
 		Set<Integer> itemIds = items.stream().map(PackageCouponItem::getItemId).collect(toSet());
+		//查询卡券使用数量信息
+		List<CouponItemUseBo> list = mapper.getCouponItemUseInfo(benefitBo.getCouponId(), benefitBo.getCardId(), itemType, couponType);
 		//设置优惠券是否可以作用订单项目
-		setItemUsableStatus(itemIds, orderItemIds, benefitBo);
-		return setItemUsableStatus(itemIds, orderItemIds, benefitBo);
+		return setItemUsableStatus(itemIds, orderItemIds, benefitBo, list);
 	}
 
-	private boolean setItemUsableStatus(Set<Integer> itemIds, Set<Integer> orderItemIds, PatientBenefitBo benefitBo) {
+	private boolean setItemUsableStatus(Set<Integer> itemIds, Set<Integer> orderItemIds, PatientBenefitBo benefitBo,
+	                                    List<CouponItemUseBo> list) {
 		if (CollectionUtils.isNotEmpty(itemIds)) {
 			Set<Integer> joinIds = SetUtils.intersection(orderItemIds, itemIds);
 			if (CollectionUtils.isNotEmpty(joinIds)) {
-				benefitBo.setItemUsable(TRUE.getCode());
-				return true;
+				//查找订单的项目是否可用该卡券
+				Optional<CouponItemUseBo> optional = list.stream().filter(obj -> joinIds.contains(obj.getItemId()) && TRUE.equals(obj.getUsable())).findFirst();
+				if (optional.isPresent()) {
+					benefitBo.setItemUsable(TRUE.getCode());
+					return true;
+				}
 			}
 		}
 		return false;
@@ -1395,7 +1367,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 		});
 		//设置患者会员卡集合
-		vo.setMemberCardVoList(getPatientMemberCards(patientId));
+		List<PatientMemberCardVo> memberCards = getPatientMemberCards(patientId);
+		if (CollectionUtils.isNotEmpty(memberCards)) {
+			vo.setMemberCardVoList(memberCards);
+		}
 		return vo;
 	}
 
@@ -2027,9 +2002,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	}
 
 	private List getCouponItemByCouponId(Integer couponId, Mapper mapper, Class<?> clazz) {
-		Example example = new Example(clazz);
-		example.createCriteria().andEqualTo("couponId", couponId);
-		return mapper.selectByExample(example);
+		if (couponId != null) {
+			Example example = new Example(clazz);
+			example.createCriteria().andEqualTo("couponId", couponId);
+			return mapper.selectByExample(example);
+		}
+		return Collections.emptyList();
 	}
 
 	/**
@@ -2099,7 +2077,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				errorBo.setError(DiscountError.PATIENT_NOT_OWN_EXCHANGE);
 				return errorBo;
 			} else {
-				List<Integer> choiceCardIds = Lists.newArrayList();
 				//可作用在项目的兑换券卡券
 				List<Integer> exchangeIdsForItem = exchangeVoList.stream().filter(obj -> TRUE.equals(obj.getItemUsable()))
 						.map(PatientExchangeVo::getCardId).collect(toList());
@@ -2109,11 +2086,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 						Card card = mapper.selectByPrimaryKey(exchangeId);
 						errorBo.setMsg(card == null ? null : card.getCardNumber());
 						return errorBo;
-					} else {
-						choiceCardIds.add(exchangeId);
 					}
 				}
-				Map<Integer, Long> limitCountMap = exchangeVoList.stream().filter(obj -> choiceCardIds.contains(obj.getCardId())).
+				Map<Integer, Long> limitCountMap = exchangeVoList.stream().filter(obj -> useExchangeIds.contains(obj.getCardId())).
 						collect(groupingBy(PatientExchangeVo::getCouponId, counting()));
 				//校验单个账单使用限制数
 				errorBo = checkLimitCount(limitCountMap, PackageCoupon.class, EXCHANGE.getCode());
@@ -2203,6 +2178,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.info("【开始锁定】开始锁定患者选择的优惠信息");
 			Set<String> keys = redisUtils.keys(RedisConstants.LOCK_CHOICE_CARD + "*");
 			if (CollectionUtils.isNotEmpty(keys)) {
+				keys = keys.stream().map(key -> key.replace(RedisConstants.LOCK_CHOICE_CARD + ":", "")).collect(toSet());
 				addCardIds = SetUtils.difference(cardIds, keys);
 				delCardIds = SetUtils.difference(keys, cardIds);
 				//需要删除的key
@@ -2224,6 +2200,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					}
 				}
 			} else {
+				log.info("【开始锁定】开始锁定患者选择的优惠信息");
 				for (String cardId : cardIds) {
 					errorBo = lockChoiceCard(patientId, cardId);
 					if (errorBo.getError() != null) {
@@ -2358,16 +2335,20 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		List<PatientUseBenefitBo> voucherBenefitBos = benefitUseBo.getVoucherBenefitBos();
 		//兑换券设置可使用项目
 		exchangeBenefitBos.forEach(obj -> {
-			obj.setExchangeCouponItemDetail(getCouponItemByCouponId(obj.getCouponId(), packageCouponItemMapper, PackageCouponItem.class));
+			List<CouponItemUseBo> couponItemUseBos = mapper.getCouponItemUseInfo(obj.getCouponId(), obj.getCardId(), null, EXCHANGE.getCode());
+			obj.setExchangeCouponItemDetail(couponItemUseBos);
 		});
 		//套餐券设置可使用项目
 		packageBenefitBos.forEach(obj -> {
-			obj.setPackageCouponItemDetail(getCouponItemByCouponId(obj.getCouponId(), specialPackageCouponItemMapper, SpecialPackageCouponItem.class));
+			List<CouponItemUseBo> couponItemUseBos = mapper.getCouponItemUseInfo(obj.getCouponId(), obj.getCardId(), null, SPECIAL_PACKAGE.getCode());
+			obj.setPackageCouponItemDetail(couponItemUseBos);
 		});
 		//代金折扣券基础，价目范围映射 <选择范围，项目id（分类/明细）>
-		List<VoucherDiscountItem> discountItems = getCouponItemByCouponId(discountBenefitBo.getCouponId(), voucherDiscountItemMapper, VoucherDiscountItem.class);
-		if (CollectionUtils.isNotEmpty(discountItems)) {
-			assignedCouponItem(discountItems, discountBenefitBo);
+		if (discountBenefitBo != null) {
+			List<VoucherDiscountItem> discountItems = getCouponItemByCouponId(discountBenefitBo.getCouponId(), voucherDiscountItemMapper, VoucherDiscountItem.class);
+			if (CollectionUtils.isNotEmpty(discountItems)) {
+				assignedCouponItem(discountItems, discountBenefitBo);
+			}
 		}
 		//代金券设置可使用项目
 		voucherBenefitBos.forEach(voucherBo -> {
@@ -2422,7 +2403,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		Set<Integer> tariffItemIds = discountItems.stream().filter(obj -> FALSE.equals(obj.getType())
 				&& SELECT_ITEM_DETAIL.equals(obj.getChoiceRangType().intValue())).map(VoucherDiscountItem::getItemId).collect(toSet());
 		disCountVoucherItemBo.setDiscountVoucherCouponItemDetail(tariffItemIds, FALSE.getCode(), SELECT_ITEM_DETAIL.getCode());
-		////设置商品明细
+		//设置商品明细
 		Set<Integer> shopItemIds = discountItems.stream().filter(obj -> TRUE.equals(obj.getType())
 				&& SELECT_ITEM_DETAIL.equals(obj.getChoiceRangType().intValue())).map(VoucherDiscountItem::getItemId).collect(toSet());
 		disCountVoucherItemBo.setDiscountVoucherCouponItemDetail(shopItemIds, TRUE.getCode(), SELECT_ITEM_DETAIL.getCode());
@@ -2514,9 +2495,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @return map
 	 */
 	private Map<Integer, UseClinicBo> getCouponUseClinic(List<Integer> couponIds) {
-		List<UseClinicBo> useClinicIdStr = mapper.getUseClinicIdStr(couponIds);
-		return useClinicIdStr.stream().collect(toMap(UseClinicBo::getCouponId,
-				Function.identity(), (v1, v2) -> v2));
+		if (CollectionUtils.isNotEmpty(couponIds)) {
+			List<UseClinicBo> useClinicIdStr = mapper.getUseClinicIdStr(couponIds);
+			return useClinicIdStr.stream().collect(toMap(UseClinicBo::getCouponId,
+					Function.identity(), (v1, v2) -> v2));
+		}
+		return Collections.emptyMap();
 	}
 
 	public void assignedBenefitBos(BenefitUseBo benefitUseBo, PatientOptionalBenefitVo benefitVo, PatientChooseBenefitForm form) {
@@ -2595,7 +2579,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		//设置代金券
 		if (CollectionUtils.isNotEmpty(voucherIds) && CollectionUtils.isNotEmpty(voucherVoList)) {
 			Map<Integer, PatientVoucherVo> voucherVoMap = voucherVoList.stream().collect(toMap(PatientVoucherVo::getCardId, Function.identity()));
-			List<PatientUseBenefitBo> voucherUseBos = packageIds.stream().filter(cardId -> voucherVoMap.get(cardId) != null)
+			List<PatientUseBenefitBo> voucherUseBos = voucherIds.stream().filter(cardId -> voucherVoMap.get(cardId) != null)
 					.map(cardId -> {
 						PatientVoucherVo voucherVo = voucherVoMap.get(cardId);
 						PatientUseBenefitBo voucherBenefitBo = BeanCopierUtils.generalCopyBean(voucherVo, PatientUseBenefitBo.class);
@@ -2618,16 +2602,16 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		//查询优惠券的可用门诊
 		Map<Integer, UseClinicBo> useClinicMap = getCouponUseClinic(benefitUseBo.stream().
 				map(PatientUseBenefitBo::getCouponId).collect(toList()));
-		//设置优惠券可用门诊
-		benefitUseBo.stream().filter(obj -> useClinicMap.get(obj.getCouponId()) != null).forEach(obj -> {
-			String useClinicIdStr = useClinicMap.get(obj.getCouponId()).getUseClinicIdStr();
-			if (StringUtils.isNotBlank(useClinicIdStr)) {
-				obj.setUsableClinic(Lists.newArrayList(Splitter.on(",").split(useClinicIdStr)).stream().map(Integer::valueOf)
-						.collect(toList()));
-			}
-		});
+		if (!org.springframework.util.CollectionUtils.isEmpty(useClinicMap)) {
+			//设置优惠券可用门诊
+			benefitUseBo.stream().filter(obj -> useClinicMap.get(obj.getCouponId()) != null).forEach(obj -> {
+				String useClinicIdStr = useClinicMap.get(obj.getCouponId()).getUseClinicIdStr();
+				if (StringUtils.isNotBlank(useClinicIdStr)) {
+					obj.setUsableClinic(Lists.newArrayList(Splitter.on(",").split(useClinicIdStr)).stream().map(Integer::valueOf)
+							.collect(toList()));
+				}
+			});
+		}
 	}
 
-//    private RestErrorBo getUsedBenefitBoInfo(PatientOptionalBenefitVo benefitVo, PatientChooseBenefitForm form) {
-//    }
 }
