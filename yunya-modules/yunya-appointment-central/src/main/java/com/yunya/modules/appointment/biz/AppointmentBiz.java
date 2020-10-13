@@ -784,12 +784,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             employeeScheduleQueryForm.setUserId(dentistId);
             // 获取排班列表
             EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
-            if (employeeScheduleResult == null){
-                return ResponseUtil.fail(AppointmentError.SCHEDULE_SERVER_ERR.getCode(),AppointmentError.SCHEDULE_SERVER_ERR.getMessage(),employeeScheduleResult);
-            }
-            // 预约医生没有排班，返回空
-            if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
-                return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),employeeScheduleResult);
+            if (employeeScheduleResult != null){
+                List<UserWorkVO> shiftWorkDatas = employeeScheduleResult.getShiftWorkDatas();
+                // 预约医生没有排班，返回空
+                if (StringHelper.isEmpty(shiftWorkDatas)) {
+                    return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),null);
+                }
             }
         }
         // 检查分解的助手是否排班
@@ -799,13 +799,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 employeeScheduleQueryForm.setUserId(assistantId);
                 // 获取排班列表
                 EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
-                if (employeeScheduleResult == null){
-                    return ResponseUtil.fail(AppointmentError.SCHEDULE_SERVER_ERR.getCode(),AppointmentError.SCHEDULE_SERVER_ERR.getMessage(),employeeScheduleResult);
+                if (employeeScheduleResult != null){
+                    List<UserWorkVO> shiftWorkDatas = employeeScheduleResult.getShiftWorkDatas();
+                    // 预约助手没有排班，返回空
+                    if (StringHelper.isEmpty(shiftWorkDatas)) {
+                        return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),null);
+                    }
                 }
-                // 预约助手没有排班，返回空
-                if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
-                    return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),employeeScheduleResult);
-                }
+
             }
 
         }
