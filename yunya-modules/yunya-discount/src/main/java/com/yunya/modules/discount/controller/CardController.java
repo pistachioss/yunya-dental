@@ -29,7 +29,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
  * @author xiangyang
  * @create 2020-08-19
  */
-@Api(tags = {"卡券"})
+@Api(tags = {"卡券-生成、售卖、激活"})
 @RestController
 public class CardController {
 
@@ -65,7 +65,7 @@ public class CardController {
     }
 
     @ApiOperation(value = "产品生成分配--查看配给--导出")
-    @PostMapping("/coupon/generate/allocation/detail/export")
+    @PostMapping("/coupon/generate/allocation/export")
     public void exportAllocateDetail(HttpServletResponse response, @Valid @RequestBody GenerateAllocateCardQuery query) throws IOException {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
@@ -159,12 +159,5 @@ public class CardController {
     public ResponseResult<PageInfo<PatientCardBaseVo>> getPatientCardList(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody PatientCardQuery query) {
         PageInfo<PatientCardBaseVo> pageInfo = cardBiz.getPatientCardPage(patientId, query);
         return ResponseUtil.success(pageInfo);
-    }
-
-    @ApiOperation(value = "收费-选择优惠")
-    @PostMapping("/order/choice/coupon")
-    public ResponseResult<PatientOptionalBenefitVo> chooseCoupon(@Valid @RequestBody PatientBenefitQuery query) {
-        PatientOptionalBenefitVo benefit = cardBiz.getPatientBenefit(query);
-        return ResponseUtil.success(benefit);
     }
 }

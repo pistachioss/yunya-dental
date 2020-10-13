@@ -35,5 +35,29 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
     List<PatientCardBo> listPatientCardsByParam(@Param("patientId") Integer patient, @Param("couponName") String couponName,
                                                 @Param("couponTypeList") List<Integer> couponTypeList, @Param("queryType") Integer queryType);
 
-    List<PatientBenefitBo> listBenefitByPatientId(@Param("patientId") Integer patientId);
+    List<PatientBenefitBo> listBenefitByPatientId(@Param("patientId") Integer patientId, @Param("orgId") Integer orgId);
+
+    /**
+     * 查询卡券可用门诊
+     * @param couponIds  优惠券id集合
+     * @return list
+     */
+    List<UseClinicBo> getUseClinicIdStr(@Param("couponIds") List<Integer> couponIds);
+
+    /**
+     * 查询卡券可单个账单限制数量
+     * @param couponId  优惠券id
+     * @return list
+     */
+    List<UseClinicBo> getLimitCountByParam(@Param("couponId") Integer couponId);
+
+    /**
+     * 查询卡券使用数量信息
+     * @param couponId 优惠券
+     * @param cardId 卡券
+     * @param type 项目类型
+     * @return list
+     */
+    List<CouponItemUseBo> getCouponItemUseInfo(@Param("couponId") Integer couponId, @Param("cardId") Integer cardId,
+                                           @Param("type") Integer type, @Param("couponType") Integer couponType);
 }

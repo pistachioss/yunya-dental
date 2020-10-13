@@ -257,6 +257,9 @@ public class AppointmentController {
   public ResponseResult exportAppointListToExcel(
           HttpServletResponse response,
           @RequestBody @Validated AppointListExportQuery query) throws IOException {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(),query.getPageSize());
+    }
     appointmentBiz.exportAppointListToExcel(response,query);
     return ResponseUtil.success();
   }

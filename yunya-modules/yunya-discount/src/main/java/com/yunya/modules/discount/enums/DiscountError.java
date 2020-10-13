@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.enums;
 
+import com.yunya.framework.common.constant.PreFixCode;
 import com.yunya.framework.common.model.*;
 
 /**
@@ -7,34 +8,47 @@ import com.yunya.framework.common.model.*;
  */
 
 public enum DiscountError implements RestError {
-    CARD_IS_GENERATED(30001, "产品已生成卡券"),
-    FAIL_TO_GENERATE(30002, "卡券生成失败"),
-    COUPON_NOT_ALLOCATE(30003, "优惠券未分配，请先分配再生成"),
-    ORG_NOT_ALLOCATE(30004, "%s未分配该优惠券，不能生成分配"),
-    NUM_NOT_EQUAL(30005, "优惠券生成数量和分配数量不一致"),
-    ORG_BATCH_ERROR(30006, "数据异常，%s不属于当前生成批次"),
-    COUPON_IS_LOCKED(30007, "卡券正在生成分配中，无法提交"),
-    CARD_SOLD_IS_LOCKED(30008, "卡券正在售卖中，无法提交"),
-    COUPON_NOT_EXIST(30009, "优惠券不存在"),
-    SOLD_DATE_RANGE_ERROR(30010, "卡券不在售出时间范围内"),
-    ORG_COUPON_NOT_ALLOCATE(30011, "优惠券%s，%s未生成分配"),
-    CARD_NOT_EXIST(30012, "卡券不存在"),
-    CARD_SOLD_STATUS_ERROR(30013, "卡券售卖状态异常"),
-    CARD_SOLD_OUT(30014, "%s的%s已全部售出"),
-    CARD_NOT_BELONG_ORG(30016, "该卡券不属于%s"),
-    CARD_NOT_BELONG_COUPON(30017, "卡券是%s，请重新选择优惠券类型"),
-    CARD_ACTIVE_IS_LOCKED(30018, "卡券正在激活中，无法提交"),
-    CARD_IS_ACTIVATED(30019, "该卡券已被激活"),
-    CARD_ACTIVE_STATUS_ERROR(30020, "该卡券不是待激活状态，无法激活"),
-    CARD_BEYOND_DEADLINE(30021, "优惠券已超过有效期"),
-    CARD_NOT_CHARGE(30022, "卡券未收费"),
-    CARD_IS_CHARGED(30023, "卡券已收费"),
-    OTHER_ALLOW_ACTIVE_OWN(30024, "自有平台卡券不允许在地三方平台激活"),
-    CARD_NOT_ACTIVATED(30025, "卡券未激活"),
-    COUPON_NOT_ALLOW_SHARE(30026, "该优惠券不能与他人共享"),
-    SHARER_NOT_ALLOW_OWNER(30027, "配置共享人不能是患者自己"),
-    BEYOND_CARD_LIMIT_NUM(30028, "已超过卡券最大生成数量"),
-    CARD_NOT_SOLD(30029, "卡券未售卖"),
+    CARD_IS_GENERATED(1, "产品已生成卡券"),
+    FAIL_TO_GENERATE(2, "卡券生成失败"),
+    COUPON_NOT_ALLOCATE(3, "优惠券未分配，请先分配再生成"),
+    ORG_NOT_ALLOCATE(4, "%s未分配该优惠券，不能生成分配"),
+    NUM_NOT_EQUAL(5, "优惠券生成数量和分配数量不一致"),
+    ORG_BATCH_ERROR(6, "数据异常，%s不属于当前生成批次"),
+    COUPON_IS_LOCKED(7, "卡券正在生成分配中，无法提交"),
+    CARD_SOLD_IS_LOCKED(8, "卡券正在售卖中，无法提交"),
+    COUPON_NOT_EXIST(9, "优惠券不存在"),
+    SOLD_DATE_RANGE_ERROR(10, "卡券不在售出时间范围内"),
+    ORG_COUPON_NOT_ALLOCATE(11, "优惠券%s，%s未生成分配"),
+    CARD_NOT_EXIST(12, "卡券不存在"),
+    CARD_SOLD_STATUS_ERROR(13, "卡券售卖状态异常"),
+    CARD_SOLD_OUT(14, "%s的%s已全部售出"),
+    CARD_NOT_BELONG_ORG(16, "该卡券不属于%s"),
+    CARD_NOT_BELONG_COUPON(17, "卡券是%s，请重新选择优惠券类型"),
+    CARD_ACTIVE_IS_LOCKED(18, "卡券正在激活中，无法提交"),
+    CARD_IS_ACTIVATED(19, "该卡券已被激活"),
+    CARD_ACTIVE_STATUS_ERROR(20, "该卡券不是待激活状态，无法激活"),
+    CARD_BEYOND_DEADLINE(21, "优惠券已超过有效期"),
+    CARD_NOT_CHARGE(22, "卡券未收费"),
+    CARD_IS_CHARGED(23, "卡券已收费"),
+    OTHER_ALLOW_ACTIVE_OWN(24, "自有平台卡券不允许在地三方平台激活"),
+    CARD_NOT_ACTIVATED(25, "卡券未激活"),
+    COUPON_NOT_ALLOW_SHARE(26, "该优惠券不能与他人共享"),
+    SHARER_NOT_ALLOW_OWNER(27, "配置共享人不能是患者自己"),
+    BEYOND_CARD_LIMIT_NUM(28, "已超过卡券最大生成数量"),
+    CARD_NOT_SOLD(29, "卡券未售卖"),
+    PATIENT_NOT_OWN_MEMBER(30, "患者不能使用该会员卡"),
+    PATIENT_NOT_OWN_DISCOUNT(31, "患者不能使用该折扣券"),
+    PATIENT_NOT_OWN_EXCHANGE(32, "患者不能使用该兑换券%s，没有适用项目"),
+    PATIENT_NOT_OWN_PACKAGE(33, "患者不能使用该套餐券%s，没有适用项目"),
+    PATIENT_NOT_OWN_VOUCHER(34, "患者不能使用该代金券%s，没有适用项目"),
+    COUPON_BEYOND_LIMIT_COUNT(35, "选中同产品的卡券%s已超过单个账单限制使用的卡券数量！"),
+    CARD_HAS_CHOICE(36,"卡号是%s的卡券正在被使用，请取消使用该卡券！"),
+    CANT_USE_BENEFIT(37, "患者没有可使用优惠券信息"),
+    EMPLOYEE_NO_AUTH_DISCOUNT(38, "该员工没有授权折扣权限"),
+    ORDER_NOT_EXIST(39, "未查询到订单对应的项目明细"),
+    ORDER_ITEM_NOT_EXIST(40, "项目不存在"),
+    AUTH_BENEFIT_AMOUNT_ERROR(41, "授权折扣项目优惠金额异常"),
+    ORDER_ON_SUBMITTING(42, "订单正在使用优惠，请勿重复提交"),
     ;
     private Integer code;
     private String value;
@@ -43,10 +57,9 @@ public enum DiscountError implements RestError {
         this.code = code;
         this.value = value;
     }
-
     @Override
     public Integer getCode() {
-        return code;
+        return PreFixCode.DISCOUNT.getCode() * 1000 + code;
     }
 
     @Override

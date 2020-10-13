@@ -5,7 +5,6 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.discount.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
-import com.yunya.modules.discount.constant.ExceptionCode;
 import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;

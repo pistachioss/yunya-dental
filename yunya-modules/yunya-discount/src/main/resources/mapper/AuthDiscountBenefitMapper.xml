@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.discount.mapper.AuthDiscountBenefitMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.discount.AuthDiscountBenefit">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="org_id" jdbcType="INTEGER" property="orgId"/>
+        <result column="order_id" jdbcType="INTEGER" property="orderId"/>
+        <result column="order_detail_id" jdbcType="INTEGER" property="orderDetailId"/>
+        <result column="patient_id" jdbcType="INTEGER" property="patientId"/>
+        <result column="item_id" jdbcType="INTEGER" property="itemId"/>
+        <result column="item_type" jdbcType="TINYINT" property="itemType"/>
+        <result column="benefit_amount" jdbcType="DECIMAL" property="benefitAmount"/>
+        <result column="operate_type" jdbcType="TINYINT" property="operateType"/>
+        <result column="is_deleted" jdbcType="BIT" property="deleted"/>
+        <result column="crt_id" jdbcType="INTEGER" property="crtId"/>
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
+        <result column="upd_id" jdbcType="INTEGER" property="updId"/>
+        <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
+    </resultMap>
+
+    <insert id="insertList" parameterType="List">
+        insert into
+        `auth_discount_benefit`
+        (`org_id`, `order_id`, `order_detail_id`, `patient_id`, `item_id`, `item_type`,
+         `benefit_amount`, `operate_type`, `crt_id`, `upd_id`)
+        values
+        <foreach collection="List" item="item" separator=",">
+            (#{item.orgId}, #{item.orderId}, #{item.orderDetailId}, #{item.patientId},#{item.itemId},
+            #{item.itemType}, #{item.benefitAmount}, #{item.operateType}, #{item.crtId}, #{item.updId})
+        </foreach>
+    </insert>
+
+</mapper>
