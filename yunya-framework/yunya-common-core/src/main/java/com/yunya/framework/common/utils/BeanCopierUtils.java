@@ -28,9 +28,7 @@ public class BeanCopierUtils {
         if (CollectionUtils.isNotEmpty(source)) {
             return Lists.newArrayList();
         }
-        return source.stream().map(obj -> {
-            return copySingleBean(obj, targetClazz);
-        }).collect(toList());
+        return source.stream().map(obj -> copySingleBean(obj, targetClazz)).collect(toList());
     }
 
     private static <S extends Serializable, T extends Serializable> T copySingleBean(S source, Class<T> targetClazz) {

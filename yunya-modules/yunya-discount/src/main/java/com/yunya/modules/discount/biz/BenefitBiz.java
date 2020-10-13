@@ -44,20 +44,17 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
-import static com.yunya.modules.discount.enums.BenefitOperateEnum.CHARGE;
-import static com.yunya.modules.discount.enums.BenefitTypeEnum.COUPON_TYPE;
-import static com.yunya.modules.discount.enums.ChoiceBenefitTypeEnum.AUTH_BENEFIT;
-import static com.yunya.modules.discount.enums.ChoiceBenefitTypeEnum.CARD_BENEFIT;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.DISCOUNT;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.EXCHANGE;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.SPECIAL_PACKAGE;
-import static com.yunya.modules.discount.enums.CouponTypeEnum.VOUCHER;
-import static com.yunya.modules.discount.enums.TrueFalseEnum.FALSE;
-import static java.util.stream.Collectors.toMap;
+import static com.yunya.framework.common.constant.BusinessConstants.*;
+import static com.yunya.modules.discount.enums.BenefitOperateEnum.*;
+import static com.yunya.modules.discount.enums.BenefitTypeEnum.*;
+import static com.yunya.modules.discount.enums.ChoiceBenefitTypeEnum.*;
+import static com.yunya.modules.discount.enums.CouponTypeEnum.*;
+import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
+import static java.util.stream.Collectors.*;
 
 /**
  * @author xiangyang
@@ -154,6 +151,8 @@ public class BenefitBiz {
                 orderBenefitMapper.insertSelective(orderBenefit);
 				cardBenefitMapper.insertList(list);
 			}
+			//解锁卡券
+			unlockCard(model.getPatientId());
 			return ResponseUtil.success();
 		} finally {
 			if (locked) {
@@ -319,5 +318,25 @@ public class BenefitBiz {
 			}
 		}
 		return errorBo;
+	}
+
+	/**
+	 * 解锁卡券资源
+	 * @param patientId 患者
+	 */
+	private void unlockCard(Integer patientId) {
+		Set<String> keys = redisUtils.keys(RedisConstants.LOCK_CHOICE_CARD + "*");
+		log.info("【收费-优惠】收费使用优惠完成，开始释放卡券资源");
+		//需要删除的key
+		if (CollectionUtils.isNotEmpty(keys)) {
+			for (String delCardId : keys) {
+				String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHOICE_CARD, String.valueOf(delCardId));
+				String lockVal = String.valueOf(patientId);
+				// 释放患者取消选择的卡券的锁
+				redisUtils.unlock(lockKey, lockVal);
+			}
+			log.info("【收费-优惠】解锁完成");
+		}
+
 	}
 }

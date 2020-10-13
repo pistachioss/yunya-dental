@@ -1,0 +1,44 @@
+
+## 数据源连接
+myjdbc:
+    type: com.zaxxer.hikari.HikariDataSource
+    driverClassName: com.mysql.cj.jdbc.Driver
+    host: 192.168.31.90
+    port: 3306
+    username: sa
+    password: Admin001!
+    jdbc-url-ext: useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false
+
+## 数据库列表
+mydb:
+    system: yunya_system
+    patient: yunya_patient_central
+
+## 多数据源配置
+spring:
+    shardingsphere:
+        props:
+            sql:
+                show: true
+        datasource:
+            names: system,patient
+            system:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.system}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            patient:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.patient}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+        sharding:
+#            defaultDataSourceName: system
+            defaultDatabaseStrategy:
+                hint:
+                    algorithmClassName: com.yunya.middletable.config.MutilDBRoutingAlgorithm
+            defaultTableStrategy:
+                none:
+                    any: ""

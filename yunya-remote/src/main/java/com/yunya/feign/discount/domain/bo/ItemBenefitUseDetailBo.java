@@ -14,6 +14,9 @@ import java.math.BigDecimal;
 public class ItemBenefitUseDetailBo {
     private Integer itemId;
     private Integer type;
+    /**
+     * 当前可用数量
+     */
     private Integer count;
     /**
      * 该字段套餐券需要使用（计算优惠金额）

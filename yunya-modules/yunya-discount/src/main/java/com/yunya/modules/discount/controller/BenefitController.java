@@ -56,7 +56,7 @@ public class BenefitController {
         return benefitBiz.saveCardBenefit(model);
     }
 
-    @ApiOperation(value = "收费-确认收费-保存优惠券优惠")
+    @ApiOperation(value = "收费-确认收费-授权折扣优惠")
     @PostMapping("/order/benefit/authorization/save")
     @CurrentUser
     public ResponseResult<PatientOrderBenefitVo> saveAuthBenefit(@Valid @RequestBody AuthDiscountBenefitModel model) {

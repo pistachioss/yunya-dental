@@ -24,13 +24,16 @@ import java.util.Date;
 @ToString
 public class AppointListExportQuery implements Serializable {
 
+    @ApiModelProperty(value = "是否分页（默认分页）")
+    private Boolean whetherPage = true;
+
     @ApiModelProperty(value = "页码")
     @NotNull(message = "页码为空！")
-    private int pageNum;
+    private Integer pageNum = 1;
 
-    @ApiModelProperty(value = "每页显示条数", required = true)
+    @ApiModelProperty(value = "每页显示条数")
     @NotNull(message = "每页显示条数为空！")
-    private int pageSize;
+    private Integer pageSize = 10;
 
     /** 预约日期 */
     @ApiModelProperty(value = "预约日期",required = true)

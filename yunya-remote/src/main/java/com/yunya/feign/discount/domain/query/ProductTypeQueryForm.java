@@ -30,8 +30,8 @@ public class ProductTypeQueryForm implements Serializable {
   @ApiModelProperty("每页显示数量，默认显示10条")
   @Min(message = "最小值", value = 1)
   private Integer pageSize = 10;
-  /** 入账方式ID */
-  @ApiModelProperty("入账方式ID")
+  /** ID */
+  @ApiModelProperty("ID")
   private Integer id;
   /** 产品分类名称 */
   @ApiModelProperty("产品分类名称")
