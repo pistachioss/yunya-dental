@@ -25,6 +25,8 @@ public class PatientVoucherVo implements Serializable {
     private LocalDate useDeadline;
     @ApiModelProperty(value = "产品共用（0：不共用 1：共用）")
     private Integer mixable;
+    @ApiModelProperty(value = "账单单次使用限制数量（页面不用显示）")
+    private Integer limitCount;
     @ApiModelProperty(value = "拥有者")
     private String owner;
     @ApiModelProperty(value = "图片路径")

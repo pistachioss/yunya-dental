@@ -1,8 +1,6 @@
 package com.yunya.feign.discount.domain.bo;
 
 import com.google.common.collect.Lists;
-import com.yunya.models.discount.PackageCouponItem;
-import com.yunya.models.discount.SpecialPackageCouponItem;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.commons.collections4.CollectionUtils;
@@ -13,7 +11,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 /**
  * @author xiangyang
@@ -46,21 +44,21 @@ public class PatientUseBenefitBo implements Serializable {
         this.benefitUseDetail = Lists.newArrayList();
     }
 
-    public void setExchangeCouponItemDetail(List<PackageCouponItem> list) {
+    public void setExchangeCouponItemDetail(List<CouponItemUseBo> list) {
         if (CollectionUtils.isNotEmpty(list)) {
             List<ItemBenefitUseDetailBo> itemList = list.stream().map(exchangeItem -> {
-                return new ItemBenefitUseDetailBo(exchangeItem.getItemId(),
-                        exchangeItem.getType(), exchangeItem.getCount(), BigDecimal.valueOf(0));
+                return new ItemBenefitUseDetailBo(exchangeItem.getItemId(), exchangeItem.getType(),
+                        exchangeItem.getOriginCount() - exchangeItem.getUseCount(), BigDecimal.valueOf(0));
             }).collect(toList());
             this.setBenefitUseDetail(itemList);
         }
     }
 
-    public void setPackageCouponItemDetail(List<SpecialPackageCouponItem> list) {
+    public void setPackageCouponItemDetail(List<CouponItemUseBo> list) {
         if (CollectionUtils.isNotEmpty(list)) {
             List<ItemBenefitUseDetailBo> itemList = list.stream().map(packageItem -> {
-                return new ItemBenefitUseDetailBo(packageItem.getItemId(),
-                        packageItem.getType(), packageItem.getCount(), packageItem.getPackageUnitPrice());
+                return new ItemBenefitUseDetailBo(packageItem.getItemId(), packageItem.getType(),
+                        packageItem.getOriginCount() - packageItem.getUseCount(), packageItem.getPackageUnitPrice());
             }).collect(toList());
             this.setBenefitUseDetail(itemList);
         }

@@ -29,7 +29,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
  * @author xiangyang
  * @create 2020-08-19
  */
-@Api(tags = {"卡券"})
+@Api(tags = {"卡券-生成、售卖、激活"})
 @RestController
 public class CardController {
 

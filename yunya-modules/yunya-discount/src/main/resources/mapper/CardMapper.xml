@@ -285,7 +285,8 @@
             `temp`.`useDeadline`,
             `temp`.`useWay`,
             `temp`.`mixable`,
-            `temp`.`path`
+            `temp`.`path`,
+            `temp`.`limitCount`
         from (select
                   `c`.`id`         as `cardId`,
                   `c`.`card_number`,
@@ -314,22 +315,34 @@
                   case
                       when `cci`.`type` = 0 then
                           (select
-                               date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                                if(activation_deadline &lt;
+                                    date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d'),
+                                    activation_deadline,
+                                    date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d'))
                            from `vouche_coupon`
                            where `coupon_id` = `c`.coupon_id)
                       when `cci`.`type` = 1 then
                           (select
-                               date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                               if(activation_deadline &lt;
+                                    date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d'),
+                                    activation_deadline,
+                                    date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d'))
                            from `discount_coupon`
                            where `coupon_id` = `c`.`coupon_id`)
                       when `cci`.`type` = 2 then
                           (select
-                               date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                               if(activation_deadline &lt;
+                                    date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d'),
+                                    activation_deadline,
+                                    date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d'))
                            from `package_coupon`
                            where `coupon_id` = `c`.`coupon_id`)
                       when `cci`.`type` = 3 then
                           (select
-                               date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')
+                               if(activation_deadline &lt;
+                                    date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d'),
+                                    activation_deadline,
+                                    date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d'))
                            from `special_package_coupon`
                            where `coupon_id` = `c`.`coupon_id`)
                       else null
@@ -338,38 +351,38 @@
                       when `cci`.`type` in (0, 1) then
                           (select
                                 if(count(*) = 0, 1, 0)
-                           from `benefit_detail` `bd`
+                           from `card_benefit` `bd`
                            where `bd`.`card_id` = `c`.`id`
                              and `bd`.`benefit_type` = 1
-                             and `bd`.`inservice` = 0)
+                             and `bd`.`is_deleted` = 0)
                       when `cci`.`type` = 2 then
                           (select
-                                if(isnull(sum(`bd`.`benefit_num`)) = 1,
+                                if(isnull(count(`bd`.`card_id`)) = 1,
                                    null,
-                                   sum(`bd`.`benefit_num`)
+                                   count(`bd`.`card_id`)
                                        &lt; (select sum(count)
                                           from `package_coupon_item` `pci`
                                           where `pci`.`coupon_id` = `cci`.`id`
                                           group by `pci`.`coupon_id`)
                                    )
-                          from `benefit_detail` `bd`
+                          from `card_benefit` `bd`
                           where `bd`.`card_id` = `c`.`id`
                             and `bd`.`benefit_type` = 1
-                            and `bd`.`inservice` = 0)
+                            and `bd`.`is_deleted` = 0)
                       when `cci`.`type` = 3 then
                           (select
-                                if(isnull(sum(`bd`.`benefit_num`)) = 1,
+                                if(isnull(count(`bd`.`card_id`)) = 1,
                                     null,
-                                    sum(`bd`.`benefit_num`)
+                                    count(`bd`.`card_id`)
                                         &lt; (select sum(count)
                                            from `special_package_coupon_item` `spci`
                                            where `spci`.`coupon_id` = `cci`.`id`
                                            group by `spci`.`coupon_id`)
                                   )
-                          from `benefit_detail` `bd`
+                          from `card_benefit` `bd`
                           where `bd`.`card_id` = `c`.`id`
                             and `bd`.`benefit_type` = 1
-                            and `bd`.`inservice` = 0)
+                            and `bd`.`is_deleted` = 0)
                       else null
                       end      as `itemUseable`,
                   (select
@@ -384,21 +397,32 @@
                       when `cci`.`type` = 0 then
                           (select count(*)
                            from `vouche_coupon` `vc`
-                           where `vc`.`coupon_id` = `c`.`id` and find_in_set(#{orgId}, `vc`.`useable_clinci`))
+                           where `vc`.`coupon_id` = `c`.`coupon_id` and find_in_set(#{orgId}, `vc`.`useable_clinci`))
                       when `cci`.`type` = 1 then
                           (select count(*)
                            from `discount_coupon` `dc`
-                           where `dc`.`coupon_id` = `c`.`id` and find_in_set(#{orgId}, `dc`.`useable_clinic`))
+                           where `dc`.`coupon_id` = `c`.`coupon_id` and find_in_set(#{orgId}, `dc`.`useable_clinic`))
                       when `cci`.`type` = 2 then
                           (select count(*)
                            from `package_coupon` `pc`
-                           where `pc`.`coupon_id` = `c`.`id` and find_in_set(#{orgId}, `pc`.`useable_clinic`))
+                           where `pc`.`coupon_id` = `c`.`coupon_id` and find_in_set(#{orgId}, `pc`.`useable_clinic`))
                       when `cci`.`type` = 3 then
                           (select count(*)
                            from `special_package_coupon` `spc`
-                           where `spc`.`coupon_id` = `c`.`id` and find_in_set(#{orgId}, `spc`.`useable_clinic`))
+                           where `spc`.`coupon_id` = `c`.`coupon_id` and find_in_set(#{orgId}, `spc`.`useable_clinic`))
                       else null
-                      end          as `useClinicCount`
+                      end          as `useClinicCount`,
+                  case
+                      when `cci`.`type` = 0 then
+                          (select `limit_count` from `vouche_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      when `cci`.`type` = 1 then
+                          1
+                      when `cci`.`type` = 2 then
+                          (select `limit_count` from `package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      when `cci`.`type` = 3 then
+                          (select `limit_count` from `special_package_coupon` where `coupon_id` = `c`.`coupon_id`)
+                      else null
+                      end      as `limitCount`
               from `card` `c`
                    inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
               where `cci`.`is_inservice` = 1
@@ -448,7 +472,8 @@
                     )
                 else
                     null
-                end as useClinicId
+                end as useClinicIdStr,
+            cci.id      as couponId
         from coupon_common_info cci
         where cci.id in
             <foreach collection="couponIds" item="item" open="(" separator="," close=")">
@@ -489,5 +514,60 @@
         from coupon_common_info cci
         where cci.id = #{couponId}
           and cci.is_inservice = 1;
+    </select>
+
+    <!-- 查询卡券使用数量信息 -->
+    <select id="getCouponItemUseInfo" resultType="com.yunya.feign.discount.domain.bo.CouponItemUseBo">
+        select
+            <if test="couponType != null and couponType == 2">
+                pci.coupon_id                                    as couponId,
+                pci.item_id                                      as itemId,
+                pci.type,
+                pci.count                                        as originCount,
+                if(if(isnull(temp.useCount) = 1, 0,
+                    temp.useCount) >= pci.count, 0, 1)           as usable,
+            </if>
+            <if test="couponType != null and couponType == 3">
+                spci.coupon_id                                    as couponId,
+                spci.item_id                                      as itemId,
+                spci.type,
+                spci.count                                        as originCount,
+                if(if(isnull(temp.useCount) = 1, 0,
+                    temp.useCount) >= spci.count, 0, 1)           as usable,
+                spci.package_unit_price                           as packageUnitPrice,
+            </if>
+            if(isnull(temp.card_id) = 1, #{cardId}, temp.card_id) as cardId,
+            if(isnull(temp.useCount) = 1, 0, temp.useCount)  as useCount
+        from (select
+                  cb.coupon_id,
+                  cb.card_id,
+                  cb.item_id,
+                  count(*) as useCount
+              from card_benefit cb
+              where cb.card_id = #{cardId}
+                and cb.is_deleted = 0
+              group by cb.coupon_id, cb.card_id, cb.item_id) temp
+        right join
+                <if test="couponType != null and couponType == 2">
+                    package_coupon_item pci on temp.coupon_id = pci.coupon_id
+                    and temp.item_id = pci.item_id
+                </if>
+                <if test="couponType != null and couponType == 3">
+                    special_package_coupon_item spci on temp.coupon_id = spci.coupon_id
+                    and temp.item_id = spci.item_id
+                </if>
+        where
+            <if test="couponType != null and couponType == 2">
+                pci.coupon_id = #{couponId}
+                <if test="type != null and type != ''">
+                    and pci.type = #{type}
+                </if>
+            </if>
+            <if test="couponType != null and couponType == 3">
+                spci.coupon_id = #{couponId}
+                <if test="type != null and type != ''">
+                    and spci.type = #{type}
+                </if>
+            </if>
     </select>
 </mapper>

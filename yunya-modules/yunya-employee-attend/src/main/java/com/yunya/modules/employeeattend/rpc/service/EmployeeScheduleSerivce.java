@@ -80,7 +80,7 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     Integer formuserId = employeeScheduleQueryForm.getUserId();
 
     List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicId(null);
-    Map<String, ClinicScheduleVO> ClinicScheduleMap = new HashMap();
+    Map<String, ClinicScheduleVO> ClinicScheduleMap = new HashMap(16);
     ClinicSchedules.forEach(x -> ClinicScheduleMap.put(x.getScheduleId() + "", x));
     if (postNames == null || postNames.size() == 0) {
       postNames = null;
