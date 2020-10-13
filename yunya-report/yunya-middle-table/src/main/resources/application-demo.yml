@@ -1,0 +1,29 @@
+
+## 多数据源配置
+spring:
+    shardingsphere:
+        props:
+            sql:
+                show:
+                    true
+        datasource:
+            names: system,patient
+            system:
+                type: com.zaxxer.hikari.HikariDataSource
+                driverClassName: com.mysql.cj.jdbc.Driver
+                jdbc-url: jdbc:mysql://192.168.31.90:3306/yunya_system?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false
+                username: sa
+                password: Admin001!
+            patient:
+                type: com.zaxxer.hikari.HikariDataSource
+                driverClassName: com.mysql.cj.jdbc.Driver
+                jdbc-url: jdbc:mysql://192.168.31.90:3306/yunya_patient_central?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false
+                username: sa
+                password: Admin001!
+        sharding:
+            defaultDatabaseStrategy:
+                hint:
+                    algorithmClassName: com.yunya.middletable.config.MutilDBRoutingAlgorithm
+            defaultTableStrategy:
+                none:
+                    any: ""
