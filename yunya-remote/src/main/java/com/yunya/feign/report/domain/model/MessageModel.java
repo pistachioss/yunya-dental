@@ -1,4 +1,4 @@
-package com.yunya.feign.middletable.domain.model;
+package com.yunya.feign.report.domain.model;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;

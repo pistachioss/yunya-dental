@@ -1,4 +1,4 @@
-package com.yunya.feign.middletable.domain.form;
+package com.yunya.feign.report.domain.form;
 
 import lombok.Getter;
 import lombok.Setter;

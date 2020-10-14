@@ -1,4 +1,4 @@
-package com.yunya.feign.middletable;
+package com.yunya.feign.report;
 
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
