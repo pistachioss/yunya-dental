@@ -44,6 +44,6 @@ public interface RemoteTreatmentOtherFeign {
      * @param treatmentId 就诊记录ID
      */
     @ApiOperation(value = "根据就诊记录ID删除随访")
-    @RequestMapping(value = "api/treatment/other/visiting/record/delete/{treatmentId}", method = RequestMethod.GET)
+    @RequestMapping(value = "api/treatment/other/visiting/record/delete/{treatmentId}", method = RequestMethod.DELETE)
     void deleteVisitingRecordByTreatmentIdRest(@PathVariable(value = "treatmentId") Integer treatmentId);
 }
