@@ -86,10 +86,9 @@ public class ClinicAccountItemController {
    * @return
    */
   @ApiOperation("根据条件查询门诊支付方式配置列表")
-  @ApiImplicitParams({@ApiImplicitParam(name = "queryForm", value = "查询条件", required = true)})
   @PostMapping(value = "/clinic/configure", name = "查询条件")
   public ResponseResult<PageInfo<ClinicAccountItemVO>> configureClinicAccountItem(
-      @RequestBody ClinicAccountItemConfigureQueryForm queryForm) {
+      @RequestBody @Validated ClinicAccountItemConfigureQueryForm queryForm) {
     PageInfo<ClinicAccountItemVO> resultList = clinicAccountItemBiz.configure(queryForm);
     return ResponseUtil.success(resultList);
   }
