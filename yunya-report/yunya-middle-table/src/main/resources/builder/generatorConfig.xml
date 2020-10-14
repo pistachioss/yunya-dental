@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+        PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+        "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration>
+
+    <context id="Mysql" targetRuntime="MyBatis3Simple" defaultModelType="flat">
+        <property name="beginningDelimiter" value="`"/>
+        <property name="endingDelimiter" value="`"/>
+        <property name="mergeable" value="false"/>
+        <plugin type="tk.mybatis.mapper.generator.MapperPlugin">
+            <property name="mappers" value="tk.mybatis.mapper.common.Mapper"/>
+        </plugin>
+
+        <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+                        connectionURL="jdbc:mysql://192.168.31.90:3306/yunya_report?useUnicode=true"
+                        userId="sa"
+                        password="Admin001!">
+        </jdbcConnection>
+
+        <javaModelGenerator targetPackage="${targetModelPackage}" targetProject="${targetJavaProject}"/>
+
+        <sqlMapGenerator targetPackage="${targetXMLPackage}" targetProject="${targetResourcesProject}"/>
+
+        <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
+                             type="XMLMAPPER"/>
+
+<!--        <table tableName="base_benefit" domainObjectName="BaseBenefit"/>-->
+<!--        <table tableName="base_bill" domainObjectName="BaseBill"/>-->
+<!--        <table tableName="base_bill_detail" domainObjectName="BaseBillDetail"/>-->
+<!--        <table tableName="base_bill_pay" domainObjectName="BaseBillPay"/>-->
+<!--        <table tableName="base_card" domainObjectName="BaseCard"/>-->
+<!--        <table tableName="base_coupon" domainObjectName="BaseCoupon"/>-->
+<!--        <table tableName="base_coupon_item" domainObjectName="BaseCouponItem"/>-->
+<!--        <table tableName="base_employee" domainObjectName="BaseEmployee"/>-->
+<!--        <table tableName="base_employee_schedule" domainObjectName="BaseEmployeeSchedule"/>-->
+<!--        <table tableName="base_organization" domainObjectName="BaseOrganization"/>-->
+        <table tableName="base_patient" domainObjectName="BasePatient"/>
+        <table tableName="base_patient_member" domainObjectName="BasePatientMember"/>
+        <table tableName="base_patient_member_occur_log" domainObjectName="BasePatientMemberOccurLog"/>
+        <table tableName="base_patient_member_relation" domainObjectName="BasePatientMemberRelation"/>
+<!--        <table tableName="base_refund" domainObjectName="BaseRefund"/>-->
+<!--        <table tableName="base_refund_detail" domainObjectName="BaseRefundDetail"/>-->
+<!--        <table tableName="base_tariff" domainObjectName="BaseTariff"/>-->
+<!--        <table tableName="base_treatment_process" domainObjectName="BaseTreatmentProcess"/>-->
+<!--        <table tableName="base_user_post" domainObjectName="BaseUserPost"/>-->
+<!--        <table tableName="base_visit_remind" domainObjectName="BaseVisitRemind"/>-->
+    </context>
+</generatorConfiguration>
