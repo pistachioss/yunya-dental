@@ -126,16 +126,6 @@ spring:
           metadata:
             title: "患者资料服务"
 
-        - id: yunya-tariff
-          uri: lb://yunya-tariff
-          order: 9003
-          predicates:
-            - Path=/api/tariff/**
-          filters:
-            - StripPrefix=2
-          metadata:
-            title: "价目表服务"
-
         - id: yunya-treatment
           uri: lb://yunya-treatment
           order: 9004
