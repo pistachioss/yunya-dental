@@ -36,6 +36,6 @@ public class PageQuery implements Serializable {
     if (StringHelper.isEmpty(orderByColumn)) {
       return "";
     }
-    return StringHelper.toUnderScoreCase(orderByColumn) + " " + isAsc;
+    return StringHelper.toUnderScoreCase(orderByColumn) + isAsc;
   }
 }
