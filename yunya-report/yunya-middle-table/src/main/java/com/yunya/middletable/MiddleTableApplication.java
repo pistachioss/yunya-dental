@@ -1,16 +1,19 @@
 package com.yunya.middletable;
 
+import com.yunya.feign.EnableYunyaFeignClients;
+import com.yunya.framework.swagger.EnableCustomSwagger2;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.context.annotation.ComponentScan;
 import tk.mybatis.spring.annotation.MapperScan;
 
 @SpringBootApplication
-@EnableDiscoveryClient
 @MapperScan(basePackages = "com.yunya.middletable.dao")
-@EnableAutoConfiguration(exclude={DataSourceAutoConfiguration.class})
+@EnableYunyaFeignClients
+@EnableDiscoveryClient
+@EnableCustomSwagger2
+@ComponentScan(basePackages = {"com.yunya.middletable","com.yunya.framework.common","com.yunya.framework.redis"})
 public class MiddleTableApplication {
 
     public static void main(String[] args) {

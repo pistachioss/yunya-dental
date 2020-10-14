@@ -1391,13 +1391,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                         } else {
                             // 设置医生维度大医生下的预约助手相关信息（助手排班、助手分解到的患者信息）
                             AppointmentDimensionVo assistantPatientInfo = this.setAppointAssistantInfo(appointmentPatientCardVo, appointmentSplitVo);
-                            // 设置预约助手下的患者数量，没循环一次加1
-                            assert assistantPatientInfo != null;
-                            Integer patientNum = assistantPatientInfo.getPatientNum();
-                            patientNum = (null == patientNum ? 0 : patientNum);
-                            assistantPatientInfo.setPatientNum(++patientNum);
-                            // 将助手信息放入助手预约信息列表中
-                            assistantAppointList.add(assistantPatientInfo);
+                            // 设置预约助手下的患者数量，每循环一次加1；
+                            if(null != assistantPatientInfo) {
+                                Integer patientNum = assistantPatientInfo.getPatientNum();
+                                patientNum = (null == patientNum ? 0 : patientNum);
+                                assistantPatientInfo.setPatientNum(++patientNum);
+
+                                // 将助手信息放入助手预约信息列表中
+                                assistantAppointList.add(assistantPatientInfo);
+                            }
                         }
                     }
                     // 将助手预约信息设置到医生维度信息实体中
@@ -1418,6 +1420,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     appointmentPatientCardVo.setStation(aByte);
                 }
             }
+            System.out.println(appointmentDimensionVo.toString());
             // 判断大医生下面的助手列表中是否已经存在同一个助手了，如果存在同一个助手，则合并助手下的所有患者
             appointmentDimensionVo = this.mergeAssistant(appointmentDimensionVo);
 
