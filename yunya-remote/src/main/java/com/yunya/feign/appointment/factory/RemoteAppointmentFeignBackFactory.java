@@ -2,6 +2,7 @@ package com.yunya.feign.appointment.factory;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
@@ -53,6 +54,11 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
 
     @Override
     public List<Appointment> findAppointmentByPatientId(Integer patientId) {
+        return null;
+    }
+
+    @Override
+    public List<Appointment> findAppointmentList(AppAppointmentInfoQuery query) {
         return null;
     }
 }

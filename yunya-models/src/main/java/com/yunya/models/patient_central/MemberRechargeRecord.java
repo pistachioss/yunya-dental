@@ -87,6 +87,51 @@ public class MemberRechargeRecord {
     private Date updTime;
 
     /**
+     * 充值后当前本金
+     */
+    @Column(name = "current_recharge_principal")
+    private BigDecimal currentRechargePrincipal;
+
+    /**
+     * 充值后当前赠金
+     */
+    @Column(name = "current_recharge_bonus")
+    private BigDecimal currentRechargeBonus;
+
+
+    /**
+     *  获取充值后当前本金
+     * @return currentRechargePrincipal
+     */
+    public BigDecimal getCurrentRechargePrincipal() {
+        return currentRechargePrincipal;
+    }
+
+    /**
+     * 设置充值后当前本金
+     * @param currentRechargePrincipal
+     */
+    public void setCurrentRechargePrincipal(BigDecimal currentRechargePrincipal) {
+        this.currentRechargePrincipal = currentRechargePrincipal;
+    }
+
+    /**
+     * 获取 充值后当前赠金
+     * @return currentRechargeBonus
+     */
+    public BigDecimal getCurrentRechargeBonus() {
+        return currentRechargeBonus;
+    }
+
+    /**
+     * 设置 充值后当前赠金
+     * @param currentRechargeBonus
+     */
+    public void setCurrentRechargeBonus(BigDecimal currentRechargeBonus) {
+        this.currentRechargeBonus = currentRechargeBonus;
+    }
+
+    /**
      * 获取主键
      *
      * @return id - 主键

@@ -132,7 +132,7 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
     sysUserPost.setCompanyId(form.getOrgId());
     sysUserPost.setPostId(form.getPostId());
     sysUserPost.setGroupId(form.getPostGroupId());
-    sysUserPost.setUserId(Integer.valueOf(BaseContextHandler.getUserID()));
+    sysUserPost.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     sysUserPost.setUpdName(BaseContextHandler.getName());
     sysUserPost.setUpdTime(new Date(System.currentTimeMillis()));
     mapper.updateByPrimaryKeySelective(sysUserPost);

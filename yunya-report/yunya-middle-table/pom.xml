@@ -40,15 +40,29 @@
         <dependency>
             <groupId>org.apache.shardingsphere</groupId>
             <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
-            <version>4.1.1</version>
+            <!-- 此版本需要固定，在切换数据源的时候无需指定具体表 -->
+            <version>4.0.0-RC2</version>
         </dependency>
+        <!-- 服务调用 -->
         <dependency>
             <groupId>com.yunya</groupId>
-            <artifactId>yunya-models</artifactId>
+            <artifactId>yunya-remote</artifactId>
             <version>1.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
 
+        <!-- redis -->
+        <dependency>
+            <groupId>com.yunya</groupId>
+            <artifactId>yunya-common-redis</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
+        <!-- swagger -->
+        <dependency>
+            <groupId>com.yunya</groupId>
+            <artifactId>yunya-common-swagger</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>

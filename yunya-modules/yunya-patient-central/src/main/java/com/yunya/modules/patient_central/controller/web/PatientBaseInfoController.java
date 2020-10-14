@@ -40,7 +40,7 @@ import java.util.Map;
  */
 @Api(value = "患者信息", description = "患者信息（增删查改）")
 @RestController
-@RequestMapping("central")
+@RequestMapping("/central")
 public class PatientBaseInfoController {
 
   /** 注入对象 */
