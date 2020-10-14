@@ -1,10 +1,7 @@
 package com.yunya.modules.treatment.other.rpc;
 
-import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
-import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import io.swagger.annotations.Api;
@@ -55,7 +52,7 @@ public class TreatmentOtherServiceRest {
      */
     @ApiOperation(value = "根据就诊记录ID删除随访")
     @RequestMapping(value = "/visiting/record/delete/{treatmentId}", method = RequestMethod.GET)
-    public void deleteVisitingRecordByTreatmentIdRest(@PathVariable("treatmentId") Integer treatmentId) {
+    public void deleteVisitingRecordByTreatmentIdRest(@PathVariable(value = "treatmentId") Integer treatmentId) {
         visitingRecordBiz.deleteVisitingRecordByTreatmentId(treatmentId);
     }
 
