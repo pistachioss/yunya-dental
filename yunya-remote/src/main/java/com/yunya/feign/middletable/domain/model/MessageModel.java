@@ -1,8 +1,11 @@
 package com.yunya.feign.middletable.domain.model;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * @author xiangyang
@@ -12,9 +15,17 @@ import lombok.ToString;
 @Setter
 @ToString
 public class MessageModel {
+
+	/**
+	 * "采集消息id
+	 */
+	@ApiModelProperty(value = "采集消息id", required = true)
+	@NotNull
 	private Integer id;
 	/**
-	 * 0-新增 1-修改 2-删除
+	 * 操作类型（0-新增 1-修改 2-删除）
 	 */
-	private Integer operateId;
+	@ApiModelProperty(value = "操作类型（0-新增 1-修改 2-删除）", required = true)
+	@NotNull
+	private Integer operateType;
 }
