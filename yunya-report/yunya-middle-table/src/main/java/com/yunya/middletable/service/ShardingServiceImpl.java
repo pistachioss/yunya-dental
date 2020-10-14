@@ -1,6 +1,5 @@
 package com.yunya.middletable.service;
 
-import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.middletable.dao.patient.PatientBaseInfoMapper;
 import com.yunya.middletable.dao.system.DictionaryItemMapper;
 import com.yunya.models.patient_central.PatientBaseInfo;
@@ -11,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class ShardingServiceImpl extends BaseBiz {
+public class ShardingServiceImpl{
 
     @Autowired
     DictionaryItemMapper dictionaryItemMapper;
