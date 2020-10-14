@@ -3,9 +3,8 @@ package com.yunya.middletable.config;
 import org.apache.shardingsphere.api.sharding.hint.HintShardingAlgorithm;
 import org.apache.shardingsphere.api.sharding.hint.HintShardingValue;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 
 public class MutilDBRoutingAlgorithm implements HintShardingAlgorithm<String> {
 
@@ -14,7 +13,7 @@ public class MutilDBRoutingAlgorithm implements HintShardingAlgorithm<String> {
 
         System.out.println("shardingValue=" + shardingValue);
         System.out.println("availableTargetNames=" + availableTargetNames);
-        List<String> shardingResult = new ArrayList<>();
+        Collection<String> shardingResult = new HashSet<>();
         for(String value : shardingValue.getValues()){
             if(availableTargetNames.contains(value)) {
                 shardingResult.add(value);

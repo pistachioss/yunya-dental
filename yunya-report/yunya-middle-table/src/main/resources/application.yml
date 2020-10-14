@@ -1,4 +1,5 @@
-
+server:
+    port: 8300
 ## 数据源连接
 myjdbc:
     type: com.zaxxer.hikari.HikariDataSource
@@ -16,6 +17,21 @@ mydb:
 
 ## 多数据源配置
 spring:
+    application:
+        name: yunya-middle-table
+    jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+        time-zone: GMT+8
+        default-property-inclusion: always
+    redis:
+        host: 192.168.31.90
+        port: 6379
+        password: foobared
+        database: 2
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 192.168.31.215:8848
     shardingsphere:
         props:
             sql:
@@ -42,3 +58,22 @@ spring:
             defaultTableStrategy:
                 none:
                     any: ""
+
+# 配置swagger
+swagger:
+    enabled: true
+    base-package: com.yunya.middletable
+    title: yunya-middle-table
+    version: 1.0.0.SNAPSHOT
+    description: 报表相关功能 (网关地址：/api/emr/**)
+    contact:
+        name: yunya-middle-table
+
+#设置hystrix超时
+hystrix:
+    command:
+        default:
+            execution:
+                isolation:
+                    thread:
+                        timeoutInMilliseconds: 30000
