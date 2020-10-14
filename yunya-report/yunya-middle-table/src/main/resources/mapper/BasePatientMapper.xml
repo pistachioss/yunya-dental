@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.BasePatientMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BasePatient" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="medical_number" property="medicalNumber" jdbcType="VARCHAR" />
+    <result column="birthday" property="birthday" jdbcType="DATE" />
+    <result column="origin_type" property="originType" jdbcType="INTEGER" />
+    <result column="origin_id" property="originId" jdbcType="INTEGER" />
+    <result column="gender" property="gender" jdbcType="TINYINT" />
+    <result column="first_visit_date" property="firstVisitDate" jdbcType="TIMESTAMP" />
+    <result column="first_visit_outpatient" property="firstVisitOutpatient" jdbcType="VARCHAR" />
+    <result column="first_visit_doctors" property="firstVisitDoctors" jdbcType="VARCHAR" />
+    <result column="last_visit_date" property="lastVisitDate" jdbcType="TIMESTAMP" />
+    <result column="last_visit_outpatient" property="lastVisitOutpatient" jdbcType="VARCHAR" />
+    <result column="last_visit_doctors" property="lastVisitDoctors" jdbcType="VARCHAR" />
+    <result column="cumulative_consumption" property="cumulativeConsumption" jdbcType="INTEGER" />
+    <result column="total_arrears" property="totalArrears" jdbcType="INTEGER" />
+    <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER" />
+  </resultMap>
+</mapper>

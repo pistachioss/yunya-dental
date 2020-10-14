@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.BaseEmployeeMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseEmployee" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="employee_name" property="employeeName" jdbcType="VARCHAR" />
+    <result column="gender" property="gender" jdbcType="TINYINT" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="work_status" property="workStatus" jdbcType="TINYINT" />
+    <result column="title" property="title" jdbcType="VARCHAR" />
+    <result column="post_level" property="postLevel" jdbcType="VARCHAR" />
+    <result column="bonus_coefficient" property="bonusCoefficient" jdbcType="DOUBLE" />
+    <result column="work_amount" property="workAmount" jdbcType="DOUBLE" />
+    <result column="work_number" property="workNumber" jdbcType="VARCHAR" />
+  </resultMap>
+</mapper>
