@@ -286,6 +286,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     // 添加会员卡充值记
     MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
     BeanUtils.copyProperties(model, memberRechargeRecord);
+    memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
+    memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
     memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     memberRechargeRecord.setCrtName(BaseContextHandler.getName());

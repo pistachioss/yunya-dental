@@ -104,6 +104,28 @@ public class MemberExpendRecord {
     private Integer billPayRecordId;
 
     /**
+     * 类型（0：撤销消费 1：消费 ）
+     */
+    @Column(name = "type")
+    private Integer type;
+
+    /**
+     * 获取type
+     * @return type
+     */
+    public Integer getType() {
+        return type;
+    }
+
+    /**
+     * 设置type
+     * @param type
+     */
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    /**
      * @return id
      */
     public Integer getId() {

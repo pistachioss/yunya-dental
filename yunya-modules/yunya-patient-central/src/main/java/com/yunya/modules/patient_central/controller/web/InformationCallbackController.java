@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -88,7 +89,7 @@ public class InformationCallbackController {
    */
   @IgnoreUserToken
   @ApiOperation(value = "人脸识别认证返回")
-    @RequestMapping(value = "/faceRecognition", method = {RequestMethod.POST})
+      @RequestMapping(value = "/faceRecognition", method = {RequestMethod.POST})
   public Map<String, Object> faceRecognition(@RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
     return this.informationCallbackBiz.renlianshibie(patientWoPlatformInfoModel);
   }
@@ -112,12 +113,14 @@ public class InformationCallbackController {
   @IgnoreUserToken
   @ApiOperation(value = "拍照回调")
   @RequestMapping(value = "/paizhao")
-  public ResponseResult takePictures() {
-    System.out.println("---------------------拍照回调------------------");
-    System.out.println("---------------------拍照回调------------------");
-    System.out.println("---------------------拍照回调------------------");
-    System.out.println("---------------------拍照回调------------------");
-      return ResponseUtil.success();
+  public Map<String,Object> paizhao() {
+    Map<String,Object> map = new HashMap<>();
+     System.out.println("---------------------拍照回调------------------");
+     System.out.println("---------------------拍照回调------------------");
+     System.out.println("---------------------拍照回调------------------");
+     System.out.println("---------------------拍照回调------------------");
+     map.put("msg","拍照回调,请求成功");
+     return map;
   }
 
 

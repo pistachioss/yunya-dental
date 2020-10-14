@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.EquipmentBiz;
@@ -8,6 +9,7 @@ import com.yunya.modules.system.domain.model.EquipmentInfoModel;
 import com.yunya.modules.system.domain.query.EquipmentInfoQueryForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,6 +55,17 @@ public class EquipmentController {
     @DeleteMapping(value = "delete/{id}")
     public ResponseResult delete(@PathVariable(value = "id") Integer id){
         equipmentBiz.deleteById(id);
+        return ResponseUtil.success();
+    }
+
+    @IgnoreUserToken
+    @ApiOperation(value = "拍照回调")
+    @RequestMapping(value = "/paizhao")
+    public ResponseResult takePictures() {
+        System.out.println("---------------------拍照回调------------------");
+        System.out.println("---------------------拍照回调------------------");
+        System.out.println("---------------------拍照回调------------------");
+        System.out.println("---------------------拍照回调------------------");
         return ResponseUtil.success();
     }
 
