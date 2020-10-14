@@ -3,13 +3,16 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.domain.query.AppTreatListQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.AppPatientTreatmentInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
@@ -560,5 +563,30 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         }
       }
     }
+  }
+
+  /**
+   * 根据条件查询APP端就诊列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<AppPatientTreatmentInfoVO> findAppTreatList(AppTreatListQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    Integer orgId = query.getOrgId();
+    String queryDate = query.getQueryDate();
+    Integer dentistId = query.getDentistId();
+
+    AppAppointmentInfoQuery form = new AppAppointmentInfoQuery();
+    form.setOrgId(orgId);
+    form.setQueryDate(queryDate);
+    form.setWhetherPage(false);
+    List<Appointment> appointments = appointmentFeign.findAppointmentList(form);
+    if (StringHelper.isNotEmpty(appointments)) {
+
+    }
+    return null;
   }
 }

@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.mapper;
 
+import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
@@ -61,9 +62,9 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return 预约冲突信息
    */
   List<AppointConflictInfoVo> findAppointListByAssistantIdAndAppointStartTimeAndAppointEndTime(
-          @Param("assistantId") Integer assistantId,
-          @Param("appointStartTime") Date appointStartTime,
-          @Param("appointEndTime") Date appointEndTime);
+      @Param("assistantId") Integer assistantId,
+      @Param("appointStartTime") Date appointStartTime,
+      @Param("appointEndTime") Date appointEndTime);
 
   /**
    * 根据条件查询预约列表
@@ -121,10 +122,10 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return
    */
   List<AppointConflictInfoVo> editCheckAssistantConflict(
-          @Param("id") Integer id,
-          @Param("assistantId") Integer assistantId,
-          @Param("appointStartTime") Date appointStartTime,
-          @Param("appointEndTime") Date appointEndTime);
+      @Param("id") Integer id,
+      @Param("assistantId") Integer assistantId,
+      @Param("appointStartTime") Date appointStartTime,
+      @Param("appointEndTime") Date appointEndTime);
 
   /**
    * 编辑预约检查设备预约冲突（排除自身）
@@ -183,6 +184,7 @@ public interface AppointmentMapper extends Mapper<Appointment> {
 
   /**
    * 根据患者id查询患者所有预约列表
+   *
    * @param patientId 患者id
    * @return 患者列表
    */
@@ -190,6 +192,7 @@ public interface AppointmentMapper extends Mapper<Appointment> {
 
   /**
    * 根据条件查询患者预约信息（患者档案-预约信息）用
+   *
    * @param query 查询条件
    * @return 患者列表
    */
@@ -197,14 +200,22 @@ public interface AppointmentMapper extends Mapper<Appointment> {
 
   /**
    * 根据分解助手ID、开始分解日期、结束分解日期查询列表
+   *
    * @param assistantId 助手ID
    * @param startTime 分解开始时间
-   * @param endTime  分解结束时间
+   * @param endTime 分解结束时间
    * @return 对象列表
    */
   List<AppointConflictInfoVo> findByIdAndStartTimeAndEndTime(
-          @Param("assistantId") Integer assistantId,
-          @Param("startTime") Date startTime,
-          @Param("endTime") Date endTime);
+      @Param("assistantId") Integer assistantId,
+      @Param("startTime") Date startTime,
+      @Param("endTime") Date endTime);
 
+  /**
+   *  根据条件查询预约列表
+   *
+   * @param query 查询条件
+   * @return List<Appointment>
+   */
+  List<Appointment> selectAppointmentList(@Param("query") AppAppointmentInfoQuery query);
 }

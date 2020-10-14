@@ -1,12 +1,11 @@
 package com.yunya.feign.system.form;
 
-import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -21,8 +20,17 @@ import java.io.Serializable;
 @ApiModel("支付方式配置查询参数模型")
 @Data
 @ToString
-@EqualsAndHashCode(callSuper = true)
-public class ClinicAccountItemConfigureQueryForm extends PageQuery implements Serializable {
+public class ClinicAccountItemConfigureQueryForm implements Serializable {
+  @ApiModelProperty("是否分页,默认true")
+  private Boolean whetherPage = true;
+
+  @ApiModelProperty("页码，默认第一页")
+  @Min(message = "最小值", value = 1)
+  private Integer pageNum = 1;
+
+  @ApiModelProperty("每页显示条数，默认10条")
+  @Min(message = "最小值", value = 1)
+  private Integer pageSize = 10;
   /** 入账方式ID */
   @ApiModelProperty(value = "入账方式ID", required = true)
   @NotNull(message = "入账方式ID不能为空！")

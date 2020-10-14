@@ -49,7 +49,6 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,7 +57,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -784,12 +782,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             employeeScheduleQueryForm.setUserId(dentistId);
             // 获取排班列表
             EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
-            if (employeeScheduleResult == null){
-                return ResponseUtil.fail(AppointmentError.SCHEDULE_SERVER_ERR.getCode(),AppointmentError.SCHEDULE_SERVER_ERR.getMessage(),employeeScheduleResult);
-            }
-            // 预约医生没有排班，返回空
-            if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
-                return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),employeeScheduleResult);
+            if (employeeScheduleResult != null){
+                List<UserWorkVO> shiftWorkDatas = employeeScheduleResult.getShiftWorkDatas();
+                // 预约医生没有排班，返回空
+                if (StringHelper.isEmpty(shiftWorkDatas)) {
+                    return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),null);
+                }
             }
         }
         // 检查分解的助手是否排班
@@ -799,13 +797,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 employeeScheduleQueryForm.setUserId(assistantId);
                 // 获取排班列表
                 EmployeeScheduleResultVO employeeScheduleResult = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
-                if (employeeScheduleResult == null){
-                    return ResponseUtil.fail(AppointmentError.SCHEDULE_SERVER_ERR.getCode(),AppointmentError.SCHEDULE_SERVER_ERR.getMessage(),employeeScheduleResult);
+                if (employeeScheduleResult != null){
+                    List<UserWorkVO> shiftWorkDatas = employeeScheduleResult.getShiftWorkDatas();
+                    // 预约助手没有排班，返回空
+                    if (StringHelper.isEmpty(shiftWorkDatas)) {
+                        return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),null);
+                    }
                 }
-                // 预约助手没有排班，返回空
-                if (employeeScheduleResult.getShiftWorkDatas().size() <= 0){
-                    return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),employeeScheduleResult);
-                }
+
             }
 
         }
@@ -1845,5 +1844,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
     }
 
+    /**
+     * 根据条件查询预约列表
+     *
+     * @param query 查询条件
+     * @return
+     */
+    public PageInfo<Appointment> findAppointmentList(AppAppointmentInfoQuery query) {
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(), query.getPageSize());
+        }
+        List<Appointment> resultList = mapper.selectAppointmentList(query);
+        return new PageInfo<>(resultList);
+    }
 }
 

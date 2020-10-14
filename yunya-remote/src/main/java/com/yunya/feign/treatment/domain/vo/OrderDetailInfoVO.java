@@ -1,5 +1,7 @@
 package com.yunya.feign.treatment.domain.vo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -15,15 +17,19 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
+@ApiModel("开单详情信息VO")
 @Data
 @ToString
 public class OrderDetailInfoVO implements Serializable {
 
   /** 开单记录ID */
+  @ApiModelProperty("开单记录ID")
   private Integer orderRecordId;
   /** 开单总额 */
+  @ApiModelProperty("开单总额")
   private BigDecimal totalAmount;
   /** 开单状态 */
+  @ApiModelProperty("开单状态")
   private Byte status;
   /** 配诊助手列表 */
   private List<AssistantInfoVO> assistants;

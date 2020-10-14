@@ -43,7 +43,7 @@ public class OrderRecordController {
    */
   @ApiOperation("根据就诊记录ID查询开单信息")
   @GetMapping("/list/{treatmentRecordId}")
-  public ResponseResult findOrderInfoByTreatmentId(
+  public ResponseResult<OrderDetailInfoVO> findOrderInfoByTreatmentId(
       @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
     OrderDetailInfoVO resultData = orderRecordBiz.findOrderDetailInfoVO(treatmentRecordId);
     return ResponseUtil.success(resultData);

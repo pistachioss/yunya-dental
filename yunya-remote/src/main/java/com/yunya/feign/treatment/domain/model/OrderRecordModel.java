@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -28,12 +29,15 @@ public class OrderRecordModel implements Serializable {
   private Integer treatmentRecordId;
   /** 助手1ID */
   @ApiModelProperty("助手1ID")
+  @JsonIgnoreProperties(ignoreUnknown = true)
   private Integer assistantId1;
   /** 助手2ID */
   @ApiModelProperty("助手2ID")
+  @JsonIgnoreProperties(ignoreUnknown = true)
   private Integer assistantId2;
   /** 助手3ID */
   @ApiModelProperty("助手3ID")
+  @JsonIgnoreProperties(ignoreUnknown = true)
   private Integer assistantId3;
   /** 开单详情 */
   private List<OrderDetailModel> orderDetails;

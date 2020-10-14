@@ -473,5 +473,26 @@
 
     </select>
 
+    <!-- 根据条件查询预约列表 -->
+    <select id="selectAppointmentList" resultMap="appointmentMap">
+        select
+            <include refid="Base_Column_List"></include>
+        from appointment a
+        <where>
+            <if test="query.orgId != null">
+                and a.org_id = #{query.orgId}
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = #{query.queryDate}
+            </if>
+            <if test="query.dentistId != null">
+                and a.dentist_id = #{query.dentistId}
+            </if>
+            <if test="query.appointStatus != null">
+                and a.appoint_status = #{query.appointStatus}
+            </if>
+        </where>
+    </select>
+
 
 </mapper>
