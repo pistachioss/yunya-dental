@@ -14,6 +14,7 @@ myjdbc:
 mydb:
     system: yunya_system
     patient: yunya_patient_central
+    report: yunya_report
 
 ## 多数据源配置
 spring:
@@ -37,7 +38,7 @@ spring:
             sql:
                 show: true
         datasource:
-            names: system,patient
+            names: system,patient,report
             system:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
@@ -48,6 +49,12 @@ spring:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
                 jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.patient}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            report:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.report}?${myjdbc.jdbc-url-ext}
                 username: ${myjdbc.username}
                 password: ${myjdbc.password}
         sharding:

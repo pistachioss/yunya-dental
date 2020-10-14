@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.middletable.dao.report.BasePatientMemberRelationMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BasePatientMemberRelation" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="relation_id" property="relationId" jdbcType="INTEGER" />
+    <result column="master_card_id" property="masterCardId" jdbcType="INTEGER" />
+    <result column="secondary_card_id" property="secondaryCardId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="bind_type" property="bindType" jdbcType="TINYINT" />
+  </resultMap>
+</mapper>

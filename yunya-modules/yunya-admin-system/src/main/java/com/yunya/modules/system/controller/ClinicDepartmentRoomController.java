@@ -106,10 +106,9 @@ public class ClinicDepartmentRoomController {
    * @return
    */
   @ApiOperation("根据条件查询门诊科室配置列表")
-  @ApiImplicitParams({@ApiImplicitParam(name = "queryForm", value = "查询条件", required = true)})
   @PostMapping(value = "/clinic/configure", name = "查询条件")
   public ResponseResult<PageInfo<ClinicDepartmentRoomVO>> configureClinicDeptRoom(
-      @RequestBody ClinicDeptRoomConfigureQueryForm queryForm) {
+      @RequestBody @Validated ClinicDeptRoomConfigureQueryForm queryForm) {
     PageInfo<ClinicDepartmentRoomVO> resultList = clinicDepartmentRoomBiz.configure(queryForm);
     return ResponseUtil.success(resultList);
   }

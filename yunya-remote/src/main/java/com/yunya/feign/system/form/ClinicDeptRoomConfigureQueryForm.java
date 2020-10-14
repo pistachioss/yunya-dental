@@ -1,11 +1,12 @@
 package com.yunya.feign.system.form;
 
+import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -17,20 +18,11 @@ import java.io.Serializable;
  * @description:
  * @since: 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
 @ApiModel("门诊科室配置查询参数模型")
 @Data
 @ToString
-public class ClinicDeptRoomConfigureQueryForm implements Serializable {
-  @ApiModelProperty("是否分页,默认true")
-  private Boolean whetherPage = true;
-
-  @ApiModelProperty("页码，默认第一页")
-  @Min(message = "最小值", value = 1)
-  private Integer pageNum = 1;
-
-  @ApiModelProperty("每页显示条数，默认10条")
-  @Min(message = "最小值", value = 1)
-  private Integer pageSize = 10;
+public class ClinicDeptRoomConfigureQueryForm extends PageQuery implements Serializable {
   /** 科室ID */
   @ApiModelProperty(value = "科室ID", required = true)
   @NotNull(message = "科室ID不能为空！")

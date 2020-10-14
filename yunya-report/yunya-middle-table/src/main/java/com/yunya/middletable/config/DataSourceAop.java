@@ -54,4 +54,23 @@ public class DataSourceAop {
         //清理掉当前设置的数据源，让默认的数据源不受影响
         HintManager.clear();
     }
+
+    /**
+     * patient库切入点
+     */
+    @Pointcut("execution(* com.yunya.middletable.dao.report..*.*(..))")
+    public void switchDataSourceReport() {
+    }
+
+    @Before("switchDataSourceReport()")
+    public void reportBefore() {
+        HintManager hintManager = HintManager.getInstance();
+        hintManager.setDatabaseShardingValue("report");
+    }
+
+    @After("switchDataSourceReport()")
+    public void reportAfter() {
+        //清理掉当前设置的数据源，让默认的数据源不受影响
+        HintManager.clear();
+    }
 }

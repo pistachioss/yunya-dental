@@ -34,4 +34,6 @@ public interface YunyaServiceNameConstants {
   String YUNYA_TREATMENT_OTHER = "yunya-treatment-other";
   /** 卡券服务 */
   String YUNYA_DISCOUNT = "yunya-discount";
+  /** 报表服务 */
+  String YUNYA_MIDDLE_TABLE = "yunya-middle-table";
 }

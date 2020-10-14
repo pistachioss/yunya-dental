@@ -458,12 +458,19 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (null != baseTariff) {
       String fellowUp = baseTariff.getFellowUp();
       if (StringHelper.isNotBlank(fellowUp)) {
-        String[] nums = fellowUp.split(",");
+        String[] nums = fellowUp.replaceAll("-","").split(",");
         if (nums.length > 0) {
           Arrays.stream(nums)
               .filter(StringHelper::isNotBlank)
               .forEach(
                   num -> {
+                    int nn;
+                    try{
+                      nn = Integer.parseInt(num);
+                    }
+                    catch (Exception ex){
+                      throw new ClientServiceException("价目表的随访字段有非数字！", DATA_ERROR);
+                    }
                     VisitingRecord visitRecord = new VisitingRecord();
                     TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
                     if (null != treatmentRecord) {
@@ -482,7 +489,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     visitRecord.setTreatmentId(treatmentRecordId);
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(
-                            new Date(System.currentTimeMillis()), Integer.parseInt(num)));
+                            new Date(System.currentTimeMillis()), nn));
                     treatmentOtherFeign.insertVisitingRecord(visitRecord);
                   });
         }
