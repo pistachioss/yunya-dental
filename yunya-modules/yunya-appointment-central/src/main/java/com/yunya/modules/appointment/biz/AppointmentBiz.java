@@ -40,6 +40,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.system.Department;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
@@ -666,6 +667,46 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     public AppointmentVo findAppointmentById(Integer id){
         AppointmentVo appointmentVo = mapper.findAppointmentById(id);
+        if (null == appointmentVo) {
+            return null;
+        }
+        // 设置医生信息
+        Integer dentistId = appointmentVo.getDentistId();
+        if (null != dentistId) {
+            SysEmployee sysDentist = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+            if (null != sysDentist) {
+                String name = sysDentist.getName();
+                appointmentVo.setDentistName(name);
+            }
+        }
+        // 设置默认助手信息
+        Integer assistantId = appointmentVo.getAssistantId();
+        if (null != assistantId) {
+            SysEmployee sysAssistant = this.remoteSystemServiceFeign.findSysEmployeeById(assistantId);
+            if (null != sysAssistant) {
+                String name = sysAssistant.getName();
+                appointmentVo.setAssistantName(name);
+            }
+        }
+        // 设置设备名称
+        Integer clinicDeviceItemId = appointmentVo.getClinicDeviceItemId();
+        if (null != clinicDeviceItemId) {
+            DeviceItemVo deviceItemVo = this.clinicDeviceItemBiz.selectDeviceItemById(clinicDeviceItemId);
+            if (null != deviceItemVo) {
+                String name = deviceItemVo.getName();
+                appointmentVo.setClinicDeviceItemName(name);
+            }
+        }
+        // 设置门诊名称
+        Integer deptRoomId = appointmentVo.getDeptRoomId();
+        if (null != deptRoomId) {
+            DepartmentRoom departmentRoom = this.remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
+            if (null != departmentRoom) {
+                String name = departmentRoom.getName();
+                appointmentVo.setDeptRoomName(name);
+            }
+        }
+        // 设置患者信息
         PatientBaseInfo patientBaseInfo = this.patientCentralServiceFeign.findPatientInfoById(appointmentVo.getPatientId());
         if (null != patientBaseInfo) {
             // 设置患者名字
@@ -679,7 +720,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         splitQuery.setOrgId(appointmentVo.getOrgId());
         List<AppointmentSplitVo> splitVos = this.appointmentSplitBiz.findAppointmentSplitByExample(splitQuery);
         appointmentVo.setSplitList(splitVos);
-
         return appointmentVo;
     }
 

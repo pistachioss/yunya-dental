@@ -15,6 +15,21 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <!-- 基础价目表 -->
+    <resultMap id="categoryInfoMap" type="com.yunya.feign.treatment.domain.vo.BaseCategoryInfoVO">
+        <id column="categoryId" property="categoryId" jdbcType="INTEGER"/>
+        <result column="categoryName" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="categoryNumber" property="categoryNumber" jdbcType="VARCHAR"/>
+        <collection property="items" ofType="com.yunya.feign.treatment.domain.vo.BaseItemInfoVO">
+            <id column="id" property="id" jdbcType="INTEGER"/>
+            <result column="item_number" property="itemNumber" jdbcType="VARCHAR"/>
+            <result column="unit" property="unit" jdbcType="VARCHAR"/>
+            <result column="name" property="name" jdbcType="VARCHAR"/>
+            <result column="price" property="price" jdbcType="DECIMAL"/>
+            <result column="pinyin" property="pinyin" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
     <!-- 根据门诊价目表ID获取门诊价目表信息 -->
     <select id="selectClinicTariffById" resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffVO">
         select
@@ -178,6 +193,48 @@
             </if>
             <if test="queryForm.inservice != null">
                 and ct.inservice = #{queryForm.inservice}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询价目表列表 -->
+    <select id="selectTariffList" resultMap="categoryInfoMap">
+        SELECT
+            btc.id as categoryId,
+            btc.NAME as categoryName,
+            btc.number as categoryNumber,
+            bt.id,
+            bt.item_number,
+            bt.name,
+            bt.unit,
+            bt.pinyin,
+            bt.price
+        FROM base_tariff_category btc
+	    LEFT JOIN base_tariff bt ON bt.tariff_category_id = btc.id
+	    <where>
+            <if test="search != null and search != ''">
+                bt.pinyin = #{search}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询基础商品表列表 -->
+    <select id="selectBaseOralTariffList" resultMap="categoryInfoMap">
+        SELECT
+        btc.id as categoryId,
+        btc.NAME as categoryName,
+        btc.number as categoryNumber,
+        bt.id,
+        bt.item_number,
+        bt.name,
+        bt.unit,
+        bt.pinyin,
+        bt.price
+        FROM base_oral_tariff_category btc
+        LEFT JOIN base_oral_tariff bt ON bt.oral_tariff_category_id = btc.id
+        <where>
+            <if test="search != null and search != ''">
+                bt.pinyin = #{search}
             </if>
         </where>
     </select>

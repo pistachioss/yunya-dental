@@ -53,10 +53,22 @@ public class AppointmentVo implements Serializable {
     private Integer dentistId;
 
     /**
+     * 医生名字
+     */
+    @ApiModelProperty(value = "医生名字")
+    private String dentistName;
+
+    /**
      * 助手ID 默认医生配置助手ID
      */
     @ApiModelProperty(value = "助手ID 默认医生配置助手ID")
     private Integer assistantId;
+
+    /**
+     * 助手名字
+     */
+    @ApiModelProperty(value = "助手名字")
+    private String assistantName;
 
     /**
      * 门诊科室ID 默认医生配置科室ID
@@ -65,10 +77,22 @@ public class AppointmentVo implements Serializable {
     private Integer deptRoomId;
 
     /**
+     * 门诊科室名称
+     */
+    @ApiModelProperty(value = "门诊科室名称")
+    private String deptRoomName;
+
+    /**
      * 门诊设备ID
      */
     @ApiModelProperty(value = "门诊设备ID")
     private Integer clinicDeviceItemId;
+
+    /**
+     * 门诊设备名称
+     */
+    @ApiModelProperty(value = "门诊设备名称")
+    private String clinicDeviceItemName;
 
     /**
      * 预约项目ID
