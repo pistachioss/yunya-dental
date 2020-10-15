@@ -12,12 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class DiscountController {
 
-    @Autowired
-    BaseCouponServiceImpl discountService;
+  @Autowired BaseCouponServiceImpl discountService;
 
-    @PostMapping("/discount/pull")
-    public ResponseResult pullData(@RequestBody PullForm form){
-        discountService.pullCoupon(form.getStartDate(), form.getEndDate());
-        return ResponseUtil.success();
-    }
+  @PostMapping("/discount/pull")
+  public ResponseResult pullData(@RequestBody PullForm form) {
+    discountService.pullCoupon(form.getStartDate(), form.getEndDate());
+    return ResponseUtil.success();
+  }
 }

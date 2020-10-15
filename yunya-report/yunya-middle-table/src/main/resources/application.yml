@@ -12,10 +12,11 @@ myjdbc:
 
 ## 数据库列表
 mydb:
+    report: yunya_report
     system: yunya_system
     patient: yunya_patient_central
-    report: yunya_report
     discount: yunya_discount
+    treatment: yunya_treatment
 
 ## 多数据源配置
 spring:
@@ -39,7 +40,13 @@ spring:
             sql:
                 show: true
         datasource:
-            names: system,patient,report,discount
+            names: report,system,patient,treatment
+            report:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.report}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
             system:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
@@ -52,10 +59,10 @@ spring:
                 jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.patient}?${myjdbc.jdbc-url-ext}
                 username: ${myjdbc.username}
                 password: ${myjdbc.password}
-            report:
+            treatment:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
-                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.report}?${myjdbc.jdbc-url-ext}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.patient}?${myjdbc.jdbc-url-ext}
                 username: ${myjdbc.username}
                 password: ${myjdbc.password}
             discount:
