@@ -31,7 +31,7 @@ public class ThreadPoolManagerConfig {
     /** 闲置线程存活时间 1s */
     private static final int KEEP_ALIVE = 1;
     /** 线程名称 */
-    private static final String NAME_PREFIX = "yunya-thread-";
+    private static final String NAME_PREFIX = "yunya-appoint-";
     /** 线程尾部ID */
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     /** 缓冲队列 */
