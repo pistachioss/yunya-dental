@@ -3,6 +3,7 @@ package com.yunya.modules.appointment.biz;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -14,9 +15,11 @@ import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentSplitMapper;
 import com.yunya.feign.appointment.vo.AppointmentSplitVo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +38,10 @@ import java.util.*;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, AppointmentSplit> {
+
+    /** 系统服务 */
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
     /**
      * 新增预约分解
@@ -59,7 +66,17 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @return list
      */
     public List<AppointmentSplitVo> findAppointmentSplitByExample(AppointmentSplitQuery query){
-        return mapper.findAppointmentSplitByExample(query);
+        List<AppointmentSplitVo> splitVos = mapper.findAppointmentSplitByExample(query);
+        if (!StringHelper.isEmpty(splitVos)) {
+            splitVos.forEach(appointmentSplitVo -> {
+                SysEmployee sysEmployee = this.remoteSystemServiceFeign.findSysEmployeeById(appointmentSplitVo.getAssistantId());
+                if (null != sysEmployee) {
+                    String name = sysEmployee.getName();
+                    appointmentSplitVo.setAssistantName(name);
+                }
+            });
+        }
+        return splitVos;
     }
 
     /**
