@@ -5,11 +5,11 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.cglib.beans.BeanCopier;
+import org.springframework.cglib.core.Converter;
 
-import java.io.Serializable;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.*;
 
 /**
  * @author xiangyang
@@ -20,22 +20,27 @@ public class BeanCopierUtils {
     private BeanCopierUtils() {
     }
 
-    public static <S extends Serializable, T extends Serializable> T generalCopyBean(S source, Class<T> targetClazz) {
-        return copySingleBean(source, targetClazz);
+    public static <S extends Object, T extends Object> T generalCopyBean(S source, Class<T> targetClazz) {
+        return copySingleBean(source, targetClazz,false,null);
     }
 
-    public static <S extends Serializable, T extends Serializable> List<T> listGeneralCopyBean(List<S> source, Class<T> targetClazz) {
-        if (CollectionUtils.isNotEmpty(source)) {
+    public static <S extends Object, T extends Object> T generalCopyBean(S source, Class<T> targetClazz, Converter converter) {
+        return copySingleBean(source, targetClazz, true, converter);
+    }
+
+    public static <S extends Object, T extends Object> List<T> listGeneralCopyBean(List<S> source, Class<T> targetClazz) {
+        if (CollectionUtils.isEmpty(source)) {
             return Lists.newArrayList();
         }
-        return source.stream().map(obj -> copySingleBean(obj, targetClazz)).collect(toList());
+        return source.stream().map(obj -> copySingleBean(obj, targetClazz, false, null)).collect(toList());
     }
 
-    private static <S extends Serializable, T extends Serializable> T copySingleBean(S source, Class<T> targetClazz) {
+    private static <S extends Object, T extends Object> T copySingleBean(S source, Class<T> targetClazz,
+                                                                         boolean useConvert, Converter converter) {
         try {
             T t = targetClazz.newInstance();
-            BeanCopier copier = BeanCopier.create(source.getClass(), targetClazz, false);
-            copier.copy(source, t, null);
+            BeanCopier copier = BeanCopier.create(source.getClass(), targetClazz, useConvert);
+            copier.copy(source, t, converter);
             return t;
         } catch (Exception e) {
             throw new ClientServiceException("对象属性转换异常", OperationCodeConstants.BEAN_CONVERT_ERROR);

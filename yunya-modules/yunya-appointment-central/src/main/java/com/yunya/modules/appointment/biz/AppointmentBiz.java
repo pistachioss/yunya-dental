@@ -1813,33 +1813,43 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointPatientRecord.forEach(appointPatientRecordVo -> {
             // 设置医生名字
             Integer dentistId = appointPatientRecordVo.getDentistId();
-            SysEmployee dentistInfo = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
-            if (null != dentistInfo) {
-                appointPatientRecordVo.setDentistName(dentistInfo.getName());
+            if (null != dentistId) {
+                SysEmployee dentistInfo = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+                if (null != dentistInfo) {
+                    appointPatientRecordVo.setDentistName(dentistInfo.getName());
+                }
             }
             // 设置助手名字
             Integer assistantId = appointPatientRecordVo.getAssistantId();
-            SysEmployee assistantInfo = this.remoteSystemServiceFeign.findSysEmployeeById(assistantId);
-            if (null != assistantInfo) {
-                appointPatientRecordVo.setAssistantName(assistantInfo.getName());
+            if (null != assistantId) {
+                SysEmployee assistantInfo = this.remoteSystemServiceFeign.findSysEmployeeById(assistantId);
+                if (null != assistantInfo) {
+                    appointPatientRecordVo.setAssistantName(assistantInfo.getName());
+                }
             }
             // 设置门诊名称
             Integer orgId = appointPatientRecordVo.getOrgId();
-            OrganizationInfo orgInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-            if (null != orgInfo) {
-                appointPatientRecordVo.setOrgName(orgInfo.getName());
+            if (null != orgId) {
+                OrganizationInfo orgInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+                if (null != orgInfo) {
+                    appointPatientRecordVo.setOrgName(orgInfo.getName());
+                }
             }
             // 设置科室名称
             Integer deptRoomId = appointPatientRecordVo.getDeptRoomId();
-            DepartmentRoom departmentRoomInfo = this.remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
-            if (null != departmentRoomInfo) {
-                appointPatientRecordVo.setDeptRoomName(departmentRoomInfo.getName());
+            if (null != deptRoomId) {
+                DepartmentRoom departmentRoomInfo = this.remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
+                if (null != departmentRoomInfo) {
+                    appointPatientRecordVo.setDeptRoomName(departmentRoomInfo.getName());
+                }
             }
             // 设置设备编号
             Integer clinicDeviceItemId = appointPatientRecordVo.getClinicDeviceItemId();
-            DeviceItemVo deviceItemVo = this.clinicDeviceItemBiz.selectDeviceItemById(clinicDeviceItemId);
-            if (null != deviceItemVo) {
-                appointPatientRecordVo.setClinicDeviceItemNumber(deviceItemVo.getNumber());
+            if (null != clinicDeviceItemId) {
+                DeviceItemVo deviceItemVo = this.clinicDeviceItemBiz.selectDeviceItemById(clinicDeviceItemId);
+                if (null != deviceItemVo) {
+                    appointPatientRecordVo.setClinicDeviceItemNumber(deviceItemVo.getNumber());
+                }
             }
 
         });

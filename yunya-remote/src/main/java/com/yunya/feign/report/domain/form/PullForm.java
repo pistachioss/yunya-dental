@@ -1,8 +1,10 @@
-package com.yunya.feign.middletable.domain.form;
+package com.yunya.feign.report.domain.form;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import javax.validation.constraints.NotBlank;
 
 /**
  * @author xiangyang
@@ -12,6 +14,9 @@ import lombok.ToString;
 @Setter
 @ToString
 public class PullForm {
+
+	@NotBlank
 	private String startDate;
+	@NotBlank
 	private String endDate;
 }
