@@ -154,24 +154,26 @@ public class PatientPrepaymentRelationBiz
       patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
       patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(model.getRechargeBonus()));
       patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
+
+      // 添加预付款充值记录
+      PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
+      BeanUtils.copyProperties(model, prepaidRechargeRecord);
+      prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
+      prepaidRechargeRecord.setCurrentRechargePrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+      prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+      prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
+
+      // 添加预付款充值收费记录
+      PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
+      BeanUtils.copyProperties(model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
+      prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
+      prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+      prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
     }
-
-    // 添加预付款充值记录
-    PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
-    BeanUtils.copyProperties(model, prepaidRechargeRecord);
-    prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-    prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
-    prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
-
-    // 添加预付款充值收费记录
-    PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
-    BeanUtils.copyProperties(model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
-    prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
-    prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-    prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
-    prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
   }
 
   /**
@@ -290,6 +292,22 @@ public class PatientPrepaymentRelationBiz
         patientPrepaymentsInfoMapper.selectOneByCardNumber(
             model.getPrepaidId(), model.getPatientId());
     if (patientPrepaymentsInfo != null){
+      if (model.getType() == 0 ){
+        patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getPrincipalAmount()));
+        patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(model.getBonusAmount()));
+        patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
+        PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord(); // 创建消费记录对象
+        BeanUtils.copyProperties(model, prepaidExpendRecord);
+        //撤销本金
+        prepaidExpendRecord.setExpendPrincipal(model.getPrincipalAmount());
+        //撤销赠金
+        prepaidExpendRecord.setExpendGift(model.getBonusAmount());
+        prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        prepaidExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
+        prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
+        return ResponseUtil.success();
+      }
       if (patientPrepaymentsInfo.getPrepaymentPrincipal().add(patientPrepaymentsInfo.getPrepaymentBonus()).compareTo(model.getExpendTotal()) < 0) { // 如果本金+赠金 小于 消费金额
         return ResponseUtil.fail(OperationCodeConstants.BALANCE_INSUFFICIENT, "预付款余额不足", patientPrepaymentsInfo);
       }
