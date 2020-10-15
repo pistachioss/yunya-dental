@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.scheduled_task;
+package com.yunya.modules.appointment.async;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

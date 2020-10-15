@@ -33,7 +33,4 @@ public class ItemUseBenefitBo implements Serializable {
     @ApiModelProperty(value = "优惠金额")
     private BigDecimal benefitAmount;
 
-    public ItemUseBenefitBo() {
-        this.id = 0;
-    }
 }
