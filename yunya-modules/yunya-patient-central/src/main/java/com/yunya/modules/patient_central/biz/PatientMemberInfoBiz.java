@@ -282,26 +282,26 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       patientMemberInfo.setBonusAmount(
           patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
       patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
-    }
-    // 添加会员卡充值记
-    MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
-    BeanUtils.copyProperties(model, memberRechargeRecord);
-    memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
-    memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
-    memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-    memberRechargeRecord.setCrtName(BaseContextHandler.getName());
-    memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
-    // 添加会员卡充值收费记录
-    if (!StringHelper.isEmpty(model.getAccountedWayModelList())) {
-      for (AccountedWayModel accountedWayModel : model.getAccountedWayModelList()) {
-        MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
-        BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
-        memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
-        memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
-        memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
+      // 添加会员卡充值记
+      MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+      BeanUtils.copyProperties(model, memberRechargeRecord);
+      memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
+      memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+      memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+      memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+      // 添加会员卡充值收费记录
+      if (!StringHelper.isEmpty(model.getAccountedWayModelList())) {
+        for (AccountedWayModel accountedWayModel : model.getAccountedWayModelList()) {
+          MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
+          BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
+          memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+          memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
+          memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+          memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
+          memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
+        }
       }
     }
   }
@@ -411,6 +411,22 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     PatientMemberInfo patientMemberInfo =
         patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
     if (patientMemberInfo != null) {
+      if (model.getType() == 0 ){
+        patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().add(model.getPrincipalAmount()));
+        patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(model.getBonusAmount()));
+        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+        MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
+        BeanUtils.copyProperties(model, memberExpendRecord);
+        //撤销本金
+        memberExpendRecord.setExpendPrincipal(model.getPrincipalAmount());
+        //撤销赠金
+        memberExpendRecord.setExpendGift(model.getBonusAmount());
+        memberExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        memberExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberExpendRecord.setCrtName(BaseContextHandler.getName());
+        memberExpendRecordMapper.insertSelective(memberExpendRecord);
+        return ResponseUtil.success();
+      }
       BigDecimal num =
           patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount());
       // 如果本金+赠金 小于 消费金额

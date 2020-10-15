@@ -27,7 +27,7 @@ public class OrderBenefit implements Serializable {
     /**
      * 订单id
      */
-    @Column(name = "org_id")
+    @Column(name = "order_id")
     private Integer orderId;
 
     /**

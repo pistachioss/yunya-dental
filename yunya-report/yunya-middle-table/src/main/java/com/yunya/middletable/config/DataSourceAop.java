@@ -56,7 +56,7 @@ public class DataSourceAop {
     }
 
     /**
-     * patient库切入点
+     * report库切入点
      */
     @Pointcut("execution(* com.yunya.middletable.dao.report..*.*(..))")
     public void switchDataSourceReport() {
@@ -70,6 +70,25 @@ public class DataSourceAop {
 
     @After("switchDataSourceReport()")
     public void reportAfter() {
+        //清理掉当前设置的数据源，让默认的数据源不受影响
+        HintManager.clear();
+    }
+
+    /**
+     * discount库切入点
+     */
+    @Pointcut("execution(* com.yunya.middletable.dao.discount..*.*(..))")
+    public void switchDataSourceDiscount() {
+    }
+
+    @Before("switchDataSourceDiscount()")
+    public void discountBefore() {
+        HintManager hintManager = HintManager.getInstance();
+        hintManager.setDatabaseShardingValue("discount");
+    }
+
+    @After("switchDataSourceDiscount()")
+    public void discountAfter() {
         //清理掉当前设置的数据源，让默认的数据源不受影响
         HintManager.clear();
     }

@@ -143,7 +143,9 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param id  就诊id
      */
     public void deleteVisitingRecordByTreatmentId(Integer id){
-        mapper.deleteVisitingRecordByTreatmentId(id);
+        if (null != id) {
+            mapper.deleteVisitingRecordByTreatmentId(id);
+        }
     }
 
     /**
