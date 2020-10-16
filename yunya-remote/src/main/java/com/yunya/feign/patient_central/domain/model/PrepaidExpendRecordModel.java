@@ -62,4 +62,22 @@ public class PrepaidExpendRecordModel implements Serializable {
     @ApiModelProperty(value = "备注")
     private String remarks;
 
+    /**
+     * 类型（0：撤销消费 1：消费 ）
+     */
+    @ApiModelProperty(value = "类型（0：撤销消费 1：消费 ）",required = true)
+    private Integer type;
+
+    /**
+     * 会员卡本金 充值金额
+     */
+    @ApiModelProperty(value = "消费本金",required = false)
+    private BigDecimal principalAmount;
+
+    /**
+     * 会员卡赠金 充值赠送金额
+     */
+    @ApiModelProperty(value = "消费赠金",required = false)
+    private BigDecimal bonusAmount;
+
 }

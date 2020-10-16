@@ -100,6 +100,29 @@ public class PrepaidExpendRecord {
     private Integer billPayRecordId;
 
     /**
+     * 类型（0：撤销消费 1：消费 ）
+     */
+    @Column(name = "type")
+    private Integer type;
+
+
+    /**
+     * 获取消费类型
+     * @return type
+     */
+    public Integer getType() {
+        return type;
+    }
+
+    /**
+     * 设置类型
+     * @param type type
+     */
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    /**
      * @return id
      */
     public Integer getId() {

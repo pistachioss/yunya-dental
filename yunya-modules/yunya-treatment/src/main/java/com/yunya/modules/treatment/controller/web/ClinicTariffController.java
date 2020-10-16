@@ -10,6 +10,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.ClinicTariffBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -119,4 +120,17 @@ public class ClinicTariffController {
     clinicTariffBiz.exportClinicTariffList(response, queryForm);
     return ResponseUtil.success();
   }
+
+  /**
+   * 根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）
+   * @param search 检索名称首字母缩写
+   * @param type 项目类型 0-价目表；1-商品表
+   * @return 返回实体对象
+   */
+  @ApiModelProperty("根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）项目类型 0-价目表；1-商品表")
+  @GetMapping("/category/{type}")
+  public ResponseResult clinicBaseTariff(@PathVariable("type") Byte type, String search) {
+    return this.clinicTariffBiz.clinicBaseTariff(type,search);
+  }
+
 }

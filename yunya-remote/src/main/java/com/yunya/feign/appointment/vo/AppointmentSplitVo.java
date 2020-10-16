@@ -43,6 +43,12 @@ public class AppointmentSplitVo implements Serializable {
     @ApiModelProperty(value = "医生id/助手id")
     private Integer assistantId;
 
+    /**
+     * 医生id/助手id名字
+     */
+    @ApiModelProperty(value = "医生id/助手id名字")
+    private String assistantName;
+
     /** 备注 */
     @ApiModelProperty(value = "备注")
     private String remarks;

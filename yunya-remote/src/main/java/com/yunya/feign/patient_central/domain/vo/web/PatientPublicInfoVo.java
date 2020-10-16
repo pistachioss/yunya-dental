@@ -3,6 +3,7 @@ package com.yunya.feign.patient_central.domain.vo.web;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -61,6 +62,26 @@ public class PatientPublicInfoVo implements Serializable {
      * 预付款总余额（本金+赠金）
      */
     private BigDecimal prepaymentsMoneySum;
+
+    /**
+     * 会员卡本金 充值金额
+     */
+    private BigDecimal principalAmount;
+
+    /**
+     * 会员卡赠金 充值赠送金额
+     */
+    private BigDecimal bonusAmount;
+
+    /**
+     * 预付款本金
+     */
+    private BigDecimal prepaymentPrincipal;
+
+    /**
+     * 预付款赠金
+     */
+    private BigDecimal prepaymentBonus;
 
     /**
      * 会员卡类型id

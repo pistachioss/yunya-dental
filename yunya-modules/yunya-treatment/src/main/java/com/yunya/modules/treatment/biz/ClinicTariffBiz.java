@@ -9,11 +9,15 @@ import com.yunya.feign.treatment.domain.form.ClinicTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffUniteDiscountForm;
 import com.yunya.feign.treatment.domain.form.MemberUniteDiscountForm;
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.BaseCategoryInfoVO;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.system.MemberType;
@@ -272,5 +276,22 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     }
     ExcelUtil<ClinicTariffExportVO> excelUtil = new ExcelUtil<>(ClinicTariffExportVO.class);
     excelUtil.exportExcel(response, resultList, abbreviation + "-价目表信息列表");
+  }
+
+  /**
+   * 根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）
+   * @param type
+   * @param search
+   * @return
+   */
+  public ResponseResult clinicBaseTariff(Byte type, String search) {
+    if (type == 0) {
+      List<BaseCategoryInfoVO> baseCategoryInfoVOS = mapper.selectTariffList(search);
+      return ResponseUtil.success(baseCategoryInfoVOS);
+    } else if (type == 1) {
+      List<BaseCategoryInfoVO> baseCategoryInfoVOS = mapper.selectBaseOralTariffList(search);
+      return ResponseUtil.success(baseCategoryInfoVOS);
+    }
+    return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL,"参数错误",null);
   }
 }
