@@ -14,9 +14,10 @@ import javax.validation.constraints.NotBlank;
 @Setter
 @ToString
 public class PullForm {
-
-	@NotBlank
-	private String startDate;
-	@NotBlank
-	private String endDate;
+  /** 开始时间 */
+  @NotBlank private String startDate;
+  /** 结束时间 */
+  @NotBlank private String endDate;
+  /** 自定义数据类型，用来指定拉取原始表数据类型 */
+  private Integer dataType;
 }

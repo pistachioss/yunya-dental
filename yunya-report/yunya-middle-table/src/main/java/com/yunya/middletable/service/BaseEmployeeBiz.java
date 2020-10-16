@@ -8,7 +8,6 @@ import com.yunya.middletable.dao.report.BaseEmployeeMapper;
 import com.yunya.middletable.dao.system.SysEmployeeMapper;
 import com.yunya.middletable.dao.system.SysUserMapper;
 import com.yunya.models.middletable.BaseEmployee;
-import com.yunya.models.system.Company;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -113,7 +112,7 @@ public class BaseEmployeeBiz extends BaseBiz<BaseEmployeeMapper, BaseEmployee> {
   public void pullEmpData(PullForm form) {
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
-    Example emp = new Example(Company.class);
+    Example emp = new Example(SysUser.class);
     emp.createCriteria().andBetween("updTime", startDate, endDate);
     List<SysUser> sysUsers = userMapper.selectByExample(emp);
     if (StringHelper.isNotEmpty(sysUsers)) {

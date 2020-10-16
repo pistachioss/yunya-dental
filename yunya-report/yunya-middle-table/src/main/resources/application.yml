@@ -62,7 +62,7 @@ spring:
             treatment:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
-                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.patient}?${myjdbc.jdbc-url-ext}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.treatment}?${myjdbc.jdbc-url-ext}
                 username: ${myjdbc.username}
                 password: ${myjdbc.password}
             discount:

@@ -1,17 +1,26 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.middletable.dao.report.BaseTariffInfoMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseTariffInfo" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="item_id" property="itemId" jdbcType="INTEGER" />
-    <id column="item_type" property="itemType" jdbcType="TINYINT" />
-    <result column="category_id" property="categoryId" jdbcType="INTEGER" />
-    <result column="category_name" property="categoryName" jdbcType="VARCHAR" />
-    <result column="item_num" property="itemNum" jdbcType="VARCHAR" />
-    <result column="item_name" property="itemName" jdbcType="VARCHAR" />
-    <result column="unit" property="unit" jdbcType="VARCHAR" />
-    <result column="price" property="price" jdbcType="DECIMAL" />
-  </resultMap>
+<mapper namespace="com.yunya.middletable.dao.report.BaseTariffInfoMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseTariffInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="item_id" property="itemId" jdbcType="INTEGER"/>
+        <id column="item_type" property="itemType" jdbcType="TINYINT"/>
+        <result column="category_id" property="categoryId" jdbcType="INTEGER"/>
+        <result column="category_name" property="categoryName" jdbcType="VARCHAR"/>
+        <result column="item_num" property="itemNum" jdbcType="VARCHAR"/>
+        <result column="item_name" property="itemName" jdbcType="VARCHAR"/>
+        <result column="unit" property="unit" jdbcType="VARCHAR"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!-- 根据联合主键查询 -->
+    <select id="selectByPrimaryKey" resultType="com.yunya.models.middletable.BaseTariffInfo">
+    select * from base_tariff_info where item_id = #{dataId} and item_type = #{dateType}
+  </select>
+    <!-- 根据联合主键删除 -->
+    <delete id="deleteByPrimaryKey">
+    delete from base_tariff_info where item_id = #{dataId} and item_type = #{dateType}
+  </delete>
 </mapper>
