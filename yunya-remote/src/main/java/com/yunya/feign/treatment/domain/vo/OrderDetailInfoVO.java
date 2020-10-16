@@ -29,7 +29,7 @@ public class OrderDetailInfoVO implements Serializable {
   @ApiModelProperty("开单总额")
   private BigDecimal totalAmount;
   /** 开单状态 */
-  @ApiModelProperty("开单状态")
+  @ApiModelProperty("订单状态（0-账单未锁定 ；1-账单锁定；2-结算完成状态）")
   private Byte status;
   /** 配诊助手列表 */
   private List<AssistantInfoVO> assistants;
