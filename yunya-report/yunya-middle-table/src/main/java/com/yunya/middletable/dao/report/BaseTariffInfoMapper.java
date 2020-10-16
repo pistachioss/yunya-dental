@@ -12,7 +12,7 @@ public interface BaseTariffInfoMapper extends Mapper<BaseTariffInfo> {
    * @param dateType 数据类型
    * @return
    */
-  BaseTariffInfo selectByPrimaryKey(
+  BaseTariffInfo selectByUnionPrimaryKey(
       @Param("dataId") Integer dataId, @Param("dateType") Integer dateType);
 
   /**
@@ -22,5 +22,6 @@ public interface BaseTariffInfoMapper extends Mapper<BaseTariffInfo> {
    * @param itemType 数据类型
    * @return
    */
-  void deleteByPrimaryKey(@Param("itemId") Integer itemId, @Param("itemType") Integer itemType);
+  void deleteByUnionPrimaryKey(
+      @Param("itemId") Integer itemId, @Param("itemType") Integer itemType);
 }

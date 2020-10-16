@@ -64,7 +64,7 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
         mapper.insertSelective(tariffInfo);
         break;
       case 1:
-        BaseTariffInfo result = mapper.selectByPrimaryKey(dataId, dateType);
+        BaseTariffInfo result = mapper.selectByUnionPrimaryKey(dataId, dateType);
         if (null == result) {
           mapper.insertSelective(tariffInfo);
         } else {
@@ -156,7 +156,7 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
             tariffs.forEach(
                 t -> {
                   Integer itemId = t.getId();
-                  mapper.deleteByPrimaryKey(itemId, itemType);
+                  mapper.deleteByUnionPrimaryKey(itemId, itemType);
                   BaseTariffInfo tariffInfo = generateTariffInfo(itemId, itemType);
                   mapper.insertSelective(tariffInfo);
                 });
@@ -172,7 +172,7 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
             oralTariffs.forEach(
                 ot -> {
                   Integer itemId = ot.getId();
-                  mapper.deleteByPrimaryKey(itemId, itemType);
+                  mapper.deleteByUnionPrimaryKey(itemId, itemType);
                   BaseTariffInfo tariffInfo = generateTariffInfo(itemId, itemType);
                   mapper.insertSelective(tariffInfo);
                 });

@@ -16,11 +16,11 @@
     </resultMap>
 
     <!-- 根据联合主键查询 -->
-    <select id="selectByPrimaryKey" resultType="com.yunya.models.middletable.BaseTariffInfo">
-    select * from base_tariff_info where item_id = #{dataId} and item_type = #{dateType}
-  </select>
+    <select id="selectByUnionPrimaryKey" resultType="com.yunya.models.middletable.BaseTariffInfo">
+        select * from base_tariff_info where item_id = #{dataId} and item_type = #{dateType}
+    </select>
     <!-- 根据联合主键删除 -->
-    <delete id="deleteByPrimaryKey">
-    delete from base_tariff_info where item_id = #{itemId} and item_type = #{itemType}
-  </delete>
+    <delete id="deleteByUnionPrimaryKey">
+        delete from base_tariff_info where item_id = #{itemId} and item_type = #{itemType}
+    </delete>
 </mapper>
