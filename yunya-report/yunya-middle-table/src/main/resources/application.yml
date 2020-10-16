@@ -94,7 +94,7 @@ swagger:
     base-package: com.yunya.middletable
     title: yunya-middle-table
     version: 1.0.0.SNAPSHOT
-    description: 报表相关功能 (网关地址：/api/emr/**)
+    description: 报表相关功能 (网关地址：/api/middletable/**)
     contact:
         name: yunya-middle-table
 

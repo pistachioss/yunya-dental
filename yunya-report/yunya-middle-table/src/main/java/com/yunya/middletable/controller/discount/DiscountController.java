@@ -25,7 +25,7 @@ public class DiscountController {
 		long start = System.currentTimeMillis();
 		RestErrorBo errorBo = discountService.pullCoupon(form.getStartDate(), form.getEndDate());
 		if (errorBo.getError() != null) {
-			return ResponseUtil.error(errorBo.getError());
+			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
 		long end = System.currentTimeMillis();
 		log.info("总时长：[{}]", end - start);
@@ -36,7 +36,7 @@ public class DiscountController {
 	public ResponseResult sendMessage(@RequestBody MessageModel model) {
 		RestErrorBo errorBo = discountService.operateBaseCoupon(model);
 		if (errorBo.getError() != null) {
-			return ResponseUtil.error(errorBo.getError());
+			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
 		return ResponseUtil.success();
 	}
