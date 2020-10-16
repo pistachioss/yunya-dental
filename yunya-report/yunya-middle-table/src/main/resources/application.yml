@@ -34,7 +34,7 @@ spring:
     cloud:
         nacos:
             discovery:
-                server-addr: localhost:8848
+                server-addr: 192.168.31.215:8848
     shardingsphere:
         props:
             sql:
