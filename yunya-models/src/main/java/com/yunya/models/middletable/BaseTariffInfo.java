@@ -1,20 +1,21 @@
 package com.yunya.models.middletable;
 
-import javax.persistence.Column;
-import javax.persistence.Table;
 import java.math.BigDecimal;
+import javax.persistence.*;
 
-@Table(name = "base_tariff")
-public class BaseTariff {
+@Table(name = "base_tariff_info")
+public class BaseTariffInfo {
     /**
      * 项目ID
      */
+    @Id
     @Column(name = "item_id")
     private Integer itemId;
 
     /**
      * 项目类型（0-价目表；1-商品）
      */
+    @Id
     @Column(name = "item_type")
     private Byte itemType;
 
