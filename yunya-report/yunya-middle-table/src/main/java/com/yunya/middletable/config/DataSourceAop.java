@@ -92,4 +92,23 @@ public class DataSourceAop {
         //清理掉当前设置的数据源，让默认的数据源不受影响
         HintManager.clear();
     }
+
+    /**
+     * treatment库切入点
+     */
+    @Pointcut("execution(* com.yunya.middletable.dao.treatment..*.*(..))")
+    public void switchDataSourceTreatment() {
+    }
+
+    @Before("switchDataSourceTreatment()")
+    public void treatmentBefore() {
+        HintManager hintManager = HintManager.getInstance();
+        hintManager.setDatabaseShardingValue("treatment");
+    }
+
+    @After("switchDataSourceTreatment()")
+    public void treatmentAfter() {
+        //清理掉当前设置的数据源，让默认的数据源不受影响
+        HintManager.clear();
+    }
 }

@@ -54,7 +54,7 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	public void operateBaseCoupon(MessageModel model) {
-		Integer couponId = model.getId();
+		Integer couponId = (Integer) model.getParamMap().get("id");
 		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
 		createCoupon(coupon);
 	}
