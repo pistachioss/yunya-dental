@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.patient.BasePatientBiz;
+import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -34,10 +35,17 @@ public class PatientController {
         return ResponseUtil.success(null);
     }
 
-    @PostMapping("/patient/pull")
-    public ResponseResult pullData(@RequestBody PullForm form) {
-        basePatientBiz.pullPatient(form.getStartDate(), form.getEndDate());
-        return ResponseUtil.success();
+    /**
+     * 根据条件拉取员工数据并更新中间表
+     *
+     * @param form 拉取时间
+     * @return
+     */
+    @ApiOperation("根据时间段批量操作中间表员工信息")
+    @PostMapping(value = "/patient/batch", name = "PatientBaseInfoBiz")
+    public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
+        basePatientBiz.pullPatientData(form);
+        return ResponseUtil.success(null);
     }
 
 }
