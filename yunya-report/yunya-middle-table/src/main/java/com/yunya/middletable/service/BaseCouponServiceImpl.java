@@ -1,4 +1,4 @@
-package com.yunya.middletable.service.discount;
+package com.yunya.middletable.service;
 
 import com.google.common.collect.Lists;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
