@@ -143,10 +143,10 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
    * @param form 拉取时间
    */
   public void pullTariffData(PullForm form) {
-    Integer dataType = form.getDataType();
+    Integer itemType = form.getDataType();
     String startDate = form.getStartDate();
     String endDate = form.getEndDate();
-    switch (dataType) {
+    switch (itemType) {
       case 0:
         {
           Example emp = new Example(BaseTariff.class);
@@ -156,8 +156,8 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
             tariffs.forEach(
                 t -> {
                   Integer itemId = t.getId();
-                  mapper.deleteByPrimaryKey(itemId, dataType);
-                  BaseTariffInfo tariffInfo = generateTariffInfo(itemId, dataType);
+                  mapper.deleteByPrimaryKey(itemId, itemType);
+                  BaseTariffInfo tariffInfo = generateTariffInfo(itemId, itemType);
                   mapper.insertSelective(tariffInfo);
                 });
           }
@@ -172,8 +172,8 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
             oralTariffs.forEach(
                 ot -> {
                   Integer itemId = ot.getId();
-                  mapper.deleteByPrimaryKey(itemId, dataType);
-                  BaseTariffInfo tariffInfo = generateTariffInfo(itemId, dataType);
+                  mapper.deleteByPrimaryKey(itemId, itemType);
+                  BaseTariffInfo tariffInfo = generateTariffInfo(itemId, itemType);
                   mapper.insertSelective(tariffInfo);
                 });
           }
