@@ -123,10 +123,11 @@ public class ClinicTariffController {
 
   /**
    * 根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）
-   * @param search
-   * @return
+   * @param search 检索名称首字母缩写
+   * @param type 项目类型 0-价目表；1-商品表
+   * @return 返回实体对象
    */
-  @ApiModelProperty("根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）")
+  @ApiModelProperty("根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）项目类型 0-价目表；1-商品表")
   @GetMapping("/category/{type}")
   public ResponseResult clinicBaseTariff(@PathVariable("type") Byte type, String search) {
     return this.clinicTariffBiz.clinicBaseTariff(type,search);
