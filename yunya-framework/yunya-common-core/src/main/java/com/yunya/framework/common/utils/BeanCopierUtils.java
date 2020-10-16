@@ -35,6 +35,13 @@ public class BeanCopierUtils {
         return source.stream().map(obj -> copySingleBean(obj, targetClazz, false, null)).collect(toList());
     }
 
+    public static <S extends Object, T extends Object> List<T> listGeneralCopyBean(List<S> source, Class<T> targetClazz, Converter converter) {
+        if (CollectionUtils.isEmpty(source)) {
+            return Lists.newArrayList();
+        }
+        return source.stream().map(obj -> copySingleBean(obj, targetClazz, true, converter)).collect(toList());
+    }
+
     private static <S extends Object, T extends Object> T copySingleBean(S source, Class<T> targetClazz,
                                                                          boolean useConvert, Converter converter) {
         try {
