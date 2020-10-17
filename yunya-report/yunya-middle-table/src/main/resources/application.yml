@@ -17,6 +17,7 @@ mydb:
     patient: yunya_patient_central
     discount: yunya_discount
     treatment: yunya_treatment
+    employee-expand: employee_expand
 
 ## 多数据源配置
 spring:
@@ -40,7 +41,7 @@ spring:
             sql:
                 show: true
         datasource:
-            names: report,system,patient,treatment,discount
+            names: report,system,patient,treatment,discount,employee-expand
             report:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
@@ -69,6 +70,12 @@ spring:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
                 jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.discount}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            employee_expand:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.employee-expand}?${myjdbc.jdbc-url-ext}
                 username: ${myjdbc.username}
                 password: ${myjdbc.password}
         sharding:
