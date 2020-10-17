@@ -283,6 +283,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (appointment == null){
             return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
         }
+        // 除预约未到意外的其他情况，不可以取消预约
+        Byte appointStatus = appointment.getAppointStatus();
+        if (appointStatus != 0) {
+            return ResponseUtil.fail(AppointmentError.APPOINT_NOT_ALLOW_CANCEL.getCode(),AppointmentError.APPOINT_NOT_ALLOW_CANCEL.getMessage(),null);
+        }
         appointment.setInservice(false);
         appointment.setRemarks(form.getCause());
         appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -292,7 +297,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (result <= 0){
             return ResponseUtil.fail(AppointmentError.APPOINT_CANCEL_FAIL.getCode(),AppointmentError.APPOINT_CANCEL_FAIL.getMessage(),null);
         }
-
         AppointOperationModel record = new AppointOperationModel();
         record.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
         record.setAppointmentId(appointment.getId());
