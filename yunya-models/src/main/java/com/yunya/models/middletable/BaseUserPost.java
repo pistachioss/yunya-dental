@@ -1,6 +1,7 @@
 package com.yunya.models.middletable;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "base_user_post")
@@ -8,6 +9,7 @@ public class BaseUserPost {
     /**
      * 用户可登陆组织ID
      */
+    @Id
     @Column(name = "user_post_id")
     private Integer userPostId;
 

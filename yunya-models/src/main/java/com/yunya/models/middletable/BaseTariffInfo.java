@@ -1,22 +1,25 @@
 package com.yunya.models.middletable;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 
-@Table(name = "base_tariff")
-public class BaseTariff {
+@Table(name = "base_tariff_info")
+public class BaseTariffInfo {
     /**
      * 项目ID
      */
+    @Id
     @Column(name = "item_id")
     private Integer itemId;
 
     /**
      * 项目类型（0-价目表；1-商品）
      */
+    @Id
     @Column(name = "item_type")
-    private Byte itemType;
+    private Integer itemType;
 
     /**
      * 父项目分类
@@ -75,7 +78,7 @@ public class BaseTariff {
      *
      * @return item_type - 项目类型（0-价目表；1-商品）
      */
-    public Byte getItemType() {
+    public Integer getItemType() {
         return itemType;
     }
 
@@ -84,7 +87,7 @@ public class BaseTariff {
      *
      * @param itemType 项目类型（0-价目表；1-商品）
      */
-    public void setItemType(Byte itemType) {
+    public void setItemType(Integer itemType) {
         this.itemType = itemType;
     }
 

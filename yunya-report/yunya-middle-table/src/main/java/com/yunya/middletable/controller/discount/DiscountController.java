@@ -1,22 +1,44 @@
 package com.yunya.middletable.controller.discount;
 
+import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.report.domain.form.PullForm;
+import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.service.discount.BaseCouponServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.yunya.middletable.service.BaseCouponServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Resource;
+
+@Slf4j
 @RestController
 public class DiscountController {
 
-  @Autowired BaseCouponServiceImpl discountService;
+	@Resource
+	BaseCouponServiceImpl discountService;
 
-  @PostMapping("/discount/pull")
-  public ResponseResult pullData(@RequestBody PullForm form) {
-    discountService.pullCoupon(form.getStartDate(), form.getEndDate());
-    return ResponseUtil.success();
-  }
+	@PostMapping("/discount/pull")
+	public ResponseResult pullData(@RequestBody PullForm form) {
+		long start = System.currentTimeMillis();
+		RestErrorBo errorBo = discountService.pullCoupon(form.getStartDate(), form.getEndDate());
+		if (errorBo.getError() != null) {
+			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+		}
+		long end = System.currentTimeMillis();
+		log.info("总时长：[{}]", end - start);
+		return ResponseUtil.success(end - start);
+	}
+
+	@PostMapping("/discount/msg/send")
+	public ResponseResult sendMessage(@RequestBody MessageModel model) {
+		RestErrorBo errorBo = discountService.operateBaseCoupon(model);
+		if (errorBo.getError() != null) {
+			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+		}
+		return ResponseUtil.success();
+	}
+
 }

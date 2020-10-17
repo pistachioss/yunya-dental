@@ -1,6 +1,7 @@
 package com.yunya.models.middletable;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "base_organization")
@@ -8,6 +9,7 @@ public class BaseOrganization {
     /**
      * 组织ID
      */
+    @Id
     @Column(name = "org_id")
     private Integer orgId;
 

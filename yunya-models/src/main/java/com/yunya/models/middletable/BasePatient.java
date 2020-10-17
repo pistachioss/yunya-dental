@@ -1,6 +1,7 @@
 package com.yunya.models.middletable;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
@@ -9,6 +10,7 @@ public class BasePatient {
     /**
      * 患者ID
      */
+    @Id
     @Column(name = "patient_id")
     private Integer patientId;
 
