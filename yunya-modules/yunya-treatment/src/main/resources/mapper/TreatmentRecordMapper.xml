@@ -52,9 +52,9 @@
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
                 and DATE_FORMAT(tr.crt_time, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
-            <if test="queryForm.treatStatus != null and queryForm.treatStatus.length > 0">
+            <if test="queryForm.treatmentStatus != null and queryForm.treatmentStatus.length > 0">
                 and tr.status in
-                <foreach collection="queryForm.treatStatus" item="item" index="index" open="(" close=")" separator=",">
+                <foreach collection="queryForm.treatmentStatus" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
