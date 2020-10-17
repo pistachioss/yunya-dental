@@ -38,7 +38,7 @@ public class OrderDetailController {
    */
   @ApiOperation("根据开单记录ID查询商品开单详情列表")
   @GetMapping("/goods/list/{orderRecordId}")
-  public ResponseResult findGoodsList(
+  public ResponseResult<List<OrderDetailVO>> findGoodsList(
       @PathVariable(value = "orderRecordId") Integer orderRecordId) {
     List<OrderDetailVO> resultList = orderDetailBiz.findGoodsDetailVOList(orderRecordId);
     return ResponseUtil.success(resultList);
@@ -52,7 +52,7 @@ public class OrderDetailController {
    */
   @ApiOperation("根据开单记录ID查询开单详情列表")
   @GetMapping("/list/{orderRecordId}")
-  public ResponseResult findList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+  public ResponseResult<List<OrderDetailVO>> findList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
     List<OrderDetailVO> resultList = orderDetailBiz.findOrderDetailVOList(orderRecordId);
     return ResponseUtil.success(resultList);
   }
