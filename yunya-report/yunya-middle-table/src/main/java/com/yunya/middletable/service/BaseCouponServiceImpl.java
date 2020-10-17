@@ -88,32 +88,65 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		if (ADD.equals(operateType)) {
-			if (baseCoupon != null) {
-				log.info("优惠券[{}]数据已存在, 无法新增", couponId);
-				errorBo.setError(MiddleError.COUPON_CANT_ADD);
+			if (coupon == null) {
+				log.info("优惠券[{}]源数据不存在, 无法新增", couponId);
+				errorBo.setError(MiddleError.COUPON_NOT_EXIST);
+				errorBo.setMsg(couponId);
 			} else {
-				if (coupon != null) {
-					createCoupon(coupon);
+				if (baseCoupon != null) {
+					log.info("优惠券[{}]基础表数据已存在, 无法新增", couponId);
+					errorBo.setError(MiddleError.BASE_COUPON_EXISTED);
+					errorBo.setMsg(couponId);
+				} else {
+					if (!coupon.getIsInservice()) {
+						log.info("优惠券[{}]源数据已删除, 无法新增", couponId);
+						errorBo.setError(MiddleError.COUPON_DELETED);
+						errorBo.setMsg(couponId);
+					} else {
+						createCoupon(coupon);
+					}
 				}
 			}
 		}
 		if (UPDATE.equals(operateType)) {
-			if (baseCoupon == null) {
-				log.info("优惠券[{}]数据不存在, 无法更新", couponId);
-				errorBo.setError(MiddleError.COUPON_CANT_UPDATE);
+			if (coupon == null) {
+				log.info("优惠券[{}]源数据不存在, 无法更新", couponId);
+				errorBo.setError(MiddleError.COUPON_NOT_EXIST);
+				errorBo.setMsg(couponId);
 			} else {
-				if (coupon != null) {
-					updateCoupon(coupon);
+				if (baseCoupon == null) {
+					log.info("优惠券[{}]基础表数据不存在, 无法更新", couponId);
+					errorBo.setError(MiddleError.BASE_COUPON_NOT_EXIST);
+					errorBo.setMsg(couponId);
+				} else {
+					if (!coupon.getIsInservice()) {
+						log.info("优惠券[{}]源数据已删除, 无法更新", couponId);
+						errorBo.setError(MiddleError.COUPON_DELETED);
+						errorBo.setMsg(couponId);
+					} else {
+						updateCoupon(coupon);
+					}
 				}
 			}
 		}
 		if (DELETE.equals(operateType)) {
-			if (baseCoupon == null) {
-				log.info("优惠券[{}]数据不存在, 无法删除", couponId);
-				errorBo.setError(MiddleError.COUPON_CANT_DELETE);
+			if (coupon == null) {
+				log.info("优惠券[{}]源数据不存在, 无法删除", couponId);
+				errorBo.setError(MiddleError.COUPON_NOT_EXIST);
+				errorBo.setMsg(couponId);
 			} else {
-				if (coupon != null && !coupon.getIsInservice()) {
-					deleteCoupon(couponId);
+				if (baseCoupon == null) {
+					log.info("优惠券[{}]基础表数据不存在, 无法删除", couponId);
+					errorBo.setError(MiddleError.BASE_COUPON_NOT_EXIST);
+					errorBo.setMsg(couponId);
+				} else {
+					if (coupon.getIsInservice()) {
+						log.info("优惠券[{}]源数据未删除, 无法删除", couponId);
+						errorBo.setError(MiddleError.COUPON_NOT_DELETED);
+						errorBo.setMsg(couponId);
+					} else {
+						deleteCoupon(couponId);
+					}
 				}
 			}
 		}
@@ -391,7 +424,7 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 	 * @return bo
 	 */
 	private BaseCouponBo getBaseCouponBo(List<CouponCommonInfo> list) {
-		BaseCouponBo baseCouponBo = new BaseCouponBo();
+		BaseCouponBo baseCouponBo = BaseCouponBo.getInstance();
 		List<Integer> rechargeIds = list.stream().filter(obj -> RECHARGE.equals(obj.getType().intValue()))
 				.map(CouponCommonInfo::getId).collect(toList());
 		List<Integer> voucherIds = list.stream().filter(obj -> VOUCHER.equals(obj.getType().intValue()))

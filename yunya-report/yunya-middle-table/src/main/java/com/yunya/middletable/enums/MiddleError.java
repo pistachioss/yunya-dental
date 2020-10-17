@@ -5,9 +5,11 @@ import com.yunya.framework.common.model.RestError;
 
 public enum MiddleError implements RestError {
     DATE_ERROR(1, "日期错误"),
-    COUPON_CANT_ADD(2, "优惠券%s数据已存在，无法重复新增"),
-    COUPON_CANT_UPDATE(3, "优惠券%s数据不存在，无法更新"),
-    COUPON_CANT_DELETE(4, "优惠券%s数据不存在，无法删除"),
+    BASE_COUPON_EXISTED(2, "基础产品表数据已存在[%s]"),
+    BASE_COUPON_NOT_EXIST(3, "基础产品表数据不存在[%s]"),
+    COUPON_NOT_EXIST(4, "优惠券源数据不存在[%s]"),
+    COUPON_DELETED(5, "优惠券源数据已删除[%s]"),
+    COUPON_NOT_DELETED(6, "优惠券源数据未删除[%s]"),
     ;
     private Integer code;
     private String value;
