@@ -153,6 +153,9 @@ public class TreatmentPatientInfoVO implements Serializable {
   /** 治疗完成时间 */
   @ApiModelProperty("治疗完成时间")
   private String treatEndTime;
+  /** 诊疗状态 */
+  @ApiModelProperty("诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)")
+  private Byte treatmentStatus;
   /** 后续预约 */
   @ApiModelProperty("后续预约")
   private Integer nextAppointment;

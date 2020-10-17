@@ -43,7 +43,7 @@ public class TreatmentRecordQueryForm implements Serializable {
 
   @ApiModelProperty(value = "诊疗状态(0-就诊中;1-已开单;2-治疗完成;3-已结账)", required = true)
   @NotNull(message = "就诊状态不能为空！")
-  private Byte treatmentStatus;
+  private Byte[] treatmentStatus;
 
   @ApiModelProperty("接诊ID")
   private Integer id;

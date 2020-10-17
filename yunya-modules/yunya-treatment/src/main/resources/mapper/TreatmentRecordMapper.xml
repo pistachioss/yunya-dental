@@ -36,6 +36,7 @@
         tr.appointment_id as appointmentId,
         tr.registered_id as registeredId,
         tr.dentist_id as treatDentistId,
+        tr.status as treatmentStatus,
         DATE_FORMAT(tr.crt_time, '%Y-%m-%d') as treatDate,
         DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
         DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
@@ -51,8 +52,11 @@
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
                 and DATE_FORMAT(tr.crt_time, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
-            <if test="queryForm.treatmentStatus != null">
-                and tr.status = #{queryForm.treatmentStatus}
+            <if test="queryForm.treatStatus != null and queryForm.treatStatus.length > 0">
+                and tr.status in
+                <foreach collection="queryForm.treatStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="queryForm.dentistId != null">
                 and tr.dentist_id = #{queryForm.dentistId}
