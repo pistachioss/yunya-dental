@@ -29,20 +29,6 @@ public class ClinicAppointSettingController {
 
     @Autowired
     private ClinicAppointSettingBiz clinicAppointSettingBiz;
-
-    /**
-     * 新增预约设置
-     * @param model
-     * @return
-     */
-    @ApiOperation(value = "新增预约设置")
-    @PostMapping("/add")
-    @CurrentUser
-    public ResponseResult addAppointSetting(@RequestBody @Validated AppointSettingModel model){
-        ResponseResult responseResult = clinicAppointSettingBiz.addAppointSetting(model);
-        return responseResult;
-    }
-
     /**
      * 修改预约设置
      * @param form  设置表单

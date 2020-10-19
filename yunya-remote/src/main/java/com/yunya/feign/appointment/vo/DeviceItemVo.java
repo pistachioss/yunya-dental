@@ -31,9 +31,9 @@ public class DeviceItemVo implements Serializable {
     private Integer orgId;
 
     /**
-     * 设备名称
+     * 设备分类名称
      */
-    @ApiModelProperty(value = "设备名称")
+    @ApiModelProperty(value = "设备分类名称")
     private String name;
 
     /**
