@@ -8,8 +8,8 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BillRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -57,11 +57,10 @@ public class BillRecordController {
    * @return
    */
   @CurrentUser
-  @ApiOperation("billRecordBiz")
-  @ApiImplicitParams({@ApiImplicitParam(name = "model", value = "账单退费参数模型", required = true)})
+  @ApiOperation("账单退费")
   @PostMapping(value = "/refund", name = "账单退费")
-  public ResponseResult billRefund(@RequestBody @Validated BillRefundModel model) {
+  public ResponseResult<T> billRefund(@RequestBody @Validated BillRefundModel model) {
     billRecordBiz.refund(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

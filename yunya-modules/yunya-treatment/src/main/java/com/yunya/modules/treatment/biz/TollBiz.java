@@ -183,13 +183,21 @@ public class TollBiz {
     // 预付款入账总额
     if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
       for (PrepaymentAccountModel prepaymentAccountModel : prepaymentAccountModels) {
-        totalAmount = totalAmount.add(prepaymentAccountModel.getAmount());
+        BigDecimal amount = prepaymentAccountModel.getAmount();
+        if (null == amount) {
+          amount = BigDecimal.valueOf(0);
+        }
+        totalAmount = totalAmount.add(amount);
       }
     }
     // 会员卡入账总额
     if (StringHelper.isNotEmpty(memberAccountModels)) {
       for (MemberAccountModel memberAccountModel : memberAccountModels) {
-        totalAmount = totalAmount.add(memberAccountModel.getAmount());
+        BigDecimal amount = memberAccountModel.getAmount();
+        if (null == amount) {
+          amount = BigDecimal.valueOf(0);
+        }
+        totalAmount = totalAmount.add(amount);
       }
     }
     // 其他方式入账总额
