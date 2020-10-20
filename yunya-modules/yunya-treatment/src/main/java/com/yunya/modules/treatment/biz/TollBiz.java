@@ -308,6 +308,7 @@ public class TollBiz {
           memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
           memberExpendRecordModel.setBillRecordId(billRecordId);
           memberExpendRecordModel.setBillPayRecordId(billPayRecordId);
+          memberExpendRecordModel.setType(1);
           patientCentralServiceFeign.expend(memberExpendRecordModel);
         });
   }
@@ -337,6 +338,7 @@ public class TollBiz {
           prepaidExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
           prepaidExpendRecordModel.setBillRecordId(billRecordId);
           prepaidExpendRecordModel.setBillPayRecordId(billPayRecordId);
+          prepaidExpendRecordModel.setType(1);
           patientCentralServiceFeign.expend(prepaidExpendRecordModel);
         });
   }
