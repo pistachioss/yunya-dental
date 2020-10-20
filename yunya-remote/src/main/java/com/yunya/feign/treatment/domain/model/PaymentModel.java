@@ -28,7 +28,7 @@ public class PaymentModel implements Serializable {
   @NotNull(message = "入账方式ID不能为空！")
   private Integer accountItemId;
 
-  @ApiModelProperty("入账金额")
+  @ApiModelProperty(value = "入账金额", required = true)
   @NotNull(message = "入账金额不能为空！")
   @Min(value = 0, message = "输入金额不能小于0！")
   private BigDecimal amount;
