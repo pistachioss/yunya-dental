@@ -39,14 +39,14 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
      */
     public ResponseResult editOrAddSetting(AppointSettingForm form){
 
-        if (form.getAppointUnit() > 30 || form.getAppointUnit() < 5){
+        if (form.getAppointUnit() > 30 || form.getAppointUnit() < 5) {
             return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_UNIT.getCode(),AppointmentError.APPOINT_SETTING_UNIT.getMessage(),null);
         }
         ClinicAppointmentSetting build = EntityUtils.build(form, ClinicAppointmentSetting.class);
         Integer userId = form.getUserId();
         AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(userId);
         // 如果已经存在用户设置，则进行修改设置操作，否则进行新增操作
-        if (appointSettingVo != null){
+        if (appointSettingVo != null) {
             build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
             build.setUpdName(BaseContextHandler.getName());
             build.setUpdTime(new Date(System.currentTimeMillis()));

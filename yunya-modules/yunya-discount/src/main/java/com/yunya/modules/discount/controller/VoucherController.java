@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
@@ -9,6 +10,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.form.VoucheCouponForm;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
@@ -34,7 +36,8 @@ public class VoucherController {
     private VoucherBiz voucherBiz;
     @Autowired
     private CouponCommonInfoBiz couponCommonInfoBiz;
-
+    @Autowired
+    private CouponAllocateMapper couponAllocateMapper;
     /**
      * 新增代金券基础信息
      *
@@ -89,7 +92,18 @@ public class VoucherController {
         VoucheCouponForm voucheCouponForm = new VoucheCouponForm();
         BeanUtils.copyProperties(voucheCoupon, voucheCouponForm);
         BeanUtils.copyProperties(couponCommonInfo, voucheCouponForm);
-        voucheCouponForm.setMixedUseType(voucheCoupon.getMixedUseType().intValue());//格式问题 单独进行转换赋值
+        //格式问题 单独进行转换赋值
+        voucheCouponForm.setMixedUseType(voucheCoupon.getMixedUseType().intValue());
+        voucheCouponForm.setIsDistribution(true);
+
+        CouponAllocate couponAllocate = new CouponAllocate();
+        couponAllocate.setCouponId(id);
+        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
+            // 未完成分配
+            voucheCouponForm.setIsDistribution(false);
+        }
+
+
         return ResponseUtil.success(voucheCouponForm);
     }
 
