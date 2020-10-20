@@ -15,15 +15,15 @@ import javax.annotation.Resource;
 
 @Slf4j
 @RestController
-public class DiscountController {
+public class BaseCouponController {
 
 	@Resource
-	BaseCouponServiceImpl discountService;
+	BaseCouponServiceImpl couponService;
 
-	@PostMapping("/discount/pull")
+	@PostMapping("/base/coupon/pull")
 	public ResponseResult pullData(@RequestBody PullForm form) {
 		long start = System.currentTimeMillis();
-		RestErrorBo errorBo = discountService.pullCoupon(form.getStartDate(), form.getEndDate());
+		RestErrorBo errorBo = couponService.pullCoupon(form.getStartDate(), form.getEndDate());
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
@@ -32,9 +32,9 @@ public class DiscountController {
 		return ResponseUtil.success(end - start);
 	}
 
-	@PostMapping("/discount/msg/send")
+	@PostMapping("/base/coupon/msg/send")
 	public ResponseResult sendMessage(@RequestBody MessageModel model) {
-		RestErrorBo errorBo = discountService.operateBaseCoupon(model);
+		RestErrorBo errorBo = couponService.operateBaseCoupon(model);
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}

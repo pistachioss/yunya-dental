@@ -14,16 +14,6 @@
         <result column="workload_rate" jdbcType="DECIMAL" property="workloadRate" />
     </resultMap>
 
-    <select id="existIds" resultType="int">
-        select
-            `coupon_id`
-        from `base_coupon`
-        where `coupon_id` in
-            <foreach collection="list" item="item" open="(" separator="," close=")">
-                #{item}
-            </foreach>
-    </select>
-
     <insert id="insertList" parameterType="List">
         insert into
         `base_coupon`
