@@ -195,7 +195,11 @@ public class TollBiz {
     // 其他方式入账总额
     if (StringHelper.isNotEmpty(paymentModels)) {
       for (PaymentModel paymentModel : paymentModels) {
-        totalAmount = totalAmount.add(paymentModel.getAmount());
+        BigDecimal amount = paymentModel.getAmount();
+        if (null == amount) {
+          amount = BigDecimal.valueOf(0);
+        }
+        totalAmount = totalAmount.add(amount);
       }
     }
     return totalAmount;
