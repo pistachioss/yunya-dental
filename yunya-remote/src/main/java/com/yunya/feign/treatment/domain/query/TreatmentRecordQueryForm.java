@@ -41,8 +41,7 @@ public class TreatmentRecordQueryForm implements Serializable {
   @NotBlank(message = "查询日期不能为空！")
   private String currentDate;
 
-  @ApiModelProperty(value = "诊疗状态(0-就诊中;1-已开单;2-治疗完成;3-已结账)", required = true)
-  @NotNull(message = "就诊状态不能为空！")
+  @ApiModelProperty(value = "诊疗状态列表(0-就诊中;1-已开单;2-治疗完成;3-已结账)", required = true)
   private Byte[] treatmentStatus;
 
   @ApiModelProperty("接诊ID")
