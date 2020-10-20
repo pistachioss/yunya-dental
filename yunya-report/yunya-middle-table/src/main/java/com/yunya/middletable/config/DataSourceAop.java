@@ -130,4 +130,23 @@ public class DataSourceAop {
         //清理掉当前设置的数据源，让默认的数据源不受影响
         HintManager.clear();
     }
+
+    /**
+     * appointment_central库切入点
+     */
+    @Pointcut("execution(* com.yunya.middletable.dao.appointment..*.*(..))")
+    public void switchDataSourceAppointment() {
+    }
+
+    @Before("switchDataSourceAppointment()")
+    public void appointmentBefore() {
+        HintManager hintManager = HintManager.getInstance();
+        hintManager.setDatabaseShardingValue("appointment");
+    }
+
+    @After("switchDataSourceAppointment()")
+    public void appointmentAfter() {
+        //清理掉当前设置的数据源，让默认的数据源不受影响
+        HintManager.clear();
+    }
 }
