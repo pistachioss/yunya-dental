@@ -60,7 +60,8 @@ public class VoucherDiscountItemController {
         if(voucherDiscountItems.size()>0) {
             VoucherDiscountItem voucherDiscountItem = new VoucherDiscountItem();
             voucherDiscountItem.setCouponId(voucherDiscountItems.get(0).getCouponId());
-            voucherDiscountItemBiz.delete(voucherDiscountItem);//清除之前的适用项目
+            //清除之前的适用项目
+            voucherDiscountItemBiz.delete(voucherDiscountItem);
             voucherDiscountItems.forEach(t -> {
                 t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
                 t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
