@@ -47,7 +47,7 @@ public class BaseOrganizationController {
    * @return
    */
   @ApiOperation("根据时间段批量操作中间表组织信息")
-  @PostMapping(value = "/operate/batch", name = "organizationBiz")
+  @PostMapping(value = "/operate/batch", name = "form")
   public ResponseResult<T> pullOrgData(@RequestBody PullForm form) {
     organizationBiz.pullOrgData(form);
     return ResponseUtil.success(null);

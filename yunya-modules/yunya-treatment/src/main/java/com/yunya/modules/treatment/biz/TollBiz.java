@@ -183,19 +183,31 @@ public class TollBiz {
     // 预付款入账总额
     if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
       for (PrepaymentAccountModel prepaymentAccountModel : prepaymentAccountModels) {
-        totalAmount = totalAmount.add(prepaymentAccountModel.getAmount());
+        BigDecimal amount = prepaymentAccountModel.getAmount();
+        if (null == amount) {
+          amount = BigDecimal.valueOf(0);
+        }
+        totalAmount = totalAmount.add(amount);
       }
     }
     // 会员卡入账总额
     if (StringHelper.isNotEmpty(memberAccountModels)) {
       for (MemberAccountModel memberAccountModel : memberAccountModels) {
-        totalAmount = totalAmount.add(memberAccountModel.getAmount());
+        BigDecimal amount = memberAccountModel.getAmount();
+        if (null == amount) {
+          amount = BigDecimal.valueOf(0);
+        }
+        totalAmount = totalAmount.add(amount);
       }
     }
     // 其他方式入账总额
     if (StringHelper.isNotEmpty(paymentModels)) {
       for (PaymentModel paymentModel : paymentModels) {
-        totalAmount = totalAmount.add(paymentModel.getAmount());
+        BigDecimal amount = paymentModel.getAmount();
+        if (null == amount) {
+          amount = BigDecimal.valueOf(0);
+        }
+        totalAmount = totalAmount.add(amount);
       }
     }
     return totalAmount;
@@ -223,8 +235,7 @@ public class TollBiz {
                     prepaymentAccountModel.getAccountItemId(),
                     prepaymentAccountModel.getAmount(),
                     (byte) 0);
-            billPayDetailRecord.setRemark(
-                prepaymentAccountModel.getPrepaymentAccountId().toString());
+            billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
@@ -237,7 +248,7 @@ public class TollBiz {
                     memberAccountModel.getAccountItemId(),
                     memberAccountModel.getAmount(),
                     (byte) 1);
-            billPayDetailRecord.setRemark(memberAccountModel.getMemberAccountId().toString());
+            billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
@@ -303,11 +314,12 @@ public class TollBiz {
     memberAccountModels.forEach(
         memberAccountModel -> {
           memberExpendRecordModel.setPatientId(patientId);
-          memberExpendRecordModel.setMemberId(memberAccountModel.getMemberAccountId().toString());
+          memberExpendRecordModel.setMemberId(memberAccountModel.getMemberNum());
           memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
           memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
           memberExpendRecordModel.setBillRecordId(billRecordId);
           memberExpendRecordModel.setBillPayRecordId(billPayRecordId);
+          memberExpendRecordModel.setType(1);
           patientCentralServiceFeign.expend(memberExpendRecordModel);
         });
   }
@@ -331,12 +343,12 @@ public class TollBiz {
     prepaymentAccountModels.forEach(
         prepaymentAccountModel -> {
           prepaidExpendRecordModel.setPatientId(patientId);
-          prepaidExpendRecordModel.setPrepaidId(
-              prepaymentAccountModel.getPrepaymentAccountId().toString());
+          prepaidExpendRecordModel.setPrepaidId(prepaymentAccountModel.getPrepaymentNum());
           prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
           prepaidExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
           prepaidExpendRecordModel.setBillRecordId(billRecordId);
           prepaidExpendRecordModel.setBillPayRecordId(billPayRecordId);
+          prepaidExpendRecordModel.setType(1);
           patientCentralServiceFeign.expend(prepaidExpendRecordModel);
         });
   }

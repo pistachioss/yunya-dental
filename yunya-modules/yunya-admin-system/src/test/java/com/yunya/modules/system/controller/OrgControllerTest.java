@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.modules.system.domain.form.OrganizationForm;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,5 +31,17 @@ public class OrgControllerTest {
     form.setTypes(new Byte[] {0, 2});
     ResponseResult list = organizationController.findList(form);
     System.out.println(list);
+  }
+
+  @Test
+  public void testAdd() {
+    OrganizationForm entity = new OrganizationForm();
+    entity.setName("测试门诊新增");
+    entity.setType((byte) 0);
+    entity.setCrtId(524);
+    entity.setCrtName("含哭哭");
+    System.out.println(entity.getId());
+    ResponseResult result = organizationController.addOrganization(entity);
+    System.out.println(result);
   }
 }

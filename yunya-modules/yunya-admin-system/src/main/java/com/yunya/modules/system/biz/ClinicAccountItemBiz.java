@@ -210,7 +210,7 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
     ClinicAccountItem result = mapper.selectOne(entity);
     if (null == result) {
       entity.setInservice(false);
-      entity.setCrtId(Integer.valueOf(BaseContextHandler.getOrgId()));
+      entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       entity.setCrtName(BaseContextHandler.getName());
       mapper.insertSelective(entity);
     } else {

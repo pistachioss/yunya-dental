@@ -200,54 +200,44 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
 
     List<TreatmentPatientInfoVO> treatingList = mapper.selectTreatingList(queryForm);
-    Byte status = queryForm.getTreatmentStatus();
-    switch (status) {
-      case 0:
-      case 1:
-      case 2:
-        if (StringHelper.isNotEmpty(treatingList)) {
-          treatingList.forEach(
-              vo -> {
-                // 设置患者信息
-                setPatientInfo(vo);
-                // 设置预约信息
-                setAppointmentInfo(vo);
-                // 设置挂号信息
-                setRegisteredInfo(vo);
-                // 设置接诊信息
-                setTreatingInfo(vo);
-                // 设置账单信息
-                setOrderInfo(vo);
-              });
-        } else {
-          treatingList = new ArrayList<>();
+    if (StringHelper.isNotEmpty(treatingList)) {
+      for (TreatmentPatientInfoVO vo : treatingList) {
+        switch (vo.getTreatmentStatus()) {
+          case 0:
+          case 1:
+          case 2:
+            // 设置患者信息
+            setPatientInfo(vo);
+            // 设置预约信息
+            setAppointmentInfo(vo);
+            // 设置挂号信息
+            setRegisteredInfo(vo);
+            // 设置接诊信息
+            setTreatingInfo(vo);
+            // 设置账单信息
+            setOrderInfo(vo);
+            break;
+          case 3:
+            // 设置患者信息
+            setPatientInfo(vo);
+            // 设置预约信息
+            setAppointmentInfo(vo);
+            // 设置挂号信息
+            setRegisteredInfo(vo);
+            // 设置接诊信息
+            setTreatingInfo(vo);
+            // 设置账单信息
+            setOrderInfo(vo);
+            // 设置收费信息
+            setChargeInfo(vo);
+            break;
+          default:
+            break;
         }
-        break;
-      case 3:
-        if (StringHelper.isNotEmpty(treatingList)) {
-          treatingList.forEach(
-              vo -> {
-                // 设置患者信息
-                setPatientInfo(vo);
-                // 设置预约信息
-                setAppointmentInfo(vo);
-                // 设置挂号信息
-                setRegisteredInfo(vo);
-                // 设置接诊信息
-                setTreatingInfo(vo);
-                // 设置账单信息
-                setOrderInfo(vo);
-                // 设置收费信息
-                setChargeInfo(vo);
-              });
-        } else {
-          treatingList = new ArrayList<>();
-        }
-        break;
-      default:
-        break;
+      }
+    } else {
+      treatingList = new ArrayList<>();
     }
-
     return new PageInfo<>(treatingList);
   }
 
@@ -458,17 +448,16 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (null != baseTariff) {
       String fellowUp = baseTariff.getFellowUp();
       if (StringHelper.isNotBlank(fellowUp)) {
-        String[] nums = fellowUp.replaceAll("-","").split(",");
+        String[] nums = fellowUp.replaceAll("-", "").split(",");
         if (nums.length > 0) {
           Arrays.stream(nums)
               .filter(StringHelper::isNotBlank)
               .forEach(
                   num -> {
                     int nn;
-                    try{
+                    try {
                       nn = Integer.parseInt(num);
-                    }
-                    catch (Exception ex){
+                    } catch (Exception ex) {
                       throw new ClientServiceException("价目表的随访字段有非数字！", DATA_ERROR);
                     }
                     VisitingRecord visitRecord = new VisitingRecord();
@@ -488,8 +477,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     visitRecord.setCrtName(detail.getCrtName());
                     visitRecord.setTreatmentId(treatmentRecordId);
                     visitRecord.setVisitingDate(
-                        DateUtils.addDays(
-                            new Date(System.currentTimeMillis()), nn));
+                        DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
                     treatmentOtherFeign.insertVisitingRecord(visitRecord);
                   });
         }
@@ -591,9 +579,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     form.setQueryDate(queryDate);
     form.setWhetherPage(false);
     List<Appointment> appointments = appointmentFeign.findAppointmentList(form);
-    if (StringHelper.isNotEmpty(appointments)) {
+    if (StringHelper.isNotEmpty(appointments)) {}
 
-    }
     return null;
   }
 }

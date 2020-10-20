@@ -107,7 +107,6 @@ public class TreatmentRecordController {
    * @return resultList
    */
   @ApiOperation("根据条件查询患者就诊记录列表(患者档案就诊列表)")
-  @ApiImplicitParam(name = "queryFrom", value = "患者就诊记录列表查询参数模型", required = true)
   @PostMapping(value = "/patient/list", name = "患者就诊记录列表")
   public ResponseResult<PageInfo<PatientTreatmentRecordVO>> treatmentRecordBiz(
       @RequestBody @Validated PatientTreatmentRecordQueryForm queryForm) {
