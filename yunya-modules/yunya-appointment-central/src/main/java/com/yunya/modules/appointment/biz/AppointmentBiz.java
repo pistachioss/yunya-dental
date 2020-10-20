@@ -492,30 +492,23 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 获取当天的所有医生的排班（包含有排班和没有排班的医生）
         List<UserWorkVO> shiftWorkDatas = scheduleResultVO.getShiftWorkDatas();
-        // 将没有排班的医生过滤掉
-        List<UserWorkVO> distentWorkDatas = null;
+        List<Integer> flags = new ArrayList<>();
         // 如果是查找多天则进行不过滤操作（适配预约修改画面中预约医生一周的预约情况）
         if (startDateStr.equals(endDateStr)) {
-            distentWorkDatas = new ArrayList<UserWorkVO>();
             for (UserWorkVO userWorkVO : shiftWorkDatas) {
                 List<WorkDayVO> days = userWorkVO.getDays();
                 if (!StringHelper.isEmpty(days)) {
                     for (WorkDayVO workDayVO: days) {
                         Integer id = workDayVO.getId();
-                        if (null != id) {
-                            distentWorkDatas.add(userWorkVO);
+                        // 将没有排班的员工ID放入flags列表中
+                        if (null == id) {
+                            Integer compEmpId = userWorkVO.getCompEmpId();
+                            flags.add(compEmpId);
                         }
                     }
                 }
             }
-            // 如果当天没有排班医生，则返回null
-            if (StringHelper.isEmpty(distentWorkDatas)) {
-                return null;
-            }
-        } else {
-            distentWorkDatas = shiftWorkDatas;
         }
-
         // 获取可预约的医生
         EnableEmployeeRes enableEmployeeList = this.clinicEmployeeConfigFeign.getEnableEmployeeList(query.getOrgId());
         List<EnableChooseEmployeeRes> enableAppointList = enableEmployeeList.getEnableAppointList();
@@ -527,7 +520,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         List<Integer> appointIdList = Arrays.asList(appointIds);
         // 过滤出可预约医生的排班信息
-        List<UserWorkVO> filterAppointIds = distentWorkDatas.stream().filter(
+        List<UserWorkVO> filterAppointIds = shiftWorkDatas.stream().filter(
                 userWorkVO -> appointIdList.contains(userWorkVO.getCompEmpId())).collect(Collectors.toList());
 
         Integer orgId = query.getOrgId();
@@ -538,10 +531,32 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(query,orgId, startDate, endDate, userWorkVO);
             // 将预约信息放入预约可视图列表
             if (!dimensionVoList.isEmpty()){
-                dimensionVoList.forEach(dimensionVo -> appointmentDimensionVoList.add(dimensionVo));
+                dimensionVoList.forEach(dimensionVo -> {
+                    Integer dentistId = dimensionVo.getDentistId();
+                    List<AppointmentDimensionVo> appointmentAssistants = dimensionVo.getAppointmentAssistants();
+                    List<AppointmentPatientCardVo> appointmentPatientCardVos = dimensionVo.getAppointmentPatientCardVos();
+                    // 只有在当天有预约或者有排班才将预约信息添加到预约信息列表
+                    if (!(StringHelper.isEmpty(appointmentAssistants) &&
+                            StringHelper.isEmpty(appointmentPatientCardVos) &&
+                            flags.contains(dentistId))) {
+                        appointmentDimensionVoList.add(dimensionVo);
+                    }
+
+                });
             }
         }
+        // 最后进行排序
+        return this.sort(appointmentDimensionVoList,query.getOrder(),query.getOrderBy());
+    }
 
+    /**
+     * 根据指定字段和排序规则排序
+     * @param appointmentDimensionVoList 预约信息 要排序的列表
+     * @param field 根据哪个字段排序
+     * @param orderBy 升序asc 还是降序desc
+     * @return 返回排序之后的列表
+     */
+    private List<AppointmentDimensionVo> sort(List<AppointmentDimensionVo> appointmentDimensionVoList, String field, String orderBy) {
         // 按患者预约数量升序排列
         // 按照患者数量排序
         String ORDER_PATIENTNUM = "patientNum";
@@ -551,34 +566,33 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         String ORDER_BY_ASC = "asc";
         // 降序
         String ORDER_BY_DESC = "desc";
-        if (ORDER_PATIENTNUM.equals(query.getOrder()) && ORDER_BY_ASC.equals(query.getOrderBy())){
+        if (ORDER_PATIENTNUM.equals(field) && ORDER_BY_ASC.equals(orderBy)){
             return appointmentDimensionVoList
                     .stream()
                     .sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum,
                             Comparator.nullsLast(Integer::compareTo))).collect(Collectors.toList());
 
-        } else if (ORDER_PATIENTNUM.equals(query.getOrder()) && ORDER_BY_DESC.equals(query.getOrderBy())){
+        } else if (ORDER_PATIENTNUM.equals(field) && ORDER_BY_DESC.equals(orderBy)){
             // 按患者预约数量降序排列
             return appointmentDimensionVoList
                     .stream()
                     .sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum,
                             Comparator.nullsFirst(Integer::compareTo)).reversed()).collect(Collectors.toList());
 
-        } else if (ORDER_DATE.equals(query.getOrder()) && ORDER_BY_ASC.equals(query.getOrderBy())){
+        } else if (ORDER_DATE.equals(field) && ORDER_BY_ASC.equals(orderBy)){
             // 按日期升序排列
             return appointmentDimensionVoList
                     .stream()
                     .sorted(Comparator.comparing(AppointmentDimensionVo::getCurrentDate,
                             Comparator.nullsLast(Date::compareTo))).collect(Collectors.toList());
 
-        } else if (ORDER_DATE.equals(query.getOrder()) && ORDER_BY_DESC.equals(query.getOrderBy())){
+        } else if (ORDER_DATE.equals(field) && ORDER_BY_DESC.equals(orderBy)){
             // 按日期降序排列
             return appointmentDimensionVoList
                     .stream()
                     .sorted(Comparator.comparing(AppointmentDimensionVo::getCurrentDate,
                             Comparator.nullsFirst(Date::compareTo)).reversed()).collect(Collectors.toList());
         }
-        // 没有排序直接返回
         return appointmentDimensionVoList;
     }
 
@@ -806,8 +820,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             if (employeeScheduleResult != null){
                 List<UserWorkVO> shiftWorkDatas = employeeScheduleResult.getShiftWorkDatas();
                 // 预约医生没有排班，返回空
-                if (StringHelper.isEmpty(shiftWorkDatas)) {
-                    return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(),AppointmentError.DENTIST_NOT_WORK.getMessage(),null);
+                if (!StringHelper.isEmpty(shiftWorkDatas)) {
+                    UserWorkVO userWorkVO = shiftWorkDatas.get(0);
+                    List<WorkDayVO> days = userWorkVO.getDays();
+                    if (!StringHelper.isEmpty(days)) {
+                        WorkDayVO workDayVO = days.get(0);
+                        Integer id = workDayVO.getId();
+                        if (null == id) {
+                            return ResponseUtil.fail(AppointmentError.DENTIST_NOT_WORK.getCode(), AppointmentError.DENTIST_NOT_WORK.getMessage(), null);
+                        }
+                    }
+
                 }
             }
         }
@@ -1366,7 +1389,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
         String excelName = orgName + "预约报表(" + exportAppointDate + ")";
-        appointExcelExport.exportExcel(response,appointListExportVos,excelName);
+        appointExcelExport.exportExcel(response,appointListExportVos,excelName,excelName);
     }
 
     /**
@@ -1711,8 +1734,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             String[] splitStartTimeArr = appointmentSplitVo.getSplitStartTime().split(":");
             String[] splitEndTimeArr = appointmentSplitVo.getSplitEndTime().split(":");
             // 设置预约时间段
-            Integer startMinute = Integer.valueOf(splitStartTimeArr[0]) * 60 + Integer.valueOf(splitStartTimeArr[1]);
-            Integer endMinute = Integer.valueOf(splitEndTimeArr[0]) * 60 + Integer.valueOf(splitEndTimeArr[1]);
+            Integer startMinute = Integer.parseInt(splitStartTimeArr[0]) * 60 + Integer.parseInt(splitStartTimeArr[1]);
+            Integer endMinute = Integer.parseInt(splitEndTimeArr[0]) * 60 + Integer.parseInt(splitEndTimeArr[1]);
             assistantPatientCardInfo.setAppointDuration(endMinute-startMinute);
             // 助手预约时间
             assistantPatientCardInfo.setAppointTime(appointmentSplitVo.getSplitStartTime());

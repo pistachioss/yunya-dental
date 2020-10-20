@@ -188,6 +188,8 @@ public class PageUtil<T> {
             List<AppointmentDimensionVo> appointmentDimensionVos = obj.subList(start, end);
             // 设置分页列表
             page.setList(appointmentDimensionVos);
+        } else {
+            page.setList(obj);
         }
         return page;
     }
