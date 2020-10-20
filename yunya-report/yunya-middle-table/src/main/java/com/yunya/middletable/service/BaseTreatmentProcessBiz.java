@@ -4,10 +4,12 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.middletable.dao.appointment.AppointmentMapper;
+import com.yunya.middletable.dao.appointment.AppointmentModifyRecordMapper;
 import com.yunya.middletable.dao.report.BaseTreatmentProcessMapper;
 import com.yunya.middletable.dao.treatment.RegisteredMapper;
 import com.yunya.middletable.dao.treatment.TreatmentRecordMapper;
 import com.yunya.models.appointment.Appointment;
+import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.models.middletable.BaseTreatmentProcess;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
@@ -32,6 +34,8 @@ public class BaseTreatmentProcessBiz
 
   /** 预约 */
   @Autowired private AppointmentMapper appointmentMapper;
+  /** 预约修改 */
+  @Autowired private AppointmentModifyRecordMapper appointmentModifyRecordMapper;
   /** 挂号 */
   @Autowired private RegisteredMapper registeredMapper;
   /** 接诊 */
@@ -81,7 +85,7 @@ public class BaseTreatmentProcessBiz
         treatmentProcess = generateBaseTreatmentProcess(appointment);
         process.setAppointmentId(dataId);
         mapper.delete(process);
-        mapper.insert(treatmentProcess);
+        mapper.insertSelective(treatmentProcess);
         break;
         // 挂号
       case 1:
@@ -125,6 +129,7 @@ public class BaseTreatmentProcessBiz
       treatmentProcess.setTreatStatus((byte) 0);
       treatmentProcess.setOrgId(registered.getOrgId());
       treatmentProcess.setPatientId(registered.getPatientId());
+      treatmentProcess.setTreatType(registered.getFirstVisit());
       treatmentProcess.setRegisteredDentistId(registered.getDentistId());
       treatmentProcess.setRegisteredTime(registered.getRegTime());
       return treatmentProcess;
@@ -143,8 +148,8 @@ public class BaseTreatmentProcessBiz
     switch (type) {
         // 预约
       case 0:
-        entity.setAppointmentId(dataId);
-        mapper.delete(entity);
+        entity.setAppointStatus((byte) 4);
+        mapper.updateByAppointmentId(dataId, entity);
         break;
         // 挂号
       case 1:
@@ -222,11 +227,13 @@ public class BaseTreatmentProcessBiz
       Registered registeredResult = registeredMapper.selectOne(registered);
       if (null != registeredResult) {
         if (registeredResult.getInservice()) {
+          treatmentProcess.setTreatType(registeredResult.getFirstVisit());
           treatmentProcess.setRegisteredId(registeredResult.getId());
           treatmentProcess.setTreatStatus((byte) 0);
           treatmentProcess.setRegisteredDentistId(registeredResult.getDentistId());
           treatmentProcess.setRegisteredTime(registeredResult.getRegTime());
         } else {
+          treatmentProcess.setTreatType(null);
           treatmentProcess.setRegisteredId(null);
           treatmentProcess.setTreatStatus(null);
           treatmentProcess.setRegisteredDentistId(null);
@@ -280,19 +287,39 @@ public class BaseTreatmentProcessBiz
    * @param appointment 预约
    */
   private void setAppointmentValue(BaseTreatmentProcess treatmentProcess, Appointment appointment) {
-    treatmentProcess.setAppointmentId(appointment.getId());
+    Integer appointmentId = appointment.getId();
     treatmentProcess.setOrgId(appointment.getOrgId());
     treatmentProcess.setPatientId(appointment.getPatientId());
-    treatmentProcess.setTreatStatus(appointment.getAppointStatus());
-    treatmentProcess.setTreatType(appointment.getAppointType());
-    treatmentProcess.setAppointStatus(appointment.getAppointStatus());
+    treatmentProcess.setAppointmentId(appointmentId);
+    AppointmentModifyRecord modifyAppointment = new AppointmentModifyRecord();
+    modifyAppointment.setAppointmentId(appointmentId);
+    int count = appointmentModifyRecordMapper.selectCount(modifyAppointment);
+    treatmentProcess.setAppointModifyTime(count);
+    Byte appointStatus = appointment.getAppointStatus();
+    if (count > 0) {
+      treatmentProcess.setAppointStatus(appointment.getConfirmStatus() ? (byte) 3 : (byte) 2);
+    } else {
+      switch (appointStatus) {
+        case 0:
+          treatmentProcess.setAppointStatus(appointment.getConfirmStatus() ? (byte) 1 : (byte) 0);
+          break;
+        case 2:
+          treatmentProcess.setAppointStatus((byte) 4);
+          break;
+        default:
+          break;
+      }
+    }
     treatmentProcess.setAppointDentistId(appointment.getDentistId());
     treatmentProcess.setAppointStartTime(appointment.getAppointStartTime());
     treatmentProcess.setAppointDuration(appointment.getAppointDuration());
     treatmentProcess.setAppointContent(appointment.getAppointContent());
   }
 
-  public void pullTreatmentProcessData(PullForm form) {
-
-  }
+  /**
+   * 根据时间段拉取数据
+   *
+   * @param form 拉取时间
+   */
+  public void pullTreatmentProcessData(PullForm form) {}
 }

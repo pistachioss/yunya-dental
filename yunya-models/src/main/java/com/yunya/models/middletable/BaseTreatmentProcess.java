@@ -78,6 +78,9 @@ public class BaseTreatmentProcess {
     @Column(name = "appoint_content")
     private String appointContent;
 
+    @Column(name = "appoint_modify_time")
+    private Integer appointModifyTime;
+
     /**
      * 挂号医生ID
      */
@@ -316,6 +319,24 @@ public class BaseTreatmentProcess {
      */
     public void setAppointContent(String appointContent) {
         this.appointContent = appointContent;
+    }
+
+    /**
+     * 获取预约修改次数
+     *
+     * @return appoint_modify_time
+     */
+    public Integer getAppointModifyTime() {
+        return appointModifyTime;
+    }
+
+    /**
+     * 设置预约修改次数
+     *
+     * @param appointModifyTime appoint_modify_time
+     */
+    public void setAppointModifyTime(Integer appointModifyTime) {
+        this.appointModifyTime = appointModifyTime;
     }
 
     /**

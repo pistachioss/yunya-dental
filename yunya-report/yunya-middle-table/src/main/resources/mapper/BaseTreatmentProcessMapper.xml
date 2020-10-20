@@ -16,6 +16,7 @@
         <result column="appoint_dentist_id" property="appointDentistId" jdbcType="INTEGER"/>
         <result column="appoint_start_time" property="appointStartTime" jdbcType="TIMESTAMP"/>
         <result column="appoint_duration" property="appointDuration" jdbcType="INTEGER"/>
+        <result column="appoint_modify_time" property="appointModifyTime" jdbcType="INTEGER"/>
         <result column="appoint_content" property="appointContent" jdbcType="VARCHAR"/>
         <result column="registered_dentist_id" property="registeredDentistId" jdbcType="INTEGER"/>
         <result column="registered_time" property="registeredTime" jdbcType="TIME"/>
@@ -40,6 +41,9 @@
         </if>
         <if test="treatmentProcess.patientId != null">
             patient_id = #{treatmentProcess.patientId},
+        </if>
+        <if test="treatmentProcess.appointModifyTime != null">
+            appoint_modify_time = #{treatmentProcess.appointModifyTime},
         </if>
         <if test="treatmentProcess.treatStatus != null">
             treat_status = #{treatmentProcess.treatStatus},
