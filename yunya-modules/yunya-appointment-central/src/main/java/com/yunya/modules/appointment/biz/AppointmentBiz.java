@@ -378,10 +378,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 生成修改预约操作记录
         appointOperateRecordBiz.saveAppointOperationRecord(appointment,appointmentForm);
-        // 从redis中移出该数据
-        Boolean aBoolean = redisUtils.hasKey(RedisConstants.REDIS_KEY_APPOINT_DIMENSION_INFO + appointmentForm.getId());
+        // 移出redis中的预约信息（患者维度，医生维度，预约列表，单条预约）
+        Boolean aBoolean = redisUtils.hasKey(RedisConstants.REDIS_KEY_APPOINT_INFO + appointmentForm.getId());
         if (aBoolean) {
-            redisUtils.delete(RedisConstants.REDIS_KEY_APPOINT_DIMENSION_INFO + appointmentForm.getId());
+            redisUtils.delete(RedisConstants.REDIS_KEY_APPOINT_INFO + appointmentForm.getId());
         }
         return ResponseUtil.success();
     }
@@ -401,26 +401,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointmentQuery.setAppointDate(query.getAppointDate());
         appointmentQuery.setAppointType(query.getAppointType());
         appointmentQuery.setOrgId(query.getOrgId());
+        List<AppointmentVo> appointmentVos = mapper.findAppointmentByExample(appointmentQuery);
+        // 设置预约医生/助手信息
+        appointmentVos.forEach(appointmentVo -> {
+            // 组合预约列表信息
+            AppointmentListItemVo itemVo = this.combinationAppointListItemVo(appointmentVo);
+            appointmentList.add(itemVo);
+        });
+        // 按条件检索之后的列表
+        collect = appointmentList;
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-        String redisKey = RedisConstants.REDIS_KEY_APPOINT_LIST + dateFormat.format(query.getAppointDate());
-        // redis中是否存在要检索的数据
-        Boolean aBoolean = redisUtils.hasKey(redisKey);
-        if (aBoolean) {
-            List<AppointmentVo> appointmentVos = mapper.findAppointmentByExample(appointmentQuery);
-            // 设置预约医生/助手信息
-            appointmentVos.forEach(appointmentVo -> {
-                // 组合预约列表信息
-                AppointmentListItemVo itemVo = this.combinationAppointListItemVo(appointmentVo);
-                appointmentList.add(itemVo);
-            });
-            // 按条件检索之后的列表
-            collect = appointmentList;
-            // 将当前的预约列表添加到redis中
-            redisUtils.set(redisKey,appointmentVos);
-        } else {
-            collect = redisUtils.get(redisKey, List.class);
-        }
 
         // 匹配姓名
         String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
@@ -497,7 +487,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         employeeScheduleQueryForm.setUserId(query.getDentistId());
         // 查询当前天有排班的员工列表
         EmployeeScheduleResultVO scheduleResultVO = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
-        if (scheduleResultVO == null || scheduleResultVO.getCount() <= 0){
+        if (scheduleResultVO == null || scheduleResultVO.getCount() <= 0) {
             return null;
         }
         // 获取当天的所有医生的排班（包含有排班和没有排班的医生）
@@ -875,102 +865,301 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 判断患者预约是否存在冲突
         if (patientId != null) {
-            List<AppointConflictInfoVo> patientList = mapper.findAppointListByPatientIdAndAppointStartTimeAndAppointEndTime(
-                    patientId, appointStartTime, appointEndTime);
-            if (!StringHelper.isEmpty(patientList)){
-                patientList.forEach(appointConflictInfoVo -> {
-                    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
-                    if (organizationInfo != null){
-                        appointConflictInfoVo.setClinicName(organizationInfo.getName());
-                        appointConflictInfoVo.setClinicNumber(organizationInfo.getClinicNumber());
-                        appointConflictInfoVo.setAbbreviation(organizationInfo.getAbbreviation());
-                    }
-                });
-                // 预约冲突返回冲突信息
-                return ResponseUtil.fail(AppointmentError.APPOINT_PATIENT_EXIST.getCode(),
-                        AppointmentError.APPOINT_PATIENT_EXIST.getMessage(),
-                        patientList);
+            ResponseResult responseResult = this.patientConflictInfo(null, patientId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
-
         // 判断医生预约是否存在冲突
         if (dentistId != null){
-            List<AppointConflictInfoVo> dentisList = mapper.findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime(
-                    dentistId, appointStartTime, appointEndTime);
-            if (!StringHelper.isEmpty(dentisList)){
-                dentisList.forEach(appointConflictInfoVo -> {
-                    OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
-                    if (organizatioinInfo != null){
-                        appointConflictInfoVo.setClinicName(organizatioinInfo.getName());
-                        appointConflictInfoVo.setClinicNumber(organizatioinInfo.getClinicNumber());
-                        appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
-                    }
-                });
-                // 预约冲突返回冲突信息
-                return ResponseUtil.fail(AppointmentError.APPOINT_DENTIST_EXIST.getCode(),
-                        AppointmentError.APPOINT_DENTIST_EXIST.getMessage(),
-                        dentisList);
+            ResponseResult responseResult = this.dentistConflictInfo(null, dentistId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
 
         // 判断助手预约是否存在冲突
         if (assistantId != null){
-            List<AppointConflictInfoVo> dentisList = mapper.findAppointListByAssistantIdAndAppointStartTimeAndAppointEndTime(
-                    assistantId, appointStartTime, appointEndTime);
-            if (!StringHelper.isEmpty(dentisList)){
-                dentisList.forEach(appointConflictInfoVo -> {
-                    OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
-                    if (organizatioinInfo != null){
-                        appointConflictInfoVo.setClinicName(organizatioinInfo.getName());
-                        appointConflictInfoVo.setClinicNumber(organizatioinInfo.getClinicNumber());
-                        appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
-                    }
-                });
-                // 预约助手冲突返回冲突信息
-                return ResponseUtil.fail(AppointmentError.APPOINT_ASSISTANT_EXIST.getCode(),
-                        AppointmentError.APPOINT_ASSISTANT_EXIST.getMessage(),
-                        dentisList);
+            ResponseResult responseResult = this.assistantConflictInfo(null, assistantId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
 
         // 判断预约分解助手是否冲突
         if (!StringHelper.isEmpty(splitList)){
-            List<AppointConflictInfoVo> dentisList = mapper.findByIdAndStartTimeAndEndTime(
-                    assistantId, appointStartTime, appointEndTime);
-            if (!StringHelper.isEmpty(dentisList)){
-                dentisList.forEach(appointConflictInfoVo -> {
-                    OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
-                    if (organizatioinInfo != null){
-                        appointConflictInfoVo.setClinicName(organizatioinInfo.getName());
-                        appointConflictInfoVo.setClinicNumber(organizatioinInfo.getClinicNumber());
-                        appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
-                    }
-                });
-                // 预约分解助手冲突返回冲突信息
-                return ResponseUtil.fail(AppointmentError.SPLIT_ASSISTANT_EXIST.getCode(),
-                        AppointmentError.SPLIT_ASSISTANT_EXIST.getMessage(),
-                        dentisList);
+            ResponseResult responseResult = this.splitAssistantConflictInfo(null, assistantId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
 
         // 判断设备预约是否存在冲突
         if (deviceId != null){
-            List<AppointConflictInfoVo> deviceList = mapper.findAppointListByDeviceIdAndAppointStartTimeAndAppointEndTime(
-                    deviceId, appointStartTime, appointEndTime);
-            if (!StringHelper.isEmpty(deviceList)){
-                deviceList.forEach(appointConflictInfoVo -> {
-                    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
-                    if (organizationInfo != null){
-                        appointConflictInfoVo.setClinicName(organizationInfo.getName());
-                        appointConflictInfoVo.setAbbreviation(organizationInfo.getAbbreviation());
-                        appointConflictInfoVo.setClinicNumber(organizationInfo.getClinicNumber());
-                    }
-                });
-                // 预约冲突返回冲突信息
-                return ResponseUtil.fail(AppointmentError.APPOINT_DEVICE_EXIST.getCode(),
-                        AppointmentError.APPOINT_DEVICE_EXIST.getMessage(),
-                        deviceList);
+            ResponseResult responseResult = this.deviceConflictInfo(null, deviceId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
+        }
+        return null;
+    }
+
+    /**
+     * 患者冲突信息
+     * @param id 预约ID id==null 时 添加预约冲突检查；id!=null 时，编辑预约冲突检查
+     * @param patientId 患者ID
+     * @param appointStartTime 预约开始时间
+     * @param appointEndTime 预约结束时间
+     * @return 冲突则返回冲突信息，否则返回null
+     */
+    private ResponseResult patientConflictInfo(Integer id, Integer patientId, Date appointStartTime, Date appointEndTime) {
+        List<AppointConflictInfoVo> patientList = null;
+        if (null != id) {
+            patientList = mapper.editCheckPatientConflict(id,patientId,appointStartTime,appointEndTime);
+        } else {
+            patientList = mapper.findAppointListByPatientIdAndAppointStartTimeAndAppointEndTime(
+                    patientId, appointStartTime, appointEndTime);
+        }
+        if (!StringHelper.isEmpty(patientList)){
+            StringBuilder errBuffer = new StringBuilder();
+            patientList.forEach(appointConflictInfoVo -> {
+                OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
+                if (organizationInfo != null){
+                    appointConflictInfoVo.setClinicName(organizationInfo.getName());
+                    appointConflictInfoVo.setClinicNumber(organizationInfo.getClinicNumber());
+                    appointConflictInfoVo.setAbbreviation(organizationInfo.getAbbreviation());
+                }
+                // 设置患者名字
+                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(patientId);
+                if (null != patientInfo) {
+                    appointConflictInfoVo.setPatientName(patientInfo.getName());
+                }
+                String errMsg = AppointmentError.APPOINT_PATIENT_EXIST.paddingParams(
+                        appointConflictInfoVo.getPatientName(),
+                        appointConflictInfoVo.getClinicName(),
+                        appointConflictInfoVo.getAppointPeriod());
+                boolean bresult = StringHelper.inStringIgnoreCase(errBuffer.toString(), errMsg);
+                if (!bresult) {
+                    errBuffer.append(errMsg);
+                }
+
+            });
+            // 预约冲突返回冲突信息
+            return ResponseUtil.fail(AppointmentError.APPOINT_PATIENT_EXIST.getCode(),
+                    errBuffer.toString(),
+                    null);
+        }
+        return null;
+    }
+
+    /**
+     * 预约医生冲突信息
+     * @param id 预约ID id==null 时 添加预约冲突检查；id!=null 时，编辑预约冲突检查
+     * @param dentistId 医生ID
+     * @param appointStartTime 预约开始时间
+     * @param appointEndTime 预约结束时间
+     * @return 有冲突返回冲突信息，否则返回null
+     */
+    private ResponseResult dentistConflictInfo(Integer id, Integer dentistId, Date appointStartTime, Date appointEndTime) {
+        List<AppointConflictInfoVo> dentisList = null;
+        if (null != id) {
+            dentisList = mapper.editCheckDentistConflict(id,dentistId,appointStartTime,appointEndTime);
+        } else {
+            dentisList = mapper.findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime(
+                    dentistId, appointStartTime, appointEndTime);
+        }
+        if (!StringHelper.isEmpty(dentisList)){
+            StringBuilder errBuffer = new StringBuilder();
+            dentisList.forEach(appointConflictInfoVo -> {
+                OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
+                if (organizatioinInfo != null){
+                    appointConflictInfoVo.setClinicName(organizatioinInfo.getName());
+                    appointConflictInfoVo.setClinicNumber(organizatioinInfo.getClinicNumber());
+                    appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
+                }
+                Integer conflictPatientId = appointConflictInfoVo.getPatientId();
+                // 设置患者名字
+                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(conflictPatientId);
+                if (null != patientInfo) {
+                    appointConflictInfoVo.setPatientName(patientInfo.getName());
+                }
+                // 设置医生名称
+                SysEmployee dentistInfo = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+                if (null != dentistInfo) {
+                    appointConflictInfoVo.setDentistName(dentistInfo.getName());
+                }
+                String errMsg = AppointmentError.APPOINT_DENTIST_EXIST.paddingParams(
+                        appointConflictInfoVo.getDentistName(),
+                        appointConflictInfoVo.getClinicName(),
+                        appointConflictInfoVo.getAppointPeriod(),
+                        appointConflictInfoVo.getPatientName());
+
+                boolean bresult = StringHelper.inStringIgnoreCase(errBuffer.toString(), errMsg);
+                if(!bresult) {
+                    errBuffer.append(errMsg);
+                }
+
+            });
+            // 预约冲突返回冲突信息
+            return ResponseUtil.fail(AppointmentError.APPOINT_DENTIST_EXIST.getCode(),
+                    errBuffer.toString(),
+                    null);
+        }
+        return null;
+    }
+
+    /**
+     * 默认助手冲突信息
+     * @param id 预约ID id==null 时 添加预约冲突检查；id!=null 时，编辑预约冲突检查
+     * @param assistantId 助手ID
+     * @param appointStartTime 预约开始时间
+     * @param appointEndTime 预约结束时间
+     * @return 有冲突返回冲突信息，否则返回null
+     */
+    private ResponseResult assistantConflictInfo(Integer id, Integer assistantId, Date appointStartTime, Date appointEndTime) {
+        List<AppointConflictInfoVo> dentisList = null;
+        if(null != id){
+            dentisList = mapper.editCheckAssistantConflict(id,assistantId,appointStartTime,appointEndTime);
+        } else {
+            dentisList = mapper.findAppointListByAssistantIdAndAppointStartTimeAndAppointEndTime(
+                    assistantId, appointStartTime, appointEndTime);
+        }
+        if (!StringHelper.isEmpty(dentisList)){
+            StringBuilder errBuffer = new StringBuilder();
+            dentisList.forEach(appointConflictInfoVo -> {
+                OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
+                if (organizatioinInfo != null){
+                    appointConflictInfoVo.setClinicName(organizatioinInfo.getName());
+                    appointConflictInfoVo.setClinicNumber(organizatioinInfo.getClinicNumber());
+                    appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
+                }
+                Integer conflictPatientId = appointConflictInfoVo.getPatientId();
+                // 设置助手信息
+                SysEmployee assistantInfo = this.remoteSystemServiceFeign.findSysEmployeeById(assistantId);
+                if (null != assistantInfo) {
+                    appointConflictInfoVo.setAssistantName(assistantInfo.getName());
+                }
+                // 设置患者名字
+                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(conflictPatientId);
+                if (null != patientInfo) {
+                    appointConflictInfoVo.setPatientName(patientInfo.getName());
+                }
+                String errMsg = AppointmentError.APPOINT_ASSISTANT_EXIST.paddingParams(
+                        appointConflictInfoVo.getAssistantName(),
+                        appointConflictInfoVo.getClinicName(),
+                        appointConflictInfoVo.getAppointPeriod(),
+                        appointConflictInfoVo.getPatientName());
+                boolean bresult = StringHelper.inStringIgnoreCase(errBuffer.toString(), errMsg);
+                if (!bresult) {
+                    errBuffer.append(errMsg);
+                }
+            });
+            // 预约助手冲突返回冲突信息
+            return ResponseUtil.fail(AppointmentError.APPOINT_ASSISTANT_EXIST.getCode(),
+                    errBuffer.toString(),
+                    null);
+        }
+        return null;
+    }
+
+    /**
+     * 分解助手冲突信息
+     * @param id 预约ID id==null 时 添加预约冲突检查；id!=null 时，编辑预约冲突检查
+     * @param assistantId 助手ID
+     * @param appointStartTime 预约开始时间
+     * @param appointEndTime 预约结束时间
+     * @return 冲突返回冲突信息，否则返回null
+     */
+    private ResponseResult splitAssistantConflictInfo(Integer id, Integer assistantId, Date appointStartTime, Date appointEndTime) {
+        List<AppointConflictInfoVo> dentisList = null;
+        if (null != id) {
+            dentisList = mapper.editCheckAssistantConflict(id,assistantId,appointStartTime,appointEndTime);
+        } else {
+            dentisList = mapper.findByIdAndStartTimeAndEndTime(
+                    assistantId, appointStartTime, appointEndTime);
+        }
+        if (!StringHelper.isEmpty(dentisList)){
+            StringBuilder errBuffer = new StringBuilder();
+            dentisList.forEach(appointConflictInfoVo -> {
+                OrganizationInfo organizatioinInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
+                if (organizatioinInfo != null){
+                    appointConflictInfoVo.setClinicName(organizatioinInfo.getName());
+                    appointConflictInfoVo.setClinicNumber(organizatioinInfo.getClinicNumber());
+                    appointConflictInfoVo.setAbbreviation(organizatioinInfo.getAbbreviation());
+                }
+                Integer conflictPatientId = appointConflictInfoVo.getPatientId();
+                // 设置患者名字
+                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(conflictPatientId);
+                if (null != patientInfo) {
+                    appointConflictInfoVo.setPatientName(patientInfo.getName());
+                }
+                String errMsg = AppointmentError.SPLIT_ASSISTANT_EXIST.paddingParams(
+                        appointConflictInfoVo.getAssistantName(),
+                        appointConflictInfoVo.getClinicName(),
+                        appointConflictInfoVo.getAppointPeriod(),
+                        appointConflictInfoVo.getPatientName());
+                boolean bresult = StringHelper.inStringIgnoreCase(errBuffer.toString(), errMsg);
+                if (!bresult) {
+                    errBuffer.append(errMsg);
+                }
+            });
+            // 预约分解助手冲突返回冲突信息
+            return ResponseUtil.fail(AppointmentError.SPLIT_ASSISTANT_EXIST.getCode(),
+                    errBuffer.toString(),
+                    null);
+        }
+        return null;
+    }
+
+    /**
+     * 设备冲突信息
+     * @param id 预约ID id==null 时 添加预约冲突检查；id!=null 时，编辑预约冲突检查
+     * @param deviceId 设备ID
+     * @param appointStartTime 预约开始信息
+     * @param appointEndTime 预约结束信息
+     * @return 冲突返回冲突信息，否则返回null
+     */
+    private ResponseResult deviceConflictInfo(Integer id, Integer deviceId, Date appointStartTime, Date appointEndTime) {
+        List<AppointConflictInfoVo> deviceList = null;
+        // id 不为null 时，编辑预约冲突检查，否则添加预约冲突检查
+        if (null != id) {
+            deviceList = mapper.editCheckDeviceConflict(id,deviceId,appointStartTime,appointEndTime);
+        } else {
+            deviceList = mapper.findAppointListByDeviceIdAndAppointStartTimeAndAppointEndTime(
+                    deviceId, appointStartTime, appointEndTime);
+        }
+        if (!StringHelper.isEmpty(deviceList)){
+            StringBuilder errBuffer = new StringBuilder();
+            deviceList.forEach(appointConflictInfoVo -> {
+                OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(appointConflictInfoVo.getOrgId());
+                if (organizationInfo != null){
+                    appointConflictInfoVo.setClinicName(organizationInfo.getName());
+                    appointConflictInfoVo.setAbbreviation(organizationInfo.getAbbreviation());
+                    appointConflictInfoVo.setClinicNumber(organizationInfo.getClinicNumber());
+                }
+                // 设置设备信息
+                DeviceItemVo deviceItemVo = this.clinicDeviceItemBiz.selectDeviceItemById(deviceId);
+                if (null != deviceItemVo) {
+                    appointConflictInfoVo.setClinicDeviceItemName(deviceItemVo.getName() + "("+ deviceItemVo.getNumber() +")");
+                }
+                Integer conflictPatientId = appointConflictInfoVo.getPatientId();
+                // 设置患者名字
+                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(conflictPatientId);
+                if (null != patientInfo) {
+                    appointConflictInfoVo.setPatientName(patientInfo.getName());
+                }
+                String errMsg = AppointmentError.APPOINT_DEVICE_EXIST.paddingParams(
+                        appointConflictInfoVo.getPatientName(),
+                        appointConflictInfoVo.getAppointPeriod());
+                boolean bresult = StringHelper.inStringIgnoreCase(errBuffer.toString(), errMsg);
+                if (!bresult) {
+                    errBuffer.append(errMsg);
+                }
+            });
+            // 预约冲突返回冲突信息
+            return ResponseUtil.fail(AppointmentError.APPOINT_DEVICE_EXIST.getCode(),
+                    errBuffer.toString(),
+                    null);
         }
         return null;
     }
@@ -1076,59 +1265,39 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Date appointEndTime = endTime.toDate();
         if (patientId != null) {
             // 判断患者预约是否存在冲突
-            List<AppointConflictInfoVo> appointConflictInfoVos =
-                    mapper.editCheckPatientConflict(id, appointmentForm.getPatientId(), appointStartTime, appointEndTime);
-            if (!appointConflictInfoVos.isEmpty()) {
-                // 存在患者预约冲突
-                return ResponseUtil.fail(AppointmentError.APPOINT_PATIENT_EXIST.getCode(),
-                        AppointmentError.APPOINT_PATIENT_EXIST.getMessage(),
-                        appointConflictInfoVos);
+            ResponseResult responseResult = this.patientConflictInfo(id, patientId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
         // 判断医生预约是否存在冲突
         if (dentistId != null) {
-            List<AppointConflictInfoVo> appointConflictInfoVos =
-                    mapper.editCheckDentistConflict(id, appointmentForm.getDentistId(), appointStartTime, appointEndTime);
-            if (!appointConflictInfoVos.isEmpty()) {
-                // 存在医生预约冲突
-                return ResponseUtil.fail(AppointmentError.APPOINT_DENTIST_EXIST.getCode(),
-                        AppointmentError.APPOINT_DENTIST_EXIST.getMessage(),
-                        appointConflictInfoVos);
+            ResponseResult responseResult = this.dentistConflictInfo(id, dentistId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
         // 判断助手预约是否存在冲突
         if (assistantId != null) {
-            List<AppointConflictInfoVo> appointConflictInfoVos =
-                    mapper.editCheckDentistConflict(id, appointmentForm.getAssistantId(), appointStartTime, appointEndTime);
-            if (!appointConflictInfoVos.isEmpty()) {
-                // 存在医生预约冲突
-                return ResponseUtil.fail(AppointmentError.APPOINT_ASSISTANT_EXIST.getCode(),
-                        AppointmentError.APPOINT_ASSISTANT_EXIST.getMessage(),
-                        appointConflictInfoVos);
+            ResponseResult responseResult = this.assistantConflictInfo(id, assistantId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
 
         // 判断预约分解助手是否冲突
         if (!StringHelper.isEmpty(splitList)){
-            List<AppointConflictInfoVo> dentisList = mapper.findByIdAndStartTimeAndEndTime(
-                    assistantId, appointStartTime, appointEndTime);
-            if (!StringHelper.isEmpty(dentisList)){
-                // 预约分解助手冲突返回冲突信息
-                return ResponseUtil.fail(AppointmentError.SPLIT_ASSISTANT_EXIST.getCode(),
-                        AppointmentError.SPLIT_ASSISTANT_EXIST.getMessage(),
-                        dentisList);
+            ResponseResult responseResult = this.splitAssistantConflictInfo(id, assistantId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
 
         // 判断设备预约是否存在冲突
         if (deviceId != null) {
-            List<AppointConflictInfoVo> appointConflictInfoVos =
-                    mapper.editCheckDeviceConflict(id, deviceId, appointStartTime, appointEndTime);
-            if (!appointConflictInfoVos.isEmpty()) {
-                // 存在设备预约冲突
-                return ResponseUtil.fail(AppointmentError.APPOINT_DEVICE_EXIST.getCode(),
-                        AppointmentError.APPOINT_DEVICE_EXIST.getMessage(),
-                        appointConflictInfoVos);
+            ResponseResult responseResult = this.deviceConflictInfo(id, deviceId, appointStartTime, appointEndTime);
+            if (null != responseResult) {
+                return responseResult;
             }
         }
         return null;
@@ -1719,23 +1888,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 // 组合患者基本信息
                 List<AppointmentPatientCardVo> appointmentPatientCardVos = appointmentDimensionVo.getAppointmentPatientCardVos();
                 appointmentPatientCardVos.forEach(appointmentPatientCardVo -> {
-                    // redis中2是否有该条预约数据
                     Integer appointId = appointmentPatientCardVo.getId();
-                    Boolean aBoolean = redisUtils.hasKey(RedisConstants.REDIS_KEY_APPOINT_DIMENSION_INFO + appointId);
-                    if (!aBoolean) {
-                        Integer patientId = appointmentPatientCardVo.getPatientId();
-                        PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
-                        if (patientInfo != null) {
-                            appointmentPatientCardVo.setAge(patientInfo.getAge());
-                            appointmentPatientCardVo.setGender(patientInfo.getGender());
-                            appointmentPatientCardVo.setName(patientInfo.getName());
-                            // 获取大医生下患者当前处于哪个就诊状态
-                            Byte aByte = this.getTreatmentStation(appointId, appointmentPatientCardVo.getPatientId());
-                            // 设置大医生下所有的患者就诊状态
-                            appointmentPatientCardVo.setStation(aByte);
-                        }
-                        // 将预约管着信息放入redis
-                        redisUtils.set(RedisConstants.REDIS_KEY_APPOINT_DIMENSION_INFO + appointId, appointmentPatientCardVo);
+                    Integer patientId = appointmentPatientCardVo.getPatientId();
+                    PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+                    if (patientInfo != null) {
+                        appointmentPatientCardVo.setAge(patientInfo.getAge());
+                        appointmentPatientCardVo.setGender(patientInfo.getGender());
+                        appointmentPatientCardVo.setName(patientInfo.getName());
+                        // 获取大医生下患者当前处于哪个就诊状态
+                        Byte aByte = this.getTreatmentStation(appointId, appointmentPatientCardVo.getPatientId());
+                        // 设置大医生下所有的患者就诊状态
+                        appointmentPatientCardVo.setStation(aByte);
                     }
                 });
                 appointmentDimensionVoList.add(appointmentDimensionVo);

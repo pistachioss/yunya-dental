@@ -163,8 +163,8 @@ public class AppointmentController {
    * @return 预约列表
    */
   @ApiOperation(value = "根据条件查询患者预约（患者档案-预约信息；查看详细-预约信息）用")
-  @GetMapping("/find/patient/record")
-  public ResponseResult findAppointPatientRecord(@Validated AppointPatientRecordQuery query) {
+  @PostMapping("/find/patient/record")
+  public ResponseResult findAppointPatientRecord(@RequestBody @Validated AppointPatientRecordQuery query) {
     return appointmentBiz.findAppointPatientRecord(query);
   }
 

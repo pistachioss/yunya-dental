@@ -412,13 +412,13 @@
             appointment a
         <where>
             <if test="patientId != null">
-                a.patient_id = #{patientId}
+                and a.patient_id = #{patientId}
             </if>
             <if test="startDate != null and endDate != null">
                 and DATE_FORMAT(a.appoint_date,'%y-%M-%d') BETWEEN DATE_FORMAT(#{startDate},'%y-%M-%d') and DATE_FORMAT(#{endDate},'%y-%M-%d')
             </if>
             <if test="orgId != null">
-                a.org_id = #{orgId}
+                and a.org_id = #{orgId}
             </if>
         </where>
     </select>
@@ -461,16 +461,6 @@
         AND assistant_id = #{assistantId}
         AND inservice = 1
         ) apt LEFT JOIN appointment a ON a.id = apt.appointment_id
-        WHERE
-        apt.id NOT IN (#{id})
-
-
-
-
-
-
-
-
     </select>
 
     <!-- 根据条件查询预约列表 -->

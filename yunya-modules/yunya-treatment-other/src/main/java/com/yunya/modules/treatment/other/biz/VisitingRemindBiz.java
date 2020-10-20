@@ -219,15 +219,15 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容（包括时间正序排序）
             searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, query.getSearch(), query.getMedicalNumber(), query.getDistentName());
         }
-        if (searchVisitingRemindVo != null) {
-            // 分页
-            if (query.getWhetherPage()){
-                PageHelper.startPage(query.getPageNum(),query.getPageSize());
-            }
-            return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
-        } else {
-            return ResponseUtil.success();
+        // 如果 searchVisitingRemindVo 为空
+        if (StringHelper.isEmpty(searchVisitingRemindVo)) {
+            searchVisitingRemindVo = new ArrayList<>();
         }
+        // 分页
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
     }
 
     /**
