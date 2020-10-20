@@ -201,10 +201,13 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return ResponseResult
      */
     public ResponseResult findVisitingRecordByCondition(VisitingRecordQuery query){
+        // 设置分页
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        List<VisitingRecordVo> searchVisitingRecordVo = null;
         // 随访记录结果列表
         List<VisitingRecordVo> visitingRecordVoList = new ArrayList<>();
-        // 按指定条件检索之后的列表
-        List<VisitingRecordVo> searchVisitingRecordVo = null;
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
             // 组合随访记录信息
@@ -214,14 +217,13 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             }
             // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
             searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList,query.getSearch(),query.getMedicalNumber(),query.getDistentName());
-        } else {
-            return ResponseUtil.success();
         }
-        // 设置分页
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        if (StringHelper.isEmpty(searchVisitingRecordVo)) {
+            searchVisitingRecordVo = new ArrayList<>();
         }
         return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
+
+
     }
 
     /**

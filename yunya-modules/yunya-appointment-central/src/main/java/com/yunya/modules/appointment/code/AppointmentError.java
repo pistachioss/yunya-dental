@@ -15,9 +15,9 @@ public enum AppointmentError {
     /** 11002-开始日期不能大于结束日期 */
     START_DATE_AFTER_END_DATE(2,"开始日期不能大于结束日期"),
     /** 11003-预约助手冲突 */
-    APPOINT_ASSISTANT_EXIST(3,"预约助手冲突"),
+    APPOINT_ASSISTANT_EXIST(3,"{0}助手已在{1}门诊{2}时间段预约了{3}患者，是否仍要继续创建预约？"),
     /** 11004-分解助手冲突 */
-    SPLIT_ASSISTANT_EXIST(4,"分解助手冲突"),
+    SPLIT_ASSISTANT_EXIST(4,"{0}助手已在{1}门诊{2}时间段预约了{3}患者，是否仍要继续创建预约？"),
     /** 11010-患者预约失败 */
     APPOINTMENT_FAIL(10,"患者预约失败"),
     /** 11011-预约分解失败 */
@@ -29,11 +29,11 @@ public enum AppointmentError {
     /** 11014-预约医生id不能为空 */
     DENTIST_NOT_ID(14,"预约医生id不能为空"),
     /** 11015-患者预约冲突 */
-    APPOINT_PATIENT_EXIST(15,"患者预约冲突"),
+    APPOINT_PATIENT_EXIST(15,"{0}患者在{1}门诊{2}时间段已存在预约，是否继续添加预约？"),
     /** 11016-医生预约冲突 */
-    APPOINT_DENTIST_EXIST(16,"医生预约冲突"),
+    APPOINT_DENTIST_EXIST(16,"{0}医生已在{1}门诊{2}时间段预约了{3}患者，是否仍要继续创建预约？"),
     /** 11017-设备预约冲突 */
-    APPOINT_DEVICE_EXIST(17,"设备预约冲突"),
+    APPOINT_DEVICE_EXIST(17,"预约的设备已被{0}患者在{1}时间段预约使用，是否需要继续创建预约？"),
     /** 11018-医生在当前日期下没有排班 */
     DENTIST_NOT_SCHEDULE(18,"医生在当前日期下没有排班"),
     /** 11019-已经存在相同的预约 */
@@ -81,6 +81,20 @@ public enum AppointmentError {
     }
 
     public String getMessage() {
+        return value;
+    }
+
+    /**
+     * 填充参数
+     * @param args
+     * @return
+     */
+    public String paddingParams(String ...args) {
+        if (args.length > 0) {
+            for (int i = 0; i< args.length; i++) {
+                value = value.replace("{" +i+ "}",args[i]);
+            }
+        }
         return value;
     }
 }

@@ -125,6 +125,14 @@ public class VisitingRecordVo implements Serializable {
     @ApiModelProperty(value = "后续随访个数")
     private Integer visitingCount;
 
+    /** 更新人ID(随访人ID) */
+    @ApiModelProperty(value = "更新人ID(随访人ID)")
+    private Integer uptId;
+
+    /** 更新人名字(随访人名字) */
+    @ApiModelProperty(value = "更新人名字(随访人名字)")
+    private String updName;
+
     /******************************* 患者信息 ********************************/
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")
