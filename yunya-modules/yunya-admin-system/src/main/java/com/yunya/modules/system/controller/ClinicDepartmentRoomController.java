@@ -14,6 +14,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -151,9 +152,9 @@ public class ClinicDepartmentRoomController {
   @CurrentUser
   @ApiOperation("新增门诊科室")
   @PostMapping("/clinic/save")
-  public ResponseResult save(@RequestBody @Validated ClinicDepartmentRoomModel model) {
+  public ResponseResult<T> save(@RequestBody @Validated ClinicDepartmentRoomModel model) {
     clinicDepartmentRoomBiz.add(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**

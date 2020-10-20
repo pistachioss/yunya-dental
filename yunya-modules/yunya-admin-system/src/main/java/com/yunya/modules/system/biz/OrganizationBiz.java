@@ -125,9 +125,13 @@ public class OrganizationBiz {
     }
     Byte type = resource.getType();
     Company company = EntityUtils.build(resource, Company.class);
-    company.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    company.setCrtName(BaseContextHandler.getName());
-    companyMapper.insertCompany(company);
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String userName = BaseContextHandler.getName();
+    company.setCrtId(userId);
+    company.setCrtName(userName);
+    company.setUpdId(userId);
+    company.setUpdName(userName);
+    companyMapper.insertSelective(company);
     // 添加组织类型为医疗机构，添加医疗机构扩展信息
     addClinicExtInfo(resource, company.getId(), type);
   }
