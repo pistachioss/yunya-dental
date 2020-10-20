@@ -227,8 +227,7 @@ public class TollBiz {
                     prepaymentAccountModel.getAccountItemId(),
                     prepaymentAccountModel.getAmount(),
                     (byte) 0);
-            billPayDetailRecord.setRemark(
-                prepaymentAccountModel.getPrepaymentAccountId().toString());
+            billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
@@ -241,7 +240,7 @@ public class TollBiz {
                     memberAccountModel.getAccountItemId(),
                     memberAccountModel.getAmount(),
                     (byte) 1);
-            billPayDetailRecord.setRemark(memberAccountModel.getMemberAccountId().toString());
+            billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
             billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
           });
     }
@@ -307,7 +306,7 @@ public class TollBiz {
     memberAccountModels.forEach(
         memberAccountModel -> {
           memberExpendRecordModel.setPatientId(patientId);
-          memberExpendRecordModel.setMemberId(memberAccountModel.getMemberAccountId().toString());
+          memberExpendRecordModel.setMemberId(memberAccountModel.getMemberNum());
           memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
           memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
           memberExpendRecordModel.setBillRecordId(billRecordId);
@@ -336,8 +335,7 @@ public class TollBiz {
     prepaymentAccountModels.forEach(
         prepaymentAccountModel -> {
           prepaidExpendRecordModel.setPatientId(patientId);
-          prepaidExpendRecordModel.setPrepaidId(
-              prepaymentAccountModel.getPrepaymentAccountId().toString());
+          prepaidExpendRecordModel.setPrepaidId(prepaymentAccountModel.getPrepaymentNum());
           prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
           prepaidExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
           prepaidExpendRecordModel.setBillRecordId(billRecordId);
