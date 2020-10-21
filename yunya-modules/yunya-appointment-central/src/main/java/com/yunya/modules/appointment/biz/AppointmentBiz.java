@@ -525,7 +525,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Date endDate = query.getEndDate();
         for (UserWorkVO userWorkVO : filterAppointIds) {
             // 组合预约医生和患者信息（患者维度）
-            List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(query,orgId, startDate, endDate, userWorkVO);
+            List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(orgId, startDate, endDate, userWorkVO);
             // 将预约信息放入预约可视图列表
             if (!dimensionVoList.isEmpty()){
                 dimensionVoList.forEach(dimensionVo -> {
