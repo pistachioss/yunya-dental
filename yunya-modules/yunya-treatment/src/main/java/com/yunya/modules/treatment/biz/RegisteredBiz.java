@@ -62,18 +62,21 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
    */
   public void save(RegisteredModel model) {
     Registered entity = new Registered();
-    BeanUtils.copyProperties(model, entity);
     Integer appointmentId = model.getAppointmentId();
     if (null != appointmentId) {
+      // todo 锁定该预约，防止重复对该预约挂号
+      entity.setAppointmentId(appointmentId);
+      int regCount = mapper.selectCount(entity);
+      if (regCount > 0) {
+        throw new ClientServiceException("挂号失败，当前预约已被挂号，请勿重复挂号！", PARAMETERS_IS_ILLEGAL);
+      }
       Appointment appointment = appointmentFeign.findAppointmentById(appointmentId);
       if (null != appointment) {
-        if (appointment.getAppointStatus() == 1) {
-          throw new ClientServiceException("挂号失败，当前预约已被挂号，请勿重复挂号！", PARAMETERS_IS_ILLEGAL);
-        }
         appointment.setAppointStatus((byte) 1);
         appointmentFeign.updateAppointment(appointment);
       }
     }
+    BeanUtils.copyProperties(model, entity);
     Integer patientId = model.getPatientId();
     TreatmentRecord treatmentrecord = new TreatmentRecord();
     treatmentrecord.setPatientId(patientId);

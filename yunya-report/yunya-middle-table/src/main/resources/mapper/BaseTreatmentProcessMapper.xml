@@ -23,6 +23,37 @@
         <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
         <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+    <!-- 批量插入就诊流程 -->
+    <insert id="batchInsertSelective">
+        INSERT INTO base_treatment_process (
+        appointment_id,
+        registered_id,
+        treatment_id,
+        org_id,
+        patient_id,
+        treat_status,
+        treat_type,
+        appoint_status,
+        appoint_dentist_id,
+        appoint_start_time,
+        appoint_duration,
+        appoint_modify_time,
+        appoint_content,
+        registered_dentist_id,
+        registered_time,
+        treat_start_time,
+        treat_end_time
+        )
+        VALUES
+        <foreach collection = "treatmentProcesses" item = "item" separator = "," >
+         (#{item.appointmentId}, #{item.registeredId}, #{item.treatmentId},
+          #{item.orgId}, #{item.patientId}, #{item.treatStatus},
+          #{item.treatType}, #{item.appointStatus}, #{item.appointDentistId},
+          #{item.appointStartTime}, #{item.appointDuration}, #{item.appointModifyTime},
+          #{item.appointContent}, #{item.registeredDentistId}, #{item.registeredTime},
+          #{item.treatStartTime}, #{item.treatEndTime})
+        </foreach>
+    </insert>
     <!-- 根据预约ID更新就诊流程 -->
     <update id="updateByAppointmentId">
       update base_treatment_process
