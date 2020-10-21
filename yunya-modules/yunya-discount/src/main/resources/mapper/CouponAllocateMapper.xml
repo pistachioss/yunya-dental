@@ -49,6 +49,7 @@
 
     <select id="findVOList" resultType="com.yunya.modules.discount.vo.CouponAllocateVO">
         SELECT
+        id,
 	sum(allocate_num) allocateNum,
 	allocate_date allocateDate,
 	allocate_user_id allocateUserId
@@ -58,6 +59,7 @@
     GROUP BY
 	allocate_date
     </select>
+
     <select id="findVODetailList" resultType="com.yunya.modules.discount.vo.CouponAllocateDetailVO">
     SELECT
     id,

@@ -49,6 +49,11 @@ public enum DiscountError implements RestError {
     ORDER_ITEM_NOT_EXIST(40, "项目不存在"),
     AUTH_BENEFIT_AMOUNT_ERROR(41, "授权折扣项目优惠金额异常"),
     ORDER_ON_SUBMITTING(42, "订单正在使用优惠，请勿重复提交"),
+    PATIENT_EXCHANGE_NULL(43, "患者没有可使用的兑换券"),
+    PATIENT_PACKAGE_NULL(44, "患者没有可使用的套餐券"),
+    PATIENT_VOUCHER_NULL(45, "患者没有可使用的代金券"),
+    PATIENT_DISCOUNT_NULL(46, "患者没有可使用的折扣券"),
+    PATIENT_MEMBER_NULL(47, "患者没有可使用的会员卡"),
     ;
     private Integer code;
     private String value;

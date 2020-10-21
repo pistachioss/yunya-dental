@@ -75,7 +75,7 @@ public class PageUtil<T> {
      * @param obj
      * @return
      */
-    public Page getPageAssistantData(List<AppointmentDimensionVo> obj) {
+    public Page<AppointmentDimensionVo> getPageAssistantData(List<AppointmentDimensionVo> obj) {
         // 设置总数
         setTotal(obj);
         // 大医生下的所有助手
