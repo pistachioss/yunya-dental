@@ -4,6 +4,8 @@ import com.yunya.models.middletable.BaseTreatmentProcess;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.List;
+
 public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess> {
   /**
    * 根据预约ID查询就诊流程信息
@@ -58,4 +60,11 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
   void updateByTreatmentRecordId(
       @Param("treatmentRecordId") Integer treatmentRecordId,
       @Param("treatmentProcess") BaseTreatmentProcess treatmentProcess);
+
+  /**
+   * 批量插入就诊流程
+   *
+   * @param treatmentProcesses 就诊流程列表
+   */
+  void batchInsertSelective(@Param("treatmentProcesses") List<BaseTreatmentProcess> treatmentProcesses);
 }
