@@ -405,10 +405,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             AppointmentListItemVo itemVo = this.combinationAppointListItemVo(appointmentVo);
             appointmentList.add(itemVo);
         });
-        // 按条件检索之后的列表
-        collect = appointmentList;
-
-
         // 匹配姓名
         String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
         // 匹配手机号
@@ -419,8 +415,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 || !StringHelper.isEmpty(query.getDentistName())
                 || !StringHelper.isEmpty(query.getMedicalNumber())
                 || !StringHelper.isEmpty(query.getSearch())){
-
-            collect = collect.stream()
+            collect = appointmentList.stream()
                     .filter(
                             appointmentListItemVo -> {
                                 boolean result = false;
@@ -459,7 +454,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     ).collect(Collectors.toList());
         }
         // 如果不为空，则有内容过滤，返回过滤之后的结果
-        if (collect != null){
+        if (collect != null) {
             return collect;
         }
         return appointmentList;
@@ -634,7 +629,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             return 0;
         });
-
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
@@ -708,10 +702,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         splitQuery.setOrgId(appointmentVo.getOrgId());
         List<AppointmentSplitVo> splitVos = this.appointmentSplitBiz.findAppointmentSplitByExample(splitQuery);
         appointmentVo.setSplitList(splitVos);
-
         // 将预约信息放入redis
         redisUtils.set(RedisConstants.REDIS_KEY_APPOINT_INFO + id, appointmentVo);
-
         return appointmentVo;
     }
 
