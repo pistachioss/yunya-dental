@@ -106,23 +106,25 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     entity.setOrderRecordId(orderRecordId);
     entity.setInservice(true);
     BillRecord billRecord = mapper.selectOne(entity);
-    Integer treatmentRecordId = billRecord.getTreatmentRecordId();
-    List<BillHandleRecordVO> billHandleRecords =
-        billExceptionHandleRecordMapper.selectBillExceptionHandleRecord(treatmentRecordId);
-    if (StringHelper.isNotEmpty(billHandleRecords)) {
-      billHandleRecords.forEach(
-          handleRecord -> {
-            Integer orgId = handleRecord.getOrgId();
-            // todo 从缓存中查询诊所信息
-            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
-            if (null != orgInfo) {
-              handleRecord.setOrgName(orgInfo.getAbbreviation());
-            }
-          });
-    } else {
-      billHandleRecords = new ArrayList<>();
+    if (null != billRecord) {
+      Integer treatmentRecordId = billRecord.getTreatmentRecordId();
+      List<BillHandleRecordVO> billHandleRecords =
+          billExceptionHandleRecordMapper.selectBillExceptionHandleRecord(treatmentRecordId);
+      if (StringHelper.isNotEmpty(billHandleRecords)) {
+        billHandleRecords.forEach(
+            handleRecord -> {
+              Integer orgId = handleRecord.getOrgId();
+              // todo 从缓存中查询诊所信息
+              OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+              if (null != orgInfo) {
+                handleRecord.setOrgName(orgInfo.getAbbreviation());
+              }
+            });
+      } else {
+        billHandleRecords = new ArrayList<>();
+      }
+      resultData.setBillHandleRecords(billHandleRecords);
     }
-    resultData.setBillHandleRecords(billHandleRecords);
     return resultData;
   }
 
