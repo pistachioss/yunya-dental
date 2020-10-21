@@ -514,7 +514,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 过滤出可预约医生的排班信息
         List<UserWorkVO> filterAppointIds = shiftWorkDatas.stream().filter(
                 userWorkVO -> appointIdList.contains(userWorkVO.getCompEmpId())).collect(Collectors.toList());
-
         Integer orgId = query.getOrgId();
         Date startDate = query.getStartDate();
         Date endDate = query.getEndDate();
@@ -533,7 +532,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                             flags.contains(dentistId))) {
                         appointmentDimensionVoList.add(dimensionVo);
                     }
-
                 });
             }
         }
@@ -1880,7 +1878,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointmentDimensionVos.forEach(appointmentDimensionVo -> {
                 appointmentDimensionVo.setName(dentistName);
                 // 设置排班日期
-//                dentistWorkSchedule.getDays().forEach(workDayVO -> appointmentDimensionVo.setCurrentDate(workDayVO.getDate()));
+                dentistWorkSchedule.getDays().forEach(workDayVO -> appointmentDimensionVo.setCurrentDate(workDayVO.getDate()));
                 // 设置医生排班信息
                 appointmentDimensionVo.setDentistScheduleVos(dentistWorkSchedule.getDays());
                 // 组合患者基本信息
@@ -2060,7 +2058,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private void deleteCache(String postfix) {
         String appointInfo = RedisConstants.REDIS_KEY_APPOINT_INFO + postfix;
         String appointList = RedisConstants.REDIS_KEY_APPOINT_LIST + postfix;
-        String appointDistantDimension = RedisConstants.REDIS_KEY_APPOINT_DISTANT_DIMENSION + postfix;
+        String appointDentistDimension = RedisConstants.REDIS_KEY_APPOINT_DENTIST_DIMENSION + postfix;
         String appointPatientDimension = RedisConstants.REDIS_KEY_APPOINT_PATIENT_DIMENSION + postfix;
         // 删除预约信息(未加工信息)
         Boolean aBoolean = redisUtils.hasKey(appointInfo);
@@ -2073,9 +2071,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             redisUtils.delete(appointList);
         }
         // 删除预约医生维度信息
-        Boolean aBoolean2 = redisUtils.hasKey(appointDistantDimension);
+        Boolean aBoolean2 = redisUtils.hasKey(appointDentistDimension);
         if (aBoolean2) {
-            redisUtils.delete(appointDistantDimension);
+            redisUtils.delete(appointDentistDimension);
         }
         // 删除预约患者维度信息
         Boolean aBoolean3 = redisUtils.hasKey(appointPatientDimension);
