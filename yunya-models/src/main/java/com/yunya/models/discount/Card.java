@@ -50,6 +50,12 @@ public class Card implements Serializable {
     private Integer patientId;
 
     /**
+     * 激活人
+     */
+    @Column(name = "active_user_id")
+    private Integer activeUserId;
+
+    /**
      * 卡号
      */
     @Column(name = "card_number")
@@ -136,6 +142,12 @@ public class Card implements Serializable {
     private Integer pay;
 
     /**
+     * 售出日期
+     */
+    @Column(name = "sold_date")
+    private LocalDateTime soldDate;
+
+    /**
      * 激活时间
      */
     @Column(name = "active_date")
@@ -150,8 +162,8 @@ public class Card implements Serializable {
     /**
      * 售出人
      */
-    @Column(name = "seller_id")
-    private Integer sellerId;
+    @Column(name = "seller_user_id")
+    private Integer sellerUserId;
 
     /**
      * 创建时间

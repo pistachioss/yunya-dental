@@ -1,9 +1,12 @@
 package com.yunya.models.middletable;
 
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 
+@Data
 @Table(name = "base_card")
 public class BaseCard {
     /**
