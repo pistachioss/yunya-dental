@@ -40,7 +40,6 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.system.Department;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
@@ -50,11 +49,9 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -599,8 +596,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /**
      * 预约可视图列表（医生维度）
      * 通过日期、门诊id、查询医生预约情况
-     * @param query
-     * @return
+     * @param query 参数
+     * @return 返回response
      */
     public ResponseResult findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
         List<AppointmentDimensionVo> appointmentDentistDimensionVoList = new ArrayList<>();
@@ -641,8 +638,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
-        PageUtil paging = new PageUtil(query.getPageNum(),query.getPageSize());
-        Page pageAssistantData = paging.getPageAssistantData(appointmentDentistDimensionVoList);
+        PageUtil<AppointmentDimensionVo> paging = new PageUtil<>(query.getPageNum(), query.getPageSize());
+        Page<AppointmentDimensionVo> pageAssistantData = paging.getPageAssistantData(appointmentDentistDimensionVoList);
         return ResponseUtil.success(pageAssistantData);
     }
 
@@ -936,7 +933,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return 冲突则返回冲突信息，否则返回null
      */
     private ResponseResult patientConflictInfo(Integer id, Integer patientId, Date appointStartTime, Date appointEndTime) {
-        List<AppointConflictInfoVo> patientList = null;
+        List<AppointConflictInfoVo> patientList;
         if (null != id) {
             patientList = mapper.editCheckPatientConflict(id,patientId,appointStartTime,appointEndTime);
         } else {
@@ -984,7 +981,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return 有冲突返回冲突信息，否则返回null
      */
     private ResponseResult dentistConflictInfo(Integer id, Integer dentistId, Date appointStartTime, Date appointEndTime) {
-        List<AppointConflictInfoVo> dentisList = null;
+        List<AppointConflictInfoVo> dentisList;
         if (null != id) {
             dentisList = mapper.editCheckDentistConflict(id,dentistId,appointStartTime,appointEndTime);
         } else {
@@ -1040,7 +1037,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return 有冲突返回冲突信息，否则返回null
      */
     private ResponseResult assistantConflictInfo(Integer id, Integer assistantId, Date appointStartTime, Date appointEndTime) {
-        List<AppointConflictInfoVo> dentisList = null;
+        List<AppointConflictInfoVo> dentisList;
         if(null != id){
             dentisList = mapper.editCheckAssistantConflict(id,assistantId,appointStartTime,appointEndTime);
         } else {
@@ -1094,7 +1091,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return 冲突返回冲突信息，否则返回null
      */
     private ResponseResult splitAssistantConflictInfo(Integer id, Integer assistantId, Date appointStartTime, Date appointEndTime) {
-        List<AppointConflictInfoVo> dentisList = null;
+        List<AppointConflictInfoVo> dentisList;
         if (null != id) {
             dentisList = mapper.editCheckAssistantConflict(id,assistantId,appointStartTime,appointEndTime);
         } else {
@@ -1143,7 +1140,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return 冲突返回冲突信息，否则返回null
      */
     private ResponseResult deviceConflictInfo(Integer id, Integer deviceId, Date appointStartTime, Date appointEndTime) {
-        List<AppointConflictInfoVo> deviceList = null;
+        List<AppointConflictInfoVo> deviceList;
         // id 不为null 时，编辑预约冲突检查，否则添加预约冲突检查
         if (null != id) {
             deviceList = mapper.editCheckDeviceConflict(id,deviceId,appointStartTime,appointEndTime);
@@ -1425,45 +1422,32 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             AppointOperationRecordVo appointOperationRecordVo = appointOperationRecords.get(0);
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String crtTime = dateFormat.format(appointOperationRecordVo.getCrtTime());
-            StringBuilder operationRecordContentBuilder = new StringBuilder();
+            String operationRecordContent = "";
 
             Byte operateType = appointOperationRecordVo.getOperateType();
             switch (operateType){
                 case 0:
-                    operationRecordContentBuilder.append("[" + crtTime + "]");
-                    operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
-                    operationRecordContentBuilder.append("新建了这条预约");
+                    operationRecordContent = "[" + crtTime + "]" + appointOperationRecordVo.getCrtName() + "新建了这条预约";
                     break;
                 case 1:
-                    operationRecordContentBuilder.append("[" + crtTime + "]");
-                    operationRecordContentBuilder.append("修改了【");
-                    operationRecordContentBuilder.append(appointOperationRecordVo.getRemarks());
-                    operationRecordContentBuilder.append("】，将\"");
-                    operationRecordContentBuilder.append(appointOperationRecordVo.getBeforeOperation());
-                    operationRecordContentBuilder.append("\"改成了\"");
-                    operationRecordContentBuilder.append(appointOperationRecordVo.getAfterOperation());
-                    operationRecordContentBuilder.append("\"");
+                    operationRecordContent = "[" + crtTime + "]" +  "修改了【" + appointOperationRecordVo.getRemarks() +
+                            "】，将\"" + appointOperationRecordVo.getBeforeOperation() + "\"改成了\"" +
+                            appointOperationRecordVo.getAfterOperation() + "\"";
                     break;
                 case 2:
-                    operationRecordContentBuilder.append("[" + crtTime + "]");
-                    operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
-                    operationRecordContentBuilder.append("取消了这条预约");
+                    operationRecordContent = "[" + crtTime + "]" + appointOperationRecordVo.getCrtName() + "取消了这条预约";
                     // 设置取消预约原因
                     appointListExportVo.setCancleReasion(appointOperationRecordVo.getRemarks());
                     break;
                 case 3:
-                    operationRecordContentBuilder.append("[" + crtTime + "]");
-                    operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
-                    operationRecordContentBuilder.append("确认了这条预约");
+                    operationRecordContent = "[" + crtTime + "]" + appointOperationRecordVo.getCrtName() + "确认了这条预约";
                     break;
                 case 4:
-                    operationRecordContentBuilder.append("[" + crtTime + "]");
-                    operationRecordContentBuilder.append(appointOperationRecordVo.getCrtName());
-                    operationRecordContentBuilder.append("取消了这条预约的确认");
+                    operationRecordContent = "[" + crtTime + "]" + appointOperationRecordVo.getCrtName() + "取消了这条预约的确认";
                     break;
                 default:
             }
-            appointListExportVo.setAppointOperationRecord(operationRecordContentBuilder.toString());
+            appointListExportVo.setAppointOperationRecord(operationRecordContent);
         }
         return appointListExportVo;
     }
@@ -1606,8 +1590,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                             String[] splitStartTimeArr = appointmentSplitVo.getSplitStartTime().split(":");
                             String[] splitEndTimeArr = appointmentSplitVo.getSplitEndTime().split(":");
                             // 设置预约时间段
-                            Integer startMinute = Integer.valueOf(splitStartTimeArr[0]) * 60 + Integer.valueOf(splitStartTimeArr[1]);
-                            Integer endMinute = Integer.valueOf(splitEndTimeArr[0]) * 60 + Integer.valueOf(splitEndTimeArr[1]);
+                            Integer startMinute = Integer.parseInt(splitStartTimeArr[0]) * 60 + Integer.parseInt(splitStartTimeArr[1]);
+                            Integer endMinute = Integer.parseInt(splitEndTimeArr[0]) * 60 + Integer.parseInt(splitEndTimeArr[1]);
                             appointmentPatientCardVo.setAppointDuration(endMinute-startMinute);
                             // 助手预约时间
                             appointmentPatientCardVo.setAppointTime(appointmentSplitVo.getSplitStartTime());
@@ -1835,7 +1819,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 if (appointSplitVo != null && !appointSplitVo.isEmpty()){
                     AppointmentDimensionVo assistentPatientInfo = new AppointmentDimensionVo();
                     appointSplitVo.forEach(appointmentSplitVo -> {
-                        AppointmentPatientCardVo assistentPatientCardInfo = appointmentPatientCardVo;
                         // 设置助手id
                         assistentPatientInfo.setDentistId(appointmentSplitVo.getAssistantId());
                         // 通过feign查询助手详细信息
@@ -1847,10 +1830,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                             String splitEndTime = appointmentSplitVo.getSplitEndTime();
                             // 助手预约时间段
                             String splitTime = splitStartTime + "-" + splitEndTime;
-                            assistentPatientCardInfo.setAppointTime(splitTime);
+                            appointmentPatientCardVo.setAppointTime(splitTime);
                         }
                         // 将助手的患者信息放入列表
-                        appointmentPatientCardVos.add(assistentPatientCardInfo);
+                        appointmentPatientCardVos.add(appointmentPatientCardVo);
                     });
                     // 设置助手信息所有患者信息
                     assistentPatientInfo.setAppointmentPatientCardVos(appointmentPatientCardVos);
@@ -1893,7 +1876,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param dentistWorkSchedule 排班表
      * @return  预约可视图vo
      */
-    private List<AppointmentDimensionVo> combinationPatientDimensionVo(PatientDimensionByDayQuery query, Integer orgId, Date startDate, Date endDate,UserWorkVO dentistWorkSchedule){
+    private List<AppointmentDimensionVo> combinationPatientDimensionVo(Integer orgId, Date startDate, Date endDate,UserWorkVO dentistWorkSchedule){
         List<AppointmentDimensionVo> appointmentDimensionVoList = new LinkedList<>();
         Integer userId = dentistWorkSchedule.getCompEmpId();
         String dentistName = dentistWorkSchedule.getName();
@@ -2075,8 +2058,38 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
 
         });
-
         return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
+    }
+
+    /**
+     * 删除缓冲中的数据
+     * @param postfix 键值后缀
+     */
+    private void deleteCache(String postfix) {
+        String appointInfo = RedisConstants.REDIS_KEY_APPOINT_INFO + postfix;
+        String appointList = RedisConstants.REDIS_KEY_APPOINT_LIST + postfix;
+        String appointDistantDimension = RedisConstants.REDIS_KEY_APPOINT_DISTANT_DIMENSION + postfix;
+        String appointPatientDimension = RedisConstants.REDIS_KEY_APPOINT_PATIENT_DIMENSION + postfix;
+        // 删除预约信息(未加工信息)
+        Boolean aBoolean = redisUtils.hasKey(appointInfo);
+        if (aBoolean) {
+            redisUtils.delete(appointInfo);
+        }
+        // 删除预约列表信息
+        Boolean aBoolean1 = redisUtils.hasKey(appointList);
+        if (aBoolean1) {
+            redisUtils.delete(appointList);
+        }
+        // 删除预约医生维度信息
+        Boolean aBoolean2 = redisUtils.hasKey(appointDistantDimension);
+        if (aBoolean2) {
+            redisUtils.delete(appointDistantDimension);
+        }
+        // 删除预约患者维度信息
+        Boolean aBoolean3 = redisUtils.hasKey(appointPatientDimension);
+        if (aBoolean3) {
+            redisUtils.delete(appointPatientDimension);
+        }
     }
 
     /**

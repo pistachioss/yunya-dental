@@ -54,16 +54,15 @@ public class AppointmentController {
    * 添加预约（有冲突检测）
    *
    * @param form 预约数据
-   * @return
-   * @throws ParseException
+   * @return 预约冲突信息
+   * @throws ParseException 异常
    */
   @ApiOperation(value = "添加预约（有冲突检测）")
   @PostMapping("/add")
   @CurrentUser
   public ResponseResult addAppointment(@RequestBody @Validated AppointmentBaseModel form)
       throws ParseException {
-    ResponseResult responseResult = appointmentBiz.addAppointment(form);
-    return responseResult;
+    return appointmentBiz.addAppointment(form);
   }
 
   /**
@@ -77,9 +76,7 @@ public class AppointmentController {
   @CurrentUser
   public ResponseResult continueAddAppointment(
       @RequestBody @Validated AppointmentBaseModel appointmentForm) {
-
-    ResponseResult responseResult = appointmentBiz.continueAddAppointment(appointmentForm);
-    return responseResult;
+    return appointmentBiz.continueAddAppointment(appointmentForm);
   }
 
   /**
@@ -92,8 +89,7 @@ public class AppointmentController {
   @PutMapping("/update")
   @CurrentUser
   public ResponseResult updateAppointment(@RequestBody @Validated AppointmentBaseForm form) {
-    ResponseResult responseResult = appointmentBiz.updateAppointment(form);
-    return responseResult;
+    return appointmentBiz.updateAppointment(form);
   }
 
   /**
@@ -107,8 +103,7 @@ public class AppointmentController {
   @CurrentUser
   public ResponseResult editAppointmentContinueSave(
       @RequestBody @Validated AppointmentBaseForm appointmentForm) {
-    ResponseResult responseResult = this.appointmentBiz.continueUpdateAppointment(appointmentForm);
-    return responseResult;
+    return this.appointmentBiz.continueUpdateAppointment(appointmentForm);
   }
 
   /**
@@ -123,8 +118,7 @@ public class AppointmentController {
   @CurrentUser
   public ResponseResult updateAppointStatus(
       @PathVariable("id") Integer id, @RequestBody @Validated AppointStatusForm form) {
-    ResponseResult responseResult = appointmentBiz.updateAppointStatus(id, form.getAppointStatus(), form.getRemarks());
-    return responseResult;
+    return appointmentBiz.updateAppointStatus(id, form.getAppointStatus(), form.getRemarks());
   }
 
   /**
@@ -139,8 +133,7 @@ public class AppointmentController {
   @CurrentUser
   public ResponseResult AppointmentCancel(
       @PathVariable("id") Integer id, @Validated AppointmentCancelCauseForm form) {
-    ResponseResult responseResult = appointmentBiz.appointmentCancel(id, form);
-    return responseResult;
+    return appointmentBiz.appointmentCancel(id, form);
   }
 
   /**
@@ -153,8 +146,7 @@ public class AppointmentController {
   @PutMapping("/confirm/{id}")
   @CurrentUser
   public ResponseResult appointConfirm(@PathVariable("id") Integer id) {
-    ResponseResult responseResult = appointmentBiz.confirmAppointment(id);
-    return responseResult;
+    return appointmentBiz.confirmAppointment(id);
   }
 
   /**
@@ -172,7 +164,7 @@ public class AppointmentController {
    * 根据id查询预约
    *
    * @param id 预约id
-   * @return
+   * @return 预约信息
    */
   @ApiOperation(value = "根据id查询预约")
   @GetMapping("/find/{id}")
@@ -185,13 +177,12 @@ public class AppointmentController {
    * 根据条件查询预约可视图（患者维度）
    *
    * @param query 查询参数
-   * @return
+   * @return 患者维度列表
    */
   @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询)")
   @PostMapping("/find/patient/dimension")
   public ResponseResult findAppointmentPatientDimensionByDate(
       @RequestBody @Validated PatientDimensionByDayQuery query) {
-
     List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
     // 分页
@@ -204,7 +195,7 @@ public class AppointmentController {
    * 根据排班开始结束日期/门诊id/医生id查询医生维度预约可视图（医生维度）
    *
    * @param query 查询参数
-   * @return
+   * @return 医生维度列表
    */
   @ApiOperation(value = "根据排班开始结束日期/门诊id/医生id查询医生维度预约可视图")
   @PostMapping("/find/dentist/dimension")
@@ -228,8 +219,7 @@ public class AppointmentController {
     }
     List<AppointmentListItemVo> appointmentList =
         appointmentBiz.findAppointmentListByExample(query);
-    PageInfo pageInfo = new PageInfo(appointmentList);
-
+    PageInfo<AppointmentListItemVo> pageInfo = new PageInfo<>(appointmentList);
     return ResponseUtil.success(pageInfo);
   }
 
@@ -237,7 +227,7 @@ public class AppointmentController {
    * 根据条件查询预约未到列表
    *
    * @param queryForm 查询条件
-   * @return
+   * @return 预约未到列表
    */
   @ApiOperation("根据条件查询预约未到列表(可分页)")
   @PostMapping("/list/current")
@@ -253,7 +243,7 @@ public class AppointmentController {
    * @param response  HttpServletResponse
    * @param query   参数封装
    * @return ResponseResult
-   * @throws IOException
+   * @throws IOException 异常
    */
   @ApiOperation(value = "导出预约列表")
   @PostMapping("/export/list")
