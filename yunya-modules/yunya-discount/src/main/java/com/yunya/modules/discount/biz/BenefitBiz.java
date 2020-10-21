@@ -38,6 +38,7 @@ import com.yunya.modules.discount.mapper.VoucheCouponMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -93,6 +94,7 @@ public class BenefitBiz {
 	 * @param model model
 	 * @return ResponseResult
 	 */
+	@Transactional
 	public ResponseResult<PatientOrderBenefitVo> saveCardBenefit(PatientOrderBenefitModel model) {
 		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -141,7 +143,7 @@ public class BenefitBiz {
 				}
 			}
 			if (CollectionUtils.isNotEmpty(list)) {
-                BigDecimal totalBenefitAmount = data.stream().map(OrderItemUseBo::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal totalBenefitAmount = data.stream().filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
                 OrderBenefit orderBenefit = new OrderBenefit();
                 orderBenefit.setOrderId(orderId);
                 orderBenefit.setTotalAmount(totalBenefitAmount);
@@ -151,13 +153,13 @@ public class BenefitBiz {
                 orderBenefitMapper.insertSelective(orderBenefit);
 				cardBenefitMapper.insertList(list);
 			}
-			//解锁卡券
-			unlockCard(model.getPatientId());
 			return ResponseUtil.success();
 		} finally {
 			if (locked) {
-				log.info("【解锁成功】");
+				//解锁卡券
+				unlockCard(model.getPatientId());
 				redisUtils.unlock(lockKey, lockVal);
+				log.info("【解锁成功】");
 			}
 		}
 	}
@@ -168,6 +170,7 @@ public class BenefitBiz {
 	 * @param model model
 	 * @return ResponseResult
 	 */
+	@Transactional
 	public ResponseResult saveAuthBenefit(AuthDiscountBenefitModel model) {
 		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());

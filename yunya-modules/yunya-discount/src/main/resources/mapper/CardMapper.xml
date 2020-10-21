@@ -8,6 +8,7 @@
         <result column="coupon_allocate_id" jdbcType="INTEGER" property="couponAllocateId"/>
         <result column="active_org_id" jdbcType="INTEGER" property="activeOrgId" />
         <result column="patient_id" jdbcType="INTEGER" property="patientId" />
+        <result column="active_user_id" jdbcType="INTEGER" property="activeUserId" />
         <result column="card_number" jdbcType="VARCHAR" property="cardNumber" />
         <result column="card_password" jdbcType="VARCHAR" property="cardPassword" />
         <result column="status" jdbcType="TINYINT" property="status" />
@@ -23,8 +24,9 @@
         <result column="link" jdbcType="VARCHAR" property="link" />
         <result column="sold_way" jdbcType="TINYINT" property="soldWay" />
         <result column="is_pay" jdbcType="TINYINT" property="pay" />
+        <result column="sold_date" jdbcType="TIMESTAMP" property="soldDate"/>
         <result column="active_date" jdbcType="TIMESTAMP" property="activeDate"/>
-        <result column="seller_id" jdbcType="INTEGER" property="sellerId" />
+        <result column="seller_user_id" jdbcType="INTEGER" property="sellerUserId" />
         <result column="crt_id" jdbcType="INTEGER" property="crtId" />
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
         <result column="upd_id" jdbcType="INTEGER" property="updId" />

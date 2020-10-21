@@ -84,4 +84,9 @@ public class BusinessConstants {
   public static String EXPORT_CARD_FILENAME = "产品生成分配";
   /** 优惠券有效期 */
   public static String COUPON_ALWAYS_EFFECT = "永久有效";
+
+  /********************************report********************************/
+  public static final Integer ADD = 0;
+  public static final Integer UPDATE = 1;
+  public static final Integer DELETE = 2;
 }

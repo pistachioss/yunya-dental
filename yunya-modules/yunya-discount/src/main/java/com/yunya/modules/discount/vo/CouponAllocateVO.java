@@ -14,6 +14,7 @@ import java.util.Date;
  */
 @Data
 public class CouponAllocateVO {
+    private Integer id;
     /**
      * 卡券配给数量
      */
@@ -31,4 +32,8 @@ public class CouponAllocateVO {
      * 分配人姓名
      */
     private String allocateUserName;
+    /**
+     * 是否配给
+     */
+    private Boolean isAllocate;
 }
