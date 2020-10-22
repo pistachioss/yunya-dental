@@ -43,14 +43,15 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
   public void operateOrganization(MessageModel msg) {
     Integer dataId = (Integer) msg.getParamMap().get("id");
     BaseOrganization organization = generateOrganization(dataId);
-    if (null == organization) {
-      return;
-    }
     Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
-        mapper.delete(organization);
-        mapper.insertSelective(organization);
+        if (null != organization) {
+          mapper.delete(organization);
+          mapper.insertSelective(organization);
+        } else {
+          mapper.deleteByPrimaryKey(dataId);
+        }
         break;
       case 1:
         BaseOrganization result = mapper.selectByPrimaryKey(dataId);
@@ -61,7 +62,11 @@ public class BaseOrganizationBiz extends BaseBiz<BaseOrganizationMapper, BaseOrg
         }
         break;
       case 2:
-        mapper.delete(organization);
+        if (null == organization) {
+          mapper.deleteByPrimaryKey(dataId);
+        } else {
+          mapper.insertSelective(organization);
+        }
         break;
       default:
         break;
