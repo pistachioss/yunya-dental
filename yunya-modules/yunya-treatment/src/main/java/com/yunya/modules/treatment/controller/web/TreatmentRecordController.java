@@ -14,6 +14,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,9 +48,9 @@ public class TreatmentRecordController {
   @ApiImplicitParam(name = "regId", required = true, value = "患者挂号ID")
   @CurrentUser
   @GetMapping("/start/{regId}")
-  public ResponseResult startTreatment(@PathVariable(value = "regId") Integer regId) {
+  public ResponseResult<T> startTreatment(@PathVariable(value = "regId") Integer regId) {
     treatmentRecordBiz.startTreatment(regId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -94,10 +95,10 @@ public class TreatmentRecordController {
       dataType = "int",
       paramType = "path")
   @GetMapping("/complete/{treatmentRecordId}")
-  public ResponseResult completeTreatment(
+  public ResponseResult<T> completeTreatment(
       @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
     treatmentRecordBiz.completeTreatment(treatmentRecordId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
