@@ -66,5 +66,20 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    *
    * @param treatmentProcesses 就诊流程列表
    */
-  void batchInsertSelective(@Param("treatmentProcesses") List<BaseTreatmentProcess> treatmentProcesses);
+  void batchInsertSelective(
+      @Param("treatmentProcesses") List<BaseTreatmentProcess> treatmentProcesses);
+
+  /**
+   * 根据预约ID删除
+   *
+   * @param appointmentId 预约ID
+   */
+  void deleteByAppointmentId(@Param("appointmentId") Integer appointmentId);
+
+  /**
+   * 根据挂号ID删除
+   *
+   * @param registeredId 挂号ID
+   */
+  void deleteByRegisteredId(@Param("registeredId") Integer registeredId);
 }
