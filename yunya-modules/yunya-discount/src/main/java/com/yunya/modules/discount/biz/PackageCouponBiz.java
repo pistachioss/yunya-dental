@@ -122,14 +122,17 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
             BeanUtils.copyProperties(packageCouponForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             packageCoupon.setCouponId(packageCouponForm.getId());
             packageCoupon = selectOne(packageCoupon);
             if (packageCoupon != null) {
                 PackageCoupon pc = new PackageCoupon();
+                BeanUtils.copyProperties(packageCoupon, pc);
                 BeanUtils.copyProperties(packageCouponForm, pc);
                 pc.setId(packageCoupon.getId());
-                updateSelectiveById(pc);//更新明细信息
+                //更新明细信息
+                updateById(pc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
