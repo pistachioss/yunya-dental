@@ -14,4 +14,9 @@
     <result column="content" property="content" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!-- 根据 操作id和类型进行删除 -->
+    <delete id="deleteByPrimaryKeyAndType">
+      delete from base_visit_remind where id = #{id} and type = #{type}
+    </delete>
 </mapper>

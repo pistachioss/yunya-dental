@@ -13,10 +13,7 @@ import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentRelationVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PrepaidMeturnRecordVo;
-import com.yunya.feign.patient_central.domain.vo.web.PrepaidRechargeRecordVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -79,6 +76,17 @@ public class PatientPrepaymentRelationController {
   @GetMapping("/findPrepaymentLink/{id}")
   public ResponseResult<List<PatientPrepaymentRelationVo>> findPrepaymentLink(@PathVariable("id") Integer id) {
     return ResponseUtil.success(this.patientPrepaymentBiz.findPrepaymentLink(id));
+  }
+
+  /**
+   * 预付款付款余额查询
+   * @param id 患者id
+   * @return PatientPrepaymentBalanceVo
+   */
+  @ApiOperation("预付款付款余额查询")
+  @GetMapping("/balancePayment/{id}")
+  public ResponseResult<PatientPrepaymentBalanceVo> balancePayment(@PathVariable("id") Integer id) {
+    return ResponseUtil.success(this.patientPrepaymentBiz.balancePayment(id));
   }
 
   /**

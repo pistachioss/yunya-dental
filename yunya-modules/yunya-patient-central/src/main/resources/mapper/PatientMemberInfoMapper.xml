@@ -35,9 +35,12 @@
 
     <!-- 根据患者id查询会员基本信息(会员卡界面基本信息（非全部信息）) -->
     <select id="findMemberBaseInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo">
-      select card_number cardNumber,CAST(SUM(principal_amount+bonus_amount) AS decimal(15,2)) memberCardMoneySum,bonus_amount bonusAmount,
-           member_type_id memberTypeId,crt_time crtTime
-      from patient_member_info where patient_id =#{id}
+     select pmio.id,pmio.card_number cardNumber,pmio.member_type_id memberTypeId,pmio.crt_time crtTime,pbio.name name,
+				CAST(SUM(pmio.principal_amount+pmio.bonus_amount) AS decimal(15,2)) memberCardMoneySum,
+				CAST(IFNULL(pmio.principal_amount,0) AS decimal(15,2)) principalAmount,
+				CAST(IFNULL(pmio.bonus_amount,0) AS decimal(15,2)) bonusAmount
+      from patient_member_info pmio join  patient_base_info pbio on pmio.patient_id = pbio.id
+      where pmio.patient_id =#{id}
     </select>
 
     <!-- 查询会员卡关联关系 -->
@@ -81,9 +84,29 @@
 
     <!-- 查询主卡人信息 -->
     <select id="selectMasertMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo">
-        select id,patient_id masterCardId, member_type_id masterCardTypeId,(select name from patient_base_info where id
-        = patient_id) masterName,card_number masterCardNumber
+        select id,patient_id masterCardId, member_type_id masterCardTypeId,
+        (select name from patient_base_info where id = patient_id) masterName,card_number masterCardNumber
         from patient_member_info where patient_id = #{form.patientId}
+    </select>
+
+    <!-- 根据主卡人id 查询会员贡献值关联信息 -->
+    <select id="selectMemberRelationByMasterPatientId"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.MemberBaseInfoVo">
+        SELECT
+            pmio.id id,
+            pmio.org_id orgid,
+            pmio.patient_id patientId,
+            pmio.card_number cardNumber,
+            pmio.crt_time crtTime,
+            pbio.NAME NAME,
+            CAST(IFNULL( pmio.principal_amount + pmio.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) memberCardMoneySum,
+            CAST(IFNULL( pmio.principal_amount, 0 ) AS DECIMAL ( 15, 2 )) principalAmount,
+            CAST(IFNULL( pmio.bonus_amount, 0 ) AS DECIMAL ( 15, 2 )) bonusAmount
+        FROM
+            patient_member_relation pmrn
+          join  patient_member_info pmio on pmrn.secondary_card_id = pmio.patient_id
+          join  patient_base_info pbio on pmio.patient_id = pbio.id
+          where pmrn.master_card_id  =#{id} and pmrn.bind_type = 1
     </select>
 
 

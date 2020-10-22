@@ -15,19 +15,20 @@ public class BasePatientMember {
     /**
      * 卡号
      */
+    @Id
     @Column(name = "card_number")
     private String cardNumber;
 
     /**
      * 卡类型(0：会员卡；１：预付款)
      */
-    private String type;
+    private Integer type;
 
     /**
      * 会员卡级别(金藤卡，银藤卡)
      */
     @Column(name = "member_level_id")
-    private String memberLevelId;
+    private Integer memberLevelId;
 
     /**
      * 本金
@@ -94,7 +95,7 @@ public class BasePatientMember {
      *
      * @return type - 卡类型(0：会员卡；１：预付款)
      */
-    public String getType() {
+    public Integer getType() {
         return type;
     }
 
@@ -103,7 +104,7 @@ public class BasePatientMember {
      *
      * @param type 卡类型(0：会员卡；１：预付款)
      */
-    public void setType(String type) {
+    public void setType(Integer type) {
         this.type = type;
     }
 
@@ -112,7 +113,7 @@ public class BasePatientMember {
      *
      * @return member_level_id - 会员卡级别(金藤卡，银藤卡)
      */
-    public String getMemberLevelId() {
+    public Integer getMemberLevelId() {
         return memberLevelId;
     }
 
@@ -121,7 +122,7 @@ public class BasePatientMember {
      *
      * @param memberLevelId 会员卡级别(金藤卡，银藤卡)
      */
-    public void setMemberLevelId(String memberLevelId) {
+    public void setMemberLevelId(Integer memberLevelId) {
         this.memberLevelId = memberLevelId;
     }
 

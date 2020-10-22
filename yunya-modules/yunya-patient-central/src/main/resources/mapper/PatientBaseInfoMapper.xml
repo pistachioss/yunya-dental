@@ -58,7 +58,9 @@
                cast(IFNULL(pmi.principal_amount,0) as decimal(15,2)) principalAmount,
 			   cast(IFNULL(pmi.bonus_amount,0) as decimal(15,2)) bonusAmount,
                cast(IFNULL(ppi.prepayment_principal,0) as decimal(15,2)) prepaymentPrincipal,
-			   cast(IFNULL(ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentBonus
+			   cast(IFNULL(ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentBonus,
+			   cast(IFNULL(pmi.principal_amount + pmi.bonus_amount,0) as decimal(15,2)) memberCardMoneySum,
+			   cast(IFNULL(ppi.prepayment_principal + ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentsMoneySum
         from patient_base_info pbi
         left join patient_prepayments_info ppi on pbi.id = ppi.patient_id
         left join patient_member_info pmi      on pbi.id = pmi.patient_id

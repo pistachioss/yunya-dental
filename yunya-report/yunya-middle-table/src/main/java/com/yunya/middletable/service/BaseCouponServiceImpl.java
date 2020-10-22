@@ -21,6 +21,7 @@ import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.models.middletable.BaseCoupon;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,7 +49,7 @@ import static java.util.stream.Collectors.*;
 @Slf4j
 @Service
 public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon> {
-	@Resource
+	@Autowired
 	private CouponMapper couponMapper;
 	@Resource
 	private VoucheCouponMapper voucheCouponMapper;

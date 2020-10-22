@@ -110,6 +110,18 @@ public class MemberExpendRecord {
     private Integer type;
 
     /**
+     * 消费后当前本金
+     */
+    @Column(name = "current_recharge_principal")
+    private BigDecimal currentPrincipal;
+
+    /**
+     * 消费后当前赠金
+     */
+    @Column(name = "current_recharge_bonus")
+    private BigDecimal currentBonus;
+
+    /**
      * 获取type
      * @return type
      */
@@ -408,5 +420,37 @@ public class MemberExpendRecord {
      */
     public void setBillPayRecordId(Integer billPayRecordId) {
         this.billPayRecordId = billPayRecordId;
+    }
+
+    /**
+     * 获取当前本金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentPrincipal() {
+        return currentPrincipal;
+    }
+
+    /**
+     * 设置当前本金
+     * @param currentPrincipal
+     */
+    public void setCurrentPrincipal(BigDecimal currentPrincipal) {
+        this.currentPrincipal = currentPrincipal;
+    }
+
+    /**
+     * 获取当前证金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentBonus() {
+        return currentBonus;
+    }
+
+    /**
+     * 设置当前赠金
+     * @param currentBonus
+     */
+    public void setCurrentBonus(BigDecimal currentBonus) {
+        this.currentBonus = currentBonus;
     }
 }

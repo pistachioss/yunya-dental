@@ -7,6 +7,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseCouponServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,7 +18,7 @@ import javax.annotation.Resource;
 @RestController
 public class BaseCouponController {
 
-	@Resource
+	@Autowired
 	BaseCouponServiceImpl couponService;
 
 	@PostMapping("/base/coupon/pull")

@@ -28,18 +28,54 @@
 
     <!-- 根据患者id患者预付款基本信息查询 -->
     <select id="findPrepaymentInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo">
-        select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,
-        CAST(IFNULL(SUM(ppio.prepayment_principal+ppio.prepayment_bonus),0) AS decimal(15,2)) prepaymentMoneySum,ppio.prepayment_bonus prepaymentBonus
-        from patient_prepayments_info ppio
+       select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,pbio.name name,
+        CAST(IFNULL(SUM(ppio.prepayment_principal+ppio.prepayment_bonus),0) AS decimal(15,2)) prepaymentMoneySum,
+        CAST(IFNULL(ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentBonus,
+		CAST(IFNULL(ppio.prepayment_principal,0) AS decimal(15,2)) prepaymentPrincipal
+        from patient_prepayments_info ppio join patient_base_info pbio on ppio.patient_id = pbio.id
         where ppio.patient_id = #{id}
     </select>
 
     <!-- 根据预付款卡号和患者id查询预付款信息 -->
+    <select id="selectOneByPrepaymentNumberAndPatientId" resultType="com.yunya.models.patient_central.PatientPrepaymentsInfo">
+        SELECT
+            ppio.id,
+            ppio.patient_id,
+            ppio.prepayment_number prepaymentNumber,
+            ppio.prepayment_principal prepaymentPrincipal,
+            ppio.prepayment_bonus prepaymentBonus,
+            ppio.remarks,
+            ppio.inservice,
+            ppio.crt_id crtId,
+            ppio.crt_name crtName,
+            ppio.crt_time crtTime,
+            ppio.upt_id uptId,
+            ppio.upd_name updName,
+            ppio.upd_time updTime
+        FROM
+            patient_prepayments_info ppio
+        where ppio.prepayment_number =#{prepaymentNumber} and ppio.patient_id =#{patientId}
+    </select>
+
+    <!-- 根据主卡人id 查询副卡人信息  -->
+    <select id="selectPrepaymentRelationByMasterPatientId"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo">
+        select ppio.id id,ppio.org_id orgid,ppio.patient_id patientId,ppio.prepayment_number prepaymentNumber,ppio.crt_time crtTime,pbio.name name,
+			   CAST(IFNULL(ppio.prepayment_principal+ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentMoneySum,
+               CAST(IFNULL(ppio.prepayment_bonus,0) AS decimal(15,2)) prepaymentBonus,
+			   CAST(IFNULL(ppio.prepayment_principal,0) AS decimal(15,2)) prepaymentPrincipal
+        from patient_prepayment_relation pprn
+        join  patient_prepayments_info ppio on pprn.secondary_card_id = ppio.patient_id
+        join  patient_base_info pbio on ppio.patient_id = pbio.id
+        where master_card_id  = #{id}
+    </select>
+
+    <!-- 根据预付款卡号查询预付款信息 -->
     <select id="selectOneByCardNumber" resultType="com.yunya.models.patient_central.PatientPrepaymentsInfo">
         select
         <include refid="Column_List"/>
         from patient_prepayments_info ppio
-        where ppio.prepayment_number = #{prepaidId} and ppio.patient_id =#{patientId}
+        where ppio.prepayment_number = #{prepaidId}
     </select>
 
 </mapper>

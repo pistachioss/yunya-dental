@@ -21,7 +21,7 @@ public class PatientPrepaymentsInfoVo implements Serializable {
     /**
      * 主键id
      */
-    private Integer Id;
+    private Integer id;
 
     /**
      * 诊所id
@@ -32,6 +32,11 @@ public class PatientPrepaymentsInfoVo implements Serializable {
      * 患者id
      */
     private Integer patientId;
+
+    /**
+     * 患者名称
+     */
+    private String name;
 
     /**
      * 预付款账号
@@ -47,6 +52,11 @@ public class PatientPrepaymentsInfoVo implements Serializable {
      * 赠金
      */
     private BigDecimal prepaymentBonus;
+
+    /**
+     * 本金
+     */
+    private BigDecimal prepaymentPrincipal;
 
     /**
      * 开户日期
