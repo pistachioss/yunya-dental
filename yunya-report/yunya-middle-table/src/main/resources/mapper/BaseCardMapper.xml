@@ -1,31 +1,197 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.middletable.dao.report.BaseCardMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseCard" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="card_id" property="cardId" jdbcType="INTEGER" />
-    <result column="coupon_id" property="couponId" jdbcType="INTEGER" />
-    <result column="card_number" property="cardNumber" jdbcType="VARCHAR" />
-    <result column="allocate_org_id" property="allocateOrgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="active_user_id" property="activeUserId" jdbcType="INTEGER" />
-    <result column="active_org_id" property="activeOrgId" jdbcType="INTEGER" />
-    <result column="seller_user_id" property="sellerUserId" jdbcType="INTEGER" />
-    <result column="allocate_date" property="allocateDate" jdbcType="TIMESTAMP" />
-    <result column="status" property="status" jdbcType="TINYINT" />
-    <result column="generate_date" property="generateDate" jdbcType="TIMESTAMP" />
-    <result column="sold_date" property="soldDate" jdbcType="TIMESTAMP" />
-    <result column="sold_target" property="soldTarget" jdbcType="VARCHAR" />
-    <result column="sold_phone_number" property="soldPhoneNumber" jdbcType="VARCHAR" />
-    <result column="sold_type" property="soldType" jdbcType="TINYINT" />
-    <result column="sold_way" property="soldWay" jdbcType="TINYINT" />
-    <result column="pay_id" property="payId" jdbcType="INTEGER" />
-    <result column="pay_name" property="payName" jdbcType="VARCHAR" />
-    <result column="charge_status" property="chargeStatus" jdbcType="TINYINT" />
-    <result column="active_date" property="activeDate" jdbcType="TIMESTAMP" />
-    <result column="activation_deadline" property="activationDeadline" jdbcType="TIMESTAMP" />
-    <result column="first_use_date" property="firstUseDate" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.middletable.dao.report.BaseCardMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseCard">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="card_id" property="cardId" jdbcType="INTEGER"/>
+        <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
+        <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="allocate_org_id" property="allocateOrgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="active_user_id" property="activeUserId" jdbcType="INTEGER"/>
+        <result column="active_org_id" property="activeOrgId" jdbcType="INTEGER"/>
+        <result column="seller_user_id" property="sellerUserId" jdbcType="INTEGER"/>
+        <result column="allocate_date" property="allocateDate" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="generate_date" property="generateDate" jdbcType="TIMESTAMP"/>
+        <result column="sold_date" property="soldDate" jdbcType="TIMESTAMP"/>
+        <result column="sold_target" property="soldTarget" jdbcType="VARCHAR"/>
+        <result column="sold_phone_number" property="soldPhoneNumber" jdbcType="VARCHAR"/>
+        <result column="sold_type" property="soldType" jdbcType="TINYINT"/>
+        <result column="sold_way" property="soldWay" jdbcType="TINYINT"/>
+        <result column="pay_id" property="payId" jdbcType="INTEGER"/>
+        <result column="pay_name" property="payName" jdbcType="VARCHAR"/>
+        <result column="charge_status" property="chargeStatus" jdbcType="TINYINT"/>
+        <result column="active_date" property="activeDate" jdbcType="TIMESTAMP"/>
+        <result column="activation_deadline" property="activationDeadline" jdbcType="TIMESTAMP"/>
+        <result column="first_use_date" property="firstUseDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insertList" parameterType="List">
+        insert into
+        `base_card`
+        (`card_id`, `coupon_id`, `card_number`, `allocate_org_id`, `patient_id`,`active_user_id`, `active_org_id`
+         , `seller_user_id`, `allocate_date`, `status`, `generate_date`, `sold_date`, `sold_target`, `sold_phone_number`
+         ,`sold_type`, `sold_way`, `pay_id`, `pay_name`, `charge_status`, `active_date`, `activation_deadline`, `first_use_date`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.cardId}, #{item.couponId}, #{item.cardNumber}, #{item.allocateOrgId}, #{item.patientId}
+            , #{item.activeUserId}, #{item.activeOrgId}, #{item.sellerUserId}, #{item.allocateDate}, #{item.status}
+            , #{item.generateDate}, #{item.soldDate}, #{item.soldTarget}, #{item.soldPhoneNumber}, #{item.soldType}
+            , #{item.soldWay}, #{item.payId}, #{item.payName}, #{item.chargeStatus}, #{item.activeDate}, #{item.activationDeadline}
+            , #{item.firstUseDate})
+        </foreach>
+    </insert>
+
+    <update id="updateList" parameterType="java.util.List">
+        update `base_card`
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="coupon_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.couponId != null">
+                        when `card_id` = #{item.cardId} then #{item.couponId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="card_number = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.cardNumber != null">
+                        when `card_id` = #{item.cardId} then #{item.cardNumber}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="allocate_org_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.allocateOrgId != null">
+                        when `card_id` = #{item.cardId} then #{item.allocateOrgId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="patient_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.patientId != null">
+                        when `card_id` = #{item.cardId} then #{item.patientId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="active_user_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.activeUserId != null">
+                        when `card_id` = #{item.cardId} then #{item.activeUserId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="active_org_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.activeOrgId != null">
+                        when `card_id` = #{item.cardId} then #{item.activeOrgId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="allocate_date = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.allocateDate != null">
+                        when `card_id` = #{item.cardId} then #{item.allocateDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="status = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.status != null">
+                        when `card_id` = #{item.cardId} then #{item.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="generate_date = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.generateDate != null">
+                        when `card_id` = #{item.cardId} then #{item.generateDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_date = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldDate != null">
+                        when `card_id` = #{item.cardId} then #{item.soldDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_target = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldTarget != null">
+                        when `card_id` = #{item.cardId} then #{item.soldTarget}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_phone_number = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldPhoneNumber != null">
+                        when `card_id` = #{item.cardId} then #{item.soldPhoneNumber}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_type = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldType != null">
+                        when `card_id` = #{item.cardId} then #{item.soldType}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_way = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldWay != null">
+                        when `card_id` = #{item.cardId} then #{item.soldWay}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="pay_id = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.payId != null">
+                        when `card_id` = #{item.cardId} then #{item.payId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="pay_name = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.payName != null">
+                        when `card_id` = #{item.cardId} then #{item.payName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="charge_status = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.chargeStatus != null">
+                        when `card_id` = #{item.cardId} then #{item.chargeStatus}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="active_date = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.activeDate != null">
+                        when `card_id` = #{item.cardId} then #{item.activeDate}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="activation_deadline = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.activationDeadline != null">
+                        when `card_id` = #{item.cardId} then #{item.activationDeadline}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="first_use_date = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.firstUseDate != null">
+                        when `card_id` = #{item.cardId} then #{item.firstUseDate}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where `card_id` in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.couponId}
+        </foreach>
+    </update>
 </mapper>

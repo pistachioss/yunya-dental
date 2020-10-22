@@ -54,25 +54,33 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
     Integer dataId = (Integer) paramMap.get("id");
     Integer dateType = (Integer) paramMap.get("type");
     BaseTariffInfo tariffInfo = generateTariffInfo(dataId, dateType);
-    if (null == tariffInfo) {
-      return;
-    }
     Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
-        mapper.delete(tariffInfo);
-        mapper.insertSelective(tariffInfo);
+        mapper.deleteByUnionPrimaryKey(dataId, dateType);
+        if (null != tariffInfo) {
+          mapper.insertSelective(tariffInfo);
+        }
         break;
       case 1:
-        BaseTariffInfo result = mapper.selectByUnionPrimaryKey(dataId, dateType);
-        if (null == result) {
-          mapper.insertSelective(tariffInfo);
+        if (null != tariffInfo) {
+          BaseTariffInfo result = mapper.selectByUnionPrimaryKey(dataId, dateType);
+          if (null == result) {
+            mapper.deleteByUnionPrimaryKey(dataId, dateType);
+            mapper.insertSelective(tariffInfo);
+          } else {
+            mapper.updateByPrimaryKeySelective(tariffInfo);
+          }
         } else {
-          mapper.updateByPrimaryKeySelective(tariffInfo);
+          mapper.deleteByUnionPrimaryKey(dataId, dateType);
         }
         break;
       case 2:
-        mapper.delete(tariffInfo);
+        if (null == tariffInfo) {
+          mapper.deleteByUnionPrimaryKey(dataId, dateType);
+        } else {
+          mapper.insertSelective(tariffInfo);
+        }
         break;
       default:
         break;
@@ -95,7 +103,7 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
           baseTariffInfo.setItemType(dateType);
           Integer categoryId = tariff.getTariffCategoryId();
           BaseTariffCategory tariffCategory = tariffCategoryMapper.selectByPrimaryKey(categoryId);
-          String categoryName = null != tariffCategory ? tariffCategory.getName() : "--";
+          String categoryName = null != tariffCategory ? tariffCategory.getName() : "";
           String itemNumber = tariff.getItemNumber();
           String itemName = tariff.getName();
           String unit = tariff.getUnit();
@@ -118,7 +126,7 @@ public class BaseTariffInfoBiz extends BaseBiz<BaseTariffInfoMapper, BaseTariffI
           Integer categoryId = oralTariff.getOralTariffCategoryId();
           BaseOralTariffCategory oralTariffCategory =
               oralTariffCategoryMapper.selectByPrimaryKey(categoryId);
-          String categoryName = null != oralTariffCategory ? oralTariffCategory.getName() : "--";
+          String categoryName = null != oralTariffCategory ? oralTariffCategory.getName() : "";
           String itemNumber = oralTariff.getItemNumber();
           String itemName = oralTariff.getName();
           String unit = oralTariff.getUnit();

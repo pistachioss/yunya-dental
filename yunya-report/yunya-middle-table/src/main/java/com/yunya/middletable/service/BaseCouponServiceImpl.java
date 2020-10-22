@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.middletable.enums.CouponTypeEnum.*;
 import static java.util.stream.Collectors.*;
 
@@ -64,20 +63,10 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-	public RestErrorBo operateBaseCoupon(MessageModel model) {
+	public void operateBaseCoupon(MessageModel model) {
 		Integer couponId = (Integer) model.getParamMap().get("id");
-		Integer operateType = model.getOperateType();
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		if (ADD.equals(operateType)) {
-			return createCoupon(couponId);
-		}
-		if (UPDATE.equals(operateType)) {
-			return updateCoupon(couponId);
-		}
-		if (DELETE.equals(operateType)) {
-			return deleteCoupon(couponId);
-		}
-		return errorBo;
+//		Integer operateType = model.getOperateType();
+		operateData(couponId);
 	}
 
 	/**
@@ -147,82 +136,35 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 
 	/**
 	 * 新增
+	 *
 	 * @param couponId 优惠券id
 	 * @return error
 	 */
-	private RestErrorBo createCoupon(Integer couponId) {
+	private RestErrorBo operateData(Integer couponId) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
-		BaseCoupon baseCoupon = mapper.selectByPrimaryKey(couponId);
 		if (coupon == null) {
-			log.info("优惠券[{}]源数据不存在, 无法新增", couponId);
-			errorBo.setError(MiddleError.COUPON_NOT_EXIST);
-			errorBo.setMsg(couponId);
+			deleteCoupon(couponId);
 		} else {
+			BaseCoupon baseCoupon = mapper.selectByPrimaryKey(couponId);
+			//数据转换（原始数据）
+			List<BaseCoupon> originData = getOriginData(Collections.singletonList(coupon));
 			if (baseCoupon != null) {
-				log.info("优惠券[{}]基础表数据已存在, 无法新增", couponId);
-				errorBo.setError(MiddleError.BASE_COUPON_EXISTED);
-				errorBo.setMsg(couponId);
+				List<BaseCoupon> updateCoupons = getUpdateCoupons(Collections.singletonList(baseCoupon), originData);
+				if (CollectionUtils.isNotEmpty(updateCoupons)) {
+					mapper.updateByPrimaryKeySelective(updateCoupons.get(0));
+				}
 			} else {
-				BaseCouponBo baseCouponBo = getBaseCouponBo(Collections.singletonList(coupon));
-				mapper.insertSelective(singleEntityTransform(coupon, baseCouponBo));
+				mapper.insertSelective(originData.get(0));
 			}
 		}
 		return errorBo;
 	}
 
-	/**
-	 * 更新
-	 * @param couponId 优惠券id
-	 * @return error
-	 */
-	private RestErrorBo updateCoupon(Integer couponId) {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
-		BaseCoupon baseCoupon = mapper.selectByPrimaryKey(couponId);
-		if (coupon == null) {
-			log.info("优惠券[{}]源数据不存在, 无法更新", couponId);
-			errorBo.setError(MiddleError.COUPON_NOT_EXIST);
-			errorBo.setMsg(couponId);
-		} else {
-			if (baseCoupon == null) {
-				log.info("优惠券[{}]基础表数据不存在, 无法更新", couponId);
-				errorBo.setError(MiddleError.BASE_COUPON_NOT_EXIST);
-				errorBo.setMsg(couponId);
-			} else {
-				BaseCouponBo baseCouponBo = getBaseCouponBo(Collections.singletonList(coupon));
-				mapper.updateByPrimaryKeySelective(singleEntityTransform(coupon, baseCouponBo));
-			}
-		}
-		return errorBo;
-	}
-
-	/**
-	 * 删除
-	 * @param couponId 优惠券id
-	 * @return error
-	 */
-	private RestErrorBo deleteCoupon(Integer couponId) {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
-		BaseCoupon baseCoupon = mapper.selectByPrimaryKey(couponId);
-		if (coupon != null) {
-			log.info("优惠券[{}]源数据未删除", couponId);
-			errorBo.setError(MiddleError.COUPON_NOT_DELETED);
-			errorBo.setMsg(couponId);
-		} else {
-			if (baseCoupon == null) {
-				log.info("优惠券[{}]基础表数据不存在, 无法删除", couponId);
-				errorBo.setError(MiddleError.BASE_COUPON_NOT_EXIST);
-				errorBo.setMsg(couponId);
-			} else {
-				Example example = new Example(BaseCoupon.class);
-				example.createCriteria().andEqualTo("couponId", couponId);
-				mapper.deleteByExample(example);
-				errorBo = baseCouponItemService.deleteCouponItem(couponId);
-			}
-		}
-		return errorBo;
+	private void deleteCoupon(Integer couponId) {
+		Example example = new Example(BaseCoupon.class);
+		example.createCriteria().andEqualTo("couponId", couponId);
+		mapper.deleteByExample(example);
 	}
 
 	/**
@@ -233,11 +175,15 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 	 * @return list
 	 */
 	private List<BaseCoupon> getAddCoupons(List<BaseCoupon> existBaseCoupons, List<BaseCoupon> list) {
+		List<BaseCoupon> addCoupons = Lists.newArrayList();
 		if (CollectionUtils.isEmpty(existBaseCoupons)) {
-			return list;
+			addCoupons = list;
+		} else {
+			List<Integer> existIds = existBaseCoupons.stream().map(BaseCoupon::getCouponId).collect(toList());
+			addCoupons = list.stream().filter(obj -> !existIds.contains(obj.getCouponId())).collect(toList());
 		}
-		List<Integer> existIds = existBaseCoupons.stream().map(BaseCoupon::getCouponId).collect(toList());
-		return list.stream().filter(obj -> !existIds.contains(obj.getCouponId())).collect(toList());
+		log.info("优惠券基础表，需要新增的数据[{}]", addCoupons.size());
+		return addCoupons;
 	}
 
 	/**
@@ -255,9 +201,9 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 			//需要更新的产品集合
 			updateCoupons = existBaseCoupons.stream().filter(obj -> couponMap.get(obj.getCouponId()) != null
 					&& !obj.equals(couponMap.get(obj.getCouponId()))).collect(toList());
-			log.info("本次需更新的优惠券数量为[{}]", updateCoupons.size());
 			return updateCoupons;
 		}
+		log.info("优惠券基础表，需要更新的数据[{}]", updateCoupons.size());
 		return updateCoupons;
 	}
 
@@ -368,12 +314,16 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 		List<BaseCoupon> result = Lists.newArrayList();
 		log.info("本次查询优惠券数据量：[{}]", list.size());
 		if (CollectionUtils.isNotEmpty(list)) {
-			//获取其他字段
-			BaseCouponBo baseCouponBo = getBaseCouponBo(list);
-			//对象转换
-			result = transformToEntity(list, baseCouponBo);
+			result = getOriginData(list);
 		}
 		return result;
+	}
+
+	private List<BaseCoupon> getOriginData(List<CouponCommonInfo> list) {
+		//获取其他字段
+		BaseCouponBo baseCouponBo = getBaseCouponBo(list);
+		//对象转换
+		return transformToEntity(list, baseCouponBo);
 	}
 
 	/**
