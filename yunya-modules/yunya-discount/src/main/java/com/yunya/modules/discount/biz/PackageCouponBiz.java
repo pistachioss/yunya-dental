@@ -100,7 +100,8 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
                 packageCoupon.setActivationDeadline(packageCouponForm.getActivationDeadline());
 //                packageCoupon.setWorkloadRate(packageCouponForm.getWorkloadRate());
                 packageCoupon.setEffectiveDays(packageCouponForm.getEffectiveDays());
-                updateSelectiveById(packageCoupon);//更新明细信息
+                //更新明细信息
+                updateSelectiveById(packageCoupon);
             }else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -117,17 +118,22 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
                     throw new BaseException("兑换券名称与系统中已有兑换券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(packageCouponForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             packageCoupon.setCouponId(packageCouponForm.getId());
             packageCoupon = selectOne(packageCoupon);
             if (packageCoupon != null) {
                 PackageCoupon pc = new PackageCoupon();
+                BeanUtils.copyProperties(packageCoupon, pc);
                 BeanUtils.copyProperties(packageCouponForm, pc);
                 pc.setId(packageCoupon.getId());
-                updateSelectiveById(pc);//更新明细信息
+                //更新明细信息
+                updateById(pc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

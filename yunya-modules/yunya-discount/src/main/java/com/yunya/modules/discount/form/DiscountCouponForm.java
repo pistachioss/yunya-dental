@@ -118,7 +118,15 @@ public class DiscountCouponForm {
     private String useableClinic;
 
 
+    @ApiModelProperty("是否分配")
+    private Boolean isDistribution;
 
+    /**
+     * 是否可混合使用优惠 0.不可以共用 1.可以共用
+     */
+    @NotNull(message = "是否混合使用选项不能为空")
+    @ApiModelProperty("是否可混合使用优惠 0.不可以共用 1.可以共用")
+    private Integer mixable;
 
 
 }

@@ -58,18 +58,21 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         couponCommonInfo.setType(new Byte("1"));
         couponCommonInfo.setIsInservice(true);
         couponCommonInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        couponCommonInfoBiz.insertSelective(couponCommonInfo);//基础信息表中插入数据
+        //基础信息表中插入数据
+        couponCommonInfoBiz.insertSelective(couponCommonInfo);
 
         DiscountCoupon discountCoupon = new DiscountCoupon();
         BeanUtils.copyProperties(discountCouponForm, discountCoupon);
         discountCoupon.setCouponId(couponCommonInfo.getId());
         discountCoupon.setUseableClinic(discountCouponForm.getUseableClinic());
-        insertSelective(discountCoupon);//插入卡券信息
-
-        if(discountCoupon.getId()<10000){//同一种卡券最多添加9999个
+        //插入卡券信息
+        insertSelective(discountCoupon);
+        //同一种卡券最多添加9999个
+        if(discountCoupon.getId()<10000){
         String num = String.format("%04d", discountCoupon.getId());
         couponCommonInfo.setCouponCode(DISCOUNT_COUPON_TYPE + num);
-        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+        //插入卡券编码
+        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
         }else{
             throw new BaseException("已超过系统允许新增折扣券产品的最大数量9999，不允许新增！", INSERT_MODEL);
         }
@@ -97,7 +100,8 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             couponCommonInfo.setId(discountCouponForm.getId());
             couponCommonInfo.setAvailableSaleStartDate(discountCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(discountCouponForm.getAvailableSaleEndDate());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            //更新基础信息
+            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if (discountCoupon != null) {
@@ -106,7 +110,8 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
                 discountCoupon.setActivationDeadline(discountCouponForm.getActivationDeadline());
                 discountCoupon.setWorkloadRate(discountCouponForm.getWorkloadRate());
                 discountCoupon.setEffectiveDays(discountCouponForm.getEffectiveDays());
-                updateSelectiveById(discountCoupon);//更新明细信息
+                //更新明细信息
+                updateSelectiveById(discountCoupon);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -122,17 +127,22 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
                     throw new BaseException("折扣券名称与系统中已有折扣券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(discountCouponForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if (discountCoupon != null) {
                 DiscountCoupon dc = new DiscountCoupon();
+                BeanUtils.copyProperties(discountCoupon, dc);
                 BeanUtils.copyProperties(discountCouponForm, dc);
                 dc.setId(discountCoupon.getId());
-                updateSelectiveById(dc);//更新明细信息
+                //更新明细信息
+                updateById(dc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

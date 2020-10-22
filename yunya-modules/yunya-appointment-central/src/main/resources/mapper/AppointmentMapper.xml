@@ -161,8 +161,11 @@
         a.crt_time as crtTime
         from appointment a
         <where>
+            <if test="query.inservice != null">
+                and a.inservice = #{query.inservice}
+            </if>
             <if test="query.patientId != null">
-                a.patient_id = #{query.patientId}
+                and a.patient_id = #{query.patientId}
             </if>
             <if test="query.orgId != null">
                 and a.org_id = #{query.orgId}
@@ -186,7 +189,7 @@
                 and a.appoint_date = DATE_FORMAT(#{query.appointDate},'%Y-%m-%d')
             </if>
             <if test="query.appointTime != null and query.appointTime != ''">
-                and a.appoint_time = #{q.appointTime}
+                and a.appoint_time = #{query.appointTime}
             </if>
             <if test="query.appointStartTime != null">
                 and a.appoint_start_time = #{query.appointStartTime}
@@ -199,6 +202,9 @@
             </if>
             <if test="query.confirmStatus != null">
                 and a.confirmStatus = #{query.confirmStatus}
+            </if>
+            <if test="query.appointStatus != null">
+                and a.appoint_status = #{query.appointStatus}
             </if>
             <if test="query.appointStatus != null">
                 and a.appoint_status = #{query.appointStatus}

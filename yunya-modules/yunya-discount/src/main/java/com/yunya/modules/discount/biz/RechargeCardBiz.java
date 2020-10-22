@@ -96,13 +96,15 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
             couponCommonInfo.setId(rechargeCardForm.getId());
             couponCommonInfo.setAvailableSaleStartDate(rechargeCardForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(rechargeCardForm.getAvailableSaleEndDate());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            //更新基础信息
+            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
             rechargeCard.setCouponId(rechargeCardForm.getId());
             rechargeCard = selectOne(rechargeCard);
             if(rechargeCard!=null){
                 rechargeCard.setRemark(rechargeCardForm.getRemark());
                 rechargeCard.setRechargeDeadline(rechargeCardForm.getRechargeDeadline());
-                updateSelectiveById(rechargeCard);//更新明细信息
+                //更新明细信息
+                updateSelectiveById(rechargeCard);
             }else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -118,18 +120,23 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
                     throw new BaseException("充值卡名称与系统中已有充值卡重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(rechargeCardForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             rechargeCard.setCouponId(rechargeCardForm.getId());
             rechargeCard = selectOne(rechargeCard);
             if (rechargeCard != null) {
                 RechargeCard pc = new RechargeCard();
+                BeanUtils.copyProperties(rechargeCard, pc);
                 BeanUtils.copyProperties(rechargeCardForm, pc);
                 pc.setId(rechargeCard.getId());
                 pc.setBonus(rechargeCardForm.getFaceValue().subtract(rechargeCardForm.getSoldAmount()));
-                updateSelectiveById(pc);//更新明细信息
+                //更新明细信息
+                updateById(pc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
