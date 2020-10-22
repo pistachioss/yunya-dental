@@ -100,7 +100,8 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
                 packageCoupon.setActivationDeadline(packageCouponForm.getActivationDeadline());
 //                packageCoupon.setWorkloadRate(packageCouponForm.getWorkloadRate());
                 packageCoupon.setEffectiveDays(packageCouponForm.getEffectiveDays());
-                updateSelectiveById(packageCoupon);//更新明细信息
+                //更新明细信息
+                updateSelectiveById(packageCoupon);
             }else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
