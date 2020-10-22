@@ -147,7 +147,8 @@ public class VoucherDiscountItemController {
         if(specialPackageCouponItemForms.size()>0){
             SpecialPackageCouponItem specialPackageCouponItem = new SpecialPackageCouponItem();
             specialPackageCouponItem.setCouponId(specialPackageCouponItemForms.get(0).getCouponId());
-            specialPackageCouponItemBiz.delete(specialPackageCouponItem);//清除之前的适用项目
+            //清除之前的适用项目
+            specialPackageCouponItemBiz.delete(specialPackageCouponItem);
             specialPackageCouponItemForms.forEach(t -> {
                 t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
                 t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));

@@ -331,25 +331,6 @@ public class BaseTreatmentProcessBiz
     registeredEmp.createCriteria().andBetween("updTime", startDate, endDate);
     List<Registered> registeredList = registeredMapper.selectByExample(registeredEmp);
     List<BaseTreatmentProcess> tempList = Lists.newArrayList();
-    //    if (StringHelper.isNotEmpty(treatmentProcesses) &&
-    // StringHelper.isNotEmpty(registeredList)) {
-    //      for (Registered registered : registeredList) {
-    //        for (BaseTreatmentProcess process : treatmentProcesses) {
-    //          Integer registeredId = registered.getId();
-    //          Integer processRegisteredId = process.getRegisteredId();
-    //          if (null != processRegisteredId) {
-    //            if (!registeredId.equals(processRegisteredId)) {
-    //              BaseTreatmentProcess treatmentProcess =
-    // generateBaseTreatmentProcess(registered);
-    //              TreatmentRecord treatmentRecord = new TreatmentRecord();
-    //              treatmentRecord.setRegisteredId(registeredId);
-    //              setTreatmentValue(treatmentProcess, treatmentRecord);
-    //              tempList.add(treatmentProcess);
-    //            }
-    //          }
-    //        }
-    //      }
-    //    } else {
     if (StringHelper.isNotEmpty(registeredList)) {
       registeredList.forEach(
           registered -> {
@@ -357,19 +338,19 @@ public class BaseTreatmentProcessBiz
             BaseTreatmentProcess entity = new BaseTreatmentProcess();
             entity.setRegisteredId(registeredId);
             int count = mapper.selectCount(entity);
-            if (!(count > 0)) {
+            if (0 >= count) {
               BaseTreatmentProcess process = generateBaseTreatmentProcess(registered);
-              TreatmentRecord treatmentRecord = new TreatmentRecord();
-              treatmentRecord.setRegisteredId(registered.getId());
-              setTreatmentValue(process, treatmentRecord);
-              tempList.add(process);
+              if (null != process) {
+                TreatmentRecord treatmentRecord = new TreatmentRecord();
+                treatmentRecord.setRegisteredId(registered.getId());
+                setTreatmentValue(process, treatmentRecord);
+                tempList.add(process);
+              }
             }
           });
     }
-
     if (StringHelper.isNotEmpty(tempList)) {
       mapper.batchInsertSelective(tempList);
-      // treatmentProcesses.forEach(process -> mapper.insertSelective(process));
     }
   }
 

@@ -1,6 +1,7 @@
 package com.yunya.models.middletable;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -10,6 +11,7 @@ public class BaseBill {
     /**
      * 订单记录ID
      */
+    @Id
     @Column(name = "bill_id")
     private Integer billId;
 

@@ -137,15 +137,18 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
                     throw new BaseException("代金券名称与系统中已有代金券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(discountUpdateForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
             //基础信息表中修改数据
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             voucheCoupon.setCouponId(discountUpdateForm.getId());
             voucheCoupon = selectOne(voucheCoupon);
             if (voucheCoupon != null) {
                 VoucheCoupon vc = new VoucheCoupon();
+                BeanUtils.copyProperties(voucheCoupon, vc);
                 BeanUtils.copyProperties(discountUpdateForm, vc);
                 vc.setId(voucheCoupon.getId());
                 //更新明细信息
