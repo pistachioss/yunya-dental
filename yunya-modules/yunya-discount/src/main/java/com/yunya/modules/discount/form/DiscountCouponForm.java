@@ -118,7 +118,8 @@ public class DiscountCouponForm {
     private String useableClinic;
 
 
-
+    @ApiModelProperty("是否分配")
+    private Boolean isDistribution;
 
 
 }

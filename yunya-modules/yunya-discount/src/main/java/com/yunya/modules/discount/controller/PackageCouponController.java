@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.PackageCoupon;
 import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
@@ -8,6 +9,7 @@ import com.yunya.modules.discount.biz.PackageCouponBiz;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.discount.form.PackageCouponForm;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +36,8 @@ public class PackageCouponController {
     private PackageCouponBiz packageCouponBiz;
     @Autowired
     private CouponCommonInfoBiz couponCommonInfoBiz;
+    @Autowired
+    private CouponAllocateMapper couponAllocateMapper;
 
     /**
      * 新增兑换券
@@ -87,6 +91,13 @@ public class PackageCouponController {
         PackageCouponForm packageCouponForm = new PackageCouponForm();
         BeanUtils.copyProperties(packageCoupon, packageCouponForm);
         BeanUtils.copyProperties(couponCommonInfo, packageCouponForm);
+
+        CouponAllocate couponAllocate = new CouponAllocate();
+        couponAllocate.setCouponId(id);
+        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
+            // 未完成分配
+            packageCouponForm.setIsDistribution(false);
+        }
         return ResponseUtil.success(packageCouponForm);
     }
 
