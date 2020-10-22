@@ -34,7 +34,7 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @param secondaryCardId 副卡人id
      * @param masterCardId 主卡人id
      * @return int
-     */
+      */
     int deleteMemberRelation(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId);
 
     /**

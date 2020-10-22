@@ -5,7 +5,7 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.service.BaseCouponServiceImpl;
+import com.yunya.middletable.service.BaseCardServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,15 +15,15 @@ import javax.annotation.Resource;
 
 @Slf4j
 @RestController
-public class BaseCouponController {
+public class BaseCardController {
 
 	@Resource
-	BaseCouponServiceImpl couponService;
+	BaseCardServiceImpl cardService;
 
-	@PostMapping("/base/coupon/pull")
+	@PostMapping("/base/card/pull")
 	public ResponseResult pullData(@RequestBody PullForm form) {
 		long start = System.currentTimeMillis();
-		RestErrorBo errorBo = couponService.pullCoupon(form.getStartDate(), form.getEndDate());
+		RestErrorBo errorBo = cardService.pullCard(form.getStartDate(), form.getEndDate());
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
@@ -32,9 +32,9 @@ public class BaseCouponController {
 		return ResponseUtil.success(end - start);
 	}
 
-	@PostMapping("/base/coupon/msg/send")
+	@PostMapping("/base/card/msg/send")
 	public ResponseResult sendMessage(@RequestBody MessageModel model) {
-		couponService.operateBaseCoupon(model);
+		cardService.operateBaseCard(model);
 		return ResponseUtil.success();
 	}
 
