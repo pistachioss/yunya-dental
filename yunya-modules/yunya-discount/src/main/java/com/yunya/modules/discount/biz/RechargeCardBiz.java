@@ -120,20 +120,23 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
                     throw new BaseException("充值卡名称与系统中已有充值卡重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(rechargeCardForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
             //基础信息表中修改数据
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             rechargeCard.setCouponId(rechargeCardForm.getId());
             rechargeCard = selectOne(rechargeCard);
             if (rechargeCard != null) {
                 RechargeCard pc = new RechargeCard();
+                BeanUtils.copyProperties(rechargeCard, pc);
                 BeanUtils.copyProperties(rechargeCardForm, pc);
                 pc.setId(rechargeCard.getId());
                 pc.setBonus(rechargeCardForm.getFaceValue().subtract(rechargeCardForm.getSoldAmount()));
                 //更新明细信息
-                updateSelectiveById(pc);
+                updateById(pc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

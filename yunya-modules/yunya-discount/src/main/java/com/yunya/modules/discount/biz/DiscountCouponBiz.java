@@ -127,19 +127,22 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
                     throw new BaseException("折扣券名称与系统中已有折扣券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(discountCouponForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
             //基础信息表中修改数据
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if (discountCoupon != null) {
                 DiscountCoupon dc = new DiscountCoupon();
+                BeanUtils.copyProperties(discountCoupon, dc);
                 BeanUtils.copyProperties(discountCouponForm, dc);
                 dc.setId(discountCoupon.getId());
                 //更新明细信息
-                updateSelectiveById(dc);
+                updateById(dc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
