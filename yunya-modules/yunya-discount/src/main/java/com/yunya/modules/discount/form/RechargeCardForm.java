@@ -98,5 +98,5 @@ public class RechargeCardForm {
     private String remark;
 
     @ApiModelProperty("是否分配")
-    private Boolean isDistribution;
+    private Boolean isDistribution = true;
 }

@@ -119,7 +119,7 @@ public class DiscountCouponForm {
 
 
     @ApiModelProperty("是否分配")
-    private Boolean isDistribution;
+    private Boolean isDistribution = true;
 
     /**
      * 是否可混合使用优惠 0.不可以共用 1.可以共用

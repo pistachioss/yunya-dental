@@ -133,7 +133,7 @@ public class VoucheCouponForm {
   private String useableClinci;
 
   @ApiModelProperty("是否分配")
-  private Boolean isDistribution;
+  private Boolean isDistribution = true;
 
 
 }

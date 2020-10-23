@@ -118,6 +118,8 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
                     throw new BaseException("兑换券名称与系统中已有兑换券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(packageCouponForm.getId());
             CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
             BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(packageCouponForm, couponCommonInfo);

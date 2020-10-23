@@ -128,5 +128,5 @@ public class PackageCouponForm {
     private String useableClinic;
 
     @ApiModelProperty("是否分配")
-    private Boolean isDistribution;
+    private Boolean isDistribution = true;
 }

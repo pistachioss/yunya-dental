@@ -123,10 +123,13 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             if (couponCommonInfoMapper.select(data).size() >= 1) {
                 data = new CouponCommonInfo();
                 data.setId(discountCouponForm.getId());
+                //相等说明没改名字
                 if (!couponCommonInfoMapper.selectOne(data).getName().equals(name)) {
                     throw new BaseException("折扣券名称与系统中已有折扣券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(discountCouponForm.getId());
             CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
             BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(discountCouponForm, couponCommonInfo);
