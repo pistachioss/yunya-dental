@@ -1,4 +1,4 @@
-package com.yunya.middletable.dao.treatment;
+package com.yunya.middletable.dao.treatment_other;
 
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;

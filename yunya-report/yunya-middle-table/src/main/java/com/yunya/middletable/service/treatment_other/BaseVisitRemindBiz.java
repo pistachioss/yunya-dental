@@ -1,12 +1,12 @@
-package com.yunya.middletable.service.treatment;
+package com.yunya.middletable.service.treatment_other;
 
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseVisitRemindMapper;
-import com.yunya.middletable.dao.treatment.VisitingRecordMapper;
-import com.yunya.middletable.dao.treatment.VisitingRemindMapper;
+import com.yunya.middletable.dao.treatment_other.VisitingRecordMapper;
+import com.yunya.middletable.dao.treatment_other.VisitingRemindMapper;
 import com.yunya.models.middletable.BaseVisitRemind;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
@@ -58,8 +58,13 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         }
         break;
       case 2:
-        BaseVisitRemind delBaseVisitRemind = getBaseVisitRemindInfo(id, type);
-        if (StringHelper.isNotNull(delBaseVisitRemind)) {
+        if (type == 0){
+          BaseVisitRemind delBaseVisitRemind = getBaseVisitRemindInfo(id, type);
+          VisitingRecord visitingInfo = (VisitingRecord)getVisitingInfo(id, type);
+          if (StringHelper.isNotNull(visitingInfo)){
+            mapper.delete(delBaseVisitRemind);
+            mapper.insertSelective(delBaseVisitRemind);
+          }
           mapper.delete(delBaseVisitRemind);
         }
         break;
@@ -155,6 +160,18 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         return baseVisitRemind;
       }
       return null;
+    }
+    return null;
+  }
+
+  public Object getVisitingInfo(Integer id, Integer type){
+    if (type == 0){
+      VisitingRecord visitingRecord = visitingRecordMapper.selectByPrimaryKey(id);
+      return visitingRecord;
+    }
+    if (type == 1){
+      VisitingRemind visitingRemind = visitingRemindMapper.selectByPrimaryKey(id);
+      return visitingRemind;
     }
     return null;
   }

@@ -140,6 +140,13 @@ public class PatientPrepaymentRelationController {
     return ResponseUtil.success();
   }
 
+  @CurrentUser
+  @ApiOperation("预付款消费")
+  @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
+  public ResponseResult expend(@RequestBody PrepaidExpendRecordModel model ){
+    return patientPrepaymentBiz.expend(model);
+  }
+
   /**
    * 退费记录
    * @param queryForm 预付款退费记录列表

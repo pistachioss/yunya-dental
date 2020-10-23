@@ -1,4 +1,4 @@
-package com.yunya.middletable.dao.treatment;
+package com.yunya.middletable.dao.treatment_other;
 
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
 import com.yunya.models.treatment_other.VisitingRemind;

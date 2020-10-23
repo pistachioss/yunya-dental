@@ -498,6 +498,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     memberExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     memberExpendRecord.setCrtName(BaseContextHandler.getName());
+    memberExpendRecord.setCurrentPrincipal(patientMemberInfo.getPrincipalAmount());
+    memberExpendRecord.setCurrentBonus(patientMemberInfo.getBonusAmount());
     memberExpendRecordMapper.insertSelective(memberExpendRecord);
   }
 

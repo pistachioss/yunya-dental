@@ -58,8 +58,26 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
                 }
                 break;
             case 2:
-                BasePatientMember member = getPatientMemberInfo(id, type);
-                mapper.delete(member);
+                if (type == 0){
+                    BasePatientMember member = getPatientMemberInfo(id, type);
+                    PatientMemberInfo MemberInfo = patientMemberInfoMapper.selectByPrimaryKey(id);
+                    if (StringHelper.isNotNull(MemberInfo) && StringHelper.isNotNull(member)){
+                        mapper.delete(member);
+                        mapper.insert(member);
+                    }
+                    mapper.delete(member);
+                }
+                if (type == 1){
+                    BasePatientMember prepayments = getPatientMemberInfo(id, type);
+                    PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectByPrimaryKey(id);
+                    if (StringHelper.isNotNull(patientPrepaymentsInfo) && StringHelper.isNotNull(prepayments)){
+                        mapper.delete(prepayments);
+                        mapper.insert(prepayments);
+                    }
+                    mapper.delete(prepayments);
+                }
+
+
                 break;
             default:
                 break;

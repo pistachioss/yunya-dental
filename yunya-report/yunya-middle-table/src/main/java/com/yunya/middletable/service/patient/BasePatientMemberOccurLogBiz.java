@@ -6,8 +6,10 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.*;
 import com.yunya.middletable.dao.report.BasePatientMemberOccurLogMapper;
+import com.yunya.middletable.dao.system.AccountItemMapper;
 import com.yunya.models.middletable.BasePatientMemberOccurLog;
 import com.yunya.models.patient_central.*;
+import com.yunya.models.system.AccountItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,11 +51,17 @@ public class BasePatientMemberOccurLogBiz
   /** 注入会员卡mapper */
   @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
 
-  /** 注入会员卡mapper */
+  /** 注入会员卡充值明细mapper */
   @Autowired private MemberRechargeTollRecordMapper memberRechargeTollRecordMapper;
 
   /** 注入预付款信息mapper */
   @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+
+  /** 注入系统字典服务 */
+  @Autowired private AccountItemMapper accountItemMapper;
+
+  /** 注入预付款充值明细Mapper */
+  @Autowired private PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
 
   /**
    * 中间表-会员-预付款 信息操作源头
@@ -309,13 +317,15 @@ public class BasePatientMemberOccurLogBiz
               memberRechargeRecord.getCurrentRechargePrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(
               memberRechargeRecord.getCurrentRechargeBonus());
-
       MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
       memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
       MemberRechargeTollRecord  memberRechargeToll = memberRechargeTollRecordMapper.selectOne(memberRechargeTollRecord);
       if (StringHelper.isNotNull(memberRechargeToll)){
-        basePatientMemberOccurLog.setPaymentId(memberRechargeRecord.getId());
-       // basePatientMemberOccurLog.setPaymentManner(memberRechargeToll.get); // todo 一个充值
+        basePatientMemberOccurLog.setPaymentId(memberRechargeToll.getPaymentId());
+        AccountItem accountItem = accountItemMapper.selectByPrimaryKey(memberRechargeToll.getPaymentId());
+        if (StringHelper.isNotNull(accountItem)){
+          basePatientMemberOccurLog.setPaymentManner(accountItem.getName());
+        }
       }
       basePatientMemberOccurLog.setOperatorUserId(memberRechargeRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(memberRechargeRecord.getRemarks());
@@ -355,6 +365,8 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOperatorUserId(memberExpendRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(memberExpendRecord.getRemarks());
       basePatientMemberOccurLog.setOccurDate(memberExpendRecord.getCrtTime());
+      basePatientMemberOccurLog.setCurrentRechargePrincipal(memberExpendRecord.getCurrentPrincipal());
+      basePatientMemberOccurLog.setCurrentRechargeBonus(memberExpendRecord.getCurrentBonus());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -386,10 +398,13 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOccurType((byte) occurType.intValue());
       basePatientMemberOccurLog.setPrincipalAmount(memberReturnRecord.getReturnPrincipalAmount());
       basePatientMemberOccurLog.setBonusAmount(memberReturnRecord.getReturnGiftAmount());
-      basePatientMemberOccurLog.setPaymentId(memberReturnRecord.getId());
+      basePatientMemberOccurLog.setPaymentId(memberReturnRecord.getReturnWayId());
+      basePatientMemberOccurLog.setPaymentManner(memberReturnRecord.getReturnWayType());
       basePatientMemberOccurLog.setOperatorUserId(memberReturnRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(memberReturnRecord.getRemarks());
       basePatientMemberOccurLog.setOccurDate(memberReturnRecord.getCrtTime());
+      basePatientMemberOccurLog.setCurrentRechargePrincipal(memberReturnRecord.getCurrentPrincipal());
+      basePatientMemberOccurLog.setCurrentRechargeBonus(memberReturnRecord.getCurrentBonus());
       return basePatientMemberOccurLog;
     }
 
@@ -575,10 +590,18 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setPrincipalAmount(
               prepaidRechargeRecord.getRechargePrincipal());
       basePatientMemberOccurLog.setBonusAmount(prepaidRechargeRecord.getRechargeBonus());
-      basePatientMemberOccurLog.setPaymentId(prepaidRechargeRecord.getId());
       basePatientMemberOccurLog.setCurrentRechargePrincipal(prepaidRechargeRecord.getCurrentRechargePrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(prepaidRechargeRecord.getCurrentRechargeBonus());
-      // basePatientMemberRelation.setPaymentManner(memberRechargeRecord.); // todo 一个充值
+      PrepaidRechargeTollRecord memberRechargeTollRecord = new PrepaidRechargeTollRecord();
+      memberRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
+      PrepaidRechargeTollRecord prepaidRechargeTollRecord = prepaidRechargeTollRecordMapper.selectOne(memberRechargeTollRecord);
+      if (StringHelper.isNotNull(prepaidRechargeTollRecord)){
+        basePatientMemberOccurLog.setPaymentId(prepaidRechargeTollRecord.getPaymentId());
+        AccountItem accountItem = accountItemMapper.selectByPrimaryKey(prepaidRechargeTollRecord.getPaymentId());
+        if (StringHelper.isNotNull(accountItem)){
+          basePatientMemberOccurLog.setPaymentManner(accountItem.getName());
+        }
+      }
       // 对应多个入账方式 这里只能取一个
       basePatientMemberOccurLog.setOperatorUserId(prepaidRechargeRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(prepaidRechargeRecord.getRemarks());
@@ -612,10 +635,11 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOccurType((byte) operationType.intValue());
       basePatientMemberOccurLog.setPrincipalAmount(prepaidExpendRecord.getExpendPrincipal());
       basePatientMemberOccurLog.setBonusAmount(prepaidExpendRecord.getExpendGift());
-      basePatientMemberOccurLog.setPaymentId(prepaidExpendRecord.getId());
       basePatientMemberOccurLog.setOperatorUserId(prepaidExpendRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(prepaidExpendRecord.getRemarks());
       basePatientMemberOccurLog.setOccurDate(prepaidExpendRecord.getCrtTime());
+      basePatientMemberOccurLog.setCurrentRechargePrincipal(prepaidExpendRecord.getCurrentPrincipal());
+      basePatientMemberOccurLog.setCurrentRechargeBonus(prepaidExpendRecord.getCurrentBonus());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -647,10 +671,13 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setPrincipalAmount(
               prepaidReturnRecord.getReturnPrincipalAmount());
       basePatientMemberOccurLog.setBonusAmount(prepaidReturnRecord.getReturnGiftAmount());
-      basePatientMemberOccurLog.setPaymentId(prepaidReturnRecord.getId());
+      basePatientMemberOccurLog.setPaymentId(prepaidReturnRecord.getReturnWayId());
+      basePatientMemberOccurLog.setPaymentManner(prepaidReturnRecord.getReturnWayType());
       basePatientMemberOccurLog.setOperatorUserId(prepaidReturnRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(prepaidReturnRecord.getRemarks());
       basePatientMemberOccurLog.setOccurDate(prepaidReturnRecord.getCrtTime());
+      basePatientMemberOccurLog.setCurrentRechargePrincipal(prepaidReturnRecord.getCurrentPrincipal());
+      basePatientMemberOccurLog.setCurrentRechargeBonus(prepaidReturnRecord.getCurrentBonus());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -667,7 +694,7 @@ public class BasePatientMemberOccurLogBiz
       case 1:
         BasePatientMemberOccurLog prepaidRechargeRecord = getPrepaidRechargeRecord(id,type,operationType);
         if (StringHelper.isNotNull(prepaidRechargeRecord)){
-          mapper.deleteByPrimaryKeyAndtype(prepaidRechargeRecord.getOccurLogId(),(Integer) prepaidRechargeRecord.getType().intValue(),(Integer) prepaidRechargeRecord.getOccurType().intValue());
+          mapper.deleteByPrimaryKeyAndtype(prepaidRechargeRecord.getOccurLogId(),prepaidRechargeRecord.getType().intValue(), prepaidRechargeRecord.getOccurType().intValue());
           mapper.insert(prepaidRechargeRecord);
         }
         break;

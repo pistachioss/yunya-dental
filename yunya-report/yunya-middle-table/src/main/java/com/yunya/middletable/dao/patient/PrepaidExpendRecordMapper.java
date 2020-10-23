@@ -7,6 +7,7 @@ import tk.mybatis.mapper.common.Mapper;
 /**
  * @author WY
  */
+@Repository
 public interface PrepaidExpendRecordMapper extends Mapper<PrepaidExpendRecord> {
 
 }

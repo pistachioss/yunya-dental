@@ -1,10 +1,10 @@
-package com.yunya.middletable.controller.treatment;
+package com.yunya.middletable.controller.treatment_other;
 
 import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.service.treatment.BaseVisitRemindBiz;
+import com.yunya.middletable.service.treatment_other.BaseVisitRemindBiz;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class BaseVisitRemindController {
      * @return ResponseResult
      */
     @ApiOperation("根据时间段批量操作中间表员工信息")
-    @PostMapping(value = "/patient/batch", name = "PatientBaseInfoBiz")
+    @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
     public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
         baseVisitRemindBiz.pullPatientData(form);
         return ResponseUtil.success(null);

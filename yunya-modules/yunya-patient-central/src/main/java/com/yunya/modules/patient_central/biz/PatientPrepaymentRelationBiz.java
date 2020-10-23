@@ -307,6 +307,8 @@ public class PatientPrepaymentRelationBiz
         prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         prepaidExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
+        prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+        prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
         prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
         return ResponseUtil.success();
       }
@@ -369,6 +371,8 @@ public class PatientPrepaymentRelationBiz
     prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     prepaidExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
+    prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+    prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
     prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
     prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
     prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);

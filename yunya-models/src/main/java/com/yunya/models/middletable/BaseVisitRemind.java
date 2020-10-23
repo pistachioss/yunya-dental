@@ -1,6 +1,7 @@
 package com.yunya.models.middletable;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
@@ -9,6 +10,7 @@ public class BaseVisitRemind {
     /**
      * 随访/提醒ID
      */
+    @Id
     @Column(name = "record_id")
     private Integer recordId;
 
@@ -27,6 +29,7 @@ public class BaseVisitRemind {
     /**
      * 数据类型（0-随访；1-提醒）
      */
+    @Id
     private Byte type;
 
     /**

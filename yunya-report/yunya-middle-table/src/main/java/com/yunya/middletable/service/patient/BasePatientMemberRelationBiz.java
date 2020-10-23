@@ -56,8 +56,24 @@ public class BasePatientMemberRelationBiz
         }
         break;
       case 2:
-        BasePatientMemberRelation memberRelation = getPatientMemberRelationInfo(id, type);
-        mapper.delete(memberRelation);
+        if (type == 0){
+          BasePatientMemberRelation memberRelation = getPatientMemberRelationInfo(id, type);
+          PatientMemberRelation patientMemberRelation = patientMemberRelationMapper.selectByPrimaryKey(id);
+          if (StringHelper.isNotNull(patientMemberRelation) && StringHelper.isNotNull(memberRelation)){
+              mapper.delete(memberRelation);
+              mapper.insert(memberRelation);
+          }
+          mapper.delete(memberRelation);
+        }
+        if (type == 1){
+          BasePatientMemberRelation memberRelation = getPatientMemberRelationInfo(id, type);
+          PatientPrepaymentRelation patientPrepaymentRelation = patientPrepaymentRelationMapper.selectByPrimaryKey(id);
+          if (StringHelper.isNotNull(patientPrepaymentRelation) && StringHelper.isNotNull(memberRelation)){
+            mapper.delete(memberRelation);
+            mapper.insert(memberRelation);
+          }
+          mapper.delete(memberRelation);
+        }
         break;
       default:
         break;
