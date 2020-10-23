@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.yunya.middletable.dao.report.BaseTreatmentProcessMapper">
-    <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseTreatmentProcess">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseTreatmentProcess">
         <!--
           WARNING - @mbg.generated
         -->
@@ -186,15 +186,15 @@
         delete from base_treatment_process where registered_id = #{registeredId}
     </delete>
     <!-- 根据预约ID查询就诊流程信息 -->
-    <select id="selectOneByAppointmentId" resultType="com.yunya.models.middletable.BaseTreatmentProcess">
+    <select id="selectOneByAppointmentId" resultType="com.yunya.models.report.BaseTreatmentProcess">
       select * from base_treatment_process where appointment_id = #{appointmentId}
     </select>
     <!-- 根据挂号ID查询就诊流程信息 -->
-    <select id="selectOneByRegisteredId" resultType="com.yunya.models.middletable.BaseTreatmentProcess">
+    <select id="selectOneByRegisteredId" resultType="com.yunya.models.report.BaseTreatmentProcess">
       select * from base_treatment_process where registered_id = #{registeredId}
     </select>
     <!-- 根据就诊ID查询就诊流程信息 -->
-    <select id="selectOneByTreatmentId" resultType="com.yunya.models.middletable.BaseTreatmentProcess">
+    <select id="selectOneByTreatmentId" resultType="com.yunya.models.report.BaseTreatmentProcess">
       select * from base_treatment_process where treatment_id = #{treatmentId}
     </select>
 </mapper>

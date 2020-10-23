@@ -7,7 +7,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseOrganizationMapper;
 import com.yunya.middletable.dao.system.ClinicExtInfoMapper;
 import com.yunya.middletable.dao.system.CompanyMapper;
-import com.yunya.models.middletable.BaseOrganization;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.system.ClinicExtInfo;
 import com.yunya.models.system.Company;
 import org.springframework.beans.factory.annotation.Autowired;

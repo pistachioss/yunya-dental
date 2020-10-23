@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBill" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="bill_id" property="billId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
+    <result column="bill_status" property="billStatus" jdbcType="TINYINT" />
+    <result column="order_num" property="orderNum" jdbcType="VARCHAR" />
+    <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
+    <result column="order_date" property="orderDate" jdbcType="TIMESTAMP" />
+    <result column="assistant_1" property="assistant1" jdbcType="INTEGER" />
+    <result column="assistant_2" property="assistant2" jdbcType="INTEGER" />
+    <result column="assistant_3" property="assistant3" jdbcType="INTEGER" />
+    <result column="privilege_type" property="privilegeType" jdbcType="TINYINT" />
+    <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
+    <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
+    <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
+    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+    <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL" />
+  </resultMap>
+</mapper>
