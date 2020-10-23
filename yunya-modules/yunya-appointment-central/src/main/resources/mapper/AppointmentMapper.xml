@@ -375,6 +375,7 @@
         a.confirm_status as confirmStatus
         from appointment a
         <where>
+            and a.appoint_status = 0
             <if test="queryForm.orgId != null">
                 and a.org_id = #{queryForm.orgId}
             </if>
