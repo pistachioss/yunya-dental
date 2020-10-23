@@ -375,11 +375,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         // 生成修改预约操作记录
         appointOperateRecordBiz.saveAppointOperationRecord(appointment,appointmentForm);
-        // 移出redis中的预约信息（患者维度，医生维度，预约列表，单条预约）
-        Boolean aBoolean = redisUtils.hasKey(RedisConstants.REDIS_KEY_APPOINT_INFO + appointmentForm.getId());
-        if (aBoolean) {
-            redisUtils.delete(RedisConstants.REDIS_KEY_APPOINT_INFO + appointmentForm.getId());
-        }
         return ResponseUtil.success();
     }
 
@@ -467,8 +462,44 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return List<AppointmentDimensionVo>
      */
     public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
+        List<AppointmentDimensionVo> appointmentDimensionVos;
+        // 根据门诊ID获取该门诊所有可预约医生的ID
+        Integer[] enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
+        // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
+        appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+        // 最后进行排序
+        return this.sort(appointmentDimensionVos, query.getOrder(), query.getOrderBy());
+    }
+
+    /**
+     * 根据门诊ID获取该门诊所有可预约医生的ID
+     * @param orgId 门诊ID
+     * @return 可预约ID集合
+     */
+    private Integer[] enableAppointDentistIds(Integer orgId) {
+        // 获取可预约的医生
+        EnableEmployeeRes enableEmployeeList = this.clinicEmployeeConfigFeign.getEnableEmployeeList(orgId);
+        List<EnableChooseEmployeeRes> enableAppointList = enableEmployeeList.getEnableAppointList();
+        Integer[] enableDentistIds = new Integer[enableAppointList.size()];
+        if (!StringHelper.isEmpty(enableAppointList)) {
+            for (int index = 0; index < enableAppointList.size();index++) {
+                enableDentistIds[index] = enableAppointList.get(index).getEmployeeId();
+            }
+        }
+        return enableDentistIds;
+    }
+    /**
+     * 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
+     * @param enableDentistIds 可预约医生ID列表
+     * @param query 预约信息查询参数
+     * @return 返回预约信息列表
+     */
+    private List<AppointmentDimensionVo> dimensionAppointInfo(PatientDimensionByDayQuery query, Integer... enableDentistIds) {
         // 预约可视图列表
         List<AppointmentDimensionVo> appointmentDimensionVoList = new ArrayList<>();
+        // 可预约医生ID列表
+        List<Integer> appointIdList = Arrays.asList(enableDentistIds);
+        // 查询当前天有排班的员工列表
         EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String startDateStr = simpleDateFormat.format(query.getStartDate());
@@ -477,14 +508,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         employeeScheduleQueryForm.setEndDate(endDateStr);
         employeeScheduleQueryForm.setClinicId(query.getOrgId());
         employeeScheduleQueryForm.setUserId(query.getDentistId());
-        // 查询当前天有排班的员工列表
         EmployeeScheduleResultVO scheduleResultVO = employeeAttendServiceFeign.findList(employeeScheduleQueryForm);
         if (scheduleResultVO == null || scheduleResultVO.getCount() <= 0) {
             return null;
         }
         // 获取当天的所有医生的排班（包含有排班和没有排班的医生）
         List<UserWorkVO> shiftWorkDatas = scheduleResultVO.getShiftWorkDatas();
-        List<Integer> flags = new ArrayList<>();
+        List<Integer> unScheduleIds = new ArrayList<>();
         // 如果是查找多天则进行不过滤操作（适配预约修改画面中预约医生一周的预约情况）
         if (startDateStr.equals(endDateStr)) {
             for (UserWorkVO userWorkVO : shiftWorkDatas) {
@@ -495,22 +525,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                         // 将没有排班的员工ID放入flags列表中
                         if (null == id) {
                             Integer compEmpId = userWorkVO.getCompEmpId();
-                            flags.add(compEmpId);
+                            unScheduleIds.add(compEmpId);
                         }
                     }
                 }
             }
         }
-        // 获取可预约的医生
-        EnableEmployeeRes enableEmployeeList = this.clinicEmployeeConfigFeign.getEnableEmployeeList(query.getOrgId());
-        List<EnableChooseEmployeeRes> enableAppointList = enableEmployeeList.getEnableAppointList();
-        Integer[] appointIds = new Integer[enableAppointList.size()];
-        if (!StringHelper.isEmpty(enableAppointList)) {
-            for (int index = 0; index < enableAppointList.size();index++) {
-                appointIds[index] = enableAppointList.get(index).getEmployeeId();
-            }
-        }
-        List<Integer> appointIdList = Arrays.asList(appointIds);
         // 过滤出可预约医生的排班信息
         List<UserWorkVO> filterAppointIds = shiftWorkDatas.stream().filter(
                 userWorkVO -> appointIdList.contains(userWorkVO.getCompEmpId())).collect(Collectors.toList());
@@ -521,7 +541,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 组合预约医生和患者信息（患者维度）
             List<AppointmentDimensionVo> dimensionVoList = this.combinationPatientDimensionVo(orgId, startDate, endDate, userWorkVO);
             // 将预约信息放入预约可视图列表
-            if (!dimensionVoList.isEmpty()){
+            if (!dimensionVoList.isEmpty()) {
                 dimensionVoList.forEach(dimensionVo -> {
                     Integer dentistId = dimensionVo.getDentistId();
                     List<AppointmentDimensionVo> appointmentAssistants = dimensionVo.getAppointmentAssistants();
@@ -529,18 +549,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     // 只有在当天有预约或者有排班才将预约信息添加到预约信息列表
                     if (!(StringHelper.isEmpty(appointmentAssistants) &&
                             StringHelper.isEmpty(appointmentPatientCardVos) &&
-                            flags.contains(dentistId))) {
+                            unScheduleIds.contains(dentistId))) {
                         appointmentDimensionVoList.add(dimensionVo);
                     }
                 });
             }
         }
-        // 最后进行排序
-        return this.sort(appointmentDimensionVoList,query.getOrder(),query.getOrderBy());
+        return appointmentDimensionVoList;
     }
 
     /**
-     * 根据指定字段和排序规则排序
+     * 患者维度预约可视图排序
      * @param appointmentDimensionVoList 预约信息 要排序的列表
      * @param field 根据哪个字段排序
      * @param orderBy 升序asc 还是降序desc
@@ -556,32 +575,34 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         String ORDER_BY_ASC = "asc";
         // 降序
         String ORDER_BY_DESC = "desc";
-        if (ORDER_PATIENTNUM.equals(field) && ORDER_BY_ASC.equals(orderBy)){
-            return appointmentDimensionVoList
-                    .stream()
-                    .sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum,
-                            Comparator.nullsLast(Integer::compareTo))).collect(Collectors.toList());
+        if (!StringHelper.isEmpty(appointmentDimensionVoList)) {
+            if (ORDER_PATIENTNUM.equals(field) && ORDER_BY_ASC.equals(orderBy)) {
+                return appointmentDimensionVoList
+                        .stream()
+                        .sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum,
+                                Comparator.nullsLast(Integer::compareTo))).collect(Collectors.toList());
 
-        } else if (ORDER_PATIENTNUM.equals(field) && ORDER_BY_DESC.equals(orderBy)){
-            // 按患者预约数量降序排列
-            return appointmentDimensionVoList
-                    .stream()
-                    .sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum,
-                            Comparator.nullsFirst(Integer::compareTo)).reversed()).collect(Collectors.toList());
+            } else if (ORDER_PATIENTNUM.equals(field) && ORDER_BY_DESC.equals(orderBy)) {
+                // 按患者预约数量降序排列
+                return appointmentDimensionVoList
+                        .stream()
+                        .sorted(Comparator.comparing(AppointmentDimensionVo::getPatientNum,
+                                Comparator.nullsFirst(Integer::compareTo)).reversed()).collect(Collectors.toList());
 
-        } else if (ORDER_DATE.equals(field) && ORDER_BY_ASC.equals(orderBy)){
-            // 按日期升序排列
-            return appointmentDimensionVoList
-                    .stream()
-                    .sorted(Comparator.comparing(AppointmentDimensionVo::getCurrentDate,
-                            Comparator.nullsLast(Date::compareTo))).collect(Collectors.toList());
+            } else if (ORDER_DATE.equals(field) && ORDER_BY_ASC.equals(orderBy)) {
+                // 按日期升序排列
+                return appointmentDimensionVoList
+                        .stream()
+                        .sorted(Comparator.comparing(AppointmentDimensionVo::getCurrentDate,
+                                Comparator.nullsLast(Date::compareTo))).collect(Collectors.toList());
 
-        } else if (ORDER_DATE.equals(field) && ORDER_BY_DESC.equals(orderBy)){
-            // 按日期降序排列
-            return appointmentDimensionVoList
-                    .stream()
-                    .sorted(Comparator.comparing(AppointmentDimensionVo::getCurrentDate,
-                            Comparator.nullsFirst(Date::compareTo)).reversed()).collect(Collectors.toList());
+            } else if (ORDER_DATE.equals(field) && ORDER_BY_DESC.equals(orderBy)) {
+                // 按日期降序排列
+                return appointmentDimensionVoList
+                        .stream()
+                        .sorted(Comparator.comparing(AppointmentDimensionVo::getCurrentDate,
+                                Comparator.nullsFirst(Date::compareTo)).reversed()).collect(Collectors.toList());
+            }
         }
         return appointmentDimensionVoList;
     }
@@ -602,9 +623,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             return ResponseUtil.fail(AppointmentError.START_DATE_AFTER_END_DATE.getCode(),
                     AppointmentError.START_DATE_AFTER_END_DATE.getMessage(),null);
         }
-        // 预约医生列表
-        List<AppointmentDimensionVo> appointmentDimensionVos = this.findAppointmentPatientDimensionByExample(query);
-        if (StringHelper.isEmpty(appointmentDimensionVos)) {
+        // 根据门诊ID获取该门诊所有可预约医生的ID
+        Integer[] enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
+        // 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
+        List<AppointmentDimensionVo> appointmentDimensionVos = this.dimensionAppointInfo(query,enableDentistIds);
+        // 最后进行排序
+        List<AppointmentDimensionVo> appointmentDimensionVosSort = this.sort(appointmentDimensionVos,query.getOrder(),query.getOrderBy());
+
+        if (StringHelper.isEmpty(appointmentDimensionVosSort)) {
             return ResponseUtil.fail(AppointmentError.DENTIST_NOT_SCHEDULE.getCode(),AppointmentError.DENTIST_NOT_SCHEDULE.getMessage(),null);
         }
         // 根据大医生id查询相关助手信息并且设置助手信息
@@ -627,9 +653,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
             return 0;
         });
-        if (query.getWhetherPage()) {
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
-        }
+        // 设置分页
         PageUtil<AppointmentDimensionVo> paging = new PageUtil<>(query.getPageNum(), query.getPageSize());
         Page<AppointmentDimensionVo> pageAssistantData = paging.getPageAssistantData(appointmentDentistDimensionVoList);
         return ResponseUtil.success(pageAssistantData);
@@ -641,11 +665,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return 返回预约视图
      */
     public AppointmentVo findAppointmentById(Integer id){
-        // 如果redis中有数据，则从redis中取，否则从数据库中查询
-        Boolean aBoolean = redisUtils.hasKey(RedisConstants.REDIS_KEY_APPOINT_INFO + id);
-        if (aBoolean) {
-            return redisUtils.get(RedisConstants.REDIS_KEY_APPOINT_INFO + id,AppointmentVo.class);
-        }
         AppointmentVo appointmentVo = mapper.findAppointmentById(id);
         if (null == appointmentVo) {
             return null;
@@ -700,8 +719,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         splitQuery.setOrgId(appointmentVo.getOrgId());
         List<AppointmentSplitVo> splitVos = this.appointmentSplitBiz.findAppointmentSplitByExample(splitQuery);
         appointmentVo.setSplitList(splitVos);
-        // 将预约信息放入redis
-        redisUtils.set(RedisConstants.REDIS_KEY_APPOINT_INFO + id, appointmentVo);
         return appointmentVo;
     }
 
@@ -2062,6 +2079,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         String appointList = RedisConstants.REDIS_KEY_APPOINT_LIST + postfix;
         String appointDentistDimension = RedisConstants.REDIS_KEY_APPOINT_DENTIST_DIMENSION + postfix;
         String appointPatientDimension = RedisConstants.REDIS_KEY_APPOINT_PATIENT_DIMENSION + postfix;
+        String appointmentUnDone = RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE + postfix;
         // 删除预约信息(未加工信息)
         Boolean aBoolean = redisUtils.hasKey(appointInfo);
         if (aBoolean) {
@@ -2081,6 +2099,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Boolean aBoolean3 = redisUtils.hasKey(appointPatientDimension);
         if (aBoolean3) {
             redisUtils.delete(appointPatientDimension);
+        }
+        // 删除预约未到患者信息
+        Boolean aBoolean4 = redisUtils.hasKey(appointmentUnDone);
+        if (aBoolean4) {
+            redisUtils.delete(appointDentistDimension);
         }
     }
 

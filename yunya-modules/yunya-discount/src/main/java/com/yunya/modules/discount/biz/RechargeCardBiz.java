@@ -120,6 +120,8 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
                     throw new BaseException("充值卡名称与系统中已有充值卡重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(rechargeCardForm.getId());
             CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
             BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(rechargeCardForm, couponCommonInfo);

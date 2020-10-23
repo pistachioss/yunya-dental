@@ -137,6 +137,8 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
                     throw new BaseException("代金券名称与系统中已有代金券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(discountUpdateForm.getId());
             CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
             BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(discountUpdateForm, couponCommonInfo);
