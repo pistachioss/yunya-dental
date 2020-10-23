@@ -98,6 +98,9 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
         if (flag) {
             couponCommonInfo.setId(discountCouponForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(discountCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(discountCouponForm.getAvailableSaleEndDate());
             //更新基础信息
@@ -111,7 +114,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
                 discountCoupon.setWorkloadRate(discountCouponForm.getWorkloadRate());
                 discountCoupon.setEffectiveDays(discountCouponForm.getEffectiveDays());
                 //更新明细信息
-                updateSelectiveById(discountCoupon);
+                updateById(discountCoupon);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

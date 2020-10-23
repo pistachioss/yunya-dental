@@ -94,18 +94,22 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
         if (flag) {
             // 只能修改时间
             couponCommonInfo.setId(specialPackageCouponForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(specialPackageCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(specialPackageCouponForm.getAvailableSaleEndDate());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            //更新基础信息
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             specialPackageCoupon.setCouponId(specialPackageCouponForm.getId());
             specialPackageCoupon = selectOne(specialPackageCoupon);
             if(specialPackageCoupon!=null){
                 specialPackageCoupon.setUseableClinic(specialPackageCouponForm.getUseableClinic());
                 specialPackageCoupon.setRemark(specialPackageCouponForm.getRemark());
                 specialPackageCoupon.setActivationDeadline(specialPackageCouponForm.getActivationDeadline());
-//                specialPackageCoupon.setWorkloadRate(specialPackageCouponForm.getWorkloadRate());
                 specialPackageCoupon.setEffectiveDays(specialPackageCouponForm.getEffectiveDays());
-                updateSelectiveById(specialPackageCoupon);//更新明细信息
+                //更新明细信息
+                updateById(specialPackageCoupon);
             }else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -139,7 +143,7 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
                 BeanUtils.copyProperties(specialPackageCouponForm, pc);
                 pc.setId(specialPackageCoupon.getId());
                 //更新明细信息
-                updateSelectiveById(pc);
+                updateById(pc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
