@@ -104,7 +104,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             couponCommonInfo.setAvailableSaleStartDate(discountCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(discountCouponForm.getAvailableSaleEndDate());
             //更新基础信息
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if (discountCoupon != null) {
