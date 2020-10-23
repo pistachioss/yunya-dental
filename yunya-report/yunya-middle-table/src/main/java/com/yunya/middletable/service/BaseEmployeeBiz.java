@@ -43,25 +43,33 @@ public class BaseEmployeeBiz extends BaseBiz<BaseEmployeeMapper, BaseEmployee> {
   public void operateEmployee(MessageModel msg) {
     Integer dataId = (Integer) msg.getParamMap().get("id");
     BaseEmployee employee = generateEmployee(dataId);
-    if (null == employee) {
-      return;
-    }
     Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
-        mapper.delete(employee);
-        mapper.insertSelective(employee);
+        mapper.deleteByPrimaryKey(dataId);
+        if (null != employee) {
+          mapper.insertSelective(employee);
+        }
         break;
       case 1:
-        BaseEmployee result = mapper.selectByPrimaryKey(dataId);
-        if (null == result) {
-          mapper.insertSelective(employee);
+        if (null != employee) {
+          BaseEmployee result = mapper.selectByPrimaryKey(dataId);
+          if (null == result) {
+            mapper.deleteByPrimaryKey(dataId);
+            mapper.insertSelective(employee);
+          } else {
+            mapper.updateByPrimaryKeySelective(employee);
+          }
         } else {
-          mapper.updateByPrimaryKeySelective(employee);
+          mapper.deleteByPrimaryKey(dataId);
         }
         break;
       case 2:
-        mapper.delete(employee);
+        if (null == employee) {
+          mapper.deleteByPrimaryKey(dataId);
+        } else {
+          mapper.insertSelective(employee);
+        }
         break;
       default:
         break;
@@ -75,7 +83,7 @@ public class BaseEmployeeBiz extends BaseBiz<BaseEmployeeMapper, BaseEmployee> {
    */
   private BaseEmployee generateEmployee(Integer userId) {
     SysUser sysUser = userMapper.selectByPrimaryKey(userId);
-    return null != sysUser ? setEmployeeValue(userId) : null;
+    return null != sysUser ? setBaseEmployeeValue(userId) : null;
   }
 
   /**
@@ -84,7 +92,7 @@ public class BaseEmployeeBiz extends BaseBiz<BaseEmployeeMapper, BaseEmployee> {
    * @param userId 员工id
    * @return
    */
-  private BaseEmployee setEmployeeValue(Integer userId) {
+  private BaseEmployee setBaseEmployeeValue(Integer userId) {
     BaseEmployee employee = new BaseEmployee();
     employee.setUserId(userId);
     SysEmployee sysEmp = new SysEmployee();
@@ -120,7 +128,7 @@ public class BaseEmployeeBiz extends BaseBiz<BaseEmployeeMapper, BaseEmployee> {
           su -> {
             Integer userId = su.getId();
             mapper.deleteByPrimaryKey(userId);
-            BaseEmployee employee = setEmployeeValue(userId);
+            BaseEmployee employee = setBaseEmployeeValue(userId);
             mapper.insertSelective(employee);
           });
     }

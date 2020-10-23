@@ -38,7 +38,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.middletable.enums.CouponTypeEnum.*;
 import static java.util.stream.Collectors.*;
 
@@ -63,14 +62,9 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 
 	public RestErrorBo operateBaseCouponItem(MessageModel model) {
 		Integer couponId = (Integer) model.getParamMap().get("id");
-		Integer operateType = model.getOperateType();
+//		Integer operateType = model.getOperateType();
 		RestErrorBo errorBo = RestErrorBo.getInstance();
-		if (ADD.equals(operateType)) {
-			return createCouponItem(couponId);
-		}
-		if (UPDATE.equals(operateType)) {
-			return updateBCouponItem(couponId);
-		}
+		operateData(couponId);
 		return errorBo;
 	}
 
@@ -117,6 +111,7 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	}
 
 	/**
+	 * 批量更新基础数据
 	 * @param list 原数据集合
 	 */
 	private void batchUpdateBase(List<BaseCouponItem> list) {
@@ -134,121 +129,61 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 		}
 	}
 
-	public RestErrorBo createCouponItem(Integer couponId) {
+	public RestErrorBo operateData(Integer couponId) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
-		//查询报表中的优惠券项目
-		List<BaseCouponItem> baseItems = getBaseItems(couponId);
 		if (coupon == null) {
-			log.info("优惠券[{}]源数据不存在, 无法新增", couponId);
-			errorBo.setError(MiddleError.COUPON_NOT_EXIST);
-			errorBo.setMsg(couponId);
-			return errorBo;
-		} else {
-			if (CollectionUtils.isNotEmpty(baseItems)) {
-				errorBo.setError(MiddleError.BASE_COUPON_ITEM_EXISTED);
-				errorBo.setMsg(couponId);
-			} else {
-				List<BaseCouponItem> baseCouponItems = Lists.newArrayList();
-				int couponType = coupon.getType().intValue();
-				if (VOUCHER.equals(couponType) || DISCOUNT.equals(couponType)) {
-					//获取优惠券项目源数据
-					List<VoucherDiscountItem> voucherDiscountItems = listCouponItems(couponId, VoucherDiscountItem.class,
-							voucherDiscountItemMapper);
-					if (CollectionUtils.isNotEmpty(voucherDiscountItems)) {
-						baseCouponItems = BeanCopierUtils.listGeneralCopyBean(voucherDiscountItems, BaseCouponItem.class,
-								getCouponConvert());
-					}
-				}
-				if (EXCHANGE.equals(couponType)) {
-					List<PackageCouponItem> exchangeItems = listCouponItems(couponId, PackageCouponItem.class,
-							packageCouponItemMapper);
-					if (CollectionUtils.isNotEmpty(exchangeItems)) {
-						baseCouponItems = BeanCopierUtils.listGeneralCopyBean(exchangeItems, BaseCouponItem.class, getCouponConvert());
-					}
-				}
-				if (SPECIAL_PACKAGE.equals(couponType)) {
-					List<SpecialPackageCouponItem> packageItems = listCouponItems(couponId, SpecialPackageCouponItem.class,
-							specialPackageCouponItemMapper);
-					if (CollectionUtils.isNotEmpty(packageItems)) {
-						baseCouponItems = BeanCopierUtils.listGeneralCopyBean(packageItems, BaseCouponItem.class, getCouponConvert());
-					}
-				}
-				if (CollectionUtils.isNotEmpty(baseCouponItems)) {
-					mapper.insertList(baseCouponItems);
-				}
-			}
-		}
-		return errorBo;
-	}
-
-	public RestErrorBo updateBCouponItem(Integer couponId) {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
-		//查询报表中的优惠券项目
-		List<BaseCouponItem> baseItems = getBaseItems(couponId);
-		if (coupon == null) {
-			log.info("优惠券[{}]源数据不存在, 无法更新", couponId);
-			errorBo.setError(MiddleError.COUPON_NOT_EXIST);
-			errorBo.setMsg(couponId);
-		} else {
-			if (CollectionUtils.isEmpty(baseItems)) {
-				errorBo.setError(MiddleError.BASE_COUPON_ITEM_NOT_EXISTED);
-				errorBo.setMsg(couponId);
-			} else {
-				int couponType = coupon.getType().intValue();
-				List<BaseCouponItem> baseCouponItems = Lists.newArrayList();
-				if (VOUCHER.equals(couponType) || DISCOUNT.equals(couponType)) {
-					//获取优惠券项目源数据
-					List<VoucherDiscountItem> voucherDiscountItems = listCouponItems(couponId, VoucherDiscountItem.class,
-							voucherDiscountItemMapper);
-					//对象转换
-					baseCouponItems = BeanCopierUtils.listGeneralCopyBean(voucherDiscountItems, BaseCouponItem.class,
-							getCouponConvert());
-				}
-				if (EXCHANGE.equals(couponType)) {
-					List<PackageCouponItem> exchangeItems = listCouponItems(couponId, PackageCouponItem.class,
-							packageCouponItemMapper);
-					baseCouponItems = exchangeItems.stream().map(obj -> {
-						BaseCouponItem item = BeanCopierUtils.generalCopyBean(obj, BaseCouponItem.class, getCouponConvert());
-						item.setQuantity(obj.getCount());
-						return item;
-					}).collect(toList());
-				}
-				if (SPECIAL_PACKAGE.equals(couponType)) {
-					List<SpecialPackageCouponItem> packageItems = listCouponItems(couponId, SpecialPackageCouponItem.class,
-							specialPackageCouponItemMapper);
-					baseCouponItems = packageItems.stream().map(obj -> {
-						BaseCouponItem item = BeanCopierUtils.generalCopyBean(obj, BaseCouponItem.class, getCouponConvert());
-						item.setQuantity(obj.getCount());
-						item.setSaleUnitPrice(obj.getPackageUnitPrice());
-						return item;
-					}).collect(toList());
-				}
-				if (CollectionUtils.isNotEmpty(baseCouponItems)) {
-					//需要新增的优惠券项目
-					batchInsert(getAddCoupons(baseCouponItems, baseItems));
-					//需要更新的优惠券项目
-					batchUpdateBase(getUpdateCoupons(baseCouponItems, baseItems));
-					//查找需要删除的优惠券项目
-					batchDeleteBase(getDeleteItems(baseCouponItems, baseItems));
-				}
-			}
-		}
-		return errorBo;
-	}
-
-	public RestErrorBo deleteCouponItem(Integer couponId) {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		//查询报表中的优惠券项目
-		List<BaseCouponItem> baseItems = getBaseItems(couponId);
-		if (CollectionUtils.isEmpty(baseItems)) {
-			errorBo.setError(MiddleError.BASE_COUPON_ITEM_NOT_EXISTED);
-			errorBo.setMsg(couponId);
-		} else {
 			deleteByCouponId(couponId);
+		} else {
+			//查询报表中的优惠券项目
+			List<BaseCouponItem> baseItems = getBaseItems(couponId);
+			if (CollectionUtils.isEmpty(baseItems)) {
+				batchInsert(getOriginItems(coupon));
+			} else {
+				List<BaseCouponItem> baseCouponItems = getOriginItems(coupon);
+				//需要新增的优惠券项目
+				batchInsert(getAddCoupons(baseCouponItems, baseItems));
+				//需要更新的优惠券项目
+				batchUpdateBase(getUpdateCoupons(baseCouponItems, baseItems));
+				//查找需要删除的优惠券项目
+				batchDeleteBase(getDeleteItems(baseCouponItems, baseItems));
+			}
 		}
 		return errorBo;
+	}
+
+	private List<BaseCouponItem> getOriginItems(CouponCommonInfo coupon) {
+		int couponType = coupon.getType().intValue();
+		Integer couponId = coupon.getId();
+		List<BaseCouponItem> baseCouponItems = Lists.newArrayList();
+		if (VOUCHER.equals(couponType) || DISCOUNT.equals(couponType)) {
+			//获取优惠券项目源数据
+			List<VoucherDiscountItem> voucherDiscountItems = listCouponItems(couponId, VoucherDiscountItem.class,
+					voucherDiscountItemMapper);
+			//对象转换
+			baseCouponItems = BeanCopierUtils.listGeneralCopyBean(voucherDiscountItems, BaseCouponItem.class,
+					getCouponConvert());
+		}
+		if (EXCHANGE.equals(couponType)) {
+			List<PackageCouponItem> exchangeItems = listCouponItems(couponId, PackageCouponItem.class,
+					packageCouponItemMapper);
+			baseCouponItems = exchangeItems.stream().map(obj -> {
+				BaseCouponItem item = BeanCopierUtils.generalCopyBean(obj, BaseCouponItem.class, getCouponConvert());
+				item.setQuantity(obj.getCount());
+				return item;
+			}).collect(toList());
+		}
+		if (SPECIAL_PACKAGE.equals(couponType)) {
+			List<SpecialPackageCouponItem> packageItems = listCouponItems(couponId, SpecialPackageCouponItem.class,
+					specialPackageCouponItemMapper);
+			baseCouponItems = packageItems.stream().map(obj -> {
+				BaseCouponItem item = BeanCopierUtils.generalCopyBean(obj, BaseCouponItem.class, getCouponConvert());
+				item.setQuantity(obj.getCount());
+				item.setSaleUnitPrice(obj.getPackageUnitPrice());
+				return item;
+			}).collect(toList());
+		}
+		return baseCouponItems;
 	}
 
 	/**
@@ -259,13 +194,15 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	 * @return list
 	 */
 	private List<BaseCouponItem> getAddCoupons(List<BaseCouponItem> baseCouponItems, List<BaseCouponItem> existItems) {
+		List<BaseCouponItem> addItems = Lists.newArrayList();
 		if (CollectionUtils.isEmpty(existItems)) {
-			return baseCouponItems;
+			addItems = baseCouponItems;
+		} else {
+			addItems = baseCouponItems.stream().filter(obj -> (obj.getQuantity() == null && !existItems.contains(obj)) ||
+					(obj.getQuantity() != null && !judgeEqual(obj, existItems))).collect(toList());
 		}
-		List<BaseCouponItem> list = baseCouponItems.stream().filter(obj -> (obj.getQuantity() == null && !existItems.contains(obj)) ||
-				(obj.getQuantity() != null && !judgeEqual(obj, existItems))).collect(toList());
-		log.info("优惠券项目基础表，需要新增的数据[{}]", list.size());
-		return list;
+		log.info("优惠券项目基础表，需要新增的数据[{}]", addItems.size());
+		return addItems;
 	}
 
 	/**

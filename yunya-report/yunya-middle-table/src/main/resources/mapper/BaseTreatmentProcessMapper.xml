@@ -45,135 +45,146 @@
         treat_end_time
         )
         VALUES
-        <foreach collection = "treatmentProcesses" item = "item" separator = "," >
-         (#{item.appointmentId}, #{item.registeredId}, #{item.treatmentId},
-          #{item.orgId}, #{item.patientId}, #{item.treatStatus},
-          #{item.treatType}, #{item.appointStatus}, #{item.appointDentistId},
-          #{item.appointStartTime}, #{item.appointDuration}, #{item.appointModifyTime},
-          #{item.appointContent}, #{item.registeredDentistId}, #{item.registeredTime},
-          #{item.treatStartTime}, #{item.treatEndTime})
+        <foreach collection="treatmentProcesses" item="item" separator=",">
+            (#{item.appointmentId}, #{item.registeredId}, #{item.treatmentId},
+            #{item.orgId}, #{item.patientId}, #{item.treatStatus},
+            #{item.treatType}, #{item.appointStatus}, #{item.appointDentistId},
+            #{item.appointStartTime}, #{item.appointDuration}, #{item.appointModifyTime},
+            #{item.appointContent}, #{item.registeredDentistId}, #{item.registeredTime},
+            #{item.treatStartTime}, #{item.treatEndTime})
         </foreach>
     </insert>
     <!-- 根据预约ID更新就诊流程 -->
     <update id="updateByAppointmentId">
-      update base_treatment_process
-      set
-        <if test="treatmentProcess.appointmentId != null">
-            appointment_id = #{treatmentProcess.appointmentId},
-        </if>
-        <if test="treatmentProcess.registeredId != null">
-            registered_id = #{treatmentProcess.registeredId},
-        </if>
-        <if test="treatmentProcess.treatmentId != null">
-            treatment_id = #{treatmentProcess.treatmentId},
-        </if>
-        <if test="treatmentProcess.orgId != null">
-            org_id = #{treatmentProcess.orgId},
-        </if>
-        <if test="treatmentProcess.patientId != null">
-            patient_id = #{treatmentProcess.patientId},
-        </if>
-        <if test="treatmentProcess.appointModifyTime != null">
-            appoint_modify_time = #{treatmentProcess.appointModifyTime},
-        </if>
-        <if test="treatmentProcess.treatStatus != null">
-            treat_status = #{treatmentProcess.treatStatus},
-        </if>
-        <if test="treatmentProcess.treatType != null">
-            treat_type = #{treatmentProcess.treatType},
-        </if>
-        <if test="treatmentProcess.appointStatus != null">
-            appoint_status = #{treatmentProcess.appointStatus},
-        </if>
-        <if test="treatmentProcess.appointDentistId != null">
-            appoint_dentist_id = #{treatmentProcess.appointDentistId},
-        </if>
-        <if test="treatmentProcess.appointStartTime != null">
-            appoint_start_time = #{treatmentProcess.appointStartTime},
-        </if>
-        <if test="treatmentProcess.appointDuration != null">
-            appoint_duration = #{treatmentProcess.appointDuration},
-        </if>
-        <if test="treatmentProcess.appointContent != null and treatmentProcess.appointContent != ''">
-            appoint_content = #{treatmentProcess.appointContent},
-        </if>
-        <if test="treatmentProcess.registeredDentistId != null">
-            registered_dentist_id = #{treatmentProcess.registeredDentistId},
-        </if>
-        <if test="treatmentProcess.registeredTime != null">
-            registered_time = #{treatmentProcess.registeredTime},
-        </if>
-        <if test="treatmentProcess.treatStartTime != null">
-            treat_start_time = #{treatmentProcess.treatStartTime},
-        </if>
-        <if test="treatmentProcess.treatEndTime != null">
-            treat_end_time = #{treatmentProcess.treatEndTime}
-        </if>
-      where appointment_id = #{appointmentId}
+        update base_treatment_process
+        <set>
+            <if test="treatmentProcess.appointmentId != null">
+                appointment_id = #{treatmentProcess.appointmentId},
+            </if>
+            <if test="treatmentProcess.registeredId != null">
+                registered_id = #{treatmentProcess.registeredId},
+            </if>
+            <if test="treatmentProcess.treatmentId != null">
+                treatment_id = #{treatmentProcess.treatmentId},
+            </if>
+            <if test="treatmentProcess.orgId != null">
+                org_id = #{treatmentProcess.orgId},
+            </if>
+            <if test="treatmentProcess.patientId != null">
+                patient_id = #{treatmentProcess.patientId},
+            </if>
+            <if test="treatmentProcess.appointModifyTime != null">
+                appoint_modify_time = #{treatmentProcess.appointModifyTime},
+            </if>
+            <if test="treatmentProcess.treatStatus != null">
+                treat_status = #{treatmentProcess.treatStatus},
+            </if>
+            <if test="treatmentProcess.treatType != null">
+                treat_type = #{treatmentProcess.treatType},
+            </if>
+            <if test="treatmentProcess.appointStatus != null">
+                appoint_status = #{treatmentProcess.appointStatus},
+            </if>
+            <if test="treatmentProcess.appointDentistId != null">
+                appoint_dentist_id = #{treatmentProcess.appointDentistId},
+            </if>
+            <if test="treatmentProcess.appointStartTime != null">
+                appoint_start_time = #{treatmentProcess.appointStartTime},
+            </if>
+            <if test="treatmentProcess.appointDuration != null">
+                appoint_duration = #{treatmentProcess.appointDuration},
+            </if>
+            <if test="treatmentProcess.appointContent != null and treatmentProcess.appointContent != ''">
+                appoint_content = #{treatmentProcess.appointContent},
+            </if>
+            <if test="treatmentProcess.registeredDentistId != null">
+                registered_dentist_id = #{treatmentProcess.registeredDentistId},
+            </if>
+            <if test="treatmentProcess.registeredTime != null">
+                registered_time = #{treatmentProcess.registeredTime},
+            </if>
+            <if test="treatmentProcess.treatStartTime != null">
+                treat_start_time = #{treatmentProcess.treatStartTime},
+            </if>
+            <if test="treatmentProcess.treatEndTime != null">
+                treat_end_time = #{treatmentProcess.treatEndTime},
+            </if>
+        </set>
+        where appointment_id = #{appointmentId}
     </update>
     <!-- 根据挂号ID更新就诊流程 -->
     <update id="updateByRegisteredId">
-      update base_treatment_process
-      set
-        <if test="treatmentProcess.registeredId != null">
-            registered_id = #{treatmentProcess.registeredId},
-        </if>
-        <if test="treatmentProcess.treatmentId != null">
-            treatment_id = #{treatmentProcess.treatmentId},
-        </if>
-        <if test="treatmentProcess.orgId != null">
-            org_id = #{treatmentProcess.orgId},
-        </if>
-        <if test="treatmentProcess.patientId != null">
-            patient_id = #{treatmentProcess.patientId},
-        </if>
-        <if test="treatmentProcess.treatStatus != null">
-            treat_status = #{treatmentProcess.treatStatus},
-        </if>
-        <if test="treatmentProcess.treatType != null">
-            treat_type = #{treatmentProcess.treatType},
-        </if>
-        <if test="treatmentProcess.registeredDentistId != null">
-            registered_dentist_id = #{treatmentProcess.registeredDentistId},
-        </if>
-        <if test="treatmentProcess.registeredTime != null">
-            registered_time = #{treatmentProcess.registeredTime},
-        </if>
-        <if test="treatmentProcess.treatStartTime != null">
-            treat_start_time = #{treatmentProcess.treatStartTime},
-        </if>
-        <if test="treatmentProcess.treatEndTime != null">
-            treat_end_time = #{treatmentProcess.treatEndTime}
-        </if>
-      where registered_id = #{registeredId}
+        update base_treatment_process
+        <set>
+            <if test="treatmentProcess.registeredId != null">
+                registered_id = #{treatmentProcess.registeredId},
+            </if>
+            <if test="treatmentProcess.treatmentId != null">
+                treatment_id = #{treatmentProcess.treatmentId},
+            </if>
+            <if test="treatmentProcess.orgId != null">
+                org_id = #{treatmentProcess.orgId},
+            </if>
+            <if test="treatmentProcess.patientId != null">
+                patient_id = #{treatmentProcess.patientId},
+            </if>
+            <if test="treatmentProcess.treatStatus != null">
+                treat_status = #{treatmentProcess.treatStatus},
+            </if>
+            <if test="treatmentProcess.treatType != null">
+                treat_type = #{treatmentProcess.treatType},
+            </if>
+            <if test="treatmentProcess.registeredDentistId != null">
+                registered_dentist_id = #{treatmentProcess.registeredDentistId},
+            </if>
+            <if test="treatmentProcess.registeredTime != null">
+                registered_time = #{treatmentProcess.registeredTime},
+            </if>
+            <if test="treatmentProcess.treatStartTime != null">
+                treat_start_time = #{treatmentProcess.treatStartTime},
+            </if>
+            <if test="treatmentProcess.treatEndTime != null">
+                treat_end_time = #{treatmentProcess.treatEndTime},
+            </if>
+        </set>
+        where registered_id = #{registeredId}
     </update>
     <!-- 根据就诊ID更新就诊流程 -->
     <update id="updateByTreatmentRecordId">
-      update base_treatment_process
-      set
-        <if test="treatmentProcess.treatmentId != null">
-            treatment_id = #{treatmentProcess.treatmentId},
-        </if>
-        <if test="treatmentProcess.orgId != null">
-            org_id = #{treatmentProcess.orgId},
-        </if>
-        <if test="treatmentProcess.patientId != null">
-            patient_id = #{treatmentProcess.patientId},
-        </if>
-        <if test="treatmentProcess.treatStatus != null">
-            treat_status = #{treatmentProcess.treatStatus},
-        </if>
-        <if test="treatmentProcess.treatType != null">
-            treat_type = #{treatmentProcess.treatType},
-        </if>
-        <if test="treatmentProcess.treatStartTime != null">
-            treat_start_time = #{treatmentProcess.treatStartTime},
-        </if>
-        <if test="treatmentProcess.treatEndTime != null">
-            treat_end_time = #{treatmentProcess.treatEndTime}
-        </if>
-      where treatment_id = #{treatmentId}
+        update base_treatment_process
+        <set>
+            <if test="treatmentProcess.treatmentId != null">
+                treatment_id = #{treatmentProcess.treatmentId},
+            </if>
+            <if test="treatmentProcess.orgId != null">
+                org_id = #{treatmentProcess.orgId},
+            </if>
+            <if test="treatmentProcess.patientId != null">
+                patient_id = #{treatmentProcess.patientId},
+            </if>
+            <if test="treatmentProcess.treatStatus != null">
+                treat_status = #{treatmentProcess.treatStatus},
+            </if>
+            <if test="treatmentProcess.treatType != null">
+                treat_type = #{treatmentProcess.treatType},
+            </if>
+            <if test="treatmentProcess.treatStartTime != null">
+                treat_start_time = #{treatmentProcess.treatStartTime},
+            </if>
+            <if test="treatmentProcess.treatEndTime != null">
+                treat_end_time = #{treatmentProcess.treatEndTime},
+            </if>
+        </set>
+        where treatment_id = #{treatmentId}
     </update>
+    <!-- 根据预约ID删除就诊流程 -->
+    <delete id="deleteByAppointmentId">
+        delete from base_treatment_process where appointment_id = #{appointmentId}
+    </delete>
+    <!-- 根据预约ID删除就诊流程 -->
+    <delete id="deleteByRegisteredId">
+        delete from base_treatment_process where registered_id = #{registeredId}
+    </delete>
     <!-- 根据预约ID查询就诊流程信息 -->
     <select id="selectOneByAppointmentId" resultType="com.yunya.models.middletable.BaseTreatmentProcess">
       select * from base_treatment_process where appointment_id = #{appointmentId}

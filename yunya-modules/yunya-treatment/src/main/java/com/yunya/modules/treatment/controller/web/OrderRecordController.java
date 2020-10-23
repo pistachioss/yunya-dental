@@ -9,9 +9,8 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.OrderRecordBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -58,9 +57,9 @@ public class OrderRecordController {
   @CurrentUser
   @ApiOperation("暂存账单")
   @PostMapping("/hold")
-  public ResponseResult holdOrder(@RequestBody @Validated OrderRecordModel model) {
+  public ResponseResult<T> holdOrder(@RequestBody @Validated OrderRecordModel model) {
     orderRecordBiz.storage(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -72,9 +71,9 @@ public class OrderRecordController {
   @CurrentUser
   @ApiOperation("提交并治疗完成")
   @PostMapping("/submit")
-  public ResponseResult submitAndCompleteOrder(@RequestBody @Validated OrderRecordModel model) {
+  public ResponseResult<T> submitAndCompleteOrder(@RequestBody @Validated OrderRecordModel model) {
     orderRecordBiz.submitAndCompleteOrder(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -86,9 +85,10 @@ public class OrderRecordController {
   @CurrentUser
   @ApiOperation("根据开单记录ID账单解锁")
   @GetMapping("/unlock/{orderRecordId}")
-  public ResponseResult unlockOrder(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+  public ResponseResult<T> unlockOrder(
+      @PathVariable(value = "orderRecordId") Integer orderRecordId) {
     orderRecordBiz.unlockOrder(orderRecordId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -101,11 +101,11 @@ public class OrderRecordController {
   @CurrentUser
   @ApiOperation("根据开单记录ID修改订单明细并提交")
   @PutMapping("/modify/{orderRecordId}")
-  public ResponseResult modifyAndCommitOrder(
+  public ResponseResult<T> modifyAndCommitOrder(
       @PathVariable(value = "orderRecordId") Integer orderRecordId,
       @RequestBody @Validated OrderRecordForm form) {
     orderRecordBiz.modifyAndCommitOrder(orderRecordId, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -116,10 +116,9 @@ public class OrderRecordController {
    */
   @CurrentUser
   @ApiOperation("调整账单")
-  @ApiImplicitParams({@ApiImplicitParam(name = "model", value = "账单调整参数模型", required = true)})
   @PostMapping(value = "/adjust", name = "调整账单")
-  public ResponseResult adjustBill(@RequestBody @Validated BillAdjustDetailModel model) {
+  public ResponseResult<T> adjustBill(@RequestBody @Validated BillAdjustDetailModel model) {
     orderRecordBiz.adjust(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

@@ -50,25 +50,33 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
   public void operateUserPost(MessageModel msg) {
     Integer dataId = (Integer) msg.getParamMap().get("id");
     BaseUserPost userPost = generateUserPost(dataId);
-    if (null == userPost) {
-      return;
-    }
     Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
-        mapper.delete(userPost);
-        mapper.insertSelective(userPost);
+        mapper.deleteByPrimaryKey(dataId);
+        if (null != userPost) {
+          mapper.insertSelective(userPost);
+        }
         break;
       case 1:
-        BaseUserPost result = mapper.selectByPrimaryKey(dataId);
-        if (null == result) {
-          mapper.insertSelective(userPost);
+        if (null != userPost) {
+          BaseUserPost result = mapper.selectByPrimaryKey(dataId);
+          if (null == result) {
+            mapper.deleteByPrimaryKey(dataId);
+            mapper.insertSelective(userPost);
+          } else {
+            mapper.updateByPrimaryKeySelective(userPost);
+          }
         } else {
-          mapper.updateByPrimaryKeySelective(userPost);
+          mapper.deleteByPrimaryKey(dataId);
         }
         break;
       case 2:
-        mapper.delete(userPost);
+        if (null == userPost) {
+          mapper.deleteByPrimaryKey(dataId);
+        } else {
+          mapper.insertSelective(userPost);
+        }
         break;
       default:
         break;

@@ -81,15 +81,13 @@ public class BaseTreatmentProcessBiz
    */
   private void createTreatmentProcess(Integer dataId, Integer type) {
     BaseTreatmentProcess treatmentProcess;
-    BaseTreatmentProcess process = new BaseTreatmentProcess();
     switch (type) {
         // 预约
       case 0:
         Appointment appointment = appointmentMapper.selectByPrimaryKey(dataId);
         treatmentProcess = generateBaseTreatmentProcess(appointment);
         if (null != treatmentProcess) {
-          process.setAppointmentId(dataId);
-          mapper.delete(process);
+          mapper.deleteByAppointmentId(dataId);
           mapper.insertSelective(treatmentProcess);
         }
         break;
@@ -98,8 +96,7 @@ public class BaseTreatmentProcessBiz
         Registered registered = registeredMapper.selectByPrimaryKey(dataId);
         treatmentProcess = generateBaseTreatmentProcess(registered);
         if (null != treatmentProcess) {
-          process.setRegisteredId(dataId);
-          mapper.delete(process);
+          mapper.deleteByRegisteredId(dataId);
           mapper.insertSelective(treatmentProcess);
         }
         break;
@@ -117,7 +114,7 @@ public class BaseTreatmentProcessBiz
   private BaseTreatmentProcess generateBaseTreatmentProcess(Appointment appointment) {
     if (null != appointment) {
       BaseTreatmentProcess treatmentProcess = new BaseTreatmentProcess();
-      setAppointmentValue(treatmentProcess, appointment);
+      setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
       return treatmentProcess;
     }
     return null;
@@ -145,30 +142,6 @@ public class BaseTreatmentProcessBiz
   }
 
   /**
-   * 删除就诊流程
-   *
-   * @param dataId 删除数据ID
-   * @param type 数据类型（0-预约；1-挂号）
-   */
-  private void deleteTreatmentProcess(Integer dataId, Integer type) {
-    BaseTreatmentProcess entity = new BaseTreatmentProcess();
-    switch (type) {
-        // 预约
-      case 0:
-        entity.setAppointStatus((byte) 4);
-        mapper.updateByAppointmentId(dataId, entity);
-        break;
-        // 挂号
-      case 1:
-        entity.setRegisteredId(dataId);
-        mapper.delete(entity);
-        break;
-      default:
-        break;
-    }
-  }
-
-  /**
    * 更新就诊流程
    *
    * @param dataId 更新数据ID
@@ -190,50 +163,73 @@ public class BaseTreatmentProcessBiz
   }
 
   /**
-   * 根据挂号ID更新就诊流程
-   *
-   * @param registeredId 挂号ID
-   */
-  private void updateTreatProcessByRegisteredId(Integer registeredId) {
-    BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
-    if (null != treatmentProcess) {
-      Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
-      if (null != registered) {
-        if (registered.getInservice()) {
-          treatmentProcess.setRegisteredId(registered.getId());
-          treatmentProcess.setTreatStatus((byte) 0);
-          treatmentProcess.setRegisteredDentistId(registered.getDentistId());
-          treatmentProcess.setRegisteredTime(registered.getRegTime());
-          TreatmentRecord treatmentRecord = new TreatmentRecord();
-          treatmentRecord.setRegisteredId(registeredId);
-          setTreatmentValue(treatmentProcess, treatmentRecord);
-          mapper.updateByRegisteredId(registeredId, treatmentProcess);
-        } else {
-          BaseTreatmentProcess entity = new BaseTreatmentProcess();
-          entity.setRegisteredId(registeredId);
-          mapper.delete(entity);
-        }
-      }
-    }
-  }
-
-  /**
    * 根据预约ID更新就诊流程
    *
    * @param appointmentId 预约ID
    */
   private void updateTreatmentProcessByAppointmentId(Integer appointmentId) {
-    BaseTreatmentProcess treatmentProcess = mapper.selectOneByAppointmentId(appointmentId);
-    if (null != treatmentProcess) {
-      Appointment appointment = appointmentMapper.selectByPrimaryKey(appointmentId);
-      if (null != appointment) {
-        setAppointmentValue(treatmentProcess, appointment);
+    Appointment appointment = appointmentMapper.selectByPrimaryKey(appointmentId);
+    if (null != appointment) {
+      BaseTreatmentProcess treatmentProcess = mapper.selectOneByAppointmentId(appointmentId);
+      if (null != treatmentProcess) {
+        setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
+        setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
+        TreatmentRecord treatmentRecord = new TreatmentRecord();
+        treatmentRecord.setAppointmentId(appointmentId);
+        setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+        mapper.updateByAppointmentId(appointmentId, treatmentProcess);
+      } else {
+        treatmentProcess = new BaseTreatmentProcess();
+        setTreatmentProcessAppointmentValue(treatmentProcess, appointment);
+        setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
+        TreatmentRecord treatmentRecord = new TreatmentRecord();
+        treatmentRecord.setAppointmentId(appointmentId);
+        setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+        mapper.insertSelective(treatmentProcess);
       }
-      setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
-      TreatmentRecord treatmentRecord = new TreatmentRecord();
-      treatmentRecord.setAppointmentId(appointmentId);
-      setTreatmentValue(treatmentProcess, treatmentRecord);
-      mapper.updateByAppointmentId(appointmentId, treatmentProcess);
+    } else {
+      mapper.deleteByAppointmentId(appointmentId);
+    }
+  }
+
+  /**
+   * 根据挂号ID更新就诊流程
+   *
+   * @param registeredId 挂号ID
+   */
+  private void updateTreatProcessByRegisteredId(Integer registeredId) {
+    Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
+    if (null != registered) {
+      BaseTreatmentProcess treatmentProcess = mapper.selectOneByRegisteredId(registeredId);
+      if (registered.getInservice()) {
+        if (treatmentProcess != null) {
+          setTreatmentProcessRegisteredValue(treatmentProcess, registered);
+          TreatmentRecord treatmentRecord = new TreatmentRecord();
+          treatmentRecord.setRegisteredId(registeredId);
+          setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+          mapper.updateByRegisteredId(registeredId, treatmentProcess);
+        } else {
+          treatmentProcess = new BaseTreatmentProcess();
+          setTreatmentProcessRegisteredValue(treatmentProcess, registered);
+          TreatmentRecord treatmentRecord = new TreatmentRecord();
+          treatmentRecord.setRegisteredId(registeredId);
+          setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+          mapper.insertSelective(treatmentProcess);
+        }
+      } else {
+        if (null != treatmentProcess.getAppointmentId()) {
+          treatmentProcess.setRegisteredId(null);
+          treatmentProcess.setRegisteredDentistId(null);
+          treatmentProcess.setTreatType(null);
+          treatmentProcess.setRegisteredTime(null);
+          treatmentProcess.setTreatStatus(null);
+          mapper.updateByRegisteredId(registeredId, treatmentProcess);
+        } else {
+          mapper.deleteByRegisteredId(registeredId);
+        }
+      }
+    } else {
+      mapper.deleteByRegisteredId(registeredId);
     }
   }
 
@@ -243,7 +239,7 @@ public class BaseTreatmentProcessBiz
    * @param treatmentProcess 就诊流程
    * @param treatmentRecord 挂号
    */
-  private void setTreatmentValue(
+  private void setTreatmentProcessTreatmentValue(
       BaseTreatmentProcess treatmentProcess, TreatmentRecord treatmentRecord) {
     TreatmentRecord treatmentRecordResult = treatmentRecordMapper.selectOne(treatmentRecord);
     if (null != treatmentRecordResult) {
@@ -271,21 +267,112 @@ public class BaseTreatmentProcessBiz
   }
 
   /**
+   * 设置就诊流程挂号信息
+   *
+   * @param treatmentProcess 就诊流程
+   * @param registered 挂号信息
+   */
+  private void setTreatmentProcessRegisteredValue(
+      BaseTreatmentProcess treatmentProcess, Registered registered) {
+    treatmentProcess.setRegisteredId(registered.getId());
+    treatmentProcess.setTreatStatus((byte) 0);
+    treatmentProcess.setTreatType(registered.getFirstVisit());
+    treatmentProcess.setRegisteredDentistId(registered.getDentistId());
+    treatmentProcess.setRegisteredTime(registered.getRegTime());
+  }
+
+  /**
    * 设置就诊流程预约属性
    *
    * @param treatmentProcess 就诊流程
    * @param appointment 预约
    */
-  private void setAppointmentValue(BaseTreatmentProcess treatmentProcess, Appointment appointment) {
+  private void setTreatmentProcessAppointmentValue(
+      BaseTreatmentProcess treatmentProcess, Appointment appointment) {
     Integer appointmentId = appointment.getId();
     treatmentProcess.setOrgId(appointment.getOrgId());
     treatmentProcess.setPatientId(appointment.getPatientId());
     treatmentProcess.setAppointmentId(appointmentId);
-    setTreatmentProcessAppointmentStatus(appointment, treatmentProcess, appointmentId);
+    setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
+        appointment, treatmentProcess, appointmentId);
     treatmentProcess.setAppointDentistId(appointment.getDentistId());
     treatmentProcess.setAppointStartTime(appointment.getAppointStartTime());
     treatmentProcess.setAppointDuration(appointment.getAppointDuration());
     treatmentProcess.setAppointContent(appointment.getAppointContent());
+  }
+
+  /**
+   * 删除就诊流程
+   *
+   * @param dataId 删除数据ID
+   * @param type 数据类型（0-预约；1-挂号）
+   */
+  private void deleteTreatmentProcess(Integer dataId, Integer type) {
+    switch (type) {
+        // 预约
+      case 0:
+        deleteTreatmentProcessByAppointmentId(dataId);
+        break;
+        // 挂号
+      case 1:
+        deleteTreatmentProcessByRegistered(dataId);
+        break;
+      default:
+        break;
+    }
+  }
+
+  /**
+   * 根据预约ID删除就诊流程
+   *
+   * @param registeredId 预约ID
+   */
+  private void deleteTreatmentProcessByRegistered(Integer registeredId) {
+    Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
+    if (null != registered) {
+      if (registered.getInservice()) {
+        BaseTreatmentProcess treatmentProcess = generateBaseTreatmentProcess(registered);
+        TreatmentRecord treatmentRecord = new TreatmentRecord();
+        treatmentRecord.setRegisteredId(registeredId);
+        setTreatmentProcessTreatmentValue(treatmentProcess, treatmentRecord);
+        mapper.insertSelective(treatmentProcess);
+      } else {
+        BaseTreatmentProcess entity = new BaseTreatmentProcess();
+        entity.setRegisteredId(registeredId);
+        mapper.delete(entity);
+      }
+    } else {
+      mapper.deleteByRegisteredId(registeredId);
+    }
+  }
+
+  /**
+   * 根据预约ID删除就诊流程
+   *
+   * @param appointmentId 预约ID
+   */
+  private void deleteTreatmentProcessByAppointmentId(Integer appointmentId) {
+    Appointment appointment = appointmentMapper.selectByPrimaryKey(appointmentId);
+    if (null == appointment) {
+      mapper.deleteByAppointmentId(appointmentId);
+    } else {
+      BaseTreatmentProcess process = mapper.selectOneByAppointmentId(appointmentId);
+      if (null != process) {
+        setTreatmentProcessAppointmentValue(process, appointment);
+        setTreatmentProcessRegisteredValue(process, appointmentId);
+        TreatmentRecord treatmentRecord = new TreatmentRecord();
+        treatmentRecord.setAppointmentId(appointmentId);
+        setTreatmentProcessTreatmentValue(process, treatmentRecord);
+        mapper.updateByAppointmentId(appointmentId, process);
+      } else {
+        BaseTreatmentProcess treatmentProcess = generateBaseTreatmentProcess(appointment);
+        setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
+        TreatmentRecord treatmentRecord = new TreatmentRecord();
+        treatmentRecord.setAppointmentId(appointmentId);
+        setTreatmentProcessTreatmentValue(process, treatmentRecord);
+        mapper.insertSelective(treatmentProcess);
+      }
+    }
   }
 
   /**
@@ -312,14 +399,15 @@ public class BaseTreatmentProcessBiz
             process.setAppointStartTime(appointment.getAppointStartTime());
             process.setAppointDuration(appointment.getAppointDuration());
             process.setAppointContent(appointment.getAppointContent());
-            // 设置就诊流程预约状态
-            setTreatmentProcessAppointmentStatus(appointment, process, appointmentId);
+            // 设置就诊流程预约状态和改约次数
+            setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
+                appointment, process, appointmentId);
             // 设置就诊流程挂号信息
             setTreatmentProcessRegisteredValue(process, appointmentId);
             // 设置就诊流程就诊信息
             TreatmentRecord treatmentRecord = new TreatmentRecord();
             treatmentRecord.setAppointmentId(appointmentId);
-            setTreatmentValue(process, treatmentRecord);
+            setTreatmentProcessTreatmentValue(process, treatmentRecord);
             treatmentProcesses.add(process);
           });
     }
@@ -343,7 +431,7 @@ public class BaseTreatmentProcessBiz
               if (null != process) {
                 TreatmentRecord treatmentRecord = new TreatmentRecord();
                 treatmentRecord.setRegisteredId(registered.getId());
-                setTreatmentValue(process, treatmentRecord);
+                setTreatmentProcessTreatmentValue(process, treatmentRecord);
                 tempList.add(process);
               }
             }
@@ -389,26 +477,22 @@ public class BaseTreatmentProcessBiz
    * @param process 就诊流程
    * @param appointmentId 预约ID
    */
-  private void setTreatmentProcessAppointmentStatus(
+  private void setTreatmentProcessAppointmentStatusAndAppointmentModifyTime(
       Appointment appointment, BaseTreatmentProcess process, Integer appointmentId) {
     AppointmentModifyRecord modifyAppointment = new AppointmentModifyRecord();
     modifyAppointment.setAppointmentId(appointmentId);
     int count = appointmentModifyRecordMapper.selectCount(modifyAppointment);
     process.setAppointModifyTime(count);
     Byte appointStatus = appointment.getAppointStatus();
-    if (count > 0) {
-      process.setAppointStatus(appointment.getConfirmStatus() ? (byte) 3 : (byte) 2);
-    } else {
-      switch (appointStatus) {
-        case 0:
-          process.setAppointStatus(appointment.getConfirmStatus() ? (byte) 1 : (byte) 0);
-          break;
-        case 2:
-          process.setAppointStatus((byte) 4);
-          break;
-        default:
-          break;
-      }
+    switch (appointStatus) {
+      case 0:
+        process.setAppointStatus(appointment.getConfirmStatus() ? (byte) 1 : (byte) 0);
+        break;
+      case 2:
+        process.setAppointStatus((byte) 2);
+        break;
+      default:
+        break;
     }
   }
 }
