@@ -1,6 +1,6 @@
 spring:
   application:
-    name: yunya-treatment
+    name: yunya-report-ultimate
   cloud:
     nacos:
       config:
