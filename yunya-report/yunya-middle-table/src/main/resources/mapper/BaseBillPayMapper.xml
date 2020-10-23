@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.yunya.middletable.dao.report.BaseBillPayMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseBillPay" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBillPay" >
     <!--
       WARNING - @mbg.generated
     -->
@@ -11,7 +11,6 @@
     <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
     <result column="payee_user_id" property="payeeUserId" jdbcType="INTEGER" />
     <result column="payee_date" property="payeeDate" jdbcType="TIMESTAMP" />
-    <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
     <result column="still_owe_amount" property="stillOweAmount" jdbcType="DECIMAL" />
     <result column="cash_amount" property="cashAmount" jdbcType="DECIMAL" />
@@ -23,5 +22,7 @@
     <result column="prepaid_gift_amount" property="prepaidGiftAmount" jdbcType="DECIMAL" />
     <result column="insurance_amount" property="insuranceAmount" jdbcType="DECIMAL" />
     <result column="bank_card_amount" property="bankCardAmount" jdbcType="DECIMAL" />
+    <result column="city_medical_insurance_amount" property="cityMedicalInsuranceAmount" jdbcType="DECIMAL" />
+    <result column="province_medical_insurance_amount" property="provinceMedicalInsuranceAmount" jdbcType="DECIMAL" />
   </resultMap>
 </mapper>

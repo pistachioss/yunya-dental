@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillPayMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBillPay" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
+    <result column="bill_id" property="billId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
+    <result column="payee_user_id" property="payeeUserId" jdbcType="INTEGER" />
+    <result column="payee_date" property="payeeDate" jdbcType="TIMESTAMP" />
+    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+    <result column="still_owe_amount" property="stillOweAmount" jdbcType="DECIMAL" />
+    <result column="cash_amount" property="cashAmount" jdbcType="DECIMAL" />
+    <result column="alipay_amount" property="alipayAmount" jdbcType="DECIMAL" />
+    <result column="wechat_amount" property="wechatAmount" jdbcType="DECIMAL" />
+    <result column="member_principle_amount" property="memberPrincipleAmount" jdbcType="DECIMAL" />
+    <result column="member_gift_amount" property="memberGiftAmount" jdbcType="DECIMAL" />
+    <result column="prepaid_principle_amount" property="prepaidPrincipleAmount" jdbcType="DECIMAL" />
+    <result column="prepaid_gift_amount" property="prepaidGiftAmount" jdbcType="DECIMAL" />
+    <result column="insurance_amount" property="insuranceAmount" jdbcType="DECIMAL" />
+    <result column="bank_card_amount" property="bankCardAmount" jdbcType="DECIMAL" />
+    <result column="city_medical_insurance_amount" property="cityMedicalInsuranceAmount" jdbcType="DECIMAL" />
+    <result column="province_medical_insurance_amount" property="provinceMedicalInsuranceAmount" jdbcType="DECIMAL" />
+  </resultMap>
+</mapper>

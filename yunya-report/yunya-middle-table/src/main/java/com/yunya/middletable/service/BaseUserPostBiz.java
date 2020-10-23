@@ -10,7 +10,7 @@ import com.yunya.middletable.dao.system.PostGroupMapper;
 import com.yunya.middletable.dao.system.PostMapper;
 import com.yunya.middletable.dao.system.SysUserPostMapper;
 import com.yunya.models.expand.ClinicEmployeeConfig;
-import com.yunya.models.middletable.BaseUserPost;
+import com.yunya.models.report.BaseUserPost;
 import com.yunya.models.system.Post;
 import com.yunya.models.system.PostGroup;
 import com.yunya.models.system.SysUserPost;

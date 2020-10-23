@@ -6,7 +6,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.PatientBaseInfoMapper;
 import com.yunya.middletable.dao.report.BasePatientMapper;
-import com.yunya.models.middletable.BasePatient;
+import com.yunya.models.report.BasePatient;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

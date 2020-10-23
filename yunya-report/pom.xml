@@ -14,7 +14,7 @@
     <description>云牙系统报表中心</description>
     <modules>
         <module>yunya-middle-table</module>
-        <module>yunya-final-report</module>
+        <module>yunya-report-ultimate</module>
     </modules>
 
 </project>

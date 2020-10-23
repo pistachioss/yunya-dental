@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.yunya.middletable.dao.report.BaseTariffInfoMapper">
-    <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseTariffInfo">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseTariffInfo">
         <!--
           WARNING - @mbg.generated
         -->
@@ -16,7 +16,7 @@
     </resultMap>
 
     <!-- 根据联合主键查询 -->
-    <select id="selectByUnionPrimaryKey" resultType="com.yunya.models.middletable.BaseTariffInfo">
+    <select id="selectByUnionPrimaryKey" resultType="com.yunya.models.report.BaseTariffInfo">
         select * from base_tariff_info where item_id = #{dataId} and item_type = #{dateType}
     </select>
     <!-- 根据联合主键删除 -->

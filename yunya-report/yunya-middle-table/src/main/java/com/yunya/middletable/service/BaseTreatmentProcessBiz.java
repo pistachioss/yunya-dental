@@ -12,7 +12,7 @@ import com.yunya.middletable.dao.treatment.RegisteredMapper;
 import com.yunya.middletable.dao.treatment.TreatmentRecordMapper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentModifyRecord;
-import com.yunya.models.middletable.BaseTreatmentProcess;
+import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.beans.factory.annotation.Autowired;

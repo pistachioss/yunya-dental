@@ -1,6 +1,6 @@
 package com.yunya.middletable.dao.report;
 
-import com.yunya.models.middletable.BaseCoupon;
+import com.yunya.models.report.BaseCoupon;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 

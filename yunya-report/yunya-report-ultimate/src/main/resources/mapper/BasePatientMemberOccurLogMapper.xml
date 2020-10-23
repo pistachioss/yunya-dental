@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BasePatientMemberOccurLogMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BasePatientMemberOccurLog" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="occur_log_id" property="occurLogId" jdbcType="INTEGER" />
+    <result column="card_id" property="cardId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="occur_type" property="occurType" jdbcType="TINYINT" />
+    <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL" />
+    <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL" />
+    <result column="current_recharge_principal" property="currentRechargePrincipal" jdbcType="DECIMAL" />
+    <result column="current_recharge_bonus" property="currentRechargeBonus" jdbcType="DECIMAL" />
+    <result column="payment_id" property="paymentId" jdbcType="INTEGER" />
+    <result column="payment_manner" property="paymentManner" jdbcType="VARCHAR" />
+    <result column="operator_user_id" property="operatorUserId" jdbcType="INTEGER" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="bill_id" property="billId" jdbcType="INTEGER" />
+    <result column="recharge_card_number" property="rechargeCardNumber" jdbcType="VARCHAR" />
+    <result column="occur_date" property="occurDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>
