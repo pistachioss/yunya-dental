@@ -122,12 +122,15 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
                     throw new BaseException("套餐券名称与系统中已有套餐券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(specialPackageCouponForm.getId());
             CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
             BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(specialPackageCouponForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             specialPackageCoupon.setCouponId(specialPackageCouponForm.getId());
             specialPackageCoupon = selectOne(specialPackageCoupon);
             if (specialPackageCoupon != null) {
@@ -135,7 +138,8 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
                 BeanUtils.copyProperties(specialPackageCoupon, pc);
                 BeanUtils.copyProperties(specialPackageCouponForm, pc);
                 pc.setId(specialPackageCoupon.getId());
-                updateSelectiveById(pc);//更新明细信息
+                //更新明细信息
+                updateSelectiveById(pc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
