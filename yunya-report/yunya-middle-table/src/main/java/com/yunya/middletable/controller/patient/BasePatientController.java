@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.patient.BasePatientBiz;
+import com.yunya.models.middletable.BasePatient;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,6 +51,17 @@ public class BasePatientController {
     @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
     public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
         basePatientBiz.pullPatientData(form);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 修改患者信息
+     * @param basePatient 患者消息
+     * @return ResponseResult<T>
+     */
+    @PostMapping("/upd")
+    public ResponseResult<T> upd(@RequestBody BasePatient basePatient) {
+        basePatientBiz.upd(basePatient);
         return ResponseUtil.success(null);
     }
 

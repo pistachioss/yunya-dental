@@ -104,6 +104,29 @@ public class BasePatientMemberOccurLog {
     private Date occurDate;
 
     /**
+     * 门诊id
+     */
+    @Column(name = "org_id")
+    private Integer orgId;
+
+
+    /**
+     * 获取门诊id
+     * @return orgId
+     */
+    public Integer getOrgId() {
+        return orgId;
+    }
+
+    /**
+     * 设置门诊id
+     * @param orgId 门诊id
+     */
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
+    }
+
+    /**
      * 获取主键ID
      *
      * @return occur_log_id - 主键ID

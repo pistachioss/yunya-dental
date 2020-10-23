@@ -116,4 +116,12 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
 
     }
+
+    /**
+     * 修改患者信息
+     * @param basePatient 患者信息
+     */
+    public void upd(BasePatient basePatient) {
+        mapper.updateByPrimaryKeySelective(basePatient);
+    }
 }

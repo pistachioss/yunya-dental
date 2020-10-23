@@ -163,6 +163,8 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
       prepaidRechargeRecord.setCurrentRechargePrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
       prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+      prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
 
       // 添加预付款充值收费记录
@@ -229,6 +231,8 @@ public class PatientPrepaymentRelationBiz
       prepaidReturnRecord.setCrtName(BaseContextHandler.getName());
       prepaidReturnRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
       prepaidReturnRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+      prepaidReturnRecord.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidReturnRecord.setUpdName(BaseContextHandler.getName());
       prepaidReturnRecordMapper.insertSelective(prepaidReturnRecord);
     }
   }
@@ -309,6 +313,8 @@ public class PatientPrepaymentRelationBiz
         prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
         prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
         prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+        prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
         prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
         return ResponseUtil.success();
       }
@@ -375,6 +381,8 @@ public class PatientPrepaymentRelationBiz
     prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
     prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
     prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+    prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+    prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
     prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
   }
 

@@ -25,7 +25,7 @@
 
   <!-- 根据操作id和操作类型 进行删除 -->
     <delete id="deleteByPrimaryKeyAndtype">
-      delete from base_patient_member_occur_log where occur_log_id =#{id} and type = #{occurType}
+      delete from base_patient_member_occur_log where occur_log_id =#{id} and type = #{type} and occur_type = #{occurType}
     </delete>
 
 

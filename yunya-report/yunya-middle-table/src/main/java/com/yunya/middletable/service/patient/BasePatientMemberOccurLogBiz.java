@@ -330,6 +330,7 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOperatorUserId(memberRechargeRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(memberRechargeRecord.getRemarks());
       basePatientMemberOccurLog.setOccurDate(memberRechargeRecord.getCrtTime());
+      basePatientMemberOccurLog.setOrgId(memberRechargeRecord.getOrgId());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -367,6 +368,7 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOccurDate(memberExpendRecord.getCrtTime());
       basePatientMemberOccurLog.setCurrentRechargePrincipal(memberExpendRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(memberExpendRecord.getCurrentBonus());
+      basePatientMemberOccurLog.setOrgId(memberExpendRecord.getOrgId());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -405,6 +407,7 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOccurDate(memberReturnRecord.getCrtTime());
       basePatientMemberOccurLog.setCurrentRechargePrincipal(memberReturnRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(memberReturnRecord.getCurrentBonus());
+      basePatientMemberOccurLog.setOrgId(memberReturnRecord.getOrgId());
       return basePatientMemberOccurLog;
     }
 
@@ -504,8 +507,8 @@ public class BasePatientMemberOccurLogBiz
       prepaidReturnRecordList.forEach(
               prepaidReturnRecord -> {
                 Integer id = prepaidReturnRecord.getId();
-                mapper.deleteByPrimaryKeyAndtype(id, type, 1);
-                BasePatientMemberOccurLog memberOccurLog = getPrepaidReturnRecordInfo(id, type, 1);
+                mapper.deleteByPrimaryKeyAndtype(id, type, 3);
+                BasePatientMemberOccurLog memberOccurLog = getPrepaidReturnRecordInfo(id, type, 3);
                 if (memberOccurLog != null) {
                   mapper.insertSelective(memberOccurLog);
                 }
@@ -602,11 +605,11 @@ public class BasePatientMemberOccurLogBiz
           basePatientMemberOccurLog.setPaymentManner(accountItem.getName());
         }
       }
-      // 对应多个入账方式 这里只能取一个
       basePatientMemberOccurLog.setOperatorUserId(prepaidRechargeRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(prepaidRechargeRecord.getRemarks());
       basePatientMemberOccurLog.setOccurDate(prepaidRechargeRecord.getCrtTime());
       basePatientMemberOccurLog.setRechargeCardNumber(prepaidRechargeRecord.getRechargeCardNumber());
+      basePatientMemberOccurLog.setOrgId(prepaidRechargeRecord.getOrgId());
       return basePatientMemberOccurLog;
   }
     return null;
@@ -640,6 +643,7 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOccurDate(prepaidExpendRecord.getCrtTime());
       basePatientMemberOccurLog.setCurrentRechargePrincipal(prepaidExpendRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(prepaidExpendRecord.getCurrentBonus());
+      basePatientMemberOccurLog.setOrgId(prepaidExpendRecord.getOrgId());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -678,6 +682,7 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOccurDate(prepaidReturnRecord.getCrtTime());
       basePatientMemberOccurLog.setCurrentRechargePrincipal(prepaidReturnRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(prepaidReturnRecord.getCurrentBonus());
+      basePatientMemberOccurLog.setOrgId(prepaidReturnRecord.getOrgId());
       return basePatientMemberOccurLog;
     }
     return null;

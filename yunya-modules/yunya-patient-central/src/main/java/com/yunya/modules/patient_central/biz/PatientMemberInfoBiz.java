@@ -289,6 +289,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+      memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      memberRechargeRecord.setUpdName(BaseContextHandler.getName());
       memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
       // 添加会员卡充值收费记录
       if (!StringHelper.isEmpty(model.getAccountedWayModelList())) {
@@ -374,6 +376,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberReturnRecord.setCrtName(BaseContextHandler.getName());
       memberReturnRecord.setCurrentPrincipal(patientMemberInfo.getPrincipalAmount());
       memberReturnRecord.setCurrentBonus(patientMemberInfo.getBonusAmount());
+      memberReturnRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      memberReturnRecord.setUpdName(BaseContextHandler.getName());
       memberReturnRecordMapper.insertSelective(memberReturnRecord);
       return ResponseUtil.success();
     }
@@ -431,6 +435,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         memberExpendRecord.setCrtName(BaseContextHandler.getName());
         memberExpendRecord.setCurrentPrincipal(patientMemberInfo.getPrincipalAmount());
         memberExpendRecord.setCurrentBonus(patientMemberInfo.getBonusAmount());
+        memberExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        memberExpendRecord.setUpdName(BaseContextHandler.getName());
         memberExpendRecordMapper.insertSelective(memberExpendRecord);
         return ResponseUtil.success();
       }
@@ -500,6 +506,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberExpendRecord.setCrtName(BaseContextHandler.getName());
     memberExpendRecord.setCurrentPrincipal(patientMemberInfo.getPrincipalAmount());
     memberExpendRecord.setCurrentBonus(patientMemberInfo.getBonusAmount());
+    memberExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+    memberExpendRecord.setUpdName(BaseContextHandler.getName());
     memberExpendRecordMapper.insertSelective(memberExpendRecord);
   }
 
