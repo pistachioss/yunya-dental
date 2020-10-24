@@ -9,7 +9,7 @@ import com.yunya.middletable.dao.treatment.BaseOralTariffCategoryMapper;
 import com.yunya.middletable.dao.treatment.BaseOralTariffMapper;
 import com.yunya.middletable.dao.treatment.BaseTariffCategoryMapper;
 import com.yunya.middletable.dao.treatment.BaseTariffMapper;
-import com.yunya.models.middletable.BaseTariffInfo;
+import com.yunya.models.report.BaseTariffInfo;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseOralTariffCategory;
 import com.yunya.models.tariff.BaseTariff;

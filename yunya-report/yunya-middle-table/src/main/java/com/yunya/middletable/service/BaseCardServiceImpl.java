@@ -23,7 +23,7 @@ import com.yunya.models.discount.DiscountCoupon;
 import com.yunya.models.discount.PackageCoupon;
 import com.yunya.models.discount.SpecialPackageCoupon;
 import com.yunya.models.discount.VoucheCoupon;
-import com.yunya.models.middletable.BaseCard;
+import com.yunya.models.report.BaseCard;
 import com.yunya.models.system.AccountItem;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;

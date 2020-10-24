@@ -108,10 +108,13 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         if (flag) {
             // 只能修改时间
             couponCommonInfo.setId(discountUpdateForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(discountUpdateForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(discountUpdateForm.getAvailableSaleEndDate());
             //更新基础信息
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             voucheCoupon.setCouponId(discountUpdateForm.getId());
             voucheCoupon = selectOne(voucheCoupon);
             if (voucheCoupon != null) {
@@ -121,7 +124,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
                 voucheCoupon.setWorkloadRate(discountUpdateForm.getWorkloadRate());
                 voucheCoupon.setEffectiveDays(discountUpdateForm.getEffectiveDays());
                 //更新明细信息
-                updateSelectiveById(voucheCoupon);
+                updateById(voucheCoupon);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -154,7 +157,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
                 BeanUtils.copyProperties(discountUpdateForm, vc);
                 vc.setId(voucheCoupon.getId());
                 //更新明细信息
-                updateSelectiveById(vc);
+                updateById(vc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

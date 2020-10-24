@@ -7,7 +7,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseEmployeeMapper;
 import com.yunya.middletable.dao.system.SysEmployeeMapper;
 import com.yunya.middletable.dao.system.SysUserMapper;
-import com.yunya.models.middletable.BaseEmployee;
+import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import org.springframework.beans.factory.annotation.Autowired;

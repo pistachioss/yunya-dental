@@ -18,7 +18,7 @@ import com.yunya.models.discount.DiscountCoupon;
 import com.yunya.models.discount.ProductType;
 import com.yunya.models.discount.RechargeCard;
 import com.yunya.models.discount.VoucheCoupon;
-import com.yunya.models.middletable.BaseCoupon;
+import com.yunya.models.report.BaseCoupon;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.cglib.core.Converter;

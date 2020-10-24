@@ -94,17 +94,20 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
         if (flag) {
             // 只能修改时间
             couponCommonInfo.setId(rechargeCardForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(rechargeCardForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(rechargeCardForm.getAvailableSaleEndDate());
             //更新基础信息
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             rechargeCard.setCouponId(rechargeCardForm.getId());
             rechargeCard = selectOne(rechargeCard);
             if(rechargeCard!=null){
                 rechargeCard.setRemark(rechargeCardForm.getRemark());
                 rechargeCard.setRechargeDeadline(rechargeCardForm.getRechargeDeadline());
                 //更新明细信息
-                updateSelectiveById(rechargeCard);
+                updateById(rechargeCard);
             }else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

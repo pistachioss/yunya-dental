@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseCouponMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCoupon">
+        <result column="coupon_id" jdbcType="INTEGER" property="couponId" />
+        <result column="coupon_name" jdbcType="VARCHAR" property="couponName" />
+        <result column="product_type_id" jdbcType="INTEGER" property="productTypeId" />
+        <result column="product_type_name" jdbcType="VARCHAR" property="productTypeName" />
+        <result column="coupon_type" jdbcType="TINYINT" property="couponType" />
+        <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+        <result column="sold_amount" jdbcType="DECIMAL" property="soldAmount" />
+        <result column="bonus" jdbcType="DECIMAL" property="bonus" />
+        <result column="workload_rate" jdbcType="DECIMAL" property="workloadRate" />
+    </resultMap>
+
+    <insert id="insertList" parameterType="List">
+        insert into
+        `base_coupon`
+        (`coupon_id`, `coupon_name`, `product_type_id`, `product_type_name`, `coupon_type`, `crt_id`, `crt_time`, `sold_amount`,
+        `bonus`, `workload_rate`)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.couponId}, #{item.couponName}, #{item.productTypeId}, #{item.productTypeName}, #{item.couponType}, #{item.crtId},
+            #{item.crtTime}, #{item.soldAmount}, #{item.bonus}, #{item.workloadRate})
+        </foreach>
+    </insert>
+
+    <update id="updateList" parameterType="java.util.List">
+        update `base_coupon`
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="coupon_name = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.couponName != null and item.couponName != ''">
+                        when `coupon_id` = #{item.couponId} then #{item.couponName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="product_type_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.productTypeId != null">
+                        when `coupon_id` = #{item.couponId} then #{item.productTypeId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="product_type_name = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.productTypeName != null and item.productTypeName != ''">
+                        when `coupon_id` = #{item.couponId} then #{item.productTypeName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="coupon_type = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.couponType != null">
+                        when `coupon_id` = #{item.couponId} then #{item.couponType}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="crt_id = case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.crtId != null">
+                        when `coupon_id` = #{item.couponId} then #{item.crtId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="crt_time = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.crtTime != null">
+                        when `coupon_id` = #{item.couponId} then #{item.crtTime}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="sold_amount = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.soldAmount != null">
+                        when `coupon_id` = #{item.couponId} then #{item.soldAmount}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="bonus = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.bonus != null">
+                        when `coupon_id` = #{item.couponId} then #{item.bonus}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="workload_rate = case" suffix="end," >
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.workloadRate != null">
+                        when `coupon_id` = #{item.couponId} then #{item.workloadRate}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where `coupon_id` in
+            <foreach collection="list" item="item" open="(" separator="," close=")">
+               #{item.couponId}
+            </foreach>
+    </update>
+</mapper>
