@@ -21,7 +21,7 @@ import java.io.Serializable;
 @ToString
 public class MemberTypeQueryForm implements Serializable {
 
-  @ApiModelProperty(value = "是否分页,默认true", required = true)
+  @ApiModelProperty(value = "是否分页,默认true")
   private Boolean whetherPage = true;
 
   @ApiModelProperty("页码，默认第1页")

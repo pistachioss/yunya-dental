@@ -11,6 +11,7 @@ import com.yunya.modules.system.domain.query.MemberTypeQueryForm;
 import com.yunya.modules.system.vo.MemberTypeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +43,7 @@ public class MemberTypeController {
    */
   @ApiOperation("根据ID查询会员卡类型信息")
   @GetMapping("/one/{id}")
-  public ResponseResult findById(@PathVariable("id") Integer id) {
+  public ResponseResult<MemberTypeVO> findById(@PathVariable("id") Integer id) {
     MemberTypeVO resultData = memberTypeBiz.findById(id);
     return ResponseUtil.success(resultData);
   }
@@ -55,9 +56,10 @@ public class MemberTypeController {
    */
   @ApiOperation("根据条件查询会员卡类型列表(可分页)")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody MemberTypeQueryForm queryForm) {
-    PageInfo<MemberTypeVO> resultLIst = memberTypeBiz.findList(queryForm);
-    return ResponseUtil.success(resultLIst);
+  public ResponseResult<PageInfo<MemberTypeVO>> findList(
+      @RequestBody MemberTypeQueryForm queryForm) {
+    PageInfo<MemberTypeVO> resultList = memberTypeBiz.findList(queryForm);
+    return ResponseUtil.success(resultList);
   }
 
   /**
@@ -69,9 +71,9 @@ public class MemberTypeController {
   @CurrentUser
   @PostMapping("/save")
   @ApiOperation("新增会员类型方式")
-  public ResponseResult save(@RequestBody @Validated MemberTypeModel model) {
+  public ResponseResult<T> save(@RequestBody @Validated MemberTypeModel model) {
     memberTypeBiz.add(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -84,10 +86,10 @@ public class MemberTypeController {
   @CurrentUser
   @ApiOperation("修改会员卡类型信息")
   @PutMapping("/edit/{id}")
-  public ResponseResult modify(
+  public ResponseResult<T> modify(
       @PathVariable("id") Integer id, @RequestBody @Validated MemberTypeForm form) {
     memberTypeBiz.modify(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -98,8 +100,8 @@ public class MemberTypeController {
    */
   @ApiOperation("根据ID删除会员卡类型")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable("id") Integer id) {
+  public ResponseResult<T> delete(@PathVariable("id") Integer id) {
     memberTypeBiz.deleteMemberTypeById(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }
