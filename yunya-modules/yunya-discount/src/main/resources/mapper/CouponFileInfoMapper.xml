@@ -8,6 +8,7 @@
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
         <result column="file_type" property="fileType" jdbcType="TINYINT"/>
+        <result column="file_name" property="fileName" jdbcType="TINYINT"/>
         <result column="path" property="path" jdbcType="VARCHAR"/>
         <result column="remark" property="remark" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
@@ -18,10 +19,10 @@
     </resultMap>
     <insert id="insertAll" parameterType="java.util.List">
         INSERT INTO `coupon_file_info`
-        (`id`, `coupon_id`, `file_type`, `path`, `remark`, `inservice`, `crt_id`, `crt_time`, `upd_id`, `upd_time`)
+        (`id`, `coupon_id`, `file_type`,`file_name`, `path`, `remark`, `inservice`, `crt_id`, `crt_time`, `upd_id`, `upd_time`)
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.id}, #{item.couponId}, #{item.fileType}, #{item.path}, #{item.remark}, #{item.inservice}, #{item.crtId}, #{item.crtTime}, #{item.updId},
+            (#{item.id}, #{item.couponId}, #{item.fileType},#{item.fileName}, #{item.path}, #{item.remark}, #{item.inservice}, #{item.crtId}, #{item.crtTime}, #{item.updId},
             #{item.updTime})
         </foreach>
     </insert>
