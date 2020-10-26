@@ -476,6 +476,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     visitRecord.setCrtId(detail.getCrtId());
                     visitRecord.setCrtName(detail.getCrtName());
                     visitRecord.setTreatmentId(treatmentRecordId);
+                    visitRecord.setVisitingTime("09:00");
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
                     treatmentOtherFeign.insertVisitingRecord(visitRecord);
