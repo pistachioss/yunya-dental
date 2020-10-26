@@ -20,6 +20,7 @@ import com.yunya.models.treatment.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -420,6 +421,29 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @param form 时间段
    */
   public void pullBillData(PullForm form) {
-    
+    String startDate = form.getStartDate();
+    String endDate = form.getEndDate();
+    Example orderExample = new Example(OrderRecord.class);
+    orderExample.createCriteria().andBetween("updTime", startDate, endDate);
+    List<OrderRecord> orderRecords = orderRecordMapper.selectByExample(orderExample);
+    if (StringHelper.isNotEmpty(orderRecords)) {
+      orderRecords.stream()
+          .map(OrderRecord::getId)
+          .forEach(
+              orderRecordId -> {
+                BaseBill baseBill = generateBaseBill(orderRecordId);
+                mapper.deleteByPrimaryKey(orderRecordId);
+                if (null != baseBill) {
+                  mapper.insertSelective(baseBill);
+                  // 保存账单收费记录
+                  saveBaseBillPay(orderRecordId);
+                  // 保存账单收费明细
+                  saveBaseBillDetail(orderRecordId);
+                } else {
+                  baseBillPayMapper.deleteByBillId(orderRecordId);
+                  baseBillDetailMapper.deleteByBillId(orderRecordId);
+                }
+              });
+    }
   }
 }
