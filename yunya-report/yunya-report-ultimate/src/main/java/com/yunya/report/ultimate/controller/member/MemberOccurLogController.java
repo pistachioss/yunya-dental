@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ public class MemberOccurLogController {
      */
     @ApiOperation("查询会员充值列表")
     @PostMapping("/recharge/list")
-    public ResponseResult<List<MemberRechargeLogBizVo>> rechargeList(@RequestBody MemberQueryForm memberQueryForm) {
+    public ResponseResult<List<MemberRechargeLogBizVo>> rechargeList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
         return ResponseUtil.success(this.memberOccurLogBiz.rechargeList(memberQueryForm));
     }
 
@@ -46,18 +47,18 @@ public class MemberOccurLogController {
      */
     @ApiOperation("查询会员充值列表")
     @PostMapping("/expend/list")
-    public ResponseResult<List<MemberExpendLogBizVo>> expendList(@RequestBody MemberQueryForm memberQueryForm) {
+    public ResponseResult<List<MemberExpendLogBizVo>> expendList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
         return ResponseUtil.success(this.memberOccurLogBiz.expendList(memberQueryForm));
     }
 
-    /**
+   /* *//**
      * 查询会员充值列表
      * @param memberQueryForm 会员卡充值form
      * @return
      *//*
     @ApiOperation("查询会员充值列表")
     @PostMapping("/return/list")
-    public ResponseResult<List<MemberRechargeLogBizVo>> returnList(@RequestBody MemberQueryForm memberQueryForm) {
+    public ResponseResult<List<MemberRechargeLogBizVo>> returnList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
         return ResponseUtil.success(this.memberOccurLogBiz.returnList(memberQueryForm));
     }*/
 

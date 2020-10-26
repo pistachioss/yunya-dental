@@ -35,6 +35,7 @@
   <!-- 查询会员卡充值记录列表 -->
   <select id="selectRechargeList" resultType="com.yunya.feign.report.domain.vo.MemberRechargeLogBizVo">
     SELECT
+        bpmol.id,
         bpmol.occur_date occurDate,
         bpt.NAME,
         bpt.mobile,
@@ -80,6 +81,52 @@
 
   <!-- 查询会员卡消费记录列表 -->
   <select id="selecExpendtList" resultType="com.yunya.feign.report.domain.vo.MemberExpendLogBizVo">
+    SELECT
+        bpmol.id,
+        bpmol.occur_date occurDate,
+        bb.order_date orderDate,
+        bb.order_num orderNum,
+        bpt.NAME,
+        bpt.mobile,
+        ( SELECT NAME FROM base_patient WHERE patient_id = bpm.patient_id ) masterCardName,
+        bpm.card_number cardNumber,
+        bpm.member_level_id memberLevelId,
+        bpm.member_level_name memberLevelName,
+        bpmol.principal_amount principalAmount,
+        bpmol.bonus_amount bonusAmount,
+        bpmol.current_recharge_principal currentRechargePrincipal,
+        bpmol.current_recharge_bonus currentRechargeBonus,
+        bpmol.remarks
+    FROM
+        base_patient_member_occur_log bpmol
+        JOIN base_patient bpt ON bpmol.patient_id = bpt.patient_Id
+        JOIN base_patient_member bpm ON bpm.card_id = bpmol.card_id
+        JOIN base_bill bb ON bpmol.bill_id = bb.bill_id
+      <where>
+          bpmol.occur_type = 2
+          <if test="form.orgId != null and form.orgId != ''">
+              AND bpmol.org_id = #{form.orgId}
+          </if>
+          <if test="form.cardNumber != null and form.cardNumber != ''">
+              AND bpm.card_number = #{form.cardNumber}
+          </if>
+          <if test="patientIds != null and patientIds.size() > 0 ">
+              AND bpmol.patient_id in
+              <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                  #{ids}
+              </foreach>
+          </if>
+          <if test="form.memberLevelId != null and form.memberLevelId != ''">
+              AND bpm.member_level_id = #{form.memberLevelId}
+          </if>
+          <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+              AND bpmol.occur_date &gt;= #{startDate} 
+              AND bpmol.occur_date &lt;= #{endDate}
+          </if>
+      </where>
+  </select>
+
+  <select id="selectReturnList" resultType="com.yunya.feign.report.domain.vo.MemberReturnLogBizVo">
 
   </select>
 </mapper>

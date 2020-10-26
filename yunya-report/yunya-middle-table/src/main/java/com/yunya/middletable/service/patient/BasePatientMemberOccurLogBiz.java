@@ -369,6 +369,7 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setCurrentRechargePrincipal(memberExpendRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(memberExpendRecord.getCurrentBonus());
       basePatientMemberOccurLog.setOrgId(memberExpendRecord.getOrgId());
+      basePatientMemberOccurLog.setBillId(memberExpendRecord.getBillRecordId());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -426,7 +427,7 @@ public class BasePatientMemberOccurLogBiz
       case 1:
         BasePatientMemberOccurLog memberRechargeLog = getMemberRechargeRecordInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberRechargeLog)){
-          mapper.delete(memberRechargeLog);
+          mapper.deleteByPrimaryKey(memberRechargeLog);
           mapper.insert(memberRechargeLog);
         }
         break;
@@ -434,7 +435,7 @@ public class BasePatientMemberOccurLogBiz
       case 2: case 4:
         BasePatientMemberOccurLog memberExpendLog = getMemberExpendAndRevocation(id, type,operationType);
         if (StringHelper.isNotNull(memberExpendLog)){
-          mapper.delete(memberExpendLog);
+          mapper.deleteByPrimaryKey(memberExpendLog);
           mapper.insert(memberExpendLog);
         }
         break;
@@ -442,7 +443,7 @@ public class BasePatientMemberOccurLogBiz
       case 3:
         BasePatientMemberOccurLog memberReturnInfoLog = getMemberReturnInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberReturnInfoLog)){
-          mapper.delete(memberReturnInfoLog);
+          mapper.deleteByPrimaryKey(memberReturnInfoLog);
           mapper.insert(memberReturnInfoLog);
         }
         break;

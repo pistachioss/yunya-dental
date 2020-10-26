@@ -23,11 +23,17 @@ public class MemberExpendLogBizVo {
     /** 消费日期 */
     private String occurDate;
 
+    /** 订单号 */
+    private String orderNum;
+
     /** 患者姓名 */
     private String name;
 
     /** 手机号 */
     private String mobile;
+
+    /** 主卡人姓名 */
+    private String masterCardName;
 
     /** 会员卡号 */
     private String cardNumber;
@@ -49,12 +55,6 @@ public class MemberExpendLogBizVo {
 
     /** 消费后会员卡赠金（赠金） */
     private BigDecimal currentRechargeBonus;
-
-    /** 入账方式 */
-    private Integer paymentId;
-
-    /** 入账方式名称 */
-    private String paymentManner;
 
     /** 充值人 */
     private String operatorUserName;
