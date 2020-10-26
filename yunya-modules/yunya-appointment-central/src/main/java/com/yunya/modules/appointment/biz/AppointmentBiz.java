@@ -462,6 +462,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return List<AppointmentDimensionVo>
      */
     public List<AppointmentDimensionVo> findAppointmentPatientDimensionByExample(PatientDimensionByDayQuery query) {
+
         List<AppointmentDimensionVo> appointmentDimensionVos;
         // 根据门诊ID获取该门诊所有可预约医生的ID
         Integer[] enableDentistIds = this.enableAppointDentistIds(query.getOrgId());
@@ -2067,6 +2068,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
 
         });
+        // 按医生名字检索
+        if (!StringHelper.isEmpty(query.getDentistName())) {
+            appointPatientRecord = appointPatientRecord.stream().filter(
+                    appointPatientRecordVo -> appointPatientRecordVo
+                            .getDentistName().contains(query.getDentistName())).collect(Collectors.toList());
+        }
         return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
     }
 

@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -37,6 +38,7 @@ public class VisitingRemindContentVo implements Serializable {
      * 提醒日期
      */
     @ApiModelProperty(value = "提醒日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date remindDate;
 
     /** 提醒时间 */

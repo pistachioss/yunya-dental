@@ -79,6 +79,15 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
 
 
     /**
+     * 插入随访记录（外部服务调用）
+     * @param mode
+     * @return
+     */
+    public Integer insertEntity(VisitingRecord mode) {
+        return mapper.insertSelective(mode);
+    }
+
+    /**
      * 插入随访记录
      * @param model  随访记录表单
      * @return  返回插入成功的条数
