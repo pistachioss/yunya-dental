@@ -89,19 +89,22 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         if (flag) {
             // 只能修改时间
             couponCommonInfo.setId(packageCouponForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(packageCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(packageCouponForm.getAvailableSaleEndDate());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            //更新基础信息
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             packageCoupon.setCouponId(packageCouponForm.getId());
             packageCoupon = selectOne(packageCoupon);
             if(packageCoupon!=null){
                 packageCoupon.setUseableClinic(packageCouponForm.getUseableClinic());
                 packageCoupon.setRemark(packageCouponForm.getRemark());
                 packageCoupon.setActivationDeadline(packageCouponForm.getActivationDeadline());
-//                packageCoupon.setWorkloadRate(packageCouponForm.getWorkloadRate());
                 packageCoupon.setEffectiveDays(packageCouponForm.getEffectiveDays());
                 //更新明细信息
-                updateSelectiveById(packageCoupon);
+                updateById(packageCoupon);
             }else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

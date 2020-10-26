@@ -32,7 +32,9 @@ public class TreatmentOtherServiceRest {
     @ApiOperation(value = "插入随访记录")
     @RequestMapping(value = "/visiting/record/add",method = RequestMethod.POST)
     public void insertVisitingRecordRest(@RequestBody VisitingRecord visitingRecord){
-        visitingRecordBiz.insertSelective(visitingRecord);
+        System.out.println("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓自动插入随访记录↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+        System.out.println(visitingRecord.toString());
+        visitingRecordBiz.insertEntity(visitingRecord);
     }
 
     /**
