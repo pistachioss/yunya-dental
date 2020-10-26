@@ -7,8 +7,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.TollBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -55,7 +53,6 @@ public class TollController {
    */
   @CurrentUser
   @ApiOperation("收欠费")
-  @ApiImplicitParams({@ApiImplicitParam(name = "model", value = "收欠费参数模型", required = true)})
   @PostMapping(value = "/collect/debt", name = "收欠费")
   public ResponseResult collectDebt(@RequestBody @Validated TollDebtModel model) {
     tollBiz.collectDebt(model);
