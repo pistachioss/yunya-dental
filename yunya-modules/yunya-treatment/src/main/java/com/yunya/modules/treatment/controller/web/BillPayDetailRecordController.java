@@ -8,7 +8,6 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BillPayDetailRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -54,10 +53,6 @@ public class BillPayDetailRecordController {
    */
   @CurrentUser
   @ApiOperation("调整账单支付记录入账明细")
-  @ApiImplicitParams({
-    @ApiImplicitParam(name = "billPayRecordId", value = "收费记录ID", required = true),
-    @ApiImplicitParam(name = "form", value = "调整收费入账明细列表", required = true)
-  })
   @PutMapping(value = "/detail/adjust/{billPayRecordId}", name = "调整账单入账明细")
   public ResponseResult adjustBillPayDetail(
       @PathVariable(value = "billPayRecordId") Integer billPayRecordId,
