@@ -7,10 +7,12 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.PatientMemberInfoMapper;
 import com.yunya.middletable.dao.patient.PatientPrepaymentsInfoMapper;
 import com.yunya.middletable.dao.report.BasePatientMemberMapper;
-import com.yunya.models.middletable.BasePatientMember;
+import com.yunya.middletable.dao.system.MemberTypeMapper;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
 import com.yunya.models.patient_central.PatientPrepaymentsInfo;
+import com.yunya.models.report.BasePatientMember;
+import com.yunya.models.system.MemberType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,9 +41,13 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
     @Autowired
     private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
+    /** 注入会员卡名称查询对象*/
+    @Autowired
+    private MemberTypeMapper memberTypeMapper;
+
     /**
      * 患者会员/预付款信息操作
-     * @param msg
+     * @param msg 消息
      */
     public void operate(MessageModel msg) {
         Integer operateType = msg.getOperateType();
@@ -60,8 +66,8 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
             case 2:
                 if (type == 0){
                     BasePatientMember member = getPatientMemberInfo(id, type);
-                    PatientMemberInfo MemberInfo = patientMemberInfoMapper.selectByPrimaryKey(id);
-                    if (StringHelper.isNotNull(MemberInfo) && StringHelper.isNotNull(member)){
+                    PatientMemberInfo memberInfo = patientMemberInfoMapper.selectByPrimaryKey(id);
+                    if (StringHelper.isNotNull(memberInfo) && StringHelper.isNotNull(member)){
                         mapper.delete(member);
                         mapper.insert(member);
                     }
@@ -171,6 +177,10 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
             basePatientMember.setCardNumber(patientMemberInfo.getCardNumber());
             basePatientMember.setType(type);
             basePatientMember.setMemberLevelId(patientMemberInfo.getMemberTypeId());
+            MemberType memberType = memberTypeMapper.selectByPrimaryKey(patientMemberInfo.getMemberTypeId());
+            if (null != memberType){
+                basePatientMember.setMemberLevelName(memberType.getName());
+            }
             basePatientMember.setPrincipalAmount(patientMemberInfo.getPrincipalAmount());
             basePatientMember.setBonusAmount(patientMemberInfo.getBonusAmount());
             basePatientMember.setPatientId(patientMemberInfo.getPatientId());

@@ -7,7 +7,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.report.BaseVisitRemindMapper;
 import com.yunya.middletable.dao.treatment_other.VisitingRecordMapper;
 import com.yunya.middletable.dao.treatment_other.VisitingRemindMapper;
-import com.yunya.models.middletable.BaseVisitRemind;
+import com.yunya.models.report.BaseVisitRemind;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.VisitingRemind;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -113,6 +113,28 @@ public class BasePatient {
     private Integer numberOfVisits;
 
     /**
+     * 患者名称拼音
+     */
+    @Column(name = "pinyin_name")
+    private String pinyinName;
+
+    /**
+     * 获取患者拼音
+     * @return String
+     */
+    public String getPinyinName() {
+        return pinyinName;
+    }
+
+    /**
+     * 设置患者拼音
+     * @param pinyinName 患者拼音
+     */
+    public void setPinyinName(String pinyinName) {
+        this.pinyinName = pinyinName;
+    }
+
+    /**
      * 获取患者ID
      *
      * @return patient_id - 患者ID

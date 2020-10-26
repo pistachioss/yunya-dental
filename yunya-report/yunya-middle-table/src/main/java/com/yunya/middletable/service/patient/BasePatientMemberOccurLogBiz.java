@@ -7,8 +7,8 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.*;
 import com.yunya.middletable.dao.report.BasePatientMemberOccurLogMapper;
 import com.yunya.middletable.dao.system.AccountItemMapper;
-import com.yunya.models.middletable.BasePatientMemberOccurLog;
 import com.yunya.models.patient_central.*;
+import com.yunya.models.report.BasePatientMemberOccurLog;
 import com.yunya.models.system.AccountItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -66,7 +66,7 @@ public class BasePatientMemberOccurLogBiz
   /**
    * 中间表-会员-预付款 信息操作源头
    *
-   * @param msg
+   * @param msg 消息
    */
   public void operate(MessageModel msg) {
     Integer operateType = msg.getOperateType();
@@ -92,7 +92,7 @@ public class BasePatientMemberOccurLogBiz
   /**
    * 添加中间表信息-会员/预付款-转
    *
-   * @param msg
+   * @param msg 消息
    */
   private void addPatientMemberOccurLog(MessageModel msg) {
     // 操作id

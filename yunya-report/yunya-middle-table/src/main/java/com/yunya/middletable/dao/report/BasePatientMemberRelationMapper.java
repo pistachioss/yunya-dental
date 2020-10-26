@@ -1,6 +1,6 @@
 package com.yunya.middletable.dao.report;
 
-import com.yunya.models.middletable.BasePatientMemberRelation;
+import com.yunya.models.report.BasePatientMemberRelation;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 

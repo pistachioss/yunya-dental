@@ -25,6 +25,12 @@ public class BasePatientMember {
     private Integer type;
 
     /**
+     * 卡类型名称
+     */
+    @Column(name = "member_level_name")
+    private String memberLevelName;
+
+    /**
      * 会员卡级别(金藤卡，银藤卡)
      */
     @Column(name = "member_level_id")
@@ -53,6 +59,22 @@ public class BasePatientMember {
      */
     @Column(name = "card_opening_date")
     private Date cardOpeningDate;
+
+    /**
+     * 获取卡类型名称
+     * @return memberLevelName
+     */
+    public String getMemberLevelName() {
+        return memberLevelName;
+    }
+
+    /**
+     * 设置会员卡类型名称
+     * @param memberLevelName 会员卡类型名称
+     */
+    public void setMemberLevelName(String memberLevelName) {
+        this.memberLevelName = memberLevelName;
+    }
 
     /**
      * 获取卡ID

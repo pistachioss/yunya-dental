@@ -30,7 +30,7 @@
 
 
   <!-- 根据操作id 会员类型 操作类型 查询会员操作信息 -->
-    <select id="selectOneByPrimaryKeyAndtype" resultType="com.yunya.models.middletable.BasePatientMemberOccurLog">
+    <select id="selectOneByPrimaryKeyAndtype" resultType="com.yunya.models.report.BasePatientMemberOccurLog">
       select * from base_patient_member_occur_log where occur_log_id =#{id} and type =#{type} and occur_type =#{occurType}
     </select>
 </mapper>

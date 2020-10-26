@@ -23,5 +23,6 @@
     <result column="cumulative_consumption" property="cumulativeConsumption" jdbcType="INTEGER" />
     <result column="total_arrears" property="totalArrears" jdbcType="INTEGER" />
     <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER" />
+    <result column="pinyin_name" property="pinyinName" javaType="VARCHAR"/>
   </resultMap>
 </mapper>

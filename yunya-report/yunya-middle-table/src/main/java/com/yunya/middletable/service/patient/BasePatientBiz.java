@@ -31,7 +31,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
     /**
      * 患者信息操作
-     * @param msg
+     * @param msg 消息
      */
     public void operate(MessageModel msg) {
         Integer patientId = (Integer) msg.getParamMap().get("patientId");
@@ -87,6 +87,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             basePatient.setOriginType(patientBaseInfo.getOriginType());
             basePatient.setOriginId(patientBaseInfo.getOriginId());
             basePatient.setGender(patientBaseInfo.getGender());
+            basePatient.setPinyinName(patientBaseInfo.getPinyinName());
             return basePatient;
         }
         return null;
