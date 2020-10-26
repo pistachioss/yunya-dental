@@ -161,15 +161,19 @@
         a.crt_time as crtTime
         from appointment a
         <where>
+            <if test="query.orgId != null">
+                and a.org_id = #{query.orgId}
+            </if>
             <if test="query.inservice != null">
                 and a.inservice = #{query.inservice}
+            </if>
+            <if test="query.appointStatus != null">
+                and a.appoint_status = #{query.appointStatus}
             </if>
             <if test="query.patientId != null">
                 and a.patient_id = #{query.patientId}
             </if>
-            <if test="query.orgId != null">
-                and a.org_id = #{query.orgId}
-            </if>
+
             <if test="query.dentistId != null">
                 and a.dentist_id = #{query.dentistId}
             </if>
@@ -203,12 +207,7 @@
             <if test="query.confirmStatus != null">
                 and a.confirmStatus = #{query.confirmStatus}
             </if>
-            <if test="query.appointStatus != null">
-                and a.appoint_status = #{query.appointStatus}
-            </if>
-            <if test="query.appointStatus != null">
-                and a.appoint_status = #{query.appointStatus}
-            </if>
+
         </where>
     </select>
 
@@ -418,14 +417,14 @@
         FROM
             appointment a
         <where>
+            <if test="orgId != null">
+                and a.org_id = #{orgId}
+            </if>
             <if test="patientId != null">
                 and a.patient_id = #{patientId}
             </if>
             <if test="startDate != null and endDate != null">
                 and DATE_FORMAT(a.appoint_date,'%y-%M-%d') BETWEEN DATE_FORMAT(#{startDate},'%y-%M-%d') and DATE_FORMAT(#{endDate},'%y-%M-%d')
-            </if>
-            <if test="orgId != null">
-                and a.org_id = #{orgId}
             </if>
         </where>
     </select>
