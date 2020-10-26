@@ -1,8 +1,10 @@
 package com.yunya.models.system;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "member_type")
 public class MemberType {
@@ -43,6 +45,9 @@ public class MemberType {
      * 图标
      */
     private Byte icon;
+
+    @Column(name = "picture_code")
+    private String pictureCode;
 
     /**
      * 会员卡描述（青藤、银藤、金藤、艾维会员）
@@ -195,12 +200,40 @@ public class MemberType {
         this.type = type;
     }
 
+    /**
+     * 设置会员卡图标
+     *
+     * @return icon
+     */
     public Byte getIcon() {
         return icon;
     }
 
+    /**
+     * 获取会员卡图标
+     *
+     * @param icon 图标
+     */
     public void setIcon(Byte icon) {
         this.icon = icon;
+    }
+
+    /**
+     * 获取会员卡图片码
+     *
+     * @return pictureCode
+     */
+    public String getPictureCode() {
+        return pictureCode;
+    }
+
+    /**
+     * 设置会员卡图片码
+     *
+     * @param pictureCode 会员卡图片码
+     */
+    public void setPictureCode(String pictureCode) {
+        this.pictureCode = pictureCode;
     }
 
     /**

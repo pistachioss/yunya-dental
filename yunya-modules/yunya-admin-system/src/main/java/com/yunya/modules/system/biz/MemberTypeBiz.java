@@ -3,7 +3,6 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.MemberType;
@@ -16,8 +15,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
+import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 
 /**
  * 简介: 会员卡类型业务层
@@ -67,8 +68,7 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
     entity.setName(name);
     int count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增会员卡失败，名称为'" + name + "'的会员卡已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增会员卡失败，名称为'" + name + "'的会员卡已存在！", NAME_IS_OCCUPIED);
     }
     BeanUtils.copyProperties(model, entity);
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -85,8 +85,7 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
   public void modify(Integer id, MemberTypeForm form) {
     MemberType resultData = mapper.selectByPrimaryKey(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "修改失败，ID为'" + id + "'的数据不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改失败，ID为'" + id + "'的数据不存在！", QUERY_RESULT_INVALID);
     }
     if (!resultData.getName().equals(form.getName())) {
       String name = form.getName();
@@ -94,14 +93,12 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
       resultData.setName(name);
       int count = mapper.selectCount(resultData);
       if (count > 0) {
-        throw new ClientServiceException(
-            "修改会员类型失败，名称为'" + name + "'的会员卡已存在", OperationCodeConstants.NAME_IS_OCCUPIED);
+        throw new ClientServiceException("修改会员类型失败，名称为'" + name + "'的会员卡已存在", NAME_IS_OCCUPIED);
       }
     }
     BeanUtils.copyProperties(form, resultData);
     resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     resultData.setUpdName(BaseContextHandler.getName());
-    resultData.setUpdTime(new Date(System.currentTimeMillis()));
     resultData.setId(id);
     mapper.updateByPrimaryKeySelective(resultData);
   }
