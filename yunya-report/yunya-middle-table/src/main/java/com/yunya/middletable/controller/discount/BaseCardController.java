@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
@@ -21,7 +22,7 @@ public class BaseCardController {
 	BaseCardServiceImpl cardService;
 
 	@PostMapping("/base/card/pull")
-	public ResponseResult pullData(@RequestBody PullForm form) {
+	public ResponseResult pullData(@RequestBody PullForm form) throws ExecutionException, InterruptedException {
 		long start = System.currentTimeMillis();
 		RestErrorBo errorBo = cardService.pullCard(form.getStartDate(), form.getEndDate());
 		if (errorBo.getError() != null) {

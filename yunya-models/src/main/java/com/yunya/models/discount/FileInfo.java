@@ -20,4 +20,7 @@ public class FileInfo {
   @ApiModelProperty("描述")
   private String mark;
 
+  @ApiModelProperty("文件名")
+  private String fileName;
+
 }

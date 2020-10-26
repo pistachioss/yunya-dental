@@ -7,6 +7,7 @@ public class BasePatientMemberRelation {
     /**
      * 关系ID
      */
+    @Id
     @Column(name = "relation_id")
     private Integer relationId;
 
@@ -25,6 +26,7 @@ public class BasePatientMemberRelation {
     /**
      * 卡类型(0：会员卡；１：预付款)
      */
+    @Id
     private Byte type;
 
     /**

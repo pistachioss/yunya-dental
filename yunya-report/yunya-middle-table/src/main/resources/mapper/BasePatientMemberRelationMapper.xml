@@ -11,4 +11,9 @@
     <result column="type" property="type" jdbcType="TINYINT" />
     <result column="bind_type" property="bindType" jdbcType="TINYINT" />
   </resultMap>
+
+  <!-- 根据关系id 和 会员卡类型进行删除 -->
+    <delete id="deleteByPrimaryKeyAndType">
+      delete from base_patient_member_relation where relation_id =#{relationId} and type =#{type}
+    </delete>
 </mapper>

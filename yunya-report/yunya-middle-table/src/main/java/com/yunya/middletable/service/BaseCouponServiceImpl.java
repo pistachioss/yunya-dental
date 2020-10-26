@@ -21,6 +21,7 @@ import com.yunya.models.discount.VoucheCoupon;
 import com.yunya.models.report.BaseCoupon;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Converter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,7 @@ import static java.util.stream.Collectors.*;
 @Slf4j
 @Service
 public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon> {
-	@Resource
+	@Autowired
 	private CouponMapper couponMapper;
 	@Resource
 	private VoucheCouponMapper voucheCouponMapper;
@@ -199,8 +200,8 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 			Map<Integer, BaseCoupon> couponMap = list.stream().collect(toMap(BaseCoupon::getCouponId, Function.identity()));
 			//需要更新的产品集合
 			updateCoupons = existBaseCoupons.stream().filter(obj -> couponMap.get(obj.getCouponId()) != null
-					&& !obj.equals(couponMap.get(obj.getCouponId()))).collect(toList());
-			return updateCoupons;
+					&& !obj.equals(couponMap.get(obj.getCouponId()))).map(obj ->couponMap.get(obj.getCouponId()))
+					.collect(toList());
 		}
 		log.info("优惠券基础表，需要更新的数据[{}]", updateCoupons.size());
 		return updateCoupons;

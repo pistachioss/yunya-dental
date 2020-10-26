@@ -31,15 +31,12 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
     /**
      * 患者信息操作
-     * @param msg
+     * @param msg 消息
      */
     public void operate(MessageModel msg) {
         Integer patientId = (Integer) msg.getParamMap().get("patientId");
         Integer operateType = msg.getOperateType();
         BasePatient patient = generatePatientBaseInfo(patientId);
-        if (null == patient){
-            return;
-        }
         switch (operateType) {
             case 0:
                 mapper.delete(patient);
@@ -49,6 +46,11 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
                 mapper.updateByPrimaryKeySelective(patient);
                 break;
             case 2:
+                PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientId);
+                if (StringHelper.isNotNull(patientBaseInfo) && StringHelper.isNotNull(patient)){
+                    mapper.delete(patient);
+                    mapper.insertSelective(patient);
+                }
                 mapper.delete(patient);
                 break;
             default:
@@ -65,6 +67,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectByPrimaryKey(patientId);
         return null != patientBaseInfo ? setPatientBaseInfo(patientId) : null;
     }
+
 
     /**
      * 设置患者信息属性
@@ -84,6 +87,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             basePatient.setOriginType(patientBaseInfo.getOriginType());
             basePatient.setOriginId(patientBaseInfo.getOriginId());
             basePatient.setGender(patientBaseInfo.getGender());
+            basePatient.setPinyinName(patientBaseInfo.getPinyinName());
             return basePatient;
         }
         return null;
@@ -112,5 +116,13 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         }
 
 
+    }
+
+    /**
+     * 修改患者信息
+     * @param basePatient 患者信息
+     */
+    public void upd(BasePatient basePatient) {
+        mapper.updateByPrimaryKeySelective(basePatient);
     }
 }

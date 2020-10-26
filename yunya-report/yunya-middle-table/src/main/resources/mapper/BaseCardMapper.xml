@@ -194,4 +194,36 @@
             #{item.couponId}
         </foreach>
     </update>
+
+    <select id="getExistData" resultMap="BaseResultMap">
+        select
+            `card_id`,
+            `coupon_id`,
+            `card_number`,
+            `allocate_org_id`,
+            `patient_id`,
+            `active_user_id`,
+            `active_org_id`,
+            `seller_user_id`,
+            `allocate_date`,
+            `status`,
+            `generate_date`,
+            `sold_date`,
+            `sold_target`,
+            `sold_phone_number`,
+            `sold_type`,
+            `sold_way`,
+            `pay_id`,
+            `pay_name`,
+            `charge_status`,
+            `active_date`,
+            `activation_deadline`,
+            `first_use_date`
+        from
+            `base_card`
+        where `card_id` in
+            <foreach collection="list" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
 </mapper>

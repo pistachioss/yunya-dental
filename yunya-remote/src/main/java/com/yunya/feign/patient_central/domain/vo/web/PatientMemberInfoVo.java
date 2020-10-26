@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 /**
  * 简单介绍:</br> 会员信息Vo
@@ -17,5 +18,43 @@ import java.io.Serializable;
 @Data
 @ToString
 public class PatientMemberInfoVo implements Serializable {
+    /**
+     * 主键id
+     */
+    private Integer id;
 
+    /**
+     * 诊所id
+     */
+    private Integer orgId;
+
+    /**
+     * 患者id
+     */
+    private Integer patientId;
+
+    /**
+     * 患者id
+     */
+    private String name;
+
+    /**
+     * 会员账号
+     */
+    private String cardNumber;
+
+    /**
+     * 本金+赠金
+     */
+    private BigDecimal memberMoneySum;
+
+    /**
+     * 赠金
+     */
+    private BigDecimal principalAmount;
+
+    /**
+     * 本金
+     */
+    private BigDecimal bonusAmount;
 }

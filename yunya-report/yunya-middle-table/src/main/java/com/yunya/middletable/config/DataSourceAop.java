@@ -113,6 +113,25 @@ public class DataSourceAop {
     }
 
     /**
+     * treatment_other库切入点
+     */
+    @Pointcut("execution(* com.yunya.middletable.dao.treatment_other..*.*(..))")
+    public void switchDataSourceTreatmentOther() {
+    }
+
+    @Before("switchDataSourceTreatmentOther()")
+    public void treatmentOtherBefore() {
+        HintManager hintManager = HintManager.getInstance();
+        hintManager.setDatabaseShardingValue("treatment-other");
+    }
+
+    @After("switchDataSourceTreatmentOther()")
+    public void treatmentOtherAfter() {
+        //清理掉当前设置的数据源，让默认的数据源不受影响
+        HintManager.clear();
+    }
+
+    /**
      * employee_expand库切入点
      */
     @Pointcut("execution(* com.yunya.middletable.dao.employee_expand..*.*(..))")

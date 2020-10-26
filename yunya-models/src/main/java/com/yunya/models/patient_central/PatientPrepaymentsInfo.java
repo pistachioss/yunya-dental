@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.*;
 
+/**
+ * @author WY
+ */
 @Table(name = "patient_prepayments_info")
 public class PatientPrepaymentsInfo {
     /**

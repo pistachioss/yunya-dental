@@ -90,13 +90,13 @@ public class MemberRechargeRecord {
      * 充值后当前本金
      */
     @Column(name = "current_recharge_principal")
-    private BigDecimal currentRechargePrincipal;
+    private BigDecimal currentPrincipal;
 
     /**
      * 充值后当前赠金
      */
     @Column(name = "current_recharge_bonus")
-    private BigDecimal currentRechargeBonus;
+    private BigDecimal currentBonus;
 
 
     /**
@@ -104,7 +104,7 @@ public class MemberRechargeRecord {
      * @return currentRechargePrincipal
      */
     public BigDecimal getCurrentRechargePrincipal() {
-        return currentRechargePrincipal;
+        return currentPrincipal;
     }
 
     /**
@@ -112,7 +112,7 @@ public class MemberRechargeRecord {
      * @param currentRechargePrincipal
      */
     public void setCurrentRechargePrincipal(BigDecimal currentRechargePrincipal) {
-        this.currentRechargePrincipal = currentRechargePrincipal;
+        this.currentPrincipal = currentRechargePrincipal;
     }
 
     /**
@@ -120,7 +120,7 @@ public class MemberRechargeRecord {
      * @return currentRechargeBonus
      */
     public BigDecimal getCurrentRechargeBonus() {
-        return currentRechargeBonus;
+        return currentBonus;
     }
 
     /**
@@ -128,7 +128,7 @@ public class MemberRechargeRecord {
      * @param currentRechargeBonus
      */
     public void setCurrentRechargeBonus(BigDecimal currentRechargeBonus) {
-        this.currentRechargeBonus = currentRechargeBonus;
+        this.currentBonus = currentRechargeBonus;
     }
 
     /**

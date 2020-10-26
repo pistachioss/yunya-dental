@@ -1,5 +1,6 @@
 package com.yunya.models.report;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import javax.persistence.*;
 
@@ -8,6 +9,7 @@ public class BasePatientMemberOccurLog {
     /**
      * 主键ID
      */
+    @Id
     @Column(name = "occur_log_id")
     private Integer occurLogId;
 
@@ -26,11 +28,13 @@ public class BasePatientMemberOccurLog {
     /**
      * 卡类型(0：会员卡；１：预付款)
      */
+    @Id
     private Byte type;
 
     /**
      * 发生类型(1充值2消费3退款4撤销收费)
      */
+    @Id
     @Column(name = "occur_type")
     private Byte occurType;
 
@@ -38,25 +42,25 @@ public class BasePatientMemberOccurLog {
      * 本金金额
      */
     @Column(name = "principal_amount")
-    private Long principalAmount;
+    private BigDecimal principalAmount;
 
     /**
      * 赠金金额
      */
     @Column(name = "bonus_amount")
-    private Long bonusAmount;
+    private BigDecimal bonusAmount;
 
     /**
      * 发生点本金余额
      */
     @Column(name = "current_recharge_principal")
-    private Long currentRechargePrincipal;
+    private BigDecimal currentRechargePrincipal;
 
     /**
      * 发生点赠金余额
      */
     @Column(name = "current_recharge_bonus")
-    private Long currentRechargeBonus;
+    private BigDecimal currentRechargeBonus;
 
     /**
      * 发生方式id
@@ -98,6 +102,29 @@ public class BasePatientMemberOccurLog {
      */
     @Column(name = "occur_date")
     private Date occurDate;
+
+    /**
+     * 门诊id
+     */
+    @Column(name = "org_id")
+    private Integer orgId;
+
+
+    /**
+     * 获取门诊id
+     * @return orgId
+     */
+    public Integer getOrgId() {
+        return orgId;
+    }
+
+    /**
+     * 设置门诊id
+     * @param orgId 门诊id
+     */
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
+    }
 
     /**
      * 获取主键ID
@@ -194,7 +221,7 @@ public class BasePatientMemberOccurLog {
      *
      * @return principal_amount - 本金金额
      */
-    public Long getPrincipalAmount() {
+    public BigDecimal getPrincipalAmount() {
         return principalAmount;
     }
 
@@ -203,7 +230,7 @@ public class BasePatientMemberOccurLog {
      *
      * @param principalAmount 本金金额
      */
-    public void setPrincipalAmount(Long principalAmount) {
+    public void setPrincipalAmount(BigDecimal principalAmount) {
         this.principalAmount = principalAmount;
     }
 
@@ -212,7 +239,7 @@ public class BasePatientMemberOccurLog {
      *
      * @return bonus_amount - 赠金金额
      */
-    public Long getBonusAmount() {
+    public BigDecimal getBonusAmount() {
         return bonusAmount;
     }
 
@@ -221,7 +248,7 @@ public class BasePatientMemberOccurLog {
      *
      * @param bonusAmount 赠金金额
      */
-    public void setBonusAmount(Long bonusAmount) {
+    public void setBonusAmount(BigDecimal bonusAmount) {
         this.bonusAmount = bonusAmount;
     }
 
@@ -230,7 +257,7 @@ public class BasePatientMemberOccurLog {
      *
      * @return current_recharge_principal - 发生点本金余额
      */
-    public Long getCurrentRechargePrincipal() {
+    public BigDecimal getCurrentRechargePrincipal() {
         return currentRechargePrincipal;
     }
 
@@ -239,7 +266,7 @@ public class BasePatientMemberOccurLog {
      *
      * @param currentRechargePrincipal 发生点本金余额
      */
-    public void setCurrentRechargePrincipal(Long currentRechargePrincipal) {
+    public void setCurrentRechargePrincipal(BigDecimal currentRechargePrincipal) {
         this.currentRechargePrincipal = currentRechargePrincipal;
     }
 
@@ -248,7 +275,7 @@ public class BasePatientMemberOccurLog {
      *
      * @return current_recharge_bonus - 发生点赠金余额
      */
-    public Long getCurrentRechargeBonus() {
+    public BigDecimal getCurrentRechargeBonus() {
         return currentRechargeBonus;
     }
 
@@ -257,7 +284,7 @@ public class BasePatientMemberOccurLog {
      *
      * @param currentRechargeBonus 发生点赠金余额
      */
-    public void setCurrentRechargeBonus(Long currentRechargeBonus) {
+    public void setCurrentRechargeBonus(BigDecimal currentRechargeBonus) {
         this.currentRechargeBonus = currentRechargeBonus;
     }
 

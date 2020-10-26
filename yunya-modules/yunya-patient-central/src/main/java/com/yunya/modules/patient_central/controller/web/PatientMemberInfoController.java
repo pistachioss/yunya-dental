@@ -65,6 +65,18 @@ public class PatientMemberInfoController {
   }
 
   /**
+   * 会员卡付款余额查询
+   * @param id 患者id
+   * @return PatientPrepaymentBalanceVo
+   */
+  @ApiOperation("会员卡付款余额查询")
+  @GetMapping("/balancePayment/{id}")
+  public ResponseResult<PatientMemberBalanceVo> balancePayment(@PathVariable("id") Integer id) {
+    return ResponseUtil.success(this.patientMemberInfoBiz.balancePayment(id));
+  }
+
+
+  /**
    * 添加会员卡关联关系/共享值关联关系
    * @param form 会员卡关联关系
    * @return ResponseResult
@@ -185,5 +197,12 @@ public class PatientMemberInfoController {
   @PostMapping("/expendList")
   public ResponseResult<PageInfo<MemberExpendRecordVo>> expendList(@RequestBody MemberExpendRecordQueryForm queryForm) {
     return ResponseUtil.success(patientMemberInfoBiz.expendList(queryForm));
+  }
+
+  @CurrentUser
+  @ApiOperation("会员卡消费")
+  @RequestMapping(value = "/member/expend", method = RequestMethod.POST)
+  public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
+    return patientMemberInfoBiz.expend(model);
   }
 }

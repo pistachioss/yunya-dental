@@ -18,4 +18,6 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
 	 * @param list
 	 */
 	void updateList(@Param("list") List<BaseCard> list);
+
+	List<BaseCard> getExistData(@Param("list") List<Integer> cardIds);
 }

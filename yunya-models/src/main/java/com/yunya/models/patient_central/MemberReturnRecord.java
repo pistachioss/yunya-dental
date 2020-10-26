@@ -96,6 +96,18 @@ public class MemberReturnRecord {
     private Date updTime;
 
     /**
+     * 消费后当前本金
+     */
+    @Column(name = "current_recharge_principal")
+    private BigDecimal currentPrincipal;
+
+    /**
+     * 消费后当前赠金
+     */
+    @Column(name = "current_recharge_bonus")
+    private BigDecimal currentBonus;
+
+    /**
      * @return id
      */
     public Integer getId() {
@@ -359,5 +371,53 @@ public class MemberReturnRecord {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取备注
+     * @return remarks
+     */
+    public String getRemarks() {
+        return remarks;
+    }
+
+    /**
+     * 设置备注
+     * @param remarks 备注
+     */
+    public void setRemarks(String remarks) {
+        this.remarks = remarks;
+    }
+
+    /**
+     * 获取当前本金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentPrincipal() {
+        return currentPrincipal;
+    }
+
+    /**
+     * 设置当前本金
+     * @param currentPrincipal
+     */
+    public void setCurrentPrincipal(BigDecimal currentPrincipal) {
+        this.currentPrincipal = currentPrincipal;
+    }
+
+    /**
+     * 获取当前证金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentBonus() {
+        return currentBonus;
+    }
+
+    /**
+     * 设置当前赠金
+     * @param currentBonus
+     */
+    public void setCurrentBonus(BigDecimal currentBonus) {
+        this.currentBonus = currentBonus;
     }
 }

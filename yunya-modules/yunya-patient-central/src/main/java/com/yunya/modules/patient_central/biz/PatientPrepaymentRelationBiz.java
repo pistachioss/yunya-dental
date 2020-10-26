@@ -149,7 +149,7 @@ public class PatientPrepaymentRelationBiz
    */
   public void recharge(PrepaidRechargeModel model) {
     // 查询会员余额 增加余额
-    PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId(), model.getPatientId());
+    PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(model.getPrepaidId(), model.getPatientId());
     if(patientPrepaymentsInfo != null){
       patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
       patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(model.getRechargeBonus()));
@@ -163,6 +163,8 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
       prepaidRechargeRecord.setCurrentRechargePrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
       prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+      prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
 
       // 添加预付款充值收费记录
@@ -211,7 +213,7 @@ public class PatientPrepaymentRelationBiz
    */
   public void refund(PrepaidMeturnRecordModel model) {
     // 查询会员余额 退减余额
-    PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId(), model.getPatientId());
+    PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(model.getPrepaidId(), model.getPatientId());
     if(patientPrepaymentsInfo != null){
       patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().subtract(model.getReturnPrincipalAmount()));
       patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().subtract(model.getReturnGiftAmount()));
@@ -227,6 +229,10 @@ public class PatientPrepaymentRelationBiz
       }
       prepaidReturnRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidReturnRecord.setCrtName(BaseContextHandler.getName());
+      prepaidReturnRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+      prepaidReturnRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+      prepaidReturnRecord.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
+      prepaidReturnRecord.setUpdName(BaseContextHandler.getName());
       prepaidReturnRecordMapper.insertSelective(prepaidReturnRecord);
     }
   }
@@ -289,7 +295,7 @@ public class PatientPrepaymentRelationBiz
    */
   public ResponseResult expend(PrepaidExpendRecordModel model) {
     PatientPrepaymentsInfo patientPrepaymentsInfo =
-        patientPrepaymentsInfoMapper.selectOneByCardNumber(
+        patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(
             model.getPrepaidId(), model.getPatientId());
     if (patientPrepaymentsInfo != null){
       if (model.getType() == 0 ){
@@ -305,6 +311,10 @@ public class PatientPrepaymentRelationBiz
         prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         prepaidExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
+        prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+        prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+        prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
         prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
         return ResponseUtil.success();
       }
@@ -367,6 +377,32 @@ public class PatientPrepaymentRelationBiz
     prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     prepaidExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
+    prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+    prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+    prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+    prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+    prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+    prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
     prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
+  }
+
+  /**
+   * 预付款付款余额查询
+   * @param id
+   * @return PatientPrepaymentBalanceVo
+   */
+  public PatientPrepaymentBalanceVo balancePayment(Integer id) {
+    PatientPrepaymentsInfoVo prepaymentInfo = patientPrepaymentsInfoMapper.findPrepaymentInfo(id);
+    if (null != prepaymentInfo){
+      PatientPrepaymentBalanceVo patientPrepaymentBalanceVo = new PatientPrepaymentBalanceVo();
+      patientPrepaymentBalanceVo.setPatientPrepaymentsInfoVo(prepaymentInfo);
+
+      List<PatientPrepaymentsInfoVo> prepaymentsInfoVoList = patientPrepaymentsInfoMapper.selectPrepaymentRelationByMasterPatientId(id);
+      if (StringHelper.isNotNull(prepaymentsInfoVoList)){
+        patientPrepaymentBalanceVo.setPrepaymentsInfoVoList(prepaymentsInfoVoList);
+      }
+      return patientPrepaymentBalanceVo;
+    }
+    return null;
   }
 }

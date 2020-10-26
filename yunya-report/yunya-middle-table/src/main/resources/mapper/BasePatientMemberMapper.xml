@@ -7,11 +7,20 @@
     -->
     <result column="card_id" property="cardId" jdbcType="INTEGER" />
     <result column="card_number" property="cardNumber" jdbcType="VARCHAR" />
-    <result column="type" property="type" jdbcType="VARCHAR" />
-    <result column="member_level_id" property="memberLevelId" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="member_level_id" property="memberLevelId" jdbcType="INTEGER" />
+    <result column="member_level_name" property="memberLevelName" jdbcType="VARCHAR" />
     <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL" />
     <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL" />
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
     <result column="card_opening_date" property="cardOpeningDate" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!-- 根据会员卡号修改会员信息 -->
+
+  <!-- 根据会员id和tyep 删除中间表消息 -->
+    <delete id="deleteByPrimaryKeyAndType">
+      delete from base_patient_member where card_id =#{cardId} and type =#{type}
+    </delete>
+
 </mapper>

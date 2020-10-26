@@ -19,6 +19,27 @@ import java.util.Date;
 @ToString
 public class MemberBaseInfoVo implements Serializable {
 
+
+    /**
+     * 主键id
+     */
+    private Integer id;
+
+    /**
+     * 诊所id
+     */
+    private Integer orgId;
+
+    /**
+     * 患者id
+     */
+    private Integer patientId;
+
+    /**
+     * 患者名称
+     */
+    private String name;
+
     /**
      * 会员卡卡号
      */
@@ -35,6 +56,11 @@ public class MemberBaseInfoVo implements Serializable {
     private BigDecimal memberCardMoneySum;
 
     /**
+     *  本金
+     */
+    private BigDecimal principalAmount;
+
+    /**
      *  赠金
      */
     private BigDecimal bonusAmount;
@@ -48,4 +74,5 @@ public class MemberBaseInfoVo implements Serializable {
      * 开卡日期
      */
     private Date crtTime;
+
 }

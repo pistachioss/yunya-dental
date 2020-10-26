@@ -67,4 +67,11 @@ public interface PatientMemberInfoMapper extends Mapper<PatientMemberInfo> {
      * @return MasertMemberInfoVo
      */
     MasertMemberInfoVo selectMasertMemberInfo(@Param("form") PatientMemberInfoQueryForm form);
+
+    /**
+     * 根据主卡人id 查询会员贡献值关联信息
+     * @param id 主卡人id
+     * @return MemberBaseInfoVo
+     */
+    List<MemberBaseInfoVo> selectMemberRelationByMasterPatientId(Integer id);
 }
