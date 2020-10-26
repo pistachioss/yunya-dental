@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import static com.yunya.middletable.enums.CouponTypeEnum.*;
 import static java.util.stream.Collectors.*;
@@ -89,9 +88,9 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 			//查询已存在的基础数据
 			List<BaseCouponItem> existItems = getExistBaseCouponItem(couponIds);
 			//批量插入
-			batchInsert(getAddCoupons(list, existItems));
+			batchInsert(getAddItem(list, existItems));
 			//批量更新
-			batchUpdateBase(getUpdateCoupons(list, existItems));
+			batchUpdateBase(getUpdateItem(list, existItems));
 			//批量删除
 			batchDeleteBase(getDeleteItems(list, existItems));
 		}
@@ -142,9 +141,9 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 			} else {
 				List<BaseCouponItem> baseCouponItems = getOriginItems(coupon);
 				//需要新增的优惠券项目
-				batchInsert(getAddCoupons(baseCouponItems, baseItems));
+				batchInsert(getAddItem(baseCouponItems, baseItems));
 				//需要更新的优惠券项目
-				batchUpdateBase(getUpdateCoupons(baseCouponItems, baseItems));
+				batchUpdateBase(getUpdateItem(baseCouponItems, baseItems));
 				//查找需要删除的优惠券项目
 				batchDeleteBase(getDeleteItems(baseCouponItems, baseItems));
 			}
@@ -193,7 +192,7 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	 * @param existItems      已存在基础数据
 	 * @return list
 	 */
-	private List<BaseCouponItem> getAddCoupons(List<BaseCouponItem> baseCouponItems, List<BaseCouponItem> existItems) {
+	private List<BaseCouponItem> getAddItem(List<BaseCouponItem> baseCouponItems, List<BaseCouponItem> existItems) {
 		List<BaseCouponItem> addItems = Lists.newArrayList();
 		if (CollectionUtils.isEmpty(existItems)) {
 			addItems = baseCouponItems;
@@ -225,7 +224,7 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	 * @param existItems      已存在基础数据
 	 * @return List
 	 */
-	private List<BaseCouponItem> getUpdateCoupons(List<BaseCouponItem> baseCouponItems, List<BaseCouponItem> existItems) {
+	private List<BaseCouponItem> getUpdateItem(List<BaseCouponItem> baseCouponItems, List<BaseCouponItem> existItems) {
 		List<BaseCouponItem> list = Lists.newArrayList();
 		if (CollectionUtils.isNotEmpty(existItems)) {
 			Map<String, BaseCouponItem> itemMap = baseCouponItems.stream().filter(obj -> obj.getQuantity() != null)
@@ -253,27 +252,24 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 	private List<BaseCouponItem> getDeleteItems(List<BaseCouponItem> baseCouponItems, List<BaseCouponItem> existItems) {
 		List<BaseCouponItem> deleteItems = Lists.newArrayList();
 		if (CollectionUtils.isNotEmpty(existItems)) {
-			Map<String, BaseCouponItem> itemMap = baseCouponItems.stream().filter(obj -> obj.getItemId() != null).
-					collect(toMap(obj -> Joiner.on(":").join(obj.getCouponId(), obj.getItemId(), obj.getType()), Function.identity()));
-			Map<String, BaseCouponItem> nullItemMap = baseCouponItems.stream().filter(obj -> obj.getItemId() == null).
-					collect(toMap(obj -> Joiner.on(":").join(obj.getCouponId(), obj.getType()), Function.identity()));
 			//需要更新的产品集合
-			deleteItems = existItems.stream().filter(notContainsKey(itemMap, nullItemMap)).collect(toList());
+			deleteItems = existItems.stream().filter(obj -> (obj.getQuantity() == null && !baseCouponItems.contains(obj)) ||
+					(obj.getQuantity() != null && !judgeEqual(obj, baseCouponItems))).collect(toList());
 		}
 		log.info("优惠券项目基础表，需要删除的数据[{}]", deleteItems.size());
 		return deleteItems;
 	}
 
-	private Predicate<BaseCouponItem> notContainsKey(Map<String, BaseCouponItem> itemMap, Map<String, BaseCouponItem> nullItemMap) {
-		return (obj) -> {
-			if (obj.getItemId() != null) {
-				String key = Joiner.on(":").join(obj.getCouponId(), obj.getItemId(), obj.getType());
-				return itemMap.get(key) == null;
-			}
-			String key = Joiner.on(":").join(obj.getCouponId(), obj.getType());
-			return nullItemMap.get(key) == null;
-		};
-	}
+//	private Predicate<BaseCouponItem> notContainsKey(Map<String, BaseCouponItem> itemMap, Map<String, BaseCouponItem> nullItemMap) {
+//		return (obj) -> {
+//			if (obj.getItemId() != null) {
+//				String key = Joiner.on(":").join(obj.getCouponId(), obj.getItemId(), obj.getType());
+//				return itemMap.get(key) == null;
+//			}
+//			String key = Joiner.on(":").join(obj.getCouponId(), obj.getType());
+//			return nullItemMap.get(key) == null;
+//		};
+//	}
 
 	private List<BaseCouponItem> getExistBaseCouponItem(List<Integer> couponIds) {
 		Example example = new Example(BaseCouponItem.class);

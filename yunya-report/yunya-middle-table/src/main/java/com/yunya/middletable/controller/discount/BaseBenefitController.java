@@ -5,26 +5,25 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.middletable.service.BaseCardServiceImpl;
+import com.yunya.middletable.service.BaseBenefitServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
-import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
-public class BaseCardController {
+public class BaseBenefitController {
 
 	@Resource
-	BaseCardServiceImpl cardService;
+	BaseBenefitServiceImpl benefitService;
 
-	@PostMapping("/base/card/pull")
-	public ResponseResult pullData(@RequestBody PullForm form) throws ExecutionException, InterruptedException {
+	@PostMapping("/base/benefit/pull")
+	public ResponseResult pullData(@RequestBody PullForm form) {
 		long start = System.currentTimeMillis();
-		RestErrorBo errorBo = cardService.pullCard(form.getStartDate(), form.getEndDate());
+		RestErrorBo errorBo = benefitService.pullBenefit(form.getStartDate(), form.getEndDate());
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
@@ -33,9 +32,9 @@ public class BaseCardController {
 		return ResponseUtil.success(end - start);
 	}
 
-	@PostMapping("/base/card/msg/send")
+	@PostMapping("/base/benefit/msg/send")
 	public ResponseResult sendMessage(@RequestBody MessageModel model) {
-		cardService.operateBaseCard(model);
+		benefitService.operateBaseBenefit(model);
 		return ResponseUtil.success();
 	}
 
