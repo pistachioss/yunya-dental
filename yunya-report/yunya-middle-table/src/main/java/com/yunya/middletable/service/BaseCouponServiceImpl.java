@@ -200,8 +200,8 @@ public class BaseCouponServiceImpl extends BaseBiz<BaseCouponMapper, BaseCoupon>
 			Map<Integer, BaseCoupon> couponMap = list.stream().collect(toMap(BaseCoupon::getCouponId, Function.identity()));
 			//需要更新的产品集合
 			updateCoupons = existBaseCoupons.stream().filter(obj -> couponMap.get(obj.getCouponId()) != null
-					&& !obj.equals(couponMap.get(obj.getCouponId()))).collect(toList());
-			return updateCoupons;
+					&& !obj.equals(couponMap.get(obj.getCouponId()))).map(obj ->couponMap.get(obj.getCouponId()))
+					.collect(toList());
 		}
 		log.info("优惠券基础表，需要更新的数据[{}]", updateCoupons.size());
 		return updateCoupons;

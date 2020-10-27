@@ -64,7 +64,10 @@ public class TemplateBiz {
         List<GeneralTemplatePageVo> list = Lists.newArrayListWithExpectedSize(page.size());
         list = EntityUtils.build(page.getResult(), GeneralTemplatePageVo.class);
         list.forEach(obj -> obj.setEnable(EnableEnum.getValue(Integer.valueOf(obj.getEnable()))));
-        return new PageInfo<>(list);
+        PageInfo<GeneralTemplatePageVo> pageInfo = new PageInfo<>(list);
+        pageInfo.setPageNum(page.getPageNum());
+        pageInfo.setTotal(page.getTotal());
+        return pageInfo;
     }
 
     public void createMedicalRecord(Integer categoryId, MedicalTemplateModel createModel) {
@@ -107,7 +110,10 @@ public class TemplateBiz {
             obj.setEnable(EnableEnum.getValue(Integer.valueOf(obj.getEnable())));
             obj.setType(TemplateTypeEnum.getValue(Integer.valueOf(obj.getType())));
         });
-        return new PageInfo<>(list);
+        PageInfo<MedicalTemplatePageVo> pageInfo = new PageInfo<>(list);
+        pageInfo.setPageNum(page.getPageNum());
+        pageInfo.setTotal(page.getTotal());
+        return pageInfo;
     }
 
     public List<EnableTemplateVo> getEnableMedicalTemplate(Integer categoryId, Integer type) {

@@ -289,6 +289,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             return ResponseUtil.fail(AppointmentError.APPOINT_NOT_ALLOW_CANCEL.getCode(),AppointmentError.APPOINT_NOT_ALLOW_CANCEL.getMessage(),null);
         }
         appointment.setInservice(false);
+        appointment.setAppointStatus((byte) 2);
         appointment.setRemarks(form.getCause());
         appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointment.setUpdName(BaseContextHandler.getName());

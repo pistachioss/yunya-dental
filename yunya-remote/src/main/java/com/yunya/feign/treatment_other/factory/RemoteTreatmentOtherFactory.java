@@ -21,8 +21,7 @@ import java.util.List;
 public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
 
     @Override
-    public Integer insertVisitingRecord(VisitingRecord visitingRecord) {
-        return null;
+    public void insertVisitingRecord(List<VisitingRecord> visitingRecords) {
     }
 
     @Override

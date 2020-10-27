@@ -46,6 +46,7 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         if (fileForm.getPaths() != null && fileForm.getPaths().size() > 0) {
             for (FileInfo fileInfo : fileForm.getPaths()) {
                 CouponFileInfo couponFileInfo = new CouponFileInfo();
+                couponFileInfo.setFileName(fileInfo.getFileName());
                 couponFileInfo.setCouponId(fileForm.getId());
                 couponFileInfo.setInservice(true);
                 couponFileInfo.setRemark(fileInfo.getMark());

@@ -15,7 +15,7 @@ import java.util.Date;
  * @author: LHB
  * @create: 2020-08-24 14:43
  **/
-@ApiModel(value = "后续随访内容")
+@ApiModel(value = "VisitingContentAfterCurrentVo",description = "后续随访内容")
 @Data
 @ToString
 public class VisitingContentAfterCurrentVo implements Serializable {

@@ -28,7 +28,7 @@ public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "售出对象手机号", required = true)
     @NotBlank
     private String soldPhoneNumber;
-    @ApiModelProperty(value = "售出类型", required = true)
+    @ApiModelProperty(value = "售出类型（0:售出 1:置换 2:赠送）", required = true)
     @NotNull
     private Integer soldType;
     @ApiModelProperty(value = "发短信", required = true)
@@ -51,7 +51,7 @@ public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "售出方式（0:线上 1:线下）", required = true)
     @NotNull
     private Integer soldWay;
-    @ApiModelProperty(value = "优惠券类型", required = true)
+    @ApiModelProperty(value = "优惠券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）", required = true)
     @NotNull
     private Integer couponType;
 

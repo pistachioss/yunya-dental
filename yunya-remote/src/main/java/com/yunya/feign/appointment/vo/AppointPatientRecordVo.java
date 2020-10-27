@@ -129,4 +129,10 @@ public class AppointPatientRecordVo implements Serializable {
     @ApiModelProperty(value = "预约状态 0-预约未到，1-履约，2，取消预约，3-失约")
     private Byte appointStatus;
 
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remarks;
+
 }

@@ -3,6 +3,7 @@ package com.yunya.models.report;
 import lombok.Data;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.time.LocalDateTime;
 
@@ -12,6 +13,7 @@ public class BaseCard {
     /**
      * 卡券ID
      */
+    @Id
     @Column(name = "card_id")
     private Integer cardId;
 
