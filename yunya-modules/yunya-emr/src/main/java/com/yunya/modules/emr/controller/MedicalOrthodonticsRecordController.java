@@ -19,6 +19,7 @@ import javax.validation.Valid;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author 杨柳絮
@@ -57,6 +58,15 @@ public class MedicalOrthodonticsRecordController {
   @ApiOperation("新增正畸电子病历")
   @CurrentUser
   public ResponseResult create(@RequestBody @Valid MedicalOrthodonticsRecord model) {
+
+    MedicalOrthodonticsRecordQueryForm queryForm = new MedicalOrthodonticsRecordQueryForm();
+    queryForm.setPatientId(model.getPatientId());
+    MedicalOrthodonticsRecord medicalOrthodonticsRecord = new MedicalOrthodonticsRecord();
+    BeanUtils.copyProperties(queryForm,medicalOrthodonticsRecord);
+    List<MedicalOrthodonticsRecord>list = medicalOrthodonticsRecordBiz.selectByEntity(medicalOrthodonticsRecord);
+    if(list.size()>0){
+      return ResponseUtil.error("该患者已经拥有正畸病历",list);
+    }
     model.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     model.setCrtTime(new Date());
     return ResponseUtil.success(medicalOrthodonticsRecordBiz.create(model));
