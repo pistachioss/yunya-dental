@@ -100,4 +100,16 @@
     delete from visiting_record where treatment_id = #{treatmentId}
   </delete>
 
+  <!-- 批量保存随访记录（就诊服务调用） -->
+  <insert id="insertEntitys" parameterType="java.util.List" useGeneratedKeys="true">
+    insert into visiting_record (org_id,treatment_id,patient_id,dentist_id,dept_room_id,treatment_date,visiting_date,visiting_time,reason,
+    visiting_content,inservice,remarks,status ,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time)
+    values
+    <foreach collection="visitingRecords" item="item" separator=",">
+      (#{item.orgId},#{item.treatmentId},#{item.patientId},#{item.dentistId},#{item.deptRoomId},#{item.treatmentDate},#{item.visitingDate},#{item.visitingTime},
+      #{item.reason},#{item.visitingContent},#{item.inservice},#{item.remarks},#{item.status},#{item.crtId},#{item.crtName},#{item.crtTime},
+      #{item.uptId},#{item.updName},#{item.updTime})
+    </foreach>
+  </insert>
+
 </mapper>

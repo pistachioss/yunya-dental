@@ -80,11 +80,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
 
     /**
      * 插入随访记录（外部服务调用）
-     * @param mode
+     * @param visitingRecords
      * @return
      */
-    public Integer insertEntity(VisitingRecord mode) {
-        return mapper.insertSelective(mode);
+    public void insertEntity(List<VisitingRecord> visitingRecords) {
+        mapper.insertEntitys(visitingRecords);
     }
 
     /**

@@ -95,6 +95,7 @@ public class TreatmentRecordController {
       dataType = "int",
       paramType = "path")
   @GetMapping("/complete/{treatmentRecordId}")
+  @CurrentUser
   public ResponseResult<T> completeTreatment(
       @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
     treatmentRecordBiz.completeTreatment(treatmentRecordId);

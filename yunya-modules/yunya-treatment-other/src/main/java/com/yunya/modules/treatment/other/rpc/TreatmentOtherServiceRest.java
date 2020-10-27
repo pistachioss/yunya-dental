@@ -27,14 +27,12 @@ public class TreatmentOtherServiceRest {
 
     /**
      * 插入随访记录
-     * @param visitingRecord 表单
+     * @param visitingRecords 表单
      */
     @ApiOperation(value = "插入随访记录")
     @RequestMapping(value = "/visiting/record/add",method = RequestMethod.POST)
-    public void insertVisitingRecordRest(@RequestBody VisitingRecord visitingRecord){
-        System.out.println("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓自动插入随访记录↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-        System.out.println(visitingRecord.toString());
-        visitingRecordBiz.insertEntity(visitingRecord);
+    public void insertVisitingRecordRest(@RequestBody List<VisitingRecord> visitingRecords){
+        visitingRecordBiz.insertEntity(visitingRecords);
     }
 
     /**

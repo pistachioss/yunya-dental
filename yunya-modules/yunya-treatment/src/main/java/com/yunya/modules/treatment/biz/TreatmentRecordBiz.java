@@ -39,7 +39,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS;
@@ -430,20 +432,53 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     // 新增开单处置的随访
     detail.setType((byte) 0);
     List<OrderDetail> orderDetails = orderDetailMapper.select(detail);
+    List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)) {
       treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
-          orderDetail -> saveOrderDetailVisitRecord(treatmentRecordId, orderDetail));
+          orderDetail -> {
+            List<VisitingRecord> orderDetailVisitRecord = createOrderDetailVisitRecord(treatmentRecordId, orderDetail);
+            orderDetailVisitRecord.stream().sequential().collect(Collectors.toCollection(()->visitingRecordList));
+          });
+      this.saveOrderDetailVisitRecord(visitingRecordList);
     }
   }
 
   /**
    * 保存开单处置随访计划
+   * @param visitingRecordList 随访计划列表
+   */
+  public void saveOrderDetailVisitRecord(List<VisitingRecord> visitingRecordList) {
+    Map<String,VisitingRecord> groupVisitRecordMap = new HashMap<>();
+    // 按照随访日期和就诊ID对随访计划分组
+    visitingRecordList.forEach(visitingRecord -> {
+      Integer treatmentId = visitingRecord.getTreatmentId();
+      String visitingDate = new SimpleDateFormat("yyyyMMdd").format(visitingRecord.getVisitingDate());
+      String key = treatmentId + "_" + visitingDate;
+      if (groupVisitRecordMap.containsKey(key)) {
+        VisitingRecord visitingRecordCache = groupVisitRecordMap.get(key);
+        String currentReason = visitingRecord.getReason();
+        String newReason = visitingRecordCache.getReason() + "," + currentReason;
+        visitingRecordCache.setReason(newReason);
+        groupVisitRecordMap.put(key,visitingRecordCache);
+      } else {
+        groupVisitRecordMap.put(key,visitingRecord);
+      }
+    });
+    // 设置分组计划
+    List<VisitingRecord> collect = groupVisitRecordMap.values().stream().collect(Collectors.toList());
+    treatmentOtherFeign.insertVisitingRecord(collect);
+  }
+
+
+  /**
+   * 创建开单处置随访计划
    *
    * @param treatmentRecordId 就诊记录ID
    * @param detail 开单详情
    */
-  public void saveOrderDetailVisitRecord(Integer treatmentRecordId, OrderDetail detail) {
+  public List<VisitingRecord> createOrderDetailVisitRecord(Integer treatmentRecordId, OrderDetail detail) {
+    List<VisitingRecord> visitRecordPlanList = new ArrayList<>();
     BaseTariff baseTariff = baseTariffBiz.selectById(detail.getBillingItemId());
     if (null != baseTariff) {
       String fellowUp = baseTariff.getFellowUp();
@@ -475,15 +510,19 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     }
                     visitRecord.setCrtId(detail.getCrtId());
                     visitRecord.setCrtName(detail.getCrtName());
+                    visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
                     visitRecord.setTreatmentId(treatmentRecordId);
                     visitRecord.setVisitingTime("09:00");
+                    visitRecord.setReason(baseTariff.getName());
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
-                    treatmentOtherFeign.insertVisitingRecord(visitRecord);
+                    visitRecordPlanList.add(visitRecord);
+//                    treatmentOtherFeign.insertVisitingRecord(visitRecord);
                   });
         }
       }
     }
+    return visitRecordPlanList;
   }
 
   /**

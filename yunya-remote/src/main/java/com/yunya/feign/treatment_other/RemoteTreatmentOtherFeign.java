@@ -24,11 +24,11 @@ import java.util.List;
 public interface RemoteTreatmentOtherFeign {
     /**
      * 插入随访记录
-     * @param visitingRecord 表单
+     * @param visitingRecords 表单
      * @return 是否成功
      */
     @RequestMapping(value = "api/treatment/other/visiting/record/add",method = RequestMethod.POST)
-    Integer insertVisitingRecord(@RequestBody VisitingRecord visitingRecord);
+    void insertVisitingRecord(@RequestBody List<VisitingRecord> visitingRecords);
 
     /**
      * 根据条件查询随访记录

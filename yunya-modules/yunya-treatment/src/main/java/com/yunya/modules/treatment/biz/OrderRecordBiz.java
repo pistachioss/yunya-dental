@@ -14,6 +14,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.treatment.*;
+import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -346,6 +348,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
+    List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)) {
       treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
@@ -353,9 +356,13 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
             detail.setOrderRecordId(orderRecordId);
             orderDetailBiz.insertSelective(detail);
             if (0 == detail.getType()) {
-              treatmentRecordBiz.saveOrderDetailVisitRecord(treatmentRecordId, detail);
+              List<VisitingRecord> orderDetailVisitRecord = treatmentRecordBiz.createOrderDetailVisitRecord(treatmentRecordId, orderDetail);
+              visitingRecordList.stream().sequential().collect(Collectors.toCollection(()->orderDetailVisitRecord));
+//              treatmentRecordBiz.saveOrderDetailVisitRecord(treatmentRecordId, detail);
             }
           });
+      // 设置分组计划
+      treatmentRecordBiz.saveOrderDetailVisitRecord(visitingRecordList);
     }
 
     BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
