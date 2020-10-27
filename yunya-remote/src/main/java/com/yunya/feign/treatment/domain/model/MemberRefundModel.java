@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -24,9 +25,9 @@ import java.math.BigDecimal;
 public class MemberRefundModel implements Serializable {
 
   /** 会员卡账户ID */
-  @ApiModelProperty(value = "会员卡账户ID", required = true)
-  @NotNull(message = "会员卡账户ID不能为空！")
-  private Integer memberAccountId;
+  @ApiModelProperty(value = "会员卡卡号", required = true)
+  @NotBlank(message = "会员卡卡号不能为空！")
+  private String memberNum;
   /** 会员卡入账方式ID */
   @ApiModelProperty(value = "会员卡入账方式ID", required = true)
   @NotNull(message = "会员卡入账方式ID不能为空！")

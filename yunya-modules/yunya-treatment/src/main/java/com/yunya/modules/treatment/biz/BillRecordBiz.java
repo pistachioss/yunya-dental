@@ -166,6 +166,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
 
     BillRefundRecord billRefundRecord = new BillRefundRecord();
+    billRefundRecord.setPatientId(patientId);
     billRefundRecord.setOrgId(orgId);
     billRefundRecord.setTreatmentRecordId(treatmentRecordId);
     billRefundRecord.setOrderRecordId(orderRecordId);
@@ -183,6 +184,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BillRefundOrderDetail refundOrderDetail = new BillRefundOrderDetail();
     refundOrderDetail.setCrtId(userId);
     refundOrderDetail.setCrtName(name);
+    refundOrderDetail.setOrgId(orgId);
     refundOrderDetailModels.forEach(
         detailModel -> {
           refundOrderDetail.setOrderDetailId(detailModel.getOrderDetailId());
@@ -197,7 +199,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     refundPayDetailRecord.setCrtName(name);
     if (null != memberRefundModel) {
       refundPayDetailRecord.setAccountItemId(memberRefundModel.getAccountItemId());
-      refundPayDetailRecord.setRemark(memberRefundModel.getMemberAccountId().toString());
+      refundPayDetailRecord.setRemark(memberRefundModel.getMemberNum());
       BigDecimal principalAmount = memberRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = memberRefundModel.getGiftAmount();
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
@@ -206,14 +208,14 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
 
     if (null != prepaymentRefundModel) {
       refundPayDetailRecord.setAccountItemId(prepaymentRefundModel.getAccountItemId());
-      refundPayDetailRecord.setRemark(prepaymentRefundModel.getPrepaymentAccountId().toString());
+      refundPayDetailRecord.setRemark(prepaymentRefundModel.getPrepaymentNum());
       BigDecimal principalAmount = prepaymentRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = prepaymentRefundModel.getGiftAmount();
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
     }
 
-    if (StringHelper.isNotEmpty(refundPaymentModels)) {
+    if (!StringHelper.isNotEmpty(refundPaymentModels)) {
       refundPaymentModels.forEach(
           paymentModel -> {
             refundPayDetailRecord.setAccountItemId(paymentModel.getAccountItemId());
@@ -301,7 +303,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       BigDecimal giftAmount = prepaymentAccountModel.getGiftAmount();
       totalAmount = totalAmount.add(principalAmount).add(giftAmount);
     }
-    if (StringHelper.isNotEmpty(refundPaymentModels)) {
+    if (!StringHelper.isNotEmpty(refundPaymentModels)) {
       for (PaymentModel model : refundPaymentModels) {
         totalAmount = totalAmount.add(model.getAmount());
       }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -23,9 +24,9 @@ import java.math.BigDecimal;
 @ToString
 public class PrepaymentRefundModel implements Serializable {
   /** 预付款账户ID */
-  @ApiModelProperty(value = "预付款账户ID", required = true)
-  @NotNull(message = "预付款账户ID不能为空！")
-  private Integer prepaymentAccountId;
+  @ApiModelProperty(value = "预付款卡号", required = true)
+  @NotBlank(message = "预付款卡号不能为空！")
+  private String prepaymentNum;
 
   @ApiModelProperty(value = "预付款入账方式ID", required = true)
   @NotNull(message = "预付款入账方式ID不能为空！")
