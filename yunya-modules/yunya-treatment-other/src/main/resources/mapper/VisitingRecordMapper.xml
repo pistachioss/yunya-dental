@@ -47,7 +47,7 @@
   <select id="findVisitingRecordByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery" resultType="com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo">
     SELECT
         <include refid="baseColumns"></include>,
-        ( SELECT COUNT( id ) FROM visiting_record WHERE patient_id = vr.patient_id ) AS visitingCount
+    (select count(id) from visiting_record where patient_id = vr.patient_id and visiting_date > DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d' )) as visitingCount
     FROM
         `visiting_record` vr
     <where>
@@ -87,7 +87,7 @@
       from visiting_record vr
       <where>
         <if test="query.patientId != null and query.date != null">
-          vr.patient_id = #{query.patientId} and vr.visiting_date > DATE_FORMAT(#{query.date},'%Y-%m-%d')
+          vr.patient_id = #{query.patientId} and vr.visiting_date &gt; DATE_FORMAT(#{query.date},'%Y-%m-%d')
         </if>
         <if test="query.status != null">
           and vr.status = #{query.status}

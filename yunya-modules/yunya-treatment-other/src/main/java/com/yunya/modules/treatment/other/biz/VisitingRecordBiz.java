@@ -302,7 +302,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param id 随访记录id
      * @return 随访内容
      */
-    public ResponseResult executeVisiting(Integer id){
+    public ResponseResult<VisitingContentVo> executeVisiting(Integer id){
         VisitingRecord visitingRecord = mapper.selectByPrimaryKey(id);
         VisitingContentVo build = EntityUtils.build(visitingRecord, VisitingContentVo.class);
         // 组合患者信息
@@ -357,8 +357,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param query 查询条件
      * @return ResponseResult
      */
-    public ResponseResult findAfterVisitingContent(VisitingContentAfterCurrentQuery query){
+    public ResponseResult<PageInfo<VisitingContentAfterCurrentVo>> findAfterVisitingContent(VisitingContentAfterCurrentQuery query){
         List<VisitingContentAfterCurrentVo> visitingContentAfterCurrentVos = new ArrayList<>();
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
         List<VisitingRecord> visitingRecords = mapper.findAfterVisitingContentByPatientIdAndDate(query);
         if (visitingRecords != null && !visitingRecords.isEmpty()){
             visitingRecords.forEach(visitingRecord -> {
@@ -382,9 +385,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 }
                 visitingContentAfterCurrentVos.add(build);
             });
-        }
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         return ResponseUtil.success(new PageInfo<>(visitingContentAfterCurrentVos));
     }
