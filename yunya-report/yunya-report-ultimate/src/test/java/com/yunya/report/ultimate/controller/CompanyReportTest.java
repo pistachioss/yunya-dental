@@ -1,7 +1,9 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.OrderRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
+import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
@@ -30,5 +32,14 @@ public class CompanyReportTest {
     ResponseResult<PageInfo<TreatmentRecordReportVO>> treatmentList =
         companyReportOfDataRecordController.findTreatmentList(query);
     System.out.println(treatmentList);
+  }
+
+  @Test
+  public void findOrderList() {
+    OrderRecordQuery query = new OrderRecordQuery();
+    query.setOrgId(35);
+    ResponseResult<PageInfo<BillOfOrderRecordVO>> result =
+        companyReportOfDataRecordController.billRecordOfOrderList(query);
+    System.out.println(result);
   }
 }

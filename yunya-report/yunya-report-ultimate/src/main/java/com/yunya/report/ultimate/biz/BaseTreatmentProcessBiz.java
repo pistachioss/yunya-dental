@@ -30,9 +30,6 @@ public class BaseTreatmentProcessBiz
 
   @Autowired private BaseOrganizationMapper organizationMapper;
 
-  /** 就诊流程 */
-  @Autowired private BaseTreatmentProcessMapper treatmentProcessMapper;
-
   /**
    * 根据条件查询就诊记录报表
    *
@@ -43,8 +40,7 @@ public class BaseTreatmentProcessBiz
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<TreatmentRecordReportVO> resultList =
-        treatmentProcessMapper.selectTreatmentRecordReportVOList(query);
+    List<TreatmentRecordReportVO> resultList = mapper.selectTreatmentRecordReportVOList(query);
     return new PageInfo<>(resultList);
   }
 
@@ -56,8 +52,7 @@ public class BaseTreatmentProcessBiz
    */
   public void exportTreatmentList(HttpServletResponse response, TreatmentRecordQuery query)
       throws IOException {
-    List<TreatmentRecordReportVO> list =
-        treatmentProcessMapper.selectTreatmentRecordReportVOList(query);
+    List<TreatmentRecordReportVO> list = mapper.selectTreatmentRecordReportVOList(query);
     ExcelUtil<TreatmentRecordReportVO> excelUtil = new ExcelUtil<>(TreatmentRecordReportVO.class);
     excelUtil.exportExcel(response, list, "患者就诊记录");
   }

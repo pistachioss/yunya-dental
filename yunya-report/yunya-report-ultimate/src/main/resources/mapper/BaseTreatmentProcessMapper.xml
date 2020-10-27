@@ -78,7 +78,7 @@
                 and tr.orgId = #{query.orgId}
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(tr.patientName ,''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like concat('%', #{query.keyWord} ,'%')
+                and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.treatStartDate != null and query.treatStartDate != ''">
                 and tr.treatDate &gt;= #{query.treatStartDate}
