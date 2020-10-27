@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.controller;
 
 
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -88,6 +89,7 @@ public class EmployeeScheduleController {
    */
   @PostMapping("/create")
   @ApiOperation("添加")
+  @RepeatSubmit
   public ResponseResult create(@RequestBody EmployeeScheduleForm employeeScheduleForm) throws ParseException {
     employeeScheduleBiz.create(employeeScheduleForm);
     return ResponseUtil.success();
