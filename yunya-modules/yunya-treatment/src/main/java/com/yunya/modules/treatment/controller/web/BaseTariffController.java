@@ -12,6 +12,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseTariffBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -126,9 +127,9 @@ public class BaseTariffController {
    */
   @ApiOperation("根据条件导出价目表")
   @PostMapping("/export")
-  public ResponseResult exportExcel(
+  public ResponseResult<T> exportExcel(
       HttpServletResponse response, @RequestBody BaseTariffQueryForm queryForm) throws Exception {
     baseTariffBiz.exportExcel(response, queryForm);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }
