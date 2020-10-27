@@ -22,5 +22,6 @@
     <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
     <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL" />
+    <result column="biller_id" property="billerId" jdbcType="INTEGER" />
   </resultMap>
 </mapper>
