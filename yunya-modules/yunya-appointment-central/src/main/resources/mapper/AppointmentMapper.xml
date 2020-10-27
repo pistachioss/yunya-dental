@@ -414,7 +414,8 @@
             a.confirm_status AS confirmStatus,
             a.appoint_status AS appointStatus,
             a.dept_room_id AS deptRoomId,
-            a.clinic_device_item_id AS clinicDeviceItemId
+            a.clinic_device_item_id AS clinicDeviceItemId,
+            a.remarks
         FROM
             appointment a
         <where>

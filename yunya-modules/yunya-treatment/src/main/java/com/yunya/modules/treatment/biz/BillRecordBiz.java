@@ -172,7 +172,9 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     billRefundRecord.setReason(refundReason);
     billRefundRecord.setTotalRefundAmount(refundTotalAmount);
     Joiner joiner = Joiner.on(",");
-    billRefundRecord.setRefundCertificate(joiner.join(refundAnnex));
+    if (!StringHelper.isEmpty(refundAnnex)) {
+      billRefundRecord.setRefundCertificate(joiner.join(refundAnnex));
+    }
     billRefundRecord.setCrtId(userId);
     billRefundRecord.setCrtName(name);
     billRefundRecordMapper.insertSelective(billRefundRecord);

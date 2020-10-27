@@ -20,6 +20,7 @@ import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -155,6 +156,7 @@ public class AppointmentController {
    * @return 预约列表
    */
   @ApiOperation(value = "根据条件查询患者预约（患者档案-预约信息；查看详细-预约信息）用")
+  @ApiResponse(code = 0, message = "success", response = ResponseResult.class)
   @PostMapping("/find/patient/record")
   public ResponseResult findAppointPatientRecord(@RequestBody @Validated AppointPatientRecordQuery query) {
     return appointmentBiz.findAppointPatientRecord(query);
