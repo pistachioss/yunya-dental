@@ -1,0 +1,96 @@
+package com.yunya.report.ultimate.controller;
+
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
+import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
+import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponUsedQuery;
+import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
+import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
+import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
+import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponUsedVo;
+import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.report.ultimate.service.DiscountBiz;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import javax.validation.Valid;
+
+/**
+ * @author xiangyang
+ * @date 2020/10/26
+ */
+@Api(tags = {"公司端-优惠券、卡券报表接口"})
+@Slf4j
+@RestController
+public class DiscountController {
+	@Resource
+	private DiscountBiz discountBiz;
+
+	@ApiOperation(value = "产品售出激活统计")
+	@PostMapping("/coupon/statistics")
+	public ResponseResult<PageInfo<CouponStatisticsVo>> getCouponStatistics(@Valid @RequestBody CouponStatisticsQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponStatisticsPage(query));
+	}
+
+	@ApiOperation(value = "产品售出激活统计-售出激活统计（代金、折扣、兑换、套餐）")
+	@PostMapping("/{couponId}/card/statistics")
+	public ResponseResult<PageInfo<CardStatisticsVo>> getCardStatistics(@PathVariable(value = "couponId") Integer couponId,
+	                                                                      @Valid @RequestBody CardStatisticsQuery query) {
+		return ResponseUtil.success(discountBiz.getCardStatisticsPage(couponId, query));
+	}
+
+	@ApiOperation(value = "产品售出激活统计-售出激活统计（充值卡）")
+	@PostMapping("/{couponId}/recharge/statistics")
+	public ResponseResult<PageInfo<RechargeCardStatisticsVo>> getRechargeCardStatistics(@PathVariable(value = "couponId") Integer couponId,
+	                                                                                    @Valid @RequestBody RechargeCardStatisticsQuery query) {
+		return ResponseUtil.success(discountBiz.getRechargeCardStatistics(couponId, query));
+	}
+
+	@ApiOperation(value = "产品售出统计-产品维度")
+	@PostMapping("/coupon/sold/statistics")
+	public ResponseResult<PageInfo<CouponSoldStatisticsVo>> getCouponSold(@Valid @RequestBody CouponSoldStatisticsQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponSoldPage(query));
+	}
+
+	@ApiOperation(value = "产品售出统计-时间维度")
+	@PostMapping("/card/sold/statistics")
+	public ResponseResult<PageInfo<CardSoldStatisticsVo>> getCardSold(@Valid @RequestBody CardSoldStatisticsQuery query) {
+		return ResponseUtil.success(discountBiz.getCardSoldPage(query));
+	}
+
+	@ApiOperation(value = "产品售出统计-自有平台卡券售出明细")
+	@PostMapping("/{couponId}/card/sold/statistics")
+	public ResponseResult<PageInfo<CouponSoldDetailVo>> getCouponSoldStatistics(@PathVariable(value = "couponId") Integer couponId,
+	                                                                          @Valid @RequestBody CouponSoldDetailQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponSoldDetailPage(couponId, query));
+	}
+
+	@ApiOperation(value = "产品售出统计-第三方平台卡券激活")
+	@PostMapping("/{couponId}/card/active/statistics")
+	public ResponseResult<PageInfo<CouponActiveDetailVo>> getCouponActiveStatistics(@PathVariable(value = "couponId") Integer couponId,
+	                                                                              @Valid @RequestBody CouponActiveDetailQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponActivePage(couponId, query));
+	}
+
+	@ApiOperation(value = "产品使用统计")
+	@PostMapping("/coupon/used/statistics")
+	public ResponseResult<PageInfo<CouponUsedVo>> getCouponUsed(@Valid @RequestBody CouponUsedQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponUsedPage(query));
+	}
+}

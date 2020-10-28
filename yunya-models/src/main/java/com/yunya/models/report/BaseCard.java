@@ -119,6 +119,18 @@ public class BaseCard {
     private String payName;
 
     /**
+     * 销售渠道id
+     */
+    @Column(name = "sale_channel_id")
+    private Integer saleChannelId;
+
+    /**
+     * 销售渠道名称
+     */
+    @Column(name = "sale_channel_name")
+    private String saleChannelName;
+
+    /**
      * 售出收费状态（0-否 1-是）
      */
     @Column(name = "charge_status")
