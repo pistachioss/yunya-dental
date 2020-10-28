@@ -153,6 +153,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       matchingRecord.setTreatmentRecordId(entity.getId());
       matchingRecord.setAssistantId(userId);
       matchingRecord.setType((byte) 0);
+      matchingRecord.setOperatorPostType((byte) 0);
       matchingRecord.setCrtId(userId);
       matchingRecord.setCrtName(name);
       assistantMatchingRecordMapper.insertSelective(matchingRecord);
