@@ -95,4 +95,78 @@
         </where>
         ORDER BY tr.treatDate DESC
     </select>
+    <!-- 根据条件查询就诊配诊记录列表 -->
+    <select id="selectTreatmentMatchingRecord"
+            resultType="com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO">
+        SELECT
+            treatmentId,
+            assistant1Id,
+            assistant1Name,
+            assistant2Id,
+            assistant2Name,
+            assistant3Id,
+            assistant3Name,
+            matchingDentistId,
+            matchingDentistName,
+            patientId,
+            patientName,
+            mobile,
+            matchingDate,
+            treatStartTime,
+            treatEndTime,
+            matchingDuration
+        FROM
+            (
+            SELECT
+                btp.treatment_id AS treatmentId,
+                btp.assistant_1 AS assistant1Id,
+                be1.employee_name AS assistant1Name,
+                btp.assistant_2 AS assistant2Id,
+                be2.employee_name AS assistant2Name,
+                btp.assistant_3 AS assistant3Id,
+                be3.employee_name AS assistant3Name,
+                btp.registered_dentist_id AS matchingDentistId,
+                be.employee_name AS matchingDentistName,
+                btp.patient_id AS patientId,
+                bp.`name` AS patientName,
+                bp.pinyin_name AS pinyinName,
+                bp.mobile AS mobile,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS matchingDate,
+                btp.treat_start_time AS treatStartTime,
+                btp.treat_end_time AS treatEndTime,
+                TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS matchingDuration
+            FROM
+                base_treatment_process btp
+                LEFT JOIN base_employee be1 ON btp.assistant_1 = be1.user_id
+                LEFT JOIN base_employee be2 ON btp.assistant_2 = be1.user_id
+                LEFT JOIN base_employee be3 ON btp.assistant_3 = be1.user_id
+                LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+            WHERE
+                btp.treatment_id IS NOT NULL
+                AND ( btp.assistant_1 IS NOT NULL OR btp.assistant_2 IS NOT NULL OR btp.assistant_3 IS NOT NULL )
+            ) tmr
+        <where>
+            <if test="query.orgId != null">
+                and tmr.orgId = #{query.orgId}
+            </if>
+            <if test="query.keyWord != null and query.keyWord != ''">
+                and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like concat('%', #{query.keyWord}, '%')
+            </if>
+            <if test="query.matchingStartDate != null and query.matchingStartDate != ''">
+                and tmr.matchingDate &gt;= #{query.matchingStartDate}
+            </if>
+            <if test="query.matchingEndDate != null and query.matchingEndDate != ''">
+                and tmr.matchingDate &lt;= #{query.matchingEndDate}
+            </if>
+            <if test="query.matchingDentistIds != null and query.matchingDentistIds.length > 0">
+                and tmr.matchingDentistId in
+                <foreach collection="query.matchingDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+            tmr.matchingDate DESC
+    </select>
 </mapper>

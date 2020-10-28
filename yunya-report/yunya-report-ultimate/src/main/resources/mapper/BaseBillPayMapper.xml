@@ -66,7 +66,7 @@
                 bb.actual_amount AS actualAmount,
                 bbp.received_amount AS receivedAmount,
                 bbp.still_owe_amount AS stillOweAmount,
-                ( bb.actual_amount - bb.received_amount ) AS remainingOweAmount,
+                bb.debt_amount AS remainingOweAmount,
                 bbp.payee_user_id AS payeeUserId,
                 be.employee_name AS payeeUserName
             FROM
