@@ -47,4 +47,12 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @return
    */
   List<TreatmentRecord> selectByIds(@Param("ids") Set<Integer> ids);
+
+  /**
+   * 根据挂号ID查询就诊数量
+   *
+   * @param regId 跟据挂号ID查询就诊记录数量
+   * @return int
+   */
+  int selectCountByRegisteredId(@Param("regId") Integer regId);
 }

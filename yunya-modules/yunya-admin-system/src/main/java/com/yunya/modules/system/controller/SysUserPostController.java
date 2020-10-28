@@ -16,6 +16,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -74,7 +75,6 @@ public class SysUserPostController {
    * @return
    */
   @ApiOperation("根据条件查询用户信息")
-  @ApiImplicitParams({@ApiImplicitParam(name = "queryForm", value = "员工信息查询参数", required = true)})
   @PostMapping(value = "/employee/list", name = "根据条件查询用户信息")
   public ResponseResult<PageInfo<EmployeeInfoVO>> findEmployeeByExample(
       @RequestBody EmployeeInfoQueryForm queryForm) {
@@ -111,9 +111,9 @@ public class SysUserPostController {
   @CurrentUser
   @ApiOperation("新增用户可登陆组织")
   @PostMapping("/add")
-  public ResponseResult add(@RequestBody @Validated SysUserPostModel resource) {
+  public ResponseResult<T> add(@RequestBody @Validated SysUserPostModel resource) {
     sysUserPostBiz.add(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -131,10 +131,10 @@ public class SysUserPostController {
       dataType = "number",
       paramType = "path")
   @PutMapping("/edit/{userPostId}")
-  public ResponseResult edit(
+  public ResponseResult<T> edit(
       @PathVariable Integer userPostId, @RequestBody @Validated LoginOrganizationForm form) {
     sysUserPostBiz.edit(userPostId, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -145,8 +145,8 @@ public class SysUserPostController {
    */
   @ApiOperation("根据ID删除用户可登陆组织")
   @DeleteMapping("/delete/{userPostId}")
-  public ResponseResult remove(@PathVariable Integer userPostId) {
+  public ResponseResult<T> remove(@PathVariable Integer userPostId) {
     sysUserPostBiz.remove(userPostId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

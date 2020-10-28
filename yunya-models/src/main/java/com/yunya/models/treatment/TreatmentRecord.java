@@ -3,8 +3,11 @@ package com.yunya.models.treatment;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "treatment_record")
 public class TreatmentRecord {
@@ -12,6 +15,7 @@ public class TreatmentRecord {
      * 唯一id
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
@@ -41,15 +42,14 @@ public class TreatmentRecordController {
   /**
    * 根据挂号ID接诊患者
    *
-   * @param regId 挂号ID
+   * @param model 接诊信息
    * @return
    */
-  @ApiOperation("开始接诊")
-  @ApiImplicitParam(name = "regId", required = true, value = "患者挂号ID")
   @CurrentUser
-  @GetMapping("/start/{regId}")
-  public ResponseResult<T> startTreatment(@PathVariable(value = "regId") Integer regId) {
-    treatmentRecordBiz.startTreatment(regId);
+  @ApiOperation("开始接诊")
+  @PostMapping("/start")
+  public ResponseResult<T> startTreatment(@RequestBody @Validated TreatmentModel model) {
+    treatmentRecordBiz.startTreatment(model);
     return ResponseUtil.success(null);
   }
 

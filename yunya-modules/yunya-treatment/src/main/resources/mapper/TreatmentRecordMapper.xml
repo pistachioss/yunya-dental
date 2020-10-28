@@ -54,7 +54,8 @@
             </if>
             <if test="queryForm.treatmentStatus != null and queryForm.treatmentStatus.length > 0">
                 and tr.status in
-                <foreach collection="queryForm.treatmentStatus" item="item" index="index" open="(" close=")" separator=",">
+                <foreach collection="queryForm.treatmentStatus" item="item" index="index" open="(" close=")"
+                         separator=",">
                     #{item}
                 </foreach>
             </if>
@@ -140,5 +141,9 @@
         <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
             #{item}
         </foreach>
+    </select>
+    <!-- 根据挂号ID查询就诊数量 -->
+    <select id="selectCountByRegisteredId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM treatment_record WHERE registered_id = #{regId} LIMIT 1
     </select>
 </mapper>

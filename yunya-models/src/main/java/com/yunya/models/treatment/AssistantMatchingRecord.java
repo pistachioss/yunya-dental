@@ -1,7 +1,9 @@
 package com.yunya.models.treatment;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "assistant_matching_record")
 public class AssistantMatchingRecord {
@@ -39,6 +41,10 @@ public class AssistantMatchingRecord {
      * 助手类型（0-助手1；1-助手2；2-巡回）
      */
     private Byte type;
+
+    /** 操作者岗位类型（0-助手；1-其他） */
+    @Column(name = "operator_post_type")
+    private Byte operatorPostType;
 
     /**
      * 是否有效
@@ -180,7 +186,25 @@ public class AssistantMatchingRecord {
         this.type = type;
     }
 
-    /**
+  /**
+   * 获取操作者岗位类型（0-助手；1-其他）
+   *
+   * @return operatorPostType
+   */
+  public Byte getOperatorPostType() {
+    return operatorPostType;
+  }
+
+  /**
+   * 设置操作者岗位类型（0-助手；1-其他）
+   *
+   * @param operatorPostType 操作者岗位类型（0-助手；1-其他）
+   */
+  public void setOperatorPostType(Byte operatorPostType) {
+    this.operatorPostType = operatorPostType;
+  }
+
+  /**
      * 获取是否有效
      *
      * @return inservice - 是否有效
