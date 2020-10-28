@@ -13,10 +13,7 @@ import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.AppTreatListQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.vo.AppPatientTreatmentInfoVO;
-import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -661,4 +658,16 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
     return null;
   }
+
+  /**
+   * 末次就诊信息
+   * @param patientId 患者ID
+   * @return 返回末次就诊实体对象
+   */
+  public LastTreatmentInfoVO lastTreatmentInfo(Integer patientId) {
+    LastTreatmentInfoVO lastTreatmentInfoVO = mapper.lastTreatmentInfo(patientId);
+    return lastTreatmentInfoVO;
+  }
+
+
 }

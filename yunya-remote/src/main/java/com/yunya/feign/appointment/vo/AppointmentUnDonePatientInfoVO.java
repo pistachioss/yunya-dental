@@ -1,5 +1,7 @@
 package com.yunya.feign.appointment.vo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -16,6 +18,7 @@ import java.math.BigDecimal;
  */
 @Data
 @ToString
+@ApiModel(value = "AppointmentUnDonePatientInfoVO", description = "预约未完成患者信息VO")
 public class AppointmentUnDonePatientInfoVO implements Serializable {
   /** 预约ID */
   private Integer id;

@@ -66,12 +66,13 @@
       <if test="query.patientId != null">
         and vr.patient_id = #{query.patientId}
       </if>
-      <if test="query.inservice != null">
-        and vr.inservice = #{query.inservice}
-      </if>
       <if test="query.dentistId != null">
         and vr.dentist_id = #{query.dentistId}
       </if>
+      <if test="query.inservice != null">
+        and vr.inservice = #{query.inservice}
+      </if>
+
       <if test="query.status != null">
         and vr.status = #{query.status}
       </if>

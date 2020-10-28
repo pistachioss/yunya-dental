@@ -28,7 +28,7 @@
             bth.`name`,
             bth.crt_id as crtId,
             bth.crt_name as crtName,
-            bth.crt_time as crtTime
+            DATE_FORMAT(bth.crt_time,'%Y-%m-%d %H:%m:%s') as crtTime
         from base_tariff_history bth
         left join base_tariff_category btc on bth.tariff_category_id = btc.id
         where bth.tariff_id = #{tariffId}

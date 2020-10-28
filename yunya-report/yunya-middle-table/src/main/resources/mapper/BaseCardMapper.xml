@@ -23,6 +23,8 @@
         <result column="sold_way" property="soldWay" jdbcType="TINYINT"/>
         <result column="pay_id" property="payId" jdbcType="INTEGER"/>
         <result column="pay_name" property="payName" jdbcType="VARCHAR"/>
+        <result column="sale_channel_id" property="saleChannelId" jdbcType="INTEGER"/>
+        <result column="sale_channel_name" property="saleChannelName" jdbcType="VARCHAR"/>
         <result column="charge_status" property="chargeStatus" jdbcType="TINYINT"/>
         <result column="active_date" property="activeDate" jdbcType="TIMESTAMP"/>
         <result column="activation_deadline" property="activationDeadline" jdbcType="TIMESTAMP"/>

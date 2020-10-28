@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.yunya.middletable.dao.report.BaseBenefitMapper">
-    <resultMap id="BaseResultMap" type="com.yunya.models.middletable.BaseBenefit">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBenefit">
         <!--
           WARNING - @mbg.generated
         -->
@@ -17,6 +17,8 @@
         <result column="item_index" property="itemIndex" jdbcType="INTEGER"/>
         <result column="benefit_amount" property="benefitAmount" jdbcType="DECIMAL"/>
         <result column="choice_benefit_type" property="choiceBenefitType" jdbcType="TINYINT"/>
+        <result column="operate_user_id" property="operateUserId" jdbcType="INTEGER"/>
+        <result column="use_date" property="useDate" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <insert id="insertList" parameterType="List">

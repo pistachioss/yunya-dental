@@ -5,7 +5,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
-import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.domain.model.AppointOperationModel;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
@@ -274,23 +273,29 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /**
      * 删除预约（取消预约）
      * @param id   预约id
-     * @param form  取消预约原因表单
+     * @param cause  取消预约原因
      * @return ResponseResult
      */
-    public ResponseResult appointmentCancel(Integer id, AppointmentCancelCauseForm form){
+    public ResponseResult appointmentCancel(Integer id, String cause){
+        if (null != cause && cause.length() > 500) {
+            return ResponseUtil.fail(AppointmentError.TEXT_MAX_LENGTH_ERROR.getCode(),
+                    AppointmentError.TEXT_MAX_LENGTH_ERROR.getMessage(),null);
+        }
         Appointment appointment = mapper.selectByPrimaryKey(id);
         // 预约不存在的情况
         if (appointment == null){
-            return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
+            return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),
+                    AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
         }
         // 除预约未到意外的其他情况，不可以取消预约
         Byte appointStatus = appointment.getAppointStatus();
         if (appointStatus != 0) {
-            return ResponseUtil.fail(AppointmentError.APPOINT_NOT_ALLOW_CANCEL.getCode(),AppointmentError.APPOINT_NOT_ALLOW_CANCEL.getMessage(),null);
+            return ResponseUtil.fail(AppointmentError.APPOINT_NOT_ALLOW_CANCEL.getCode(),
+                    AppointmentError.APPOINT_NOT_ALLOW_CANCEL.getMessage(),null);
         }
         appointment.setInservice(false);
         appointment.setAppointStatus((byte) 2);
-        appointment.setRemarks(form.getCause());
+        appointment.setRemarks(cause);
         appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointment.setUpdName(BaseContextHandler.getName());
         appointment.setUpdTime(new Date(System.currentTimeMillis()));
@@ -302,7 +307,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         record.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
         record.setAppointmentId(appointment.getId());
         record.setOperateType((byte) 2);
-        record.setRemarks(form.getCause());
+        record.setRemarks(cause);
         appointOperateRecordBiz.insertAppointmentOperateRecord(record);
         return ResponseUtil.success();
     }
@@ -615,7 +620,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param query 参数
      * @return 返回response
      */
-    public ResponseResult findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
+    public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentDentistDimensionByExample(PatientDimensionByDayQuery query){
         List<AppointmentDimensionVo> appointmentDentistDimensionVoList = new ArrayList<>();
         // 校验检索日期
         long startTime = query.getStartDate().getTime();
@@ -2010,7 +2015,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param query 查询条件
      * @return 预约列表
      */
-    public ResponseResult findAppointPatientRecord(AppointPatientRecordQuery query) {
+    public ResponseResult<PageInfo<AppointPatientRecordVo>> findAppointPatientRecord(AppointPatientRecordQuery query) {
         Date startDate = query.getStartDate();
         Date endDate = query.getEndDate();
         if (null != startDate && null != endDate) {

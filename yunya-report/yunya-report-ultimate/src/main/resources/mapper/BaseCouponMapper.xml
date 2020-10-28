@@ -12,90 +12,122 @@
         <result column="sold_amount" jdbcType="DECIMAL" property="soldAmount" />
         <result column="bonus" jdbcType="DECIMAL" property="bonus" />
         <result column="workload_rate" jdbcType="DECIMAL" property="workloadRate" />
+        <result column="activation_deadline" jdbcType="TIMESTAMP" property="activationDeadline" />
+        <result column="effective_days" jdbcType="INTEGER" property="effectiveDays" />
     </resultMap>
 
-    <insert id="insertList" parameterType="List">
-        insert into
-        `base_coupon`
-        (`coupon_id`, `coupon_name`, `product_type_id`, `product_type_name`, `coupon_type`, `crt_id`, `crt_time`, `sold_amount`,
-        `bonus`, `workload_rate`)
-        values
-        <foreach collection="list" item="item" separator=",">
-            (#{item.couponId}, #{item.couponName}, #{item.productTypeId}, #{item.productTypeName}, #{item.couponType}, #{item.crtId},
-            #{item.crtTime}, #{item.soldAmount}, #{item.bonus}, #{item.workloadRate})
-        </foreach>
-    </insert>
+    <select id="listCouponStatistics" resultType="com.yunya.feign.report.domain.vo.CouponStatisticsVo">
+        select
+            `bc`.`coupon_id`,
+            `bc`.`coupon_name`,
+            `bc`.`product_type_name`                        as `couponCategoryName`,
+            `bc`.`crt_time`                                 as `crtDate`,
+            `bc`.`coupon_type`,
+            `bc`.`sold_amount`,
+            `be`.`employee_name`                            as `crtUser`,
+            ifnull(sum(`b`.`status` in (0, 1, 2, 3, 4)),0)  as `generatedQuantity`,
+            ifnull(sum(`b`.`status` in (1, 2, 3, 4)),0)     as `soldQuantity`,
+            ifnull(sum(`b`.`status` in (2, 3, 4)),0)        as `activatedQuantity`,
+            ifnull(sum(`b`.`status` in (3, 4)),0)           as `usedQuantity`
+        from `base_coupon` `bc`
+             left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
+             left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
+        <where>
+            <if test="couponName !=null and couponName != ''">
+                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponCategoryIds != null and couponCategoryIds.size() > 0">
+                and `bc`.`product_type_id` in
+                <foreach collection="couponCategoryIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `bc`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by `bc`.`coupon_id`,`bc`.`crt_time`
+        order by `bc`.`crt_time` desc
+    </select>
 
-    <update id="updateList" parameterType="java.util.List">
-        update `base_coupon`
-        <trim prefix="set" suffixOverrides=",">
-            <trim prefix="coupon_name = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.couponName != null and item.couponName != ''">
-                        when `coupon_id` = #{item.couponId} then #{item.couponName}
-                    </if>
+    <select id="listCouponSold" resultType="com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo">
+        select
+            `bc`.`coupon_id`,
+            `bc`.`coupon_name`,
+            `bc`.`product_type_name`            as `couponCategoryName`,
+            `bc`.`crt_time`                     as `crtDate`,
+            `bc`.`coupon_type`,
+            `bc`.`sold_amount`,
+            `be`.`employee_name`                as `crtUser`,
+            ifnull(sum(`b`.`status` in (1, 2, 3, 4)
+                and b.allocate_org_id != 0),0)  as `ownPlatformSoldQuantity`,
+            case
+                when bc.coupon_type = 4 then null
+                else ifnull(sum(`b`.`status` in (2, 3, 4)
+                    and b.allocate_org_id = 0),0)
+                end                             as `thirdPartyActivatedQuantity`
+        from `base_coupon` `bc`
+             left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
+             left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
+        <where>
+            <if test="couponName !=null and couponName != ''">
+                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponCategoryIds != null and couponCategoryIds.size() > 0">
+                and `bc`.`product_type_id` in
+                <foreach collection="couponCategoryIds" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="product_type_id = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.productTypeId != null">
-                        when `coupon_id` = #{item.couponId} then #{item.productTypeId}
-                    </if>
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `bc`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="product_type_name = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.productTypeName != null and item.productTypeName != ''">
-                        when `coupon_id` = #{item.couponId} then #{item.productTypeName}
-                    </if>
+            </if>
+            <if test="crtStartDate != null and crtEndDate != null">
+                and (`bc`.`crt_time` &gt;= #{crtStartDate} and `bc`.`crt_time` &lt; #{crtEndDate})
+            </if>
+        </where>
+        group by `bc`.`coupon_id`, `bc`.`crt_time`
+        order by `bc`.`crt_time` desc
+    </select>
+
+    <select id="listCouponUsedByParam" resultType="com.yunya.feign.report.domain.vo.CouponUsedVo">
+        select
+            `bc`.`coupon_id`,
+            `bc`.`coupon_name`,
+            `bc`.`product_type_name`                        as `couponCategoryName`,
+            `bc`.`crt_time`                                 as `crtDate`,
+            `bc`.`coupon_type`,
+            `bc`.`sold_amount`,
+            `be`.`employee_name`                            as `crtUser`,
+            ifnull(sum(`b`.`status` in (2, 3, 4)),0)        as `activatedQuantity`,
+            ifnull(sum(`b`.`status` in (3, 4)),0)           as `usedQuantity`
+        from `base_coupon` `bc`
+            left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
+            left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
+        <where>
+            <if test="couponName !=null and couponName != ''">
+                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponCategoryIds != null and couponCategoryIds.size() > 0">
+                and `bc`.`product_type_id` in
+                <foreach collection="couponCategoryIds" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="coupon_type = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.couponType != null">
-                        when `coupon_id` = #{item.couponId} then #{item.couponType}
-                    </if>
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `bc`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="crt_id = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.crtId != null">
-                        when `coupon_id` = #{item.couponId} then #{item.crtId}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="crt_time = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.crtTime != null">
-                        when `coupon_id` = #{item.couponId} then #{item.crtTime}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="sold_amount = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.soldAmount != null">
-                        when `coupon_id` = #{item.couponId} then #{item.soldAmount}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="bonus = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.bonus != null">
-                        when `coupon_id` = #{item.couponId} then #{item.bonus}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="workload_rate = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.workloadRate != null">
-                        when `coupon_id` = #{item.couponId} then #{item.workloadRate}
-                    </if>
-                </foreach>
-            </trim>
-        </trim>
-        where `coupon_id` in
-            <foreach collection="list" item="item" open="(" separator="," close=")">
-               #{item.couponId}
-            </foreach>
-    </update>
+            </if>
+        </where>
+        group by `bc`.`coupon_id`,`bc`.`crt_time`
+        order by `bc`.`crt_time` desc
+    </select>
 </mapper>

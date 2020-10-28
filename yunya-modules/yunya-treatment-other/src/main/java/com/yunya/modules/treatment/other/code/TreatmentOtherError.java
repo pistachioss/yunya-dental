@@ -16,6 +16,8 @@ public enum TreatmentOtherError {
 
     /** 10-新增随访失败*/
     INSERT_VISITING_RECORD_ERR(10,"新增随访失败"),
+    /** 11-{0}的随访有冲突,请修改后重新提交*/
+    VISITING_CONFIICT_EXP(11,"随访有冲突,请修改后重新提交"),
 
     /** 20-该条记录不允许编辑*/
     EDIT_NOT_ALLOWED(20,"该条记录正在被修改中,不允许编辑"),

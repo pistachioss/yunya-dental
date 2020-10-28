@@ -140,8 +140,8 @@ public class BaseCardServiceImpl{
 			//分割集合
 			List<List<BaseCard>> partition = Lists.partition(list, cutSlice);
 			for (List<BaseCard> baseCards : partition) {
+				//多线程异步插入
 				cardThreadPool.submit(() -> {
-					//对象转换
 					baseCardMapper.insertList(baseCards);
 				});
 			}
@@ -406,6 +406,7 @@ public class BaseCardServiceImpl{
 	private List<BaseCard> getExistData(List<Integer> cardIds) throws ExecutionException, InterruptedException {
 		List<List<Integer>> partition = Lists.partition(cardIds, cutSlice);
 		long start = System.currentTimeMillis();
+		//多线程异步查询结果
 		List<Future<List<BaseCard>>> futures = partition.stream().map(list -> cardThreadPool.submit(() ->
 				baseCardMapper.getExistData(list))).collect(toList());
 		List<BaseCard> existData = Lists.newArrayList();

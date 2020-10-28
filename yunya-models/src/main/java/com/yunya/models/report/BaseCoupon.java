@@ -71,4 +71,18 @@ public class BaseCoupon {
 	@Column(name = "workload_rate")
 	private BigDecimal workloadRate;
 
+	/**
+	 * 激活截至日期(产品有效期)
+	 */
+	@Column(name = "activation_deadline")
+	private LocalDateTime activationDeadline;
+
+	/**
+	 * 卡券激活后有效期
+	 */
+	@Column(name = "effective_days")
+	private Integer effectiveDays;
+
+
+
 }

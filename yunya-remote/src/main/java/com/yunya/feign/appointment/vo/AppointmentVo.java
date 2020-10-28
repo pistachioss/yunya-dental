@@ -18,7 +18,7 @@ import java.util.List;
  * @create 2020-08-03 20:21
  * @update yunya-lihuibin    2020-08-03    新建
  */
-@ApiModel(value = "预约列表视图模型")
+@ApiModel(value = "AppointmentVo", description = "预约列表视图模型")
 @Data
 @ToString
 public class AppointmentVo implements Serializable {
