@@ -24,7 +24,8 @@
     <select id="selectAssistantInfoVOList" resultType="com.yunya.feign.treatment.domain.vo.AssistantInfoVO">
         select
             amr.assistant_id as assistantId,
-            amr.`type` as type
+            amr.`type` as type,
+            amr.operator_post_type as operatorPostType
         from assistant_matching_record amr
         where amr.treatment_record_id = #{treatmentRecordId}
     </select>

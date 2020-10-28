@@ -28,4 +28,7 @@ public class AssistantInfoVO implements Serializable {
   /** 助手姓名 */
   @ApiModelProperty("助手姓名")
   private String assistantName;
+  /** 操作人岗位类型 */
+  @ApiModelProperty("操作人岗位类型（0-助手；1-非助手）")
+  private Byte operatorPostType;
 }

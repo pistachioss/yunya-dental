@@ -69,7 +69,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @return
    */
   public OrderDetailInfoVO findOrderDetailInfoVO(Integer treatmentRecordId) {
-    // todo 补充就诊创建人信息（ID，岗位ID）
     OrderDetailInfoVO resultData = new OrderDetailInfoVO();
     OrderRecord entity = new OrderRecord();
     entity.setTreatmentRecordId(treatmentRecordId);
