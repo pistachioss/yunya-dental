@@ -30,14 +30,19 @@
     </select>
     <!-- 根据条件查询产品分类列表 -->
     <select id="selectProductTypeList" resultType="com.yunya.feign.discount.domain.vo.ProductTypeVO">
-        select
-            pt.id,
-            pt.name,
-            pt.inservice,
-            pt.crt_id as crtId,
-            pt.crt_name as crtName,
-            pt.crt_time as crtTime
-        from product_type pt
+        SELECT
+        pt.id,
+        pt. NAME,
+        pt.inservice,
+        pt.crt_id AS crtId,
+        pt.crt_name AS crtName,
+        pt.crt_time AS crtTime,
+        IFNULL(ci.productNum,0) productNum
+        FROM
+        product_type pt
+        LEFT JOIN
+        (select count(id) productNum,product_type_id id from coupon_common_info GROUP BY product_type_id) ci
+        on ci.id = pt.id
         <where>
             <if test="queryForm.id != null">
                 and pt.id = #{queryForm.id}
