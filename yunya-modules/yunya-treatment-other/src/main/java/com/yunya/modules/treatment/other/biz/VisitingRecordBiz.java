@@ -96,9 +96,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         List<VisitingContentModel> visitingContents = model.getVisitingContents();
         if (!StringHelper.isEmpty(visitingContents)){
             Integer patientId = model.getPatientId();
+            String userID = BaseContextHandler.getUserID();
             for(VisitingContentModel visitingContentModel : visitingContents){
                 Date visitingDate = visitingContentModel.getVisitingDate();
                 VisitingRecordQuery query = new VisitingRecordQuery();
+                query.setDentistId(Integer.valueOf(userID));
                 query.setPatientId(patientId);
                 query.setVisitingDate(visitingDate);
                 List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
