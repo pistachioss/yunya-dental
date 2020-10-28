@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
@@ -47,4 +48,11 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @return
    */
   List<TreatmentRecord> selectByIds(@Param("ids") Set<Integer> ids);
+
+  /**
+   * 根据患者ID查询末次就诊信息
+   * @param patientId 患者ID
+   * @return 末次就诊信息
+   */
+  LastTreatmentInfoVO lastTreatmentInfo(@Param("patientId") Integer patientId);
 }

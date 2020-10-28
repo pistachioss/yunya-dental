@@ -141,4 +141,23 @@
             #{item}
         </foreach>
     </select>
+
+    <!-- 根据患者ID查询末次就诊信息 -->
+    <select id="lastTreatmentInfo" resultType="com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO">
+        SELECT
+            r.patient_id AS patientId,
+            r.dentist_id AS dentistId,
+            r.dept_room_id AS deptRoomId,
+            r.crt_time AS crtTime
+        FROM
+            registered r
+        <where>
+            <if test="patientId != null">
+                r.patient_id = #{patientId}
+            </if>
+        </where>
+        ORDER BY
+            r.crt_time DESC
+            LIMIT 1
+    </select>
 </mapper>
