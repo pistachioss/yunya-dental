@@ -41,10 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -95,6 +92,12 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     public ResponseResult insertVisitingRecord(VisitingRecordModel model){
         List<VisitingContentModel> visitingContents = model.getVisitingContents();
         if (!StringHelper.isEmpty(visitingContents)){
+            // 判断同一天，同一个医生是否新建多条随访，如果是则返回异常信息
+            boolean conflict = this.isVisitingRecordConflict(visitingContents);
+            if (conflict) {
+                return ResponseUtil.fail(TreatmentOtherError.VISITING_CONFIICT_EXP.getCode(),
+                        TreatmentOtherError.VISITING_CONFIICT_EXP.getMessage(),null);
+            }
             Integer patientId = model.getPatientId();
             String userID = BaseContextHandler.getUserID();
             for(VisitingContentModel visitingContentModel : visitingContents){
@@ -125,6 +128,22 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             return ResponseUtil.success();
         }
         throw new ClientServiceException("随访内容列表为空！",OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+    }
+
+    /**
+     * 检测随访是否冲突
+     * @param visitingContents 随访列表
+     * @return 冲突返回true,否则返回false
+     */
+    private boolean isVisitingRecordConflict(List<VisitingContentModel> visitingContents) {
+        Map<Date, Long> collect = visitingContents.stream().collect(Collectors.groupingBy(VisitingContentModel::getVisitingDate, Collectors.counting()));
+        for (Map.Entry<Date,Long> item : collect.entrySet()) {
+            Long value = item.getValue();
+            if (value > 1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -233,8 +252,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             searchVisitingRecordVo = new ArrayList<>();
         }
         return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
-
-
     }
 
     /**
@@ -294,6 +311,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             if (treatmentRecord != null){
                 visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatEndTime());
             }
+        }
+        // 设置患者过敏源
+        PatientTotalInfoVo patientTotalInfo = this.patientCentralServiceFeign.findPatientTotalInfo(patientId);
+        if (patientTotalInfo != null) {
+            visitingRecordVo.setAllergen(patientTotalInfo.getAllergensDescriptions());
         }
 
         return visitingRecordVo;
