@@ -111,6 +111,9 @@ public class BaseBill {
     @Column(name = "debt_amount")
     private BigDecimal debtAmount;
 
+    @Column(name = "biller_id")
+    private Integer billerId;
+
     /**
      * 获取订单记录ID
      *
@@ -415,5 +418,23 @@ public class BaseBill {
      */
     public void setDebtAmount(BigDecimal debtAmount) {
         this.debtAmount = debtAmount;
+    }
+
+    /**
+     * 获取开单人ID
+     *
+     * @return billerId
+     */
+    public Integer getBillerId() {
+        return billerId;
+    }
+
+    /**
+     * 设置开单人ID
+     *
+     * @param billerId 开单人ID
+     */
+    public void setBillerId(Integer billerId) {
+        this.billerId = billerId;
     }
 }

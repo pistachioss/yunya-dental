@@ -23,7 +23,7 @@ import java.util.Map;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "")
+@Api(tags = "账单异常处理")
 @RestController
 @RequestMapping("handle")
 public class BillExceptionHandleRecordController {

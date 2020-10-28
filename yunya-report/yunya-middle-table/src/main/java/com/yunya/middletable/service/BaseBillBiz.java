@@ -129,6 +129,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBill.setTreatmentId(orderRecord.getTreatmentRecordId());
       baseBill.setOrderNum(orderRecord.getOrderRecordNum());
       baseBill.setOrderAmount(orderRecord.getTotalAmount());
+      baseBill.setBillerId(orderRecord.getCrtId());
       baseBill.setOrderDate(orderRecord.getCrtTime());
       // 设置账单的助手信息
       setBaseBillAssistantValue(dataId, baseBill);

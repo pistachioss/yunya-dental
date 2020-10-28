@@ -1,10 +1,10 @@
 package com.yunya.modules.treatment.controller.web;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BillPayRecordBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,8 +34,8 @@ public class BillPayRecordController {
    * @param billPayRecordId 账单收费记录ID
    * @return
    */
+  @CurrentUser
   @ApiOperation("根据账单收费记录ID撤销账单收费记录")
-  @ApiImplicitParam(name = "billPayRecordId", value = "账单收费记录ID", required = true)
   @GetMapping(value = "/revoke/{billPayRecordId}", name = "根据账单收费记录ID撤销账单收费记录")
   public ResponseResult revokeBillPayRecord(
       @PathVariable(value = "billPayRecordId") Integer billPayRecordId) {
