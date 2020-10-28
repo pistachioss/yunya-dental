@@ -8,6 +8,7 @@ import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQ
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingContentAfterCurrentVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -78,7 +79,7 @@ public class VisitingRecordController {
      */
     @ApiOperation(value = "根据id查询随访记录")
     @GetMapping("/find/{id}")
-    public ResponseResult findRecordById(@PathVariable("id") Integer id){
+    public ResponseResult<VisitingRecordVo> findRecordById(@PathVariable("id") Integer id){
         return visitingRecordBiz.findVisitingRecordById(id);
     }
 
@@ -90,7 +91,7 @@ public class VisitingRecordController {
     @ApiOperation(value = "根据条件查询随访记录")
     @PostMapping("/find")
     @CurrentUser
-    public ResponseResult findRecordByCondition(@RequestBody @Validated VisitingRecordQuery query){
+    public ResponseResult<PageInfo<VisitingRecordVo>> findRecordByCondition(@RequestBody @Validated VisitingRecordQuery query){
         return visitingRecordBiz.findVisitingRecordByCondition(query);
     }
 

@@ -197,7 +197,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param id 随访id
      * @return ResponseResult
      */
-    public ResponseResult findVisitingRecordById(Integer id){
+    public ResponseResult<VisitingRecordVo> findVisitingRecordById(Integer id){
         VisitingRecordVo visitingRecordVo = mapper.findVisitingRecordById(id);
         if (visitingRecordVo == null){
             return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有数据",null);
@@ -211,7 +211,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param query 查询条件
      * @return ResponseResult
      */
-    public ResponseResult findVisitingRecordByCondition(VisitingRecordQuery query){
+    public ResponseResult<PageInfo<VisitingRecordVo>> findVisitingRecordByCondition(VisitingRecordQuery query){
         // 设置分页
         if (query.getWhetherPage()){
             PageHelper.startPage(query.getPageNum(),query.getPageSize());

@@ -16,7 +16,7 @@ import java.util.Date;
  * @author: LHB
  * @create: 2020-08-21 20:25
  **/
-@ApiModel(value = "随访记录视图模型")
+@ApiModel(value = "VisitingRecordVo", description = "随访记录视图模型")
 @Data
 @ToString
 public class VisitingRecordVo implements Serializable {
@@ -137,7 +137,7 @@ public class VisitingRecordVo implements Serializable {
     @ApiModelProperty(value = "更新人名字(随访人名字)")
     private String updName;
     /** 随访时间（更新时间） */
-    @JsonFormat(pattern = "HH:mm",timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date updTime;
 
     /******************************* 患者信息 ********************************/
