@@ -487,13 +487,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 获取可预约的医生
         EnableEmployeeRes enableEmployeeList = this.clinicEmployeeConfigFeign.getEnableEmployeeList(orgId);
         List<EnableChooseEmployeeRes> enableAppointList = enableEmployeeList.getEnableAppointList();
-        Integer[] enableDentistIds = new Integer[enableAppointList.size()];
         if (!StringHelper.isEmpty(enableAppointList)) {
+            Integer[] enableDentistIds = new Integer[enableAppointList.size()];
             for (int index = 0; index < enableAppointList.size();index++) {
                 enableDentistIds[index] = enableAppointList.get(index).getEmployeeId();
             }
+            return enableDentistIds;
         }
-        return enableDentistIds;
+        throw new ClientServiceException(AppointmentError.CLINIC_NOT_EXIST_ENABLE_APPOINT_DENTIST.getMessage(),
+                AppointmentError.CLINIC_NOT_EXIST_ENABLE_APPOINT_DENTIST.getCode());
     }
     /**
      * 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
