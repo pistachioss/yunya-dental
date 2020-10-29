@@ -56,4 +56,7 @@ public class EmployeeScheduleQueryForm {
     @ApiModelProperty("每页个数")
     private Integer size = 10;
 
+    @ApiModelProperty("是否分页")
+    private Boolean whetherPage = false;
+
 }
