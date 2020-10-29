@@ -54,4 +54,17 @@ public class AssistantMatchingRecordBiz
     }
     return resultList;
   }
+
+  /**
+   * 根据就诊记录ID，助手类型查询助手配诊记录
+   *
+   * @param treatmentRecordId 就诊记录ID
+   * @param type 配诊类型 0-助手1；1-助手2；2-助手3
+   * @return AssistantMatchingRecord
+   */
+  public AssistantMatchingRecord selectOneByTreatmentIdAndType(
+      Integer treatmentRecordId, int type) {
+
+    return null;
+  }
 }

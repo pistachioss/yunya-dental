@@ -104,7 +104,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer treatmentRecordId = model.getTreatmentRecordId();
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
-    redisUtils.set(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId, treatmentRecordId, 5);
+    String orderKey = LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId;
+    redisUtils.set(orderKey, treatmentRecordId, 5);
     List<OrderDetailModel> models = model.getOrderDetails();
     int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -163,7 +164,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     treatmentRecord.setUpdId(userId);
     treatmentRecord.setUpdName(name);
     treatmentRecordBiz.updateSelectiveById(treatmentRecord);
-    redisUtils.delete(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
+    redisUtils.delete(orderKey);
   }
 
   /**
@@ -221,20 +222,29 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       Integer assistantId3) {
     AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
     matchingRecord.setTreatmentRecordId(treatmentRecordId);
-    matchingRecord.setOrderRecordId(orderRecordId);
+    AssistantMatchingRecord resultMatchingRecord =
+        matchingRecordBiz.selectOneByTreatmentIdAndType(treatmentRecordId, (byte) 0);
     if (null != assistantId1) {
+      if (null != resultMatchingRecord) {
+        if (resultMatchingRecord.getOperatorPostType() == 0
+            && !resultMatchingRecord.getAssistantId().equals(assistantId1)) {
+          throw new ClientServiceException("开单失败，配诊助手1不可被修改！", PARAMETERS_IS_ILLEGAL);
+        }
+      }
       matchingRecord.setType((byte) 0);
-      addAssistantMatchingRecord(assistantId1, matchingRecord);
+      addAssistantMatchingRecord(assistantId1, orderRecordId, matchingRecord);
     } else {
-      matchingRecord.setType((byte) 0);
-      matchingRecordBiz.delete(matchingRecord);
+      if (resultMatchingRecord.getOperatorPostType() != 0) {
+        matchingRecord.setType((byte) 0);
+        matchingRecordBiz.delete(matchingRecord);
+      }
     }
     if (null != assistantId2) {
       if (assistantId2.equals(assistantId1)) {
         throw new ClientServiceException("开单失败，助手2与助手1不能是同一个人！", PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 1);
-      addAssistantMatchingRecord(assistantId2, matchingRecord);
+      addAssistantMatchingRecord(assistantId2, orderRecordId, matchingRecord);
     } else {
       matchingRecord.setType((byte) 1);
       matchingRecordBiz.delete(matchingRecord);
@@ -244,7 +254,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         throw new ClientServiceException("开单失败，巡回与助手1或助手2不能是同一个人！", PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 2);
-      addAssistantMatchingRecord(assistantId3, matchingRecord);
+      addAssistantMatchingRecord(assistantId3, orderRecordId, matchingRecord);
     } else {
       matchingRecord.setType((byte) 2);
       matchingRecordBiz.delete(matchingRecord);
@@ -255,12 +265,14 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * 添加助手匹配记录
    *
    * @param assistantId 助手ID
+   * @param orderRecordId 订单记录ID
    * @param matchingRecord 匹配记录
    */
   private void addAssistantMatchingRecord(
-      Integer assistantId, AssistantMatchingRecord matchingRecord) {
+      Integer assistantId, Integer orderRecordId, AssistantMatchingRecord matchingRecord) {
     AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
     if (null == matchingResult) {
+      matchingRecord.setOrderRecordId(orderRecordId);
       matchingRecord.setAssistantId(assistantId);
       matchingRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
       matchingRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -294,8 +306,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param orderRecordId 开单记录ID
    */
   public void unlockOrder(Integer orderRecordId) {
-    String recordId = redisUtils.get(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
-    if (StringHelper.isNotBlank(recordId)) {
+    String orderKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
+    String orderValue = redisUtils.get(orderKey);
+    if (StringHelper.isNotBlank(orderValue)) {
       throw new ClientServiceException("解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", SAME_DATA_EXIST);
     }
 
@@ -310,10 +323,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException("解锁失败，无法解锁已经完成结算的账单！", PARAMETERS_IS_ILLEGAL);
     }
 
+    redisUtils.set(orderKey, orderRecordId, 5);
     orderRecord.setStatus((byte) 0);
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     orderRecord.setUpdName(BaseContextHandler.getName());
     mapper.updateByPrimaryKeySelective(orderRecord);
+    redisUtils.delete(orderKey);
   }
 
   /**
@@ -356,9 +371,13 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
             detail.setOrderRecordId(orderRecordId);
             orderDetailBiz.insertSelective(detail);
             if (0 == detail.getType()) {
-              List<VisitingRecord> orderDetailVisitRecord = treatmentRecordBiz.createOrderDetailVisitRecord(treatmentRecordId, orderDetail);
-              visitingRecordList.stream().sequential().collect(Collectors.toCollection(()->orderDetailVisitRecord));
-//              treatmentRecordBiz.saveOrderDetailVisitRecord(treatmentRecordId, detail);
+              List<VisitingRecord> orderDetailVisitRecord =
+                  treatmentRecordBiz.createOrderDetailVisitRecord(treatmentRecordId, orderDetail);
+              visitingRecordList.stream()
+                  .sequential()
+                  .collect(Collectors.toCollection(() -> orderDetailVisitRecord));
+              //              treatmentRecordBiz.saveOrderDetailVisitRecord(treatmentRecordId,
+              // detail);
             }
           });
       // 设置分组计划

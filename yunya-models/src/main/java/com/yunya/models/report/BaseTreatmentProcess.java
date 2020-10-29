@@ -78,6 +78,9 @@ public class BaseTreatmentProcess {
     @Column(name = "appoint_content")
     private String appointContent;
 
+    /**
+     * 改约次数
+     */
     @Column(name = "appoint_modify_time")
     private Integer appointModifyTime;
 
@@ -104,6 +107,24 @@ public class BaseTreatmentProcess {
      */
     @Column(name = "treat_end_time")
     private Date treatEndTime;
+
+    /**
+     * 助手1
+     */
+    @Column(name = "assistant_1")
+    private Integer assistant1;
+
+    /**
+     * 助手2
+     */
+    @Column(name = "assistant_2")
+    private Integer assistant2;
+
+    /**
+     * 助手3
+     */
+    @Column(name = "assistant_3")
+    private Integer assistant3;
 
     /**
      * 获取预约ID
@@ -409,5 +430,59 @@ public class BaseTreatmentProcess {
      */
     public void setTreatEndTime(Date treatEndTime) {
         this.treatEndTime = treatEndTime;
+    }
+
+    /**
+     * 获取助手1
+     *
+     * @return assistant_1 - 助手1
+     */
+    public Integer getAssistant1() {
+        return assistant1;
+    }
+
+    /**
+     * 设置助手1
+     *
+     * @param assistant1 助手1
+     */
+    public void setAssistant1(Integer assistant1) {
+        this.assistant1 = assistant1;
+    }
+
+    /**
+     * 获取助手2
+     *
+     * @return assistant_2 - 助手2
+     */
+    public Integer getAssistant2() {
+        return assistant2;
+    }
+
+    /**
+     * 设置助手2
+     *
+     * @param assistant2 助手2
+     */
+    public void setAssistant2(Integer assistant2) {
+        this.assistant2 = assistant2;
+    }
+
+    /**
+     * 获取助手3
+     *
+     * @return assistant_3 - 助手3
+     */
+    public Integer getAssistant3() {
+        return assistant3;
+    }
+
+    /**
+     * 设置助手3
+     *
+     * @param assistant3 助手3
+     */
+    public void setAssistant3(Integer assistant3) {
+        this.assistant3 = assistant3;
     }
 }

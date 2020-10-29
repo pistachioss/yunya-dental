@@ -58,24 +58,6 @@ public class BaseBill {
     private Date orderDate;
 
     /**
-     * 助手1
-     */
-    @Column(name = "assistant_1")
-    private Integer assistant1;
-
-    /**
-     * 助手2
-     */
-    @Column(name = "assistant_2")
-    private Integer assistant2;
-
-    /**
-     * 助手3
-     */
-    @Column(name = "assistant_3")
-    private Integer assistant3;
-
-    /**
      * 优惠类型（0-普通优惠；1-授权折扣）
      */
     @Column(name = "privilege_type")
@@ -256,60 +238,6 @@ public class BaseBill {
      */
     public void setOrderDate(Date orderDate) {
         this.orderDate = orderDate;
-    }
-
-    /**
-     * 获取助手1
-     *
-     * @return assistant_1 - 助手1
-     */
-    public Integer getAssistant1() {
-        return assistant1;
-    }
-
-    /**
-     * 设置助手1
-     *
-     * @param assistant1 助手1
-     */
-    public void setAssistant1(Integer assistant1) {
-        this.assistant1 = assistant1;
-    }
-
-    /**
-     * 获取助手2
-     *
-     * @return assistant_2 - 助手2
-     */
-    public Integer getAssistant2() {
-        return assistant2;
-    }
-
-    /**
-     * 设置助手2
-     *
-     * @param assistant2 助手2
-     */
-    public void setAssistant2(Integer assistant2) {
-        this.assistant2 = assistant2;
-    }
-
-    /**
-     * 获取助手3
-     *
-     * @return assistant_3 - 助手3
-     */
-    public Integer getAssistant3() {
-        return assistant3;
-    }
-
-    /**
-     * 设置助手3
-     *
-     * @param assistant3 助手3
-     */
-    public void setAssistant3(Integer assistant3) {
-        this.assistant3 = assistant3;
     }
 
     /**

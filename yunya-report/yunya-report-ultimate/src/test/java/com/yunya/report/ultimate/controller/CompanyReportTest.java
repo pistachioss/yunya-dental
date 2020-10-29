@@ -39,7 +39,7 @@ public class CompanyReportTest {
     OrderRecordQuery query = new OrderRecordQuery();
     query.setOrgId(35);
     ResponseResult<PageInfo<BillOfOrderRecordVO>> result =
-        companyReportOfDataRecordController.billRecordOfOrderList(query);
+        companyReportOfDataRecordController.findBillRecordOfOrderList(query);
     System.out.println(result);
   }
 }

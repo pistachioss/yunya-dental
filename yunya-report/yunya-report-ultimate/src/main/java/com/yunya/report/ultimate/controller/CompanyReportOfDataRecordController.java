@@ -3,9 +3,11 @@ package com.yunya.report.ultimate.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillPayRecordQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
+import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
 import com.yunya.feign.report.domain.vo.BillOfPayRecordVO;
+import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -33,7 +35,7 @@ import java.io.IOException;
  * @description:
  * @since: 1.0.0
  */
-@Api("数据统计（就诊记录；账单记录；配诊记录）")
+@Api(tags = "数据统计（就诊记录；账单记录；配诊记录）")
 @RestController
 @RequestMapping("record")
 public class CompanyReportOfDataRecordController {
@@ -66,7 +68,7 @@ public class CompanyReportOfDataRecordController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("数据记录-就诊记录-根据条件查询就诊列表并导出Excel(请设置分页条件为false)")
+  @ApiOperation("数据记录-就诊记录-根据条件查询就诊列表并导出Excel")
   @PostMapping(value = "/treatment/export", name = "根据条件查询就诊列表并导出Excel")
   public ResponseResult<T> exportTreatmentList(
       HttpServletResponse response, @RequestBody @Validated TreatmentRecordQuery query)
@@ -96,7 +98,7 @@ public class CompanyReportOfDataRecordController {
    * @param query 查询条件
    * @return list
    */
-  @ApiOperation("根据条件导出:数据记录-账单记录-开单记录列表；分页条件置为false")
+  @ApiOperation("根据条件导出:数据记录-账单记录-开单记录列表")
   @PostMapping(value = "/bill/order/export", name = "导出数据记录-账单记录-开单记录列表")
   public ResponseResult<T> exportBillOfOrderRecord(
       HttpServletResponse response, @RequestBody @Validated OrderRecordQuery query)
@@ -112,7 +114,7 @@ public class CompanyReportOfDataRecordController {
    * @return list
    */
   @ApiOperation("根据条件查询账单收费记录")
-  @PostMapping(value = "/bill/pay/list", name = "根据条件查询账单收费记录")
+  @PostMapping(value = "/bill/pay/list", name = "数据记录-收费记录-根据条件查询账单收费记录")
   public ResponseResult<PageInfo<BillOfPayRecordVO>> findBillRecordOfPayList(
       @RequestBody @Validated BillPayRecordQuery query) {
     PageInfo<BillOfPayRecordVO> resultList = billPayBiz.findBillRecordOfPayList(query);
@@ -126,12 +128,43 @@ public class CompanyReportOfDataRecordController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("根据条件导出:数据记录-账单记录-收费记录；分页条件置为false")
+  @ApiOperation("根据条件导出:数据记录-账单记录-收费记录")
   @PostMapping(value = "/bill/pay/export", name = "根据条件导出账单收费记录")
   public ResponseResult<T> exportBillOfPayRecord(
       HttpServletResponse response, @RequestBody @Validated BillPayRecordQuery query)
       throws IOException {
     billPayBiz.exportBillOfPayRecord(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询配诊记录
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  @ApiOperation("根据条件查询配诊记录")
+  @PostMapping(value = "/matching/list", name = "数据记录-配诊记录-根据条件查询配诊记录")
+  public ResponseResult<PageInfo<TreatmentMatchingRecordVO>> treatmentMatchingRecord(
+      @RequestBody @Validated TreatmentMatchingRecordQuery query) {
+    PageInfo<TreatmentMatchingRecordVO> list =
+        treatmentProcessBiz.findTreatmentMatchingRecord(query);
+    return ResponseUtil.success(list);
+  }
+
+  /**
+   * 导出就诊配诊记录列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("导出就诊配诊记录列表")
+  @PostMapping(value = "/matching/export", name = "数据记录-配诊记录-导出就诊配诊记录列表")
+  public ResponseResult<T> exportTreatmentMatchingRecord(
+      HttpServletResponse response, @RequestBody @Validated TreatmentMatchingRecordQuery query)
+      throws IOException {
+    treatmentProcessBiz.exportTreatmentMatchingRecord(response, query);
     return ResponseUtil.success(null);
   }
 }

@@ -13,7 +13,7 @@ import com.yunya.middletable.dao.report.BaseBenefitMapper;
 import com.yunya.models.discount.AuthDiscountBenefit;
 import com.yunya.models.discount.CardBenefit;
 import com.yunya.models.discount.OrderBenefit;
-import com.yunya.models.middletable.BaseBenefit;
+import com.yunya.models.report.BaseBenefit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.cglib.core.Converter;
@@ -25,14 +25,11 @@ import javax.annotation.Resource;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import static com.yunya.middletable.enums.BenefitEnum.*;
-import static com.yunya.middletable.enums.TrueFalseEnum.*;
+import static com.yunya.middletable.enums.BenefitEnum.AUTH_BENEFIT;
+import static com.yunya.middletable.enums.BenefitEnum.CARD_BENEFIT;
+import static com.yunya.middletable.enums.TrueFalseEnum.FALSE;
 import static java.util.stream.Collectors.*;
 
 /**

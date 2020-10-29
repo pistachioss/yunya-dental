@@ -21,7 +21,6 @@ import java.util.List;
 @Data
 @ToString
 public class OrderDetailInfoVO implements Serializable {
-
   /** 开单记录ID */
   @ApiModelProperty("开单记录ID")
   private Integer orderRecordId;

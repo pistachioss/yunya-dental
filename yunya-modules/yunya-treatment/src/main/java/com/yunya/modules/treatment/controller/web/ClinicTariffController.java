@@ -12,6 +12,7 @@ import com.yunya.modules.treatment.biz.ClinicTariffBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -41,7 +42,7 @@ public class ClinicTariffController {
    */
   @ApiOperation("根据门诊价目表ID获取信息")
   @GetMapping("/one/{orgId}/{id}")
-  public ResponseResult findById(
+  public ResponseResult<ClinicTariffVO> findById(
       @PathVariable(value = "orgId") Integer orgId, @PathVariable(value = "id") Integer id) {
     ClinicTariffVO resultData = clinicTariffBiz.findById(orgId, id);
     return ResponseUtil.success(resultData);
@@ -55,7 +56,8 @@ public class ClinicTariffController {
    */
   @ApiOperation("根据条件查询门诊价目表信息列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody @Validated ClinicTariffQueryForm queryForm) {
+  public ResponseResult<PageInfo<ClinicTariffVO>> findList(
+      @RequestBody @Validated ClinicTariffQueryForm queryForm) {
     PageInfo<ClinicTariffVO> resultList = clinicTariffBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -70,10 +72,10 @@ public class ClinicTariffController {
   @CurrentUser
   @ApiOperation("修改门诊价目表价格信息")
   @PutMapping("/modify/{id}")
-  public ResponseResult modify(
+  public ResponseResult<T> modify(
       @PathVariable(value = "id") Integer id, @RequestBody @Validated ClinicTariffForm form) {
     clinicTariffBiz.modify(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -85,9 +87,9 @@ public class ClinicTariffController {
   @CurrentUser
   @ApiOperation("设置门诊价目表项目是否启用")
   @GetMapping("/switch/{id}")
-  public ResponseResult switchClinicTariff(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "id") Integer id) {
     clinicTariffBiz.switchClinicTariff(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -99,10 +101,10 @@ public class ClinicTariffController {
   @CurrentUser
   @ApiOperation("统一设置门诊价目表会员折扣")
   @PostMapping("/unite")
-  public ResponseResult uniteMemberDiscount(
+  public ResponseResult<T> uniteMemberDiscount(
       @RequestBody @Validated ClinicTariffUniteDiscountForm form) {
     clinicTariffBiz.uniteMemberDiscount(form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -114,15 +116,16 @@ public class ClinicTariffController {
    */
   @ApiOperation("根据条件导出门诊价目表列表")
   @PostMapping("/export")
-  public ResponseResult export(
+  public ResponseResult<T> export(
       HttpServletResponse response, @RequestBody @Validated ClinicTariffQueryForm queryForm)
       throws IOException {
     clinicTariffBiz.exportClinicTariffList(response, queryForm);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
    * 根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）
+   *
    * @param search 检索名称首字母缩写
    * @param type 项目类型 0-价目表；1-商品表
    * @return 返回实体对象
@@ -131,7 +134,6 @@ public class ClinicTariffController {
   @GetMapping("/category/{type}")
   public ResponseResult clinicBaseTariff(@PathVariable("type") Byte type, String search) {
 
-    return this.clinicTariffBiz.clinicBaseTariff(type,search);
+    return this.clinicTariffBiz.clinicBaseTariff(type, search);
   }
-
 }
