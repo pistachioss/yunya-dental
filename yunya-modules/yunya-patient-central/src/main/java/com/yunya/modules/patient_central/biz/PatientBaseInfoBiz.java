@@ -9,6 +9,10 @@ import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.RemoteMiddleTableServiceFeign;
+import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -81,6 +85,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /** 设备心跳回调 */
   @Autowired private InformationCallbackBiz informationCallbackBiz;
+
+  @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
   /**
    * 通过患者id查询患者共用属性
@@ -161,7 +167,18 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
       // 添加患者时,创建预付款账户
       this.addPatientPrepaymentsInfo(patientBaseInfo);
-      return this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+      PatientBaseInfoVo patientBaseInfoVo = this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+
+      // 发送 更新中间表 消息
+      MessageModel messageModel = new MessageModel();
+      Map<String, Object> map = new HashMap<String, Object>();
+      map.put("patientId", patientBaseInfoVo.getId());
+      messageModel.setParamMap(map);
+      messageModel.setOperateType(0);
+      messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatient);
+      remoteRabbitMqServiceFeign.sendMessage(messageModel);
+
+      return patientBaseInfoVo;
   }
 
   /**
