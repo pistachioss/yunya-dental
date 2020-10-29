@@ -155,7 +155,6 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       resultData.setPrice(price);
       resultData.setUpdId(userId);
       resultData.setUpdName(name);
-      resultData.setUpdTime(new Date(System.currentTimeMillis()));
     }
     mapper.updateByPrimaryKeySelective(resultData);
     List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
@@ -280,6 +279,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
 
   /**
    * 根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）
+   *
    * @param type
    * @param search
    * @return
@@ -292,6 +292,6 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       List<BaseCategoryInfoVO> baseCategoryInfoVOS = mapper.selectBaseOralTariffList(search);
       return ResponseUtil.success(baseCategoryInfoVOS);
     }
-    return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL,"参数错误",null);
+    return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "参数错误", null);
   }
 }
