@@ -2118,7 +2118,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (!StringHelper.isEmpty(query.getDentistName())) {
             appointPatientRecord = appointPatientRecord.stream().filter(
                     appointPatientRecordVo -> appointPatientRecordVo
-                            .getDentistName().contains(query.getDentistName())).collect(Collectors.toList());
+                            .getDentistName().equals(query.getDentistName())).collect(Collectors.toList());
         }
         return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
     }
