@@ -19,7 +19,7 @@ import java.util.Date;
  * @create 2020-08-10 20:13
  * @update yunya-lihuibin    2020-08-10    新建
  */
-@ApiModel(value = "预约列表视图模型")
+@ApiModel(value = "AppointmentListItemVo",description = "预约列表视图模型")
 @Data
 @ToString
 public class AppointmentListItemVo implements Serializable {

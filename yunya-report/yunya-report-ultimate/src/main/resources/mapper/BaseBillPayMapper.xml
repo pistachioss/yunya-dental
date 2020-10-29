@@ -1,28 +1,124 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillPayMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBillPay" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER" />
-    <result column="bill_id" property="billId" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
-    <result column="payee_user_id" property="payeeUserId" jdbcType="INTEGER" />
-    <result column="payee_date" property="payeeDate" jdbcType="TIMESTAMP" />
-    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
-    <result column="still_owe_amount" property="stillOweAmount" jdbcType="DECIMAL" />
-    <result column="cash_amount" property="cashAmount" jdbcType="DECIMAL" />
-    <result column="alipay_amount" property="alipayAmount" jdbcType="DECIMAL" />
-    <result column="wechat_amount" property="wechatAmount" jdbcType="DECIMAL" />
-    <result column="member_principle_amount" property="memberPrincipleAmount" jdbcType="DECIMAL" />
-    <result column="member_gift_amount" property="memberGiftAmount" jdbcType="DECIMAL" />
-    <result column="prepaid_principle_amount" property="prepaidPrincipleAmount" jdbcType="DECIMAL" />
-    <result column="prepaid_gift_amount" property="prepaidGiftAmount" jdbcType="DECIMAL" />
-    <result column="insurance_amount" property="insuranceAmount" jdbcType="DECIMAL" />
-    <result column="bank_card_amount" property="bankCardAmount" jdbcType="DECIMAL" />
-    <result column="city_medical_insurance_amount" property="cityMedicalInsuranceAmount" jdbcType="DECIMAL" />
-    <result column="province_medical_insurance_amount" property="provinceMedicalInsuranceAmount" jdbcType="DECIMAL" />
-  </resultMap>
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillPayMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBillPay">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="bill_pay_id" property="billPayId" jdbcType="INTEGER"/>
+        <result column="bill_id" property="billId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="treatment_id" property="treatmentId" jdbcType="INTEGER"/>
+        <result column="payee_user_id" property="payeeUserId" jdbcType="INTEGER"/>
+        <result column="payee_date" property="payeeDate" jdbcType="TIMESTAMP"/>
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+        <result column="still_owe_amount" property="stillOweAmount" jdbcType="DECIMAL"/>
+        <result column="cash_amount" property="cashAmount" jdbcType="DECIMAL"/>
+        <result column="alipay_amount" property="alipayAmount" jdbcType="DECIMAL"/>
+        <result column="wechat_amount" property="wechatAmount" jdbcType="DECIMAL"/>
+        <result column="member_principle_amount" property="memberPrincipleAmount" jdbcType="DECIMAL"/>
+        <result column="member_gift_amount" property="memberGiftAmount" jdbcType="DECIMAL"/>
+        <result column="prepaid_principle_amount" property="prepaidPrincipleAmount" jdbcType="DECIMAL"/>
+        <result column="prepaid_gift_amount" property="prepaidGiftAmount" jdbcType="DECIMAL"/>
+        <result column="insurance_amount" property="insuranceAmount" jdbcType="DECIMAL"/>
+        <result column="bank_card_amount" property="bankCardAmount" jdbcType="DECIMAL"/>
+        <result column="city_medical_insurance_amount" property="cityMedicalInsuranceAmount" jdbcType="DECIMAL"/>
+        <result column="province_medical_insurance_amount" property="provinceMedicalInsuranceAmount"
+                jdbcType="DECIMAL"/>
+    </resultMap>
+    <!-- 根据条件查询账单支付记录列表 -->
+    <select id="selectBillRecordOfPayList" resultType="com.yunya.feign.report.domain.vo.BillOfPayRecordVO">
+        SELECT
+            brp.toolDate,
+            brp.orderDate,
+            brp.billPayId,
+            brp.billNum,
+            brp.patientId,
+            brp.patientName,
+            brp.mobile,
+            brp.gender,
+            brp.regDentistId,
+            brp.regDentistName,
+            brp.orderAmount,
+            brp.privilegeAmount,
+            brp.actualAmount,
+            brp.receivedAmount,
+            brp.stillOweAmount,
+            brp.remainingOweAmount,
+            brp.payeeUserId,
+            brp.payeeUserName
+        FROM
+            (
+            SELECT
+                DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) AS toolDate,
+                DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS orderDate,
+                bbp.bill_pay_id AS billPayId,
+                bb.bill_num AS billNum,
+                tp.patient_id AS patientId,
+                tp.`name` AS patientName,
+                tp.pinyin_name AS pinyinName,
+                tp.mobile AS mobile,
+                tp.gender AS gender,
+                tp.registered_dentist_id AS regDentistId,
+                tp.regDentistName AS regDentistName,
+                bb.order_amount AS orderAmount,
+                bb.privilege_amount AS privilegeAmount,
+                bb.actual_amount AS actualAmount,
+                bbp.received_amount AS receivedAmount,
+                bbp.still_owe_amount AS stillOweAmount,
+                bb.debt_amount AS remainingOweAmount,
+                bbp.payee_user_id AS payeeUserId,
+                be.employee_name AS payeeUserName
+            FROM
+                base_bill_pay bbp
+                LEFT JOIN base_bill bb ON bbp.bill_id = bb.bill_id
+                LEFT JOIN base_employee be ON bbp.payee_user_id = be.user_id
+                LEFT JOIN (
+                SELECT
+                    btp.treatment_id,
+                    bp.patient_id,
+                    bp.`name`,
+                    bp.pinyin_name,
+                    bp.mobile,
+                    bp.gender,
+                    btp.registered_dentist_id,
+                    be.employee_name AS regDentistName
+                FROM
+                    base_treatment_process btp
+                    LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+                    LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                ) tp ON bbp.treatment_id = tp.treatment_id
+            ) brp
+        <where>
+            <if test="query.orgId != null">
+                and bor.orgId = #{query.orgId}
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and bor.billNum = #{query.billNum}
+            </if>
+            <if test="query.keyWord != null and query.keyWord != ''">
+                and concat(ifnull(bor.patientName, ''), ifnull(bor.pinyinName, ''), ifnull(bor.mobile, '')) like concat('%', #{query.keyWord}, '%')
+            </if>
+            <if test="query.tollStartDate != null and query.tollStartDate != ''">
+                and bor.toolDate &gt;= #{query.tollStartDate}
+            </if>
+            <if test="query.tollEndDate != null and query.tollEndDate != ''">
+                and bor.toolDate &lt;= #{query.orderEndDate}
+            </if>
+            <if test="query.orderStartDate != null and query.orderStartDate != ''">
+                and bor.orderDate &gt;= #{query.orderStartDate}
+            </if>
+            <if test="query.orderEndDate != null and query.orderEndDate != ''">
+                and bor.orderDate &lt;= #{query.orderEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and bor.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+            brp.toolDate DESC
+    </select>
 </mapper>

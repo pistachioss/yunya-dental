@@ -23,178 +23,150 @@
         <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
         <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
     </resultMap>
-    <!-- 批量插入就诊流程 -->
-    <insert id="batchInsertSelective">
-        INSERT INTO base_treatment_process (
-        appointment_id,
-        registered_id,
-        treatment_id,
-        org_id,
-        patient_id,
-        treat_status,
-        treat_type,
-        appoint_status,
-        appoint_dentist_id,
-        appoint_start_time,
-        appoint_duration,
-        appoint_modify_time,
-        appoint_content,
-        registered_dentist_id,
-        registered_time,
-        treat_start_time,
-        treat_end_time
-        )
-        VALUES
-        <foreach collection="treatmentProcesses" item="item" separator=",">
-            (#{item.appointmentId}, #{item.registeredId}, #{item.treatmentId},
-            #{item.orgId}, #{item.patientId}, #{item.treatStatus},
-            #{item.treatType}, #{item.appointStatus}, #{item.appointDentistId},
-            #{item.appointStartTime}, #{item.appointDuration}, #{item.appointModifyTime},
-            #{item.appointContent}, #{item.registeredDentistId}, #{item.registeredTime},
-            #{item.treatStartTime}, #{item.treatEndTime})
-        </foreach>
-    </insert>
-    <!-- 根据预约ID更新就诊流程 -->
-    <update id="updateByAppointmentId">
-        update base_treatment_process
-        <set>
-            <if test="treatmentProcess.appointmentId != null">
-                appointment_id = #{treatmentProcess.appointmentId},
+    <!-- 根据条件查询就诊列表 -->
+    <select id="selectTreatmentRecordReportVOList"
+            resultType="com.yunya.feign.report.domain.vo.TreatmentRecordReportVO">
+        SELECT
+            tr.orgId,
+            tr.orgName,
+            tr.treatDate,
+            tr.patientId,
+            tr.patientName,
+            tr.mobile,
+            tr.gender,
+            tr.treatType,
+            tr.regDentistId,
+            tr.regDentistName,
+            tr.appointTime,
+            tr.appointDuration,
+            tr.appointContent,
+            tr.regTime,
+            tr.treatStartTime,
+            tr.treatEndTime,
+            tr.treatWaitingTime,
+            tr.treatExpendTime
+        FROM
+            (
+            SELECT
+                btp.org_id AS orgId,
+                bo.abbreviation AS orgName,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
+                btp.patient_id AS patientId,
+                bp.`name` AS patientName,
+                bp.pinyin_name AS pinyinName,
+                bp.mobile AS mobile,
+                bp.gender AS gender,
+                btp.treat_type AS treatType,
+                btp.registered_dentist_id AS regDentistId,
+                be.employee_name AS regDentistName,
+                DATE_FORMAT( btp.appoint_start_time, '%H:%i' ) AS appointTime,
+                btp.appoint_duration AS appointDuration,
+                btp.appoint_content AS appointContent,
+                DATE_FORMAT( btp.registered_time, '%H:%i' ) AS regTime,
+                DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
+                DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
+                TIMESTAMPDIFF( MINUTE, btp.registered_time, DATE_FORMAT( btp.treat_start_time, '%H:%i' ) ) AS treatWaitingTime,
+                TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS treatExpendTime
+            FROM
+                base_treatment_process btp
+                LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            ) tr
+        <where>
+            <if test="query.orgId != null">
+                and tr.orgId = #{query.orgId}
             </if>
-            <if test="treatmentProcess.registeredId != null">
-                registered_id = #{treatmentProcess.registeredId},
+            <if test="query.keyWord != null and query.keyWord != ''">
+                and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like concat('%', #{query.keyWord}, '%')
             </if>
-            <if test="treatmentProcess.treatmentId != null">
-                treatment_id = #{treatmentProcess.treatmentId},
+            <if test="query.treatStartDate != null and query.treatStartDate != ''">
+                and tr.treatDate &gt;= #{query.treatStartDate}
             </if>
-            <if test="treatmentProcess.orgId != null">
-                org_id = #{treatmentProcess.orgId},
+            <if test="query.treatEndDate != null and query.treatEndDate != ''">
+                and tr.treatDate &lt;= #{query.treatEndDate}
             </if>
-            <if test="treatmentProcess.patientId != null">
-                patient_id = #{treatmentProcess.patientId},
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and tr.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
             </if>
-            <if test="treatmentProcess.appointModifyTime != null">
-                appoint_modify_time = #{treatmentProcess.appointModifyTime},
-            </if>
-            <if test="treatmentProcess.treatStatus != null">
-                treat_status = #{treatmentProcess.treatStatus},
-            </if>
-            <if test="treatmentProcess.treatType != null">
-                treat_type = #{treatmentProcess.treatType},
-            </if>
-            <if test="treatmentProcess.appointStatus != null">
-                appoint_status = #{treatmentProcess.appointStatus},
-            </if>
-            <if test="treatmentProcess.appointDentistId != null">
-                appoint_dentist_id = #{treatmentProcess.appointDentistId},
-            </if>
-            <if test="treatmentProcess.appointStartTime != null">
-                appoint_start_time = #{treatmentProcess.appointStartTime},
-            </if>
-            <if test="treatmentProcess.appointDuration != null">
-                appoint_duration = #{treatmentProcess.appointDuration},
-            </if>
-            <if test="treatmentProcess.appointContent != null and treatmentProcess.appointContent != ''">
-                appoint_content = #{treatmentProcess.appointContent},
-            </if>
-            <if test="treatmentProcess.registeredDentistId != null">
-                registered_dentist_id = #{treatmentProcess.registeredDentistId},
-            </if>
-            <if test="treatmentProcess.registeredTime != null">
-                registered_time = #{treatmentProcess.registeredTime},
-            </if>
-            <if test="treatmentProcess.treatStartTime != null">
-                treat_start_time = #{treatmentProcess.treatStartTime},
-            </if>
-            <if test="treatmentProcess.treatEndTime != null">
-                treat_end_time = #{treatmentProcess.treatEndTime},
-            </if>
-        </set>
-        where appointment_id = #{appointmentId}
-    </update>
-    <!-- 根据挂号ID更新就诊流程 -->
-    <update id="updateByRegisteredId">
-        update base_treatment_process
-        <set>
-            <if test="treatmentProcess.registeredId != null">
-                registered_id = #{treatmentProcess.registeredId},
-            </if>
-            <if test="treatmentProcess.treatmentId != null">
-                treatment_id = #{treatmentProcess.treatmentId},
-            </if>
-            <if test="treatmentProcess.orgId != null">
-                org_id = #{treatmentProcess.orgId},
-            </if>
-            <if test="treatmentProcess.patientId != null">
-                patient_id = #{treatmentProcess.patientId},
-            </if>
-            <if test="treatmentProcess.treatStatus != null">
-                treat_status = #{treatmentProcess.treatStatus},
-            </if>
-            <if test="treatmentProcess.treatType != null">
-                treat_type = #{treatmentProcess.treatType},
-            </if>
-            <if test="treatmentProcess.registeredDentistId != null">
-                registered_dentist_id = #{treatmentProcess.registeredDentistId},
-            </if>
-            <if test="treatmentProcess.registeredTime != null">
-                registered_time = #{treatmentProcess.registeredTime},
-            </if>
-            <if test="treatmentProcess.treatStartTime != null">
-                treat_start_time = #{treatmentProcess.treatStartTime},
-            </if>
-            <if test="treatmentProcess.treatEndTime != null">
-                treat_end_time = #{treatmentProcess.treatEndTime},
-            </if>
-        </set>
-        where registered_id = #{registeredId}
-    </update>
-    <!-- 根据就诊ID更新就诊流程 -->
-    <update id="updateByTreatmentRecordId">
-        update base_treatment_process
-        <set>
-            <if test="treatmentProcess.treatmentId != null">
-                treatment_id = #{treatmentProcess.treatmentId},
-            </if>
-            <if test="treatmentProcess.orgId != null">
-                org_id = #{treatmentProcess.orgId},
-            </if>
-            <if test="treatmentProcess.patientId != null">
-                patient_id = #{treatmentProcess.patientId},
-            </if>
-            <if test="treatmentProcess.treatStatus != null">
-                treat_status = #{treatmentProcess.treatStatus},
-            </if>
-            <if test="treatmentProcess.treatType != null">
-                treat_type = #{treatmentProcess.treatType},
-            </if>
-            <if test="treatmentProcess.treatStartTime != null">
-                treat_start_time = #{treatmentProcess.treatStartTime},
-            </if>
-            <if test="treatmentProcess.treatEndTime != null">
-                treat_end_time = #{treatmentProcess.treatEndTime},
-            </if>
-        </set>
-        where treatment_id = #{treatmentId}
-    </update>
-    <!-- 根据预约ID删除就诊流程 -->
-    <delete id="deleteByAppointmentId">
-        delete from base_treatment_process where appointment_id = #{appointmentId}
-    </delete>
-    <!-- 根据预约ID删除就诊流程 -->
-    <delete id="deleteByRegisteredId">
-        delete from base_treatment_process where registered_id = #{registeredId}
-    </delete>
-    <!-- 根据预约ID查询就诊流程信息 -->
-    <select id="selectOneByAppointmentId" resultType="com.yunya.models.report.BaseTreatmentProcess">
-      select * from base_treatment_process where appointment_id = #{appointmentId}
+        </where>
+        ORDER BY tr.treatDate DESC
     </select>
-    <!-- 根据挂号ID查询就诊流程信息 -->
-    <select id="selectOneByRegisteredId" resultType="com.yunya.models.report.BaseTreatmentProcess">
-      select * from base_treatment_process where registered_id = #{registeredId}
-    </select>
-    <!-- 根据就诊ID查询就诊流程信息 -->
-    <select id="selectOneByTreatmentId" resultType="com.yunya.models.report.BaseTreatmentProcess">
-      select * from base_treatment_process where treatment_id = #{treatmentId}
+    <!-- 根据条件查询就诊配诊记录列表 -->
+    <select id="selectTreatmentMatchingRecord"
+            resultType="com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO">
+        SELECT
+            treatmentId,
+            assistant1Id,
+            assistant1Name,
+            assistant2Id,
+            assistant2Name,
+            assistant3Id,
+            assistant3Name,
+            matchingDentistId,
+            matchingDentistName,
+            patientId,
+            patientName,
+            mobile,
+            matchingDate,
+            treatStartTime,
+            treatEndTime,
+            matchingDuration
+        FROM
+            (
+            SELECT
+                btp.treatment_id AS treatmentId,
+                btp.assistant_1 AS assistant1Id,
+                be1.employee_name AS assistant1Name,
+                btp.assistant_2 AS assistant2Id,
+                be2.employee_name AS assistant2Name,
+                btp.assistant_3 AS assistant3Id,
+                be3.employee_name AS assistant3Name,
+                btp.registered_dentist_id AS matchingDentistId,
+                be.employee_name AS matchingDentistName,
+                btp.patient_id AS patientId,
+                bp.`name` AS patientName,
+                bp.pinyin_name AS pinyinName,
+                bp.mobile AS mobile,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS matchingDate,
+                btp.treat_start_time AS treatStartTime,
+                btp.treat_end_time AS treatEndTime,
+                TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS matchingDuration
+            FROM
+                base_treatment_process btp
+                LEFT JOIN base_employee be1 ON btp.assistant_1 = be1.user_id
+                LEFT JOIN base_employee be2 ON btp.assistant_2 = be1.user_id
+                LEFT JOIN base_employee be3 ON btp.assistant_3 = be1.user_id
+                LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+            WHERE
+                btp.treatment_id IS NOT NULL
+                AND ( btp.assistant_1 IS NOT NULL OR btp.assistant_2 IS NOT NULL OR btp.assistant_3 IS NOT NULL )
+            ) tmr
+        <where>
+            <if test="query.orgId != null">
+                and tmr.orgId = #{query.orgId}
+            </if>
+            <if test="query.keyWord != null and query.keyWord != ''">
+                and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like concat('%', #{query.keyWord}, '%')
+            </if>
+            <if test="query.matchingStartDate != null and query.matchingStartDate != ''">
+                and tmr.matchingDate &gt;= #{query.matchingStartDate}
+            </if>
+            <if test="query.matchingEndDate != null and query.matchingEndDate != ''">
+                and tmr.matchingDate &lt;= #{query.matchingEndDate}
+            </if>
+            <if test="query.matchingDentistIds != null and query.matchingDentistIds.length > 0">
+                and tmr.matchingDentistId in
+                <foreach collection="query.matchingDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+            tmr.matchingDate DESC
     </select>
 </mapper>

@@ -363,7 +363,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         // 获取门诊排班列表 （获取开始和结束时间）
         List<ClinicScheduleVO> ClinicSchedules = clinicScheduleBiz.findVOsByClinicId(null);
 
-        Map<String, ClinicScheduleVO> clinicScheduleMap = new HashMap();
+        Map<String, ClinicScheduleVO> clinicScheduleMap = new HashMap(16);
         ClinicSchedules.forEach(x -> clinicScheduleMap.put(x.getScheduleId() + "", x));
         // 根据排班表ID获取排班开始时间和结束时间
         String shiftId = employeeScheduleForm.getScheduleId();
@@ -373,7 +373,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         Date endTime = null;
         try {
             startTime = dateFormat.parse(dateFormat.format(clinicScheduleMap.get(shiftId).getFirstStartTime()));
-            endTime = new Date();
             if (clinicScheduleMap.get(shiftId).getSecondEndTime() != null) {
                 endTime = dateFormat.parse(dateFormat.format(clinicScheduleMap.get(shiftId).getSecondEndTime()));
             } else {
@@ -405,9 +404,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                     if (endTime.before(oldShift.getFirstStartTime()) ||
                             endTime.equals(oldShift.getFirstStartTime()) ||
                             startTime.equals(oldShift.getSecondEndTime()) ||
-                            startTime.after(oldShift.getSecondEndTime())||
-                            startTime.equals(oldShift.getFirstStartTime()) ||
-                            endTime.equals(oldShift.getSecondEndTime())
+                            startTime.after(oldShift.getSecondEndTime())
                             ) {
                         flag = true;
                     } else {

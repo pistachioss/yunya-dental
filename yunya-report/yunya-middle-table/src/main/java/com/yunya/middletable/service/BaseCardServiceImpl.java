@@ -4,14 +4,12 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.report.domain.bo.BaseCardBo;
 import com.yunya.feign.report.domain.model.MessageModel;
-import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.middletable.dao.discount.CardMapper;
 import com.yunya.middletable.dao.discount.CouponAllocateMapper;
 import com.yunya.middletable.dao.discount.CouponMapper;
 import com.yunya.middletable.dao.discount.DiscountCouponMapper;
 import com.yunya.middletable.dao.discount.PackageCouponMapper;
-import com.yunya.middletable.dao.discount.RechargeCardMapper;
 import com.yunya.middletable.dao.discount.SpecialPackageCouponMapper;
 import com.yunya.middletable.dao.discount.VoucheCouponMapper;
 import com.yunya.middletable.dao.report.BaseCardMapper;
@@ -37,11 +35,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 
 import static com.yunya.middletable.enums.CouponTypeEnum.*;
@@ -53,7 +55,7 @@ import static java.util.stream.Collectors.*;
  */
 @Slf4j
 @Service
-public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
+public class BaseCardServiceImpl{
 	@Resource
 	private CardMapper cardMapper;
 	@Resource
@@ -70,10 +72,13 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 	private PackageCouponMapper packageCouponMapper;
 	@Resource
 	private SpecialPackageCouponMapper specialPackageCouponMapper;
+	@Resource(name = "customizeThreadPool")
+	private ExecutorService cardThreadPool;
 	@Resource
-	private RechargeCardMapper rechargeCardMapper;
+	private BaseCardMapper baseCardMapper;
 
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	private static final int cutSlice = 100;
 
 	public void operateBaseCard(MessageModel model) {
 		Integer cardId = (Integer) model.getParamMap().get("id");
@@ -81,7 +86,7 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 		operateData(cardId);
 	}
 
-	public RestErrorBo pullCard(String startDateStr, String endDateStr) {
+	public RestErrorBo pullCard(String startDateStr, String endDateStr) throws ExecutionException, InterruptedException {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		if (!checkPullDate(startDateStr, endDateStr)) {
 			return errorBo;
@@ -89,11 +94,11 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 		List<BaseCard> originData = getOriginDataByDate(startDateStr, endDateStr);
 		if (CollectionUtils.isNotEmpty(originData)) {
 			List<Integer> cardIds = originData.stream().map(BaseCard::getCardId).collect(toList());
-			List<BaseCard> existData = getExistByCardIds(cardIds);
+			List<BaseCard> existData = getExistData(cardIds);
 			//批量新增
-			batchInsert(getAddCoupons(originData, existData));
+			batchInsert(getAddCards(originData, existData));
 			//批量更新
-			batchUpdate(getUpdateCoupons(originData, existData));
+			batchUpdate(getUpdateCards(originData, existData));
 		}
 		return errorBo;
 	}
@@ -106,24 +111,23 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 		if (card == null) {
 			deleteCard(cardId);
 		} else {
-			BaseCard baseCard = mapper.selectByPrimaryKey(cardId);
-			Map<Integer, String> accountMap = getAccountMap();
-			List<CouponAllocate> couponAllocates = getCouponAllocate(Lists.newArrayList(cardId));
-			List<BaseCardBo> deadlineBo = getActiveDeadlineBo(Lists.newArrayList(cardId));
-			if (baseCard != null) {
-
-				mapper.updateByPrimaryKeySelective(singleEntityTransform(card, accountMap, couponAllocates, deadlineBo));
+			BaseCard baseCard = baseCardMapper.selectByPrimaryKey(cardId);
+			List<BaseCard> originData = getOriginData(Collections.singletonList(card));
+			if (baseCard == null) {
+				baseCardMapper.insertSelective(originData.get(0));
 			} else {
-				mapper.insertSelective(singleEntityTransform(card, accountMap, couponAllocates, deadlineBo));
+				List<BaseCard> updateCards = getUpdateCards(originData, Collections.singletonList(baseCard));
+				if (CollectionUtils.isNotEmpty(updateCards)) {
+					baseCardMapper.updateByPrimaryKeySelective(updateCards.get(0));
+				}
 			}
 		}
 	}
 
-
 	private void deleteCard(Integer cardId) {
 		Example example = new Example(BaseCard.class);
 		example.createCriteria().andEqualTo("cardId", cardId);
-		mapper.deleteByExample(example);
+		baseCardMapper.deleteByExample(example);
 	}
 
 	/**
@@ -133,8 +137,14 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 	 */
 	private void batchInsert(List<BaseCard> list) {
 		if (CollectionUtils.isNotEmpty(list)) {
-			//对象转换
-			mapper.insertList(list);
+			//分割集合
+			List<List<BaseCard>> partition = Lists.partition(list, cutSlice);
+			for (List<BaseCard> baseCards : partition) {
+				//多线程异步插入
+				cardThreadPool.submit(() -> {
+					baseCardMapper.insertList(baseCards);
+				});
+			}
 		}
 	}
 
@@ -143,7 +153,7 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 	 */
 	private void batchUpdate(List<BaseCard> list) {
 		if (CollectionUtils.isNotEmpty(list)) {
-			mapper.updateList(list);
+			baseCardMapper.updateList(list);
 		}
 	}
 
@@ -154,12 +164,14 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 	 * @param existData 已存在基础数据
 	 * @return list
 	 */
-	private List<BaseCard> getAddCoupons(List<BaseCard> pullList, List<BaseCard> existData) {
+	private List<BaseCard> getAddCards(List<BaseCard> pullList, List<BaseCard> existData) {
+		List<BaseCard> list = Lists.newArrayList();
 		if (CollectionUtils.isEmpty(existData)) {
-			return pullList;
+			list = pullList;
+		} else {
+			List<Integer> existIds = existData.stream().map(BaseCard::getCardId).collect(toList());
+			list = pullList.stream().filter(obj -> !existIds.contains(obj.getCardId())).collect(toList());
 		}
-		List<Integer> existIds = existData.stream().map(BaseCard::getCardId).collect(toList());
-		List<BaseCard> list = pullList.stream().filter(obj -> !existIds.contains(obj.getCardId())).collect(toList());
 		log.info("卡券基础表，需要新增的数据[{}]", list.size());
 		return list;
 	}
@@ -171,17 +183,18 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 	 * @param existData 已存在基础数据
 	 * @return List
 	 */
-	private List<BaseCard> getUpdateCoupons(List<BaseCard> pullData, List<BaseCard> existData) {
-		List<BaseCard> updateCoupons = Lists.newArrayList();
+	private List<BaseCard> getUpdateCards(List<BaseCard> pullData, List<BaseCard> existData) {
+		List<BaseCard> updateCards = Lists.newArrayList();
 		if (CollectionUtils.isNotEmpty(existData)) {
 			//拉取的数据转换map
 			Map<Integer, BaseCard> cardMap = pullData.stream().collect(toMap(BaseCard::getCardId, Function.identity()));
 			//需要更新的产品集合
-			updateCoupons = existData.stream().filter(obj -> cardMap.get(obj.getCardId()) != null
-					&& !obj.equals(cardMap.get(obj.getCardId()))).collect(toList());
+			updateCards = existData.stream().filter(obj -> cardMap.get(obj.getCardId()) != null
+					&& !obj.equals(cardMap.get(obj.getCardId()))).map(obj -> cardMap.get(obj.getCardId()))
+					.collect(toList());
 		}
-		log.info("卡券基础表，需要更新的数据[{}]", updateCoupons.size());
-		return updateCoupons;
+		log.info("卡券基础表，需要更新的数据[{}]", updateCards.size());
+		return updateCards;
 	}
 
 	/**
@@ -192,19 +205,26 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 	 * @return list
 	 */
 	private List<BaseCard> getOriginDataByDate(String startDateStr, String endDateStr) {
-		List<Card> originCards = getOriginCards(startDateStr, endDateStr);
+		long start = System.currentTimeMillis();
+		List<Card> originCards = getCardsByDate(startDateStr, endDateStr);
+		long end = System.currentTimeMillis();
+		log.info("查询源数据时长：[{}]", end - start);
 		List<BaseCard> list = Lists.newArrayList();
 		if (CollectionUtils.isNotEmpty(originCards)) {
-			//查询优惠券分配信息
-			Set<Integer> couponIds = originCards.stream().map(Card::getCouponId).collect(toSet());
-			List<CouponAllocate> allocates = getCouponAllocate(Lists.newArrayList(couponIds));
-			List<BaseCardBo> deadlineBo = getActiveDeadlineBo(Lists.newArrayList(couponIds));
-			//入账方式查询
-			Map<Integer, String> accountMap = getAccountMap();
-			list = originCards.stream().map(card -> singleEntityTransform(card, accountMap, allocates, deadlineBo))
-					.collect(toList());
+			list = getOriginData(originCards);
 		}
 		return list;
+	}
+
+	private List<BaseCard> getOriginData(List<Card> originCards) {
+		//查询优惠券分配信息
+		Set<Integer> couponIds = originCards.stream().map(Card::getCouponId).collect(toSet());
+		List<CouponAllocate> allocates = getCouponAllocate(Lists.newArrayList(couponIds));
+		List<BaseCardBo> deadlineBo = getActiveDeadlineBo(Lists.newArrayList(couponIds));
+		//入账方式查询
+		Map<Integer, String> accountMap = getAccountMap();
+		return originCards.stream().map(card -> singleEntityTransform(card, accountMap, allocates, deadlineBo))
+				.collect(toList());
 	}
 
 	private Map<Integer, String> getAccountMap() {
@@ -245,7 +265,7 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 		};
 	}
 
-	private List<Card> getOriginCards(String startDateStr, String endDateStr) {
+	private List<Card> getCardsByDate(String startDateStr, String endDateStr) {
 		Example example = new Example(Card.class);
 		example.createCriteria().andGreaterThanOrEqualTo("updTime", startDateStr)
 				.andLessThan("updTime", endDateStr);
@@ -353,8 +373,8 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 
 	private List<BaseCard> getExistByCardIds(List<Integer> cardIds) {
 		Example example = new Example(BaseCard.class);
-		example.createCriteria().andIn("couponId", cardIds);
-		return mapper.selectByExample(example);
+		example.createCriteria().andIn("cardId", cardIds);
+		return baseCardMapper.selectByExample(example);
 	}
 
 	private List<CouponCommonInfo> getCouponCommons(List<Integer> couponIds) {
@@ -374,5 +394,27 @@ public class BaseCardServiceImpl extends BaseBiz<BaseCardMapper, BaseCard> {
 		LocalDate startDate = LocalDate.parse(startDateStr, df);
 		LocalDate endDate = LocalDate.parse(endDateStr, df);
 		return endDate.compareTo(startDate) > 0;
+	}
+
+	/**
+	 * 查询卡券已存在数据
+	 * @param cardIds 卡券ids
+	 * @return list
+	 * @throws ExecutionException ex
+	 * @throws InterruptedException ex
+	 */
+	private List<BaseCard> getExistData(List<Integer> cardIds) throws ExecutionException, InterruptedException {
+		List<List<Integer>> partition = Lists.partition(cardIds, cutSlice);
+		long start = System.currentTimeMillis();
+		//多线程异步查询结果
+		List<Future<List<BaseCard>>> futures = partition.stream().map(list -> cardThreadPool.submit(() ->
+				baseCardMapper.getExistData(list))).collect(toList());
+		List<BaseCard> existData = Lists.newArrayList();
+		for (Future<List<BaseCard>> future : futures) {
+			existData.addAll(future.get());
+		}
+		long end = System.currentTimeMillis();
+		log.info("查询卡券存在数据时长：[{}]", end - start);
+		return existData;
 	}
 }

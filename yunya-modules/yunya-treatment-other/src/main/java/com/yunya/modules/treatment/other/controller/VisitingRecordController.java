@@ -1,16 +1,22 @@
 package com.yunya.modules.treatment.other.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.VisitingContentAfterCurrentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.CustomLog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -73,7 +79,7 @@ public class VisitingRecordController {
      */
     @ApiOperation(value = "根据id查询随访记录")
     @GetMapping("/find/{id}")
-    public ResponseResult findRecordById(@PathVariable("id") Integer id){
+    public ResponseResult<VisitingRecordVo> findRecordById(@PathVariable("id") Integer id){
         return visitingRecordBiz.findVisitingRecordById(id);
     }
 
@@ -85,7 +91,7 @@ public class VisitingRecordController {
     @ApiOperation(value = "根据条件查询随访记录")
     @PostMapping("/find")
     @CurrentUser
-    public ResponseResult findRecordByCondition(@RequestBody @Validated VisitingRecordQuery query){
+    public ResponseResult<PageInfo<VisitingRecordVo>> findRecordByCondition(@RequestBody @Validated VisitingRecordQuery query){
         return visitingRecordBiz.findVisitingRecordByCondition(query);
     }
 
@@ -96,7 +102,7 @@ public class VisitingRecordController {
      */
     @ApiOperation(value = "随访内容（执行随访按钮用）")
     @GetMapping("/execute/visiting/{id}")
-    public ResponseResult executeVisiting(@PathVariable("id") Integer id){
+    public ResponseResult<VisitingContentVo> executeVisiting(@PathVariable("id") Integer id){
         return visitingRecordBiz.executeVisiting(id);
     }
 
@@ -107,7 +113,7 @@ public class VisitingRecordController {
      */
     @ApiOperation(value = "后续随访查询（随访管理-执行随访-随访-后续随访）")
     @PostMapping("/find/after/visiting")
-    public ResponseResult findAfterVisitingContent(@RequestBody @Validated VisitingContentAfterCurrentQuery query){
+    public ResponseResult<PageInfo<VisitingContentAfterCurrentVo>> findAfterVisitingContent(@RequestBody @Validated VisitingContentAfterCurrentQuery query){
         return visitingRecordBiz.findAfterVisitingContent(query);
     }
 

@@ -22,6 +22,9 @@
         <result column="registered_time" property="registeredTime" jdbcType="TIME"/>
         <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
         <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
+        <result column="assistant_1" property="assistant1" jdbcType="INTEGER" />
+        <result column="assistant_2" property="assistant2" jdbcType="INTEGER" />
+        <result column="assistant_3" property="assistant3" jdbcType="INTEGER" />
     </resultMap>
     <!-- 批量插入就诊流程 -->
     <insert id="batchInsertSelective">
@@ -42,7 +45,10 @@
         registered_dentist_id,
         registered_time,
         treat_start_time,
-        treat_end_time
+        treat_end_time,
+        assistant_1,
+        assistant_2,
+        assistant_3
         )
         VALUES
         <foreach collection="treatmentProcesses" item="item" separator=",">
@@ -51,7 +57,8 @@
             #{item.treatType}, #{item.appointStatus}, #{item.appointDentistId},
             #{item.appointStartTime}, #{item.appointDuration}, #{item.appointModifyTime},
             #{item.appointContent}, #{item.registeredDentistId}, #{item.registeredTime},
-            #{item.treatStartTime}, #{item.treatEndTime})
+            #{item.treatStartTime}, #{item.treatEndTime}, #{item.assistant1},
+            #{item.assistant2}, #{item.assistant3})
         </foreach>
     </insert>
     <!-- 根据预约ID更新就诊流程 -->
@@ -109,6 +116,15 @@
             <if test="treatmentProcess.treatEndTime != null">
                 treat_end_time = #{treatmentProcess.treatEndTime},
             </if>
+            <if test="treatmentProcess.assistant1 != null">
+                assistant_1 = #{treatmentProcess.assistant1},
+            </if>
+            <if test="treatmentProcess.assistant2 != null">
+                assistant_2 = #{treatmentProcess.assistant2},
+            </if>
+            <if test="treatmentProcess.assistant3 != null">
+                assistant_3 = #{treatmentProcess.assistant3},
+            </if>
         </set>
         where appointment_id = #{appointmentId}
     </update>
@@ -146,6 +162,15 @@
             <if test="treatmentProcess.treatEndTime != null">
                 treat_end_time = #{treatmentProcess.treatEndTime},
             </if>
+            <if test="treatmentProcess.assistant1 != null">
+                assistant_1 = #{treatmentProcess.assistant1},
+            </if>
+            <if test="treatmentProcess.assistant2 != null">
+                assistant_2 = #{treatmentProcess.assistant2},
+            </if>
+            <if test="treatmentProcess.assistant3 != null">
+                assistant_3 = #{treatmentProcess.assistant3},
+            </if>
         </set>
         where registered_id = #{registeredId}
     </update>
@@ -173,6 +198,15 @@
             </if>
             <if test="treatmentProcess.treatEndTime != null">
                 treat_end_time = #{treatmentProcess.treatEndTime},
+            </if>
+            <if test="treatmentProcess.assistant1 != null">
+                assistant_1 = #{treatmentProcess.assistant1},
+            </if>
+            <if test="treatmentProcess.assistant2 != null">
+                assistant_2 = #{treatmentProcess.assistant2},
+            </if>
+            <if test="treatmentProcess.assistant3 != null">
+                assistant_3 = #{treatmentProcess.assistant3},
             </if>
         </set>
         where treatment_id = #{treatmentId}

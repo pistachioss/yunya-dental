@@ -11,6 +11,7 @@
         <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER"/>
         <result column="assistant_id" property="assistantId" jdbcType="INTEGER"/>
         <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="operator_post_type" property="operatorPostType" jdbcType="TINYINT"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
@@ -23,7 +24,8 @@
     <select id="selectAssistantInfoVOList" resultType="com.yunya.feign.treatment.domain.vo.AssistantInfoVO">
         select
             amr.assistant_id as assistantId,
-            amr.`type` as type
+            amr.`type` as type,
+            amr.operator_post_type as operatorPostType
         from assistant_matching_record amr
         where amr.treatment_record_id = #{treatmentRecordId}
     </select>

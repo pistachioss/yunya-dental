@@ -12,6 +12,8 @@
         <result column="sold_amount" jdbcType="DECIMAL" property="soldAmount" />
         <result column="bonus" jdbcType="DECIMAL" property="bonus" />
         <result column="workload_rate" jdbcType="DECIMAL" property="workloadRate" />
+        <result column="activation_deadline" jdbcType="TIMESTAMP" property="activationDeadline" />
+        <result column="effective_days" jdbcType="INTEGER" property="effectiveDays" />
     </resultMap>
 
     <insert id="insertList" parameterType="List">

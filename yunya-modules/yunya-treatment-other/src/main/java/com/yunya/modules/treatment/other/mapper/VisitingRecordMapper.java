@@ -38,4 +38,10 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
      * @return
      */
     void deleteVisitingRecordByTreatmentId(@Param("treatmentId") Integer treatmentId);
+
+    /**
+     * 批量保存随访记录（就诊服务调用）
+     * @param visitingRecords 实体对象列表
+     */
+    void insertEntitys(@Param("visitingRecords") List<VisitingRecord> visitingRecords);
 }

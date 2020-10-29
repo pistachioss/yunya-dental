@@ -47,8 +47,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
   /** 预付款消费记录 */
   @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
-  /** 助手配诊 */
-  @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
   /** 账单记录 */
   @Autowired private BillRecordMapper billRecordMapper;
   /** 账单付款记录 */
@@ -129,44 +127,13 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBill.setTreatmentId(orderRecord.getTreatmentRecordId());
       baseBill.setOrderNum(orderRecord.getOrderRecordNum());
       baseBill.setOrderAmount(orderRecord.getTotalAmount());
+      baseBill.setBillerId(orderRecord.getCrtId());
       baseBill.setOrderDate(orderRecord.getCrtTime());
-      // 设置账单的助手信息
-      setBaseBillAssistantValue(dataId, baseBill);
       // 设置账单的收费信息
       setBaseBillChargeValue(dataId, baseBill);
       return baseBill;
     }
     return null;
-  }
-
-  /**
-   * 设置中间表账单关联助手
-   *
-   * @param orderRecordId 订单ID
-   * @param baseBill 中间表账单
-   */
-  private void setBaseBillAssistantValue(Integer orderRecordId, BaseBill baseBill) {
-    AssistantMatchingRecord assistantMatchRecord = new AssistantMatchingRecord();
-    assistantMatchRecord.setOrderRecordId(orderRecordId);
-    List<AssistantMatchingRecord> matchingRecords =
-        assistantMatchingRecordMapper.select(assistantMatchRecord);
-    if (StringHelper.isNotEmpty(matchingRecords)) {
-      for (AssistantMatchingRecord record : matchingRecords) {
-        Byte type = record.getType();
-        Integer assistantId = record.getAssistantId();
-        switch (type) {
-          case 0:
-            baseBill.setAssistant1(assistantId);
-            break;
-          case 1:
-            baseBill.setAssistant2(assistantId);
-            break;
-          default:
-            baseBill.setAssistant3(assistantId);
-            break;
-        }
-      }
-    }
   }
 
   /**

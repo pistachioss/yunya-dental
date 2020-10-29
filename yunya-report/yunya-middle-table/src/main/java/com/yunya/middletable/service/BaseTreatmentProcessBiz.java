@@ -8,11 +8,13 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.appointment.AppointmentMapper;
 import com.yunya.middletable.dao.appointment.AppointmentModifyRecordMapper;
 import com.yunya.middletable.dao.report.BaseTreatmentProcessMapper;
+import com.yunya.middletable.dao.treatment.AssistantMatchingRecordMapper;
 import com.yunya.middletable.dao.treatment.RegisteredMapper;
 import com.yunya.middletable.dao.treatment.TreatmentRecordMapper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentModifyRecord;
 import com.yunya.models.report.BaseTreatmentProcess;
+import com.yunya.models.treatment.AssistantMatchingRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,8 @@ public class BaseTreatmentProcessBiz
   @Autowired private RegisteredMapper registeredMapper;
   /** 接诊 */
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
+  /** 助手配诊 */
+  @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
 
   /**
    * 根据消息操作中间表就诊流程信息
@@ -263,6 +267,38 @@ public class BaseTreatmentProcessBiz
       }
       treatmentProcess.setTreatStartTime(treatmentRecordResult.getTreatStartTime());
       treatmentProcess.setTreatEndTime(treatmentRecordResult.getTreatEndTime());
+      setBaseTreatmentProcessAssistantValue(treatmentRecord.getId(), treatmentProcess);
+    }
+  }
+
+  /**
+   * 设置中间表账单关联助手
+   *
+   * @param treatmentRecordId 就诊ID
+   * @param treatmentProcess 中间表就诊流程
+   */
+  private void setBaseTreatmentProcessAssistantValue(
+      Integer treatmentRecordId, BaseTreatmentProcess treatmentProcess) {
+    AssistantMatchingRecord assistantMatchRecord = new AssistantMatchingRecord();
+    assistantMatchRecord.setTreatmentRecordId(treatmentRecordId);
+    List<AssistantMatchingRecord> matchingRecords =
+        assistantMatchingRecordMapper.select(assistantMatchRecord);
+    if (StringHelper.isNotEmpty(matchingRecords)) {
+      for (AssistantMatchingRecord record : matchingRecords) {
+        Byte type = record.getType();
+        Integer assistantId = record.getAssistantId();
+        switch (type) {
+          case 0:
+            treatmentProcess.setAssistant1(assistantId);
+            break;
+          case 1:
+            treatmentProcess.setAssistant2(assistantId);
+            break;
+          default:
+            treatmentProcess.setAssistant3(assistantId);
+            break;
+        }
+      }
     }
   }
 
@@ -365,12 +401,12 @@ public class BaseTreatmentProcessBiz
         setTreatmentProcessTreatmentValue(process, treatmentRecord);
         mapper.updateByAppointmentId(appointmentId, process);
       } else {
-        BaseTreatmentProcess treatmentProcess = generateBaseTreatmentProcess(appointment);
-        setTreatmentProcessRegisteredValue(treatmentProcess, appointmentId);
+        process = generateBaseTreatmentProcess(appointment);
+        setTreatmentProcessRegisteredValue(process, appointmentId);
         TreatmentRecord treatmentRecord = new TreatmentRecord();
         treatmentRecord.setAppointmentId(appointmentId);
         setTreatmentProcessTreatmentValue(process, treatmentRecord);
-        mapper.insertSelective(treatmentProcess);
+        mapper.insertSelective(process);
       }
     }
   }

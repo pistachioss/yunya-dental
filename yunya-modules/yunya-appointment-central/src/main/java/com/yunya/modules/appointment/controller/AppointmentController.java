@@ -7,10 +7,7 @@ import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentCancelCauseForm;
 import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.feign.appointment.domain.query.*;
-import com.yunya.feign.appointment.vo.AppointmentDimensionVo;
-import com.yunya.feign.appointment.vo.AppointmentListItemVo;
-import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
-import com.yunya.feign.appointment.vo.AppointmentVo;
+import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -18,8 +15,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +23,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -123,17 +121,15 @@ public class AppointmentController {
 
   /**
    * 取消预约/删除预约（逻辑删除）
-   *
-   * @param id 预约id
-   * @param form 取消预约原因表单
+   * @param form 取消预约原因
    * @return ResponseResult
    */
   @ApiOperation(value = "取消预约/删除预约（逻辑删除）")
-  @DeleteMapping("/delete/appoint/{id}")
+  @PostMapping("/delete/appoint")
   @CurrentUser
   public ResponseResult AppointmentCancel(
-      @PathVariable("id") Integer id, @Validated AppointmentCancelCauseForm form) {
-    return appointmentBiz.appointmentCancel(id, form);
+      @RequestBody @Validated AppointmentCancelCauseForm form) {
+    return appointmentBiz.appointmentCancel(form.getId(), form.getCause());
   }
 
   /**
@@ -155,8 +151,9 @@ public class AppointmentController {
    * @return 预约列表
    */
   @ApiOperation(value = "根据条件查询患者预约（患者档案-预约信息；查看详细-预约信息）用")
+  @ApiResponse(code = 0, message = "success", response = ResponseResult.class)
   @PostMapping("/find/patient/record")
-  public ResponseResult findAppointPatientRecord(@RequestBody @Validated AppointPatientRecordQuery query) {
+  public ResponseResult<PageInfo<AppointPatientRecordVo>> findAppointPatientRecord(@RequestBody @Validated AppointPatientRecordQuery query) {
     return appointmentBiz.findAppointPatientRecord(query);
   }
 
@@ -168,7 +165,7 @@ public class AppointmentController {
    */
   @ApiOperation(value = "根据id查询预约")
   @GetMapping("/find/{id}")
-  public ResponseResult findAppointById(@PathVariable("id") Integer id) {
+  public ResponseResult<AppointmentVo> findAppointById(@PathVariable("id") Integer id) {
     AppointmentVo appointmentVo = appointmentBiz.findAppointmentById(id);
     return ResponseUtil.success(appointmentVo);
   }
@@ -181,13 +178,13 @@ public class AppointmentController {
    */
   @ApiOperation(value = "根据条件查询患者维度预约可视图(按医生id、时间段查询)")
   @PostMapping("/find/patient/dimension")
-  public ResponseResult findAppointmentPatientDimensionByDate(
+  public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentPatientDimensionByDate(
       @RequestBody @Validated PatientDimensionByDayQuery query) {
     List<AppointmentDimensionVo> appointmentDimensionVos =
         appointmentBiz.findAppointmentPatientDimensionByExample(query);
     // 分页
     PageUtil pageUtil = new PageUtil(query.getPageNum(),query.getPageSize());
-    Page paging = pageUtil.getPaging(appointmentDimensionVos);
+    Page<AppointmentDimensionVo> paging = pageUtil.getPaging(appointmentDimensionVos);
     return ResponseUtil.success(paging);
   }
 
@@ -199,7 +196,7 @@ public class AppointmentController {
    */
   @ApiOperation(value = "根据排班开始结束日期/门诊id/医生id查询医生维度预约可视图")
   @PostMapping("/find/dentist/dimension")
-  public ResponseResult findAppointmentDentistDimensionByExample(
+  public ResponseResult<Page<AppointmentDimensionVo>> findAppointmentDentistDimensionByExample(
       @RequestBody PatientDimensionByDayQuery query) {
     return appointmentBiz.findAppointmentDentistDimensionByExample(query);
   }
@@ -212,7 +209,7 @@ public class AppointmentController {
    */
   @ApiOperation(value = "根据条件查询预约列表（预约列表可视图用）")
   @PostMapping("/find/list")
-  public ResponseResult findAppointmentListByExample(
+  public ResponseResult<PageInfo<AppointmentListItemVo>> findAppointmentListByExample(
       @RequestBody @Validated AppointListQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
@@ -231,7 +228,7 @@ public class AppointmentController {
    */
   @ApiOperation("根据条件查询预约未到列表(可分页)")
   @PostMapping("/list/current")
-  public ResponseResult findUnComingAppointmentList(
+  public ResponseResult<PageInfo<AppointmentUnDonePatientInfoVO>> findUnComingAppointmentList(
       @RequestBody @Validated AppointmentCurrentListQuery queryForm) {
     PageInfo<AppointmentUnDonePatientInfoVO> resultList =
         appointmentBiz.findUnComingAppointmentList(queryForm);

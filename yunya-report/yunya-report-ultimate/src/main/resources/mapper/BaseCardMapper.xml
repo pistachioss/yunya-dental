@@ -23,175 +23,360 @@
         <result column="sold_way" property="soldWay" jdbcType="TINYINT"/>
         <result column="pay_id" property="payId" jdbcType="INTEGER"/>
         <result column="pay_name" property="payName" jdbcType="VARCHAR"/>
+        <result column="sale_channel_id" property="saleChannelId" jdbcType="INTEGER"/>
+        <result column="sale_channel_name" property="saleChannelName" jdbcType="VARCHAR"/>
         <result column="charge_status" property="chargeStatus" jdbcType="TINYINT"/>
         <result column="active_date" property="activeDate" jdbcType="TIMESTAMP"/>
         <result column="activation_deadline" property="activationDeadline" jdbcType="TIMESTAMP"/>
         <result column="first_use_date" property="firstUseDate" jdbcType="TIMESTAMP"/>
     </resultMap>
 
-    <insert id="insertList" parameterType="List">
-        insert into
-        `base_card`
-        (`card_id`, `coupon_id`, `card_number`, `allocate_org_id`, `patient_id`,`active_user_id`, `active_org_id`
-         , `seller_user_id`, `allocate_date`, `status`, `generate_date`, `sold_date`, `sold_target`, `sold_phone_number`
-         ,`sold_type`, `sold_way`, `pay_id`, `pay_name`, `charge_status`, `active_date`, `activation_deadline`, `first_use_date`)
-        values
-        <foreach collection="list" item="item" separator=",">
-            (#{item.cardId}, #{item.couponId}, #{item.cardNumber}, #{item.allocateOrgId}, #{item.patientId}
-            , #{item.activeUserId}, #{item.activeOrgId}, #{item.sellerUserId}, #{item.allocateDate}, #{item.status}
-            , #{item.generateDate}, #{item.soldDate}, #{item.soldTarget}, #{item.soldPhoneNumber}, #{item.soldType}
-            , #{item.soldWay}, #{item.payId}, #{item.payName}, #{item.chargeStatus}, #{item.activeDate}, #{item.activationDeadline}
-            , #{item.firstUseDate})
-        </foreach>
-    </insert>
+    <select id="listCardUsedByParam" resultType="com.yunya.feign.report.domain.vo.CardStatisticsVo">
+        select
+            `bc`.`sold_date`,
+            `bc`.`card_number`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sold_type`,
+            `bc`.`sold_way`,
+            `bc`.`charge_status`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`seller_user_id`) as `soldUser`,
+            `bc`.`active_date`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`active_org_id`)   as `activeOrgName`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`active_user_id`) as `activeUser`,
+            (select
+                 `name`
+             from `base_patient`
+             where `patient_id` = `bc`.`patient_id`)  as `cardOwner`,
+            (select
+                 `mobile`
+             from `base_patient`
+             where `patient_id` = `bc`.`patient_id`)  as `cardOwnerPhoneNumber`,
+            if(isnull(`bc`.`active_date`), null,
+                if(isnull(`b`.`activation_deadline`), date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day),
+                   if(DATE_FORMAT(`b`.`activation_deadline`, '%Y-%m-%d') &gt;
+                      DATE_FORMAT(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
+                      date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day),
+                      `b`.`activation_deadline`)))  as `activationDeadline`,
+            case
+                when `bc`.`status` in (3, 4) then 1
+                else 0
+                end                            as `used`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            and `b`.`coupon_type` in (0,1,2,3)
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+                and `bc`.`allocate_org_id` in
+                <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldTypes != null and soldTypes.size() > 0">
+                and `bc`.`sold_type` in
+                <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="activeOrgIds != null and activeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="activeOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="activeStartDate != null and activeEndDate != null">
+                and (`bc`.`active_date` &gt;= #{activeStartDate} and `bc`.`active_date` &lt; #{activeEndDate})
+            </if>
+            <if test="soldWays != null and soldWays.size() > 0">
+                and `bc`.`sold_way` in
+                <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="chargeStatus != null and chargeStatus.size() > 0">
+                and `bc`.`charge_status` in
+                <foreach collection="chargeStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
 
-    <update id="updateList" parameterType="java.util.List">
-        update `base_card`
-        <trim prefix="set" suffixOverrides=",">
-            <trim prefix="coupon_id = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.couponId != null">
-                        when `card_id` = #{item.cardId} then #{item.couponId}
-                    </if>
+    <select id="listRechargeUsedByParam" resultType="com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo">
+        select
+            `bc`.`sold_date`,
+            `bc`.`card_number`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sold_type`,
+            `bc`.`sold_way`,
+            `bc`.`charge_status`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`seller_user_id`) as `soldUser`,
+            `bc`.`active_date`                        as `rechargeDate`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`active_org_id`)   as `rechargeOrgName`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`active_user_id`) as `rechargeUser`,
+            (select
+                 `name`
+             from `base_patient`
+             where `patient_id` = `bc`.`patient_id`)  as `rechargeTarget`,
+            (select
+                 `card_number`
+             from `base_patient_member` `bpm`
+             where `bpm`.`patient_id` = `bc`.`patient_id`
+                and `bpm`.type = 1)                   as `rechargeAccount`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            and `b`.`coupon_type` = 4
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+                and `bc`.`allocate_org_id` in
+                <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="card_number = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.cardNumber != null">
-                        when `card_id` = #{item.cardId} then #{item.cardNumber}
-                    </if>
+            </if>
+            <if test="soldTypes != null and soldTypes.size() > 0">
+                and `bc`.`sold_type` in
+                <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="allocate_org_id = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.allocateOrgId != null">
-                        when `card_id` = #{item.cardId} then #{item.allocateOrgId}
-                    </if>
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="rechargeOrgIds != null and rechargeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="rechargeOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="patient_id = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.patientId != null">
-                        when `card_id` = #{item.cardId} then #{item.patientId}
-                    </if>
+            </if>
+            <if test="rechargeStartDate != null and rechargeEndDate != null">
+                and (`bc`.`active_date` &gt;= #{rechargeStartDate} and `bc`.`active_date` &lt; #{rechargeEndDate})
+            </if>
+            <if test="soldWays != null and soldWays.size() > 0">
+                and `bc`.`sold_way` in
+                <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="active_user_id = case" suffix="end,">
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.activeUserId != null">
-                        when `card_id` = #{item.cardId} then #{item.activeUserId}
-                    </if>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
+
+    <select id="listCouponSoldDetailByParam" resultType="com.yunya.feign.report.domain.vo.CouponSoldDetailVo">
+        select
+            `bc`.`sold_date`,
+            `bc`.`card_number`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sold_type`,
+            `bc`.`sold_way`,
+            `bc`.`charge_status`,
+            `bc`.`pay_name`,
+            (select
+                `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`seller_user_id`) as `soldUser`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="soldTarget !=null and soldTarget != ''">
+                and `bc`.`sold_target` like concat('%', #{soldTarget}, '%')
+            </if>
+            <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+                and `bc`.`allocate_org_id` in
+                <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="active_org_id = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.activeOrgId != null">
-                        when `card_id` = #{item.cardId} then #{item.activeOrgId}
-                    </if>
+            </if>
+            <if test="soldTypes != null and soldTypes.size() > 0">
+                and `bc`.`sold_type` in
+                <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="allocate_date = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.allocateDate != null">
-                        when `card_id` = #{item.cardId} then #{item.allocateDate}
-                    </if>
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="soldWays != null and soldWays.size() > 0">
+                and `bc`.`sold_way` in
+                <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="status = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.status != null">
-                        when `card_id` = #{item.cardId} then #{item.status}
-                    </if>
+            </if>
+            <if test="chargeStatus != null and chargeStatus.size() > 0">
+                and `bc`.`charge_status` in
+                <foreach collection="chargeStatus" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="generate_date = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.generateDate != null">
-                        when `card_id` = #{item.cardId} then #{item.generateDate}
-                    </if>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
+
+    <select id="listCouponActiveByParam" resultType="com.yunya.feign.report.domain.vo.CouponActiveDetailVo">
+        select
+            `bc`.`active_date`,
+            (select
+                `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`active_org_id`)   as `activeOrgName`,
+            `bc`.`card_number`,
+            (select
+                `name`
+             from `base_patient`
+             where `patient_id` = `bc`.`patient_id`)  as `cardOwner`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sale_channel_name`,
+            (select
+                `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`active_user_id`) as `activeUser`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` in (2,3,4)
+            and `bc`.`allocate_org_id` = 0
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="soldTarget !=null and soldTarget != ''">
+                and `bc`.`sold_target` like concat('%', #{soldTarget}, '%')
+            </if>
+            <if test="soldChannelIds != null and soldChannelIds.size() > 0">
+                and `bc`.`sale_channel_id` in
+                <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="sold_date = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.soldDate != null">
-                        when `card_id` = #{item.cardId} then #{item.soldDate}
-                    </if>
+            </if>
+            <if test="activeStartDate != null and activeEndDate != null">
+                and (`bc`.`active_date` &gt;= #{activeStartDate} and `bc`.`active_date` &lt; #{activeStartDate})
+            </if>
+            <if test="activeOrgIds != null and activeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="activeOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="sold_target = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.soldTarget != null">
-                        when `card_id` = #{item.cardId} then #{item.soldTarget}
-                    </if>
+            </if>
+        order by `bc`.`active_date` desc
+    </select>
+
+    <select id="listAllCardSoldParam" resultType="com.yunya.feign.report.domain.vo.CardSoldStatisticsVo">
+        select
+            `bc`.`sold_date`,
+            `b`.`coupon_name`,
+            `b`.`sold_amount`,
+            `bc`.`card_number`,
+            (select
+                `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sold_type`,
+            `bc`.`sold_way`,
+            `bc`.`charge_status`,
+            (select
+                `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`seller_user_id`) as `soldUser`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            <if test="couponName !=null and couponName != ''">
+                and `b`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `b`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="sold_phone_number = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.soldPhoneNumber != null">
-                        when `card_id` = #{item.cardId} then #{item.soldPhoneNumber}
-                    </if>
+            </if>
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="soldTarget !=null and soldTarget != ''">
+                and `bc`.`sold_target` like concat('%', #{soldTarget}, '%')
+            </if>
+            <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+                and `bc`.`allocate_org_id` in
+                <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="sold_type = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.soldType != null">
-                        when `card_id` = #{item.cardId} then #{item.soldType}
-                    </if>
+            </if>
+            <if test="soldTypes != null and soldTypes.size() > 0">
+                and `bc`.`sold_type` in
+                <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="sold_way = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.soldWay != null">
-                        when `card_id` = #{item.cardId} then #{item.soldWay}
-                    </if>
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="soldWays != null and soldWays.size() > 0">
+                and `bc`.`sold_way` in
+                <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="pay_id = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.payId != null">
-                        when `card_id` = #{item.cardId} then #{item.payId}
-                    </if>
+            </if>
+            <if test="chargeStatus != null and chargeStatus.size() > 0">
+                and `bc`.`charge_status` in
+                <foreach collection="chargeStatus" item="item" open="(" separator="," close=")">
+                    #{item}
                 </foreach>
-            </trim>
-            <trim prefix="pay_name = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.payName != null">
-                        when `card_id` = #{item.cardId} then #{item.payName}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="charge_status = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.chargeStatus != null">
-                        when `card_id` = #{item.cardId} then #{item.chargeStatus}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="active_date = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.activeDate != null">
-                        when `card_id` = #{item.cardId} then #{item.activeDate}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="activation_deadline = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.activationDeadline != null">
-                        when `card_id` = #{item.cardId} then #{item.activationDeadline}
-                    </if>
-                </foreach>
-            </trim>
-            <trim prefix="first_use_date = case" suffix="end," >
-                <foreach collection="list" item="item" index="index">
-                    <if test="item.firstUseDate != null">
-                        when `card_id` = #{item.cardId} then #{item.firstUseDate}
-                    </if>
-                </foreach>
-            </trim>
-        </trim>
-        where `card_id` in
-        <foreach collection="list" item="item" open="(" separator="," close=")">
-            #{item.couponId}
-        </foreach>
-    </update>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
 </mapper>

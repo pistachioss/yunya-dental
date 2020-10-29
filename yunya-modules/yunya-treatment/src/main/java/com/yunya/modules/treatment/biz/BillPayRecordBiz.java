@@ -101,6 +101,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     billPayDetail.setBillPayRecordId(billPayRecordId);
     List<BillPayDetailRecord> payDetailRecords = billPayDetailRecordBiz.selectList(billPayDetail);
     if (StringHelper.isNotEmpty(payDetailRecords)) {
+      // todo 会员卡、预付款需退还到原先账号
       payDetailRecords.forEach(
           detailRecord -> {
             detailRecord.setInservice(false);

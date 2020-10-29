@@ -375,18 +375,19 @@
         from appointment a
         <where>
             and a.appoint_status = 0
-            <if test="queryForm.orgId != null">
-                and a.org_id = #{queryForm.orgId}
-            </if>
-            <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
-                and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
-            </if>
             <if test="queryForm.id != null">
                 and a.id = #{queryForm.id}
             </if>
             <if test="queryForm.dentistId != null">
                 and a.dentist_id = #{queryForm.dentistId}
             </if>
+            <if test="queryForm.orgId != null">
+                and a.org_id = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
+                and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
+            </if>
+
         </where>
     </select>
 
@@ -413,7 +414,8 @@
             a.confirm_status AS confirmStatus,
             a.appoint_status AS appointStatus,
             a.dept_room_id AS deptRoomId,
-            a.clinic_device_item_id AS clinicDeviceItemId
+            a.clinic_device_item_id AS clinicDeviceItemId,
+            a.remarks
         FROM
             appointment a
         <where>

@@ -1,8 +1,10 @@
 package com.yunya.modules.treatment.controller.web;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
@@ -41,15 +43,14 @@ public class TreatmentRecordController {
   /**
    * 根据挂号ID接诊患者
    *
-   * @param regId 挂号ID
+   * @param model 接诊信息
    * @return
    */
-  @ApiOperation("开始接诊")
-  @ApiImplicitParam(name = "regId", required = true, value = "患者挂号ID")
   @CurrentUser
-  @GetMapping("/start/{regId}")
-  public ResponseResult<T> startTreatment(@PathVariable(value = "regId") Integer regId) {
-    treatmentRecordBiz.startTreatment(regId);
+  @ApiOperation("开始接诊")
+  @PostMapping("/start")
+  public ResponseResult<T> startTreatment(@RequestBody @Validated TreatmentModel model) {
+    treatmentRecordBiz.startTreatment(model);
     return ResponseUtil.success(null);
   }
 
@@ -95,6 +96,7 @@ public class TreatmentRecordController {
       dataType = "int",
       paramType = "path")
   @GetMapping("/complete/{treatmentRecordId}")
+  @CurrentUser
   public ResponseResult<T> completeTreatment(
       @PathVariable(value = "treatmentRecordId") Integer treatmentRecordId) {
     treatmentRecordBiz.completeTreatment(treatmentRecordId);
@@ -115,4 +117,17 @@ public class TreatmentRecordController {
         treatmentRecordBiz.findPatientTreatList(queryForm);
     return ResponseUtil.success(resultList);
   }
+
+  /**
+   * 根据患者ID查询患者最后一次就诊信息
+   * @param patientId 患者ID
+   * @return 实体
+   */
+  @ApiOperation("根据患者ID查询患者最后一次就诊信息(随访管理、随访提醒--添加)")
+  @GetMapping(value = "/last/treatment/info/{patientId}", name = "患者ID")
+  public ResponseResult<LastTreatmentInfoVO> lastTreatmentInfo(@PathVariable("patientId") Integer patientId) {
+    LastTreatmentInfoVO lastTreatmentInfoVO = this.treatmentRecordBiz.lastTreatmentInfo(patientId);
+    return ResponseUtil.success(lastTreatmentInfoVO);
+  }
+
 }

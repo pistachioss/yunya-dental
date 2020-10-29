@@ -20,30 +20,30 @@ public class BeanCopierUtils {
     private BeanCopierUtils() {
     }
 
-    public static <S extends Object, T extends Object> T generalCopyBean(S source, Class<T> targetClazz) {
+    public static <S, T> T generalCopyBean(S source, Class<T> targetClazz) {
         return copySingleBean(source, targetClazz,false,null);
     }
 
-    public static <S extends Object, T extends Object> T generalCopyBean(S source, Class<T> targetClazz, Converter converter) {
+    public static <S, T> T generalCopyBean(S source, Class<T> targetClazz, Converter converter) {
         return copySingleBean(source, targetClazz, true, converter);
     }
 
-    public static <S extends Object, T extends Object> List<T> listGeneralCopyBean(List<S> source, Class<T> targetClazz) {
+    public static <S, T> List<T> listGeneralCopyBean(List<S> source, Class<T> targetClazz) {
         if (CollectionUtils.isEmpty(source)) {
             return Lists.newArrayList();
         }
         return source.stream().map(obj -> copySingleBean(obj, targetClazz, false, null)).collect(toList());
     }
 
-    public static <S extends Object, T extends Object> List<T> listGeneralCopyBean(List<S> source, Class<T> targetClazz, Converter converter) {
+    public static <S, T> List<T> listGeneralCopyBean(List<S> source, Class<T> targetClazz, Converter converter) {
         if (CollectionUtils.isEmpty(source)) {
             return Lists.newArrayList();
         }
         return source.stream().map(obj -> copySingleBean(obj, targetClazz, true, converter)).collect(toList());
     }
 
-    private static <S extends Object, T extends Object> T copySingleBean(S source, Class<T> targetClazz,
-                                                                         boolean useConvert, Converter converter) {
+    private static <S, T> T copySingleBean(S source, Class<T> targetClazz,
+                                           boolean useConvert, Converter converter) {
         try {
             T t = targetClazz.newInstance();
             BeanCopier copier = BeanCopier.create(source.getClass(), targetClazz, useConvert);

@@ -23,8 +23,8 @@ public class BillRefundOrderDetail {
     /**
      * 退费记录ID
      */
-    @Column(name = "bill_refund_record_id")
-    private Integer billRefundRecordId;
+    @Column(name = "refund_record_id")
+    private Integer refundRecordId;
 
     /**
      * 开单明细ID
@@ -118,19 +118,19 @@ public class BillRefundOrderDetail {
     /**
      * 获取退费记录ID
      *
-     * @return bill_refund_record_id - 退费记录ID
+     * @return refund_record_id - 退费记录ID
      */
-    public Integer getBillRefundRecordId() {
-        return billRefundRecordId;
+    public Integer getRefundRecordId() {
+        return refundRecordId;
     }
 
     /**
      * 设置退费记录ID
      *
-     * @param billRefundRecordId 退费记录ID
+     * @param refundRecordId 退费记录ID
      */
-    public void setBillRefundRecordId(Integer billRefundRecordId) {
-        this.billRefundRecordId = billRefundRecordId;
+    public void setBillRefundRecordId(Integer refundRecordId) {
+        this.refundRecordId = refundRecordId;
     }
 
     /**

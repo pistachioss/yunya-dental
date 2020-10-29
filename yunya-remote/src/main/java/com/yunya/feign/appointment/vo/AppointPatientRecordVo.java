@@ -18,7 +18,7 @@ import java.util.Date;
  * @create: 2020-09-25 18:50
  **/
 @Data
-@ApiModel(value = "患者档案中预约列表视图模型")
+@ApiModel(value = "AppointPatientRecordVo", description = "患者档案中预约列表视图模型")
 public class AppointPatientRecordVo implements Serializable {
     /**
      * 患者预约ID
@@ -128,5 +128,11 @@ public class AppointPatientRecordVo implements Serializable {
      */
     @ApiModelProperty(value = "预约状态 0-预约未到，1-履约，2，取消预约，3-失约")
     private Byte appointStatus;
+
+    /**
+     * 备注
+     */
+    @ApiModelProperty(value = "备注")
+    private String remarks;
 
 }

@@ -47,7 +47,7 @@
   <select id="findVisitingRecordByCondition" parameterType="com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery" resultType="com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo">
     SELECT
         <include refid="baseColumns"></include>,
-        ( SELECT COUNT( id ) FROM visiting_record WHERE patient_id = vr.patient_id ) AS visitingCount
+    (select count(id) from visiting_record where patient_id = vr.patient_id and visiting_date > DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d' )) as visitingCount
     FROM
         `visiting_record` vr
     <where>
@@ -66,12 +66,13 @@
       <if test="query.patientId != null">
         and vr.patient_id = #{query.patientId}
       </if>
-      <if test="query.inservice != null">
-        and vr.inservice = #{query.inservice}
-      </if>
       <if test="query.dentistId != null">
         and vr.dentist_id = #{query.dentistId}
       </if>
+      <if test="query.inservice != null">
+        and vr.inservice = #{query.inservice}
+      </if>
+
       <if test="query.status != null">
         and vr.status = #{query.status}
       </if>
@@ -87,7 +88,7 @@
       from visiting_record vr
       <where>
         <if test="query.patientId != null and query.date != null">
-          vr.patient_id = #{query.patientId} and vr.visiting_date > DATE_FORMAT(#{query.date},'%Y-%m-%d')
+          vr.patient_id = #{query.patientId} and vr.visiting_date &gt; DATE_FORMAT(#{query.date},'%Y-%m-%d')
         </if>
         <if test="query.status != null">
           and vr.status = #{query.status}
@@ -99,5 +100,17 @@
   <delete id="deleteVisitingRecordByTreatmentId" parameterType="java.lang.Integer">
     delete from visiting_record where treatment_id = #{treatmentId}
   </delete>
+
+  <!-- 批量保存随访记录（就诊服务调用） -->
+  <insert id="insertEntitys" parameterType="java.util.List" useGeneratedKeys="true">
+    insert into visiting_record (org_id,treatment_id,patient_id,dentist_id,dept_room_id,treatment_date,visiting_date,visiting_time,reason,
+    visiting_content,inservice,remarks,status ,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time)
+    values
+    <foreach collection="visitingRecords" item="item" separator=",">
+      (#{item.orgId},#{item.treatmentId},#{item.patientId},#{item.dentistId},#{item.deptRoomId},#{item.treatmentDate},#{item.visitingDate},#{item.visitingTime},
+      #{item.reason},#{item.visitingContent},#{item.inservice},#{item.remarks},#{item.status},#{item.crtId},#{item.crtName},#{item.crtTime},
+      #{item.uptId},#{item.updName},#{item.updTime})
+    </foreach>
+  </insert>
 
 </mapper>
