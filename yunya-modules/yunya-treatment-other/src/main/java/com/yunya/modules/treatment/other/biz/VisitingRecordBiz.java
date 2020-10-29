@@ -498,7 +498,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             }
             String distentName = visitingRecordVo.getDentistName();
             if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
-                result = result | distentName.contains(distentNameStr);
+                result = result | distentName.equalsIgnoreCase(distentNameStr);
             }
             return result;
         }).collect(Collectors.toList());

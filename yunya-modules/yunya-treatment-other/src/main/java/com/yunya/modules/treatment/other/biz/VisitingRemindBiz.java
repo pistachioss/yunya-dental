@@ -306,7 +306,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             // 按医生名字模糊检索
             String dentistNameStr = visitingRemindVo.getDentistName();
             if (!StringHelper.isEmpty(dentistNameStr) && !StringHelper.isEmpty(distentName)) {
-                result = result | dentistNameStr.contains(distentName);
+                result = result | dentistNameStr.equalsIgnoreCase(distentName);
             }
             return result;
         }).collect(Collectors.toList());
