@@ -222,21 +222,27 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       Integer assistantId3) {
     AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
     matchingRecord.setTreatmentRecordId(treatmentRecordId);
-    AssistantMatchingRecord resultMatchingRecord =
-        matchingRecordBiz.selectOneByTreatmentIdAndType(treatmentRecordId, (byte) 0);
     if (null != assistantId1) {
+      AssistantMatchingRecord resultMatchingRecord =
+              matchingRecordBiz.selectOneByTreatmentIdAndType(treatmentRecordId, (byte) 0);
+
       if (null != resultMatchingRecord) {
         if (resultMatchingRecord.getOperatorPostType() == 0
             && !resultMatchingRecord.getAssistantId().equals(assistantId1)) {
           throw new ClientServiceException("开单失败，配诊助手1不可被修改！", PARAMETERS_IS_ILLEGAL);
         }
+
       }
       matchingRecord.setType((byte) 0);
       addAssistantMatchingRecord(assistantId1, orderRecordId, matchingRecord);
     } else {
-      if (resultMatchingRecord.getOperatorPostType() != 0) {
-        matchingRecord.setType((byte) 0);
-        matchingRecordBiz.delete(matchingRecord);
+      AssistantMatchingRecord resultMatchingRecord =
+              matchingRecordBiz.selectOneByTreatmentIdAndType(treatmentRecordId, (byte) 0);
+      if (null != resultMatchingRecord) {
+        if (resultMatchingRecord.getOperatorPostType() != 0) {
+          matchingRecord.setType((byte) 0);
+          matchingRecordBiz.delete(matchingRecord);
+        }
       }
     }
     if (null != assistantId2) {
