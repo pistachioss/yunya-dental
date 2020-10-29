@@ -449,8 +449,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             return ResponseUtil.success();
         }
         return ResponseUtil.success("随访状态更新失败");
-
-
     }
 
     /**
@@ -479,52 +477,46 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return 检索并且排序之后的列表
      */
     private List searchAndOrder(List<VisitingRecordVo> visitingRecordVoList, String searchStr, String medicalNumberStr, String distentNameStr) {
-        List<VisitingRecordVo> searchVisitingRecordVo = null;
         // 匹配姓名
         String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
         // 匹配手机号
         String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
-        if (!StringHelper.isEmpty(searchStr) || !StringHelper.isEmpty(medicalNumberStr)){
-            searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
-                String patientName = visitingRecordVo.getPatientName();
-                String mobile = visitingRecordVo.getMobile();
-                String medicalNumber = visitingRecordVo.getMedicalNumber();
-                boolean result = false;
-                if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)){
+        List<VisitingRecordVo> searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
+            String patientName = visitingRecordVo.getPatientName();
+            String mobile = visitingRecordVo.getMobile();
+            String medicalNumber = visitingRecordVo.getMedicalNumber();
+            boolean result = false;
+            if (!StringHelper.isEmpty(searchStr)) {
+                if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
                     result = result | patientName.contains(searchStr);
-                } else if (searchStr.matches(mobileReg) && !StringHelper.isEmpty(mobile)){
+                } else if (searchStr.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
                     result = result | mobile.contains(searchStr);
                 }
-                if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
-                    result = result | medicalNumber.contains(medicalNumberStr);
-                }
-                String distentName = visitingRecordVo.getDentistName();
-                if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
-                    result = result | distentName.contains(distentNameStr);
-                }
-                return result;
-            }).collect(Collectors.toList());
-        } else {
+            }
+            if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
+                result = result | medicalNumber.contains(medicalNumberStr);
+            }
+            String distentName = visitingRecordVo.getDentistName();
+            if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
+                result = result | distentName.contains(distentNameStr);
+            }
+            return result;
+        }).collect(Collectors.toList());
+        if (StringHelper.isEmpty(searchVisitingRecordVo)) {
             searchVisitingRecordVo = visitingRecordVoList;
         }
         // 按随访时间排序
         searchVisitingRecordVo = searchVisitingRecordVo.stream().sorted(
-                Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
-                    if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
-                        return -1;
-                    }
-                    String[] objSplit1 = obj1.trim().split(":");
-                    Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
-                    String[] objSplit2 = obj2.trim().split(":");
-                    Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
-                    if (objMinute1 < objMinute2){
-                        return -1;
-                    } else if (objMinute1 > objMinute2){
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                })).collect(Collectors.toList());
+            Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
+                if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
+                    return -1;
+                }
+                String[] objSplit1 = obj1.trim().split(":");
+                Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
+                String[] objSplit2 = obj2.trim().split(":");
+                Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
+                return objMinute1.compareTo(objMinute2);
+            })).collect(Collectors.toList());
         return searchVisitingRecordVo;
     }
 

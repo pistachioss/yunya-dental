@@ -273,8 +273,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                                                         String search,
                                                         String medicalNumber,
                                                         String distentName) {
-        // 检索随访提醒结果列表
-        List<VisitingRemindVo> searchVisitingRemindVo = null;
         // 按条件检索
         // 匹配患者名字
         String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
@@ -282,37 +280,37 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
         // 匹配拼音名字
         String pinyinReg = "^[A-Za-z]+$";
-        if (!StringHelper.isEmpty(search) || !StringHelper.isEmpty(medicalNumber)){
-            searchVisitingRemindVo = visitingRemindVos.stream().filter(visitingRemindVo -> {
-                boolean result = false;
-                if (!StringHelper.isEmpty(search)) {
-                    String patientName = visitingRemindVo.getPatientName();
-                    String mobile = visitingRemindVo.getMobile();
-                    String pinyinName = visitingRemindVo.getPinyinName();
-                    if (search.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
-                        // 按名字模糊检索
-                        result = result | patientName.contains(search);
-                    } else if (search.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
-                        // 按手机检索
-                        result = result | mobile.contains(search);
-                    } else if (search.matches(pinyinReg) && !StringHelper.isEmpty(pinyinName)) {
-                        // 按拼音检索
-                        result = result | pinyinName.contains(search);
-                    }
+        // 检索随访提醒结果列表
+        List<VisitingRemindVo> searchVisitingRemindVo = visitingRemindVos.stream().filter(visitingRemindVo -> {
+            boolean result = false;
+            if (!StringHelper.isEmpty(search)) {
+                String patientName = visitingRemindVo.getPatientName();
+                String mobile = visitingRemindVo.getMobile();
+                String pinyinName = visitingRemindVo.getPinyinName();
+                if (search.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
+                    // 按名字模糊检索
+                    result = result | patientName.contains(search);
+                } else if (search.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
+                    // 按手机检索
+                    result = result | mobile.contains(search);
+                } else if (search.matches(pinyinReg) && !StringHelper.isEmpty(pinyinName)) {
+                    // 按拼音检索
+                    result = result | pinyinName.contains(search);
                 }
-                // 按病历号检索
-                String currentMedicalNumber = visitingRemindVo.getMedicalNumber();
-                if (!StringHelper.isEmpty(currentMedicalNumber) && !StringHelper.isEmpty(medicalNumber)) {
-                    result = result | currentMedicalNumber.contains(medicalNumber);
-                }
-                // 按医生名字模糊检索
-                String dentistNameStr = visitingRemindVo.getDentistName();
-                if (!StringHelper.isEmpty(dentistNameStr) && !StringHelper.isEmpty(distentName)) {
-                    result = result | dentistNameStr.contains(distentName);
-                }
-                return result;
-            }).collect(Collectors.toList());
-        } else {
+            }
+            // 按病历号检索
+            String currentMedicalNumber = visitingRemindVo.getMedicalNumber();
+            if (!StringHelper.isEmpty(currentMedicalNumber) && !StringHelper.isEmpty(medicalNumber)) {
+                result = result | currentMedicalNumber.contains(medicalNumber);
+            }
+            // 按医生名字模糊检索
+            String dentistNameStr = visitingRemindVo.getDentistName();
+            if (!StringHelper.isEmpty(dentistNameStr) && !StringHelper.isEmpty(distentName)) {
+                result = result | dentistNameStr.contains(distentName);
+            }
+            return result;
+        }).collect(Collectors.toList());
+        if (StringHelper.isEmpty(searchVisitingRemindVo)){
             searchVisitingRemindVo = visitingRemindVos;
         }
 
