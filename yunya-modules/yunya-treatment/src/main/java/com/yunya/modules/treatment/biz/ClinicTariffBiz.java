@@ -179,7 +179,6 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       if (null != resultClinicTariffMemberPrice) {
         clinicTariffMemberPrice.setUpdId(userId);
         clinicTariffMemberPrice.setUpdName(name);
-        clinicTariffMemberPrice.setUpdTime(new Date(System.currentTimeMillis()));
         clinicTariffMemberPrice.setId(resultClinicTariffMemberPrice.getId());
         clinicTariffMemberPriceBiz.updateSelectiveById(clinicTariffMemberPrice);
       } else {
