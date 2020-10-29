@@ -114,7 +114,7 @@ public class CompanyReportOfDataRecordController {
    * @return list
    */
   @ApiOperation("根据条件查询账单收费记录")
-  @PostMapping(value = "/bill/pay/list", name = "根据条件查询账单收费记录")
+  @PostMapping(value = "/bill/pay/list", name = "数据记录-收费记录-根据条件查询账单收费记录")
   public ResponseResult<PageInfo<BillOfPayRecordVO>> findBillRecordOfPayList(
       @RequestBody @Validated BillPayRecordQuery query) {
     PageInfo<BillOfPayRecordVO> resultList = billPayBiz.findBillRecordOfPayList(query);
@@ -144,11 +144,27 @@ public class CompanyReportOfDataRecordController {
    * @return list
    */
   @ApiOperation("根据条件查询配诊记录")
-  @PostMapping(value = "/matching/list", name = "根据条件查询配诊记录")
+  @PostMapping(value = "/matching/list", name = "数据记录-配诊记录-根据条件查询配诊记录")
   public ResponseResult<PageInfo<TreatmentMatchingRecordVO>> treatmentMatchingRecord(
       @RequestBody @Validated TreatmentMatchingRecordQuery query) {
     PageInfo<TreatmentMatchingRecordVO> list =
         treatmentProcessBiz.findTreatmentMatchingRecord(query);
     return ResponseUtil.success(list);
+  }
+
+  /**
+   * 导出就诊配诊记录列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("导出就诊配诊记录列表")
+  @PostMapping(value = "/matching/export", name = "数据记录-配诊记录-导出就诊配诊记录列表")
+  public ResponseResult<T> exportTreatmentMatchingRecord(
+      HttpServletResponse response, @RequestBody @Validated TreatmentMatchingRecordQuery query)
+      throws IOException {
+    treatmentProcessBiz.exportTreatmentMatchingRecord(response, query);
+    return ResponseUtil.success(null);
   }
 }

@@ -99,25 +99,26 @@
     <select id="selectTreatmentMatchingRecord"
             resultType="com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO">
         SELECT
-            treatmentId,
-            assistant1Id,
-            assistant1Name,
-            assistant2Id,
-            assistant2Name,
-            assistant3Id,
-            assistant3Name,
-            matchingDentistId,
-            matchingDentistName,
-            patientId,
-            patientName,
-            mobile,
-            matchingDate,
-            treatStartTime,
-            treatEndTime,
-            matchingDuration
+            tmr.treatmentId,
+            tmr.assistant1Id,
+            tmr.assistant1Name,
+            tmr.assistant2Id,
+            tmr.assistant2Name,
+            tmr.assistant3Id,
+            tmr.assistant3Name,
+            tmr.matchingDentistId,
+            tmr.matchingDentistName,
+            tmr.patientId,
+            tmr.patientName,
+            tmr.mobile,
+            tmr.matchingDate,
+            tmr.treatStartTime,
+            tmr.treatEndTime,
+            tmr.matchingDuration
         FROM
             (
             SELECT
+                btp.org_id as orgId,
                 btp.treatment_id AS treatmentId,
                 btp.assistant_1 AS assistant1Id,
                 be1.employee_name AS assistant1Name,
@@ -132,8 +133,8 @@
                 bp.pinyin_name AS pinyinName,
                 bp.mobile AS mobile,
                 DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS matchingDate,
-                btp.treat_start_time AS treatStartTime,
-                btp.treat_end_time AS treatEndTime,
+                DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
+                DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
                 TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS matchingDuration
             FROM
                 base_treatment_process btp
@@ -151,7 +152,7 @@
                 and tmr.orgId = #{query.orgId}
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like concat('%', #{query.keyWord}, '%')
+                and concat(ifnull(tmr.patientName, ''), ifnull(tmr.pinyinName, ''), ifnull(tmr.mobile, '')) like concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.matchingStartDate != null and query.matchingStartDate != ''">
                 and tmr.matchingDate &gt;= #{query.matchingStartDate}
