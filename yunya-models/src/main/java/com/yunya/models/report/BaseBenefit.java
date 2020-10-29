@@ -64,7 +64,7 @@ public class BaseBenefit {
      * 使用的优惠类型（0：会员卡  1：优惠券）
      */
     @Column(name = "benefit_type")
-    private Byte benefitType;
+    private Integer benefitType;
 
     /**
      * 项目使用优惠下标（记录哪一个数量）
@@ -82,7 +82,7 @@ public class BaseBenefit {
      * 选择使用的优惠方式（0-卡券优惠 1-授权折扣）
      */
     @Column(name = "choice_benefit_type")
-    private Byte choiceBenefitType;
+    private Integer choiceBenefitType;
 
     /**
      * 优惠操作人
