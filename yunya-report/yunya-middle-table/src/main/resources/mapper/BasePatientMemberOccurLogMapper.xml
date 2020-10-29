@@ -21,6 +21,7 @@
     <result column="bill_id" property="billId" jdbcType="INTEGER" />
     <result column="recharge_card_number" property="rechargeCardNumber" jdbcType="VARCHAR" />
     <result column="occur_date" property="occurDate" jdbcType="TIMESTAMP" />
+    <result column="recharge_method" property="rechargeMethod" jdbcType="TINYINT" />
   </resultMap>
 
   <!-- 根据操作id和操作类型 进行删除 -->

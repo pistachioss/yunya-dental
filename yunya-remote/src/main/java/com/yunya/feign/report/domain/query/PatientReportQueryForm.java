@@ -10,17 +10,17 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * 简介: 会员卡Occur日志QueryForm
+ * 简介: 患者报表查询-未复诊预约且未提醒Form
  *
  * @author: WY
- * @date: 2020/10/24 13:49
+ * @date: 2020/10/27 13:48
  * @description:
  * @since: 1.0.0
  */
 
 @Data
 @ToString
-public class MemberQueryForm implements Serializable {
+public class PatientReportQueryForm implements Serializable {
 
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
@@ -33,29 +33,28 @@ public class MemberQueryForm implements Serializable {
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
 
-
     @ApiModelProperty(value = "门诊id", required = false)
     /** 门诊id */
     private Integer orgId;
+
+    @ApiModelProperty(value = "开始末次就诊日期", required = false)
+    /** 充值开始日期 */
+    private Date startDate;
+
+    @ApiModelProperty(value = "结束末次就诊日期", required = false)
+    /** 充值结束日期 */
+    private Date endDate;
+
+    @ApiModelProperty(value = "末次接诊医生", required = false)
+    /** 接诊医生 */
+    private List<Integer> attendingDoctors;
 
     @ApiModelProperty(value = "患者条件", required = false)
     /** 患者条件 */
     private String combination;
 
-    @ApiModelProperty(value = "预付款账号", required = false)
-    /** 预付款账号 */
-    private String cardNumber;
-
-    @ApiModelProperty(value = "充值开始日期", required = false)
-    /** 充值开始日期 */
-    private Date startDate;
-
-    @ApiModelProperty(value = "充值结束日期", required = false)
-    /** 充值结束日期 */
-    private Date endDate;
-
-    @ApiModelProperty(value = "充值方式", required = false)
-    /** 充值方式 */
-    private List<Integer> rechargeMethods;
+    @ApiModelProperty(value = "初复诊（0：初,1：复）", required = false)
+    /** 会员卡类型 */
+    private List<Integer> treatTypes;
 
 }

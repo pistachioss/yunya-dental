@@ -15,19 +15,28 @@ import java.math.BigDecimal;
  */
 @Data
 @ToString
-public class MemberRechargeLogBizVo {
+public class BaseMemberExpendLogVo {
 
     /** 操作id **/
     private Integer occurLogId;
 
-    /** 充值日期 */
+    /** 消费日期 */
     private String occurDate;
+
+    /** 账单日期 */
+    private String orderDate;
+
+    /** 订单号 */
+    private String orderNum;
 
     /** 患者姓名 */
     private String name;
 
     /** 手机号 */
     private String mobile;
+
+    /** 主卡人姓名 */
+    private String masterCardName;
 
     /** 会员卡号 */
     private String cardNumber;
@@ -38,24 +47,18 @@ public class MemberRechargeLogBizVo {
     /** 会员卡级别名称 */
     private String memberLevelName;
 
-    /** 充值本金金额 */
+    /** 消费本金金额 */
     private BigDecimal principalAmount;
 
-    /** 充值赠金金额 */
+    /** 消费赠金金额 */
     private BigDecimal bonusAmount;
 
-    /** 充值后会员卡余额（本金） */
+    /** 消费后会员卡余额（本金） */
     private BigDecimal currentRechargePrincipal;
 
-    /** 充值后会员卡余额（赠金） */
+    /** 消费后会员卡赠金（赠金） */
     private BigDecimal currentRechargeBonus;
 
-    /** 入账方式 */
-    private Integer paymentId;
-
-    /** 入账方式名称 */
-    private String paymentManner;
-
-    /** 充值人 */
+    /** 消费人 */
     private String operatorUserName;
 }

@@ -23,4 +23,49 @@
     <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
     <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL" />
   </resultMap>
+  <!-- 欠费查询 -->
+    <select id="arrears" resultType="com.yunya.feign.report.domain.vo.ArrearsVo">
+      select
+        bb.bill_id billId,
+        be.employee_name employeeName,
+        bb.order_date orderDate,
+        bb.order_num orderNum,
+        bp.name,
+        bp.mobile,
+        (bb.privilege_amount - bb.actual_amount) originalPrice,
+        bb.privilege_amount privilegeAmount,
+        bb.actual_amount actualAmount,
+        bb.received_amount receivedAmount,
+        bb.debt_amount debtAmount
+      from  base_bill bb
+        join  base_patient bp on bp.patient_id = bb.patient_id
+        join  base_treatment_process btpr on btpr.patient_id = bp.patient_id
+        join  base_employee be on btpr.registered_dentist_id = be.user_id
+      <where>
+        <if test="form.orgId != null and form.orgId != ''">
+          AND bb.org_id = #{form.orgId}
+        </if>
+
+        <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+          AND bb.order_date &gt;= #{form.startDate} 
+          AND bb.order_date &lt;= #{form.endDate}
+        </if>
+
+        <if test="form.registeredDentistIds != null and form.registeredDentistIds.size() > 0 ">
+          AND bp.registered_dentist_id in
+          <foreach collection="form.registeredDentistIds" item="registeredDentistId" index="index" open="(" close=")" separator=",">
+            #{registeredDentistId}
+          </foreach>
+        </if>
+
+        <if test="patientIds != null and patientIds.size() > 0 ">
+          AND bp.patient_id in
+          <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+            #{ids}
+          </foreach>
+        </if>
+
+      </where>
+      group by bb.order_date orderDate asc
+    </select>
 </mapper>

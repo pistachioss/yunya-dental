@@ -119,6 +119,29 @@ public class BasePatient {
     private String pinyinName;
 
     /**
+     * 末诊日期
+     */
+    @Column(name = "patient_crt_time")
+    private Date patientCrtTime;
+
+
+    /**
+     * 获取患者创建时间
+     * @return
+     */
+    public Date getPatientCrtTime() {
+        return patientCrtTime;
+    }
+
+    /**
+     * 设置患者创建时间
+     * @param patientCrtTime
+     */
+    public void setPatientCrtTime(Date patientCrtTime) {
+        this.patientCrtTime = patientCrtTime;
+    }
+
+    /**
      * 获取患者拼音
      * @return String
      */

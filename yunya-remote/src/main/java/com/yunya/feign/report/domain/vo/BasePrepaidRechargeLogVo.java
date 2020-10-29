@@ -6,7 +6,7 @@ import lombok.ToString;
 import java.math.BigDecimal;
 
 /**
- * 简介: 报表会员卡退费vo
+ * 简介: 报表预付款充值vo
  *
  * @author: WY
  * @date: 2020/10/24 14:11
@@ -15,12 +15,12 @@ import java.math.BigDecimal;
  */
 @Data
 @ToString
-public class MemberReturnLogBizVo {
+public class BasePrepaidRechargeLogVo {
 
     /** 操作id **/
     private Integer occurLogId;
 
-    /** 退费日期 */
+    /** 充值日期 */
     private String occurDate;
 
     /** 患者姓名 */
@@ -29,14 +29,8 @@ public class MemberReturnLogBizVo {
     /** 手机号 */
     private String mobile;
 
-    /** 会员卡号 */
+    /** 预付款卡号 */
     private String cardNumber;
-
-    /** 会员级别id */
-    private Integer memberLevelId;
-
-    /** 会员卡级别名称 */
-    private String memberLevelName;
 
     /** 充值本金金额 */
     private BigDecimal principalAmount;
@@ -44,11 +38,14 @@ public class MemberReturnLogBizVo {
     /** 充值赠金金额 */
     private BigDecimal bonusAmount;
 
-    /** 退费后会员卡余额（本金） */
+    /** 充值后会员卡余额（本金） */
     private BigDecimal currentRechargePrincipal;
 
-    /** 退费后会员卡余额（赠金） */
+    /** 充值后会员卡余额（赠金） */
     private BigDecimal currentRechargeBonus;
+
+    /** 充值方式 */
+    private String rechargeMethod;
 
     /** 入账方式 */
     private Integer paymentId;
@@ -56,6 +53,14 @@ public class MemberReturnLogBizVo {
     /** 入账方式名称 */
     private String paymentManner;
 
+    /** 充值卡号 */
+    private String rechargeCardNumber;
+
     /** 充值人 */
     private String operatorUserName;
+
+    /** 备注 */
+    private String remarks;
+
+
 }
