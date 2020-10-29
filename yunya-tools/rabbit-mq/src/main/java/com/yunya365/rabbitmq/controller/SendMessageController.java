@@ -36,7 +36,7 @@ public class SendMessageController {
         return "ok";
     }
 
-    @RabbitListener(queues = {"DirectQueue_Temp"})
+//    @RabbitListener(queues = {"DirectQueue_Temp"})
     public void handleTest(Map<String,Object> map) throws Exception {
         // 处理消息
         System.out.println("handleMessage :"+ map.get("messageId"));

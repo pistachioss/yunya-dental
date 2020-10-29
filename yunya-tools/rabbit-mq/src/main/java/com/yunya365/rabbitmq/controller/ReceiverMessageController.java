@@ -10,12 +10,12 @@ import org.springframework.stereotype.Component;
 import java.util.Map;
 
 @Component
-@RabbitListener(queues = {"DirectQueue_MiddleSingle"})
+//@RabbitListener(queues = {"DirectExchange_Temp"})
 public class ReceiverMessageController {
 
     public static int n = 0;
 
-    @RabbitHandler
+//    @RabbitHandler
     public void handleTest1(MessageModel messageModel, Channel channel, Message message) throws Exception {
         // 处理消息
         System.out.println("handleMessage :" + messageModel.getMsgID());
