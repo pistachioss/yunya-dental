@@ -172,6 +172,10 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return  ResponseResult
      */
     public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
+        // 分页
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
         // 组合随访提醒信息列表
         List<VisitingRemindVo> visitingRemindVos = new ArrayList<>();
         // 检索随访提醒内容列表
@@ -216,16 +220,22 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 }
                 visitingRemindVos.add(build);
             });
-            // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容（包括时间正序排序）
-            searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, query.getSearch(), query.getMedicalNumber(), query.getDistentName());
+            String search = query.getSearch();
+            String medicalNumber = query.getMedicalNumber();
+            String distentName = query.getDistentName();
+            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
+                // 按照时间正序排序
+                searchVisitingRemindVo = this.sort(visitingRemindVos);
+            } else {
+                // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
+                searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, search, medicalNumber, distentName);
+                // 按照时间正序排序
+                searchVisitingRemindVo = this.sort(searchVisitingRemindVo);
+            }
         }
         // 如果 searchVisitingRemindVo 为空
         if (StringHelper.isEmpty(searchVisitingRemindVo)) {
             searchVisitingRemindVo = new ArrayList<>();
-        }
-        // 分页
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
     }
@@ -306,16 +316,20 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             // 按医生名字模糊检索
             String dentistNameStr = visitingRemindVo.getDentistName();
             if (!StringHelper.isEmpty(dentistNameStr) && !StringHelper.isEmpty(distentName)) {
-                result = result | dentistNameStr.equalsIgnoreCase(distentName);
+                result = result | dentistNameStr.equals(distentName);
             }
             return result;
         }).collect(Collectors.toList());
-        if (StringHelper.isEmpty(searchVisitingRemindVo)){
-            searchVisitingRemindVo = visitingRemindVos;
-        }
+        return searchVisitingRemindVo;
+    }
 
-        // 将检索结果按时间正序排序
-        searchVisitingRemindVo = searchVisitingRemindVo.stream().sorted(Comparator.comparing(VisitingRemindVo::getRemindTime,(obj1,obj2)->{
+    /**
+     * 按照时间将检随访提醒列表按时间正序排序
+     * @param searchVisitingRemindVos 随访列表
+     * @return 返回排序之后的列表
+     */
+    private List<VisitingRemindVo> sort(List<VisitingRemindVo> searchVisitingRemindVos) {
+        return searchVisitingRemindVos.stream().sorted(Comparator.comparing(VisitingRemindVo::getRemindTime,(obj1,obj2)->{
             if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
                 return -1;
             }
@@ -331,6 +345,5 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 return 0;
             }
         })).collect(Collectors.toList());
-        return searchVisitingRemindVo;
     }
 }
