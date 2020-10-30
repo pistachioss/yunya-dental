@@ -110,4 +110,10 @@ public class DiscountController {
 	                                                                  @Valid @RequestBody CouponUsedDetailQuery query) {
 		return ResponseUtil.success(discountBiz.getCouponDetailUsedPage(couponId, query));
 	}
+
+//	@ApiOperation(value = "充值卡充值统计")
+//	@PostMapping("{couponId}/card/used/statistics")
+//	public ResponseResult<PageInfo<RechargeVo>> getCouponUsed(@Valid @RequestBody RechargeQuery query) {
+//		return ResponseUtil.success(discountBiz.getCouponDetailUsedPage(query));
+//	}
 }

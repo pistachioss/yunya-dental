@@ -1,6 +1,7 @@
 package com.yunya.models.report;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 
@@ -9,6 +10,7 @@ public class BaseRefund {
     /**
      * 退费记录ID
      */
+    @Id
     @Column(name = "refund_id")
     private Integer refundId;
 
@@ -31,7 +33,7 @@ public class BaseRefund {
     private Integer treatmentId;
 
     /**
-     * 账单ID
+     * 账单ID(开单记录ID)
      */
     @Column(name = "bill_id")
     private Integer billId;
