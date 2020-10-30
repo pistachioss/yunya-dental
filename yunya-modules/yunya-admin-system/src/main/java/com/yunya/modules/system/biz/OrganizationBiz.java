@@ -2,6 +2,8 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -43,6 +45,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Transactional(rollbackFor = Exception.class)
 public class OrganizationBiz {
 
+  /** 消息中间件 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 组织信息 */
   @Autowired private CompanyMapper companyMapper;
   /** 组织扩展信息 */
@@ -131,9 +135,14 @@ public class OrganizationBiz {
     company.setCrtName(userName);
     company.setUpdId(userId);
     company.setUpdName(userName);
-    companyMapper.insertSelective(company);
+    int i = companyMapper.insertSelective(company);
     // 添加组织类型为医疗机构，添加医疗机构扩展信息
-    addClinicExtInfo(resource, company.getId(), type);
+    Integer companyId = company.getId();
+    addClinicExtInfo(resource, companyId, type);
+    // 发送消息，同步中间表数据
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(companyId, 0, MsgCategoryEnum.BaseOrganization);
+    }
   }
 
   /**
@@ -177,9 +186,13 @@ public class OrganizationBiz {
     company.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     company.setUpdName(BaseContextHandler.getName());
     company.setUpdTime(new Date(System.currentTimeMillis()));
-    companyMapper.updateByPrimaryKeySelective(company);
+    int i = companyMapper.updateByPrimaryKeySelective(company);
     // 更新医疗机构扩展信息,并校验医疗机构简称是否重复
     updateOrganizationExtInfo(id, resource, companyType);
+    // 发送消息
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(id, 1, MsgCategoryEnum.BaseOrganization);
+    }
   }
 
   /**
@@ -340,10 +353,13 @@ public class OrganizationBiz {
       throw new ClientServiceException(
           "删除ID为'" + organizationId + "'的组织失败，该组织已被使用", DELETE_NOT_ALLOW);
     }
-    companyMapper.deleteByPrimaryKey(organizationId);
+    int i = companyMapper.deleteByPrimaryKey(organizationId);
     ClinicExtInfo extInfo = new ClinicExtInfo();
     extInfo.setCompanyId(organizationId);
     clinicExtInfoBiz.delete(extInfo);
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(organizationId, 2, MsgCategoryEnum.BaseOrganization);
+    }
   }
 
   /**
