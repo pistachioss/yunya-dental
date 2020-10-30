@@ -5,20 +5,25 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CardStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
 import com.yunya.feign.report.domain.query.CouponUsedQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.report.ultimate.mapper.BaseBenefitMapper;
 import com.yunya.report.ultimate.mapper.BaseCardMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponItemMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponMapper;
@@ -40,6 +45,8 @@ public class DiscountBiz {
 	private BaseCardMapper cardMapper;
 	@Resource
 	private BaseCouponItemMapper itemMapper;
+	@Resource
+	private BaseBenefitMapper benefitMapper;
 
 	/**
 	 * 产品售出激活统计
@@ -59,7 +66,7 @@ public class DiscountBiz {
 	 */
 	public PageInfo<CardStatisticsVo> getCardStatisticsPage(Integer couponId, CardStatisticsQuery query) {
 		Page<CardStatisticsVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-		cardMapper.listCardUsedByParam(query.getCardNumber(), query.getAllocateOrgIds(), query.getSoldTypes(),
+		cardMapper.listCardByParam(query.getCardNumber(), query.getAllocateOrgIds(), query.getSoldTypes(),
 				query.getSoldStartDate(), query.getSoldEndDate(), query.getActiveOrgIds(), query.getActiveStartDate(),
 				query.getActiveEndDate(), query.getSoldWays(), query.getChargeStatus(), couponId);
 		return new PageInfo<>(page);
@@ -136,6 +143,32 @@ public class DiscountBiz {
 	public PageInfo<CouponUsedVo> getCouponUsedPage(CouponUsedQuery query) {
 		Page<CouponUsedVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
 		couponMapper.listCouponUsedByParam(query.getCouponName(), query.getCouponCategoryIds(), query.getCouponTypes());
+		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 产品使用统计-时间维度
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<CardUsedStatisticsVo> getCardUsedPage(CardUsedStatisticsQuery query) {
+		Page<CardUsedStatisticsVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCardUsedByParam(query.getCouponName(), query.getBillNumber(), query.getCardNumber(),
+				query.getPatientKeyWord(), query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
+				query.getUsedEndDate(), query.getSoldChannelIds(), query.getCouponTypes());
+		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 产品使用统计-产品维度-使用统计
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<CouponUsedDetailVo> getCouponDetailUsedPage(Integer couponId, CouponUsedDetailQuery query) {
+		Page<CouponUsedDetailVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCouponDetailUsedByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getBillNumber(),
+				query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
+				query.getUsedEndDate(), query.getSoldChannelIds(), couponId);
 		return new PageInfo<>(page);
 	}
 }

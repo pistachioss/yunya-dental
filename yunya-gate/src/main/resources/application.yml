@@ -144,7 +144,7 @@ spring:
             - StripPrefix=3
           metadata:
             title: "结算统计服务"
-        - id: yunya-clinic-base
+        - id: yunya-report-ultimate
           uri: lb://yunya-report-ultimate
           order: 9007
           predicates:

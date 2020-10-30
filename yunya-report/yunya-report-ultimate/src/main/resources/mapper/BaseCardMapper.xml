@@ -31,7 +31,7 @@
         <result column="first_use_date" property="firstUseDate" jdbcType="TIMESTAMP"/>
     </resultMap>
 
-    <select id="listCardUsedByParam" resultType="com.yunya.feign.report.domain.vo.CardStatisticsVo">
+    <select id="listCardByParam" resultType="com.yunya.feign.report.domain.vo.CardStatisticsVo">
         select
             `bc`.`sold_date`,
             `bc`.`card_number`,
@@ -81,7 +81,7 @@
             `bc`.`coupon_id` = #{couponId}
             and `bc`.`status` != 0
             and `bc`.`allocate_org_id` != 0
-            and `b`.`coupon_type` in (0,1,2,3)
+            and `b`.`coupon_type` != 4
             <if test="cardNumber !=null and cardNumber != ''">
                 and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
             </if>
@@ -285,6 +285,7 @@
             inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
         where
             `bc`.`coupon_id` = #{couponId}
+            and `b`.`coupon_type` != 4
             and `bc`.`status` in (2,3,4)
             and `bc`.`allocate_org_id` = 0
             <if test="cardNumber !=null and cardNumber != ''">
@@ -379,4 +380,5 @@
             </if>
         order by `bc`.`sold_date` desc
     </select>
+
 </mapper>

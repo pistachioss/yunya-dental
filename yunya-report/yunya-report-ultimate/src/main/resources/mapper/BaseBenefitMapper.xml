@@ -20,4 +20,156 @@
         <result column="operate_user_id" property="operateUserId" jdbcType="INTEGER"/>
         <result column="use_date" property="useDate" jdbcType="TIMESTAMP"/>
     </resultMap>
+
+    <select id="listCardUsedByParam" resultType="com.yunya.feign.report.domain.vo.CardUsedStatisticsVo">
+        select
+        `bco`.`coupon_name`,
+        `bco`.coupon_type,
+        `bcd`.`card_number`,
+        `bp`.`name`                          as `cardOwner`,
+        `bcd`.`sale_channel_name`,
+        `bo`.`abbreviation`                  as `usedClinicName`,
+        `bf`.`use_date`,
+        `bp1`.`name`                         as `usedPatientName`,
+        `bp1`.`mobile`                       as `usedPatientMobile`,
+        `be`.`employee_name`                 as `dentistName`,
+        `bb`.`bill_num`                      as `billNumber`,
+        `bb`.`order_amount`,
+        ifnull(sum(`bf`.`benefit_amount`), 0)as `benefitAmount`,
+        `bb`.`actual_amount`,
+        `be1`.`employee_name`                as `operateBenefitUser`
+        from `base_benefit` `bf`
+        inner join `base_coupon` `bco` on `bco`.`coupon_id` = `bf`.`coupon_id`
+        inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
+        inner join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+        <!-- 卡主 -->
+        inner join `base_patient` `bp` on `bp`.`patient_id` = `bcd`.`patient_id`
+        <!-- 优惠券使用患者 -->
+        inner join `base_patient` `bp1` on `bp1`.`patient_id` = `bf`.`patient_id`
+        inner join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
+        <!-- 挂号医生 -->
+        inner join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
+        inner join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
+        <!-- 优惠券操作人 -->
+        inner join `base_employee` `be1` on `be1`.`user_id` = `bf`.`operate_user_id`
+        where `bco`.`coupon_type` != 4
+        <if test="couponName !=null and couponName != ''">
+            and `bco`.`coupon_name` like concat('%', #{couponName}, '%')
+        </if>
+        <if test="billNumber !=null and billNumber != ''">
+            and `bb`.`bill_num` like concat('%', #{billNumber}, '%')
+        </if>
+        <if test="cardNumber !=null and cardNumber != ''">
+            and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
+        </if>
+        <if test="patientKeyWord !=null and patientKeyWord != ''">
+            and (`bp1`.`name` like concat('%', #{patientKeyWord}, '%') or `bp1`.`mobile` like concat('%', #{patientKeyWord}, '%')
+            or `bp1`.`pinyin_name` like concat('%', #{patientKeyWord}, '%'))
+        </if>
+        <if test="orgIds != null and orgIds.size() > 0">
+            and `bf`.`org_id` in
+            <foreach collection="orgIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dentistIds != null and dentistIds.size() > 0">
+            and `btp`.`registered_dentist_id` in
+            <foreach collection="dentistIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dentistIds != null and dentistIds.size() > 0">
+            and `btp`.`registered_dentist_id` in
+            <foreach collection="dentistIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="usedStartDate != null and usedEndDate != null">
+            and (`bf`.`use_date` &gt;= #{soldStartDate} and `bf`.`use_date` &lt; #{soldEndDate})
+        </if>
+        <if test="soldChannelIds != null and soldChannelIds.size() > 0">
+            and `bcd`.`sale_channel_id` in
+            <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="couponTypes != null and couponTypes.size() > 0">
+            and `bco`.`coupon_type` in
+            <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        group by `bf`.`card_id`, `bf`.`order_id`
+        order by `bf`.`use_date` desc
+    </select>
+
+    <select id="listCouponDetailUsedByParam" resultType="com.yunya.feign.report.domain.vo.CouponUsedDetailVo">
+        select
+        `bcd`.`card_number`,
+        `bp`.`name`                          as `cardOwner`,
+        `bcd`.`sale_channel_name`,
+        `bo`.`abbreviation`                  as `usedClinicName`,
+        `bf`.`use_date`,
+        `bp1`.`name`                         as `usedPatientName`,
+        `bp1`.`mobile`                       as `usedPatientMobile`,
+        `be`.`employee_name`                 as `dentistName`,
+        `bb`.`bill_num`                      as `billNumber`,
+        `bb`.`order_amount`,
+        ifnull(sum(`bf`.`benefit_amount`), 0)as `benefitAmount`,
+        `bb`.`actual_amount`,
+        `be1`.`employee_name`                as `operateBenefitUser`
+        from `base_benefit` `bf`
+        inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
+        inner join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+        <!-- 卡主 -->
+        inner join `base_patient` `bp` on `bp`.`patient_id` = `bcd`.`patient_id`
+        <!-- 优惠券使用患者 -->
+        inner join `base_patient` `bp1` on `bp1`.`patient_id` = `bf`.`patient_id`
+        inner join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
+        <!-- 挂号医生 -->
+        inner join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
+        inner join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
+        <!-- 优惠券操作人 -->
+        inner join `base_employee` `be1` on `be1`.`user_id` = `bf`.`operate_user_id`
+        where `bf`.`coupon_id` = #{couponId}
+        <if test="cardNumber !=null and cardNumber != ''">
+            and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
+        </if>
+        <if test="patientKeyWord !=null and patientKeyWord != ''">
+            and (`bp1`.`name` like concat('%', #{patientKeyWord}, '%') or `bp1`.`mobile` like concat('%', #{patientKeyWord}, '%')
+            or `bp1`.`pinyin_name` like concat('%', #{patientKeyWord}, '%'))
+        </if>
+        <if test="billNumber !=null and billNumber != ''">
+            and `bb`.`bill_num` like concat('%', #{billNumber}, '%')
+        </if>
+        <if test="orgIds != null and orgIds.size() > 0">
+            and `bf`.`org_id` in
+            <foreach collection="orgIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dentistIds != null and dentistIds.size() > 0">
+            and `btp`.`registered_dentist_id` in
+            <foreach collection="dentistIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="dentistIds != null and dentistIds.size() > 0">
+            and `btp`.`registered_dentist_id` in
+            <foreach collection="dentistIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="usedStartDate != null and usedEndDate != null">
+            and (`bf`.`use_date` &gt;= #{soldStartDate} and `bf`.`use_date` &lt; #{soldEndDate})
+        </if>
+        <if test="soldChannelIds != null and soldChannelIds.size() > 0">
+            and `bcd`.`sale_channel_id` in
+            <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        group by `bf`.`card_id`, `bf`.`order_id`
+        order by `bf`.`use_date` desc
+    </select>
 </mapper>
