@@ -107,21 +107,21 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         List<AnalysisPatientAgeVo> analysisPatientAgeVoList = new ArrayList<>();
         AnalysisPatientAgeVo youngVo = new AnalysisPatientAgeVo();
         Integer count = mapper.selectCountAnalysisAge(patientAnalysisQueryForm);
-        Integer countYoungAge =  mapper.selectAnalysisAge(patientAnalysisQueryForm,14,0);
+        Integer countYoungAge =  mapper.selectAnalysisAge(patientAnalysisQueryForm,14,0,0);
         String percentageYoung = mapper.calculateAgePercentage(countYoungAge,count);
         youngVo.setAgeBracket("0-14");
         youngVo.setPercentage(percentageYoung);
         analysisPatientAgeVoList.add(youngVo);
 
         AnalysisPatientAgeVo wrinklyList = new AnalysisPatientAgeVo();
-        Integer countWrinkly =  mapper.selectAnalysisAge(patientAnalysisQueryForm,14,60);
+        Integer countWrinkly =  mapper.selectAnalysisAge(patientAnalysisQueryForm,0,14,60);
         String percentageWrinkly = mapper.calculateAgePercentage(countWrinkly,count);
         wrinklyList.setAgeBracket("14-60");
         wrinklyList.setPercentage(percentageWrinkly);
         analysisPatientAgeVoList.add(wrinklyList);
 
         AnalysisPatientAgeVo oldPeopleList = new AnalysisPatientAgeVo();
-        Integer countOldPeople =  mapper.selectAnalysisAge(patientAnalysisQueryForm,60,999);
+        Integer countOldPeople =  mapper.selectAnalysisAge(patientAnalysisQueryForm,0,60,999);
         String percentageOldPeople = mapper.calculateAgePercentage(countOldPeople,count);
         oldPeopleList.setAgeBracket("60-999");
         oldPeopleList.setPercentage(percentageOldPeople);

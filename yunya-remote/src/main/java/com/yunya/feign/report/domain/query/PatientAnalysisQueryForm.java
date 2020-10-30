@@ -28,11 +28,11 @@ public class PatientAnalysisQueryForm implements Serializable {
 
     @ApiModelProperty(value = "(年-月-日)开始日期yyyy-MM-dd", required = false)
     /** 开始（年-月-日） */
-    private Date startDate;
+    private String startDate;
 
     @ApiModelProperty(value = "(年-月-日)结束日期yyyy-MM-dd", required = false)
     /** 结束（年-月-日） */
-    private Date endDate;
+    private String endDate;
 
     @ApiModelProperty(value = "(年-月):yyyy-MM", required = false)
     /** 年月 */

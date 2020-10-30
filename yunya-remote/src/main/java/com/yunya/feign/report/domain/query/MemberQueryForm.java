@@ -48,14 +48,14 @@ public class MemberQueryForm implements Serializable {
 
     @ApiModelProperty(value = "充值开始日期", required = false)
     /** 充值开始日期 */
-    private Date startDate;
+    private String startDate;
 
     @ApiModelProperty(value = "充值结束日期", required = false)
     /** 充值结束日期 */
-    private Date endDate;
+    private String endDate;
 
-    @ApiModelProperty(value = "充值方式", required = false)
-    /** 充值方式 */
-    private List<Integer> rechargeMethods;
+    @ApiModelProperty(value = "会员级别", required = false)
+    /** 会员级别 */
+    private List<Integer> memberLevelIds;
 
 }

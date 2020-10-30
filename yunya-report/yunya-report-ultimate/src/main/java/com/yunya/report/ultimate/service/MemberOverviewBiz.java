@@ -50,8 +50,6 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
-        form.setStartDate(memberOccurLogBiz.getStartDateTime(form.getStartDate()));
-        form.setEndDate(memberOccurLogBiz.getEndDateTime(form.getEndDate()));
         List<BasePatientMemberOverviewVo> basePatientMemberOverviewVoList = mapper.selectMemberOverviewList(form,patientIds);
         return basePatientMemberOverviewVoList;
     }
@@ -72,10 +70,10 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
                 sumAmount = sumAmount +  baseMemberOverviewVo.getAmount();
             }
             if (baseMemberOverviewVo.getPrincipalAmount().compareTo(new BigDecimal(0)) > 0){
-                sumPrincipalAmount.add(baseMemberOverviewVo.getPrincipalAmount());
+                sumPrincipalAmount = sumPrincipalAmount.add(baseMemberOverviewVo.getPrincipalAmount());
             }
             if (baseMemberOverviewVo.getBonusAmount().compareTo(new BigDecimal(0)) > 0){
-                sumBonusAmount.add(baseMemberOverviewVo.getBonusAmount());
+                sumBonusAmount =  sumBonusAmount.add(baseMemberOverviewVo.getBonusAmount());
             }
         };
         map.put("baseMemberOverviewVoList",baseMemberOverviewVos);

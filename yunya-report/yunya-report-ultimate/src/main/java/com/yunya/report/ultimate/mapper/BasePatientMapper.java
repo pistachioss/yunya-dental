@@ -36,7 +36,7 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
      * @param patientAnalysisQueryForm 来源类型查询条件
      * @return Integer
      */
-    Integer selectCountOriginType(@Param("from") PatientAnalysisQueryForm patientAnalysisQueryForm);
+    Integer selectCountOriginType(@Param("form") PatientAnalysisQueryForm patientAnalysisQueryForm);
 
     /**
      * 查询来患者源类型占比
@@ -44,7 +44,7 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
      * @param countOriginType  来源总数量
      * @return List<PatientOriginAnalysisVo>
      */
-    List<AnalysisPatientOriginVo> analysis(@Param("from") PatientAnalysisQueryForm patientAnalysisQueryForm, @Param("countOriginType") Integer countOriginType);
+    List<AnalysisPatientOriginVo> analysis(@Param("form") PatientAnalysisQueryForm patientAnalysisQueryForm, @Param("countOriginType") Integer countOriginType);
 
     /**
      * 查询性别总数量
@@ -71,11 +71,12 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
     /**
      * 根据条件查询 年龄段患者数量
      * @param patientAnalysisQueryForm 查询条件
-     * @param ageOne 最小时间段年龄
-     * @param ageTwo 最大时间段年龄
+     * @param ageOne <=14
+     * @param ageTwo >=14 <=60
+     * @param ageThree >=60 <=999
      * @return Integer
      */
-    Integer selectAnalysisAge(@Param("form") PatientAnalysisQueryForm patientAnalysisQueryForm, @Param("ageOne") int ageOne, @Param("ageTwo") int ageTwo);
+    Integer selectAnalysisAge(@Param("form") PatientAnalysisQueryForm patientAnalysisQueryForm, @Param("ageOne") int ageOne, @Param("ageTwo") int ageTwo,@Param("ageThree") int ageThree);
 
     /**
      * 计算百分比

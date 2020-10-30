@@ -44,12 +44,12 @@
         </if>
 
         <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-          and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &gt; DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
+          and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
           and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
         </if>
 
         <if test="form.registeredDentistIds != null and form.registeredDentistIds.size() > 0 ">
-          AND bp.registered_dentist_id in
+          AND btpr.registered_dentist_id in
           <foreach collection="form.registeredDentistIds" item="registeredDentistId" index="index" open="(" close=")" separator=",">
             #{registeredDentistId}
           </foreach>
@@ -63,7 +63,7 @@
         </if>
 
       </where>
-      group by bb.order_date orderDate asc
+      group by bb.order_date asc
     </select>
 
     <!-- 根据条件查询开单记录列表 -->

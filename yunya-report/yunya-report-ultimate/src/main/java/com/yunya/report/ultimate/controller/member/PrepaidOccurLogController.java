@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.controller.member;
 
 import com.yunya.feign.report.domain.query.MemberQueryForm;
+import com.yunya.feign.report.domain.query.PrepaidQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
@@ -45,13 +46,13 @@ public class PrepaidOccurLogController {
 
     /**
      * 查询预付款充值列表
-     * @param memberQueryForm 预付款卡充值form
+     * @param prepaidQueryForm 预付款卡充值form
      * @return List<MemberRechargeLogBizVo>
      */
     @ApiOperation("查询预付款充值列表")
     @PostMapping("/recharge/list")
-    public ResponseResult<List<BasePrepaidRechargeLogVo>> prepaidRechargeList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
-        List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVos = memberOccurLogBiz.prepaidRechargeList(memberQueryForm);
+    public ResponseResult<List<BasePrepaidRechargeLogVo>> prepaidRechargeList(@RequestBody PrepaidQueryForm prepaidQueryForm) throws ParseException {
+        List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVos = memberOccurLogBiz.prepaidRechargeList(prepaidQueryForm);
         if (StringHelper.isNotEmpty(basePrepaidRechargeLogVos)){
             return ResponseUtil.success(basePrepaidRechargeLogVos);
         }
@@ -60,13 +61,13 @@ public class PrepaidOccurLogController {
 
     /**
      * 查询预付款消费列表
-     * @param memberQueryForm 预付款卡消费form
+     * @param prepaidQueryForm 预付款卡消费form
      * @return List<MemberExpendLogBizVo>
      */
     @ApiOperation("查询预付款消费列表")
     @PostMapping("/expend/list")
-    public ResponseResult<List<BasePrepaidExpendLogVo>> prepaidExpendList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException{
-        List<BasePrepaidExpendLogVo> basePrepaidExpendLogVos = memberOccurLogBiz.prepaidExpendList(memberQueryForm);
+    public ResponseResult<List<BasePrepaidExpendLogVo>> prepaidExpendList(@RequestBody PrepaidQueryForm prepaidQueryForm) throws ParseException{
+        List<BasePrepaidExpendLogVo> basePrepaidExpendLogVos = memberOccurLogBiz.prepaidExpendList(prepaidQueryForm);
         if (StringHelper.isNotEmpty(basePrepaidExpendLogVos)){
             return ResponseUtil.success(basePrepaidExpendLogVos);
         }
@@ -76,14 +77,14 @@ public class PrepaidOccurLogController {
 
     /**
      * 查询预付款退费列表
-     * @param memberQueryForm 预付款卡退费form
+     * @param prepaidQueryForm 预付款卡退费form
      * @return List<MemberRechargeLogBizVo>
      * @throws ParseException
      */
     @ApiOperation("查询预付款退费列表")
     @PostMapping("/return/list")
-    public ResponseResult<List<BasePrepaidReturnLogVo>> prepaidReturnList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
-        List<BasePrepaidReturnLogVo> basePrepaidReturnLogVos = memberOccurLogBiz.prepaidReturnList(memberQueryForm);
+    public ResponseResult<List<BasePrepaidReturnLogVo>> prepaidReturnList(@RequestBody PrepaidQueryForm prepaidQueryForm) throws ParseException {
+        List<BasePrepaidReturnLogVo> basePrepaidReturnLogVos = memberOccurLogBiz.prepaidReturnList(prepaidQueryForm);
         if (StringHelper.isNotEmpty(basePrepaidReturnLogVos)){
             return ResponseUtil.success(basePrepaidReturnLogVos);
         }

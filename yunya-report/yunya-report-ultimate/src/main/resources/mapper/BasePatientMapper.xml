@@ -85,6 +85,7 @@
     select count(bp.origin_type)
     from base_patient bp
     <where>
+       bp.origin_type_name is not null
       <if test="form.orgId != null and form.orgId != ''">
         AND bp.org_id = #{form.orgId}
       </if>
@@ -98,7 +99,7 @@
       </if>
 
       <if test="form.year != null and form.year != ''">
-        AND year(patient_crt_time) =#{form.year}
+        AND year(bp.patient_crt_time) =#{form.year}
       </if>
     </where>
 
@@ -112,6 +113,7 @@
       concat( format(count(bp.origin_type) / ${countOriginType} * 100, 2 ),'%') percentage
     from base_patient bp
     <where>
+      bp.origin_type_name is not null
       <if test="form.orgId != null and form.orgId != ''">
         AND bp.org_id = #{form.orgId}
       </if>
@@ -218,7 +220,11 @@
       </if>
 
       <if test="ageTwo != null and ageTwo != '' and ageTwo > 0">
-         AND ( DATE_FORMAT(now(),'%Y-%m') - DATE_FORMAT(bp.birthday,'%Y-%m') ) &gt; #{ageTwo}
+         AND ( DATE_FORMAT(now(),'%Y-%m') - DATE_FORMAT(bp.birthday,'%Y-%m') ) &gt;= #{ageTwo}
+      </if>
+
+      <if test="ageThree != null and ageThree != '' and ageThree > 0">
+        AND ( DATE_FORMAT(now(),'%Y-%m') - DATE_FORMAT(bp.birthday,'%Y-%m') ) &lt;= #{ageThree}
       </if>
 
       <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">

@@ -56,33 +56,33 @@
         JOIN base_patient bpt ON bpmol.patient_id = bpt.patient_Id
         JOIN base_patient_member bpm ON bpm.patient_id = bpt.patient_Id
     <where>
-        bpmol.type = 0
-        AND bpmol.occur_type = 1
-      <if test="form.orgId != null and form.orgId != ''">
-        AND bpmol.org_id = #{form.orgId}
+      bpmol.type = 0
+      AND bpmol.occur_type = 1
+      <if test="form.orgId != null">
+          AND bpmol.org_id = #{form.orgId}
       </if>
 
       <if test="form.cardNumber != null and form.cardNumber != ''">
-        AND bpm.card_number = #{form.cardNumber}
+          AND bpm.card_number = #{form.cardNumber}
       </if>
 
       <if test="patientIds != null and patientIds.size() > 0 ">
-        AND bpmol.patient_id in
-        <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-          #{ids}
-        </foreach>
+          AND bpmol.patient_id in
+          <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+              #{ids}
+          </foreach>
       </if>
 
-     <if test="form.memberLevelIds != null and memberLevelIds.size() > 0 ">
-         AND bpm.member_level_id in
-        <foreach collection="memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
-            #{levelIds}
-        </foreach>
-     </if>
+      <if test="form.memberLevelIds != null ">
+          AND bpm.member_level_id in
+          <foreach collection="form.memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
+              #{levelIds}
+          </foreach>
+      </if>
 
       <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-        AND bpmol.occur_date &gt;= #{startDate} 
-        AND bpmol.occur_date &lt;= #{endDate}
+          <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
+          <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
       </if>
     </where>
       group by bpmol.occur_date desc
@@ -122,20 +122,23 @@
               AND bpm.card_number = #{form.cardNumber}
           </if>
 
-          <if test="patientIds != null and patientIds.size() > 0 ">
+          <if test="patientIds != null">
               AND bpmol.patient_id in
               <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
                   #{ids}
               </foreach>
           </if>
 
-          <if test="form.memberLevelId != null and form.memberLevelId != ''">
-              AND bpm.member_level_id = #{form.memberLevelId}
+          <if test="form.memberLevelIds != null ">
+              AND bpm.member_level_id in
+              <foreach collection="form.memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
+                  #{levelIds}
+              </foreach>
           </if>
 
           <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-              AND bpmol.occur_date &gt;= #{startDate} 
-              AND bpmol.occur_date &lt;= #{endDate}
+              <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
+              <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
           </if>
       </where>
       group by bpmol.occur_date desc
@@ -182,7 +185,7 @@
               </foreach>
           </if>
 
-          <if test="form.memberLevelIds != null and memberLevelIds.size() > 0 ">
+          <if test="form.memberLevelIds != null ">
               AND bpm.member_level_id in
               <foreach collection="memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
                   #{levelIds}
@@ -190,8 +193,8 @@
           </if>
 
           <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-              AND bpmol.occur_date &gt;= #{startDate} 
-              AND bpmol.occur_date &lt;= #{endDate}
+              <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
+              <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
           </if>
       </where>
       group by bpmol.occur_date desc
@@ -230,7 +233,7 @@
                 AND bpmol.org_id = #{form.orgId}
             </if>
 
-            <if test="patientIds != null and form.patientIds.size() > 0 ">
+            <if test="patientIds != null">
                 AND bpmol.patient_id in
                 <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
                     #{ids}
@@ -242,11 +245,11 @@
             </if>
 
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND bpmol.occur_date &gt;= #{startDate} 
-                AND bpmol.occur_date &lt;= #{endDate}
+                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
+                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
             </if>
 
-            <if test="form.rechargeMethods != null and rechargeMethods.size() > 0 ">
+            <if test="form.rechargeMethods != null and form.rechargeMethods.size() > 0 ">
                 AND bpmol.recharge_method in
                 <foreach collection="form.rechargeMethods" item="rechargeMethod" index="index" open="(" close=")" separator=",">
                     #{rechargeMethod}
@@ -298,8 +301,8 @@
             </if>
 
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND bpmol.occur_date &gt;= #{startDate} 
-                AND bpmol.occur_date &lt;= #{endDate}
+                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
+                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
             </if>
 
         </where>
@@ -346,8 +349,8 @@
             </if>
 
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                AND bpmol.occur_date &gt;= #{startDate} 
-                AND bpmol.occur_date &lt;= #{endDate}
+                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
+                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
             </if>
 
         </where>
