@@ -1,19 +1,109 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillDetailMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBillDetail" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="bill_detail_id" property="billDetailId" jdbcType="INTEGER" />
-    <result column="bill_id" property="billId" jdbcType="INTEGER" />
-    <result column="discount_amount" property="discountAmount" jdbcType="DECIMAL" />
-    <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL" />
-    <result column="executor_id" property="executorId" jdbcType="INTEGER" />
-    <result column="item_id" property="itemId" jdbcType="INTEGER" />
-    <result column="item_type" property="itemType" jdbcType="TINYINT" />
-    <result column="quantity" property="quantity" jdbcType="INTEGER" />
-    <result column="price" property="price" jdbcType="DECIMAL" />
-    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
-  </resultMap>
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillDetailMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBillDetail">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="bill_detail_id" property="billDetailId" jdbcType="INTEGER"/>
+        <result column="bill_id" property="billId" jdbcType="INTEGER"/>
+        <result column="discount_amount" property="discountAmount" jdbcType="DECIMAL"/>
+        <result column="coupon_workload" property="couponWorkload" jdbcType="DECIMAL"/>
+        <result column="executor_id" property="executorId" jdbcType="INTEGER"/>
+        <result column="item_id" property="itemId" jdbcType="INTEGER"/>
+        <result column="item_type" property="itemType" jdbcType="TINYINT"/>
+        <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        <result column="price" property="price" jdbcType="DECIMAL"/>
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+    </resultMap>
+    <!-- 根据条件查询账单项目收入明细列表 -->
+    <select id="selectBillDetailIncomeList"
+            resultType="com.yunya.feign.report.domain.vo.BillTariffIncomeDetailVO">
+        SELECT
+        bdi.billDetailId,
+        bdi.itemId,
+        bdi.itemNum,
+        bdi.itemName,
+        bdi.itemType,
+        bdi.categoryId,
+        bdi.categoryName,
+        bdi.billNum,
+        DATE_FORMAT( bdi.orderDate, '%Y-%m-%d' ),
+        bdi.patientId,
+        bdi.patientName,
+        bdi.mobile,
+        bdi.gender,
+        bdi.executorId,
+        bdi.executorName,
+        bdi.price,
+        bdi.quantity,
+        bdi.totalOriginalAmount,
+        bdi.discountAmount,
+        bdi.totalOriginalAmount - bdi.discountAmount AS actualAmount
+        FROM
+        (
+        SELECT
+        bbd.org_id AS orgId,
+        bp.billId,
+        bbd.bill_detail_id AS billDetailId,
+        bbd.item_id AS itemId,
+        bti.item_num AS itemNum,
+        bti.item_name AS itemName,
+        bbd.item_type AS itemType,
+        bti.category_id AS categoryId,
+        bti.category_name AS categoryName,
+        bp.billNum,
+        bp.orderDate,
+        bp.patientId,
+        bp.patientName,
+        bp.pinyinName,
+        bp.mobile,
+        bp.gender,
+        bbd.executor_id AS executorId,
+        be.employee_name AS executorName,
+        bbd.price,
+        bbd.quantity,
+        bbd.price * bbd.quantity AS totalOriginalAmount,
+        bbd.discount_amount AS discountAmount
+        FROM
+        base_bill_detail bbd
+        LEFT JOIN base_tariff_info bti ON bbd.item_id = bti.item_id
+        AND bti.item_type = bti.item_type
+        LEFT JOIN (
+        SELECT
+        bb.bill_id AS billId,
+        bb.order_date AS orderDate,
+        bb.patient_id AS patientId,
+        bb.bill_num AS billNum,
+        bp.`name` AS patientName,
+        bp.gender AS gender,
+        bp.mobile AS mobile,
+        bp.pinyin_name AS pinyinName
+        FROM
+        base_bill bb
+        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        ) bp ON bbd.bill_id = bp.billId
+        LEFT JOIN base_employee be ON bbd.executor_id = be.user_id
+        ) bdi
+        <where>
+            <if test="query.orgId != null">
+                AND bdi.orgId = #{query.orgId}
+            </if>
+            <if test="query.orderDate != null and query.orderDate != ''">
+                AND DATE_FORMAT( bdi.orderDate, '%Y-%m' ) = #{query.orderDate}
+            </if>
+            <if test="query.keyWord != null and query.keyWord != ''">
+                AND concat(ifnull(bdi.patientName, ''), ifnull(bdi.pinyinName, ''), ifnull(bdi.mobile, '')) Like
+                concat('%', #{query.keyWord}, '%')
+            </if>
+        </where>
+        ORDER BY
+        bdi.orderDate DESC,
+        bdi.billId,
+        bdi.billDetailId
+    </select>
+    <!-- 根据条件查询员工工作量列表 -->
+    <select id="selectEmployeeWorkloadList" resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
+
+    </select>
 </mapper>
