@@ -3,7 +3,9 @@ package com.yunya.middletable.handle;
 import com.rabbitmq.client.Channel;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.middletable.service.BaseBenefitServiceImpl;
+import com.yunya.middletable.service.BaseEmployeeBiz;
 import com.yunya.middletable.service.BaseOrganizationBiz;
+import com.yunya.middletable.service.BaseUserPostBiz;
 import com.yunya.middletable.service.patient.BasePatientBiz;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -14,9 +16,15 @@ import org.springframework.stereotype.Component;
 @Component
 @RabbitListener(queues = {"DirectQueue_MiddleSingle"})
 public class ReceiverMessageController {
-
+  /** 组织 */
   @Autowired private BaseOrganizationBiz organizationBiz;
+  /** 员工 */
+  @Autowired private BaseEmployeeBiz employeeBiz;
+  /** 员工可登录组织 */
+  @Autowired private BaseUserPostBiz userPostBiz;
+  /** 患者 */
   @Autowired private BasePatientBiz basePatientBiz;
+
   @Autowired private BaseBenefitServiceImpl baseBenefitService;
 
   @RabbitHandler
@@ -30,6 +38,12 @@ public class ReceiverMessageController {
       switch (messageModel.getMsgCategoryEnum()) {
         case BaseOrganization:
           organizationBiz.operateOrganization(messageModel);
+          break;
+        case BaseEmployee:
+          employeeBiz.operateEmployee(messageModel);
+          break;
+        case BaseUserPost:
+          userPostBiz.operateUserPost(messageModel);
           break;
         case BasePatient:
           basePatientBiz.operate(messageModel);
