@@ -10,6 +10,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.RegisteredBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,9 +43,9 @@ public class RegisteredController {
   @CurrentUser
   @ApiOperation("新增患者挂号")
   @PostMapping("/save")
-  public ResponseResult add(@RequestBody @Validated RegisteredModel model) {
+  public ResponseResult<T> add(@RequestBody @Validated RegisteredModel model) {
     registeredBiz.save(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -55,9 +56,9 @@ public class RegisteredController {
    */
   @ApiOperation("根据挂号ID取消患者挂号")
   @GetMapping("/cancel/{id}")
-  public ResponseResult cancel(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<T> cancel(@PathVariable(value = "id") Integer id) {
     registeredBiz.cancelRegistered(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**

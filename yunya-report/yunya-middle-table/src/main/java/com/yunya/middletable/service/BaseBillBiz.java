@@ -93,6 +93,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           }
         } else {
           mapper.deleteByPrimaryKey(dataId);
+          baseBillPayMapper.deleteByBillId(dataId);
+          baseBillDetailMapper.deleteByBillId(dataId);
         }
         break;
       case 2:
@@ -168,9 +170,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     payRecord.setOrderRecordId(orderRecordId);
     List<BillPayRecord> billPayRecords = billPayRecordMapper.select(payRecord);
     if (StringHelper.isNotEmpty(billPayRecords)) {
+      BaseBillPay baseBillPay = new BaseBillPay();
       billPayRecords.forEach(
           billPayRecord -> {
-            BaseBillPay baseBillPay = new BaseBillPay();
             generateBaseBillPayValue(billPayRecord, baseBillPay);
             baseBillPayMapper.deleteByPrimaryKey(billPayRecord.getId());
             baseBillPayMapper.insertSelective(baseBillPay);

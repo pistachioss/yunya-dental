@@ -1,6 +1,7 @@
 package com.yunya.models.report;
 
 import javax.persistence.Column;
+import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 
@@ -9,6 +10,7 @@ public class BaseRefundDetail {
     /**
      * 退费明细ID
      */
+    @Id
     @Column(name = "refund_detail_id")
     private Integer refundDetailId;
 
