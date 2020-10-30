@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
+import com.yunya.feign.report.domain.vo.RechargeVo;
 import com.yunya.models.report.BaseCoupon;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -27,4 +28,8 @@ public interface BaseCouponMapper extends Mapper<BaseCoupon> {
 	 */
 	List<CouponUsedVo> listCouponUsedByParam(@Param("couponName") String couponName, @Param("couponCategoryIds") List<Integer> couponCategoryIds,
 	                                         @Param("couponTypes") List<Integer> couponTypes);
+	/**
+	 * 查询产品使用统计
+	 */
+	List<RechargeVo> listRechargeByParam(@Param("couponName") String couponName, @Param("couponCategoryIds") List<Integer> couponCategoryIds);
 }

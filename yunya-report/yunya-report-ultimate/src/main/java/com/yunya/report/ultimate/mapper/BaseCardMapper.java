@@ -1,11 +1,9 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
-import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
-import com.yunya.feign.report.domain.vo.CardStatisticsVo;
-import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
 import com.yunya.models.report.BaseCard;
 import org.apache.ibatis.annotations.Param;
@@ -55,20 +53,4 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
 	                                                @Param("allocateOrgIds") List<Integer> allocateOrgIds, @Param("soldTypes") List<Integer> soldTypes,
 	                                                @Param("soldStartDate") LocalDate soldStartDate, @Param("soldEndDate") LocalDate soldEndDate,
 	                                                @Param("soldWays") List<Integer> soldWays, @Param("chargeStatus")List<Integer> chargeStatus);
-	/**
-	 * 产品使用统计-时间维度
-	 */
-	List<CardUsedStatisticsVo> listCardUsedByParam(@Param("couponName") String couponName, @Param("billNumber") String billNumber, @Param("cardNumber") String cardNumber,
-	                                               @Param("patientKeyWord") String patientKeyWord, @Param("orgIds") List<Integer> orgIds,
-	                                               @Param("dentistIds") List<Integer> dentistIds, @Param("usedStartDate") LocalDate usedStartDate,
-	                                               @Param("usedEndDate") LocalDate usedEndDate, @Param("soldChannelIds") List<Integer> soldChannelIds,
-	                                               @Param("couponTypes") List<Integer> couponTypes);
-	/**
-	 * 产品使用统计-产品维度-使用统计
-	 */
-	List<CouponUsedDetailVo> listCouponDetailUsedByParam(@Param("cardNumber") String cardNumber, @Param("patientKeyWord") String patientKeyWord,
-	                                               @Param("billNumber") String billNumber, @Param("orgIds") List<Integer> orgIds,
-	                                               @Param("dentistIds") List<Integer> dentistIds, @Param("usedStartDate") LocalDate usedStartDate,
-	                                               @Param("usedEndDate") LocalDate usedEndDate, @Param("soldChannelIds") List<Integer> soldChannelIds,
-	                                               @Param("couponId") Integer couponId);
 }

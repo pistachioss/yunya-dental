@@ -23,6 +23,7 @@ import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.report.ultimate.mapper.BaseBenefitMapper;
 import com.yunya.report.ultimate.mapper.BaseCardMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponItemMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponMapper;
@@ -44,6 +45,8 @@ public class DiscountBiz {
 	private BaseCardMapper cardMapper;
 	@Resource
 	private BaseCouponItemMapper itemMapper;
+	@Resource
+	private BaseBenefitMapper benefitMapper;
 
 	/**
 	 * 产品售出激活统计
@@ -150,7 +153,7 @@ public class DiscountBiz {
 	 */
 	public PageInfo<CardUsedStatisticsVo> getCardUsedPage(CardUsedStatisticsQuery query) {
 		Page<CardUsedStatisticsVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-		cardMapper.listCardUsedByParam(query.getCouponName(), query.getBillNumber(), query.getCardNumber(),
+		benefitMapper.listCardUsedByParam(query.getCouponName(), query.getBillNumber(), query.getCardNumber(),
 				query.getPatientKeyWord(), query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
 				query.getUsedEndDate(), query.getSoldChannelIds(), query.getCouponTypes());
 		return new PageInfo<>(page);
@@ -163,7 +166,7 @@ public class DiscountBiz {
 	 */
 	public PageInfo<CouponUsedDetailVo> getCouponDetailUsedPage(Integer couponId, CouponUsedDetailQuery query) {
 		Page<CouponUsedDetailVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-		cardMapper.listCouponDetailUsedByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getBillNumber(),
+		benefitMapper.listCouponDetailUsedByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getBillNumber(),
 				query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
 				query.getUsedEndDate(), query.getSoldChannelIds(), couponId);
 		return new PageInfo<>(page);
