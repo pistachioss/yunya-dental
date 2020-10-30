@@ -11,6 +11,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -25,6 +26,7 @@ import java.util.List;
  * @since: 1.0.0
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class BaseTreatmentProcessBiz
     extends BaseBiz<BaseTreatmentProcessMapper, BaseTreatmentProcess> {
 
@@ -68,5 +70,19 @@ public class BaseTreatmentProcessBiz
     }
     List<TreatmentMatchingRecordVO> resultList = mapper.selectTreatmentMatchingRecord(query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出配诊记录列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportTreatmentMatchingRecord(
+      HttpServletResponse response, TreatmentMatchingRecordQuery query) throws IOException {
+    List<TreatmentMatchingRecordVO> list = mapper.selectTreatmentMatchingRecord(query);
+    ExcelUtil<TreatmentMatchingRecordVO> excelUtil =
+        new ExcelUtil<>(TreatmentMatchingRecordVO.class);
+    excelUtil.exportExcel(response, list, "配诊记录表");
   }
 }

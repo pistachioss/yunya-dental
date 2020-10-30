@@ -123,6 +123,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (null != dentistSchedulingConflict){
             return dentistSchedulingConflict;
         }
+        // 检测预约分解参数是否正常
+        List<AppointmentSplitBaseInfo> splits = this.checkAppointSplitField(form.getSplitList());
+        if (!StringHelper.isEmpty(splits)) {
+            return ResponseUtil.fail(AppointmentError.APPOINT_SPLIT_PARAM_ERR.getCode(),
+                    AppointmentError.APPOINT_SPLIT_PARAM_ERR.getMessage(),null);
+        }
         // 检查当前预约是否冲突
         ResponseResult appointConflictResult = this.checkConflict(form);
         // 如果当前的预约没有冲突则添加新预约
@@ -170,6 +176,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return  ResponseResult
      */
     public ResponseResult continueAddAppointment(AppointmentBaseModel form) {
+        // 检测预约分解参数是否正常
+        List<AppointmentSplitBaseInfo> splits = this.checkAppointSplitField(form.getSplitList());
+        if (!StringHelper.isEmpty(splits)) {
+            return ResponseUtil.fail(AppointmentError.APPOINT_SPLIT_PARAM_ERR.getCode(),
+                    AppointmentError.APPOINT_SPLIT_PARAM_ERR.getMessage(),null);
+        }
         // 将Form转为Entity
         Appointment build = transferFormToEntity(form);
         int result = mapper.insertAppointment(build);
@@ -324,6 +336,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (dentistSchedulingConflict != null){
             return dentistSchedulingConflict;
         }
+        // 检测预约分解参数是否正常
+        List<AppointmentSplitBaseInfo> splits = this.checkAppointSplitField(form.getSplitList());
+        if (!StringHelper.isEmpty(splits)) {
+            return ResponseUtil.fail(AppointmentError.APPOINT_SPLIT_PARAM_ERR.getCode(),
+                    AppointmentError.APPOINT_SPLIT_PARAM_ERR.getMessage(),null);
+        }
         // 检查预约冲突（只检查医生预约冲突、设备预约冲突）
         ResponseResult responseResult = editCheckConflict(form.getId(), form);
         if (null == responseResult) {
@@ -333,6 +351,20 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return responseResult;
     }
 
+    /**
+     * 检测预约分解参数是否正常
+     * @param splitList 预约分解列表
+     * @return 如果分解参数正常返回null，否则返回错误的分解信息
+     */
+    private List<AppointmentSplitBaseInfo> checkAppointSplitField(List<AppointmentSplitBaseInfo> splitList) {
+        if (!StringHelper.isEmpty(splitList)) {
+            return splitList.stream().filter(appointmentSplitBaseInfo -> appointmentSplitBaseInfo.getAssistantId() == null ||
+                     appointmentSplitBaseInfo.getSplitEndTime() == null ||
+                     appointmentSplitBaseInfo.getSplitEndTime() == null).collect(Collectors.toList());
+        }
+        return null;
+    }
+
 
     /**
      * 编辑预约（有冲突继续保存）
@@ -340,6 +372,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return ResponseResult
      */
     public ResponseResult continueUpdateAppointment(AppointmentBaseForm appointmentForm) {
+        // 检测预约分解参数是否正常
+        List<AppointmentSplitBaseInfo> splits = this.checkAppointSplitField(appointmentForm.getSplitList());
+        if (!StringHelper.isEmpty(splits)) {
+            return ResponseUtil.fail(AppointmentError.APPOINT_SPLIT_PARAM_ERR.getCode(),
+                    AppointmentError.APPOINT_SPLIT_PARAM_ERR.getMessage(),null);
+        }
         Appointment appointEntity = transferFormToEntity(appointmentForm);
         appointEntity.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointEntity.setUpdName(BaseContextHandler.getName());
@@ -366,7 +404,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 保存预约更新被修改的日期、医生
         appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
         // 修改时长分解
-        List<AppointmentSplitUpdateBaseInfo> splitList = appointmentForm.getSplitList();
+        List<AppointmentSplitBaseInfo> splitList = appointmentForm.getSplitList();
         if (splitList != null && !splitList.isEmpty()){
             AppointmentSplitForm splitForm = new AppointmentSplitForm();
             splitForm.setAppointDate(appointmentForm.getAppointDate());
@@ -487,13 +525,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 获取可预约的医生
         EnableEmployeeRes enableEmployeeList = this.clinicEmployeeConfigFeign.getEnableEmployeeList(orgId);
         List<EnableChooseEmployeeRes> enableAppointList = enableEmployeeList.getEnableAppointList();
-        Integer[] enableDentistIds = new Integer[enableAppointList.size()];
         if (!StringHelper.isEmpty(enableAppointList)) {
+            Integer[] enableDentistIds = new Integer[enableAppointList.size()];
             for (int index = 0; index < enableAppointList.size();index++) {
                 enableDentistIds[index] = enableAppointList.get(index).getEmployeeId();
             }
+            return enableDentistIds;
         }
-        return enableDentistIds;
+        throw new ClientServiceException(AppointmentError.CLINIC_NOT_EXIST_ENABLE_APPOINT_DENTIST.getMessage(),
+                AppointmentError.CLINIC_NOT_EXIST_ENABLE_APPOINT_DENTIST.getCode());
     }
     /**
      * 组合预约中心预约信息（包含预约医生，护士的排班以及预约人数）
@@ -1278,7 +1318,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Integer deviceId = appointmentForm.getClinicDeviceItemId();
         Integer assistantId = appointmentForm.getAssistantId();
         // 预约分解列表
-        List<AppointmentSplitUpdateBaseInfo> splitList = appointmentForm.getSplitList();
+        List<AppointmentSplitBaseInfo> splitList = appointmentForm.getSplitList();
         Date appointDate = appointmentForm.getAppointDate();
         // 转换字符串预约时间为Date类型
         String appointTimeStr = appointmentForm.getAppointTime();
@@ -2078,7 +2118,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (!StringHelper.isEmpty(query.getDentistName())) {
             appointPatientRecord = appointPatientRecord.stream().filter(
                     appointPatientRecordVo -> appointPatientRecordVo
-                            .getDentistName().contains(query.getDentistName())).collect(Collectors.toList());
+                            .getDentistName().equals(query.getDentistName())).collect(Collectors.toList());
         }
         return ResponseUtil.success(new PageInfo<>(appointPatientRecord));
     }

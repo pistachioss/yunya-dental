@@ -64,6 +64,7 @@
                 bb.order_amount AS orderAmount,
                 bb.privilege_amount AS privilegeAmount,
                 bb.actual_amount AS actualAmount,
+                bbp.org_id as orgId,
                 bbp.received_amount AS receivedAmount,
                 bbp.still_owe_amount AS stillOweAmount,
                 bb.debt_amount AS remainingOweAmount,
@@ -91,28 +92,28 @@
             ) brp
         <where>
             <if test="query.orgId != null">
-                and bor.orgId = #{query.orgId}
+                and brp.orgId = #{query.orgId}
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and bor.billNum = #{query.billNum}
+                and brp.billNum = #{query.billNum}
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(bor.patientName, ''), ifnull(bor.pinyinName, ''), ifnull(bor.mobile, '')) like concat('%', #{query.keyWord}, '%')
+                and concat(ifnull(brp.patientName, ''), ifnull(brp.pinyinName, ''), ifnull(brp.mobile, '')) like concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.tollStartDate != null and query.tollStartDate != ''">
-                and bor.toolDate &gt;= #{query.tollStartDate}
+                and brp.toolDate &gt;= #{query.tollStartDate}
             </if>
             <if test="query.tollEndDate != null and query.tollEndDate != ''">
-                and bor.toolDate &lt;= #{query.orderEndDate}
+                and brp.toolDate &lt;= #{query.orderEndDate}
             </if>
             <if test="query.orderStartDate != null and query.orderStartDate != ''">
-                and bor.orderDate &gt;= #{query.orderStartDate}
+                and brp.orderDate &gt;= #{query.orderStartDate}
             </if>
             <if test="query.orderEndDate != null and query.orderEndDate != ''">
-                and bor.orderDate &lt;= #{query.orderEndDate}
+                and brp.orderDate &lt;= #{query.orderEndDate}
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
-                and bor.regDentistId in
+                and brp.regDentistId in
                 <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>

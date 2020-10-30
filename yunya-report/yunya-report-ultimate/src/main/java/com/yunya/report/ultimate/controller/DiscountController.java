@@ -3,18 +3,22 @@ package com.yunya.report.ultimate.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CardStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
 import com.yunya.feign.report.domain.query.CouponUsedQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
 import com.yunya.framework.common.model.ResponseResult;
@@ -88,9 +92,22 @@ public class DiscountController {
 		return ResponseUtil.success(discountBiz.getCouponActivePage(couponId, query));
 	}
 
-	@ApiOperation(value = "产品使用统计")
+	@ApiOperation(value = "产品使用统计-产品维度")
 	@PostMapping("/coupon/used/statistics")
 	public ResponseResult<PageInfo<CouponUsedVo>> getCouponUsed(@Valid @RequestBody CouponUsedQuery query) {
 		return ResponseUtil.success(discountBiz.getCouponUsedPage(query));
+	}
+
+	@ApiOperation(value = "产品使用统计-时间维度")
+	@PostMapping("/card/used/statistics")
+	public ResponseResult<PageInfo<CardUsedStatisticsVo>> getCouponUsed(@Valid @RequestBody CardUsedStatisticsQuery query) {
+		return ResponseUtil.success(discountBiz.getCardUsedPage(query));
+	}
+
+	@ApiOperation(value = "产品使用统计-产品维度-使用统计")
+	@PostMapping("{couponId}/card/used/statistics")
+	public ResponseResult<PageInfo<CouponUsedDetailVo>> getCouponUsed(@PathVariable(value = "couponId") Integer couponId,
+	                                                                  @Valid @RequestBody CouponUsedDetailQuery query) {
+		return ResponseUtil.success(discountBiz.getCouponDetailUsedPage(couponId, query));
 	}
 }

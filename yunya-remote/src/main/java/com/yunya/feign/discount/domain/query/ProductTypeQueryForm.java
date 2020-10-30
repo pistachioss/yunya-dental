@@ -39,4 +39,7 @@ public class ProductTypeQueryForm implements Serializable {
   /** 是否启用 */
   @ApiModelProperty("是否启用")
   private Boolean inservice;
+
+  @ApiModelProperty("产品类型")
+  private Integer type;
 }

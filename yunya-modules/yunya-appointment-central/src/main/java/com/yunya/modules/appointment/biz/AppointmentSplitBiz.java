@@ -85,7 +85,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @return 修改成功的记录条数
      */
     public Integer updateAppointSplit(AppointmentSplitForm form){
-        List<AppointmentSplitUpdateBaseInfo> splitList = form.getSplitList();
+        List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
         if (StringHelper.isEmpty(splitList)){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
@@ -207,7 +207,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         }
 
         if (!appointDuration.equals(sumMinute)){
-            throw new ClientServiceException("预约分解时长错误，分解后的时长必须和预约总时长相等！请重新分解。", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            throw new ClientServiceException("预约分解时长错误，分解后的时长必须和预约总时长相等！请重新分解", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         return splits;
     }

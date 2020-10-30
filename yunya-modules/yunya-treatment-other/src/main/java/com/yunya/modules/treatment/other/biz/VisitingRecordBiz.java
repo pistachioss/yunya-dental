@@ -246,7 +246,18 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 visitingRecordVoList.add(recordVo);
             }
             // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
-            searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList,query.getSearch(),query.getMedicalNumber(),query.getDistentName());
+            String search = query.getSearch();
+            String medicalNumber = query.getMedicalNumber();
+            String distentName = query.getDistentName();
+            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
+                // 排序
+                searchVisitingRecordVo = this.sort(visitingRecordVoList);
+            } else {
+                // 按患者姓名、手机号、病历号、医生名字检索
+                searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList, search, medicalNumber, distentName);
+                // 将检索结果列表排序
+                searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
+            }
         }
         if (StringHelper.isEmpty(searchVisitingRecordVo)) {
             searchVisitingRecordVo = new ArrayList<>();
@@ -449,8 +460,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             return ResponseUtil.success();
         }
         return ResponseUtil.success("随访状态更新失败");
-
-
     }
 
     /**
@@ -479,36 +488,42 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return 检索并且排序之后的列表
      */
     private List searchAndOrder(List<VisitingRecordVo> visitingRecordVoList, String searchStr, String medicalNumberStr, String distentNameStr) {
-        List<VisitingRecordVo> searchVisitingRecordVo = null;
         // 匹配姓名
         String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
         // 匹配手机号
         String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
-        if (!StringHelper.isEmpty(searchStr) || !StringHelper.isEmpty(medicalNumberStr)){
-            searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
-                String patientName = visitingRecordVo.getPatientName();
-                String mobile = visitingRecordVo.getMobile();
-                String medicalNumber = visitingRecordVo.getMedicalNumber();
-                boolean result = false;
-                if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)){
-                    result = result | patientName.contains(searchStr);
-                } else if (searchStr.matches(mobileReg) && !StringHelper.isEmpty(mobile)){
-                    result = result | mobile.contains(searchStr);
+        List<VisitingRecordVo> searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
+            String patientName = visitingRecordVo.getPatientName();
+            String mobile = visitingRecordVo.getMobile();
+            String medicalNumber = visitingRecordVo.getMedicalNumber();
+            boolean result = false;
+            if (!StringHelper.isEmpty(searchStr)) {
+                if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
+                    result = patientName.contains(searchStr);
+                } else if (searchStr.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
+                    result = mobile.contains(searchStr);
                 }
-                if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
-                    result = result | medicalNumber.contains(medicalNumberStr);
-                }
-                String distentName = visitingRecordVo.getDentistName();
-                if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
-                    result = result | distentName.contains(distentNameStr);
-                }
-                return result;
-            }).collect(Collectors.toList());
-        } else {
-            searchVisitingRecordVo = visitingRecordVoList;
-        }
+            }
+            if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
+                result = result | medicalNumber.contains(medicalNumberStr);
+            }
+            String distentName = visitingRecordVo.getDentistName();
+            if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
+                result = result | distentName.equals(distentNameStr);
+            }
+            return result;
+        }).collect(Collectors.toList());
+        return searchVisitingRecordVo;
+    }
+
+    /**
+     * 按时间对随访列表进行降序排序
+     * @param visitingRecordVos 随访列表
+     * @return 排序之后的列表
+     */
+    private List<VisitingRecordVo> sort(List<VisitingRecordVo> visitingRecordVos) {
         // 按随访时间排序
-        searchVisitingRecordVo = searchVisitingRecordVo.stream().sorted(
+        return visitingRecordVos.stream().sorted(
                 Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
                     if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
                         return -1;
@@ -517,15 +532,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
                     String[] objSplit2 = obj2.trim().split(":");
                     Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
-                    if (objMinute1 < objMinute2){
-                        return -1;
-                    } else if (objMinute1 > objMinute2){
-                        return 1;
-                    } else {
-                        return 0;
-                    }
+                    return objMinute1.compareTo(objMinute2);
                 })).collect(Collectors.toList());
-        return searchVisitingRecordVo;
     }
 
 
