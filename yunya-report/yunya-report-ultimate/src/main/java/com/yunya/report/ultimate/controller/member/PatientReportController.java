@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.controller.member;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
+import com.yunya.feign.report.domain.vo.AnalysisVo;
 import com.yunya.feign.report.domain.vo.ArrearsVo;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -86,7 +87,7 @@ public class PatientReportController {
 
     @ApiOperation("就诊患者分析")
     @PostMapping("/analysis")
-    public ResponseResult<List<ArrearsVo>> analysis(@RequestBody PatientAnalysisQueryForm patientAnalysisQueryForm){
+    public ResponseResult<AnalysisVo> analysis(@RequestBody PatientAnalysisQueryForm patientAnalysisQueryForm){
         return ResponseUtil.success(patientReportBiz.analysis(patientAnalysisQueryForm));
     }
 

@@ -25,5 +25,5 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
      * @param patientIds 患者id
      * @return List<ArrearsVo>
      */
-    List<ArrearsVo> arrears(ArrearsQueryForm form, List<Integer> patientIds);
+    List<ArrearsVo> arrears(@Param("form") ArrearsQueryForm form,@Param("patientIds") List<Integer> patientIds);
 }

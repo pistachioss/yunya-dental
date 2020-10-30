@@ -18,9 +18,12 @@ import java.util.List;
 @ToString
 public class AnalysisVo implements Serializable {
 
-  /*  *//** 患者来源分析 *//*
-    private List<PatientAnalysisVo> patientAnalysisVoList;
+    /** 患者来源分析 */
+    private List<AnalysisPatientOriginVo> analysisPatientOriginVoList;
 
-    *//** 患者性别 *//*
-    private List<Patient>*/
+    /** 患者性别 */
+    private List<AnalysisPatientGenderVo> analysisPatientGenderVoList;
+
+    /** 患者年龄 */
+    private List<AnalysisPatientAgeVo> analysisPatientAgeVoList;
 }

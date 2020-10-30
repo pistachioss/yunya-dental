@@ -1,7 +1,10 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
+import com.yunya.feign.report.domain.vo.AnalysisPatientGenderVo;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
+import com.yunya.feign.report.domain.vo.AnalysisPatientOriginVo;
 import com.yunya.models.report.BasePatient;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -27,4 +30,58 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
      * @return List<BasePatientNotSeenVo>
      */
     List<BasePatientNotSeenVo> selectNotSeenList(@Param("form") PatientReportQueryForm form, @Param("patientIds") List<Integer> patientIds);
+
+    /**
+     * 查询来源类型总数量
+     * @param patientAnalysisQueryForm 来源类型查询条件
+     * @return Integer
+     */
+    Integer selectCountOriginType(@Param("from") PatientAnalysisQueryForm patientAnalysisQueryForm);
+
+    /**
+     * 查询来患者源类型占比
+     * @param patientAnalysisQueryForm 患者来源查询条件
+     * @param countOriginType  来源总数量
+     * @return List<PatientOriginAnalysisVo>
+     */
+    List<AnalysisPatientOriginVo> analysis(@Param("from") PatientAnalysisQueryForm patientAnalysisQueryForm, @Param("countOriginType") Integer countOriginType);
+
+    /**
+     * 查询性别总数量
+     * @param patientAnalysisQueryForm 查询条件
+     * @return Integer
+     */
+    Integer selectCountGender(@Param("form") PatientAnalysisQueryForm patientAnalysisQueryForm);
+
+    /**
+     * 查询男女类型占比
+     * @param patientAnalysisQueryForm 查询条件
+     * @param countGender 男女总数量
+     * @return List<AnalysisPatientGenderVo>
+     */
+    List<AnalysisPatientGenderVo> selectAnalysisPatientGender(@Param("form") PatientAnalysisQueryForm patientAnalysisQueryForm, @Param("countGender") Integer countGender);
+
+    /**
+     * 查询时间段内 患者个数
+     * @param patientAnalysisQueryForm 查询条件
+     * @return Integer
+     */
+    Integer selectCountAnalysisAge(@Param("form") PatientAnalysisQueryForm patientAnalysisQueryForm);
+
+    /**
+     * 根据条件查询 年龄段患者数量
+     * @param patientAnalysisQueryForm 查询条件
+     * @param ageOne 最小时间段年龄
+     * @param ageTwo 最大时间段年龄
+     * @return Integer
+     */
+    Integer selectAnalysisAge(@Param("form") PatientAnalysisQueryForm patientAnalysisQueryForm, @Param("ageOne") int ageOne, @Param("ageTwo") int ageTwo);
+
+    /**
+     * 计算百分比
+     * @param countAge 年龄段人数
+     * @param count 总人数
+     * @return String
+     */
+    String calculateAgePercentage(@Param("countAge") Integer countAge, @Param("count") Integer count);
 }

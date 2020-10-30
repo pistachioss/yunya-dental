@@ -39,11 +39,11 @@ public class PatientReportQueryForm implements Serializable {
 
     @ApiModelProperty(value = "开始末次就诊日期", required = false)
     /** 充值开始日期 */
-    private Date startDate;
+    private String startDate;
 
     @ApiModelProperty(value = "结束末次就诊日期", required = false)
     /** 充值结束日期 */
-    private Date endDate;
+    private String endDate;
 
     @ApiModelProperty(value = "末次接诊医生", required = false)
     /** 接诊医生 */

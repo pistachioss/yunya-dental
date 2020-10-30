@@ -13,9 +13,6 @@
     <result column="order_num" property="orderNum" jdbcType="VARCHAR" />
     <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
     <result column="order_date" property="orderDate" jdbcType="TIMESTAMP" />
-    <result column="assistant_1" property="assistant1" jdbcType="INTEGER" />
-    <result column="assistant_2" property="assistant2" jdbcType="INTEGER" />
-    <result column="assistant_3" property="assistant3" jdbcType="INTEGER" />
     <result column="privilege_type" property="privilegeType" jdbcType="TINYINT" />
     <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
     <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
@@ -47,8 +44,8 @@
         </if>
 
         <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-          AND bb.order_date &gt;= #{form.startDate} 
-          AND bb.order_date &lt;= #{form.endDate}
+          and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &gt; DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
+          and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
         </if>
 
         <if test="form.registeredDentistIds != null and form.registeredDentistIds.size() > 0 ">

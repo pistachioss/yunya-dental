@@ -26,20 +26,20 @@ public class PatientAnalysisQueryForm implements Serializable {
     /** 门诊id */
     private Integer orgId;
 
-    @ApiModelProperty(value = "(日)开始日期yyyy-MM-dd", required = false)
-    /** 充值开始日期 */
+    @ApiModelProperty(value = "(年-月-日)开始日期yyyy-MM-dd", required = false)
+    /** 开始（年-月-日） */
     private Date startDate;
 
-    @ApiModelProperty(value = "(日)结束日期yyyy-MM-dd", required = false)
-    /** 充值结束日期 */
+    @ApiModelProperty(value = "(年-月-日)结束日期yyyy-MM-dd", required = false)
+    /** 结束（年-月-日） */
     private Date endDate;
 
-    @ApiModelProperty(value = "(月):yyyy-MM", required = false)
-    /** 充值结束日期 */
-    private Date monthDay;
+    @ApiModelProperty(value = "(年-月):yyyy-MM", required = false)
+    /** 年月 */
+    private String monthDay;
 
     @ApiModelProperty(value = "(年):yyyy", required = false)
-    /** 充值结束日期 */
-    private Date year;
+    /** 年 */
+    private String year;
 
 }

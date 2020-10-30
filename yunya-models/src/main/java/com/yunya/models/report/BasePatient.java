@@ -124,6 +124,26 @@ public class BasePatient {
     @Column(name = "patient_crt_time")
     private Date patientCrtTime;
 
+    /** 患者来源名称 */
+    @Column(name = "origin_type_name")
+    private String originTypeName;
+
+
+    /**
+     * 获取患者来源名称
+     * @return originTypeName
+     */
+    public String getOriginTypeName() {
+        return originTypeName;
+    }
+
+    /**
+     * 设置患者来源名称
+     * @param originTypeName 患者来源名称
+     */
+    public void setOriginTypeName(String originTypeName) {
+        this.originTypeName = originTypeName;
+    }
 
     /**
      * 获取患者创建时间

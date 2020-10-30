@@ -5,7 +5,9 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.PatientBaseInfoMapper;
+import com.yunya.middletable.dao.patient.PatientOriginMapper;
 import com.yunya.middletable.dao.report.BasePatientMapper;
+import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ import java.util.List;
 public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     /**注入对象*/
     @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
+
+    @Autowired private PatientOriginMapper patientOriginMapper;
 
     /**
      * 患者信息操作
@@ -89,6 +93,13 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             basePatient.setGender(patientBaseInfo.getGender());
             basePatient.setPinyinName(patientBaseInfo.getPinyinName());
             basePatient.setPatientCrtTime(patientBaseInfo.getCrtTime());
+            PatientOrigin patientOrigin = new PatientOrigin();
+            patientOrigin.setId(0);
+            patientOrigin.setOriginType(patientBaseInfo.getOriginType());
+            PatientOrigin origin = patientOriginMapper.selectOne(patientOrigin);
+            if (origin != null){
+                basePatient.setOriginTypeName(origin.getName());
+            }
             return basePatient;
         }
         return null;

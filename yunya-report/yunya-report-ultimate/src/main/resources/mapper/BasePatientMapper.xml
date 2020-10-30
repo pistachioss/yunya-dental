@@ -52,8 +52,8 @@
       </if>
 
       <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-        AND bp.last_visit_date &gt;= #{form.startDate} 
-        AND bp.last_visit_date &lt;= #{form.endDate}
+        and DATE_FORMAT(bp.last_visit_date, "%Y-%m-%d") &gt; DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
+        and DATE_FORMAT(bp.last_visit_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
       </if>
 
       <if test="form.attendingDoctors != null and form.attendingDoctors.size() > 0 ">
@@ -79,6 +79,166 @@
 
     </where>
     group by bp.last_visit_date desc
+  </select>
+  <!-- 查询来源类型总数量 -->
+  <select id="selectCountOriginType" resultType="java.lang.Integer">
+    select count(bp.origin_type)
+    from base_patient bp
+    <where>
+      <if test="form.orgId != null and form.orgId != ''">
+        AND bp.org_id = #{form.orgId}
+      </if>
+
+      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+        AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+      </if>
+
+      <if test="form.monthDay != null and form.monthDay != ''">
+        AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+      </if>
+
+      <if test="form.year != null and form.year != ''">
+        AND year(patient_crt_time) =#{form.year}
+      </if>
+    </where>
+
+  </select>
+  <!-- 查询来患者源类型占比 -->
+  <select id="analysis" resultType="com.yunya.feign.report.domain.vo.AnalysisPatientOriginVo">
+    select
+      bp.origin_type originType,
+      bp.origin_type_name originTypeName,
+      count(bp.origin_type) countType,
+      concat( format(count(bp.origin_type) / ${countOriginType} * 100, 2 ),'%') percentage
+    from base_patient bp
+    <where>
+      <if test="form.orgId != null and form.orgId != ''">
+        AND bp.org_id = #{form.orgId}
+      </if>
+
+      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+        AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+      </if>
+
+      <if test="form.monthDay != null and form.monthDay != ''">
+        AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+      </if>
+
+      <if test="form.year != null and form.year != ''">
+        AND year(bp.patient_crt_time) = #{form.year}
+      </if>
+    </where>
+    group by  bp.origin_type
+  </select>
+
+  <!-- 查询性别总数量 -->
+  <select id="selectCountGender" resultType="java.lang.Integer">
+    select count(bp.gender)
+    from base_patient bp
+    <where>
+      <if test="form.orgId != null and form.orgId != ''">
+        AND bp.org_id = #{form.orgId}
+      </if>
+
+      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+        AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+      </if>
+
+      <if test="form.monthDay != null and form.monthDay != ''">
+        AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+      </if>
+
+      <if test="form.year != null and form.year != ''">
+        AND year(bp.patient_crt_time) =#{form.year}
+      </if>
+    </where>
+  </select>
+
+  <!-- 查询男女类型占比 -->
+  <select id="selectAnalysisPatientGender" resultType="com.yunya.feign.report.domain.vo.AnalysisPatientGenderVo">
+     select
+      case when bp.gender = 0 then '男'
+           when bp.gender = 1 then '女'
+      end gender,
+      count(bp.gender) countGender,
+      concat( format(count(bp.gender) / ${countGender} * 100, 2 ),'%') percentage
+    from base_patient bp
+    <where>
+      <if test="form.orgId != null and form.orgId != ''">
+        AND bp.org_id = #{form.orgId}
+      </if>
+
+      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+        AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+      </if>
+
+      <if test="form.monthDay != null and form.monthDay != ''">
+        AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+      </if>
+
+      <if test="form.year != null and form.year != ''">
+        AND year(bp.patient_crt_time) =#{form.year}
+      </if>
+    </where>
+    group by bp.gender
+  </select>
+
+  <!-- 查询时间段内 患者个数 -->
+  <select id="selectCountAnalysisAge" resultType="java.lang.Integer">
+    select count(1) from base_patient bp
+    <where>
+      <if test="form.orgId != null and form.orgId != ''">
+        AND bp.org_id = #{form.orgId}
+      </if>
+
+      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+        AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+      </if>
+
+      <if test="form.monthDay != null and form.monthDay != ''">
+        AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+      </if>
+
+      <if test="form.year != null and form.year != ''">
+        AND year(bp.patient_crt_time) =#{form.year}
+      </if>
+    </where>
+  </select>
+
+  <!-- 根据条件查询 年龄段患者数量 -->
+  <select id="selectAnalysisAge" resultType="java.lang.Integer">
+    select count(1) from base_patient bp
+    <where>
+      <if test="form.orgId != null and form.orgId != ''">
+        AND bp.org_id = #{form.orgId}
+      </if>
+
+      <if test="ageOne != null and ageOne != '' and ageOne > 0">
+        AND ( DATE_FORMAT(now(),'%Y-%m') - DATE_FORMAT(bp.birthday,'%Y-%m') ) &lt;= #{ageOne}
+      </if>
+
+      <if test="ageTwo != null and ageTwo != '' and ageTwo > 0">
+         AND ( DATE_FORMAT(now(),'%Y-%m') - DATE_FORMAT(bp.birthday,'%Y-%m') ) &gt; #{ageTwo}
+      </if>
+
+      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+        AND cast(bp.patient_crt_time as date) between #{form.startDate} and #{form.endDate}
+      </if>
+
+      <if test="form.monthDay != null and form.monthDay != ''">
+        AND DATE_FORMAT(bp.patient_crt_time,'%Y-%m') = #{form.monthDay}
+      </if>
+
+      <if test="form.year != null and form.year != ''">
+        AND year(bp.patient_crt_time) =#{form.year}
+      </if>
+
+    </where>
+  </select>
+
+  <!-- 计算百分比 -->
+  <select id="calculateAgePercentage" resultType="java.lang.String">
+    select concat( format( ${countAge} / ${count} * 100, 2 ),'%') percentage
   </select>
 
 </mapper>
