@@ -13,6 +13,8 @@ import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
 import com.yunya.feign.report.domain.query.CouponUsedQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
+import com.yunya.feign.report.domain.query.RechargeDetailQuery;
+import com.yunya.feign.report.domain.query.RechargeQuery;
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
@@ -23,6 +25,8 @@ import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.feign.report.domain.vo.RechargeDetailVo;
+import com.yunya.feign.report.domain.vo.RechargeVo;
 import com.yunya.report.ultimate.mapper.BaseBenefitMapper;
 import com.yunya.report.ultimate.mapper.BaseCardMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponItemMapper;
@@ -50,6 +54,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出激活统计
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -61,6 +66,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出激活卡券明细（代金、折扣、兑换、套餐）
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -74,6 +80,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出激活卡券明细（充值卡）
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -87,6 +94,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出统计-产品维度
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -99,6 +107,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出统计-时间维度（自有平台）
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -112,6 +121,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出统计-自有平台卡券售出明细
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -125,6 +135,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出统计-第三方平台卡券激活明细
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -137,6 +148,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品使用统计
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -148,6 +160,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品使用统计-时间维度
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -161,6 +174,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品使用统计-产品维度-使用统计
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -169,6 +183,31 @@ public class DiscountBiz {
 		benefitMapper.listCouponDetailUsedByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getBillNumber(),
 				query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
 				query.getUsedEndDate(), query.getSoldChannelIds(), couponId);
+		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 充值卡充值统计
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<RechargeVo> getRechargePage(RechargeQuery query) {
+		Page<RechargeVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		couponMapper.listRechargeByParam(query.getCouponName(), query.getCouponCategoryIds());
+		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 充值卡充值统计-充值统计
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<RechargeDetailVo> getRechargeDetailPage(Integer couponId, RechargeDetailQuery query) {
+		Page<RechargeDetailVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		cardMapper.listRechargeDetailByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getRechargeOrgIds(),
+				query.getRechargeAccount(), query.getRechargeStartDate(), query.getRechargeEndDate(), couponId);
 		return new PageInfo<>(page);
 	}
 }

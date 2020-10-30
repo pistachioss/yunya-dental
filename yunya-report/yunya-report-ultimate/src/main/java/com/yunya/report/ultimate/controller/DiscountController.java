@@ -11,6 +11,8 @@ import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
 import com.yunya.feign.report.domain.query.CouponUsedQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
+import com.yunya.feign.report.domain.query.RechargeDetailQuery;
+import com.yunya.feign.report.domain.query.RechargeQuery;
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
@@ -21,6 +23,8 @@ import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.feign.report.domain.vo.RechargeDetailVo;
+import com.yunya.feign.report.domain.vo.RechargeVo;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.service.DiscountBiz;
@@ -105,15 +109,22 @@ public class DiscountController {
 	}
 
 	@ApiOperation(value = "产品使用统计-产品维度-使用统计")
-	@PostMapping("{couponId}/card/used/statistics")
+	@PostMapping("/{couponId}/card/used/statistics")
 	public ResponseResult<PageInfo<CouponUsedDetailVo>> getCouponUsed(@PathVariable(value = "couponId") Integer couponId,
 	                                                                  @Valid @RequestBody CouponUsedDetailQuery query) {
 		return ResponseUtil.success(discountBiz.getCouponDetailUsedPage(couponId, query));
 	}
 
-//	@ApiOperation(value = "充值卡充值统计")
-//	@PostMapping("{couponId}/card/used/statistics")
-//	public ResponseResult<PageInfo<RechargeVo>> getCouponUsed(@Valid @RequestBody RechargeQuery query) {
-//		return ResponseUtil.success(discountBiz.getCouponDetailUsedPage(query));
-//	}
+	@ApiOperation(value = "充值卡充值统计")
+	@PostMapping("/recharge/statistics")
+	public ResponseResult<PageInfo<RechargeVo>> getRechargePage(@Valid @RequestBody RechargeQuery query) {
+		return ResponseUtil.success(discountBiz.getRechargePage(query));
+	}
+
+	@ApiOperation(value = "充值卡充值统计-充值统计")
+	@PostMapping("/{couponId}/rechargeCard/statistics")
+	public ResponseResult<PageInfo<RechargeDetailVo>> getRechargePage(@PathVariable(value = "couponId") Integer couponId,
+	                                                                  @Valid @RequestBody RechargeDetailQuery query) {
+		return ResponseUtil.success(discountBiz.getRechargeDetailPage(couponId, query));
+	}
 }
