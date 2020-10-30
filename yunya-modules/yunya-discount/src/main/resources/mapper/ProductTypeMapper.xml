@@ -41,7 +41,13 @@
         FROM
         product_type pt
         LEFT JOIN
-        (select count(id) productNum,product_type_id id from coupon_common_info GROUP BY product_type_id) ci
+        (select count(id) productNum,product_type_id id from coupon_common_info
+        <where>
+        <if test="queryForm.type != null">
+            type = #{queryForm.type}
+        </if>
+        </where>
+           GROUP BY product_type_id) ci
         on ci.id = pt.id
         <where>
             <if test="queryForm.id != null">

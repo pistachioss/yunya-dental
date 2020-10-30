@@ -287,7 +287,9 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         //离职状态
         model.setWorkStatus(userStatus);
         int count = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model).size();
-        model.setWhetherPage(false);
+        model.setWhetherPage(employeeScheduleQueryForm.getWhetherPage());
+        model.setPageSize(size);
+        model.setPageNum(page);
 
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
         //获取门诊信息
@@ -346,9 +348,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             shiftWorkDatas.add(userWorkMap);
             calendar.add(Calendar.DATE, -days);
         }
-//        Map<String, Object> result = new HashMap(16);
-//        result.put("data", shiftWorkDatas);
-//        result.put("total", count);
         return shiftWorkDatas;
     }
 

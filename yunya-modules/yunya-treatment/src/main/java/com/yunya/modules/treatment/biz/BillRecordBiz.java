@@ -303,7 +303,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       BigDecimal giftAmount = prepaymentAccountModel.getGiftAmount();
       totalAmount = totalAmount.add(principalAmount).add(giftAmount);
     }
-    if (!StringHelper.isNotEmpty(refundPaymentModels)) {
+    if (StringHelper.isNotEmpty(refundPaymentModels)) {
       for (PaymentModel model : refundPaymentModels) {
         totalAmount = totalAmount.add(model.getAmount());
       }

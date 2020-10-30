@@ -1,0 +1,52 @@
+spring:
+    application:
+        name: rabbit-mq
+    cloud:
+        nacos:
+            config:
+                server-addr: 192.168.31.215:8848
+                file-extension: yaml
+    profiles:
+        active: dev
+    main:
+        allow-bean-definition-overriding: true
+    rabbitmq:
+        host: 192.168.31.200
+        port: 5672
+        username: admin
+        password: admin
+#        virtual-host: virtual-host    # 虚拟host 可以不设置,使用server默认host
+        publisher-confirms: true       # 发送确认
+        publisher-returns: true        # 发送回调
+        listener:
+            direct:
+                acknowledge-mode: manual    # 消费手动确认    none,auto(默认),manual(手动)
+                retry:
+                    enabled: true
+                    max-attempts: 3
+                    initial-interval: 1000
+
+# 配置swagger
+swagger:
+    enabled: true
+    base-package: com.yunya365.rabbitmq
+    title: rabbit-mq
+    version: 0.0.1.SNAPSHOT
+    description: 消息处理公共服务 （通过路由访问的路径：api/rabbitmq/）
+    contact:
+        name: rabbit-mq
+
+logging:
+    level:
+        io.swagger.models.parameters.AbstractSerializableParameter: error
+
+
+
+auth:
+    serviceId: yunya-auth
+    user:
+        token-header: Authorization
+    client:
+        id: aliyun-oss
+        secret: 123456
+        token-header: x-client-token

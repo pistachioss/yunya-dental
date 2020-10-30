@@ -1,6 +1,7 @@
 package com.yunya.feign.appointment.domain.form;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -46,5 +47,5 @@ public class AppointmentSplitForm {
 
     @ApiModelProperty(value = "预约分解列表", required = true)
     @NotEmpty(message = "预约分解列表不能为空！")
-    private List<AppointmentSplitUpdateBaseInfo> splitList;
+    private List<AppointmentSplitBaseInfo> splitList;
 }
