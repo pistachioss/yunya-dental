@@ -758,6 +758,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 设置患者名字
             String name = patientBaseInfo.getName();
             appointmentVo.setPatientName(name);
+            // 设置患者手机号
+            String mobile = patientBaseInfo.getMobile();
+            appointmentVo.setMobile(mobile);
         }
         // 查询预约分解信息
         AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
@@ -1993,7 +1996,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             SysUserInfoDetail dentistInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
             if (dentistInfoDetail != null){
                 build.setDentistName(dentistInfoDetail.getName());
+            } else {
+                build.setDentistName("--");
             }
+        } else {
+            build.setDentistName("--");
         }
 
         // 查询预约助手信息
@@ -2002,7 +2009,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             SysUserInfoDetail assistantInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(assistantId);
             if (assistantInfoDetail != null){
                 build.setAssistantName(assistantInfoDetail.getName());
+            } else {
+                build.setAssistantName("--");
             }
+        } else {
+            build.setAssistantName("--");
         }
 
         // 设置患者详细信息
@@ -2022,7 +2033,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setMobile(patientInfo.getMobile());
                 build.setPatientId(patientInfo.getId());
                 build.setPatientName(patientInfo.getName());
-                build.setPatientRemark(patientInfo.getRemarks());
+                build.setPatientRemark(patientInfo.getRemarks()==null ? "--" : patientInfo.getRemarks());
                 build.setAllergen(patientInfo.getAllergens());
                 build.setPinyinName(patientInfo.getPinyinName());
                 // 设置会员卡图标类型
@@ -2042,7 +2053,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             DepartmentRoom departmentRoom = remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
             if (departmentRoom != null){
                 build.setClinicDeptRoomName(departmentRoom.getName());
+            } else {
+                build.setClinicDeptRoomName("--");
             }
+        } else {
+            build.setClinicDeptRoomName("--");
         }
 
         // 欠费金额 服务还没做，先空着，后面补上 TODO
@@ -2078,7 +2093,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 SysEmployee dentistInfo = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
                 if (null != dentistInfo) {
                     appointPatientRecordVo.setDentistName(dentistInfo.getName());
+                } else {
+                    appointPatientRecordVo.setDentistName("--");
                 }
+            } else {
+                appointPatientRecordVo.setDentistName("--");
             }
             // 设置助手名字
             Integer assistantId = appointPatientRecordVo.getAssistantId();
@@ -2086,7 +2105,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 SysEmployee assistantInfo = this.remoteSystemServiceFeign.findSysEmployeeById(assistantId);
                 if (null != assistantInfo) {
                     appointPatientRecordVo.setAssistantName(assistantInfo.getName());
+                } else {
+                    appointPatientRecordVo.setAssistantName("--");
                 }
+            } else {
+                appointPatientRecordVo.setAssistantName("--");
             }
             // 设置门诊名称
             Integer orgId = appointPatientRecordVo.getOrgId();
@@ -2094,7 +2117,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 OrganizationInfo orgInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
                 if (null != orgInfo) {
                     appointPatientRecordVo.setOrgName(orgInfo.getName());
+                } else {
+                    appointPatientRecordVo.setOrgName("--");
                 }
+            } else {
+                appointPatientRecordVo.setOrgName("--");
             }
             // 设置科室名称
             Integer deptRoomId = appointPatientRecordVo.getDeptRoomId();
@@ -2102,7 +2129,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 DepartmentRoom departmentRoomInfo = this.remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
                 if (null != departmentRoomInfo) {
                     appointPatientRecordVo.setDeptRoomName(departmentRoomInfo.getName());
+                } else {
+                    appointPatientRecordVo.setDeptRoomName("--");
                 }
+            } else {
+                appointPatientRecordVo.setDeptRoomName("--");
             }
             // 设置设备编号
             Integer clinicDeviceItemId = appointPatientRecordVo.getClinicDeviceItemId();
@@ -2110,7 +2141,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 DeviceItemVo deviceItemVo = this.clinicDeviceItemBiz.selectDeviceItemById(clinicDeviceItemId);
                 if (null != deviceItemVo) {
                     appointPatientRecordVo.setClinicDeviceItemNumber(deviceItemVo.getNumber());
+                } else {
+                    appointPatientRecordVo.setClinicDeviceItemNumber("--");
                 }
+            } else {
+                appointPatientRecordVo.setClinicDeviceItemNumber("--");
             }
 
         });

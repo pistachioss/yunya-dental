@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.other.rpc;
 
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import io.swagger.annotations.Api;
@@ -32,7 +33,9 @@ public class TreatmentOtherServiceRest {
     @ApiOperation(value = "插入随访记录")
     @RequestMapping(value = "/visiting/record/add",method = RequestMethod.POST)
     public void insertVisitingRecordRest(@RequestBody List<VisitingRecord> visitingRecords){
-        visitingRecordBiz.insertEntity(visitingRecords);
+        if (StringHelper.isNotEmpty(visitingRecords)) {
+            visitingRecordBiz.insertEntity(visitingRecords);
+        }
     }
 
     /**
