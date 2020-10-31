@@ -8,6 +8,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
@@ -34,7 +35,10 @@ public interface RemoteRabbitMqServiceFeign {
    * @return
    */
   @RequestMapping(value = "/api/direct/single1", method = RequestMethod.POST)
-  String sendMessage(Integer dataId, Integer operateType, MsgCategoryEnum msgCategoryEnum);
+  String sendMessage(
+      @RequestParam("dataId") Integer dataId,
+      @RequestParam("operateType") Integer operateType,
+      @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum);
 
   /**
    * 通过消息更新中间表
@@ -47,10 +51,13 @@ public interface RemoteRabbitMqServiceFeign {
    */
   @RequestMapping(value = "/api/direct/single2", method = RequestMethod.POST)
   String sendMessage(
-      Integer dataId, Integer dateType, Integer operateType, MsgCategoryEnum msgCategoryEnum);
+      @RequestParam("dataId") Integer dataId,
+      @RequestParam("dateType") Integer dateType,
+      @RequestParam("operateType") Integer operateType,
+      @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum);
 
-  /**¬
-   * 通过消息更新中间表
+  /**
+   * ¬ 通过消息更新中间表
    *
    * @param paramMap map参数，自行封装
    * @param operateType 操作类型
@@ -59,5 +66,7 @@ public interface RemoteRabbitMqServiceFeign {
    */
   @RequestMapping(value = "/api/direct/single3", method = RequestMethod.POST)
   String sendMessage(
-      Map<String, Object> paramMap, Integer operateType, MsgCategoryEnum msgCategoryEnum);
+      @RequestParam("paramMap") Map<String, Object> paramMap,
+      @RequestParam("operateType") Integer operateType,
+      @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum);
 }

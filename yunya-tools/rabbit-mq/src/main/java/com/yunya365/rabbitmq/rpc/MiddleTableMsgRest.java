@@ -4,10 +4,7 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +28,9 @@ public class MiddleTableMsgRest {
 
   @PostMapping("/direct/single1")
   public String sendDirectMessage(
-      Integer dataId, Integer operateType, MsgCategoryEnum msgCategoryEnum) {
+      @RequestParam("dataId") Integer dataId,
+      @RequestParam("operateType") Integer operateType,
+      @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum) {
     MessageModel messageModel = new MessageModel();
     Map<String, Object> paramMap = new HashMap<>(16);
     paramMap.put("id", dataId);
@@ -48,7 +47,10 @@ public class MiddleTableMsgRest {
 
   @PostMapping("/direct/single2")
   public String sendDirectMessage(
-      Integer dataId, Integer dateType, Integer operateType, MsgCategoryEnum msgCategoryEnum) {
+      @RequestParam("dataId") Integer dataId,
+      @RequestParam("dateType") Integer dateType,
+      @RequestParam("operateType") Integer operateType,
+      @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum) {
     MessageModel messageModel = new MessageModel();
     Map<String, Object> paramMap = new HashMap<>(16);
     paramMap.put("id", dataId);
@@ -66,7 +68,9 @@ public class MiddleTableMsgRest {
 
   @PostMapping("/direct/single3")
   public String sendDirectMessage(
-      Map<String, Object> paramMap, Integer operateType, MsgCategoryEnum msgCategoryEnum) {
+      @RequestParam("paramMap") Map<String, Object> paramMap,
+      @RequestParam("operateType") Integer operateType,
+      @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum) {
     MessageModel messageModel = new MessageModel();
     messageModel.setParamMap(paramMap);
     messageModel.setOperateType(operateType);
