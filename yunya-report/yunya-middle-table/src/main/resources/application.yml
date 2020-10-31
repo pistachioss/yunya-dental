@@ -38,6 +38,18 @@ spring:
         nacos:
             discovery:
                 server-addr: 192.168.31.215:8848
+    rabbitmq:
+        host: 192.168.31.200
+        port: 5672
+        username: admin
+        password: admin
+        listener:
+            simple:
+                acknowledge-mode: manual    # 消费手动确认    none,auto(默认),manual(手动)
+                retry:
+                    enabled: true
+                    max-attempts: 3
+                    initial-interval: 1000
     shardingsphere:
         props:
             sql:

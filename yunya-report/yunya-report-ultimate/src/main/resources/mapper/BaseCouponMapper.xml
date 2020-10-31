@@ -111,6 +111,7 @@
             left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
             left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
         <where>
+            `bc`.`coupon_type` != 4
             <if test="couponName !=null and couponName != ''">
                 and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
             </if>
@@ -123,6 +124,36 @@
             <if test="couponTypes != null and couponTypes.size() > 0">
                 and `bc`.`coupon_type` in
                 <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by `bc`.`coupon_id`,`bc`.`crt_time`
+        order by `bc`.`crt_time` desc
+    </select>
+
+    <select id="listRechargeByParam" resultType="com.yunya.feign.report.domain.vo.RechargeVo">
+        select
+                `bc`.`coupon_id`,
+                `bc`.`coupon_name`,
+                `bc`.`product_type_name`                        as `couponCategoryName`,
+                `bc`.`crt_time`                                 as `crtDate`,
+                `bc`.`sold_amount`,
+                `be`.`employee_name`                            as `crtUser`,
+                ifnull(sum(`b`.`status` in (0, 1, 2, 3, 4)),0)  as `generatedQuantity`,
+                ifnull(sum(`b`.`status` in (1, 2, 3, 4)),0)     as `soldQuantity`,
+                ifnull(sum(`b`.`status` = 2),0)                 as `activatedQuantity`,
+        from `base_coupon` `bc`
+            left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
+            left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
+        <where>
+            `bc`.`coupon_type` = 4
+            <if test="couponName !=null and couponName != ''">
+                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponCategoryIds != null and couponCategoryIds.size() > 0">
+                and `bc`.`product_type_id` in
+                <foreach collection="couponCategoryIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>

@@ -90,16 +90,6 @@ spring:
             - StripPrefix=3
           metadata:
             title: "排班考勤服务"
-      # 通用工具服务，编号后排
-        - id: aliyun-oss
-          uri: lb://aliyun-oss
-          order: 8999
-          predicates:
-            - Path=/api/aliyunoss/**
-          filters:
-            - StripPrefix=2
-          metadata:
-            title: "资源图片服务"
         - id: yunya-appointment-central
           uri: lb://yunya-appointment-central
           order: 9001
@@ -154,7 +144,7 @@ spring:
             - StripPrefix=3
           metadata:
             title: "结算统计服务"
-        - id: yunya-clinic-base
+        - id: yunya-report-ultimate
           uri: lb://yunya-report-ultimate
           order: 9007
           predicates:
@@ -163,7 +153,28 @@ spring:
             - StripPrefix=3
           metadata:
             title: "系统报表服务"
+  
+  
+        # 通用工具服务，编号后排
+        - id: aliyun-oss
+          uri: lb://aliyun-oss
+          order: 8999
+          predicates:
+            - Path=/api/aliyunoss/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "资源图片服务"
 
+        - id: rabbit-mq
+          uri: lb://rabbit-mq
+          order: 8998
+          predicates:
+            - Path=/api/rabbitmq/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "系统消息服务"
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848

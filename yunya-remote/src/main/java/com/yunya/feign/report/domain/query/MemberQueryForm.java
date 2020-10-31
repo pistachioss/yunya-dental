@@ -1,10 +1,13 @@
 package com.yunya.feign.report.domain.query;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介: 会员卡Occur日志QueryForm
@@ -19,22 +22,40 @@ import java.util.Date;
 @ToString
 public class MemberQueryForm implements Serializable {
 
+    @ApiModelProperty(value = "是否分页", required = true)
+    private Boolean whetherPage = true;
+
+    @ApiModelProperty("页码")
+    @Min(message = "最小值", value = 1)
+    private Integer pageNum = 1;
+
+    @ApiModelProperty("每页显示数量")
+    @Min(message = "最小值", value = 1)
+    private Integer pageSize = 10;
+
+
+    @ApiModelProperty(value = "门诊id", required = false)
     /** 门诊id */
     private Integer orgId;
 
+    @ApiModelProperty(value = "患者条件", required = false)
     /** 患者条件 */
     private String combination;
 
-    /** 会员卡号 */
+    @ApiModelProperty(value = "预付款账号", required = false)
+    /** 预付款账号 */
     private String cardNumber;
 
+    @ApiModelProperty(value = "充值开始日期", required = false)
     /** 充值开始日期 */
-    private Date startDate;
+    private String startDate;
 
-    /** 充值开始日期 */
-    private Date endDate;
+    @ApiModelProperty(value = "充值结束日期", required = false)
+    /** 充值结束日期 */
+    private String endDate;
 
-    /** 会员卡名称 */
-    private Integer cardName;
+    @ApiModelProperty(value = "会员级别", required = false)
+    /** 会员级别 */
+    private List<Integer> memberLevelIds;
 
 }

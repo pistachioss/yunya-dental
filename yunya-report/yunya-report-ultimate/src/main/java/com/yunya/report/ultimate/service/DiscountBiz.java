@@ -5,20 +5,30 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CardStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
+import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
 import com.yunya.feign.report.domain.query.CouponUsedQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
+import com.yunya.feign.report.domain.query.RechargeDetailQuery;
+import com.yunya.feign.report.domain.query.RechargeQuery;
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
+import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.feign.report.domain.vo.RechargeDetailVo;
+import com.yunya.feign.report.domain.vo.RechargeVo;
+import com.yunya.models.report.BaseCoupon;
+import com.yunya.report.ultimate.mapper.BaseBenefitMapper;
 import com.yunya.report.ultimate.mapper.BaseCardMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponItemMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponMapper;
@@ -26,6 +36,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.List;
 
 /**
  * @author xiangyang
@@ -40,9 +54,12 @@ public class DiscountBiz {
 	private BaseCardMapper cardMapper;
 	@Resource
 	private BaseCouponItemMapper itemMapper;
+	@Resource
+	private BaseBenefitMapper benefitMapper;
 
 	/**
 	 * 产品售出激活统计
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -54,12 +71,13 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出激活卡券明细（代金、折扣、兑换、套餐）
+	 *
 	 * @param query query
 	 * @return page
 	 */
 	public PageInfo<CardStatisticsVo> getCardStatisticsPage(Integer couponId, CardStatisticsQuery query) {
 		Page<CardStatisticsVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-		cardMapper.listCardUsedByParam(query.getCardNumber(), query.getAllocateOrgIds(), query.getSoldTypes(),
+		cardMapper.listCardByParam(query.getCardNumber(), query.getAllocateOrgIds(), query.getSoldTypes(),
 				query.getSoldStartDate(), query.getSoldEndDate(), query.getActiveOrgIds(), query.getActiveStartDate(),
 				query.getActiveEndDate(), query.getSoldWays(), query.getChargeStatus(), couponId);
 		return new PageInfo<>(page);
@@ -67,6 +85,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出激活卡券明细（充值卡）
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -80,6 +99,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出统计-产品维度
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -92,6 +112,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出统计-时间维度（自有平台）
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -105,6 +126,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出统计-自有平台卡券售出明细
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -118,6 +140,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品售出统计-第三方平台卡券激活明细
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -130,6 +153,7 @@ public class DiscountBiz {
 
 	/**
 	 * 产品使用统计
+	 *
 	 * @param query query
 	 * @return page
 	 */
@@ -137,5 +161,164 @@ public class DiscountBiz {
 		Page<CouponUsedVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
 		couponMapper.listCouponUsedByParam(query.getCouponName(), query.getCouponCategoryIds(), query.getCouponTypes());
 		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 产品使用统计-时间维度
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<CardUsedStatisticsVo> getCardUsedPage(CardUsedStatisticsQuery query) {
+		Page<CardUsedStatisticsVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCardUsedByParam(query.getCouponName(), query.getBillNumber(), query.getCardNumber(),
+				query.getPatientKeyWord(), query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
+				query.getUsedEndDate(), query.getSoldChannelIds(), query.getCouponTypes());
+		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 产品使用统计-产品维度-使用统计
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<CouponUsedDetailVo> getCouponDetailUsedPage(Integer couponId, CouponUsedDetailQuery query) {
+		Page<CouponUsedDetailVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCouponDetailUsedByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getBillNumber(),
+				query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
+				query.getUsedEndDate(), query.getSoldChannelIds(), couponId);
+		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 充值卡充值统计
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<RechargeVo> getRechargePage(RechargeQuery query) {
+		Page<RechargeVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		couponMapper.listRechargeByParam(query.getCouponName(), query.getCouponCategoryIds());
+		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 充值卡充值统计-充值统计
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<RechargeDetailVo> getRechargeDetailPage(Integer couponId, RechargeDetailQuery query) {
+		Page<RechargeDetailVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		cardMapper.listRechargeDetailByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getRechargeOrgIds(),
+				query.getRechargeAccount(), query.getRechargeStartDate(), query.getRechargeEndDate(), couponId);
+		return new PageInfo<>(page);
+	}
+
+	public void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
+		response.setContentType("application/vnd.ms-excel");
+		response.setCharacterEncoding("utf-8");
+		response.setHeader("Content-disposition", "attachment;filename=" +
+				URLEncoder.encode(fileName, "UTF-8") + ".xls");
+	}
+
+	public String getCouponName(Integer couponId) {
+		BaseCoupon coupon = couponMapper.selectByPrimaryKey(couponId);
+		return coupon == null ? "未知" : coupon.getCouponName();
+	}
+
+	/**
+	 * 产品售出激活卡券明细（代金、折扣、兑换、套餐）- 导出
+	 *
+	 * @param query query
+	 * @return list
+	 */
+	public List<CardStatisticsVo> getCardStatisticsList(Integer couponId, CardStatisticsQuery query) {
+		return cardMapper.listCardByParam(query.getCardNumber(), query.getAllocateOrgIds(), query.getSoldTypes(),
+				query.getSoldStartDate(), query.getSoldEndDate(), query.getActiveOrgIds(), query.getActiveStartDate(),
+				query.getActiveEndDate(), query.getSoldWays(), query.getChargeStatus(), couponId);
+	}
+
+	/**
+	 * 产品售出激活卡券明细（充值卡）- 导出
+	 *
+	 * @param query query
+	 * @return list
+	 */
+	public List<RechargeCardStatisticsVo> getRechargeCardStatisticsList(Integer couponId, RechargeCardStatisticsQuery query) {
+		return cardMapper.listRechargeUsedByParam(query.getCardNumber(), query.getAllocateOrgIds(), query.getSoldTypes(),
+				query.getSoldStartDate(), query.getSoldEndDate(), query.getRechargeOrgIds(), query.getRechargeStartDate(),
+				query.getRechargeEndDate(), query.getSoldWays(), couponId);
+	}
+
+	/**
+	 * 产品售出统计-时间维度（自有平台）- 导出
+	 *
+	 * @param query query
+	 * @return list
+	 */
+	public List<CardSoldStatisticsVo> getCardSoldList(CardSoldStatisticsQuery query) {
+		return cardMapper.listAllCardSoldParam(query.getCouponName(), query.getCouponTypes(), query.getCardNumber(),
+				query.getSoldTarget(), query.getAllocateOrgIds(), query.getSoldTypes(), query.getSoldStartDate(),
+				query.getSoldEndDate(), query.getSoldWays(), query.getChargeStatus());
+	}
+
+	/**
+	 * 产品售出统计-自有平台卡券售出明细 - 导出
+	 *
+	 * @param query query
+	 * @return list
+	 */
+	public List<CouponSoldDetailVo> getCouponSoldDetailList(Integer couponId, CouponSoldDetailQuery query) {
+		return cardMapper.listCouponSoldDetailByParam(query.getCardNumber(), query.getSoldTarget(), query.getAllocateOrgIds(),
+				query.getSoldTypes(), query.getSoldStartDate(), query.getSoldEndDate(), query.getSoldWays(),
+				query.getChargeStatus(), couponId);
+	}
+
+	/**
+	 * 产品售出统计-第三方平台卡券激活明细 - 导出
+	 *
+	 * @param query query
+	 * @return list
+	 */
+	public List<CouponActiveDetailVo> getCouponActiveList(Integer couponId, CouponActiveDetailQuery query) {
+		return cardMapper.listCouponActiveByParam(query.getCardNumber(), query.getSoldTarget(), query.getSoldChannelIds(),
+				query.getActiveStartDate(), query.getActiveEndDate(), query.getActiveOrgIds(), couponId);
+	}
+
+	/**
+	 * 产品使用统计-时间维度 - 导出
+	 *
+	 * @param query query
+	 * @return list
+	 */
+	public List<CardUsedStatisticsVo> getCardUsedList(CardUsedStatisticsQuery query) {
+		return benefitMapper.listCardUsedByParam(query.getCouponName(), query.getBillNumber(), query.getCardNumber(),
+				query.getPatientKeyWord(), query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
+				query.getUsedEndDate(), query.getSoldChannelIds(), query.getCouponTypes());
+	}
+
+	/**
+	 * 产品使用统计-产品维度-使用统计 - 导出
+	 *
+	 * @param query query
+	 * @return list
+	 */
+	public List<CouponUsedDetailVo> getCouponDetailUsedList(Integer couponId, CouponUsedDetailQuery query) {
+			return benefitMapper.listCouponDetailUsedByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getBillNumber(),
+				query.getOrgIds(), query.getDentistIds(), query.getUsedStartDate(),
+				query.getUsedEndDate(), query.getSoldChannelIds(), couponId);
+	}
+
+	/**
+	 * 充值卡充值统计-充值统计 - 导出
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public List<RechargeDetailVo> getRechargeDetailList(Integer couponId, RechargeDetailQuery query) {
+		return cardMapper.listRechargeDetailByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getRechargeOrgIds(),
+				query.getRechargeAccount(), query.getRechargeStartDate(), query.getRechargeEndDate(), couponId);
 	}
 }

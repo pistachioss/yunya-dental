@@ -31,7 +31,7 @@
         <result column="first_use_date" property="firstUseDate" jdbcType="TIMESTAMP"/>
     </resultMap>
 
-    <select id="listCardUsedByParam" resultType="com.yunya.feign.report.domain.vo.CardStatisticsVo">
+    <select id="listCardByParam" resultType="com.yunya.feign.report.domain.vo.CardStatisticsVo">
         select
             `bc`.`sold_date`,
             `bc`.`card_number`,
@@ -81,7 +81,7 @@
             `bc`.`coupon_id` = #{couponId}
             and `bc`.`status` != 0
             and `bc`.`allocate_org_id` != 0
-            and `b`.`coupon_type` in (0,1,2,3)
+            and `b`.`coupon_type` != 4
             <if test="cardNumber !=null and cardNumber != ''">
                 and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
             </if>
@@ -285,6 +285,7 @@
             inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
         where
             `bc`.`coupon_id` = #{couponId}
+            and `b`.`coupon_type` != 4
             and `bc`.`status` in (2,3,4)
             and `bc`.`allocate_org_id` = 0
             <if test="cardNumber !=null and cardNumber != ''">
@@ -378,5 +379,48 @@
                 </foreach>
             </if>
         order by `bc`.`sold_date` desc
+    </select>
+
+    <select id="listRechargeDetailByParam" resultType="com.yunya.feign.report.domain.vo.RechargeDetailVo">
+        select
+            `bc`.`card_number`,
+            `bo`.`abbreviation`                     as `rechargeOrgName`,
+            `bc`.`active_date`                      as `rechargeDate`,
+            `bp`.`name`                             as `patientName`,
+            `bp`.`mobile`                           as `patientMobile`,
+            `bpm`.`card_number`                     as `rechargeAccount`,
+            `b`.`sold_amount`                       as `rechargeAmount`,
+            `b`.`bonus`                             as `rechargeBonus`,
+            `be`.`employee_name`                    as `rechargeUser`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+            inner join `base_patient` `bp` on `bp`.`patient_id` = `bc`.`patient_id`
+            inner join `base_patient_member` `bpm` on `bpm`.`patient_id` = `bc`.`patient_id`
+                                                 and `bpm`.type = 1
+            inner join `base_organization` `bo` on `bo`.`org_id` = `bc`.`active_org_id`
+            inner join `base_employee` `be` on `be`.`user_id` = `bc`.`active_user_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` = 4
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="patientKeyWord !=null and patientKeyWord != ''">
+                and (`bp`.`name` like concat('%', #{patientKeyWord}, '%') or `bp`.`mobile` like concat('%', #{patientKeyWord}, '%')
+                or `bp`.`pinyin_name` like concat('%', #{patientKeyWord}, '%'))
+            </if>
+            <if test="rechargeOrgIds != null and rechargeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="rechargeOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="rechargeAccount !=null and rechargeAccount != ''">
+                and `bpm`.`card_number` like concat('%', #{rechargeAccount}, '%')
+            </if>
+            <if test="rechargeStartDate != null and rechargeEndDate != null">
+                and (`bc`.`active_date` &gt;= #{rechargeStartDate} and `bc`.`active_date` &lt; #{rechargeEndDate})
+            </if>
+        order by `bc`.`active_date` desc
     </select>
 </mapper>

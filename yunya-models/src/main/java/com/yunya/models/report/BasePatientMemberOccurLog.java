@@ -109,6 +109,28 @@ public class BasePatientMemberOccurLog {
     @Column(name = "org_id")
     private Integer orgId;
 
+    /**
+     * 充值方式
+     */
+    @Column(name = "recharge_method")
+    private Byte rechargeMethod;
+
+
+    /**
+     * 获取充值方式
+     * @return
+     */
+    public Byte getRechargeMethod() {
+        return rechargeMethod;
+    }
+
+    /**
+     * 设置充值方式
+     * @param rechargeMethod
+     */
+    public void setRechargeMethod(Byte rechargeMethod) {
+        this.rechargeMethod = rechargeMethod;
+    }
 
     /**
      * 获取门诊id

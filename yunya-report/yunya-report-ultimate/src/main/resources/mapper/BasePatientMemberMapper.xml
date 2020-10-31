@@ -14,4 +14,55 @@
     <result column="patient_id" property="patientId" jdbcType="INTEGER" />
     <result column="card_opening_date" property="cardOpeningDate" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <!-- 查询会员卡概况 -->
+  <select id="selectMemberOverviewList" resultType="com.yunya.feign.report.domain.vo.BasePatientMemberOverviewVo">
+    select
+    bp.name,
+    bp.mobile,
+    bpm.card_number cardNumber,
+    bo.abbreviation,
+    bpm.card_opening_date cardOpeningDate,
+    sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
+    bpm.bonus_amount bonusAmount
+    from base_patient bp
+    join base_patient_member bpm on bp.patient_id = bpm.patient_id
+    join base_organization bo on bo.org_id = bp.org_id
+    <where>
+      bpm.type = #{form.type}
+      <if test="form.orgIds != null and from.orgIds.size() > 0">
+        AND bp.org_id in
+        <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
+          #{orgId}
+        </foreach>
+      </if>
+
+      <if test="patientIds != null and patientIds.size() > 0 ">
+        AND bp.patient_id in
+        <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+          #{ids}
+        </foreach>
+      </if>
+
+      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+        and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
+        and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
+      </if>
+
+    </where>
+    group by bpm.card_opening_date desc
+  </select>
+
+  <!-- 查询会员卡状态 -->
+  <select id="memberOverviewList" resultType="com.yunya.feign.report.domain.vo.BaseMemberOverviewVo">
+    select
+      bpm.member_level_name memberLevelName,
+      count(bpm.member_level_name) amount,
+      sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
+      sum(bpm.bonus_amount) bonusAmount
+    from base_patient_member bpm
+    where type = 0
+    group by bpm.member_level_name
+  </select>
+
 </mapper>

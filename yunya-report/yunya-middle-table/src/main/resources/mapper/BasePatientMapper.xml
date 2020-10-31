@@ -24,5 +24,7 @@
     <result column="total_arrears" property="totalArrears" jdbcType="INTEGER" />
     <result column="number_of_visits" property="numberOfVisits" jdbcType="INTEGER" />
     <result column="pinyin_name" property="pinyinName" jdbcType="VARCHAR" />
+    <result column="patient_crt_time" property="patientCrtTime" jdbcType="TIMESTAMP" />
+    <result column="origin_type_name" property="originTypeName" jdbcType="VARCHAR" />
   </resultMap>
 </mapper>
