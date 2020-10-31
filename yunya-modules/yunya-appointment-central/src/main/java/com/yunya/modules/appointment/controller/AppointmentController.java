@@ -15,7 +15,10 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.AppointmentBiz;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,8 +26,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -41,7 +42,7 @@ import java.util.List;
 @RequestMapping("appoint")
 public class AppointmentController {
 
-  private Logger logger = LoggerFactory.getLogger(AppointmentController.class);
+  private final Logger logger = LoggerFactory.getLogger(AppointmentController.class);
 
   /** 预约服务 */
   @Autowired private AppointmentBiz appointmentBiz;
@@ -245,14 +246,14 @@ public class AppointmentController {
   @ApiOperation(value = "导出预约列表")
   @PostMapping("/export/list")
   @CurrentUser
-  public ResponseResult exportAppointListToExcel(
+  public ResponseResult<T> exportAppointListToExcel(
           HttpServletResponse response,
           @RequestBody @Validated AppointListExportQuery query) throws IOException {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(),query.getPageSize());
     }
     appointmentBiz.exportAppointListToExcel(response,query);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
 }

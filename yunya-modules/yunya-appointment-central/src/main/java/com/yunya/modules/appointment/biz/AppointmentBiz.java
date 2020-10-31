@@ -3,7 +3,6 @@ package com.yunya.modules.appointment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
-import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.domain.model.AppointOperationModel;
@@ -21,6 +20,7 @@ import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.expand.model.response.EnableEmployeeRes;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -61,6 +61,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+
 /**
  * 患者预约服务
  *
@@ -71,6 +73,11 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
+
+    /** 消息中间件调用 */
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+
     /** 注入yunya-admin-system Feign接口服务 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
@@ -140,6 +147,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             if (index <= 0){
                 return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
             }
+            rabbitMqServiceFeign.sendMessage(appointmentEntity.getId(),0,0, BaseTreatmentProcess);
+
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             // 添加预约时长分解
             if (form.getSplitList() != null && !splitList.isEmpty()){
@@ -186,6 +195,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Appointment build = transferFormToEntity(form);
         int result = mapper.insertAppointment(build);
         if (result > 0) {
+            rabbitMqServiceFeign.sendMessage(build.getId(),0,0, BaseTreatmentProcess);
+
             // 添加预约时长分解
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             if (splitList != null && !splitList.isEmpty()){
@@ -246,9 +257,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         record.setCrtName(BaseContextHandler.getName());
         record.setCrtTime(new Date(System.currentTimeMillis()));
         // 履约
+        int i =0;
         if (appointState == 1){
             appointment.setAppointStatus((byte) 1);
-            mapper.updateByPrimaryKeySelective(appointment);
+            i = mapper.updateByPrimaryKeySelective(appointment);
+
             // 操作记录
             AppointOperationModel model = new AppointOperationModel();
             model.setAppointmentId(id);
@@ -259,7 +272,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 取消预约
             appointment.setAppointStatus((byte) 2);
             appointment.setInservice(false);
-            mapper.updateByPrimaryKeySelective(appointment);
+            i = mapper.updateByPrimaryKeySelective(appointment);
             // 操作记录
             AppointOperationModel model = new AppointOperationModel();
             model.setAppointmentId(id);
@@ -270,13 +283,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 失约
             appointment.setAppointStatus((byte) 3);
             appointment.setInservice(false);
-            mapper.updateByPrimaryKeySelective(appointment);
+            i = mapper.updateByPrimaryKeySelective(appointment);
             // 操作记录
             AppointOperationModel model = new AppointOperationModel();
             model.setAppointmentId(id);
             model.setOperateType((byte) 2);
             model.setRemarks(remarks);
             appointOperateRecordBiz.insertAppointmentOperateRecord(model);
+        }
+        if (i > 0) {
+            rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
         }
         return ResponseUtil.success(appointment);
     }
@@ -321,6 +337,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         record.setOperateType((byte) 2);
         record.setRemarks(cause);
         appointOperateRecordBiz.insertAppointmentOperateRecord(record);
+        // 发送消息更新中间表就诊流程
+        rabbitMqServiceFeign.sendMessage(id,0,2, BaseTreatmentProcess);
         return ResponseUtil.success();
     }
 
@@ -394,12 +412,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
 
         // 查询修改前的预约信息，方便做操作记录使用
-        Appointment appointment = mapper.selectByPrimaryKey(appointmentForm.getId());
+        Integer id = appointmentForm.getId();
+        Appointment appointment = mapper.selectByPrimaryKey(id);
 
         int num = mapper.updateByPrimaryKeySelective(appointEntity);
         if (num <= 0){
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
+        // 发送消息更新中间表就诊流程
+        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
         // 保存预约更新被修改的日期、医生
         appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
@@ -787,6 +808,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointment.setUpdTime(new Date(System.currentTimeMillis()));
         int result = mapper.updateByPrimaryKeySelective(appointment);
         if (result > 0) {
+            // 发送消息更新中间表就诊流程
+            rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
+
             appointOperationModel.setOperateType((byte) 3);
             appointOperationModel.setAppointmentId(appointment.getId());
             appointOperationModel.setOrgId(Integer.valueOf(BaseContextHandler.getUserID()));

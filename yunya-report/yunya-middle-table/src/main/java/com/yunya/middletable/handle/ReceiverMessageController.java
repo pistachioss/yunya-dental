@@ -23,6 +23,8 @@ public class ReceiverMessageController {
   @Autowired private BasePatientBiz basePatientBiz;
   /** 开单项目 */
   @Autowired private BaseTariffInfoBiz tariffInfoBiz;
+  /** 就诊流程 */
+  @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
   @Autowired private BaseBenefitServiceImpl baseBenefitService;
 
   @RabbitHandler
@@ -48,6 +50,9 @@ public class ReceiverMessageController {
           break;
         case BaseTariffInfo:
           tariffInfoBiz.operateTariff(messageModel);
+          break;
+        case BaseTreatmentProcess:
+          treatmentProcessBiz.operateTreatmentProcess(messageModel);
           break;
         case BaseBenefit:
           baseBenefitService.operateBaseBenefit(messageModel);
