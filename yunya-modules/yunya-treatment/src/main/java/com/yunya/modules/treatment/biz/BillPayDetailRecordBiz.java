@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -45,6 +47,9 @@ import static com.yunya.framework.common.constant.RedisConstants.LOCK_BILL_PAY_R
 @Transactional(rollbackFor = Exception.class)
 public class BillPayDetailRecordBiz
     extends BaseBiz<BillPayDetailRecordMapper, BillPayDetailRecord> {
+
+  /** 消息中间件调用 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
@@ -129,8 +134,9 @@ public class BillPayDetailRecordBiz
    * @param form 调整参数
    */
   public void adjustDetail(Integer billPayRecordId, BillPayDetailForm form) {
-    String str = redisUtils.get(LOCK_BILL_PAY_RECORD + billPayRecordId);
-    if (StringHelper.isNotBlank(str)) {
+    String redisKey = LOCK_BILL_PAY_RECORD + billPayRecordId;
+    String redisValue = redisUtils.get(redisKey);
+    if (StringHelper.isNotBlank(redisValue)) {
       throw new ClientServiceException("调整账单入账方式失败，当前收费记录正在被操作，请稍后再试！", DATA_NOT_EXIST);
     }
     BillPayDetailRecord entity = new BillPayDetailRecord();
@@ -149,8 +155,7 @@ public class BillPayDetailRecordBiz
       throw new ClientServiceException(
           "调整账单入账方式失败，本次调整后的入账明细总额与调整前的入账明细总额不相等！", PARAMETERS_IS_ILLEGAL);
     }
-    redisUtils.set(LOCK_BILL_PAY_RECORD + billPayRecordId, billPayRecordId, 5);
-
+    redisUtils.set(redisKey, billPayRecordId, 5);
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
@@ -201,8 +206,8 @@ public class BillPayDetailRecordBiz
           payDetail.setCrtName(name);
           mapper.insertSelective(payDetail);
         });
-
-    redisUtils.delete(LOCK_BILL_PAY_RECORD + billPayRecordId);
+    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    redisUtils.delete(redisKey);
   }
 
   /**

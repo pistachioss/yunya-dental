@@ -6,6 +6,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BillPayRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,9 +38,9 @@ public class BillPayRecordController {
   @CurrentUser
   @ApiOperation("根据账单收费记录ID撤销账单收费记录")
   @GetMapping(value = "/revoke/{billPayRecordId}", name = "根据账单收费记录ID撤销账单收费记录")
-  public ResponseResult revokeBillPayRecord(
+  public ResponseResult<T> revokeBillPayRecord(
       @PathVariable(value = "billPayRecordId") Integer billPayRecordId) {
     billPayRecordBiz.revoke(billPayRecordId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }
