@@ -95,19 +95,7 @@ public class BillExceptionHandleDetailRecordBiz
        }
     }
 
-    if (StringHelper.isNotEmpty(payDetailRecords)) {
-      payDetailRecords.forEach(
-          detailRecord -> {
-            Integer accountItemId = detailRecord.getAccountItemId();
-            // todo 从缓存中查询支付方式
-            AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
-            if (null != accountItem) {
-              detailRecord.setAccountItemName(accountItem.getName());
-            }
-          });
-    } else {
-      payDetailRecords = new ArrayList<>();
-    }
+    payDetailRecords = BillPayDetailRecordBiz.getBillPayDetailRecordVOS(payDetailRecords, systemServiceFeign);
     // 设置修改收费记录
     billAdjustDetail.setBillPayDetailRecords(payDetailRecords);
     BillExceptionHandleDetailRecord entity = new BillExceptionHandleDetailRecord();

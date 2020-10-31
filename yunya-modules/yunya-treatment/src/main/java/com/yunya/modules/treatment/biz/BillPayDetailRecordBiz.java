@@ -76,26 +76,11 @@ public class BillPayDetailRecordBiz
     BillPayRecordVO resultData = new BillPayRecordVO();
     BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(billPayRecordId);
     if (null != billPayRecord) {
-      Boolean inservice = billPayRecord.getInservice();
-      if (inservice) {
+      if (billPayRecord.getInservice()) {
         resultData.setBillPayRecordId(billPayRecordId);
         resultData.setReceivedAmount(billPayRecord.getReceivedAmount());
       }
-      List<BillPayDetailRecordVO> detailRecords =
-          mapper.selectBillPayDetailRecord(billPayRecordId, true);
-      if (StringHelper.isNotEmpty(detailRecords)) {
-        detailRecords.forEach(
-            detailRecord -> {
-              Integer accountItemId = detailRecord.getAccountItemId();
-              // todo 从缓存中查询支付方式
-              AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
-              if (null != accountItem) {
-                detailRecord.setAccountItemName(accountItem.getName());
-              }
-            });
-      } else {
-        detailRecords = new ArrayList<>();
-      }
+      List<BillPayDetailRecordVO> detailRecords = getBillPayDetailRecordList(billPayRecordId);
       resultData.setBillPayDetailRecords(detailRecords);
     }
     return resultData;
@@ -109,22 +94,38 @@ public class BillPayDetailRecordBiz
    */
   public List<BillPayDetailRecordVO> findBillPayDetailRecordByBillPayRecordId(
       Integer billPayRecordId) {
-    List<BillPayDetailRecordVO> resultList =
+    return getBillPayDetailRecordList(billPayRecordId);
+  }
+
+  /**
+   * 根据账单支付记录ID查询账单支付详情列表
+   *
+   * @param billPayRecordId 账单支付记录ID
+   * @return
+   */
+  private List<BillPayDetailRecordVO> getBillPayDetailRecordList(Integer billPayRecordId) {
+    List<BillPayDetailRecordVO> detailRecords =
         mapper.selectBillPayDetailRecord(billPayRecordId, true);
-    if (StringHelper.isNotEmpty(resultList)) {
-      resultList.forEach(
-          vo -> {
-            Integer accountItemId = vo.getAccountItemId();
-            // todo 从缓存中查询入账方式
+    detailRecords = getBillPayDetailRecordVOS(detailRecords, systemServiceFeign);
+    return detailRecords;
+  }
+
+  static List<BillPayDetailRecordVO> getBillPayDetailRecordVOS(
+      List<BillPayDetailRecordVO> detailRecords, RemoteSystemServiceFeign systemServiceFeign) {
+    if (StringHelper.isNotEmpty(detailRecords)) {
+      detailRecords.forEach(
+          detailRecord -> {
+            Integer accountItemId = detailRecord.getAccountItemId();
+            // todo 从缓存中查询支付方式
             AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
             if (null != accountItem) {
-              vo.setAccountItemName(accountItem.getName());
+              detailRecord.setAccountItemName(accountItem.getName());
             }
           });
     } else {
-      resultList = new ArrayList<>();
+      detailRecords = new ArrayList<>();
     }
-    return resultList;
+    return detailRecords;
   }
 
   /**
@@ -174,9 +175,10 @@ public class BillPayDetailRecordBiz
     exceptionHandleRecord.setCrtId(userId);
     exceptionHandleRecord.setCrtName(name);
     // 上一次修改账单记录ID
-    Integer preExceptionHandleRecordId = billExceptionHandleRecordMapper.selectPreExpectionHandleRecordId(billPayRecordId, (byte) 0);
+    Integer preExceptionHandleRecordId =
+        billExceptionHandleRecordMapper.selectPreExpectionHandleRecordId(billPayRecordId, (byte) 0);
     if (preExceptionHandleRecordId == null) {
-        preExceptionHandleRecordId = 0;
+      preExceptionHandleRecordId = 0;
     }
     exceptionHandleRecord.setPreExceptionHandleRecordId(preExceptionHandleRecordId);
     billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
