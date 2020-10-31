@@ -2,10 +2,7 @@ package com.yunya.middletable.handle;
 
 import com.rabbitmq.client.Channel;
 import com.yunya.feign.report.domain.model.MessageModel;
-import com.yunya.middletable.service.BaseBenefitServiceImpl;
-import com.yunya.middletable.service.BaseEmployeeBiz;
-import com.yunya.middletable.service.BaseOrganizationBiz;
-import com.yunya.middletable.service.BaseUserPostBiz;
+import com.yunya.middletable.service.*;
 import com.yunya.middletable.service.patient.BasePatientBiz;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -24,7 +21,8 @@ public class ReceiverMessageController {
   @Autowired private BaseUserPostBiz userPostBiz;
   /** 患者 */
   @Autowired private BasePatientBiz basePatientBiz;
-
+  /** 开单项目 */
+  @Autowired private BaseTariffInfoBiz tariffInfoBiz;
   @Autowired private BaseBenefitServiceImpl baseBenefitService;
 
   @RabbitHandler
@@ -47,6 +45,9 @@ public class ReceiverMessageController {
           break;
         case BasePatient:
           basePatientBiz.operate(messageModel);
+          break;
+        case BaseTariffInfo:
+          tariffInfoBiz.operateTariff(messageModel);
           break;
         case BaseBenefit:
           baseBenefitService.operateBaseBenefit(messageModel);
