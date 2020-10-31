@@ -2059,6 +2059,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         } else {
             build.setClinicDeptRoomName("--");
         }
+        String remarks = appointmentVo.getRemarks();
+        if (StringHelper.isEmpty(remarks)) {
+            build.setRemarks("--");
+        }
+        String appointContent = appointmentVo.getAppointContent();
+        if (StringHelper.isEmpty(appointContent)) {
+            build.setAppointContent("--");
+        }
 
         // 欠费金额 服务还没做，先空着，后面补上 TODO
 
