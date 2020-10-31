@@ -29,7 +29,7 @@ public interface BaseCouponMapper extends Mapper<BaseCoupon> {
 	List<CouponUsedVo> listCouponUsedByParam(@Param("couponName") String couponName, @Param("couponCategoryIds") List<Integer> couponCategoryIds,
 	                                         @Param("couponTypes") List<Integer> couponTypes);
 	/**
-	 * 查询产品使用统计
+	 * 查询充值卡充值统计
 	 */
 	List<RechargeVo> listRechargeByParam(@Param("couponName") String couponName, @Param("couponCategoryIds") List<Integer> couponCategoryIds);
 }

@@ -119,6 +119,49 @@ public class BasePatient {
     private String pinyinName;
 
     /**
+     * 末诊日期
+     */
+    @Column(name = "patient_crt_time")
+    private Date patientCrtTime;
+
+    /** 患者来源名称 */
+    @Column(name = "origin_type_name")
+    private String originTypeName;
+
+
+    /**
+     * 获取患者来源名称
+     * @return originTypeName
+     */
+    public String getOriginTypeName() {
+        return originTypeName;
+    }
+
+    /**
+     * 设置患者来源名称
+     * @param originTypeName 患者来源名称
+     */
+    public void setOriginTypeName(String originTypeName) {
+        this.originTypeName = originTypeName;
+    }
+
+    /**
+     * 获取患者创建时间
+     * @return
+     */
+    public Date getPatientCrtTime() {
+        return patientCrtTime;
+    }
+
+    /**
+     * 设置患者创建时间
+     * @param patientCrtTime
+     */
+    public void setPatientCrtTime(Date patientCrtTime) {
+        this.patientCrtTime = patientCrtTime;
+    }
+
+    /**
      * 获取患者拼音
      * @return String
      */

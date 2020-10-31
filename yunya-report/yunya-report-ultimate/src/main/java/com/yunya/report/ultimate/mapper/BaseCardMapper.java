@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.vo.CardStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
+import com.yunya.feign.report.domain.vo.RechargeDetailVo;
 import com.yunya.models.report.BaseCard;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -53,4 +54,11 @@ public interface BaseCardMapper extends Mapper<BaseCard> {
 	                                                @Param("allocateOrgIds") List<Integer> allocateOrgIds, @Param("soldTypes") List<Integer> soldTypes,
 	                                                @Param("soldStartDate") LocalDate soldStartDate, @Param("soldEndDate") LocalDate soldEndDate,
 	                                                @Param("soldWays") List<Integer> soldWays, @Param("chargeStatus")List<Integer> chargeStatus);
+	/**
+	 * 充值卡充值统计-充值统计
+	 */
+	List<RechargeDetailVo> listRechargeDetailByParam(@Param("cardNumber") String cardNumber, @Param("patientKeyWord") String patientKeyWord,
+	                                                    @Param("rechargeOrgIds") List<Integer> rechargeOrgIds, @Param("rechargeAccount") String rechargeAccount,
+	                                                    @Param("rechargeStartDate") LocalDate rechargeStartDate, @Param("rechargeEndDate") LocalDate rechargeEndDate,
+	                                                    @Param("couponId") Integer couponId);
 }

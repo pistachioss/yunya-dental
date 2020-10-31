@@ -173,6 +173,12 @@ public class BillPayDetailRecordBiz
     exceptionHandleRecord.setRemark(form.getRemark());
     exceptionHandleRecord.setCrtId(userId);
     exceptionHandleRecord.setCrtName(name);
+    // 上一次修改账单记录ID
+    Integer preExceptionHandleRecordId = billExceptionHandleRecordMapper.selectPreExpectionHandleRecordId(billPayRecordId, (byte) 0);
+    if (preExceptionHandleRecordId == null) {
+        preExceptionHandleRecordId = 0;
+    }
+    exceptionHandleRecord.setPreExceptionHandleRecordId(preExceptionHandleRecordId);
     billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
 
     Integer exceptionHandleRecordId = exceptionHandleRecord.getId();

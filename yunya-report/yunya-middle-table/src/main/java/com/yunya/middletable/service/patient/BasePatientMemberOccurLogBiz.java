@@ -611,6 +611,7 @@ public class BasePatientMemberOccurLogBiz
       basePatientMemberOccurLog.setOccurDate(prepaidRechargeRecord.getCrtTime());
       basePatientMemberOccurLog.setRechargeCardNumber(prepaidRechargeRecord.getRechargeCardNumber());
       basePatientMemberOccurLog.setOrgId(prepaidRechargeRecord.getOrgId());
+      basePatientMemberOccurLog.setRechargeMethod(prepaidRechargeRecord.getRechargeType());
       return basePatientMemberOccurLog;
   }
     return null;

@@ -18,4 +18,14 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    */
   List<BillPayDetailRecordVO> selectBillPayDetailRecord(
       @Param("billPayRecordId") Integer billPayRecordId, @Param("inservice") Boolean inservice);
+
+  /**
+   * 账单异常处理数据详情记录ID查询异常处理记录
+   *
+   * @param id 账单异常处理数据详情记录ID
+   * @param inservice 是否有效
+   * @return
+   */
+  BillPayDetailRecordVO selectPreBillPayDetailRecord(
+          @Param("id") Integer id, @Param("inservice") Boolean inservice);
 }

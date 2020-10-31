@@ -11,8 +11,27 @@ import java.util.Map;
 @Slf4j
 @Component
 public class RabbitMqFallBackFactory implements RemoteRabbitMqServiceFeign {
-    @Override
-    public String sendMessage(MessageModel messageModel) {
+	@Override
+	public String sendMessage(MessageModel messageModel) {
+		log.error("remoteRabbitMqServiceFeign: rabbitmq service 未启用");
+		return "fail";
+	}
+
+	@Override
+    public String sendMessage(Integer dataId, Integer operateType, MsgCategoryEnum msgCategoryEnum) {
+		log.error("remoteRabbitMqServiceFeign: rabbitmq service 未启用");
+		return "fail";
+	}
+
+	@Override
+    public String sendMessage(Integer dataId, Integer dateType, Integer operateType, MsgCategoryEnum msgCategoryEnum) {
+		log.error("remoteRabbitMqServiceFeign: rabbitmq service 未启用");
+		return "fail";
+
+	}
+
+	@Override
+    public String sendMessage(Map<String, Object> paramMap, Integer operateType, MsgCategoryEnum msgCategoryEnum) {
         log.error("remoteRabbitMqServiceFeign: rabbitmq service 未启用");
         return "fail";
     }
