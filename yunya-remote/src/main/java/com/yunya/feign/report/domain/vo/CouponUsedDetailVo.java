@@ -6,7 +6,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 /**
  * @author xiangyang
@@ -29,7 +28,7 @@ public class CouponUsedDetailVo {
 	private String usedClinicName;
 	@ApiModelProperty(value = "使用时间")
 	@ExcelProperty(value = "使用时间")
-	private LocalDate usedDate;
+	private String usedDate;
 	@ApiModelProperty(value = "使用患者")
 	@ExcelProperty(value = "使用患者")
 	private String usedPatientName;

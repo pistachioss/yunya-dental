@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 /**
  * @author xiangyang
  * @date 2020/10/26
@@ -16,7 +14,7 @@ import java.time.LocalDate;
 public class CardStatisticsVo {
 	@ApiModelProperty(value = "售出日期")
 	@ExcelProperty("售出日期")
-	private LocalDate soldDate;
+	private String soldDate;
 	@ApiModelProperty(value = "卡号")
 	@ExcelProperty("卡号")
 	private String cardNumber;
@@ -43,7 +41,7 @@ public class CardStatisticsVo {
 	private String soldUser;
 	@ApiModelProperty(value = "激活日期")
 	@ExcelProperty("激活日期")
-	private LocalDate activeDate;
+	private String activeDate;
 	@ApiModelProperty(value = "激活门诊")
 	@ExcelProperty("激活门诊")
 	private String activeOrgName;
@@ -58,7 +56,7 @@ public class CardStatisticsVo {
 	private String cardOwnerPhoneNumber;
 	@ApiModelProperty(value = "卡券使用有效截止日期")
 	@ExcelProperty("卡券使用有效截止日期")
-	private LocalDate activationDeadline;
+	private String activationDeadline;
 	@ApiModelProperty(value = "是否已使用（0-否 1-是）")
 	@ExcelProperty("是否已使用")
 	private Integer used;

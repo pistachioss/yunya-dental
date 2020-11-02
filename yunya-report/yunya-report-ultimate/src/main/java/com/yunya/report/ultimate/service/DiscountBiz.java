@@ -3,8 +3,10 @@ package com.yunya.report.ultimate.service;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.CardSoldRecordQuery;
 import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CardStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardUsedRecordQuery;
 import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
@@ -17,9 +19,11 @@ import com.yunya.feign.report.domain.query.RechargeDetailQuery;
 import com.yunya.feign.report.domain.query.RechargeQuery;
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
 import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
+import com.yunya.feign.report.domain.vo.CouponSoldRecordVo;
 import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
@@ -216,11 +220,39 @@ public class DiscountBiz {
 		return new PageInfo<>(page);
 	}
 
+	/**
+	 * 产品记录-产品售出记录
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<CouponSoldRecordVo> getCardSoldRecordPage(CardSoldRecordQuery query) {
+		Page<CouponSoldRecordVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		cardMapper.listCardSoldRecord(query.getOrgId(), query.getSoldStartDate(), query.getSoldEndDate(),
+				query.getCouponName(), query.getCardNumber(), query.getSoldTarget(), query.getSoldPhoneNumber(),
+				query.getCouponTypes());
+		return new PageInfo<>(page);
+	}
+
+	/**
+	 * 产品记录-产品使用记录
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<CardUsedRecordVo> getCardUsedRecordPage(CardUsedRecordQuery query) {
+		Page<CardUsedRecordVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCardUsedRecordByParam(query.getOrgId(), query.getUsedStartDate(), query.getUsedEndDate(),
+				query.getCouponName(), query.getCardNumber(), query.getPatientKeyword(), query.getCouponTypes(),
+				query.getSaleChannelIds());
+		return new PageInfo<>(page);
+	}
+
 	public void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
 		response.setContentType("application/vnd.ms-excel");
 		response.setCharacterEncoding("utf-8");
 		response.setHeader("Content-disposition", "attachment;filename=" +
-				URLEncoder.encode(fileName, "UTF-8") + ".xls");
+				URLEncoder.encode(fileName, "UTF-8") + ".xlsx");
 	}
 
 	public String getCouponName(Integer couponId) {

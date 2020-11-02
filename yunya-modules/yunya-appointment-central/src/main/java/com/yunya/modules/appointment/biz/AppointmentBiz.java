@@ -48,6 +48,7 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -124,7 +126,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return ResponseResult
      * @throws ParseException 日期转换异常
      */
-    public ResponseResult addAppointment(AppointmentBaseModel form) throws ParseException {
+    public ResponseResult<T> addAppointment(AppointmentBaseModel form) throws ParseException {
         // 检查预约当天预约的医生是否排班
         ResponseResult dentistSchedulingConflict = this.checkScheduling(form);
         if (null != dentistSchedulingConflict){
@@ -376,9 +378,21 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private List<AppointmentSplitBaseInfo> checkAppointSplitField(List<AppointmentSplitBaseInfo> splitList) {
         if (!StringHelper.isEmpty(splitList)) {
-            return splitList.stream().filter(appointmentSplitBaseInfo -> appointmentSplitBaseInfo.getAssistantId() == null ||
+            List<AppointmentSplitBaseInfo> splitBaseInfos = splitList.stream().filter(appointmentSplitBaseInfo -> appointmentSplitBaseInfo.getAssistantId() == null ||
                      appointmentSplitBaseInfo.getSplitEndTime() == null ||
                      appointmentSplitBaseInfo.getSplitEndTime() == null).collect(Collectors.toList());
+            if (StringHelper.isEmpty(splitBaseInfos)) {
+                int position = 0;
+                for (int index = 0; index < splitList.size(); index++) {
+                    AppointmentSplitBaseInfo baseInfo = splitList.get(index);
+                    for (position = index+1; position < splitList.size(); position++) {
+                        AppointmentSplitBaseInfo baseInfo1 = splitList.get(position);
+                        if (baseInfo.getAssistantId().equals(baseInfo1.getAssistantId())) {
+                            return splitList;
+                        }
+                    }
+                }
+            }
         }
         return null;
     }
