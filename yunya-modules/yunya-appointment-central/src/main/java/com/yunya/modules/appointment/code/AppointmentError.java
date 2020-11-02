@@ -55,7 +55,7 @@ public enum AppointmentError {
     /** 11027-该条预约不允许取消 */
     APPOINT_NOT_ALLOW_CANCEL(27,"该条预约不允许取消"),
     /** 11028-预约分解参数错误 */
-    APPOINT_SPLIT_PARAM_ERR(28,"预约分解参数错误"),
+    APPOINT_SPLIT_PARAM_ERR(28,"预约分解错误,请检查预约分解时间段和分解助手是否正确"),
     /** 11029-文本长度超过了最大可输入长度,请重新输入 */
     TEXT_MAX_LENGTH_ERROR(29,"文本长度超过了最大可输入长度,请重新输入"),
 
