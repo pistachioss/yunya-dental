@@ -142,7 +142,7 @@
                 </configuration>
             </plugin>
         </plugins>
-        <finalName>${project.name}-${project.version}</finalName>
+        <finalName>${project.name}</finalName>
     </build>
 
 </project>
