@@ -6,7 +6,6 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -20,6 +19,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
+import com.yunya.modules.system.domain.form.ForgetPasswordForm;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
 import com.yunya.modules.system.domain.form.ModificationPasswordForm;
 import com.yunya.modules.system.domain.form.SysUserForm;
@@ -28,14 +28,12 @@ import com.yunya.modules.system.mapper.SysEmployeeMapper;
 import com.yunya.modules.system.mapper.SysUserMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -325,25 +323,16 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   /**
    * 修改用户密码
    * @param form 密码表单
+   * @return
    */
-  public ResponseResult<T> modificationPassword(ModificationPasswordForm form) {
+  public ResponseResult modificationPassword(ModificationPasswordForm form) {
     String oldPwd = form.getOldPwd();
     String newPwd = form.getNewPwd();
     String confirmPwd = form.getConfirmPwd();
-    String authCode = form.getAuthCode();
-    String userID = BaseContextHandler.getUserID();
+    String userId = BaseContextHandler.getUserID();
     // 通过userID查询用户信息
-    SysUser sysUser = mapper.selectByPrimaryKey(userID);
+    SysUser sysUser = mapper.selectByPrimaryKey(userId);
     String originPwd = sysUser.getPassword();
-    // 校验短信验证码是否正确
-    String key = RedisConstants.MODIFICATION_PWD_AUTHORIZATION + userID;
-    if (!redisUtils.hasKey(key)) {
-      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"请发送短信验证",null);
-    }
-    String cacheCode = redisUtils.get(key);
-    if (!authCode.equals(cacheCode)) {
-      return ResponseUtil.fail(OperationCodeConstants.MESSAGE_CODE_ERROR,"短信验证码输入错误",null);
-    }
 
     // 校验旧密码是否正确
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
@@ -361,12 +350,47 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   }
 
   /**
+   * 忘记密码
+   * @param form 忘记密码表单
+   * @return 返回状态
+   */
+  public ResponseResult forgetPassword(ForgetPasswordForm form) {
+    String newPwd = form.getNewPwd();
+    String confirmPwd = form.getConfirmPwd();
+    String authCode = form.getAuthCode();
+    String userid = BaseContextHandler.getUserID();
+    String mobile = form.getMobile();
+
+    // 验证新密码和确认密码是否相同
+    if (!newPwd.equals(confirmPwd)) {
+      return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"新密码和确认密码不一致",null);
+    }
+    // 短信验证码是否正确
+    String key = RedisConstants.FORGET_PWD_AUTHORIZATION + mobile;
+    if (!redisUtils.hasKey(key)) {
+      return ResponseUtil.fail(DATA_NOT_EXIST,"验证码过期,请重新发送",null);
+    }
+    String authCordCache = redisUtils.get(key);
+    if (!authCordCache.equals(authCode)) {
+      return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"验证码无效,请重新发送",null);
+    }
+    SysUser sysUser = mapper.selectByPrimaryKey(Integer.valueOf(userid));
+    if (null != sysUser) {
+      // 密码加密，加盐，设置默认密码
+      sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode(newPwd));
+      mapper.updateByPrimaryKey(sysUser);
+    }
+    return ResponseUtil.success();
+  }
+
+
+  /**
+   * @param mobile 手机号
    * 获取修改密码短信验证码
    */
-  public ResponseResult authorizationCode() {
-    String userId = BaseContextHandler.getUserID();
+  public ResponseResult authorizationCode(String mobile) {
     String  messageCode = this.messageCodeGenerator();
-    String key = RedisConstants.MODIFICATION_PWD_AUTHORIZATION + userId;
+    String key = RedisConstants.FORGET_PWD_AUTHORIZATION + mobile;
     if (redisUtils.hasKey(key)) {
       return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送,稍后再试",null);
     }

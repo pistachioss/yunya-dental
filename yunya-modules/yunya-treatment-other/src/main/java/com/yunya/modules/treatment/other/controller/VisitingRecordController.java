@@ -18,6 +18,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.CustomLog;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -125,8 +126,19 @@ public class VisitingRecordController {
     @ApiOperation(value = "随访完成（随访完成-提交）")
     @PostMapping("/finish")
     @CurrentUser
-    public ResponseResult finishVisiting(@RequestBody @Validated FinishVisitingForm form) {
+    public ResponseResult<T> finishVisiting(@RequestBody @Validated FinishVisitingForm form) {
         return visitingRecordBiz.finishVisiting(form);
+    }
+
+    /**
+     *
+     * @param dentistId
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public ResponseResult findVisitingForMonth(Integer dentistId,String startDate,String endDate) {
+        return ResponseUtil.success();
     }
 
 }
