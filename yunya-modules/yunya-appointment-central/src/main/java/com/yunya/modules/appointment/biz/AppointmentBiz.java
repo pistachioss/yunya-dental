@@ -781,7 +781,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointmentVo.setPatientName(name);
             // 设置患者手机号
             String mobile = patientBaseInfo.getMobile();
-            appointmentVo.setMobile(mobile);
+            appointmentVo.setPatientMobile(mobile);
         }
         // 查询预约分解信息
         AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
