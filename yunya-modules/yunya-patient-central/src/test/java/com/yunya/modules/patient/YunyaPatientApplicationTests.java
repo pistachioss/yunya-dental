@@ -10,6 +10,7 @@ import com.uniubi.sdk.model.DeviceOutput;
 import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.uniubi.sdk.model.ResultPageResultBeanAuthOutput;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.framework.common.utils.CompareList;
 import com.yunya.framework.common.utils.MD5Util;
 import com.yunya.modules.patient.tokenApi.TokenTask;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
@@ -364,6 +365,38 @@ class YunyaPatientApplicationTests {
         }
     }
 
+
+    @Test
+    public void CompareList(){
+        List<String> a = new ArrayList<>();
+        a.add("A");
+        a.add("B");
+        a.add("B");
+        a.add("B");
+        a.add("B");
+        a.add("C");
+        a.add("C");
+        a.add("C");
+        a.add("D");
+        a.add("E");
+        a.add("E");
+        a.add("E");
+        a.add("E");
+        List<String> b = new ArrayList<>();
+        b.add("A");
+        b.add("B");
+        b.add("C");
+        b.add("D");
+        List<String> addaListThanbList = CompareList.getAddaListThanbList(a, b);
+        System.out.println(addaListThanbList.toString());
+        List<String> cleanDisRepet = CompareList.cleanDisRepet(addaListThanbList);
+        System.out.println(cleanDisRepet.toString());
+    System.out.println("------------------");
+        List<String> remove = CompareList.getReduceaListThanbList(a, b);
+        System.out.println(remove.toString());
+        List<String> strings = CompareList.cleanDisRepet(remove);
+    System.out.println(strings);
+    }
 
 
 

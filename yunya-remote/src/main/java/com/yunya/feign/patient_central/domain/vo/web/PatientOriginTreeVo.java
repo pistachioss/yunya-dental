@@ -8,7 +8,7 @@ import lombok.ToString;
 import java.util.Date;
 
 /**
- * 简单介绍:</br> 患者来来源数据返回Vo
+ * 简单介绍:</br> 返回患者来源数据信息模型
  *
  * @author: WY
  * @date 2020/8/5 14:46
@@ -17,7 +17,7 @@ import java.util.Date;
  */
 @Data
 @ToString
-@ApiModel("患者来来源数据返回Vo")
+@ApiModel("返回患者来源数据信息模型")
 public class PatientOriginTreeVo extends TreeNode {
     /**
      * 患者来源ID

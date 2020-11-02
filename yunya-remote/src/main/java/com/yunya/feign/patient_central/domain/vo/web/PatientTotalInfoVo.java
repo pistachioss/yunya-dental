@@ -1,12 +1,13 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
 
 /**
- * 简介: 患者全部信息VO
+ * 简介: 返回患者全部信息模型
  *
  * @author: chow
  * @date: 2020/8/12 13:08
@@ -15,6 +16,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
+@ApiModel("返回患者全部信息模型")
 public class PatientTotalInfoVo implements Serializable {
   /*************** 基础信息 **************/
   /** 患者ID */

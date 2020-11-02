@@ -86,6 +86,7 @@
     from base_patient bp
     <where>
        bp.origin_type_name is not null
+       and bp.origin_type is not null
       <if test="form.orgId != null and form.orgId != ''">
         AND bp.org_id = #{form.orgId}
       </if>
@@ -114,6 +115,7 @@
     from base_patient bp
     <where>
       bp.origin_type_name is not null
+      and bp.origin_type is not null
       <if test="form.orgId != null and form.orgId != ''">
         AND bp.org_id = #{form.orgId}
       </if>
@@ -138,6 +140,7 @@
     select count(bp.gender)
     from base_patient bp
     <where>
+      bp.gender is not null
       <if test="form.orgId != null and form.orgId != ''">
         AND bp.org_id = #{form.orgId}
       </if>
@@ -166,6 +169,7 @@
       concat( format(count(bp.gender) / ${countGender} * 100, 2 ),'%') percentage
     from base_patient bp
     <where>
+      bp.gender is not null
       <if test="form.orgId != null and form.orgId != ''">
         AND bp.org_id = #{form.orgId}
       </if>
@@ -189,6 +193,7 @@
   <select id="selectCountAnalysisAge" resultType="java.lang.Integer">
     select count(1) from base_patient bp
     <where>
+      bp.birthday is not null
       <if test="form.orgId != null and form.orgId != ''">
         AND bp.org_id = #{form.orgId}
       </if>
@@ -211,6 +216,7 @@
   <select id="selectAnalysisAge" resultType="java.lang.Integer">
     select count(1) from base_patient bp
     <where>
+      bp.birthday is not null
       <if test="form.orgId != null and form.orgId != ''">
         AND bp.org_id = #{form.orgId}
       </if>

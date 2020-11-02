@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -8,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 简单介绍:</br> 预付款基本信息Vo
+ * 简单介绍:</br> 返回预付款基本信息模型
  *
  * @author: WY
  * @date 2020/7/31 9:46
@@ -17,6 +18,7 @@ import java.util.Date;
  */
 @Data
 @ToString
+@ApiModel("返回预付款基本信息模型")
 public class PatientPrepaymentsInfoVo implements Serializable {
     /**
      * 主键id

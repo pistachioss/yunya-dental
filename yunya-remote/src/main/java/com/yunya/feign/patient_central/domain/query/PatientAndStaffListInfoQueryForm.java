@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.query;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -16,6 +17,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
+@ApiModel("模糊查询员工和患者信息参数模型")
 public class PatientAndStaffListInfoQueryForm implements Serializable {
 
     /**

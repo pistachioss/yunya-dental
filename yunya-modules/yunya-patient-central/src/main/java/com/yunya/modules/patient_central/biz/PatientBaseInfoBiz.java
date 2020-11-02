@@ -1,10 +1,12 @@
 package com.yunya.modules.patient_central.biz;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
@@ -86,7 +88,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /** 设备心跳回调 */
   @Autowired private InformationCallbackBiz informationCallbackBiz;
 
+  /** 注入服务 */
   @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+
+  /** 标签Mapper */
+  @Autowired private PatientLabelRecordMapper patientLabelRecordMapper;
+
 
   /**
    * 通过患者id查询患者共用属性
@@ -139,17 +146,19 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
       return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
+    if (patientBaseInfo.getOriginId() != null){
       PatientOrigin patientOrigin =
               this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
       if (patientOrigin != null) {
         patientBaseInfo.setOriginType(patientOrigin.getOriginType());
       }
+    }
 
-      patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-      patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientBaseInfo.setCrtName(BaseContextHandler.getName());
-      patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      mapper.insertSelective(patientBaseInfo);
+    patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+    patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientBaseInfo.setCrtName(BaseContextHandler.getName());
+    patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    mapper.insertSelective(patientBaseInfo);
 
       /*// 创建硬件任务 创建人员
       JSONObject object = new JSONObject();
@@ -272,13 +281,17 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
-    PatientOrigin patientOrigin =
-        patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
-    if (patientOrigin == null) {
-      return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者来源信息", "");
+    if (patientBaseInfo.getOriginId() !=null ){
+      PatientOrigin patientOrigin =
+              patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+      if (patientOrigin == null) {
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者来源信息", "");
+      }
+      // 获取患者来源的父级id
+      patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
     }
-    // 获取患者来源的父级id
-    patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
+
+
     // 获取患者来源name
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
@@ -307,49 +320,51 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /**
    * 获取 来源名称 推荐人名称 推荐来源名称
    *
-   * @param patientBaseInfoVo
-   * @return
+   * @param patientBaseInfoVo 患者信息
+   * @return PatientBaseInfoVo
    */
   private PatientBaseInfoVo getTypeName(PatientBaseInfoVo patientBaseInfoVo) {
-    PatientOrigin patientOrigin =
-        patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
-    if (patientOrigin != null) {
-      patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
-    }
-    if (patientBaseInfoVo.getOriginId() != null) {
-      switch (patientBaseInfoVo.getOriginType()) {
-        //查询员工
-        case 1:
-          SysUserEmployeeModel model = new SysUserEmployeeModel();
-          if (patientBaseInfoVo.getSourceId() != null){
-            model.setUserId(patientBaseInfoVo.getSourceId());
-            model.setWhetherPage(false);
-            List<SysUserInfoDetail> list =
-                    remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-            if (!StringHelper.isEmpty(list)) {
-              patientBaseInfoVo.setOriginName(list.get(0).getName());
+    if (patientBaseInfoVo.getOriginType()!= null){
+      PatientOrigin patientOrigin =
+              patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
+      if (patientOrigin != null) {
+        patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
+      }
+      if (patientBaseInfoVo.getOriginId() != null) {
+        switch (patientBaseInfoVo.getOriginType()) {
+          //查询员工
+          case 1:
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            if (patientBaseInfoVo.getSourceId() != null){
+              model.setUserId(patientBaseInfoVo.getSourceId());
+              model.setWhetherPage(false);
+              List<SysUserInfoDetail> list =
+                      remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+              if (!StringHelper.isEmpty(list)) {
+                patientBaseInfoVo.setOriginName(list.get(0).getName());
+              }
             }
-          }
-          break;
+            break;
           //查询患者
-        case 2:
-          if (patientBaseInfoVo.getSourceId() != null){
-            PatientBaseInfo patientBaseInfo =
-                    patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
-            if (patientBaseInfo != null) {
-              patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
+          case 2:
+            if (patientBaseInfoVo.getSourceId() != null){
+              PatientBaseInfo patientBaseInfo =
+                      patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
+              if (patientBaseInfo != null) {
+                patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
+              }
             }
-          }
-          break;
-        default:
-          if (patientBaseInfoVo.getOriginId() != null){
-            PatientOrigin activity =
-                    patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
-            if (activity != null) {
-              patientBaseInfoVo.setOriginName(activity.getName());
+            break;
+          default:
+            if (patientBaseInfoVo.getOriginId() != null){
+              PatientOrigin activity =
+                      patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
+              if (activity != null) {
+                patientBaseInfoVo.setOriginName(activity.getName());
+              }
             }
-          }
-          break;
+            break;
+        }
       }
     }
     // 根据ID查询字典明细
@@ -876,5 +891,32 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     redisUtils.delete("takePhotosPatientId");
     redisUtils.delete("userId");
     redisUtils.delete("userName");
+  }
+
+  /**
+   * 操作标签
+   * @param patientLabelRecordModel 操作标签Model
+   */
+  public void operatingLabel(PatientLabelRecordModel patientLabelRecordModel) {
+      PatientLabelRecord patientLabelRecord = new PatientLabelRecord();
+      BeanUtils.copyProperties(patientLabelRecordModel,patientLabelRecord);
+      patientLabelRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientLabelRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientLabelRecord.setCrtName(BaseContextHandler.getName());
+      patientLabelRecord.setCrtTime(new Date());
+      patientLabelRecordMapper.insert(patientLabelRecord);
+  }
+
+  /**
+   * 查询标签操作记录列表
+   * @return List<PatientLabelRecord>
+   */
+  public List<PatientLabelRecord> labelList(PatientLabelRecordQueryForm form) {
+    if (form.getWhetherPage()) {
+      PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    }
+    PatientLabelRecord patientLabelRecord = new PatientLabelRecord();
+    patientLabelRecord.setPatientId(form.getPatientId());
+   return patientLabelRecordMapper.select(patientLabelRecord);
   }
 }

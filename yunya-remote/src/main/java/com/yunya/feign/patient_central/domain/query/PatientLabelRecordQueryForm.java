@@ -9,17 +9,23 @@ import javax.validation.constraints.Min;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br> 预付款退费记录列表
+ * 简介: 操作标签记录Model
  *
  * @author: WY
- * @date 2020/8/26 16:33
+ * @date: 2020/11/2 10:02
  * @description:
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("查询预付款退费记录信息参数模型")
-public class PrepaidMeturnRecordQueryForm implements Serializable {
+@ApiModel("查询标签记录Model")
+public class PatientLabelRecordQueryForm implements Serializable {
+
+    /**
+     * 患者ID
+     */
+    @ApiModelProperty(value = "患者id",required = true)
+    private Integer patientId;
 
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;
@@ -31,17 +37,5 @@ public class PrepaidMeturnRecordQueryForm implements Serializable {
     @ApiModelProperty("每页显示数量")
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
-
-    /**
-     *  预付款卡号
-     */
-    @ApiModelProperty(value = "预付款卡号",required = true)
-    private String prepaidId;
-
-    /**
-     *  患者id
-     */
-    @ApiModelProperty(value = "患者id",required = true)
-        private String patientId;
 
 }
