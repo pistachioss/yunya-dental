@@ -43,7 +43,7 @@ public class AccountItemController {
    */
   @ApiOperation("根据ID查询入账方式")
   @GetMapping("/item/one/{id}")
-  public ResponseResult<AccountItemVO> findById(@PathVariable("id") Integer id) {
+  public ResponseResult<AccountItemVO> findById(@PathVariable(value = "id") Integer id) {
     AccountItemVO resultData = accountItemBiz.findById(id);
     return ResponseUtil.success(resultData);
   }
@@ -100,7 +100,7 @@ public class AccountItemController {
    */
   @ApiOperation("根据ID删除入账方式")
   @DeleteMapping("/item/{id}")
-  public ResponseResult<T> deleteById(@PathVariable("id") Integer id) {
+  public ResponseResult<T> deleteById(@PathVariable(value = "id") Integer id) {
     accountItemBiz.deleteAccountItemById(id);
     return ResponseUtil.success(null);
   }
