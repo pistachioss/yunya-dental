@@ -385,7 +385,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 int position = 0;
                 for (int index = 0; index < splitList.size(); index++) {
                     AppointmentSplitBaseInfo baseInfo = splitList.get(index);
-                    for (position = index; position < splitList.size(); position++) {
+                    for (position = index+1; position < splitList.size(); position++) {
                         AppointmentSplitBaseInfo baseInfo1 = splitList.get(position);
                         if (baseInfo.getAssistantId().equals(baseInfo1.getAssistantId())) {
                             return splitList;
