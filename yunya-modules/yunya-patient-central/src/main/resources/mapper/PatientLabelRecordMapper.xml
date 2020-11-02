@@ -15,4 +15,8 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="operating_type" property="operatingType" jdbcType="INTEGER" />
   </resultMap>
+    <select id="selectLabelList"
+            resultType="com.yunya.feign.patient_central.domain.vo.web.PatientLabelRecordVo">
+      select * from patient_label_record where patient_id = #{patientId}
+    </select>
 </mapper>

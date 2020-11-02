@@ -10,10 +10,12 @@ import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientLabelRecordVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientVisitInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -55,6 +57,8 @@ public class PatientBaseInfoController {
    * @param patientBaseInfoModel 新增患者信息
    * @return ResponseResult
    */
+
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("添加患者基本信息信息")
   @PostMapping("/add")
@@ -175,19 +179,19 @@ public class PatientBaseInfoController {
   }
 
 
-  @IgnoreUserToken
+  @CurrentUser
   @ApiOperation(value = "操作标签记录")
-  @RequestMapping(value = "/operatingLabel", method = {RequestMethod.POST})
+  @PostMapping(value = "/operatingLabel")
   public ResponseResult operatingLabel(@RequestBody PatientLabelRecordModel patientLabelRecordModel) {
     patientBaseInfoBiz.operatingLabel(patientLabelRecordModel);
     return ResponseUtil.success();
   }
 
-  @IgnoreUserToken
+  @CurrentUser
   @ApiOperation(value = "查询标签操作记录")
-  @RequestMapping(value = "/labelList", method = {RequestMethod.POST})
-  public ResponseResult<List<PatientLabelRecord>> labelList(@RequestBody PatientLabelRecordQueryForm form) {
-    List<PatientLabelRecord> patientLabelRecordList = patientBaseInfoBiz.labelList(form);
+  @PostMapping(value = "/labelList")
+  public ResponseResult<List<PatientLabelRecordVo>> labelList(@RequestBody PatientLabelRecordQueryForm form) {
+    List<PatientLabelRecordVo> patientLabelRecordList = patientBaseInfoBiz.labelList(form);
     return ResponseUtil.success(patientLabelRecordList);
   }
 

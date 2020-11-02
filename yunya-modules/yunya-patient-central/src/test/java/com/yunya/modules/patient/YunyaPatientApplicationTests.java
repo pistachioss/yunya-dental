@@ -368,7 +368,7 @@ class YunyaPatientApplicationTests {
 
     @Test
     public void CompareList(){
-        List<String> a = new ArrayList<>();
+       /* List<String> a = new ArrayList<>();
         a.add("A");
         a.add("B");
         a.add("B");
@@ -395,7 +395,7 @@ class YunyaPatientApplicationTests {
         List<String> remove = CompareList.getReduceaListThanbList(a, b);
         System.out.println(remove.toString());
         List<String> strings = CompareList.cleanDisRepet(remove);
-    System.out.println(strings);
+    System.out.println(strings);*/
     }
 
 

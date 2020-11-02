@@ -216,6 +216,28 @@
         update patient_base_info set face_url = null where id =#{id}
     </update>
 
+    <!-- 添加患者基本信息 -->
+    <insert id="insertPatientInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT ignore INTO patient_base_info (
+            id,
+            org_id,
+            NAME,
+            pinyin_name,
+            mobile,
+            mobile_owner,
+            gender,
+            birthday,
+            origin_type,
+            origin_id,
+            remarks,
+            inservice,
+            crt_id,
+            crt_name
+        )
+        VALUES(#{id},#{orgId},#{name},#{pinyinName},#{mobile},#{mobileOwner},#{gender},#{birthday},#{originType},
+               #{originId},#{remarks},#{inservice},#{crtId},#{crtName})
+    </insert>
+
 
 </mapper>
 

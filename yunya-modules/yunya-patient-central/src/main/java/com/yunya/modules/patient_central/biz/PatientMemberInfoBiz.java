@@ -7,6 +7,9 @@ import com.yunya.feign.patient_central.domain.form.CardTypeForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.*;
 import com.yunya.feign.patient_central.domain.vo.web.*;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.model.MessageModel;
+import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -26,7 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -56,6 +61,8 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   @Autowired private MemberReturnRecordMapper memberReturnRecordMapper;
   /** 注入会员消费记录Mapper */
   @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
+  /** 注入服务 */
+  @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
   /**
    * 根据患者id查询会员基本信息
@@ -153,6 +160,15 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     patientMemberInfo.setCrtName(BaseContextHandler.getName());
     this.patientMemberInfoMapper.insertSelective(patientMemberInfo);
     this.cardLog(patientMemberInfo, "开卡", "");
+    // 发送 更新中间表 消息
+    MessageModel messageModel = new MessageModel();
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("id", patientMemberInfo.getId());
+    map.put("type", 0);
+    messageModel.setParamMap(map);
+    messageModel.setOperateType(0);
+    messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatient);
+    remoteRabbitMqServiceFeign.sendMessage(messageModel);
   }
 
   /**
