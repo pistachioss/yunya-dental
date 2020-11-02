@@ -29,7 +29,7 @@
             `bp`.`name`                          as `cardOwner`,
             `bcd`.`sale_channel_name`,
             `bo`.`abbreviation`                  as `usedClinicName`,
-            `bf`.`use_date`,
+            date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
             `bp1`.`name`                         as `usedPatientName`,
             `bp1`.`mobile`                       as `usedPatientMobile`,
             `be`.`employee_name`                 as `dentistName`,
@@ -103,7 +103,7 @@
             `bp`.`name`                          as `cardOwner`,
             `bcd`.`sale_channel_name`,
             `bo`.`abbreviation`                  as `usedClinicName`,
-            `bf`.`use_date`,
+            date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
             `bp1`.`name`                         as `usedPatientName`,
             `bp1`.`mobile`                       as `usedPatientMobile`,
             `be`.`employee_name`                 as `dentistName`,
@@ -154,6 +154,59 @@
             <if test="soldChannelIds != null and soldChannelIds.size() > 0">
                 and `bcd`.`sale_channel_id` in
                 <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        group by `bf`.`card_id`, `bf`.`order_id`
+        order by `bf`.`use_date` desc
+    </select>
+
+    <select id="listCardUsedRecordByParam" resultType="com.yunya.feign.report.domain.vo.CardUsedRecordVo">
+        select
+            date_format(`bf`.`use_date`, '%Y-%m-%d') as `usedDate`,
+            date_format(`bb`.`order_date`, '%Y-%m-%d') as `orderDate`,
+            `bb`.`bill_num`                         as `billNumber`,
+                `bp`.`name`                         as `usedPatientName`,
+                `bp`.`mobile`                       as `usedPatientMobile`,
+            `bco`.`coupon_name`,
+            `bco`.coupon_type,
+            `bcd`.`sale_channel_name`,
+            `bcd`.`card_number`,
+            `be`.`employee_name`                    as `operateBenefitUser`
+        from `base_benefit` `bf`
+            inner join `base_coupon` `bco` on `bco`.`coupon_id` = `bf`.`coupon_id`
+            inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
+            inner join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+            <!-- 优惠券使用患者 -->
+            inner join `base_patient` `bp` on `bp`.`patient_id` = `bf`.`patient_id`
+            <!-- 优惠券操作人 -->
+            inner join `base_employee` `be` on `be`.`user_id` = `bf`.`operate_user_id`
+        where `bco`.`coupon_type` != 4
+            <if test="orgId != null">
+                and `bf`.`org_id` = #{orgId}
+            </if>
+            <if test="usedStartDate != null and usedEndDate != null">
+                and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; #{usedEndDate})
+            </if>
+            <if test="couponName !=null and couponName != ''">
+                and `bco`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bcd`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="patientKeyword !=null and patientKeyword != ''">
+                and (`bp1`.`name` like concat('%', #{patientKeyword}, '%') or `bp1`.`mobile` like concat('%', #{patientKeyword}, '%')
+                or `bp1`.`pinyin_name` like concat('%', #{patientKeyword}, '%'))
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `bco`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="saleChannelIds != null and saleChannelIds.size() > 0">
+                and `bcd`.`sale_channel_id` in
+                <foreach collection="saleChannelIds" item="item" open="(" separator="," close=")">
                     #{item}
                 </foreach>
             </if>

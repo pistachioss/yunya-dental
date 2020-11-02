@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 /**
  * @author xiangyang
  * @date 2020/10/27
@@ -16,7 +14,7 @@ import java.time.LocalDate;
 public class RechargeCardStatisticsVo {
 	@ApiModelProperty(value = "售出日期")
 	@ExcelProperty("售出日期")
-	private LocalDate soldDate;
+	private String soldDate;
 	@ApiModelProperty(value = "卡号")
 	@ExcelProperty("卡号")
 	private String cardNumber;
@@ -43,7 +41,7 @@ public class RechargeCardStatisticsVo {
 	private String soldUser;
 	@ApiModelProperty(value = "充值日期")
 	@ExcelProperty("充值日期")
-	private LocalDate rechargeDate;
+	private String rechargeDate;
 	@ApiModelProperty(value = "充值门诊")
 	@ExcelProperty("充值门诊")
 	private String rechargeOrgName;

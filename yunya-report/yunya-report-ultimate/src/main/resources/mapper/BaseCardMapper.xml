@@ -33,7 +33,7 @@
 
     <select id="listCardByParam" resultType="com.yunya.feign.report.domain.vo.CardStatisticsVo">
         select
-            `bc`.`sold_date`,
+             date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
             `bc`.`card_number`,
             (select
                  `abbreviation`
@@ -47,16 +47,16 @@
             (select
                  `employee_name`
              from `base_employee`
-             where `user_id` = `bc`.`seller_user_id`) as `soldUser`,
-            `bc`.`active_date`,
+             where `user_id` = `bc`.`seller_user_id`)   as `soldUser`,
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `activeDate`,
             (select
                  `abbreviation`
              from `base_organization`
-             where `org_id` = `bc`.`active_org_id`)   as `activeOrgName`,
+             where `org_id` = `bc`.`active_org_id`)     as `activeOrgName`,
             (select
                  `employee_name`
              from `base_employee`
-             where `user_id` = `bc`.`active_user_id`) as `activeUser`,
+             where `user_id` = `bc`.`active_user_id`)   as `activeUser`,
             (select
                  `name`
              from `base_patient`
@@ -66,11 +66,11 @@
              from `base_patient`
              where `patient_id` = `bc`.`patient_id`)  as `cardOwnerPhoneNumber`,
             if(isnull(`bc`.`active_date`), null,
-                if(isnull(`b`.`activation_deadline`), date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day),
-                   if(DATE_FORMAT(`b`.`activation_deadline`, '%Y-%m-%d') &gt;
-                      DATE_FORMAT(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
-                      date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day),
-                      `b`.`activation_deadline`)))  as `activationDeadline`,
+                if(isnull(`b`.`activation_deadline`), date_format(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
+                   if(date_format(`b`.`activation_deadline`, '%Y-%m-%d') &gt;
+                        date_format(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
+                            date_format(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
+                            date_format(`b`.`activation_deadline`, '%Y-%m-%d'))))  as `activationDeadline`,
             case
                 when `bc`.`status` in (3, 4) then 1
                 else 0
@@ -126,7 +126,7 @@
 
     <select id="listRechargeUsedByParam" resultType="com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo">
         select
-            `bc`.`sold_date`,
+             date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
             `bc`.`card_number`,
             (select
                  `abbreviation`
@@ -140,16 +140,16 @@
             (select
                  `employee_name`
              from `base_employee`
-             where `user_id` = `bc`.`seller_user_id`) as `soldUser`,
-            `bc`.`active_date`                        as `rechargeDate`,
+             where `user_id` = `bc`.`seller_user_id`)   as `soldUser`,
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `rechargeDate`,
             (select
                  `abbreviation`
              from `base_organization`
-             where `org_id` = `bc`.`active_org_id`)   as `rechargeOrgName`,
+             where `org_id` = `bc`.`active_org_id`)     as `rechargeOrgName`,
             (select
                  `employee_name`
              from `base_employee`
-             where `user_id` = `bc`.`active_user_id`) as `rechargeUser`,
+             where `user_id` = `bc`.`active_user_id`)   as `rechargeUser`,
             (select
                  `name`
              from `base_patient`
@@ -204,7 +204,7 @@
 
     <select id="listCouponSoldDetailByParam" resultType="com.yunya.feign.report.domain.vo.CouponSoldDetailVo">
         select
-            `bc`.`sold_date`,
+            date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
             `bc`.`card_number`,
             (select
                  `abbreviation`
@@ -264,7 +264,7 @@
 
     <select id="listCouponActiveByParam" resultType="com.yunya.feign.report.domain.vo.CouponActiveDetailVo">
         select
-            `bc`.`active_date`,
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `activeDate`,,
             (select
                 `abbreviation`
              from `base_organization`
@@ -314,7 +314,7 @@
 
     <select id="listAllCardSoldParam" resultType="com.yunya.feign.report.domain.vo.CardSoldStatisticsVo">
         select
-            `bc`.`sold_date`,
+            date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
             `b`.`coupon_name`,
             `b`.`sold_amount`,
             `bc`.`card_number`,
@@ -381,11 +381,55 @@
         order by `bc`.`sold_date` desc
     </select>
 
+    <select id="listCardSoldRecord" resultType="com.yunya.feign.report.domain.vo.CouponSoldRecordVo">
+        select
+            date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `b`.`coupon_name`,
+            `b`.`coupon_type`,
+            `bc`.`card_number`,
+            `b`.`sold_amount`,
+            `bc`.`sold_type`,
+            `bc`.`charge_status`,
+            `bc`.`pay_name`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            <if test="orgId != null">
+                and `bc`.`allocate_org_id` = #{orgId}
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="couponName !=null and couponName != ''">
+                and `b`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="soldTarget !=null and soldTarget != ''">
+                and `bc`.`sold_target` like concat('%', #{soldTarget}, '%')
+            </if>
+            <if test="soldPhoneNumber !=null and soldPhoneNumber != ''">
+                and `bc`.`sold_phone_number` like concat('%', #{soldPhoneNumber}, '%')
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `b`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
+
     <select id="listRechargeDetailByParam" resultType="com.yunya.feign.report.domain.vo.RechargeDetailVo">
         select
             `bc`.`card_number`,
             `bo`.`abbreviation`                     as `rechargeOrgName`,
-            `bc`.`active_date`                      as `rechargeDate`,
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `rechargeDate`,
             `bp`.`name`                             as `patientName`,
             `bp`.`mobile`                           as `patientMobile`,
             `bpm`.`card_number`                     as `rechargeAccount`,
