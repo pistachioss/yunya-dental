@@ -78,6 +78,7 @@ public class BaseCardServiceImpl{
 	private BaseCardMapper baseCardMapper;
 
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	private static final DateTimeFormatter dfTime = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	private static final int cutSlice = 100;
 
 	public void operateSingle(MessageModel model) {
@@ -88,7 +89,7 @@ public class BaseCardServiceImpl{
 
 	public void operateBatch(MessageModel model) {
 		Integer cardId = (Integer) model.getParamMap().get("id");
-		LocalDateTime submitDate = (LocalDateTime) model.getParamMap().get("submitDate");
+		LocalDateTime submitDate = LocalDateTime.parse((String)model.getParamMap().get("submitDate"), dfTime);
 //		Integer operateType = model.getOperateType();
 		operateBatchDate(cardId, submitDate);
 	}
@@ -141,14 +142,10 @@ public class BaseCardServiceImpl{
 		} else {
 			List<BaseCard> baseCards = getBaseCards(couponId, submitDate);
 			List<BaseCard> originData = getOriginData(cards);
-			if (CollectionUtils.isEmpty(baseCards)) {
-				baseCardMapper.insertSelective(originData.get(0));
-			} else {
-				List<BaseCard> updateCards = getUpdateCards(originData, baseCards);
-				if (CollectionUtils.isNotEmpty(updateCards)) {
-					baseCardMapper.updateByPrimaryKeySelective(updateCards.get(0));
-				}
-			}
+			//批量新增
+			batchInsert(getAddCards(originData, baseCards));
+			//批量更新
+			batchUpdate(getUpdateCards(originData, baseCards));
 		}
 	}
 
