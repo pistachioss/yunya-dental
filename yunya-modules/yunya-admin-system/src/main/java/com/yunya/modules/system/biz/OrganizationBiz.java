@@ -3,7 +3,6 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -31,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseOrganization;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -141,7 +141,7 @@ public class OrganizationBiz {
     addClinicExtInfo(resource, companyId, type);
     // 发送消息，同步中间表数据
     if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(companyId, 0, MsgCategoryEnum.BaseOrganization);
+      rabbitMqServiceFeign.sendMessage(companyId, 0, BaseOrganization);
     }
   }
 
@@ -191,7 +191,7 @@ public class OrganizationBiz {
     updateOrganizationExtInfo(id, resource, companyType);
     // 发送消息
     if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(id, 1, MsgCategoryEnum.BaseOrganization);
+      rabbitMqServiceFeign.sendMessage(id, 1, BaseOrganization);
     }
   }
 
@@ -358,7 +358,7 @@ public class OrganizationBiz {
     extInfo.setCompanyId(organizationId);
     clinicExtInfoBiz.delete(extInfo);
     if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(organizationId, 2, MsgCategoryEnum.BaseOrganization);
+      rabbitMqServiceFeign.sendMessage(organizationId, 2, BaseOrganization);
     }
   }
 
