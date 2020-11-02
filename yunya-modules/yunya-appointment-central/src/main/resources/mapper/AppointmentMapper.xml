@@ -154,8 +154,8 @@
         a.confirm_status as confirmStatus,
         a.appoint_status as appointStatus,
         a.tooth_bit as toothBit,
-        a.appoint_content as appointContent,
-        a.remarks,
+        IFNULL(a.appoint_content,'--') as appointContent,
+        IFNULL(a.remarks,'--') as remarks,
         a.inservice,
         a.crt_name as crtName,
         a.crt_time as crtTime

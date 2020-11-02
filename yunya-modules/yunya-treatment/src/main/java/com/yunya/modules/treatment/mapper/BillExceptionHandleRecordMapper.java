@@ -16,4 +16,12 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
    */
   List<BillHandleRecordVO> selectBillExceptionHandleRecord(
       @Param("treatmentRecordId") Integer treatmentRecordId);
+
+  /**
+   * 根据账单收费记录ID和操作类型查询上次账单异常处理记录ID
+   * @param billPayRecordId 账单收费记录ID
+   * @param operateType 操作类型
+   * @return
+   */
+  Integer selectPreExpectionHandleRecordId(@Param("billPayRecordId") Integer billPayRecordId, @Param("operateType") Byte operateType);
 }

@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.controller.web;
 
+import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -7,7 +8,10 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.OrderDetailBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -84,4 +88,20 @@ public class OrderDetailController {
     orderDetailBiz.deleteOrderDetailById(id);
     return ResponseUtil.success();
   }
+
+  /**
+   * 修改执行人（患者档案）
+   * @param form 修改表单
+   * @return responseResult
+   */
+  @ApiOperation("修改执行人（患者档案）")
+  @PutMapping("/modification/executor")
+  @CurrentUser
+  public ResponseResult<T> modificationExecutor(@RequestBody @Validated List<ModificationExecutorForm> form) {
+    orderDetailBiz.modificationExecutor(form);
+    return ResponseUtil.success();
+  }
+
+
+
 }

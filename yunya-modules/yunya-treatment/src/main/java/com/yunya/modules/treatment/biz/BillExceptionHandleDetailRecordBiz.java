@@ -9,11 +9,9 @@ import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.AccountItem;
-import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
-import com.yunya.models.treatment.BillPayRecord;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleDetailRecordMapper;
+import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import org.joda.time.DateTime;
@@ -49,15 +47,22 @@ public class BillExceptionHandleDetailRecordBiz
   @Autowired private BillPayRecordMapper billPayRecordMapper;
   /** 账单支付明细记录 */
   @Autowired private BillPayDetailRecordMapper billPayDetailRecordMapper;
+  /** 账单异常处理数据详情记录 */
+  @Autowired
+  private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
+  /** 账单异常处理记录 */
+  @Autowired
+  private BillExceptionHandleRecordMapper billExceptionHandleRecordMapper;
 
   /**
    * 根据账单异常处理记录ID查询
    *
    * @param handledRecordId 被处理记录ID（收费记录）
    * @param billHandleRecordId 账单异常处理记录ID
+   * @param preExceptionHandleRecordId 上一次异常处理记录ID
    */
   public Map<String, Object> findBillPaymentAdjustDetail(
-      Integer handledRecordId, Integer billHandleRecordId) {
+      Integer handledRecordId, Integer billHandleRecordId, Integer preExceptionHandleRecordId) {
     Map<String, Object> resultMap = new HashMap<>(16);
     BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(handledRecordId);
 
@@ -74,23 +79,25 @@ public class BillExceptionHandleDetailRecordBiz
     billAdjustDetail.setPayeeId(billPayRecord.getCrtId());
     billAdjustDetail.setPayeeName(billPayRecord.getCrtName());
     billAdjustDetail.setReceivedAmount(billPayRecord.getReceivedAmount());
-    List<BillPayDetailRecordVO> payDetailRecords =
-        billPayDetailRecordMapper.selectBillPayDetailRecord(handledRecordId, true);
-    if (StringHelper.isNotEmpty(payDetailRecords)) {
-      payDetailRecords.forEach(
-          detailRecord -> {
-            Integer accountItemId = detailRecord.getAccountItemId();
-            // todo 从缓存中查询支付方式
-            AccountItem accountItem = systemServiceFeign.findAccountItemById(accountItemId);
-            if (null != accountItem) {
-              detailRecord.setAccountItemName(accountItem.getName());
-            }
-          });
+    List<BillPayDetailRecordVO> payDetailRecords = null;
+    if (null == preExceptionHandleRecordId) {
+      payDetailRecords = billPayDetailRecordMapper.selectBillPayDetailRecord(handledRecordId, true);
     } else {
       payDetailRecords = new ArrayList<>();
+      BillExceptionHandleDetailRecord behdrEntity = new BillExceptionHandleDetailRecord();
+      behdrEntity.setBillHandleRecordId(preExceptionHandleRecordId);
+      // 根据bill_handle_record_id从账单异常处理数据详情记表中查询记录
+      List<BillExceptionHandleDetailRecord> behdrLists = this.billExceptionHandleDetailRecordMapper.select(behdrEntity);
+      for (BillExceptionHandleDetailRecord behdrItem : behdrLists) {
+        // 根据id 从账单收费详情记录表中查询信息
+        BillPayDetailRecordVO billPayDetailRecordVOS = this.billPayDetailRecordMapper.selectPreBillPayDetailRecord(behdrItem.getAssociateRecordId(), false);
+        payDetailRecords.add(billPayDetailRecordVOS);
+       }
     }
-    billAdjustDetail.setBillPayDetailRecords(payDetailRecords);
 
+    payDetailRecords = BillPayDetailRecordBiz.getBillPayDetailRecordVOS(payDetailRecords, systemServiceFeign);
+    // 设置修改收费记录
+    billAdjustDetail.setBillPayDetailRecords(payDetailRecords);
     BillExceptionHandleDetailRecord entity = new BillExceptionHandleDetailRecord();
     entity.setBillHandleRecordId(billHandleRecordId);
     List<BillExceptionHandleDetailRecord> handleDetailRecords = mapper.select(entity);
@@ -115,8 +122,8 @@ public class BillExceptionHandleDetailRecordBiz
                 afterAdjustBillPayDetails.add(vo);
               });
     }
-    resultMap.put("beforeAdjust", billAdjustDetail);
     resultMap.put("afterAdjust", afterAdjustBillPayDetails);
+    resultMap.put("beforeAdjust", billAdjustDetail);
     return resultMap;
   }
 

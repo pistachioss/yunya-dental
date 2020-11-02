@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
@@ -14,6 +15,7 @@ import java.util.Date;
 public class SysUserPost {
     @ApiModelProperty(hidden = true)
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     @ApiModelProperty(value = "用户ID", required = true)

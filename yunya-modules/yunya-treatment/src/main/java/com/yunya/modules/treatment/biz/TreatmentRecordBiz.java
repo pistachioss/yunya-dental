@@ -6,6 +6,7 @@ import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -42,6 +43,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -64,6 +66,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /** 患者服务调用 */
   @Autowired private PatientCentralServiceFeign patientServiceFeign;
+
+  /** 消息中间件调用 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
@@ -112,7 +117,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     TreatmentRecord entity = new TreatmentRecord();
     Integer orgId = regResult.getOrgId();
     entity.setOrgId(orgId);
-    entity.setAppointmentId(regResult.getAppointmentId());
+    Integer appointmentId = regResult.getAppointmentId();
+    entity.setAppointmentId(appointmentId);
     entity.setRegisteredId(regId);
     entity.setDentistId(regResult.getDentistId());
     Integer patientId = regResult.getPatientId();
@@ -141,7 +147,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       throw new ClientServiceException("接诊失败，该挂号已被接诊，无法再次接诊！", DATA_EXIST);
     }
 
-    mapper.insertSelective(entity);
+    int i = mapper.insertSelective(entity);
     redisUtils.delete(treatingKey);
 
     if (postType == 0) {
@@ -160,6 +166,12 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     regResult.setUpdId(userId);
     regResult.setUpdName(name);
     registeredBiz.updateSelectiveById(regResult);
+    if (i > 0) {
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      }
+      rabbitMqServiceFeign.sendMessage(regId, 1, 1, BaseTreatmentProcess);
+    }
   }
 
   /**
@@ -453,10 +465,25 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       throw new ClientServiceException("结束治疗失败,当前就诊未进行开单，请至少开单一个项目！", DATA_NOT_EXIST);
     }
     orderRecord.setStatus((byte) 1);
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    orderRecord.setUpdId(userId);
+    orderRecord.setUpdName(name);
     orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
     treatmentRecord.setStatus((byte) 2);
-    mapper.updateByPrimaryKeySelective(treatmentRecord);
+    treatmentRecord.setUpdId(userId);
+    treatmentRecord.setUpdName(name);
+    int i = mapper.updateByPrimaryKeySelective(treatmentRecord);
+    if (i > 0) {
+      Integer appointmentId = treatmentRecord.getAppointmentId();
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        Integer registeredId = treatmentRecord.getRegisteredId();
+        rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
+      }
+    }
     // 新增开单处置的随访
     detail.setType((byte) 0);
     List<OrderDetail> orderDetails = orderDetailMapper.select(detail);
@@ -500,8 +527,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           }
         });
     // 设置分组计划
-    List<VisitingRecord> collect =
-            new ArrayList<>(groupVisitRecordMap.values());
+    List<VisitingRecord> collect = new ArrayList<>(groupVisitRecordMap.values());
     treatmentOtherFeign.insertVisitingRecord(collect);
   }
 
@@ -661,6 +687,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /**
    * 末次就诊信息
+   *
    * @param patientId 患者ID
    * @return 返回末次就诊实体对象
    */
@@ -668,6 +695,4 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     LastTreatmentInfoVO lastTreatmentInfoVO = mapper.lastTreatmentInfo(patientId);
     return lastTreatmentInfoVO;
   }
-
-
 }

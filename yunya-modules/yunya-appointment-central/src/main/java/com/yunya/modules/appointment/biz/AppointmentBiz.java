@@ -3,7 +3,6 @@ package com.yunya.modules.appointment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
-import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
 import com.yunya.feign.appointment.domain.model.AppointOperationModel;
@@ -21,6 +20,7 @@ import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.expand.model.response.EnableEmployeeRes;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -61,6 +61,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+
 /**
  * 患者预约服务
  *
@@ -71,6 +73,11 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
+
+    /** 消息中间件调用 */
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+
     /** 注入yunya-admin-system Feign接口服务 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
@@ -140,6 +147,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             if (index <= 0){
                 return ResponseUtil.fail(AppointmentError.APPOINTMENT_FAIL.getCode(),AppointmentError.APPOINTMENT_FAIL.getMessage(),null);
             }
+            rabbitMqServiceFeign.sendMessage(appointmentEntity.getId(),0,0, BaseTreatmentProcess);
+
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             // 添加预约时长分解
             if (form.getSplitList() != null && !splitList.isEmpty()){
@@ -186,6 +195,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Appointment build = transferFormToEntity(form);
         int result = mapper.insertAppointment(build);
         if (result > 0) {
+            rabbitMqServiceFeign.sendMessage(build.getId(),0,0, BaseTreatmentProcess);
+
             // 添加预约时长分解
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             if (splitList != null && !splitList.isEmpty()){
@@ -246,9 +257,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         record.setCrtName(BaseContextHandler.getName());
         record.setCrtTime(new Date(System.currentTimeMillis()));
         // 履约
+        int i =0;
         if (appointState == 1){
             appointment.setAppointStatus((byte) 1);
-            mapper.updateByPrimaryKeySelective(appointment);
+            i = mapper.updateByPrimaryKeySelective(appointment);
+
             // 操作记录
             AppointOperationModel model = new AppointOperationModel();
             model.setAppointmentId(id);
@@ -259,7 +272,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 取消预约
             appointment.setAppointStatus((byte) 2);
             appointment.setInservice(false);
-            mapper.updateByPrimaryKeySelective(appointment);
+            i = mapper.updateByPrimaryKeySelective(appointment);
             // 操作记录
             AppointOperationModel model = new AppointOperationModel();
             model.setAppointmentId(id);
@@ -270,13 +283,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 失约
             appointment.setAppointStatus((byte) 3);
             appointment.setInservice(false);
-            mapper.updateByPrimaryKeySelective(appointment);
+            i = mapper.updateByPrimaryKeySelective(appointment);
             // 操作记录
             AppointOperationModel model = new AppointOperationModel();
             model.setAppointmentId(id);
             model.setOperateType((byte) 2);
             model.setRemarks(remarks);
             appointOperateRecordBiz.insertAppointmentOperateRecord(model);
+        }
+        if (i > 0) {
+            rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
         }
         return ResponseUtil.success(appointment);
     }
@@ -321,6 +337,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         record.setOperateType((byte) 2);
         record.setRemarks(cause);
         appointOperateRecordBiz.insertAppointmentOperateRecord(record);
+        // 发送消息更新中间表就诊流程
+        rabbitMqServiceFeign.sendMessage(id,0,2, BaseTreatmentProcess);
         return ResponseUtil.success();
     }
 
@@ -394,12 +412,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
 
         // 查询修改前的预约信息，方便做操作记录使用
-        Appointment appointment = mapper.selectByPrimaryKey(appointmentForm.getId());
+        Integer id = appointmentForm.getId();
+        Appointment appointment = mapper.selectByPrimaryKey(id);
 
         int num = mapper.updateByPrimaryKeySelective(appointEntity);
         if (num <= 0){
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
+        // 发送消息更新中间表就诊流程
+        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
         // 保存预约更新被修改的日期、医生
         appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
@@ -758,6 +779,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 设置患者名字
             String name = patientBaseInfo.getName();
             appointmentVo.setPatientName(name);
+            // 设置患者手机号
+            String mobile = patientBaseInfo.getMobile();
+            appointmentVo.setMobile(mobile);
         }
         // 查询预约分解信息
         AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
@@ -787,6 +811,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         appointment.setUpdTime(new Date(System.currentTimeMillis()));
         int result = mapper.updateByPrimaryKeySelective(appointment);
         if (result > 0) {
+            // 发送消息更新中间表就诊流程
+            rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
+
             appointOperationModel.setOperateType((byte) 3);
             appointOperationModel.setAppointmentId(appointment.getId());
             appointOperationModel.setOrgId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -1993,7 +2020,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             SysUserInfoDetail dentistInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
             if (dentistInfoDetail != null){
                 build.setDentistName(dentistInfoDetail.getName());
+            } else {
+                build.setDentistName("--");
             }
+        } else {
+            build.setDentistName("--");
         }
 
         // 查询预约助手信息
@@ -2002,7 +2033,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             SysUserInfoDetail assistantInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(assistantId);
             if (assistantInfoDetail != null){
                 build.setAssistantName(assistantInfoDetail.getName());
+            } else {
+                build.setAssistantName("--");
             }
+        } else {
+            build.setAssistantName("--");
         }
 
         // 设置患者详细信息
@@ -2022,7 +2057,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setMobile(patientInfo.getMobile());
                 build.setPatientId(patientInfo.getId());
                 build.setPatientName(patientInfo.getName());
-                build.setPatientRemark(patientInfo.getRemarks());
+                build.setPatientRemark(patientInfo.getRemarks()==null ? "--" : patientInfo.getRemarks());
                 build.setAllergen(patientInfo.getAllergens());
                 build.setPinyinName(patientInfo.getPinyinName());
                 // 设置会员卡图标类型
@@ -2042,7 +2077,19 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             DepartmentRoom departmentRoom = remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
             if (departmentRoom != null){
                 build.setClinicDeptRoomName(departmentRoom.getName());
+            } else {
+                build.setClinicDeptRoomName("--");
             }
+        } else {
+            build.setClinicDeptRoomName("--");
+        }
+        String remarks = appointmentVo.getRemarks();
+        if (StringHelper.isEmpty(remarks)) {
+            build.setRemarks("--");
+        }
+        String appointContent = appointmentVo.getAppointContent();
+        if (StringHelper.isEmpty(appointContent)) {
+            build.setAppointContent("--");
         }
 
         // 欠费金额 服务还没做，先空着，后面补上 TODO
@@ -2078,7 +2125,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 SysEmployee dentistInfo = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
                 if (null != dentistInfo) {
                     appointPatientRecordVo.setDentistName(dentistInfo.getName());
+                } else {
+                    appointPatientRecordVo.setDentistName("--");
                 }
+            } else {
+                appointPatientRecordVo.setDentistName("--");
             }
             // 设置助手名字
             Integer assistantId = appointPatientRecordVo.getAssistantId();
@@ -2086,7 +2137,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 SysEmployee assistantInfo = this.remoteSystemServiceFeign.findSysEmployeeById(assistantId);
                 if (null != assistantInfo) {
                     appointPatientRecordVo.setAssistantName(assistantInfo.getName());
+                } else {
+                    appointPatientRecordVo.setAssistantName("--");
                 }
+            } else {
+                appointPatientRecordVo.setAssistantName("--");
             }
             // 设置门诊名称
             Integer orgId = appointPatientRecordVo.getOrgId();
@@ -2094,7 +2149,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 OrganizationInfo orgInfo = this.remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
                 if (null != orgInfo) {
                     appointPatientRecordVo.setOrgName(orgInfo.getName());
+                } else {
+                    appointPatientRecordVo.setOrgName("--");
                 }
+            } else {
+                appointPatientRecordVo.setOrgName("--");
             }
             // 设置科室名称
             Integer deptRoomId = appointPatientRecordVo.getDeptRoomId();
@@ -2102,7 +2161,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 DepartmentRoom departmentRoomInfo = this.remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
                 if (null != departmentRoomInfo) {
                     appointPatientRecordVo.setDeptRoomName(departmentRoomInfo.getName());
+                } else {
+                    appointPatientRecordVo.setDeptRoomName("--");
                 }
+            } else {
+                appointPatientRecordVo.setDeptRoomName("--");
             }
             // 设置设备编号
             Integer clinicDeviceItemId = appointPatientRecordVo.getClinicDeviceItemId();
@@ -2110,7 +2173,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 DeviceItemVo deviceItemVo = this.clinicDeviceItemBiz.selectDeviceItemById(clinicDeviceItemId);
                 if (null != deviceItemVo) {
                     appointPatientRecordVo.setClinicDeviceItemNumber(deviceItemVo.getNumber());
+                } else {
+                    appointPatientRecordVo.setClinicDeviceItemNumber("--");
                 }
+            } else {
+                appointPatientRecordVo.setClinicDeviceItemNumber("--");
             }
 
         });

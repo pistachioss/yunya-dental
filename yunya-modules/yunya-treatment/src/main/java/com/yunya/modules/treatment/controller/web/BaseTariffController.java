@@ -45,7 +45,7 @@ public class BaseTariffController {
    */
   @ApiOperation("根据ID(基础价目表ID)获取价目表信息(包含门诊价目表价格)")
   @GetMapping("/one/{id}")
-  public ResponseResult findById(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<BaseTariffInfoVO> findById(@PathVariable(value = "id") Integer id) {
     BaseTariffInfoVO resultData = baseTariffBiz.findBaseTariffInfoById(id);
     return ResponseUtil.success(resultData);
   }
@@ -57,7 +57,8 @@ public class BaseTariffController {
    */
   @ApiOperation("根据条件查询基础价目表列表(可分页)")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody BaseTariffQueryForm queryForm) {
+  public ResponseResult<PageInfo<BaseTariffVO>> findList(
+      @RequestBody BaseTariffQueryForm queryForm) {
     PageInfo<BaseTariffVO> resultList = baseTariffBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -71,9 +72,9 @@ public class BaseTariffController {
   @CurrentUser
   @ApiOperation("新增价目表")
   @PostMapping("/add")
-  public ResponseResult save(@RequestBody @Validated BaseTariffModel model) {
+  public ResponseResult<T> save(@RequestBody @Validated BaseTariffModel model) {
     baseTariffBiz.add(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -85,10 +86,10 @@ public class BaseTariffController {
   @CurrentUser
   @ApiOperation("修改价目表信息")
   @PutMapping("/modify/{id}")
-  public ResponseResult modify(
+  public ResponseResult<T> modify(
       @PathVariable(value = "id") Integer id, @RequestBody @Validated BaseTariffForm form) {
     baseTariffBiz.modify(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -99,9 +100,9 @@ public class BaseTariffController {
    */
   @ApiOperation("根据ID删除")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     baseTariffBiz.delete(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -113,7 +114,7 @@ public class BaseTariffController {
   @CurrentUser
   @ApiOperation("导入价目表")
   @PostMapping("/import")
-  public ResponseResult importExcel(MultipartFile excelFile) throws Exception {
+  public ResponseResult<String> importExcel(MultipartFile excelFile) throws Exception {
     String resultStr = baseTariffBiz.importExcel(excelFile);
     return ResponseUtil.success(resultStr);
   }

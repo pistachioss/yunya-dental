@@ -1,13 +1,16 @@
 package com.yunya.models.appointment;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.Date;
-import javax.persistence.*;
 
 public class Appointment {
     /**
      * 主键
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

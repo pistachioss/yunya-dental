@@ -40,6 +40,12 @@ public class BillExceptionHandleRecord {
     private Integer handledRecordId;
 
     /**
+     * 上一次修改支付记录ID(本表中的ID,本表自关联)
+     */
+    @Column(name = "pre_exception_handle_record_id")
+    private Integer preExceptionHandleRecordId;
+
+    /**
      * 操作类型（0-收费方式调整；1-撤销收费；2-修改账单；3-账单退费）
      */
     @Column(name = "operate_type")
@@ -341,5 +347,21 @@ public class BillExceptionHandleRecord {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取上一次修改支付记录ID(本表中的ID,本表自关联)
+     * @return preExceptionHandleRecordId 上一次修改支付记录ID
+     */
+    public Integer getPreExceptionHandleRecordId() {
+        return preExceptionHandleRecordId;
+    }
+
+    /**
+     * 设置上一次修改支付记录ID(本表中的ID,本表自关联)
+     * @param preExceptionHandleRecordId 上一次修改支付记录ID
+     */
+    public void setPreExceptionHandleRecordId(Integer preExceptionHandleRecordId) {
+        this.preExceptionHandleRecordId = preExceptionHandleRecordId;
     }
 }

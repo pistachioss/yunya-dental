@@ -2,6 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.form.EmployeeInfoQueryForm;
 import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -19,9 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DATA_EXIST;
 
@@ -37,6 +38,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DA
 @Transactional(rollbackFor = Exception.class)
 public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
 
+  /** 消息中间件调用 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 注入对象 */
   @Autowired private SysUserPostMapper sysUserPostMapper;
 
@@ -56,7 +59,11 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
     entity.setGroupId(resource.getPostGroupId());
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
-    mapper.insertSelective(entity);
+    int i = mapper.insertSelective(entity);
+    if (i > 0) {
+      // 发送消息同步员工信息
+      rabbitMqServiceFeign.sendMessage(entity.getId(), 0, BaseUserPost);
+    }
   }
 
   /**
@@ -134,8 +141,11 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
     sysUserPost.setGroupId(form.getPostGroupId());
     sysUserPost.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     sysUserPost.setUpdName(BaseContextHandler.getName());
-    sysUserPost.setUpdTime(new Date(System.currentTimeMillis()));
-    mapper.updateByPrimaryKeySelective(sysUserPost);
+    int i = mapper.updateByPrimaryKeySelective(sysUserPost);
+    if (i > 0) {
+      // 发送消息同步员工信息
+      rabbitMqServiceFeign.sendMessage(userPostId, 1, BaseUserPost);
+    }
   }
 
   /**
@@ -144,7 +154,11 @@ public class SysUserPostBiz extends BaseBiz<SysUserPostMapper, SysUserPost> {
    * @param userPostId 可登陆组织ID
    */
   public void remove(Integer userPostId) {
-    mapper.deleteByPrimaryKey(userPostId);
+    int i = mapper.deleteByPrimaryKey(userPostId);
+    if (i > 0) {
+      // 发送消息同步员工可登录组织信息
+      rabbitMqServiceFeign.sendMessage(userPostId, 2, BaseUserPost);
+    }
   }
 
   /**

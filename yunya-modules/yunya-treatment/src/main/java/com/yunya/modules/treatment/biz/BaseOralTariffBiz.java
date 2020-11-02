@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
@@ -16,7 +17,6 @@ import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
 import com.yunya.feign.treatment.domain.vo.ClinicItemPriceVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -53,6 +54,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Transactional(rollbackFor = Exception.class)
 public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTariff> {
 
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 系统服务远程调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 商品分类 */
@@ -130,8 +132,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
         baseOralTariffCategoryMapper.selectByPrimaryKey(categoryId);
     if (null == oralTariffCategory) {
       throw new ClientServiceException(
-          "新增失败，ID为'" + categoryId + "'的商品分类不存在，请选择正确的商品分类！",
-          OperationCodeConstants.QUERY_RESULT_INVALID);
+          "新增失败，ID为'" + categoryId + "'的商品分类不存在，请选择正确的商品分类！", QUERY_RESULT_INVALID);
     }
 
     BaseOralTariff entity = new BaseOralTariff();
@@ -139,8 +140,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     entity.setName(name);
     int count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增失败，商品项目名称'" + name + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增失败，商品项目名称'" + name + "'已存在！", NAME_IS_OCCUPIED);
     }
 
     entity = new BaseOralTariff();
@@ -148,8 +148,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     entity.setItemNumber(number);
     count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增失败，商品项目编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增失败，商品项目编号'" + number + "'已存在！", NAME_IS_OCCUPIED);
     }
 
     String categoryNumber = oralTariffCategory.getNumber().substring(0, 3);
@@ -165,7 +164,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
     entity.setCrtId(crtId);
     entity.setCrtName(crtName);
-    mapper.insertSelective(entity);
+    int i = mapper.insertSelective(entity);
 
     // 添加门诊商品项目
     Integer itemId = entity.getId();
@@ -183,6 +182,10 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     baseOralTariffHistory.setCrtId(crtId);
     baseOralTariffHistory.setCrtName(crtName);
     baseOralTariffHistoryBiz.insertSelective(baseOralTariffHistory);
+    // 发送消息同步价目表
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(itemId, 1, 0, BaseTariffInfo);
+    }
   }
 
   /**
@@ -233,8 +236,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
   public void modify(Integer id, BaseOralTariffForm form) {
     BaseOralTariffInfoVO resultData = findBaseOralTariffInfoById(id);
     if (null == resultData) {
-      throw new ClientServiceException(
-          "修改失败，ID为'" + id + "的商品项目不存在！", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改失败，ID为'" + id + "的商品项目不存在！", QUERY_RESULT_INVALID);
     }
     String resultDataName = resultData.getName();
     String resultDataItemNumber = resultData.getItemNumber();
@@ -247,8 +249,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       entity.setName(name);
       int count = mapper.selectCount(entity);
       if (count > 0) {
-        throw new ClientServiceException(
-            "修改失败，名称为'" + name + "'的商品项目已存在！", OperationCodeConstants.OBJECT_EDIT_FAIL);
+        throw new ClientServiceException("修改失败，名称为'" + name + "'的商品项目已存在！", OBJECT_EDIT_FAIL);
       }
     }
 
@@ -258,8 +259,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       entity.setItemNumber(number);
       int count = mapper.selectCount(entity);
       if (count > 0) {
-        throw new ClientServiceException(
-            "修改失败，商品项目编号'" + number + "'已存在！", OperationCodeConstants.NAME_IS_OCCUPIED);
+        throw new ClientServiceException("修改失败，商品项目编号'" + number + "'已存在！", NAME_IS_OCCUPIED);
       }
     }
 
@@ -273,9 +273,8 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
     entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setUpdName(BaseContextHandler.getName());
-    entity.setUpdTime(new Date(System.currentTimeMillis()));
     entity.setId(id);
-    mapper.updateByPrimaryKeySelective(entity);
+    int i = mapper.updateByPrimaryKeySelective(entity);
 
     List<ClinicItemPriceForm> clinicItemPriceForms = form.getClinicItemPriceForms();
 
@@ -292,6 +291,10 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       baseOralTariffHistory.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       baseOralTariffHistory.setCrtName(BaseContextHandler.getName());
       baseOralTariffHistoryBiz.insertSelective(baseOralTariffHistory);
+    }
+    // 发送消息同步中间表价目信息
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(id, 1, 1, BaseTariffInfo);
     }
   }
 
@@ -340,10 +343,14 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       throw new ClientServiceException(
           "商品项目删除失败，ID为" + oralTariffId + "'的商品项目已被关联！", DELETE_NOT_ALLOW);
     }
-    mapper.deleteByPrimaryKey(oralTariffId);
+    int i = mapper.deleteByPrimaryKey(oralTariffId);
     BaseOralTariffHistory historyEntity = new BaseOralTariffHistory();
     historyEntity.setOralTariffId(oralTariffId);
     baseOralTariffHistoryBiz.delete(historyEntity);
+    // 发送消息同步中间表价目表信息
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(oralTariffId, 1, 2, BaseTariffInfo);
+    }
   }
 
   /**
@@ -356,7 +363,7 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
     ExcelUtil<BaseOralTariffImportModel> excelUtil =
         new ExcelUtil<>(BaseOralTariffImportModel.class);
     List<BaseOralTariffImportModel> models = excelUtil.importExcel(excelFile.getInputStream());
-    if (null == models || models.size() == 0) {
+    if (StringHelper.isEmpty(models)) {
       throw new ClientServiceException("导入失败,导入的商品项目数据不能为空！", PARAM_NOT_ALLOW_EMPTY);
     }
 
@@ -462,18 +469,13 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       Integer oralCategoryId,
       Integer orgId) {
     int itemId;
-    BaseOralTariff itemEntity;
-    itemEntity = new BaseOralTariff();
+    BaseOralTariff itemEntity = new BaseOralTariff();
     itemEntity.setOralTariffCategoryId(oralCategoryId);
     itemEntity.setName(itemName);
     itemEntity.setItemNumber(itemNumber);
     BaseOralTariff itemResult = mapper.selectOne(itemEntity);
 
-    itemEntity = new BaseOralTariff();
-    itemEntity.setOralTariffCategoryId(oralCategoryId);
-    itemEntity.setName(itemName);
     itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
-    itemEntity.setItemNumber(itemNumber);
     itemEntity.setEnglishName(englishName);
     itemEntity.setPrice(price);
     itemEntity.setUnit(unit);
@@ -482,16 +484,23 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       // 新增商品
       itemEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       itemEntity.setCrtName(BaseContextHandler.getName());
-      mapper.insertSelective(itemEntity);
+      int i = mapper.insertSelective(itemEntity);
       itemId = itemEntity.getId();
+      // 发送消息同步中间表价目信息
+      if (i > 0) {
+        rabbitMqServiceFeign.sendMessage(itemId, 1, 0, BaseTariffInfo);
+      }
     } else {
       // 更新商品
       itemEntity.setId(itemResult.getId());
       itemEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       itemEntity.setUpdName(BaseContextHandler.getName());
-      itemEntity.setUpdTime(new Date(System.currentTimeMillis()));
-      mapper.updateByPrimaryKeySelective(itemEntity);
+      int i = mapper.updateByPrimaryKeySelective(itemEntity);
       itemId = itemResult.getId();
+      // 发送消息更新中间表价目信息
+      if (i > 0) {
+        rabbitMqServiceFeign.sendMessage(itemId, 1, 1, BaseTariffInfo);
+      }
     }
 
     ClinicOralTariff clinicItem = new ClinicOralTariff();
@@ -523,18 +532,13 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       String unit,
       BigDecimal price,
       Integer categoryId) {
-    BaseOralTariff itemEntity;
-    itemEntity = new BaseOralTariff();
+    BaseOralTariff itemEntity = new BaseOralTariff();
     itemEntity.setOralTariffCategoryId(categoryId);
     itemEntity.setName(itemName);
     itemEntity.setItemNumber(itemNumber);
     BaseOralTariff itemResult = mapper.selectOne(itemEntity);
 
-    itemEntity = new BaseOralTariff();
-    itemEntity.setOralTariffCategoryId(categoryId);
-    itemEntity.setName(itemName);
     itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
-    itemEntity.setItemNumber(itemNumber);
     itemEntity.setEnglishName(englishName);
     itemEntity.setPrice(price);
     itemEntity.setUnit(unit);
@@ -543,14 +547,22 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       // 新增商品项目
       itemEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       itemEntity.setCrtName(BaseContextHandler.getName());
-      mapper.insertSelective(itemEntity);
+      int i = mapper.insertSelective(itemEntity);
+      // 发送消息同步中间表价目信息
+      if (i > 0) {
+        rabbitMqServiceFeign.sendMessage(itemEntity.getId(), 1, 0, BaseTariffInfo);
+      }
     } else {
       // 更新商品项目
-      itemEntity.setId(itemResult.getId());
+      Integer id = itemResult.getId();
+      itemEntity.setId(id);
       itemEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       itemEntity.setUpdName(BaseContextHandler.getName());
-      itemEntity.setUpdTime(new Date(System.currentTimeMillis()));
-      mapper.updateByPrimaryKeySelective(itemEntity);
+      int i = mapper.updateByPrimaryKeySelective(itemEntity);
+      // 发送消息更新中间表价目信息
+      if (i > 0) {
+        rabbitMqServiceFeign.sendMessage(id, 1, 1, BaseTariffInfo);
+      }
     }
   }
 

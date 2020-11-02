@@ -13,6 +13,7 @@ import com.yunya.modules.system.vo.tree.OrganizationTreeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,7 +47,7 @@ public class OrganizationController {
    */
   @ApiOperation("根据ID获取组织信息")
   @GetMapping("/one/{id}")
-  public ResponseResult findById(@PathVariable Integer id) {
+  public ResponseResult<OrganizationInfo> findById(@PathVariable Integer id) {
     OrganizationInfo vo = organizationBiz.findOrgInfoById(id);
     return ResponseUtil.success(vo);
   }
@@ -58,7 +59,7 @@ public class OrganizationController {
    */
   @ApiOperation("获取组织树列表")
   @GetMapping("/tree")
-  public ResponseResult initOrganizationTree() {
+  public ResponseResult<List<OrganizationTreeVO>> initOrganizationTree() {
     List<OrganizationTreeVO> resultList = organizationBiz.initOrganizationTree();
     return ResponseUtil.success(resultList);
   }
@@ -71,7 +72,8 @@ public class OrganizationController {
    */
   @ApiOperation("根据条件查询组织列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody OrganizationQueryForm queryForm) {
+  public ResponseResult<PageInfo<OrganizationInfoVO>> findList(
+      @RequestBody OrganizationQueryForm queryForm) {
     PageInfo<OrganizationInfoVO> resultList = organizationBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -85,9 +87,9 @@ public class OrganizationController {
   @CurrentUser
   @ApiOperation("新增组织")
   @PostMapping("/add")
-  public ResponseResult addOrganization(@Validated @RequestBody OrganizationForm resource) {
+  public ResponseResult<T> addOrganization(@Validated @RequestBody OrganizationForm resource) {
     organizationBiz.addOrganization(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -106,10 +108,10 @@ public class OrganizationController {
       dataType = "int",
       paramType = "path")
   @PutMapping("/edit/{id}")
-  public ResponseResult editOrganization(
+  public ResponseResult<T> editOrganization(
       @PathVariable Integer id, @Validated @RequestBody OrganizationForm form) {
     organizationBiz.editOrganization(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -126,8 +128,8 @@ public class OrganizationController {
       required = true,
       paramType = "path")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult deleteOrganization(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<T> deleteOrganization(@PathVariable(value = "id") Integer id) {
     organizationBiz.deleteOrganization(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

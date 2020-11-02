@@ -11,6 +11,7 @@ import com.yunya.modules.system.domain.form.SysUserForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,7 +46,7 @@ public class SysUserController {
    */
   @ApiOperation("根据用户名(手机号)查询用户信息")
   @GetMapping("/{username}")
-  public ResponseResult findByUsername(@PathVariable String username) {
+  public ResponseResult<SysUser> findByUsername(@PathVariable String username) {
     SysUser user = sysUserBiz.getUserByUsername(username);
     return ResponseUtil.success(user);
   }
@@ -58,7 +59,7 @@ public class SysUserController {
    */
   @ApiOperation("根据用户ID获取用户信息（包含员工信息）")
   @GetMapping("/one/{id}")
-  public ResponseResult findById(@PathVariable Integer id) {
+  public ResponseResult<SysUserInfoDetail> findById(@PathVariable Integer id) {
     SysUserInfoDetail info = sysUserBiz.findUserInfoByUserId(id);
     return ResponseUtil.success(info);
   }
@@ -71,7 +72,8 @@ public class SysUserController {
    */
   @ApiOperation("根据条件查询用户(员工)详情信息列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody SysUserInfoDetailQueryFrom queryFrom) {
+  public ResponseResult<PageInfo<SysUserInfoDetail>> findList(
+      @RequestBody SysUserInfoDetailQueryFrom queryFrom) {
     PageInfo<SysUserInfoDetail> resultList = sysUserBiz.findUserDetailInfoList(queryFrom);
     return ResponseUtil.success(resultList);
   }
@@ -85,9 +87,9 @@ public class SysUserController {
   @CurrentUser
   @ApiOperation("新增用户")
   @PostMapping("/add")
-  public ResponseResult add(@RequestBody @Validated SysUserForm resource) {
+  public ResponseResult<T> add(@RequestBody @Validated SysUserForm resource) {
     sysUserBiz.add(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -100,10 +102,10 @@ public class SysUserController {
   @CurrentUser
   @ApiOperation("用户修改")
   @PutMapping("/edit/{userId}")
-  public ResponseResult edit(
+  public ResponseResult<T> edit(
       @PathVariable Integer userId, @RequestBody @Validated SysUserForm form) {
     sysUserBiz.edit(userId, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -114,9 +116,9 @@ public class SysUserController {
    */
   @ApiOperation("根据用户ID删除用户")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable Integer id) {
+  public ResponseResult<T> delete(@PathVariable Integer id) {
     sysUserBiz.deleteUserAndEmployeeByUserId(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -128,10 +130,10 @@ public class SysUserController {
    */
   @ApiOperation("根据条件查询员工信息列表并导出列表")
   @PostMapping("/export")
-  public ResponseResult exportUserInfo(
+  public ResponseResult<T> exportUserInfo(
       HttpServletResponse response, @RequestBody SysUserInfoDetailQueryFrom queryFrom)
       throws IOException {
     sysUserBiz.exportUserInfo(response, queryFrom);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }
