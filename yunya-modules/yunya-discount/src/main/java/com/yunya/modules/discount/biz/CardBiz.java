@@ -66,6 +66,8 @@ import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -151,6 +153,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.discount.enums.BenefitTypeEnum.*;
 import static com.yunya.modules.discount.enums.CardQrCodeEnum.*;
@@ -204,6 +207,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private ExecutorService cardThreadPool;
 	@Resource
 	private RemoteTreatmentServiceFeign treatmentServiceFeign;
+	@Resource
+	private RemoteRabbitMqServiceFeign mqServiceFeign;
 
 	/**
 	 * 产品生成分配分页查询
@@ -296,6 +301,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 			long end = System.currentTimeMillis();
 			log.info("卡券[{}]生成分配完成，执行时间[{}]秒[{}]毫秒", couponId, (end - start) / 1000, (end - start) % 1000);
+			mqServiceFeign.sendMessage(buildMessage(couponId, submitDate));
+			log.info("【生成卡券发送消息成功】：优惠券id[{}]批次[{}]", couponId, submitDate);
 			return ResponseUtil.success();
 		} finally {
 			if (locked) {
@@ -2617,4 +2624,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		}
 	}
 
+	private MessageModel buildMessage(Integer id, LocalDateTime submitDate) {
+		MessageModel messageModel = new MessageModel();
+		Map<String, Object> map = Maps.newHashMap();
+		map.put("id", id);
+		map.put("submitDate", submitDate);
+		messageModel.setParamMap(map);
+		messageModel.setMsgCategoryEnum(BaseCardBatch);
+		messageModel.setOperateType(0);
+		return messageModel;
+	}
 }

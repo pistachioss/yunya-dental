@@ -86,7 +86,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/brand/one/{id}", method = RequestMethod.GET)
-  public Brand findBrandById(@PathVariable Integer id) {
+  public Brand findBrandById(@PathVariable(value = "id") Integer id) {
     return brandBiz.selectById(id);
   }
 
@@ -110,7 +110,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/department/{id}", method = RequestMethod.GET)
-  public Department findDepartmentById(@PathVariable Integer id) {
+  public Department findDepartmentById(@PathVariable(value = "id") Integer id) {
     return departmentBiz.selectById(id);
   }
 
@@ -134,7 +134,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/dictionary/{id}", method = RequestMethod.GET)
-  public DictionaryItem findDictionaryItemById(@PathVariable Integer id) {
+  public DictionaryItem findDictionaryItemById(@PathVariable(value = "id") Integer id) {
     return dictionaryItemBiz.selectById(id);
   }
 
@@ -158,7 +158,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/dict/{id}", method = RequestMethod.GET)
-  public DictionaryType findDictionaryTypeById(@PathVariable Integer id) {
+  public DictionaryType findDictionaryTypeById(@PathVariable(value = "id") Integer id) {
     return dictionaryTypeBiz.selectById(id);
   }
 
@@ -182,7 +182,7 @@ public class SystemServiceRest {
    * @return obj
    */
   @RequestMapping(value = "/organization/{id}", method = RequestMethod.GET)
-  public OrganizationInfo findOrgInfoByOrgId(@PathVariable Integer id) {
+  public OrganizationInfo findOrgInfoByOrgId(@PathVariable(value = "id") Integer id) {
     return organizationBiz.findOrgInfoById(id);
   }
 
@@ -204,7 +204,7 @@ public class SystemServiceRest {
    * @return obj
    */
   @RequestMapping(value = "/org/dept/{id}", method = RequestMethod.GET)
-  public CompanyDepartment findCompanyDepartmentById(@PathVariable Integer id) {
+  public CompanyDepartment findCompanyDepartmentById(@PathVariable(value = "id") Integer id) {
     return companyDepartmentBiz.selectById(id);
   }
 
@@ -228,7 +228,7 @@ public class SystemServiceRest {
    * @return obj
    */
   @RequestMapping(value = "/post/one/{id}", method = RequestMethod.GET)
-  public Post findPostById(@PathVariable Integer id) {
+  public Post findPostById(@PathVariable(value = "id") Integer id) {
     return postBiz.selectById(id);
   }
 
@@ -252,7 +252,7 @@ public class SystemServiceRest {
    * @return obj
    */
   @RequestMapping(value = "/post/group/{id}", method = RequestMethod.GET)
-  public PostGroup findPostGroupById(@PathVariable Integer id) {
+  public PostGroup findPostGroupById(@PathVariable(value = "id") Integer id) {
     return postGroupBiz.selectById(id);
   }
 
@@ -276,7 +276,8 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/userInfo/{userId}", method = RequestMethod.GET)
-  public SysUserInfoDetail findSysUserEmployeeInfoByUserId(@PathVariable("userId") Integer userId) {
+  public SysUserInfoDetail findSysUserEmployeeInfoByUserId(
+      @PathVariable(value = "userId") Integer userId) {
     return sysUserBiz.findUserInfoByUserId(userId);
   }
 
@@ -314,7 +315,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/deptRoom/{id}", method = RequestMethod.GET)
-  public DepartmentRoom findDepartmentRoomById(@PathVariable("id") Integer id) {
+  public DepartmentRoom findDepartmentRoomById(@PathVariable(value = "id") Integer id) {
     return departmentRoomBiz.selectById(id);
   }
 
@@ -336,7 +337,8 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/deptRoom/clinic/{id}", method = RequestMethod.GET)
-  public ClinicDepartmentRoomVO findClinicDepartmentRoomById(@PathVariable("id") Integer id) {
+  public ClinicDepartmentRoomVO findClinicDepartmentRoomById(
+      @PathVariable(value = "id") Integer id) {
     return clinicDepartmentRoomBiz.findByClinicDeptRoomId(id);
   }
 
@@ -359,7 +361,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/memberType/{id}", method = RequestMethod.GET)
-  public MemberType findMemberTypeById(@PathVariable("id") Integer id) {
+  public MemberType findMemberTypeById(@PathVariable(value = "id") Integer id) {
     return memberTypeBiz.selectById(id);
   }
 
@@ -381,7 +383,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/accountType/{id}", method = RequestMethod.GET)
-  public AccountType findAccountTypeById(@PathVariable("id") Integer id) {
+  public AccountType findAccountTypeById(@PathVariable(value = "id") Integer id) {
     return accountTypeBiz.selectById(id);
   }
 
@@ -403,7 +405,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/accountItem/{id}", method = RequestMethod.GET)
-  public AccountItem findAccountItemById(@PathVariable("id") Integer id) {
+  public AccountItem findAccountItemById(@PathVariable(value = "id") Integer id) {
     return accountItemBiz.selectById(id);
   }
 
@@ -425,7 +427,7 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/accountItem/clinic/{id}", method = RequestMethod.GET)
-  public ClinicAccountItemVO findClinicAccountItemById(@PathVariable("id") Integer id) {
+  public ClinicAccountItemVO findClinicAccountItemById(@PathVariable(value = "id") Integer id) {
     return clinicAccountItemBiz.findById(id);
   }
 
@@ -443,12 +445,12 @@ public class SystemServiceRest {
 
   /**
    * 获取设备信息
+   *
    * @return EquipmentInfo
    */
   @ApiModelProperty(value = "获取设备信息")
-  @RequestMapping(value = "/equipmentInfoOne",method = RequestMethod.GET)
-  public EquipmentInfo equipmentInfoOne(){
+  @RequestMapping(value = "/equipmentInfoOne", method = RequestMethod.GET)
+  public EquipmentInfo equipmentInfoOne() {
     return equipmentBiz.findEquipmentInfoVO();
   }
-
 }

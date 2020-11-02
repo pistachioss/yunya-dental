@@ -4,14 +4,18 @@ import com.rabbitmq.client.Channel;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.middletable.service.*;
 import com.yunya.middletable.service.patient.BasePatientBiz;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
+
 @Component
 @RabbitListener(queues = {"DirectQueue_MiddleSingle"})
+@Slf4j
 public class ReceiverMessageController {
   /** 组织 */
   @Autowired private BaseOrganizationBiz organizationBiz;
@@ -32,12 +36,14 @@ public class ReceiverMessageController {
 
   @Autowired private BaseBenefitServiceImpl baseBenefitService;
 
+  @Resource
+  private BaseCardServiceImpl baseCardService;
+
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
       throws Exception {
     // 处理消息
-    System.out.println("handleMessage :" + messageModel.getMsgID());
-
+    log.info("handleMessage[{}]", messageModel);
     int result = 0;
     try {
       switch (messageModel.getMsgCategoryEnum()) {
@@ -67,6 +73,9 @@ public class ReceiverMessageController {
           break;
         case BaseBenefit:
           baseBenefitService.operateBaseBenefit(messageModel);
+          break;
+        case BaseCardBatch:
+          baseCardService.operateBatch(messageModel);
           break;
         default:
           break;
