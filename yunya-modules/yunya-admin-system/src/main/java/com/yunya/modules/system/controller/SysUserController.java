@@ -146,7 +146,7 @@ public class SysUserController {
   @ApiOperation("修改用户密码")
   @PostMapping("/modification/password")
   @CurrentUser
-  public ResponseResult<T> modificationPassword(ModificationPasswordForm form) {
+  public ResponseResult<T> modificationPassword(@RequestBody @Validated ModificationPasswordForm form) {
     return sysUserBiz.modificationPassword(form);
   }
 
