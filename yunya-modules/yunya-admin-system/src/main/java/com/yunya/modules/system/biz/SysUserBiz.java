@@ -6,10 +6,14 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.framework.redis.util.RedisUtils;
@@ -17,21 +21,25 @@ import com.yunya.models.system.SysEmployee;
 import com.yunya.models.system.SysUser;
 import com.yunya.models.system.SysUserPost;
 import com.yunya.modules.system.domain.form.LoginOrganizationForm;
+import com.yunya.modules.system.domain.form.ModificationPasswordForm;
 import com.yunya.modules.system.domain.form.SysUserForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.mapper.SysEmployeeMapper;
 import com.yunya.modules.system.mapper.SysUserMapper;
 import com.yunya.modules.system.mapper.SysUserPostMapper;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployee;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
@@ -313,4 +321,81 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     ExcelUtil<SysUserInfoDetail> excelUtil = new ExcelUtil<>(SysUserInfoDetail.class);
     excelUtil.exportExcel(response, details, "员工信息列表");
   }
+
+  /**
+   * 修改用户密码
+   * @param form 密码表单
+   */
+  public ResponseResult<T> modificationPassword(ModificationPasswordForm form) {
+    String oldPwd = form.getOldPwd();
+    String newPwd = form.getNewPwd();
+    String confirmPwd = form.getConfirmPwd();
+    String authCode = form.getAuthCode();
+    String userID = BaseContextHandler.getUserID();
+    // 通过userID查询用户信息
+    SysUser sysUser = mapper.selectByPrimaryKey(userID);
+    String originPwd = sysUser.getPassword();
+    // 校验短信验证码是否正确
+    String key = RedisConstants.MODIFICATION_PWD_AUTHORIZATION + userID;
+    if (!redisUtils.hasKey(key)) {
+      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"请发送短信验证",null);
+    }
+    String cacheCode = redisUtils.get(key);
+    if (!authCode.equals(cacheCode)) {
+      return ResponseUtil.fail(OperationCodeConstants.MESSAGE_CODE_ERROR,"短信验证码输入错误",null);
+    }
+
+    // 校验旧密码是否正确
+    BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+    if (!encoder.matches(oldPwd,originPwd)) {
+      return ResponseUtil.fail(PASSWORD_ERROR,"旧密码输入错误",null);
+    }
+    // 校验新密码和确认密码是否正确
+    if (!newPwd.equals(confirmPwd)) {
+      return ResponseUtil.fail(PASSWORD_ERROR,"新密码和确认密码不一致",null);
+    }
+    // 密码加密，加盐，设置默认密码
+    sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode(newPwd));
+    mapper.updateByPrimaryKey(sysUser);
+    return ResponseUtil.success();
+  }
+
+  /**
+   * 获取修改密码短信验证码
+   */
+  public ResponseResult authorizationCode() {
+    String userId = BaseContextHandler.getUserID();
+    String  messageCode = this.messageCodeGenerator();
+    String key = RedisConstants.MODIFICATION_PWD_AUTHORIZATION + userId;
+    if (redisUtils.hasKey(key)) {
+      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送,稍后再试",null);
+    }
+    redisUtils.set(key,messageCode,60);
+    return ResponseUtil.success(messageCode);
+  }
+
+  /**
+   * 随机生成六位数，并且每位数都不重复
+   * @return 返回短信验证码
+   */
+  private String messageCodeGenerator() {
+    int[] array = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    Random rand = new Random();
+    for (int i = 10; i > 1; i--) {
+      int index = rand.nextInt(i);
+      int tmp = array[index];
+      array[index] = array[i - 1];
+      array[i - 1] = tmp;
+    }
+    int result = 0;
+    for (int i = 0; i < 6; i++) {
+      result = result * 10 + array[i];
+    }
+    if (String.valueOf(result).length() == 6) {
+      return String.valueOf(result);
+    } else {
+      return String.valueOf(messageCodeGenerator());
+    }
+  }
+
 }

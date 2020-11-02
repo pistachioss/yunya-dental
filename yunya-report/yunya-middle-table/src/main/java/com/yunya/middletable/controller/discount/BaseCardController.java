@@ -35,8 +35,15 @@ public class BaseCardController {
 
 	@PostMapping("/base/card/msg/send")
 	public ResponseResult sendMessage(@RequestBody MessageModel model) {
-		cardService.operateBaseCard(model);
+		cardService.operateSingle(model);
 		return ResponseUtil.success();
 	}
+
+	@PostMapping("/base/card/generate/msg/send")
+	public ResponseResult sendBatchMessage(@RequestBody MessageModel model) {
+		cardService.operateBatch(model);
+		return ResponseUtil.success();
+	}
+
 
 }

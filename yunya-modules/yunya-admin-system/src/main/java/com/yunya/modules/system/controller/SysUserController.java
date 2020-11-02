@@ -7,6 +7,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysUser;
 import com.yunya.modules.system.biz.SysUserBiz;
+import com.yunya.modules.system.domain.form.ModificationPasswordForm;
 import com.yunya.modules.system.domain.form.SysUserForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import io.swagger.annotations.Api;
@@ -136,4 +137,28 @@ public class SysUserController {
     sysUserBiz.exportUserInfo(response, queryFrom);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 修改用户密码
+   * @param form 修改用户密码表单
+   * @return 返回状态
+   */
+  @ApiOperation("修改用户密码")
+  @PostMapping("/modification/password")
+  @CurrentUser
+  public ResponseResult<T> modificationPassword(ModificationPasswordForm form) {
+    return sysUserBiz.modificationPassword(form);
+  }
+
+  /**
+   * 获取修改密码短信验证码
+   * @return 返回短信验证码
+   */
+  @ApiOperation("获取修改密码短信验证码")
+  @GetMapping("/authorization/code")
+  @CurrentUser
+  public ResponseResult<T> authorizationCode() {
+    return sysUserBiz.authorizationCode();
+  }
+
 }
