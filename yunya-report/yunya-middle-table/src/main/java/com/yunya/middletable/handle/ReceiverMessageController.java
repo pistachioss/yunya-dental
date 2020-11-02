@@ -101,7 +101,7 @@ public class ReceiverMessageController {
         break;
       case 2:
         // 拒绝消息：requeue=false 表示不再重新入队，如果配置了死信队列则进入死信队列。
-        channel.basicReject(message.getMessageProperties().getDeliveryTag(), true);
+        channel.basicReject(message.getMessageProperties().getDeliveryTag(), false);
         break;
       default:
         break;
