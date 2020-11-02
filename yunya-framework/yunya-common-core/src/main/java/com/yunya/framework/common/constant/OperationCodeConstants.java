@@ -46,4 +46,8 @@ public class OperationCodeConstants {
   public static final Integer PHONE_EXIST = 30018;
   /** 重复提交 */
   public static final Integer REPEAT_SUBMIT = 30019;
+  /** 密码错误 */
+  public static final Integer PASSWORD_ERROR = 30020;
+  /** 短信验证码错误 */
+  public static final Integer MESSAGE_CODE_ERROR = 30021;
 }
