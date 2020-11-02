@@ -23,7 +23,7 @@ public class RechargeDetailVo {
 	private String rechargeOrgName;
 	@ApiModelProperty(value = "充值时间")
 	@ExcelProperty(value = "充值时间")
-	private LocalDate rechargeDate;
+	private String rechargeDate;
 	@ApiModelProperty(value = "患者")
 	@ExcelProperty(value = "患者")
 	private String patientName;

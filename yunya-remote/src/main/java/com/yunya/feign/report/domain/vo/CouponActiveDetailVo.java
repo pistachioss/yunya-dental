@@ -5,8 +5,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 /**
  * @author xiangyang
  * @date 2020/10/28
@@ -16,7 +14,7 @@ import java.time.LocalDate;
 public class CouponActiveDetailVo {
 	@ApiModelProperty(value = "激活日期")
 	@ExcelProperty("激活日期")
-	private LocalDate activeDate;
+	private String activeDate;
 	@ApiModelProperty(value = "激活门诊")
 	@ExcelProperty("激活门诊")
 	private String activeOrgName;
