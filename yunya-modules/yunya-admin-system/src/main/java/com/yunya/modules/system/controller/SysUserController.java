@@ -7,16 +7,20 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysUser;
 import com.yunya.modules.system.biz.SysUserBiz;
+import com.yunya.modules.system.domain.form.ForgetPasswordForm;
 import com.yunya.modules.system.domain.form.ModificationPasswordForm;
 import com.yunya.modules.system.domain.form.SysUserForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Pattern;
 import java.io.IOException;
 
 /**
@@ -146,8 +150,20 @@ public class SysUserController {
   @ApiOperation("修改用户密码")
   @PostMapping("/modification/password")
   @CurrentUser
-  public ResponseResult<T> modificationPassword(@RequestBody @Validated ModificationPasswordForm form) {
+  public ResponseResult modificationPassword(@RequestBody @Validated ModificationPasswordForm form) {
     return sysUserBiz.modificationPassword(form);
+  }
+
+  /**
+   * 忘记密码
+   * @param form 忘记密码表单
+   * @return 返回状态
+   */
+  @ApiOperation("忘记密码")
+  @PostMapping("/forget/password")
+  @CurrentUser
+  public ResponseResult forgetPassword(@RequestBody @Validated ForgetPasswordForm form) {
+    return sysUserBiz.forgetPassword(form);
   }
 
   /**
@@ -157,8 +173,11 @@ public class SysUserController {
   @ApiOperation("获取修改密码短信验证码")
   @GetMapping("/authorization/code")
   @CurrentUser
-  public ResponseResult<T> authorizationCode() {
-    return sysUserBiz.authorizationCode();
+  public ResponseResult authorizationCode(
+          @Pattern(regexp = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$")
+          @NotBlank(message = "手机号不能为空")
+          @ApiParam(name = "mobile", value = "手机号") String mobile) {
+    return sysUserBiz.authorizationCode(mobile);
   }
 
 }
