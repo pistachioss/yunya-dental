@@ -5,8 +5,10 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CardStatisticsQuery;
 import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
+import com.yunya.feign.report.domain.query.CardUsedRecordQuery;
 import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
+import com.yunya.feign.report.domain.query.CardSoldRecordQuery;
 import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
@@ -16,9 +18,11 @@ import com.yunya.feign.report.domain.query.RechargeDetailQuery;
 import com.yunya.feign.report.domain.query.RechargeQuery;
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
+import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
 import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponActiveDetailVo;
 import com.yunya.feign.report.domain.vo.CouponSoldDetailVo;
+import com.yunya.feign.report.domain.vo.CouponSoldRecordVo;
 import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
@@ -131,6 +135,18 @@ public class DiscountController {
 		return ResponseUtil.success(discountBiz.getRechargeDetailPage(couponId, query));
 	}
 
+	@ApiOperation(value = "产品记录-产品售出记录")
+	@PostMapping("/coupon/sold/record")
+	public ResponseResult<PageInfo<CouponSoldRecordVo>> getCardSoldRecord(@Valid @RequestBody CardSoldRecordQuery query) {
+		return ResponseUtil.success(discountBiz.getCardSoldRecordPage(query));
+	}
+
+	@ApiOperation(value = "产品记录-产品使用记录")
+	@PostMapping("/coupon/used/record")
+	public ResponseResult<PageInfo<CardUsedRecordVo>> getCardUsedRecord(@Valid @RequestBody CardUsedRecordQuery query) {
+		return ResponseUtil.success(discountBiz.getCardUsedRecordPage(query));
+	}
+
 	@ApiOperation(value = "产品售出激活统计-售出激活统计（代金、折扣、兑换、套餐）- 导出")
 	@PostMapping("/{couponId}/card/export")
 	public void exportCard(HttpServletResponse response, @PathVariable(value = "couponId") Integer couponId,
@@ -200,4 +216,6 @@ public class DiscountController {
 		EasyExcel.write(response.getOutputStream(), RechargeDetailVo.class)
 				.sheet("sheet").doWrite(discountBiz.getRechargeDetailList(couponId, query));
 	}
+
+
 }

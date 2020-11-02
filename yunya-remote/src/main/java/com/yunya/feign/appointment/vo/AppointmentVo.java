@@ -44,7 +44,7 @@ public class AppointmentVo implements Serializable {
      * 患者手机号
      */
     @ApiModelProperty(value = "患者手机号")
-    private String mobile;
+    private String patientMobile;
 
     /**
      * 诊所ID

@@ -62,7 +62,7 @@ public class HttpIpUtils {
         }
         if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
-            if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
+            if ("127.0.0.1".equals(ip) || "0:0:0:0:0:0:0:1".equals(ip)) {
                 //根据网卡取本机配置的IP
                 InetAddress inet = null;
                 try {
@@ -70,6 +70,7 @@ public class HttpIpUtils {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
+                assert inet != null;
                 ip = inet.getHostAddress();
             }
         }

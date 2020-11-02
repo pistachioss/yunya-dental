@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
 import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.models.report.BaseBenefit;
@@ -26,4 +27,11 @@ public interface BaseBenefitMapper extends Mapper<BaseBenefit> {
 	                                                     @Param("dentistIds") List<Integer> dentistIds, @Param("usedStartDate") LocalDate usedStartDate,
 	                                                     @Param("usedEndDate") LocalDate usedEndDate, @Param("soldChannelIds") List<Integer> soldChannelIds,
 	                                                     @Param("couponId") Integer couponId);
+	/**
+	 * 产品使用统计-时间维度
+	 */
+	List<CardUsedRecordVo> listCardUsedRecordByParam(@Param("orgId") Integer orgId, @Param("usedStartDate") LocalDate usedStartDate,
+	                                                 @Param("usedEndDate") LocalDate usedEndDate, @Param("couponName") String couponName,
+	                                                 @Param("cardNumber") String cardNumber, @Param("patientKeyword") String patientKeyword,
+	                                                 @Param("couponTypes") List<Integer> couponTypes, @Param("saleChannelIds") List<Integer> saleChannelIds);
 }
