@@ -80,10 +80,17 @@ public class BaseCardServiceImpl{
 	private static final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	private static final int cutSlice = 100;
 
-	public void operateBaseCard(MessageModel model) {
+	public void operateSingle(MessageModel model) {
 		Integer cardId = (Integer) model.getParamMap().get("id");
 //		Integer operateType = model.getOperateType();
-		operateData(cardId);
+		operateSingleData(cardId);
+	}
+
+	public void operateBatch(MessageModel model) {
+		Integer cardId = (Integer) model.getParamMap().get("id");
+		LocalDateTime submitDate = (LocalDateTime) model.getParamMap().get("submitDate");
+//		Integer operateType = model.getOperateType();
+		operateBatchDate(cardId, submitDate);
 	}
 
 	public RestErrorBo pullCard(String startDateStr, String endDateStr) throws ExecutionException, InterruptedException {
@@ -104,9 +111,9 @@ public class BaseCardServiceImpl{
 	}
 
 	/**
-	 * 新增
+	 * 操作单条数据
 	 */
-	private void operateData(Integer cardId) {
+	private void operateSingleData(Integer cardId) {
 		Card card = cardMapper.selectByPrimaryKey(cardId);
 		if (card == null) {
 			deleteCard(cardId);
@@ -117,6 +124,27 @@ public class BaseCardServiceImpl{
 				baseCardMapper.insertSelective(originData.get(0));
 			} else {
 				List<BaseCard> updateCards = getUpdateCards(originData, Collections.singletonList(baseCard));
+				if (CollectionUtils.isNotEmpty(updateCards)) {
+					baseCardMapper.updateByPrimaryKeySelective(updateCards.get(0));
+				}
+			}
+		}
+	}
+
+	/**
+	 * 新增
+	 */
+	private void operateBatchDate(Integer couponId, LocalDateTime submitDate) {
+		List<Card> cards = getCards(couponId, submitDate);
+		if (CollectionUtils.isEmpty(cards)) {
+			deleteBaseCards(couponId, submitDate);
+		} else {
+			List<BaseCard> baseCards = getBaseCards(couponId, submitDate);
+			List<BaseCard> originData = getOriginData(cards);
+			if (CollectionUtils.isEmpty(baseCards)) {
+				baseCardMapper.insertSelective(originData.get(0));
+			} else {
+				List<BaseCard> updateCards = getUpdateCards(originData, baseCards);
 				if (CollectionUtils.isNotEmpty(updateCards)) {
 					baseCardMapper.updateByPrimaryKeySelective(updateCards.get(0));
 				}
@@ -381,6 +409,27 @@ public class BaseCardServiceImpl{
 		Example example = new Example(CouponCommonInfo.class);
 		example.createCriteria().andIn("id", couponIds);
 		return couponMapper.selectByExample(example);
+	}
+
+	private List<Card> getCards(Integer couponId, LocalDateTime submitDate) {
+		Example example = new Example(Card.class);
+		example.createCriteria().andEqualTo("couponId", couponId)
+				.andEqualTo("crtTime", submitDate);
+		return cardMapper.selectByExample(example);
+	}
+
+	private List<BaseCard> getBaseCards(Integer couponId, LocalDateTime submitDate) {
+		Example example = new Example(BaseCard.class);
+		example.createCriteria().andEqualTo("couponId", couponId)
+				.andEqualTo("generateDate", submitDate);
+		return baseCardMapper.selectByExample(example);
+	}
+
+	private void deleteBaseCards(Integer couponId, LocalDateTime submitDate) {
+		Example example = new Example(BaseCard.class);
+		example.createCriteria().andEqualTo("couponId", couponId)
+				.andEqualTo("generateDate", submitDate);
+		baseCardMapper.deleteByExample(example);
 	}
 
 	/**
