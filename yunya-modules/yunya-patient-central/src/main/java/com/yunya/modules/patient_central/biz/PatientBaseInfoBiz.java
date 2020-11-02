@@ -1,16 +1,17 @@
 package com.yunya.modules.patient_central.biz;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.PageHelper;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.report.RemoteMiddleTableServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -25,14 +26,15 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
+import com.yunya.models.system.Department;
 import com.yunya.models.system.DictionaryItem;
+import com.yunya.models.system.DictionaryType;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,7 +88,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /** 设备心跳回调 */
   @Autowired private InformationCallbackBiz informationCallbackBiz;
 
+  /** 注入服务 */
   @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+
+  /** 标签Mapper */
+  @Autowired private PatientLabelRecordMapper patientLabelRecordMapper;
+
 
   /**
    * 通过患者id查询患者共用属性
@@ -139,17 +146,19 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
       return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
+    if (patientBaseInfo.getOriginId() != null){
       PatientOrigin patientOrigin =
               this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
       if (patientOrigin != null) {
         patientBaseInfo.setOriginType(patientOrigin.getOriginType());
       }
+    }
 
-      patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
-      patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientBaseInfo.setCrtName(BaseContextHandler.getName());
-      patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      mapper.insertSelective(patientBaseInfo);
+    patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
+    patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientBaseInfo.setCrtName(BaseContextHandler.getName());
+    patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    mapper.insertPatientInfo(patientBaseInfo);
 
       /*// 创建硬件任务 创建人员
       JSONObject object = new JSONObject();
@@ -172,7 +181,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       // 发送 更新中间表 消息
       MessageModel messageModel = new MessageModel();
       Map<String, Object> map = new HashMap<String, Object>();
-      map.put("patientId", patientBaseInfoVo.getId());
+      map.put("id", patientBaseInfoVo.getId());
       messageModel.setParamMap(map);
       messageModel.setOperateType(0);
       messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatient);
@@ -187,16 +196,28 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param patientBaseInfo 患者信息
    */
   private void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo) {
-    PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
-    patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
-    // 预付款卡号生成规则 开通Y
-    patientPrepaymentsInfo.setPrepaymentNumber(
-        this.patientMemberInfoBiz.generateCardNumber(
-            "Y", "patient_prepayments_info", "prepayment_number"));
-    patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-    patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
-    this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
+    if (patientBaseInfo.getId() != null){
+      PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
+      patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
+      // 预付款卡号生成规则 开通Y
+      patientPrepaymentsInfo.setPrepaymentNumber(
+              this.patientMemberInfoBiz.generateCardNumber(
+                      "Y", "patient_prepayments_info", "prepayment_number"));
+      patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
+      this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
+
+      // 创建消息
+      MessageModel messageModel = new MessageModel();
+      Map<String, Object> map = new HashMap<String, Object>();
+      map.put("id", patientPrepaymentsInfo.getId());
+      map.put("type", 1);
+      messageModel.setParamMap(map);
+      messageModel.setOperateType(0);
+      messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatientMember);
+      remoteRabbitMqServiceFeign.sendMessage(messageModel);
+    }
   }
 
   /**
@@ -272,13 +293,17 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
-    PatientOrigin patientOrigin =
-        patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
-    if (patientOrigin == null) {
-      return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者来源信息", "");
+    if (patientBaseInfo.getOriginId() !=null ){
+      PatientOrigin patientOrigin =
+              patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+      if (patientOrigin == null) {
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者来源信息", "");
+      }
+      // 获取患者来源的父级id
+      patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
     }
-    // 获取患者来源的父级id
-    patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
+
+
     // 获取患者来源name
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
@@ -307,49 +332,51 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /**
    * 获取 来源名称 推荐人名称 推荐来源名称
    *
-   * @param patientBaseInfoVo
-   * @return
+   * @param patientBaseInfoVo 患者信息
+   * @return PatientBaseInfoVo
    */
   private PatientBaseInfoVo getTypeName(PatientBaseInfoVo patientBaseInfoVo) {
-    PatientOrigin patientOrigin =
-        patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
-    if (patientOrigin != null) {
-      patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
-    }
-    if (patientBaseInfoVo.getOriginId() != null) {
-      switch (patientBaseInfoVo.getOriginType()) {
-        //查询员工
-        case 1:
-          SysUserEmployeeModel model = new SysUserEmployeeModel();
-          if (patientBaseInfoVo.getSourceId() != null){
-            model.setUserId(patientBaseInfoVo.getSourceId());
-            model.setWhetherPage(false);
-            List<SysUserInfoDetail> list =
-                    remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-            if (!StringHelper.isEmpty(list)) {
-              patientBaseInfoVo.setOriginName(list.get(0).getName());
+    if (patientBaseInfoVo.getOriginType()!= null){
+      PatientOrigin patientOrigin =
+              patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
+      if (patientOrigin != null) {
+        patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
+      }
+      if (patientBaseInfoVo.getOriginId() != null) {
+        switch (patientBaseInfoVo.getOriginType()) {
+          //查询员工
+          case 1:
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            if (patientBaseInfoVo.getSourceId() != null){
+              model.setUserId(patientBaseInfoVo.getSourceId());
+              model.setWhetherPage(false);
+              List<SysUserInfoDetail> list =
+                      remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+              if (!StringHelper.isEmpty(list)) {
+                patientBaseInfoVo.setOriginName(list.get(0).getName());
+              }
             }
-          }
-          break;
+            break;
           //查询患者
-        case 2:
-          if (patientBaseInfoVo.getSourceId() != null){
-            PatientBaseInfo patientBaseInfo =
-                    patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
-            if (patientBaseInfo != null) {
-              patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
+          case 2:
+            if (patientBaseInfoVo.getSourceId() != null){
+              PatientBaseInfo patientBaseInfo =
+                      patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
+              if (patientBaseInfo != null) {
+                patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
+              }
             }
-          }
-          break;
-        default:
-          if (patientBaseInfoVo.getOriginId() != null){
-            PatientOrigin activity =
-                    patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
-            if (activity != null) {
-              patientBaseInfoVo.setOriginName(activity.getName());
+            break;
+          default:
+            if (patientBaseInfoVo.getOriginId() != null){
+              PatientOrigin activity =
+                      patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
+              if (activity != null) {
+                patientBaseInfoVo.setOriginName(activity.getName());
+              }
             }
-          }
-          break;
+            break;
+        }
       }
     }
     // 根据ID查询字典明细
@@ -876,5 +903,40 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     redisUtils.delete("takePhotosPatientId");
     redisUtils.delete("userId");
     redisUtils.delete("userName");
+  }
+
+  /**
+   * 操作标签
+   * @param patientLabelRecordModel 操作标签Model
+   */
+  public void operatingLabel(PatientLabelRecordModel patientLabelRecordModel) {
+      PatientLabelRecord patientLabelRecord = new PatientLabelRecord();
+      BeanUtils.copyProperties(patientLabelRecordModel,patientLabelRecord);
+      patientLabelRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      patientLabelRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      patientLabelRecord.setCrtName(BaseContextHandler.getName());
+      patientLabelRecord.setCrtTime(new Date());
+      patientLabelRecordMapper.insert(patientLabelRecord);
+  }
+
+  /**
+   * 查询标签操作记录列表
+   * @return List<PatientLabelRecord>
+   */
+  public List<PatientLabelRecordVo> labelList(PatientLabelRecordQueryForm form) {
+    if (form.getWhetherPage()) {
+      PageHelper.startPage(form.getPageNum(), form.getPageSize());
+    }
+    List<PatientLabelRecordVo> patientLabelRecordList = patientLabelRecordMapper.selectLabelList(form.getPatientId());
+    patientLabelRecordList.forEach(
+            patientLabelRecordVo -> {
+              // 查询标签字典名称
+              DictionaryType dictionaryTypeById = remoteSystemServiceFeign.findDictionaryTypeById(patientLabelRecordVo.getDictItemId());
+              /*if (departmentById != null){
+                patientLabelRecordVo.setDictItemName(departmentById.getName());
+              }*/
+            }
+    );
+    return patientLabelRecordList;
   }
 }

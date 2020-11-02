@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -8,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 简单介绍:</br> 会员卡充值记录Vo
+ * 简单介绍:</br> 返回会员卡充值记录模型
  *
  * @author: WY
  * @date 2020/8/15 17:00
@@ -17,6 +18,7 @@ import java.util.Date;
  */
 @Data
 @ToString
+@ApiModel("返回会员卡充值记录模型")
 public class RechargeRecordVo implements Serializable {
 
     /**

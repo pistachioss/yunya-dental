@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -8,7 +9,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简单介绍:</br> 患者信息VO
+ * 简单介绍:</br> 返回患者信息模型
  *
  * @author: WY
  * @date 2020/7/25 15:56
@@ -17,6 +18,7 @@ import java.util.Date;
  */
 @Data
 @ToString
+@ApiModel("返回患者信息模型")
 public class PatientBaseInfoVo implements Serializable {
     /**
      * 主键

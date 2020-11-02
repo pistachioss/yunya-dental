@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简介: 患者照片Vo
+ * 简介: 返回患者照片Vo
  *
  * @author: WY
  * @date: 2020/9/24 20:01
@@ -19,7 +19,7 @@ import java.util.Date;
  */
 @Data
 @ToString
-@ApiModel(value = "患者照片Vo")
+@ApiModel(value = "返回患者照片Vo")
 public class PatientImgVo implements Serializable {
 
     /**

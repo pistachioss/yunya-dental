@@ -177,4 +177,10 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @param id 患者id
    */
   void updateFaceUrlById(@Param("id") Integer id);
+
+  /**
+   * 添加患者基本信息
+   * @param patientBaseInfo 患者信息
+   */
+  void insertPatientInfo(PatientBaseInfo patientBaseInfo);
 }

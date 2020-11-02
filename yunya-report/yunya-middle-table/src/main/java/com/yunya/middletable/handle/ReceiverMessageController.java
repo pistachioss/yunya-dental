@@ -31,13 +31,12 @@ public class ReceiverMessageController {
   @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
   /** 账单 */
   @Autowired private BaseBillBiz billBiz;
-  /**账单退费*/
+  /** 账单退费 */
   @Autowired private BaseRefundBiz refundBiz;
 
   @Autowired private BaseBenefitServiceImpl baseBenefitService;
 
-  @Resource
-  private BaseCardServiceImpl baseCardService;
+  @Resource private BaseCardServiceImpl baseCardService;
 
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
@@ -46,6 +45,12 @@ public class ReceiverMessageController {
     log.info("handleMessage[{}]", messageModel);
     int result = 0;
     try {
+      System.out.println(
+          "消息消费：数据ID:"
+              + messageModel.getParamMap().get("id")
+              + ";"
+              + "操作类型："
+              + messageModel.getOperateType());
       switch (messageModel.getMsgCategoryEnum()) {
         case BaseOrganization:
           organizationBiz.operateOrganization(messageModel);
@@ -81,8 +86,10 @@ public class ReceiverMessageController {
           break;
       }
     } catch (Exception e) {
-      //            result = 2;
+      System.out.println(e);
+      result = 2;
     }
+    System.out.println("----------方法执行成功！----------------");
     switch (result) {
       case 0:
         // 消费成功：确认收到消息，消息将被队列移除，false只确认当前consumer一个消息收到，true确认所有consumer获得的消息。
@@ -99,5 +106,6 @@ public class ReceiverMessageController {
       default:
         break;
     }
+    System.out.println("消息消费成功：");
   }
 }

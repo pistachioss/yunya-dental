@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -7,7 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 简单介绍:</br> 主卡对副卡 一对多
+ * 简单介绍:</br> 返回卡主信息和副卡人信息模型 主卡对副卡 一对多
  *
  * @author: WY
  * @date 2020/9/11 16:22
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Data
 @ToString
+@ApiModel("返回卡主信息和副卡人信息模型")
 public class MemberInfoVo implements Serializable {
 
     /**

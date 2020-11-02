@@ -5,20 +5,21 @@
 
 package com.yunya.modules.patient_central.controller.web;
 
-import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
-import com.yunya.feign.patient_central.domain.model.PatientWoPlatformInfoModel;
-import com.yunya.feign.patient_central.domain.model.PicturesCallbackInfoModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientLabelRecordVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientVisitInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.PatientLabelRecord;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -51,6 +53,21 @@ public class PatientBaseInfoController {
   }
 
   /**
+   * 添加患者基本信息信息
+   * @param patientBaseInfoModel 新增患者信息
+   * @return ResponseResult
+   */
+
+  @RepeatSubmit
+  @CurrentUser
+  @ApiOperation("添加患者基本信息信息")
+  @PostMapping("/add")
+  public ResponseResult addPatient(
+          @RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel) {
+    return ResponseUtil.success(this.patientBaseInfoBiz.addPatient(patientBaseInfoModel));
+  }
+
+  /**
    * 根据Id查询患者信息公用信息
    * @param id 患者id
    * @return ResponseResult<PatientPublicInfoVo>
@@ -60,6 +77,20 @@ public class PatientBaseInfoController {
   public ResponseResult<PatientPublicInfoVo> findPatientPublicInfoById(
       @PathVariable("id") Integer id) {
     return ResponseUtil.success(this.patientBaseInfoBiz.findPatientPublicInfoById(id));
+  }
+
+  /**
+   * 完善患者基本信息
+   * @param patientExtendInfoModel 基本信息+扩展信息+其他信息 参数模板
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("添加完善患者基本信息")
+  @PostMapping("/patientInfoAdd")
+  public ResponseResult addPatientInfo(
+          @RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel) {
+    this.patientBaseInfoBiz.addPatientInfo(patientExtendInfoModel);
+    return ResponseUtil.success();
   }
 
   /**
@@ -74,19 +105,6 @@ public class PatientBaseInfoController {
     return this.patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
   }
 
-  /**
-   * 添加完善患者基本信息
-   * @param patientExtendInfoModel 基本信息+扩展信息+其他信息 参数模板
-   * @return ResponseResult
-   */
-  @CurrentUser
-  @ApiOperation("添加完善患者基本信息")
-  @PostMapping("/patientInfoAdd")
-  public ResponseResult addPatientInfo(
-      @RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel) {
-    this.patientBaseInfoBiz.addPatientInfo(patientExtendInfoModel);
-    return ResponseUtil.success();
-  }
 
   /**
    * 根据患者id查询患者资料
@@ -112,18 +130,6 @@ public class PatientBaseInfoController {
         this.patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm));
   }
 
-  /**
-   * 添加患者基本信息信息
-   * @param patientBaseInfoModel 新增患者信息
-   * @return ResponseResult
-   */
-  @CurrentUser
-  @ApiOperation("添加患者基本信息信息")
-  @PostMapping("/add")
-  public ResponseResult addPatient(
-      @RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel) {
-    return ResponseUtil.success(this.patientBaseInfoBiz.addPatient(patientBaseInfoModel));
-  }
 
   /**
    * 拍照
@@ -173,6 +179,22 @@ public class PatientBaseInfoController {
   }
 
 
+  @CurrentUser
+  @ApiOperation(value = "操作标签记录")
+  @PostMapping(value = "/operatingLabel")
+  public ResponseResult operatingLabel(@RequestBody PatientLabelRecordModel patientLabelRecordModel) {
+    patientBaseInfoBiz.operatingLabel(patientLabelRecordModel);
+    return ResponseUtil.success();
+  }
+
+  @CurrentUser
+  @ApiOperation(value = "查询标签操作记录")
+  @PostMapping(value = "/labelList")
+  public ResponseResult<List<PatientLabelRecordVo>> labelList(@RequestBody PatientLabelRecordQueryForm form) {
+    List<PatientLabelRecordVo> patientLabelRecordList = patientBaseInfoBiz.labelList(form);
+    return ResponseUtil.success(patientLabelRecordList);
+  }
+
   /**
    * 拍照回调
    * @param picturesCallbackInfoModel 拍照回调Model
@@ -194,7 +216,9 @@ public class PatientBaseInfoController {
   public ResponseResult paizhaohuidiao(@RequestBody PicturesCallbackInfoModel picturesCallbackInfoModel) {
     System.out.println(picturesCallbackInfoModel.toString());
       return ResponseUtil.success();
-
   }
+
+
+
 
 }

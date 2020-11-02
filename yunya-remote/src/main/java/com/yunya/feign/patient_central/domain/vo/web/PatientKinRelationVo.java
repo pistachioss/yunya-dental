@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -7,7 +8,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简单介绍:</br> 患者亲属VO
+ * 简单介绍:</br> 返回患者亲属关系模型
  *
  * @author: WY
  * @date 2020/7/29 9:32
@@ -16,6 +17,7 @@ import java.util.Date;
  */
 @Data
 @ToString
+@ApiModel("返回患者亲属关系模型")
 public class PatientKinRelationVo implements Serializable {
     /**
      * 主键

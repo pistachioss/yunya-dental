@@ -10,17 +10,17 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * 简单介绍:</br> 返回患者其他资料信息模型
+ * 简介:
  *
  * @author: WY
- * @date 2020/8/31 11:34
+ * @date: 2020/11/2 13:52
  * @description:
  * @since: 1.0.0
  */
 @Data
 @ToString
-@ApiModel("返回患者其他资料信息模型")
-public class PatientExtInfoVo implements Serializable {
+@ApiModel("返回标签记录信息参数模型")
+public class PatientLabelRecordVo implements Serializable {
 
     /**
      * 主键
@@ -43,29 +43,9 @@ public class PatientExtInfoVo implements Serializable {
     private Integer dictItemId;
 
     /**
-     * 疾病史 or 过敏原 姓名
-     */
-    private String dictItemName;
-
-    /**
-     * 数据类型 0-标签；1-疾病史；2-过敏原
-     */
-    private Byte type;
-
-    /**
-     * 描述 描述信息
-     */
-    private String description;
-
-    /**
      * 备注 备注
      */
     private String remarks;
-
-    /**
-     * 是否启用 是否有效
-     */
-    private Boolean inservice;
 
     /**
      * 创建人ID
@@ -83,17 +63,12 @@ public class PatientExtInfoVo implements Serializable {
     private Date crtTime;
 
     /**
-     * 更新人ID
+     * 操作类型
      */
-    private Integer uptId;
+    private Integer operatingType;
 
     /**
-     * 更新人姓名
+     * 创建人姓名
      */
-    private String updName;
-
-    /**
-     * 更新时间
-     */
-    private Date updTime;
+    private String dictItemName;
 }

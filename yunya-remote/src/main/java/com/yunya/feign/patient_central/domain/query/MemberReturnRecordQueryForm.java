@@ -18,7 +18,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-@ApiModel(value = "退费记录")
+@ApiModel(value = "会员退费记录查询参数模型")
 public class MemberReturnRecordQueryForm implements Serializable {
 
     @ApiModelProperty(value = "是否分页", required = true)

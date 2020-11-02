@@ -18,7 +18,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
-@ApiModel(value = "充值记录")
+@ApiModel(value = "查询会员卡充值记录参数模型")
 public class RechargeRecordQueryForm implements Serializable {
     @ApiModelProperty(value = "是否分页", required = true)
     private Boolean whetherPage = true;

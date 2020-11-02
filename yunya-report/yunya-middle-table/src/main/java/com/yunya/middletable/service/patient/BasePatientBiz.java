@@ -38,7 +38,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      * @param msg 消息
      */
     public void operate(MessageModel msg) {
-        Integer patientId = (Integer) msg.getParamMap().get("patientId");
+        Integer patientId = (Integer) msg.getParamMap().get("id");
         Integer operateType = msg.getOperateType();
         BasePatient patient = generatePatientBaseInfo(patientId);
         switch (operateType) {
@@ -87,19 +87,23 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             basePatient.setName(patientBaseInfo.getName());
             basePatient.setMobile(patientBaseInfo.getMobile());
             basePatient.setMedicalNumber(patientBaseInfo.getMedicalNumber());
-            basePatient.setBirthday(patientBaseInfo.getBirthday());
-            basePatient.setOriginType(patientBaseInfo.getOriginType());
-            basePatient.setOriginId(patientBaseInfo.getOriginId());
+            if (patientBaseInfo.getBirthday() != null){
+                basePatient.setBirthday(patientBaseInfo.getBirthday());
+            }
+            if (patientBaseInfo.getOriginId()!=null){
+                basePatient.setOriginType(patientBaseInfo.getOriginType());
+                basePatient.setOriginId(patientBaseInfo.getOriginId());
+                PatientOrigin patientOrigin = new PatientOrigin();
+                patientOrigin.setParentId(0);
+                patientOrigin.setOriginType(patientBaseInfo.getOriginType());
+                PatientOrigin origin = patientOriginMapper.selectOne(patientOrigin);
+                if (origin != null){
+                    basePatient.setOriginTypeName(origin.getName());
+                }
+            }
             basePatient.setGender(patientBaseInfo.getGender());
             basePatient.setPinyinName(patientBaseInfo.getPinyinName());
             basePatient.setPatientCrtTime(patientBaseInfo.getCrtTime());
-            PatientOrigin patientOrigin = new PatientOrigin();
-            patientOrigin.setId(0);
-            patientOrigin.setOriginType(patientBaseInfo.getOriginType());
-            PatientOrigin origin = patientOriginMapper.selectOne(patientOrigin);
-            if (origin != null){
-                basePatient.setOriginTypeName(origin.getName());
-            }
             return basePatient;
         }
         return null;
