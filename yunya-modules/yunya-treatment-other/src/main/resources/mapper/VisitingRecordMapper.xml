@@ -113,4 +113,27 @@
     </foreach>
   </insert>
 
+  <!-- 根据医生ID,开始时间，结束时间查询 -->
+  <select id="findVisitingForMonth" resultType="com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo">
+    SELECT
+    DATE_FORMAT(a.crt_time,'%Y-%m-%d') as currentDate,
+    COUNT(a.id) as `count`
+    FROM(
+    SELECT
+    vr.id,
+    DATE_FORMAT(vr.crt_time,'%Y-%m-%d') as crt_time
+    FROM
+    `visiting_record` vr
+    <where>
+      <if test="dentistId != null">
+        and vr.dentist_id = #{dentistId}
+      </if>
+      <if test="startDate != null and endDate != null">
+        and date_format(vr.crt_time,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND date_format(#{endDate},'%Y-%m-%d')
+      </if>
+    </where>
+    ) a
+    GROUP BY a.crt_time
+  </select>
+
 </mapper>

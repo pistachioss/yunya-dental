@@ -5,23 +5,24 @@ import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
+import com.yunya.feign.treatment_other.domain.query.VisitingForMonthInfo;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingContentAfterCurrentVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import lombok.CustomLog;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -131,14 +132,15 @@ public class VisitingRecordController {
     }
 
     /**
-     *
-     * @param dentistId
-     * @param startDate
-     * @param endDate
-     * @return
+     * 查询指定时间段内指定医生的每一天的随访数(app用)
+     * @param forMonthInfo 表单
+     * @return 返回实体
      */
-    public ResponseResult findVisitingForMonth(Integer dentistId,String startDate,String endDate) {
-        return ResponseUtil.success();
+    @ApiOperation(value = "查询指定时间段内指定医生的每一天的随访数(app用)")
+    @PostMapping("/visit/range")
+    public ResponseResult<List<VisitingForMonthVo>> findVisitingForMonth(@RequestBody @Validated VisitingForMonthInfo forMonthInfo) {
+        List<VisitingForMonthVo> visitingForMonth = visitingRecordBiz.findVisitingForMonth(forMonthInfo);
+        return ResponseUtil.success(visitingForMonth);
     }
 
 }
