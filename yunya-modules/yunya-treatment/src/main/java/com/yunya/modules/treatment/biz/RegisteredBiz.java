@@ -76,6 +76,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         throw new ClientServiceException("挂号失败，当前预约正在被操作，请稍后再试！", PARAMETERS_IS_ILLEGAL);
       }
       entity.setAppointmentId(appointmentId);
+      entity.setInservice(true);
       int regCount = mapper.selectCount(entity);
       if (regCount > 0) {
         throw new ClientServiceException("挂号失败，当前预约已被挂号，请勿重复挂号！", PARAMETERS_IS_ILLEGAL);
