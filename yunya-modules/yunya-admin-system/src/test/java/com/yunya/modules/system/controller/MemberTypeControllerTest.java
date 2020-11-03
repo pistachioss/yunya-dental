@@ -26,9 +26,9 @@ public class MemberTypeControllerTest {
 
   @Test
   public void testAdd() {
-    byte icon = 7;
+    String icon = "7";
     MemberTypeModel entity = new MemberTypeModel();
-    entity.setType(icon);
+    entity.setType((byte)7);
     entity.setName("测试会员");
     entity.setRenewalAmount(BigDecimal.valueOf(100));
     entity.setAgeLimit(1);
