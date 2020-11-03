@@ -29,7 +29,6 @@ public class ModificationPasswordForm implements Serializable {
     @NotBlank(message = "确认密码不能为空")
     private String confirmPwd;
     /** 短信验证码 */
-    @ApiModelProperty(value = "短信验证码",required = true)
-    @NotBlank(message = "短信验证码不能为空")
+    @ApiModelProperty(value = "短信验证码")
     private String authCode;
 }

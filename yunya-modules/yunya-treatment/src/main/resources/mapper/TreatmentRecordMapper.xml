@@ -166,4 +166,28 @@
             r.crt_time DESC
             LIMIT 1
     </select>
+
+    <!-- 查询指定时间段内每个医生每天患者就诊人数 -->
+    <select id="treatInfoForMonth" resultType="com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO">
+        SELECT
+        DATE_FORMAT(a.crt_time,'%Y-%m-%d') as currentDate,
+        COUNT(a.id) as `count`
+        FROM(
+        SELECT
+        tr.id,
+        DATE_FORMAT(tr.crt_time,'%Y-%m-%d') as crt_time
+        FROM
+        `treatment_record` tr
+        <where>
+            <if test="dentistId != null">
+                and tr.dentist_id = #{dentistId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                and date_format(tr.crt_time,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND date_format(#{endDate},'%Y-%m-%d')
+            </if>
+        </where>
+        ) a
+        GROUP BY a.crt_time
+    </select>
+
 </mapper>
