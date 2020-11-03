@@ -2,13 +2,19 @@ package com.yunya.middletable.handle;
 
 import com.rabbitmq.client.Channel;
 import com.yunya.feign.report.domain.model.MessageModel;
-import com.yunya.middletable.service.*;
+import com.yunya.middletable.service.BaseBenefitServiceImpl;
+import com.yunya.middletable.service.BaseBillBiz;
+import com.yunya.middletable.service.BaseCardServiceImpl;
+import com.yunya.middletable.service.BaseEmployeeBiz;
+import com.yunya.middletable.service.BaseOrganizationBiz;
+import com.yunya.middletable.service.BaseRefundBiz;
+import com.yunya.middletable.service.BaseTariffInfoBiz;
+import com.yunya.middletable.service.BaseTreatmentProcessBiz;
+import com.yunya.middletable.service.BaseUserPostBiz;
 import com.yunya.middletable.service.patient.BasePatientBiz;
 import com.yunya.middletable.service.patient.BasePatientMemberBiz;
 import com.yunya.middletable.service.patient.BasePatientMemberOccurLogBiz;
 import com.yunya.middletable.service.patient.BasePatientMemberRelationBiz;
-import com.yunya.models.report.BasePatientMember;
-import com.yunya.models.report.BasePatientMemberOccurLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -52,16 +58,11 @@ public class ReceiverMessageController {
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
       throws Exception {
+    log.info("-----------------------------------------消息开始消费--------------------------------------------------");
     // 处理消息
-    log.info("handleMessage[{}]", messageModel);
+    log.info("消息体：handleMessage[{}]", messageModel);
     int result = 0;
     try {
-      System.out.println(
-          "消息消费：数据ID:"
-              + messageModel.getParamMap().get("id")
-              + ";"
-              + "操作类型："
-              + messageModel.getOperateType());
       switch (messageModel.getMsgCategoryEnum()) {
         case BaseOrganization:
           organizationBiz.operateOrganization(messageModel);
@@ -103,29 +104,32 @@ public class ReceiverMessageController {
           baseCardService.operateBatch(messageModel);
           break;
         default:
+          log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());
           break;
       }
     } catch (Exception e) {
       System.out.println(e);
       result = 2;
     }
-    System.out.println("----------方法执行成功！----------------");
     switch (result) {
       case 0:
         // 消费成功：确认收到消息，消息将被队列移除，false只确认当前consumer一个消息收到，true确认所有consumer获得的消息。
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+        log.info("消息已被确认");
         break;
       case 1:
         // 确认否定消息：第一个boolean表示一个consumer还是所有，第二个boolean表示requeue是否重新回到队列，true重新入队。
         channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true);
+        log.info("消息已被否定");
         break;
       case 2:
         // 拒绝消息：requeue=false 表示不再重新入队，如果配置了死信队列则进入死信队列。
         channel.basicReject(message.getMessageProperties().getDeliveryTag(), false);
+        log.info("消息已被拒绝");
         break;
       default:
         break;
     }
-    System.out.println("消息消费成功：");
+    log.info("-----------------------------------------消息消费成功--------------------------------------------------");
   }
 }
