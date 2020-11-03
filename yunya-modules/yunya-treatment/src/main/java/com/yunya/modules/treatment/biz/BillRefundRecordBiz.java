@@ -99,15 +99,8 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
                   BillRefundGroupInfoVO::setRefundCertificate,
                   billRefundRecord.getRefundCertificate())
               .build();
-      // 根据退费记录ID获取退费开单明细
-      List<BillRefundOrderDetailVO> refundOrderDetails =
-          getBillRefundOrderDetails(billRefundRecordId);
-      resultData.setBillRefundOrderDetails(
-          StringHelper.isEmpty(refundOrderDetails) ? Lists.newArrayList() : refundOrderDetails);
-      // 根据退费记录ID查询退费方式列表
-      List<BillRefundPaymentVO> refundPaymentList = getBillRefundPaymentList(billRefundRecordId);
-      resultData.setBillRefundPayments(
-          StringHelper.isEmpty(refundPaymentList) ? Lists.newArrayList() : refundPaymentList);
+      // 设置账单退费详情、退费方式
+      setBillRefundGroupInfoValue(resultData, billRefundRecordId);
       return resultData;
     }
     return new BillRefundGroupInfoVO();
@@ -134,18 +127,31 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
         billRefundGroupInfo.setReason(billRefundRecord.getReason());
         billRefundGroupInfo.setRefundCertificate(billRefundRecord.getRefundCertificate());
       }
-      List<BillRefundOrderDetailVO> billRefundOrderDetails =
-          getBillRefundOrderDetails(associateRecordId);
-      billRefundGroupInfo.setBillRefundOrderDetails(
-          StringHelper.isEmpty(billRefundOrderDetails)
-              ? Lists.newArrayList()
-              : billRefundOrderDetails);
-      List<BillRefundPaymentVO> billRefundPayments = getBillRefundPaymentList(associateRecordId);
-      billRefundGroupInfo.setBillRefundPayments(
-          StringHelper.isEmpty(billRefundPayments) ? Lists.newArrayList() : billRefundPayments);
+      setBillRefundGroupInfoValue(billRefundGroupInfo, associateRecordId);
     }
     resultMap.put("billRefundGroupInfo", billRefundGroupInfo);
     return resultMap;
+  }
+
+  /**
+   * 设置账单退费信息退费订单详情、退费方式
+   *
+   * @param billRefundGroupInfo 账单退费vo
+   * @param billRefundRecordId 账单退费记录ID
+   */
+  private void setBillRefundGroupInfoValue(
+      BillRefundGroupInfoVO billRefundGroupInfo, Integer billRefundRecordId) {
+    // 获取退费订单详情
+    List<BillRefundOrderDetailVO> billRefundOrderDetails =
+        getBillRefundOrderDetails(billRefundRecordId);
+    billRefundGroupInfo.setBillRefundOrderDetails(
+        StringHelper.isEmpty(billRefundOrderDetails)
+            ? Lists.newArrayList()
+            : billRefundOrderDetails);
+    // 获取退费方式
+    List<BillRefundPaymentVO> billRefundPayments = getBillRefundPaymentList(billRefundRecordId);
+    billRefundGroupInfo.setBillRefundPayments(
+        StringHelper.isEmpty(billRefundPayments) ? Lists.newArrayList() : billRefundPayments);
   }
 
   /**
