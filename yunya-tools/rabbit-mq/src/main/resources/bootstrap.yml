@@ -47,6 +47,6 @@ auth:
     user:
         token-header: Authorization
     client:
-        id: aliyun-oss
+        id: rabbit-mq
         secret: 123456
         token-header: x-client-token
