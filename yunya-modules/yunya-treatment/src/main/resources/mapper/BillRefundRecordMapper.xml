@@ -53,7 +53,7 @@
         ) br
         <where>
             <if test="query.patientId != null">
-                and br.patient_id = #{query.patientId}
+                and br.patientId = #{query.patientId}
             </if>
             <if test="query.billNum != null and query.billNum != ''">
                 and br.billNum = #{query.billNum}
