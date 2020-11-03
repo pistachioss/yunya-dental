@@ -58,7 +58,7 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
         //获取配给信息
         List<CouponAllocateVO>list = mapper.findVOList(id);
         for(CouponAllocateVO couponAllocateVO:list){
-            SysUserInfoDetail sysUserInfoDetail = employeesMap.get(couponAllocateVO.getAllocateUserId() + "");
+            SysUserInfoDetail sysUserInfoDetail = employeesMap.get(couponAllocateVO.getCrtId() + "");
             if(sysUserInfoDetail!=null){
                 //设置分配人信息
                 couponAllocateVO.setAllocateUserName(sysUserInfoDetail.getName());

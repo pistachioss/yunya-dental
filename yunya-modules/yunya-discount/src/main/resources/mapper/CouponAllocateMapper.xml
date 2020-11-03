@@ -52,7 +52,8 @@
         id,
 	sum(allocate_num) allocateNum,
 	allocate_date allocateDate,
-	allocate_user_id allocateUserId
+	allocate_user_id allocateUserId,
+	crt_id crtId
     FROM
 	coupon_allocate
 	where coupon_id = #{id}
