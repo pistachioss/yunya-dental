@@ -4,6 +4,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.ClinicExtInfo;
 import com.yunya.modules.system.domain.form.MedicalOrganizationInfoForm;
 import com.yunya.modules.system.mapper.ClinicExtInfoMapper;
@@ -65,6 +66,10 @@ public class ClinicExtInfoBiz extends BaseBiz<ClinicExtInfoMapper, ClinicExtInfo
     // 更新组织表信用代码
     organizationBiz.updateCompanyCredit(companyId, creditCode);
     ClinicExtInfo build = EntityUtils.build(form, ClinicExtInfo.class);
+    String path = build.getPath();
+    if (StringHelper.isEmpty(path)) {
+      build.setPath("");
+    }
     build.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     build.setUpdName(BaseContextHandler.getName());
     build.setUpdTime(new Date(System.currentTimeMillis()));

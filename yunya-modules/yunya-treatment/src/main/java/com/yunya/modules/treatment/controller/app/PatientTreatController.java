@@ -48,7 +48,6 @@ public class PatientTreatController {
 
 
   @ApiOperation("查询指定时间段内每个医生每天患者就诊人数")
-  @ApiImplicitParams({@ApiImplicitParam(name = "form",value = "查询表单")})
   @PostMapping(value = "/everyday/count")
   public ResponseResult<List<TreatmentInfoForMonthVO>> treatInfoForMonth(@RequestBody @Validated TreatmentInfoForMonthForm form) {
     List<TreatmentInfoForMonthVO> treatmentInfoForMonthVOS = treatmentRecordBiz.treatInfoForMonth(form);
