@@ -128,7 +128,7 @@ public class VisitingRemindVo implements Serializable {
 
     /** 会员图标 */
     @ApiModelProperty(value = "会员图标")
-    private Byte memberIcon;
+    private String memberIcon;
 
     /** 患者过敏原 */
     @ApiModelProperty(value = "患者过敏原")

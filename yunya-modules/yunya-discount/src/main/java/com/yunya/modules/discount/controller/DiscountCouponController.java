@@ -86,7 +86,10 @@ public class DiscountCouponController {
         CouponCommonInfo couponCommonInfo = couponCommonInfoBiz.selectById(id);
         DiscountCoupon discountCoupon = new DiscountCoupon();
         discountCoupon.setCouponId(couponCommonInfo.getId());
-        discountCoupon = discountCouponBiz.selectOne(discountCoupon);
+        DiscountCoupon coupon = discountCouponBiz.selectOne(discountCoupon);
+        if (null != coupon) {
+            discountCoupon = coupon;
+        }
         DiscountCouponForm discountCouponForm = new DiscountCouponForm();
         BeanUtils.copyProperties(discountCoupon, discountCouponForm);
         BeanUtils.copyProperties(couponCommonInfo, discountCouponForm);
