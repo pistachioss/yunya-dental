@@ -13,7 +13,6 @@ import com.yunya.feign.treatment.domain.vo.BaseCategoryInfoVO;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -290,6 +289,6 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       List<BaseCategoryInfoVO> baseCategoryInfoVOS = mapper.selectBaseOralTariffList(search);
       return ResponseUtil.success(baseCategoryInfoVOS);
     }
-    return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL, "参数错误", null);
+    return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL, "参数错误", null);
   }
 }

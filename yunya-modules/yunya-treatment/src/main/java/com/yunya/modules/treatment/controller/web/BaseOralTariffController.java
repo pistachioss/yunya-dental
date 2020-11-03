@@ -7,6 +7,7 @@ import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseOralTariffBiz;
@@ -69,6 +70,7 @@ public class BaseOralTariffController {
    * @param model 新增参数
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增单个商品项目")
   @PostMapping("/add")
@@ -87,7 +89,7 @@ public class BaseOralTariffController {
   @ApiOperation("修改公司商品")
   @PutMapping("/modify/{id}")
   public ResponseResult<T> modify(
-      @PathVariable("id") Integer id, @RequestBody @Validated BaseOralTariffForm form) {
+      @PathVariable(value = "id") Integer id, @RequestBody @Validated BaseOralTariffForm form) {
     baseOralTariffBiz.modify(id, form);
     return ResponseUtil.success(null);
   }

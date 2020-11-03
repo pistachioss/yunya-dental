@@ -5,6 +5,7 @@ import com.yunya.feign.system.form.ClinicDeptRoomConfigureQueryForm;
 import com.yunya.feign.system.vo.ClinicDepartmentRoomVO;
 import com.yunya.feign.system.vo.ClinicDeptRoomListVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicDepartmentRoomBiz;
@@ -44,12 +45,13 @@ public class ClinicDepartmentRoomController {
    * @param deptRoomId 科室模板ID
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("一键添加门诊科室")
   @GetMapping("/clinic/batch/{deptRoomId}")
-  public ResponseResult oneClickAdd(@PathVariable(value = "deptRoomId") Integer deptRoomId) {
+  public ResponseResult<T> oneClickAdd(@PathVariable(value = "deptRoomId") Integer deptRoomId) {
     clinicDepartmentRoomBiz.batchSave(deptRoomId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -61,9 +63,9 @@ public class ClinicDepartmentRoomController {
   @CurrentUser
   @ApiOperation("开启/关闭门诊科室启用状态")
   @GetMapping("/clinic/switch/{id}")
-  public ResponseResult switchDeptRoomDisable(@PathVariable("id") Integer id) {
+  public ResponseResult<T> switchDeptRoomDisable(@PathVariable(value = "id") Integer id) {
     clinicDepartmentRoomBiz.switchDeptRoomDisable(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -80,11 +82,11 @@ public class ClinicDepartmentRoomController {
     @ApiImplicitParam(name = "deptRoomId", value = "科室ID", required = true)
   })
   @GetMapping(value = "/switch/dept//{orgId}/{deptRoomId}", name = "设置科室在门诊是否启用")
-  public ResponseResult switchClinicDept(
+  public ResponseResult<T> switchClinicDept(
       @PathVariable(value = "orgId") Integer orgId,
       @PathVariable(value = "deptRoomId") Integer deptRoomId) {
     clinicDepartmentRoomBiz.switchClinicDept(orgId, deptRoomId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -95,7 +97,7 @@ public class ClinicDepartmentRoomController {
    */
   @ApiOperation("根据门诊科室ID查询门诊科室")
   @GetMapping("/clinic/one/{id}")
-  public ResponseResult findById(@PathVariable("id") Integer id) {
+  public ResponseResult<ClinicDepartmentRoomVO> findById(@PathVariable(value = "id") Integer id) {
     ClinicDepartmentRoomVO departmentRoom = clinicDepartmentRoomBiz.findByClinicDeptRoomId(id);
     return ResponseUtil.success(departmentRoom);
   }
@@ -149,6 +151,7 @@ public class ClinicDepartmentRoomController {
    * @param model 门诊科室参数模型
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增门诊科室")
   @PostMapping("/clinic/save")
@@ -165,8 +168,8 @@ public class ClinicDepartmentRoomController {
    */
   @ApiOperation("根据门诊科室ID删除门诊科室")
   @DeleteMapping("/clinic/delete/{id}")
-  public ResponseResult deleteByClinicDeptRoomId(@PathVariable("id") Integer id) {
+  public ResponseResult<T> deleteByClinicDeptRoomId(@PathVariable(value = "id") Integer id) {
     clinicDepartmentRoomBiz.deleteByClinicDeptRoomId(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

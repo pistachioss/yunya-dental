@@ -9,6 +9,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseTariffBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -42,7 +43,7 @@ public class BaseTariffAssociationController {
    */
   @ApiOperation("根据条件查询开单关联信息列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody BaseTariffAssociationQueryForm queryForm) {
+  public ResponseResult<PageInfo<BaseTariffAssociationVO>> findList(@RequestBody BaseTariffAssociationQueryForm queryForm) {
     PageInfo<BaseTariffAssociationVO> resultList =
         baseTariffBiz.findTariffAssociationList(queryForm);
     return ResponseUtil.success(resultList);
@@ -57,10 +58,10 @@ public class BaseTariffAssociationController {
    */
   @ApiOperation("修改价目表开单关联信息")
   @PutMapping("/modify/{id}")
-  public ResponseResult modifyTariffAssociation(
+  public ResponseResult<T> modifyTariffAssociation(
       @PathVariable(value = "id") Integer id, @RequestBody BaseTariffAssociationForm form) {
     baseTariffBiz.modifyTariffAssociation(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -72,7 +73,7 @@ public class BaseTariffAssociationController {
    */
   @ApiOperation("导入价目表开单关联信息")
   @PostMapping("/import")
-  public ResponseResult importTariffAssociation(MultipartFile excelFile) throws Exception {
+  public ResponseResult<String> importTariffAssociation(MultipartFile excelFile) throws Exception {
     String resultStr = baseTariffBiz.importTariffAssociation(excelFile);
     return ResponseUtil.success(resultStr);
   }
@@ -87,10 +88,10 @@ public class BaseTariffAssociationController {
    */
   @ApiOperation("导出价目表开单关联文件")
   @PostMapping("/export")
-  public ResponseResult exportTariffAssociation(
+  public ResponseResult<T> exportTariffAssociation(
       HttpServletResponse response, @RequestBody BaseTariffAssociationQueryForm queryForm)
       throws Exception {
     baseTariffBiz.exportTariffAssociation(response, queryForm);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

@@ -3,6 +3,7 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
@@ -72,13 +73,14 @@ public class SysElementBiz extends BaseBiz<SysElementMapper, SysElement> {
       sysElement.setType(RESOURCE_TYPE_BTN);
       resource.setType(RESOURCE_TYPE_BTN);
     }
-
     SysElement resultData = mapper.selectOne(sysElement);
     if (null == resultData) {
       resource.setId(UUIDUtils.generateShortUuid());
+      resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       mapper.insertSelective(resource);
     } else {
       resource.setId(resultData.getId());
+      resource.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       mapper.updateByPrimaryKeySelective(resource);
     }
   }

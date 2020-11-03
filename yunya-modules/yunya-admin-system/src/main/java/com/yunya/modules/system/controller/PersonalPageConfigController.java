@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.PersonalPageConfigBiz;
@@ -10,6 +11,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +47,7 @@ public class PersonalPageConfigController {
     @ApiImplicitParam(name = "pageName", value = "页面", required = true)
   })
   @GetMapping(value = "/field/list/{userId}/{pageName}")
-  public ResponseResult findFieldList(
+  public ResponseResult<List<PersonalPageFieldVO>> findFieldList(
       @PathVariable(value = "userId") Integer userId,
       @PathVariable(value = "pageName") String pageName) {
     List<PersonalPageFieldVO> resultList = personalPageConfigBiz.findFieldList(userId, pageName);
@@ -58,12 +60,13 @@ public class PersonalPageConfigController {
    * @param model 配置参数
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("保存个人页面字段显示配置信息")
   @PostMapping(value = "/config/save")
-  public ResponseResult savePersonalPageConfig(
+  public ResponseResult<T> savePersonalPageConfig(
       @RequestBody @Validated PersonalPageConfigModel model) {
     personalPageConfigBiz.save(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }
