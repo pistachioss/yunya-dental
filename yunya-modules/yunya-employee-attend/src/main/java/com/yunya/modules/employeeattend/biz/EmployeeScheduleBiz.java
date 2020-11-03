@@ -231,7 +231,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
      * @param employeeScheduleQueryForm
      * @return
      */
-    public JSONArray findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
+    public Map<String, Object> findList(EmployeeScheduleQueryForm employeeScheduleQueryForm) {
         //注意月份是MM
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         String startDateString = employeeScheduleQueryForm.getStartDate();
@@ -348,7 +348,11 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             shiftWorkDatas.add(userWorkMap);
             calendar.add(Calendar.DATE, -days);
         }
-        return shiftWorkDatas;
+        Map<String, Object> result = new HashMap(16);
+        result.put("data", shiftWorkDatas);
+        result.put("total", count);
+        result.put("page", page);
+        return result;
     }
 
     /**
