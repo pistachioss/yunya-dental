@@ -195,12 +195,14 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
      * @return
      */
     public  List<CouponCommonInfoVO> findList(CouponCommonInfoQueryForm couponCommonInfoQueryForm){
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(couponCommonInfoQueryForm.getEndTime());
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        couponCommonInfoQueryForm.setEndTime(calendar.getTime());
+        if(couponCommonInfoQueryForm.getEndTime()!=null){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(couponCommonInfoQueryForm.getEndTime());
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            couponCommonInfoQueryForm.setEndTime(calendar.getTime());
+        }
         return mapper.findList(couponCommonInfoQueryForm);
     }
 
