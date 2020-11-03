@@ -1,6 +1,8 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysElement;
@@ -11,6 +13,7 @@ import com.yunya.modules.system.vo.SysElementVO;
 import com.yunya.modules.system.vo.tree.SysElementTreeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +47,7 @@ public class SysElementController {
    */
   @ApiOperation("获取用户功能权限列表")
   @PostMapping("/user/list")
-  public ResponseResult findElementResourceList(
+  public ResponseResult<List<SysElementVO>> findElementResourceList(
       @RequestBody @Validated UserResourceForm resourceForm) {
     List<SysElementVO> resultList = sysElementBiz.findElementResourceList(resourceForm);
     return ResponseUtil.success(resultList);
@@ -56,11 +59,13 @@ public class SysElementController {
    * @param resource 参数封装
    * @return
    */
+  @RepeatSubmit
+  @CurrentUser
   @ApiOperation("新增（修改）系统功能按钮")
   @PostMapping("/add")
-  public ResponseResult add(@RequestBody @Validated SysElement resource) {
+  public ResponseResult<T> add(@RequestBody @Validated SysElement resource) {
     sysElementBiz.add(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -72,10 +77,10 @@ public class SysElementController {
    */
   @ApiOperation("修改系统菜单按钮")
   @PutMapping("/edit/{id}")
-  public ResponseResult edit(
-      @PathVariable String id, @RequestBody @Validated SysElement resource) {
+  public ResponseResult<T> edit(
+      @PathVariable(value = "id") String id, @RequestBody @Validated SysElement resource) {
     sysElementBiz.edit(id, resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -86,9 +91,9 @@ public class SysElementController {
    */
   @ApiOperation("删除系统功能按钮")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable String id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") String id) {
     sysElementBiz.deleteSysElement(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -99,7 +104,8 @@ public class SysElementController {
    */
   @ApiOperation("根据菜单ID查询菜单按钮列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findListByMenuId(@RequestBody @Validated SysElementQueryForm queryForm) {
+  public ResponseResult<PageInfo<SysElementVO>> findListByMenuId(
+      @RequestBody @Validated SysElementQueryForm queryForm) {
     PageInfo<SysElementVO> resultList = sysElementBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -111,7 +117,7 @@ public class SysElementController {
    */
   @ApiOperation("获取按钮树列表")
   @GetMapping("/tree")
-  public ResponseResult getTree() {
+  public ResponseResult<List<SysElementTreeVO>> getTree() {
     List<SysElementTreeVO> treeList = sysElementBiz.getElementTreeByExample();
     return ResponseUtil.success(treeList);
   }

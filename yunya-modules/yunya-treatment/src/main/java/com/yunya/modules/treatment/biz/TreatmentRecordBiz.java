@@ -13,6 +13,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.AppTreatListQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.query.TreatmentInfoForMonthForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
@@ -695,4 +696,18 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     LastTreatmentInfoVO lastTreatmentInfoVO = mapper.lastTreatmentInfo(patientId);
     return lastTreatmentInfoVO;
   }
+
+  /**
+   * 查询指定时间段内每个医生每天患者就诊人数
+   * @param form 查询条件表单
+   * @return 返回实体列表
+   */
+  public List<TreatmentInfoForMonthVO> treatInfoForMonth(TreatmentInfoForMonthForm form) {
+    Integer dentistId = form.getDentistId();
+    Date startDate = form.getStartDate();
+    Date endDate = form.getEndDate();
+    return mapper.treatInfoForMonth(dentistId,startDate,endDate);
+  }
+
+
 }

@@ -9,6 +9,7 @@ import com.yunya.modules.system.vo.MedicalOrganizationInfoVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,7 +47,8 @@ public class MedicalOrganizationController {
       required = true,
       paramType = "path")
   @GetMapping("/medical/{companyId}")
-  public ResponseResult<MedicalOrganizationInfoVO> findMedicalOrganizationInfo(@PathVariable Integer companyId) {
+  public ResponseResult<MedicalOrganizationInfoVO> findMedicalOrganizationInfo(
+      @PathVariable(value = "companyId") Integer companyId) {
     MedicalOrganizationInfoVO resultVO = clinicExtInfoBiz.findMedicalOrganizationInfo(companyId);
     return ResponseUtil.success(resultVO);
   }
@@ -67,9 +69,10 @@ public class MedicalOrganizationController {
       required = true,
       paramType = "path")
   @PutMapping("/medical/edit/{companyId}")
-  public ResponseResult edit(
-      @PathVariable Integer companyId, @RequestBody @Validated MedicalOrganizationInfoForm form) {
+  public ResponseResult<T> edit(
+      @PathVariable(value = "companyId") Integer companyId,
+      @RequestBody @Validated MedicalOrganizationInfoForm form) {
     clinicExtInfoBiz.edit(companyId, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

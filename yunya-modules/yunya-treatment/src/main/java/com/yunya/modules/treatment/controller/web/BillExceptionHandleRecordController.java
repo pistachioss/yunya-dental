@@ -42,7 +42,7 @@ public class BillExceptionHandleRecordController {
     @ApiImplicitParam(name = "billHandleRecordId", value = "账单异常处理记录ID", required = true)
   })
   @GetMapping(value = "/detail/{billHandleRecordId}", name = "账单异常处理记录详情查询")
-  public ResponseResult findBillHandleDetailById(
+  public ResponseResult<Map<String, Object>> findBillHandleDetailById(
       @PathVariable(value = "billHandleRecordId") Integer billHandleRecordId) {
     Map<String, Object> resultMap =
         billExceptionHandleRecordBiz.findBillHandleDetail(billHandleRecordId);

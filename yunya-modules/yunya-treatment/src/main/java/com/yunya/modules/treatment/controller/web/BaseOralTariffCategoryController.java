@@ -6,11 +6,13 @@ import com.yunya.feign.treatment.domain.model.BaseOralTariffCategoryModel;
 import com.yunya.feign.treatment.domain.query.BaseOralTariffCategoryQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseOralTariffCategoryVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseOralTariffCategoryBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +42,7 @@ public class BaseOralTariffCategoryController {
    */
   @ApiOperation("根据ID获取商品分类信息")
   @GetMapping("/one/{id}")
-  public ResponseResult findById(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<BaseOralTariffCategoryVO> findById(@PathVariable(value = "id") Integer id) {
     BaseOralTariffCategoryVO resultData = baseOralTariffCategoryBiz.findById(id);
     return ResponseUtil.success(resultData);
   }
@@ -52,7 +54,8 @@ public class BaseOralTariffCategoryController {
    */
   @ApiOperation("根据条件查询商品分类列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody BaseOralTariffCategoryQueryForm queryForm) {
+  public ResponseResult<PageInfo<BaseOralTariffCategoryVO>> findList(
+      @RequestBody BaseOralTariffCategoryQueryForm queryForm) {
     PageInfo<BaseOralTariffCategoryVO> resultList = baseOralTariffCategoryBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -63,12 +66,13 @@ public class BaseOralTariffCategoryController {
    * @param model 新增参数
    * @return
    */
+  @RepeatSubmit
   @ApiOperation("新增商品分类")
   @CurrentUser
   @PostMapping("/save")
-  public ResponseResult save(@RequestBody @Validated BaseOralTariffCategoryModel model) {
+  public ResponseResult<T> save(@RequestBody @Validated BaseOralTariffCategoryModel model) {
     baseOralTariffCategoryBiz.add(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -81,11 +85,11 @@ public class BaseOralTariffCategoryController {
   @CurrentUser
   @ApiOperation("修改商品分类")
   @PutMapping("/modify/{id}")
-  public ResponseResult modify(
+  public ResponseResult<T> modify(
       @PathVariable(value = "id") Integer id,
       @RequestBody @Validated BaseOralTariffCategoryForm form) {
     baseOralTariffCategoryBiz.modify(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -96,8 +100,8 @@ public class BaseOralTariffCategoryController {
    */
   @ApiOperation("根据ID（商品分类ID）删除商品分类")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     baseOralTariffCategoryBiz.deleteBaseOralTariffCategoryById(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

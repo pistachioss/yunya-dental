@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.form.EmployeeInfoQueryForm;
 import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.SysUserPostBiz;
@@ -50,7 +51,8 @@ public class SysUserPostController {
    */
   @ApiOperation("获取用户可登陆组织列表(用户登陆)")
   @GetMapping("/list/{userId}")
-  public ResponseResult<List<SysUserLoginOrgVO>> getUserLoginList(@PathVariable Integer userId) {
+  public ResponseResult<List<SysUserLoginOrgVO>> getUserLoginList(
+      @PathVariable(value = "userId") Integer userId) {
     List<SysUserLoginOrgVO> loginList = sysUserPostBiz.getUserLoginListByUserId(userId);
     return ResponseUtil.success(loginList);
   }
@@ -63,7 +65,8 @@ public class SysUserPostController {
    */
   @ApiOperation("获取用户可登陆组织列表(员工信息管理用)")
   @GetMapping("/userPostlist/{userId}")
-  public ResponseResult<List<SysUserPostOrgVO>> getUserPostList(@PathVariable Integer userId) {
+  public ResponseResult<List<SysUserPostOrgVO>> getUserPostList(
+      @PathVariable(value = "userId") Integer userId) {
     List<SysUserPostOrgVO> loginList = sysUserPostBiz.getUserPostListByUserId(userId);
     return ResponseUtil.success(loginList);
   }
@@ -108,6 +111,7 @@ public class SysUserPostController {
    * @param resource 参数封装
    * @return map
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增用户可登陆组织")
   @PostMapping("/add")
@@ -132,7 +136,8 @@ public class SysUserPostController {
       paramType = "path")
   @PutMapping("/edit/{userPostId}")
   public ResponseResult<T> edit(
-      @PathVariable Integer userPostId, @RequestBody @Validated LoginOrganizationForm form) {
+      @PathVariable(value = "userPostId") Integer userPostId,
+      @RequestBody @Validated LoginOrganizationForm form) {
     sysUserPostBiz.edit(userPostId, form);
     return ResponseUtil.success(null);
   }

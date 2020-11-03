@@ -1,27 +1,67 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.treatment.mapper.BillRefundRecordMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.treatment.BillRefundRecord" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER" />
-    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
-    <result column="total_refund_amount" property="totalRefundAmount" jdbcType="DECIMAL" />
-    <result column="reason" property="reason" jdbcType="VARCHAR" />
-    <result column="status" property="status" jdbcType="TINYINT" />
-    <result column="approver_id" property="approverId" jdbcType="INTEGER" />
-    <result column="refund_certificate" property="refundCertificate" jdbcType="VARCHAR" />
-    <result column="remark" property="remark" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.treatment.mapper.BillRefundRecordMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.treatment.BillRefundRecord">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="treatment_record_id" property="treatmentRecordId" jdbcType="INTEGER"/>
+        <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER"/>
+        <result column="total_refund_amount" property="totalRefundAmount" jdbcType="DECIMAL"/>
+        <result column="reason" property="reason" jdbcType="VARCHAR"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="approver_id" property="approverId" jdbcType="INTEGER"/>
+        <result column="refund_certificate" property="refundCertificate" jdbcType="VARCHAR"/>
+        <result column="remark" property="remark" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据条件查询账单退费记录列表 -->
+    <select id="selectBillRefundList" resultType="com.yunya.feign.treatment.domain.vo.BillRefundRecordVO">
+        SELECT
+        br.billRefundRecordId,
+        br.billRefundDate,
+        br.orgId,
+        br.billNum,
+        br.totalRefundAmount,
+        br.operateId,
+        br.operateName,
+        br.reason
+        FROM
+        (
+        SELECT
+        brr.patient_id as patientId,
+        brr.id AS billRefundRecordId,
+        DATE_FORMAT( brr.crt_time, '%Y-%m-%d' ) AS billRefundDate,
+        brr.org_id AS orgId,
+        br.bill_number AS billNum,
+        brr.total_refund_amount AS totalRefundAmount,
+        brr.crt_id AS operateId,
+        brr.crt_name AS operateName,
+        brr.reason
+        FROM
+        bill_refund_record brr
+        LEFT JOIN bill_record br ON brr.order_record_id = br.order_record_id
+        ) br
+        <where>
+            <if test="query.patientId != null">
+                and br.patient_id = #{query.patientId}
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and br.billNum = #{query.billNum}
+            </if>
+            <if test="query.orgId != null">
+                and br.orgId = #{query.orgId}
+            </if>
+        </where>
+        ORDER BY br.billRefundDate DESC
+    </select>
 </mapper>

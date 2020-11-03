@@ -3,6 +3,7 @@ package com.yunya.modules.system.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.OrganizationBiz;
@@ -47,7 +48,7 @@ public class OrganizationController {
    */
   @ApiOperation("根据ID获取组织信息")
   @GetMapping("/one/{id}")
-  public ResponseResult<OrganizationInfo> findById(@PathVariable Integer id) {
+  public ResponseResult<OrganizationInfo> findById(@PathVariable(value = "id") Integer id) {
     OrganizationInfo vo = organizationBiz.findOrgInfoById(id);
     return ResponseUtil.success(vo);
   }
@@ -84,6 +85,7 @@ public class OrganizationController {
    * @param resource 参数封装
    * @return map
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增组织")
   @PostMapping("/add")
@@ -109,7 +111,7 @@ public class OrganizationController {
       paramType = "path")
   @PutMapping("/edit/{id}")
   public ResponseResult<T> editOrganization(
-      @PathVariable Integer id, @Validated @RequestBody OrganizationForm form) {
+      @PathVariable(value = "id") Integer id, @Validated @RequestBody OrganizationForm form) {
     organizationBiz.editOrganization(id, form);
     return ResponseUtil.success(null);
   }

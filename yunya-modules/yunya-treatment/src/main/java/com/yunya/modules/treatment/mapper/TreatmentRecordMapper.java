@@ -2,14 +2,12 @@ package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
-import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.models.treatment.TreatmentRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -64,4 +62,16 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @return 末次就诊信息
    */
   LastTreatmentInfoVO lastTreatmentInfo(@Param("patientId") Integer patientId);
+
+  /**
+   * 查询指定时间段内每个医生每天患者就诊人数
+   * @param dentistId 医生ID
+   * @param startDate 开始日期
+   * @param endDate 结束日期
+   * @return 实体列表
+   */
+  List<TreatmentInfoForMonthVO> treatInfoForMonth(
+          @Param("dentistId") Integer dentistId,
+          @Param("startDate") Date startDate,
+          @Param("endDate") Date endDate);
 }

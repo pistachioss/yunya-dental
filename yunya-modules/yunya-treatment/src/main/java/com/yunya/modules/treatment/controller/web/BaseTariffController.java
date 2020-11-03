@@ -7,6 +7,7 @@ import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseTariffInfoVO;
 import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseTariffBiz;
@@ -69,6 +70,7 @@ public class BaseTariffController {
    * @param model 新增参数
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增价目表")
   @PostMapping("/add")

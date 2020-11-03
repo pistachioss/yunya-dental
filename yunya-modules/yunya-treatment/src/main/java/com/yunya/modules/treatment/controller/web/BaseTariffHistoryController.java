@@ -41,7 +41,8 @@ public class BaseTariffHistoryController {
    */
   @ApiOperation("获取商品项目id查询变更历史记录")
   @GetMapping("/history/{tariffId}")
-  public ResponseResult findList(@PathVariable(value = "tariffId") Integer tariffId) {
+  public ResponseResult<List<BaseTariffHistoryVO>> findList(
+      @PathVariable(value = "tariffId") Integer tariffId) {
     List<BaseTariffHistoryVO> resultList = baseTariffHistoryBiz.findList(tariffId);
     return ResponseUtil.success(resultList);
   }

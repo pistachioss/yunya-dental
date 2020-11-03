@@ -6,6 +6,7 @@ import com.yunya.feign.treatment.domain.model.BaseTariffCategoryModel;
 import com.yunya.feign.treatment.domain.query.BaseTariffCategoryQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseTariffCategoryVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BaseTariffCategoryBiz;
@@ -40,7 +41,7 @@ public class BaseTariffCategoryController {
    */
   @ApiOperation("根据ID获取价目表分类信息")
   @GetMapping("/one/{id}")
-  public ResponseResult findById(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<BaseTariffCategoryVO> findById(@PathVariable(value = "id") Integer id) {
     BaseTariffCategoryVO resultData = baseTariffCategoryBiz.findById(id);
     return ResponseUtil.success(resultData);
   }
@@ -63,6 +64,7 @@ public class BaseTariffCategoryController {
    * @param model 新增参数
    * @return
    */
+  @RepeatSubmit
   @ApiOperation("新增价目表分类")
   @CurrentUser
   @PostMapping("/save")

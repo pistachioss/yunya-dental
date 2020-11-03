@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -194,6 +195,14 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
      * @return
      */
     public  List<CouponCommonInfoVO> findList(CouponCommonInfoQueryForm couponCommonInfoQueryForm){
+        if(couponCommonInfoQueryForm.getEndTime()!=null){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(couponCommonInfoQueryForm.getEndTime());
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            couponCommonInfoQueryForm.setEndTime(calendar.getTime());
+        }
         return mapper.findList(couponCommonInfoQueryForm);
     }
 

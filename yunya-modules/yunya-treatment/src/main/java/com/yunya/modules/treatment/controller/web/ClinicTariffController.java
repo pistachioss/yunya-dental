@@ -132,7 +132,7 @@ public class ClinicTariffController {
    */
   @ApiModelProperty("根据条件查询门诊基础价目表（卡券设计-产品详情-适用项目）项目类型 0-价目表；1-商品表")
   @GetMapping("/category/{type}")
-  public ResponseResult clinicBaseTariff(@PathVariable("type") Byte type, String search) {
+  public ResponseResult clinicBaseTariff(@PathVariable(value = "type") Byte type, String search) {
 
     return this.clinicTariffBiz.clinicBaseTariff(type, search);
   }

@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.CompanyDepartment;
@@ -14,6 +15,7 @@ import com.yunya.modules.system.vo.OrgDeptVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,7 +49,7 @@ public class OrganizationDepartmentController {
    */
   @ApiOperation("根据ID查询组织部门信息")
   @GetMapping("/dept/one/{id}")
-  public ResponseResult findById(@PathVariable Integer id) {
+  public ResponseResult<CompanyDepartment> findById(@PathVariable(value = "id") Integer id) {
     CompanyDepartment companyDepartment = organizationDepartmentBiz.selectById(id);
     return ResponseUtil.success(companyDepartment);
   }
@@ -66,7 +68,8 @@ public class OrganizationDepartmentController {
       value = "组织ID",
       paramType = "path")
   @GetMapping("/dept/tree/{companyId}")
-  public ResponseResult findTree(@PathVariable Integer companyId) {
+  public ResponseResult<List<OrgDeptTreeVO>> findTree(
+      @PathVariable(value = "companyId") Integer companyId) {
     List<OrgDeptTreeVO> treeList = organizationDepartmentBiz.findDeptTree(companyId);
     return ResponseUtil.success(treeList);
   }
@@ -79,7 +82,8 @@ public class OrganizationDepartmentController {
    */
   @ApiOperation("根据条件查询组织部门列表（可分页）")
   @PostMapping("/dept/list")
-  public ResponseResult findList(@RequestBody @Validated OrgDeptQueryForm queryForm) {
+  public ResponseResult<PageInfo<OrgDeptVO>> findList(
+      @RequestBody @Validated OrgDeptQueryForm queryForm) {
     PageInfo<OrgDeptVO> resultList = organizationDepartmentBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -90,12 +94,13 @@ public class OrganizationDepartmentController {
    * @param resource 参数封装
    * @return map
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增组织部门")
   @PostMapping("/dept/add")
-  public ResponseResult add(@RequestBody @Validated CompanyDepartmentModel resource) {
+  public ResponseResult<T> add(@RequestBody @Validated CompanyDepartmentModel resource) {
     organizationDepartmentBiz.addCompanyDepartment(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -114,10 +119,10 @@ public class OrganizationDepartmentController {
       dataType = "int",
       paramType = "path")
   @PutMapping("/dept/edit/{id}")
-  public ResponseResult edit(
-      @PathVariable Integer id, @RequestBody @Validated CompanyDepartmentForm form) {
+  public ResponseResult<T> edit(
+      @PathVariable(value = "id") Integer id, @RequestBody @Validated CompanyDepartmentForm form) {
     organizationDepartmentBiz.edit(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -134,8 +139,8 @@ public class OrganizationDepartmentController {
       dataType = "int",
       paramType = "path")
   @DeleteMapping("/dept/delete/{id}")
-  public ResponseResult delete(@PathVariable Integer id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     organizationDepartmentBiz.deleteOrganizationDepartment(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }
