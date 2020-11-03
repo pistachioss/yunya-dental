@@ -94,7 +94,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /** 标签Mapper */
   @Autowired private PatientLabelRecordMapper patientLabelRecordMapper;
 
-
   /**
    * 通过患者id查询患者共用属性
    *
@@ -141,14 +140,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public PatientBaseInfoVo addPatient(PatientBaseInfoModel patientBaseInfoModel) {
     PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
     BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
-    //患者id不为空表明,是修改操作
-    if (StringHelper.isNotNull(patientBaseInfoModel.getId())){
+    // 患者id不为空表明,是修改操作
+    if (StringHelper.isNotNull(patientBaseInfoModel.getId())) {
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
       return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
-    if (patientBaseInfo.getOriginId() != null){
+    if (patientBaseInfo.getOriginId() != null) {
       PatientOrigin patientOrigin =
-              this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+          this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
       if (patientOrigin != null) {
         patientBaseInfo.setOriginType(patientOrigin.getOriginType());
       }
@@ -160,34 +159,42 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     mapper.insertPatientInfo(patientBaseInfo);
 
-      /*// 创建硬件任务 创建人员
-      JSONObject object = new JSONObject();
-      object.put("taskNo", "personCreate");
-      object.put("interfaceName", "person/create");
-      object.put("result", true);
-      PersonModel person = new PersonModel();
-      person.setName(patientBaseInfo.getName());
-      object.put("person", person);
-      redisUtils.set("patientId",patientBaseInfo.getId());
+    /*// 创建硬件任务 创建人员
+    JSONObject object = new JSONObject();
+    object.put("taskNo", "personCreate");
+    object.put("interfaceName", "person/create");
+    object.put("result", true);
+    PersonModel person = new PersonModel();
+    person.setName(patientBaseInfo.getName());
+    object.put("person", person);
+    redisUtils.set("patientId",patientBaseInfo.getId());
 
-      if ( StringHelper.isNotNull(informationCallbackBiz.getSN()) ){
-        redisUtils.set(informationCallbackBiz.getSN(), object);
-      }*/
+    if ( StringHelper.isNotNull(informationCallbackBiz.getSN()) ){
+      redisUtils.set(informationCallbackBiz.getSN(), object);
+    }*/
+    PatientBaseInfoVo patientBaseInfoVo =
+        this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
 
-      // 添加患者时,创建预付款账户
-      this.addPatientPrepaymentsInfo(patientBaseInfo);
-      PatientBaseInfoVo patientBaseInfoVo = this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+    // 发送 创建患者
+    sendMessages(patientBaseInfoVo.getId(), 0);
+    // 创建预付款 并发送消息
+    this.addPatientPrepaymentsInfo(patientBaseInfo);
+    return patientBaseInfoVo;
+  }
 
-      // 发送 更新中间表 消息
-      MessageModel messageModel = new MessageModel();
-      Map<String, Object> map = new HashMap<String, Object>();
-      map.put("id", patientBaseInfoVo.getId());
-      messageModel.setParamMap(map);
-      messageModel.setOperateType(0);
-      messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatient);
-      remoteRabbitMqServiceFeign.sendMessage(messageModel);
-
-      return patientBaseInfoVo;
+  /**
+   * 发送消息
+   *
+   * @param id 操作id
+   */
+  public void sendMessages(Integer id, Integer operateType) {
+    MessageModel messageModel = new MessageModel();
+    Map<String, Object> map = new HashMap<String, Object>();
+    map.put("id", id);
+    messageModel.setParamMap(map);
+    messageModel.setOperateType(operateType);
+    messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatient);
+    remoteRabbitMqServiceFeign.sendMessage(messageModel);
   }
 
   /**
@@ -196,14 +203,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @param patientBaseInfo 患者信息
    */
   private void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo) {
-    if (patientBaseInfo.getId() != null){
+    if (patientBaseInfo.getId() != null) {
       PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
       patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       patientPrepaymentsInfo.setPatientId(patientBaseInfo.getId());
       // 预付款卡号生成规则 开通Y
       patientPrepaymentsInfo.setPrepaymentNumber(
-              this.patientMemberInfoBiz.generateCardNumber(
-                      "Y", "patient_prepayments_info", "prepayment_number"));
+          this.patientMemberInfoBiz.generateCardNumber(
+              "Y", "patient_prepayments_info", "prepayment_number"));
       patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
       this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
@@ -235,6 +242,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setUpdTime(new Date());
     // 完善患者基本信息  对补全信息进行更新
     this.mapper.updateByPrimaryKey(patientBaseInfo);
+    sendMessages(patientBaseInfo.getId(), 1);
     PatientExpInfo patientExpInfo = new PatientExpInfo();
     // 完善患者扩展信息
     BeanUtils.copyProperties(patientExtendInfoModel.getPatientExpInfoModel(), patientExpInfo);
@@ -293,16 +301,15 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
-    if (patientBaseInfo.getOriginId() !=null ){
+    if (patientBaseInfo.getOriginId() != null) {
       PatientOrigin patientOrigin =
-              patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+          patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
       if (patientOrigin == null) {
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者来源信息", "");
       }
       // 获取患者来源的父级id
       patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
     }
-
 
     // 获取患者来源name
     // 基本信息
@@ -336,41 +343,41 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    * @return PatientBaseInfoVo
    */
   private PatientBaseInfoVo getTypeName(PatientBaseInfoVo patientBaseInfoVo) {
-    if (patientBaseInfoVo.getOriginType()!= null){
+    if (patientBaseInfoVo.getOriginType() != null) {
       PatientOrigin patientOrigin =
-              patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
+          patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
       if (patientOrigin != null) {
         patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
       }
       if (patientBaseInfoVo.getOriginId() != null) {
         switch (patientBaseInfoVo.getOriginType()) {
-          //查询员工
+            // 查询员工
           case 1:
             SysUserEmployeeModel model = new SysUserEmployeeModel();
-            if (patientBaseInfoVo.getSourceId() != null){
+            if (patientBaseInfoVo.getSourceId() != null) {
               model.setUserId(patientBaseInfoVo.getSourceId());
               model.setWhetherPage(false);
               List<SysUserInfoDetail> list =
-                      remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+                  remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
               if (!StringHelper.isEmpty(list)) {
                 patientBaseInfoVo.setOriginName(list.get(0).getName());
               }
             }
             break;
-          //查询患者
+            // 查询患者
           case 2:
-            if (patientBaseInfoVo.getSourceId() != null){
+            if (patientBaseInfoVo.getSourceId() != null) {
               PatientBaseInfo patientBaseInfo =
-                      patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
+                  patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
               if (patientBaseInfo != null) {
                 patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
               }
             }
             break;
           default:
-            if (patientBaseInfoVo.getOriginId() != null){
+            if (patientBaseInfoVo.getOriginId() != null) {
               PatientOrigin activity =
-                      patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
+                  patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
               if (activity != null) {
                 patientBaseInfoVo.setOriginName(activity.getName());
               }
@@ -383,7 +390,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     DictionaryItem dictionaryItem =
         remoteSystemServiceFeign.findDictionaryItemById(patientBaseInfoVo.getMobileOwner());
     if (dictionaryItem != null) {
-      //手机号所属名称
+      // 手机号所属名称
       patientBaseInfoVo.setMobileOwnerName(dictionaryItem.getName());
     }
     return patientBaseInfoVo;
@@ -400,8 +407,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfoMapper.findPatientByNameAndMobile(form);
     return patientByNameAndMobile;
   }
-
-
 
   /**
    * 根据患者id集合查询患者list
@@ -420,20 +425,20 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public void takeAPhoto(Integer id) {
     PatientBaseInfo patientBaseInfo = patientBaseInfoMapper.selectPatientById(id);
-    if (patientBaseInfo != null){
+    if (patientBaseInfo != null) {
       JSONObject object = new JSONObject();
       object.put("taskNo", "faceTakeImg");
       object.put("interfaceName", "face/takeImg");
-      object.put("personId",patientBaseInfo.getPersonId());
+      object.put("personId", patientBaseInfo.getPersonId());
       object.put("result", true);
-      redisUtils.set("takePhotosPatientId",patientBaseInfo.getId());
+      redisUtils.set("takePhotosPatientId", patientBaseInfo.getId());
 
       // 如果未获取到设备号 任务就不创建
-      if (StringHelper.isNotNull(informationCallbackBiz.getSN())){
+      if (StringHelper.isNotNull(informationCallbackBiz.getSN())) {
         redisUtils.set(informationCallbackBiz.getSN(), object);
       }
-      redisUtils.set("userId",BaseContextHandler.getUserID());
-      redisUtils.set("userName",BaseContextHandler.getName());
+      redisUtils.set("userId", BaseContextHandler.getUserID());
+      redisUtils.set("userName", BaseContextHandler.getName());
     }
   }
 
@@ -444,29 +449,30 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   public ResponseResult deleteThePhoto(String faceId) {
     PatientImg patientImg = patientImgMapper.selectByFaceId(faceId);
-    if(StringHelper.isNotNull(patientImg)){
-      PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoMapper.selectOneById(patientImg.getPatientId());
-      if (StringHelper.isNotNull(patientBaseInfoVo)){
+    if (StringHelper.isNotNull(patientImg)) {
+      PatientBaseInfoVo patientBaseInfoVo =
+          patientBaseInfoMapper.selectOneById(patientImg.getPatientId());
+      if (StringHelper.isNotNull(patientBaseInfoVo)) {
 
         // 判断删除的是否是第一张照片，如果是 同时清空患者头像
-        if (StringHelper.isNotEmpty(patientImg.getFaceIdOne())){
-          if (patientImg.getFaceIdOne().equals(faceId)){
+        if (StringHelper.isNotEmpty(patientImg.getFaceIdOne())) {
+          if (patientImg.getFaceIdOne().equals(faceId)) {
             patientBaseInfoMapper.updateFaceUrlById(patientBaseInfoVo.getId());
-            patientImgMapper.updateFaceImg("img_one","face_id_one",patientImg.getId());
+            patientImgMapper.updateFaceImg("img_one", "face_id_one", patientImg.getId());
           }
         }
 
         // 判断是否删除第二张照片
-        if (StringHelper.isNotEmpty(patientImg.getFaceIdTwo())){
-          if (patientImg.getFaceIdTwo().equals(faceId)){
-            patientImgMapper.updateFaceImg("img_two","face_id_two",patientImg.getId());
+        if (StringHelper.isNotEmpty(patientImg.getFaceIdTwo())) {
+          if (patientImg.getFaceIdTwo().equals(faceId)) {
+            patientImgMapper.updateFaceImg("img_two", "face_id_two", patientImg.getId());
           }
         }
 
         // 判断是否删除第三张照片
-        if (StringHelper.isNotEmpty(patientImg.getFaceIdThree())){
-          if (patientImg.getFaceIdThree().equals(faceId)){
-            patientImgMapper.updateFaceImg("img_three","face_id_three",patientImg.getId());
+        if (StringHelper.isNotEmpty(patientImg.getFaceIdThree())) {
+          if (patientImg.getFaceIdThree().equals(faceId)) {
+            patientImgMapper.updateFaceImg("img_three", "face_id_three", patientImg.getId());
           }
         }
 
@@ -474,22 +480,20 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         JSONObject object = new JSONObject();
         object.put("taskNo", "faceDelete");
         object.put("interfaceName", "face/delete");
-        object.put("faceId",faceId);
+        object.put("faceId", faceId);
         object.put("result", true);
 
         // 如果未获取到设备号 任务就不创建
-        if (StringHelper.isNotNull(informationCallbackBiz.getSN())){
+        if (StringHelper.isNotNull(informationCallbackBiz.getSN())) {
           redisUtils.set(informationCallbackBiz.getSN(), object);
         }
 
         return ResponseUtil.success();
-
       }
       return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者信息", "");
     }
     return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者照片对象信息", "");
   }
-
 
   /**
    * 获取人员照片
@@ -500,9 +504,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public PatientImgVo getFaceUrl(Integer patientId) {
     PatientImgVo patientImgVo = null;
     PatientImg patientImg = patientImgMapper.selectByPatient(patientId);
-    if (patientImg != null){
+    if (patientImg != null) {
       patientImgVo = new PatientImgVo();
-      BeanUtils.copyProperties(patientImg,patientImgVo);
+      BeanUtils.copyProperties(patientImg, patientImgVo);
     }
     return patientImgVo;
   }
@@ -678,8 +682,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/setPassWord", data);
   }
 
-
-
   /**
    * 根据姓名/病例编号/手机号/姓名拼音模糊查询患者
    *
@@ -729,47 +731,50 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /**
    * app端患者档案查询
+   *
    * @param patientId 患者id
    * @return AppPatientArchivesVo
    */
   public AppPatientArchivesVo patientArchives(Integer patientId) {
     AppPatientArchivesVo appPatientArchivesVo = patientBaseInfoMapper.appPatientArchives(patientId);
-    if (appPatientArchivesVo != null){
+    if (appPatientArchivesVo != null) {
       // 获取会员卡名称
-      if (appPatientArchivesVo.getMemberTypeId() != null){
-        MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(appPatientArchivesVo.getMemberTypeId());
+      if (appPatientArchivesVo.getMemberTypeId() != null) {
+        MemberType memberType =
+            this.remoteSystemServiceFeign.findMemberTypeById(
+                appPatientArchivesVo.getMemberTypeId());
         if (memberType != null && memberType.getName() != null) {
           appPatientArchivesVo.setMemberCardName(memberType.getName());
         }
         Byte[] str = {0, 1};
         int age = 14;
-          // 设置患者的类型(未成年男性0，成年男性1，未成年女性2，成年女性3)
-          Integer integer = appPatientArchivesVo.getAge();
-          if (integer != null) {
-            // 未成年男性0
-            Byte gender = appPatientArchivesVo.getGender();
-            if (integer < age && str[0].equals(gender)) {
-              appPatientArchivesVo.setPatientKind(0);
-            }
-            // 成年男性1
-            if (integer >= age && str[0].equals(gender)) {
-              appPatientArchivesVo.setPatientKind(1);
-            }
-            // 未成年女性2
-            if (integer < age && str[1].equals(gender)) {
-              appPatientArchivesVo.setPatientKind(2);
-            }
-            // 成年女性3
-            if (integer >= age && str[1].equals(gender)) {
-              appPatientArchivesVo.setPatientKind(3);
-            }
+        // 设置患者的类型(未成年男性0，成年男性1，未成年女性2，成年女性3)
+        Integer integer = appPatientArchivesVo.getAge();
+        if (integer != null) {
+          // 未成年男性0
+          Byte gender = appPatientArchivesVo.getGender();
+          if (integer < age && str[0].equals(gender)) {
+            appPatientArchivesVo.setPatientKind(0);
+          }
+          // 成年男性1
+          if (integer >= age && str[0].equals(gender)) {
+            appPatientArchivesVo.setPatientKind(1);
+          }
+          // 未成年女性2
+          if (integer < age && str[1].equals(gender)) {
+            appPatientArchivesVo.setPatientKind(2);
+          }
+          // 成年女性3
+          if (integer >= age && str[1].equals(gender)) {
+            appPatientArchivesVo.setPatientKind(3);
+          }
+        } else {
+          // 年龄为空，性别为男 4
+          if (str[0].equals(appPatientArchivesVo.getGender())) {
+            appPatientArchivesVo.setPatientKind(4);
           } else {
-            // 年龄为空，性别为男 4
-            if (str[0].equals(appPatientArchivesVo.getGender())) {
-              appPatientArchivesVo.setPatientKind(4);
-            } else {
-              // 年龄为空，性别为女 5
-              appPatientArchivesVo.setPatientKind(5);
+            // 年龄为空，性别为女 5
+            appPatientArchivesVo.setPatientKind(5);
           }
         }
       }
@@ -779,6 +784,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /**
    * 查询患者是否存在
+   *
    * @param patientBaseInfoQueryForm 患者信息查询QueryFrom
    * @return ResponseResult
    */
@@ -786,50 +792,58 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     List<PatientBaseInfoVo> patientBaseInfoVos;
     patientBaseInfoVos = patientBaseInfoMapper.findUserExistsList(patientBaseInfoQueryForm);
     if (!StringHelper.isEmpty(patientBaseInfoVos)) {
-      return ResponseUtil.fail(OperationCodeConstants.SAME_DATA_EXIST,"添加失败,该用户已存在", patientBaseInfoVos);
+      return ResponseUtil.fail(
+          OperationCodeConstants.SAME_DATA_EXIST, "添加失败,该用户已存在", patientBaseInfoVos);
     }
     List<PatientBaseInfoVo> patientBaseInfoVoList =
-            patientBaseInfoMapper.findUserExistsByMobileList(patientBaseInfoQueryForm.getMobile());
+        patientBaseInfoMapper.findUserExistsByMobileList(patientBaseInfoQueryForm.getMobile());
     if (!StringHelper.isEmpty(patientBaseInfoVoList)) {
-      return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "该手机号已存在", patientBaseInfoVoList);
+      return ResponseUtil.fail(
+          OperationCodeConstants.RETURN_MOBILE_ISNULL, "该手机号已存在", patientBaseInfoVoList);
     }
     return ResponseUtil.success();
   }
 
   /**
    * 修改患者信息
+   *
    * @param patientExtendInfoModel 患者信息
    */
   public void updatePatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
     PatientBaseInfoModel patientBaseInfoModel = patientExtendInfoModel.getPatientBaseInfoModel();
-    if (patientBaseInfoModel != null){
-      PatientBaseInfo patientBaseInfo =new PatientBaseInfo();
-      BeanUtils.copyProperties(patientBaseInfoModel,patientBaseInfo);
+    if (patientBaseInfoModel != null) {
+      PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
+      BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
     }
   }
 
   /**
    * 拍照回调
+   *
    * @param picturesCallbackInfoModel 拍照回调接收结果Model
    */
   public Boolean takePictures(PicturesCallbackInfoModel picturesCallbackInfoModel) {
     // 如果未获取到设备号 任务就不创建
-    System.out.println("******************************拍照回调成功**************************************");
-    if (picturesCallbackInfoModel != null && picturesCallbackInfoModel.getBase64() != null){
-      if( informationCallbackBiz.getSN().equals(picturesCallbackInfoModel.getDeviceKey()) ){
+    System.out.println(
+        "******************************拍照回调成功**************************************");
+    if (picturesCallbackInfoModel != null && picturesCallbackInfoModel.getBase64() != null) {
+      if (informationCallbackBiz.getSN().equals(picturesCallbackInfoModel.getDeviceKey())) {
         // 创建患者照片对象
         PatientImg patientImg = new PatientImg();
         // 创建患者信息对象
         PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
         patientBaseInfo.setFaceUrl(picturesCallbackInfoModel.getBase64());
         // 查询患者照片信息
-        PatientImg patientImgModel = patientImgMapper.selectByPatient(Integer.parseInt(redisUtils.get("takePhotosPatientId")));
+        PatientImg patientImgModel =
+            patientImgMapper.selectByPatient(
+                Integer.parseInt(redisUtils.get("takePhotosPatientId")));
 
         // 如果照片不为空就判断那个照片位置是空的 让后插入照片
-        if (patientImgModel != null){
+        if (patientImgModel != null) {
           // 添加一张照片
-          if (patientImgModel.getImgOne() == null || StringHelper.isEmpty(patientImgModel.getImgOne())){
+          if (patientImgModel.getImgOne() == null
+              || StringHelper.isEmpty(patientImgModel.getImgOne())) {
             // 获取照片base64码
             patientImgModel.setImgOne(picturesCallbackInfoModel.getBase64());
             // 获取设备照片id
@@ -840,7 +854,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             return true;
           }
           // 添加二张照片
-          if (patientImgModel.getImgTwo() == null || StringHelper.isEmpty(patientImgModel.getImgTwo())){
+          if (patientImgModel.getImgTwo() == null
+              || StringHelper.isEmpty(patientImgModel.getImgTwo())) {
             // 获取照片base64码
             patientImgModel.setImgTwo(picturesCallbackInfoModel.getBase64());
             // 获取设备照片id
@@ -849,7 +864,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             return true;
           }
           // 添加三张照片
-          if (patientImgModel.getImgThree() == null || StringHelper.isEmpty(patientImgModel.getImgThree())){
+          if (patientImgModel.getImgThree() == null
+              || StringHelper.isEmpty(patientImgModel.getImgThree())) {
             // 获取照片base64码
             patientImgModel.setImgThree(picturesCallbackInfoModel.getBase64());
             // 获取设备照片id
@@ -859,14 +875,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
           }
 
           // 如果没有照片对象就创建 并把第一张照片作为头像
-        }else {
+        } else {
           patientImg.setPatientId(Integer.parseInt(redisUtils.get("takePhotosPatientId")));
           patientImg.setImgOne(picturesCallbackInfoModel.getBase64());
           patientImg.setFaceIdOne(picturesCallbackInfoModel.getFaceId());
           patientImg.setCrtId(Integer.parseInt(redisUtils.get("userId")));
           patientImg.setCrtName(redisUtils.get("userName"));
           patientImgMapper.insert(patientImg);
-          //患者信息头像同时更新
+          // 患者信息头像同时更新
           updatePatientInfoImg(patientBaseInfo);
           return true;
         }
@@ -878,12 +894,12 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     return false;
   }
 
-
   /**
    * 插入照片
+   *
    * @param patientImgModel 患者照片对象
    */
-  public void addPatientImg(PatientImg patientImgModel){
+  public void addPatientImg(PatientImg patientImgModel) {
     patientImgModel.setUpdId(Integer.parseInt(redisUtils.get("userId")));
     patientImgModel.setUpdName(redisUtils.get("userName"));
     patientImgModel.setUpdTime(new Date());
@@ -892,6 +908,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /**
    * 更新患者信息头像
+   *
    * @param patientBaseInfo 患者信息
    */
   public void updatePatientInfoImg(PatientBaseInfo patientBaseInfo) {
@@ -907,36 +924,39 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /**
    * 操作标签
+   *
    * @param patientLabelRecordModel 操作标签Model
    */
   public void operatingLabel(PatientLabelRecordModel patientLabelRecordModel) {
-      PatientLabelRecord patientLabelRecord = new PatientLabelRecord();
-      BeanUtils.copyProperties(patientLabelRecordModel,patientLabelRecord);
-      patientLabelRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      patientLabelRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      patientLabelRecord.setCrtName(BaseContextHandler.getName());
-      patientLabelRecord.setCrtTime(new Date());
-      patientLabelRecordMapper.insert(patientLabelRecord);
+    PatientLabelRecord patientLabelRecord = new PatientLabelRecord();
+    BeanUtils.copyProperties(patientLabelRecordModel, patientLabelRecord);
+    patientLabelRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    patientLabelRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+    patientLabelRecord.setCrtName(BaseContextHandler.getName());
+    patientLabelRecord.setCrtTime(new Date());
+    patientLabelRecordMapper.insert(patientLabelRecord);
   }
 
   /**
    * 查询标签操作记录列表
+   *
    * @return List<PatientLabelRecord>
    */
   public List<PatientLabelRecordVo> labelList(PatientLabelRecordQueryForm form) {
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    List<PatientLabelRecordVo> patientLabelRecordList = patientLabelRecordMapper.selectLabelList(form.getPatientId());
+    List<PatientLabelRecordVo> patientLabelRecordList =
+        patientLabelRecordMapper.selectLabelList(form.getPatientId());
     patientLabelRecordList.forEach(
-            patientLabelRecordVo -> {
-              // 查询标签字典名称
-              DictionaryType dictionaryTypeById = remoteSystemServiceFeign.findDictionaryTypeById(patientLabelRecordVo.getDictItemId());
-              /*if (departmentById != null){
-                patientLabelRecordVo.setDictItemName(departmentById.getName());
-              }*/
-            }
-    );
+        patientLabelRecordVo -> {
+          // 查询标签字典名称
+          DictionaryType dictionaryTypeById =
+              remoteSystemServiceFeign.findDictionaryTypeById(patientLabelRecordVo.getDictItemId());
+          /*if (departmentById != null){
+            patientLabelRecordVo.setDictItemName(departmentById.getName());
+          }*/
+        });
     return patientLabelRecordList;
   }
 }

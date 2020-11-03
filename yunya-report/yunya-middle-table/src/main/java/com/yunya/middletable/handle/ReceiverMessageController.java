@@ -4,6 +4,8 @@ import com.rabbitmq.client.Channel;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.middletable.service.*;
 import com.yunya.middletable.service.patient.BasePatientBiz;
+import com.yunya.middletable.service.patient.BasePatientMemberBiz;
+import com.yunya.models.report.BasePatientMember;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -37,6 +39,8 @@ public class ReceiverMessageController {
   @Autowired private BaseBenefitServiceImpl baseBenefitService;
 
   @Resource private BaseCardServiceImpl baseCardService;
+
+  @Autowired private BasePatientMemberBiz basePatientMemberBiz;
 
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
@@ -81,6 +85,9 @@ public class ReceiverMessageController {
           break;
         case BaseCardBatch:
           baseCardService.operateBatch(messageModel);
+          break;
+        case BasePatientMember:
+          basePatientMemberBiz.operate(messageModel);
           break;
         default:
           break;

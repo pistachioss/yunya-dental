@@ -38,6 +38,14 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
     int deleteMemberRelation(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId);
 
     /**
+     * 查询关系id
+     * @param secondaryCardId 副卡人id
+     * @param masterCardId 主卡人id
+     * @return int
+     */
+    int selectMemberRelationId(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId);
+
+    /**
      * 查询关联关系是否已经存在
      * @param form 会员卡关联关系
      * @return MemberRelationVo
@@ -57,4 +65,6 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @return  List<MemberInfoVo>
      */
     List<SecondaryMemberInfoVo> findMemberInfo(@Param("form") PatientMemberInfoQueryForm form);
+
+
 }
