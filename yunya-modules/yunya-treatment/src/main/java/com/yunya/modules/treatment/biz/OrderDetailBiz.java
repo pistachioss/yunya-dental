@@ -102,14 +102,6 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   public List<OrderDetailVO> findOrderDetailVOList(Integer orderRecordId) {
-    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
-    if (null == orderRecord) {
-      throw new ClientServiceException("账单不存在，请选择正确的就诊记录进行收费！", PARAMETERS_IS_ILLEGAL);
-    }
-    orderRecord.setId(orderRecordId);
-    // 设置账单状态为收费中
-    orderRecord.setStatus((byte) 3);
-    orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, null);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(

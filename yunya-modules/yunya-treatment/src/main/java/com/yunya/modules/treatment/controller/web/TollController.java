@@ -58,6 +58,20 @@ public class TollController {
   }
 
   /**
+   * 点击收费修改账单状态
+   *
+   * @param orderRecordId 开单记录ID
+   * @return
+   */
+  @ApiOperation("点击收费修改账单状态")
+  @GetMapping(value = "/change/{orderRecordId}", name = "点击收费修改账单状态")
+  public ResponseResult<T> changeOrderRecordStatus(
+      @PathVariable(value = "orderRecordId") Integer orderRecordId) {
+    tollBiz.changeOrderRecordStatus(orderRecordId);
+    return ResponseUtil.success(null);
+  }
+
+  /**
    * 取消账单收费
    *
    * @param orderRecordId 开单记录ID
