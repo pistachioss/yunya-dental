@@ -159,25 +159,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     mapper.insertPatientInfo(patientBaseInfo);
 
-    /*// 创建硬件任务 创建人员
-    JSONObject object = new JSONObject();
-    object.put("taskNo", "personCreate");
-    object.put("interfaceName", "person/create");
-    object.put("result", true);
-    PersonModel person = new PersonModel();
-    person.setName(patientBaseInfo.getName());
-    object.put("person", person);
-    redisUtils.set("patientId",patientBaseInfo.getId());
-
-    if ( StringHelper.isNotNull(informationCallbackBiz.getSN()) ){
-      redisUtils.set(informationCallbackBiz.getSN(), object);
-    }*/
-    PatientBaseInfoVo patientBaseInfoVo =
-        this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
-
-    // 发送 创建患者
-    sendMessages(patientBaseInfoVo.getId(), 0);
+    PatientBaseInfoVo patientBaseInfoVo = this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     // 创建预付款 并发送消息
+    sendMessages(patientBaseInfo.getId(), 0);
     this.addPatientPrepaymentsInfo(patientBaseInfo);
     return patientBaseInfoVo;
   }
@@ -214,16 +198,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
       this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
-
-      // 创建消息
-      MessageModel messageModel = new MessageModel();
-      Map<String, Object> map = new HashMap<String, Object>();
-      map.put("id", patientPrepaymentsInfo.getId());
-      map.put("type", 1);
-      messageModel.setParamMap(map);
-      messageModel.setOperateType(0);
-      messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatientMember);
-      remoteRabbitMqServiceFeign.sendMessage(messageModel);
+      remoteRabbitMqServiceFeign.sendMessage(patientPrepaymentsInfo.getId(),1,0,MsgCategoryEnum.BasePatientMember);
     }
   }
 

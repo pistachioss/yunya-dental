@@ -150,7 +150,6 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
         Integer id = (Integer)msg.getParamMap().get("id");
         // 会员卡
         if (type == 0){
-
             BasePatientMember basePatientMember = getPatientMemberInfo(id,type);
             mapper.deleteByPrimaryKey(basePatientMember);
             mapper.insert(basePatientMember);

@@ -6,10 +6,14 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.PatientBaseInfoMapper;
 import com.yunya.middletable.dao.patient.PatientOriginMapper;
+import com.yunya.middletable.dao.patient.PatientPrepaymentsInfoMapper;
 import com.yunya.middletable.dao.report.BasePatientMapper;
+import com.yunya.middletable.dao.report.BasePatientMemberMapper;
 import com.yunya.models.patient_central.PatientOrigin;
+import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.models.report.BasePatient;
 import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.report.BasePatientMember;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,12 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
     @Autowired private PatientOriginMapper patientOriginMapper;
 
+    @Autowired private BasePatientMemberBiz basePatientMemberBiz;
+
+    @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+
+    @Autowired private BasePatientMemberMapper basePatientMemberMapper;
+
     /**
      * 患者信息操作
      * @param msg 消息
@@ -45,6 +55,7 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             case 0:
                 mapper.delete(patient);
                 mapper.insertSelective(patient);
+                addPrepaidInfo(patient);
                 break;
             case 1:
                 mapper.updateByPrimaryKeySelective(patient);
@@ -60,6 +71,19 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             default:
                 break;
         }
+    }
+
+
+    public void addPrepaidInfo(BasePatient patient){
+        PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
+        patientPrepaymentsInfo.setPatientId(patient.getPatientId());
+        PatientPrepaymentsInfo patientPrepayments = patientPrepaymentsInfoMapper.selectOne(patientPrepaymentsInfo);
+        if (patientPrepayments !=null){
+            BasePatientMember basePatientMember = basePatientMemberBiz.getPatientMemberInfo(patientPrepayments.getId(),1);
+            basePatientMemberMapper.deleteByPrimaryKey(basePatientMember);
+            basePatientMemberMapper.insert(basePatientMember);
+        }
+
     }
 
     /**
