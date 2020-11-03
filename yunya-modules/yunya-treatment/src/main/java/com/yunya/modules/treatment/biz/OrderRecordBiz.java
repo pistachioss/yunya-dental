@@ -327,12 +327,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param orderRecordId 开单记录ID
    */
   public void unlockOrder(Integer orderRecordId) {
-    String orderKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
-    String orderValue = redisUtils.get(orderKey);
-    if (StringHelper.isNotBlank(orderValue)) {
-      throw new ClientServiceException("解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", SAME_DATA_EXIST);
-    }
-
     OrderRecord orderRecord = mapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
       throw new ClientServiceException(
@@ -342,6 +336,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Byte status = orderRecord.getStatus();
     if (ORDER_FINISH_STATUS.equals(status)) {
       throw new ClientServiceException("解锁失败，无法解锁已经完成结算的账单！", PARAMETERS_IS_ILLEGAL);
+    }
+
+    String orderKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
+    String orderValue = redisUtils.get(orderKey);
+    if (StringHelper.isNotBlank(orderValue) || ORDER_CHARGING_STATUS.equals(status)) {
+      throw new ClientServiceException("解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", SAME_DATA_EXIST);
     }
 
     redisUtils.set(orderKey, orderRecordId, 5);

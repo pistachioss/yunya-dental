@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment.domain.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -113,5 +114,6 @@ public class TreatmentCompletedPatientInfoVO implements Serializable {
   /** 原价合计 */
   private BigDecimal originalPrice;
   /** 账单状态 */
+  @ApiModelProperty("订单状态（0-账单未锁定 ；1-账单锁定；2-结算完成状态；3-收费中）")
   private Byte orderStatus;
 }

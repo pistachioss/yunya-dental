@@ -1,8 +1,11 @@
 package com.yunya.models.treatment;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "order_record")
 public class OrderRecord {
@@ -32,7 +35,7 @@ public class OrderRecord {
     private Integer treatmentRecordId;
 
     /**
-     * 状态 （0-账单未锁定 ；1-账单锁定；2-结算完成状态）
+     * 状态 （0-账单未锁定 ；1-账单锁定；2-结算完成状态；3-收费中）
      */
     private Byte status;
 

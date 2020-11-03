@@ -616,4 +616,19 @@ public class TollBiz {
     billPayRecord.setCrtName(BaseContextHandler.getName());
     return billPayRecord;
   }
+
+  /**
+   * 取消收费
+   *
+   * @param orderRecordId 开单记录ID
+   */
+  public void cancelCharge(Integer orderRecordId) {
+    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
+    if (null != orderRecord) {
+      orderRecord.setStatus((byte) 1);
+      orderRecordBiz.updateSelectiveById(orderRecord);
+    } else {
+      throw new ClientServiceException("取消收费失败，该账单不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+  }
 }
