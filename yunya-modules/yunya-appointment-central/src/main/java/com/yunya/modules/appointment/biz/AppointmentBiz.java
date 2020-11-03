@@ -1860,6 +1860,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Registered registered = new Registered();
         registered.setAppointmentId(appointId);
         registered.setPatientId(patientId);
+        registered.setInservice(true);
         // 查询挂号患者信息
         Registered registeredByExample = this.remoteTreatmentServiceFeign.findRegisteredByExample(registered);
 

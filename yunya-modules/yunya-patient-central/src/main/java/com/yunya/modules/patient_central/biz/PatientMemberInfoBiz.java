@@ -294,8 +294,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     if (patientMemberInfo != null) {
       patientMemberInfo.setPrincipalAmount(
           patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
-      patientMemberInfo.setBonusAmount(
-          patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
+      BigDecimal rechargeBonus = model.getRechargeBonus();
+      if (null != rechargeBonus) {
+        patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(rechargeBonus));
+      }
       patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
       // 添加会员卡充值记
       MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
