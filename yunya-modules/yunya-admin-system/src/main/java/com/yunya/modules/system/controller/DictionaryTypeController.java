@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.DictionaryType;
@@ -13,6 +14,7 @@ import com.yunya.modules.system.vo.DictionaryTypeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -45,7 +47,7 @@ public class DictionaryTypeController {
    */
   @ApiOperation("根据ID查询字典类型")
   @GetMapping("/type/{id}")
-  public ResponseResult findById(@PathVariable("id") Integer id) {
+  public ResponseResult<DictionaryTypeVO> findById(@PathVariable(value = "id") Integer id) {
     DictionaryTypeVO vo = new DictionaryTypeVO();
     DictionaryType dictionaryType = dictionaryTypeBiz.selectById(id);
     BeanUtils.copyProperties(dictionaryType, vo);
@@ -60,7 +62,8 @@ public class DictionaryTypeController {
    */
   @ApiOperation("根据条件查询字典类型列表（可分页）")
   @PostMapping("/type/list")
-  public ResponseResult findList(@RequestBody @Validated DictQueryForm queryForm) {
+  public ResponseResult<PageInfo<DictionaryTypeVO>> findList(
+      @RequestBody @Validated DictQueryForm queryForm) {
     PageInfo<DictionaryTypeVO> resultList = dictionaryTypeBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -71,12 +74,13 @@ public class DictionaryTypeController {
    * @param resource 参数封装
    * @return map
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增字典类型")
   @PostMapping("/type/add")
-  public ResponseResult addDictType(@RequestBody @Validated DictionaryTypeModel resource) {
+  public ResponseResult<T> addDictType(@RequestBody @Validated DictionaryTypeModel resource) {
     dictionaryTypeBiz.add(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -95,9 +99,9 @@ public class DictionaryTypeController {
       dataType = "int",
       paramType = "path")
   @PutMapping("/type/edit/{id}")
-  public ResponseResult edit(@PathVariable Integer id, @RequestBody @Validated DictForm form) {
+  public ResponseResult<T> edit(@PathVariable Integer id, @RequestBody @Validated DictForm form) {
     dictionaryTypeBiz.edit(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -114,8 +118,8 @@ public class DictionaryTypeController {
       dataType = "int",
       paramType = "path")
   @DeleteMapping("/type/delete/{id}")
-  public ResponseResult delete(@PathVariable Integer id) {
+  public ResponseResult<T> delete(@PathVariable Integer id) {
     dictionaryTypeBiz.deleteDict(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

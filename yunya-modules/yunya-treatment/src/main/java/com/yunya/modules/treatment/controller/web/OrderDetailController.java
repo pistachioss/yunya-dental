@@ -8,8 +8,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.OrderDetailBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +54,8 @@ public class OrderDetailController {
    */
   @ApiOperation("根据开单记录ID查询开单详情列表")
   @GetMapping("/list/{orderRecordId}")
-  public ResponseResult<List<OrderDetailVO>> findList(@PathVariable(value = "orderRecordId") Integer orderRecordId) {
+  public ResponseResult<List<OrderDetailVO>> findList(
+      @PathVariable(value = "orderRecordId") Integer orderRecordId) {
     List<OrderDetailVO> resultList = orderDetailBiz.findOrderDetailVOList(orderRecordId);
     return ResponseUtil.success(resultList);
   }
@@ -70,9 +69,9 @@ public class OrderDetailController {
   @CurrentUser
   @ApiOperation("添加商品（收费界面用）")
   @PostMapping("/add/goods")
-  public ResponseResult addGoods(@RequestBody @Validated GoodsDetailModel model) {
+  public ResponseResult<T> addGoods(@RequestBody @Validated GoodsDetailModel model) {
     orderDetailBiz.addAndUpdGoodDetail(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -84,24 +83,23 @@ public class OrderDetailController {
   @CurrentUser
   @ApiOperation("根据开单明细ID删除开单明细")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     orderDetailBiz.deleteOrderDetailById(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
    * 修改执行人（患者档案）
+   *
    * @param form 修改表单
    * @return responseResult
    */
   @ApiOperation("修改执行人（患者档案）")
   @PutMapping("/modification/executor")
   @CurrentUser
-  public ResponseResult<T> modificationExecutor(@RequestBody @Validated List<ModificationExecutorForm> form) {
+  public ResponseResult<T> modificationExecutor(
+      @RequestBody @Validated List<ModificationExecutorForm> form) {
     orderDetailBiz.modificationExecutor(form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
-
-
-
 }

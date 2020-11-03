@@ -11,6 +11,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.ClinicOralTariffBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -44,7 +45,7 @@ public class ClinicOralTariffController {
    */
   @ApiOperation("根据门诊商品项目ID获取信息")
   @GetMapping("/one/{orgId}/{id}")
-  public ResponseResult findById(
+  public ResponseResult<ClinicOralTariffVO> findById(
       @PathVariable(value = "orgId") Integer orgId, @PathVariable(value = "id") Integer id) {
     ClinicOralTariffVO resultData = clinicOralTariffBiz.findById(orgId, id);
     return ResponseUtil.success(resultData);
@@ -58,7 +59,8 @@ public class ClinicOralTariffController {
    */
   @ApiOperation("根据条件查询门诊商品项目信息列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody @Validated ClinicOralTariffQueryForm queryForm) {
+  public ResponseResult<PageInfo<ClinicOralTariffVO>> findList(
+      @RequestBody @Validated ClinicOralTariffQueryForm queryForm) {
     PageInfo<ClinicOralTariffVO> resultList = clinicOralTariffBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -73,10 +75,10 @@ public class ClinicOralTariffController {
   @CurrentUser
   @ApiOperation("修改门诊商品项目价格信息")
   @PutMapping("/modify/{id}")
-  public ResponseResult modify(
+  public ResponseResult<T> modify(
       @PathVariable(value = "id") Integer id, @RequestBody @Validated ClinicOralTariffForm form) {
     clinicOralTariffBiz.modify(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -88,9 +90,9 @@ public class ClinicOralTariffController {
   @CurrentUser
   @ApiOperation("设置门诊商品项目项目是否启用")
   @GetMapping("/switch/{id}")
-  public ResponseResult switchClinicTariff(@PathVariable(value = "id") Integer id) {
+  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "id") Integer id) {
     clinicOralTariffBiz.switchClinicOralTariff(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -102,10 +104,10 @@ public class ClinicOralTariffController {
   @CurrentUser
   @ApiOperation("统一设置门诊商品项目会员折扣")
   @PostMapping("/unite")
-  public ResponseResult uniteMemberDiscount(
+  public ResponseResult<T> uniteMemberDiscount(
       @RequestBody @Validated ClinicOralTariffUniteDiscountForm form) {
     clinicOralTariffBiz.uniteMemberDiscount(form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -117,10 +119,10 @@ public class ClinicOralTariffController {
    */
   @ApiOperation("根据条件导出门诊商品项目列表")
   @PostMapping("/export")
-  public ResponseResult export(
+  public ResponseResult<T> export(
       HttpServletResponse response, @RequestBody @Validated ClinicOralTariffQueryForm queryForm)
       throws IOException {
     clinicOralTariffBiz.exportClinicOralTariffList(response, queryForm);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

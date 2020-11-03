@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.PostGroup;
@@ -14,6 +15,7 @@ import com.yunya.modules.system.vo.tree.PostGroupTreeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,7 +49,7 @@ public class PostGroupController {
    */
   @ApiOperation("根据岗位组ID查询岗位组信息")
   @GetMapping("/group/one/{id}")
-  public ResponseResult findById(@PathVariable Integer id) {
+  public ResponseResult<PostGroup> findById(@PathVariable(value = "id") Integer id) {
     PostGroup postGroup = postGroupBiz.selectById(id);
     return ResponseUtil.success(postGroup);
   }
@@ -60,7 +62,8 @@ public class PostGroupController {
    */
   @ApiOperation("根据条件查询岗位组列表（可分页）")
   @PostMapping("/group/list")
-  public ResponseResult findList(@RequestBody @Validated PostGroupQueryForm queryForm) {
+  public ResponseResult<PageInfo<PostGroupVO>> findList(
+      @RequestBody @Validated PostGroupQueryForm queryForm) {
     PageInfo<PostGroupVO> resultList = postGroupBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -72,7 +75,7 @@ public class PostGroupController {
    */
   @ApiOperation("获取岗位组树列表")
   @GetMapping("/group/tree")
-  public ResponseResult getTree() {
+  public ResponseResult<List<PostGroupTreeVO>> getTree() {
     List<PostGroupTreeVO> resultList = postGroupBiz.initPostGroupTree();
     return ResponseUtil.success(resultList);
   }
@@ -83,12 +86,13 @@ public class PostGroupController {
    * @param resource 参数封装
    * @return map
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增岗位分组")
   @PostMapping("/group/add")
-  public ResponseResult add(@RequestBody @Validated PostGroupModel resource) {
+  public ResponseResult<T> add(@RequestBody @Validated PostGroupModel resource) {
     postGroupBiz.add(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -107,9 +111,10 @@ public class PostGroupController {
       dataType = "int",
       paramType = "path")
   @PutMapping("/group/edit/{id}")
-  public ResponseResult edit(@PathVariable Integer id, @RequestBody @Validated PostGroupForm form) {
+  public ResponseResult<T> edit(
+      @PathVariable(value = "id") Integer id, @RequestBody @Validated PostGroupForm form) {
     postGroupBiz.edit(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -126,8 +131,8 @@ public class PostGroupController {
       dataType = "int",
       paramType = "path")
   @DeleteMapping("/group/delete/{id}")
-  public ResponseResult delete(@PathVariable Integer id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     postGroupBiz.deletePostGroup(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

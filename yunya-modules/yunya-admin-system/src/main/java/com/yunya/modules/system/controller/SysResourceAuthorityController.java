@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.SysResourceAuthorityBiz;
@@ -9,6 +10,7 @@ import com.yunya.modules.system.domain.form.SysPostResourceForm;
 import com.yunya.modules.system.vo.SysResourceAuthorityVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,12 +45,13 @@ public class SysResourceAuthorityController {
    * @param resource 参数封装
    * @return map
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增岗位资源权限")
   @PostMapping("/add")
-  public ResponseResult add(@RequestBody @Validated SysPostResourceForm resource) {
+  public ResponseResult<T> add(@RequestBody @Validated SysPostResourceForm resource) {
     sysResourceAuthorityBiz.add(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -59,7 +62,7 @@ public class SysResourceAuthorityController {
    */
   @ApiOperation("根据岗位ID查询岗位的资源权限列表")
   @PostMapping("/list")
-  public ResponseResult findList(
+  public ResponseResult<List<SysResourceAuthorityVO>> findList(
       @RequestBody @Validated ResourceAuthorityForm resourceAuthorityForm) {
     List<SysResourceAuthorityVO> resultList =
         sysResourceAuthorityBiz.findResourceAuthorityList(resourceAuthorityForm);
@@ -74,8 +77,8 @@ public class SysResourceAuthorityController {
    */
   @ApiOperation("删除岗位资源权限")
   @PostMapping("/delete")
-  public ResponseResult delete(@RequestBody @Validated SysPostResourceForm resourceForm) {
+  public ResponseResult<T> delete(@RequestBody @Validated SysPostResourceForm resourceForm) {
     sysResourceAuthorityBiz.deleteResourceAuthority(resourceForm);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

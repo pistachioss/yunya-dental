@@ -5,6 +5,7 @@ import com.yunya.feign.system.form.ClinicAccountItemConfigureQueryForm;
 import com.yunya.feign.system.vo.ClinicAccountItemListVO;
 import com.yunya.feign.system.vo.ClinicAccountItemVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicAccountItemBiz;
@@ -14,6 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,12 +101,13 @@ public class ClinicAccountItemController {
    * @param model 参数模型
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增门诊入账方式")
   @PostMapping("/clinic/save")
-  public ResponseResult save(@RequestBody @Validated ClinicAccountItemModel model) {
+  public ResponseResult<T> save(@RequestBody @Validated ClinicAccountItemModel model) {
     clinicAccountItemBiz.add(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -113,12 +116,13 @@ public class ClinicAccountItemController {
    * @param accountItemId 入账方式ID
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("一键新增门诊入账方式")
   @GetMapping("/clinic/batch/{accountItemId}")
-  public ResponseResult oneClickAdd(@PathVariable("accountItemId") Integer accountItemId) {
+  public ResponseResult<T> oneClickAdd(@PathVariable(value = "accountItemId") Integer accountItemId) {
     clinicAccountItemBiz.batchSave(accountItemId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -130,9 +134,9 @@ public class ClinicAccountItemController {
   @CurrentUser
   @ApiOperation("设置组织支付方式是否可用")
   @GetMapping("/clinic/{id}")
-  public ResponseResult switchClinicAccountItem(@PathVariable("id") Integer id) {
+  public ResponseResult<T> switchClinicAccountItem(@PathVariable(value = "id") Integer id) {
     clinicAccountItemBiz.switchClinicAccountItem(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -148,10 +152,10 @@ public class ClinicAccountItemController {
     @ApiImplicitParam(name = "accountItemId", value = "支付方式ID", required = true)
   })
   @GetMapping(value = "/switch/item/{orgId}/{accountItemId}", name = "设置支付方式在门诊是否可用")
-  public ResponseResult switchClinicAccountItem(
+  public ResponseResult<T> switchClinicAccountItem(
       @PathVariable(value = "orgId") Integer orgId,
       @PathVariable(value = "accountItemId") Integer accountItemId) {
     clinicAccountItemBiz.switchClinicAccountItem(orgId, accountItemId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

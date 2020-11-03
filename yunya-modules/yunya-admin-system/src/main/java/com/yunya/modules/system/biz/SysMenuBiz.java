@@ -7,6 +7,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.TreeUtil;
@@ -107,9 +108,13 @@ public class SysMenuBiz extends BaseBiz<SysMenuMapper, SysMenu> {
     }
     SysMenu resultData = mapper.selectOne(sysMenu);
     if (null == resultData) {
+      resource.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+      resource.setCrtName(BaseContextHandler.getName());
       mapper.insertSelective(resource);
     } else {
       resource.setId(resultData.getId());
+      resource.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+      resource.setUpdName(BaseContextHandler.getName());
       mapper.updateByPrimaryKeySelective(resource);
     }
   }

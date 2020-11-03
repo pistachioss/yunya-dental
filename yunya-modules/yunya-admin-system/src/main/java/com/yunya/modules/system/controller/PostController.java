@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.Post;
@@ -13,6 +14,7 @@ import com.yunya.modules.system.vo.PostVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -43,7 +45,7 @@ public class PostController {
    */
   @ApiOperation("根据ID查询岗位信息")
   @GetMapping("/one/{id}")
-  public ResponseResult findById(@PathVariable Integer id) {
+  public ResponseResult<Post> findById(@PathVariable(value = "id") Integer id) {
     Post post = postBiz.selectById(id);
     return ResponseUtil.success(post);
   }
@@ -56,7 +58,8 @@ public class PostController {
    */
   @ApiOperation("根据条件查询岗位列表（可分页）")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody @Validated PostQueryForm queryForm) {
+  public ResponseResult<PageInfo<PostVO>> findList(
+      @RequestBody @Validated PostQueryForm queryForm) {
     PageInfo<PostVO> resultList = postBiz.findAll(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -67,12 +70,13 @@ public class PostController {
    * @param resource 参数封装
    * @return map
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增岗位")
   @PostMapping("/add")
-  public ResponseResult add(@RequestBody @Validated PostModel resource) {
+  public ResponseResult<T> add(@RequestBody @Validated PostModel resource) {
     postBiz.add(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -91,9 +95,9 @@ public class PostController {
       required = true,
       paramType = "path")
   @PutMapping("/edit/{id}")
-  public ResponseResult edit(@PathVariable Integer id, @RequestBody @Validated PostForm form) {
+  public ResponseResult<T> edit(@PathVariable Integer id, @RequestBody @Validated PostForm form) {
     postBiz.edit(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -110,8 +114,8 @@ public class PostController {
       required = true,
       paramType = "path")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable Integer id) {
+  public ResponseResult<T> delete(@PathVariable Integer id) {
     postBiz.deletePost(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

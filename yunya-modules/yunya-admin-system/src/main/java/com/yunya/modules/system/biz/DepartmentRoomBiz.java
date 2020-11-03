@@ -1,6 +1,7 @@
 package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -54,12 +55,12 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
    * @param queryForm 查询条件
    * @return
    */
-  public List<DepartmentRoomVO> findList(DepartmentRoomQueryForm queryForm) {
+  public PageInfo<DepartmentRoomVO> findList(DepartmentRoomQueryForm queryForm) {
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<DepartmentRoomVO> resultList = mapper.selectList(queryForm);
-    return resultList;
+    return new PageInfo<>(resultList);
   }
 
   /**

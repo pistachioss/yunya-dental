@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.MemberTypeBiz;
@@ -43,7 +44,7 @@ public class MemberTypeController {
    */
   @ApiOperation("根据ID查询会员卡类型信息")
   @GetMapping("/one/{id}")
-  public ResponseResult<MemberTypeVO> findById(@PathVariable("id") Integer id) {
+  public ResponseResult<MemberTypeVO> findById(@PathVariable(value = "id") Integer id) {
     MemberTypeVO resultData = memberTypeBiz.findById(id);
     return ResponseUtil.success(resultData);
   }
@@ -68,6 +69,7 @@ public class MemberTypeController {
    * @param model 参数模型
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @PostMapping("/save")
   @ApiOperation("新增会员类型方式")
@@ -87,7 +89,7 @@ public class MemberTypeController {
   @ApiOperation("修改会员卡类型信息")
   @PutMapping("/edit/{id}")
   public ResponseResult<T> modify(
-      @PathVariable("id") Integer id, @RequestBody @Validated MemberTypeForm form) {
+      @PathVariable(value = "id") Integer id, @RequestBody @Validated MemberTypeForm form) {
     memberTypeBiz.modify(id, form);
     return ResponseUtil.success(null);
   }
@@ -100,7 +102,7 @@ public class MemberTypeController {
    */
   @ApiOperation("根据ID删除会员卡类型")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult<T> delete(@PathVariable("id") Integer id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     memberTypeBiz.deleteMemberTypeById(id);
     return ResponseUtil.success(null);
   }
