@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @description:
  * @since: 1.0.0
  */
-@Api("账单退费记录控制器")
+@Api(tags = "账单退费记录控制器")
 @RestController
 @RequestMapping("refund")
 public class BillRefundRecordController {

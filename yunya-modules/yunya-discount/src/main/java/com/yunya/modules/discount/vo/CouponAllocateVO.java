@@ -36,4 +36,6 @@ public class CouponAllocateVO {
      * 是否配给
      */
     private Boolean isAllocate;
+
+    private Integer crtId;
 }

@@ -616,4 +616,35 @@ public class TollBiz {
     billPayRecord.setCrtName(BaseContextHandler.getName());
     return billPayRecord;
   }
+
+  /**
+   * 点击收费修改订单状态
+   *
+   * @param orderRecordId 开单记录ID
+   */
+  public void changeOrderRecordStatus(Integer orderRecordId) {
+    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
+    if (null == orderRecord) {
+      throw new ClientServiceException("账单不存在，请选择正确的就诊记录进行收费！", PARAMETERS_IS_ILLEGAL);
+    }
+    orderRecord.setId(orderRecordId);
+    // 设置账单状态为收费中
+    orderRecord.setStatus((byte) 3);
+    orderRecordBiz.updateSelectiveById(orderRecord);
+  }
+
+  /**
+   * 取消收费
+   *
+   * @param orderRecordId 开单记录ID
+   */
+  public void cancelCharge(Integer orderRecordId) {
+    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
+    if (null != orderRecord) {
+      orderRecord.setStatus((byte) 1);
+      orderRecordBiz.updateSelectiveById(orderRecord);
+    } else {
+      throw new ClientServiceException("取消收费失败，该账单不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+  }
 }
