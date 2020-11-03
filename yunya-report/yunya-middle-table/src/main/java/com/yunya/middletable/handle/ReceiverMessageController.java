@@ -60,7 +60,7 @@ public class ReceiverMessageController {
       throws Exception {
     log.info("-----------------------------------------消息开始消费--------------------------------------------------");
     // 处理消息
-    log.info("消息体：handleMessage[{}]", messageModel);
+    log.info("【消息体】：handleMessage[{}]", messageModel);
     int result = 0;
     try {
       switch (messageModel.getMsgCategoryEnum()) {
@@ -108,28 +108,27 @@ public class ReceiverMessageController {
           break;
       }
     } catch (Exception e) {
-      System.out.println(e);
+      log.warn("【消费异常】:",e);
       result = 2;
     }
     switch (result) {
       case 0:
         // 消费成功：确认收到消息，消息将被队列移除，false只确认当前consumer一个消息收到，true确认所有consumer获得的消息。
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
-        log.info("消息已被确认");
+        log.info("【消费成功】消息已被确认");
         break;
       case 1:
         // 确认否定消息：第一个boolean表示一个consumer还是所有，第二个boolean表示requeue是否重新回到队列，true重新入队。
         channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true);
-        log.info("消息已被否定");
+        log.info("【消费否定】消息已被否定");
         break;
       case 2:
         // 拒绝消息：requeue=false 表示不再重新入队，如果配置了死信队列则进入死信队列。
         channel.basicReject(message.getMessageProperties().getDeliveryTag(), false);
-        log.info("消息已被拒绝");
+        log.info("【消费失败】消息已被拒绝");
         break;
       default:
         break;
     }
-    log.info("-----------------------------------------消息消费成功--------------------------------------------------");
   }
 }
