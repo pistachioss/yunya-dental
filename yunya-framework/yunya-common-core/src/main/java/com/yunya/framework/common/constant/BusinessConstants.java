@@ -68,6 +68,8 @@ public class BusinessConstants {
   public static final Byte ORDER_LOCK_STATUS = 1;
   /** 账单已结算 */
   public static final Byte ORDER_FINISH_STATUS = 2;
+  /** 收费中 */
+  public static final Byte ORDER_CHARGING_STATUS = 3;
 
   /*******************************就诊记录状态*****************************/
   /** 就诊中 */

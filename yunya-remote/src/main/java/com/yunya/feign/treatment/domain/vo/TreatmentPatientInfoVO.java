@@ -173,7 +173,7 @@ public class TreatmentPatientInfoVO implements Serializable {
   @ApiModelProperty("原价合计")
   private BigDecimal originalPrice;
   /** 账单（开单）状态 */
-  @ApiModelProperty("就诊开单状态")
+  @ApiModelProperty("订单状态（0-账单未锁定 ；1-账单锁定；2-结算完成状态；3-收费中）")
   private Byte orderStatus;
   /** 本次收费总额 */
   @ApiModelProperty("本次收费总额")

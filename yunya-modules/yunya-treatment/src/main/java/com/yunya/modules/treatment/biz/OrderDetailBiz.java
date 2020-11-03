@@ -25,17 +25,12 @@ import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.RequestBody;
-import tk.mybatis.mapper.entity.Example;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简介: 开单明细业务层（开单明细列表查询、添加商品、删除开单明细）
@@ -107,6 +102,14 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   public List<OrderDetailVO> findOrderDetailVOList(Integer orderRecordId) {
+    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
+    if (null == orderRecord) {
+      throw new ClientServiceException("账单不存在，请选择正确的就诊记录进行收费！", PARAMETERS_IS_ILLEGAL);
+    }
+    orderRecord.setId(orderRecordId);
+    // 设置账单状态为收费中
+    orderRecord.setStatus((byte) 3);
+    orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, null);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
@@ -309,27 +312,30 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   /**
    * 修改执行人（患者档案）
+   *
    * @param form 修改执行人表单
    */
   public void modificationExecutor(List<ModificationExecutorForm> form) {
     if (StringHelper.isEmpty(form)) {
       throw new ClientServiceException("没有修改任何项目的执行人,不可以提交", PARAM_NOT_ALLOW_EMPTY);
     }
-    form.forEach(modificationExecutorForm -> {
-      Integer executorId = modificationExecutorForm.getExecutorId();
-      Integer id = modificationExecutorForm.getId();
-      OrderDetail orderDetail = mapper.selectByPrimaryKey(id);
-      if (null != orderDetail) {
-        Integer orderRecordId = orderDetail.getOrderRecordId();
-        BillPayRecord billPayRecord = new BillPayRecord();
-        billPayRecord.setOrderRecordId(orderRecordId);
-        List<BillPayRecord> select = billPayRecordMapper.select(billPayRecord);
-        if (StringHelper.isEmpty(select)) {
-          throw new ClientServiceException("账单未完成收费,不允许修改执行人",OperationCodeConstants.OBJECT_EDIT_FAIL);
-        }
-        orderDetail.setExecutorId(executorId);
-        mapper.updateByPrimaryKey(orderDetail);
-      }
-    });
+    form.forEach(
+        modificationExecutorForm -> {
+          Integer executorId = modificationExecutorForm.getExecutorId();
+          Integer id = modificationExecutorForm.getId();
+          OrderDetail orderDetail = mapper.selectByPrimaryKey(id);
+          if (null != orderDetail) {
+            Integer orderRecordId = orderDetail.getOrderRecordId();
+            BillPayRecord billPayRecord = new BillPayRecord();
+            billPayRecord.setOrderRecordId(orderRecordId);
+            List<BillPayRecord> select = billPayRecordMapper.select(billPayRecord);
+            if (StringHelper.isEmpty(select)) {
+              throw new ClientServiceException(
+                  "账单未完成收费,不允许修改执行人", OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
+            orderDetail.setExecutorId(executorId);
+            mapper.updateByPrimaryKey(orderDetail);
+          }
+        });
   }
 }
