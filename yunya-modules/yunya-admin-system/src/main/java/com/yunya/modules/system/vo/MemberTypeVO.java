@@ -39,7 +39,7 @@ public class MemberTypeVO implements Serializable {
   private Byte type;
   /** 会员卡图标 */
   @ApiModelProperty("会员卡图标")
-  private Byte icon;
+  private String icon;
   /** 会员卡图片样式获取码 */
   @ApiModelProperty("会员卡图片样式获取码")
   private String pictureCode;

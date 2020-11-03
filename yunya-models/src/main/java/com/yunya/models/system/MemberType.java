@@ -44,7 +44,7 @@ public class MemberType {
     /**
      * 图标
      */
-    private Byte icon;
+    private String icon;
 
     @Column(name = "picture_code")
     private String pictureCode;
@@ -205,7 +205,7 @@ public class MemberType {
      *
      * @return icon
      */
-    public Byte getIcon() {
+    public String getIcon() {
         return icon;
     }
 
@@ -214,7 +214,7 @@ public class MemberType {
      *
      * @param icon 图标
      */
-    public void setIcon(Byte icon) {
+    public void setIcon(String icon) {
         this.icon = icon;
     }
 
