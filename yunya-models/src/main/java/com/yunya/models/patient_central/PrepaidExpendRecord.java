@@ -7,6 +7,7 @@ import javax.persistence.*;
 @Table(name = "prepaid_expend_record")
 public class PrepaidExpendRecord {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

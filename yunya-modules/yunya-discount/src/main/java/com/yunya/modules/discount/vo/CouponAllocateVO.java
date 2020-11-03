@@ -38,4 +38,6 @@ public class CouponAllocateVO {
     private Boolean isAllocate;
 
     private Integer crtId;
+
+    private Integer crtTime;
 }

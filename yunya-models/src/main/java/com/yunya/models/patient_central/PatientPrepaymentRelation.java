@@ -9,6 +9,7 @@ public class PatientPrepaymentRelation {
      * 主键
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
