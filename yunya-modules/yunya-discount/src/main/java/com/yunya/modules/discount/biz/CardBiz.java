@@ -252,6 +252,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @return res
 	 * @throws Exception ex
 	 */
+	@Transactional
 	public ResponseResult generateAllocate(GenerateAllocateModel allocateModel) throws Exception {
 		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -295,14 +296,15 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
 			//3. 提交生成分配
-			errorBo = generateAllocateDetail(allocateList, couponId, submitDate, coupon.getCouponCode());
+			LocalDateTime generateDate = LocalDateTime.now().withNano(0);
+			errorBo = generateAllocateDetail(allocateList, couponId, submitDate, coupon.getCouponCode(), generateDate);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
 			}
 			long end = System.currentTimeMillis();
 			log.info("卡券[{}]生成分配完成，执行时间[{}]秒[{}]毫秒", couponId, (end - start) / 1000, (end - start) % 1000);
-			mqServiceFeign.sendMessage(buildMessage(couponId, submitDate));
-			log.info("【生成卡券发送消息成功】：优惠券id[{}]批次[{}]", couponId, submitDate);
+			mqServiceFeign.sendMessage(buildMessage(couponId, generateDate));
+			log.info("【生成卡券发送消息成功】：优惠券id[{}]批次[{}]", couponId, generateDate);
 			return ResponseUtil.success();
 		} finally {
 			if (locked) {
@@ -314,7 +316,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
 	@Transactional(rollbackFor = Exception.class)
 	public RestErrorBo generateAllocateDetail(List<ClinicAllocateModel> allocateList, Integer couponId,
-	                                          LocalDateTime submitDate, String couponCode) throws Exception {
+	                                          LocalDateTime submitDate, String couponCode, LocalDateTime generateDate) throws Exception {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		//所有组织的卡券分配信息
@@ -335,7 +337,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			errorBo.setError(DiscountError.FAIL_TO_GENERATE);
 			return errorBo;
 		}
-		LocalDateTime generateDate = LocalDateTime.now();
 		CountDownLatch cardLatch = new CountDownLatch(sumAllocate);
 		//2. 计算每个卡券的生成信息
 		List<Future<Card>> cardFutureList = createCardEntity(couponId, couponCode, numBoList, loginUserId,
@@ -346,7 +347,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		if (CollectionUtils.isEmpty(cardList) || sumAllocate != cardList.size()) {
 			log.warn("【卡券生成失败】");
 			errorBo.setError(DiscountError.FAIL_TO_GENERATE);
-			return errorBo;
+	return errorBo;
 		}
 		log.info("【卡券明细任务执行结束】卡券数量count：[{}]", cardList.size());
 		//3. 生成卡券信息
