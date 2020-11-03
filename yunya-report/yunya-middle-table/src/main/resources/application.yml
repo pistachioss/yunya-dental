@@ -3,6 +3,11 @@ server:
 ## 数据源连接
 myjdbc:
     type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+        connection-test-query: SELECT 1
+        minimum-idle: 1
+        maximum-pool-size: 5
+        pool-name: dbcp1
     driverClassName: com.mysql.cj.jdbc.Driver
     host: 192.168.31.90
     port: 3306

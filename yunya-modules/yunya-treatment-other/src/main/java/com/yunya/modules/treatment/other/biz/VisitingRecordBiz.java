@@ -13,9 +13,11 @@ import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingContentModel;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
+import com.yunya.feign.treatment_other.domain.query.VisitingForMonthInfo;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingContentAfterCurrentVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -536,25 +538,14 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 })).collect(Collectors.toList());
     }
 
-
     /**
-     * 格式化日期时间
-     * @param date  日期
-     * @param time  时间
-     * @return  yyyy-MM-dd HH:mm
+     * 根据时间段，医生ID查询这个时间段内每一天每个医生预约的患者数量
+     * @param forMonthInfo 查询条件
+     * @return 返回实体列表
      */
-    private Date formatDateTime(Date date,String time){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String dateStr = dateFormat.format(date);
-        String dateTime = dateStr + " " + time;
-        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Date parse = null;
-        try {
-            parse = dateTimeFormat.parse(dateTime);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return parse;
+    public List<VisitingForMonthVo> findVisitingForMonth(VisitingForMonthInfo forMonthInfo) {
+        return mapper.findVisitingForMonth(forMonthInfo.getDentistId(),forMonthInfo.getStartDate(),forMonthInfo.getEndDate());
     }
+
 
 }

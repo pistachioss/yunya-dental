@@ -2,11 +2,13 @@ package com.yunya.modules.treatment.other.mapper;
 
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.models.treatment_other.VisitingRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Date;
 import java.util.List;
 
 public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
@@ -44,4 +46,16 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
      * @param visitingRecords 实体对象列表
      */
     void insertEntitys(@Param("visitingRecords") List<VisitingRecord> visitingRecords);
+
+    /**
+     * 根据医生ID,开始时间，结束时间查询
+     * @param dentistId 医生ID
+     * @param startDate 开始时间
+     * @param endDate 结束时间
+     * @return 实体列表
+     */
+    List<VisitingForMonthVo> findVisitingForMonth(
+            @Param("dentistId") Integer dentistId,
+            @Param("startDate") Date startDate,
+            @Param("endDate") Date endDate);
 }
