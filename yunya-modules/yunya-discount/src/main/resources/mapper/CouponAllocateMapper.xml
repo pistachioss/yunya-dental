@@ -41,7 +41,7 @@
         VALUES
         <foreach collection="list" item="item" index="index" separator=",">
             (#{item.id}, #{item.couponId},#{item.orgId}
-            ,#{item.allocateNum},#{item.allocateDate},#{item.allocateUserId}
+            ,#{item.allocateNum},null,null
             ,#{item.crtId},#{item.crtTime},
             #{item.updId},#{item.updTime})
         </foreach>
@@ -57,7 +57,7 @@
 	coupon_allocate
 	where coupon_id = #{id}
     GROUP BY
-	allocate_date
+	crt_time
     </select>
 
     <select id="findVODetailList" resultType="com.yunya.modules.discount.vo.CouponAllocateDetailVO">
@@ -67,7 +67,7 @@
 	allocate_num allocateNum
     FROM
 	coupon_allocate
-	where allocate_date = #{allocateDate}
+	where crt_time = #{crtTime}
 	and coupon_id = #{couponId}
     </select>
 
