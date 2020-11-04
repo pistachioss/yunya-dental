@@ -22,7 +22,7 @@ public class OtherCardActiveForm implements Serializable {
     private Integer saleChannelId;
     @ApiModelProperty(value = "卡号", required = true)
     @NotBlank
-    private String cardNumber;
+    private String thirdCardNumber;
     @ApiModelProperty(value = "售出对象")
     private String soldTarget;
     @ApiModelProperty(value = "售出对象手机号")

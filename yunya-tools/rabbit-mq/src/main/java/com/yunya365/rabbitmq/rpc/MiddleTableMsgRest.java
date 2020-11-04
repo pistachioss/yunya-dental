@@ -67,7 +67,7 @@ public class MiddleTableMsgRest {
 
     @PostMapping("/direct/single3")
     public String sendDirectMessage(
-            @RequestParam("paramMap") Map<String, Object> paramMap,
+            @RequestBody Map<String, Object> paramMap,
             @RequestParam("operateType") Integer operateType,
             @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum) {
         MessageModel messageModel = new MessageModel();

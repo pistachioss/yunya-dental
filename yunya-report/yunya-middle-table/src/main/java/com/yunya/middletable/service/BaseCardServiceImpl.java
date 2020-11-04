@@ -81,14 +81,12 @@ public class BaseCardServiceImpl{
 	private static final int cutSlice = 100;
 
 	public void operateSingle(MessageModel model) {
-		log.info("卡券消息参数：[{}]", model);
 		Integer cardId = (Integer) model.getParamMap().get("id");
 //		Integer operateType = model.getOperateType();
 		operateSingleData(cardId);
 	}
 
 	public void operateBatch(MessageModel model) {
-		log.info("批量卡券消息参数：[{}]", model);
 		Integer cardId = (Integer) model.getParamMap().get("id");
 		LocalDateTime submitDate = LocalDateTime.parse((String)model.getParamMap().get("submitDate"), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 //		Integer operateType = model.getOperateType();

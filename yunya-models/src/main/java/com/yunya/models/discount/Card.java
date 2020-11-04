@@ -62,6 +62,12 @@ public class Card implements Serializable {
     private String cardNumber;
 
     /**
+     * 第三方激活卡号
+     */
+    @Column(name = "third_card_number")
+    private String thirdCardNumber;
+
+    /**
      * 卡密
      */
     @Column(name = "card_password")

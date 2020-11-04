@@ -34,10 +34,10 @@ public class MemberTypeControllerTest {
     entity.setAgeLimit(1);
     entity.setRate(0.1F);
 
-    entity.setIcon(icon);
+    /*entity.setIcon(icon);
     entity.setPictureCode("adadasdq");
     entity.setDescription("qqweqe");
     ResponseResult<T> result = memberTypeController.save(entity);
-    System.out.println(result);
+    System.out.println(result);*/
   }
 }

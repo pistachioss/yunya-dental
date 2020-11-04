@@ -107,7 +107,7 @@ public class PatientPrepaymentRelationBiz
     patientPrepaymentRelationyi.setCrtName(BaseContextHandler.getName());
     patientPrepaymentRelationMapper.insertSelective(patientPrepaymentRelationyi);
     // 发送预付款关联消息
-    sendPrepaidRelationMessages(patientPrepaymentRelationyi.getId(),0);
+    remoteRabbitMqServiceFeign.sendMessage(patientPrepaymentRelationyi.getId(),1,0,MsgCategoryEnum.BasePatientMemberRelation);
     PatientPrepaymentRelation patientPrepaymentRelationer = new PatientPrepaymentRelation();
     patientPrepaymentRelationer.setMasterCardId(model.getSecondaryCardId());
     patientPrepaymentRelationer.setSecondaryCardId(model.getMasterCardId());
@@ -120,21 +120,6 @@ public class PatientPrepaymentRelationBiz
     return ResponseUtil.success();
   }
 
-  /**
-   * 预付款操作消息 参数模板
-   * @param id 操作
-   * @param OperateType 操作类型
-   */
-  public void sendPrepaidLogMessages(Integer id,Integer OperateType){
-    MessageModel messageModel = new MessageModel();
-    Map<String, Object> map = new HashMap<String, Object>();
-    map.put("id", id);
-    map.put("type", 1);
-    messageModel.setParamMap(map);
-    messageModel.setOperateType(OperateType);
-    messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatientMemberOccurLog);
-    remoteRabbitMqServiceFeign.sendMessage(messageModel);
-  }
 
   /**
    * 预付款关联消息 参数模板
@@ -150,6 +135,21 @@ public class PatientPrepaymentRelationBiz
     messageModel.setOperateType(OperateType);
     messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatientMemberRelation);
     remoteRabbitMqServiceFeign.sendMessage(messageModel);
+  }
+
+  /**
+   * 预付款操作消息 参数模板
+   * @param id 操作LogId
+   * @param operateType 操作类型
+   * @param type 会员类型
+   * @param operationType Log类型
+   */
+  public void sendPrepaidLogMessages(Integer id,Integer operateType,Integer type,Integer operationType){
+    Map<String, Object> paramMap = new HashMap<String, Object>();
+    paramMap.put("id", id);
+    paramMap.put("type", type);
+    paramMap.put("operationType", operationType);
+    remoteRabbitMqServiceFeign.sendMessage(paramMap,operateType,MsgCategoryEnum.BasePatientMemberOccurLog);
   }
 
   /**
@@ -186,7 +186,7 @@ public class PatientPrepaymentRelationBiz
       int prepaymentRelationId  = patientPrepaymentRelationMapper.selectPrepaymentRelationId(patientPrepaymentRelation);
       patientPrepaymentRelationMapper.deletePrepaymentRelation(patientPrepaymentRelation);
       // 发送预付款删除消息
-      sendPrepaidRelationMessages(prepaymentRelationId,2);
+      remoteRabbitMqServiceFeign.sendMessage(prepaymentRelationId,1,2,MsgCategoryEnum.BasePatientMemberRelation);
       patientPrepaymentRelationMapper.delete(patientPrepaymentRelation);
       // 发送预付款删除消息
       sendPrepaidRelationMessages(patientPrepaymentRelation.getId(),2);
@@ -217,8 +217,7 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
-      // 发送预付款充值消息
-      sendPrepaidLogMessages(prepaidRechargeRecord.getId(),1);
+
 
       // 添加预付款充值收费记录
       PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
@@ -228,6 +227,8 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
       prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
+      // 发送消息 预付款充值
+      sendPrepaidLogMessages(prepaidRechargeRecord.getId(),0,1,1);
     }
   }
 
@@ -287,7 +288,9 @@ public class PatientPrepaymentRelationBiz
       prepaidReturnRecord.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidReturnRecord.setUpdName(BaseContextHandler.getName());
       prepaidReturnRecordMapper.insertSelective(prepaidReturnRecord);
-      sendPrepaidLogMessages(prepaidReturnRecord.getId(),3);
+
+      // 发送消息 退费
+      sendPrepaidLogMessages(prepaidReturnRecord.getId(),0,1,3);
     }
   }
 
@@ -371,7 +374,8 @@ public class PatientPrepaymentRelationBiz
         prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
         prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
-        sendPrepaidLogMessages(prepaidExpendRecord.getId(),4);
+        // 发送消息 撤销收费
+        sendPrepaidLogMessages(prepaidExpendRecord.getId(),0,1,4);
         return ResponseUtil.success();
       }
       if (patientPrepaymentsInfo.getPrepaymentPrincipal().add(patientPrepaymentsInfo.getPrepaymentBonus()).compareTo(model.getExpendTotal()) < 0) { // 如果本金+赠金 小于 消费金额
@@ -439,7 +443,8 @@ public class PatientPrepaymentRelationBiz
     prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
     prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
-    sendPrepaidLogMessages(prepaidExpendRecord.getId(),2);
+    // 发送消息 预付款消费
+    sendPrepaidLogMessages(prepaidExpendRecord.getId(),0,1,2);
   }
 
   /**

@@ -17,47 +17,56 @@
 
 package com.yunya.gate.handler;
 
+import com.alibaba.fastjson.JSON;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.gateway.handler.AsyncPredicate;
 import org.springframework.cloud.gateway.handler.predicate.AbstractRoutePredicateFactory;
 import org.springframework.cloud.gateway.handler.predicate.ReadBodyPredicateFactory;
-import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
+import org.springframework.cloud.gateway.support.ServerWebExchangeUtils;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.codec.HttpMessageReader;
-import org.springframework.http.server.reactive.ServerHttpRequest;
-import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
+import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.HandlerStrategies;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.function.Predicate;
-
-import static org.springframework.cloud.gateway.filter.AdaptCachedBodyGlobalFilter.CACHED_REQUEST_BODY_KEY;
 
 /**
  * This predicate is BETA and may be subject to change in a future release.
  *
  * @author ace
  */
+@Slf4j
+@Component
+@Order(1)
 public class RequestBodyRoutePredicateFactory
     extends AbstractRoutePredicateFactory<RequestBodyRoutePredicateFactory.Config> {
 
   protected static final Log LOGGER = LogFactory.getLog(ReadBodyPredicateFactory.class);
 
-  private static final List<HttpMessageReader<?>> MESSAGE_READERS =
-      HandlerStrategies.withDefaults().messageReaders();
+  private final List<HttpMessageReader<?>> MESSAGE_READERS;
+
+  public RequestBodyRoutePredicateFactory() {
+    super(RequestBodyRoutePredicateFactory.Config.class);
+    this.MESSAGE_READERS = HandlerStrategies.withDefaults().messageReaders();
+  }
+
+  public RequestBodyRoutePredicateFactory(List<HttpMessageReader<?>> messageReaders) {
+    super(RequestBodyRoutePredicateFactory.Config.class);
+    this.MESSAGE_READERS = messageReaders;
+  }
 
   public static final String REQUEST_BODY_ATTR = "requestBodyAttr";
 
-  private static final String REQUEST_METHOD = "POST";
+  private static final String REQUEST_METHOD_POST = "POST";
 
-  public RequestBodyRoutePredicateFactory() {
-    super(Config.class);
-  }
+  private static final String REQUEST_METHOD_PUT = "PUT";
 
   /**
    * 异步调用
@@ -68,7 +77,8 @@ public class RequestBodyRoutePredicateFactory
   @Override
   public AsyncPredicate<ServerWebExchange> applyAsync(Config config) {
     return exchange -> {
-      if (!REQUEST_METHOD.equals(exchange.getRequest().getMethodValue())) {
+      if (!REQUEST_METHOD_POST.equals(exchange.getRequest().getMethodValue())
+          && !REQUEST_METHOD_PUT.equals(exchange.getRequest().getMethodValue())) {
         return Mono.just(true);
       }
       Object cachedBody = exchange.getAttribute(REQUEST_BODY_ATTR);
@@ -84,30 +94,26 @@ public class RequestBodyRoutePredicateFactory
         }
         return Mono.just(true);
       } else {
-        return DataBufferUtils.join(exchange.getRequest().getBody())
-            .flatMap(
-                dataBuffer -> {
-                  DataBufferUtils.retain(dataBuffer);
-                  Flux<DataBuffer> cachedFlux =
-                      Flux.defer(
-                          () -> Flux.just(dataBuffer.slice(0, dataBuffer.readableByteCount())));
-                  ServerHttpRequest mutatedRequest =
-                      new ServerHttpRequestDecorator(exchange.getRequest()) {
-                        @Override
-                        public Flux<DataBuffer> getBody() {
-                          return cachedFlux;
-                        }
-                      };
-                  return ServerRequest.create(
-                          exchange.mutate().request(mutatedRequest).build(), MESSAGE_READERS)
-                      .bodyToMono(String.class)
-                      .doOnNext(
-                          objectValue -> {
+        return ServerWebExchangeUtils.cacheRequestBodyAndRequest(
+            exchange,
+            (serverHttpRequest) ->
+                ServerRequest.create(
+                        exchange.mutate().request(serverHttpRequest).build(), this.MESSAGE_READERS)
+                    .bodyToMono(String.class)
+                    .defaultIfEmpty("")
+                    .doOnNext(
+                        (objectValue) -> {
+                          if (StringUtils.isBlank(objectValue)) {
+                            exchange
+                                .getAttributes()
+                                .put(
+                                    REQUEST_BODY_ATTR,
+                                    JSON.toJSONString(exchange.getRequest().getQueryParams()));
+                          } else {
                             exchange.getAttributes().put(REQUEST_BODY_ATTR, objectValue);
-                            exchange.getAttributes().put(CACHED_REQUEST_BODY_KEY, cachedFlux);
-                          })
-                      .map(objectValue -> true);
-                });
+                          }
+                        })
+                    .map((objectValue) -> true));
       }
     };
   }

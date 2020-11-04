@@ -20,7 +20,7 @@
         <targetModelPackage>com.yunya.middletable.model</targetModelPackage>
         <!-- XML生成路径 -->
         <targetResourcesProject>${basedir}/src/main/resources</targetResourcesProject>
-        <targetXMLPackage>mapper1</targetXMLPackage>
+        <targetXMLPackage>mapper</targetXMLPackage>
     </properties>
 
     <dependencies>
