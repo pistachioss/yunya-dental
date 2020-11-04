@@ -107,7 +107,7 @@ public class PatientPrepaymentRelationBiz
     patientPrepaymentRelationyi.setCrtName(BaseContextHandler.getName());
     patientPrepaymentRelationMapper.insertSelective(patientPrepaymentRelationyi);
     // 发送预付款关联消息
-    sendPrepaidRelationMessages(patientPrepaymentRelationyi.getId(),0);
+    remoteRabbitMqServiceFeign.sendMessage(patientPrepaymentRelationyi.getId(),1,0,MsgCategoryEnum.BasePatientMemberOccurLog);
     PatientPrepaymentRelation patientPrepaymentRelationer = new PatientPrepaymentRelation();
     patientPrepaymentRelationer.setMasterCardId(model.getSecondaryCardId());
     patientPrepaymentRelationer.setSecondaryCardId(model.getMasterCardId());
@@ -186,7 +186,7 @@ public class PatientPrepaymentRelationBiz
       int prepaymentRelationId  = patientPrepaymentRelationMapper.selectPrepaymentRelationId(patientPrepaymentRelation);
       patientPrepaymentRelationMapper.deletePrepaymentRelation(patientPrepaymentRelation);
       // 发送预付款删除消息
-      sendPrepaidRelationMessages(prepaymentRelationId,2);
+      remoteRabbitMqServiceFeign.sendMessage(prepaymentRelationId,1,2,MsgCategoryEnum.BasePatientMemberOccurLog);
       patientPrepaymentRelationMapper.delete(patientPrepaymentRelation);
       // 发送预付款删除消息
       sendPrepaidRelationMessages(patientPrepaymentRelation.getId(),2);
@@ -217,8 +217,7 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
       prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
-      // 发送预付款充值消息
-      sendPrepaidLogMessages(prepaidRechargeRecord.getId(),1);
+
 
       // 添加预付款充值收费记录
       PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
@@ -228,6 +227,9 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
       prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
+
+      // 发送消息 预付款充值
+      remoteRabbitMqServiceFeign.sendMessage(prepaidRechargeRecord.getId(),1,1,MsgCategoryEnum.BasePatientMemberOccurLog);
     }
   }
 
@@ -287,7 +289,9 @@ public class PatientPrepaymentRelationBiz
       prepaidReturnRecord.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidReturnRecord.setUpdName(BaseContextHandler.getName());
       prepaidReturnRecordMapper.insertSelective(prepaidReturnRecord);
-      sendPrepaidLogMessages(prepaidReturnRecord.getId(),3);
+
+      // 发送消息 退费
+      remoteRabbitMqServiceFeign.sendMessage(prepaidReturnRecord.getId(),1,3,MsgCategoryEnum.BasePatientMemberOccurLog);
     }
   }
 
@@ -371,7 +375,8 @@ public class PatientPrepaymentRelationBiz
         prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
         prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
-        sendPrepaidLogMessages(prepaidExpendRecord.getId(),4);
+        // 发送消息 撤销收费
+        remoteRabbitMqServiceFeign.sendMessage(prepaidExpendRecord.getId(),1,4,MsgCategoryEnum.BasePatientMemberOccurLog);
         return ResponseUtil.success();
       }
       if (patientPrepaymentsInfo.getPrepaymentPrincipal().add(patientPrepaymentsInfo.getPrepaymentBonus()).compareTo(model.getExpendTotal()) < 0) { // 如果本金+赠金 小于 消费金额
@@ -439,7 +444,8 @@ public class PatientPrepaymentRelationBiz
     prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
     prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
     prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
-    sendPrepaidLogMessages(prepaidExpendRecord.getId(),2);
+    remoteRabbitMqServiceFeign.sendMessage(prepaidExpendRecord.getId(),1,2,MsgCategoryEnum.BasePatientMemberOccurLog);
+
   }
 
   /**

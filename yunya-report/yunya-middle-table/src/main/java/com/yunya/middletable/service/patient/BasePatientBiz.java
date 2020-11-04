@@ -73,7 +73,10 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         }
     }
 
-
+    /**
+     * 添加患者信息是添加预付款信息
+     * @param patient 患者信息
+     */
     public void addPrepaidInfo(BasePatient patient){
         PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
         patientPrepaymentsInfo.setPatientId(patient.getPatientId());

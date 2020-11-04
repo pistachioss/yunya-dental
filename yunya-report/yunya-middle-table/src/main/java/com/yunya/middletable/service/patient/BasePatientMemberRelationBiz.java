@@ -79,6 +79,8 @@ public class BasePatientMemberRelationBiz
     }
   }
 
+
+
   private void addPatientMemberInfo(MessageModel msg) {
     Integer id = (Integer) msg.getParamMap().get("id");
     Integer type = (Integer) msg.getParamMap().get("type");
