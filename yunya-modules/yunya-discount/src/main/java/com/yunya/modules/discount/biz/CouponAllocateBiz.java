@@ -83,12 +83,13 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
         List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
         Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
         clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
-
-        List<CouponAllocateDetailVO>list =  mapper.findVODetailList(couponAllocateDetailForm);//获取配给详情
+        //获取配给详情
+        List<CouponAllocateDetailVO>list =  mapper.findVODetailList(couponAllocateDetailForm);
         for(CouponAllocateDetailVO couponAllocateDetailVO:list){
             OrganizationInfoDetail organizationInfoDetail = clinicMap.get(couponAllocateDetailVO.getOrgId() + "");
             if(organizationInfoDetail!=null){
-                couponAllocateDetailVO.setOrgName(organizationInfoDetail.getName());//设置门诊信息
+                //设置门诊信息
+                couponAllocateDetailVO.setOrgName(organizationInfoDetail.getName());
             }else{
                 throw new BaseException("无此门诊信息", OperationCodeConstants.DATA_NOT_EXIST);
             }
