@@ -5,6 +5,8 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.middletable.service.BaseBenefitServiceImpl;
 import com.yunya.middletable.service.BaseBillBiz;
 import com.yunya.middletable.service.BaseCardServiceImpl;
+import com.yunya.middletable.service.BaseCouponItemServiceImpl;
+import com.yunya.middletable.service.BaseCouponServiceImpl;
 import com.yunya.middletable.service.BaseEmployeeBiz;
 import com.yunya.middletable.service.BaseOrganizationBiz;
 import com.yunya.middletable.service.BaseRefundBiz;
@@ -48,6 +50,10 @@ public class ReceiverMessageController {
   @Autowired private BaseBenefitServiceImpl baseBenefitService;
 
   @Resource private BaseCardServiceImpl baseCardService;
+
+  @Resource private BaseCouponServiceImpl baseCouponService;
+
+  @Resource private BaseCouponItemServiceImpl baseCouponItemService;
 
   @Autowired private BasePatientMemberBiz basePatientMemberBiz;
 
@@ -102,6 +108,12 @@ public class ReceiverMessageController {
           break;
         case BaseCardBatch:
           baseCardService.operateBatch(messageModel);
+          break;
+        case BaseCoupon:
+          baseCouponService.operateBaseCoupon(messageModel);
+          break;
+        case BaseCouponItem:
+          baseCouponItemService.operateBaseCouponItem(messageModel);
           break;
         default:
           log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());
