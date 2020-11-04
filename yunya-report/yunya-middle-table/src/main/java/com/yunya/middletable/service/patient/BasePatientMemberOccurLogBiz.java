@@ -96,9 +96,9 @@ public class BasePatientMemberOccurLogBiz
    */
   private void addPatientMemberOccurLog(MessageModel msg) {
     // 操作id
-    Integer operationType = (Integer) msg.getParamMap().get("operationType");
-    Integer type = (Integer) msg.getParamMap().get("type");
     Integer id = (Integer) msg.getParamMap().get("id");
+    Integer type = (Integer) msg.getParamMap().get("type");
+    Integer operationType = (Integer) msg.getParamMap().get("operationType");
     // 会员卡操作日志
     if (type == 0) {
       addMemberOccurLog(id,type,operationType);

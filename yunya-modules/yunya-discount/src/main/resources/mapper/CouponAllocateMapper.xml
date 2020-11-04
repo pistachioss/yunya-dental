@@ -53,7 +53,8 @@
 	sum(allocate_num) allocateNum,
 	allocate_date allocateDate,
 	allocate_user_id allocateUserId,
-	crt_id crtId
+	crt_id crtId,
+	crt_time crtTime
     FROM
 	coupon_allocate
 	where coupon_id = #{id}

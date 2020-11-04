@@ -41,9 +41,9 @@ public class BasePatientMemberRelationBiz
    * @param msg 消息
    */
   public void operate(MessageModel msg) {
-    Integer operateType =  msg.getOperateType();
     Integer id = (Integer) msg.getParamMap().get("id");
     Integer type = (Integer) msg.getParamMap().get("type");
+    Integer operateType =  msg.getOperateType();
     switch (operateType) {
       case 0:
         addPatientMemberInfo(msg);
@@ -78,6 +78,8 @@ public class BasePatientMemberRelationBiz
         break;
     }
   }
+
+
 
   private void addPatientMemberInfo(MessageModel msg) {
     Integer id = (Integer) msg.getParamMap().get("id");

@@ -56,4 +56,9 @@
       from patient_member_relation pmrn join patient_member_info pmio on pmrn.secondary_card_id = pmio.patient_id join patient_base_info pbio on pmrn.secondary_card_id = pbio.id
       where pmrn.master_card_id = #{form.patientId} and pmrn.bind_type = #{form.bindType}
     </select>
+
+    <!-- 查询关系id -->
+    <select id="selectMemberRelationId" resultType="java.lang.Integer">
+        select  id  from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId}
+    </select>
 </mapper>

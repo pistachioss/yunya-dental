@@ -38,4 +38,7 @@ public class CouponAllocateVO {
     private Boolean isAllocate;
 
     private Integer crtId;
+
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date crtTime;
 }
