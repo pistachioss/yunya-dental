@@ -36,7 +36,7 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @param mobile 手机号
    * @return PatientBaseInfoVo
    */
-  PatientBaseInfoVo findUserExistsByMobile(@Param("mobile") String mobile);
+  List<PatientBaseInfoVo> findUserExistsByMobile(@Param("mobile") String mobile);
 
   /**
    * 通过用户id查询患者公共字段

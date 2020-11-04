@@ -141,6 +141,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         int masterCardI = patientMemberRelation.getMasterCardId();
         patientMemberRelation.setMasterCardId(patientMemberRelation.getSecondaryCardId());
         patientMemberRelation.setSecondaryCardId(masterCardI);
+        patientMemberRelation.setId(null);
         this.patientMemberRelationMapper.insertSelective(patientMemberRelation);
         // 添加会员双向关联
         sendMemberRelationMessages(patientMemberRelation.getId(),0);
@@ -165,6 +166,21 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     messageModel.setOperateType(OperateType);
     messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatientMemberRelation);
     remoteRabbitMqServiceFeign.sendMessage(messageModel);
+  }
+
+  /**
+   * 会员操作消息 参数模板
+   * @param id 操作LogId
+   * @param operateType 操作类型
+   * @param type 会员类型
+   * @param operationType Log类型
+   */
+  public void sendMemberLogMessages(Integer id,Integer operateType,Integer type,Integer operationType){
+    Map<String, Object> paramMap = new HashMap<String, Object>();
+    paramMap.put("id", id);
+    paramMap.put("type", type);
+    paramMap.put("operationType", operationType);
+    remoteRabbitMqServiceFeign.sendMessage(paramMap,operateType,MsgCategoryEnum.BasePatientMemberOccurLog);
   }
 
 
@@ -338,7 +354,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       memberRechargeRecord.setUpdName(BaseContextHandler.getName());
       memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
-      remoteRabbitMqServiceFeign.sendMessage(memberRechargeRecord.getId(),0,1,MsgCategoryEnum.BasePatientMemberOccurLog);
+      sendMemberLogMessages(memberRechargeRecord.getId(),0,0,1);
       // 添加会员卡充值收费记录
       if (!StringHelper.isEmpty(model.getAccountedWayModelList())) {
         for (AccountedWayModel accountedWayModel : model.getAccountedWayModelList()) {
@@ -430,7 +446,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberReturnRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       memberReturnRecord.setUpdName(BaseContextHandler.getName());
       memberReturnRecordMapper.insertSelective(memberReturnRecord);
-      remoteRabbitMqServiceFeign.sendMessage(memberReturnRecord.getId(),0,3,MsgCategoryEnum.BasePatientMemberOccurLog);
+      sendMemberLogMessages(memberReturnRecord.getId(),0,0,3);
       return ResponseUtil.success();
     }
     return ResponseUtil.fail(
@@ -491,7 +507,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         memberExpendRecord.setUpdName(BaseContextHandler.getName());
         memberExpendRecordMapper.insertSelective(memberExpendRecord);
         // 发送会员卡撤销收费消息
-        remoteRabbitMqServiceFeign.sendMessage(memberExpendRecord.getId(),0,4,MsgCategoryEnum.BasePatientMemberOccurLog);
+        sendMemberLogMessages(memberExpendRecord.getId(),0,0,4);
         return ResponseUtil.success();
       }
       BigDecimal num =
@@ -564,7 +580,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberExpendRecord.setUpdName(BaseContextHandler.getName());
     memberExpendRecordMapper.insertSelective(memberExpendRecord);
     // 发送预付款消费消息
-    remoteRabbitMqServiceFeign.sendMessage(memberExpendRecord.getId(),0,2,MsgCategoryEnum.BasePatientMemberOccurLog);
+    sendMemberLogMessages(memberExpendRecord.getId(),0,0,2);
   }
 
   /**

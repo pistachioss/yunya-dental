@@ -57,21 +57,27 @@ public class BasePatientMemberRelationBiz
       case 2:
         if (type == 0){
           BasePatientMemberRelation memberRelation = getPatientMemberRelationInfo(id, type);
-          PatientMemberRelation patientMemberRelation = patientMemberRelationMapper.selectByPrimaryKey(id);
-          if (StringHelper.isNotNull(patientMemberRelation) && StringHelper.isNotNull(memberRelation)){
-              mapper.delete(memberRelation);
-              mapper.insert(memberRelation);
-          }
-          mapper.delete(memberRelation);
-        }
-        if (type == 1){
-          BasePatientMemberRelation memberRelation = getPatientMemberRelationInfo(id, type);
-          PatientPrepaymentRelation patientPrepaymentRelation = patientPrepaymentRelationMapper.selectByPrimaryKey(id);
-          if (StringHelper.isNotNull(patientPrepaymentRelation) && StringHelper.isNotNull(memberRelation)){
-            mapper.delete(memberRelation);
+          if (memberRelation == null){
+            BasePatientMemberRelation basePatientMemberRelation = new BasePatientMemberRelation();
+            basePatientMemberRelation.setRelationId(id);
+            basePatientMemberRelation.setType(type.byteValue());
+            BasePatientMemberRelation baseMemberRelation = mapper.selectByPrimaryKey(basePatientMemberRelation);
+            mapper.deleteByPrimaryKey(baseMemberRelation);
+          }else {
             mapper.insert(memberRelation);
           }
-          mapper.delete(memberRelation);
+        }
+        if (type == 1){
+          BasePatientMemberRelation preaidRelation = getPatientMemberRelationInfo(id, type);
+          if (preaidRelation == null){
+            BasePatientMemberRelation basePatientMemberRelation = new BasePatientMemberRelation();
+            basePatientMemberRelation.setRelationId(id);
+            basePatientMemberRelation.setType(type.byteValue());
+            BasePatientMemberRelation baseMemberRelation = mapper.selectByPrimaryKey(basePatientMemberRelation);
+            mapper.deleteByPrimaryKey(baseMemberRelation);
+          }else {
+            mapper.insert(preaidRelation);
+          }
         }
         break;
       default:
@@ -80,7 +86,10 @@ public class BasePatientMemberRelationBiz
   }
 
 
-
+  /**
+   * 添加会员卡/预付款 关联关系
+   * @param msg
+   */
   private void addPatientMemberInfo(MessageModel msg) {
     Integer id = (Integer) msg.getParamMap().get("id");
     Integer type = (Integer) msg.getParamMap().get("type");
@@ -109,6 +118,7 @@ public class BasePatientMemberRelationBiz
         basePatientMemberRelation.setMasterCardId(patientPrepaymentRelation.getMasterCardId());
         basePatientMemberRelation.setSecondaryCardId(patientPrepaymentRelation.getSecondaryCardId());
         basePatientMemberRelation.setType((byte)type.intValue());
+        basePatientMemberRelation.setBindType((byte)1);
         BasePatientMemberRelation memberRelation = mapper.selectOne(basePatientMemberRelation);
         if (StringHelper.isNotNull(memberRelation)) {
           mapper.delete(basePatientMemberRelation);

@@ -66,7 +66,7 @@ public interface RemoteRabbitMqServiceFeign {
    */
   @RequestMapping(value = "/api/direct/single3", method = RequestMethod.POST)
   String sendMessage(
-      @RequestParam("paramMap") Map<String, Object> paramMap,
+      @RequestBody Map<String, Object> paramMap,
       @RequestParam("operateType") Integer operateType,
       @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum);
 }
