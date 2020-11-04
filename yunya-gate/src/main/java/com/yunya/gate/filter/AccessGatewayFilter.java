@@ -83,7 +83,7 @@ public class AccessGatewayFilter implements GlobalFilter {
       ServerWebExchange serverWebExchange, GatewayFilterChain gatewayFilterChain) {
     log.info("check user token....");
     // 获取请求属性（该属性已做非空判断）
-    LinkedHashSet requiredAttribute =
+    LinkedHashSet<Object> requiredAttribute =
         serverWebExchange.getRequiredAttribute(
             ServerWebExchangeUtils.GATEWAY_ORIGINAL_REQUEST_URL_ATTR);
     ServerHttpRequest request = serverWebExchange.getRequest();
