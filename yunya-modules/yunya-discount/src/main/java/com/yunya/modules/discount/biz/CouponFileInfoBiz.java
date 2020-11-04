@@ -33,13 +33,20 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
      */
     public Integer saveOrUpdateFile(FileForm fileForm) {
         List<CouponFileInfo> list = new ArrayList<>();
+        //清除之前的图片
         CouponFileInfo couponFiledelete = new CouponFileInfo();
-        if (fileForm.getPaths() != null && fileForm.getPaths().size() > 0) {//图片信息
-            couponFiledelete.setCouponId(fileForm.getId());
-            couponFiledelete.setFileType(new Byte("0"));
-            mapper.delete(couponFiledelete);//清除之前的图片
+        couponFiledelete.setCouponId(fileForm.getId());
+        couponFiledelete.setFileType(new Byte("0"));
+        mapper.delete(couponFiledelete);
+        //清除之前的文档
+        couponFiledelete.setCouponId(fileForm.getId());
+        couponFiledelete.setFileType(new Byte("1"));
+        mapper.delete(couponFiledelete);
+        //图片信息
+        if (fileForm.getPaths() != null && fileForm.getPaths().size() > 0) {
             for (FileInfo fileInfo : fileForm.getPaths()) {
                 CouponFileInfo couponFileInfo = new CouponFileInfo();
+                couponFileInfo.setFileName(fileInfo.getFileName());
                 couponFileInfo.setCouponId(fileForm.getId());
                 couponFileInfo.setInservice(true);
                 couponFileInfo.setRemark(fileInfo.getMark());
@@ -50,10 +57,8 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
                 list.add(couponFileInfo);
             }
         }
-        if (fileForm.getDocs() != null && fileForm.getDocs().size() > 0) {//文档信息
-            couponFiledelete.setCouponId(fileForm.getId());
-            couponFiledelete.setFileType(new Byte("1"));
-            mapper.delete(couponFiledelete);//清除之前的文档
+        //文档信息
+        if (fileForm.getDocs() != null && fileForm.getDocs().size() > 0) {
             for (String doc : fileForm.getDocs()) {
                 CouponFileInfo couponFileInfo = new CouponFileInfo();
                 couponFileInfo.setCouponId(fileForm.getId());
@@ -66,7 +71,8 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
             }
         }
         if (list.size() > 0) {
-            return mapper.insertAll(list);//插入文件信息
+            //插入文件信息
+            return mapper.insertAll(list);
         }
         return 0;
     }

@@ -2,11 +2,13 @@ package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
@@ -14,8 +16,10 @@ import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.models.tariff.ClinicTariff;
+import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
+import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.OrderDetailMapper;
 import com.yunya.modules.treatment.mapper.OrderRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +30,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_NOT_ALLOW;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简介: 开单明细业务层（开单明细列表查询、添加商品、删除开单明细）
@@ -53,6 +56,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private ClinicOralTariffBiz clinicOralTariffBiz;
   /** 开单记录 */
   @Autowired private OrderRecordMapper orderRecordMapper;
+  /** 账单收费记录 */
+  @Autowired private BillPayRecordMapper billPayRecordMapper;
 
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
@@ -295,5 +300,34 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       orderRecord.setTotalAmount(totalAmount);
       orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     }
+  }
+
+  /**
+   * 修改执行人（患者档案）
+   *
+   * @param form 修改执行人表单
+   */
+  public void modificationExecutor(List<ModificationExecutorForm> form) {
+    if (StringHelper.isEmpty(form)) {
+      throw new ClientServiceException("没有修改任何项目的执行人,不可以提交", PARAM_NOT_ALLOW_EMPTY);
+    }
+    form.forEach(
+        modificationExecutorForm -> {
+          Integer executorId = modificationExecutorForm.getExecutorId();
+          Integer id = modificationExecutorForm.getId();
+          OrderDetail orderDetail = mapper.selectByPrimaryKey(id);
+          if (null != orderDetail) {
+            Integer orderRecordId = orderDetail.getOrderRecordId();
+            BillPayRecord billPayRecord = new BillPayRecord();
+            billPayRecord.setOrderRecordId(orderRecordId);
+            List<BillPayRecord> select = billPayRecordMapper.select(billPayRecord);
+            if (StringHelper.isEmpty(select)) {
+              throw new ClientServiceException(
+                  "账单未完成收费,不允许修改执行人", OperationCodeConstants.OBJECT_EDIT_FAIL);
+            }
+            orderDetail.setExecutorId(executorId);
+            mapper.updateByPrimaryKey(orderDetail);
+          }
+        });
   }
 }

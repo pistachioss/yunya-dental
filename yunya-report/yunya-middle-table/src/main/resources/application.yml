@@ -1,0 +1,146 @@
+server:
+    port: 8300
+## 数据源连接
+myjdbc:
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+        connection-test-query: SELECT 1
+        minimum-idle: 1
+        maximum-pool-size: 5
+        pool-name: dbcp1
+    driverClassName: com.mysql.cj.jdbc.Driver
+    host: 192.168.31.90
+    port: 3306
+    username: sa
+    password: Admin001!
+    jdbc-url-ext: useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false
+
+## 数据库列表
+mydb:
+    report: yunya_report
+    system: yunya_system
+    patient: yunya_patient_central
+    discount: yunya_discount
+    treatment: yunya_treatment
+    employee-expand: employee_expand
+    appointment: yunya_appointment_central
+    treatment-other: yunya_treatment_other
+
+## 多数据源配置
+spring:
+    application:
+        name: yunya-middle-table
+    jackson:
+        date-format: yyyy-MM-dd HH:mm:ss
+        time-zone: GMT+8
+        default-property-inclusion: always
+    redis:
+        host: 192.168.31.90
+        port: 6379
+        password: foobared
+        database: 2
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 192.168.31.215:8848
+    rabbitmq:
+        host: 192.168.31.200
+        port: 5672
+        username: admin
+        password: admin
+        listener:
+            simple:
+                acknowledge-mode: manual    # 消费手动确认    none,auto(默认),manual(手动)
+                retry:
+                    enabled: true
+                    max-attempts: 3
+                    initial-interval: 1000
+    shardingsphere:
+        props:
+            sql:
+                show: false
+        datasource:
+            names: report,system,patient,treatment,discount,employee-expand,appointment,treatment-other
+            report:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.report}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            system:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.system}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            patient:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.patient}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            treatment:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.treatment}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            discount:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.discount}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            employee_expand:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.employee-expand}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            appointment:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.appointment}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            treatment_other:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.treatment-other}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+        sharding:
+            #            defaultDataSourceName: system
+            defaultDatabaseStrategy:
+                hint:
+                    algorithmClassName: com.yunya.middletable.config.MutilDBRoutingAlgorithm
+            defaultTableStrategy:
+                none:
+                    any: ""
+
+mybatis:
+    mapperLocations: classpath:mapper/*Mapper.xml
+    type-aliases-package: com.yunya.models.middletable
+    configuration:
+        log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+        # 开启驼峰命名
+        map-underscore-to-camel-case: true
+
+# 配置swagger
+swagger:
+    enabled: true
+    base-package: com.yunya.middletable
+    title: yunya-middle-table
+    version: 1.0.0.SNAPSHOT
+    description: 报表相关功能 (网关地址：/api/middletable/**)
+    contact:
+        name: yunya-middle-table
+
+#设置hystrix超时
+hystrix:
+    command:
+        default:
+            execution:
+                isolation:
+                    thread:
+                        timeoutInMilliseconds: 30000

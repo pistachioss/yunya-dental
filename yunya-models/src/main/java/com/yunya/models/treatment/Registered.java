@@ -1,13 +1,16 @@
 package com.yunya.models.treatment;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.Date;
-import javax.persistence.*;
 
 public class Registered {
     /**
      * 唯一id
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

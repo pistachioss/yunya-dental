@@ -29,7 +29,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.*;
  * @author xiangyang
  * @create 2020-08-19
  */
-@Api(tags = {"卡券"})
+@Api(tags = {"卡券-生成、售卖、激活"})
 @RestController
 public class CardController {
 
@@ -65,7 +65,7 @@ public class CardController {
     }
 
     @ApiOperation(value = "产品生成分配--查看配给--导出")
-    @PostMapping("/coupon/generate/allocation/detail/export")
+    @PostMapping("/coupon/generate/allocation/export")
     public void exportAllocateDetail(HttpServletResponse response, @Valid @RequestBody GenerateAllocateCardQuery query) throws IOException {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
@@ -125,21 +125,21 @@ public class CardController {
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-自有平台激活")
-    @PutMapping("/patient/{patientId}/product/card/owner/activation")
+    @PutMapping("/{patientId}/product/card/owner/activation")
     @CurrentUser
     public ResponseResult ownActiveCard(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody OwnCardActiveForm form) {
         return cardBiz.ownActiveCard(patientId, form);
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-第三方平台激活")
-    @PutMapping("/patient/{patientId}/product/card/other/activation")
+    @PutMapping("/{patientId}/product/card/other/activation")
     @CurrentUser
     public ResponseResult otherActiveCard(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody OtherCardActiveForm form) {
         return cardBiz.otherActiveCard(patientId, form);
     }
 
     @ApiOperation(value = "患者档案-产品管理-配置共享人")
-    @PutMapping("/patient/{patientId}/product/card/{cardId}/configuration/sharer")
+    @PutMapping("/{patientId}/product/card/{cardId}/configuration/sharer")
     @CurrentUser
     public ResponseResult configSharer(@PathVariable(value = "patientId") Integer patientId, @PathVariable(value = "cardId") Integer cardId,
                                         @Valid @RequestBody ConfigSharerForm form) {
@@ -155,16 +155,9 @@ public class CardController {
     }
 
     @ApiOperation(value = "患者档案-产品管理-分页查询")
-    @PostMapping("/patient/{patientId}/product/card/page")
+    @PostMapping("/{patientId}/product/card/page")
     public ResponseResult<PageInfo<PatientCardBaseVo>> getPatientCardList(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody PatientCardQuery query) {
         PageInfo<PatientCardBaseVo> pageInfo = cardBiz.getPatientCardPage(patientId, query);
         return ResponseUtil.success(pageInfo);
-    }
-
-    @ApiOperation(value = "收费-选择优惠")
-    @PostMapping("/order/choice/coupon")
-    public ResponseResult<PatientOptionalBenefitVo> chooseCoupon(@Valid @RequestBody PatientBenefitQuery query) {
-        PatientOptionalBenefitVo benefit = cardBiz.getPatientBenefit(query);
-        return ResponseUtil.success(benefit);
     }
 }

@@ -60,7 +60,8 @@ public class VoucherDiscountItemController {
         if(voucherDiscountItems.size()>0) {
             VoucherDiscountItem voucherDiscountItem = new VoucherDiscountItem();
             voucherDiscountItem.setCouponId(voucherDiscountItems.get(0).getCouponId());
-            voucherDiscountItemBiz.delete(voucherDiscountItem);//清除之前的适用项目
+            //清除之前的适用项目
+            voucherDiscountItemBiz.delete(voucherDiscountItem);
             voucherDiscountItems.forEach(t -> {
                 t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
                 t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
@@ -99,7 +100,8 @@ public class VoucherDiscountItemController {
         if(packageCouponItemItems.size()>0){
             PackageCouponItem packageCouponItem = new PackageCouponItem();
             packageCouponItem.setCouponId(packageCouponItemItems.get(0).getCouponId());
-            packageCouponItemBiz.delete(packageCouponItem);//清除之前的适用项目
+            //清除之前的适用项目
+            packageCouponItemBiz.delete(packageCouponItem);
             packageCouponItemItems.forEach(t -> {
                 t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
                 t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
@@ -113,7 +115,8 @@ public class VoucherDiscountItemController {
             CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
             couponCommonInfo.setId(packageCouponItemItems.get(0).getCouponId());
             couponCommonInfo.setSoldAmount(saleAmount);
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券售出金额
+            //插入卡券售出金额
+            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
         }
         return ResponseUtil.success(voucherDiscountItemBiz.savePackage(packageCouponItemItems));
     }
@@ -146,7 +149,8 @@ public class VoucherDiscountItemController {
         if(specialPackageCouponItemForms.size()>0){
             SpecialPackageCouponItem specialPackageCouponItem = new SpecialPackageCouponItem();
             specialPackageCouponItem.setCouponId(specialPackageCouponItemForms.get(0).getCouponId());
-            specialPackageCouponItemBiz.delete(specialPackageCouponItem);//清除之前的适用项目
+            //清除之前的适用项目
+            specialPackageCouponItemBiz.delete(specialPackageCouponItem);
             specialPackageCouponItemForms.forEach(t -> {
                 t.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
                 t.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));

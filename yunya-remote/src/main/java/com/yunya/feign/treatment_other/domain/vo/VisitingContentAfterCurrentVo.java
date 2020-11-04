@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -14,7 +15,7 @@ import java.util.Date;
  * @author: LHB
  * @create: 2020-08-24 14:43
  **/
-@ApiModel(value = "后续随访内容")
+@ApiModel(value = "VisitingContentAfterCurrentVo",description = "后续随访内容")
 @Data
 @ToString
 public class VisitingContentAfterCurrentVo implements Serializable {
@@ -27,6 +28,7 @@ public class VisitingContentAfterCurrentVo implements Serializable {
      * 就诊日期
      */
     @ApiModelProperty(value = "就诊日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date treatmentDate;
 
     /**
@@ -39,6 +41,7 @@ public class VisitingContentAfterCurrentVo implements Serializable {
      * 随访日期
      */
     @ApiModelProperty(value = "随访日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date visitingDate;
 
     /** 随访时间 */

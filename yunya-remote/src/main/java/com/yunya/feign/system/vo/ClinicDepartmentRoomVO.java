@@ -1,6 +1,9 @@
 package com.yunya.feign.system.vo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.io.Serializable;
@@ -13,19 +16,15 @@ import java.io.Serializable;
  * @description:
  * @since: 1.0.0
  */
+@ApiModel("门诊科室VO")
 @Data
 @ToString
-public class ClinicDepartmentRoomVO implements Serializable {
-  /** 门诊科室ID */
-  private Integer clinicDeptRoomId;
-  /** 科室ID */
-  private Integer deptRoomId;
-  /** 科室名称 */
-  private String deptRoomName;
+@EqualsAndHashCode(callSuper = true)
+public class ClinicDepartmentRoomVO extends DeptRoomVO implements Serializable {
   /** 组织（诊所）ID */
+  @ApiModelProperty("组织（诊所）ID")
   private Integer orgId;
   /** 组织(诊所)简称 */
-  private String abbreviation;
-  /** 启用状态 */
-  private Boolean inservice;
+  @ApiModelProperty("组织(诊所)简称")
+  private String orgName;
 }

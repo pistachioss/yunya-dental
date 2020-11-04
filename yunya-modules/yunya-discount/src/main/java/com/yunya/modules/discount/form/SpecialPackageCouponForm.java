@@ -128,4 +128,7 @@ public class SpecialPackageCouponForm {
      */
     @ApiModelProperty("可使用门诊列表")
     private String useableClinic;
+
+    @ApiModelProperty("是否分配")
+    private Boolean isDistribution = true;
 }

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.patient_central.mapper.PatientImgMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.patient_central.PatientImg" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="INTEGER" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="img_one" property="imgOne" jdbcType="LONGVARCHAR" />
+    <result column="img_two" property="imgTwo" jdbcType="LONGVARCHAR" />
+    <result column="img_three" property="imgThree" jdbcType="LONGVARCHAR" />
+    <result column="face_id_one" property="faceIdOne" jdbcType="VARCHAR" />
+    <result column="face_id_two" property="faceIdTwo" jdbcType="VARCHAR" />
+    <result column="face_id_three" property="faceIdThree" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <sql id="Find_Column_List">
+        id,	patient_id patientId,	img_one imgOne,	img_two imgTwo,	img_three imgThree, face_id_one faceIdOne, face_id_two faceIdTwo, face_id_three faceIdThree,
+        remarks,inservice,	crt_id crtId,	crt_name crtName,	crt_time crtTime,	upd_id updId,	upd_name updName,	upd_time updTime
+  </sql>
+
+  <!-- 根据患者id查询患者照片对象 -->
+  <select id="selectByPatient" resultType="com.yunya.models.patient_central.PatientImg">
+    select <include refid="Find_Column_List"/>
+    from patient_img where patient_id = #{patientId}
+  </select>
+
+  <!-- 根据FaceImgId查询患者照片信息 -->
+  <select id="selectByFaceId" resultType="com.yunya.models.patient_central.PatientImg">
+    select <include refid="Find_Column_List"/>
+    from patient_img
+    where face_id_one =#{faceId} or face_id_two =#{faceId} or face_id_three =#{faceId}
+  </select>
+
+  <update id="updateFaceImg">
+    update patient_img set ${faceColumn} = null , ${faceIdColumn} = null where id =#{id}
+  </update>
+
+</mapper>

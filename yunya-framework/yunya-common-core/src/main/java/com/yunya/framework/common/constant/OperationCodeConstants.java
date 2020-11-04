@@ -9,7 +9,7 @@ package com.yunya.framework.common.constant;
  * @since: 1.0.0
  */
 public class OperationCodeConstants {
-  
+
   /** 数据名称已存在 */
   public static final Integer NAME_IS_OCCUPIED = 30001;
   /** 请求参数为空 */
@@ -42,4 +42,12 @@ public class OperationCodeConstants {
   public static final Integer BALANCE_INSUFFICIENT = 30016;
   /** 查询结果为空 */
   public static final Integer RETURN_MOBILE_ISNULL = 30017;
+  /** 手机号已存在 */
+  public static final Integer PHONE_EXIST = 30018;
+  /** 重复提交 */
+  public static final Integer REPEAT_SUBMIT = 30019;
+  /** 密码错误 */
+  public static final Integer PASSWORD_ERROR = 30020;
+  /** 短信验证码错误 */
+  public static final Integer MESSAGE_CODE_ERROR = 30021;
 }

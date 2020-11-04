@@ -18,7 +18,7 @@ import java.util.List;
  * @create 2020-08-03 20:21
  * @update yunya-lihuibin    2020-08-03    新建
  */
-@ApiModel(value = "预约列表视图模型")
+@ApiModel(value = "AppointmentVo", description = "预约列表视图模型")
 @Data
 @ToString
 public class AppointmentVo implements Serializable {
@@ -41,6 +41,12 @@ public class AppointmentVo implements Serializable {
     private String patientName;
 
     /**
+     * 患者手机号
+     */
+    @ApiModelProperty(value = "患者手机号")
+    private String patientMobile;
+
+    /**
      * 诊所ID
      */
     @ApiModelProperty(value = "诊所ID")
@@ -53,10 +59,22 @@ public class AppointmentVo implements Serializable {
     private Integer dentistId;
 
     /**
+     * 医生名字
+     */
+    @ApiModelProperty(value = "医生名字")
+    private String dentistName;
+
+    /**
      * 助手ID 默认医生配置助手ID
      */
     @ApiModelProperty(value = "助手ID 默认医生配置助手ID")
     private Integer assistantId;
+
+    /**
+     * 助手名字
+     */
+    @ApiModelProperty(value = "助手名字")
+    private String assistantName;
 
     /**
      * 门诊科室ID 默认医生配置科室ID
@@ -65,10 +83,22 @@ public class AppointmentVo implements Serializable {
     private Integer deptRoomId;
 
     /**
+     * 门诊科室名称
+     */
+    @ApiModelProperty(value = "门诊科室名称")
+    private String deptRoomName;
+
+    /**
      * 门诊设备ID
      */
     @ApiModelProperty(value = "门诊设备ID")
     private Integer clinicDeviceItemId;
+
+    /**
+     * 门诊设备名称
+     */
+    @ApiModelProperty(value = "门诊设备名称")
+    private String clinicDeviceItemName;
 
     /**
      * 预约项目ID

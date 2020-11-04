@@ -7,6 +7,7 @@ import javax.persistence.*;
 @Table(name = "prepaid_expend_record")
 public class PrepaidExpendRecord {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
@@ -100,6 +101,72 @@ public class PrepaidExpendRecord {
     private Integer billPayRecordId;
 
     /**
+     * 类型（0：撤销消费 1：消费 ）
+     */
+    @Column(name = "type")
+    private Integer type;
+
+    /**
+     * 消费后当前本金
+     */
+    @Column(name = "current_recharge_principal")
+    private BigDecimal currentPrincipal;
+
+    /**
+     * 消费后当前赠金
+     */
+    @Column(name = "current_recharge_bonus")
+    private BigDecimal currentBonus;
+
+    /**
+     * 获取当前本金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentPrincipal() {
+        return currentPrincipal;
+    }
+
+    /**
+     * 设置当前本金
+     * @param currentPrincipal
+     */
+    public void setCurrentPrincipal(BigDecimal currentPrincipal) {
+        this.currentPrincipal = currentPrincipal;
+    }
+
+    /**
+     * 获取当前证金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentBonus() {
+        return currentBonus;
+    }
+
+    /**
+     * 设置当前赠金
+     * @param currentBonus
+     */
+    public void setCurrentBonus(BigDecimal currentBonus) {
+        this.currentBonus = currentBonus;
+    }
+
+    /**
+     * 获取消费类型
+     * @return type
+     */
+    public Integer getType() {
+        return type;
+    }
+
+    /**
+     * 设置类型
+     * @param type type
+     */
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    /**
      * @return id
      */
     public Integer getId() {
@@ -132,7 +199,7 @@ public class PrepaidExpendRecord {
     }
 
     /**
-     * 获取预付款id
+     * 获取预付款卡号
      *
      * @return prepaid_id - 预付款id
      */
@@ -141,7 +208,7 @@ public class PrepaidExpendRecord {
     }
 
     /**
-     * 设置预付款id
+     * 设置预付款卡号
      *
      * @param prepaidId 预付款id
      */

@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.AccountTypeBiz;
@@ -11,6 +12,7 @@ import com.yunya.modules.system.domain.query.AccountTypeQueryForm;
 import com.yunya.modules.system.vo.AccountTypeVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,7 +43,7 @@ public class AccountTypeController {
    */
   @ApiOperation("根据ID查询入账方式分类信息")
   @GetMapping("/type/one/{id}")
-  public ResponseResult findById(@PathVariable("id") Integer id) {
+  public ResponseResult<AccountTypeVO> findById(@PathVariable(value = "id") Integer id) {
     AccountTypeVO resultData = accountTypeBiz.findById(id);
     return ResponseUtil.success(resultData);
   }
@@ -54,7 +56,8 @@ public class AccountTypeController {
    */
   @ApiOperation("根据条件查询入账方式分类列表(可分页)")
   @PostMapping("/type/list")
-  public ResponseResult findList(@RequestBody AccountTypeQueryForm queryForm) {
+  public ResponseResult<PageInfo<AccountTypeVO>> findList(
+      @RequestBody AccountTypeQueryForm queryForm) {
     PageInfo<AccountTypeVO> resultList = accountTypeBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -65,12 +68,13 @@ public class AccountTypeController {
    * @param model 参数模型
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增入账方式分类")
   @PostMapping("/type/save")
-  public ResponseResult save(@RequestBody @Validated AccountTypeModel model) {
+  public ResponseResult<T> save(@RequestBody @Validated AccountTypeModel model) {
     accountTypeBiz.add(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -83,10 +87,10 @@ public class AccountTypeController {
   @CurrentUser
   @ApiOperation("修改入账方式分类")
   @PutMapping("/type/modify/{id}")
-  public ResponseResult modify(
-      @PathVariable("id") Integer id, @RequestBody @Validated AccountTypeForm form) {
+  public ResponseResult<T> modify(
+      @PathVariable(value = "id") Integer id, @RequestBody @Validated AccountTypeForm form) {
     accountTypeBiz.modify(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -97,8 +101,8 @@ public class AccountTypeController {
    */
   @ApiOperation("根据ID删除入账方式分类")
   @DeleteMapping("/type/delete/{id}")
-  public ResponseResult delete(@PathVariable("id") Integer id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     accountTypeBiz.deleteAccountTypeById(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

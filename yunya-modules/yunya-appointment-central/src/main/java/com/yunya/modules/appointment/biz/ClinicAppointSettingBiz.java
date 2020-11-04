@@ -12,6 +12,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.ClinicAppointmentSetting;
+import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ClinicAppointmentSettingMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,26 +39,26 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
      */
     public ResponseResult editOrAddSetting(AppointSettingForm form){
 
-        if (form.getAppointUnit() > 30 || form.getAppointUnit() < 5){
-            throw new ClientServiceException("预约单位设置错误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        if (form.getAppointUnit() > 30 || form.getAppointUnit() < 5) {
+            return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_UNIT.getCode(),AppointmentError.APPOINT_SETTING_UNIT.getMessage(),null);
         }
         ClinicAppointmentSetting build = EntityUtils.build(form, ClinicAppointmentSetting.class);
         Integer userId = form.getUserId();
         AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(userId);
         // 如果已经存在用户设置，则进行修改设置操作，否则进行新增操作
-        if (appointSettingVo != null){
+        if (appointSettingVo != null) {
             build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
             build.setUpdName(BaseContextHandler.getName());
             build.setUpdTime(new Date(System.currentTimeMillis()));
             int result = mapper.updateByPrimaryKeySelective(build);
             if (result <= 0 ){
-                throw new ClientServiceException("修改预约设置失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_FAIL.getCode(),AppointmentError.APPOINT_SETTING_FAIL.getMessage(),null);
             }
         } else {
             build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
             int result = mapper.insertSelective(build);
             if (result <= 0 ){
-                throw new ClientServiceException("新增预约设置失败！",OperationCodeConstants.OBJECT_EDIT_FAIL);
+                return ResponseUtil.fail(AppointmentError.APPOINT_SETTING_FAIL.getCode(),AppointmentError.APPOINT_SETTING_FAIL.getMessage(),null);
             }
         }
         return ResponseUtil.success();

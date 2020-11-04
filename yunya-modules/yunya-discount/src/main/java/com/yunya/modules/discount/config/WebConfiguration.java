@@ -16,6 +16,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Primary
 public class WebConfiguration implements WebMvcConfigurer {
 
+
+
   @Bean
   GlobalExceptionHandler getGlobalExceptionHandler() {
     return new GlobalExceptionHandler();
@@ -25,6 +27,7 @@ public class WebConfiguration implements WebMvcConfigurer {
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(getUserAuthRestInterceptor())
             .addPathPatterns("/**");
+
   }
 
   /**

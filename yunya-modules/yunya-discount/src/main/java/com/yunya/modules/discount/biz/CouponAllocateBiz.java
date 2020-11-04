@@ -9,6 +9,8 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.BaseException;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.modules.discount.form.CouponAllocateDetailForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
@@ -35,29 +37,39 @@ import java.util.Map;
 public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAllocate> {
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-
+    @Autowired
+    private CardBiz cardBiz;
     public int insertAll(List<CouponAllocateForm> list){
         return mapper.insertAll(list);
     }
 
     public List<CouponAllocateVO> findVOList(Integer id){
-        SysUserEmployeeModel model = new SysUserEmployeeModel();//获取用户信息
+        //获取用户信息
+        SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
         List<Integer> orgIds = new ArrayList<>();
         model.setOrgIds(orgIds);
         Byte[]userStatus = {0,1,3};
-        model.setWorkStatus(userStatus);//离职状态
+        //离职状态
+        model.setWorkStatus(userStatus);
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-        Map<String, SysUserInfoDetail> employeesMap = new HashMap();
+        Map<String, SysUserInfoDetail> employeesMap = new HashMap(16);
         employees.forEach(z -> employeesMap.put(z.getUserId() + "", z));
-
-        List<CouponAllocateVO>list = mapper.findVOList(id);//获取配给信息
+        //获取配给信息
+        List<CouponAllocateVO>list = mapper.findVOList(id);
         for(CouponAllocateVO couponAllocateVO:list){
-            SysUserInfoDetail sysUserInfoDetail = employeesMap.get(couponAllocateVO.getAllocateUserId() + "");
+            SysUserInfoDetail sysUserInfoDetail = employeesMap.get(couponAllocateVO.getCrtId() + "");
             if(sysUserInfoDetail!=null){
-                couponAllocateVO.setAllocateUserName(sysUserInfoDetail.getName());//设置分配人信息
+                //设置分配人信息
+                couponAllocateVO.setAllocateUserName(sysUserInfoDetail.getName());
             }else{
                 throw new BaseException("无此分配人信息", OperationCodeConstants.DATA_NOT_EXIST);
+            }
+            Card card = new Card();
+            card.setCouponAllocateId(couponAllocateVO.getId());
+            couponAllocateVO.setIsAllocate(false);
+            if (cardBiz.selectList(card).size() > 0) {
+                couponAllocateVO.setIsAllocate(true);
             }
         }
         return list;
@@ -71,12 +83,13 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
         List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
         Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
         clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
-
-        List<CouponAllocateDetailVO>list =  mapper.findVODetailList(couponAllocateDetailForm);//获取配给详情
+        //获取配给详情
+        List<CouponAllocateDetailVO>list =  mapper.findVODetailList(couponAllocateDetailForm);
         for(CouponAllocateDetailVO couponAllocateDetailVO:list){
             OrganizationInfoDetail organizationInfoDetail = clinicMap.get(couponAllocateDetailVO.getOrgId() + "");
             if(organizationInfoDetail!=null){
-                couponAllocateDetailVO.setOrgName(organizationInfoDetail.getName());//设置门诊信息
+                //设置门诊信息
+                couponAllocateDetailVO.setOrgName(organizationInfoDetail.getName());
             }else{
                 throw new BaseException("无此门诊信息", OperationCodeConstants.DATA_NOT_EXIST);
             }

@@ -1,6 +1,10 @@
 package com.yunya.modules.system.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.form.EmployeeInfoQueryForm;
+import com.yunya.feign.system.vo.EmployeeInfoVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.SysUserPostBiz;
@@ -13,6 +17,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,7 +51,8 @@ public class SysUserPostController {
    */
   @ApiOperation("获取用户可登陆组织列表(用户登陆)")
   @GetMapping("/list/{userId}")
-  public ResponseResult getUserLoginList(@PathVariable Integer userId) {
+  public ResponseResult<List<SysUserLoginOrgVO>> getUserLoginList(
+      @PathVariable(value = "userId") Integer userId) {
     List<SysUserLoginOrgVO> loginList = sysUserPostBiz.getUserLoginListByUserId(userId);
     return ResponseUtil.success(loginList);
   }
@@ -59,9 +65,24 @@ public class SysUserPostController {
    */
   @ApiOperation("获取用户可登陆组织列表(员工信息管理用)")
   @GetMapping("/userPostlist/{userId}")
-  public ResponseResult getUserPostList(@PathVariable Integer userId) {
+  public ResponseResult<List<SysUserPostOrgVO>> getUserPostList(
+      @PathVariable(value = "userId") Integer userId) {
     List<SysUserPostOrgVO> loginList = sysUserPostBiz.getUserPostListByUserId(userId);
     return ResponseUtil.success(loginList);
+  }
+
+  /**
+   * 根据条件查询员工信息
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件查询用户信息")
+  @PostMapping(value = "/employee/list", name = "根据条件查询用户信息")
+  public ResponseResult<PageInfo<EmployeeInfoVO>> findEmployeeByExample(
+      @RequestBody EmployeeInfoQueryForm queryForm) {
+    PageInfo<EmployeeInfoVO> resultList = sysUserPostBiz.findEmployeeList(queryForm);
+    return ResponseUtil.success(resultList);
   }
 
   /**
@@ -77,7 +98,7 @@ public class SysUserPostController {
     @ApiImplicitParam(name = "userId", value = "用户ID", required = true)
   })
   @GetMapping(value = "/post/list/{orgId}/{userId}", name = "根据用户ID、组织ID查询用户岗位列表")
-  public ResponseResult postInfoList(
+  public ResponseResult<List<PostVO>> postInfoList(
       @PathVariable(value = "orgId") Integer orgId,
       @PathVariable(value = "userId") Integer userId) {
     List<PostVO> resultList = sysUserPostBiz.findUserPostList(orgId, userId);
@@ -90,12 +111,13 @@ public class SysUserPostController {
    * @param resource 参数封装
    * @return map
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增用户可登陆组织")
   @PostMapping("/add")
-  public ResponseResult add(@RequestBody @Validated SysUserPostModel resource) {
+  public ResponseResult<T> add(@RequestBody @Validated SysUserPostModel resource) {
     sysUserPostBiz.add(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -113,10 +135,11 @@ public class SysUserPostController {
       dataType = "number",
       paramType = "path")
   @PutMapping("/edit/{userPostId}")
-  public ResponseResult edit(
-      @PathVariable Integer userPostId, @RequestBody @Validated LoginOrganizationForm form) {
+  public ResponseResult<T> edit(
+      @PathVariable(value = "userPostId") Integer userPostId,
+      @RequestBody @Validated LoginOrganizationForm form) {
     sysUserPostBiz.edit(userPostId, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -127,8 +150,8 @@ public class SysUserPostController {
    */
   @ApiOperation("根据ID删除用户可登陆组织")
   @DeleteMapping("/delete/{userPostId}")
-  public ResponseResult remove(@PathVariable Integer userPostId) {
+  public ResponseResult<T> remove(@PathVariable Integer userPostId) {
     sysUserPostBiz.remove(userPostId);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

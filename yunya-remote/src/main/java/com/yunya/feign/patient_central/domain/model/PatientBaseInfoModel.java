@@ -85,7 +85,7 @@ public class PatientBaseInfoModel implements Serializable {
      * 性别 0-男；1-女；2-未知
      */
     @NotNull(message = "性别不能为空！")
-    @ApiModelProperty(value = "性别 0-男；1-女；2-未知",required = true)
+    @ApiModelProperty(value = "性别 0-男；1-女；2-未知",required = false)
     private Byte gender;
 
     /**
@@ -98,21 +98,21 @@ public class PatientBaseInfoModel implements Serializable {
      * 出生日期
      */
     @NotNull(message = "出生日期不能为空！")
-    @ApiModelProperty(value = "出生日期",required = true)
+    @ApiModelProperty(value = "出生日期",required = false)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date birthday;
 
     /**
      * 患者来源类型 患者来源分类ID
      */
-    @ApiModelProperty(value = "患者来源分类ID")
+    @ApiModelProperty(value = "患者来源分类ID",required = false)
     private Integer originType;
 
     /**
      * 患者来源关联ID 患者来源关联ID（员工ID/患者ID/活动ID）
      */
     @NotNull(message = "患者来源关联ID不能为空！")
-    @ApiModelProperty(value = "患者来源关联ID",required = true)
+    @ApiModelProperty(value = "患者来源关联ID",required = false)
     private Integer originId;
 
     /**

@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -109,5 +110,5 @@ public class AppointmentBaseForm implements Serializable {
 
     /** 时长分解列表 */
     @ApiModelProperty(value = "时长分解列表")
-    private List<AppointmentSplitUpdateBaseInfo> splitList;
+    private List<AppointmentSplitBaseInfo> splitList;
 }

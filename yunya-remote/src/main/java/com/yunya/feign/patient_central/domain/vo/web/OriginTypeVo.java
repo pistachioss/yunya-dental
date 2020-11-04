@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
 import com.yunya.models.patient_central.PatientOrigin;
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -8,7 +9,7 @@ import java.io.Serializable;
 import java.util.List;
 
 /**
- * 简单介绍:</br>患者原来类型listVo
+ * 简单介绍:</br>返回患者来源信息模型
  *
  * @author: WY
  * @date 2020/8/13 19:52
@@ -17,6 +18,7 @@ import java.util.List;
  */
 @Data
 @ToString
+@ApiModel("返回患者来源信息模型")
 public class OriginTypeVo implements Serializable {
 
     /**

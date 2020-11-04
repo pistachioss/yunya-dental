@@ -1,10 +1,11 @@
 package com.yunya.feign.discount.domain.vo;
 
-import io.swagger.annotations.*;
-import lombok.*;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.io.*;
-import java.math.*;
+import java.math.BigDecimal;
 
 /**
  * @author xiangyang
@@ -13,7 +14,7 @@ import java.math.*;
 @Getter
 @Setter
 @ApiModel(value = "产品售卖查询分页模型")
-public class CouponSalePageVo implements Serializable {
+public class CouponSalePageVo {
     @ApiModelProperty(value = "优惠券id")
     private Integer couponId;
     @ApiModelProperty(value = "优惠券名称")

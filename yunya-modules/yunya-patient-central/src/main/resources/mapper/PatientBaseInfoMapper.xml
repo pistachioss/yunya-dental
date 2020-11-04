@@ -55,8 +55,12 @@
     <select id="findPatientPublicInfoById" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo">
         select pbi.face_url faceUrl,pbi.name name,pbi.gender gender,pbi.age age,pbi.mobile mobile,
                pbi.medical_number medicalNumber,pmi.member_type_id memberTypeId,
-               cast(IFNULL(SUM(pmi.principal_amount+pmi.bonus_amount),0) as decimal(15,2)) memberCardMoneySum,
-               cast(IFNULL(SUM(ppi.prepayment_principal+ppi.prepayment_bonus),0) as decimal(15,2)) prepaymentsMoneySum
+               cast(IFNULL(pmi.principal_amount,0) as decimal(15,2)) principalAmount,
+			   cast(IFNULL(pmi.bonus_amount,0) as decimal(15,2)) bonusAmount,
+               cast(IFNULL(ppi.prepayment_principal,0) as decimal(15,2)) prepaymentPrincipal,
+			   cast(IFNULL(ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentBonus,
+			   cast(IFNULL(pmi.principal_amount + pmi.bonus_amount,0) as decimal(15,2)) memberCardMoneySum,
+			   cast(IFNULL(ppi.prepayment_principal + ppi.prepayment_bonus,0) as decimal(15,2)) prepaymentsMoneySum
         from patient_base_info pbi
         left join patient_prepayments_info ppi on pbi.id = ppi.patient_id
         left join patient_member_info pmi      on pbi.id = pmi.patient_id
@@ -69,7 +73,7 @@
         select pbio.id,pbio.origin_id patientId,pbio.name,pbio.gender,pbio.mobile,pbio.crt_time crtTime
         from patient_base_info pbio
         where pbio.source_id = #{form.patientId} and pbio.origin_type = 2
-        order by pbio.crtTime desc
+        order by pbio.crt_time desc
     </select>
 
     <!-- 根据id查询患者推荐关系拓展图 -->
@@ -193,17 +197,46 @@
         where pbio.id =#{patientId}
     </select>
 
+    <!-- 查询判断手机号是否已经存在 -->
     <select id="findUserExistsList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where name = #{form.name} and mobile = #{form.mobile}
     </select>
 
+    <!-- app端查询手机号是否已经存在 -->
     <select id="findUserExistsByMobileList" resultType="com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo">
         select
         <include refid="Patient_Column_List"/>
         from patient_base_info where mobile = #{mobile}
     </select>
+
+    <!-- 根据患者id 清空患者头像 -->
+    <update id="updateFaceUrlById">
+        update patient_base_info set face_url = null where id =#{id}
+    </update>
+
+    <!-- 添加患者基本信息 -->
+    <insert id="insertPatientInfo" useGeneratedKeys="true" keyProperty="id">
+        INSERT ignore INTO patient_base_info (
+            id,
+            org_id,
+            NAME,
+            pinyin_name,
+            mobile,
+            mobile_owner,
+            gender,
+            birthday,
+            origin_type,
+            origin_id,
+            remarks,
+            inservice,
+            crt_id,
+            crt_name
+        )
+        VALUES(#{id},#{orgId},#{name},#{pinyinName},#{mobile},#{mobileOwner},#{gender},#{birthday},#{originType},
+               #{originId},#{remarks},#{inservice},#{crtId},#{crtName})
+    </insert>
 
 
 </mapper>

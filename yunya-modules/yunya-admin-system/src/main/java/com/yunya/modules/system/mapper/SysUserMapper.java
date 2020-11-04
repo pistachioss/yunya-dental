@@ -14,11 +14,11 @@ public interface SysUserMapper extends Mapper<SysUser> {
   /**
    * 根据条件查询员工详细信息列表
    *
-   * @param queryFrom 查询条件
+   * @param queryForm 查询条件
    * @return
    */
   List<SysUserInfoDetail> selectSysUserInfoDetailList(
-      @Param("queryFrom") SysUserInfoDetailQueryFrom queryFrom);
+      @Param("queryForm") SysUserInfoDetailQueryFrom queryForm);
 
   /**
    * 校验用户名是否存在

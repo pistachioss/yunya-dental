@@ -14,7 +14,7 @@ import java.util.Date;
  * @author: LHB
  * @create: 2020-08-24 12:41
  **/
-@ApiModel(value = "随访内容视图信息(随访按钮)")
+@ApiModel(value="VisitingContentVo",description = "随访内容视图信息(随访按钮)")
 @Data
 @ToString
 public class VisitingContentVo implements Serializable {
@@ -38,6 +38,7 @@ public class VisitingContentVo implements Serializable {
      * 就诊日期
      */
     @ApiModelProperty(value = "就诊日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date treatmentDate;
 
     /**
@@ -50,6 +51,7 @@ public class VisitingContentVo implements Serializable {
      * 随访日期
      */
     @ApiModelProperty(value = "随访日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date visitingDate;
 
     /** 随访时间 */
@@ -62,6 +64,7 @@ public class VisitingContentVo implements Serializable {
 
     /** 末次预约日期 */
     @ApiModelProperty(value = "末次预约日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date endAppointDate;
 
     /**
@@ -80,6 +83,11 @@ public class VisitingContentVo implements Serializable {
      * 随访状态 0-待随访（默认）；1-随访完成
      */
     private Boolean status;
+
+    /**
+     * 更新人姓名
+     */
+    private String updName;
 
     /**
      * 是否启用 0-不启用；1-启用

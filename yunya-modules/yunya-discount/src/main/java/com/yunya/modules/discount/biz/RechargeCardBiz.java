@@ -1,21 +1,17 @@
 package com.yunya.modules.discount.biz;
 
+import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.BaseException;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.CouponFileInfo;
 import com.yunya.models.discount.RechargeCard;
-import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.modules.discount.form.RechargeCardForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import com.yunya.modules.discount.mapper.RechargeCardMapper;
-import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.exception.BaseException;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.modules.discount.constant.ExceptionCode;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -98,15 +94,20 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
         if (flag) {
             // 只能修改时间
             couponCommonInfo.setId(rechargeCardForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(rechargeCardForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(rechargeCardForm.getAvailableSaleEndDate());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            //更新基础信息
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             rechargeCard.setCouponId(rechargeCardForm.getId());
             rechargeCard = selectOne(rechargeCard);
             if(rechargeCard!=null){
                 rechargeCard.setRemark(rechargeCardForm.getRemark());
                 rechargeCard.setRechargeDeadline(rechargeCardForm.getRechargeDeadline());
-                updateSelectiveById(rechargeCard);//更新明细信息
+                //更新明细信息
+                updateById(rechargeCard);
             }else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -122,18 +123,25 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
                     throw new BaseException("充值卡名称与系统中已有充值卡重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(rechargeCardForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(rechargeCardForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             rechargeCard.setCouponId(rechargeCardForm.getId());
             rechargeCard = selectOne(rechargeCard);
             if (rechargeCard != null) {
                 RechargeCard pc = new RechargeCard();
+                BeanUtils.copyProperties(rechargeCard, pc);
                 BeanUtils.copyProperties(rechargeCardForm, pc);
                 pc.setId(rechargeCard.getId());
                 pc.setBonus(rechargeCardForm.getFaceValue().subtract(rechargeCardForm.getSoldAmount()));
-                updateSelectiveById(pc);//更新明细信息
+                //更新明细信息
+                updateById(pc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

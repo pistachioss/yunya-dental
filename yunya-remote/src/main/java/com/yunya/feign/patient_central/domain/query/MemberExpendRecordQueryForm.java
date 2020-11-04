@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.query;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -18,6 +19,7 @@ import java.io.Serializable;
 
 @Data
 @ToString
+@ApiModel("会员消费信息查询参数模型")
 public class MemberExpendRecordQueryForm implements Serializable {
 
     @ApiModelProperty(value = "是否分页", required = true)

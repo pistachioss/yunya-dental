@@ -17,13 +17,13 @@ import javax.annotation.Resource;
 @Api(tags = {"门诊端员工管理"})
 @RestController
 public class ClinicEmployeeApi {
-
     @Resource
     private ClinicEmployeeConfigBiz clinicEmployeeConfigBiz;
 
     @ApiOperation("查询可预约，可挂号医生")
-    @GetMapping("clinic/employee/config/{clinicId}/list")
-    public EnableEmployeeRes getEnableEmployeeList(@PathVariable("clinicId") Integer clinicId) {
-        return clinicEmployeeConfigBiz.getAllEnableEmployee(clinicId);
+    @GetMapping("/api/{clinicId}/config/list")
+    public EnableEmployeeRes getEnableEmployeeList(@PathVariable(value = "clinicId") Integer clinicId) {
+        EnableEmployeeRes result = clinicEmployeeConfigBiz.getAllEnableEmployee(clinicId);
+        return result;
     }
 }

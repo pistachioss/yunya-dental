@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseCardMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCard">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="card_id" property="cardId" jdbcType="INTEGER"/>
+        <result column="coupon_id" property="couponId" jdbcType="INTEGER"/>
+        <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="allocate_org_id" property="allocateOrgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="active_user_id" property="activeUserId" jdbcType="INTEGER"/>
+        <result column="active_org_id" property="activeOrgId" jdbcType="INTEGER"/>
+        <result column="seller_user_id" property="sellerUserId" jdbcType="INTEGER"/>
+        <result column="allocate_date" property="allocateDate" jdbcType="TIMESTAMP"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="generate_date" property="generateDate" jdbcType="TIMESTAMP"/>
+        <result column="sold_date" property="soldDate" jdbcType="TIMESTAMP"/>
+        <result column="sold_target" property="soldTarget" jdbcType="VARCHAR"/>
+        <result column="sold_phone_number" property="soldPhoneNumber" jdbcType="VARCHAR"/>
+        <result column="sold_type" property="soldType" jdbcType="TINYINT"/>
+        <result column="sold_way" property="soldWay" jdbcType="TINYINT"/>
+        <result column="pay_id" property="payId" jdbcType="INTEGER"/>
+        <result column="pay_name" property="payName" jdbcType="VARCHAR"/>
+        <result column="sale_channel_id" property="saleChannelId" jdbcType="INTEGER"/>
+        <result column="sale_channel_name" property="saleChannelName" jdbcType="VARCHAR"/>
+        <result column="charge_status" property="chargeStatus" jdbcType="TINYINT"/>
+        <result column="active_date" property="activeDate" jdbcType="TIMESTAMP"/>
+        <result column="activation_deadline" property="activationDeadline" jdbcType="TIMESTAMP"/>
+        <result column="first_use_date" property="firstUseDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <select id="listCardByParam" resultType="com.yunya.feign.report.domain.vo.CardStatisticsVo">
+        select
+             date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+            `bc`.`card_number`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sold_type`,
+            `bc`.`sold_way`,
+            `bc`.`charge_status`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`seller_user_id`)   as `soldUser`,
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `activeDate`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`active_org_id`)     as `activeOrgName`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`active_user_id`)   as `activeUser`,
+            (select
+                 `name`
+             from `base_patient`
+             where `patient_id` = `bc`.`patient_id`)  as `cardOwner`,
+            (select
+                 `mobile`
+             from `base_patient`
+             where `patient_id` = `bc`.`patient_id`)  as `cardOwnerPhoneNumber`,
+            if(isnull(`bc`.`active_date`), null,
+                if(isnull(`b`.`activation_deadline`), date_format(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
+                   if(date_format(`b`.`activation_deadline`, '%Y-%m-%d') &gt;
+                        date_format(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
+                            date_format(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
+                            date_format(`b`.`activation_deadline`, '%Y-%m-%d'))))  as `activationDeadline`,
+            case
+                when `bc`.`status` in (3, 4) then 1
+                else 0
+                end                            as `used`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            and `b`.`coupon_type` != 4
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+                and `bc`.`allocate_org_id` in
+                <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldTypes != null and soldTypes.size() > 0">
+                and `bc`.`sold_type` in
+                <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="activeOrgIds != null and activeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="activeOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="activeStartDate != null and activeEndDate != null">
+                and (`bc`.`active_date` &gt;= #{activeStartDate} and `bc`.`active_date` &lt; #{activeEndDate})
+            </if>
+            <if test="soldWays != null and soldWays.size() > 0">
+                and `bc`.`sold_way` in
+                <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="chargeStatus != null and chargeStatus.size() > 0">
+                and `bc`.`charge_status` in
+                <foreach collection="chargeStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
+
+    <select id="listRechargeUsedByParam" resultType="com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo">
+        select
+             date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+            `bc`.`card_number`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sold_type`,
+            `bc`.`sold_way`,
+            `bc`.`charge_status`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`seller_user_id`)   as `soldUser`,
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `rechargeDate`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`active_org_id`)     as `rechargeOrgName`,
+            (select
+                 `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`active_user_id`)   as `rechargeUser`,
+            (select
+                 `name`
+             from `base_patient`
+             where `patient_id` = `bc`.`patient_id`)  as `rechargeTarget`,
+            (select
+                 `card_number`
+             from `base_patient_member` `bpm`
+             where `bpm`.`patient_id` = `bc`.`patient_id`
+                and `bpm`.type = 1)                   as `rechargeAccount`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            and `b`.`coupon_type` = 4
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+                and `bc`.`allocate_org_id` in
+                <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldTypes != null and soldTypes.size() > 0">
+                and `bc`.`sold_type` in
+                <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="rechargeOrgIds != null and rechargeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="rechargeOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="rechargeStartDate != null and rechargeEndDate != null">
+                and (`bc`.`active_date` &gt;= #{rechargeStartDate} and `bc`.`active_date` &lt; #{rechargeEndDate})
+            </if>
+            <if test="soldWays != null and soldWays.size() > 0">
+                and `bc`.`sold_way` in
+                <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
+
+    <select id="listCouponSoldDetailByParam" resultType="com.yunya.feign.report.domain.vo.CouponSoldDetailVo">
+        select
+            date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+            `bc`.`card_number`,
+            (select
+                 `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sold_type`,
+            `bc`.`sold_way`,
+            `bc`.`charge_status`,
+            `bc`.`pay_name`,
+            (select
+                `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`seller_user_id`) as `soldUser`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="soldTarget !=null and soldTarget != ''">
+                and `bc`.`sold_target` like concat('%', #{soldTarget}, '%')
+            </if>
+            <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+                and `bc`.`allocate_org_id` in
+                <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldTypes != null and soldTypes.size() > 0">
+                and `bc`.`sold_type` in
+                <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="soldWays != null and soldWays.size() > 0">
+                and `bc`.`sold_way` in
+                <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="chargeStatus != null and chargeStatus.size() > 0">
+                and `bc`.`charge_status` in
+                <foreach collection="chargeStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
+
+    <select id="listCouponActiveByParam" resultType="com.yunya.feign.report.domain.vo.CouponActiveDetailVo">
+        select
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `activeDate`,,
+            (select
+                `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`active_org_id`)   as `activeOrgName`,
+            `bc`.`card_number`,
+            (select
+                `name`
+             from `base_patient`
+             where `patient_id` = `bc`.`patient_id`)  as `cardOwner`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sale_channel_name`,
+            (select
+                `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`active_user_id`) as `activeUser`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `b`.`coupon_type` != 4
+            and `bc`.`status` in (2,3,4)
+            and `bc`.`allocate_org_id` = 0
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="soldTarget !=null and soldTarget != ''">
+                and `bc`.`sold_target` like concat('%', #{soldTarget}, '%')
+            </if>
+            <if test="soldChannelIds != null and soldChannelIds.size() > 0">
+                and `bc`.`sale_channel_id` in
+                <foreach collection="soldChannelIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="activeStartDate != null and activeEndDate != null">
+                and (`bc`.`active_date` &gt;= #{activeStartDate} and `bc`.`active_date` &lt; #{activeStartDate})
+            </if>
+            <if test="activeOrgIds != null and activeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="activeOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `bc`.`active_date` desc
+    </select>
+
+    <select id="listAllCardSoldParam" resultType="com.yunya.feign.report.domain.vo.CardSoldStatisticsVo">
+        select
+            date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+            `b`.`coupon_name`,
+            `b`.`sold_amount`,
+            `bc`.`card_number`,
+            (select
+                `abbreviation`
+             from `base_organization`
+             where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `bc`.`sold_type`,
+            `bc`.`sold_way`,
+            `bc`.`charge_status`,
+            (select
+                `employee_name`
+             from `base_employee`
+             where `user_id` = `bc`.`seller_user_id`) as `soldUser`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            <if test="couponName !=null and couponName != ''">
+                and `b`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `b`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="soldTarget !=null and soldTarget != ''">
+                and `bc`.`sold_target` like concat('%', #{soldTarget}, '%')
+            </if>
+            <if test="allocateOrgIds != null and allocateOrgIds.size() > 0">
+                and `bc`.`allocate_org_id` in
+                <foreach collection="allocateOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldTypes != null and soldTypes.size() > 0">
+                and `bc`.`sold_type` in
+                <foreach collection="soldTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="soldWays != null and soldWays.size() > 0">
+                and `bc`.`sold_way` in
+                <foreach collection="soldWays" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="chargeStatus != null and chargeStatus.size() > 0">
+                and `bc`.`charge_status` in
+                <foreach collection="chargeStatus" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
+
+    <select id="listCardSoldRecord" resultType="com.yunya.feign.report.domain.vo.CouponSoldRecordVo">
+        select
+            date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
+            `bc`.`sold_target`,
+            `bc`.`sold_phone_number`,
+            `b`.`coupon_name`,
+            `b`.`coupon_type`,
+            `bc`.`card_number`,
+            `b`.`sold_amount`,
+            `bc`.`sold_type`,
+            `bc`.`charge_status`,
+            `bc`.`pay_name`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+        where
+            `bc`.`status` != 0
+            and `bc`.`allocate_org_id` != 0
+            <if test="orgId != null">
+                and `bc`.`allocate_org_id` = #{orgId}
+            </if>
+            <if test="soldStartDate != null and soldEndDate != null">
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+            </if>
+            <if test="couponName !=null and couponName != ''">
+                and `b`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="soldTarget !=null and soldTarget != ''">
+                and `bc`.`sold_target` like concat('%', #{soldTarget}, '%')
+            </if>
+            <if test="soldPhoneNumber !=null and soldPhoneNumber != ''">
+                and `bc`.`sold_phone_number` like concat('%', #{soldPhoneNumber}, '%')
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `b`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        order by `bc`.`sold_date` desc
+    </select>
+
+    <select id="listRechargeDetailByParam" resultType="com.yunya.feign.report.domain.vo.RechargeDetailVo">
+        select
+            `bc`.`card_number`,
+            `bo`.`abbreviation`                     as `rechargeOrgName`,
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `rechargeDate`,
+            `bp`.`name`                             as `patientName`,
+            `bp`.`mobile`                           as `patientMobile`,
+            `bpm`.`card_number`                     as `rechargeAccount`,
+            `b`.`sold_amount`                       as `rechargeAmount`,
+            `b`.`bonus`                             as `rechargeBonus`,
+            `be`.`employee_name`                    as `rechargeUser`
+        from `base_card` `bc`
+            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+            inner join `base_patient` `bp` on `bp`.`patient_id` = `bc`.`patient_id`
+            inner join `base_patient_member` `bpm` on `bpm`.`patient_id` = `bc`.`patient_id`
+                                                 and `bpm`.type = 1
+            inner join `base_organization` `bo` on `bo`.`org_id` = `bc`.`active_org_id`
+            inner join `base_employee` `be` on `be`.`user_id` = `bc`.`active_user_id`
+        where
+            `bc`.`coupon_id` = #{couponId}
+            and `bc`.`status` = 4
+            <if test="cardNumber !=null and cardNumber != ''">
+                and `bc`.`card_number` like concat('%', #{cardNumber}, '%')
+            </if>
+            <if test="patientKeyWord !=null and patientKeyWord != ''">
+                and (`bp`.`name` like concat('%', #{patientKeyWord}, '%') or `bp`.`mobile` like concat('%', #{patientKeyWord}, '%')
+                or `bp`.`pinyin_name` like concat('%', #{patientKeyWord}, '%'))
+            </if>
+            <if test="rechargeOrgIds != null and rechargeOrgIds.size() > 0">
+                and `bc`.`active_org_id` in
+                <foreach collection="rechargeOrgIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="rechargeAccount !=null and rechargeAccount != ''">
+                and `bpm`.`card_number` like concat('%', #{rechargeAccount}, '%')
+            </if>
+            <if test="rechargeStartDate != null and rechargeEndDate != null">
+                and (`bc`.`active_date` &gt;= #{rechargeStartDate} and `bc`.`active_date` &lt; #{rechargeEndDate})
+            </if>
+        order by `bc`.`active_date` desc
+    </select>
+</mapper>

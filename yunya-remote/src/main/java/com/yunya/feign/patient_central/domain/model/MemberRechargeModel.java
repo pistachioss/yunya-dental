@@ -43,7 +43,7 @@ public class MemberRechargeModel implements Serializable {
     /**
      * 充值赠金
      */
-    @ApiModelProperty(value = "充值赠金",required = true)
+    @ApiModelProperty(value = "充值赠金",required = false)
     private BigDecimal rechargeBonus;
 
     /**

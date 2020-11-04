@@ -5,7 +5,6 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.discount.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.BaseException;
-import com.yunya.modules.discount.constant.ExceptionCode;
 import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -17,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -61,19 +61,22 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         couponCommonInfo.setIsInservice(true);
         couponCommonInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         couponCommonInfo.setCrtTime(new Date());
-        couponCommonInfoBiz.insertSelective(couponCommonInfo);//基础信息表中插入数据
+        //基础信息表中插入数据
+        couponCommonInfoBiz.insertSelective(couponCommonInfo);
 
         VoucheCoupon voucheCoupon = new VoucheCoupon();
         BeanUtils.copyProperties(voucheCouponForm, voucheCoupon);
         voucheCoupon.setCouponId(couponCommonInfo.getId());
         voucheCoupon.setMixedUseType(voucheCouponForm.getMixedUseType().byteValue());
         voucheCoupon.setUseableClinci(voucheCouponForm.getUseableClinci());
-        insertSelective(voucheCoupon);//插入卡券信息
-
-        if(voucheCoupon.getId()<10000){//同一种卡券最多添加9999个
+        //插入卡券信息
+        insertSelective(voucheCoupon);
+        //同一种卡券最多添加9999个
+        if(voucheCoupon.getId()<10000){
             String num = String.format("%04d", voucheCoupon.getId());
             couponCommonInfo.setCouponCode(VOUCHER_TYPE + num);
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+            //插入卡券编码
+            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
         }else{
             throw new BaseException("已超过系统允许新增代金券产品的最大数量9999，不允许新增！", INSERT_MODEL);
         }
@@ -102,12 +105,17 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         }
         VoucheCoupon voucheCoupon = new VoucheCoupon();
         CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
-        if (flag) {//已经分配
+        //已经分配
+        if (flag) {
             // 只能修改时间
             couponCommonInfo.setId(discountUpdateForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(discountUpdateForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(discountUpdateForm.getAvailableSaleEndDate());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            //更新基础信息
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             voucheCoupon.setCouponId(discountUpdateForm.getId());
             voucheCoupon = selectOne(voucheCoupon);
             if (voucheCoupon != null) {
@@ -116,7 +124,8 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
                 voucheCoupon.setActivationDeadline(discountUpdateForm.getActivationDeadline());
                 voucheCoupon.setWorkloadRate(discountUpdateForm.getWorkloadRate());
                 voucheCoupon.setEffectiveDays(discountUpdateForm.getEffectiveDays());
-                updateSelectiveById(voucheCoupon);//更新明细信息
+                //更新明细信息
+                updateById(voucheCoupon);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -132,17 +141,24 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
                     throw new BaseException("代金券名称与系统中已有代金券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(discountUpdateForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(discountUpdateForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             voucheCoupon.setCouponId(discountUpdateForm.getId());
             voucheCoupon = selectOne(voucheCoupon);
             if (voucheCoupon != null) {
                 VoucheCoupon vc = new VoucheCoupon();
+                BeanUtils.copyProperties(voucheCoupon, vc);
                 BeanUtils.copyProperties(discountUpdateForm, vc);
                 vc.setId(voucheCoupon.getId());
-                updateSelectiveById(vc);//更新明细信息
+                //更新明细信息
+                updateById(vc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -165,9 +181,12 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         voucheCoupon.setCouponId(id);
         CouponFileInfo couponFiledelete = new CouponFileInfo();
         couponFiledelete.setCouponId(id);
-        couponCommonInfoBiz.deleteById(id);//删除卡券公用信息
-        delete(voucheCoupon);//删除代金券卡券信息
-        couponFileInfoBiz.delete(couponFiledelete);//清除图片文档信息
+        //删除卡券公用信息
+        couponCommonInfoBiz.deleteById(id);
+        //删除代金券卡券信息
+        delete(voucheCoupon);
+        //清除图片文档信息
+        couponFileInfoBiz.delete(couponFiledelete);
     }
 
     /**
@@ -176,6 +195,14 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
      * @return
      */
     public  List<CouponCommonInfoVO> findList(CouponCommonInfoQueryForm couponCommonInfoQueryForm){
+        if(couponCommonInfoQueryForm.getEndTime()!=null){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(couponCommonInfoQueryForm.getEndTime());
+            calendar.set(Calendar.HOUR_OF_DAY, 23);
+            calendar.set(Calendar.MINUTE, 59);
+            calendar.set(Calendar.SECOND, 59);
+            couponCommonInfoQueryForm.setEndTime(calendar.getTime());
+        }
         return mapper.findList(couponCommonInfoQueryForm);
     }
 

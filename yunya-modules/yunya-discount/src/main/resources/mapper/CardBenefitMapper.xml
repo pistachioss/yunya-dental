@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.discount.mapper.CardBenefitMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.discount.CardBenefit">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="org_id" jdbcType="INTEGER" property="orgId"/>
+        <result column="order_id" jdbcType="INTEGER" property="orderId"/>
+        <result column="order_detail_id" jdbcType="INTEGER" property="orderDetailId"/>
+        <result column="coupon_id" jdbcType="INTEGER" property="couponId"/>
+        <result column="coupon_type" jdbcType="TINYINT" property="couponType"/>
+        <result column="card_id" jdbcType="INTEGER" property="cardId"/>
+        <result column="patient_id" jdbcType="INTEGER" property="patientId"/>
+        <result column="benefit_type" jdbcType="TINYINT" property="benefitType"/>
+        <result column="item_index" jdbcType="INTEGER" property="itemIndex"/>
+        <result column="item_id" jdbcType="INTEGER" property="itemId"/>
+        <result column="item_type" jdbcType="TINYINT" property="itemType"/>
+        <result column="benefit_amount" jdbcType="DECIMAL" property="benefitAmount"/>
+        <result column="supply_workload" jdbcType="DECIMAL" property="supplyWorkload"/>
+        <result column="operate_type" jdbcType="TINYINT" property="operateType"/>
+        <result column="is_deleted" jdbcType="BIT" property="deleted"/>
+        <result column="crt_id" jdbcType="INTEGER" property="crtId"/>
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
+        <result column="upd_id" jdbcType="INTEGER" property="updId"/>
+        <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
+    </resultMap>
+
+    <insert id="insertList" parameterType="List">
+        insert into
+        `card_benefit`
+            (`org_id`, `order_id`, `order_detail_id`, `coupon_id`, `patient_id`, `card_id`, `item_id`, `item_type`,
+            `coupon_type`, `benefit_type`, `item_index`, `benefit_amount`, `supply_workload`, `operate_type`,
+            `crt_id`, `upd_id`)
+        values
+        <foreach collection="List" item="item" separator=",">
+            (#{item.orgId}, #{item.orderId}, #{item.orderDetailId}, #{item.couponId}, #{item.patientId}, #{item.cardId},
+            #{item.itemId}, #{item.itemType}, #{item.couponType}, #{item.benefitType}, #{item.itemIndex}, #{item.benefitAmount},
+            #{item.supplyWorkload}, #{item.operateType}, #{item.crtId}, #{item.updId})
+        </foreach>
+    </insert>
+</mapper>

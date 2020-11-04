@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseTreatmentProcess">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="appointment_id" property="appointmentId" jdbcType="INTEGER"/>
+        <result column="registered_id" property="registeredId" jdbcType="INTEGER"/>
+        <result column="treatment_id" property="treatmentId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="treat_status" property="treatStatus" jdbcType="TINYINT"/>
+        <result column="treat_type" property="treatType" jdbcType="TINYINT"/>
+        <result column="appoint_status" property="appointStatus" jdbcType="TINYINT"/>
+        <result column="appoint_dentist_id" property="appointDentistId" jdbcType="INTEGER"/>
+        <result column="appoint_start_time" property="appointStartTime" jdbcType="TIMESTAMP"/>
+        <result column="appoint_duration" property="appointDuration" jdbcType="INTEGER"/>
+        <result column="appoint_modify_time" property="appointModifyTime" jdbcType="INTEGER"/>
+        <result column="appoint_content" property="appointContent" jdbcType="VARCHAR"/>
+        <result column="registered_dentist_id" property="registeredDentistId" jdbcType="INTEGER"/>
+        <result column="registered_time" property="registeredTime" jdbcType="TIME"/>
+        <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
+        <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <!-- 根据条件查询就诊列表 -->
+    <select id="selectTreatmentRecordReportVOList"
+            resultType="com.yunya.feign.report.domain.vo.TreatmentRecordReportVO">
+        SELECT
+            tr.orgId,
+            tr.orgName,
+            tr.treatDate,
+            tr.patientId,
+            tr.patientName,
+            tr.mobile,
+            tr.gender,
+            tr.treatType,
+            tr.regDentistId,
+            tr.regDentistName,
+            tr.appointTime,
+            tr.appointDuration,
+            tr.appointContent,
+            tr.regTime,
+            tr.treatStartTime,
+            tr.treatEndTime,
+            tr.treatWaitingTime,
+            tr.treatExpendTime
+        FROM
+            (
+            SELECT
+                btp.org_id AS orgId,
+                bo.abbreviation AS orgName,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS treatDate,
+                btp.patient_id AS patientId,
+                bp.`name` AS patientName,
+                bp.pinyin_name AS pinyinName,
+                bp.mobile AS mobile,
+                bp.gender AS gender,
+                btp.treat_type AS treatType,
+                btp.registered_dentist_id AS regDentistId,
+                be.employee_name AS regDentistName,
+                DATE_FORMAT( btp.appoint_start_time, '%H:%i' ) AS appointTime,
+                btp.appoint_duration AS appointDuration,
+                btp.appoint_content AS appointContent,
+                DATE_FORMAT( btp.registered_time, '%H:%i' ) AS regTime,
+                DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
+                DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
+                TIMESTAMPDIFF( MINUTE, btp.registered_time, DATE_FORMAT( btp.treat_start_time, '%H:%i' ) ) AS treatWaitingTime,
+                TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS treatExpendTime
+            FROM
+                base_treatment_process btp
+                LEFT JOIN base_organization bo ON btp.org_id = bo.org_id
+                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+            LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            ) tr
+        <where>
+            <if test="query.orgId != null">
+                and tr.orgId = #{query.orgId}
+            </if>
+            <if test="query.keyWord != null and query.keyWord != ''">
+                and concat(ifnull(tr.patientName, ''), ifnull(tr.pinyinName, ''), ifnull(tr.mobile, '')) like concat('%', #{query.keyWord}, '%')
+            </if>
+            <if test="query.treatStartDate != null and query.treatStartDate != ''">
+                and tr.treatDate &gt;= #{query.treatStartDate}
+            </if>
+            <if test="query.treatEndDate != null and query.treatEndDate != ''">
+                and tr.treatDate &lt;= #{query.treatEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and tr.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY tr.treatDate DESC
+    </select>
+    <!-- 根据条件查询就诊配诊记录列表 -->
+    <select id="selectTreatmentMatchingRecord"
+            resultType="com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO">
+        SELECT
+            tmr.treatmentId,
+            tmr.assistant1Id,
+            tmr.assistant1Name,
+            tmr.assistant2Id,
+            tmr.assistant2Name,
+            tmr.assistant3Id,
+            tmr.assistant3Name,
+            tmr.matchingDentistId,
+            tmr.matchingDentistName,
+            tmr.patientId,
+            tmr.patientName,
+            tmr.mobile,
+            tmr.matchingDate,
+            tmr.treatStartTime,
+            tmr.treatEndTime,
+            tmr.matchingDuration
+        FROM
+            (
+            SELECT
+                btp.org_id as orgId,
+                btp.treatment_id AS treatmentId,
+                btp.assistant_1 AS assistant1Id,
+                be1.employee_name AS assistant1Name,
+                btp.assistant_2 AS assistant2Id,
+                be2.employee_name AS assistant2Name,
+                btp.assistant_3 AS assistant3Id,
+                be3.employee_name AS assistant3Name,
+                btp.registered_dentist_id AS matchingDentistId,
+                be.employee_name AS matchingDentistName,
+                btp.patient_id AS patientId,
+                bp.`name` AS patientName,
+                bp.pinyin_name AS pinyinName,
+                bp.mobile AS mobile,
+                DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) AS matchingDate,
+                DATE_FORMAT( btp.treat_start_time, '%H:%i' ) AS treatStartTime,
+                DATE_FORMAT( btp.treat_end_time, '%H:%i' ) AS treatEndTime,
+                TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) AS matchingDuration
+            FROM
+                base_treatment_process btp
+                LEFT JOIN base_employee be1 ON btp.assistant_1 = be1.user_id
+                LEFT JOIN base_employee be2 ON btp.assistant_2 = be1.user_id
+                LEFT JOIN base_employee be3 ON btp.assistant_3 = be1.user_id
+                LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+            WHERE
+                btp.treatment_id IS NOT NULL
+                AND ( btp.assistant_1 IS NOT NULL OR btp.assistant_2 IS NOT NULL OR btp.assistant_3 IS NOT NULL )
+            ) tmr
+        <where>
+            <if test="query.orgId != null">
+                and tmr.orgId = #{query.orgId}
+            </if>
+            <if test="query.keyWord != null and query.keyWord != ''">
+                and concat(ifnull(tmr.patientName, ''), ifnull(tmr.pinyinName, ''), ifnull(tmr.mobile, '')) like concat('%', #{query.keyWord}, '%')
+            </if>
+            <if test="query.matchingStartDate != null and query.matchingStartDate != ''">
+                and tmr.matchingDate &gt;= #{query.matchingStartDate}
+            </if>
+            <if test="query.matchingEndDate != null and query.matchingEndDate != ''">
+                and tmr.matchingDate &lt;= #{query.matchingEndDate}
+            </if>
+            <if test="query.matchingDentistIds != null and query.matchingDentistIds.length > 0">
+                and tmr.matchingDentistId in
+                <foreach collection="query.matchingDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+            tmr.matchingDate DESC
+    </select>
+</mapper>

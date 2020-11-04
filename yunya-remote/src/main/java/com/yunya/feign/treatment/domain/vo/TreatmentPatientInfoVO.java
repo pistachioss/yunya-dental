@@ -153,6 +153,9 @@ public class TreatmentPatientInfoVO implements Serializable {
   /** 治疗完成时间 */
   @ApiModelProperty("治疗完成时间")
   private String treatEndTime;
+  /** 诊疗状态 */
+  @ApiModelProperty("诊疗状态(0-接诊中;1-已开单;2-接诊完成3-已结账)")
+  private Byte treatmentStatus;
   /** 后续预约 */
   @ApiModelProperty("后续预约")
   private Integer nextAppointment;
@@ -170,7 +173,7 @@ public class TreatmentPatientInfoVO implements Serializable {
   @ApiModelProperty("原价合计")
   private BigDecimal originalPrice;
   /** 账单（开单）状态 */
-  @ApiModelProperty("就诊开单状态")
+  @ApiModelProperty("订单状态（0-账单未锁定 ；1-账单锁定；2-结算完成状态；3-收费中）")
   private Byte orderStatus;
   /** 本次收费总额 */
   @ApiModelProperty("本次收费总额")

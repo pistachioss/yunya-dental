@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTariffInfo;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -52,6 +54,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Transactional(rollbackFor = Exception.class)
 public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
 
+  /** 消息中间件调用 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 系统服务远程调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 价目表分类 */
@@ -157,7 +161,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
-    mapper.insertSelective(entity);
+    int i = mapper.insertSelective(entity);
 
     // 添加门诊价目表
     Integer itemId = entity.getId();
@@ -175,6 +179,9 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     baseTariffHistory.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     baseTariffHistory.setCrtName(BaseContextHandler.getName());
     baseTariffHistoryBiz.insertSelective(baseTariffHistory);
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(entity.getId(), 0, 0, BaseTariffInfo);
+    }
   }
 
   /**
@@ -251,20 +258,16 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     if (!categoryNumber.equals(itemNumber)) {
       throw new ClientServiceException("修改失败，价目表编号前3位与价目表分类编号前3位不同！", PARAMETERS_IS_ILLEGAL);
     }
-
     BeanUtils.copyProperties(form, entity);
     entity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(name));
     entity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setUpdName(BaseContextHandler.getName());
     entity.setUpdTime(new Date(System.currentTimeMillis()));
     entity.setId(id);
-    mapper.updateByPrimaryKeySelective(entity);
-
+    int i = mapper.updateByPrimaryKeySelective(entity);
     List<ClinicItemPriceForm> clinicItemPriceForms = form.getClinicItemPriceForms();
-
     // 更新门诊价目表信息
     updateClinicTariff(id, clinicItemPriceForms);
-
     // 保存价目表变更记录
     if (!resultData.getName().equals(name) || !resultData.getItemNumber().equals(number)) {
       BaseTariffHistory baseTariffHistory = new BaseTariffHistory();
@@ -275,6 +278,10 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       baseTariffHistory.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       baseTariffHistory.setCrtName(BaseContextHandler.getName());
       baseTariffHistoryBiz.insertSelective(baseTariffHistory);
+    }
+    // 发送消息同步价目表信息
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(id, 0, 1, BaseTariffInfo);
     }
   }
 
@@ -321,10 +328,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     if (count > 0) {
       throw new ClientServiceException("价目表删除失败，ID为" + TariffId + "'的价目表已被关联！", DELETE_NOT_ALLOW);
     }
-    mapper.deleteByPrimaryKey(TariffId);
+    int i = mapper.deleteByPrimaryKey(TariffId);
     BaseTariffHistory historyEntity = new BaseTariffHistory();
     historyEntity.setTariffId(TariffId);
     baseTariffHistoryBiz.delete(historyEntity);
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(TariffId, 0, 2, BaseTariffInfo);
+    }
   }
 
   /**
@@ -451,16 +461,22 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       // 新增价目表
       itemEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       itemEntity.setCrtName(BaseContextHandler.getName());
-      mapper.insertSelective(itemEntity);
+      int i = mapper.insertSelective(itemEntity);
       itemId = itemEntity.getId();
+      if (i > 0) {
+        rabbitMqServiceFeign.sendMessage(itemId, 0, 0, BaseTariffInfo);
+      }
     } else {
       // 更新价目表
       itemEntity.setId(itemResult.getId());
       itemEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       itemEntity.setUpdName(BaseContextHandler.getName());
       itemEntity.setUpdTime(new Date(System.currentTimeMillis()));
-      mapper.updateByPrimaryKeySelective(itemEntity);
+      int i = mapper.updateByPrimaryKeySelective(itemEntity);
       itemId = itemResult.getId();
+      if (i > 0) {
+        rabbitMqServiceFeign.sendMessage(itemId, 0, 1, BaseTariffInfo);
+      }
     }
 
     ClinicTariff clinicItem = new ClinicTariff();
@@ -492,18 +508,13 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       String unit,
       BigDecimal price,
       Integer categoryId) {
-    BaseTariff itemEntity;
-    itemEntity = new BaseTariff();
+    BaseTariff itemEntity = new BaseTariff();
     itemEntity.setTariffCategoryId(categoryId);
     itemEntity.setName(itemName);
     itemEntity.setItemNumber(itemNumber);
     BaseTariff itemResult = mapper.selectOne(itemEntity);
 
-    itemEntity = new BaseTariff();
-    itemEntity.setTariffCategoryId(categoryId);
-    itemEntity.setName(itemName);
     itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
-    itemEntity.setItemNumber(itemNumber);
     itemEntity.setEnglishName(englishName);
     itemEntity.setPrice(price);
     itemEntity.setUnit(unit);
@@ -512,14 +523,20 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       // 新增价目表
       itemEntity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
       itemEntity.setCrtName(BaseContextHandler.getName());
-      mapper.insertSelective(itemEntity);
+      int i = mapper.insertSelective(itemEntity);
+      if (i > 0) {
+        rabbitMqServiceFeign.sendMessage(itemEntity.getId(), 0, 0, BaseTariffInfo);
+      }
     } else {
       // 更新价目表
-      itemEntity.setId(itemResult.getId());
+      Integer id = itemResult.getId();
+      itemEntity.setId(id);
       itemEntity.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       itemEntity.setUpdName(BaseContextHandler.getName());
-      itemEntity.setUpdTime(new Date(System.currentTimeMillis()));
-      mapper.updateByPrimaryKeySelective(itemEntity);
+      int i = mapper.updateByPrimaryKeySelective(itemEntity);
+      if (i > 0) {
+        rabbitMqServiceFeign.sendMessage(id, 0, 1, BaseTariffInfo);
+      }
     }
   }
 

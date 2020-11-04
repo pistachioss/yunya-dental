@@ -18,14 +18,14 @@
     </resultMap>
     <!-- 根据条件查询门诊科室列表 -->
     <select id="selectClinicDepartmentRoomList"
-            resultType="com.yunya.modules.system.vo.ClinicDepartmentRoomVO">
+            resultType="com.yunya.feign.system.vo.ClinicDepartmentRoomVO">
         select
             cdr.id as clinicDeptRoomId,
-            cdr.dept_room_id as deptRoomId,
+            ifnull(cdr.dept_room_id, dr.id) as deptRoomId,
             dr.name as deptRoomName,
-            cdr.company_id as orgId,
-            cei.abbreviation,
-            cdr.inservice
+            ifnull(cdr.company_id, cei.company_id) as orgId,
+            cei.abbreviation as orgName,
+            ifnull(cdr.inservice, 1) as inservice
         from clinic_department_room cdr
         left join department_room dr on cdr.dept_room_id = dr.id
         left join clinic_ext_info cei on cdr.company_id = cei.company_id
@@ -45,17 +45,44 @@
         </where>
     </select>
     <!-- 根据门诊科室ID查询门诊科室信息 -->
-    <select id="selectByClinicDeptRoomId" resultType="com.yunya.modules.system.vo.ClinicDepartmentRoomVO">
+    <select id="selectByClinicDeptRoomId" resultType="com.yunya.feign.system.vo.ClinicDepartmentRoomVO">
         select
             cdr.id as clinicDeptRoomId,
-            cdr.dept_room_id as deptRoomId,
+            ifnull(cdr.dept_room_id, dr.id) as deptRoomId,
             dr.name as deptRoomName,
-            cdr.company_id as orgId,
-            cei.abbreviation,
-            cdr.inservice
+            ifnull(cdr.company_id, cei.company_id) as orgId,
+            cei.abbreviation as orgName,
+            ifnull(cdr.inservice, 1) as inservice
         from clinic_department_room cdr
         left join department_room dr on cdr.dept_room_id = dr.id
         left join clinic_ext_info cei on cdr.company_id = cei.company_id
         where cdr.id = #{id}
+    </select>
+    <!-- 查询某个科室在门诊的配置列表 -->
+    <select id="selectClinicDeptRoom" resultType="com.yunya.feign.system.vo.ClinicDepartmentRoomVO">
+        SELECT
+            dr.id AS deptRoomId,
+            dr.`name` AS deptRoomName,
+            cdr.id AS clinicDeptRoomId,
+            IFNULL( cdr.inservice, 1 ) as inservice
+        FROM
+            department_room dr
+            LEFT JOIN clinic_department_room cdr ON  cdr.company_id = #{orgId}
+            AND dr.id = cdr.dept_room_id
+        WHERE
+            dr.id = #{deptRoomId}
+    </select>
+    <!-- 查询门诊可用科室 -->
+    <select id="selectDeptRoomVO" resultType="com.yunya.feign.system.vo.DeptRoomVO">
+        SELECT
+            cdr.id as clinicDeptRoomId,
+            IFNULL(cdr.dept_room_id, dr.id) AS deptRoomId,
+            dr.name as deptRoomName,
+            IFNULL( cdr.inservice, 1 ) AS inservice
+        FROM
+            clinic_department_room cdr
+            LEFT JOIN department_room dr ON cdr.dept_room_id = dr.id
+        WHERE  cdr.inservice = #{inservice} and
+            cdr.dept_room_id = #{departmentRoomId} and cdr.company_id = #{orgId}
     </select>
 </mapper>

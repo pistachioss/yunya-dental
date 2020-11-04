@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.ToString;
@@ -7,7 +8,7 @@ import lombok.ToString;
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br> 主卡信息
+ * 简单介绍:</br> 返回卡主信息参数模型 主卡信息
  *
  * @author: WY
  * @date 2020/9/11 16:21
@@ -16,6 +17,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
+@ApiModel("返回卡主信息参数模型")
 public class MasertMemberInfoVo implements Serializable {
 
     /**
@@ -47,4 +49,9 @@ public class MasertMemberInfoVo implements Serializable {
      * 主卡人会员卡类型名称
      */
     private String masterMemberCardName;
+
+    /**
+     * 折扣率（价目表自动调价的折扣率）
+     */
+    private Float rate;
 }

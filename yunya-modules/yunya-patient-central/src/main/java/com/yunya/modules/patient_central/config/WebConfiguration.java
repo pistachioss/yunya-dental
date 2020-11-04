@@ -1,6 +1,8 @@
 package com.yunya.modules.patient_central.config;
 
 import com.yunya.framework.common.handler.GlobalExceptionHandler;
+import com.yunya.framework.common.interceptor.RepeatSubmitInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -21,9 +23,12 @@ public class WebConfiguration implements WebMvcConfigurer {
     return new GlobalExceptionHandler();
   }
 
+  @Autowired private RepeatSubmitInterceptor repeatSubmitInterceptor;
+
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(getUserAuthRestInterceptor()).addPathPatterns("/**");
+    registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
   }
 
   /**

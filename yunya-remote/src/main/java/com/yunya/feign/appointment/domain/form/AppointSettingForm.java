@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
+import org.hibernate.validator.constraints.Range;
 
 import javax.persistence.Column;
 import javax.validation.constraints.Max;
@@ -42,6 +43,7 @@ public class AppointSettingForm implements Serializable {
      */
     @ApiModelProperty(value = "预约单位(分钟)", required = true)
     @NotNull(message = "预约单位不能为空！")
+    @Range(min = 5, max = 30)
     private Integer appointUnit;
 
     /**
@@ -49,8 +51,7 @@ public class AppointSettingForm implements Serializable {
      */
     @ApiModelProperty(value = "预约显示列数", required = true)
     @NotNull(message = "预约显示列数不能为空！")
-    @Min(value = 1)
-    @Max(value = 15)
+    @Range(min = 1, max = 15)
     private Integer columns;
 
     /**

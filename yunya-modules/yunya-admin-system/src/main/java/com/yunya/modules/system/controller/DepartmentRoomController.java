@@ -1,6 +1,8 @@
 package com.yunya.modules.system.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.DepartmentRoomBiz;
@@ -10,10 +12,9 @@ import com.yunya.modules.system.domain.query.DepartmentRoomQueryForm;
 import com.yunya.modules.system.vo.DepartmentRoomVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 简介: 科室控制器
@@ -43,7 +44,7 @@ public class DepartmentRoomController {
    */
   @ApiOperation("根据科室ID查询科室")
   @GetMapping("/one/{id}")
-  public ResponseResult findById(@PathVariable("id") Integer id) {
+  public ResponseResult<DepartmentRoomVO> findById(@PathVariable(value = "id") Integer id) {
     DepartmentRoomVO resultData = departmentRoomBiz.findById(id);
     return ResponseUtil.success(resultData);
   }
@@ -56,8 +57,9 @@ public class DepartmentRoomController {
    */
   @ApiOperation("根据条件查询科室列表(可分页)")
   @PostMapping("/list")
-  public ResponseResult findList(@RequestBody DepartmentRoomQueryForm resource) {
-    List<DepartmentRoomVO> resultList = departmentRoomBiz.findList(resource);
+  public ResponseResult<PageInfo<DepartmentRoomVO>> findList(
+      @RequestBody DepartmentRoomQueryForm resource) {
+    PageInfo<DepartmentRoomVO> resultList = departmentRoomBiz.findList(resource);
     return ResponseUtil.success(resultList);
   }
 
@@ -67,12 +69,13 @@ public class DepartmentRoomController {
    * @param resource 参数封装
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增科室")
   @PostMapping("/save")
-  public ResponseResult add(@RequestBody @Validated DepartmentRoomModel resource) {
+  public ResponseResult<T> add(@RequestBody @Validated DepartmentRoomModel resource) {
     departmentRoomBiz.saveDepartmentRoom(resource);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -85,10 +88,10 @@ public class DepartmentRoomController {
   @CurrentUser
   @ApiOperation("修改科室")
   @PutMapping("/modify/{id}")
-  public ResponseResult modify(
+  public ResponseResult<T> modify(
       @PathVariable("id") Integer id, @RequestBody @Validated DepartmentRoomForm form) {
     departmentRoomBiz.modify(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -99,8 +102,8 @@ public class DepartmentRoomController {
    */
   @ApiOperation("根据ID删除科室")
   @DeleteMapping("/delete/{id}")
-  public ResponseResult delete(@PathVariable("id") Integer id) {
+  public ResponseResult<T> delete(@PathVariable(value = "id") Integer id) {
     departmentRoomBiz.deleteDeptRoomById(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

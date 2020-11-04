@@ -25,6 +25,7 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+
     <!-- 根据条件查询就诊中患者信息列表 -->
     <select id="selectTreatingList" resultType="com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO">
         select
@@ -35,6 +36,7 @@
         tr.appointment_id as appointmentId,
         tr.registered_id as registeredId,
         tr.dentist_id as treatDentistId,
+        tr.status as treatmentStatus,
         DATE_FORMAT(tr.crt_time, '%Y-%m-%d') as treatDate,
         DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
         DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
@@ -50,14 +52,40 @@
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
                 and DATE_FORMAT(tr.crt_time, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
-            <if test="queryForm.treatmentStatus != null">
-                and tr.status = #{queryForm.treatmentStatus}
+            <if test="queryForm.treatmentStatus != null and queryForm.treatmentStatus.length > 0">
+                and tr.status in
+                <foreach collection="queryForm.treatmentStatus" item="item" index="index" open="(" close=")"
+                         separator=",">
+                    #{item}
+                </foreach>
             </if>
             <if test="queryForm.dentistId != null">
                 and tr.dentist_id = #{queryForm.dentistId}
             </if>
             order by tr.id desc
         </where>
+    </select>
+    <!-- 根据就诊记录ID查询就诊信息 -->
+    <select id="selectTreatmentInfoById" resultType="com.yunya.feign.treatment.domain.vo.TreatmentRecordVO">
+        select
+            tr.id as id,
+            tr.org_id as orgId,
+            tr.patient_id as patientId,
+            tr.appointment_id as appointmentId,
+            tr.registered_id as registeredId,
+            tr.dentist_id as dentistId,
+            tr.type as firstVisit,
+            tr.status as status,
+            DATE_FORMAT(tr.crt_time, '%Y-%m-%d') as treatDate,
+            DATE_FORMAT(tr.treat_start_time, '%H:%i') as treatStartTime,
+            DATE_FORMAT(tr.treat_end_time, '%H:%i') as treatEndTime,
+            tr.medical_record_completed as medicalRecordCompleted,
+            tr.remarks,
+            tr.inservice
+        from
+            treatment_record tr
+        where
+            tr.id = #{id}
     </select>
     <!-- 根据条件查询患者就诊记录列表 -->
     <select id="selectPatientTreatmentRecordList"
@@ -114,4 +142,52 @@
             #{item}
         </foreach>
     </select>
+
+    <!-- 根据挂号ID查询就诊数量 -->
+    <select id="selectCountByRegisteredId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM treatment_record WHERE registered_id = #{regId} LIMIT 1
+    </select>
+
+    <!-- 根据患者ID查询末次就诊信息 -->
+    <select id="lastTreatmentInfo" resultType="com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO">
+        SELECT
+            r.patient_id AS patientId,
+            r.dentist_id AS dentistId,
+            r.dept_room_id AS deptRoomId,
+            r.crt_time AS crtTime
+        FROM
+            registered r
+        <where>
+            <if test="patientId != null">
+                r.patient_id = #{patientId}
+            </if>
+        </where>
+        ORDER BY
+            r.crt_time DESC
+            LIMIT 1
+    </select>
+
+    <!-- 查询指定时间段内每个医生每天患者就诊人数 -->
+    <select id="treatInfoForMonth" resultType="com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO">
+        SELECT
+        DATE_FORMAT(a.crt_time,'%Y-%m-%d') as currentDate,
+        COUNT(a.id) as `count`
+        FROM(
+        SELECT
+        tr.id,
+        DATE_FORMAT(tr.crt_time,'%Y-%m-%d') as crt_time
+        FROM
+        `treatment_record` tr
+        <where>
+            <if test="dentistId != null">
+                and tr.dentist_id = #{dentistId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                and date_format(tr.crt_time,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND date_format(#{endDate},'%Y-%m-%d')
+            </if>
+        </where>
+        ) a
+        GROUP BY a.crt_time
+    </select>
+
 </mapper>

@@ -1,12 +1,16 @@
 package com.yunya.models.patient_central;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "prepaid_return_record")
 public class PrepaidReturnRecord {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
@@ -16,7 +20,7 @@ public class PrepaidReturnRecord {
     private Integer orgId;
 
     /**
-     * 预付款id
+     * 预付款卡号
      */
     @Column(name = "prepaid_id")
     private String prepaidId;
@@ -78,7 +82,7 @@ public class PrepaidReturnRecord {
     /**
      * 更新人id
      */
-    @Column(name = "upt_id")
+    @Column(name = "upd_id")
     private Integer updId;
 
     /**
@@ -92,6 +96,50 @@ public class PrepaidReturnRecord {
      */
     @Column(name = "upd_time")
     private Date updTime;
+
+    /**
+     * 消费后当前本金
+     */
+    @Column(name = "current_recharge_principal")
+    private BigDecimal currentPrincipal;
+
+    /**
+     * 消费后当前赠金
+     */
+    @Column(name = "current_recharge_bonus")
+    private BigDecimal currentBonus;
+
+    /**
+     * 获取当前本金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentPrincipal() {
+        return currentPrincipal;
+    }
+
+    /**
+     * 设置当前本金
+     * @param currentPrincipal
+     */
+    public void setCurrentPrincipal(BigDecimal currentPrincipal) {
+        this.currentPrincipal = currentPrincipal;
+    }
+
+    /**
+     * 获取当前证金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentBonus() {
+        return currentBonus;
+    }
+
+    /**
+     * 设置当前赠金
+     * @param currentBonus
+     */
+    public void setCurrentBonus(BigDecimal currentBonus) {
+        this.currentBonus = currentBonus;
+    }
 
     /**
      * @return id
@@ -126,18 +174,18 @@ public class PrepaidReturnRecord {
     }
 
     /**
-     * 获取预付款id
+     * 获取预付款卡号
      *
-     * @return prepaid_id - 预付款id
+     * @return prepaid_id - 预付款卡号
      */
     public String getPrepaidId() {
         return prepaidId;
     }
 
     /**
-     * 设置预付款id
+     * 设置预付款卡号
      *
-     * @param prepaidId 预付款id
+     * @param prepaidId 预付款卡号
      */
     public void setPrepaidId(String prepaidId) {
         this.prepaidId = prepaidId;

@@ -2,9 +2,7 @@ package com.yunya.models.system;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -14,6 +12,7 @@ import java.util.Date;
 public class Company {
   @Id
   @ApiModelProperty(hidden = true)
+  @GeneratedValue(generator = "JDBC")
   private Integer id;
 
   /** 父节点编号 */

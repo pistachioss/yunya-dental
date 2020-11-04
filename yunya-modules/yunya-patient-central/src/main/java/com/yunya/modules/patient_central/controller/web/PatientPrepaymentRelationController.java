@@ -7,23 +7,24 @@ package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentRelationVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPrepaymentsInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PrepaidMeturnRecordVo;
-import com.yunya.feign.patient_central.domain.vo.web.PrepaidRechargeRecordVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -81,6 +82,17 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
+   * 预付款付款余额查询
+   * @param id 患者id
+   * @return PatientPrepaymentBalanceVo
+   */
+  @ApiOperation("预付款付款余额查询")
+  @GetMapping("/balancePayment/{id}")
+  public ResponseResult<PatientPrepaymentBalanceVo> balancePayment(@PathVariable("id") Integer id) {
+    return ResponseUtil.success(this.patientPrepaymentBiz.balancePayment(id));
+  }
+
+  /**
    * 删除
    * @param id 关联关系id
    * @return ResponseResult
@@ -104,6 +116,7 @@ public class PatientPrepaymentRelationController {
     this.patientPrepaymentBiz.recharge(memberRechargeModel);
     return ResponseUtil.success();
   }
+
 
   /**
    * 充值记录
@@ -130,6 +143,13 @@ public class PatientPrepaymentRelationController {
     return ResponseUtil.success();
   }
 
+  @CurrentUser
+  @ApiOperation("预付款消费")
+  @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
+  public ResponseResult expend(@RequestBody PrepaidExpendRecordModel model ){
+    return patientPrepaymentBiz.expend(model);
+  }
+
   /**
    * 退费记录
    * @param queryForm 预付款退费记录列表
@@ -153,4 +173,5 @@ public class PatientPrepaymentRelationController {
   public ResponseResult expendList(@RequestBody PrepaidExpendRecordQueryForm queryForm) {
     return ResponseUtil.success(patientPrepaymentBiz.expendList(queryForm));
   }
+
 }

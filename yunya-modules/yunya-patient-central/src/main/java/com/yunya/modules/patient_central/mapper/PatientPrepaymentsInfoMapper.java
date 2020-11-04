@@ -6,6 +6,8 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.List;
+
 /**
  * @author WY
  */
@@ -24,6 +26,21 @@ public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsI
      * @param patientId 患者id
      * @return PatientPrepaymentsInfo
      */
-    PatientPrepaymentsInfo selectOneByCardNumber(@Param("prepaidId") String prepaidId,@Param("patientId") Integer patientId);
+    PatientPrepaymentsInfo selectOneByPrepaymentNumberAndPatientId(@Param("prepaymentNumber") String prepaidId,@Param("patientId") Integer patientId);
+
+    /**
+     * 根据主卡人id 查询副卡人信息
+     * @param id 主卡人id
+     * @return  List<PatientPrepaymentsInfoVo
+     */
+    List<PatientPrepaymentsInfoVo> selectPrepaymentRelationByMasterPatientId(@Param("id") Integer id);
+
+
+    /**
+     * 根据预付款卡号查询预付款信息
+     * @param prepaidId 预付款卡号
+     * @return PatientPrepaymentsInfo
+     */
+    PatientPrepaymentsInfo selectOneByCardNumber(@Param("prepaidId") String prepaidId);
 
 }

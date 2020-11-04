@@ -3,10 +3,7 @@ package com.yunya.modules.patient_central.controller.web;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.CardRelationForm;
 import com.yunya.feign.patient_central.domain.form.CardTypeForm;
-import com.yunya.feign.patient_central.domain.model.MemberBindingRelationInfoModel;
-import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
-import com.yunya.feign.patient_central.domain.model.MemberReturnRecordModel;
-import com.yunya.feign.patient_central.domain.model.OpenCardModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.MemberExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.MemberReturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryForm;
@@ -66,6 +63,18 @@ public class PatientMemberInfoController {
     return ResponseUtil.success(
         patientMemberInfoBiz.findMemberBindingRelation(patientMemberRelationQueryForm));
   }
+
+  /**
+   * 会员卡付款余额查询
+   * @param id 患者id
+   * @return PatientPrepaymentBalanceVo
+   */
+  @ApiOperation("会员卡付款余额查询")
+  @GetMapping("/balancePayment/{id}")
+  public ResponseResult<PatientMemberBalanceVo> balancePayment(@PathVariable("id") Integer id) {
+    return ResponseUtil.success(this.patientMemberInfoBiz.balancePayment(id));
+  }
+
 
   /**
    * 添加会员卡关联关系/共享值关联关系
@@ -188,5 +197,12 @@ public class PatientMemberInfoController {
   @PostMapping("/expendList")
   public ResponseResult<PageInfo<MemberExpendRecordVo>> expendList(@RequestBody MemberExpendRecordQueryForm queryForm) {
     return ResponseUtil.success(patientMemberInfoBiz.expendList(queryForm));
+  }
+
+  @CurrentUser
+  @ApiOperation("会员卡消费")
+  @RequestMapping(value = "/member/expend", method = RequestMethod.POST)
+  public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
+    return patientMemberInfoBiz.expend(model);
   }
 }

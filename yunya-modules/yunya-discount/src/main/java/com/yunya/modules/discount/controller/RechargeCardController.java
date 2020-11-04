@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.RechargeCard;
 import com.yunya.modules.discount.biz.CouponCommonInfoBiz;
@@ -9,6 +10,7 @@ import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.discount.form.RechargeCardForm;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +38,8 @@ public class RechargeCardController {
     private RechargeCardBiz rechargeCardBiz;
     @Autowired
     private CouponCommonInfoBiz couponCommonInfoBiz;
+    @Autowired
+    private CouponAllocateMapper couponAllocateMapper;
     /**
      * 新增充值卡
      *
@@ -88,6 +92,12 @@ public class RechargeCardController {
         RechargeCardForm rechargeCardForm = new RechargeCardForm();
         BeanUtils.copyProperties(rechargeCard, rechargeCardForm);
         BeanUtils.copyProperties(couponCommonInfo, rechargeCardForm);
+        CouponAllocate couponAllocate = new CouponAllocate();
+        couponAllocate.setCouponId(id);
+        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
+            // 未完成分配
+            rechargeCardForm.setIsDistribution(false);
+        }
         return ResponseUtil.success(rechargeCardForm);
     }
 

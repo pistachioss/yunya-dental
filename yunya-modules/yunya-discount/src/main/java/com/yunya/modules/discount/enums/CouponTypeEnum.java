@@ -9,6 +9,7 @@ public enum CouponTypeEnum {
     EXCHANGE(2, "兑换券"),
     SPECIAL_PACKAGE(3, "套餐券"),
     RECHARGE(4, "充值券"),
+    MEMBER_CARD(99, "会员卡"),
     ;
 
     private Integer code;
@@ -26,6 +27,11 @@ public enum CouponTypeEnum {
         return value;
     }
 
+    /**
+     * 根据code获取value
+     * @param code code
+     * @return value
+     */
     public static String getValue(Integer code)
     {
         if(code != null)

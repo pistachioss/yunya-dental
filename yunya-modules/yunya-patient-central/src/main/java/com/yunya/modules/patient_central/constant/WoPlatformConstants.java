@@ -39,7 +39,17 @@ public class WoPlatformConstants {
     /** 心跳方法条用url前缀 */
     public static final String URL = "http://" + IP + ":" + "8090";
 
-    public static final String SN = "84E0F4246B261501";
+
+
+    /** 添加员工 */
+    public static final String CREATOR_TASK_NO = "personCreate";
+
+    /** 拍照 */
+    public static final String TAKE_IMG_TASK_NO = "faceTakeImg";
+
+    /** 删除照片 */
+    public static final String FACE_DELETE_NO = "faceDelete";
+
 
     /** ---------------------患者信息--------------------------------- */
 

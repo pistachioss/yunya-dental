@@ -80,11 +80,7 @@ public class AppointItemController {
     @ApiOperation(value = "通过预约项目id查询配置适用门诊列表(公司端-预约项目-配置)")
     @PostMapping("/find/item_config")
     public ResponseResult findAppointItemAndOrgInfo(@RequestBody @Validated AppointItemConfigQuery query){
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageNum());
-        }
-        List<ClinicAppointItemConfigVo> clinicAppointItemConfigVos = clinicAppointItemBiz.findByAppointItemId(query.getAppointItemId());
-        return ResponseUtil.success(new PageInfo<>(clinicAppointItemConfigVos));
+        return clinicAppointItemBiz.findByAppointItemId(query);
     }
 
     /**

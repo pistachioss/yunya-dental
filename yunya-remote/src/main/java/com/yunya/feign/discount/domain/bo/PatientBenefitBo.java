@@ -23,6 +23,7 @@ public class PatientBenefitBo implements Serializable {
     private Integer couponType;
     private Integer itemUsable;
     private String path;
+    private Integer limitCount;
 
     public PatientBenefitBo() {
         this.itemUsable = 0;

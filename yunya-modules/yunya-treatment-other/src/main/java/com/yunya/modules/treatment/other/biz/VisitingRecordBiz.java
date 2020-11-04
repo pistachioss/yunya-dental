@@ -13,9 +13,11 @@ import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingContentModel;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
+import com.yunya.feign.treatment_other.domain.query.VisitingForMonthInfo;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingContentAfterCurrentVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingContentVo;
+import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -41,10 +43,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -79,6 +78,15 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
 
 
     /**
+     * 插入随访记录（外部服务调用）
+     * @param visitingRecords
+     * @return
+     */
+    public void insertEntity(List<VisitingRecord> visitingRecords) {
+        mapper.insertEntitys(visitingRecords);
+    }
+
+    /**
      * 插入随访记录
      * @param model  随访记录表单
      * @return  返回插入成功的条数
@@ -86,10 +94,18 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     public ResponseResult insertVisitingRecord(VisitingRecordModel model){
         List<VisitingContentModel> visitingContents = model.getVisitingContents();
         if (!StringHelper.isEmpty(visitingContents)){
+            // 判断同一天，同一个医生是否新建多条随访，如果是则返回异常信息
+            boolean conflict = this.isVisitingRecordConflict(visitingContents);
+            if (conflict) {
+                return ResponseUtil.fail(TreatmentOtherError.VISITING_CONFIICT_EXP.getCode(),
+                        TreatmentOtherError.VISITING_CONFIICT_EXP.getMessage(),null);
+            }
             Integer patientId = model.getPatientId();
+            String userID = BaseContextHandler.getUserID();
             for(VisitingContentModel visitingContentModel : visitingContents){
                 Date visitingDate = visitingContentModel.getVisitingDate();
                 VisitingRecordQuery query = new VisitingRecordQuery();
+                query.setDentistId(Integer.valueOf(userID));
                 query.setPatientId(patientId);
                 query.setVisitingDate(visitingDate);
                 List<VisitingRecordVo> visitingRecordByCondition = mapper.findVisitingRecordByCondition(query);
@@ -114,6 +130,22 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             return ResponseUtil.success();
         }
         throw new ClientServiceException("随访内容列表为空！",OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+    }
+
+    /**
+     * 检测随访是否冲突
+     * @param visitingContents 随访列表
+     * @return 冲突返回true,否则返回false
+     */
+    private boolean isVisitingRecordConflict(List<VisitingContentModel> visitingContents) {
+        Map<Date, Long> collect = visitingContents.stream().collect(Collectors.groupingBy(VisitingContentModel::getVisitingDate, Collectors.counting()));
+        for (Map.Entry<Date,Long> item : collect.entrySet()) {
+            Long value = item.getValue();
+            if (value > 1) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -143,7 +175,9 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param id  就诊id
      */
     public void deleteVisitingRecordByTreatmentId(Integer id){
-        mapper.deleteVisitingRecordByTreatmentId(id);
+        if (null != id) {
+            mapper.deleteVisitingRecordByTreatmentId(id);
+        }
     }
 
     /**
@@ -184,7 +218,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param id 随访id
      * @return ResponseResult
      */
-    public ResponseResult findVisitingRecordById(Integer id){
+    public ResponseResult<VisitingRecordVo> findVisitingRecordById(Integer id){
         VisitingRecordVo visitingRecordVo = mapper.findVisitingRecordById(id);
         if (visitingRecordVo == null){
             return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有数据",null);
@@ -198,11 +232,14 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param query 查询条件
      * @return ResponseResult
      */
-    public ResponseResult findVisitingRecordByCondition(VisitingRecordQuery query){
+    public ResponseResult<PageInfo<VisitingRecordVo>> findVisitingRecordByCondition(VisitingRecordQuery query){
+        // 设置分页
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        List<VisitingRecordVo> searchVisitingRecordVo = null;
         // 随访记录结果列表
         List<VisitingRecordVo> visitingRecordVoList = new ArrayList<>();
-        // 按指定条件检索之后的列表
-        List<VisitingRecordVo> searchVisitingRecordVo = null;
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
             // 组合随访记录信息
@@ -211,19 +248,23 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 visitingRecordVoList.add(recordVo);
             }
             // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
-            searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList,query.getSearch(),query.getMedicalNumber(),query.getDistentName());
-        } else {
-            return ResponseUtil.success();
-        }
-        // 设置分页
-        if (searchVisitingRecordVo != null) {
-            if (query.getWhetherPage()){
-                PageHelper.startPage(query.getPageNum(),query.getPageSize());
+            String search = query.getSearch();
+            String medicalNumber = query.getMedicalNumber();
+            String distentName = query.getDistentName();
+            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
+                // 排序
+                searchVisitingRecordVo = this.sort(visitingRecordVoList);
+            } else {
+                // 按患者姓名、手机号、病历号、医生名字检索
+                searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList, search, medicalNumber, distentName);
+                // 将检索结果列表排序
+                searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
             }
-            return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
-        } else {
-            return ResponseUtil.success();
         }
+        if (StringHelper.isEmpty(searchVisitingRecordVo)) {
+            searchVisitingRecordVo = new ArrayList<>();
+        }
+        return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
     }
 
     /**
@@ -284,6 +325,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatEndTime());
             }
         }
+        // 设置患者过敏源
+        PatientTotalInfoVo patientTotalInfo = this.patientCentralServiceFeign.findPatientTotalInfo(patientId);
+        if (patientTotalInfo != null) {
+            visitingRecordVo.setAllergen(patientTotalInfo.getAllergensDescriptions());
+        }
 
         return visitingRecordVo;
     }
@@ -293,7 +339,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param id 随访记录id
      * @return 随访内容
      */
-    public ResponseResult executeVisiting(Integer id){
+    public ResponseResult<VisitingContentVo> executeVisiting(Integer id){
         VisitingRecord visitingRecord = mapper.selectByPrimaryKey(id);
         VisitingContentVo build = EntityUtils.build(visitingRecord, VisitingContentVo.class);
         // 组合患者信息
@@ -348,8 +394,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @param query 查询条件
      * @return ResponseResult
      */
-    public ResponseResult findAfterVisitingContent(VisitingContentAfterCurrentQuery query){
+    public ResponseResult<PageInfo<VisitingContentAfterCurrentVo>> findAfterVisitingContent(VisitingContentAfterCurrentQuery query){
         List<VisitingContentAfterCurrentVo> visitingContentAfterCurrentVos = new ArrayList<>();
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
         List<VisitingRecord> visitingRecords = mapper.findAfterVisitingContentByPatientIdAndDate(query);
         if (visitingRecords != null && !visitingRecords.isEmpty()){
             visitingRecords.forEach(visitingRecord -> {
@@ -373,9 +422,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 }
                 visitingContentAfterCurrentVos.add(build);
             });
-        }
-        if (query.getWhetherPage()){
-            PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         return ResponseUtil.success(new PageInfo<>(visitingContentAfterCurrentVos));
     }
@@ -416,8 +462,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             return ResponseUtil.success();
         }
         return ResponseUtil.success("随访状态更新失败");
-
-
     }
 
     /**
@@ -446,36 +490,42 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return 检索并且排序之后的列表
      */
     private List searchAndOrder(List<VisitingRecordVo> visitingRecordVoList, String searchStr, String medicalNumberStr, String distentNameStr) {
-        List<VisitingRecordVo> searchVisitingRecordVo = null;
         // 匹配姓名
         String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
         // 匹配手机号
         String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
-        if (!StringHelper.isEmpty(searchStr) || !StringHelper.isEmpty(medicalNumberStr)){
-            searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
-                String patientName = visitingRecordVo.getPatientName();
-                String mobile = visitingRecordVo.getMobile();
-                String medicalNumber = visitingRecordVo.getMedicalNumber();
-                boolean result = false;
-                if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)){
-                    result = result | patientName.contains(searchStr);
-                } else if (searchStr.matches(mobileReg) && !StringHelper.isEmpty(mobile)){
-                    result = result | mobile.contains(searchStr);
+        List<VisitingRecordVo> searchVisitingRecordVo = visitingRecordVoList.stream().filter(visitingRecordVo -> {
+            String patientName = visitingRecordVo.getPatientName();
+            String mobile = visitingRecordVo.getMobile();
+            String medicalNumber = visitingRecordVo.getMedicalNumber();
+            boolean result = false;
+            if (!StringHelper.isEmpty(searchStr)) {
+                if (searchStr.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
+                    result = patientName.contains(searchStr);
+                } else if (searchStr.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
+                    result = mobile.contains(searchStr);
                 }
-                if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
-                    result = result | medicalNumber.contains(medicalNumberStr);
-                }
-                String distentName = visitingRecordVo.getDentistName();
-                if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
-                    result = result | distentName.contains(distentNameStr);
-                }
-                return result;
-            }).collect(Collectors.toList());
-        } else {
-            searchVisitingRecordVo = visitingRecordVoList;
-        }
+            }
+            if (!StringHelper.isEmpty(medicalNumber) && !StringHelper.isEmpty(medicalNumberStr)){
+                result = result | medicalNumber.contains(medicalNumberStr);
+            }
+            String distentName = visitingRecordVo.getDentistName();
+            if (!StringHelper.isEmpty(distentName) && !StringHelper.isEmpty(distentNameStr)) {
+                result = result | distentName.equals(distentNameStr);
+            }
+            return result;
+        }).collect(Collectors.toList());
+        return searchVisitingRecordVo;
+    }
+
+    /**
+     * 按时间对随访列表进行降序排序
+     * @param visitingRecordVos 随访列表
+     * @return 排序之后的列表
+     */
+    private List<VisitingRecordVo> sort(List<VisitingRecordVo> visitingRecordVos) {
         // 按随访时间排序
-        searchVisitingRecordVo = searchVisitingRecordVo.stream().sorted(
+        return visitingRecordVos.stream().sorted(
                 Comparator.comparing(VisitingRecordVo::getVisitingTime,(obj1,obj2)->{
                     if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
                         return -1;
@@ -484,36 +534,18 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     Integer objMinute1 = Integer.parseInt(objSplit1[0]) * 60 + Integer.parseInt(objSplit1[1]);
                     String[] objSplit2 = obj2.trim().split(":");
                     Integer objMinute2 = Integer.parseInt(objSplit2[0]) * 60 + Integer.parseInt(objSplit2[1]);
-                    if (objMinute1 < objMinute2){
-                        return -1;
-                    } else if (objMinute1 > objMinute2){
-                        return 1;
-                    } else {
-                        return 0;
-                    }
+                    return objMinute1.compareTo(objMinute2);
                 })).collect(Collectors.toList());
-        return searchVisitingRecordVo;
     }
-
 
     /**
-     * 格式化日期时间
-     * @param date  日期
-     * @param time  时间
-     * @return  yyyy-MM-dd HH:mm
+     * 根据时间段，医生ID查询这个时间段内每一天每个医生预约的患者数量
+     * @param forMonthInfo 查询条件
+     * @return 返回实体列表
      */
-    private Date formatDateTime(Date date,String time){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String dateStr = dateFormat.format(date);
-        String dateTime = dateStr + " " + time;
-        SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Date parse = null;
-        try {
-            parse = dateTimeFormat.parse(dateTime);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return parse;
+    public List<VisitingForMonthVo> findVisitingForMonth(VisitingForMonthInfo forMonthInfo) {
+        return mapper.findVisitingForMonth(forMonthInfo.getDentistId(),forMonthInfo.getStartDate(),forMonthInfo.getEndDate());
     }
+
 
 }

@@ -172,6 +172,10 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
      * @return  ResponseResult
      */
     public ResponseResult findVisitingRemindByCondition(VisitingRemindQuery query){
+        // 分页
+        if (query.getWhetherPage()){
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
         // 组合随访提醒信息列表
         List<VisitingRemindVo> visitingRemindVos = new ArrayList<>();
         // 检索随访提醒内容列表
@@ -216,18 +220,24 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 }
                 visitingRemindVos.add(build);
             });
-            // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容（包括时间正序排序）
-            searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, query.getSearch(), query.getMedicalNumber(), query.getDistentName());
-        }
-        if (searchVisitingRemindVo != null) {
-            // 分页
-            if (query.getWhetherPage()){
-                PageHelper.startPage(query.getPageNum(),query.getPageSize());
+            String search = query.getSearch();
+            String medicalNumber = query.getMedicalNumber();
+            String distentName = query.getDistentName();
+            if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
+                // 按照时间正序排序
+                searchVisitingRemindVo = this.sort(visitingRemindVos);
+            } else {
+                // 根据患者姓名/手机号/拼音/病历号/医生名字 检索随访提醒内容
+                searchVisitingRemindVo = this.searchVisitingRemind(visitingRemindVos, search, medicalNumber, distentName);
+                // 按照时间正序排序
+                searchVisitingRemindVo = this.sort(searchVisitingRemindVo);
             }
-            return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
-        } else {
-            return ResponseUtil.success();
         }
+        // 如果 searchVisitingRemindVo 为空
+        if (StringHelper.isEmpty(searchVisitingRemindVo)) {
+            searchVisitingRemindVo = new ArrayList<>();
+        }
+        return ResponseUtil.success(new PageInfo<>(searchVisitingRemindVo));
     }
 
     /**
@@ -273,8 +283,6 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                                                         String search,
                                                         String medicalNumber,
                                                         String distentName) {
-        // 检索随访提醒结果列表
-        List<VisitingRemindVo> searchVisitingRemindVo = null;
         // 按条件检索
         // 匹配患者名字
         String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
@@ -282,42 +290,46 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
         // 匹配拼音名字
         String pinyinReg = "^[A-Za-z]+$";
-        if (!StringHelper.isEmpty(search) || !StringHelper.isEmpty(medicalNumber)){
-            searchVisitingRemindVo = visitingRemindVos.stream().filter(visitingRemindVo -> {
-                boolean result = false;
-                if (!StringHelper.isEmpty(search)) {
-                    String patientName = visitingRemindVo.getPatientName();
-                    String mobile = visitingRemindVo.getMobile();
-                    String pinyinName = visitingRemindVo.getPinyinName();
-                    if (search.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
-                        // 按名字模糊检索
-                        result = result | patientName.contains(search);
-                    } else if (search.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
-                        // 按手机检索
-                        result = result | mobile.contains(search);
-                    } else if (search.matches(pinyinReg) && !StringHelper.isEmpty(pinyinName)) {
-                        // 按拼音检索
-                        result = result | pinyinName.contains(search);
-                    }
+        // 检索随访提醒结果列表
+        List<VisitingRemindVo> searchVisitingRemindVo = visitingRemindVos.stream().filter(visitingRemindVo -> {
+            boolean result = false;
+            if (!StringHelper.isEmpty(search)) {
+                String patientName = visitingRemindVo.getPatientName();
+                String mobile = visitingRemindVo.getMobile();
+                String pinyinName = visitingRemindVo.getPinyinName();
+                if (search.matches(patientNameReg) && !StringHelper.isEmpty(patientName)) {
+                    // 按名字模糊检索
+                    result = result | patientName.contains(search);
+                } else if (search.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
+                    // 按手机检索
+                    result = result | mobile.contains(search);
+                } else if (search.matches(pinyinReg) && !StringHelper.isEmpty(pinyinName)) {
+                    // 按拼音检索
+                    result = result | pinyinName.contains(search);
                 }
-                // 按病历号检索
-                String currentMedicalNumber = visitingRemindVo.getMedicalNumber();
-                if (!StringHelper.isEmpty(currentMedicalNumber) && !StringHelper.isEmpty(medicalNumber)) {
-                    result = result | currentMedicalNumber.contains(medicalNumber);
-                }
-                // 按医生名字模糊检索
-                String dentistNameStr = visitingRemindVo.getDentistName();
-                if (!StringHelper.isEmpty(dentistNameStr) && !StringHelper.isEmpty(distentName)) {
-                    result = result | dentistNameStr.contains(distentName);
-                }
-                return result;
-            }).collect(Collectors.toList());
-        } else {
-            searchVisitingRemindVo = visitingRemindVos;
-        }
+            }
+            // 按病历号检索
+            String currentMedicalNumber = visitingRemindVo.getMedicalNumber();
+            if (!StringHelper.isEmpty(currentMedicalNumber) && !StringHelper.isEmpty(medicalNumber)) {
+                result = result | currentMedicalNumber.contains(medicalNumber);
+            }
+            // 按医生名字模糊检索
+            String dentistNameStr = visitingRemindVo.getDentistName();
+            if (!StringHelper.isEmpty(dentistNameStr) && !StringHelper.isEmpty(distentName)) {
+                result = result | dentistNameStr.equals(distentName);
+            }
+            return result;
+        }).collect(Collectors.toList());
+        return searchVisitingRemindVo;
+    }
 
-        // 将检索结果按时间正序排序
-        searchVisitingRemindVo = searchVisitingRemindVo.stream().sorted(Comparator.comparing(VisitingRemindVo::getRemindTime,(obj1,obj2)->{
+    /**
+     * 按照时间将检随访提醒列表按时间正序排序
+     * @param searchVisitingRemindVos 随访列表
+     * @return 返回排序之后的列表
+     */
+    private List<VisitingRemindVo> sort(List<VisitingRemindVo> searchVisitingRemindVos) {
+        return searchVisitingRemindVos.stream().sorted(Comparator.comparing(VisitingRemindVo::getRemindTime,(obj1,obj2)->{
             if (StringHelper.isEmpty(obj1) || StringHelper.isEmpty(obj2)){
                 return -1;
             }
@@ -333,6 +345,5 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 return 0;
             }
         })).collect(Collectors.toList());
-        return searchVisitingRemindVo;
     }
 }

@@ -64,6 +64,12 @@ public class RedisConstants implements Serializable {
   public static final String REDIS_KEY_EMPLOYEE_INFO = "sys_user_info_";
   public static final String REDIS_KEY_EMPLOYEE_LIST = "sys_user_info_list";
 
+  /** --------------------------------- 预约中心 ---------------------------------------------- */
+  public static final String REDIS_KEY_APPOINT_INFO = "appoint_info_";
+  public static final String REDIS_KEY_APPOINT_DENTIST_DIMENSION = "appoint_dentist_dimension_";
+  public static final String REDIS_KEY_APPOINT_PATIENT_DIMENSION = "appoint_patient_dimension_";
+  public static final String REDIS_KEY_APPOINT_LIST = "appoint_list_";
+
   /** ------------------------------ 随访管理 ------------------------------------------------- */
   public static final String LOCK_VISITING_RECORD = "lock:visiting:record";
 
@@ -74,4 +80,12 @@ public class RedisConstants implements Serializable {
   public static final String LOCK_CARD_GENERATE = "lock:card:generate";
   public static final String LOCK_CARD_SOLD = "lock:card:sold";
   public static final String LOCK_CARD_ACTIVE = "lock:card:active";
+
+  /**-------------------------优惠------------------------------------------------*/
+  public static final String LOCK_CHOICE_CARD = "lock:choice:card";
+  public static final String LOCK_SUBMIT_BENEFIT = "lock:submit:benefit";
+
+  /** ---------------------------用户短信验证码----------------------------------------------- */
+  public static final String FORGET_PWD_AUTHORIZATION = "forget_pwd_authorization_";
+
 }

@@ -1,5 +1,9 @@
 package com.yunya.modules.system.controller;
 
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.form.ClinicDeptRoomConfigureQueryForm;
+import com.yunya.feign.system.vo.ClinicDepartmentRoomVO;
+import com.yunya.feign.system.vo.ClinicDeptRoomListVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +34,22 @@ public class ClinicDepartmentRoomControllerTest {
   @Test
   public void saveAll() {
     ResponseResult result = clinicDepartmentRoomController.oneClickAdd(4);
+    System.out.println(result);
+  }
+
+  @Test
+  public void findList() {
+    ClinicDeptRoomConfigureQueryForm form = new ClinicDeptRoomConfigureQueryForm();
+    form.setDeptRoomId(1);
+    ResponseResult<PageInfo<ClinicDepartmentRoomVO>> result =
+        clinicDepartmentRoomController.configureClinicDeptRoom(form);
+    System.out.println(result);
+  }
+
+  @Test
+  public void testOrgList() {
+    ResponseResult<ClinicDeptRoomListVO> result =
+        clinicDepartmentRoomController.clinicDeptRoomList(35);
     System.out.println(result);
   }
 }

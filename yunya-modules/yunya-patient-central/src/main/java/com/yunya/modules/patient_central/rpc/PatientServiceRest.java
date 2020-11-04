@@ -15,6 +15,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
+import com.yunya.modules.patient_central.biz.InformationCallbackBiz;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
 import com.yunya.modules.patient_central.biz.PatientPrepaymentRelationBiz;
@@ -40,9 +41,14 @@ public class PatientServiceRest {
     /** 患者 */
     @Autowired private PatientBaseInfoBiz patientBaseInfoBiz;
 
+    /** 会员卡信息 */
     @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
 
+    /** 预付款关联 */
     @Autowired private PatientPrepaymentRelationBiz patientPrepaymentRelationBiz;
+
+    /** 回调中心 */
+    @Autowired private InformationCallbackBiz informationCallbackBiz;
 
 
     @ApiOperation("根据姓名/手机号/姓名拼音模糊查询患者")
@@ -140,6 +146,12 @@ public class PatientServiceRest {
     @RequestMapping(value = "/findMemberInfo",method = RequestMethod.POST)
     public MemberInfoVo findMemberInfo(@RequestBody PatientMemberInfoQueryForm form ){
         return patientMemberInfoBiz.findMemberInfo(form);
+    }
+
+    @ApiOperation("获取端口号")
+    @RequestMapping(value = "/portNumberGet",method = RequestMethod.GET)
+    public String portNumberGet(){
+        return informationCallbackBiz.portNumberGet();
     }
 
 

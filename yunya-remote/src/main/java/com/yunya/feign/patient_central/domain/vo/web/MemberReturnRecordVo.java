@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
  */
 @Data
 @ToString
+@ApiModel("返回会员卡退费信息模型")
 public class MemberReturnRecordVo implements Serializable {
 
     /**

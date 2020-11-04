@@ -30,7 +30,7 @@
             bot.`name`,
             bot.crt_id as crtId,
             bot.crt_name as crtName,
-            bot.crt_time as crtTime
+            date_format(bot.crt_time,'%Y-%m-%d %H:%m:%s') as crtTime
         from base_oral_tariff_history bot
         left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
         where bot.oral_tariff_id = #{oralTariffId}

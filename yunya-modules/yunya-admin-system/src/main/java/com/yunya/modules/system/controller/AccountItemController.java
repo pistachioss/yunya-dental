@@ -2,6 +2,7 @@ package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.AccountItemBiz;
@@ -11,6 +12,7 @@ import com.yunya.modules.system.domain.query.AccountItemQueryForm;
 import com.yunya.modules.system.vo.AccountItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,7 +44,7 @@ public class AccountItemController {
    */
   @ApiOperation("根据ID查询入账方式")
   @GetMapping("/item/one/{id}")
-  public ResponseResult<AccountItemVO> findById(@PathVariable("id") Integer id) {
+  public ResponseResult<AccountItemVO> findById(@PathVariable(value = "id") Integer id) {
     AccountItemVO resultData = accountItemBiz.findById(id);
     return ResponseUtil.success(resultData);
   }
@@ -55,7 +57,8 @@ public class AccountItemController {
    */
   @ApiOperation("根据条件查询入账方式列表(可分页)")
   @PostMapping("/item/list")
-  public ResponseResult findList(@RequestBody AccountItemQueryForm queryForm) {
+  public ResponseResult<PageInfo<AccountItemVO>> findList(
+      @RequestBody AccountItemQueryForm queryForm) {
     PageInfo<AccountItemVO> resultList = accountItemBiz.findList(queryForm);
     return ResponseUtil.success(resultList);
   }
@@ -66,12 +69,13 @@ public class AccountItemController {
    * @param model 新增参数模型
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("新增入账方式")
   @PostMapping("/item/save")
-  public ResponseResult save(@RequestBody @Validated AccountItemModel model) {
+  public ResponseResult<T> save(@RequestBody @Validated AccountItemModel model) {
     accountItemBiz.add(model);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -84,10 +88,10 @@ public class AccountItemController {
   @CurrentUser
   @ApiOperation("修改入账方式")
   @PutMapping("/item/edit/{id}")
-  public ResponseResult edit(
+  public ResponseResult<T> edit(
       @PathVariable("id") Integer id, @RequestBody @Validated AccountItemForm form) {
     accountItemBiz.modify(id, form);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 
   /**
@@ -98,8 +102,8 @@ public class AccountItemController {
    */
   @ApiOperation("根据ID删除入账方式")
   @DeleteMapping("/item/{id}")
-  public ResponseResult deleteById(@PathVariable("id") Integer id) {
+  public ResponseResult<T> deleteById(@PathVariable(value = "id") Integer id) {
     accountItemBiz.deleteAccountItemById(id);
-    return ResponseUtil.success();
+    return ResponseUtil.success(null);
   }
 }

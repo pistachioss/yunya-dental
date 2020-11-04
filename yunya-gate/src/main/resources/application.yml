@@ -54,7 +54,6 @@ spring:
             - StripPrefix=2
           metadata:
             title: "权限认证服务"
-            
         - id: yunya-system
           uri: lb://yunya-system
           order: 8001
@@ -64,7 +63,6 @@ spring:
             - StripPrefix=2
           metadata:
             title: "系统基础服务"
-            
         - id: yunya-employee-expand
           uri: lb://yunya-employee-expand
           order: 8004
@@ -74,7 +72,6 @@ spring:
             - StripPrefix=3
           metadata:
             title: "员工个人服务"
-            
         - id: yunya-emr
           uri: lb://yunya-emr
           order: 8005
@@ -84,7 +81,6 @@ spring:
             - StripPrefix=2
           metadata:
             title: "电子病历服务"
-
         - id: yunya-employee-attend
           uri: lb://yunya-employee-attend
           order: 8006
@@ -94,18 +90,6 @@ spring:
             - StripPrefix=3
           metadata:
             title: "排班考勤服务"
-
-        # 通用工具服务，编号后排
-        - id: aliyun-oss
-          uri: lb://aliyun-oss
-          order: 8999
-          predicates:
-            - Path=/api/aliyunoss/**
-          filters:
-            - StripPrefix=2
-          metadata:
-            title: "资源图片服务"
-
         - id: yunya-appointment-central
           uri: lb://yunya-appointment-central
           order: 9001
@@ -115,7 +99,6 @@ spring:
             - StripPrefix=2
           metadata:
             title: "预约服务"
-
         - id: yunya-patient
           uri: lb://yunya-patient
           order: 9002
@@ -125,17 +108,6 @@ spring:
             - StripPrefix=2
           metadata:
             title: "患者资料服务"
-
-        - id: yunya-tariff
-          uri: lb://yunya-tariff
-          order: 9003
-          predicates:
-            - Path=/api/tariff/**
-          filters:
-            - StripPrefix=2
-          metadata:
-            title: "价目表服务"
-
         - id: yunya-treatment
           uri: lb://yunya-treatment
           order: 9004
@@ -145,7 +117,6 @@ spring:
             - StripPrefix=2
           metadata:
             title: "诊疗服务"
-
         - id: yunya-discount
           uri: lb://yunya-discount
           order: 9005
@@ -164,7 +135,6 @@ spring:
             - StripPrefix=3
           metadata:
             title: "就诊扩展服务"
-
         - id: yunya-clinic-base
           uri: lb://yunya-clinic-base
           order: 9006
@@ -174,7 +144,37 @@ spring:
             - StripPrefix=3
           metadata:
             title: "结算统计服务"
+        - id: yunya-report-ultimate
+          uri: lb://yunya-report-ultimate
+          order: 9007
+          predicates:
+            - Path=/api/report/ultimate/**
+          filters:
+            - StripPrefix=3
+          metadata:
+            title: "系统报表服务"
+  
+  
+        # 通用工具服务，编号后排
+        - id: aliyun-oss
+          uri: lb://aliyun-oss
+          order: 8999
+          predicates:
+            - Path=/api/aliyunoss/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "资源图片服务"
 
+        - id: rabbit-mq
+          uri: lb://rabbit-mq
+          order: 8998
+          predicates:
+            - Path=/api/rabbitmq/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "系统消息服务"
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
@@ -197,7 +197,7 @@ management:
 # 忽略网关鉴权的请求路径
 gate:
   ignore:
-    startWith: /auth/jwt,/v2/api-docs,/patient/central/renlianshibie,/patient/central/setIp,/patient/callback
+    startWith: /auth/jwt,/v2/api-docs,/patient/callback/,/patient/central/paizhaohuidiao
 
 auth:
   serviceId: yunya-auth

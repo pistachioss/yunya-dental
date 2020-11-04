@@ -48,7 +48,11 @@ public class MemberTypeModel implements Serializable {
   /** 图标 */
   @ApiModelProperty(value = "会员卡图标", required = true)
   @NotNull(message = "会员卡图标不能为空！")
-  private Byte icon;
+  private String icon;
+  /** 会员卡图片获取码 */
+  @ApiModelProperty(value = "会员卡图片获取码", required = true)
+  @NotBlank(message = "会员卡图片样式不能为空！")
+  private String pictureCode;
   /** 会员卡描述（青藤、银藤、金藤、艾维会员） */
   @ApiModelProperty("描述")
   private String description;

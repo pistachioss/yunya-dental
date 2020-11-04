@@ -17,7 +17,7 @@ import java.util.Date;
  * @create 2020-07-30 14:19
  * @update yunya-lihuibin    2020-07-30    新建
  */
-@ApiModel(value = "时长分解参数封装", subTypes = {AppointmentSplitUpdateBaseInfo.class})
+@ApiModel(value = "AppointmentSplitBaseInfo", description = "时长分解参数封装")
 @Data
 @ToString
 public class AppointmentSplitBaseInfo implements Serializable {

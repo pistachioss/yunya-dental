@@ -10,14 +10,21 @@ import com.uniubi.sdk.model.DeviceOutput;
 import com.uniubi.sdk.model.ResultDeviceOutput;
 import com.uniubi.sdk.model.ResultPageResultBeanAuthOutput;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
+import com.yunya.framework.common.utils.CompareList;
 import com.yunya.framework.common.utils.MD5Util;
+import com.yunya.models.patient_central.PatientPrepaymentRelation;
+import com.yunya.models.patient_central.PatientPrepaymentsInfo;
 import com.yunya.modules.patient.tokenApi.TokenTask;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.constant.WoPlatformConstants;
+import com.yunya.modules.patient_central.controller.web.PatientBaseInfoController;
+import com.yunya.modules.patient_central.mapper.PatientPrepaymentRelationMapper;
+import com.yunya.modules.patient_central.mapper.PatientPrepaymentsInfoMapper;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -43,6 +50,9 @@ class YunyaPatientApplicationTests {
     //公钥 秘钥
     private static String appSecret = "B496892726AC4D0BBCBC0A6575EC9365";
     private static String appKey = "2CA42A1905B44CD18D8EE83049903306";
+
+    @Autowired(required=true)
+    PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
     @Test
     void contextLoads() {
@@ -330,7 +340,7 @@ class YunyaPatientApplicationTests {
 
     @Test
     public static void main(String[] args) {
-        try {
+        /*try {
             System.out.println("----------------------------------------------------------------------");
             String postURL ="http://192.168.19.96:8090/person/create";
             PostMethod postMethod = null;
@@ -361,10 +371,55 @@ class YunyaPatientApplicationTests {
             //return result;
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
-        }
+        }*/
     }
 
 
+    @Test
+    public void CompareList(){
+       /* List<String> a = new ArrayList<>();
+        a.add("A");
+        a.add("B");
+        a.add("B");
+        a.add("B");
+        a.add("B");
+        a.add("C");
+        a.add("C");
+        a.add("C");
+        a.add("D");
+        a.add("E");
+        a.add("E");
+        a.add("E");
+        a.add("E");
+        List<String> b = new ArrayList<>();
+        b.add("A");
+        b.add("B");
+        b.add("C");
+        b.add("D");
+        List<String> addaListThanbList = CompareList.getAddaListThanbList(a, b);
+        System.out.println(addaListThanbList.toString());
+        List<String> cleanDisRepet = CompareList.cleanDisRepet(addaListThanbList);
+        System.out.println(cleanDisRepet.toString());
+    System.out.println("------------------");
+        List<String> remove = CompareList.getReduceaListThanbList(a, b);
+        System.out.println(remove.toString());
+        List<String> strings = CompareList.cleanDisRepet(remove);
+    System.out.println(strings);*/
+    }
+
+    @Test
+    public void tianjiashuju(){
+        Integer id[] ={148, 237, 291, 149, 264, 265, 266, 267, 269, 270, 271, 272, 273, 274, 275, 137, 138, 145, 147, 182, 146, 139, 142, 259, 260, 262, 263, 9, 22,6, 177, 54, 372, 360, 159, 281, 422, 157, 302, 308, 320, 323, 181,155, 156, 98, 114, 90, 91, 183, 245, 279, 257, 288, 280, 224, 166, 169, 174, 170, 191, 218, 195, 221, 192, 199, 219, 200, 189, 196, 220, 194, 84, 178, 180, 179, 188, 184, 317, 250, 144, 172, 115, 113, 173, 107, 233, 387, 240, 153, 118, 151, 116, 252, 4, 97, 238, 222, 35, 99, 105, 100, 241, 110, 167, 168, 101, 96, 92, 108, 357, 258, 165, 162, 223, 388, 164, 163, 225, 251, 392, 5, 227, 246, 242, 235, 111, 12, 243, 150, 154, 121, 276, 277, 278, 109, 7, 3, 136, 197, 217, 103, 2, 186, 190, 83, 95, 93, 234, 185, 236, 198, 143, 133, 239, 1, 117, 119, 127, 187, 120, 122, 8, 134, 175, 176, 319, 6, 249, 132, 131, 244, 247, 248, 102 };
+        for (int i =0;i<id.length;i++){
+            PatientPrepaymentsInfo patientPrepaymentsInfo =new PatientPrepaymentsInfo();
+            patientPrepaymentsInfo.setPatientId(id[i]);
+            patientPrepaymentsInfo.setPrepaymentNumber("Y000"+4000070+i);
+            patientPrepaymentsInfo.setOrgId(42);
+            patientPrepaymentsInfo.setCrtTime(new Date());
+            patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
+        }
+
+    }
 
 
 

@@ -5,25 +5,31 @@
 
 package com.yunya.modules.patient_central.controller.web;
 
-import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
-import com.yunya.feign.patient_central.domain.form.PictureForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.PatientLabelRecordVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientVisitInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
+import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.PatientLabelRecord;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import javax.servlet.http.HttpServletRequest;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,7 +42,7 @@ import java.util.Map;
  */
 @Api(value = "患者信息", description = "患者信息（增删查改）")
 @RestController
-@RequestMapping("central")
+@RequestMapping("/central")
 public class PatientBaseInfoController {
 
   /** 注入对象 */
@@ -44,6 +50,21 @@ public class PatientBaseInfoController {
 
   public PatientBaseInfoController(PatientBaseInfoBiz patientBaseInfoBiz) {
     this.patientBaseInfoBiz = patientBaseInfoBiz;
+  }
+
+  /**
+   * 添加患者基本信息信息
+   * @param patientBaseInfoModel 新增患者信息
+   * @return ResponseResult
+   */
+
+  @RepeatSubmit
+  @CurrentUser
+  @ApiOperation("添加患者基本信息信息")
+  @PostMapping("/add")
+  public ResponseResult addPatient(
+          @RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel) {
+    return ResponseUtil.success(this.patientBaseInfoBiz.addPatient(patientBaseInfoModel));
   }
 
   /**
@@ -59,6 +80,20 @@ public class PatientBaseInfoController {
   }
 
   /**
+   * 完善患者基本信息
+   * @param patientExtendInfoModel 基本信息+扩展信息+其他信息 参数模板
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("添加完善患者基本信息")
+  @PostMapping("/patientInfoAdd")
+  public ResponseResult addPatientInfo(
+          @RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel) {
+    this.patientBaseInfoBiz.addPatientInfo(patientExtendInfoModel);
+    return ResponseUtil.success();
+  }
+
+  /**
    * 根据姓名和手机号判断是否已存在
    * @param patientBaseInfoQueryForm 患者信息查询QueryFrom
    * @return ResponseResult
@@ -70,19 +105,6 @@ public class PatientBaseInfoController {
     return this.patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
   }
 
-  /**
-   * 添加完善患者基本信息
-   * @param patientExtendInfoModel 基本信息+扩展信息+其他信息 参数模板
-   * @return ResponseResult
-   */
-  @CurrentUser
-  @ApiOperation("添加完善患者基本信息")
-  @PostMapping("/patientInfoAdd")
-  public ResponseResult addPatientInfo(
-      @RequestBody @Validated PatientExtendInfoModel patientExtendInfoModel) {
-    this.patientBaseInfoBiz.addPatientInfo(patientExtendInfoModel);
-    return ResponseUtil.success();
-  }
 
   /**
    * 根据患者id查询患者资料
@@ -108,24 +130,13 @@ public class PatientBaseInfoController {
         this.patientBaseInfoBiz.findPatientByNameAndMobile(patientBaseInfoQueryForm));
   }
 
-  /**
-   * 添加患者基本信息信息
-   * @param patientBaseInfoModel 新增患者信息
-   * @return ResponseResult
-   */
-  @CurrentUser
-  @ApiOperation("添加患者基本信息信息")
-  @PostMapping("/add")
-  public ResponseResult addPatient(
-      @RequestBody @Validated PatientBaseInfoModel patientBaseInfoModel) {
-    return ResponseUtil.success(this.patientBaseInfoBiz.addPatient(patientBaseInfoModel));
-  }
 
   /**
    * 拍照
    * @param patientId 患者id
    * @return ResponseResult
    */
+  @CurrentUser
   @ApiOperation("拍照")
   @GetMapping("/takeAPhoto/{patientId}")
   public ResponseResult takeAPhoto(@PathVariable("patientId") Integer patientId) {
@@ -146,55 +157,15 @@ public class PatientBaseInfoController {
 
   /**
    * 删除照片
-   * @param pictureForm Wo平台照片删除Form
+   * @param faceId 硬件照片id
    * @return ResponseResult
    */
   @ApiOperation("删除照片")
-  @DeleteMapping("/deleteThePhoto")
-  public ResponseResult deleteThePhoto(@RequestBody @Validated PictureForm pictureForm) {
-    return ResponseUtil.success(this.patientBaseInfoBiz.deleteThePhoto(pictureForm));
+  @DeleteMapping("/deleteThePhoto/{faceId}")
+  public ResponseResult deleteThePhoto(@PathVariable(value = "faceId") String faceId) {
+    return ResponseUtil.success(this.patientBaseInfoBiz.deleteThePhoto(faceId));
   }
 
-  /**
-   * 设备人员认证授权
-   * @param pictureModel 设备授权model
-   * @return ResponseResult
-   */
-  @ApiOperation("设备人员认证授权")
-  @PostMapping("/equipmenAuthorization")
-  public ResponseResult equipmenAuthorization(@RequestBody @Validated PictureModel pictureModel) {
-    this.patientBaseInfoBiz.equipmenAuthorization(pictureModel);
-    return ResponseUtil.success();
-  }
-
-  /**
-   * 测试人脸识别认证返回
-   * @param patientWoPlatformInfoModel 回调model
-   * @return Map<String, Object>
-   */
-  @IgnoreUserToken
-  @ApiOperation(value = "测试人脸识别认证返回")
-  @RequestMapping(value = "/faceRecognition", method = {RequestMethod.POST})
-  public Map<String, Object> faceRecognition(@RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
-    this.patientBaseInfoBiz.renlianshibie(patientWoPlatformInfoModel);
-    Map<String, Object> map = new HashMap<>();
-    map.put("result", 1);
-    map.put("success", true);
-    return map;
-  }
-
-  /**
-   * 测试拍照回调
-   * @param picturesCallbackInfoModel 测试拍照回调
-   * @return ResponseResult
-   */
-  @IgnoreUserToken
-  @ApiOperation(value = "测试拍照回调")
-  @RequestMapping(value = "/takePictures", method = {RequestMethod.POST})
-  public ResponseResult takePictures(@RequestBody PicturesCallbackInfoModel picturesCallbackInfoModel) {
-    this.patientBaseInfoBiz.takePictures(picturesCallbackInfoModel);
-    return ResponseUtil.success();
-  }
 
   /**
    * 根据患者id查询来访信息
@@ -207,15 +178,47 @@ public class PatientBaseInfoController {
     return ResponseUtil.success(this.patientBaseInfoBiz.findPatientVisitInfo(id));
   }
 
-  /**
-   * 编辑头像
-   * @param patientPhotoForm 编辑患者头像
-   * @return ResponseResult
-   */
-  @ApiOperation("编辑头像")
-  @PostMapping("/uptPhoto")
-  public ResponseResult uptPhoto(@RequestBody PatientPhotoForm patientPhotoForm) {
-    this.patientBaseInfoBiz.uptPhoto(patientPhotoForm);
+
+  @CurrentUser
+  @ApiOperation(value = "操作标签记录")
+  @PostMapping(value = "/operatingLabel")
+  public ResponseResult operatingLabel(@RequestBody PatientLabelRecordModel patientLabelRecordModel) {
+    patientBaseInfoBiz.operatingLabel(patientLabelRecordModel);
     return ResponseUtil.success();
   }
+
+  @CurrentUser
+  @ApiOperation(value = "查询标签操作记录")
+  @PostMapping(value = "/labelList")
+  public ResponseResult<List<PatientLabelRecordVo>> labelList(@RequestBody PatientLabelRecordQueryForm form) {
+    List<PatientLabelRecordVo> patientLabelRecordList = patientBaseInfoBiz.labelList(form);
+    return ResponseUtil.success(patientLabelRecordList);
+  }
+
+  /**
+   * 拍照回调
+   * @param picturesCallbackInfoModel 拍照回调Model
+   * @return ResponseResult
+   */
+  @IgnoreUserToken
+  @ApiOperation(value = "拍照回调")
+  @RequestMapping(value = "/takePictures", method = {RequestMethod.POST})
+  public ResponseResult takePictures(@RequestBody PicturesCallbackInfoModel picturesCallbackInfoModel) {
+    if( patientBaseInfoBiz.takePictures(picturesCallbackInfoModel) ){
+      return ResponseUtil.success();
+    }
+    return ResponseUtil.fail(OperationCodeConstants.DATA_ERROR, "拍照回调错误！", "");
+  }
+
+  @IgnoreUserToken
+  @ApiOperation(value = "拍照回调")
+  @RequestMapping(value = "/paizhaohuidiao", method = {RequestMethod.POST})
+  public ResponseResult paizhaohuidiao(@RequestBody PicturesCallbackInfoModel picturesCallbackInfoModel) {
+    System.out.println(picturesCallbackInfoModel.toString());
+      return ResponseUtil.success();
+  }
+
+
+
+
 }

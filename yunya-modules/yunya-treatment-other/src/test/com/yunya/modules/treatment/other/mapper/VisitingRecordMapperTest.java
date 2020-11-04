@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.other.mapper;
 
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,8 +19,14 @@ public class VisitingRecordMapperTest {
     @Autowired
     private VisitingRecordMapper visitingRecordMapper;
 
+    @Test
     public void findVisitingRecordByIdTest(){
         VisitingRecordVo visitingRecordVo = visitingRecordMapper.findVisitingRecordById(3);
         System.out.println(visitingRecordVo.toString());
+    }
+
+    @Test
+    public void deleteById() {
+        visitingRecordMapper.deleteVisitingRecordByTreatmentId(1);
     }
 }

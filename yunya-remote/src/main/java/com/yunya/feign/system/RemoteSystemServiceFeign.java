@@ -5,11 +5,9 @@ import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.system.*;
+import io.swagger.annotations.ApiModelProperty;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Set;
@@ -350,4 +348,11 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/user/save", method = RequestMethod.POST)
   void saveLog(LogInfo log);
+
+  /**
+   * 获取设备信息
+   * @return EquipmentInfo
+   */
+  @RequestMapping(value = "/api/equipmentInfoOne",method = RequestMethod.GET)
+  EquipmentInfo equipmentInfoOne();
 }

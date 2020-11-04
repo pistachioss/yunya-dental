@@ -3,6 +3,7 @@ package com.yunya.models.patient_central;
 import io.swagger.models.auth.In;
 
 import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ import java.util.Date;
 @Table(name = "member_expend_record")
 public class MemberExpendRecord {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**
@@ -102,6 +104,40 @@ public class MemberExpendRecord {
      */
     @Column(name = "bill_pay_record_id")
     private Integer billPayRecordId;
+
+    /**
+     * 类型（0：撤销消费 1：消费 ）
+     */
+    @Column(name = "type")
+    private Integer type;
+
+    /**
+     * 消费后当前本金
+     */
+    @Column(name = "current_recharge_principal")
+    private BigDecimal currentPrincipal;
+
+    /**
+     * 消费后当前赠金
+     */
+    @Column(name = "current_recharge_bonus")
+    private BigDecimal currentBonus;
+
+    /**
+     * 获取type
+     * @return type
+     */
+    public Integer getType() {
+        return type;
+    }
+
+    /**
+     * 设置type
+     * @param type
+     */
+    public void setType(Integer type) {
+        this.type = type;
+    }
 
     /**
      * @return id
@@ -386,5 +422,37 @@ public class MemberExpendRecord {
      */
     public void setBillPayRecordId(Integer billPayRecordId) {
         this.billPayRecordId = billPayRecordId;
+    }
+
+    /**
+     * 获取当前本金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentPrincipal() {
+        return currentPrincipal;
+    }
+
+    /**
+     * 设置当前本金
+     * @param currentPrincipal
+     */
+    public void setCurrentPrincipal(BigDecimal currentPrincipal) {
+        this.currentPrincipal = currentPrincipal;
+    }
+
+    /**
+     * 获取当前证金
+     * @return BigDecimal
+     */
+    public BigDecimal getCurrentBonus() {
+        return currentBonus;
+    }
+
+    /**
+     * 设置当前赠金
+     * @param currentBonus
+     */
+    public void setCurrentBonus(BigDecimal currentBonus) {
+        this.currentBonus = currentBonus;
     }
 }

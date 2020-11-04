@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseCouponMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseCoupon">
+        <result column="coupon_id" jdbcType="INTEGER" property="couponId" />
+        <result column="coupon_name" jdbcType="VARCHAR" property="couponName" />
+        <result column="product_type_id" jdbcType="INTEGER" property="productTypeId" />
+        <result column="product_type_name" jdbcType="VARCHAR" property="productTypeName" />
+        <result column="coupon_type" jdbcType="TINYINT" property="couponType" />
+        <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+        <result column="sold_amount" jdbcType="DECIMAL" property="soldAmount" />
+        <result column="bonus" jdbcType="DECIMAL" property="bonus" />
+        <result column="workload_rate" jdbcType="DECIMAL" property="workloadRate" />
+        <result column="activation_deadline" jdbcType="TIMESTAMP" property="activationDeadline" />
+        <result column="effective_days" jdbcType="INTEGER" property="effectiveDays" />
+    </resultMap>
+
+    <select id="listCouponStatistics" resultType="com.yunya.feign.report.domain.vo.CouponStatisticsVo">
+        select
+            `bc`.`coupon_id`,
+            `bc`.`coupon_name`,
+            `bc`.`product_type_name`                        as `couponCategoryName`,
+            `bc`.`crt_time`                                 as `crtDate`,
+            `bc`.`coupon_type`,
+            `bc`.`sold_amount`,
+            `be`.`employee_name`                            as `crtUser`,
+            ifnull(sum(`b`.`status` in (0, 1, 2, 3, 4)),0)  as `generatedQuantity`,
+            ifnull(sum(`b`.`status` in (1, 2, 3, 4)),0)     as `soldQuantity`,
+            ifnull(sum(`b`.`status` in (2, 3, 4)),0)        as `activatedQuantity`,
+            ifnull(sum(`b`.`status` in (3, 4)),0)           as `usedQuantity`
+        from `base_coupon` `bc`
+             left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
+             left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
+        <where>
+            <if test="couponName !=null and couponName != ''">
+                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponCategoryIds != null and couponCategoryIds.size() > 0">
+                and `bc`.`product_type_id` in
+                <foreach collection="couponCategoryIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `bc`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by `bc`.`coupon_id`,`bc`.`crt_time`
+        order by `bc`.`crt_time` desc
+    </select>
+
+    <select id="listCouponSold" resultType="com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo">
+        select
+            `bc`.`coupon_id`,
+            `bc`.`coupon_name`,
+            `bc`.`product_type_name`            as `couponCategoryName`,
+            `bc`.`crt_time`                     as `crtDate`,
+            `bc`.`coupon_type`,
+            `bc`.`sold_amount`,
+            `be`.`employee_name`                as `crtUser`,
+            ifnull(sum(`b`.`status` in (1, 2, 3, 4)
+                and b.allocate_org_id != 0),0)  as `ownPlatformSoldQuantity`,
+            case
+                when bc.coupon_type = 4 then null
+                else ifnull(sum(`b`.`status` in (2, 3, 4)
+                    and b.allocate_org_id = 0),0)
+                end                             as `thirdPartyActivatedQuantity`
+        from `base_coupon` `bc`
+             left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
+             left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
+        <where>
+            <if test="couponName !=null and couponName != ''">
+                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponCategoryIds != null and couponCategoryIds.size() > 0">
+                and `bc`.`product_type_id` in
+                <foreach collection="couponCategoryIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `bc`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="crtStartDate != null and crtEndDate != null">
+                and (`bc`.`crt_time` &gt;= #{crtStartDate} and `bc`.`crt_time` &lt; #{crtEndDate})
+            </if>
+        </where>
+        group by `bc`.`coupon_id`, `bc`.`crt_time`
+        order by `bc`.`crt_time` desc
+    </select>
+
+    <select id="listCouponUsedByParam" resultType="com.yunya.feign.report.domain.vo.CouponUsedVo">
+        select
+            `bc`.`coupon_id`,
+            `bc`.`coupon_name`,
+            `bc`.`product_type_name`                        as `couponCategoryName`,
+            `bc`.`crt_time`                                 as `crtDate`,
+            `bc`.`coupon_type`,
+            `bc`.`sold_amount`,
+            `be`.`employee_name`                            as `crtUser`,
+            ifnull(sum(`b`.`status` in (2, 3, 4)),0)        as `activatedQuantity`,
+            ifnull(sum(`b`.`status` in (3, 4)),0)           as `usedQuantity`
+        from `base_coupon` `bc`
+            left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
+            left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
+        <where>
+            `bc`.`coupon_type` != 4
+            <if test="couponName !=null and couponName != ''">
+                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponCategoryIds != null and couponCategoryIds.size() > 0">
+                and `bc`.`product_type_id` in
+                <foreach collection="couponCategoryIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="couponTypes != null and couponTypes.size() > 0">
+                and `bc`.`coupon_type` in
+                <foreach collection="couponTypes" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by `bc`.`coupon_id`,`bc`.`crt_time`
+        order by `bc`.`crt_time` desc
+    </select>
+
+    <select id="listRechargeByParam" resultType="com.yunya.feign.report.domain.vo.RechargeVo">
+        select
+                `bc`.`coupon_id`,
+                `bc`.`coupon_name`,
+                `bc`.`product_type_name`                        as `couponCategoryName`,
+                `bc`.`crt_time`                                 as `crtDate`,
+                `bc`.`sold_amount`,
+                `be`.`employee_name`                            as `crtUser`,
+                ifnull(sum(`b`.`status` in (0, 1, 2, 3, 4)),0)  as `generatedQuantity`,
+                ifnull(sum(`b`.`status` in (1, 2, 3, 4)),0)     as `soldQuantity`,
+                ifnull(sum(`b`.`status` = 2),0)                 as `activatedQuantity`,
+        from `base_coupon` `bc`
+            left join `base_card` `b` on `bc`.`coupon_id` = `b`.`coupon_id`
+            left join `base_employee` `be` on `bc`.`crt_id` = `be`.`user_id`
+        <where>
+            `bc`.`coupon_type` = 4
+            <if test="couponName !=null and couponName != ''">
+                and `bc`.`coupon_name` like concat('%', #{couponName}, '%')
+            </if>
+            <if test="couponCategoryIds != null and couponCategoryIds.size() > 0">
+                and `bc`.`product_type_id` in
+                <foreach collection="couponCategoryIds" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        group by `bc`.`coupon_id`,`bc`.`crt_time`
+        order by `bc`.`crt_time` desc
+    </select>
+</mapper>

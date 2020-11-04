@@ -13,6 +13,8 @@ import java.time.*;
 @Getter
 @Setter
 public class PatientExchangeVo implements Serializable {
+    @ApiModelProperty(value = "优惠券id")
+    private Integer couponId;
     @ApiModelProperty(value = "卡券id")
     private Integer cardId;
     @ApiModelProperty(value = "卡号")
@@ -25,6 +27,8 @@ public class PatientExchangeVo implements Serializable {
     private Integer mixable;
     @ApiModelProperty(value = "使用方式（0：一次使用 1：多次使用）")
     private Integer useWay;
+    @ApiModelProperty(value = "账单单次使用限制数量（页面不用显示）")
+    private Integer limitCount;
     @ApiModelProperty(value = "拥有者")
     private String owner;
     @ApiModelProperty(value = "图片路径")

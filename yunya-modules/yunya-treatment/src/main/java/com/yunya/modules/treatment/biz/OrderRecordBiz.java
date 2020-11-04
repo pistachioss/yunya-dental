@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.treatment.domain.form.OrderRecordForm;
 import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
@@ -14,6 +15,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.treatment.*;
+import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.mapper.*;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +26,10 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.*;
@@ -43,6 +48,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+  /** 消息中间件调用 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 就诊其他信息服务调用 */
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
   /** 就诊记录 */
@@ -102,7 +109,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer treatmentRecordId = model.getTreatmentRecordId();
     // 校验开单参数
     TreatmentRecord treatmentRecord = checkOrderParam(treatmentRecordId);
-    redisUtils.set(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId, treatmentRecordId, 5);
+    String orderKey = LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId;
+    redisUtils.set(orderKey, treatmentRecordId, 5);
     List<OrderDetailModel> models = model.getOrderDetails();
     int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
     int userId = Integer.parseInt(BaseContextHandler.getUserID());
@@ -125,7 +133,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       orderRecord.setTotalAmount(totalAmount);
       orderRecord.setCrtId(userId);
       orderRecord.setCrtName(name);
-      mapper.insertSelective(orderRecord);
+      int result = mapper.insertSelective(orderRecord);
       orderRecordId = orderRecord.getId();
       if (StringHelper.isNotEmpty(orderDetails)) {
         orderDetails.forEach(
@@ -134,11 +142,14 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               orderDetailBiz.insertSelective(detail);
             });
       }
+      if (result > 0) {
+        rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
+      }
     } else {
       orderResult.setTotalAmount(totalAmount);
       orderResult.setUpdId(userId);
       orderResult.setUpdName(name);
-      mapper.updateByPrimaryKeySelective(orderResult);
+      int result = mapper.updateByPrimaryKeySelective(orderResult);
       orderRecordId = orderResult.getId();
       OrderDetail orderDetail = new OrderDetail();
       orderDetail.setTreatmentRecordId(treatmentRecordId);
@@ -149,6 +160,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               detail.setOrderRecordId(orderRecordId);
               orderDetailBiz.insertSelective(detail);
             });
+      }
+      if (result > 0) {
+        rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
       }
     }
     Integer assistantId1 = model.getAssistantId1();
@@ -161,7 +175,15 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     treatmentRecord.setUpdId(userId);
     treatmentRecord.setUpdName(name);
     treatmentRecordBiz.updateSelectiveById(treatmentRecord);
-    redisUtils.delete(LOCK_ORDER_PROCESSING_CREATE + treatmentRecordId);
+    Integer appointmentId = treatmentRecord.getAppointmentId();
+    // 发送消息更新中间表就诊流程
+    if (null != appointmentId) {
+      rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+    } else {
+      Integer registeredId = treatmentRecord.getRegisteredId();
+      rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
+    }
+    redisUtils.delete(orderKey);
   }
 
   /**
@@ -219,20 +241,31 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       Integer assistantId3) {
     AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
     matchingRecord.setTreatmentRecordId(treatmentRecordId);
-    matchingRecord.setOrderRecordId(orderRecordId);
+    AssistantMatchingRecord resultMatchingRecord =
+        matchingRecordBiz.selectOneByTreatmentIdAndType(treatmentRecordId, (byte) 0);
     if (null != assistantId1) {
+      if (null != resultMatchingRecord) {
+        if (resultMatchingRecord.getOperatorPostType() == 0
+            && !resultMatchingRecord.getAssistantId().equals(assistantId1)) {
+          throw new ClientServiceException("开单失败，配诊助手1不可被修改！", PARAMETERS_IS_ILLEGAL);
+        }
+      }
       matchingRecord.setType((byte) 0);
-      addAssistantMatchingRecord(assistantId1, matchingRecord);
+      addAssistantMatchingRecord(assistantId1, orderRecordId, matchingRecord);
     } else {
-      matchingRecord.setType((byte) 0);
-      matchingRecordBiz.delete(matchingRecord);
+      if (null != resultMatchingRecord) {
+        if (resultMatchingRecord.getOperatorPostType() != 0) {
+          matchingRecord.setType((byte) 0);
+          matchingRecordBiz.delete(matchingRecord);
+        }
+      }
     }
     if (null != assistantId2) {
       if (assistantId2.equals(assistantId1)) {
         throw new ClientServiceException("开单失败，助手2与助手1不能是同一个人！", PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 1);
-      addAssistantMatchingRecord(assistantId2, matchingRecord);
+      addAssistantMatchingRecord(assistantId2, orderRecordId, matchingRecord);
     } else {
       matchingRecord.setType((byte) 1);
       matchingRecordBiz.delete(matchingRecord);
@@ -242,7 +275,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
         throw new ClientServiceException("开单失败，巡回与助手1或助手2不能是同一个人！", PARAMETERS_IS_ILLEGAL);
       }
       matchingRecord.setType((byte) 2);
-      addAssistantMatchingRecord(assistantId3, matchingRecord);
+      addAssistantMatchingRecord(assistantId3, orderRecordId, matchingRecord);
     } else {
       matchingRecord.setType((byte) 2);
       matchingRecordBiz.delete(matchingRecord);
@@ -253,12 +286,14 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * 添加助手匹配记录
    *
    * @param assistantId 助手ID
+   * @param orderRecordId 订单记录ID
    * @param matchingRecord 匹配记录
    */
   private void addAssistantMatchingRecord(
-      Integer assistantId, AssistantMatchingRecord matchingRecord) {
+      Integer assistantId, Integer orderRecordId, AssistantMatchingRecord matchingRecord) {
     AssistantMatchingRecord matchingResult = matchingRecordBiz.selectOne(matchingRecord);
     if (null == matchingResult) {
+      matchingRecord.setOrderRecordId(orderRecordId);
       matchingRecord.setAssistantId(assistantId);
       matchingRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
       matchingRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -292,11 +327,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @param orderRecordId 开单记录ID
    */
   public void unlockOrder(Integer orderRecordId) {
-    String recordId = redisUtils.get(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
-    if (StringHelper.isNotBlank(recordId)) {
-      throw new ClientServiceException("解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", SAME_DATA_EXIST);
-    }
-
     OrderRecord orderRecord = mapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
       throw new ClientServiceException(
@@ -308,10 +338,22 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException("解锁失败，无法解锁已经完成结算的账单！", PARAMETERS_IS_ILLEGAL);
     }
 
+    String orderKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
+    String orderValue = redisUtils.get(orderKey);
+    if (StringHelper.isNotBlank(orderValue) || ORDER_CHARGING_STATUS.equals(status)) {
+      throw new ClientServiceException("解锁失败，当前账单处于收费中，与相关工作人员联系并关闭收费后可继续解锁账单！", SAME_DATA_EXIST);
+    }
+
+    redisUtils.set(orderKey, orderRecordId, 5);
     orderRecord.setStatus((byte) 0);
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     orderRecord.setUpdName(BaseContextHandler.getName());
-    mapper.updateByPrimaryKeySelective(orderRecord);
+    int result = mapper.updateByPrimaryKeySelective(orderRecord);
+    redisUtils.delete(orderKey);
+    // 发送消息更新中间表数据
+    if (result > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    }
   }
 
   /**
@@ -346,6 +388,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, models);
+    List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)) {
       treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
@@ -353,9 +396,17 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
             detail.setOrderRecordId(orderRecordId);
             orderDetailBiz.insertSelective(detail);
             if (0 == detail.getType()) {
-              treatmentRecordBiz.saveOrderDetailVisitRecord(treatmentRecordId, detail);
+              List<VisitingRecord> orderDetailVisitRecord =
+                  treatmentRecordBiz.createOrderDetailVisitRecord(treatmentRecordId, orderDetail);
+              visitingRecordList.stream()
+                  .sequential()
+                  .collect(Collectors.toCollection(() -> orderDetailVisitRecord));
+              //              treatmentRecordBiz.saveOrderDetailVisitRecord(treatmentRecordId,
+              // detail);
             }
           });
+      // 设置分组计划
+      treatmentRecordBiz.saveOrderDetailVisitRecord(visitingRecordList);
     }
 
     BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
@@ -363,8 +414,12 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setStatus((byte) 1);
     orderRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
     orderRecord.setUpdName(BaseContextHandler.getName());
-    mapper.updateByPrimaryKeySelective(orderRecord);
+    int result = mapper.updateByPrimaryKeySelective(orderRecord);
     redisUtils.delete(LOCK_ORDER_PROCESSING_UNLOCK + orderRecordId);
+    // 发送消息同步账单
+    if (result > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    }
   }
 
   /**
@@ -438,12 +493,16 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setInservice(false);
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
-    mapper.updateByPrimaryKeySelective(orderRecord);
+    int i = mapper.updateByPrimaryKeySelective(orderRecord);
 
     billRecord.setInservice(false);
     billRecord.setUpdId(userId);
     billRecord.setUpdName(name);
     billRecordMapper.updateByPrimaryKeySelective(billRecord);
+    // 发送消息同步中间表账单数据
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 2, BaseBill);
+    }
 
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, detailModels);
@@ -457,12 +516,15 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setInservice(true);
     orderRecord.setCrtId(userId);
     orderRecord.setCrtName(name);
-    mapper.insertSelective(orderRecord);
-
+    int result = mapper.insertSelective(orderRecord);
     orderRecordId = orderRecord.getId();
     for (OrderDetail detail : orderDetails) {
       detail.setOrderRecordId(orderRecordId);
       orderDetailBiz.insertSelective(detail);
+    }
+    // 发送消息同步中间表账单数据
+    if (result > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 0, BaseBill);
     }
   }
 

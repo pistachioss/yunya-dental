@@ -478,4 +478,30 @@ public class VisitingRecord {
     public void setStatus(Boolean status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "VisitingRecord{" +
+                "id=" + id +
+                ", orgId=" + orgId +
+                ", treatmentId=" + treatmentId +
+                ", patientId=" + patientId +
+                ", dentistId=" + dentistId +
+                ", deptRoomId=" + deptRoomId +
+                ", treatmentDate=" + treatmentDate +
+                ", visitingDate=" + visitingDate +
+                ", visitingTime='" + visitingTime + '\'' +
+                ", reason='" + reason + '\'' +
+                ", visitingContent='" + visitingContent + '\'' +
+                ", status=" + status +
+                ", remarks='" + remarks + '\'' +
+                ", inservice=" + inservice +
+                ", crtId=" + crtId +
+                ", crtName='" + crtName + '\'' +
+                ", crtTime=" + crtTime +
+                ", uptId=" + uptId +
+                ", updName='" + updName + '\'' +
+                ", updTime=" + updTime +
+                '}';
+    }
 }

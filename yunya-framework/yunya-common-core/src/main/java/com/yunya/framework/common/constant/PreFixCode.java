@@ -12,6 +12,7 @@ public enum PreFixCode {
     TARIFF(18),
     TREATMENT(19),
     TREATMENT_OTHER(20),
+    MIDDLE_TABLE(21),
     ;
 
 

@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.query;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -17,6 +18,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
+@ApiModel("查询预付款退费记录信息参数模型")
 public class PrepaidMeturnRecordQueryForm implements Serializable {
 
     @ApiModelProperty(value = "是否分页", required = true)

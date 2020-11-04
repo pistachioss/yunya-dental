@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
@@ -8,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 简单介绍:</br>
+ * 简单介绍:</br> 返回会员信息模型
  *
  * @author: WY
  * @date 2020/7/30 13:53
@@ -17,7 +18,29 @@ import java.util.Date;
  */
 @Data
 @ToString
+@ApiModel("返回会员信息模型")
 public class MemberBaseInfoVo implements Serializable {
+
+
+    /**
+     * 主键id
+     */
+    private Integer id;
+
+    /**
+     * 诊所id
+     */
+    private Integer orgId;
+
+    /**
+     * 患者id
+     */
+    private Integer patientId;
+
+    /**
+     * 患者名称
+     */
+    private String name;
 
     /**
      * 会员卡卡号
@@ -35,6 +58,11 @@ public class MemberBaseInfoVo implements Serializable {
     private BigDecimal memberCardMoneySum;
 
     /**
+     *  本金
+     */
+    private BigDecimal principalAmount;
+
+    /**
      *  赠金
      */
     private BigDecimal bonusAmount;
@@ -48,4 +76,5 @@ public class MemberBaseInfoVo implements Serializable {
      * 开卡日期
      */
     private Date crtTime;
+
 }

@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,7 +16,7 @@ import java.util.Date;
  * @author: LHB
  * @create: 2020-08-21 20:25
  **/
-@ApiModel(value = "随访记录视图模型")
+@ApiModel(value = "VisitingRecordVo", description = "随访记录视图模型")
 @Data
 @ToString
 public class VisitingRecordVo implements Serializable {
@@ -65,12 +66,14 @@ public class VisitingRecordVo implements Serializable {
      * 就诊日期
      */
     @ApiModelProperty(value = "就诊日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date treatmentDate;
 
     /**
      * 随访日期
      */
     @ApiModelProperty(value = "随访日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date visitingDate;
 
     /**
@@ -115,6 +118,7 @@ public class VisitingRecordVo implements Serializable {
      * 创建时间
      */
     @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private Date crtTime;
 
     /** 医生名字 */
@@ -124,6 +128,17 @@ public class VisitingRecordVo implements Serializable {
     /** 后续随访个数 */
     @ApiModelProperty(value = "后续随访个数")
     private Integer visitingCount;
+
+    /** 更新人ID(随访人ID) */
+    @ApiModelProperty(value = "更新人ID(随访人ID)")
+    private Integer uptId;
+
+    /** 更新人名字(随访人名字) */
+    @ApiModelProperty(value = "更新人名字(随访人名字)")
+    private String updName;
+    /** 随访时间（更新时间） */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date updTime;
 
     /******************************* 患者信息 ********************************/
     /** 患者姓名 */
@@ -153,7 +168,7 @@ public class VisitingRecordVo implements Serializable {
 
     /** 会员图标 */
     @ApiModelProperty(value = "会员图标")
-    private Byte memberIcon;
+    private String memberIcon;
 
     /** 患者过敏原 */
     @ApiModelProperty(value = "患者过敏原")

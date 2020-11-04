@@ -1,12 +1,11 @@
 package com.yunya.modules.appointment.mapper;
 
+import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
+import com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
-import com.yunya.feign.appointment.vo.AppointmentDimensionVo;
-import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
-import com.yunya.feign.appointment.vo.AppointmentVo;
+import com.yunya.feign.appointment.vo.*;
 import com.yunya.models.appointment.Appointment;
-import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -55,6 +54,19 @@ public interface AppointmentMapper extends Mapper<Appointment> {
       @Param("appointEndTime") Date appointEndTime);
 
   /**
+   * 根据助手id，预约开始时间，预约结束时间查询所有预约列表
+   *
+   * @param assistantId 医生id
+   * @param appointStartTime 预约开始时间
+   * @param appointEndTime 预约结束时间
+   * @return 预约冲突信息
+   */
+  List<AppointConflictInfoVo> findAppointListByAssistantIdAndAppointStartTimeAndAppointEndTime(
+      @Param("assistantId") Integer assistantId,
+      @Param("appointStartTime") Date appointStartTime,
+      @Param("appointEndTime") Date appointEndTime);
+
+  /**
    * 根据条件查询预约列表
    *
    * @param query 条件查询参数
@@ -97,6 +109,21 @@ public interface AppointmentMapper extends Mapper<Appointment> {
   List<AppointConflictInfoVo> editCheckDentistConflict(
       @Param("id") Integer id,
       @Param("dentistId") Integer dentistId,
+      @Param("appointStartTime") Date appointStartTime,
+      @Param("appointEndTime") Date appointEndTime);
+
+  /**
+   * 编辑预约检查助手预约冲突（排除自身）
+   *
+   * @param id
+   * @param assistantId
+   * @param appointStartTime
+   * @param appointEndTime
+   * @return
+   */
+  List<AppointConflictInfoVo> editCheckAssistantConflict(
+      @Param("id") Integer id,
+      @Param("assistantId") Integer assistantId,
       @Param("appointStartTime") Date appointStartTime,
       @Param("appointEndTime") Date appointEndTime);
 
@@ -157,9 +184,38 @@ public interface AppointmentMapper extends Mapper<Appointment> {
 
   /**
    * 根据患者id查询患者所有预约列表
+   *
    * @param patientId 患者id
    * @return 患者列表
    */
   List<Appointment> findAppointmentByPatientId(@Param("patientId") Integer patientId);
 
+  /**
+   * 根据条件查询患者预约信息（患者档案-预约信息）用
+   *
+   * @param query 查询条件
+   * @return 患者列表
+   */
+  List<AppointPatientRecordVo> findAppointPatientRecord(AppointPatientRecordQuery query);
+
+  /**
+   * 根据分解助手ID、开始分解日期、结束分解日期查询列表
+   *
+   * @param assistantId 助手ID
+   * @param startTime 分解开始时间
+   * @param endTime 分解结束时间
+   * @return 对象列表
+   */
+  List<AppointConflictInfoVo> findByIdAndStartTimeAndEndTime(
+      @Param("assistantId") Integer assistantId,
+      @Param("startTime") Date startTime,
+      @Param("endTime") Date endTime);
+
+  /**
+   *  根据条件查询预约列表
+   *
+   * @param query 查询条件
+   * @return List<Appointment>
+   */
+  List<Appointment> selectAppointmentList(@Param("query") AppAppointmentInfoQuery query);
 }

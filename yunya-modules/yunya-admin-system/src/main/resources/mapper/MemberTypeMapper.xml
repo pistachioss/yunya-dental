@@ -11,7 +11,8 @@
         <result column="age_limit" property="ageLimit" jdbcType="INTEGER"/>
         <result column="rate" property="rate" jdbcType="REAL"/>
         <result column="type" property="type" jdbcType="TINYINT"/>
-        <result column="icon" property="icon" jdbcType="TINYINT"/>
+        <result column="icon" property="icon" jdbcType="VARCHAR"/>
+        <result column="picture_code" property="pictureCode" jdbcType="VARCHAR"/>
         <result column="description" property="description" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
@@ -31,6 +32,7 @@
         mt.rate,
         mt.type,
         mt.icon,
+        mt.picture_code as pictureCode,
         mt.description,
         mt.inservice
       from
@@ -47,6 +49,7 @@
         mt.age_limit as ageLimit,
         mt.rate,
         mt.icon,
+        mt.picture_code as pictureCode,
         mt.type,
         mt.description,
         mt.inservice

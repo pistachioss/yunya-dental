@@ -1,12 +1,13 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import io.swagger.annotations.ApiModel;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
 
 /**
- * 简单介绍:</br> 心跳版查询照片Vo
+ * 简单介绍:</br> 返回心跳版查询照片信息模型
  *
  * @author: WY
  * @date 2020/8/31 20:37
@@ -15,6 +16,7 @@ import java.io.Serializable;
  */
 @Data
 @ToString
+@ApiModel("返回心跳版查询照片信息模型")
 public class PhotoInformationVo implements Serializable {
 
     /**

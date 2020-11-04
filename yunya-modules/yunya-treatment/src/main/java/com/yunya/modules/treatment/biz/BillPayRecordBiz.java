@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_BILL_PAY_RECORD;
@@ -32,6 +34,9 @@ import static com.yunya.framework.common.constant.RedisConstants.LOCK_BILL_PAY_R
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord> {
+
+  /** 消息中间件调用 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   /** 缓存调用 */
   @Autowired private RedisUtils redisUtils;
@@ -55,8 +60,8 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
    */
   public void revoke(Integer billPayRecordId) {
     BillPayRecord billPayRecord = checkRevokeBillPayRecordWhetherAllow(billPayRecordId);
-
-    redisUtils.set(LOCK_BILL_PAY_RECORD + billPayRecordId, billPayRecordId, 5);
+    String redisKey = LOCK_BILL_PAY_RECORD + billPayRecordId;
+    redisUtils.set(redisKey, billPayRecordId, 5);
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
@@ -95,12 +100,13 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     billPayRecord.setInservice(false);
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
-    mapper.updateByPrimaryKeySelective(billPayRecord);
+    int result = mapper.updateByPrimaryKeySelective(billPayRecord);
 
     BillPayDetailRecord billPayDetail = new BillPayDetailRecord();
     billPayDetail.setBillPayRecordId(billPayRecordId);
     List<BillPayDetailRecord> payDetailRecords = billPayDetailRecordBiz.selectList(billPayDetail);
     if (StringHelper.isNotEmpty(payDetailRecords)) {
+      // todo 会员卡、预付款需退还到原先账号
       payDetailRecords.forEach(
           detailRecord -> {
             detailRecord.setInservice(false);
@@ -109,8 +115,11 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
             billPayDetailRecordBiz.updateSelectiveById(detailRecord);
           });
     }
-
-    redisUtils.delete(LOCK_BILL_PAY_RECORD + billPayRecordId);
+    // 发送消息同步中间表账单相关数据
+    if (result > 0) {
+      rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 1, BaseBill);
+    }
+    redisUtils.delete(redisKey);
   }
 
   /**

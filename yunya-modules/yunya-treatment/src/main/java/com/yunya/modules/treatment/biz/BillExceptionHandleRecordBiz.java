@@ -32,11 +32,13 @@ public class BillExceptionHandleRecordBiz
   @Autowired private BillExceptionHandleDetailRecordBiz billExceptionHandleDetailRecordBiz;
   /** 账单支付记录详情 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
+  /** 账单退费 */
+  @Autowired private BillRefundRecordBiz billRefundRecordBiz;
 
   /**
    * 根据账单异常处理记录查询处理详情
    *
-   * @param billHandleRecordId 账单处理记录ID
+   * @param billHandleRecordId 账单异常处理记录ID
    * @return map
    */
   public Map<String, Object> findBillHandleDetail(Integer billHandleRecordId) {
@@ -45,6 +47,7 @@ public class BillExceptionHandleRecordBiz
       throw new ClientServiceException("请选择正确的账单异常处理记录！", PARAMETERS_IS_ILLEGAL);
     }
     Integer handledRecordId = handleRecord.getHandledRecordId();
+    Integer preExceptionHandleRecordId = handleRecord.getPreExceptionHandleRecordId();
     Byte operateType = handleRecord.getOperateType();
     Map<String, Object> resultMap = new HashMap<>(16);
     switch (operateType) {
@@ -52,7 +55,7 @@ public class BillExceptionHandleRecordBiz
       case 0:
         resultMap =
             billExceptionHandleDetailRecordBiz.findBillPaymentAdjustDetail(
-                handledRecordId, billHandleRecordId);
+                handledRecordId, billHandleRecordId,preExceptionHandleRecordId);
         break;
         // 账单撤销
       case 1:
@@ -75,6 +78,7 @@ public class BillExceptionHandleRecordBiz
         break;
         // 账单退费
       case 3:
+        resultMap = billRefundRecordBiz.findBillRefundRecordInfo(billHandleRecordId);
         break;
       default:
         break;

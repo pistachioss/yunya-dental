@@ -61,8 +61,8 @@
             useGeneratedKeys="true" keyProperty="id">
       INSERT INTO company (
         parent_id,
-        name,
-        type,
+        `name`,
+        `type`,
         credit_code,
         order_num,
         inservice,

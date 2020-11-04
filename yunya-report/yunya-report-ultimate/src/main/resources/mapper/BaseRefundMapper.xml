@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseRefundMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseRefund" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="refund_id" property="refundId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
+    <result column="bill_id" property="billId" jdbcType="INTEGER" />
+    <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL" />
+  </resultMap>
+</mapper>

@@ -1,21 +1,17 @@
 package com.yunya.modules.discount.biz;
 
+import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.BaseException;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.CouponFileInfo;
 import com.yunya.models.discount.PackageCoupon;
-import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.modules.discount.form.PackageCouponForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import com.yunya.modules.discount.mapper.PackageCouponMapper;
-import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.exception.BaseException;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.modules.discount.constant.ExceptionCode;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -93,18 +89,22 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         if (flag) {
             // 只能修改时间
             couponCommonInfo.setId(packageCouponForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(packageCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(packageCouponForm.getAvailableSaleEndDate());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            //更新基础信息
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             packageCoupon.setCouponId(packageCouponForm.getId());
             packageCoupon = selectOne(packageCoupon);
             if(packageCoupon!=null){
                 packageCoupon.setUseableClinic(packageCouponForm.getUseableClinic());
                 packageCoupon.setRemark(packageCouponForm.getRemark());
                 packageCoupon.setActivationDeadline(packageCouponForm.getActivationDeadline());
-//                packageCoupon.setWorkloadRate(packageCouponForm.getWorkloadRate());
                 packageCoupon.setEffectiveDays(packageCouponForm.getEffectiveDays());
-                updateSelectiveById(packageCoupon);//更新明细信息
+                //更新明细信息
+                updateById(packageCoupon);
             }else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -121,17 +121,24 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
                     throw new BaseException("兑换券名称与系统中已有兑换券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(packageCouponForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(packageCouponForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             packageCoupon.setCouponId(packageCouponForm.getId());
             packageCoupon = selectOne(packageCoupon);
             if (packageCoupon != null) {
                 PackageCoupon pc = new PackageCoupon();
+                BeanUtils.copyProperties(packageCoupon, pc);
                 BeanUtils.copyProperties(packageCouponForm, pc);
                 pc.setId(packageCoupon.getId());
-                updateSelectiveById(pc);//更新明细信息
+                //更新明细信息
+                updateById(pc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

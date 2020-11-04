@@ -3,20 +3,25 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.domain.model.TreatmentModel;
+import com.yunya.feign.treatment.domain.query.AppTreatListQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.query.TreatmentInfoForMonthForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
@@ -35,11 +40,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESS_ORDER_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_TREATMENT_ING;
 
 /**
  * 简介: 就诊记录管理业务层
@@ -53,8 +62,14 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Transactional(rollbackFor = Exception.class)
 public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, TreatmentRecord> {
 
+  /** 缓存 */
+  @Autowired private RedisUtils redisUtils;
+
   /** 患者服务调用 */
   @Autowired private PatientCentralServiceFeign patientServiceFeign;
+
+  /** 消息中间件调用 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
@@ -83,25 +98,28 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   /**
    * 开始接诊
    *
-   * @param regId 挂号ID
+   * @param model 挂号ID
    */
-  public void startTreatment(Integer regId) {
-    TreatmentRecord record = new TreatmentRecord();
-    record.setRegisteredId(regId);
-    int count = mapper.selectCount(record);
-    if (count > 0) {
-      throw new ClientServiceException("接诊失败，该挂号已被接诊，无法再次接诊！", DATA_EXIST);
-    }
-
+  public void startTreatment(TreatmentModel model) {
+    Integer regId = model.getRegId();
+    Byte postType = model.getPostType();
     Registered regResult = registeredBiz.selectById(regId);
     if (null == regResult || !regResult.getInservice()) {
       throw new ClientServiceException("接诊失败，您当前未选择接诊患者或传入参数有误！", QUERY_RESULT_INVALID);
     }
 
+    String treatingKey = REDIS_KEY_TREATMENT_ING + regId;
+    String treatingValue = redisUtils.get(treatingKey);
+    if (StringHelper.isNotBlank(treatingValue)) {
+      throw new ClientServiceException("接诊失败，当前挂号正在被操作，请稍后再试！", SAME_DATA_EXIST);
+    }
+    redisUtils.set(treatingKey, regId, 5);
+
     TreatmentRecord entity = new TreatmentRecord();
     Integer orgId = regResult.getOrgId();
     entity.setOrgId(orgId);
-    entity.setAppointmentId(regResult.getAppointmentId());
+    Integer appointmentId = regResult.getAppointmentId();
+    entity.setAppointmentId(appointmentId);
     entity.setRegisteredId(regId);
     entity.setDentistId(regResult.getDentistId());
     Integer patientId = regResult.getPatientId();
@@ -119,13 +137,42 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         patientServiceFeign.updatePatientInfo(patientBaseInfo);
       }
     }
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
     entity.setTreatStartTime(new Date(System.currentTimeMillis()));
-    entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    entity.setCrtName(BaseContextHandler.getName());
-    mapper.insertSelective(entity);
+    entity.setCrtId(userId);
+    entity.setCrtName(name);
+
+    int count = mapper.selectCountByRegisteredId(regId);
+    if (count > 0) {
+      throw new ClientServiceException("接诊失败，该挂号已被接诊，无法再次接诊！", DATA_EXIST);
+    }
+
+    int i = mapper.insertSelective(entity);
+    redisUtils.delete(treatingKey);
+
+    if (postType == 0) {
+      AssistantMatchingRecord matchingRecord = new AssistantMatchingRecord();
+      matchingRecord.setOrgId(orgId);
+      matchingRecord.setTreatmentRecordId(entity.getId());
+      matchingRecord.setAssistantId(userId);
+      matchingRecord.setType((byte) 0);
+      matchingRecord.setOperatorPostType((byte) 0);
+      matchingRecord.setCrtId(userId);
+      matchingRecord.setCrtName(name);
+      assistantMatchingRecordMapper.insertSelective(matchingRecord);
+    }
 
     regResult.setStatus((byte) 1);
+    regResult.setUpdId(userId);
+    regResult.setUpdName(name);
     registeredBiz.updateSelectiveById(regResult);
+    if (i > 0) {
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      }
+      rabbitMqServiceFeign.sendMessage(regId, 1, 1, BaseTreatmentProcess);
+    }
   }
 
   /**
@@ -154,6 +201,37 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
+   * 根据就诊记录ID查询就诊信息
+   *
+   * @param id 就诊记录ID
+   * @return
+   */
+  public TreatmentRecordVO findTreatmentInfoById(Integer id) {
+    TreatmentRecordVO resultData = mapper.selectTreatmentInfoById(id);
+    if (null != resultData) {
+      Integer orgId = resultData.getOrgId();
+      // todo 从缓存中查询组织
+      OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+      if (null != organizationInfo) {
+        resultData.setOrgName(organizationInfo.getAbbreviation());
+      }
+      Integer patientId = resultData.getPatientId();
+      // todo 从缓存中查询患者
+      PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
+      if (null != patientBaseInfo) {
+        resultData.setPatientName(patientBaseInfo.getName());
+      }
+      Integer dentistId = resultData.getDentistId();
+      // todo 从缓存中查询员工
+      SysEmployee employee = systemServiceFeign.findSysEmployeeById(dentistId);
+      if (null != employee) {
+        resultData.setDentistName(employee.getName());
+      }
+    }
+    return resultData;
+  }
+
+  /**
    * 根据条件查询就诊中患者信息列表
    *
    * @param queryForm 查询条件
@@ -165,54 +243,44 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
 
     List<TreatmentPatientInfoVO> treatingList = mapper.selectTreatingList(queryForm);
-    Byte status = queryForm.getTreatmentStatus();
-    switch (status) {
-      case 0:
-      case 1:
-      case 2:
-        if (StringHelper.isNotEmpty(treatingList)) {
-          treatingList.forEach(
-              vo -> {
-                // 设置患者信息
-                setPatientInfo(vo);
-                // 设置预约信息
-                setAppointmentInfo(vo);
-                // 设置挂号信息
-                setRegisteredInfo(vo);
-                // 设置接诊信息
-                setTreatingInfo(vo);
-                // 设置账单信息
-                setOrderInfo(vo);
-              });
-        } else {
-          treatingList = new ArrayList<>();
+    if (StringHelper.isNotEmpty(treatingList)) {
+      for (TreatmentPatientInfoVO vo : treatingList) {
+        switch (vo.getTreatmentStatus()) {
+          case 0:
+          case 1:
+          case 2:
+            // 设置患者信息
+            setPatientInfo(vo);
+            // 设置预约信息
+            setAppointmentInfo(vo);
+            // 设置挂号信息
+            setRegisteredInfo(vo);
+            // 设置接诊信息
+            setTreatingInfo(vo);
+            // 设置账单信息
+            setOrderInfo(vo);
+            break;
+          case 3:
+            // 设置患者信息
+            setPatientInfo(vo);
+            // 设置预约信息
+            setAppointmentInfo(vo);
+            // 设置挂号信息
+            setRegisteredInfo(vo);
+            // 设置接诊信息
+            setTreatingInfo(vo);
+            // 设置账单信息
+            setOrderInfo(vo);
+            // 设置收费信息
+            setChargeInfo(vo);
+            break;
+          default:
+            break;
         }
-        break;
-      case 3:
-        if (StringHelper.isNotEmpty(treatingList)) {
-          treatingList.forEach(
-              vo -> {
-                // 设置患者信息
-                setPatientInfo(vo);
-                // 设置预约信息
-                setAppointmentInfo(vo);
-                // 设置挂号信息
-                setRegisteredInfo(vo);
-                // 设置接诊信息
-                setTreatingInfo(vo);
-                // 设置账单信息
-                setOrderInfo(vo);
-                // 设置收费信息
-                setChargeInfo(vo);
-              });
-        } else {
-          treatingList = new ArrayList<>();
-        }
-        break;
-      default:
-        break;
+      }
+    } else {
+      treatingList = new ArrayList<>();
     }
-
     return new PageInfo<>(treatingList);
   }
 
@@ -398,37 +466,97 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       throw new ClientServiceException("结束治疗失败,当前就诊未进行开单，请至少开单一个项目！", DATA_NOT_EXIST);
     }
     orderRecord.setStatus((byte) 1);
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    orderRecord.setUpdId(userId);
+    orderRecord.setUpdName(name);
     orderRecordMapper.updateByPrimaryKeySelective(orderRecord);
     treatmentRecord.setTreatEndTime(new Date(System.currentTimeMillis()));
     treatmentRecord.setStatus((byte) 2);
-    mapper.updateByPrimaryKeySelective(treatmentRecord);
+    treatmentRecord.setUpdId(userId);
+    treatmentRecord.setUpdName(name);
+    int i = mapper.updateByPrimaryKeySelective(treatmentRecord);
+    if (i > 0) {
+      Integer appointmentId = treatmentRecord.getAppointmentId();
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        Integer registeredId = treatmentRecord.getRegisteredId();
+        rabbitMqServiceFeign.sendMessage(registeredId, 1, 1, BaseTreatmentProcess);
+      }
+    }
     // 新增开单处置的随访
     detail.setType((byte) 0);
     List<OrderDetail> orderDetails = orderDetailMapper.select(detail);
+    List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)) {
       treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
-          orderDetail -> saveOrderDetailVisitRecord(treatmentRecordId, orderDetail));
+          orderDetail -> {
+            List<VisitingRecord> orderDetailVisitRecord =
+                createOrderDetailVisitRecord(treatmentRecordId, orderDetail);
+            orderDetailVisitRecord.stream()
+                .sequential()
+                .collect(Collectors.toCollection(() -> visitingRecordList));
+          });
+      this.saveOrderDetailVisitRecord(visitingRecordList);
     }
   }
 
   /**
    * 保存开单处置随访计划
    *
+   * @param visitingRecordList 随访计划列表
+   */
+  public void saveOrderDetailVisitRecord(List<VisitingRecord> visitingRecordList) {
+    Map<String, VisitingRecord> groupVisitRecordMap = new HashMap<>();
+    // 按照随访日期和就诊ID对随访计划分组
+    visitingRecordList.forEach(
+        visitingRecord -> {
+          Integer treatmentId = visitingRecord.getTreatmentId();
+          String visitingDate =
+              new SimpleDateFormat("yyyyMMdd").format(visitingRecord.getVisitingDate());
+          String key = treatmentId + "_" + visitingDate;
+          if (groupVisitRecordMap.containsKey(key)) {
+            VisitingRecord visitingRecordCache = groupVisitRecordMap.get(key);
+            String currentReason = visitingRecord.getReason();
+            String newReason = visitingRecordCache.getReason() + "," + currentReason;
+            visitingRecordCache.setReason(newReason);
+            groupVisitRecordMap.put(key, visitingRecordCache);
+          } else {
+            groupVisitRecordMap.put(key, visitingRecord);
+          }
+        });
+    // 设置分组计划
+    List<VisitingRecord> collect = new ArrayList<>(groupVisitRecordMap.values());
+    treatmentOtherFeign.insertVisitingRecord(collect);
+  }
+
+  /**
+   * 创建开单处置随访计划
+   *
    * @param treatmentRecordId 就诊记录ID
    * @param detail 开单详情
    */
-  public void saveOrderDetailVisitRecord(Integer treatmentRecordId, OrderDetail detail) {
+  public List<VisitingRecord> createOrderDetailVisitRecord(
+      Integer treatmentRecordId, OrderDetail detail) {
+    List<VisitingRecord> visitRecordPlanList = new ArrayList<>();
     BaseTariff baseTariff = baseTariffBiz.selectById(detail.getBillingItemId());
     if (null != baseTariff) {
       String fellowUp = baseTariff.getFellowUp();
       if (StringHelper.isNotBlank(fellowUp)) {
-        String[] nums = fellowUp.split(",");
+        String[] nums = fellowUp.replaceAll("-", "").split(",");
         if (nums.length > 0) {
           Arrays.stream(nums)
               .filter(StringHelper::isNotBlank)
               .forEach(
                   num -> {
+                    int nn;
+                    try {
+                      nn = Integer.parseInt(num);
+                    } catch (Exception ex) {
+                      throw new ClientServiceException("价目表的随访字段有非数字！", DATA_ERROR);
+                    }
                     VisitingRecord visitRecord = new VisitingRecord();
                     TreatmentRecord treatmentRecord = mapper.selectByPrimaryKey(treatmentRecordId);
                     if (null != treatmentRecord) {
@@ -444,15 +572,19 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     }
                     visitRecord.setCrtId(detail.getCrtId());
                     visitRecord.setCrtName(detail.getCrtName());
+                    visitRecord.setCrtTime(new Date(System.currentTimeMillis()));
                     visitRecord.setTreatmentId(treatmentRecordId);
+                    visitRecord.setVisitingTime("09:00");
+                    visitRecord.setReason(baseTariff.getName());
                     visitRecord.setVisitingDate(
-                        DateUtils.addDays(
-                            new Date(System.currentTimeMillis()), Integer.parseInt(num)));
-                    treatmentOtherFeign.insertVisitingRecord(visitRecord);
+                        DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
+                    visitRecordPlanList.add(visitRecord);
+                    //                    treatmentOtherFeign.insertVisitingRecord(visitRecord);
                   });
         }
       }
     }
+    return visitRecordPlanList;
   }
 
   /**
@@ -529,4 +661,53 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       }
     }
   }
+
+  /**
+   * 根据条件查询APP端就诊列表
+   *
+   * @param query 查询条件
+   * @return list
+   */
+  public PageInfo<AppPatientTreatmentInfoVO> findAppTreatList(AppTreatListQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    Integer orgId = query.getOrgId();
+    String queryDate = query.getQueryDate();
+    Integer dentistId = query.getDentistId();
+
+    AppAppointmentInfoQuery form = new AppAppointmentInfoQuery();
+    form.setOrgId(orgId);
+    form.setQueryDate(queryDate);
+    form.setWhetherPage(false);
+    List<Appointment> appointments = appointmentFeign.findAppointmentList(form);
+    if (StringHelper.isNotEmpty(appointments)) {}
+
+    return null;
+  }
+
+  /**
+   * 末次就诊信息
+   *
+   * @param patientId 患者ID
+   * @return 返回末次就诊实体对象
+   */
+  public LastTreatmentInfoVO lastTreatmentInfo(Integer patientId) {
+    LastTreatmentInfoVO lastTreatmentInfoVO = mapper.lastTreatmentInfo(patientId);
+    return lastTreatmentInfoVO;
+  }
+
+  /**
+   * 查询指定时间段内每个医生每天患者就诊人数
+   * @param form 查询条件表单
+   * @return 返回实体列表
+   */
+  public List<TreatmentInfoForMonthVO> treatInfoForMonth(TreatmentInfoForMonthForm form) {
+    Integer dentistId = form.getDentistId();
+    Date startDate = form.getStartDate();
+    Date endDate = form.getEndDate();
+    return mapper.treatInfoForMonth(dentistId,startDate,endDate);
+  }
+
+
 }

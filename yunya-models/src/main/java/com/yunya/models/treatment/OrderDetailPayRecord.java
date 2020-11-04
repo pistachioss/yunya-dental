@@ -75,6 +75,12 @@ public class OrderDetailPayRecord {
     private BigDecimal receivedAmount;
 
     /**
+     * 卡券单个项目补入工作量
+     */
+    @Column(name = "coupon_workload")
+    private BigDecimal couponWorkload;
+
+    /**
      * 是否有效
      */
     private Boolean inservice;
@@ -311,6 +317,24 @@ public class OrderDetailPayRecord {
      */
     public void setReceivedAmount(BigDecimal receivedAmount) {
         this.receivedAmount = receivedAmount;
+    }
+
+    /**
+     * 获取卡券单个项目补入工作量
+     *
+     * @return couponWorkload-单个项目补入工作量
+     */
+    public BigDecimal getCouponWorkload() {
+        return couponWorkload;
+    }
+
+    /**
+     * 设置卡券单个项目补入工作量
+     *
+     * @param couponWorkload 单个项目补入工作量
+     */
+    public void setCouponWorkload(BigDecimal couponWorkload) {
+        this.couponWorkload = couponWorkload;
     }
 
     /**

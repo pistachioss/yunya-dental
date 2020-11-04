@@ -1,27 +1,23 @@
 package com.yunya.modules.discount.biz;
 
+import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.models.discount.*;
-import com.yunya.modules.discount.form.CouponCommonInfoQueryForm;
+import com.yunya.framework.common.exception.BaseException;
+import com.yunya.models.discount.CouponAllocate;
+import com.yunya.models.discount.CouponCommonInfo;
+import com.yunya.models.discount.CouponFileInfo;
+import com.yunya.models.discount.DiscountCoupon;
 import com.yunya.modules.discount.form.DiscountCouponForm;
-import com.yunya.modules.discount.form.DiscountUpdateForm;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import com.yunya.modules.discount.mapper.DiscountCouponMapper;
-import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.exception.BaseException;
-import com.yunya.framework.common.utils.EntityUtils;
-import com.yunya.modules.discount.constant.ExceptionCode;
-import com.yunya.modules.discount.vo.CouponCommonInfoVO;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
@@ -62,18 +58,21 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         couponCommonInfo.setType(new Byte("1"));
         couponCommonInfo.setIsInservice(true);
         couponCommonInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        couponCommonInfoBiz.insertSelective(couponCommonInfo);//基础信息表中插入数据
+        //基础信息表中插入数据
+        couponCommonInfoBiz.insertSelective(couponCommonInfo);
 
         DiscountCoupon discountCoupon = new DiscountCoupon();
         BeanUtils.copyProperties(discountCouponForm, discountCoupon);
         discountCoupon.setCouponId(couponCommonInfo.getId());
         discountCoupon.setUseableClinic(discountCouponForm.getUseableClinic());
-        insertSelective(discountCoupon);//插入卡券信息
-
-        if(discountCoupon.getId()<10000){//同一种卡券最多添加9999个
+        //插入卡券信息
+        insertSelective(discountCoupon);
+        //同一种卡券最多添加9999个
+        if(discountCoupon.getId()<10000){
         String num = String.format("%04d", discountCoupon.getId());
         couponCommonInfo.setCouponCode(DISCOUNT_COUPON_TYPE + num);
-        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+        //插入卡券编码
+        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
         }else{
             throw new BaseException("已超过系统允许新增折扣券产品的最大数量9999，不允许新增！", INSERT_MODEL);
         }
@@ -99,9 +98,13 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
         if (flag) {
             couponCommonInfo.setId(discountCouponForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(couponCommonInfo);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
+
             couponCommonInfo.setAvailableSaleStartDate(discountCouponForm.getAvailableSaleStartDate());
             couponCommonInfo.setAvailableSaleEndDate(discountCouponForm.getAvailableSaleEndDate());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//更新基础信息
+            //更新基础信息
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if (discountCoupon != null) {
@@ -110,7 +113,8 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
                 discountCoupon.setActivationDeadline(discountCouponForm.getActivationDeadline());
                 discountCoupon.setWorkloadRate(discountCouponForm.getWorkloadRate());
                 discountCoupon.setEffectiveDays(discountCouponForm.getEffectiveDays());
-                updateSelectiveById(discountCoupon);//更新明细信息
+                //更新明细信息
+                updateById(discountCoupon);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
@@ -122,21 +126,29 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             if (couponCommonInfoMapper.select(data).size() >= 1) {
                 data = new CouponCommonInfo();
                 data.setId(discountCouponForm.getId());
+                //相等说明没改名字
                 if (!couponCommonInfoMapper.selectOne(data).getName().equals(name)) {
                     throw new BaseException("折扣券名称与系统中已有折扣券重复，不允许修改!", NAME_IS_OCCUPIED);
                 }
             }
+            data = new CouponCommonInfo();
+            data.setId(discountCouponForm.getId());
+            CouponCommonInfo copy = couponCommonInfoMapper.selectOne(data);
+            BeanUtils.copyProperties(copy, couponCommonInfo);
             BeanUtils.copyProperties(discountCouponForm, couponCommonInfo);
             couponCommonInfo.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
             couponCommonInfo.setUpdTime(new Date());
-            couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//基础信息表中修改数据
+            //基础信息表中修改数据
+            couponCommonInfoBiz.updateById(couponCommonInfo);
             discountCoupon.setCouponId(discountCouponForm.getId());
             discountCoupon = selectOne(discountCoupon);
             if (discountCoupon != null) {
                 DiscountCoupon dc = new DiscountCoupon();
+                BeanUtils.copyProperties(discountCoupon, dc);
                 BeanUtils.copyProperties(discountCouponForm, dc);
                 dc.setId(discountCoupon.getId());
-                updateSelectiveById(dc);//更新明细信息
+                //更新明细信息
+                updateById(dc);
             } else {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }

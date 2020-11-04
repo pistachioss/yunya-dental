@@ -1,5 +1,6 @@
 package com.yunya.modules.emr.biz;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -10,6 +11,7 @@ import com.google.common.collect.Maps;
 import com.yunya.feign.emr.domain.bo.ApproveChangePageBo;
 import com.yunya.feign.emr.domain.bo.ApprovePageBo;
 import com.yunya.feign.emr.domain.bo.AuditMedicalBo;
+import com.yunya.feign.emr.domain.bo.ChangeCountBo;
 import com.yunya.feign.emr.domain.bo.MedicalTreatmentBo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.emr.domain.form.ChangeApprovePassForm;
@@ -32,10 +34,8 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -71,12 +71,20 @@ import static com.yunya.framework.common.constant.BusinessConstants.HOUR_GAP;
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_APPLY_LOCK_SEC;
 import static com.yunya.framework.common.constant.BusinessConstants.MEDICAL_AUDIT_PENDING_STATUS;
 import static com.yunya.framework.common.constant.BusinessConstants.NORMAL_MEDICAL_STATUS;
+import static com.yunya.modules.emr.enums.ApplyTypeEnum.ADD;
+import static com.yunya.modules.emr.enums.ApplyTypeEnum.UPDATE;
+import static com.yunya.modules.emr.enums.ApproveStatusEnum.APPROVE_PENDING;
+import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_PASS;
+import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_REJECT;
 import static com.yunya.modules.emr.enums.EmrError.APPLY_APPROVE_PENDING;
+import static com.yunya.modules.emr.enums.EmrError.APPROVE_RECORD_NOT_EXIST;
 import static com.yunya.modules.emr.enums.EmrError.AUDIT_IS_PASS;
 import static com.yunya.modules.emr.enums.EmrError.AUDIT_PENDING;
 import static com.yunya.modules.emr.enums.EmrError.CHANGE_APPLY_REJECTED;
+import static com.yunya.modules.emr.enums.EmrError.CHANGE_PASS_NOT_REPEAT_SUBMIT;
 import static com.yunya.modules.emr.enums.EmrError.CHANGE_PENDING_NOT_REPEAT_SUBMIT;
 import static com.yunya.modules.emr.enums.EmrError.DATA_IS_EXISTED;
+import static com.yunya.modules.emr.enums.EmrError.DEADLINE_BEYOND_NOW;
 import static com.yunya.modules.emr.enums.EmrError.KEY_IS_LOCKED;
 import static com.yunya.modules.emr.enums.EmrError.MEDICAL_ALREADY_AUDITED;
 import static com.yunya.modules.emr.enums.EmrError.MEDICAL_IS_EXIST;
@@ -84,19 +92,13 @@ import static com.yunya.modules.emr.enums.EmrError.MEDICAL_STATUS_ERROR;
 import static com.yunya.modules.emr.enums.EmrError.MODIFY_APPLY_TIMEOUT;
 import static com.yunya.modules.emr.enums.EmrError.NORMAL_MEDICAL_NO_PERMISSION;
 import static com.yunya.modules.emr.enums.EmrError.NOT_NEED_APPLY;
-import static com.yunya.modules.emr.enums.EmrError.NO_ALLOW_REPEAT_APPLY;
 import static com.yunya.modules.emr.enums.EmrError.NO_AUTH_MODIFY_MED;
 import static com.yunya.modules.emr.enums.EmrError.NO_PERMISSION_OPERATION;
-import static com.yunya.modules.emr.enums.EmrError.OK;
 import static com.yunya.modules.emr.enums.EmrError.REJECTED_NO_NEED_APPLY;
 import static com.yunya.modules.emr.enums.EmrError.TREATMENT_NOT_EXIST;
-import static com.yunya.modules.emr.enums.ApplyTypeEnum.ADD;
-import static com.yunya.modules.emr.enums.ApplyTypeEnum.UPDATE;
-import static com.yunya.modules.emr.enums.ApproveStatusEnum.APPROVE_PENDING;
-import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_PASS;
-import static com.yunya.modules.emr.enums.ApproveStatusEnum.AUDIT_REJECT;
 import static com.yunya.modules.emr.enums.EventTypeEnum.DRAFT_AUDIT;
 import static com.yunya.modules.emr.enums.EventTypeEnum.MEDICAL_CHANGE_AUDIT;
+import static com.yunya.modules.emr.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -158,21 +160,23 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
             //4. 检查草稿电子病例审批信息
             if (isExistDraftApply(eventId)) {
-                log.warn("【申请失败】：病例[{}]病例已申请审批", eventId);
+                log.warn("【新增草稿病例申请失败】：病例[{}]病例已申请审批", eventId);
                 return ResponseUtil.error(DATA_IS_EXISTED);
             }
             //5. 检查新增变更
             ApprovalRecord treatmentRecord = mapper.findTreatmentRecord(medical.getTreatmentId());
             if (treatmentRecord != null) {
+                log.info("【新增草稿病例申请】就诊审核记录，详情：{}", JSONObject.toJSONString(treatmentRecord));
                 if (!loginUserId.equals(treatmentRecord.getProposerId())) {
-                    log.warn("【申请失败】：无权限申请");
+                    log.warn("【新增草稿病例申请失败】：无权限申请");
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
                 //是否超过截止时间
                 if (isTimeOutOfDead(treatmentRecord)) {
-                    log.warn("【申请失败】：病例[{}]申请已超过变更截止时间", eventId);
+                    log.warn("【新增草稿病例申请失败】：病例[{}]申请已超过变更截止时间", eventId);
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
+                updateChangeTime(draftModel.getId());
             }
             //6. 提交申请新增草稿
             constructCreateEntity(draftModel.getApplyBase(), DRAFT_AUDIT.getCode(), ADD.getCode(), null);
@@ -213,47 +217,49 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             if (errorBo.getError() != null) {
                 return ResponseUtil.error(errorBo.getError());
             }
-            //3. 检查草稿电子病例状态
-            if (MEDICAL_AUDIT_PENDING_STATUS.equals(medical.getStatus())) {
-                log.warn("【申请失败】：病例[{}]状态异常，待审核状态不允许重复申请", eventId);
-                return ResponseUtil.error(NO_ALLOW_REPEAT_APPLY);
-            }
-            //4. 检查草稿电子病例审批信息
+            //3. 检查病例审批信息
             ApprovalRecord record = mapper.selectByPrimaryKey(draftModel.getId());
-            if (record == null || !loginUserId.equals(record.getProposerId())) {
-                log.warn("【申请失败】：无权限操作");
-                return ResponseUtil.error(NO_PERMISSION_OPERATION);
+            errorBo = checkApproveRecord(record, loginUserId);
+            if (errorBo.getError() != null) {
+                return ResponseUtil.error(errorBo.getError());
             }
-            //5. 草稿病例
+            //4. 草稿病例
             if (DRAFT_AUDIT.equals(record.getEventType())) {
                 if (AUDIT_PASS.equals(record.getStatus())) {
-                    log.warn("【申请失败】：草稿病例[{}]审批已通过", eventId);
+                    log.warn("【修改草稿病例申请失败】：草稿病例[{}]审批已通过", eventId);
                     return ResponseUtil.error(AUDIT_IS_PASS);
                 }
                 if (APPROVE_PENDING.equals(record.getStatus())) {
-                    log.warn("【申请失败】：草稿病例[{}]正在审批中", eventId);
+                    log.warn("【修改草稿病例申请失败】：草稿病例[{}]正在审批中", eventId);
                     return ResponseUtil.error(APPLY_APPROVE_PENDING);
                 }
                 //拒绝审批是否超时
                 if (AUDIT_REJECT.equals(record.getStatus()) && judgeRejectTimeout(record.getApproveTime())) {
-                    log.warn("【申请失败】：草稿病例[{}]已超过拒绝审批时间24h", eventId);
+                    log.warn("【修改草稿病例申请失败】：草稿病例[{}]已超过拒绝审批时间24h", eventId);
                     return ResponseUtil.error(MODIFY_APPLY_TIMEOUT);
                 }
-             //6. 检查变更病例
+             //5. 检查变更病例
             } else {
+                ApprovalRecord newestDraft = mapper.findNewestDraft(eventId);
+                //待审核草稿不能申请变更
+                if (APPROVE_PENDING.equals(newestDraft.getStatus())) {
+                    log.warn("【修改草稿病例申请失败】：电子病例[{}]状态异常，待审核状态不能申请", eventId);
+                    return ResponseUtil.error(AUDIT_PENDING);
+                }
                 if (!AUDIT_PASS.equals(record.getStatus())) {
-                    log.warn("【申请失败】：申请变更病例[{}]被拒绝", eventId);
+                    log.warn("【修改草稿病例申请失败】：申请变更病例[{}]被拒绝", eventId);
                     return ResponseUtil.error(CHANGE_APPLY_REJECTED);
                 }
                 //是否超过截止时间
                 if (isTimeOutOfDead(record)) {
-                    log.warn("【申请失败】：病例[{}]申请已超过变更截止时间", eventId);
+                    log.warn("【修改草稿病例申请失败】：病例[{}]申请已超过变更截止时间", eventId);
                     return ResponseUtil.error(NO_PERMISSION_OPERATION);
                 }
+                updateChangeTime(draftModel.getId());
             }
-            //7.草稿病例提交申请
+            //6.草稿病例提交申请
             constructCreateEntity(draftModel.getApplyBase(), DRAFT_AUDIT.getCode(), UPDATE.getCode(), null);
-            return ResponseUtil.error(OK);
+            return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -302,10 +308,16 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 return ResponseUtil.error(MEDICAL_IS_EXIST);
             }
             //检查变更申请记录，申请未通过时，不可多次重复申请变更
-            int applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
-            if (applyCount > 0) {
-                log.warn("【申请变更新增失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
-                return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
+            ChangeCountBo  applyCount = mapper.countMedicalChange(eventId, ADD.getCode());
+            if (applyCount != null) {
+                if (applyCount.getPendingCount() > 0) {
+                    log.warn("【申请变更新增失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
+                    return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
+                }
+                if (applyCount.getPassCount() > 0) {
+                    log.warn("【申请变更新增失败】：该病历已申请过修改且处于审核通过状态，请勿重复申请！");
+                    return ResponseUtil.error(CHANGE_PASS_NOT_REPEAT_SUBMIT);
+                }
             }
             //4. 检查变更审批
             if (isExistChangeToAudit(eventId)) {
@@ -314,7 +326,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
             //5. 新增变更提交申请
             constructCreateEntity(buildApplyBaseModel(changeModel, loginUserId), MEDICAL_CHANGE_AUDIT.getCode(), ADD.getCode(), changeModel.getApplyReason());
-            return ResponseUtil.error(OK);
+            return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -355,11 +367,21 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                 log.warn("【申请变更修改失败】：无权限申请修改此病历，请联系新增病历医生申请修改！");
                 return ResponseUtil.error(NO_AUTH_MODIFY_MED);
             }
+            if (MEDICAL_AUDIT_PENDING_STATUS.equals(medical.getStatus())) {
+                log.warn("【申请失败】：病例[{}]状态异常，该病历未经过主诊医生审核，不能申请修改", eventId);
+                return ResponseUtil.error(AUDIT_PENDING);
+            }
             //检查变更申请记录，申请未通过时，不可多次重复申请变更
-            int applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
-            if (applyCount > 0) {
-                log.warn("【申请变更修改失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
-                return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
+            ChangeCountBo  applyCount = mapper.countMedicalChange(eventId, UPDATE.getCode());
+            if (applyCount != null) {
+                if (applyCount.getPendingCount() > 0) {
+                    log.warn("【申请变更修改失败】：该病历已申请过修改且处于待审核状态，请勿重复申请！");
+                    return ResponseUtil.error(CHANGE_PENDING_NOT_REPEAT_SUBMIT);
+                }
+                if (applyCount.getPassCount() > 0) {
+                    log.warn("【申请变更修改失败】：该病历已申请过修改且处于审核通过状态，请勿重复申请！");
+                    return ResponseUtil.error(CHANGE_PASS_NOT_REPEAT_SUBMIT);
+                }
             }
             //4. 检查病历审批
             if (loginUserId.equals(medical.getMajorDentistId())) {
@@ -389,7 +411,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             }
             //5. 提交修改变更申请
             constructCreateEntity(buildApplyBaseModel(changeModel, loginUserId), MEDICAL_CHANGE_AUDIT.getCode(), UPDATE.getCode(), changeModel.getApplyReason());
-            return ResponseUtil.error(OK);
+            return ResponseUtil.success();
         } finally {
             if (locked) {
                 log.info("【解锁成功】");
@@ -456,7 +478,8 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         LocalDate changeDeadTime = passForm.getChangeDeadTime();
         LocalDate now = LocalDate.now();
         if (now.isAfter(changeDeadTime)) {
-            throw new ClientServiceException("选择的允许变更截止时间不能早于操作当天时间", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            log.warn("【审批通过失败】：选择的允许变更截止时间不能早于操作当天时间");
+            return ResponseUtil.error(DEADLINE_BEYOND_NOW);
         }
         // 检查审批状态
         ApprovalRecord approvalRecord = mapper.selectByPrimaryKey(approveId);
@@ -599,13 +622,13 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             List<ApprovalRecord> loginUserApproveList = mapper.listMedicalByParam(null, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
             if (CollectionUtils.isNotEmpty(loginUserApproveList)) {
                 //构建就诊和电子病例的信息
-                List<Integer> treatmentIds = buildChangeMapOfKeyword(loginUserApproveList, ADD.getCode(), keyword, loginUserId, approveBo);
+                List<Integer> treatmentIds = buildChangeMapOfKeyword(loginUserApproveList, ADD.getCode(), keyword, null, approveBo);
                 List<Integer> medicalIds = buildChangeMapOfKeyword(loginUserApproveList, UPDATE.getCode(), keyword, loginUserId, approveBo);
                 List<Integer> eventIds = Lists.newArrayListWithCapacity(treatmentIds.size() + medicalIds.size());
                 eventIds.addAll(treatmentIds);
                 eventIds.addAll(medicalIds);
                 //根据电子病例Ids和病例提交时间查询审批数据
-                if (CollectionUtils.isNotEmpty(medicalIds)) {
+                if (CollectionUtils.isNotEmpty(eventIds)) {
                     page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
                     list = mapper.listMedicalByParam(eventIds, null, loginUserId, MEDICAL_CHANGE_AUDIT.getCode(), auditStatus);
                 }
@@ -831,6 +854,11 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             vo.setApproveStatus(obj.getStatus());
             vo.setChangeDeadTime(obj.getDeadTime());
             vo.setRejectReason(obj.getApproveReason());
+            if (obj.getApproveTime() != null) {
+                //新时间是否大于审批时间
+                int result = obj.getUpdTime().compareTo(obj.getApproveTime());
+                vo.setWhetherOperated(result > 0 ? TRUE.getCode() : FALSE.getCode());
+            }
             resultList.add(vo);
         });
         return resultList;
@@ -908,6 +936,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         record.setDeadTime(deadTime);
         record.setStatus(status);
         record.setUpdId(loginUserId);
+        record.setUpdTime(now);
         mapper.updateByPrimaryKeySelective(record);
     }
 
@@ -931,6 +960,21 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         mapper.insertSelective(addApplyEntity);
     }
 
+    private RestErrorBo checkApproveRecord(ApprovalRecord record, Integer loginUserId) {
+        RestErrorBo errorBo = RestErrorBo.getInstance();
+        if (record == null) {
+            log.warn("【修改草稿病例申请失败】：审批数据不存在");
+            errorBo.setError(APPROVE_RECORD_NOT_EXIST);
+            return errorBo;
+        }
+        if (!loginUserId.equals(record.getProposerId())) {
+            log.warn("【修改草稿病例申请申请失败】：无权限操作，操作人:[{}]", loginUserId);
+            errorBo.setError(NO_PERMISSION_OPERATION);
+            return errorBo;
+        }
+        return errorBo;
+    }
+
     private MedicalCommonRecord findByTreatmentId(Integer eventId) {
         Example example = new Example(MedicalCommonRecord.class);
         example.createCriteria().andEqualTo("treatmentId", eventId);
@@ -945,8 +989,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
     private List<MedicalCommonRecord> findByPatientIds(List<Integer> patientIds, Integer loginUserId) {
         Example example = new Example(MedicalCommonRecord.class);
-        example.createCriteria().andIn("patientId", patientIds)
-                .andEqualTo("crtId", loginUserId);
+        example.createCriteria().andIn("patientId", patientIds);
         return medicalMapper.selectByExample(example);
     }
 
@@ -999,6 +1042,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
 
     private boolean checkPostPermission(Integer loginUserId) {
         List<String> permission = getPostPermission(loginUserId);
+        log.info("操作人权限岗位组：{}", permission);
         return !CollectionUtils.isEmpty(permission) && permission.contains("助手");
     }
 
@@ -1007,7 +1051,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
         //检查登录人权限
         if (!checkPostPermission(loginUserId) || medicalCommonRecord == null ||
                             !loginUserId.equals(medicalCommonRecord.getCrtId())) {
-            log.warn("【申请失败】：无权限操作");
+            log.warn("无权限操作，操作人:[{}]", loginUserId);
             errorBo.setError(NO_PERMISSION_OPERATION);
             return errorBo;
         }
@@ -1140,7 +1184,12 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
                     //筛选过滤患者集合对应的就诊映射
                     Map<Integer, MedicalTreatmentBo> treatmentFilterMap = treatmentMap.values().stream().filter(obj -> patientMap.get(obj.getPatientId()) != null)
                             .collect(toMap(MedicalTreatmentBo::getTreatmentId, Function.identity()));
-                    pageBo.setTrePatientInfoMap(patientMap);
+                    //构建患者映射 <treatmentId, PatientBaseInfoVo>
+                    Map<Integer, PatientBaseInfoVo> trePatientMap = Maps.newHashMap();
+                    treatmentMap.forEach((k,v) -> {
+                        trePatientMap.put(k, patientMap.get(v.getPatientId()));
+                    });
+                    pageBo.setTrePatientInfoMap(trePatientMap);
                     pageBo.setTreTreatmentBoMap(treatmentFilterMap);
                     eventIds.addAll(treatmentFilterMap.keySet());
                 }
@@ -1196,5 +1245,16 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
             return errorBo;
         }
         return errorBo;
+    }
+
+    /**
+     * 当新增病例和修改病例时，更新申请变更的更新时间
+     * @param id
+     */
+    private void updateChangeTime(Integer id) {
+        ApprovalRecord approvalRecord = new ApprovalRecord();
+        approvalRecord.setId(id);
+        approvalRecord.setUpdTime(LocalDateTime.now());
+        mapper.updateByPrimaryKeySelective(approvalRecord);
     }
 }

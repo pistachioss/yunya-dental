@@ -1,9 +1,9 @@
 package com.yunya.feign.discount.domain.bo;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.io.*;
-import java.math.*;
+import java.math.BigDecimal;
 
 /**
  * @author xiangyang
@@ -11,7 +11,7 @@ import java.math.*;
  */
 @Getter
 @Setter
-public class CouponSaleBo implements Serializable {
+public class CouponSaleBo {
     private Integer couponId;
     private String couponName;
     private Integer couponType;

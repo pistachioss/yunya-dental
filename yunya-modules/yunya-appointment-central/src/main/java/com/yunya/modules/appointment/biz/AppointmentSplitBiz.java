@@ -2,18 +2,24 @@ package com.yunya.modules.appointment.biz;
 
 import com.yunya.feign.appointment.domain.base.AppointmentSplitUpdateBaseInfo;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
+import com.yunya.feign.appointment.vo.AppointConflictInfoVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointmentSplit;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
+import com.yunya.models.system.SysEmployee;
+import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentSplitMapper;
 import com.yunya.feign.appointment.vo.AppointmentSplitVo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +39,10 @@ import java.util.*;
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, AppointmentSplit> {
 
+    /** 系统服务 */
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
     /**
      * 新增预约分解
      * @param splitModel 时长分解列表
@@ -42,16 +52,12 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
     public Integer insertAppointSplit(AppointmentSplitModel splitModel) {
 
         List<AppointmentSplitBaseInfo> splitList = splitModel.getSplitList();
-        if (splitList == null || splitList.isEmpty()){
-            throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+        if (!StringHelper.isEmpty(splitList)) {
+            // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
+            List<AppointmentSplit> splits = this.checkSplit(splitModel.getAppointDate(),splitModel.getAppointmentId(),splitModel.getAppointDuration(),splitList);
+            return mapper.insertAppointmentSplit(splits);
         }
-        // 检查时长分解是否符合条件，分解之后的时长和必须等于预约总时长
-        List<AppointmentSplit> splits = this.checkSplit(splitModel.getAppointDate(),splitModel.getAppointmentId(),splitModel.getAppointDuration(),splitList);
-        if (splits.isEmpty()){
-            throw new ClientServiceException("时长分解有误！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
-        }
-        return mapper.insertAppointmentSplit(splits);
-
+        return 0;
     }
 
     /**
@@ -60,7 +66,17 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @return list
      */
     public List<AppointmentSplitVo> findAppointmentSplitByExample(AppointmentSplitQuery query){
-        return mapper.findAppointmentSplitByExample(query);
+        List<AppointmentSplitVo> splitVos = mapper.findAppointmentSplitByExample(query);
+        if (!StringHelper.isEmpty(splitVos)) {
+            splitVos.forEach(appointmentSplitVo -> {
+                SysEmployee sysEmployee = this.remoteSystemServiceFeign.findSysEmployeeById(appointmentSplitVo.getAssistantId());
+                if (null != sysEmployee) {
+                    String name = sysEmployee.getName();
+                    appointmentSplitVo.setAssistantName(name);
+                }
+            });
+        }
+        return splitVos;
     }
 
     /**
@@ -69,7 +85,7 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
      * @return 修改成功的记录条数
      */
     public Integer updateAppointSplit(AppointmentSplitForm form){
-        List<AppointmentSplitUpdateBaseInfo> splitList = form.getSplitList();
+        List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
         if (StringHelper.isEmpty(splitList)){
             throw new ClientServiceException("时长分解列表不能为空！",OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
@@ -191,10 +207,11 @@ public class AppointmentSplitBiz extends BaseBiz<AppointmentSplitMapper, Appoint
         }
 
         if (!appointDuration.equals(sumMinute)){
-            throw new ClientServiceException("预约分解时长错误，分解后的时长必须和预约总时长相等！请重新分解。", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            throw new ClientServiceException("预约分解时长错误，分解后的时长必须和预约总时长相等！请重新分解", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
         return splits;
     }
+
 
 
 }
