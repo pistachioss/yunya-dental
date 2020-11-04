@@ -10,12 +10,16 @@
  */
 package com.yunya.modules.appointment.biz;
 
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemTypeQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -23,12 +27,16 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointItem;
+import com.yunya.models.appointment.ClinicAppointItem;
+import com.yunya.models.emr.MedicalOrthodonticsRecord;
 import com.yunya.modules.appointment.mapper.AppointItemMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -48,6 +56,9 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
     @Autowired
     private ClinicAppointItemBiz clinicAppointItemBiz;
 
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
     /**
      * 添加可预约项目
      * @param appItemForm 预约项目表单数据
@@ -65,9 +76,30 @@ public class AppointItemBiz extends BaseBiz<AppointItemMapper, AppointItem> {
         }
         AppointItem build = EntityUtils.build(appItemForm, AppointItem.class);
         build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        int result = mapper.insertSelective(build);
+        int result = mapper.insertEntity(build);
         if (result <= 0){
             return ResponseUtil.fail(OperationCodeConstants.OBJECT_EDIT_FAIL,"添加失败i！",null);
+        }
+        // 配置项目使用门诊
+        OrganizationModel model = new OrganizationModel();
+        model.setTypes(new Byte[]{2});
+        List<OrganizationInfoDetail> orgInfoList = this.remoteSystemServiceFeign.findOrgInfoList(model);
+        List<ClinicAppointItem> clinicAppointItems = new ArrayList<>();
+        if (StringHelper.isNotEmpty(orgInfoList)) {
+            Integer id = build.getId();
+            String userID = BaseContextHandler.getUserID();
+            String username = BaseContextHandler.getName();
+            orgInfoList.forEach(organizationInfoDetail -> {
+                ClinicAppointItem clinicAppointItem = new ClinicAppointItem();
+                clinicAppointItem.setAppointItemId(id);
+                clinicAppointItem.setInservice(true);
+                clinicAppointItem.setOrgId(organizationInfoDetail.getId());
+                clinicAppointItem.setCrtId(Integer.valueOf(userID));
+                clinicAppointItem.setCrtName(username);
+                clinicAppointItem.setCrtTime(new Date(System.currentTimeMillis()));
+                clinicAppointItems.add(clinicAppointItem);
+            });
+            clinicAppointItemBiz.insertClinicAppointItem(clinicAppointItems);
         }
         return ResponseUtil.success();
     }

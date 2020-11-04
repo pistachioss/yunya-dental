@@ -182,6 +182,12 @@ public class AppointmentVo implements Serializable {
     private String remarks;
 
     /**
+     * 预约取消原因
+     */
+    @ApiModelProperty(value = "预约取消原因")
+    private String cancelReason;
+
+    /**
      * 是否启用 是否有效
      */
     @ApiModelProperty(value = "是否启用 是否有效")

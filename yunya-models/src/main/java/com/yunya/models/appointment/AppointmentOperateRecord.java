@@ -30,6 +30,12 @@ public class AppointmentOperateRecord {
     private Byte operateType;
 
     /**
+     * 修改预约操作项目
+     */
+    @Column(name = "operate_item")
+    private String operateItem;
+
+    /**
      * 预约修改操作之前的内容
      */
     @Column(name = "before_operation")
@@ -333,5 +339,21 @@ public class AppointmentOperateRecord {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取修改预约操作项目
+     * @return 修改预约操作项目
+     */
+    public String getOperateItem() {
+        return operateItem;
+    }
+
+    /**
+     * 设置修改预约操作项目
+     * @param operateItem 修改预约操作项目
+     */
+    public void setOperateItem(String operateItem) {
+        this.operateItem = operateItem;
     }
 }

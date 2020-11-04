@@ -127,6 +127,12 @@ public class Appointment {
     private String remarks;
 
     /**
+     * 取消原因
+     */
+    @Column(name = "cancel_reason")
+    private String cancelReason;
+
+    /**
      * 是否启用 是否有效
      */
     private Boolean inservice;
@@ -651,5 +657,21 @@ public class Appointment {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 获取取消原因
+     * @return cancelReason 取消原因
+     */
+    public String getCancelReason() {
+        return cancelReason;
+    }
+
+    /**
+     * 设置取消原因
+     * @param cancelReason 取消原因
+     */
+    public void setCancelReason(String cancelReason) {
+        this.cancelReason = cancelReason;
     }
 }

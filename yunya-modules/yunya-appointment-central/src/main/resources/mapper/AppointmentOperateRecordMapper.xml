@@ -9,6 +9,7 @@
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
     <result column="appointment_id" jdbcType="INTEGER" property="appointmentId" />
     <result column="operate_type" jdbcType="TINYINT" property="operateType" />
+    <result column="operate_item" jdbcType="VARCHAR" property="operateItem" />
     <result column="before_operation" jdbcType="VARCHAR" property="beforeOperation" />
     <result column="after_operation" jdbcType="VARCHAR" property="afterOperation" />
     <result column="inservice" jdbcType="BIT" property="inservice" />
@@ -30,6 +31,7 @@
 		  aor.org_id as orgId,
 		  aor.appointment_id as appointmentId,
 		  aor.operate_type as operateType,
+		  aor.operate_item as operateItem,
 		  aor.before_operation as beforeOperation,
 		  aor.after_operation as afterOperation,
 		  aor.inservice,

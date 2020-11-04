@@ -98,4 +98,12 @@
         </where>
     </select>
 
+    <!-- 插入实体 -->
+    <insert id="insertEntity" parameterType="com.yunya.models.appointment.AppointItem" useGeneratedKeys="true" keyProperty="id">
+        insert into appoint_item (appoint_type_id,`name`,duration,remarks,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time)
+        values
+        (#{appointTypeId},#{name},#{duration},#{remarks},#{crtId},#{crtName},
+        #{crtTime},#{uptId},#{updName},#{updTime})
+    </insert>
+
 </mapper>

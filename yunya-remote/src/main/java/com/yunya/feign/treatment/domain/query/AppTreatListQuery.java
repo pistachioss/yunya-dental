@@ -18,7 +18,7 @@ import java.io.Serializable;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("APP端就诊列表查询参数模型")
+@ApiModel(value = "AppTreatListQuery",description = "APP端就诊列表查询参数模型")
 @Data
 @ToString
 public class AppTreatListQuery implements Serializable {

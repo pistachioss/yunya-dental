@@ -19,6 +19,7 @@ import com.yunya.models.appointment.ClinicAppointItem;
 import com.yunya.feign.appointment.domain.form.ClinicAppointItemForm;
 import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.ClinicAppointItemMapper;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -131,6 +132,14 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
             return 1;
         }
         return 0;
+    }
+
+    /**
+     * 批量查询门使用项目
+     * @param list
+     */
+    public void insertClinicAppointItem(List<ClinicAppointItem> list) {
+        mapper.insertClinicAppointItem(list);
     }
 
 }
