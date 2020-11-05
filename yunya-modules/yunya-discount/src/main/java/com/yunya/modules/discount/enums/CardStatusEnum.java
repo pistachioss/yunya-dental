@@ -7,9 +7,11 @@ import java.util.*;
  */
 
 public enum CardStatusEnum {
-    SALE_PENDING(0, "生成"),
-    ACTIVE_PENDING(1, "售出"),
+    SALE_PENDING(0, "已生成"),
+    ACTIVE_PENDING(1, "已售出"),
     ACTIVATED(2, "已激活"),
+    PARTIAL_USE(3, "部分使用"),
+    USE_ALL(4, "全部使用"),
     ;
 
     private Integer code;

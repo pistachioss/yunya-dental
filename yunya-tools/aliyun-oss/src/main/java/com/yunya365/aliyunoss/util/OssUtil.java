@@ -68,7 +68,7 @@ public class OssUtil {
         return result;
     }
 
-    public static URL getSignatureUrl(String fullPathName, Boolean isThumb) {
+    public static String getSignatureUrl(String fullPathName, Boolean isThumb) {
         if (ossClient == null) {
             initOSSClient();
         }
@@ -82,7 +82,7 @@ public class OssUtil {
         URL result = ossClient.generatePresignedUrl(req);
 //        ossClient.shutdown();
 //        ossClient = null;
-        return result;
+        return replaceUrl(result);
     }
 
     public static CopyObjectResult copyObject(String srcFullPathName, String dest_FullPathName) {
@@ -158,5 +158,11 @@ public class OssUtil {
 //        ossClient = null;
         }
         return null;
+    }
+
+    public static String replaceUrl(URL url){
+        String urlStr = url.toString();
+        urlStr = urlStr.replace(url.getProtocol() + "://" + url.getHost(), "img");
+        return urlStr;
     }
 }

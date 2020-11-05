@@ -981,14 +981,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		result.setBenefitTotalAmount(totalBenefitAmount);
 		List<PatientItemBenefitVo> itemList = orderItemBos.stream().filter(obj -> CollectionUtils.isNotEmpty(obj.getItemUseBenefitBos()))
 				.map(obj -> {
-					BigDecimal benefitAmount = obj.getBenefitAmount();
-					benefitAmount = benefitAmount == null ? BigDecimal.ZERO : benefitAmount;
+					BigDecimal benefitAmount = obj.getBenefitAmount()  == null ? BigDecimal.ZERO : obj.getBenefitAmount();
 					PatientItemBenefitVo vo = new PatientItemBenefitVo();
 					vo.setOrderDetailId(obj.getOrderDetailId());
 					vo.setType(obj.getType());
 					vo.setItemId(obj.getItemId());
 					vo.setBenefitDiscountRate(obj.getBenefitDiscountRate());
-					vo.setActualAmount(obj.getReceivableAmount().subtract(benefitAmount));
+					vo.setItemBenefitAmount(benefitAmount);
 					List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(obj.getItemUseBenefitBos(), ItemUseBenefitVo.class);
 					vo.setItemBenefitList(itemUseBenefitVos);
 					return vo;

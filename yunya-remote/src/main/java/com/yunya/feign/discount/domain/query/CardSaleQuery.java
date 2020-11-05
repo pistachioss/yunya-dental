@@ -12,7 +12,7 @@ import java.util.*;
  */
 @Getter
 @Setter
-@ApiModel(value = "产品销售-查看配给")
+@ApiModel(value = "产品销售-查看配给参数")
 public class CardSaleQuery {
     @ApiModelProperty(value = "优惠券id", required = true)
     @NotNull
