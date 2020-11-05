@@ -1,5 +1,7 @@
 package com.yunya.modules.discount.biz;
 
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.discount.*;
@@ -16,10 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -42,7 +46,8 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
     private CouponFileInfoBiz couponFileInfoBiz;
     @Autowired
     private CouponCommonInfoMapper couponCommonInfoMapper;
-
+    @Resource
+    private RemoteRabbitMqServiceFeign mqServiceFeign;
     /**
      * 新增
      *
@@ -80,7 +85,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         }else{
             throw new BaseException("已超过系统允许新增代金券产品的最大数量9999，不允许新增！", INSERT_MODEL);
         }
-
+        mqServiceFeign.sendMessage(couponCommonInfo.getId(), BusinessConstants.ADD, BaseCoupon);
         return couponCommonInfo.getId();
 
     }
@@ -163,6 +168,7 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
         }
+        mqServiceFeign.sendMessage(couponCommonInfo.getId(), BusinessConstants.UPDATE, BaseCoupon);
     }
 
     /**
@@ -187,6 +193,8 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         delete(voucheCoupon);
         //清除图片文档信息
         couponFileInfoBiz.delete(couponFiledelete);
+
+        mqServiceFeign.sendMessage(id, BusinessConstants.DELETE, BaseCoupon);
     }
 
     /**
