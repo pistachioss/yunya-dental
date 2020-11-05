@@ -125,6 +125,15 @@ public interface RemoteSystemServiceFeign {
   List<OrganizationInfoDetail> findOrgInfoList(@RequestBody OrganizationModel model);
 
   /**
+   * 根据组织id列表查询组织信息列表
+   *
+   * @param orgIds 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/api/organization/ids", method = RequestMethod.POST)
+  List<OrganizationInfoDetail> findOrgInfoInIds(@RequestBody List<Integer> orgIds);
+
+  /**
    * 根据组织部门ID查询组织部门信息
    *
    * @param id 组织部门ID

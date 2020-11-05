@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yunya.modules.employeeattend.mapper.AttendanceAddressSetMapper">
+  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.AttendanceAddressSet">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="org_id" jdbcType="INTEGER" property="orgId" />
+    <result column="attendance_address" jdbcType="VARCHAR" property="attendanceAddress" />
+    <result column="longitude" jdbcType="VARCHAR" property="longitude" />
+    <result column="latitude" jdbcType="VARCHAR" property="latitude" />
+    <result column="attendance_range" jdbcType="INTEGER" property="attendanceRange" />
+    <result column="crt_id" jdbcType="INTEGER" property="crtId" />
+    <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime" />
+    <result column="upd_id" jdbcType="INTEGER" property="updId" />
+    <result column="upd_time" jdbcType="TIMESTAMP" property="updTime" />
+  </resultMap>
+
+  <!--分页查询考勤地址设置列表-->
+  <select id="findAttendanceAddressSetList" resultType="com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO">
+        select
+            t.id,
+            t.org_id as orgId,
+            t.attendance_address as attendanceAddress,
+            t.longitude,
+            t.latitude,
+            t.attendance_range as attendanceRange
+        from attendance_address_set as t
+        <where>
+          <if test="queryForm.orgId !=null">
+            and t.org_id = #{queryForm.orgId}
+          </if>
+          <if test="queryForm.attendanceAddress !=null and queryForm.attendanceAddress!=''">
+            and t.attendance_address = #{queryForm.attendanceAddress}
+          </if>
+        </where>
+        order by t.crt_time desc
+  </select>
+
+  <!--根据id查询考勤地址设置详情-->
+  <select id="findAttendanceAddressSetById" resultType="com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO">
+        select
+            t.id,
+            t.org_id as orgId,
+            t.attendance_address as attendanceAddress,
+            t.longitude,
+            t.latitude,
+            t.attendance_range as attendanceRange
+        from attendance_address_set t
+        where t.id = #{id}
+  </select>
+</mapper>

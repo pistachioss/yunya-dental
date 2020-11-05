@@ -158,4 +158,30 @@
         parentId,
         orderNum
     </select>
+
+    <!-- 根据组织id列表查询详情列表 -->
+    <select id="selectOrganizationInIds" resultType="com.yunya.modules.system.vo.OrganizationInfoVO">
+        select
+           c.id,
+           c.`name`,
+           c.`type`,
+           c.credit_code as creditCode,
+           cei.clinic_number as clinicNumber,
+           case
+               c.type
+           when 0 then
+                '公司'
+           when 1 then
+                '区域管理'
+           when 2 then
+            cei.abbreviation else '其他'
+           end as abbreviation
+        from
+	        company c
+	    left join clinic_ext_info cei ON c.id = cei.company_id
+        where c.id in
+        <foreach item="item" index="index" collection="orgIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 </mapper>
