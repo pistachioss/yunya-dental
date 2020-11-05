@@ -36,7 +36,7 @@
         pt.inservice,
         pt.crt_id AS crtId,
         pt.crt_name AS crtName,
-        pt.crt_time AS crtTime,
+        date_format(pt.crt_time,'%Y-%m-%d %H:%m:%s') AS crtTime,
         IFNULL(ci.productNum,0) productNum
         FROM
         product_type pt
