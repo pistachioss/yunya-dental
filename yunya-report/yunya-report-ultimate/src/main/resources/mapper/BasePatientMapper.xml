@@ -222,11 +222,11 @@
       </if>
 
       <if test="ageOne != null and ageOne != '' and ageOne > 0">
-        AND ( DATE_FORMAT(now(),'%Y-%m') - DATE_FORMAT(bp.birthday,'%Y-%m') ) &lt;= #{ageOne}
+        AND ( DATE_FORMAT(now(),'%Y-%m-%d') - DATE_FORMAT(bp.birthday,'%Y-%m-%d') ) &lt;= #{ageOne}
       </if>
 
       <if test="ageTwo != null and ageTwo != '' and ageTwo > 0">
-         AND ( DATE_FORMAT(now(),'%Y-%m') - DATE_FORMAT(bp.birthday,'%Y-%m') ) &gt;= #{ageTwo}
+         AND ( DATE_FORMAT(now(),'%Y-%m-%d') - DATE_FORMAT(bp.birthday,'%Y-%m-%d') ) &gt;= #{ageTwo}
       </if>
 
       <if test="ageThree != null and ageThree != '' and ageThree > 0">
