@@ -18,6 +18,7 @@
         <result column="supply_workload" jdbcType="DECIMAL" property="supplyWorkload"/>
         <result column="operate_type" jdbcType="TINYINT" property="operateType"/>
         <result column="is_deleted" jdbcType="BIT" property="deleted"/>
+        <result column="sort" jdbcType="BIT" property="sort"/>
         <result column="crt_id" jdbcType="INTEGER" property="crtId"/>
         <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
         <result column="upd_id" jdbcType="INTEGER" property="updId"/>

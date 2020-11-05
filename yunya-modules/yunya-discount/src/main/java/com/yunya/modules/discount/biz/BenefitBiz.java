@@ -8,6 +8,8 @@ import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.AuthItemBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
+import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
+import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -20,6 +22,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.AuthDiscountBenefit;
 import com.yunya.models.discount.CardBenefit;
+import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DiscountCoupon;
 import com.yunya.models.discount.OrderBenefit;
 import com.yunya.models.discount.PackageCouponItem;
@@ -30,6 +33,7 @@ import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.discount.enums.DiscountError;
 import com.yunya.modules.discount.mapper.AuthDiscountBenefitMapper;
 import com.yunya.modules.discount.mapper.CardBenefitMapper;
+import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import com.yunya.modules.discount.mapper.DiscountCouponMapper;
 import com.yunya.modules.discount.mapper.OrderBenefitMapper;
 import com.yunya.modules.discount.mapper.PackageCouponItemMapper;
@@ -43,6 +47,7 @@ import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,6 +86,8 @@ public class BenefitBiz {
 	private PackageCouponItemMapper packageCouponItemMapper;
 	@Resource
 	private SpecialPackageCouponItemMapper specialPackageCouponItemMapper;
+	@Resource
+	private CouponCommonInfoMapper couponMapper;
 	@Resource
 	private RemoteSystemServiceFeign systemServiceFeign;
 	@Resource
@@ -137,13 +144,16 @@ public class BenefitBiz {
 						cardBenefit.setOperateType(CHARGE.getCode());
 						cardBenefit.setCrtId(loginUserId);
 						cardBenefit.setUpdId(loginUserId);
+						cardBenefit.setSort(itemUseBenefitBo.getId());
 						calculateWordLoad(itemUseBenefitBo, itemBenefitBo, cardBenefit);
 						list.add(cardBenefit);
 					}
 				}
 			}
 			if (CollectionUtils.isNotEmpty(list)) {
-                BigDecimal totalBenefitAmount = data.stream().filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal totalBenefitAmount = data.stream()
+		                .filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
+		                .reduce(BigDecimal.ZERO, BigDecimal::add);
                 OrderBenefit orderBenefit = new OrderBenefit();
                 orderBenefit.setOrderId(orderId);
                 orderBenefit.setTotalAmount(totalBenefitAmount);
@@ -239,7 +249,44 @@ public class BenefitBiz {
 				redisUtils.unlock(lockKey, lockVal);
 			}
 		}
+	}
 
+	/**
+	 * 查询订单优惠明细
+	 * @param orderId 订单id
+	 * @return list
+	 */
+	public List<OrderBenefitDetailVo> getOrderBenefit(Integer orderId) {
+		Example example = new Example(CardBenefit.class);
+		example.createCriteria().andEqualTo("deleted", ZERO)
+				.andEqualTo("orderId", orderId);
+		List<CardBenefit> list = cardBenefitMapper.selectByExample(example);
+		List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
+		if (CollectionUtils.isNotEmpty(list)) {
+			Map<Integer, List<CardBenefit>> listMap = list.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
+			listMap.forEach((k,v) -> {
+				OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+				BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+				vo.setOrderDetailId(k);
+				vo.setItemBenefitAmount(itemBenefitAmount);
+				//按照优惠提交顺序排序
+				v.sort(Comparator.comparing(CardBenefit::getSort));
+				List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+					ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+					benefitVo.setId(obj.getSort());
+					benefitVo.setBenefitId(obj.getCardId());
+					benefitVo.setBenefitType(obj.getBenefitType());
+					benefitVo.setCouponType(obj.getCouponType());
+					CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
+					benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
+					benefitVo.setBenefitAmount(obj.getBenefitAmount());
+					return benefitVo;
+				}).collect(toList());
+				vo.setItemBenefitList(itemBenefits);
+				resultList.add(vo);
+			});
+		}
+		return resultList;
 	}
 
 	/**
@@ -340,6 +387,6 @@ public class BenefitBiz {
 			}
 			log.info("【收费-优惠】解锁完成");
 		}
-
 	}
+
 }

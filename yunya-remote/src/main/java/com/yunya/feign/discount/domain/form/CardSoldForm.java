@@ -1,12 +1,20 @@
 package com.yunya.feign.discount.domain.form;
 
-import com.yunya.feign.discount.valid.*;
-import io.swagger.annotations.*;
-import lombok.*;
-import org.hibernate.validator.group.*;
+import com.yunya.feign.discount.valid.CardSoldGroupSequenceProvider;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.validator.group.GroupSequenceProvider;
 
-import javax.validation.constraints.*;
-import java.io.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Null;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author xiangyang
@@ -17,6 +25,9 @@ import java.io.*;
 @ApiModel(value = "卡券售出模型")
 @GroupSequenceProvider(CardSoldGroupSequenceProvider.class)
 public class CardSoldForm implements Serializable {
+    @ApiModelProperty(value = "卡券id集合", required = true)
+    @NotEmpty
+    private List<Integer> cardIds;
     @ApiModelProperty(value = "优惠券id", required = true)
     private Integer couponId;
     @ApiModelProperty(value = "组织id", required = true)
@@ -26,6 +37,7 @@ public class CardSoldForm implements Serializable {
     @NotBlank
     private String soldTarget;
     @ApiModelProperty(value = "售出对象手机号", required = true)
+    @Pattern(regexp = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|5|6|7|8|9]|17[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$")
     @NotBlank
     private String soldPhoneNumber;
     @ApiModelProperty(value = "售出类型（0:售出 1:置换 2:赠送）", required = true)
