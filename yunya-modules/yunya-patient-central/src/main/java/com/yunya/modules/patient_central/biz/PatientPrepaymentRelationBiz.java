@@ -208,10 +208,18 @@ public class PatientPrepaymentRelationBiz
         patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(
             model.getPrepaidId(), model.getPatientId());
     if (patientPrepaymentsInfo != null) {
+      BigDecimal rechargePrincipal = model.getRechargePrincipal();
+      if (rechargePrincipal == null) {
+        rechargePrincipal = new BigDecimal(0);
+      }
+      BigDecimal rechargeBonus = model.getRechargeBonus();
+      if (rechargeBonus == null) {
+        rechargeBonus = new BigDecimal(0);
+      }
       patientPrepaymentsInfo.setPrepaymentPrincipal(
-          patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
+          patientPrepaymentsInfo.getPrepaymentPrincipal().add(rechargePrincipal));
       patientPrepaymentsInfo.setPrepaymentBonus(
-          patientPrepaymentsInfo.getPrepaymentBonus().add(model.getRechargeBonus()));
+          patientPrepaymentsInfo.getPrepaymentBonus().add(rechargeBonus));
       patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
 
       // 添加预付款充值记录
