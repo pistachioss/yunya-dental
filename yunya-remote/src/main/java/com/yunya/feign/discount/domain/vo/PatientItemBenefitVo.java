@@ -24,8 +24,8 @@ public class PatientItemBenefitVo {
     private Integer itemId;
     @ApiModelProperty(value = "折扣率")
     private BigDecimal benefitDiscountRate;
-    @ApiModelProperty(value = "实收金额")
-    private BigDecimal actualAmount;
+    @ApiModelProperty(value = "项目优惠金额")
+    private BigDecimal itemBenefitAmount;
     @ApiModelProperty(value = "项目使用优惠明细")
     private List<ItemUseBenefitVo> itemBenefitList;
 }
