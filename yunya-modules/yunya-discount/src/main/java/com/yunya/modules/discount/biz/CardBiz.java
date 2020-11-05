@@ -1301,14 +1301,16 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	}
 
 	private PatientOptionalBenefitVo benefitBoConvertVo(Integer patientId, List<PatientBenefitBo> benefitBos) {
+		PatientOptionalBenefitVo vo = new PatientOptionalBenefitVo();
 		//查询卡主信息
 		Set<Integer> ownerIds = benefitBos.stream().map(PatientBenefitBo::getOwnerId).collect(toSet());
-		List<PatientBaseInfoVo> owners = patientFeign.findPatientInfoByIds(Lists.newArrayList(ownerIds));
 		Map<Integer, PatientBaseInfoVo> patientMap = Maps.newHashMap();
-		if (CollectionUtils.isNotEmpty(owners)) {
-			patientMap = owners.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
+		if (CollectionUtils.isNotEmpty(ownerIds)) {
+			List<PatientBaseInfoVo> owners = patientFeign.findPatientInfoByIds(Lists.newArrayList(ownerIds));
+			if (CollectionUtils.isNotEmpty(owners)) {
+				patientMap = owners.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
+			}
 		}
-		PatientOptionalBenefitVo vo = new PatientOptionalBenefitVo();
 		//卡主信息映射
 		final Map<Integer, PatientBaseInfoVo> finalPatientMap = patientMap;
 		//bo结果集映射
