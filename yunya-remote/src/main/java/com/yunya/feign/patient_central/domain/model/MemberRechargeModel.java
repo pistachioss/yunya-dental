@@ -50,7 +50,7 @@ public class MemberRechargeModel implements Serializable {
      * 入账方式
      */
     @ApiModelProperty(value = "入账方式",required = true)
-    private List<AccountedWayModel> accountedWayModelList;
+    private AccountedWayModel accountedWayModel;
 
     /**
      * 备注
