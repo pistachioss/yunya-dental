@@ -329,7 +329,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     String oldPwd = form.getOldPwd();
     String newPwd = form.getNewPwd();
     String confirmPwd = form.getConfirmPwd();
-    String userId = BaseContextHandler.getUserID();
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     // 通过userID查询用户信息
     SysUser sysUser = mapper.selectByPrimaryKey(userId);
     String originPwd = sysUser.getPassword();

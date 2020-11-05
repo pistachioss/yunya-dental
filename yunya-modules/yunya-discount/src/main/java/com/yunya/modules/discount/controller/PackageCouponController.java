@@ -30,7 +30,6 @@ import java.util.List;
 @Api(tags = "兑换券")
 @RestController
 @RequestMapping("/package_coupon")
-@CurrentUser
 public class PackageCouponController {
     @Autowired
     private PackageCouponBiz packageCouponBiz;
@@ -47,6 +46,7 @@ public class PackageCouponController {
      */
     @PostMapping
     @ApiOperation("新增兑换券")
+    @CurrentUser
     public ResponseResult save(@RequestBody @Valid PackageCouponForm packageCouponForm) {
         return ResponseUtil.success(packageCouponBiz.savePackageCoupon(packageCouponForm));
     }
@@ -59,6 +59,7 @@ public class PackageCouponController {
      */
     @PutMapping
     @ApiOperation("修改兑换券")
+    @CurrentUser
     public ResponseResult update(@RequestBody PackageCouponForm packageCouponForm) {
         packageCouponBiz.updatePackageCoupon(packageCouponForm);
         return ResponseUtil.success();
@@ -71,6 +72,7 @@ public class PackageCouponController {
      */
     @DeleteMapping("/{id}")
     @ApiOperation("删除兑换券")
+    @CurrentUser
     public ResponseResult delete(@PathVariable("id") Integer id) {
         packageCouponBiz.deletePackageCoupon(id);
         return ResponseUtil.success();

@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 @Api(tags = "产品分类")
 @RestController
 @RequestMapping("productType")
-@CurrentUser
 public class ProductTypeController {
 
   /** 注入对象 */
