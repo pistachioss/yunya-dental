@@ -23,46 +23,46 @@ import org.springframework.web.bind.annotation.RestController;
  * @description:
  * @since: 1.0.0
  */
-
 @RestController
 @RequestMapping("patient")
 public class BasePatientController {
-    /** 注入服务 */
-    @Autowired private BasePatientBiz basePatientBiz;
+  /** 注入服务 */
+  @Autowired private BasePatientBiz basePatientBiz;
 
-    /**
-     * 患者信息操作
-     * @param model 患者消息
-     * @return ResponseResult<T>
-     */
-    @PostMapping("/operate")
-    public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
-        basePatientBiz.operate(model);
-        return ResponseUtil.success(null);
-    }
+  /**
+   * 患者信息操作
+   *
+   * @param model 患者消息
+   * @return ResponseResult<T>
+   */
+  @PostMapping("/operate")
+  public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
+    basePatientBiz.operate(model);
+    return ResponseUtil.success(null);
+  }
 
-    /**
-     * 根据条件拉取患者数据并更新中间表
-     *
-     * @param form 拉取时间
-     * @return ResponseResult<T>
-     */
-    @ApiOperation("根据时间段批量操作中间表员工信息")
-    @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
-    public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
-        basePatientBiz.pullPatientData(form);
-        return ResponseUtil.success(null);
-    }
+  /**
+   * 根据条件拉取患者数据并更新中间表
+   *
+   * @param form 拉取时间
+   * @return ResponseResult<T>
+   */
+  @ApiOperation("根据时间段批量操作中间表员工信息")
+  @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
+  public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
+    basePatientBiz.pullPatientData(form);
+    return ResponseUtil.success(null);
+  }
 
-    /**
-     * 修改患者信息
-     * @param basePatient 患者消息
-     * @return ResponseResult<T>
-     */
-    @PostMapping("/upd")
-    public ResponseResult<T> upd(@RequestBody BasePatient basePatient) {
-        basePatientBiz.upd(basePatient);
-        return ResponseUtil.success(null);
-    }
-
+  /**
+   * 修改患者信息
+   *
+   * @param basePatient 患者消息
+   * @return ResponseResult<T>
+   */
+  @PostMapping("/upd")
+  public ResponseResult<T> upd(@RequestBody BasePatient basePatient) {
+    basePatientBiz.upd(basePatient);
+    return ResponseUtil.success(null);
+  }
 }

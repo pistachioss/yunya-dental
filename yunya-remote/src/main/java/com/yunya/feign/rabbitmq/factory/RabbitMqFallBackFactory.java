@@ -36,4 +36,5 @@ public class RabbitMqFallBackFactory implements RemoteRabbitMqServiceFeign {
     log.error("remoteRabbitMqServiceFeign: rabbitmq service 未启用");
     return "fail";
   }
+
 }

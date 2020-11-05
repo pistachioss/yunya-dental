@@ -19,5 +19,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 public class PatientExtInfoBiz extends BaseBiz<PatientExtInfoMapper, PatientExtInfo> {
 
-    @Autowired  private PatientExtInfoMapper patientExtInfoMapper;
+  @Autowired private PatientExtInfoMapper patientExtInfoMapper;
 }

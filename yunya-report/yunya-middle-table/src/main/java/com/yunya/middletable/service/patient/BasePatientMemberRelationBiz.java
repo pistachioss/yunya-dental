@@ -7,7 +7,9 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.PatientMemberRelationMapper;
 import com.yunya.middletable.dao.patient.PatientPrepaymentRelationMapper;
 import com.yunya.middletable.dao.report.BasePatientMemberRelationMapper;
-import com.yunya.models.patient_central.*;
+import com.yunya.models.patient_central.PatientBaseInfo;
+import com.yunya.models.patient_central.PatientMemberRelation;
+import com.yunya.models.patient_central.PatientPrepaymentRelation;
 import com.yunya.models.report.BasePatientMemberRelation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,7 +45,7 @@ public class BasePatientMemberRelationBiz
   public void operate(MessageModel msg) {
     Integer id = (Integer) msg.getParamMap().get("id");
     Integer type = (Integer) msg.getParamMap().get("type");
-    Integer operateType =  msg.getOperateType();
+    Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
         addPatientMemberInfo(msg);
@@ -55,27 +57,29 @@ public class BasePatientMemberRelationBiz
         }
         break;
       case 2:
-        if (type == 0){
+        if (type == 0) {
           BasePatientMemberRelation memberRelation = getPatientMemberRelationInfo(id, type);
-          if (memberRelation == null){
+          if (memberRelation == null) {
             BasePatientMemberRelation basePatientMemberRelation = new BasePatientMemberRelation();
             basePatientMemberRelation.setRelationId(id);
             basePatientMemberRelation.setType(type.byteValue());
-            BasePatientMemberRelation baseMemberRelation = mapper.selectByPrimaryKey(basePatientMemberRelation);
+            BasePatientMemberRelation baseMemberRelation =
+                mapper.selectByPrimaryKey(basePatientMemberRelation);
             mapper.deleteByPrimaryKey(baseMemberRelation);
-          }else {
+          } else {
             mapper.insert(memberRelation);
           }
         }
-        if (type == 1){
+        if (type == 1) {
           BasePatientMemberRelation preaidRelation = getPatientMemberRelationInfo(id, type);
-          if (preaidRelation == null){
+          if (preaidRelation == null) {
             BasePatientMemberRelation basePatientMemberRelation = new BasePatientMemberRelation();
             basePatientMemberRelation.setRelationId(id);
             basePatientMemberRelation.setType(type.byteValue());
-            BasePatientMemberRelation baseMemberRelation = mapper.selectByPrimaryKey(basePatientMemberRelation);
+            BasePatientMemberRelation baseMemberRelation =
+                mapper.selectByPrimaryKey(basePatientMemberRelation);
             mapper.deleteByPrimaryKey(baseMemberRelation);
-          }else {
+          } else {
             mapper.insert(preaidRelation);
           }
         }
@@ -85,9 +89,9 @@ public class BasePatientMemberRelationBiz
     }
   }
 
-
   /**
    * 添加会员卡/预付款 关联关系
+   *
    * @param msg
    */
   private void addPatientMemberInfo(MessageModel msg) {
@@ -101,7 +105,7 @@ public class BasePatientMemberRelationBiz
         basePatientMemberRelation.setRelationId(patientMemberRelation.getId());
         basePatientMemberRelation.setMasterCardId(patientMemberRelation.getMasterCardId());
         basePatientMemberRelation.setSecondaryCardId(patientMemberRelation.getSecondaryCardId());
-        basePatientMemberRelation.setType((byte)type.intValue());
+        basePatientMemberRelation.setType((byte) type.intValue());
         basePatientMemberRelation.setBindType(patientMemberRelation.getBindType());
         BasePatientMemberRelation memberRelation = mapper.selectOne(basePatientMemberRelation);
         if (StringHelper.isNotNull(memberRelation)) {
@@ -111,14 +115,16 @@ public class BasePatientMemberRelationBiz
       }
     }
     if (type == 1) {
-      PatientPrepaymentRelation patientPrepaymentRelation = patientPrepaymentRelationMapper.selectByPrimaryKey(id);
+      PatientPrepaymentRelation patientPrepaymentRelation =
+          patientPrepaymentRelationMapper.selectByPrimaryKey(id);
       if (StringHelper.isNotNull(patientPrepaymentRelation)) {
         BasePatientMemberRelation basePatientMemberRelation = new BasePatientMemberRelation();
         basePatientMemberRelation.setRelationId(patientPrepaymentRelation.getId());
         basePatientMemberRelation.setMasterCardId(patientPrepaymentRelation.getMasterCardId());
-        basePatientMemberRelation.setSecondaryCardId(patientPrepaymentRelation.getSecondaryCardId());
-        basePatientMemberRelation.setType((byte)type.intValue());
-        basePatientMemberRelation.setBindType((byte)1);
+        basePatientMemberRelation.setSecondaryCardId(
+            patientPrepaymentRelation.getSecondaryCardId());
+        basePatientMemberRelation.setType((byte) type.intValue());
+        basePatientMemberRelation.setBindType((byte) 1);
         BasePatientMemberRelation memberRelation = mapper.selectOne(basePatientMemberRelation);
         if (StringHelper.isNotNull(memberRelation)) {
           mapper.delete(basePatientMemberRelation);
@@ -130,14 +136,16 @@ public class BasePatientMemberRelationBiz
 
   /**
    * 查询会员或预付款关联关系
+   *
    * @param id 关联关系id
    * @param type 类型id
    * @return BasePatientMemberRelation
    */
   private BasePatientMemberRelation getPatientMemberRelationInfo(Integer id, Integer type) {
-    //查询会员关联关系
+    // 查询会员关联关系
     if (type == 0) {
-      PatientMemberRelation patientMemberRelation = patientMemberRelationMapper.selectByPrimaryKey(id);
+      PatientMemberRelation patientMemberRelation =
+          patientMemberRelationMapper.selectByPrimaryKey(id);
       if (StringHelper.isNotNull(patientMemberRelation)) {
         BasePatientMemberRelation basePatientMemberRelation = new BasePatientMemberRelation();
         basePatientMemberRelation.setRelationId(patientMemberRelation.getId());
@@ -148,65 +156,70 @@ public class BasePatientMemberRelationBiz
         return basePatientMemberRelation;
       }
     }
-    //查询预付款关联关系
-    if (type == 1){
-      PatientPrepaymentRelation patientPrepaymentRelation = patientPrepaymentRelationMapper.selectByPrimaryKey(id);
+    // 查询预付款关联关系
+    if (type == 1) {
+      PatientPrepaymentRelation patientPrepaymentRelation =
+          patientPrepaymentRelationMapper.selectByPrimaryKey(id);
       if (StringHelper.isNotNull(patientPrepaymentRelation)) {
         BasePatientMemberRelation basePatientMemberRelation = new BasePatientMemberRelation();
         basePatientMemberRelation.setRelationId(patientPrepaymentRelation.getId());
         basePatientMemberRelation.setMasterCardId(patientPrepaymentRelation.getMasterCardId());
-        basePatientMemberRelation.setSecondaryCardId(patientPrepaymentRelation.getSecondaryCardId());
+        basePatientMemberRelation.setSecondaryCardId(
+            patientPrepaymentRelation.getSecondaryCardId());
         basePatientMemberRelation.setType((byte) type.intValue());
         basePatientMemberRelation.setBindType((byte) type.intValue());
         return basePatientMemberRelation;
       }
     }
-      return null;
-    }
+    return null;
+  }
 
   /**
    * 拉取某段时间内的组织数据并更新中间表
+   *
    * @param form 拉取时间
    */
   public void pullMemberRelationData(PullForm form) {
     Integer dataType = form.getDataType();
-    if (dataType == 0){
+    if (dataType == 0) {
       String startDate = form.getStartDate();
       String endDate = form.getEndDate();
       Example emp = new Example(PatientBaseInfo.class);
-      emp.createCriteria().andBetween("updTime",startDate,endDate);
-      List<PatientMemberRelation> patientMemberRelationList = patientMemberRelationMapper.selectByExample(emp);
+      emp.createCriteria().andBetween("updTime", startDate, endDate);
+      List<PatientMemberRelation> patientMemberRelationList =
+          patientMemberRelationMapper.selectByExample(emp);
       if (StringHelper.isNotEmpty(patientMemberRelationList)) {
         patientMemberRelationList.forEach(
-                patientMemberRelation -> {
-                  Integer memberRelationId = patientMemberRelation.getId();
-                  mapper.deleteByPrimaryKeyAndType(memberRelationId,dataType);
-                  BasePatientMemberRelation basePatientMember = getPatientMemberRelationInfo(memberRelationId,dataType);
-                  if (basePatientMember != null){
-                    mapper.insertSelective(basePatientMember);
-                  }
-                }
-        );
+            patientMemberRelation -> {
+              Integer memberRelationId = patientMemberRelation.getId();
+              mapper.deleteByPrimaryKeyAndType(memberRelationId, dataType);
+              BasePatientMemberRelation basePatientMember =
+                  getPatientMemberRelationInfo(memberRelationId, dataType);
+              if (basePatientMember != null) {
+                mapper.insertSelective(basePatientMember);
+              }
+            });
       }
     }
 
-    if (dataType == 1){
+    if (dataType == 1) {
       String startDate = form.getStartDate();
       String endDate = form.getEndDate();
       Example emp = new Example(PatientBaseInfo.class);
-      emp.createCriteria().andBetween("updTime",startDate,endDate);
-      List<PatientPrepaymentRelation> prepaymentRelationList = patientPrepaymentRelationMapper.selectByExample(emp);
+      emp.createCriteria().andBetween("updTime", startDate, endDate);
+      List<PatientPrepaymentRelation> prepaymentRelationList =
+          patientPrepaymentRelationMapper.selectByExample(emp);
       if (StringHelper.isNotEmpty(prepaymentRelationList)) {
         prepaymentRelationList.forEach(
-                patientPrepaymentRelation -> {
-                  Integer prepaymentRelationId = patientPrepaymentRelation.getId();
-                  mapper.deleteByPrimaryKeyAndType(prepaymentRelationId,dataType);
-                  BasePatientMemberRelation basePatientMember = getPatientMemberRelationInfo(prepaymentRelationId,dataType);
-                  if (basePatientMember != null){
-                    mapper.insertSelective(basePatientMember);
-                  }
-                }
-        );
+            patientPrepaymentRelation -> {
+              Integer prepaymentRelationId = patientPrepaymentRelation.getId();
+              mapper.deleteByPrimaryKeyAndType(prepaymentRelationId, dataType);
+              BasePatientMemberRelation basePatientMember =
+                  getPatientMemberRelationInfo(prepaymentRelationId, dataType);
+              if (basePatientMember != null) {
+                mapper.insertSelective(basePatientMember);
+              }
+            });
       }
     }
   }

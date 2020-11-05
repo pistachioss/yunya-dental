@@ -22,29 +22,28 @@ import org.springframework.web.bind.annotation.RestController;
  * @description:
  * @since: 1.0.0
  */
-
 @RestController
 @RequestMapping("occurlog")
 public class BasePatientMemberOccurLogController {
-    /** 注入服务 */
-    @Autowired private BasePatientMemberOccurLogBiz basePatientMemberOccurLogBiz;
+  /** 注入服务 */
+  @Autowired private BasePatientMemberOccurLogBiz basePatientMemberOccurLogBiz;
 
-    @PostMapping("/operate")
-    public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
-        basePatientMemberOccurLogBiz.operate(model);
-        return ResponseUtil.success(null);
-    }
+  @PostMapping("/operate")
+  public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
+    basePatientMemberOccurLogBiz.operate(model);
+    return ResponseUtil.success(null);
+  }
 
-    /**
-     * 根据条件拉取员工数据并更新中间表
-     *
-     * @param form 拉取时间
-     * @return
-     */
-    @ApiOperation("根据时间段批量操作中间表员工信息")
-    @PostMapping(value = "/batch", name = "PatientMemberInfoBiz")
-    public ResponseResult<T> pullOccurLogData(@RequestBody PullForm form) {
-        basePatientMemberOccurLogBiz.pullOccurLogData(form);
-        return ResponseUtil.success(null);
-    }
+  /**
+   * 根据条件拉取员工数据并更新中间表
+   *
+   * @param form 拉取时间
+   * @return
+   */
+  @ApiOperation("根据时间段批量操作中间表员工信息")
+  @PostMapping(value = "/batch", name = "PatientMemberInfoBiz")
+  public ResponseResult<T> pullOccurLogData(@RequestBody PullForm form) {
+    basePatientMemberOccurLogBiz.pullOccurLogData(form);
+    return ResponseUtil.success(null);
+  }
 }

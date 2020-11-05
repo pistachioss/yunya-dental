@@ -46,12 +46,14 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    List<PatientKinRelationVo> resultList = patientKinRelationMapper.selectListByPatientId(form.getPatientId());
+    List<PatientKinRelationVo> resultList =
+        patientKinRelationMapper.selectListByPatientId(form.getPatientId());
     return new PageInfo<>(resultList);
   }
 
   /**
    * 添加患者亲属关系
+   *
    * @param patientKinRelationModel 患者亲属关系Model
    * @return ResponseResult
    */
@@ -74,6 +76,7 @@ public class PatientKinRelationBiz extends BaseBiz<PatientKinRelationMapper, Pat
 
   /**
    * 修改患者亲属关系
+   *
    * @param patientKinRelationForm 患者亲属关系修改模板
    */
   public void update(PatientKinRelationForm patientKinRelationForm) {

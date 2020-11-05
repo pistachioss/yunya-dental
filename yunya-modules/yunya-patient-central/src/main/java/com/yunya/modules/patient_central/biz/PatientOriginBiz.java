@@ -70,7 +70,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     if (patientOrigin.getParentId() == null) {
       Integer maxiType = mapper.selectTypeMaximum();
       if (maxiType >= 0) { // 查询患者来源type字典最大值
-        patientOrigin.setOriginType(maxiType+1);
+        patientOrigin.setOriginType(maxiType + 1);
         patientOrigin.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
         patientOrigin.setCrtName(BaseContextHandler.getName());
         mapper.insertSelective(patientOrigin);
@@ -91,6 +91,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
 
   /**
    * 查询患者来源树状结构列表
+   *
    * @return List<PatientOriginTreeVo>
    */
   public List<PatientOriginTreeVo> initPatientOriginTree() {
@@ -119,6 +120,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
 
   /**
    * 患者来源修改
+   *
    * @param patientOriginForm 患者来源修改Form
    * @return ResponseResult
    */
@@ -126,10 +128,10 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     PatientOrigin patientOrigin = new PatientOrigin();
     BeanUtils.copyProperties(patientOriginForm, patientOrigin);
     PatientOrigin patientOriginv = mapper.selectByPrimaryKey(patientOrigin.getId());
-    if(patientOriginv != null ){
+    if (patientOriginv != null) {
       if (patientOriginv.getAllowOperate() == false) {
         return ResponseUtil.fail(
-                OperationCodeConstants.OBJECT_EDIT_FAIL, "该患者来源不可编辑", patientOriginv);
+            OperationCodeConstants.OBJECT_EDIT_FAIL, "该患者来源不可编辑", patientOriginv);
       }
       if (patientOrigin.getTimeLimit() == 0) {
         patientOrigin.setLimitStartDate(null);
@@ -139,7 +141,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       patientOrigin.setUpdName(BaseContextHandler.getName());
       patientOrigin.setUpdTime(new Date());
       mapper.updateByPrimaryKeySelective(patientOrigin);
-    }else{
+    } else {
       return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST, "未找到患者来源", patientOriginv);
     }
     return ResponseUtil.success();
@@ -147,6 +149,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
 
   /**
    * 删除患者来源
+   *
    * @param id 患者来源id
    * @return ResponseResult
    */
@@ -162,6 +165,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
 
   /**
    * 模糊查询员工/老患者信息
+   *
    * @param form 模糊查询员工和患者信息QueryForm
    * @return ResponseResult
    */

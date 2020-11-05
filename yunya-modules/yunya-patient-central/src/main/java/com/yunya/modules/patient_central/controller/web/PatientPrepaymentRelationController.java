@@ -6,10 +6,7 @@
 package com.yunya.modules.patient_central.controller.web;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
@@ -173,5 +170,6 @@ public class PatientPrepaymentRelationController {
   public ResponseResult expendList(@RequestBody PrepaidExpendRecordQueryForm queryForm) {
     return ResponseUtil.success(patientPrepaymentBiz.expendList(queryForm));
   }
+
 
 }

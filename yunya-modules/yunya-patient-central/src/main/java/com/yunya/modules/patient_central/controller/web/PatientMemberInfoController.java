@@ -42,6 +42,7 @@ public class PatientMemberInfoController {
 
   /**
    * 会员基本信息
+   *
    * @param id 患者id
    * @return ResponseResult<MemberBaseInfoVo>
    */
@@ -53,6 +54,7 @@ public class PatientMemberInfoController {
 
   /**
    * 会员卡关联查询
+   *
    * @param patientMemberRelationQueryForm 患者会员卡关联关系
    * @return ResponseResult<MemberRelationVo>
    */
@@ -66,6 +68,7 @@ public class PatientMemberInfoController {
 
   /**
    * 会员卡付款余额查询
+   *
    * @param id 患者id
    * @return PatientPrepaymentBalanceVo
    */
@@ -75,9 +78,9 @@ public class PatientMemberInfoController {
     return ResponseUtil.success(this.patientMemberInfoBiz.balancePayment(id));
   }
 
-
   /**
    * 添加会员卡关联关系/共享值关联关系
+   *
    * @param form 会员卡关联关系
    * @return ResponseResult
    */
@@ -90,6 +93,7 @@ public class PatientMemberInfoController {
 
   /**
    * 删除会员卡关联关系
+   *
    * @param cardRelationForm 会员卡关系删除
    * @return ResponseResult
    */
@@ -102,6 +106,7 @@ public class PatientMemberInfoController {
 
   /**
    * 开卡
+   *
    * @param openCardModel 开卡Model
    * @return ResponseResult
    */
@@ -115,6 +120,7 @@ public class PatientMemberInfoController {
 
   /**
    * 会员卡变更
+   *
    * @param form 会员卡类型修改Form
    * @return ResponseResult
    */
@@ -128,17 +134,20 @@ public class PatientMemberInfoController {
 
   /**
    * 变更记录
+   *
    * @param cardNumber 会员卡号
    * @return ResponseResult<List<PatientMemberChangeLogVo>>
    */
   @ApiOperation("变更记录")
   @GetMapping("/changeLog/{cardNumber}")
-  public ResponseResult<List<PatientMemberChangeLogVo>> changeLog(@PathVariable(value = "cardNumber") String cardNumber) {
+  public ResponseResult<List<PatientMemberChangeLogVo>> changeLog(
+      @PathVariable(value = "cardNumber") String cardNumber) {
     return ResponseUtil.success(patientMemberInfoBiz.changeLog(cardNumber));
   }
 
   /**
    * 充值
+   *
    * @param memberRechargeModel 会员卡充值Model
    * @return ResponseResult
    */
@@ -152,18 +161,21 @@ public class PatientMemberInfoController {
 
   /**
    * 充值记录
+   *
    * @param queryFormform 充值记录QueryForm
    * @return ResponseResult<PageInfo<RechargeRecordVo>>
    */
   @CurrentUser
   @ApiOperation("充值记录")
   @PostMapping("/rechargeRecord")
-  public ResponseResult<PageInfo<RechargeRecordVo>> rechargeRecord(@RequestBody RechargeRecordQueryForm queryFormform) {
+  public ResponseResult<PageInfo<RechargeRecordVo>> rechargeRecord(
+      @RequestBody RechargeRecordQueryForm queryFormform) {
     return ResponseUtil.success(patientMemberInfoBiz.rechargeRecord(queryFormform));
   }
 
   /**
    * 退费
+   *
    * @param model 会员卡退费Model
    * @return ResponseResult
    */
@@ -177,32 +189,41 @@ public class PatientMemberInfoController {
 
   /**
    * 退费记录
+   *
    * @param queryForm 退费记录QueryForm
    * @return ResponseResult<PageInfo<MemberReturnRecordVo>>
    */
   @CurrentUser
   @ApiOperation("退费记录")
   @PostMapping("/refundList")
-  public ResponseResult<PageInfo<MemberReturnRecordVo>> refundList(@RequestBody MemberReturnRecordQueryForm queryForm) {
+  public ResponseResult<PageInfo<MemberReturnRecordVo>> refundList(
+      @RequestBody MemberReturnRecordQueryForm queryForm) {
     return ResponseUtil.success(patientMemberInfoBiz.refundList(queryForm));
   }
 
   /**
    * 消费记录
+   *
    * @param queryForm 消费记录查询QueryForm
    * @return ResponseResult<PageInfo<MemberExpendRecordVo>>
    */
   @CurrentUser
   @ApiOperation("消费记录")
   @PostMapping("/expendList")
-  public ResponseResult<PageInfo<MemberExpendRecordVo>> expendList(@RequestBody MemberExpendRecordQueryForm queryForm) {
+  public ResponseResult<PageInfo<MemberExpendRecordVo>> expendList(
+      @RequestBody MemberExpendRecordQueryForm queryForm) {
     return ResponseUtil.success(patientMemberInfoBiz.expendList(queryForm));
   }
 
+  /**
+   *  会员卡消费
+   * @param model 消费model
+   * @return ResponseResult
+   */
   @CurrentUser
   @ApiOperation("会员卡消费")
   @RequestMapping(value = "/member/expend", method = RequestMethod.POST)
-  public ResponseResult expend(@RequestBody MemberExpendRecordModel model ){
+  public ResponseResult expend(@RequestBody MemberExpendRecordModel model) {
     return patientMemberInfoBiz.expend(model);
   }
 }

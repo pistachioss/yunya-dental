@@ -45,6 +45,7 @@ public class PatientRecommendRelationController {
 
   /**
    * 患者推荐列表查询
+   *
    * @param patientRecommendRelationQueryForm 患者关系推荐信息查询模型类
    * @return ResponseResult<PageInfo<PatientRecommendRelationVo>>
    */
@@ -58,6 +59,7 @@ public class PatientRecommendRelationController {
 
   /**
    * 查询患者推荐关系拓展图
+   *
    * @param form 患者关系推荐图
    * @return ResponseResult<List<PatientRecommendRelationVo>>
    */

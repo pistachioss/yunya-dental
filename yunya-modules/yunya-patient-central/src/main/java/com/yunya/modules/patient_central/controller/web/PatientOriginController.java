@@ -47,18 +47,21 @@ public class PatientOriginController {
 
   /**
    * 新建患者来源分类
+   *
    * @param patientOriginModel 患者来源分类添加模板类
    * @return ResponseResult<PageInfo<PrepaidExpendRecordVo>>
    */
   @CurrentUser
   @ApiOperation("新建患者来源分类")
   @PostMapping("/add")
-  public ResponseResult<PageInfo<PrepaidExpendRecordVo>> add(@RequestBody @Validated PatientOriginModel patientOriginModel) {
+  public ResponseResult<PageInfo<PrepaidExpendRecordVo>> add(
+      @RequestBody @Validated PatientOriginModel patientOriginModel) {
     return this.patientOriginBiz.add(patientOriginModel);
   }
 
   /**
    * 查询患者来源树状结构列表
+   *
    * @return ResponseResult<List<PatientOriginTreeVo>>
    */
   @ApiOperation("查询患者来源树状结构列表")
@@ -69,6 +72,7 @@ public class PatientOriginController {
 
   /**
    * 修改患者来源
+   *
    * @param patientOriginForm 患者来源修改Form
    * @return ResponseResult
    */
@@ -81,6 +85,7 @@ public class PatientOriginController {
 
   /**
    * 删除患者来源
+   *
    * @param id 患者来源id
    * @return ResponseResult
    */
@@ -92,6 +97,7 @@ public class PatientOriginController {
 
   /**
    * 模糊查询员工/老患者信息
+   *
    * @param form 模糊查询员工和患者信息QueryForm
    * @return ResponseResult
    */
@@ -104,17 +110,20 @@ public class PatientOriginController {
 
   /**
    * 查询活动/合作商信息
+   *
    * @param form 查询患者来源类型
    * @return ResponseResult<List<PatientOrigin>>
    */
   @ApiOperation("查询活动/合作商信息")
   @PostMapping("/originTypeList")
-  public ResponseResult<List<PatientOrigin>> findPatientOriginByTypt(@RequestBody OriginTypeQueryForm form) {
+  public ResponseResult<List<PatientOrigin>> findPatientOriginByTypt(
+      @RequestBody OriginTypeQueryForm form) {
     return ResponseUtil.success(this.patientOriginBiz.findPatientOriginByTypt(form));
   }
 
   /**
    * 查询患者来源类型
+   *
    * @return ResponseResult<List<PatientOriginVo>>
    */
   @ApiOperation("查询患者来源类型")

@@ -76,4 +76,5 @@ public class MiddleTableMsgRest {
         messageModel.setMsgCategoryEnum(msgCategoryEnum);
         return sendMessageTemp(messageModel);
     }
+
 }
