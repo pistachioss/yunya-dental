@@ -13,7 +13,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -112,7 +111,7 @@ public class BaseController {
     public ResponseResult getUrl(@RequestBody final OssUrlForm ossUrlForm) throws Exception {
 
         final String objectName = this.makeObjectFullName(ossUrlForm);
-        final URL url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
+        final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
         return ResponseUtil.success(url);
     }
 
@@ -120,10 +119,10 @@ public class BaseController {
     @ApiOperation("2.多资源：获取外网访问URL列表")
     public ResponseResult getUrl(@RequestBody final List<OssUrlForm> ossUrlForms) throws Exception {
 
-        final List<URL> urls = new ArrayList<>();
+        final List<String> urls = new ArrayList<>();
         ossUrlForms.forEach(ossUrlForm -> {
             final String objectName = this.makeObjectFullName(ossUrlForm);
-            final URL url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
+            final String url = OssUtil.getSignatureUrl(objectName, ossUrlForm.getIsThumb());
             urls.add(url);
         });
 

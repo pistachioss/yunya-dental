@@ -12,8 +12,6 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.URL;
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -80,7 +78,7 @@ public class BaseTmpController {
                                             @RequestParam(value = "is_Thumb") Boolean isThumb) throws Exception {
 
         String objectName = makeObjectFullName(oss_category, id, filename);
-        URL url = OssUtil.getSignatureUrl(objectName, isThumb);
+        String url = OssUtil.getSignatureUrl(objectName, isThumb);
         return ResponseUtil.success(url);
     }
 }
