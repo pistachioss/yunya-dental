@@ -26,6 +26,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -477,12 +478,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             AppointmentListItemVo itemVo = this.combinationAppointListItemVo(appointmentVo);
             appointmentList.add(itemVo);
         });
-        // 匹配姓名
-        String patientNameReg = "^[\\u4e00-\\u9fa5]{0,}$";
-        // 匹配手机号
-        String mobileReg = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
-        // 匹配拼音名字
-        String pinyinNameReg = "^[A-Za-z]+$";
         if (query.getAppointType() != null
                 || !StringHelper.isEmpty(query.getDentistName())
                 || !StringHelper.isEmpty(query.getMedicalNumber())
@@ -511,12 +506,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                     String patientName = appointmentListItemVo.getPatientName();
                                     String pinyinName = appointmentListItemVo.getPinyinName();
                                     // 按姓名检索
-                                    if (search.matches(patientNameReg) && !StringHelper.isEmpty(patientName)){
+                                    if (search.matches(BusinessConstants.NAME_REGEXP) && !StringHelper.isEmpty(patientName)){
                                         result = result | patientName.contains(search);
-                                    } else if (search.matches(mobileReg) && !StringHelper.isEmpty(mobile)) {
+                                    } else if (search.matches(BusinessConstants.MOBILE_REGEXP) && !StringHelper.isEmpty(mobile)) {
                                         // 按手机号检索
                                         result = result |  mobile.equals(search);
-                                    } else if (search.matches(pinyinNameReg) && !StringHelper.isEmpty(pinyinName)){
+                                    } else if (search.matches(BusinessConstants.PINYIN_REGEXP) && !StringHelper.isEmpty(pinyinName)){
                                         // 按拼音名字检索
                                         result = result |  pinyinName.contains(search);
                                     }

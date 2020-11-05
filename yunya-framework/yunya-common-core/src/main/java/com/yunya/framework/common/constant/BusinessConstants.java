@@ -93,4 +93,12 @@ public class BusinessConstants {
   public static final Integer ADD = 0;
   public static final Integer UPDATE = 1;
   public static final Integer DELETE = 2;
+
+  /********************************预约中心正则*****************************/
+  /** 手机号正则表达式 */
+  public static final String MOBILE_REGEXP = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|16[0|1|2|3|5|6|7|8|9]|17[0|1|2|3|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
+  /** 名字正则表达式 */
+  public static final String NAME_REGEXP = "^[\\u4e00-\\u9fa5]{0,}$";
+  /** 拼音名字正则表达式 */
+  public static final String PINYIN_REGEXP = "^[A-Za-z]+$";
 }
