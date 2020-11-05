@@ -129,7 +129,7 @@ public class MedicalCommonRecordBiz extends BaseBiz<MedicalCommonRecordMapper, M
             }
             medicalGeneralNumMapper.saveList(numList);
         }
-        return ResponseUtil.success(result);
+        return ResponseUtil.success(medicalCommonRecord.getId());
     }
 
     public List<MedicalCommonRecord> findList(MedicalCommonRecord model) {
