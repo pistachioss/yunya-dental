@@ -509,6 +509,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
     orderRecord.setId(null);
     orderRecord.setPatientId(patientId);
+    orderRecord.setOrgId(orgId);
     orderRecord.setTreatmentRecordId(treatmentRecordId);
     String orderRecordNumber = generateOrderRecordNumber(orgId);
     orderRecord.setOrderRecordNum(orderRecordNumber);
