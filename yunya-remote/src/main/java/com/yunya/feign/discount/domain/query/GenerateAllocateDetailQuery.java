@@ -13,7 +13,7 @@ import java.time.*;
  */
 @Getter
 @Setter
-@ApiModel(value = "查看生成分配明细模型")
+@ApiModel(value = "查看生成分配明细参数模型")
 public class GenerateAllocateDetailQuery {
     @ApiModelProperty(value = "优惠券id", required = true)
     @NotNull
