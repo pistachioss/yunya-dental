@@ -268,7 +268,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             AppointOperationModel model = new AppointOperationModel();
             model.setAppointmentId(id);
             model.setOperateType((byte) 3);
-            model.setRemarks(remarks);
             appointOperateRecordBiz.insertAppointmentOperateRecord(model);
         } else if (appointState == 2){
             // 取消预约
@@ -290,7 +289,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             AppointOperationModel model = new AppointOperationModel();
             model.setAppointmentId(id);
             model.setOperateType((byte) 2);
-            model.setRemarks(remarks);
             appointOperateRecordBiz.insertAppointmentOperateRecord(model);
         }
         if (i > 0) {
@@ -325,7 +323,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         appointment.setInservice(false);
         appointment.setAppointStatus((byte) 2);
-        appointment.setRemarks(cause);
+        appointment.setCancelReason(cause);
         appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointment.setUpdName(BaseContextHandler.getName());
         appointment.setUpdTime(new Date(System.currentTimeMillis()));
@@ -434,7 +432,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
         // 发送消息更新中间表就诊流程
-        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
+//        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
         // 保存预约更新被修改的日期、医生
         appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
@@ -832,7 +830,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             appointOperationModel.setAppointmentId(appointment.getId());
             appointOperationModel.setOrgId(Integer.valueOf(BaseContextHandler.getUserID()));
             appointOperationModel.setAfterOperation(appointment.getConfirmStatus()?"确认":"未确认");
-            appointOperationModel.setRemarks("确认预约");
             Integer recordResult = appointOperateRecordBiz.insertAppointmentOperateRecord(appointOperationModel);
             if (recordResult > 0) {
                 return ResponseUtil.success();

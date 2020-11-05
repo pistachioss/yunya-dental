@@ -75,7 +75,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         if (null != appointDateBefore && null != appointDateAfter && !appointDateBefore.equals(appointDateAfter)){
             record.setBeforeOperation(appointment.getAppointDate().toString());
             record.setAfterOperation(appointmentBaseForm.getAppointDate().toString());
-            record.setRemarks("预约日期");
+            record.setOperateItem("预约日期");
             mapper.insertSelective(record);
         }
         // 保存 预约时间 修改记录
@@ -84,7 +84,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         if (null != appointTimeBefore && null != appointTimeAfter && !appointTimeBefore.equals(appointTimeAfter)){
             record.setBeforeOperation(appointment.getAppointTime());
             record.setAfterOperation(appointmentBaseForm.getAppointTime());
-            record.setRemarks("预约时间");
+            record.setOperateItem("预约时间");
             mapper.insertSelective(record);
         }
         // 保存 预约医生 修改记录
@@ -96,7 +96,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             if (beforeModifyDentistInfo != null && afterModifyDentistInfo != null){
                 record.setBeforeOperation(beforeModifyDentistInfo.getName());
                 record.setAfterOperation(afterModifyDentistInfo.getName());
-                record.setRemarks("预约医生");
+                record.setOperateItem("预约医生");
                 mapper.insertSelective(record);
             }
         }
@@ -109,7 +109,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             if (beforeModifyDentistInfo != null && afterModifyDentistInfo != null){
                 record.setBeforeOperation(beforeModifyDentistInfo.getName());
                 record.setAfterOperation(afterModifyDentistInfo.getName());
-                record.setRemarks("预约助手");
+                record.setOperateItem("预约助手");
                 mapper.insertSelective(record);
             }
         }
@@ -119,7 +119,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         if (null != appointDurationBefore && null != appointDurationAfter && !appointDurationBefore.equals(appointDurationAfter)){
             record.setBeforeOperation(String.valueOf(appointment.getAppointDuration()));
             record.setAfterOperation(String.valueOf(appointmentBaseForm.getAppointDuration()));
-            record.setRemarks("预约时长");
+            record.setOperateItem("预约时长");
             mapper.insertSelective(record);
         }
         // 保存 预约科室 修改记录
@@ -131,7 +131,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             if (beforeModifyDepartmentRoomInfo != null && afterModifyDepartmentRoomtInfo != null){
                 record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
                 record.setAfterOperation(afterModifyDepartmentRoomtInfo.getDeptRoomName());
-                record.setRemarks("预约科室");
+                record.setOperateItem("预约科室");
                 mapper.insertSelective(record);
             }
         }
@@ -141,7 +141,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         if (null != confirmStatusBefore && null != confirmStatusAfter && !confirmStatusBefore.equals(confirmStatusAfter)){
             record.setBeforeOperation(appointment.getConfirmStatus() ? "确认" : "未确认");
             record.setAfterOperation(appointmentBaseForm.getConfirmStatus() ? "确认" : "未确认");
-            record.setRemarks("预约确认");
+            record.setOperateItem("预约确认");
             mapper.insertSelective(record);
         }
         // 保存 预约设备 修改记录
@@ -153,7 +153,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             if (beforeModifyDeviceItemInfo != null && afterModifyDeviceItemtInfo != null){
                 record.setBeforeOperation(beforeModifyDeviceItemInfo.getNumber());
                 record.setAfterOperation(afterModifyDeviceItemtInfo.getNumber());
-                record.setRemarks("预约设备");
+                record.setOperateItem("预约设备");
             }
             mapper.insertSelective(record);
         }
@@ -163,7 +163,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         if (null != appointContentBefore && null != appointContentAfter && !appointContentBefore.equals(appointContentAfter)){
             record.setBeforeOperation(appointment.getAppointContent());
             record.setAfterOperation(appointmentBaseForm.getAppointContent());
-            record.setRemarks("预约内容");
+            record.setOperateItem("预约内容");
             mapper.insertSelective(record);
         }
         // 保存 预约备注 修改记录
@@ -172,7 +172,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         if (null != remarksBefore && null != remarksAfter && !remarksBefore.equals(remarksAfter)){
             record.setBeforeOperation(appointment.getRemarks());
             record.setAfterOperation(appointmentBaseForm.getRemarks());
-            record.setRemarks("预约备注");
+            record.setOperateItem("预约备注");
             mapper.insertSelective(record);
         }
     }

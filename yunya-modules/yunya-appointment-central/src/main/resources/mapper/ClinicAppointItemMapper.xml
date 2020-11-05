@@ -38,4 +38,14 @@
     select cai.* from clinic_appoint_item cai where cai.appoint_item_id = #{appointItemId}
   </select>
 
+  <!-- 批量查询门使用项目 -->
+  <insert id="insertClinicAppointItem" useGeneratedKeys="true">
+      insert into clinic_appoint_item (id,org_id,appoint_item_id,remarks,inservice,
+      crt_id,crt_name,crt_time,upt_id,upd_name,upd_time) values
+      <foreach collection="list" item="item" separator="," >
+        (#{item.id},#{item.orgId},#{item.appointItemId},#{item.remarks},
+        #{item.inservice},#{item.crtId},#{item.crtName},#{item.crtTime},#{item.uptId},#{item.updName},#{item.updTime})
+      </foreach>
+  </insert>
+
 </mapper>

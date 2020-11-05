@@ -372,6 +372,7 @@ public class OrganizationBiz {
     // 将obj转Map
     OrganizationQueryForm form = new OrganizationQueryForm();
     BeanUtils.copyProperties(model, form);
+    form.setWhetherPage(false);
     return findList(form).getList();
   }
 

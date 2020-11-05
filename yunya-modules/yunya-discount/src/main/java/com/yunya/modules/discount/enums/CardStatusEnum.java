@@ -7,8 +7,8 @@ import java.util.*;
  */
 
 public enum CardStatusEnum {
-    SALE_PENDING(0, "待售出"),
-    ACTIVE_PENDING(1, "待激活"),
+    SALE_PENDING(0, "生成"),
+    ACTIVE_PENDING(1, "售出"),
     ACTIVATED(2, "已激活"),
     ;
 

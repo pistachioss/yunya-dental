@@ -128,7 +128,7 @@ public class BaseCouponItemServiceImpl extends BaseBiz<BaseCouponItemMapper, Bas
 		}
 	}
 
-	public RestErrorBo operateData(Integer couponId) {
+	private RestErrorBo operateData(Integer couponId) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(couponId);
 		if (coupon == null) {

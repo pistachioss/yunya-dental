@@ -3,7 +3,11 @@ package com.yunya.modules.discount.form;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import javax.persistence.Id;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import java.util.Date;
 
 /**
@@ -35,6 +39,9 @@ public class CouponAllocateForm {
      * 配给数量
      */
     @ApiModelProperty("配给数量")
+    @Pattern(regexp = "^[0-9]*$",message = "输入参数格式错误")
+    @Max(value = 10000,message = "配给数量最大为10000")
+    @Min(value = 0,message = "配给数量最小为0")
     private Integer allocateNum = 0;
 
     /**

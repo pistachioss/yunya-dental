@@ -60,6 +60,8 @@ public class BusinessConstants {
   public static Integer MEDICAL_AUDIT_PENDING_STATUS = 1;
   /** 电子待主治医生提交状态 */
   public static Integer NORMAL_MEDICAL_STATUS = 0;
+  public static Integer ZERO = 0;
+  public static Integer ONE = 1;
 
   /**************************** 开单记录状态 *******************************/
   /** 账单未锁定 */

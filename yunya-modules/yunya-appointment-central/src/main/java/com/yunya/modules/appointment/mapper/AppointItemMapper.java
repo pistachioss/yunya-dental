@@ -34,4 +34,11 @@ public interface AppointItemMapper extends Mapper<AppointItem> {
      * @return
      */
     List<AppointmentItemVo> findAppointItemByExample(@Param("form") AppointItemQuery form);
+
+    /**
+     * 插入实体
+     * @param model 实体
+     * @return 返回影响行数
+     */
+    Integer insertEntity(AppointItem model);
 }

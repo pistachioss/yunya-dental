@@ -304,7 +304,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			long end = System.currentTimeMillis();
 			log.info("卡券[{}]生成分配完成，执行时间[{}]秒[{}]毫秒", couponId, (end - start) / 1000, (end - start) % 1000);
 			mqServiceFeign.sendMessage(buildMessage(couponId, generateDate));
-			log.info("【生成卡券发送消息成功】：优惠券id[{}]批次[{}]", couponId, generateDate);
+			log.info("【生成卡券发送消息成功】：优惠券id[{}]，批次[{}]", couponId, generateDate);
 			return ResponseUtil.success();
 		} finally {
 			if (locked) {
@@ -347,7 +347,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		if (CollectionUtils.isEmpty(cardList) || sumAllocate != cardList.size()) {
 			log.warn("【卡券生成失败】");
 			errorBo.setError(DiscountError.FAIL_TO_GENERATE);
-	return errorBo;
+			return errorBo;
 		}
 		log.info("【卡券明细任务执行结束】卡券数量count：[{}]", cardList.size());
 		//3. 生成卡券信息
@@ -497,10 +497,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				return ResponseUtil.error(DiscountError.CARD_SOLD_OUT, orgName, couponInfo.getName());
 			}
 			//5. 卡券售卖
-			Card updateCard = soldVoConvertCard(card, form, loginUserId);
-			mapper.updateByPrimaryKeySelective(updateCard);
+			updateCardForSold(card, form, loginUserId);
 			// TODO: 2020/8/26 发短信
-			// TODO: 2020/8/28 对接报表
+			mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
+			log.info("【售卖卡券发送消息成功】：卡券id[{}]", cardId);
 			return ResponseUtil.success();
 		} finally {
 			if (locked) {
@@ -589,8 +589,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			return ResponseUtil.error(DiscountError.COUPON_NOT_EXIST);
 		}
 		//更新取消卡券售出
-		Card cancelCard = cancelSoldVoConvertCard(card);
-		mapper.updateByPrimaryKey(cancelCard);
+		updateCardForCancel(card);
+		mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
+		log.info("【取消售出卡券发送消息成功】：卡券id[{}]", couponId);
 		return ResponseUtil.success();
 	}
 
@@ -614,10 +615,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		String qrCodeData = new String(Base64.getDecoder().decode(qrCode));
 		List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
 		Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
-		if (card == null) {
-			return null;
-		}
-		if (!ACTIVE_PENDING.equals(card.getStatus())) {
+		if (card == null || !ACTIVE_PENDING.equals(card.getStatus())) {
 			return null;
 		}
 		return mapper.findByCardNumAndPass(card.getCardNumber(), card.getCardPassword());
@@ -649,7 +647,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			RestErrorBo errorBo;
 			//2. 检查卡券
 			Card card = mapper.selectByPrimaryKey(cardId);
-			errorBo = checkCardForOwnActive(cardId, card);
+			errorBo = checkCardForOwnActive(form.getPayId(), card);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
@@ -658,20 +656,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
 			}
-			if (FALSE.equals(card.getSoldAndPay())) {
-				if (form.getPayId() == null) {
-					log.warn("卡券未收费：{}", card.getCardNumber());
-					return ResponseUtil.error(DiscountError.CARD_NOT_CHARGE);
-				}
-			} else {
-				if (form.getPayId() != null) {
-					log.warn("卡券已收费：{}", card.getCardNumber());
-					return ResponseUtil.error(DiscountError.CARD_IS_CHARGED);
-				}
-			}
 			//4. 卡券激活
-			Card ownActiveCard = ownActiveVoConvertCard(patientId, form, loginUserId);
-			mapper.updateByPrimaryKeySelective(ownActiveCard);
+			updateOwnActiveCard(patientId, form, loginUserId);
+			mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
+			log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
 			return ResponseUtil.success();
 		} finally {
 			if (locked) {
@@ -691,7 +679,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	public ResponseResult otherActiveCard(Integer patientId, OtherCardActiveForm form) {
 		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
-		String cardNumber = form.getCardNumber();
+		String cardNumber = form.getThirdCardNumber();
 		String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CARD_ACTIVE, cardNumber);
 		String lockVal = String.valueOf(loginUserId);
 		log.info("第三方平台卡券激活开始提交：[{}]", cardNumber);
@@ -716,8 +704,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				return ResponseUtil.error(errorBo.getError());
 			}
 			//3. 第三方平台卡券激活
-			Card insertOtherCard = otherActiveVoConvertCard(patientId, form, loginUserId);
-			mapper.insertSelective(insertOtherCard);
+			Card activeCard = insertOtherActiveCard(patientId, form, loginUserId);
+			mqServiceFeign.sendMessage(activeCard.getId(), ADD, BaseCardSingle);
+			log.info("【第三方激活发送消息成功】：卡券id[{}]", activeCard.getId());
 			return ResponseUtil.success();
 		} finally {
 			if (locked) {
@@ -1312,14 +1301,16 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	}
 
 	private PatientOptionalBenefitVo benefitBoConvertVo(Integer patientId, List<PatientBenefitBo> benefitBos) {
+		PatientOptionalBenefitVo vo = new PatientOptionalBenefitVo();
 		//查询卡主信息
 		Set<Integer> ownerIds = benefitBos.stream().map(PatientBenefitBo::getOwnerId).collect(toSet());
-		List<PatientBaseInfoVo> owners = patientFeign.findPatientInfoByIds(Lists.newArrayList(ownerIds));
 		Map<Integer, PatientBaseInfoVo> patientMap = Maps.newHashMap();
-		if (CollectionUtils.isNotEmpty(owners)) {
-			patientMap = owners.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
+		if (CollectionUtils.isNotEmpty(ownerIds)) {
+			List<PatientBaseInfoVo> owners = patientFeign.findPatientInfoByIds(Lists.newArrayList(ownerIds));
+			if (CollectionUtils.isNotEmpty(owners)) {
+				patientMap = owners.stream().collect(toMap(PatientBaseInfoVo::getId, Function.identity()));
+			}
 		}
-		PatientOptionalBenefitVo vo = new PatientOptionalBenefitVo();
 		//卡主信息映射
 		final Map<Integer, PatientBaseInfoVo> finalPatientMap = patientMap;
 		//bo结果集映射
@@ -1683,12 +1674,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return vo;
 	}
 
-	private Card soldVoConvertCard(Card card, CardSoldForm form, Integer loginUserId) {
+	private void updateCardForSold(Card card, CardSoldForm form, Integer loginUserId) {
 		Card updateCard = BeanCopierUtils.generalCopyBean(form, Card.class);
 		updateCard.setStatus(ACTIVE_PENDING.getCode());
 		if (SoldTypeEnum.SOLD.equals(form.getSoldType())) {
 			updateCard.setPay(TRUE.equals(form.getSoldAndPay()) ? TRUE.getCode() : FALSE.getCode());
 		}
+		updateCard.setSoldDate(LocalDateTime.now());
 		updateCard.setSellerUserId(loginUserId);
 		updateCard.setUpdId(loginUserId);
 		updateCard.setId(card.getId());
@@ -1696,10 +1688,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		updateCard.setLink(Base64.getEncoder().encodeToString(Joiner.on(":").join(new BCryptPasswordEncoder(UserConstant.PW_ENCODER_SALT)
 				.encode(Joiner.on(":").join(card.getCardNumber(), card.getCardPassword())), card.getId())
 				.getBytes()));
-		return updateCard;
+		mapper.updateByPrimaryKeySelective(updateCard);
 	}
 
-	private Card cancelSoldVoConvertCard(Card card) {
+	private void updateCardForCancel(Card card) {
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		Card cancelCard = new Card();
 		cancelCard.setOrgId(card.getOrgId());
@@ -1712,17 +1704,25 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		cancelCard.setCrtId(card.getCrtId());
 		cancelCard.setCrtTime(card.getCrtTime());
 		cancelCard.setUpdId(loginUserId);
-		cancelCard.setUpdTime(LocalDateTime.now());
 		cancelCard.setId(card.getId());
-		return cancelCard;
+		mapper.updateByPrimaryKey(cancelCard);
 	}
 
-	private Card ownActiveVoConvertCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId) {
+	/**
+	 * 自有平台卡券激活
+	 *
+	 * @param patientId
+	 * @param form
+	 * @param loginUserId
+	 */
+	private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId) {
 		Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
+		LocalDateTime now = LocalDateTime.now();
 		Card ownActiveCard = new Card();
 		ownActiveCard.setId(form.getCardId());
 		ownActiveCard.setPatientId(patientId);
 		ownActiveCard.setActiveOrgId(activeOrgId);
+		ownActiveCard.setActiveUserId(loginUserId);
 		ownActiveCard.setStatus(ACTIVATED.getCode());
 		if (form.getPayId() != null) {
 			ownActiveCard.setSoldAndPay(TRUE.getCode());
@@ -1730,21 +1730,31 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			ownActiveCard.setPay(TRUE.getCode());
 		}
 		ownActiveCard.setUpdId(loginUserId);
-		ownActiveCard.setActiveDate(LocalDateTime.now());
-		return ownActiveCard;
+		ownActiveCard.setActiveDate(now);
+		mapper.updateByPrimaryKeySelective(ownActiveCard);
 	}
 
-	private Card otherActiveVoConvertCard(Integer patientId, OtherCardActiveForm form, Integer loginUserId) {
+	/**
+	 * 第三方平台卡券激活
+	 *
+	 * @param patientId   患者id
+	 * @param form        参数
+	 * @param loginUserId 登录人
+	 */
+	private Card insertOtherActiveCard(Integer patientId, OtherCardActiveForm form, Integer loginUserId) {
 		Integer activeOrgId = StringUtils.isBlank(BaseContextHandler.getOrgId()) ? null : Integer.valueOf(BaseContextHandler.getOrgId());
 		Card insertOtherCard = BeanCopierUtils.generalCopyBean(form, Card.class);
 		insertOtherCard.setOrgId(0);
+		insertOtherCard.setThirdCardNumber(form.getThirdCardNumber());
 		insertOtherCard.setActiveOrgId(activeOrgId);
+		insertOtherCard.setActiveUserId(loginUserId);
 		insertOtherCard.setCouponAllocateId(0);
 		insertOtherCard.setPatientId(patientId);
 		insertOtherCard.setStatus(ACTIVATED.getCode());
 		insertOtherCard.setCrtId(loginUserId);
 		insertOtherCard.setUpdId(loginUserId);
 		insertOtherCard.setActiveDate(LocalDateTime.now());
+		mapper.insertSelective(insertOtherCard);
 		return insertOtherCard;
 	}
 
@@ -1858,10 +1868,17 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return errorBo;
 	}
 
-	private RestErrorBo checkCardForOwnActive(Integer cardId, Card card) {
+	/**
+	 * 校验卡券信息（激活卡券）
+	 *
+	 * @param payId
+	 * @param card
+	 * @return
+	 */
+	private RestErrorBo checkCardForOwnActive(Integer payId, Card card) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		if (card == null) {
-			log.warn("【激活失败】卡券[{}]不存在", cardId);
+			log.warn("【激活失败】卡券不存在");
 			errorBo.setError(DiscountError.CARD_NOT_EXIST);
 			return errorBo;
 		}
@@ -1875,16 +1892,30 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			errorBo.setError(DiscountError.CARD_ACTIVE_STATUS_ERROR);
 			return errorBo;
 		}
+		if (FALSE.equals(card.getSoldAndPay())) {
+			if (payId == null) {
+				log.warn("卡券未收费：{}", card.getCardNumber());
+				errorBo.setError(DiscountError.CARD_NOT_CHARGE);
+				return errorBo;
+			}
+		} else {
+			if (payId != null) {
+				log.warn("卡券已收费：{}", card.getCardNumber());
+				errorBo.setError(DiscountError.CARD_IS_CHARGED);
+				return errorBo;
+			}
+		}
 		return errorBo;
 	}
 
 	private RestErrorBo checkCardForOtherActive(String cardNumber) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		Example example = new Example(Card.class);
-		example.createCriteria().andEqualTo("cardNumber", cardNumber);
+		example.createCriteria().andEqualTo("cardNumber", cardNumber)
+				.andNotEqualTo("orgId", ZERO);
 		Card card = mapper.selectOneByExample(example);
 		if (card != null) {
-			log.warn("【第三方平台激活失败】自有平台卡券{}不允许在地三方平台激活", cardNumber);
+			log.warn("【第三方平台激活失败】自有平台卡券{}不允许在第三方平台激活", cardNumber);
 			errorBo.setError(DiscountError.OTHER_ALLOW_ACTIVE_OWN);
 			return errorBo;
 		}
@@ -2632,7 +2663,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		map.put("submitDate", submitDate);
 		messageModel.setParamMap(map);
 		messageModel.setMsgCategoryEnum(BaseCardBatch);
-		messageModel.setOperateType(0);
+		messageModel.setOperateType(ADD);
 		return messageModel;
 	}
 }

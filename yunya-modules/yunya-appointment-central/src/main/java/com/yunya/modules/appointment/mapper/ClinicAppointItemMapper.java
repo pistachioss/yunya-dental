@@ -31,4 +31,10 @@ public interface ClinicAppointItemMapper extends Mapper<ClinicAppointItem> {
      */
     List<ClinicAppointItem> findClinicAppointItemByAppointItemId(@Param("appointItemId") Integer appointItemId);
 
+    /**
+     * 批量查询门使用项目
+     * @param list
+     */
+    void insertClinicAppointItem(@Param("list") List<ClinicAppointItem> list);
+
 }
