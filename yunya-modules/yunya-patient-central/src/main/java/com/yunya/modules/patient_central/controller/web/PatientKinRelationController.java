@@ -41,6 +41,7 @@ public class PatientKinRelationController {
 
   /**
    * 查询患者关系亲属列表
+   *
    * @param patientKinRelationQueryForm 患者亲属关系信息查询QueryFrom
    * @return ResponseResult<PageInfo<PatientKinRelationVo>>
    */
@@ -53,6 +54,7 @@ public class PatientKinRelationController {
 
   /**
    * 添加患者亲属关系
+   *
    * @param patientKinRelationModel 患者亲属关系添加模板
    * @return ResponseResult
    */
@@ -66,6 +68,7 @@ public class PatientKinRelationController {
 
   /**
    * 修改患者亲属关系
+   *
    * @param patientKinRelationForm 患者亲属关系修改模板
    * @return ResponseResult
    */
@@ -80,6 +83,7 @@ public class PatientKinRelationController {
 
   /**
    * 删除患者亲属关系
+   *
    * @param id 患者id
    * @return ResponseResult
    */

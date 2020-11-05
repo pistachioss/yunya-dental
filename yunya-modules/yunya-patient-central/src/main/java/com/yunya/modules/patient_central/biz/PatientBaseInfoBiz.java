@@ -26,7 +26,6 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
-import com.yunya.models.system.Department;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.DictionaryType;
 import com.yunya.models.system.MemberType;
@@ -159,7 +158,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     mapper.insertPatientInfo(patientBaseInfo);
 
-    PatientBaseInfoVo patientBaseInfoVo = this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
+    PatientBaseInfoVo patientBaseInfoVo =
+        this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     // 创建预付款 并发送消息
     sendMessages(patientBaseInfo.getId(), 0);
     this.addPatientPrepaymentsInfo(patientBaseInfo);
@@ -198,7 +198,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
       this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
-      remoteRabbitMqServiceFeign.sendMessage(patientPrepaymentsInfo.getId(),1,0,MsgCategoryEnum.BasePatientMember);
+      remoteRabbitMqServiceFeign.sendMessage(
+          patientPrepaymentsInfo.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
     }
   }
 

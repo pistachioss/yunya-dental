@@ -25,29 +25,33 @@ import java.util.List;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class PatientRecommendRelationBiz extends BaseBiz<PatientRecommendRelationMapper, PatientRecommendRelation> {
+public class PatientRecommendRelationBiz
+    extends BaseBiz<PatientRecommendRelationMapper, PatientRecommendRelation> {
 
-    @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
+  @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
 
-    /**
-     * 查询患者推荐关系
-     * @param form 患者推荐关系QueryForm
-     * @return List<PatientRecommendRelationVo>
-     */
-    public PageInfo<PatientRecommendRelationVo> findList(PatientRecommendRelationQueryForm form) {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
-        List<PatientRecommendRelationVo> resultList = patientBaseInfoMapper.selectListByPatientId(form);
-        return new PageInfo<>(resultList);
+  /**
+   * 查询患者推荐关系
+   *
+   * @param form 患者推荐关系QueryForm
+   * @return List<PatientRecommendRelationVo>
+   */
+  public PageInfo<PatientRecommendRelationVo> findList(PatientRecommendRelationQueryForm form) {
+    if (form.getWhetherPage()) {
+      PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
+    List<PatientRecommendRelationVo> resultList = patientBaseInfoMapper.selectListByPatientId(form);
+    return new PageInfo<>(resultList);
+  }
 
-    /**
-     * 根据id查询患者推荐关系拓展图
-     * @param form 患者关系推荐图
-     * @return List<PatientRecommendRelationVo>
-     */
-    public List<PatientRecommendRelationVo> findRecommendRelationById(PatientRecommendRelationChartQueryForm form) {
-        return patientBaseInfoMapper.findRecommendRelationById(form);
-    }
+  /**
+   * 根据id查询患者推荐关系拓展图
+   *
+   * @param form 患者关系推荐图
+   * @return List<PatientRecommendRelationVo>
+   */
+  public List<PatientRecommendRelationVo> findRecommendRelationById(
+      PatientRecommendRelationChartQueryForm form) {
+    return patientBaseInfoMapper.findRecommendRelationById(form);
+  }
 }

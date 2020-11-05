@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 简单介绍:</br>  患者信息扩展 业务成
+ * 简单介绍:</br> 患者信息扩展 业务成
  *
  * @author: WY
  * @date 2020/7/28 13:24
@@ -19,6 +19,5 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(rollbackFor = Exception.class)
 public class PatientExpInfoBiz extends BaseBiz<PatientExpInfoMapper, PatientExpInfo> {
 
-    @Autowired private PatientExpInfoMapper patientExpInfoMappers;
-
+  @Autowired private PatientExpInfoMapper patientExpInfoMappers;
 }

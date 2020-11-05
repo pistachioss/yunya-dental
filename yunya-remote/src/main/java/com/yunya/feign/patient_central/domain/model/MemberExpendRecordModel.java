@@ -69,13 +69,13 @@ public class MemberExpendRecordModel implements Serializable {
     private Integer type;
 
     /**
-     * 会员卡本金 充值金额
+     * 消费本金
      */
     @ApiModelProperty(value = "消费本金",required = false)
     private BigDecimal principalAmount;
 
     /**
-     * 会员卡赠金 充值赠送金额
+     * 消费赠金
      */
     @ApiModelProperty(value = "消费赠金",required = false)
     private BigDecimal bonusAmount;

@@ -54,6 +54,7 @@ public class WoPersonBiz {
 
   /**
    * Wo平台添加人员信息
+   *
    * @param name 人员姓名
    * @return String
    */
@@ -84,8 +85,7 @@ public class WoPersonBiz {
       new NameValuePair("personId", patientBaseInfo.getPersonId())
     };
     // 调用心跳接口进行拍照注册
-    WoPlatformHeartbeat.httpPostHeartbeatAccess(
-        redisUtils.get("URL") + "/face/takeImg", data);
+    WoPlatformHeartbeat.httpPostHeartbeatAccess(redisUtils.get("URL") + "/face/takeImg", data);
   }
 
   /**

@@ -34,7 +34,6 @@ public class InformationCallbackController {
   /** 回调中心业务层 */
   @Autowired private InformationCallbackBiz informationCallbackBiz;
 
-
   /**
    * 心跳回调
    *
@@ -43,12 +42,13 @@ public class InformationCallbackController {
    */
   @ApiOperation(value = "心跳回调")
   @IgnoreUserToken
-  @RequestMapping(value = "/heartbeatCallback", method = {RequestMethod.POST})
+  @RequestMapping(
+      value = "/heartbeatCallback",
+      method = {RequestMethod.POST})
   public Map<String, Object> getCallback(@RequestBody CallbackModel callbackModel) {
     System.out.println("******************************心跳回调**************************************");
     System.out.println(callbackModel.getDeviceKey());
     return informationCallbackBiz.heartbeatCallback(callbackModel);
-
   }
 
   /**
@@ -59,69 +59,78 @@ public class InformationCallbackController {
    */
   @ApiOperation(value = "心跳回调")
   @IgnoreUserToken
-  @RequestMapping(value = "/heartbeatCallbackPaizhao", method = {RequestMethod.POST})
+  @RequestMapping(
+      value = "/heartbeatCallbackPaizhao",
+      method = {RequestMethod.POST})
   public Map<String, Object> heartbeatCallbackPaizhao(@RequestBody CallbackModel callbackModel) {
     System.out.println("******************************回调拍照**************************************");
     return informationCallbackBiz.heartbeatCallback(callbackModel);
-
   }
 
   @ApiOperation(value = "获取任务")
   @IgnoreUserToken
-  @RequestMapping(value = "/getTask", method = {RequestMethod.POST})
+  @RequestMapping(
+      value = "/getTask",
+      method = {RequestMethod.POST})
   public JSONObject getTask(@RequestBody TaskModel taskModel) {
     return informationCallbackBiz.getTask(taskModel);
-
   }
-
 
   @ApiOperation(value = "结果回调")
   @IgnoreUserToken
-  @RequestMapping(value = "/taskProcessingResultsAddress", method = {RequestMethod.POST})
-  public Map<String, Object> taskProcessingResultsAddress(@RequestBody TaskProcessingModel taskProcessingModel) {
+  @RequestMapping(
+      value = "/taskProcessingResultsAddress",
+      method = {RequestMethod.POST})
+  public Map<String, Object> taskProcessingResultsAddress(
+      @RequestBody TaskProcessingModel taskProcessingModel) {
     return informationCallbackBiz.taskProcessingResultsAddress(taskProcessingModel);
   }
 
   /**
    * 人脸识别认证返回
+   *
    * @param patientWoPlatformInfoModel 回调model
    * @return Map<String, Object>
    */
   @IgnoreUserToken
   @ApiOperation(value = "人脸识别认证返回")
-      @RequestMapping(value = "/faceRecognition", method = {RequestMethod.POST})
-  public Map<String, Object> faceRecognition(@RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
+  @RequestMapping(
+      value = "/faceRecognition",
+      method = {RequestMethod.POST})
+  public Map<String, Object> faceRecognition(
+      @RequestBody PatientWoPlatformInfoModel patientWoPlatformInfoModel) {
     return this.informationCallbackBiz.renlianshibie(patientWoPlatformInfoModel);
   }
 
   /**
    * 拍照回调
+   *
    * @param picturesCallbackInfoModel 拍照回调Model
    * @return ResponseResult
    */
   @IgnoreUserToken
   @ApiOperation(value = "拍照回调")
-  @RequestMapping(value = "/takePictures", method = {RequestMethod.POST})
-  public ResponseResult takePictures(@RequestBody PicturesCallbackInfoModel picturesCallbackInfoModel) {
-    if( informationCallbackBiz.takePictures(picturesCallbackInfoModel) ){
+  @RequestMapping(
+      value = "/takePictures",
+      method = {RequestMethod.POST})
+  public ResponseResult takePictures(
+      @RequestBody PicturesCallbackInfoModel picturesCallbackInfoModel) {
+    if (informationCallbackBiz.takePictures(picturesCallbackInfoModel)) {
       return ResponseUtil.success();
     }
     return ResponseUtil.fail(OperationCodeConstants.DATA_ERROR, "拍照回调错误！", "");
   }
 
-
   @IgnoreUserToken
   @ApiOperation(value = "拍照回调")
   @RequestMapping(value = "/paizhao")
-  public Map<String,Object> paizhao() {
-    Map<String,Object> map = new HashMap<>();
-     System.out.println("---------------------拍照回调------------------");
-     System.out.println("---------------------拍照回调------------------");
-     System.out.println("---------------------拍照回调------------------");
-     System.out.println("---------------------拍照回调------------------");
-     map.put("msg","拍照回调,请求成功");
-     return map;
+  public Map<String, Object> paizhao() {
+    Map<String, Object> map = new HashMap<>();
+    System.out.println("---------------------拍照回调------------------");
+    System.out.println("---------------------拍照回调------------------");
+    System.out.println("---------------------拍照回调------------------");
+    System.out.println("---------------------拍照回调------------------");
+    map.put("msg", "拍照回调,请求成功");
+    return map;
   }
-
-
 }

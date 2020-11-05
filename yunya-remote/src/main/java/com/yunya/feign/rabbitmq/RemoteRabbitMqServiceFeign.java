@@ -5,11 +5,9 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @FeignClient(
@@ -69,4 +67,6 @@ public interface RemoteRabbitMqServiceFeign {
       @RequestBody Map<String, Object> paramMap,
       @RequestParam("operateType") Integer operateType,
       @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum);
+
 }
+

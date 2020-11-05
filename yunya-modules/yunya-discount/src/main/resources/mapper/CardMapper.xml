@@ -345,7 +345,7 @@
                                     if(activation_deadline &lt;
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
                                         activation_deadline,
-                                        date_format(date_add(`c`.`active_date`, interval `ifnull(`effective_days`, 0)` day), '%Y-%m-%d')))
+                                        date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d')))
                            from `vouche_coupon`
                            where `coupon_id` = `c`.coupon_id)
                       when `cci`.`type` = 1 then
@@ -354,7 +354,7 @@
                                     if(activation_deadline &lt;
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
                                         activation_deadline,
-                                        date_format(date_add(`c`.`active_date`, interval `ifnull(`effective_days`, 0)` day), '%Y-%m-%d')))
+                                        date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d')))
                            from `discount_coupon`
                            where `coupon_id` = `c`.`coupon_id`)
                       when `cci`.`type` = 2 then
@@ -363,7 +363,7 @@
                                     if(activation_deadline &lt;
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
                                         activation_deadline,
-                                        date_format(date_add(`c`.`active_date`, interval `ifnull(`effective_days`, 0)` day), '%Y-%m-%d')))
+                                        date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d')))
                            from `package_coupon`
                            where `coupon_id` = `c`.`coupon_id`)
                       when `cci`.`type` = 3 then
@@ -372,7 +372,7 @@
                                     if(activation_deadline &lt;
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
                                         activation_deadline,
-                                        date_format(date_add(`c`.`active_date`, interval `ifnull(`effective_days`, 0)` day), '%Y-%m-%d')))
+                                        date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d')))
                            from `special_package_coupon`
                            where `coupon_id` = `c`.`coupon_id`)
                       else null

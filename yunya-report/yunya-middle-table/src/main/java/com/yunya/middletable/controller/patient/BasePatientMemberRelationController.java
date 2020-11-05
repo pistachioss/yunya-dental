@@ -22,29 +22,28 @@ import org.springframework.web.bind.annotation.RestController;
  * @description:
  * @since: 1.0.0
  */
-
 @RestController
 @RequestMapping("relation")
 public class BasePatientMemberRelationController {
-    /** 注入服务 */
-    @Autowired private BasePatientMemberRelationBiz basePatientMemberRelationBiz;
+  /** 注入服务 */
+  @Autowired private BasePatientMemberRelationBiz basePatientMemberRelationBiz;
 
-    @PostMapping("/operate")
-    public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
-        basePatientMemberRelationBiz.operate(model);
-        return ResponseUtil.success(null);
-    }
+  @PostMapping("/operate")
+  public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
+    basePatientMemberRelationBiz.operate(model);
+    return ResponseUtil.success(null);
+  }
 
-    /**
-     * 根据条件拉取员工数据并更新中间表
-     *
-     * @param form 拉取时间
-     * @return
-     */
-    @ApiOperation("根据时间段批量操作中间表员工信息")
-    @PostMapping(value = "/batch", name = "PatientMemberInfoBiz")
-    public ResponseResult<T> pullMemberRelationData(@RequestBody PullForm form) {
-        basePatientMemberRelationBiz.pullMemberRelationData(form);
-        return ResponseUtil.success(null);
-    }
+  /**
+   * 根据条件拉取员工数据并更新中间表
+   *
+   * @param form 拉取时间
+   * @return
+   */
+  @ApiOperation("根据时间段批量操作中间表员工信息")
+  @PostMapping(value = "/batch", name = "PatientMemberInfoBiz")
+  public ResponseResult<T> pullMemberRelationData(@RequestBody PullForm form) {
+    basePatientMemberRelationBiz.pullMemberRelationData(form);
+    return ResponseUtil.success(null);
+  }
 }
