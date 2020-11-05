@@ -97,7 +97,7 @@ public class CardController {
     }
 
     @ApiOperation(value = "卡券二维码页面打开")
-    @GetMapping("/coupon/permit/card/QRCode/init")
+    @GetMapping("/coupon/card/QRCode/init")
     public ResponseResult<CardQrCodeVo> cardQrCodeCheck(@NotBlank @RequestParam String cardQrData) {
         CardQrCodeVo codeVo = cardBiz.cardQrCodeCheck(cardQrData);
         return ResponseUtil.success(codeVo);
