@@ -369,20 +369,19 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecord.setCrtName(BaseContextHandler.getName());
       memberRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       memberRechargeRecord.setUpdName(BaseContextHandler.getName());
+      memberRechargeRecord.setRemarks(model.getAccountedWayModel().getRemarks());
       memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
       sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 1);
       // 添加会员卡充值收费记录
-      if (!StringHelper.isEmpty(model.getAccountedWayModelList())) {
-        for (AccountedWayModel accountedWayModel : model.getAccountedWayModelList()) {
+      if (!StringHelper.isNotNull(model.getAccountedWayModel())) {
           MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
-          BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
+          BeanUtils.copyProperties(model.getAccountedWayModel(), memberRechargeTollRecord);
           memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
           memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
           memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
           memberRechargeTollRecord.setCrtName(BaseContextHandler.getName());
           memberRechargeTollRecordMapper.insertSelective(memberRechargeTollRecord);
         }
-      }
     }
   }
 
@@ -500,10 +499,14 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
     if (patientMemberInfo != null) {
       if (model.getType() <= 0) {
-        patientMemberInfo.setPrincipalAmount(
-            patientMemberInfo.getPrincipalAmount().add(model.getPrincipalAmount()));
-        patientMemberInfo.setBonusAmount(
-            patientMemberInfo.getBonusAmount().add(model.getBonusAmount()));
+        if (model.getPrincipalAmount() != null){
+          patientMemberInfo.setPrincipalAmount(
+                  patientMemberInfo.getPrincipalAmount().add(model.getPrincipalAmount()));
+        }
+        if (model.getBonusAmount() != null){
+          patientMemberInfo.setBonusAmount(
+                  patientMemberInfo.getBonusAmount().add(model.getBonusAmount()));
+        }
         patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
         MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
         BeanUtils.copyProperties(model, memberExpendRecord);
