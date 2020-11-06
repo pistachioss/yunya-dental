@@ -35,4 +35,6 @@ public class PatientExchangeVo implements Serializable {
     private String path;
     @ApiModelProperty(value = "是否可以在项目使用优惠（0：否 1：是）")
     private Integer itemUsable;
+    @ApiModelProperty(value = "优惠券类型")
+    private Integer couponType = 2;
 }

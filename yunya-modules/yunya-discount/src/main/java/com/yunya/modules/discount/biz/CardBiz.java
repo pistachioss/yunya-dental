@@ -452,23 +452,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @return res
 	 */
 	public ResponseResult soldCard(CardSoldForm form) {
-		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		List<Integer> cardIds = form.getCardIds();
 		log.info("卡券售卖开始提交：[{}]", cardIds);
 		RestErrorBo errorBo;
 		try {
-			// 1. 锁定售卖卡券
-//			for (Integer cardId : cardIds) {
-//				errorBo = lockChoiceCard(String.valueOf(cardId), loginUserId, RedisConstants.LOCK_CARD_SOLD);
-//				if (errorBo.getError() != null) {
-//					log.warn("【锁定失败】卡券[{}]正在售卖中，无法提交", cardId);
-//					return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
-//				}
-//			}
-			locked = true;
-			log.info("【锁定成功】准备提交卡券售卖...");
-
 			Integer orgId = form.getOrgId();
 			Integer couponId = form.getCouponId();
 			//获取组织名
@@ -506,10 +494,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 			return ResponseUtil.success();
 		} finally {
-			if (locked) {
-				log.info("【解锁成功】");
-//				redisUtils.unlock(lockKey, lockVal);
-			}
+			unLockByIds(cardIds.stream().map(String::valueOf).collect(toSet()), RedisConstants.LOCK_CARD_SOLD, loginUserId);
+			log.info("【解锁成功】");
 		}
 	}
 
@@ -820,7 +806,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		}
 		try {
 			//锁定患者选择的优惠信息
-			errorBo = lockedBenefitByPatient(form);
+			errorBo = needLockKeys(assembleCardIds(form), patientId, RedisConstants.LOCK_CHOICE_CARD);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
@@ -835,14 +821,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			calculateBenefit(form, benefitVo, orderItemBos);
 			return ResponseUtil.success(orderItemBos);
 		} catch (Exception e) {
-			Set<String> keys = redisUtils.keys(RedisConstants.LOCK_CHOICE_CARD + "*");
-			log.warn("【选择优惠】优惠选择发生异常，解除卡券锁定{}", keys);
-			if (CollectionUtils.isNotEmpty(keys)) {
-				for (String lockKey : keys) {
-					String lockVal = String.valueOf(patientId);
-					// 释放患者取消选择的卡券的锁
-					redisUtils.unlock(lockKey, lockVal);
-				}
+			Set<String> existLock = getExistLock(patientId, RedisConstants.LOCK_CHOICE_CARD);
+			log.warn("【选择优惠】优惠选择发生异常，解除卡券锁定{}", existLock);
+			if (CollectionUtils.isNotEmpty(existLock)) {
+				unLockByIds(existLock, RedisConstants.LOCK_CHOICE_CARD, patientId);
 			}
 			throw e;
 		}
@@ -978,24 +960,27 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @return PatientOrderBenefitVo
 	 */
 	private PatientOrderBenefitVo transformBenefitInfo(List<OrderItemUseBo> orderItemBos) {
-		PatientOrderBenefitVo result = new PatientOrderBenefitVo();
-		BigDecimal totalBenefitAmount = orderItemBos.stream().filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
-		result.setBenefitTotalAmount(totalBenefitAmount);
-		List<PatientItemBenefitVo> itemList = orderItemBos.stream().filter(obj -> CollectionUtils.isNotEmpty(obj.getItemUseBenefitBos()))
-				.map(obj -> {
-					BigDecimal benefitAmount = obj.getBenefitAmount() == null ? BigDecimal.ZERO : obj.getBenefitAmount();
-					PatientItemBenefitVo vo = new PatientItemBenefitVo();
-					vo.setOrderDetailId(obj.getOrderDetailId());
-					vo.setType(obj.getType());
-					vo.setItemId(obj.getItemId());
-					vo.setBenefitDiscountRate(obj.getBenefitDiscountRate());
-					vo.setItemBenefitAmount(benefitAmount);
-					List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(obj.getItemUseBenefitBos(), ItemUseBenefitVo.class);
-					vo.setItemBenefitList(itemUseBenefitVos);
-					return vo;
-				}).collect(toList());
-		result.setItemList(itemList);
+		PatientOrderBenefitVo result = null;
+		if (CollectionUtils.isNotEmpty(orderItemBos)) {
+			result = new PatientOrderBenefitVo();
+			BigDecimal totalBenefitAmount = orderItemBos.stream().filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			result.setBenefitTotalAmount(totalBenefitAmount);
+			List<PatientItemBenefitVo> itemList = orderItemBos.stream().filter(obj -> CollectionUtils.isNotEmpty(obj.getItemUseBenefitBos()))
+					.map(obj -> {
+						BigDecimal benefitAmount = obj.getBenefitAmount() == null ? BigDecimal.ZERO : obj.getBenefitAmount();
+						PatientItemBenefitVo vo = new PatientItemBenefitVo();
+						vo.setOrderDetailId(obj.getOrderDetailId());
+						vo.setType(obj.getType());
+						vo.setItemId(obj.getItemId());
+						vo.setBenefitDiscountRate(obj.getBenefitDiscountRate());
+						vo.setItemBenefitAmount(benefitAmount);
+						List<ItemUseBenefitVo> itemUseBenefitVos = BeanCopierUtils.listGeneralCopyBean(obj.getItemUseBenefitBos(), ItemUseBenefitVo.class);
+						vo.setItemBenefitList(itemUseBenefitVos);
+						return vo;
+					}).collect(toList());
+			result.setItemList(itemList);
+		}
 		return result;
 	}
 
@@ -2200,98 +2185,57 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	}
 
 	/**
-	 * 检查锁定患者选择的优惠信息
-	 *
-	 * @param form form
-	 * @return RestErrorBo
-	 */
-	private RestErrorBo lockedBenefitByPatient(PatientChooseBenefitForm form) {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		Set<String> addCardIds;
-		Set<String> delCardIds;
-		Integer patientId = form.getPatientId();
-		Set<String> cardIds = assembleCardIds(form);
-		if (CollectionUtils.isNotEmpty(cardIds)) {
-			log.info("【开始锁定】开始锁定患者选择的优惠信息");
-			Set<String> keys = redisUtils.keys(RedisConstants.LOCK_CHOICE_CARD + "*");
-			if (CollectionUtils.isNotEmpty(keys)) {
-				keys = keys.stream().map(key -> key.replace(RedisConstants.LOCK_CHOICE_CARD + ":", "")).collect(toSet());
-				addCardIds = SetUtils.difference(cardIds, keys);
-				delCardIds = SetUtils.difference(keys, cardIds);
-				//需要删除的key
-				if (CollectionUtils.isNotEmpty(delCardIds)) {
-					for (String delCardId : delCardIds) {
-						String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHOICE_CARD, String.valueOf(delCardId));
-						String lockVal = String.valueOf(patientId);
-						// 释放患者取消选择的卡券的锁
-						redisUtils.unlock(lockKey, lockVal);
-					}
-				}
-				//需要增加的key
-				if (CollectionUtils.isNotEmpty(addCardIds)) {
-					for (String addCardId : addCardIds) {
-						errorBo = lockChoiceCard(patientId, addCardId);
-						if (errorBo.getError() != null) {
-							return errorBo;
-						}
-					}
-				}
-			} else {
-				log.info("【开始锁定】开始锁定患者选择的优惠信息");
-				for (String cardId : cardIds) {
-					errorBo = lockChoiceCard(patientId, cardId);
-					if (errorBo.getError() != null) {
-						return errorBo;
-					}
-				}
-			}
-			log.info("【锁定成功】患者选择优惠成功");
-		}
-		return errorBo;
-	}
-
-	/**
 	 * 组合优惠信息
 	 *
 	 * @param form 患者选择优惠信息
 	 * @return set
 	 */
-	private Set<String> assembleCardIds(PatientChooseBenefitForm form) {
-		Set<String> cardIds = Sets.newHashSet();
+	private List<Integer> assembleCardIds(PatientChooseBenefitForm form) {
+		List<Integer> cardIds = Lists.newArrayList();
 		Integer discountId = form.getDiscountId();
 		if (discountId != null) {
-			cardIds.add(String.valueOf(discountId));
+			cardIds.add(discountId);
 		}
 		List<Integer> exchangeIds = form.getExchangeIds();
 		if (CollectionUtils.isNotEmpty(exchangeIds)) {
-			exchangeIds.forEach(exchangeId -> cardIds.add(String.valueOf(exchangeId)));
+			exchangeIds.forEach(exchangeId -> cardIds.add(exchangeId));
 		}
 		List<Integer> packageIds = form.getPackageIds();
 		if (CollectionUtils.isNotEmpty(packageIds)) {
-			packageIds.forEach(packageId -> cardIds.add(String.valueOf(packageId)));
+			packageIds.forEach(packageId -> cardIds.add(packageId));
 		}
 		List<Integer> voucherIds = form.getVoucherIds();
 		if (CollectionUtils.isNotEmpty(voucherIds)) {
-			voucherIds.forEach(voucherId -> cardIds.add(String.valueOf(voucherId)));
+			voucherIds.forEach(voucherId -> cardIds.add(voucherId));
 		}
 		return cardIds;
 	}
 
-	private RestErrorBo lockChoiceCard(Integer patientId, String cardId) {
-		RestErrorBo errorBo = RestErrorBo.getInstance();
-		String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHOICE_CARD, cardId);
-		String lockVal = String.valueOf(patientId);
+	private String lockChoiceCard(String key, Integer value, String lockPrefix) {
+		String lockKey = Joiner.on(":").join(lockPrefix, key);
+		String lockVal = String.valueOf(value);
 		// 锁定
 		boolean locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
 		if (!locked) {
-			Card card = mapper.selectByPrimaryKey(cardId);
+			Card card = mapper.selectByPrimaryKey(key);
 			String cardNumber = (card == null) ? null : card.getCardNumber();
 			log.warn("【锁定失败】卡号是[{}]的卡券正在被使用，请取消使用该卡券！", cardNumber);
-			errorBo.setError(DiscountError.CARD_HAS_CHOICE);
-			errorBo.setMsg(cardNumber);
-			return errorBo;
+			return cardNumber;
 		}
-		return errorBo;
+		return null;
+	}
+
+	private void unLockByIds(Set<String> delCardIds, String lockPrefix, Integer requestId) {
+		log.info("开始释放卡券资源");
+		if (CollectionUtils.isNotEmpty(delCardIds)) {
+			for (String delCardId : delCardIds) {
+				String lockKey = Joiner.on(":").join(lockPrefix, String.valueOf(delCardId));
+				String lockVal = String.valueOf(requestId);
+				// 释放患者取消选择的卡券的锁
+				redisUtils.unlock(lockKey, lockVal);
+			}
+			log.info("解锁完成");
+		}
 	}
 
 	private RestErrorBo lockCardSold(List<Integer> cardIds, Integer loginUserId) {
@@ -2689,23 +2633,79 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return messageModel;
 	}
 
-	/**
-	 * 解锁卡券资源
-	 *
-	 * @param patientId 患者
-	 */
-	private void unlockCard(Integer patientId) {
-		Set<String> keys = redisUtils.keys(RedisConstants.LOCK_CHOICE_CARD + "*");
-		log.info("【收费-优惠】收费使用优惠完成，开始释放卡券资源");
-		//需要删除的key
-		if (CollectionUtils.isNotEmpty(keys)) {
-			for (String delCardId : keys) {
-				String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHOICE_CARD, String.valueOf(delCardId));
-				String lockVal = String.valueOf(patientId);
-				// 释放患者取消选择的卡券的锁
-				redisUtils.unlock(lockKey, lockVal);
+	private RestErrorBo needLockKeys(List<Integer> resourceIds, Integer requestId, String lockPrefix) {
+		RestErrorBo errorBo = RestErrorBo.getInstance();
+		List<String> conflictList = Lists.newArrayList();
+		if (CollectionUtils.isNotEmpty(resourceIds)) {
+			Set<String> cardStrList = resourceIds.stream().map(String::valueOf).collect(toSet());
+			//获取用户已被锁定的卡券
+			Set<String> existLockKeys = getExistLock(requestId, lockPrefix);
+			if (CollectionUtils.isNotEmpty(existLockKeys)) {
+				Set<String> addCardIds;
+				Set<String> delCardIds;
+				Set<String> commonIds;
+				addCardIds = SetUtils.difference(cardStrList, existLockKeys);
+				delCardIds = SetUtils.difference(existLockKeys, cardStrList);
+				commonIds = SetUtils.intersection(existLockKeys, cardStrList);
+				//需要增加的key
+				if (CollectionUtils.isNotEmpty(addCardIds)) {
+					for (String addCardId : addCardIds) {
+						String result = lockChoiceCard(addCardId, requestId, lockPrefix);
+						if (StringUtils.isNotBlank(result)) {
+							conflictList.add(result);
+						}
+					}
+				}
+				//如果发生冲突，释放释放已选择卡券信息
+				if (CollectionUtils.isNotEmpty(conflictList)) {
+					unLockByIds(existLockKeys, lockPrefix, requestId);
+					unLockByIds(addCardIds, lockPrefix, requestId);
+				} else {
+					//需要删除的key
+					if (CollectionUtils.isNotEmpty(delCardIds)) {
+						unLockByIds(delCardIds, lockPrefix, requestId);
+					}
+					//需要更新的key
+					if (CollectionUtils.isNotEmpty(commonIds)) {
+						commonIds.forEach(key -> redisUtils.expire(key, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS));
+					}
+				}
+			} else {
+				log.info("【开始锁定】开始锁定用户选择的卡券");
+				for (String cardId : cardStrList) {
+					String result = lockChoiceCard(cardId, requestId, lockPrefix);
+					if (StringUtils.isNotBlank(result)) {
+						conflictList.add(result);
+					}
+				}
+				//释放选择的卡券
+				if (CollectionUtils.isNotEmpty(conflictList)) {
+					unLockByIds(cardStrList, lockPrefix, requestId);
+				}
 			}
-			log.info("【收费-优惠】解锁完成");
+			log.info("【锁定成功】患者选择优惠成功");
 		}
+		//释放选择的卡券
+		if (CollectionUtils.isNotEmpty(conflictList)) {
+			errorBo.setError(DiscountError.CARD_HAS_CHOICE);
+			errorBo.setMsg(Joiner.on(",").join(conflictList));
+		}
+		return errorBo;
+	}
+
+	/**
+	 * 获取当前用户已被锁定的卡券
+	 *
+	 * @param requestId  登录用户
+	 * @param lockPrefix lockPrefix
+	 * @return set
+	 */
+	private Set<String> getExistLock(Integer requestId, String lockPrefix) {
+		Set<String> keys = redisUtils.keys(lockPrefix + "*");
+		if (CollectionUtils.isNotEmpty(keys)) {
+			return keys.stream().filter(key -> requestId.equals(Integer.valueOf(redisUtils.get(key))))
+					.collect(toSet());
+		}
+		return null;
 	}
 }
