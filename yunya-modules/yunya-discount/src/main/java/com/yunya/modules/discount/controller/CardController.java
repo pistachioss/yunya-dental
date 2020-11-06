@@ -160,4 +160,18 @@ public class CardController {
         PageInfo<PatientCardBaseVo> pageInfo = cardBiz.getPatientCardPage(patientId, query);
         return ResponseUtil.success(pageInfo);
     }
+
+    @ApiOperation(value = "加锁")
+    @PostMapping("/lock")
+    @CurrentUser
+    public ResponseResult<Boolean> lock(@RequestBody LockForm form) {
+        return cardBiz.manualLock(form.getIds(), form.getLockPrefix());
+    }
+
+    @ApiOperation(value = "解锁")
+    @PostMapping("/unlock")
+    public ResponseResult unlock(@RequestBody UnLockForm form) {
+        cardBiz.manualUnLock(form.getRequestId(), form.getLockPrefix());
+        return ResponseUtil.success();
+    }
 }

@@ -2667,7 +2667,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					}
 					//需要更新的key
 					if (CollectionUtils.isNotEmpty(commonIds)) {
-						commonIds.forEach(key -> redisUtils.expire(key, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS));
+						commonIds.forEach(key -> {
+							String lockKey = Joiner.on(":").join(lockPrefix, String.valueOf(key));
+							redisUtils.expire(lockKey, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+						});
 					}
 				}
 			} else {
@@ -2704,8 +2707,30 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		Set<String> keys = redisUtils.keys(lockPrefix + "*");
 		if (CollectionUtils.isNotEmpty(keys)) {
 			return keys.stream().filter(key -> requestId.equals(Integer.valueOf(redisUtils.get(key))))
+					.map(key -> key.replace(lockPrefix + ":", ""))
 					.collect(toSet());
 		}
 		return null;
+	}
+
+	public ResponseResult<Boolean> manualLock(List<Integer> ids, String lockPrefix) {
+		log.info("【手动加锁】锁信息：[{}]，需要加锁的keys：{}", lockPrefix, ids);
+		if (CollectionUtils.isNotEmpty(ids)) {
+			Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+			RestErrorBo errorBo = needLockKeys(ids, loginUserId, lockPrefix);
+			if (errorBo.getError() != null) {
+				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+			}
+		}
+		return ResponseUtil.success(true);
+	}
+
+	public void manualUnLock(Integer requestId, String lockPrefix) {
+		Set<String> existLock = getExistLock(requestId, lockPrefix);
+		log.info("【手动解锁】锁信息：[{}]，需要解锁的keys：{}", lockPrefix, existLock);
+		if (CollectionUtils.isNotEmpty(existLock)) {
+			unLockByIds(existLock, lockPrefix, requestId);
+			log.info("手动解锁完成");
+		}
 	}
 }
