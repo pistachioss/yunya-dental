@@ -7,7 +7,9 @@ import com.yunya.feign.emr.domain.query.MedicalCommonRecordQueryForm;
 import com.yunya.feign.emr.domain.model.MedicalCommonRecordModel;
 import com.yunya.feign.emr.domain.vo.ExaminationsVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -125,9 +127,17 @@ public class MedicalCommonRecordController {
       List<TreatmentRecord> tLists = remoteTreatmentServiceFeign.findTreatmentRecordByIds(hs);
       Map<String, TreatmentRecord> tListsMap = new HashMap(16);
       tLists.forEach(z -> tListsMap.put(z.getId() + "", z));
+      //获取门诊
+      OrganizationModel organizationModel = new OrganizationModel();
+      organizationModel.setWhetherPage(false);
+      List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+      Map<String, OrganizationInfoDetail> cliListsMap = new HashMap(16);
+      clinics.forEach(z -> cliListsMap.put(z.getId() + "", z));
+
       //赋予就诊时间
       for(MedicalCommonRecordModel medicalModel : reList){
         medicalModel.setTreatmentTime(tListsMap.get(medicalModel.getTreatmentId().toString()).getTreatStartTime());
+        medicalModel.setCompanyName(cliListsMap.get(tListsMap.get(medicalModel.getTreatmentId().toString()).getOrgId().toString()).getName());
       }
     }
     return ResponseUtil.success(reList);

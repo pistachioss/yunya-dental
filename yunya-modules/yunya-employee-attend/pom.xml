@@ -12,8 +12,8 @@
     <properties>
         <!-- mapper接口、实体生成路径 -->
         <targetJavaProject>${basedir}/src/main/java</targetJavaProject>
-        <targetMapperPackage>com.yunya.modules.employee_attend.mapper</targetMapperPackage>
-        <targetModelPackage>com.yunya.modules.employee_attend.entity</targetModelPackage>
+        <targetMapperPackage>com.yunya.modules.employeeattend.mapper</targetMapperPackage>
+        <targetModelPackage>com.yunya.modules.employeeattend.entity</targetModelPackage>
         <!-- XML生成路径 -->
         <targetResourcesProject>${basedir}/src/main/resources</targetResourcesProject>
         <targetXMLPackage>mapper</targetXMLPackage>
