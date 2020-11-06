@@ -11,6 +11,8 @@ import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 简介: 客户登记业务层
@@ -20,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @description:
  * @since: 1.0.0
  */
+@Service
+@Transactional(rollbackFor = Exception.class)
 public class CustomerRegistrationBiz extends BaseBiz<PatientBaseInfoMapper, PatientBaseInfo> {
 
     /** 注入患者Biz */

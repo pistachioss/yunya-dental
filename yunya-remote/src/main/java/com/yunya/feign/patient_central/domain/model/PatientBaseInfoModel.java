@@ -84,7 +84,6 @@ public class PatientBaseInfoModel implements Serializable {
     /**
      * 性别 0-男；1-女；2-未知
      */
-    @NotNull(message = "性别不能为空！")
     @ApiModelProperty(value = "性别 0-男；1-女；2-未知",required = false)
     private Byte gender;
 
@@ -110,7 +109,6 @@ public class PatientBaseInfoModel implements Serializable {
     /**
      * 患者来源关联ID 患者来源关联ID（员工ID/患者ID/活动ID）
      */
-    @NotNull(message = "患者来源关联ID不能为空！")
     @ApiModelProperty(value = "患者来源关联ID",required = false)
     private Integer originId;
 
