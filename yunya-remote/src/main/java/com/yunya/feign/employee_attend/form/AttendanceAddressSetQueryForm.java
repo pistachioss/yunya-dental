@@ -6,8 +6,8 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  * 简介：考勤地址设置查询参数模型
@@ -40,4 +40,8 @@ public class AttendanceAddressSetQueryForm implements Serializable {
     /** 考勤地址 */
     @ApiModelProperty(value = "考勤地址")
     private String attendanceAddress;
+
+    /** 组织ID列表 */
+    @ApiModelProperty(value = "组织ID列表")
+    private Set<Integer> orgIds;
 }
