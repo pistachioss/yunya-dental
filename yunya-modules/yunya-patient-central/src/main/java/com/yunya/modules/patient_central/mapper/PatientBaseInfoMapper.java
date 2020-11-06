@@ -183,4 +183,12 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
    * @param patientBaseInfo 患者信息
    */
   void insertPatientInfo(PatientBaseInfo patientBaseInfo);
+
+  /**
+   * 根据患者来源ID查询所有推荐患者
+   * @param originId 患者来源
+   * @return 患者信息列表
+   */
+  List<PatientBaseInfo> findPatientBaseInfoByOriginId(@Param("originId") Integer originId);
+
 }

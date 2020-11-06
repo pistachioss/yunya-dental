@@ -12,6 +12,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
 import com.yunya.modules.appointment.mapper.AppointmentOperateRecordMapper;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -62,8 +64,10 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
      * @param appointment 修改内容之前的数据
      */
     public void saveAppointOperationRecord(Appointment appointment,AppointmentBaseForm appointmentBaseForm){
+        List<AppointmentOperateRecord> operateRecords = new ArrayList<>();
         AppointmentOperateRecord record = new AppointmentOperateRecord();
         record.setAppointmentId(appointmentBaseForm.getId());
+        record.setInservice(true);
         record.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
         record.setOperateType((byte) 1);
         record.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -76,7 +80,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             record.setBeforeOperation(appointment.getAppointDate().toString());
             record.setAfterOperation(appointmentBaseForm.getAppointDate().toString());
             record.setOperateItem("预约日期");
-            mapper.insertSelective(record);
+            operateRecords.add(record);
         }
         // 保存 预约时间 修改记录
         String appointTimeBefore = appointment.getAppointTime();
@@ -85,7 +89,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             record.setBeforeOperation(appointment.getAppointTime());
             record.setAfterOperation(appointmentBaseForm.getAppointTime());
             record.setOperateItem("预约时间");
-            mapper.insertSelective(record);
+            operateRecords.add(record);
         }
         // 保存 预约医生 修改记录
         Integer dentistIdBefore = appointment.getDentistId();
@@ -97,43 +101,81 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
                 record.setBeforeOperation(beforeModifyDentistInfo.getName());
                 record.setAfterOperation(afterModifyDentistInfo.getName());
                 record.setOperateItem("预约医生");
-                mapper.insertSelective(record);
+                operateRecords.add(record);
             }
         }
         // 保存 预约助手 修改记录
         Integer assistantIdBefore = appointment.getAssistantId();
         Integer assistantIdAfter = appointmentBaseForm.getAssistantId();
-        if (null != assistantIdBefore && null != assistantIdAfter && !assistantIdBefore.equals(assistantIdAfter)){
-            SysUserInfoDetail beforeModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(appointment.getAssistantId());
-            SysUserInfoDetail afterModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(appointmentBaseForm.getAssistantId());
-            if (beforeModifyDentistInfo != null && afterModifyDentistInfo != null){
+        if (null != assistantIdBefore && null == assistantIdAfter && !assistantIdBefore.equals(assistantIdAfter)) {
+            SysUserInfoDetail beforeModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantIdBefore);
+            if (beforeModifyDentistInfo != null) {
                 record.setBeforeOperation(beforeModifyDentistInfo.getName());
-                record.setAfterOperation(afterModifyDentistInfo.getName());
-                record.setOperateItem("预约助手");
-                mapper.insertSelective(record);
             }
+            record.setAfterOperation("");
+            record.setOperateItem("预约助手");
+            operateRecords.add(record);
+        } else if (null == assistantIdBefore && null != assistantIdAfter && !assistantIdAfter.equals(assistantIdBefore)) {
+            SysUserInfoDetail afterModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantIdAfter);
+            record.setBeforeOperation("");
+            if (null != afterModifyDentistInfo) {
+                record.setAfterOperation(afterModifyDentistInfo.getName());
+            }
+            record.setOperateItem("预约助手");
+            operateRecords.add(record);
+        } else if (null != assistantIdBefore && null != assistantIdAfter && !assistantIdBefore.equals(assistantIdAfter)) {
+            SysUserInfoDetail beforeModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantIdBefore);
+            SysUserInfoDetail afterModifyDentistInfo = systemServiceFeign.findSysUserEmployeeInfoByUserId(assistantIdAfter);
+            if (null != beforeModifyDentistInfo) {
+                record.setBeforeOperation(beforeModifyDentistInfo.getName());
+            }
+            if (null != afterModifyDentistInfo) {
+                record.setAfterOperation(afterModifyDentistInfo.getName());
+            }
+            record.setOperateItem("预约助手");
+            operateRecords.add(record);
         }
         // 保存 预约时长 修改记录
         Integer appointDurationBefore = appointment.getAppointDuration();
         Integer appointDurationAfter = appointmentBaseForm.getAppointDuration();
         if (null != appointDurationBefore && null != appointDurationAfter && !appointDurationBefore.equals(appointDurationAfter)){
-            record.setBeforeOperation(String.valueOf(appointment.getAppointDuration()));
-            record.setAfterOperation(String.valueOf(appointmentBaseForm.getAppointDuration()));
+            record.setBeforeOperation(appointment.getAppointDuration() + "分钟");
+            record.setAfterOperation(appointmentBaseForm.getAppointDuration() + "分钟");
             record.setOperateItem("预约时长");
-            mapper.insertSelective(record);
+            operateRecords.add(record);
         }
         // 保存 预约科室 修改记录
         Integer deptRoomIdBefore = appointment.getDeptRoomId();
         Integer deptRoomIdAfter = appointmentBaseForm.getDeptRoomId();
-        if (null != deptRoomIdBefore && null != deptRoomIdAfter && !deptRoomIdBefore.equals(deptRoomIdAfter)){
-            ClinicDepartmentRoomVO beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(appointment.getDeptRoomId());
-            ClinicDepartmentRoomVO afterModifyDepartmentRoomtInfo = systemServiceFeign.findClinicDepartmentRoomById(appointmentBaseForm.getDeptRoomId());
-            if (beforeModifyDepartmentRoomInfo != null && afterModifyDepartmentRoomtInfo != null){
-                record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
+        ClinicDepartmentRoomVO beforeModifyDepartmentRoomInfo = null;
+        ClinicDepartmentRoomVO afterModifyDepartmentRoomtInfo = null;
+        if (null == deptRoomIdBefore && null != deptRoomIdAfter && !deptRoomIdAfter.equals(deptRoomIdBefore)) {
+            afterModifyDepartmentRoomtInfo = systemServiceFeign.findClinicDepartmentRoomById(deptRoomIdAfter);
+            record.setBeforeOperation("");
+            if (null != afterModifyDepartmentRoomtInfo) {
                 record.setAfterOperation(afterModifyDepartmentRoomtInfo.getDeptRoomName());
-                record.setOperateItem("预约科室");
-                mapper.insertSelective(record);
             }
+            record.setOperateItem("预约科室");
+            operateRecords.add(record);
+        } else if (null != deptRoomIdBefore && null == deptRoomIdAfter && !deptRoomIdBefore.equals(deptRoomIdAfter)) {
+            beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(deptRoomIdBefore);
+            if (null != beforeModifyDepartmentRoomInfo) {
+                record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
+            }
+            record.setAfterOperation("");
+            record.setOperateItem("预约科室");
+            operateRecords.add(record);
+        } else if (null != deptRoomIdBefore && null != deptRoomIdAfter && !deptRoomIdBefore.equals(deptRoomIdAfter)) {
+            afterModifyDepartmentRoomtInfo = systemServiceFeign.findClinicDepartmentRoomById(deptRoomIdAfter);
+            beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(deptRoomIdBefore);
+            if (null != beforeModifyDepartmentRoomInfo) {
+                record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
+            }
+            if (null != afterModifyDepartmentRoomtInfo) {
+                record.setAfterOperation(afterModifyDepartmentRoomtInfo.getDeptRoomName());
+            }
+            record.setOperateItem("预约科室");
+            operateRecords.add(record);
         }
         // 保存 预约确认 修改记录
         Boolean confirmStatusBefore = appointment.getConfirmStatus();
@@ -142,38 +184,76 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             record.setBeforeOperation(appointment.getConfirmStatus() ? "确认" : "未确认");
             record.setAfterOperation(appointmentBaseForm.getConfirmStatus() ? "确认" : "未确认");
             record.setOperateItem("预约确认");
-            mapper.insertSelective(record);
+            operateRecords.add(record);
         }
         // 保存 预约设备 修改记录
         Integer clinicDeviceItemIdBefore = appointment.getClinicDeviceItemId();
         Integer clinicDeviceItemIdAfter = appointmentBaseForm.getClinicDeviceItemId();
-        if (null != clinicDeviceItemIdBefore && null != clinicDeviceItemIdAfter && !clinicDeviceItemIdBefore.equals(clinicDeviceItemIdAfter)){
-            DeviceItemVo beforeModifyDeviceItemInfo = clinicDeviceItemBiz.selectDeviceItemById(appointment.getClinicDeviceItemId());
+        if (null == clinicDeviceItemIdBefore && null != clinicDeviceItemIdAfter && !clinicDeviceItemIdAfter.equals(clinicDeviceItemIdBefore)) {
             DeviceItemVo afterModifyDeviceItemtInfo = clinicDeviceItemBiz.selectDeviceItemById(appointmentBaseForm.getClinicDeviceItemId());
-            if (beforeModifyDeviceItemInfo != null && afterModifyDeviceItemtInfo != null){
-                record.setBeforeOperation(beforeModifyDeviceItemInfo.getNumber());
+            record.setBeforeOperation("");
+            if (null != afterModifyDeviceItemtInfo) {
                 record.setAfterOperation(afterModifyDeviceItemtInfo.getNumber());
-                record.setOperateItem("预约设备");
             }
-            mapper.insertSelective(record);
+            record.setOperateItem("预约设备");
+            operateRecords.add(record);
+        } else if (null != clinicDeviceItemIdBefore && null == clinicDeviceItemIdAfter && !clinicDeviceItemIdBefore.equals(clinicDeviceItemIdAfter)) {
+            DeviceItemVo beforeModifyDeviceItemInfo = clinicDeviceItemBiz.selectDeviceItemById(appointment.getClinicDeviceItemId());
+            if (null != beforeModifyDeviceItemInfo) {
+                record.setBeforeOperation(beforeModifyDeviceItemInfo.getNumber());
+            }
+            record.setAfterOperation("");
+            record.setOperateItem("预约设备");
+            operateRecords.add(record);
+        } else if (null != clinicDeviceItemIdBefore && null != clinicDeviceItemIdAfter && !clinicDeviceItemIdAfter.equals(clinicDeviceItemIdBefore)) {
+            DeviceItemVo afterModifyDeviceItemtInfo = clinicDeviceItemBiz.selectDeviceItemById(appointmentBaseForm.getClinicDeviceItemId());
+            DeviceItemVo beforeModifyDeviceItemInfo = clinicDeviceItemBiz.selectDeviceItemById(appointment.getClinicDeviceItemId());
+            if (null != beforeModifyDepartmentRoomInfo) {
+                record.setBeforeOperation(beforeModifyDeviceItemInfo.getNumber());
+            }
+            if (null != afterModifyDepartmentRoomtInfo) {
+                record.setAfterOperation(afterModifyDeviceItemtInfo.getNumber());
+            }
+            record.setOperateItem("预约设备");
+            operateRecords.add(record);
         }
+
         // 保存 预约内容 修改记录
         String appointContentBefore = appointment.getAppointContent();
         String appointContentAfter = appointmentBaseForm.getAppointContent();
-        if (null != appointContentBefore && null != appointContentAfter && !appointContentBefore.equals(appointContentAfter)){
+        boolean appointContentEquels = true;
+        if (null == appointContentBefore && null != appointContentAfter) {
+            appointContentEquels = appointContentAfter.equals(appointContentBefore);
+        } else if (null != appointContentBefore && null == appointContentAfter) {
+            appointContentEquels = appointContentBefore.equals(appointContentAfter);
+        } else if (null != appointContentBefore && null != appointContentAfter) {
+            appointContentEquels = appointContentAfter.equals(appointContentBefore);
+        }
+        if (!appointContentEquels){
             record.setBeforeOperation(appointment.getAppointContent());
             record.setAfterOperation(appointmentBaseForm.getAppointContent());
             record.setOperateItem("预约内容");
-            mapper.insertSelective(record);
+            operateRecords.add(record);
         }
         // 保存 预约备注 修改记录
         String remarksBefore = appointment.getRemarks();
         String remarksAfter = appointmentBaseForm.getRemarks();
-        if (null != remarksBefore && null != remarksAfter && !remarksBefore.equals(remarksAfter)){
+        boolean remarksEquels = true;
+        if (null == remarksBefore && null != remarksAfter) {
+            remarksEquels = remarksAfter.equals(remarksBefore);
+        } else if (null != remarksBefore && null == remarksAfter) {
+            remarksEquels = remarksBefore.equals(remarksAfter);
+        } else if (null != remarksBefore && null != remarksAfter) {
+            remarksEquels = remarksAfter.equals(remarksBefore);
+        }
+        if (!remarksEquels){
             record.setBeforeOperation(appointment.getRemarks());
             record.setAfterOperation(appointmentBaseForm.getRemarks());
             record.setOperateItem("预约备注");
-            mapper.insertSelective(record);
+            operateRecords.add(record);
+        }
+        if (StringHelper.isNotEmpty(operateRecords)) {
+            mapper.inertBatch(operateRecords);
         }
     }
 

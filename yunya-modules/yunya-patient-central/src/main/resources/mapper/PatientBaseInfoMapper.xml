@@ -226,17 +226,30 @@
             mobile,
             mobile_owner,
             gender,
+            age,
             birthday,
             origin_type,
             origin_id,
+            source_id,
             remarks,
             inservice,
             crt_id,
             crt_name
         )
-        VALUES(#{id},#{orgId},#{name},#{pinyinName},#{mobile},#{mobileOwner},#{gender},#{birthday},#{originType},
-               #{originId},#{remarks},#{inservice},#{crtId},#{crtName})
+        VALUES(#{id},#{orgId},#{name},#{pinyinName},#{mobile},#{mobileOwner},#{gender},(CASE IFNULL(#{birthday},false)
+	WHEN false THEN
+		null
+	ELSE
+		(DATE_FORMAT(now(),'%Y-%m-%d') - DATE_FORMAT(#{birthday},'%Y-%m-%d'))
+END),#{birthday},#{originType},
+               #{originId},#{sourceId},#{remarks},#{inservice},#{crtId},#{crtName})
     </insert>
+
+    <!-- 根据患者来源ID查询所有推荐患者 -->
+    <select id="findPatientBaseInfoByOriginId" resultMap="BaseResultMap">
+        select <include refid="Patient_Column_List"></include>
+        from patient_base_info where origin_id = #{originId}
+    </select>
 
 
 </mapper>

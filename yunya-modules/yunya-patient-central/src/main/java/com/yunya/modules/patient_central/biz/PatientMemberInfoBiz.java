@@ -373,9 +373,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
       sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 1);
       // 添加会员卡充值收费记录
-      if (!StringHelper.isNotNull(model.getAccountedWayModel())) {
+      AccountedWayModel accountedWayModel = model.getAccountedWayModel();
+      if (StringHelper.isNotNull(accountedWayModel)) {
           MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
-          BeanUtils.copyProperties(model.getAccountedWayModel(), memberRechargeTollRecord);
+          BeanUtils.copyProperties(accountedWayModel, memberRechargeTollRecord);
           memberRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
           memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
           memberRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));

@@ -19,6 +19,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TreeUtil;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
 import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
@@ -155,7 +156,9 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
    */
   public ResponseResult deleteOriginById(Integer id) {
     PatientOrigin patientOriginv = mapper.selectByPrimaryKey(id);
-    if (patientOriginv.getAllowOperate() == false) {
+
+    List<PatientBaseInfo> patientBaseInfoByOriginId = patientBaseInfoMapper.findPatientBaseInfoByOriginId(id);
+    if (patientOriginv.getAllowOperate() == true && StringHelper.isNotEmpty(patientBaseInfoByOriginId)) {
       return ResponseUtil.fail(
           OperationCodeConstants.DELETE_NOT_ALLOW, "该患者来源不可删除", patientOriginv);
     }

@@ -12,11 +12,13 @@ import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.RemoteMiddleTableServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -29,6 +31,8 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
 import com.yunya.models.system.DictionaryType;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.system.SysEmployee;
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
 import org.apache.commons.httpclient.NameValuePair;
@@ -37,7 +41,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotNull;
+import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 简单介绍:</br> 患者基本信息业务层
@@ -93,6 +100,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   /** 标签Mapper */
   @Autowired private PatientLabelRecordMapper patientLabelRecordMapper;
 
+  /** 就诊服务 */
+  @Autowired private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+
   /**
    * 通过患者id查询患者共用属性
    *
@@ -125,7 +135,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     List<PatientBaseInfoVo> userExistsByMobile =
         patientBaseInfoMapper.findUserExistsByMobile(patientBaseInfoQueryForm.getMobile());
-    if (userExistsByMobile != null) {
+    if (StringHelper.isNotEmpty(userExistsByMobile)) {
       return ResponseUtil.fail(OperationCodeConstants.PHONE_EXIST, "该手机号已存在", userExistsByMobile);
     }
     return ResponseUtil.success();
@@ -151,7 +161,6 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientBaseInfo.setOriginType(patientOrigin.getOriginType());
       }
     }
-
     patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
     patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientBaseInfo.setCrtName(BaseContextHandler.getName());
@@ -381,6 +390,25 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm form) {
     List<PatientBaseInfoVo> patientByNameAndMobile =
         patientBaseInfoMapper.findPatientByNameAndMobile(form);
+    // 通过中间表查询末诊医生，末诊日期
+    TreatmentRecord treatmentRecord = new TreatmentRecord();
+    if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
+      patientByNameAndMobile.forEach(patientBaseInfoVo -> {
+        treatmentRecord.setPatientId(patientBaseInfoVo.getId());
+        List<TreatmentRecord> treatmentRecordList = remoteTreatmentServiceFeign.findTreatmentRecordList(treatmentRecord);
+        if (StringHelper.isNotEmpty(treatmentRecordList)) {
+          List<TreatmentRecord> collect = treatmentRecordList.stream().sorted(Comparator.comparing(TreatmentRecord::getTreatStartTime).reversed()).collect(Collectors.toList());
+          TreatmentRecord lastTreatmentRecord = collect.get(0);
+          patientBaseInfoVo.setLastVisitTime(lastTreatmentRecord.getTreatStartTime());
+          Integer lastDentistId = lastTreatmentRecord.getDentistId();
+          SysEmployee sysEmployeeById = this.remoteSystemServiceFeign.findSysEmployeeById(lastDentistId);
+          patientBaseInfoVo.setLastVisit(sysEmployeeById.getName());
+        }
+      });
+    }
+
+
+
     return patientByNameAndMobile;
   }
 

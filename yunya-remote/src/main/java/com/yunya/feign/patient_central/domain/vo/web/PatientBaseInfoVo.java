@@ -151,6 +151,7 @@ public class PatientBaseInfoVo implements Serializable {
     /**
      * 末诊时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date lastVisitTime;
 
     /**

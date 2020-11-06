@@ -17,4 +17,11 @@ public interface AppointmentOperateRecordMapper extends Mapper<AppointmentOperat
      */
     List<AppointOperationRecordVo> findAppointOperationRecordByExample(@Param("query") AppointOperationQuery query);
 
+    /**
+     * 批量插入操作记录
+     * @param operateRecords 操作记录集合
+     * @return 返回插入条数
+     */
+    Integer inertBatch(@Param("operateRecords") List<AppointmentOperateRecord> operateRecords);
+
 }

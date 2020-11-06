@@ -37,7 +37,7 @@
 		  aor.inservice,
 		  aor.remarks,
 		  aor.crt_name as crtName,
-		  aor.crt_time as crtTime
+		  date_format(aor.crt_time,'%Y-%m-%d') as crtTime
 		FROM appointment_operate_record aor
 		<where>
           <if test="query.orgId != null">
@@ -53,5 +53,16 @@
         </if>
 
   </select>
+
+    <!-- 批量插入操作记录 -->
+    <insert id="inertBatch" useGeneratedKeys="true" keyProperty="id">
+        insert into appointment_operate_record (org_id,appointment_id,operate_type,operate_item,before_operation,
+        after_operation,inservice,remarks,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time) values
+        <foreach collection="operateRecords" item="operator" separator=",">
+            (#{operator.orgId},#{operator.appointmentId},#{operator.operateType},#{operator.operateItem},
+            #{operator.beforeOperation},#{operator.afterOperation},#{operator.inservice},#{operator.remarks},
+            #{operator.crtId},#{operator.crtName},#{operator.crtTime},#{operator.uptId},#{operator.updName},#{operator.updTime})
+        </foreach>
+    </insert>
 
 </mapper>
