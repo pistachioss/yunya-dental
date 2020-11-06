@@ -54,6 +54,7 @@ public enum DiscountError implements RestError {
     PATIENT_VOUCHER_NULL(45, "患者没有可使用的代金券"),
     PATIENT_DISCOUNT_NULL(46, "患者没有可使用的折扣券"),
     PATIENT_MEMBER_NULL(47, "患者没有可使用的会员卡"),
+    CARD_IS_ON_SALE(48,"卡号为%s卡券正在售出中，请稍后重试！"),
     ;
     private Integer code;
     private String value;

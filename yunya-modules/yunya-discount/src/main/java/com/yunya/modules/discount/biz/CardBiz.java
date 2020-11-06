@@ -77,6 +77,7 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.model.RestError;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -806,7 +807,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		}
 		try {
 			//锁定患者选择的优惠信息
-			errorBo = needLockKeys(assembleCardIds(form), patientId, RedisConstants.LOCK_CHOICE_CARD);
+			errorBo = needLockKeys(assembleCardIds(form), patientId, RedisConstants.LOCK_CHOICE_CARD, DiscountError.CARD_HAS_CHOICE);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
@@ -1780,7 +1781,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		Date saleStartDate = couponInfo.getAvailableSaleStartDate();
 		//售出结束时间
 		Date saleEndDate = couponInfo.getAvailableSaleEndDate();
-		Date now = new Date();
+		Date now = Date.from(LocalDate.now().atStartOfDay(ZoneOffset.ofHours(8)).toInstant());
 		if (saleStartDate != null && saleEndDate != null &&
 				(now.before(saleStartDate) || now.after(saleEndDate))) {
 			log.warn("【售卖失败】卡券不在优惠券[{}]售出时间范围内", couponInfo.getId());
@@ -2633,9 +2634,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return messageModel;
 	}
 
-	private RestErrorBo needLockKeys(List<Integer> resourceIds, Integer requestId, String lockPrefix) {
+	private RestErrorBo needLockKeys(List<Integer> resourceIds, Integer requestId, String lockPrefix, RestError error) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		List<String> conflictList = Lists.newArrayList();
+		log.info("【开始锁定】开始锁定用户选择的卡券");
 		if (CollectionUtils.isNotEmpty(resourceIds)) {
 			Set<String> cardStrList = resourceIds.stream().map(String::valueOf).collect(toSet());
 			//获取用户已被锁定的卡券
@@ -2647,13 +2649,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				addCardIds = SetUtils.difference(cardStrList, existLockKeys);
 				delCardIds = SetUtils.difference(existLockKeys, cardStrList);
 				commonIds = SetUtils.intersection(existLockKeys, cardStrList);
+				log.info("新增需要锁定的卡券：{}", addCardIds);
+				log.info("删除锁定的卡券：{}", delCardIds);
+				log.info("需要刷新锁定的卡券：{}", commonIds);
 				//需要增加的key
-				if (CollectionUtils.isNotEmpty(addCardIds)) {
-					for (String addCardId : addCardIds) {
-						String result = lockChoiceCard(addCardId, requestId, lockPrefix);
-						if (StringUtils.isNotBlank(result)) {
-							conflictList.add(result);
-						}
+				for (String addCardId : addCardIds) {
+					String result = lockChoiceCard(addCardId, requestId, lockPrefix);
+					if (StringUtils.isNotBlank(result)) {
+						conflictList.add(result);
 					}
 				}
 				//如果发生冲突，释放释放已选择卡券信息
@@ -2666,15 +2669,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 						unLockByIds(delCardIds, lockPrefix, requestId);
 					}
 					//需要更新的key
-					if (CollectionUtils.isNotEmpty(commonIds)) {
-						commonIds.forEach(key -> {
-							String lockKey = Joiner.on(":").join(lockPrefix, String.valueOf(key));
-							redisUtils.expire(lockKey, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
-						});
-					}
+					commonIds.forEach(key -> {
+						String lockKey = Joiner.on(":").join(lockPrefix, String.valueOf(key));
+						redisUtils.expire(lockKey, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+					});
 				}
 			} else {
-				log.info("【开始锁定】开始锁定用户选择的卡券");
 				for (String cardId : cardStrList) {
 					String result = lockChoiceCard(cardId, requestId, lockPrefix);
 					if (StringUtils.isNotBlank(result)) {
@@ -2690,7 +2690,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		}
 		//释放选择的卡券
 		if (CollectionUtils.isNotEmpty(conflictList)) {
-			errorBo.setError(DiscountError.CARD_HAS_CHOICE);
+			errorBo.setError(error);
 			errorBo.setMsg(Joiner.on(",").join(conflictList));
 		}
 		return errorBo;
@@ -2717,7 +2717,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		log.info("【手动加锁】锁信息：[{}]，需要加锁的keys：{}", lockPrefix, ids);
 		if (CollectionUtils.isNotEmpty(ids)) {
 			Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
-			RestErrorBo errorBo = needLockKeys(ids, loginUserId, lockPrefix);
+			RestErrorBo errorBo = needLockKeys(ids, loginUserId, lockPrefix, DiscountError.CARD_IS_ON_SALE);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
