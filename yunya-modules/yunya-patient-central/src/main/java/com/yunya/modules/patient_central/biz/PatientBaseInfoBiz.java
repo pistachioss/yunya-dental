@@ -186,7 +186,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    *
    * @param patientBaseInfo 患者信息
    */
-  private void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo) {
+  public void addPatientPrepaymentsInfo(PatientBaseInfo patientBaseInfo) {
     if (patientBaseInfo.getId() != null) {
       PatientPrepaymentsInfo patientPrepaymentsInfo = new PatientPrepaymentsInfo();
       patientPrepaymentsInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
