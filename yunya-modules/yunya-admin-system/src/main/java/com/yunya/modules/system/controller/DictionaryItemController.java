@@ -69,6 +69,22 @@ public class DictionaryItemController {
     return ResponseUtil.success(resultList);
   }
 
+
+  /**
+   * 根据条件查询字典明细列表
+   *
+   * @param queryForm 参数封装
+   * @return list
+   */
+  @ApiOperation("根据条件查询字典明细列表（可分页）")
+  @ApiImplicitParam(name = "form", value = "字典明细全局查询参数封装模型", dataType = "DictQueryForm")
+  @PostMapping("/permit/item/list")
+  public ResponseResult<PageInfo<DictionaryItemVO>> findDictionaryList(
+          @RequestBody @Validated DictQueryForm queryForm) {
+    PageInfo<DictionaryItemVO> resultList = dictionaryItemBiz.findList(queryForm);
+    return ResponseUtil.success(resultList);
+  }
+
   /**
    * 新增字典数据
    *

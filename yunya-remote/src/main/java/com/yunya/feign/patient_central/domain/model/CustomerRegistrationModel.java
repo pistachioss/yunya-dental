@@ -1,6 +1,7 @@
 package com.yunya.feign.patient_central.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
@@ -21,6 +22,7 @@ import java.util.Date;
  */
 @Data
 @ToString
+@ApiModel("客户登记参数模型")
 public class CustomerRegistrationModel implements Serializable {
 
     /**
@@ -74,15 +76,17 @@ public class CustomerRegistrationModel implements Serializable {
     private Integer originId;
 
     /**
+     * 推荐来源id
+     */
+    @ApiModelProperty(value = "推荐来源id")
+    private Integer sourceId;
+
+    /**
      * 备注 备注
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
 
 
-    /**
-     * 推荐来源id
-     */
-    @ApiModelProperty(value = "推荐来源id")
-    private Integer sourceId;
+
 }
