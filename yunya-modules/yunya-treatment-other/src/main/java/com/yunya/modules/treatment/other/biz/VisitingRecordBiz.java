@@ -411,13 +411,20 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                         build.setDentistName(dentistInfo.getName());
                     }
                 }
-
                 // 设置末诊科室信息
                 Integer deptRoomId = visitingRecord.getDeptRoomId();
                 if (deptRoomId != null) {
                     DepartmentRoom departmentRoomInfo = remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
                     if (departmentRoomInfo != null){
                         build.setDeptRoomName(departmentRoomInfo.getName());
+                    }
+                }
+                // 设置初复诊
+                Integer treatmentId = visitingRecord.getTreatmentId();
+                if (null != treatmentId) {
+                    TreatmentRecord treatmentRecordById = remoteTreatmentServiceFeign.findTreatmentRecordById(treatmentId);
+                    if (null != treatmentRecordById) {
+                        build.setFirstVisit(treatmentRecordById.getType());
                     }
                 }
                 visitingContentAfterCurrentVos.add(build);

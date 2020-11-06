@@ -27,6 +27,6 @@
       select prrd.id id,prrd.crt_time operatingTime,prrd.recharge_principal rechargePrincipal,prrd.recharge_bonus rechargeBonus,
              prrd.org_id orgId,prrd.crt_id operatorId,prrd.crt_name operatorName,prtrd.payment_id paymentId,prtrd.remarks remarks,recharge_type rechargeType
       from prepaid_recharge_record prrd join prepaid_recharge_toll_record prtrd on prrd.id = prtrd.recharge_record_id
-      where prrd.prepaid_id = #{form.prepaidId} and prrd.org_id = #{form.orgId}  order by prrd.crt_time desc
+      where prrd.prepaid_id = #{form.prepaidId}  order by prrd.crt_time desc
     </select>
 </mapper>
