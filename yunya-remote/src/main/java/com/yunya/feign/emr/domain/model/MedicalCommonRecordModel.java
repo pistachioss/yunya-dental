@@ -142,4 +142,7 @@ public class MedicalCommonRecordModel {
 
   @ApiModelProperty("主治医生姓名")
   private String majorDentistName;
+
+  @ApiModelProperty("门诊名称")
+  private String companyName;
 }
