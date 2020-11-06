@@ -5,8 +5,13 @@ import com.yunya.models.patient_central.PatientLabelRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import javax.annotation.Resource;
 import java.util.List;
 
+/**
+ * @author YK
+ */
+@Resource
 public interface PatientLabelRecordMapper extends Mapper<PatientLabelRecord> {
     /**
      * 根据患者id 查询标签信息

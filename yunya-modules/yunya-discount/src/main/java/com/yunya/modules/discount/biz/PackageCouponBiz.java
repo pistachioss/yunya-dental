@@ -1,6 +1,8 @@
 package com.yunya.modules.discount.biz;
 
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.BaseException;
@@ -17,8 +19,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Date;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
@@ -34,6 +38,7 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
     @Autowired private CouponCommonInfoMapper couponCommonInfoMapper;
     @Autowired private CouponCommonInfoBiz couponCommonInfoBiz;
     @Autowired private CouponFileInfoBiz couponFileInfoBiz;
+    @Resource private RemoteRabbitMqServiceFeign mqServiceFeign;
     /**
      * 新增
      *
@@ -50,22 +55,25 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         couponCommonInfo.setType(new Byte("2"));
         couponCommonInfo.setIsInservice(true);
         couponCommonInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        couponCommonInfoBiz.insertSelective(couponCommonInfo);//基础信息表中插入数据
+        //基础信息表中插入数据
+        couponCommonInfoBiz.insertSelective(couponCommonInfo);
 
         PackageCoupon packageCoupon = new  PackageCoupon();
         BeanUtils.copyProperties(packageCouponForm, packageCoupon);
         packageCoupon.setCouponId(couponCommonInfo.getId());
         packageCoupon.setUseableClinic(packageCouponForm.getUseableClinic());
-        insertSelective(packageCoupon);//插入卡券信息
-
-        if(packageCoupon.getId()<10000){//同一种卡券最多添加9999个
+        //插入卡券信息
+        insertSelective(packageCoupon);
+        //同一种卡券最多添加9999个
+        if(packageCoupon.getId()<10000){
         String num = String.format("%04d", packageCoupon.getId());
         couponCommonInfo.setCouponCode(PACKAGE_COUPON_TYPE + num);
-        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);//插入卡券编码
+            //插入卡券编码
+        couponCommonInfoBiz.updateSelectiveById(couponCommonInfo);
         }else{
             throw new BaseException("已超过系统允许新增兑换券产品的最大数量9999，不允许新增！", INSERT_MODEL);
         }
-
+        mqServiceFeign.sendMessage(couponCommonInfo.getId(), BusinessConstants.ADD, BaseCoupon);
         return couponCommonInfo.getId();
 
     }
@@ -143,7 +151,7 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
                 throw new BaseException("修改错误，查无结果", OperationCodeConstants.OBJECT_EDIT_FAIL);
             }
         }
-
+        mqServiceFeign.sendMessage(couponCommonInfo.getId(), BusinessConstants.UPDATE, BaseCoupon);
     }
 
     /**
@@ -162,9 +170,14 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         packageCoupon.setCouponId(id);
         CouponFileInfo couponFiledelete = new CouponFileInfo();
         couponFiledelete.setCouponId(id);
-        couponCommonInfoBiz.deleteById(id);//删除卡券公用信息
-        delete(packageCoupon);//删除兑换券卡券信息
-        couponFileInfoBiz.delete(couponFiledelete);//清除图片文档信息
+        //删除卡券公用信息
+        couponCommonInfoBiz.deleteById(id);
+        //删除兑换券卡券信息
+        delete(packageCoupon);
+        //清除图片文档信息
+        couponFileInfoBiz.delete(couponFiledelete);
+        mqServiceFeign.sendMessage(id, BusinessConstants.DELETE, BaseCoupon);
+
     }
 
 }

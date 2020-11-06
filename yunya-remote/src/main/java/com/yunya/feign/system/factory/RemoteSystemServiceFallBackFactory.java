@@ -84,6 +84,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
+  public List<OrganizationInfoDetail> findOrgInfoInIds(List<Integer> orgIds) {
+    return null;
+  }
+
+  @Override
   public CompanyDepartment findCompanyDepartmentById(Integer id) {
     return null;
   }

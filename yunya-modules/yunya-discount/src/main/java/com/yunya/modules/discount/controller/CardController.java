@@ -90,10 +90,10 @@ public class CardController {
     }
 
     @ApiOperation(value = "产品售卖--查看配给-卡券售出")
-    @PutMapping("/coupon/card/sale/{id}")
+    @PutMapping("/coupon/card/sale")
     @CurrentUser
-    public ResponseResult soldCard(@PathVariable(value = "id") Integer cardId,@Valid @RequestBody CardSoldForm form) {
-        return cardBiz.soldCard(cardId, form);
+    public ResponseResult soldCard(@Valid @RequestBody CardSoldForm form) {
+        return cardBiz.soldCard(form);
     }
 
     @ApiOperation(value = "卡券二维码页面打开")

@@ -394,4 +394,14 @@ public class OrganizationBiz {
     company.setUpdTime(new Date());
     companyMapper.updateByPrimaryKeySelective(company);
   }
+
+  /**
+   * 根据组织ID列表获取组织信息列表
+   *
+   * @param orgIds 组织ID列表
+   * @return
+   */
+  public List<OrganizationInfoVO> findOrgInfoInIds(List<Integer> orgIds) {
+    return companyMapper.selectOrganizationInIds(orgIds);
+  }
 }

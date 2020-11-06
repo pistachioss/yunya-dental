@@ -187,6 +187,17 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据组织ID列表获取组织信息列表
+   *
+   * @param orgIds 组织ID列表
+   * @return
+   */
+  @RequestMapping (value = "/organization/ids", method = RequestMethod.POST)
+  public List<OrganizationInfoVO> findOrgInfoInIds(@RequestBody List<Integer> orgIds) {
+    return organizationBiz.findOrgInfoInIds(orgIds);
+  }
+
+  /**
    * 根据条件查询组织信息
    *
    * @param model 查询条件

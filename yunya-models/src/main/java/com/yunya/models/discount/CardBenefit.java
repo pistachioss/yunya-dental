@@ -72,7 +72,7 @@ public class CardBenefit implements Serializable {
     private Integer benefitType;
 
     /**
-     * 项目使用优惠下标（记录哪一个数量）
+     * 项目使用优惠下标（记录作用在哪一个数量）
      */
     @Column(name = "item_index")
     private Integer itemIndex;
@@ -112,6 +112,11 @@ public class CardBenefit implements Serializable {
      */
     @Column(name = "is_deleted")
     private Integer deleted;
+
+    /**
+     * 排序
+     */
+    private Integer sort;
 
     /**
      * 创建人
