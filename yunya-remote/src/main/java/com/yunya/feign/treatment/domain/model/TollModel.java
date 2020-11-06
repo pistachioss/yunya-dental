@@ -27,27 +27,24 @@ public class TollModel implements Serializable {
   @ApiModelProperty(value = "开单记录ID ", required = true)
   @NotNull(message = "开单记录ID不能为空！")
   private Integer orderRecordId;
-
+  /** 折扣方式（0-不使用优惠；1-优惠；2-授权折扣） */
+  @ApiModelProperty(value = "折扣类型（0-不使用优惠；1-优惠；2-授权折扣）", required = true)
+  @NotNull(message = "优惠类型不能为空")
+  private Byte discountType;
   /** 普通优惠信息 */
   private GeneralDiscountModel generalDiscountModel;
-
   /** 授权折扣信息 */
   private AccreditDiscountModel accreditDiscountModel;
-
   /** 预付款账户 */
   private Set<PrepaymentAccountModel> prepaymentAccountModels;
-
   /** 会员卡账户 */
   private Set<MemberAccountModel> memberAccountModels;
-
   /** 其他支付方式 */
   private Set<PaymentModel> paymentModels;
-
   /** 挂帐金额 */
   @ApiModelProperty(value = "挂帐金额", required = true)
   @NotNull(message = "挂帐金额不能为空！")
   private BigDecimal outstandingAmount;
-
   /** 发票信息 */
   private InvoiceModel invoiceModel;
 }

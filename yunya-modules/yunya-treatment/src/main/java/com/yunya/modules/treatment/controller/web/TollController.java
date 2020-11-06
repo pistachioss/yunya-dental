@@ -2,6 +2,8 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.model.TollDebtModel;
 import com.yunya.feign.treatment.domain.model.TollModel;
+import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -13,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * 简介: 收费控制器
  *
@@ -21,13 +25,27 @@ import org.springframework.web.bind.annotation.*;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "收费管理（收费、收欠费）")
+@Api(tags = "收费管理（匹配订单优惠、收费、收欠费）")
 @RestController
 @RequestMapping("charge")
 public class TollController {
 
   /** 注入对象 */
   @Autowired private TollBiz tollBiz;
+
+  /**
+   * 匹配订单列表优惠信息
+   *
+   * @param query 匹配条件
+   * @return
+   */
+  @ApiOperation("匹配订单列表优惠信息")
+  @PostMapping(value = "/privilege/match", name = "匹配订单列表优惠信息")
+  public ResponseResult<List<OrderDetailChargeVO>> matchOrderTailPrivilegeList(
+      @RequestBody @Validated OrderPrivilegeQuery query) {
+    List<OrderDetailChargeVO> resultList = tollBiz.matchOrderTailPrivilege(query);
+    return ResponseUtil.success(resultList);
+  }
 
   /**
    * 确认收费

@@ -1,10 +1,12 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -46,6 +48,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   /** 系统管理服务 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
+  /** 优惠服务调用 */
+  @Autowired private RemoteDiscountFeign discountFeign;
   /** 基础价目表 */
   @Autowired private BaseTariffBiz baseTariffBiz;
   /** 商品项目 */
@@ -66,8 +70,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   public List<OrderDetailVO> findGoodsDetailVOList(Integer orderRecordId) {
-    Byte sourceType = 1;
-    List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, sourceType);
+    List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, (byte) 1);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
@@ -96,13 +99,13 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   }
 
   /**
-   * 根据开单记录ID查询开单详情列表(开单界面)
+   * 根据开单记录ID查询开单详情列表
    *
    * @param orderRecordId 开单记录ID
    * @return
    */
-  public List<OrderDetailVO> findOrderDetailVOList(Integer orderRecordId) {
-    List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, null);
+  public List<OrderDetailVO> findOrderDetailVOList(Integer orderRecordId, Byte sourceType) {
+    List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, sourceType);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
@@ -137,6 +140,62 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           });
     } else {
       resultList = new ArrayList<>();
+    }
+    return resultList;
+  }
+
+  /**
+   * 根据订单ID查询收费订单明细列表（含优惠信息）
+   *
+   * @param orderRecordId 开单记录ID
+   * @return
+   */
+  public List<OrderDetailChargeVO> findChargeOrderDetailList(Integer orderRecordId) {
+    List<OrderDetailChargeVO> chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
+    // 查询订单优惠记录
+    
+    return chargeOrderDetailList;
+  }
+
+  /**
+   * 根据开单记录ID获取订单明细列表
+   *
+   * @param orderRecordId 开单记录ID
+   */
+  private List<OrderDetailChargeVO> getChargeOrderDetailList(Integer orderRecordId) {
+    List<OrderDetailChargeVO> resultList = mapper.selectChargeOrderDetailList(orderRecordId);
+    if (StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(
+          vo -> {
+            // todo 从缓存中获取开单项目信息
+            Integer billingItemId = vo.getBillingItemId();
+            Byte type = vo.getType();
+            switch (type) {
+              case 0:
+                BaseTariff tariff = baseTariffBiz.selectById(billingItemId);
+                if (null != tariff) {
+                  vo.setBillingItemName(tariff.getName());
+                  vo.setUnit(tariff.getUnit());
+                }
+                break;
+              case 1:
+                BaseOralTariff oralTariff = baseOralTariffBiz.selectById(billingItemId);
+                if (null != oralTariff) {
+                  vo.setBillingItemName(oralTariff.getName());
+                  vo.setUnit(oralTariff.getUnit());
+                }
+                break;
+              default:
+                break;
+            }
+            // todo 从缓存中获取用户（员工）信息
+            Integer executorId = vo.getExecutorId();
+            if (null != executorId) {
+              SysUserInfoDetail employeeInfo =
+                  systemServiceFeign.findSysUserEmployeeInfoByUserId(executorId);
+              vo.setExecutorName(null != employeeInfo ? employeeInfo.getName() : "--");
+            }
+          });
     }
     return resultList;
   }

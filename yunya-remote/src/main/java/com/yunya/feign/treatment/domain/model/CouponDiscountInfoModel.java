@@ -25,8 +25,8 @@ public class CouponDiscountInfoModel implements Serializable {
   @ApiModelProperty(value = "卡券公共信息ID", required = true)
   @NotNull(message = "卡券信息ID不能为空！")
   private Integer couponCommonInfoId;
-
-  @ApiModelProperty(value = "患者ID（卡券所有人ID）", required = true)
-  @NotNull(message = "患者ID（卡券所有人ID不能为空！")
-  private Integer patientId;
+  /** 卡券类型 */
+  @ApiModelProperty(value = "卡券类型", required = true)
+  @NotNull(message = "卡券分类不能为空！")
+  private Byte couponType;
 }

@@ -80,7 +80,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    */
   public BillDetailGroupVO findOrderDetailAndBillDetail(Integer orderRecordId) {
     BillDetailGroupVO resultData = new BillDetailGroupVO();
-    List<OrderDetailVO> orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId);
+    List<OrderDetailVO> orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId, null);
     if (StringHelper.isEmpty(orderDetails)) {
       orderDetails = new ArrayList<>();
     }
