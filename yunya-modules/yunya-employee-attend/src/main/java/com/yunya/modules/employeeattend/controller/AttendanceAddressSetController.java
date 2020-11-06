@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
  * @Date: 2020/11/5 9:13
  * @since: 1.0.0
  */
-//@RestController
 @Api(tags = "考勤地址设置管理")
 @RestController
 @RequestMapping("attendanceAddressSet")
