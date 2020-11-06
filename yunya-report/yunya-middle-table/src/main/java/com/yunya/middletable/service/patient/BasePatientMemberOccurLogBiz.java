@@ -422,7 +422,7 @@ public class BasePatientMemberOccurLogBiz
             getMemberRechargeRecordInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberRechargeLog)) {
           mapper.deleteByPrimaryKey(memberRechargeLog);
-          mapper.insert(memberRechargeLog);
+          mapper.insertSelective(memberRechargeLog);
         }
         break;
         // 消费
@@ -432,7 +432,7 @@ public class BasePatientMemberOccurLogBiz
             getMemberExpendAndRevocation(id, type, operationType);
         if (StringHelper.isNotNull(memberExpendLog)) {
           mapper.deleteByPrimaryKey(memberExpendLog);
-          mapper.insert(memberExpendLog);
+          mapper.insertSelective(memberExpendLog);
         }
         break;
         // 退款
@@ -441,7 +441,7 @@ public class BasePatientMemberOccurLogBiz
             getMemberReturnInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberReturnInfoLog)) {
           mapper.deleteByPrimaryKey(memberReturnInfoLog);
-          mapper.insert(memberReturnInfoLog);
+          mapper.insertSelective(memberReturnInfoLog);
         }
         break;
         // 撤销
@@ -721,7 +721,7 @@ public class BasePatientMemberOccurLogBiz
               prepaidRechargeRecord.getOccurLogId(),
               prepaidRechargeRecord.getType().intValue(),
               prepaidRechargeRecord.getOccurType().intValue());
-          mapper.insert(prepaidRechargeRecord);
+          mapper.insertSelective(prepaidRechargeRecord);
         }
         break;
         // 消费
@@ -731,7 +731,7 @@ public class BasePatientMemberOccurLogBiz
             getPrepaidExpendAndRevocation(id, type, operationType);
         if (StringHelper.isNotNull(memberOccurLog)) {
           mapper.delete(memberOccurLog);
-          mapper.insert(memberOccurLog);
+          mapper.insertSelective(memberOccurLog);
         }
         break;
         // 退款
@@ -740,7 +740,7 @@ public class BasePatientMemberOccurLogBiz
             getPrepaidReturnRecordInfo(id, type, operationType);
         if (StringHelper.isNotNull(prepaidReturnInfo)) {
           mapper.delete(prepaidReturnInfo);
-          mapper.insert(prepaidReturnInfo);
+          mapper.insertSelective(prepaidReturnInfo);
         }
         break;
       default:
