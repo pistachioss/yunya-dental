@@ -24,6 +24,6 @@
     <select id="RechargeRecord" resultType="com.yunya.feign.patient_central.domain.vo.web.RechargeRecordVo">
         select mrrd.id,mrrd.crt_time operatingTime,mrrd.recharge_principal rechargePrincipal,mrrd.recharge_bonus rechargeBonus,mrrd.org_id orgId,mrrd.crt_id operatorId,mrrd.crt_name operatorName,mrrd.remarks
         from member_recharge_record mrrd
-        where mrrd.member_id = #{form.cardNumber} and mrrd.org_id = #{form.orgId}
+        where mrrd.member_id = #{form.cardNumber}
     </select>
 </mapper>

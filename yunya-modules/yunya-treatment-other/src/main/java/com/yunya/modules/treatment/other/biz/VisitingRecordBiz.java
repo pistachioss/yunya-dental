@@ -240,7 +240,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         List<VisitingRecordVo> searchVisitingRecordVo = null;
         // 随访记录结果列表
         List<VisitingRecordVo> visitingRecordVoList = new ArrayList<>();
-        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
             // 组合随访记录信息
             for(VisitingRecordVo visitingRecordVo : visitingRecordVos){
