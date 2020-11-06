@@ -96,7 +96,7 @@ public class MedicalCommonRecordController {
     for (MedicalCommonRecord medical : list) {
       MedicalCommonRecordModel medicalCommonRecordModel = new MedicalCommonRecordModel();
       BeanUtils.copyProperties(medical, medicalCommonRecordModel);
-      medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getMajorDentistId()+"").getName());
+      medicalCommonRecordModel.setMajorDentistName(employeeMap.get(medicalCommonRecordModel.getCrtId()+"").getName());
 
       if (medical.getExamination() != null) {
         jsonArray = JSONArray.parseArray(medical.getExamination());

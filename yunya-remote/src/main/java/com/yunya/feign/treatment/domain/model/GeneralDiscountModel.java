@@ -24,7 +24,9 @@ public class GeneralDiscountModel implements Serializable {
   /** 会员卡类型id */
   @ApiModelProperty("会员卡类型ID")
   private Integer memberTypeId;
-
+  /** 折扣券ID */
+  @ApiModelProperty("折扣券ID")
+  private Integer discountCouponId;
   /** 患者卡券信息 */
   private List<CouponDiscountInfoModel> couponDiscountInfoModels;
 }

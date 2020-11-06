@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -52,11 +53,11 @@ public class OrderDetailController {
    * @param orderRecordId 开单记录ID
    * @return
    */
-  @ApiOperation("根据开单记录ID查询开单详情列表")
+  @ApiOperation("根据开单记录ID查询开单详情列表（收费订单明细查询）")
   @GetMapping("/list/{orderRecordId}")
-  public ResponseResult<List<OrderDetailVO>> findList(
+  public ResponseResult<List<OrderDetailChargeVO>> findChargeOrderList(
       @PathVariable(value = "orderRecordId") Integer orderRecordId) {
-    List<OrderDetailVO> resultList = orderDetailBiz.findOrderDetailVOList(orderRecordId);
+    List<OrderDetailChargeVO> resultList = orderDetailBiz.findChargeOrderDetailList(orderRecordId);
     return ResponseUtil.success(resultList);
   }
 

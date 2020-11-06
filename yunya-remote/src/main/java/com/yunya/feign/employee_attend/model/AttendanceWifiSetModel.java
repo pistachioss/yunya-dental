@@ -25,7 +25,7 @@ public class AttendanceWifiSetModel implements Serializable {
     private Integer id;
 
     /** 组织id */
-    @ApiModelProperty(value = "组织id")
+    @ApiModelProperty(value = "组织id", required = true)
     private Integer orgId;
 
     /** 组织名称 */
@@ -33,10 +33,10 @@ public class AttendanceWifiSetModel implements Serializable {
     private String organizationName;
 
     /** mac地址 */
-    @ApiModelProperty(value = "mac地址")
+    @ApiModelProperty(value = "mac地址", required = true)
     private String macAddress;
 
     /** wifi名称 */
-    @ApiModelProperty(value = "wifi名称")
+    @ApiModelProperty(value = "wifi名称", required = true)
     private String wifiName;
 }

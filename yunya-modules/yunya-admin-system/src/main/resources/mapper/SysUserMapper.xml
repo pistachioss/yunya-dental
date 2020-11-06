@@ -340,6 +340,12 @@
                     #{item}
                 </foreach>
             </if>
+            <if test="queryForm.userIds!=null and queryForm.userIds.length > 0">
+                and user_info.userId in
+                <foreach collection="queryForm.userIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
         </where>
         order by user_info.userId desc
     </select>

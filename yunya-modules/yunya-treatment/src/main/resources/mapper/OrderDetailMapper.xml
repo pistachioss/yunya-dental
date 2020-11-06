@@ -26,9 +26,9 @@
         <result column="upt_name" jdbcType="VARCHAR" property="uptName"/>
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
     </resultMap>
-    <!-- 根据就诊记录ID查询开单详情列表 -->
+    <!-- 根据开单记录ID查询开单详情列表 -->
     <select id="selectOrderDetailVOList" resultType="com.yunya.feign.treatment.domain.vo.OrderDetailVO">
-      select
+        select
         od.id as orderDetailId,
         od.`type`,
         od.billing_item_id as billingItemId,
@@ -38,14 +38,31 @@
         od.tooth_bit as toothBit,
         od.executor_id as executorId,
         od.remarks
-      from order_detail od
-      <where>
-          <if test="orderRecordId != null">
-              and od.order_record_id = #{orderRecordId}
-          </if>
-          <if test="sourceType != null">
-              and od.source_type = #{sourceType}
-          </if>
-      </where>
+        from order_detail od
+        <where>
+            <if test="orderRecordId != null">
+                and od.order_record_id = #{orderRecordId}
+            </if>
+            <if test="sourceType != null">
+                and od.source_type = #{sourceType}
+            </if>
+        </where>
+    </select>
+    <!-- 根据开单记录ID查询收费开单明细 -->
+    <select id="selectChargeOrderDetailList"
+            resultType="com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO">
+        select
+        od.id as orderDetailId,
+        od.`type`,
+        od.billing_item_id as billingItemId,
+        od.price,
+        od.quantity,
+        od.receivable_amount as receivableAmount,
+        od.tooth_bit as toothBit,
+        od.executor_id as executorId,
+        od.source_type as sourceType,
+        od.remarks
+        from order_detail od
+        where od.order_record_id = #{orderRecordId}
     </select>
 </mapper>

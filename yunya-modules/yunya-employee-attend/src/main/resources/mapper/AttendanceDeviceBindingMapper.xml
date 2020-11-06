@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.employeeattend.mapper.AttendanceDeviceBindingMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.AttendanceDeviceBinding" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="binding_status" property="bindingStatus" jdbcType="INTEGER" />
+    <result column="binding_time" property="bindingTime" jdbcType="TIMESTAMP" />
+    <result column="device_number" property="deviceNumber" jdbcType="VARCHAR" />
+    <result column="first_number" property="firstNumber" jdbcType="VARCHAR" />
+    <result column="old_number" property="oldNumber" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!--根据userid分页查询员工的考勤设备的绑定记录列表-->
+  <select id="findBindingDeviceList" resultType="com.yunya.feign.employee_attend.vo.AttendanceDeviceBindingVO">
+    select
+        t.id,
+        t.user_id as userId,
+        t.binding_status as bindingStatus,
+        t.binding_time as bindingTime,
+        t.device_number as deviceNumber,
+        t.first_number as firstNumber,
+        t.old_number as oldNumber
+    from attendance_device_binding t
+    <where>
+      <if test="queryForm.userId != null">
+        and t.user_id = #{queryForm.userId}
+      </if>
+      <if test="queryForm.bindingStatus != null">
+        and t.binding_status = #{queryForm.bindingStatus}
+      </if>
+      <if test="queryForm.startDate != null and queryForm.startDate!= ''">
+        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &gt;= #{queryForm.startDate}
+      </if>
+      <if test="queryForm.endDate != null and queryForm.endDate != ''">
+        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &lt;= #{queryForm.endDate}
+      </if>
+    </where>
+    order by t.binding_time desc
+  </select>
+</mapper>
