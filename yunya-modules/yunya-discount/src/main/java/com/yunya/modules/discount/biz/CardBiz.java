@@ -82,6 +82,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.Card;
+import com.yunya.models.discount.CardBenefit;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DiscountCoupon;
@@ -105,6 +106,7 @@ import com.yunya.modules.discount.enums.SoldTypeEnum;
 import com.yunya.modules.discount.enums.SoldWayEnum;
 import com.yunya.modules.discount.enums.TrueFalseEnum;
 import com.yunya.modules.discount.enums.UseWayEnum;
+import com.yunya.modules.discount.mapper.CardBenefitMapper;
 import com.yunya.modules.discount.mapper.CardMapper;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -207,6 +209,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private ExecutorService cardThreadPool;
 	@Resource
 	private RemoteTreatmentServiceFeign treatmentServiceFeign;
+	@Resource
+	private CardBenefitMapper cardBenefitMapper;
 	@Resource
 	private RemoteRabbitMqServiceFeign mqServiceFeign;
 
@@ -1158,6 +1162,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 */
 	public PatientOptionalBenefitVo initBenefit(PatientBenefitQuery query) {
 		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+		int count = countByBenefit(query.getOrderId());
+		if (count != 0) {
+			return null;
+		}
 		return getPatientBenefit(query.getPatientId(), query.getOrderId(), orgId);
 	}
 
@@ -1167,7 +1175,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		//获取订单明细
 		List<OrderDetail> orderDetail = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
 		if (CollectionUtils.isEmpty(orderDetail)) {
-			return null;
+			return new PatientOptionalBenefitVo();
 		}
 		//订单的项目明细映射
 		Map<Integer, Set<Integer>> itemMap = orderDetail.stream().collect(groupingBy(obj -> obj.getType().intValue(),
@@ -1834,9 +1842,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	/**
 	 * 检查卡券售出信息
 	 *
-	 * @param card     card
-	 * @param orgId    orgId
-	 * @param orgName  orgName
+	 * @param card    card
+	 * @param orgId   orgId
+	 * @param orgName orgName
 	 * @return RestErrorBo
 	 */
 	private RestErrorBo checkCardForSale(Integer cardId, Card card, Integer orgId, String orgName) {
@@ -1853,8 +1861,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	/**
 	 * 检查卡券取消售出信息
 	 *
-	 * @param card     card
-	 * @param orgId    orgId
+	 * @param card  card
+	 * @param orgId orgId
 	 * @return RestErrorBo
 	 */
 	private RestErrorBo checkCardForCancelSale(Integer cardId, Card card, Integer orgId) {
@@ -2740,5 +2748,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			unLockByIds(existLock, lockPrefix, requestId);
 			log.info("手动解锁完成");
 		}
+	}
+
+	private int countByBenefit(Integer orderId) {
+		Example example = new Example(CardBenefit.class);
+		example.createCriteria().andEqualTo("orderId", orderId)
+				.andEqualTo("deleted", FALSE.getCode());
+		return cardBenefitMapper.selectCountByExample(example);
 	}
 }

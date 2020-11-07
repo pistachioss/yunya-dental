@@ -385,34 +385,6 @@
                            where `bd`.`card_id` = `c`.`id`
                              and `bd`.`benefit_type` = 1
                              and `bd`.`is_deleted` = 0)
-                      when `cci`.`type` = 2 then
-                          (select
-                                if(isnull(count(`bd`.`card_id`)) = 1,
-                                   null,
-                                   count(`bd`.`card_id`)
-                                       &lt; (select sum(count)
-                                          from `package_coupon_item` `pci`
-                                          where `pci`.`coupon_id` = `cci`.`id`
-                                          group by `pci`.`coupon_id`)
-                                   )
-                          from `card_benefit` `bd`
-                          where `bd`.`card_id` = `c`.`id`
-                            and `bd`.`benefit_type` = 1
-                            and `bd`.`is_deleted` = 0)
-                      when `cci`.`type` = 3 then
-                          (select
-                                if(isnull(count(`bd`.`card_id`)) = 1,
-                                    null,
-                                    count(`bd`.`card_id`)
-                                        &lt; (select sum(count)
-                                           from `special_package_coupon_item` `spci`
-                                           where `spci`.`coupon_id` = `cci`.`id`
-                                           group by `spci`.`coupon_id`)
-                                  )
-                          from `card_benefit` `bd`
-                          where `bd`.`card_id` = `c`.`id`
-                            and `bd`.`benefit_type` = 1
-                            and `bd`.`is_deleted` = 0)
                       else null
                       end      as `itemUseable`,
                   (select
