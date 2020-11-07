@@ -585,19 +585,31 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return ResponseUtil.success();
 	}
 
-	public CardActiveDetailVo getCardDetailByManual(CardActiveQuery query) {
+	public ResponseResult<CardActiveDetailVo> getCardDetailByManual(CardActiveQuery query) {
 		String cardPassEncode = Base64.getEncoder().encodeToString(query.getCardPassword().getBytes());
 		Example example = new Example(Card.class);
-		example.createCriteria().andEqualTo("cardNumber", query.getCardNumber())
-				.andEqualTo("cardPassword", cardPassEncode);
+		Example.Criteria criteria = example.createCriteria().andEqualTo("cardNumber", query.getCardNumber());
+		int countNum = mapper.selectCountByExample(example);
+		if (countNum == 0) {
+			return ResponseUtil.error(DiscountError.CARD_NUMBER_ERROR);
+		}
+		criteria.andEqualTo("cardPassword", cardPassEncode);
 		Card card = mapper.selectOneByExample(example);
 		if (card == null) {
-			return null;
+			return ResponseUtil.error(DiscountError.CARD_PASSWORD_ERROR);
+		}
+		if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
+			return ResponseUtil.error(DiscountError.CARD_IS_ACTIVATED);
 		}
 		if (!ACTIVE_PENDING.equals(card.getStatus())) {
-			return null;
+			return ResponseUtil.error(DiscountError.CARD_ACTIVE_STATUS_ERROR);
 		}
-		return mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode);
+		//校验卡券有效期
+		RestErrorBo errorBo = checkCouponForActive(card.getCouponId());
+		if (errorBo.getError() != null) {
+			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+		}
+		return ResponseUtil.success(mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode));
 
 	}
 
@@ -1696,6 +1708,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		cancelCard.setCrtTime(card.getCrtTime());
 		cancelCard.setUpdId(loginUserId);
 		cancelCard.setId(card.getId());
+		cancelCard.setUpdTime(LocalDateTime.now());
 		mapper.updateByPrimaryKey(cancelCard);
 	}
 
@@ -1871,7 +1884,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			errorBo.setError(DiscountError.CARD_NOT_EXIST);
 			return errorBo;
 		}
-		if (card.getActiveOrgId() != null || ACTIVATED.equals(card.getStatus()) || card.getPatientId() != null) {
+		if (card.getActiveOrgId() != null || ACTIVATED.equals(card.getStatus()) || card.getPatientId() != null ||
+				PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
 			log.warn("【激活失败】卡券[{}]已被激活", card.getCardNumber());
 			errorBo.setError(DiscountError.CARD_IS_ACTIVATED);
 			return errorBo;

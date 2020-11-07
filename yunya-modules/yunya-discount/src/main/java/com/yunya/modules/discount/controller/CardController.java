@@ -114,8 +114,7 @@ public class CardController {
     @ApiOperation(value = "患者档案-产品管理-激活-手动查询卡券详情")
     @PostMapping("/patient/product/card/manual/detail")
     public ResponseResult<CardActiveDetailVo> cardManualDetail(@Valid @RequestBody CardActiveQuery query) {
-        CardActiveDetailVo detail = cardBiz.getCardDetailByManual(query);
-        return ResponseUtil.success(detail);
+        return cardBiz.getCardDetailByManual(query);
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-扫码枪卡券详情")
@@ -161,6 +160,8 @@ public class CardController {
         PageInfo<PatientCardBaseVo> pageInfo = cardBiz.getPatientCardPage(patientId, query);
         return ResponseUtil.success(pageInfo);
     }
+
+
 
     @ApiOperation(value = "加锁")
     @PostMapping("/lock")

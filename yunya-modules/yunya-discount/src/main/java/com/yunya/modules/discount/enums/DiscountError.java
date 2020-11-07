@@ -25,9 +25,9 @@ public enum DiscountError implements RestError {
     CARD_NOT_BELONG_ORG(16, "该卡券不属于%s"),
     CARD_NOT_BELONG_COUPON(17, "卡券是%s，请重新选择优惠券类型"),
     CARD_ACTIVE_IS_LOCKED(18, "卡券正在激活中，无法提交"),
-    CARD_IS_ACTIVATED(19, "该卡券已被激活"),
-    CARD_ACTIVE_STATUS_ERROR(20, "该卡券不是待激活状态，无法激活"),
-    CARD_BEYOND_DEADLINE(21, "优惠券已超过有效期"),
+    CARD_IS_ACTIVATED(19, "该卡券已被激活，无需再次激活！"),
+    CARD_ACTIVE_STATUS_ERROR(20, "该卡券未售出，不可以激活！"),
+    CARD_BEYOND_DEADLINE(21, "该卡券已过产品有效期，不可以激活！"),
     CARD_NOT_CHARGE(22, "卡券未收费"),
     CARD_IS_CHARGED(23, "卡券已收费"),
     OTHER_ALLOW_ACTIVE_OWN(24, "自有平台卡券不允许在第三方平台激活"),
@@ -55,6 +55,8 @@ public enum DiscountError implements RestError {
     PATIENT_DISCOUNT_NULL(46, "患者没有可使用的折扣券"),
     PATIENT_MEMBER_NULL(47, "患者没有可使用的会员卡"),
     CARD_IS_ON_SALE(48,"卡号为%s卡券正在售出中，请稍后重试！"),
+    CARD_NUMBER_ERROR(49,"卡号不存在，请输入正确的卡号！"),
+    CARD_PASSWORD_ERROR(50,"卡密错误，请输入正确的卡密！"),
     ;
     private Integer code;
     private String value;
