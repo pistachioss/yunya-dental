@@ -420,8 +420,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 */
 	public PageInfo<CouponSalePageVo> getCouponSalePage(CouponSaleQuery query) {
 		Page<CouponSaleBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
 		//查询优惠券售卖信息
-		mapper.listSaleInfoByParam(query.getCouponTypeList(), query.getCouponName(), query.getOrgId());
+		mapper.listSaleInfoByParam(query.getCouponTypeList(), query.getCouponName(), orgId);
 		List<CouponSalePageVo> list = page.getResult().stream().map(obj -> {
 			CouponSalePageVo vo = BeanCopierUtils.generalCopyBean(obj, CouponSalePageVo.class);
 			vo.setCouponTypeName(CouponTypeEnum.getValue(obj.getCouponType()));

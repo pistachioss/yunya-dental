@@ -77,6 +77,7 @@ public class CardController {
 
     @ApiOperation(value = "产品售卖分页查询")
     @PostMapping("/coupon/sale/page")
+    @CurrentUser
     public ResponseResult<PageInfo<CouponSalePageVo>> getGenerateAllocateList(@Valid @RequestBody CouponSaleQuery query) {
         PageInfo<CouponSalePageVo> pageInfo = cardBiz.getCouponSalePage(query);
         return ResponseUtil.success(pageInfo);
