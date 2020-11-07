@@ -47,12 +47,12 @@
   </select>
 
     <select id="thirdParty" resultType="com.yunya.modules.discount.vo.CouponCommonInfoVO">
-       select ci.id from coupon_common_info ci left join vouche_coupon vc on ci.id = vc.coupon_id where ci.type = 0 and (vc.activation_deadline is null or vc.activation_deadline >= now())
+       select ci.id,ci.name from coupon_common_info ci left join vouche_coupon vc on ci.id = vc.coupon_id where ci.type = 0 and (vc.activation_deadline is null or vc.activation_deadline >= now())
         union all
-        select ci.id from coupon_common_info ci left join discount_coupon vc on ci.id = vc.coupon_id where ci.type = 1 and (vc.activation_deadline is null or vc.activation_deadline >= now())
+        select ci.id,ci.name from coupon_common_info ci left join discount_coupon vc on ci.id = vc.coupon_id where ci.type = 1 and (vc.activation_deadline is null or vc.activation_deadline >= now())
         union all
-        select ci.id from coupon_common_info ci left join package_coupon vc on ci.id = vc.coupon_id where ci.type = 2 and (vc.activation_deadline is null or vc.activation_deadline >= now())
+        select ci.id,ci.name from coupon_common_info ci left join package_coupon vc on ci.id = vc.coupon_id where ci.type = 2 and (vc.activation_deadline is null or vc.activation_deadline >= now())
         union all
-        select ci.id from coupon_common_info ci left join special_package_coupon vc on ci.id = vc.coupon_id where ci.type = 3 and (vc.activation_deadline is null or vc.activation_deadline >= now())
+        select ci.id,ci.name from coupon_common_info ci left join special_package_coupon vc on ci.id = vc.coupon_id where ci.type = 3 and (vc.activation_deadline is null or vc.activation_deadline >= now())
     </select>
 </mapper>
