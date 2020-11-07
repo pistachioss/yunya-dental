@@ -106,8 +106,8 @@ public class CardController {
     @ApiOperation(value = "取消售出")
     @PutMapping("/coupon/card/cancel/{id}")
     @CurrentUser
-    public ResponseResult cancelCardSold(@PathVariable(value = "id") Integer cardId, @Valid @RequestBody CancelCardSoldForm form) {
-        return cardBiz.cancelCardSold(cardId, form);
+    public ResponseResult cancelCardSold(@PathVariable(value = "id") Integer cardId) {
+        return cardBiz.cancelCardSold(cardId);
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-手动查询卡券详情")

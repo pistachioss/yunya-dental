@@ -22,7 +22,6 @@ import com.yunya.feign.discount.domain.bo.PatientCardBo;
 import com.yunya.feign.discount.domain.bo.PatientUseBenefitBo;
 import com.yunya.feign.discount.domain.bo.UseClinicBo;
 import com.yunya.feign.discount.domain.bo.ViewAllocateBo;
-import com.yunya.feign.discount.domain.form.CancelCardSoldForm;
 import com.yunya.feign.discount.domain.form.CardSoldForm;
 import com.yunya.feign.discount.domain.form.ConfigSharerForm;
 import com.yunya.feign.discount.domain.form.OtherCardActiveForm;
@@ -455,23 +454,23 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	@Transactional
 	public ResponseResult soldCard(CardSoldForm form) {
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
 		List<Integer> cardIds = form.getCardIds();
 		log.info("卡券售卖开始提交：[{}]", cardIds);
 		RestErrorBo errorBo;
 		try {
-			Integer orgId = form.getOrgId();
-			Integer couponId = form.getCouponId();
 			//获取组织名
 			String orgName = getOrgName(orgId);
-			//2. 检查卡券
 			for (Integer cardId : cardIds) {
+				//2. 检查卡券
 				Card card = mapper.selectByPrimaryKey(cardId);
-				errorBo = checkCardForSale(cardId, card, couponId, orgId, orgName);
+				errorBo = checkCardForSale(cardId, card, orgId, orgName);
 				if (errorBo.getError() != null) {
 					return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 				}
+				Integer couponId = card.getCouponId();
 				//3. 检查优惠券
-				CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
+				CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
 				errorBo = checkCouponForSale(couponId, couponInfo);
 				if (errorBo.getError() != null) {
 					return ResponseUtil.error(errorBo.getError());
@@ -559,21 +558,19 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * 卡券取消售出
 	 *
 	 * @param cardId cardId
-	 * @param form   form
 	 * @return res
 	 */
 	@Transactional
-	public ResponseResult cancelCardSold(Integer cardId, CancelCardSoldForm form) {
-		Integer couponId = form.getCouponId();
-		Integer orgId = form.getOrgId();
+	public ResponseResult cancelCardSold(Integer cardId) {
+		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
 		RestErrorBo errorBo;
-
 		//1. 检查卡券
 		Card card = mapper.selectByPrimaryKey(cardId);
-		errorBo = checkCardForCancelSale(cardId, card, couponId, orgId);
+		errorBo = checkCardForCancelSale(cardId, card, orgId);
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
+		Integer couponId = card.getCouponId();
 		//2. 检查优惠券
 		CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
 		if (couponInfo == null || !couponInfo.getIsInservice()) {
@@ -638,13 +635,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.info("【锁定成功】准备提交卡券激活...");
 
 			RestErrorBo errorBo;
-			//2. 检查卡券
+			//3. 检查卡券
 			Card card = mapper.selectByPrimaryKey(cardId);
 			errorBo = checkCardForOwnActive(form.getPayId(), card);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
-			//3. 检查优惠券
+			//2. 检查优惠券
 			errorBo = checkCouponForActive(card.getCouponId());
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
@@ -687,13 +684,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.info("【锁定成功】准备提交第三方平台卡券激活...");
 
 			RestErrorBo errorBo;
-			//1. 检查优惠券
-			errorBo = checkCouponForActive(form.getCouponId());
+			//1. 检查卡券
+			errorBo = checkCardForOtherActive(cardNumber);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
 			}
-			//2. 检查卡券
-			errorBo = checkCardForOtherActive(cardNumber);
+			//2. 检查优惠券
+			errorBo = checkCouponForActive(form.getCouponId());
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
 			}
@@ -1824,14 +1821,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * 检查卡券售出信息
 	 *
 	 * @param card     card
-	 * @param couponId couponId
 	 * @param orgId    orgId
 	 * @param orgName  orgName
 	 * @return RestErrorBo
 	 */
-	private RestErrorBo checkCardForSale(Integer cardId, Card card, Integer couponId, Integer orgId, String orgName) {
+	private RestErrorBo checkCardForSale(Integer cardId, Card card, Integer orgId, String orgName) {
 		//校验卡券基础信息
-		RestErrorBo errorBo = checkCardBaseInfo(cardId, card, couponId, orgId, orgName);
+		RestErrorBo errorBo = checkCardBaseInfo(cardId, card, orgId, orgName);
 		if (!SALE_PENDING.equals(card.getStatus())) {
 			log.warn("【取消售卖失败】卡券[{}]售卖状态异常", card.getCardNumber());
 			errorBo.setError(DiscountError.CARD_SOLD_STATUS_ERROR);
@@ -1844,15 +1840,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * 检查卡券取消售出信息
 	 *
 	 * @param card     card
-	 * @param couponId couponId
 	 * @param orgId    orgId
 	 * @return RestErrorBo
 	 */
-	private RestErrorBo checkCardForCancelSale(Integer cardId, Card card, Integer couponId, Integer orgId) {
+	private RestErrorBo checkCardForCancelSale(Integer cardId, Card card, Integer orgId) {
 		//获取组织名
 		String orgName = getOrgName(orgId);
 		//校验卡券基础信息
-		RestErrorBo errorBo = checkCardBaseInfo(cardId, card, couponId, orgId, orgName);
+		RestErrorBo errorBo = checkCardBaseInfo(cardId, card, orgId, orgName);
 		if (!ACTIVE_PENDING.equals(card.getStatus())) {
 			log.warn("【取消售卖失败】卡券[{}]售卖状态异常", card.getCardNumber());
 			errorBo.setError(DiscountError.CARD_SOLD_STATUS_ERROR);
@@ -1915,7 +1910,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return errorBo;
 	}
 
-	private RestErrorBo checkCardBaseInfo(Integer cardId, Card card, Integer couponId, Integer orgId, String orgName) {
+	private RestErrorBo checkCardBaseInfo(Integer cardId, Card card, Integer orgId, String orgName) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		if (card == null) {
 			log.warn("【卡券校验失败】卡券[{}]不存在", cardId);
@@ -1926,13 +1921,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.warn("【卡券校验失败】卡券[{}]不属于[{}]", card.getCardNumber(), orgName);
 			errorBo.setError(DiscountError.CARD_NOT_BELONG_ORG);
 			errorBo.setMsg(orgName);
-			return errorBo;
-		}
-		if (!couponId.equals(card.getCouponId())) {
-			CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
-			log.warn("【卡券校验失败】该卡券是{}, 卡券类型异常", couponInfo.getName());
-			errorBo.setError(DiscountError.CARD_NOT_BELONG_COUPON);
-			errorBo.setMsg(couponInfo.getName());
 			return errorBo;
 		}
 		return errorBo;
