@@ -452,6 +452,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult soldCard(CardSoldForm form) {
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		List<Integer> cardIds = form.getCardIds();
@@ -496,7 +497,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			return ResponseUtil.success();
 		} finally {
 			unLockByIds(cardIds.stream().map(String::valueOf).collect(toSet()), RedisConstants.LOCK_CARD_SOLD, loginUserId);
-			log.info("【解锁成功】");
+			log.info("【卡券售卖】解锁成功");
 		}
 	}
 
@@ -561,6 +562,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form   form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult cancelCardSold(Integer cardId, CancelCardSoldForm form) {
 		Integer couponId = form.getCouponId();
 		Integer orgId = form.getOrgId();
@@ -618,6 +620,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form      form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult ownActiveCard(Integer patientId, OwnCardActiveForm form) {
 		boolean locked = false;
 		Integer cardId = form.getCardId();
@@ -666,6 +669,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form      form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult otherActiveCard(Integer patientId, OtherCardActiveForm form) {
 		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -713,6 +717,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form      form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult configSharer(Integer patientId, Integer cardId, ConfigSharerForm form) {
 		//1. 校验卡券
 		Card card = mapper.selectByPrimaryKey(cardId);
@@ -2686,7 +2691,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					unLockByIds(cardStrList, lockPrefix, requestId);
 				}
 			}
-			log.info("【锁定成功】患者选择优惠成功");
+			log.info("【锁定成功】患者选择卡券成功");
 		}
 		//释放选择的卡券
 		if (CollectionUtils.isNotEmpty(conflictList)) {
