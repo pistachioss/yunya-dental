@@ -214,4 +214,13 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
         return mapper.findList(couponCommonInfoQueryForm);
     }
 
+    /**
+     * 获取第三方卡券激活模板接口
+     * @param
+     * @return
+     */
+    public  List<CouponCommonInfoVO> thirdParty(){
+        return mapper.thirdParty();
+    }
+
 }
