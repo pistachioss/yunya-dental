@@ -98,6 +98,8 @@ import com.yunya.models.discount.VoucherDiscountItem;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
+import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
+import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.discount.enums.CardStatusEnum;
 import com.yunya.modules.discount.enums.CouponTypeEnum;
@@ -924,7 +926,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		}
 		//会员卡优惠
 		if (orderItem.getBenefitAmount() == null && memberBenefitBo != null) {
-			setUpSingleBenefitInfoForOrder(orderItem, orgId, Collections.singletonList(discountBenefitBos));
+			setUpSingleBenefitInfoForOrder(orderItem, orgId, Collections.singletonList(memberBenefitBo));
 		}
 		//代金券项目优惠
 		List<PatientUseBenefitBo> voucherBenefitBos = benefitUseBo.getVoucherBenefitBos();
@@ -1015,8 +1017,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		for (PatientUseBenefitBo benefitBo : benefitBos) {
 			//订单项目id对应的可用的优惠券信息
 			ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
-			if (benefitUseDetailBo != null) {
-				Integer couponType = benefitBo.getCouponType();
+			Integer couponType = benefitBo.getCouponType();
+			if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
 				//订单项目原价
 				BigDecimal originalPrice = orderItem.getReceivableAmount();
 				//订单项目已优惠金额
@@ -1040,10 +1042,18 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 						break;
 					}
 					if (MEMBER_CARD.equals(couponType)) {
+						BigDecimal memberPrice = BigDecimal.ZERO;
+						if (ZERO.equals(orderItem.getType())) {
+							ClinicTariffMemberPrice tariff = treatmentServiceFeign.findClinicTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
+							memberPrice = tariff.getDiscountPrice();
+						}
+						if (ONE.equals(orderItem.getType())) {
+							ClinicOralTariffMemberPrice oral = treatmentServiceFeign.findClinicOralTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
+							memberPrice = oral.getDiscountPrice();
+						}
 						//订单项目id对应的可用的优惠券信息
-						benefitAmount = receivableAmount.multiply(BigDecimal.valueOf(1).subtract(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
-								.setScale(2, BigDecimal.ROUND_HALF_UP);
-						buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), null, TRUE.getCode());
+						benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
+						buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), MEMBER_CARD.getCode(), TRUE.getCode());
 					}
 					if (VOUCHER.equals(couponType)) {
 						if (benefitBo.getFace().compareTo(BigDecimal.valueOf(0)) > 0) {
@@ -1110,8 +1120,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			if (TRUE.equals(orderItem.getPreMixAble()) && (TRUE.equals(benefitBo.getMixable()) || itemIndex == 1)) {
 				//订单项目id对应的可用的优惠券信息
 				ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
-				if (benefitUseDetailBo != null) {
-					Integer couponType = benefitBo.getCouponType();
+				Integer couponType = benefitBo.getCouponType();
+				if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
 					//订单项目原价
 					BigDecimal originalPrice = orderItem.getReceivableAmount();
 					////订单项目已优惠金额
@@ -1134,9 +1144,17 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							return TRUE.getCode();
 						}
 						if (MEMBER_CARD.equals(couponType)) {
+							BigDecimal memberPrice = BigDecimal.ZERO;
+							if (ZERO.equals(orderItem.getType())) {
+								ClinicTariffMemberPrice tariff = treatmentServiceFeign.findClinicTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
+								memberPrice = tariff.getDiscountPrice();
+							}
+							if (ONE.equals(orderItem.getType())) {
+								ClinicOralTariffMemberPrice oral = treatmentServiceFeign.findClinicOralTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
+								memberPrice = oral.getDiscountPrice();
+							}
 							//订单项目id对应的可用的优惠券信息
-							benefitAmount = receivableAmount.multiply(BigDecimal.valueOf(1).subtract(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
-									.setScale(2, BigDecimal.ROUND_HALF_UP);
+							benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), null, itemIndex);
 							return TRUE.getCode();
 						}
@@ -1399,7 +1417,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			if (CollectionUtils.isNotEmpty(secondaryMemberInfoVos)) {
 				memberCardVos = secondaryMemberInfoVos.stream().map(obj -> {
 					PatientMemberCardVo memberCardVo = new PatientMemberCardVo();
-					memberCardVo.setMemberCardId(obj.getId());
+					memberCardVo.setMemberCardId(obj.getSecondaryMemberTypeId());
 					memberCardVo.setMemberCardName(obj.getMemberCardName());
 					//卡号
 					memberCardVo.setMemberCardNumber(obj.getSecondaryCardNumber());
@@ -1414,7 +1432,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 			if (masertMemberInfoVo != null) {
 				PatientMemberCardVo memberCardVo = new PatientMemberCardVo();
-				memberCardVo.setMemberCardId(masertMemberInfoVo.getId());
+				memberCardVo.setMemberCardId(masertMemberInfoVo.getMasterCardTypeId());
 				memberCardVo.setMemberCardName(masertMemberInfoVo.getMasterMemberCardName());
 				//卡号
 				memberCardVo.setMemberCardNumber(masertMemberInfoVo.getMasterCardNumber());
@@ -2586,13 +2604,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			List<PatientUseBenefitBo> memberUseBos = memberCardVoList.stream().filter(obj -> memberCardId.equals(obj.getMemberCardId()))
 					.map(obj -> {
 						PatientUseBenefitBo memberCard = BeanCopierUtils.generalCopyBean(obj, PatientUseBenefitBo.class);
-						memberCard.setDiscountRate(obj.getMemberCardRate());
+						//会员卡类型id
+						memberCard.setCardId(obj.getMemberCardId());
+						memberCard.setCouponName(obj.getMemberCardName());
 						memberCard.setCouponType(MEMBER_CARD.getCode());
 						memberCard.setMixable(TRUE.getCode());
 						return memberCard;
 					}).collect(toList());
-			//设置可用门诊
-			assignedUseClinicForBo(memberUseBos);
 			benefitUseBo.setMemberBenefitBo(memberUseBos.get(0));
 		}
 

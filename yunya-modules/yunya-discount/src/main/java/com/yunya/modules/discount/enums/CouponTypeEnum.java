@@ -8,7 +8,7 @@ public enum CouponTypeEnum {
     DISCOUNT(1, "折扣券"),
     EXCHANGE(2, "兑换券"),
     SPECIAL_PACKAGE(3, "套餐券"),
-    RECHARGE(4, "充值券"),
+    RECHARGE(4, "充值卡"),
     MEMBER_CARD(99, "会员卡"),
     ;
 

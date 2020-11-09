@@ -43,6 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
@@ -94,6 +95,8 @@ public class BenefitBiz {
 	private RemoteTreatmentServiceFeign treatmentServiceFeign;
 	@Resource
 	private RedisUtils redisUtils;
+
+	private static final Integer AUTH_BENEFIT_TYPE = 2;
 
 	/**
 	 * 收费 - 卡券保存优惠
@@ -257,34 +260,56 @@ public class BenefitBiz {
 	 * @return list
 	 */
 	public List<OrderBenefitDetailVo> getOrderBenefit(Integer orderId) {
-		Example example = new Example(CardBenefit.class);
-		example.createCriteria().andEqualTo("deleted", ZERO)
-				.andEqualTo("orderId", orderId);
-		List<CardBenefit> list = cardBenefitMapper.selectByExample(example);
 		List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
-		if (CollectionUtils.isNotEmpty(list)) {
-			Map<Integer, List<CardBenefit>> listMap = list.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
-			listMap.forEach((k,v) -> {
-				OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
-				BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-				vo.setOrderDetailId(k);
-				vo.setItemBenefitAmount(itemBenefitAmount);
-				//按照优惠提交顺序排序
-				v.sort(Comparator.comparing(CardBenefit::getSort));
-				List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
-					ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
-					benefitVo.setId(obj.getSort());
-					benefitVo.setBenefitId(obj.getCardId());
-					benefitVo.setBenefitType(obj.getBenefitType());
-					benefitVo.setCouponType(obj.getCouponType());
-					CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
-					benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
-					benefitVo.setBenefitAmount(obj.getBenefitAmount());
-					return benefitVo;
-				}).collect(toList());
-				vo.setItemBenefitList(itemBenefits);
-				resultList.add(vo);
-			});
+		OrderBenefit summary = getOrderSummary(orderId);
+		if (summary == null) {
+			return resultList;
+		}
+		if (CARD_BENEFIT.equals(summary.getBenefitType())) {
+			List<CardBenefit> cardBenefits = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper);
+			if (CollectionUtils.isNotEmpty(cardBenefits)) {
+				Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
+				listMap.forEach((k,v) -> {
+					OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+					BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+					vo.setOrderDetailId(k);
+					vo.setItemBenefitAmount(itemBenefitAmount);
+					//按照优惠提交顺序排序
+					v.sort(Comparator.comparing(CardBenefit::getSort));
+					List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+						ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+						benefitVo.setBenefitId(obj.getCardId());
+						benefitVo.setBenefitType(obj.getBenefitType());
+						benefitVo.setCouponType(obj.getCouponType());
+						CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
+						benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
+						benefitVo.setBenefitAmount(obj.getBenefitAmount());
+						return benefitVo;
+					}).collect(toList());
+					vo.setItemBenefitList(itemBenefits);
+					resultList.add(vo);
+				});
+			}
+		}
+		if (AUTH_BENEFIT.equals(summary.getBenefitType())) {
+			List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper);
+			if (CollectionUtils.isNotEmpty(authBenefit)) {
+				Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
+				listMap.forEach((k,v) -> {
+					OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
+					BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+					vo.setOrderDetailId(k);
+					vo.setItemBenefitAmount(itemBenefitAmount);
+					List<ItemUseBenefitVo> itemBenefits = v.stream().map(obj -> {
+						ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
+						benefitVo.setBenefitType(AUTH_BENEFIT_TYPE);
+						benefitVo.setBenefitAmount(obj.getBenefitAmount());
+						return benefitVo;
+					}).collect(toList());
+					vo.setItemBenefitList(itemBenefits);
+					resultList.add(vo);
+				});
+			}
 		}
 		return resultList;
 	}
@@ -389,4 +414,28 @@ public class BenefitBiz {
 		}
 	}
 
+	/**
+	 * 查询订单总优惠信息
+	 * @param orderId
+	 * @return
+	 */
+	private OrderBenefit getOrderSummary(Integer orderId) {
+		Example example = new Example(OrderBenefit.class);
+		example.createCriteria().andEqualTo("deleted", ZERO)
+				.andEqualTo("orderId", orderId);
+		return orderBenefitMapper.selectOneByExample(example);
+	}
+
+	/**
+	 * 获取订单优惠明细（优惠券或授权折扣）
+	 * @param orderId
+	 * @param clazz
+	 * @param mapper
+	 */
+	private List getOrderBenefitDetail(Integer orderId, Class<?> clazz, Mapper mapper) {
+		Example example = new Example(clazz);
+		example.createCriteria().andEqualTo("deleted", ZERO)
+				.andEqualTo("orderId", orderId);
+		return mapper.selectByExample(example);
+	}
 }

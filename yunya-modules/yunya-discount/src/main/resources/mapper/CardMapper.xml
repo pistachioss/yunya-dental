@@ -97,8 +97,9 @@
             `cci`.id                                                                       as `couponId`,
             `cci`.name                                                                     as `couponName`,
             `cci`.`type`                                                                   as `couponType`,
-            concat_ws(' - ', date_format(`cci`.`available_sale_start_date`, '%Y/%m/%d'),
-                      date_format(`cci`.`available_sale_end_date`, '%Y/%m/%d'))            as `saleSegment`,
+            if(ISNULL(`cci`.`available_sale_end_date`), '不限售出时间',
+                concat_ws(' - ', date_format(`cci`.`available_sale_start_date`, '%Y/%m/%d'),
+                      date_format(`cci`.`available_sale_end_date`, '%Y/%m/%d')))           as `saleSegment`,
             `cci`.`sold_amount`                                                            as `soldAmount`,
             sum(`ca`.`allocate_num`)                                                       as `allocateNum`,
             (select

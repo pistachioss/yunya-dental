@@ -11,6 +11,7 @@ import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -41,6 +42,6 @@ public interface RemoteDiscountFeign {
     public ResponseResult saveAuthBenefit(@Valid @RequestBody AuthDiscountBenefitModel model);
 
     @ApiOperation(value = "查询订单优惠明细")
-    @PostMapping("/benefit/{orderId}")
+    @GetMapping("/benefit/{orderId}")
     public List<OrderBenefitDetailVo> getOrderBenefitD(@PathVariable(value = "orderId") Integer orderId);
 }
