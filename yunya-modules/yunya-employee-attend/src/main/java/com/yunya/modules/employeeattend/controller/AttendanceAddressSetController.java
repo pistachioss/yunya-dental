@@ -4,7 +4,9 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceAddressSetModel;
+import com.yunya.feign.employee_attend.model.AttendanceSetModel;
 import com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -24,7 +26,6 @@ import org.springframework.web.bind.annotation.*;
  * @Date: 2020/11/5 9:13
  * @since: 1.0.0
  */
-//@RestController
 @Api(tags = "考勤地址设置管理")
 @RestController
 @RequestMapping("attendanceAddressSet")
@@ -32,6 +33,19 @@ public class AttendanceAddressSetController {
     /** 注入对象 */
     @Autowired
     private AttendanceAddressSetBiz attendanceAddressSetBiz;
+
+    /**
+     * 分页查询所有机构以及关联的考勤地址列表
+     *
+     * @param model 查询参数
+     * @return ResponseResult<PageInfo<AttendanceAddressSetVO>>
+     */
+    @ApiOperation(value = "分页查询所有机构以及关联的考勤地址列表")
+    @PostMapping("/orgList")
+    public ResponseResult<PageInfo<AttendanceAddressSetVO>> findOrganizationAttendanceAddressSetList(@RequestBody OrganizationModel model) {
+        PageInfo<AttendanceAddressSetVO> result = attendanceAddressSetBiz.findOrganizationAttendanceAddressSetList(model);
+        return ResponseUtil.success(result);
+    }
 
     /**
      * 分页查询考勤地址设置列表
@@ -44,6 +58,22 @@ public class AttendanceAddressSetController {
     public ResponseResult<PageInfo<AttendanceAddressSetVO>> findAttendanceAddressSetList(@RequestBody @Validated AttendanceAddressSetQueryForm attendanceAddressSetQueryForm) {
         PageInfo<AttendanceAddressSetVO> result = attendanceAddressSetBiz.findAttendanceAddressSetList(attendanceAddressSetQueryForm);
         return ResponseUtil.success(result);
+    }
+
+
+    /**
+     * 批量添加考勤地址设置和考勤Wifi设置信息
+     *
+     * @param attendanceSetModel 考勤设置模型列表
+     * @return
+     */
+    @CurrentUser
+    @ApiOperation("批量添加考勤地址设置和考勤Wifi设置信息")
+    @PostMapping("/batchAdd")
+    @RepeatSubmit
+    public ResponseResult batchAdd(@RequestBody @Validated AttendanceSetModel attendanceSetModel) {
+        attendanceAddressSetBiz.batchAdd(attendanceSetModel);
+        return ResponseUtil.success(null);
     }
 
     /**
@@ -69,7 +99,7 @@ public class AttendanceAddressSetController {
     @ApiOperation("添加考勤地址设置信息")
     @PostMapping("/add")
     @RepeatSubmit
-    public ResponseResult add(@RequestBody AttendanceAddressSetModel attendanceAddressSetModel) {
+    public ResponseResult add(@RequestBody @Validated AttendanceAddressSetModel attendanceAddressSetModel) {
         attendanceAddressSetBiz.add(attendanceAddressSetModel);
         return ResponseUtil.success(null);
     }

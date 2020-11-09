@@ -78,20 +78,17 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     OrderRecord entity = new OrderRecord();
     entity.setTreatmentRecordId(treatmentRecordId);
     // 订单详情信息
-    List<OrderDetailVO> orderDetails;
     OrderRecord orderRecord = mapper.selectOne(entity);
+    List<OrderDetailVO> orderDetails = new ArrayList<>();
     if (null != orderRecord) {
       Integer orderRecordId = orderRecord.getId();
       resultData.setOrderRecordId(orderRecordId);
       resultData.setTotalAmount(orderRecord.getTotalAmount());
       resultData.setStatus(orderRecord.getStatus());
-      orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId);
-    } else {
-      orderDetails = new ArrayList<>();
+      orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId, (byte) 0);
     }
     // 配诊助手列表
-    List<AssistantInfoVO> assistants;
-    assistants = matchingRecordBiz.findAssistantInfoVOList(treatmentRecordId);
+    List<AssistantInfoVO> assistants = matchingRecordBiz.findAssistantInfoVOList(treatmentRecordId);
     if (StringHelper.isEmpty(assistants)) {
       assistants = new ArrayList<>();
     }
@@ -329,8 +326,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   public void unlockOrder(Integer orderRecordId) {
     OrderRecord orderRecord = mapper.selectByPrimaryKey(orderRecordId);
     if (null == orderRecord) {
-      throw new ClientServiceException(
-          "解锁失败，系统未查询到ID为'" + orderRecordId + "'的账单信息！", DATA_NOT_EXIST);
+      throw new ClientServiceException("解锁失败，请选择正确账单后进行解锁！", DATA_NOT_EXIST);
     }
 
     Byte status = orderRecord.getStatus();

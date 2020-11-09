@@ -160,7 +160,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     List<PatientBaseInfo> patientBaseInfoByOriginId = patientBaseInfoMapper.findPatientBaseInfoByOriginId(id);
     if (patientOriginv.getAllowOperate() == true && StringHelper.isNotEmpty(patientBaseInfoByOriginId)) {
       return ResponseUtil.fail(
-          OperationCodeConstants.DELETE_NOT_ALLOW, "该患者来源不可删除", patientOriginv);
+          OperationCodeConstants.DELETE_NOT_ALLOW, "该患者来源已被患者关联，不允许删除！", patientOriginv);
     }
     mapper.deleteByPrimaryKey(id);
     return ResponseUtil.success();

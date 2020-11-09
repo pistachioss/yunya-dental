@@ -68,7 +68,7 @@ public class AttendanceWifiSetController {
     @ApiOperation("添加考勤Wifi设置信息")
     @PostMapping("/add")
     @RepeatSubmit
-    public ResponseResult add(@RequestBody AttendanceWifiSetModel attendanceWifiSetModel) {
+    public ResponseResult add(@RequestBody @Validated AttendanceWifiSetModel attendanceWifiSetModel) {
         attendanceWifiSetBiz.add(attendanceWifiSetModel);
         return ResponseUtil.success(null);
     }

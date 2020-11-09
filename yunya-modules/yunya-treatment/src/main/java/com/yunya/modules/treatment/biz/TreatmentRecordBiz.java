@@ -167,6 +167,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     regResult.setUpdId(userId);
     regResult.setUpdName(name);
     registeredBiz.updateSelectiveById(regResult);
+    // todo 发送消息更新患者数据
     if (i > 0) {
       if (null != appointmentId) {
         rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
@@ -576,6 +577,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     visitRecord.setTreatmentId(treatmentRecordId);
                     visitRecord.setVisitingTime("09:00");
                     visitRecord.setReason(baseTariff.getName());
+                    visitRecord.setStatus(false);
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
                     visitRecordPlanList.add(visitRecord);

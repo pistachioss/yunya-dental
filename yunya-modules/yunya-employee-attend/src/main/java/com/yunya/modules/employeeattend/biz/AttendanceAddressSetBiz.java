@@ -5,26 +5,31 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceAddressSetModel;
+import com.yunya.feign.employee_attend.model.AttendanceSetModel;
+import com.yunya.feign.employee_attend.model.AttendanceWifiSetModel;
 import com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.modules.employeeattend.mapper.AttendanceAddressSetMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
- * 简介：
+ * 简介：考勤地址设置业务层
  *
  * @author: chenlin
- * @Description:
+ * @Description: 考勤地址设置业务层
  * @Date: 2020/11/5 9:29
  * @since: 1.0.0
  */
@@ -34,6 +39,9 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
     /** 注入对象 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    /** 注入对象 */
+    @Autowired
+    private AttendanceWifiSetBiz attendanceWifiSetBiz;
 
     /**
      * 分页查询考勤地址设置列表
@@ -120,6 +128,27 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
     }
 
     /**
+     * 批量添加考勤地址设置和考勤Wifi设置信息
+     *
+     * @param attendanceSetModel 考勤设置模型
+     * @return
+     */
+    public void batchAdd(AttendanceSetModel attendanceSetModel) {
+        List<AttendanceWifiSetModel> attendanceWifiSetModels = attendanceSetModel.getAttendanceWifiSetModels();
+        List<AttendanceAddressSetModel> attendanceAddressSetModels = attendanceSetModel.getAttendanceAddressSetModels();
+        if (attendanceAddressSetModels!=null && !attendanceAddressSetModels.isEmpty()) {
+            attendanceAddressSetModels.forEach(attendanceAddressSetModel -> {
+                add(attendanceAddressSetModel);
+            });
+        }
+        if (attendanceWifiSetModels!=null && !attendanceWifiSetModels.isEmpty()) {
+            attendanceWifiSetModels.forEach(attendanceWifiSetModel -> {
+                attendanceWifiSetBiz.add(attendanceWifiSetModel);
+            });
+        }
+    }
+
+    /**
      * 修改考勤地址设置信息
      *
      * @param id 主键id
@@ -159,5 +188,49 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
      */
     public void delete(Integer id) {
         mapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 分页查询所有机构以及关联的考勤地址列表
+     *
+     * @param model 查询参数
+     * @return
+     */
+    public PageInfo<AttendanceAddressSetVO> findOrganizationAttendanceAddressSetList(OrganizationModel model) {
+        if (model.getWhetherPage()) {
+            PageHelper.startPage(model.getPageNum(), model.getPageSize());
+        }
+        List<OrganizationInfoDetail> organizationInfoDetails = remoteSystemServiceFeign.findOrgInfoList(model);
+        Map<Integer, String> organizationMap = new HashMap<>();
+        if (organizationInfoDetails!=null && !organizationInfoDetails.isEmpty()) {
+            organizationInfoDetails.forEach(organizationInfoDetail -> {
+                Integer orgId = organizationInfoDetail.getId();
+                String orgName = organizationInfoDetail.getName();
+                organizationMap.put(orgId, orgName);
+            });
+            AttendanceAddressSetQueryForm queryForm = new AttendanceAddressSetQueryForm();
+            queryForm.setWhetherPage(false);
+            queryForm.setOrgIds(organizationMap.keySet());
+            List<AttendanceAddressSetVO> attendanceAddressSetVOList = mapper.findAttendanceAddressSetList(queryForm);
+            List<AttendanceAddressSetVO> attendanceAddressSetVOS = attendanceAddressSetVOList.stream().filter(attendanceAddressSetVO -> {
+                Integer orgId = attendanceAddressSetVO.getOrgId();
+                String orgName = organizationMap.remove(orgId);
+                if (StringHelper.isNotEmpty(orgName)) {
+                    attendanceAddressSetVO.setOrganizationName(orgName);
+                    return true;
+                }
+                return false;
+            }).collect(Collectors.toList());
+            if (!organizationMap.isEmpty()) {
+                organizationMap.entrySet().forEach(entry->{
+                    AttendanceAddressSetVO attendanceAddressSetVO = new AttendanceAddressSetVO();
+                    attendanceAddressSetVO.setOrgId(entry.getKey());
+                    attendanceAddressSetVO.setOrganizationName(entry.getValue());
+                    attendanceAddressSetVOS.add(attendanceAddressSetVO);
+                });
+            }
+            return new PageInfo<>(attendanceAddressSetVOS);
+        }
+        return new PageInfo<>(null);
     }
 }

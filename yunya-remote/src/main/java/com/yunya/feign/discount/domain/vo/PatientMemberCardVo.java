@@ -26,5 +26,4 @@ public class PatientMemberCardVo implements Serializable {
     @ApiModelProperty(value = "图片路径")
     private String path;
 
-
 }

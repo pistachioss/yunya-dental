@@ -49,4 +49,7 @@ public class SysUserInfoDetailQueryFrom implements Serializable {
   /** 就职状态 */
   @ApiModelProperty("就职状态（试用: 0, 正式: 1，实习: 2, 离职:3）")
   private Byte[] workStatus;
+  /** 用户ID列表 */
+  @ApiModelProperty("用户ID列表")
+  private Integer[] userIds;
 }

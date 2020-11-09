@@ -28,11 +28,6 @@ public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "卡券id集合", required = true)
     @NotEmpty
     private List<Integer> cardIds;
-    @ApiModelProperty(value = "优惠券id", required = true)
-    private Integer couponId;
-    @ApiModelProperty(value = "组织id", required = true)
-    @NotNull
-    private Integer orgId;
     @ApiModelProperty(value = "售出对象", required = true)
     @NotBlank
     private String soldTarget;

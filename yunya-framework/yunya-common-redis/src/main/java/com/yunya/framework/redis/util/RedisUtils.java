@@ -163,6 +163,18 @@ public class RedisUtils {
   }
 
   /**
+   * 设置过期时间
+   *
+   * @param key key
+   * @param timeout time
+   * @param unit unit
+   * @return
+   */
+  public Boolean expire(String key, long timeout, TimeUnit unit) {
+    return redisTemplate.expire(key, timeout, unit);
+  }
+
+  /**
    * 加锁
    */
   public boolean setLock(String key, String val, long expire, TimeUnit timeUnit) {

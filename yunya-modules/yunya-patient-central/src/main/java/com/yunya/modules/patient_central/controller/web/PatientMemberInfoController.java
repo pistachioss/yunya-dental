@@ -10,6 +10,7 @@ import com.yunya.feign.patient_central.domain.query.PatientMemberRelationQueryFo
 import com.yunya.feign.patient_central.domain.query.RechargeRecordQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
@@ -113,6 +114,7 @@ public class PatientMemberInfoController {
   @CurrentUser
   @ApiOperation("开卡")
   @PostMapping("/openCard")
+  @RepeatSubmit
   public ResponseResult addMemberCard(@RequestBody OpenCardModel openCardModel) {
     patientMemberInfoBiz.addMemberCard(openCardModel);
     return ResponseUtil.success();

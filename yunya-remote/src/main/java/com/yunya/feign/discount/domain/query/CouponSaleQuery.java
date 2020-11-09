@@ -19,9 +19,6 @@ public class CouponSaleQuery {
     private String couponName;
     @ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
     private List<Integer> couponTypeList;
-    @ApiModelProperty(value = "组织id", required = true)
-    @NotNull
-    private Integer orgId;
     @ApiModelProperty(value = "页码", required = true)
     @NotNull
     private Integer pageNum;

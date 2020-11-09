@@ -225,8 +225,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setUpdName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     patientBaseInfo.setUpdTime(new Date());
+
     // 完善患者基本信息  对补全信息进行更新
-    this.mapper.updateByPrimaryKey(patientBaseInfo);
+    this.mapper.updateByPrimaryKeySelective(patientBaseInfo);
     sendMessages(patientBaseInfo.getId(), 1);
     PatientExpInfo patientExpInfo = new PatientExpInfo();
     // 完善患者扩展信息

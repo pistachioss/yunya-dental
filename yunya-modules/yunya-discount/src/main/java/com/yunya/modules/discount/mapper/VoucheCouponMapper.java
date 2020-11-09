@@ -12,4 +12,6 @@ public interface VoucheCouponMapper extends Mapper<VoucheCoupon> {
 
     List<CouponCommonInfoVO> findList(CouponCommonInfoQueryForm couponCommonInfoQueryForm);
 
+    List<CouponCommonInfoVO> thirdParty();
+
 }

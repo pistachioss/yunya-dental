@@ -138,4 +138,16 @@ public class VoucherController {
                 voucherBiz.findList(couponCommonInfoQueryForm));
     }
 
+    /**
+     * 获取第三方卡券激活模板接口
+     *
+     * @return
+     */
+    @PostMapping("/thirdParty")
+    @ApiOperation("获取第三方卡券激活模板接口")
+    public ResponseResult thirdParty() {
+        return ResponseUtil.success(
+                voucherBiz.thirdParty());
+    }
+
 }
