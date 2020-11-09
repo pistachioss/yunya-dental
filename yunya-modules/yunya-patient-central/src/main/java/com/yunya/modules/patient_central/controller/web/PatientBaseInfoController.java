@@ -5,6 +5,8 @@
 
 package com.yunya.modules.patient_central.controller.web;
 
+import cn.hutool.db.Page;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientLabelRecordModel;
@@ -194,9 +196,9 @@ public class PatientBaseInfoController {
   @CurrentUser
   @ApiOperation(value = "查询标签操作记录")
   @PostMapping(value = "/labelList")
-  public ResponseResult<List<PatientLabelRecordVo>> labelList(
+  public ResponseResult<PageInfo<PatientLabelRecordVo>> labelList(
       @RequestBody PatientLabelRecordQueryForm form) {
-    List<PatientLabelRecordVo> patientLabelRecordList = patientBaseInfoBiz.labelList(form);
+    PageInfo<PatientLabelRecordVo> patientLabelRecordList = patientBaseInfoBiz.labelList(form);
     return ResponseUtil.success(patientLabelRecordList);
   }
 

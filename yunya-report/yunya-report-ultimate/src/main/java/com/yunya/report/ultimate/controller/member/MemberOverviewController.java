@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.controller.member;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberOverviewQueryForm;
 import com.yunya.feign.report.domain.vo.BaseMemberOverviewVo;
 import com.yunya.feign.report.domain.vo.BasePatientMemberOverviewVo;
@@ -56,9 +57,9 @@ public class MemberOverviewController {
      */
     @ApiOperation("查询患者会员卡/预付款概况")
     @PostMapping("/patientOverview/list")
-    public ResponseResult<List<BasePatientMemberOverviewVo>> patientOverviewList(@RequestBody MemberOverviewQueryForm memberOverviewQueryForm) throws ParseException {
-        List<BasePatientMemberOverviewVo> basePatientMemberOverviewVos = memberOverviewBiz.patientOverviewList(memberOverviewQueryForm);
-        if (StringHelper.isNotEmpty(basePatientMemberOverviewVos)){
+    public ResponseResult<PageInfo<BasePatientMemberOverviewVo>> patientOverviewList(@RequestBody MemberOverviewQueryForm memberOverviewQueryForm) throws ParseException {
+        PageInfo<BasePatientMemberOverviewVo> basePatientMemberOverviewVos = memberOverviewBiz.patientOverviewList(memberOverviewQueryForm);
+        if (StringHelper.isNotNull(basePatientMemberOverviewVos)){
             return ResponseUtil.success(basePatientMemberOverviewVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePatientMemberOverviewVos);

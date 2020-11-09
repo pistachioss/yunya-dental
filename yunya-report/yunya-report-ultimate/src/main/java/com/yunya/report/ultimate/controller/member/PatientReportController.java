@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.controller.member;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
@@ -56,9 +57,9 @@ public class PatientReportController {
      */
     @ApiOperation("未复诊预约且未提醒")
     @PostMapping("/notSeen/List")
-    public ResponseResult<List<BasePatientNotSeenVo>> notSeenList(@RequestBody PatientReportQueryForm patientReportQueryForm){
-        List<BasePatientNotSeenVo> basePatientNotSeenVoList = patientReportBiz.notSeenList(patientReportQueryForm);
-        if (StringHelper.isNotEmpty(basePatientNotSeenVoList)){
+    public ResponseResult<PageInfo<BasePatientNotSeenVo>> notSeenList(@RequestBody PatientReportQueryForm patientReportQueryForm){
+        PageInfo<BasePatientNotSeenVo> basePatientNotSeenVoList = patientReportBiz.notSeenList(patientReportQueryForm);
+        if (StringHelper.isNotNull(basePatientNotSeenVoList)){
             return ResponseUtil.success(basePatientNotSeenVoList);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePatientNotSeenVoList);
@@ -71,9 +72,9 @@ public class PatientReportController {
      */
     @ApiOperation("欠费查询")
     @PostMapping("/arrears")
-    public ResponseResult<List<ArrearsVo>> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm){
-        List<ArrearsVo> arrears = patientReportBiz.arrears(arrearsQueryForm);
-        if (StringHelper.isNotEmpty(arrears)){
+    public ResponseResult<PageInfo<ArrearsVo>> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm){
+        PageInfo<ArrearsVo> arrears = patientReportBiz.arrears(arrearsQueryForm);
+        if (StringHelper.isNotNull(arrears)){
             return ResponseUtil.success(arrears);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",arrears);

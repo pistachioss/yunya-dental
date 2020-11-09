@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.service;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
@@ -55,7 +56,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      * @param form 条件
      * @return List<BaseBasePatientNotSeenVo>
      */
-    public List<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form) {
+    public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form) {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -64,7 +65,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form,patientIds);
-        return basePatientNotSeenVoList;
+        return new PageInfo<>(basePatientNotSeenVoList);
     }
 
     /**
@@ -72,7 +73,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      * @param form 欠费查询form
      * @return List<ArrearsVo>
      */
-    public List<ArrearsVo> arrears(ArrearsQueryForm form) {
+    public PageInfo<ArrearsVo> arrears(ArrearsQueryForm form) {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -81,7 +82,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form,patientIds);
-        return arrearsVoList;
+        return new PageInfo<>(arrearsVoList);
     }
 
     /**

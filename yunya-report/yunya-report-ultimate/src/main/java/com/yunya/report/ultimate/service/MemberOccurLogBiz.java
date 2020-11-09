@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.service;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.query.PrepaidQueryForm;
 import com.yunya.feign.report.domain.vo.*;
@@ -44,7 +45,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @param memberQueryForm 预付款充值查询Form
      * @return List<MemberRechargeLogBizVo>
      */
-    public List<BaseMemberRechargeLogVo> memberRechargeList(MemberQueryForm form) throws ParseException {
+    public PageInfo<BaseMemberRechargeLogVo> memberRechargeList(MemberQueryForm form) throws ParseException {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -53,7 +54,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
            patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = mapper.selectMemberRechargeList(form,patientIds);
-        return memberRechargeLogBizVos;
+        return new PageInfo<>(memberRechargeLogBizVos);
     }
 
     /**
@@ -61,7 +62,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @param memberQueryForm 预付款消费查询Form
      * @return
      */
-    public List<BaseMemberExpendLogVo> memberExpendList(MemberQueryForm form) throws ParseException {
+    public PageInfo<BaseMemberExpendLogVo> memberExpendList(MemberQueryForm form) throws ParseException {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -70,7 +71,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BaseMemberExpendLogVo> baseMemberExpendLogVos = mapper.selectMemberExpendtList(form,patientIds);
-        return baseMemberExpendLogVos;
+        return new PageInfo<>(baseMemberExpendLogVos);
     }
 
     /**
@@ -78,7 +79,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @param memberQueryForm 预付款退费查询Form
      * @return List<MemberReturnLogBizVo>
      */
-    public List<BaseMemberReturnLogVo> memberReturnList(MemberQueryForm form) throws ParseException {
+    public PageInfo<BaseMemberReturnLogVo> memberReturnList(MemberQueryForm form) throws ParseException {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -87,7 +88,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BaseMemberReturnLogVo> baseMemberReturnLogVos = mapper.selectMemberReturnList(form,patientIds);
-        return baseMemberReturnLogVos;
+        return new PageInfo<>(baseMemberReturnLogVos);
     }
 
 
@@ -96,7 +97,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @param memberQueryForm 预付款充值form
      * @return List<PrepaidRechargeLogBizVo>
      */
-    public List<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form) throws ParseException {
+    public PageInfo<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form) throws ParseException {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -105,7 +106,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form,patientIds);
-        return basePrepaidRechargeLogVoList;
+        return new PageInfo<>(basePrepaidRechargeLogVoList);
     }
 
     /**
@@ -113,7 +114,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @param memberQueryForm 预付款消费form
      * @return List<PrepaidExpendLogBizVo>
      */
-    public List<BasePrepaidExpendLogVo> prepaidExpendList(PrepaidQueryForm form) throws ParseException {
+    public PageInfo<BasePrepaidExpendLogVo> prepaidExpendList(PrepaidQueryForm form) throws ParseException {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -123,7 +124,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = mapper.selectPrepaidExpendList(form,patientIds);
-        return basePrepaidExpendLogVoList;
+        return new PageInfo<>(basePrepaidExpendLogVoList);
     }
 
 
@@ -132,7 +133,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @param memberQueryForm 预付款退款form
      * @return List<PrepaidReturnLogBizVo>
      */
-    public List<BasePrepaidReturnLogVo> prepaidReturnList(PrepaidQueryForm form) throws ParseException {
+    public PageInfo<BasePrepaidReturnLogVo> prepaidReturnList(PrepaidQueryForm form) throws ParseException {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -141,7 +142,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = mapper.selectPrepaidReturnList(form,patientIds);
-        return basePrepaidReturnLogVoList;
+        return new PageInfo<>(basePrepaidReturnLogVoList);
     }
 
     /**
@@ -158,7 +159,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @param memberQueryForm 会员余额结存条件
      * @return List<BaseMemberBalanceInfoVo>
      */
-    public List<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form) {
+    public PageInfo<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form) {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -167,6 +168,6 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BaseMemberBalanceInfoVo> basePrepaidReturnLogVoList = mapper.selectMemberBalanceList(form,patientIds);
-        return basePrepaidReturnLogVoList;
+        return new PageInfo<>(basePrepaidReturnLogVoList);
     }
 }

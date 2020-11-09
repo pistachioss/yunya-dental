@@ -2,6 +2,7 @@ package com.yunya.modules.patient_central.biz;
 
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.form.PatientPhotoForm;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
@@ -12,7 +13,6 @@ import com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo;
 import com.yunya.feign.patient_central.domain.vo.app.AppPatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
-import com.yunya.feign.report.RemoteMiddleTableServiceFeign;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -29,7 +29,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.*;
 import com.yunya.models.system.DictionaryItem;
-import com.yunya.models.system.DictionaryType;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.TreatmentRecord;
@@ -41,8 +40,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
-import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -953,23 +950,25 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    *
    * @return List<PatientLabelRecord>
    */
-  public List<PatientLabelRecordVo> labelList(PatientLabelRecordQueryForm form) {
+  public  PageInfo<PatientLabelRecordVo> labelList(PatientLabelRecordQueryForm form) {
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
     List<PatientLabelRecordVo> patientLabelRecordList =
         patientLabelRecordMapper.selectLabelList(form.getPatientId());
-    patientLabelRecordList.forEach(
-        patientLabelRecordVo -> {
-          if (StringHelper.isNotNull(patientLabelRecordVo.getDictItemId())){
-            // 查询标签字典名称
-            DictionaryType dictionaryType =
-                    remoteSystemServiceFeign.findDictionaryTypeById(patientLabelRecordVo.getDictItemId());
-          if (dictionaryType != null){
-            patientLabelRecordVo.setDictItemName(dictionaryType.getName());
-          }
-          }
-        });
-    return patientLabelRecordList;
+    if (StringHelper.isNotEmpty(patientLabelRecordList)){
+      patientLabelRecordList.forEach(
+              patientLabelRecordVo -> {
+                if (StringHelper.isNotNull(patientLabelRecordVo.getDictItemId())){
+                  // 查询标签字典名称
+                  DictionaryItem dictionaryItem = remoteSystemServiceFeign.findDictionaryItemById(patientLabelRecordVo.getDictItemId());
+                  if (dictionaryItem != null){
+                    patientLabelRecordVo.setDictItemName(dictionaryItem.getName());
+                  }
+                }
+              });
+      return new PageInfo<>(patientLabelRecordList);
+    }
+    return null;
   }
 }

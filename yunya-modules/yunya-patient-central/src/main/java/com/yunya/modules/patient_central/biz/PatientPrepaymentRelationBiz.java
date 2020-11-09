@@ -264,16 +264,18 @@ public class PatientPrepaymentRelationBiz
     List<PrepaidRechargeRecordVo> resultList = prepaidRechargeRecordMapper.RechargeRecord(form);
     if (!StringHelper.isEmpty(resultList)) {
       for (PrepaidRechargeRecordVo prepaidRechargeRecordVo : resultList) {
+        // 获取门诊简称
         OrganizationInfo organizationInfo =
             remoteSystemServiceFeign.findOrgInfoByOrgId(
-                prepaidRechargeRecordVo.getOrgId()); // 获取门诊简称
+                prepaidRechargeRecordVo.getOrgId());
         if (organizationInfo != null) {
           prepaidRechargeRecordVo.setOrgName(organizationInfo.getAbbreviation());
         }
         AccountItem accountItem =
             remoteSystemServiceFeign.findAccountItemById(prepaidRechargeRecordVo.getPaymentId());
         if (accountItem != null) {
-          prepaidRechargeRecordVo.setPaymentName(accountItem.getName()); // 获取支付方式名称
+          // 获取支付方式名称
+          prepaidRechargeRecordVo.setPaymentName(accountItem.getName());
         }
       }
     }
@@ -323,7 +325,7 @@ public class PatientPrepaymentRelationBiz
   /**
    * 退费记录列表
    *
-   * @param queryForm
+   * @param queryForm 查询条件
    * @return MemberReturnRecordVo
    */
   public PageInfo<PrepaidMeturnRecordVo> refundList(PrepaidMeturnRecordQueryForm queryForm) {
@@ -353,7 +355,7 @@ public class PatientPrepaymentRelationBiz
   /**
    * 消费记录
    *
-   * @param queryForm
+   * @param queryForm 查询条件
    * @return
    */
   public PageInfo<PrepaidExpendRecordVo> expendList(PrepaidExpendRecordQueryForm queryForm) {

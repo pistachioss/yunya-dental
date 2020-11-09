@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.service;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberOverviewQueryForm;
 import com.yunya.feign.report.domain.vo.BaseMemberOverviewVo;
 import com.yunya.feign.report.domain.vo.BasePatientMemberOverviewVo;
@@ -42,7 +43,7 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
      * @param form 概况查询form
      * @return List<MemberOverviewVo>
      */
-    public List<BasePatientMemberOverviewVo> patientOverviewList(MemberOverviewQueryForm form) throws ParseException {
+    public PageInfo<BasePatientMemberOverviewVo> patientOverviewList(MemberOverviewQueryForm form) throws ParseException {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
@@ -51,7 +52,7 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         List<BasePatientMemberOverviewVo> basePatientMemberOverviewVoList = mapper.selectMemberOverviewList(form,patientIds);
-        return basePatientMemberOverviewVoList;
+        return new PageInfo<>(basePatientMemberOverviewVoList);
     }
 
 

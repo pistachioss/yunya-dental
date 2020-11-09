@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.controller.member;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.vo.BaseMemberBalanceInfoVo;
 import com.yunya.feign.report.domain.vo.BaseMemberExpendLogVo;
@@ -54,9 +55,9 @@ public class MemberOccurLogController {
      */
     @ApiOperation("查询会员充值列表")
     @PostMapping("/recharge/list")
-    public ResponseResult<List<BaseMemberRechargeLogVo>> memberRechargeList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
-        List<BaseMemberRechargeLogVo> baseMemberRechargeLogVos = memberOccurLogBiz.memberRechargeList(memberQueryForm);
-        if (StringHelper.isNotEmpty(baseMemberRechargeLogVos)){
+    public ResponseResult<PageInfo<BaseMemberRechargeLogVo>> memberRechargeList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
+        PageInfo<BaseMemberRechargeLogVo> baseMemberRechargeLogVos = memberOccurLogBiz.memberRechargeList(memberQueryForm);
+        if (StringHelper.isNotNull(baseMemberRechargeLogVos)){
             return ResponseUtil.success(baseMemberRechargeLogVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberRechargeLogVos);
@@ -69,9 +70,9 @@ public class MemberOccurLogController {
      */
     @ApiOperation("查询会员消费列表")
     @PostMapping("/expend/list")
-    public ResponseResult<List<BaseMemberExpendLogVo>> memberExpendList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
-        List<BaseMemberExpendLogVo> baseMemberExpendLogVos = memberOccurLogBiz.memberExpendList(memberQueryForm);
-        if (StringHelper.isNotEmpty(baseMemberExpendLogVos)){
+    public ResponseResult<PageInfo<BaseMemberExpendLogVo>> memberExpendList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
+        PageInfo<BaseMemberExpendLogVo> baseMemberExpendLogVos = memberOccurLogBiz.memberExpendList(memberQueryForm);
+        if (StringHelper.isNotNull(baseMemberExpendLogVos)){
             return ResponseUtil.success(baseMemberExpendLogVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberExpendLogVos);
@@ -86,25 +87,24 @@ public class MemberOccurLogController {
      */
     @ApiOperation("查询会员退费列表")
     @PostMapping("/return/list")
-    public ResponseResult<List<BaseMemberReturnLogVo>> memberReturnList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
-        List<BaseMemberReturnLogVo> baseMemberReturnLogVos = memberOccurLogBiz.memberReturnList(memberQueryForm);
-        if (StringHelper.isNotEmpty(baseMemberReturnLogVos)){
+    public ResponseResult<PageInfo<BaseMemberReturnLogVo>> memberReturnList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
+        PageInfo<BaseMemberReturnLogVo> baseMemberReturnLogVos = memberOccurLogBiz.memberReturnList(memberQueryForm);
+        if (StringHelper.isNotNull(baseMemberReturnLogVos)){
             return ResponseUtil.success(baseMemberReturnLogVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberReturnLogVos);
     }
 
     /**
-     * 会员余额结存信息列表
-     * @param memberQueryForm 会员卡退费form
+     * 会员余/预付款额结存信息列表
+     * @param memberQueryForm 查询余额结存form
      * @return List<MemberRechargeLogBizVo>
-     * @throws ParseException
      */
-    @ApiOperation("查询会员退费列表")
+    @ApiOperation("会员余/预付款额结存信息列表")
     @PostMapping("/balance/list")
-    public ResponseResult<List<BaseMemberBalanceInfoVo>> memberBalanceList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
-        List<BaseMemberBalanceInfoVo> baseMemberBalanceInfoVos = memberOccurLogBiz.memberBalanceList(memberQueryForm);
-        if (StringHelper.isNotEmpty(baseMemberBalanceInfoVos)){
+    public ResponseResult<PageInfo<BaseMemberBalanceInfoVo>> memberBalanceList(@RequestBody MemberQueryForm memberQueryForm)  {
+        PageInfo<BaseMemberBalanceInfoVo> baseMemberBalanceInfoVos = memberOccurLogBiz.memberBalanceList(memberQueryForm);
+        if (StringHelper.isNotNull(baseMemberBalanceInfoVos)){
             return ResponseUtil.success(baseMemberBalanceInfoVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberBalanceInfoVos);

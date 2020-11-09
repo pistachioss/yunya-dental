@@ -15,8 +15,11 @@
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
     <result column="operating_type" property="operatingType" jdbcType="INTEGER" />
   </resultMap>
+  <sql id="LabelColumnList">
+    id	,org_id orgId,	patient_id patientId,	dict_item_id dictItemId,	crt_id crtId,	crt_name crtName,	crt_time crtTime,	operating_type operatingType,	remarks
+  </sql>
     <select id="selectLabelList"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientLabelRecordVo">
-      select * from patient_label_record where patient_id = #{patientId}
+      select <include refid="LabelColumnList"> </include> from patient_label_record where patient_id = #{patientId}
     </select>
 </mapper>

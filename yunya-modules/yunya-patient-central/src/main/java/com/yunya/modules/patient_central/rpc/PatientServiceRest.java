@@ -1,10 +1,7 @@
 package com.yunya.modules.patient_central.rpc;
 
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
-import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
-import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
@@ -121,6 +118,14 @@ public class PatientServiceRest {
     }
 
     @CurrentUser
+    @ApiOperation("退费")
+    @PostMapping("/member/refund")
+    public ResponseResult refund(@RequestBody MemberReturnRecordModel model) {
+        patientMemberInfoBiz.refund(model);
+        return ResponseUtil.success();
+    }
+
+    @CurrentUser
     @ApiOperation("预付款充值")
     @RequestMapping(value = "/prepayment/recharge", method = RequestMethod.POST)
     public ResponseResult recharge(@RequestBody PrepaidRechargeModel memberRechargeModel) {
@@ -133,6 +138,14 @@ public class PatientServiceRest {
     @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
     public ResponseResult expend(@RequestBody PrepaidExpendRecordModel model ){
         return patientPrepaymentRelationBiz.expend(model);
+    }
+
+    @CurrentUser
+    @ApiOperation("退费")
+    @RequestMapping(value = "/prepayment/refund",method = RequestMethod.POST)
+    public ResponseResult refund(@RequestBody PrepaidMeturnRecordModel model) {
+        patientPrepaymentRelationBiz.refund(model);
+        return ResponseUtil.success();
     }
 
     @ApiOperation("修改硬件设备密码")
