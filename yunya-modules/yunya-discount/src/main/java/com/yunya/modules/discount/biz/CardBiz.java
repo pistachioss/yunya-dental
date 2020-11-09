@@ -502,7 +502,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 			return ResponseUtil.success();
 		} finally {
-			unLockByIds(cardIds.stream().map(String::valueOf).collect(toSet()), RedisConstants.LOCK_CARD_SOLD, loginUserId);
+			manualUnLock(loginUserId, RedisConstants.LOCK_CARD_SOLD);
 			log.info("【卡券售卖】解锁成功");
 		}
 	}
@@ -843,11 +843,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			calculateBenefit(form, benefitVo, orderItemBos);
 			return ResponseUtil.success(orderItemBos);
 		} catch (Exception e) {
-			Set<String> existLock = getExistLock(patientId, RedisConstants.LOCK_CHOICE_CARD);
-			log.warn("【选择优惠】优惠选择发生异常，解除卡券锁定{}", existLock);
-			if (CollectionUtils.isNotEmpty(existLock)) {
-				unLockByIds(existLock, RedisConstants.LOCK_CHOICE_CARD, patientId);
-			}
+			log.warn("【选择优惠】优惠选择发生异常，解除卡券锁定");
+			manualUnLock(patientId, RedisConstants.LOCK_CHOICE_CARD);
 			throw e;
 		}
 	}
@@ -2225,7 +2222,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form 患者选择优惠信息
 	 * @return set
 	 */
-	private List<Integer> assembleCardIds(PatientChooseBenefitForm form) {
+	protected List<Integer> assembleCardIds(PatientChooseBenefitForm form) {
 		List<Integer> cardIds = Lists.newArrayList();
 		Integer discountId = form.getDiscountId();
 		if (discountId != null) {
@@ -2260,7 +2257,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return null;
 	}
 
-	private void unLockByIds(Set<String> delCardIds, String lockPrefix, Integer requestId) {
+	protected void unLockByIds(Set<String> delCardIds, String lockPrefix, Integer requestId) {
 		log.info("开始释放卡券资源");
 		if (CollectionUtils.isNotEmpty(delCardIds)) {
 			for (String delCardId : delCardIds) {
@@ -2695,8 +2692,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				}
 				//如果发生冲突，释放释放已选择卡券信息
 				if (CollectionUtils.isNotEmpty(conflictList)) {
-					unLockByIds(existLockKeys, lockPrefix, requestId);
-					unLockByIds(addCardIds, lockPrefix, requestId);
+					manualUnLock(requestId, lockPrefix);
 				} else {
 					//需要删除的key
 					if (CollectionUtils.isNotEmpty(delCardIds)) {
@@ -2717,7 +2713,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				}
 				//释放选择的卡券
 				if (CollectionUtils.isNotEmpty(conflictList)) {
-					unLockByIds(cardStrList, lockPrefix, requestId);
+					manualUnLock(requestId, lockPrefix);
 				}
 			}
 			log.info("【锁定成功】患者选择卡券成功");
@@ -2759,6 +2755,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return ResponseUtil.success(true);
 	}
 
+	/**
+	 * 手动解锁
+	 * @param requestId
+	 * @param lockPrefix
+	 */
 	public void manualUnLock(Integer requestId, String lockPrefix) {
 		Set<String> existLock = getExistLock(requestId, lockPrefix);
 		log.info("【手动解锁】锁信息：[{}]，需要解锁的keys：{}", lockPrefix, existLock);

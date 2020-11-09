@@ -106,20 +106,9 @@ public class BenefitBiz {
 	 */
 	@Transactional
 	public ResponseResult<PatientOrderBenefitVo> saveCardBenefit(PatientOrderBenefitModel model) {
-		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		Integer orderId = model.getOrderId();
-		String lockKey = Joiner.on(":").join(RedisConstants.LOCK_SUBMIT_BENEFIT, orderId);
-		String lockVal = String.valueOf(loginUserId);
 		try {
-			// 1. 锁定产品
-			locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
-			if (!locked) {
-				log.warn("【锁定失败】订单[{}]正在提交优惠，不能重复提交", orderId);
-				return ResponseUtil.error(DiscountError.ORDER_ON_SUBMITTING);
-			}
-			log.info("【锁定成功】准备提交订单使用优惠...");
-
 			List<CardBenefit> list = Lists.newArrayList();
 			PatientChooseBenefitForm benefitForm = benefitTransformToForm(model);
 			//查询订单项目对应的优惠
@@ -168,12 +157,9 @@ public class BenefitBiz {
 			}
 			return ResponseUtil.success();
 		} finally {
-			if (locked) {
-				//解锁卡券
-				unlockCard(model.getPatientId());
-				redisUtils.unlock(lockKey, lockVal);
-				log.info("【解锁成功】");
-			}
+			//解锁卡券
+			cardBiz.manualUnLock(model.getPatientId(), RedisConstants.LOCK_CHOICE_CARD);
+			log.info("【保存卡券优惠解锁成功】");
 		}
 	}
 
@@ -479,5 +465,32 @@ public class BenefitBiz {
 		example.createCriteria().andEqualTo("orderId", orderId)
 				.andEqualTo("deleted", FALSE.getCode());
 		mapper.updateByExampleSelective(t, example);
+	}
+
+	/**
+	 * 组合优惠信息
+	 *
+	 * @param model 患者选择优惠信息
+	 * @return set
+	 */
+	protected List<Integer> assembleCardIds(PatientOrderBenefitModel model) {
+		List<Integer> cardIds = Lists.newArrayList();
+		Integer discountId = model.getDiscountId();
+		if (discountId != null) {
+			cardIds.add(discountId);
+		}
+		List<Integer> exchangeIds = model.getExchangeIds();
+		if (CollectionUtils.isNotEmpty(exchangeIds)) {
+			exchangeIds.forEach(exchangeId -> cardIds.add(exchangeId));
+		}
+		List<Integer> packageIds = model.getPackageIds();
+		if (CollectionUtils.isNotEmpty(packageIds)) {
+			packageIds.forEach(packageId -> cardIds.add(packageId));
+		}
+		List<Integer> voucherIds = model.getVoucherIds();
+		if (CollectionUtils.isNotEmpty(voucherIds)) {
+			voucherIds.forEach(voucherId -> cardIds.add(voucherId));
+		}
+		return cardIds;
 	}
 }
