@@ -68,4 +68,11 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
      */
     List<BasePrepaidReturnLogVo> selectPrepaidReturnList(@Param("form") PrepaidQueryForm prepaidQueryForm, @Param("patientIds") List<Integer> patientIds);
 
+    /**
+     * 查询会员余额结存信息列表
+     * @param form 查询条件
+     * @param patientIds 患者id集合
+     * @return  List<BaseMemberBalanceInfoVo>
+     */
+    List<BaseMemberBalanceInfoVo> selectMemberBalanceList(@Param("form") MemberQueryForm form, @Param("patientIds") List<Integer> patientIds);
 }

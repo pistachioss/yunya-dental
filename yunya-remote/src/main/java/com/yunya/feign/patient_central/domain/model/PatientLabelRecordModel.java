@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * 简介: 操作标签记录Model

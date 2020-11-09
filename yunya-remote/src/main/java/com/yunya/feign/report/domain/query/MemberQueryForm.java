@@ -42,20 +42,24 @@ public class MemberQueryForm implements Serializable {
     /** 患者条件 */
     private String combination;
 
-    @ApiModelProperty(value = "预付款账号", required = false)
-    /** 预付款账号 */
+    @ApiModelProperty(value = "会员卡账号", required = false)
+    /** 会员卡账号 */
     private String cardNumber;
 
-    @ApiModelProperty(value = "充值开始日期", required = false)
+    @ApiModelProperty(value = "开始日期", required = false)
     /** 充值开始日期 */
     private String startDate;
 
-    @ApiModelProperty(value = "充值结束日期", required = false)
+    @ApiModelProperty(value = "结束日期", required = false)
     /** 充值结束日期 */
     private String endDate;
 
     @ApiModelProperty(value = "会员级别", required = false)
     /** 会员级别 */
     private List<Integer> memberLevelIds;
+
+    @ApiModelProperty(value = "会员类型（0.会员卡 1.预付款）", required = false)
+    /** 会员类型 */
+    private Integer type;
 
 }

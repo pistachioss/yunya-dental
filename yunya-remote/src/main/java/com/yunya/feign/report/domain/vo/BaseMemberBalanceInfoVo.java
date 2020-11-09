@@ -1,0 +1,66 @@
+package com.yunya.feign.report.domain.vo;
+
+import io.swagger.annotations.ApiModel;
+import lombok.Data;
+import lombok.ToString;
+
+import java.math.BigDecimal;
+
+/**
+ * 简介: 会员余额结存表返回模型
+ *
+ * @author: WY
+ * @date: 2020/10/24 14:11
+ * @description:
+ * @since: 1.0.0
+ */
+@Data
+@ToString
+@ApiModel("会员余额结存表返回模型")
+public class BaseMemberBalanceInfoVo {
+
+    /** 患者姓名 */
+    private String name;
+
+    /** 手机号 */
+    private String mobile;
+
+    /** 会员卡号 */
+    private String cardNumber;
+
+    /** 会员级别id */
+    private Integer memberLevelId;
+
+    /** 会员卡级别名称 */
+    private String memberLevelName;
+
+    /** 期初本金余额 */
+    private BigDecimal earlyCurrentRechargePrincipal;
+
+    /** 期初赠金余额 */
+    private BigDecimal earlyCurrentRechargeBonus;
+
+    /** 本期充值本金 */
+    private BigDecimal thisRechargePrincipalAmount;
+
+    /** 本期充值赠金 */
+    private BigDecimal thisRechargeBonusAmount;
+
+    /** 本期消费本金 */
+    private BigDecimal thisExpendPrincipalAmount;
+
+    /** 本期消费赠金 */
+    private BigDecimal thisExpendBonusAmount;
+
+    /** 本期退费本金 */
+    private BigDecimal thisReturnPrincipalAmount;
+
+    /** 本期退费赠金 */
+    private BigDecimal thisReturnBonusAmount;
+
+    /** 期末本金余额 */
+    private BigDecimal currentRechargePrincipal;
+
+    /** 期末赠金余额 */
+    private BigDecimal currentRechargeBonus;
+}

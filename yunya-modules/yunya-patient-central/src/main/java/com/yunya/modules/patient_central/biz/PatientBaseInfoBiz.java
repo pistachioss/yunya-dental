@@ -928,17 +928,23 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 
   /**
    * 操作标签
-   *
-   * @param patientLabelRecordModel 操作标签Model
+   * @param patientLabelRecordModelList 标签list
    */
-  public void operatingLabel(PatientLabelRecordModel patientLabelRecordModel) {
-    PatientLabelRecord patientLabelRecord = new PatientLabelRecord();
-    BeanUtils.copyProperties(patientLabelRecordModel, patientLabelRecord);
-    patientLabelRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-    patientLabelRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-    patientLabelRecord.setCrtName(BaseContextHandler.getName());
-    patientLabelRecord.setCrtTime(new Date());
-    patientLabelRecordMapper.insert(patientLabelRecord);
+  public void operatingLabel(List<PatientLabelRecordModel> patientLabelRecordModelList) {
+    if (StringHelper.isNotEmpty(patientLabelRecordModelList)){
+      patientLabelRecordModelList.forEach(
+              patientLabelRecordModel -> {
+                PatientLabelRecord patientLabelRecord = new PatientLabelRecord();
+                BeanUtils.copyProperties(patientLabelRecordModel, patientLabelRecord);
+                patientLabelRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+                patientLabelRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+                patientLabelRecord.setCrtName(BaseContextHandler.getName());
+                patientLabelRecord.setCrtTime(new Date());
+                patientLabelRecordMapper.insert(patientLabelRecord);
+              }
+      );
+    }
+
   }
 
   /**
@@ -954,12 +960,14 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
         patientLabelRecordMapper.selectLabelList(form.getPatientId());
     patientLabelRecordList.forEach(
         patientLabelRecordVo -> {
-          // 查询标签字典名称
-          DictionaryType dictionaryTypeById =
-              remoteSystemServiceFeign.findDictionaryTypeById(patientLabelRecordVo.getDictItemId());
-          /*if (departmentById != null){
-            patientLabelRecordVo.setDictItemName(departmentById.getName());
-          }*/
+          if (StringHelper.isNotNull(patientLabelRecordVo.getDictItemId())){
+            // 查询标签字典名称
+            DictionaryType dictionaryType =
+                    remoteSystemServiceFeign.findDictionaryTypeById(patientLabelRecordVo.getDictItemId());
+          if (dictionaryType != null){
+            patientLabelRecordVo.setDictItemName(dictionaryType.getName());
+          }
+          }
         });
     return patientLabelRecordList;
   }

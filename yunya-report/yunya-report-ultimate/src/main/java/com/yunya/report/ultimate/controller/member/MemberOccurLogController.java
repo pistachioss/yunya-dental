@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.controller.member;
 
 import com.yunya.feign.report.domain.query.MemberQueryForm;
+import com.yunya.feign.report.domain.vo.BaseMemberBalanceInfoVo;
 import com.yunya.feign.report.domain.vo.BaseMemberExpendLogVo;
 import com.yunya.feign.report.domain.vo.BaseMemberRechargeLogVo;
 import com.yunya.feign.report.domain.vo.BaseMemberReturnLogVo;
@@ -91,6 +92,22 @@ public class MemberOccurLogController {
             return ResponseUtil.success(baseMemberReturnLogVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberReturnLogVos);
+    }
+
+    /**
+     * 会员余额结存信息列表
+     * @param memberQueryForm 会员卡退费form
+     * @return List<MemberRechargeLogBizVo>
+     * @throws ParseException
+     */
+    @ApiOperation("查询会员退费列表")
+    @PostMapping("/balance/list")
+    public ResponseResult<List<BaseMemberBalanceInfoVo>> memberBalanceList(@RequestBody MemberQueryForm memberQueryForm) throws ParseException {
+        List<BaseMemberBalanceInfoVo> baseMemberBalanceInfoVos = memberOccurLogBiz.memberBalanceList(memberQueryForm);
+        if (StringHelper.isNotEmpty(baseMemberBalanceInfoVos)){
+            return ResponseUtil.success(baseMemberBalanceInfoVos);
+        }
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberBalanceInfoVos);
     }
 
 }
