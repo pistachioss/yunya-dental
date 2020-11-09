@@ -52,9 +52,6 @@ public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "备注")
     @Size(max = 150)
     private String remark;
-    @ApiModelProperty(value = "销售渠道", required = true)
-    @NotNull
-    private Integer saleChannelId;
     @ApiModelProperty(value = "售出方式（0:线上 1:线下）", required = true)
     @NotNull
     private Integer soldWay;
