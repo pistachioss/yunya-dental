@@ -125,7 +125,7 @@ public interface RemoteTreatmentServiceFeign {
    * @param itemId 项目ID
    * @return
    */
-  @RequestMapping(value = "/registered/one", method = RequestMethod.POST)
+  @RequestMapping(value = "/rpc/clinic/tariff/param", method = RequestMethod.POST)
   ClinicTariffMemberPrice findClinicTariffMemberPrice(
       @RequestParam(value = "orgId") Integer orgId,
       @RequestParam(value = "memberType") Integer memberType,
@@ -139,7 +139,7 @@ public interface RemoteTreatmentServiceFeign {
    * @param itemId 项目ID
    * @return
    */
-  @RequestMapping(value = "/registered/one", method = RequestMethod.POST)
+  @RequestMapping(value = "/rpc/clinic/oral/param", method = RequestMethod.POST)
   ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(
       @RequestParam(value = "orgId") Integer orgId,
       @RequestParam(value = "memberType") Integer memberType,

@@ -155,28 +155,6 @@ public class TreatmentServiceRest {
   }
 
   /**
-   * 根据条件查询门诊商品信息
-   *
-   * @param entity 商品价目表
-   * @return
-   */
-  @RequestMapping(value = "/clinic/oral/one", method = RequestMethod.POST)
-  public ClinicOralTariff findClinicOralTariff(@RequestBody ClinicOralTariff entity) {
-    return clinicOralTariffBiz.selectOne(entity);
-  }
-
-  /**
-   * 根据挂号记录ID查询挂号记录
-   *
-   * @param id 挂号记录ID
-   * @return
-   */
-  @RequestMapping(value = "/registered/one/{id}", method = RequestMethod.GET)
-  public Registered findRegisteredById(@PathVariable(value = "id") Integer id) {
-    return registeredBiz.selectById(id);
-  }
-
-  /**
    * 根据对象查询门诊价目表会员价
    *
    * @param orgId 组织ID
@@ -184,7 +162,7 @@ public class TreatmentServiceRest {
    * @param itemId 项目ID
    * @return
    */
-  @RequestMapping(value = "/registered/one", method = RequestMethod.POST)
+  @RequestMapping(value = "/clinic/tariff/param", method = RequestMethod.POST)
   public ClinicTariffMemberPrice findClinicTariffMemberPrice(
       @RequestParam(value = "orgId") Integer orgId,
       @RequestParam(value = "memberType") Integer memberType,
@@ -197,14 +175,25 @@ public class TreatmentServiceRest {
   }
 
   /**
-   * 根据对象查询门诊价目表会员价
+   * 根据条件查询门诊商品信息
+   *
+   * @param entity 商品价目表
+   * @return
+   */
+  @RequestMapping(value = "/clinic/oral/one", method = RequestMethod.POST)
+  public ClinicOralTariff findClinicOralTariff(@RequestBody ClinicOralTariff entity) {
+    return clinicOralTariffBiz.selectOne(entity);
+  }
+
+  /**
+   * 根据对象查询门诊商品会员价
    *
    * @param orgId 组织ID
    * @param memberType 会员类型
    * @param itemId 项目ID
    * @return
    */
-  @RequestMapping(value = "/registered/one", method = RequestMethod.POST)
+  @RequestMapping(value = "/clinic/oral/param", method = RequestMethod.POST)
   public ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(
       @RequestParam(value = "orgId") Integer orgId,
       @RequestParam(value = "memberType") Integer memberType,
@@ -214,6 +203,17 @@ public class TreatmentServiceRest {
     entity.setMemberTypeId(memberType);
     entity.setOralTariffId(itemId);
     return clinicOralTariffMemberPriceBiz.selectOne(entity);
+  }
+
+  /**
+   * 根据挂号记录ID查询挂号记录
+   *
+   * @param id 挂号记录ID
+   * @return
+   */
+  @RequestMapping(value = "/registered/one/{id}", method = RequestMethod.GET)
+  public Registered findRegisteredById(@PathVariable(value = "id") Integer id) {
+    return registeredBiz.selectById(id);
   }
 
   /**
