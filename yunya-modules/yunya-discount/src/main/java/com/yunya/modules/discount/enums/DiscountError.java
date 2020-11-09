@@ -57,6 +57,7 @@ public enum DiscountError implements RestError {
     CARD_IS_ON_SALE(48,"卡号为%s卡券正在售出中，请稍后重试！"),
     CARD_NUMBER_ERROR(49,"卡号不存在，请输入正确的卡号！"),
     CARD_PASSWORD_ERROR(50,"卡密错误，请输入正确的卡密！"),
+    ORDER_NO_BENEFIT(51,"订单没有优惠信息"),
     ;
     private Integer code;
     private String value;

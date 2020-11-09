@@ -170,7 +170,7 @@ public class CardController {
         return cardBiz.manualLock(form.getIds(), form.getLockPrefix());
     }
 
-    @ApiOperation(value = "解锁")
+    @ApiOperation(value = "解锁（卡券售卖，优惠-选择卡券）")
     @PostMapping("/unlock")
     public ResponseResult unlock(@RequestBody UnLockForm form) {
         cardBiz.manualUnLock(form.getRequestId(), form.getLockPrefix());

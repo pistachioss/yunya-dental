@@ -298,7 +298,8 @@ public class BaseCardServiceImpl{
 
 	private List<CouponAllocate> getCouponAllocate(List<Integer> couponIds) {
 		Example example = new Example(CouponAllocate.class);
-		example.createCriteria().andIn("couponId", couponIds);
+		example.createCriteria().andIn("couponId", couponIds)
+				.andIsNotNull("allocateDate");
 		return allocateMapper.selectByExample(example);
 	}
 

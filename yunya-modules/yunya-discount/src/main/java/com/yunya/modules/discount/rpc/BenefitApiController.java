@@ -5,8 +5,10 @@ import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
+import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.discount.biz.BenefitBiz;
 import com.yunya.modules.discount.biz.CardBiz;
 import io.swagger.annotations.Api;
@@ -62,5 +64,15 @@ public class BenefitApiController {
         return benefitBiz.getOrderBenefit(orderId);
     }
 
+    @ApiOperation(value = "撤销优惠")
+    @GetMapping("/benefit/revoke/{orderId}")
+    @CurrentUser
+    public ResponseResult revokeBenefit(@PathVariable(value = "orderId") Integer orderId) {
+        RestErrorBo errorBo = benefitBiz.revokeBenefit(orderId);
+        if (errorBo.getError() != null) {
+            return ResponseUtil.error(errorBo.getError());
+        }
+        return ResponseUtil.success();
+    }
 
 }

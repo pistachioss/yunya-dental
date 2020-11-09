@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public enum BenefitOperateEnum {
     CHARGE(1, "收费"),
-    modify_bill(2, "撤销账单"),
+    MODIFY_BILL(2, "撤销账单"),
 
     ;
 

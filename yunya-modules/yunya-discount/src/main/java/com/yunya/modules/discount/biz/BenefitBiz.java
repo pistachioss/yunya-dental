@@ -261,7 +261,8 @@ public class BenefitBiz {
 	 */
 	public List<OrderBenefitDetailVo> getOrderBenefit(Integer orderId) {
 		List<OrderBenefitDetailVo> resultList = Lists.newArrayList();
-		OrderBenefit summary = getOrderSummary(orderId);
+		//查询订单优惠汇总信息
+		OrderBenefit summary = getOrderBenefitSummary(orderId);
 		if (summary == null) {
 			return resultList;
 		}
@@ -312,6 +313,40 @@ public class BenefitBiz {
 			}
 		}
 		return resultList;
+	}
+
+	@Transactional
+	public RestErrorBo revokeBenefit(Integer orderId) {
+		RestErrorBo errorBo = RestErrorBo.getInstance();
+		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+		//查询订单优惠汇总信息
+		OrderBenefit summary = getOrderBenefitSummary(orderId);
+		if (summary == null) {
+			errorBo.setError(DiscountError.ORDER_NO_BENEFIT);
+			return errorBo;
+		}
+		//更新优惠券
+		if (CARD_BENEFIT.equals(summary.getBenefitType())) {
+			CardBenefit cardBenefit = new CardBenefit();
+			cardBenefit.setDeleted(TRUE.getCode());
+			cardBenefit.setOperateType(MODIFY_BILL.getCode());
+			cardBenefit.setUpdId(loginUserId);
+			updateOrderBenefit(cardBenefit, orderId, CardBenefit.class, cardBenefitMapper);
+		}
+		//更新授权
+		if (AUTH_BENEFIT.equals(summary.getBenefitType())) {
+			AuthDiscountBenefit authDiscountBenefit = new AuthDiscountBenefit();
+			authDiscountBenefit.setDeleted(TRUE.getCode());
+			authDiscountBenefit.setOperateType(MODIFY_BILL.getCode());
+			authDiscountBenefit.setUpdId(loginUserId);
+			updateOrderBenefit(authDiscountBenefit, orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper);
+		}
+		//更新订单优惠总信息
+		OrderBenefit orderBenefit = new OrderBenefit();
+		orderBenefit.setDeleted(TRUE.getCode());
+		orderBenefit.setUpdId(loginUserId);
+		updateOrderBenefit(orderBenefit, orderId, OrderBenefit.class, orderBenefitMapper);
+		return errorBo;
 	}
 
 	/**
@@ -419,7 +454,7 @@ public class BenefitBiz {
 	 * @param orderId
 	 * @return
 	 */
-	private OrderBenefit getOrderSummary(Integer orderId) {
+	private OrderBenefit getOrderBenefitSummary(Integer orderId) {
 		Example example = new Example(OrderBenefit.class);
 		example.createCriteria().andEqualTo("deleted", ZERO)
 				.andEqualTo("orderId", orderId);
@@ -437,5 +472,12 @@ public class BenefitBiz {
 		example.createCriteria().andEqualTo("deleted", ZERO)
 				.andEqualTo("orderId", orderId);
 		return mapper.selectByExample(example);
+	}
+
+	private <T> void updateOrderBenefit(T t, Integer orderId, Class<?> clazz, Mapper<T> mapper) {
+		Example example = new Example(clazz);
+		example.createCriteria().andEqualTo("orderId", orderId)
+				.andEqualTo("deleted", FALSE.getCode());
+		mapper.updateByExampleSelective(t, example);
 	}
 }
