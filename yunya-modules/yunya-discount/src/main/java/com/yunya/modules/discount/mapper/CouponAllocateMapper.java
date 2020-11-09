@@ -28,4 +28,9 @@ public interface CouponAllocateMapper extends Mapper<CouponAllocate> {
 
 
     OrgCouponAllocateBo getOrgAllocateByParam(@Param("couponId") Integer couponId, @Param("orgId") Integer orgId);
+
+    /**
+     * 查询是否有生成分配的配给计划
+     */
+    int findAllocate(CouponAllocate couponAllocate);
 }
