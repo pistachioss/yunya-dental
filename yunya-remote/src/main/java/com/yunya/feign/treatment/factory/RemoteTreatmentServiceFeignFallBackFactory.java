@@ -76,6 +76,16 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
+  public ClinicTariffMemberPrice findClinicTariffMemberPrice(Integer orgId, Integer memberType, Integer itemId) {
+    return null;
+  }
+
+  @Override
+  public ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(Integer orgId, Integer memberType, Integer itemId) {
+    return null;
+  }
+
+  @Override
   public Registered findRegisteredById(Integer id) {
     return null;
   }

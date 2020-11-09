@@ -8,10 +8,7 @@ import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotEmpty;
 import java.util.List;
@@ -121,6 +118,34 @@ public interface RemoteTreatmentServiceFeign {
   ClinicOralTariff findClinicOralTariff(@RequestBody ClinicOralTariff entity);
 
   /**
+   * 根据对象查询门诊价目表会员价
+   *
+   * @param orgId 组织ID
+   * @param memberType 会员类型
+   * @param itemId 项目ID
+   * @return
+   */
+  @RequestMapping(value = "/registered/one", method = RequestMethod.POST)
+  ClinicTariffMemberPrice findClinicTariffMemberPrice(
+      @RequestParam(value = "orgId") Integer orgId,
+      @RequestParam(value = "memberType") Integer memberType,
+      @RequestParam(value = "itemId") Integer itemId);
+
+  /**
+   * 根据对象查询门诊商品会员价
+   *
+   * @param orgId 组织ID
+   * @param memberType 会员类型
+   * @param itemId 项目ID
+   * @return
+   */
+  @RequestMapping(value = "/registered/one", method = RequestMethod.POST)
+  ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(
+      @RequestParam(value = "orgId") Integer orgId,
+      @RequestParam(value = "memberType") Integer memberType,
+      @RequestParam(value = "itemId") Integer itemId);
+
+  /**
    * 根据挂号记录ID查询挂号记录
    *
    * @param id 挂号记录ID
@@ -208,6 +233,5 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
   List<OrderDetail> findOrderDetailByOrderRecordId(
-          @PathVariable(value = "orderRecordId") Integer orderRecordId);
-
+      @PathVariable(value = "orderRecordId") Integer orderRecordId);
 }

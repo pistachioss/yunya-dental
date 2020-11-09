@@ -39,6 +39,10 @@ public class TreatmentServiceRest {
   @Autowired private ClinicTariffBiz clinicTariffBiz;
   /** 门诊商品表 */
   @Autowired private ClinicOralTariffBiz clinicOralTariffBiz;
+  /** 门诊价目表会员价 */
+  @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
+  /** 门诊商品会员价 */
+  @Autowired private ClinicOralTariffMemberPriceBiz clinicOralTariffMemberPriceBiz;
   /** 挂号记录 */
   @Autowired private RegisteredBiz registeredBiz;
   /** 就诊记录 */
@@ -170,6 +174,46 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/registered/one/{id}", method = RequestMethod.GET)
   public Registered findRegisteredById(@PathVariable(value = "id") Integer id) {
     return registeredBiz.selectById(id);
+  }
+
+  /**
+   * 根据对象查询门诊价目表会员价
+   *
+   * @param orgId 组织ID
+   * @param memberType 会员类型
+   * @param itemId 项目ID
+   * @return
+   */
+  @RequestMapping(value = "/registered/one", method = RequestMethod.POST)
+  public ClinicTariffMemberPrice findClinicTariffMemberPrice(
+      @RequestParam(value = "orgId") Integer orgId,
+      @RequestParam(value = "memberType") Integer memberType,
+      @RequestParam(value = "itemId") Integer itemId) {
+    ClinicTariffMemberPrice entity = new ClinicTariffMemberPrice();
+    entity.setClinicId(orgId);
+    entity.setMemberTypeId(memberType);
+    entity.setTariffId(itemId);
+    return clinicTariffMemberPriceBiz.selectOne(entity);
+  }
+
+  /**
+   * 根据对象查询门诊价目表会员价
+   *
+   * @param orgId 组织ID
+   * @param memberType 会员类型
+   * @param itemId 项目ID
+   * @return
+   */
+  @RequestMapping(value = "/registered/one", method = RequestMethod.POST)
+  public ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(
+      @RequestParam(value = "orgId") Integer orgId,
+      @RequestParam(value = "memberType") Integer memberType,
+      @RequestParam(value = "itemId") Integer itemId) {
+    ClinicOralTariffMemberPrice entity = new ClinicOralTariffMemberPrice();
+    entity.setClinicId(orgId);
+    entity.setMemberTypeId(memberType);
+    entity.setOralTariffId(itemId);
+    return clinicOralTariffMemberPriceBiz.selectOne(entity);
   }
 
   /**
