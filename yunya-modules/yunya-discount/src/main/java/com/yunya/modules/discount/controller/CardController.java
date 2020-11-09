@@ -77,6 +77,7 @@ public class CardController {
 
     @ApiOperation(value = "产品售卖分页查询")
     @PostMapping("/coupon/sale/page")
+    @CurrentUser
     public ResponseResult<PageInfo<CouponSalePageVo>> getGenerateAllocateList(@Valid @RequestBody CouponSaleQuery query) {
         PageInfo<CouponSalePageVo> pageInfo = cardBiz.getCouponSalePage(query);
         return ResponseUtil.success(pageInfo);
@@ -106,15 +107,14 @@ public class CardController {
     @ApiOperation(value = "取消售出")
     @PutMapping("/coupon/card/cancel/{id}")
     @CurrentUser
-    public ResponseResult cancelCardSold(@PathVariable(value = "id") Integer cardId, @Valid @RequestBody CancelCardSoldForm form) {
-        return cardBiz.cancelCardSold(cardId, form);
+    public ResponseResult cancelCardSold(@PathVariable(value = "id") Integer cardId) {
+        return cardBiz.cancelCardSold(cardId);
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-手动查询卡券详情")
     @PostMapping("/patient/product/card/manual/detail")
     public ResponseResult<CardActiveDetailVo> cardManualDetail(@Valid @RequestBody CardActiveQuery query) {
-        CardActiveDetailVo detail = cardBiz.getCardDetailByManual(query);
-        return ResponseUtil.success(detail);
+        return cardBiz.getCardDetailByManual(query);
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-扫码枪卡券详情")
@@ -159,5 +159,21 @@ public class CardController {
     public ResponseResult<PageInfo<PatientCardBaseVo>> getPatientCardList(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody PatientCardQuery query) {
         PageInfo<PatientCardBaseVo> pageInfo = cardBiz.getPatientCardPage(patientId, query);
         return ResponseUtil.success(pageInfo);
+    }
+
+
+
+    @ApiOperation(value = "加锁")
+    @PostMapping("/lock")
+    @CurrentUser
+    public ResponseResult<Boolean> lock(@RequestBody LockForm form) {
+        return cardBiz.manualLock(form.getIds(), form.getLockPrefix());
+    }
+
+    @ApiOperation(value = "解锁")
+    @PostMapping("/unlock")
+    public ResponseResult unlock(@RequestBody UnLockForm form) {
+        cardBiz.manualUnLock(form.getRequestId(), form.getLockPrefix());
+        return ResponseUtil.success();
     }
 }

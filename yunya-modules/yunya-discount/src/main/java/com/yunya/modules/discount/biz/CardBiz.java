@@ -22,7 +22,6 @@ import com.yunya.feign.discount.domain.bo.PatientCardBo;
 import com.yunya.feign.discount.domain.bo.PatientUseBenefitBo;
 import com.yunya.feign.discount.domain.bo.UseClinicBo;
 import com.yunya.feign.discount.domain.bo.ViewAllocateBo;
-import com.yunya.feign.discount.domain.form.CancelCardSoldForm;
 import com.yunya.feign.discount.domain.form.CardSoldForm;
 import com.yunya.feign.discount.domain.form.ConfigSharerForm;
 import com.yunya.feign.discount.domain.form.OtherCardActiveForm;
@@ -77,11 +76,13 @@ import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.constant.UserConstant;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.model.RestError;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.Card;
+import com.yunya.models.discount.CardBenefit;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DiscountCoupon;
@@ -105,6 +106,7 @@ import com.yunya.modules.discount.enums.SoldTypeEnum;
 import com.yunya.modules.discount.enums.SoldWayEnum;
 import com.yunya.modules.discount.enums.TrueFalseEnum;
 import com.yunya.modules.discount.enums.UseWayEnum;
+import com.yunya.modules.discount.mapper.CardBenefitMapper;
 import com.yunya.modules.discount.mapper.CardMapper;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -207,6 +209,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private ExecutorService cardThreadPool;
 	@Resource
 	private RemoteTreatmentServiceFeign treatmentServiceFeign;
+	@Resource
+	private CardBenefitMapper cardBenefitMapper;
 	@Resource
 	private RemoteRabbitMqServiceFeign mqServiceFeign;
 
@@ -420,8 +424,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 */
 	public PageInfo<CouponSalePageVo> getCouponSalePage(CouponSaleQuery query) {
 		Page<CouponSaleBo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
 		//查询优惠券售卖信息
-		mapper.listSaleInfoByParam(query.getCouponTypeList(), query.getCouponName(), query.getOrgId());
+		mapper.listSaleInfoByParam(query.getCouponTypeList(), query.getCouponName(), orgId);
 		List<CouponSalePageVo> list = page.getResult().stream().map(obj -> {
 			CouponSalePageVo vo = BeanCopierUtils.generalCopyBean(obj, CouponSalePageVo.class);
 			vo.setCouponTypeName(CouponTypeEnum.getValue(obj.getCouponType()));
@@ -451,25 +456,26 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult soldCard(CardSoldForm form) {
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
 		List<Integer> cardIds = form.getCardIds();
 		log.info("卡券售卖开始提交：[{}]", cardIds);
 		RestErrorBo errorBo;
 		try {
-			Integer orgId = form.getOrgId();
-			Integer couponId = form.getCouponId();
 			//获取组织名
 			String orgName = getOrgName(orgId);
-			//2. 检查卡券
 			for (Integer cardId : cardIds) {
+				//2. 检查卡券
 				Card card = mapper.selectByPrimaryKey(cardId);
-				errorBo = checkCardForSale(cardId, card, couponId, orgId, orgName);
+				errorBo = checkCardForSale(cardId, card, orgId, orgName);
 				if (errorBo.getError() != null) {
 					return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 				}
+				Integer couponId = card.getCouponId();
 				//3. 检查优惠券
-				CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
+				CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
 				errorBo = checkCouponForSale(couponId, couponInfo);
 				if (errorBo.getError() != null) {
 					return ResponseUtil.error(errorBo.getError());
@@ -495,7 +501,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			return ResponseUtil.success();
 		} finally {
 			unLockByIds(cardIds.stream().map(String::valueOf).collect(toSet()), RedisConstants.LOCK_CARD_SOLD, loginUserId);
-			log.info("【解锁成功】");
+			log.info("【卡券售卖】解锁成功");
 		}
 	}
 
@@ -557,20 +563,19 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * 卡券取消售出
 	 *
 	 * @param cardId cardId
-	 * @param form   form
 	 * @return res
 	 */
-	public ResponseResult cancelCardSold(Integer cardId, CancelCardSoldForm form) {
-		Integer couponId = form.getCouponId();
-		Integer orgId = form.getOrgId();
+	@Transactional
+	public ResponseResult cancelCardSold(Integer cardId) {
+		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
 		RestErrorBo errorBo;
-
 		//1. 检查卡券
 		Card card = mapper.selectByPrimaryKey(cardId);
-		errorBo = checkCardForCancelSale(cardId, card, couponId, orgId);
+		errorBo = checkCardForCancelSale(cardId, card, orgId);
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 		}
+		Integer couponId = card.getCouponId();
 		//2. 检查优惠券
 		CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
 		if (couponInfo == null || !couponInfo.getIsInservice()) {
@@ -584,19 +589,31 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return ResponseUtil.success();
 	}
 
-	public CardActiveDetailVo getCardDetailByManual(CardActiveQuery query) {
+	public ResponseResult<CardActiveDetailVo> getCardDetailByManual(CardActiveQuery query) {
 		String cardPassEncode = Base64.getEncoder().encodeToString(query.getCardPassword().getBytes());
 		Example example = new Example(Card.class);
-		example.createCriteria().andEqualTo("cardNumber", query.getCardNumber())
-				.andEqualTo("cardPassword", cardPassEncode);
+		Example.Criteria criteria = example.createCriteria().andEqualTo("cardNumber", query.getCardNumber());
+		int countNum = mapper.selectCountByExample(example);
+		if (countNum == 0) {
+			return ResponseUtil.error(DiscountError.CARD_NUMBER_ERROR);
+		}
+		criteria.andEqualTo("cardPassword", cardPassEncode);
 		Card card = mapper.selectOneByExample(example);
 		if (card == null) {
-			return null;
+			return ResponseUtil.error(DiscountError.CARD_PASSWORD_ERROR);
+		}
+		if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
+			return ResponseUtil.error(DiscountError.CARD_IS_ACTIVATED);
 		}
 		if (!ACTIVE_PENDING.equals(card.getStatus())) {
-			return null;
+			return ResponseUtil.error(DiscountError.CARD_ACTIVE_STATUS_ERROR);
 		}
-		return mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode);
+		//校验卡券有效期
+		RestErrorBo errorBo = checkCouponForActive(card.getCouponId());
+		if (errorBo.getError() != null) {
+			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+		}
+		return ResponseUtil.success(mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode));
 
 	}
 
@@ -617,6 +634,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form      form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult ownActiveCard(Integer patientId, OwnCardActiveForm form) {
 		boolean locked = false;
 		Integer cardId = form.getCardId();
@@ -634,13 +652,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.info("【锁定成功】准备提交卡券激活...");
 
 			RestErrorBo errorBo;
-			//2. 检查卡券
+			//3. 检查卡券
 			Card card = mapper.selectByPrimaryKey(cardId);
 			errorBo = checkCardForOwnActive(form.getPayId(), card);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
-			//3. 检查优惠券
+			//2. 检查优惠券
 			errorBo = checkCouponForActive(card.getCouponId());
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
@@ -665,6 +683,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form      form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult otherActiveCard(Integer patientId, OtherCardActiveForm form) {
 		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
@@ -682,13 +701,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.info("【锁定成功】准备提交第三方平台卡券激活...");
 
 			RestErrorBo errorBo;
-			//1. 检查优惠券
-			errorBo = checkCouponForActive(form.getCouponId());
+			//1. 检查卡券
+			errorBo = checkCardForOtherActive(cardNumber);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
 			}
-			//2. 检查卡券
-			errorBo = checkCardForOtherActive(cardNumber);
+			//2. 检查优惠券
+			errorBo = checkCouponForActive(form.getCouponId());
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
 			}
@@ -712,6 +731,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param form      form
 	 * @return res
 	 */
+	@Transactional
 	public ResponseResult configSharer(Integer patientId, Integer cardId, ConfigSharerForm form) {
 		//1. 校验卡券
 		Card card = mapper.selectByPrimaryKey(cardId);
@@ -806,7 +826,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		}
 		try {
 			//锁定患者选择的优惠信息
-			errorBo = needLockKeys(assembleCardIds(form), patientId, RedisConstants.LOCK_CHOICE_CARD);
+			errorBo = needLockKeys(assembleCardIds(form), patientId, RedisConstants.LOCK_CHOICE_CARD, DiscountError.CARD_HAS_CHOICE);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
@@ -1142,6 +1162,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 */
 	public PatientOptionalBenefitVo initBenefit(PatientBenefitQuery query) {
 		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+		int count = countByBenefit(query.getOrderId());
+		if (count != 0) {
+			return null;
+		}
 		return getPatientBenefit(query.getPatientId(), query.getOrderId(), orgId);
 	}
 
@@ -1151,7 +1175,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		//获取订单明细
 		List<OrderDetail> orderDetail = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
 		if (CollectionUtils.isEmpty(orderDetail)) {
-			return null;
+			return new PatientOptionalBenefitVo();
 		}
 		//订单的项目明细映射
 		Map<Integer, Set<Integer>> itemMap = orderDetail.stream().collect(groupingBy(obj -> obj.getType().intValue(),
@@ -1692,6 +1716,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		cancelCard.setCrtTime(card.getCrtTime());
 		cancelCard.setUpdId(loginUserId);
 		cancelCard.setId(card.getId());
+		cancelCard.setUpdTime(LocalDateTime.now());
 		mapper.updateByPrimaryKey(cancelCard);
 	}
 
@@ -1780,7 +1805,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		Date saleStartDate = couponInfo.getAvailableSaleStartDate();
 		//售出结束时间
 		Date saleEndDate = couponInfo.getAvailableSaleEndDate();
-		Date now = new Date();
+		Date now = Date.from(LocalDate.now().atStartOfDay(ZoneOffset.ofHours(8)).toInstant());
 		if (saleStartDate != null && saleEndDate != null &&
 				(now.before(saleStartDate) || now.after(saleEndDate))) {
 			log.warn("【售卖失败】卡券不在优惠券[{}]售出时间范围内", couponInfo.getId());
@@ -1817,15 +1842,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	/**
 	 * 检查卡券售出信息
 	 *
-	 * @param card     card
-	 * @param couponId couponId
-	 * @param orgId    orgId
-	 * @param orgName  orgName
+	 * @param card    card
+	 * @param orgId   orgId
+	 * @param orgName orgName
 	 * @return RestErrorBo
 	 */
-	private RestErrorBo checkCardForSale(Integer cardId, Card card, Integer couponId, Integer orgId, String orgName) {
+	private RestErrorBo checkCardForSale(Integer cardId, Card card, Integer orgId, String orgName) {
 		//校验卡券基础信息
-		RestErrorBo errorBo = checkCardBaseInfo(cardId, card, couponId, orgId, orgName);
+		RestErrorBo errorBo = checkCardBaseInfo(cardId, card, orgId, orgName);
 		if (!SALE_PENDING.equals(card.getStatus())) {
 			log.warn("【取消售卖失败】卡券[{}]售卖状态异常", card.getCardNumber());
 			errorBo.setError(DiscountError.CARD_SOLD_STATUS_ERROR);
@@ -1837,16 +1861,15 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	/**
 	 * 检查卡券取消售出信息
 	 *
-	 * @param card     card
-	 * @param couponId couponId
-	 * @param orgId    orgId
+	 * @param card  card
+	 * @param orgId orgId
 	 * @return RestErrorBo
 	 */
-	private RestErrorBo checkCardForCancelSale(Integer cardId, Card card, Integer couponId, Integer orgId) {
+	private RestErrorBo checkCardForCancelSale(Integer cardId, Card card, Integer orgId) {
 		//获取组织名
 		String orgName = getOrgName(orgId);
 		//校验卡券基础信息
-		RestErrorBo errorBo = checkCardBaseInfo(cardId, card, couponId, orgId, orgName);
+		RestErrorBo errorBo = checkCardBaseInfo(cardId, card, orgId, orgName);
 		if (!ACTIVE_PENDING.equals(card.getStatus())) {
 			log.warn("【取消售卖失败】卡券[{}]售卖状态异常", card.getCardNumber());
 			errorBo.setError(DiscountError.CARD_SOLD_STATUS_ERROR);
@@ -1869,7 +1892,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			errorBo.setError(DiscountError.CARD_NOT_EXIST);
 			return errorBo;
 		}
-		if (card.getActiveOrgId() != null || ACTIVATED.equals(card.getStatus()) || card.getPatientId() != null) {
+		if (card.getActiveOrgId() != null || ACTIVATED.equals(card.getStatus()) || card.getPatientId() != null ||
+				PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
 			log.warn("【激活失败】卡券[{}]已被激活", card.getCardNumber());
 			errorBo.setError(DiscountError.CARD_IS_ACTIVATED);
 			return errorBo;
@@ -1909,7 +1933,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return errorBo;
 	}
 
-	private RestErrorBo checkCardBaseInfo(Integer cardId, Card card, Integer couponId, Integer orgId, String orgName) {
+	private RestErrorBo checkCardBaseInfo(Integer cardId, Card card, Integer orgId, String orgName) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		if (card == null) {
 			log.warn("【卡券校验失败】卡券[{}]不存在", cardId);
@@ -1920,13 +1944,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			log.warn("【卡券校验失败】卡券[{}]不属于[{}]", card.getCardNumber(), orgName);
 			errorBo.setError(DiscountError.CARD_NOT_BELONG_ORG);
 			errorBo.setMsg(orgName);
-			return errorBo;
-		}
-		if (!couponId.equals(card.getCouponId())) {
-			CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(card.getCouponId());
-			log.warn("【卡券校验失败】该卡券是{}, 卡券类型异常", couponInfo.getName());
-			errorBo.setError(DiscountError.CARD_NOT_BELONG_COUPON);
-			errorBo.setMsg(couponInfo.getName());
 			return errorBo;
 		}
 		return errorBo;
@@ -2633,9 +2650,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return messageModel;
 	}
 
-	private RestErrorBo needLockKeys(List<Integer> resourceIds, Integer requestId, String lockPrefix) {
+	private RestErrorBo needLockKeys(List<Integer> resourceIds, Integer requestId, String lockPrefix, RestError error) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		List<String> conflictList = Lists.newArrayList();
+		log.info("【开始锁定】开始锁定用户选择的卡券");
 		if (CollectionUtils.isNotEmpty(resourceIds)) {
 			Set<String> cardStrList = resourceIds.stream().map(String::valueOf).collect(toSet());
 			//获取用户已被锁定的卡券
@@ -2647,13 +2665,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				addCardIds = SetUtils.difference(cardStrList, existLockKeys);
 				delCardIds = SetUtils.difference(existLockKeys, cardStrList);
 				commonIds = SetUtils.intersection(existLockKeys, cardStrList);
+				log.info("新增需要锁定的卡券：{}", addCardIds);
+				log.info("删除锁定的卡券：{}", delCardIds);
+				log.info("需要刷新锁定的卡券：{}", commonIds);
 				//需要增加的key
-				if (CollectionUtils.isNotEmpty(addCardIds)) {
-					for (String addCardId : addCardIds) {
-						String result = lockChoiceCard(addCardId, requestId, lockPrefix);
-						if (StringUtils.isNotBlank(result)) {
-							conflictList.add(result);
-						}
+				for (String addCardId : addCardIds) {
+					String result = lockChoiceCard(addCardId, requestId, lockPrefix);
+					if (StringUtils.isNotBlank(result)) {
+						conflictList.add(result);
 					}
 				}
 				//如果发生冲突，释放释放已选择卡券信息
@@ -2666,12 +2685,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 						unLockByIds(delCardIds, lockPrefix, requestId);
 					}
 					//需要更新的key
-					if (CollectionUtils.isNotEmpty(commonIds)) {
-						commonIds.forEach(key -> redisUtils.expire(key, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS));
-					}
+					commonIds.forEach(key -> {
+						String lockKey = Joiner.on(":").join(lockPrefix, String.valueOf(key));
+						redisUtils.expire(lockKey, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
+					});
 				}
 			} else {
-				log.info("【开始锁定】开始锁定用户选择的卡券");
 				for (String cardId : cardStrList) {
 					String result = lockChoiceCard(cardId, requestId, lockPrefix);
 					if (StringUtils.isNotBlank(result)) {
@@ -2683,11 +2702,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					unLockByIds(cardStrList, lockPrefix, requestId);
 				}
 			}
-			log.info("【锁定成功】患者选择优惠成功");
+			log.info("【锁定成功】患者选择卡券成功");
 		}
 		//释放选择的卡券
 		if (CollectionUtils.isNotEmpty(conflictList)) {
-			errorBo.setError(DiscountError.CARD_HAS_CHOICE);
+			errorBo.setError(error);
 			errorBo.setMsg(Joiner.on(",").join(conflictList));
 		}
 		return errorBo;
@@ -2704,8 +2723,37 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		Set<String> keys = redisUtils.keys(lockPrefix + "*");
 		if (CollectionUtils.isNotEmpty(keys)) {
 			return keys.stream().filter(key -> requestId.equals(Integer.valueOf(redisUtils.get(key))))
+					.map(key -> key.replace(lockPrefix + ":", ""))
 					.collect(toSet());
 		}
 		return null;
+	}
+
+	public ResponseResult<Boolean> manualLock(List<Integer> ids, String lockPrefix) {
+		log.info("【手动加锁】锁信息：[{}]，需要加锁的keys：{}", lockPrefix, ids);
+		if (CollectionUtils.isNotEmpty(ids)) {
+			Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+			RestErrorBo errorBo = needLockKeys(ids, loginUserId, lockPrefix, DiscountError.CARD_IS_ON_SALE);
+			if (errorBo.getError() != null) {
+				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+			}
+		}
+		return ResponseUtil.success(true);
+	}
+
+	public void manualUnLock(Integer requestId, String lockPrefix) {
+		Set<String> existLock = getExistLock(requestId, lockPrefix);
+		log.info("【手动解锁】锁信息：[{}]，需要解锁的keys：{}", lockPrefix, existLock);
+		if (CollectionUtils.isNotEmpty(existLock)) {
+			unLockByIds(existLock, lockPrefix, requestId);
+			log.info("手动解锁完成");
+		}
+	}
+
+	private int countByBenefit(Integer orderId) {
+		Example example = new Example(CardBenefit.class);
+		example.createCriteria().andEqualTo("orderId", orderId)
+				.andEqualTo("deleted", FALSE.getCode());
+		return cardBenefitMapper.selectCountByExample(example);
 	}
 }

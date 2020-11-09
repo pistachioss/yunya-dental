@@ -82,7 +82,6 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     }
     String name = model.getName();
     AccountItem entity = new AccountItem();
-    entity.setAccountTypeId(accountTypeId);
     entity.setName(name);
     int count = mapper.selectCount(entity);
     if (count > 0) {

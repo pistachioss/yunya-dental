@@ -577,6 +577,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     visitRecord.setTreatmentId(treatmentRecordId);
                     visitRecord.setVisitingTime("09:00");
                     visitRecord.setReason(baseTariff.getName());
+                    visitRecord.setStatus(false);
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
                     visitRecordPlanList.add(visitRecord);

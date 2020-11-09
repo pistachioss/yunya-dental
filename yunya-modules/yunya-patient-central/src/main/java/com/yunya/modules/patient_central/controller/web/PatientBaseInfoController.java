@@ -186,8 +186,8 @@ public class PatientBaseInfoController {
   @ApiOperation(value = "操作标签记录")
   @PostMapping(value = "/operatingLabel")
   public ResponseResult operatingLabel(
-      @RequestBody PatientLabelRecordModel patientLabelRecordModel) {
-    patientBaseInfoBiz.operatingLabel(patientLabelRecordModel);
+      @RequestBody List<PatientLabelRecordModel> patientLabelRecordModelList) {
+    patientBaseInfoBiz.operatingLabel(patientLabelRecordModelList);
     return ResponseUtil.success();
   }
 
