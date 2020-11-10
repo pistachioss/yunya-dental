@@ -7,7 +7,6 @@ import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.HanyuPinyinHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientOrigin;
