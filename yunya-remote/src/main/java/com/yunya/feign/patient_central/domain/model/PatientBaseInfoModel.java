@@ -1,14 +1,13 @@
 package com.yunya.feign.patient_central.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.framework.common.constant.BusinessConstants;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -64,7 +63,7 @@ public class PatientBaseInfoModel implements Serializable {
      * 手机号码 长度14
      */
     @NotBlank(message = "患者手机号不能为空")
-    @Pattern(regexp = "^[1][3,4,5,6,7,8,9][0-9]{9}$", message = "手机号格式有误")
+    @Pattern(regexp = BusinessConstants.MOBILE_REGEXP, message = "手机号格式有误")
     @ApiModelProperty(value = "患者手机号码",required = true)
     private String mobile;
 
@@ -91,7 +90,8 @@ public class PatientBaseInfoModel implements Serializable {
      * 年龄
      */
     @ApiModelProperty(value = "年龄")
-    @Pattern(regexp = "^[1-9]\\d*|0$")
+    @Min(value = 0,message = "年龄不能为小数")
+    @Max(value = 2147483647,message = "年龄超过了允许输入的最大整数,请重新输入")
     private Integer age;
 
     /**
