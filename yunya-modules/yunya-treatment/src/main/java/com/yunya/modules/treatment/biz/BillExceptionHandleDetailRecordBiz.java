@@ -5,13 +5,12 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPaymentAdjustDetailVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
+import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
-import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
@@ -21,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +43,8 @@ public class BillExceptionHandleDetailRecordBiz
   @Autowired private OrderRecordBiz orderRecordBiz;
   /** 开单详情 */
   @Autowired private OrderDetailBiz orderDetailBiz;
+  /** 账单记录 */
+  @Autowired private BillRecordBiz billRecordBiz;
   /** 账单支付记录 */
   @Autowired private BillPayRecordMapper billPayRecordMapper;
   /** 账单支付明细记录 */
@@ -78,7 +78,6 @@ public class BillExceptionHandleDetailRecordBiz
     billAdjustDetailInfo.setPayeeId(billPayRecord.getCrtId());
     billAdjustDetailInfo.setPayeeName(billPayRecord.getCrtName());
     billAdjustDetailInfo.setReceivedAmount(billPayRecord.getReceivedAmount());
-
     // 调整前后收费方式列表
     List<BillPayDetailRecordVO> beforeAdjustPayList = Lists.newArrayList();
     List<BillPayDetailRecordVO> afterAdjustPayList = Lists.newArrayList();
@@ -145,34 +144,56 @@ public class BillExceptionHandleDetailRecordBiz
   }
 
   /**
-   * 查询账单开单记录调整详情
+   * 查询账单调整详情
    *
    * @param handledRecordId 被处理记录ID（就诊记录ID）
-   * @param billHandleRecordId 异常处理记录ID
+   * @param billExceptionHandleRecordId 异常处理记录ID
+   * @param preExceptionHandleRecordId 上一条异常处理记录ID
    * @return
    */
   public Map<String, Object> findBillOrderDetailAdjustDetails(
-      Integer handledRecordId, Integer billHandleRecordId) {
+      Integer handledRecordId,
+      Integer billExceptionHandleRecordId,
+      Integer preExceptionHandleRecordId) {
     Map<String, Object> resultMap = new HashMap<>(16);
-    OrderRecord orderRecord = new OrderRecord();
-    orderRecord.setTreatmentRecordId(handledRecordId);
-    orderRecord.setInservice(true);
-    OrderRecord orderRecordResult = orderRecordBiz.selectOne(orderRecord);
-    if (null != orderRecordResult) {
-      Integer recordResultId = orderRecordResult.getId();
-      OrderDetail orderDetail = new OrderDetail();
-      orderDetail.setOrderRecordId(recordResultId);
-      List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
-    }
-    BillExceptionHandleDetailRecord entity = new BillExceptionHandleDetailRecord();
-    entity.setBillHandleRecordId(billHandleRecordId);
-    List<BillExceptionHandleDetailRecord> exceptionHandleDetailRecords = mapper.select(entity);
-    ArrayList<OrderDetailVO> vos = new ArrayList<>();
-    if (StringHelper.isNotEmpty(exceptionHandleDetailRecords)) {
-      for (BillExceptionHandleDetailRecord record : exceptionHandleDetailRecords) {
-        Integer associateRecordId = record.getAssociateRecordId();
+    List<OrderDetailChargeVO> beforeAdjustBillDetail = Lists.newArrayList();
+    List<OrderDetailChargeVO> afterAdjustBillDetail = Lists.newArrayList();
+    if (0 == preExceptionHandleRecordId) {
+      // 第一次调整，当前异常记录ID对应的订单ID
+      beforeAdjustBillDetail = getOrderDetailChargeList(billExceptionHandleRecordId);
+      // 当前记录ID对应调整后订单明细列表
+      OrderRecord order = new OrderRecord();
+      order.setTreatmentRecordId(handledRecordId);
+      order.setInservice(true);
+      OrderRecord orderRecord = orderRecordBiz.selectOne(order);
+      if (null != orderRecord) {
+        Integer id = orderRecord.getId();
+        afterAdjustBillDetail = billRecordBiz.getOrderDetailChargeVOS(id);
       }
+    } else {
+      // 调整前订单明细列表
+      beforeAdjustBillDetail = getOrderDetailChargeList(preExceptionHandleRecordId);
+      // 调整后订单明细列表
+      afterAdjustBillDetail = getOrderDetailChargeList(billExceptionHandleRecordId);
     }
+    resultMap.put("beforeAdjust", beforeAdjustBillDetail);
+    resultMap.put("afterAdjust", afterAdjustBillDetail);
     return resultMap;
+  }
+
+  /**
+   * 获取订单详情列表
+   *
+   * @param billExceptionHandleRecordId 账单异常处理记录ID
+   * @return
+   */
+  private List<OrderDetailChargeVO> getOrderDetailChargeList(Integer billExceptionHandleRecordId) {
+    List<OrderDetailChargeVO> beforeAdjustBillDetail;
+    BillExceptionHandleDetailRecord entity = new BillExceptionHandleDetailRecord();
+    entity.setBillHandleRecordId(billExceptionHandleRecordId);
+    BillExceptionHandleDetailRecord billExceptionHandleDetailRecords = mapper.selectOne(entity);
+    Integer associateRecordId = billExceptionHandleDetailRecords.getAssociateRecordId();
+    beforeAdjustBillDetail = billRecordBiz.getOrderDetailChargeVOS(associateRecordId);
+    return beforeAdjustBillDetail;
   }
 }

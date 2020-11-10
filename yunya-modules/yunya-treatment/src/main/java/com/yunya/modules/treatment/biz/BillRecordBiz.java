@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseRefund;
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -91,29 +92,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    */
   public BillDetailGroupVO findOrderDetailAndBillDetail(Integer orderRecordId) {
     BillDetailGroupVO resultData = new BillDetailGroupVO();
-    List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
-    if (StringHelper.isEmpty(orderDetails)) {
-      orderDetails = new ArrayList<>();
-    } else {
-      List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
-      if (null != orderBenefitD) {
-        for (OrderDetailChargeVO orderDetail : orderDetails) {
-          for (OrderBenefitDetailVo benefitDetailVo : orderBenefitD) {
-            if (orderDetail.getOrderDetailId().equals(benefitDetailVo.getOrderDetailId())) {
-              BigDecimal receivableAmount = orderDetail.getReceivableAmount();
-              BigDecimal actualAmount = orderDetail.getActualAmount();
-              BigDecimal itemBenefitAmount = benefitDetailVo.getItemBenefitAmount();
-              actualAmount = actualAmount.subtract(itemBenefitAmount);
-              orderDetail.setActualAmount(actualAmount);
-              orderDetail.setDiscountRate(
-                  actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
-              List<ItemUseBenefitVo> benefitList = benefitDetailVo.getItemBenefitList();
-              setPrivilegeCouponInfo(orderDetail, benefitList);
-            }
-          }
-        }
-      }
-    }
+    // 获取开单优惠详情
+    List<OrderDetailChargeVO> orderDetails = getOrderDetailChargeVOS(orderRecordId);
     resultData.setOrderDetails(orderDetails);
 
     List<BillPayRecordVO> billPayRecords = mapper.selectBillPayRecord(orderRecordId);
@@ -160,6 +140,39 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       resultData.setBillHandleRecords(billHandleRecords);
     }
     return resultData;
+  }
+
+  /**
+   * 获取账单开单优惠详情
+   *
+   * @param orderRecordId 开单详情
+   * @return
+   */
+  public List<OrderDetailChargeVO> getOrderDetailChargeVOS(Integer orderRecordId) {
+    List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
+    if (StringHelper.isEmpty(orderDetails)) {
+      orderDetails = new ArrayList<>();
+    } else {
+      List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
+      if (null != orderBenefitD) {
+        for (OrderDetailChargeVO orderDetail : orderDetails) {
+          for (OrderBenefitDetailVo benefitDetailVo : orderBenefitD) {
+            if (orderDetail.getOrderDetailId().equals(benefitDetailVo.getOrderDetailId())) {
+              BigDecimal receivableAmount = orderDetail.getReceivableAmount();
+              BigDecimal actualAmount = orderDetail.getActualAmount();
+              BigDecimal itemBenefitAmount = benefitDetailVo.getItemBenefitAmount();
+              actualAmount = actualAmount.subtract(itemBenefitAmount);
+              orderDetail.setActualAmount(actualAmount);
+              orderDetail.setDiscountRate(
+                  actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+              List<ItemUseBenefitVo> benefitList = benefitDetailVo.getItemBenefitList();
+              setPrivilegeCouponInfo(orderDetail, benefitList);
+            }
+          }
+        }
+      }
+    }
+    return orderDetails;
   }
 
   /**
@@ -278,7 +291,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
     // 发送消息同步退费
     if (result > 0) {
-//      rabbitMqServiceFeign.sendMessage(billRefundRecordId, 0, BaseRefund);
+      rabbitMqServiceFeign.sendMessage(billRefundRecordId, 0, BaseRefund);
     }
   }
 
