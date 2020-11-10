@@ -152,6 +152,7 @@ public class ClinicAccountItemController {
     @ApiImplicitParam(name = "accountItemId", value = "支付方式ID", required = true)
   })
   @GetMapping(value = "/switch/item/{orgId}/{accountItemId}", name = "设置支付方式在门诊是否可用")
+  @CurrentUser
   public ResponseResult<T> switchClinicAccountItem(
       @PathVariable(value = "orgId") Integer orgId,
       @PathVariable(value = "accountItemId") Integer accountItemId) {

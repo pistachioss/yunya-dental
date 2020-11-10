@@ -92,6 +92,7 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     entity.setCrtName(BaseContextHandler.getName());
     Byte type = model.getType();
     entity.setType(type);
+    entity.setAccountTypeId(model.getAccountTypeId());
     mapper.insertSelective(entity);
   }
 

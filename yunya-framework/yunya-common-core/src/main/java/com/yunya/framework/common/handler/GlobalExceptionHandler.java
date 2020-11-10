@@ -11,6 +11,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -83,5 +84,12 @@ public class GlobalExceptionHandler {
     String message = e.getBindingResult().getAllErrors().get(0).getDefaultMessage();
     logger.error("error in \nurl :{} \nmsg:{}", request.getRequestURI(), message);
     return ResponseUtil.fail(CommonConstants.EX_OTHER_CODE, message, null);
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseResult httpMessageNotReadableExceptionHandler(
+          HttpMessageNotReadableException exp, HttpServletRequest request) {
+    logger.error("error in \n url:{} \nmsg:{}",request.getRequestURL(),exp.getCause());
+    return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE,"非法请求参数类型",null);
   }
 }
