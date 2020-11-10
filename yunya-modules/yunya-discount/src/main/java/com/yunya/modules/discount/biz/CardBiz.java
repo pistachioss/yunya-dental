@@ -15,6 +15,7 @@ import com.yunya.feign.discount.domain.bo.CouponSaleBo;
 import com.yunya.feign.discount.domain.bo.GenerateAllocatePageBo;
 import com.yunya.feign.discount.domain.bo.ItemBenefitUseDetailBo;
 import com.yunya.feign.discount.domain.bo.ItemUseBenefitBo;
+import com.yunya.feign.discount.domain.bo.OrderItemChangeBo;
 import com.yunya.feign.discount.domain.bo.OrderItemUseBo;
 import com.yunya.feign.discount.domain.bo.OrgCouponAllocateBo;
 import com.yunya.feign.discount.domain.bo.PatientBenefitBo;
@@ -1088,7 +1089,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		order.setBenefitAmount(oldBenefitAmount == null ? benefitAmount : oldBenefitAmount.add(benefitAmount));
 		BigDecimal receivableAmount = order.getReceivableAmount();
 		order.setBenefitDiscountRate(order.getBenefitAmount().divide(receivableAmount, 4, RoundingMode.HALF_UP));
-		order.setQuantity(order.getQuantity() - 1);
+//		order.setQuantity(order.getQuantity() - 1);
 		//是否可共用
 		order.setPreMixAble(benefitBo.getMixable());
 		if (VOUCHER.equals(couponType)) {
@@ -1111,8 +1112,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		itemUseBenefitBo.setBenefitName(benefitBo.getCouponName());
 		itemUseBenefitBo.setItemIndex(itemIndex);
 		//单个个体优惠金额
-		BigDecimal oldCouponBenefitAmount = itemUseBenefitBo.getBenefitAmount();
-		itemUseBenefitBo.setBenefitAmount(oldCouponBenefitAmount == null ? benefitAmount : oldCouponBenefitAmount.add(benefitAmount));
+		itemUseBenefitBo.setBenefitAmount(benefitAmount);
 		itemUseBenefitBos.add(itemUseBenefitBo);
 		order.setItemUseBenefitBos(itemUseBenefitBos);
 		if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType)) {
@@ -1122,6 +1122,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
 	private int setUpMultiItemForOrder(List<PatientUseBenefitBo> benefitBos, OrderItemUseBo orderItem, Integer orgId,
 	                                   Integer itemIndex) {
+		int mark = 0;
 		for (PatientUseBenefitBo benefitBo : benefitBos) {
 			if (TRUE.equals(orderItem.getPreMixAble()) && (TRUE.equals(benefitBo.getMixable()) || itemIndex == 1)) {
 				//订单项目id对应的可用的优惠券信息
@@ -1130,24 +1131,24 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
 					//订单项目原价
 					BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()),4, BigDecimal.ROUND_HALF_UP);
-					////订单项目已优惠金额
-					BigDecimal oldBenefitAmount = orderItem.getBenefitAmount() == null ? BigDecimal.ZERO : orderItem.getBenefitAmount();
+					//订单项目index已优惠金额
+					OrderItemChangeBo changeBo = getItemBenefitByIndex(orderItem, itemIndex);
 					//订单项目应收金额（原价 - 已优惠金额）
-					BigDecimal receivableAmount = originalPrice.subtract(oldBenefitAmount);
-					BigDecimal benefitAmount;
+					BigDecimal receivableAmount = originalPrice.subtract(changeBo.getDiscountedAmount());
+					BigDecimal benefitAmount = BigDecimal.ZERO;
 					if (receivableAmount.compareTo(BigDecimal.valueOf(0)) > 0) {
 						if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType)) {
 							BigDecimal packageUnitPrice = benefitUseDetailBo.getPackageUnitPrice();
 							benefitAmount = receivableAmount.compareTo(packageUnitPrice) > 0 ? benefitAmount = receivableAmount.subtract(packageUnitPrice)
 									: BigDecimal.valueOf(0);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
-							return TRUE.getCode();
+							mark = 1;
 						}
 						if (DISCOUNT.equals(couponType)) {
 							benefitAmount = receivableAmount.multiply(BigDecimal.valueOf(1).subtract(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
 									.setScale(2, BigDecimal.ROUND_HALF_UP);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), DISCOUNT.getCode(), itemIndex);
-							return TRUE.getCode();
+							mark = 1;
 						}
 						if (MEMBER_CARD.equals(couponType)) {
 							BigDecimal memberPrice = BigDecimal.ZERO;
@@ -1170,7 +1171,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							//订单项目id对应的可用的优惠券信息
 							benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), null, itemIndex);
-							return TRUE.getCode();
+							mark = 1;
 						}
 						if (VOUCHER.equals(couponType)) {
 							if (benefitBo.getFace().compareTo(BigDecimal.valueOf(0)) > 0) {
@@ -1178,11 +1179,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 								buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
 							}
 						}
+						//设置项目index已使用金额
+						changeBo.setDiscountedAmount(changeBo.getDiscountedAmount().add(benefitAmount));
 					}
 				}
 			}
 		}
-		return FALSE.getCode();
+		return mark;
 	}
 
 	/**
@@ -2348,7 +2351,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
 	public List<OrderItemUseBo> assignedItemVos(List<OrderDetail> orderDetail) {
 		return orderDetail.stream().map(order -> {
-			OrderItemUseBo bo = OrderItemUseBo.getInstance();
+			OrderItemUseBo bo = OrderItemUseBo.getInstance(order.getQuantity());
 			bo.setOrderDetailId(order.getId());
 			bo.setItemId(order.getBillingItemId());
 			bo.setReceivableAmount(order.getReceivableAmount());
@@ -2775,5 +2778,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		example.createCriteria().andEqualTo("orderId", orderId)
 				.andEqualTo("deleted", FALSE.getCode());
 		return cardBenefitMapper.selectCountByExample(example);
+	}
+
+	private OrderItemChangeBo getItemBenefitByIndex(OrderItemUseBo orderItem, Integer index) {
+		List<OrderItemChangeBo> changeBos = orderItem.getChangeBos();
+		Optional<OrderItemChangeBo> first = changeBos.stream().filter(obj -> index.equals(obj.getIndex())).findFirst();
+		return first.orElse(null);
 	}
 }
