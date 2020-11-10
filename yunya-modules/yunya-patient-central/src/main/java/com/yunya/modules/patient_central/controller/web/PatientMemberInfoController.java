@@ -245,15 +245,16 @@ public class PatientMemberInfoController {
     return patientMemberInfoBiz.expend(model);
   }
 
- /* *//**
-   *  会员卡消费
-   * @param model 消费model
+
+  /**
+   * 会员卡撤销收费
+   * @param model 撤销收费参数模型
    * @return ResponseResult
-   *//*
+   */
   @CurrentUser
-  @ApiOperation("会员卡消费")
+  @ApiOperation("会员卡撤销收费")
   @RequestMapping(value = "/member/expend", method = RequestMethod.POST)
-  public ResponseResult expend(@RequestBody MemberExpendRecordModel model) {
-    return patientMemberInfoBiz.expend(model);
-  }*/
+  public ResponseResult revocationFee(@RequestBody MemberRevocationFeeModel model) {
+    return patientMemberInfoBiz.revocationFee(model);
+  }
 }
