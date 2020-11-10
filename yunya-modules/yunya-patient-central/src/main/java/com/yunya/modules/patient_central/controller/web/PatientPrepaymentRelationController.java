@@ -128,6 +128,21 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
+   * 账单退费
+   *
+   * @param prepaidBillRechargeModel 账单退费
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("账单退费")
+  @PostMapping("/billRefund")
+  public ResponseResult billRefund(@RequestBody PrepaidBillRechargeModel prepaidBillRechargeModel) {
+    patientPrepaymentBiz.billRefund(prepaidBillRechargeModel);
+    return ResponseUtil.success();
+  }
+
+
+  /**
    * 退费
    * @param model 预付款退费
    * @return ResponseResult

@@ -42,7 +42,7 @@ public class PatientOriginTreeVo extends TreeNode {
     /**
      * 二维码地址
      */
-    private String qrCodePath;
+    private String codeUrl;
 
     /**
      * 是否允许操作（编辑、删除）

@@ -97,6 +97,12 @@ public class PrepaidRechargeRecord {
     private Date updTime;
 
     /**
+     * 操作类型
+     */
+    @Column(name = "type")
+    private Integer type;
+
+    /**
      * 充值后当前本金
      */
     @Column(name = "current_recharge_principal")
@@ -108,6 +114,21 @@ public class PrepaidRechargeRecord {
     @Column(name = "current_recharge_bonus")
     private BigDecimal currentRechargeBonus;
 
+    /**
+     * 获取充值类型
+     * @return type
+     */
+    public Integer getType() {
+        return type;
+    }
+
+    /**
+     * 设置操作类型
+     * @param type type
+     */
+    public void setType(Integer type) {
+        this.type = type;
+    }
 
     /**
      *  获取充值后当前本金

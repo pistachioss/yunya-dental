@@ -18,11 +18,15 @@
         <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="current_recharge_principal" property="currentRechargePrincipal" jdbcType="DECIMAL"/>
+        <result column="current_recharge_bonus" property="currentRechargeBonus" jdbcType="DECIMAL"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
     </resultMap>
 
     <!-- 查询充值记录 -->
     <select id="RechargeRecord" resultType="com.yunya.feign.patient_central.domain.vo.web.RechargeRecordVo">
-        select mrrd.id,mrrd.crt_time operatingTime,mrrd.recharge_principal rechargePrincipal,mrrd.recharge_bonus rechargeBonus,mrrd.org_id orgId,mrrd.crt_id operatorId,mrrd.crt_name operatorName,mrrd.remarks
+        select mrrd.id,mrrd.crt_time operatingTime,mrrd.recharge_principal rechargePrincipal,mrrd.recharge_bonus rechargeBonus,mrrd.org_id orgId,mrrd.crt_id operatorId,mrrd.crt_name operatorName,mrrd.remarks,
+               mrrd.current_recharge_principal currentRechargePrincipal,mrrd.current_recharge_bonus currentRechargeBonus,mrrd.type
         from member_recharge_record mrrd
         where mrrd.member_id = #{form.cardNumber}
     </select>

@@ -118,10 +118,10 @@ public class PatientServiceRest {
     }
 
     @CurrentUser
-    @ApiOperation("退费")
-    @PostMapping("/member/refund")
-    public ResponseResult refund(@RequestBody MemberReturnRecordModel model) {
-        patientMemberInfoBiz.refund(model);
+    @ApiOperation("账单退费")
+    @RequestMapping(value = "/billRefund", method = RequestMethod.POST)
+    public ResponseResult billRefund(@RequestBody MemberBillRechargeModel memberBillRechargeModel) {
+        patientMemberInfoBiz.billRefund(memberBillRechargeModel);
         return ResponseUtil.success();
     }
 
@@ -140,13 +140,6 @@ public class PatientServiceRest {
         return patientPrepaymentRelationBiz.expend(model);
     }
 
-    @CurrentUser
-    @ApiOperation("退费")
-    @RequestMapping(value = "/prepayment/refund",method = RequestMethod.POST)
-    public ResponseResult refund(@RequestBody PrepaidMeturnRecordModel model) {
-        patientPrepaymentRelationBiz.refund(model);
-        return ResponseUtil.success();
-    }
 
     @ApiOperation("修改硬件设备密码")
     @RequestMapping(value = "/updPass",method = RequestMethod.POST)

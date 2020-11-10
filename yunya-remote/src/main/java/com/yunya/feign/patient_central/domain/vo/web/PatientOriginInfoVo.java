@@ -40,11 +40,6 @@ public class PatientOriginInfoVo implements Serializable {
     private Integer originType;
 
     /**
-     * 二维码地址
-     */
-    private String qrCodePath;
-
-    /**
      * 是否允许操作（编辑、删除）
      */
     private Boolean allowOperate;
@@ -98,4 +93,9 @@ public class PatientOriginInfoVo implements Serializable {
      * 更新时间
      */
     private Date updTime;
+
+    /**
+     * 二维码url
+     */
+    private String codeUrl;
 }

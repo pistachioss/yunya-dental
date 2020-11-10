@@ -22,6 +22,7 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
+import io.swagger.models.auth.In;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -682,5 +683,27 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       return patientMemberBalanceVo;
     }
     return null;
+  }
+
+  /**
+   * 会员卡账单退费
+   * @param model
+   */
+  public void billRefund(MemberBillRechargeModel model) {
+    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByCardNumber(model.getMemberId());
+    if (patientMemberInfo != null){
+      patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
+      patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
+      patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+      MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+      BeanUtils.copyProperties(model,memberRechargeRecord);
+      memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      memberRechargeRecord.setType(1);
+      memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+      memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
+      memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+      memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+    }
   }
 }

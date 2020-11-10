@@ -25,6 +25,8 @@ import com.yunya.modules.patient_central.mapper.PatientBaseInfoMapper;
 import com.yunya.modules.patient_central.mapper.PatientOriginMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,7 @@ import java.util.List;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@PropertySource("classpath:application.yml")
 public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin> {
 
   /** 注入患者来源Mapper */
@@ -53,6 +56,10 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
 
   /** 注入患者信息Mapper */
   @Autowired private PatientBaseInfoMapper patientBaseInfoMapper;
+
+  /** 获取患者服务端口号 */
+  @Value("${codeUrl.url}")
+  private String servePrort;
 
   /**
    * 患者原来添加
@@ -96,8 +103,22 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
    * @return List<PatientOriginTreeVo>
    */
   public List<PatientOriginTreeVo> initPatientOriginTree() {
-    List<PatientOriginInfoVo> vos = patientOriginMapper.findAll();
-    return initTree(vos);
+    List<PatientOriginInfoVo> patientOriginInfoVos = patientOriginMapper.findAll();
+    if (StringHelper.isNotEmpty(patientOriginInfoVos)){
+      patientOriginInfoVos.forEach(
+              patientOriginInfoVo -> {
+                if (patientOriginInfoVo.getParentId() != 0){
+                    patientOriginInfoVo.setCodeUrl(getCodeUrl(patientOriginInfoVo));
+                }
+              }
+      );
+    }
+    return initTree(patientOriginInfoVos);
+  }
+
+  public String getCodeUrl(PatientOriginInfoVo patientOriginInfoVo){
+    String codeUrl = servePrort+"/#/register?"+"originType="+patientOriginInfoVo.getOriginType()+"&originId="+patientOriginInfoVo.getId();
+    return codeUrl;
   }
 
   /**

@@ -2,10 +2,7 @@ package com.yunya.modules.patient_central.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.domain.model.PatientPrepaymentRelationModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidMeturnRecordModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
@@ -393,7 +390,8 @@ public class PatientPrepaymentRelationBiz
         patientPrepaymentsInfo.setPrepaymentBonus(
             patientPrepaymentsInfo.getPrepaymentBonus().add(model.getBonusAmount()));
         patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
-        PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord(); // 创建消费记录对象
+        // 创建消费记录对象
+        PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
         BeanUtils.copyProperties(model, prepaidExpendRecord);
         // 撤销本金
         prepaidExpendRecord.setExpendPrincipal(model.getPrincipalAmount());
@@ -510,4 +508,26 @@ public class PatientPrepaymentRelationBiz
     }
     return null;
   }
+
+  /**
+   * 账单退费
+   * @param model 退费model
+   */
+    public void billRefund(PrepaidBillRechargeModel model) {
+      PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId());
+      if (patientPrepaymentsInfo != null){
+        patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
+        patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(model.getRechargeBonus()));
+        patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
+        PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
+        BeanUtils.copyProperties(model,prepaidRechargeRecord);
+        prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        prepaidRechargeRecord.setType(1);
+        prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
+        prepaidRechargeRecord.setCurrentRechargePrincipal(prepaidRechargeRecord.getRechargePrincipal());
+        prepaidRechargeRecord.setCurrentRechargeBonus(prepaidRechargeRecord.getRechargeBonus());
+        prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
+      }
+    }
 }

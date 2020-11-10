@@ -162,6 +162,22 @@ public class PatientMemberInfoController {
   }
 
   /**
+   * 账单退费
+   *
+   * @param memberBillRechargeModel 账单退费
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("账单退费")
+  @PostMapping("/billRefund")
+  public ResponseResult billRefund(@RequestBody MemberBillRechargeModel memberBillRechargeModel) {
+    patientMemberInfoBiz.billRefund(memberBillRechargeModel);
+    return ResponseUtil.success();
+  }
+
+
+
+  /**
    * 充值记录
    *
    * @param queryFormform 充值记录QueryForm

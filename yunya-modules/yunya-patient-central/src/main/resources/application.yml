@@ -4,6 +4,9 @@ server:
 var:
   port: 8765
 
+codeUrl:
+  url: http://192.168.31.95:8080
+
 logging:
   level:
     #        tk.mybatis: DEBUG

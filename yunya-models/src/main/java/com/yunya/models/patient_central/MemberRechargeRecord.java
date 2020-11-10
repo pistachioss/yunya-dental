@@ -90,45 +90,66 @@ public class MemberRechargeRecord {
      * 充值后当前本金
      */
     @Column(name = "current_recharge_principal")
-    private BigDecimal currentPrincipal;
+    private BigDecimal currentRechargePrincipal;
 
     /**
      * 充值后当前赠金
      */
     @Column(name = "current_recharge_bonus")
-    private BigDecimal currentBonus;
-
+    private BigDecimal currentRechargeBonus;
 
     /**
-     *  获取充值后当前本金
-     * @return currentRechargePrincipal
+     * 操作类型
+     */
+    @Column(name = "type")
+    private Integer type;
+
+    /**
+     * 获取操作类型
+     * @return type
+     */
+    public Integer getType() {
+        return type;
+    }
+
+    /**
+     * 设置操作类型
+     * @param type 操作类型
+     */
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    /**
+     * 获取当前本金
+     * @return currentRechargePrincipal 当前本金
      */
     public BigDecimal getCurrentRechargePrincipal() {
-        return currentPrincipal;
+        return currentRechargePrincipal;
     }
 
     /**
-     * 设置充值后当前本金
-     * @param currentRechargePrincipal
+     * 设置当前赠金
+     * @param currentRechargePrincipal 设置当前赠金
      */
     public void setCurrentRechargePrincipal(BigDecimal currentRechargePrincipal) {
-        this.currentPrincipal = currentRechargePrincipal;
+        this.currentRechargePrincipal = currentRechargePrincipal;
     }
 
     /**
-     * 获取 充值后当前赠金
-     * @return currentRechargeBonus
+     * 获取当前赠金
+     * @return currentRechargeBonus 当前赠金
      */
     public BigDecimal getCurrentRechargeBonus() {
-        return currentBonus;
+        return currentRechargeBonus;
     }
 
     /**
-     * 设置 充值后当前赠金
-     * @param currentRechargeBonus
+     * 设置当前赠金
+     * @param currentRechargeBonus currentRechargeBonus 当前赠金
      */
     public void setCurrentRechargeBonus(BigDecimal currentRechargeBonus) {
-        this.currentBonus = currentRechargeBonus;
+        this.currentRechargeBonus = currentRechargeBonus;
     }
 
     /**
