@@ -26,6 +26,8 @@ public class CommonConstants {
 
   public static final Integer EX_OTHER_CODE = 500;
 
+  public static final Integer ILLEGAL_PARAMETERS_CODE = 501;
+
   /** 请求头token */
   public static final String TOKEN_HEADER = "Authorization";
 

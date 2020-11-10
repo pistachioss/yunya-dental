@@ -91,6 +91,7 @@ public class PatientBaseInfoModel implements Serializable {
      * 年龄
      */
     @ApiModelProperty(value = "年龄")
+    @Pattern(regexp = "^[1-9]\\d*|0$")
     private Integer age;
 
     /**
