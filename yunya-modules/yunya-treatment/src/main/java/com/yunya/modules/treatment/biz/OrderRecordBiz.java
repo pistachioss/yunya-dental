@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import cn.hutool.core.util.ArrayUtil;
+import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
@@ -59,6 +60,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 就诊其他信息服务调用 */
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+  /** 优惠服务调用 */
+  @Autowired private RemoteDiscountFeign discountFeign;
   /** 就诊记录 */
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
   /** 开单详情 */
@@ -450,7 +453,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (billPayRecordCount > 0) {
       throw new ClientServiceException("调整账单失败，当前账单存在为撤销的支付记录！", PARAMETERS_IS_ILLEGAL);
     }
-
+    // 比较开单明细是否有调整
     Integer orderRecordId = billRecord.getOrderRecordId();
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
@@ -466,10 +469,15 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     String name = BaseContextHandler.getName();
     Integer patientId = billRecord.getPatientId();
     Integer treatmentRecordId = billRecord.getTreatmentRecordId();
-
+    // 前一条调整账单异常处理记录ID
+    Integer preExceptionHandleRecordId =
+        billExceptionHandleRecordMapper.selectPreExceptionHandleRecordId(
+            treatmentRecordId, (byte) 2);
+    // 保存异常处理记录
     BillExceptionHandleRecord exceptionHandleRecord = new BillExceptionHandleRecord();
     exceptionHandleRecord.setOrgId(orgId);
     exceptionHandleRecord.setPatientId(patientId);
+    exceptionHandleRecord.setPreExceptionHandleRecordId(preExceptionHandleRecordId);
     exceptionHandleRecord.setTreatmentRecordId(treatmentRecordId);
     exceptionHandleRecord.setHandledRecordId(treatmentRecordId);
     exceptionHandleRecord.setOperateType((byte) 2);
@@ -477,9 +485,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     exceptionHandleRecord.setCrtId(userId);
     exceptionHandleRecord.setCrtName(name);
     billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
-
-    // todo 将优惠置为不可用
-
+    // 将优惠置为不可用
+    discountFeign.revokeBenefit(orderRecordId);
+    // 保存异常处理明细记录并更新订单明细状态为取消
     Integer handleRecordId = exceptionHandleRecord.getId();
     BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
     handleDetailRecord.setBillHandleRecordId(handleRecordId);
@@ -492,15 +500,16 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           detail.setUptName(name);
           handleDetailRecord.setAssociateRecordId(detail.getId());
           billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
+          orderDetailBiz.updateSelectiveById(detail);
         });
-
+    // 更新订单记录
     OrderRecord orderRecord = new OrderRecord();
     orderRecord.setId(orderRecordId);
     orderRecord.setInservice(false);
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
     int i = mapper.updateByPrimaryKeySelective(orderRecord);
-
+    // 更新账单
     billRecord.setInservice(false);
     billRecord.setUpdId(userId);
     billRecord.setUpdName(name);
@@ -509,7 +518,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 2, BaseBill);
     }
-
+    // 对象转换
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, detailModels);
     BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
@@ -560,6 +569,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
 
   /**
    * 订单处理（门诊端-订单处理）
+   *
    * @param query 参数封装模型
    * @return 返回订单处理列表
    */
@@ -569,37 +579,40 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     Integer[] orgIds = query.getOrgIds();
     PatientLikeFinleQueryForm likeFinleQueryForm = new PatientLikeFinleQueryForm();
     likeFinleQueryForm.setCondition(search);
-    List<PatientBaseInfoVo> patientByNameAndMobile = patientCentralServiceFeign.findPatientByNameAndMobile(likeFinleQueryForm);
+    List<PatientBaseInfoVo> patientByNameAndMobile =
+        patientCentralServiceFeign.findPatientByNameAndMobile(likeFinleQueryForm);
     Integer[] patientArr = new Integer[0];
     if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
       List<Integer> patientIds = new ArrayList<>();
-      patientByNameAndMobile.forEach(patientBaseInfoVo -> {
-        patientIds.add(patientBaseInfoVo.getId());
-      });
+      patientByNameAndMobile.forEach(
+          patientBaseInfoVo -> {
+            patientIds.add(patientBaseInfoVo.getId());
+          });
       patientArr = ArrayUtil.toArray(patientIds, Integer.class);
     }
-    List<OrderProcessVO> orderProcessVOS = mapper.selectOrderProcess(patientArr,orderRecordNum,orgIds);
+    List<OrderProcessVO> orderProcessVOS =
+        mapper.selectOrderProcess(patientArr, orderRecordNum, orgIds);
     if (StringHelper.isNotEmpty(orderProcessVOS)) {
-      orderProcessVOS.forEach(orderProcessVO -> {
-        Integer id = orderProcessVO.getId();
-        if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
-          List<PatientBaseInfoVo> collect = patientByNameAndMobile.stream()
-                  .filter(patientBaseInfoVo -> patientBaseInfoVo.getId().equals(id)).collect(Collectors.toList());
-          PatientBaseInfoVo patientBaseInfoVo = collect.get(0);
-          orderProcessVO.setPatientName(patientBaseInfoVo.getName());
-          orderProcessVO.setPatientMobile(patientBaseInfoVo.getMobile());
-        } else {
-          PatientBaseInfo patientInfoById = patientCentralServiceFeign.findPatientInfoById(id);
-          if (null != patientInfoById) {
-            orderProcessVO.setPatientName(patientInfoById.getName());
-            orderProcessVO.setPatientMobile(patientInfoById.getMobile());
-          }
-        }
-      });
+      orderProcessVOS.forEach(
+          orderProcessVO -> {
+            Integer id = orderProcessVO.getId();
+            if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
+              List<PatientBaseInfoVo> collect =
+                  patientByNameAndMobile.stream()
+                      .filter(patientBaseInfoVo -> patientBaseInfoVo.getId().equals(id))
+                      .collect(Collectors.toList());
+              PatientBaseInfoVo patientBaseInfoVo = collect.get(0);
+              orderProcessVO.setPatientName(patientBaseInfoVo.getName());
+              orderProcessVO.setPatientMobile(patientBaseInfoVo.getMobile());
+            } else {
+              PatientBaseInfo patientInfoById = patientCentralServiceFeign.findPatientInfoById(id);
+              if (null != patientInfoById) {
+                orderProcessVO.setPatientName(patientInfoById.getName());
+                orderProcessVO.setPatientMobile(patientInfoById.getMobile());
+              }
+            }
+          });
     }
     return orderProcessVOS;
   }
-
-
-
 }
