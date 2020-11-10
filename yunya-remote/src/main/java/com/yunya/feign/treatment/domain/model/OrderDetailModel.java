@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -29,11 +30,14 @@ public class OrderDetailModel implements Serializable {
 
   @ApiModelProperty(value = "开单项目ID(非门诊价目表（商品）项目ID)", required = true)
   @NotNull(message = "开单项目ID不能为空！")
+  @Max(message = "输入的开单项目ID超过了允许输入的最大整数", value = 2147483647)
+  @Min(message = "输入的开单项目ID必须为非零正整数",value = 1)
   private Integer billingItemId;
 
   @ApiModelProperty(value = "数量", required = true)
   @NotNull(message = "开单项目数量不能为空！")
   @Min(value = 1, message = "开单项目数量不能小于1！")
+  @Max(message = "输入的开单项目数量超过了允许输入的最大整数", value = 2147483647)
   private Integer quantity;
 
   @ApiModelProperty("牙位（多个用'，'隔开）")
