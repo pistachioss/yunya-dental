@@ -2218,7 +2218,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				//可作用在项目的兑换券卡券
 				List<Integer> voucherIdsForItem = voucherVoList.stream().filter(obj -> TRUE.equals(obj.getItemUsable()))
 						.map(PatientVoucherVo::getCardId).collect(toList());
-				for (Integer voucherId : usePackageIds) {
+				for (Integer voucherId : useVoucherIds) {
 					if (!voucherIdsForItem.contains(voucherId)) {
 						errorBo.setError(DiscountError.PATIENT_NOT_OWN_VOUCHER);
 						Card card = mapper.selectByPrimaryKey(voucherId);
