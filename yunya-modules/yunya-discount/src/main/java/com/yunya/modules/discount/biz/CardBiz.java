@@ -59,7 +59,7 @@ import com.yunya.feign.discount.domain.vo.PatientShareCardVo;
 import com.yunya.feign.discount.domain.vo.PatientVoucherVo;
 import com.yunya.feign.discount.domain.vo.ViewAllocateVo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.MasertMemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
@@ -180,7 +180,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	@Resource
 	private RemoteSystemServiceFeign systemServiceFeign;
 	@Resource
-	private PatientCentralServiceFeign patientFeign;
+	private RemotePatientCentralServiceFeign patientFeign;
 	@Resource
 	private CouponCommonInfoMapper couponMapper;
 	@Resource

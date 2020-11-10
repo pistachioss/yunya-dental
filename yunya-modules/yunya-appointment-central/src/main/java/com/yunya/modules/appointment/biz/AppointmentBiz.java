@@ -18,7 +18,7 @@ import com.yunya.feign.employee_attend.vo.WorkDayVO;
 import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.expand.model.response.EnableEmployeeRes;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -57,7 +57,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -91,7 +90,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
     /** 患者中心服务 */
     @Autowired
-    private PatientCentralServiceFeign patientCentralServiceFeign;
+    private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
     /** 预约操作记录服务 */
     @Autowired
@@ -781,7 +780,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             }
         }
         // 设置患者信息
-        PatientBaseInfo patientBaseInfo = this.patientCentralServiceFeign.findPatientInfoById(appointmentVo.getPatientId());
+        PatientBaseInfo patientBaseInfo = this.remotePatientCentralServiceFeign.findPatientInfoById(appointmentVo.getPatientId());
         if (null != patientBaseInfo) {
             // 设置患者名字
             String name = patientBaseInfo.getName();
@@ -1037,7 +1036,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     appointConflictInfoVo.setAbbreviation(organizationInfo.getAbbreviation());
                 }
                 // 设置患者名字
-                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(patientId);
+                PatientBaseInfo patientInfo = this.remotePatientCentralServiceFeign.findPatientInfoById(patientId);
                 if (null != patientInfo) {
                     appointConflictInfoVo.setPatientName(patientInfo.getName());
                 }
@@ -1088,7 +1087,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 }
                 Integer conflictPatientId = appointConflictInfoVo.getPatientId();
                 // 设置患者名字
-                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(conflictPatientId);
+                PatientBaseInfo patientInfo = this.remotePatientCentralServiceFeign.findPatientInfoById(conflictPatientId);
                 if (null != patientInfo) {
                     appointConflictInfoVo.setPatientName(patientInfo.getName());
                 }
@@ -1149,7 +1148,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     appointConflictInfoVo.setAssistantName(assistantInfo.getName());
                 }
                 // 设置患者名字
-                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(conflictPatientId);
+                PatientBaseInfo patientInfo = this.remotePatientCentralServiceFeign.findPatientInfoById(conflictPatientId);
                 if (null != patientInfo) {
                     appointConflictInfoVo.setPatientName(patientInfo.getName());
                 }
@@ -1198,7 +1197,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 }
                 Integer conflictPatientId = appointConflictInfoVo.getPatientId();
                 // 设置患者名字
-                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(conflictPatientId);
+                PatientBaseInfo patientInfo = this.remotePatientCentralServiceFeign.findPatientInfoById(conflictPatientId);
                 if (null != patientInfo) {
                     appointConflictInfoVo.setPatientName(patientInfo.getName());
                 }
@@ -1253,7 +1252,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 }
                 Integer conflictPatientId = appointConflictInfoVo.getPatientId();
                 // 设置患者名字
-                PatientBaseInfo patientInfo = this.patientCentralServiceFeign.findPatientInfoById(conflictPatientId);
+                PatientBaseInfo patientInfo = this.remotePatientCentralServiceFeign.findPatientInfoById(conflictPatientId);
                 if (null != patientInfo) {
                     appointConflictInfoVo.setPatientName(patientInfo.getName());
                 }
@@ -1317,7 +1316,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
         // 设置预约类型(0-初诊；1-复诊)
         // 根据患者是否有病历号来判断患者预约类型
-        PatientBaseInfo patientBaseInfo = patientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
+        PatientBaseInfo patientBaseInfo = remotePatientCentralServiceFeign.findPatientInfoById(appointment.getPatientId());
         String medicalNumber = patientBaseInfo.getMedicalNumber();
         if (StringHelper.isEmpty(medicalNumber)){
             // 病历号为空，初诊
@@ -1575,7 +1574,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private void setPatientInfo(AppointmentUnDonePatientInfoVO vo) {
         Integer patientId = vo.getPatientId();
-        PatientTotalInfoVo patientData = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+        PatientTotalInfoVo patientData = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
         if (null != patientData) {
             vo.setPatientName(patientData.getName());
             vo.setMobile(patientData.getMobile());
@@ -1986,7 +1985,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 appointmentPatientCardVos.forEach(appointmentPatientCardVo -> {
                     Integer appointId = appointmentPatientCardVo.getId();
                     Integer patientId = appointmentPatientCardVo.getPatientId();
-                    PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+                    PatientBaseInfo patientInfo = remotePatientCentralServiceFeign.findPatientInfoById(patientId);
                     if (patientInfo != null) {
                         appointmentPatientCardVo.setAge(patientInfo.getAge());
                         appointmentPatientCardVo.setGender(patientInfo.getGender());
@@ -2050,7 +2049,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 设置患者详细信息
         Integer patientId = build.getPatientId();
         if (patientId != null){
-            PatientTotalInfoVo patientInfo = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+            PatientTotalInfoVo patientInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
             if (patientInfo != null){
                 build.setAge(patientInfo.getAge());
                 try {

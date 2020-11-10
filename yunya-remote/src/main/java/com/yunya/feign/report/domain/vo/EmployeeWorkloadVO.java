@@ -23,7 +23,7 @@ import java.math.BigDecimal;
 public class EmployeeWorkloadVO implements Serializable {
   /** 员工ID */
   @ApiModelProperty("员工ID")
-  private Integer userId;
+  private Integer employeeId;
   /** 岗位 */
   @Excel(name = "岗位")
   @ApiModelProperty("岗位")
