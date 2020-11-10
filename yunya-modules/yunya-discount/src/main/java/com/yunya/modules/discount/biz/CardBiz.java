@@ -1228,8 +1228,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 		}
 		//排序（截止时间 asc）
-		Comparator<PatientBenefitBo> comparator = Comparator.comparing(PatientBenefitBo::getUseDeadline)
-				.thenComparing(PatientBenefitBo::getMixable, Comparator.reverseOrder());
+		Comparator<PatientBenefitBo> comparator = Comparator.comparing(PatientBenefitBo::getUseDeadline, Comparator.nullsLast(LocalDate::compareTo))
+				.thenComparing(obj -> {
+					return patientId.equals(obj.getOwnerId()) ? 0 : 1;
+				});
 		benefitBos.sort(comparator);
 		//患者优惠信息转换
 		return benefitBoConvertVo(patientId, benefitBos);
@@ -1241,11 +1243,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		Set<Integer> orderItemIds = itemMap.get(itemType);
 		//查询套餐券优惠项目ids
 		List<SpecialPackageCouponItem> items = getPackageItemInfo(benefitBo.getCouponId(), itemType);
-		Set<Integer> itemIds = items.stream().map(SpecialPackageCouponItem::getItemId).collect(toSet());
-		//查询卡券使用数量信息
-		List<CouponItemUseBo> list = mapper.getCouponItemUseInfo(benefitBo.getCouponId(), benefitBo.getCardId(), itemType, couponType);
-		//设置优惠券是否可以作用订单项目
-		return setItemUsableStatus(itemIds, orderItemIds, benefitBo, list);
+		if (CollectionUtils.isNotEmpty(items) && CollectionUtils.isNotEmpty(orderItemIds)) {
+			Set<Integer> itemIds = items.stream().map(SpecialPackageCouponItem::getItemId).collect(toSet());
+			//查询卡券使用数量信息
+			List<CouponItemUseBo> list = mapper.getCouponItemUseInfo(benefitBo.getCouponId(), benefitBo.getCardId(), itemType, couponType);
+			//设置优惠券是否可以作用订单项目
+			return setItemUsableStatus(itemIds, orderItemIds, benefitBo, list);
+		}
+		return false;
 	}
 
 	private boolean checkExchangeAndSetUsable(Integer itemType, Map<Integer, Set<Integer>> itemMap, PatientBenefitBo benefitBo,
@@ -1254,11 +1259,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		Set<Integer> orderItemIds = itemMap.get(itemType);
 		//查询套餐券优惠项目ids
 		List<PackageCouponItem> items = getExchangeItemInfo(benefitBo.getCouponId(), itemType);
-		Set<Integer> itemIds = items.stream().map(PackageCouponItem::getItemId).collect(toSet());
-		//查询卡券使用数量信息
-		List<CouponItemUseBo> list = mapper.getCouponItemUseInfo(benefitBo.getCouponId(), benefitBo.getCardId(), itemType, couponType);
-		//设置优惠券是否可以作用订单项目
-		return setItemUsableStatus(itemIds, orderItemIds, benefitBo, list);
+		if (CollectionUtils.isNotEmpty(items) && CollectionUtils.isNotEmpty(orderItemIds)) {
+			Set<Integer> itemIds = items.stream().map(PackageCouponItem::getItemId).collect(toSet());
+			//查询卡券使用数量信息
+			List<CouponItemUseBo> list = mapper.getCouponItemUseInfo(benefitBo.getCouponId(), benefitBo.getCardId(), itemType, couponType);
+			//设置优惠券是否可以作用订单项目
+			return setItemUsableStatus(itemIds, orderItemIds, benefitBo, list);
+		}
+		return false;
 	}
 
 	private boolean setItemUsableStatus(Set<Integer> itemIds, Set<Integer> orderItemIds, PatientBenefitBo benefitBo,
@@ -2757,6 +2765,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
 	/**
 	 * 手动解锁
+	 *
 	 * @param requestId
 	 * @param lockPrefix
 	 */

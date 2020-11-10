@@ -1,6 +1,5 @@
 package com.yunya.modules.discount.biz;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.discount.domain.bo.ItemUseBenefitBo;
 import com.yunya.feign.discount.domain.bo.OrderItemUseBo;
@@ -13,6 +12,7 @@ import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -51,8 +51,6 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.yunya.framework.common.constant.BusinessConstants.*;
@@ -171,20 +169,9 @@ public class BenefitBiz {
 	 */
 	@Transactional
 	public ResponseResult saveAuthBenefit(AuthDiscountBenefitModel model) {
-		boolean locked = false;
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		Integer orderId = model.getOrderId();
-		String lockKey = Joiner.on(":").join(RedisConstants.LOCK_SUBMIT_BENEFIT, orderId);
-		String lockVal = String.valueOf(loginUserId);
 		try {
-			// 1. 锁定产品
-			locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
-			if (!locked) {
-				log.warn("【锁定失败】订单[{}]正在提交优惠，不能重复提交", orderId);
-				return ResponseUtil.error(DiscountError.ORDER_ON_SUBMITTING);
-			}
-			log.info("【锁定成功】准备提交订单使用优惠...");
-
 			SysEmployee employee = systemServiceFeign.findSysEmployeeById(model.getAuthorizedId());
 			if (employee == null || employee.getDiscount()) {
 				log.warn("【授权折扣优惠】授权人没有权限进行授权折扣");
@@ -233,10 +220,9 @@ public class BenefitBiz {
 			}
 			return ResponseUtil.success();
 		} finally {
-			if (locked) {
-				log.info("【解锁成功】");
-				redisUtils.unlock(lockKey, lockVal);
-			}
+			//解锁卡券
+			cardBiz.manualUnLock(model.getPatientId(), RedisConstants.LOCK_CHOICE_CARD);
+			log.info("【授权折扣-卡券选择优惠解锁成功】");
 		}
 	}
 
@@ -291,6 +277,10 @@ public class BenefitBiz {
 						ItemUseBenefitVo benefitVo = new ItemUseBenefitVo();
 						benefitVo.setBenefitType(AUTH_BENEFIT_TYPE);
 						benefitVo.setBenefitAmount(obj.getBenefitAmount());
+						benefitVo.setBenefitId(summary.getAuthorizedId());
+						SysUserInfoDetail author = summary.getAuthorizedId() == null ? null :
+								systemServiceFeign.findSysUserEmployeeInfoByUserId(summary.getAuthorizedId());
+						benefitVo.setBenefitName(author == null ? null : author.getName());
 						return benefitVo;
 					}).collect(toList());
 					vo.setItemBenefitList(itemBenefits);
@@ -417,25 +407,6 @@ public class BenefitBiz {
 	}
 
 	/**
-	 * 解锁卡券资源
-	 * @param patientId 患者
-	 */
-	private void unlockCard(Integer patientId) {
-		Set<String> keys = redisUtils.keys(RedisConstants.LOCK_CHOICE_CARD + "*");
-		log.info("【收费-优惠】收费使用优惠完成，开始释放卡券资源");
-		//需要删除的key
-		if (CollectionUtils.isNotEmpty(keys)) {
-			for (String delCardId : keys) {
-				String lockKey = Joiner.on(":").join(RedisConstants.LOCK_CHOICE_CARD, String.valueOf(delCardId));
-				String lockVal = String.valueOf(patientId);
-				// 释放患者取消选择的卡券的锁
-				redisUtils.unlock(lockKey, lockVal);
-			}
-			log.info("【收费-优惠】解锁完成");
-		}
-	}
-
-	/**
 	 * 查询订单总优惠信息
 	 * @param orderId
 	 * @return
@@ -467,30 +438,4 @@ public class BenefitBiz {
 		mapper.updateByExampleSelective(t, example);
 	}
 
-	/**
-	 * 组合优惠信息
-	 *
-	 * @param model 患者选择优惠信息
-	 * @return set
-	 */
-	protected List<Integer> assembleCardIds(PatientOrderBenefitModel model) {
-		List<Integer> cardIds = Lists.newArrayList();
-		Integer discountId = model.getDiscountId();
-		if (discountId != null) {
-			cardIds.add(discountId);
-		}
-		List<Integer> exchangeIds = model.getExchangeIds();
-		if (CollectionUtils.isNotEmpty(exchangeIds)) {
-			exchangeIds.forEach(exchangeId -> cardIds.add(exchangeId));
-		}
-		List<Integer> packageIds = model.getPackageIds();
-		if (CollectionUtils.isNotEmpty(packageIds)) {
-			packageIds.forEach(packageId -> cardIds.add(packageId));
-		}
-		List<Integer> voucherIds = model.getVoucherIds();
-		if (CollectionUtils.isNotEmpty(voucherIds)) {
-			voucherIds.forEach(voucherId -> cardIds.add(voucherId));
-		}
-		return cardIds;
-	}
 }

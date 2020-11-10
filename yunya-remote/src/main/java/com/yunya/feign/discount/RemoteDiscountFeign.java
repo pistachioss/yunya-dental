@@ -44,4 +44,8 @@ public interface RemoteDiscountFeign {
     @ApiOperation(value = "查询订单优惠明细")
     @GetMapping("/benefit/{orderId}")
     public List<OrderBenefitDetailVo> getOrderBenefitD(@PathVariable(value = "orderId") Integer orderId);
+
+    @ApiOperation(value = "撤销优惠")
+    @GetMapping("/benefit/revoke/{orderId}")
+    public ResponseResult revokeBenefit(@PathVariable(value = "orderId") Integer orderId);
 }
