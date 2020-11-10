@@ -79,7 +79,7 @@ public class BillExceptionHandleRecordBiz
       case 2:
         resultMap =
             billExceptionHandleDetailRecordBiz.findBillOrderDetailAdjustDetails(
-                handledRecordId, billHandleRecordId);
+                handledRecordId, billHandleRecordId, preExceptionHandleRecordId);
         break;
         // 账单退费
       case 3:

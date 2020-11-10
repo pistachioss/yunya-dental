@@ -37,13 +37,13 @@
     </select>
 
     <!-- 根据账单收费记录ID和操作类型查询上次账单异常处理记录ID -->
-    <select id="selectPreExpectionHandleRecordId" resultType="integer">
+    <select id="selectPreExceptionHandleRecordId" resultType="integer">
 		SELECT
-            ifNull(behr.id,0) as id
+            ifNull(behr.id, 0) as id
         FROM
             bill_exception_handle_record behr
         WHERE
-            behr.handled_record_id = #{billPayRecordId}
+            behr.handled_record_id = #{handledRecordId}
             AND behr.operate_type = #{operateType}
         ORDER BY
             behr.crt_time DESC

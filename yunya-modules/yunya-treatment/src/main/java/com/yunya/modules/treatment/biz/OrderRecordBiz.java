@@ -451,7 +451,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     billPayRecord.setInservice(true);
     int billPayRecordCount = billPayRecordMapper.selectCount(billPayRecord);
     if (billPayRecordCount > 0) {
-      throw new ClientServiceException("调整账单失败，当前账单存在为撤销的支付记录！", PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("调整账单失败，当前账单存在未撤销的支付记录！", PARAMETERS_IS_ILLEGAL);
     }
     // 比较开单明细是否有调整
     Integer orderRecordId = billRecord.getOrderRecordId();
@@ -463,7 +463,6 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (orderDetailsData.size() == detailModels.size()) {
       compareOrderDetails(orderDetailsData, detailModels);
     }
-
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
@@ -487,29 +486,30 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
     // 将优惠置为不可用
     discountFeign.revokeBenefit(orderRecordId);
-    // 保存异常处理明细记录并更新订单明细状态为取消
+    // 保存异常处理明细记录
     Integer handleRecordId = exceptionHandleRecord.getId();
     BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
     handleDetailRecord.setBillHandleRecordId(handleRecordId);
     handleDetailRecord.setCrtId(userId);
     handleDetailRecord.setCrtName(name);
+    handleDetailRecord.setAssociateRecordId(orderRecordId);
+    billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
+    // 更新订单明细为无效
     orderDetailsData.forEach(
         detail -> {
           detail.setInservice(false);
           detail.setUpdId(userId);
           detail.setUptName(name);
-          handleDetailRecord.setAssociateRecordId(detail.getId());
-          billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
           orderDetailBiz.updateSelectiveById(detail);
         });
-    // 更新订单记录
+    // 更新订单记录为无效
     OrderRecord orderRecord = new OrderRecord();
     orderRecord.setId(orderRecordId);
     orderRecord.setInservice(false);
     orderRecord.setUpdId(userId);
     orderRecord.setUpdName(name);
     int i = mapper.updateByPrimaryKeySelective(orderRecord);
-    // 更新账单
+    // 更新账单为无效
     billRecord.setInservice(false);
     billRecord.setUpdId(userId);
     billRecord.setUpdName(name);
@@ -518,9 +518,10 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 2, BaseBill);
     }
-    // 对象转换
+    // 订单明细对象转换
     List<OrderDetail> orderDetails =
         orderDetailBiz.transferModelToEntity(orgId, treatmentRecordId, detailModels);
+    // 保存调整后订单记录
     BigDecimal totalAmount = orderDetailBiz.calculateTotalAmount(orderDetails);
     orderRecord.setId(null);
     orderRecord.setPatientId(patientId);
@@ -534,6 +535,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     orderRecord.setCrtName(name);
     int result = mapper.insertSelective(orderRecord);
     orderRecordId = orderRecord.getId();
+    // 保存调整后订单明细
     for (OrderDetail detail : orderDetails) {
       detail.setOrderRecordId(orderRecordId);
       orderDetailBiz.insertSelective(detail);
