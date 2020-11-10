@@ -12,7 +12,6 @@ import com.yunya.feign.treatment.domain.vo.BillRefundOrderDetailVO;
 import com.yunya.feign.treatment.domain.vo.BillRefundPaymentVO;
 import com.yunya.feign.treatment.domain.vo.BillRefundRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.utils.Builder;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.tariff.BaseOralTariff;
@@ -89,21 +88,16 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
    */
   public BillRefundGroupInfoVO findBillRefundDetailByBillRefundRecordId(
       Integer billRefundRecordId) {
+    BillRefundGroupInfoVO resultData = new BillRefundGroupInfoVO();
     BillRefundRecord billRefundRecord = mapper.selectByPrimaryKey(billRefundRecordId);
     if (null != billRefundRecord) {
-      BillRefundGroupInfoVO resultData =
-          Builder.of(BillRefundGroupInfoVO::new)
-              .with(BillRefundGroupInfoVO::setBillRefundRecordId, billRefundRecordId)
-              .with(BillRefundGroupInfoVO::setReason, billRefundRecord.getReason())
-              .with(
-                  BillRefundGroupInfoVO::setRefundCertificate,
-                  billRefundRecord.getRefundCertificate())
-              .build();
+      resultData.setBillRefundRecordId(billRefundRecordId);
+      resultData.setReason(billRefundRecord.getReason());
+      resultData.setRefundCertificate(billRefundRecord.getRefundCertificate());
       // 设置账单退费详情、退费方式
       setBillRefundGroupInfoValue(resultData, billRefundRecordId);
-      return resultData;
     }
-    return new BillRefundGroupInfoVO();
+    return resultData;
   }
 
   /**

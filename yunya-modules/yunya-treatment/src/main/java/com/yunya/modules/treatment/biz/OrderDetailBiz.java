@@ -1,6 +1,6 @@
 package com.yunya.modules.treatment.biz;
 
-import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.google.common.collect.Lists;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
@@ -8,12 +8,14 @@ import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
+import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariff;
@@ -33,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
 
 /**
  * 简介: 开单明细业务层（开单明细列表查询、添加商品、删除开单明细）
@@ -46,10 +49,10 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Transactional(rollbackFor = Exception.class)
 public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
+  /** 缓存调用 */
+  @Autowired private RedisUtils redisUtils;
   /** 系统管理服务 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
-  /** 优惠服务调用 */
-  @Autowired private RemoteDiscountFeign discountFeign;
   /** 基础价目表 */
   @Autowired private BaseTariffBiz baseTariffBiz;
   /** 商品项目 */
@@ -151,18 +154,23 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @return
    */
   public List<OrderDetailChargeVO> findChargeOrderDetailList(Integer orderRecordId) {
+    String redisKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
+    String redisValue = redisUtils.get(redisKey);
+    if (StringHelper.isNotBlank(redisValue)) {
+      throw new ClientServiceException("收费失败，当前就诊在收费中！", PARAMETERS_IS_ILLEGAL);
+    }
     List<OrderDetailChargeVO> chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
-    // 查询订单优惠记录
-    
+    // 设置10分钟（该段时间内不允许收费，解锁）
+    redisUtils.set(redisKey, orderRecordId, 600);
     return chargeOrderDetailList;
   }
 
   /**
-   * 根据开单记录ID获取订单明细列表
+   * 根据开单记录ID获取订单明细列表（含优惠信息）
    *
    * @param orderRecordId 开单记录ID
    */
-  private List<OrderDetailChargeVO> getChargeOrderDetailList(Integer orderRecordId) {
+  public List<OrderDetailChargeVO> getChargeOrderDetailList(Integer orderRecordId) {
     List<OrderDetailChargeVO> resultList = mapper.selectChargeOrderDetailList(orderRecordId);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
@@ -195,6 +203,9 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
                   systemServiceFeign.findSysUserEmployeeInfoByUserId(executorId);
               vo.setExecutorName(null != employeeInfo ? employeeInfo.getName() : "--");
             }
+            // 设置订单明细卡券匹配信息
+            List<PrivilegeCouponInfoVO> couponInfos = Lists.newArrayList();
+            vo.setDiscountAppliesCoupons(couponInfos);
           });
     }
     return resultList;

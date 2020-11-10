@@ -118,18 +118,28 @@ public class PatientServiceRest {
     }
 
     @CurrentUser
-    @ApiOperation("账单退费")
-    @RequestMapping(value = "/billRefund", method = RequestMethod.POST)
+    @ApiOperation("会员账单退费")
+    @RequestMapping(value = "/member/billRefund", method = RequestMethod.POST)
     public ResponseResult billRefund(@RequestBody MemberBillRechargeModel memberBillRechargeModel) {
         patientMemberInfoBiz.billRefund(memberBillRechargeModel);
         return ResponseUtil.success();
     }
+
 
     @CurrentUser
     @ApiOperation("预付款充值")
     @RequestMapping(value = "/prepayment/recharge", method = RequestMethod.POST)
     public ResponseResult recharge(@RequestBody PrepaidRechargeModel memberRechargeModel) {
         this.patientPrepaymentRelationBiz.recharge(memberRechargeModel);
+        return ResponseUtil.success();
+    }
+
+
+    @CurrentUser
+    @ApiOperation("预付款账单退费")
+    @PostMapping("/prepayment/billRefund")
+    public ResponseResult billRefund(@RequestBody PrepaidBillRechargeModel prepaidBillRechargeModel) {
+        patientPrepaymentRelationBiz.billRefund(prepaidBillRechargeModel);
         return ResponseUtil.success();
     }
 

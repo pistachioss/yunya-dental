@@ -3,7 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -52,7 +52,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 患者服务调用 */
-  @Autowired private PatientCentralServiceFeign patientCentralServiceFeign;
+  @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
   /** 预约服务调用 */
   @Autowired private RemoteAppointmentFeign appointmentFeign;
   /** 就诊记录 */
@@ -189,7 +189,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
    */
   private void setPatientInfo(WaitingPatientInfoVO vo) {
     Integer patientId = vo.getPatientId();
-    PatientTotalInfoVo patientData = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+    PatientTotalInfoVo patientData = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
     if (null != patientData) {
       vo.setPatientName(patientData.getName());
       vo.setMobile(patientData.getMobile());

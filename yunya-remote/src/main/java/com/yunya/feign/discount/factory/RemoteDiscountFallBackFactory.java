@@ -40,4 +40,9 @@ public class RemoteDiscountFallBackFactory implements RemoteDiscountFeign {
     public List<OrderBenefitDetailVo> getOrderBenefitD(Integer orderId) {
         return null;
     }
+
+    @Override
+    public ResponseResult revokeBenefit(Integer orderId) {
+        return null;
+    }
 }

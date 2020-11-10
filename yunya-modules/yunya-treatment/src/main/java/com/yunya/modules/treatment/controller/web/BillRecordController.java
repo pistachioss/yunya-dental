@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.controller.web;
 import com.yunya.feign.treatment.domain.model.BillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BillRecordBiz;
@@ -56,6 +57,7 @@ public class BillRecordController {
    * @param model 账单退费参数模型
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("账单退费")
   @PostMapping(value = "/refund", name = "账单退费")

@@ -58,6 +58,8 @@
         od.price,
         od.quantity,
         od.receivable_amount as receivableAmount,
+        od.receivable_amount as actualAmount,
+        100 as discountRate,
         od.tooth_bit as toothBit,
         od.executor_id as executorId,
         od.source_type as sourceType,

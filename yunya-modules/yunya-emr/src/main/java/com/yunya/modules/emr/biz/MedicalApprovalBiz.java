@@ -27,7 +27,7 @@ import com.yunya.feign.emr.domain.vo.MedicalApplyPageVo;
 import com.yunya.feign.emr.domain.vo.MedicalApprovePageVo;
 import com.yunya.feign.emr.domain.vo.MedicalChangeApplyPageVo;
 import com.yunya.feign.emr.domain.vo.MedicalChangeApprovePageVo;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -119,7 +119,7 @@ public class MedicalApprovalBiz extends BaseBiz<ApprovalRecordMapper, ApprovalRe
     @Resource
     private MedicalCommonRecordBiz commonRecordBiz;
     @Resource
-    private PatientCentralServiceFeign patientFeign;
+    private RemotePatientCentralServiceFeign patientFeign;
     @Resource
     private RemoteTreatmentServiceFeign treatmentFeign;
     @Resource

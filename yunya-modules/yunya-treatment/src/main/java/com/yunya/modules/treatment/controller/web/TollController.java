@@ -5,6 +5,7 @@ import com.yunya.feign.treatment.domain.model.TollModel;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.TollBiz;
@@ -53,6 +54,7 @@ public class TollController {
    * @param model 收费参数
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("确认收费")
   @PostMapping("/confirm")
@@ -67,6 +69,7 @@ public class TollController {
    * @param model 收费参数
    * @return
    */
+  @RepeatSubmit
   @CurrentUser
   @ApiOperation("收欠费")
   @PostMapping(value = "/collect/debt", name = "收欠费")
@@ -81,7 +84,7 @@ public class TollController {
    * @param orderRecordId 开单记录ID
    * @return
    */
-  @ApiOperation("点击收费修改账单状态")
+  @ApiOperation("点击收费修改账单状态为收费中-（接口作废）")
   @GetMapping(value = "/change/{orderRecordId}", name = "点击收费修改账单状态")
   public ResponseResult<T> changeOrderRecordStatus(
       @PathVariable(value = "orderRecordId") Integer orderRecordId) {

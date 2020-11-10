@@ -342,7 +342,7 @@
                   case
                       when `cci`.`type` = 0 then
                           (select
-                                if(isnull(activation_deadline), date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
+                                if(isnull(activation_deadline), if(`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')),
                                     if(activation_deadline &lt;
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
                                         activation_deadline,
@@ -351,7 +351,7 @@
                            where `coupon_id` = `c`.coupon_id)
                       when `cci`.`type` = 1 then
                           (select
-                               if(isnull(activation_deadline), date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
+                               if(isnull(activation_deadline), if(`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')),
                                     if(activation_deadline &lt;
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
                                         activation_deadline,
@@ -360,7 +360,7 @@
                            where `coupon_id` = `c`.`coupon_id`)
                       when `cci`.`type` = 2 then
                           (select
-                               if(isnull(activation_deadline), date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
+                               if(isnull(activation_deadline), if(`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')),
                                     if(activation_deadline &lt;
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
                                         activation_deadline,
@@ -369,7 +369,7 @@
                            where `coupon_id` = `c`.`coupon_id`)
                       when `cci`.`type` = 3 then
                           (select
-                               if(isnull(activation_deadline), date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
+                               if(isnull(activation_deadline), if(`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `effective_days` day), '%Y-%m-%d')),
                                     if(activation_deadline &lt;
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`effective_days`, 0) day), '%Y-%m-%d'),
                                         activation_deadline,
@@ -386,6 +386,34 @@
                            where `bd`.`card_id` = `c`.`id`
                              and `bd`.`benefit_type` = 1
                              and `bd`.`is_deleted` = 0)
+                       when `cci`.`type` = 2 then
+                          (select
+                                if(isnull(count(`bd`.`card_id`)) = 1,
+                                   null,
+                                   count(`bd`.`card_id`)
+                                       &lt; (select sum(count)
+                                          from `package_coupon_item` `pci`
+                                          where `pci`.`coupon_id` = `cci`.`id`
+                                          group by `pci`.`coupon_id`)
+                                   )
+                          from `card_benefit` `bd`
+                          where `bd`.`card_id` = `c`.`id`
+                            and `bd`.`benefit_type` = 1
+                            and `bd`.`is_deleted` = 0)
+                      when `cci`.`type` = 3 then
+                          (select
+                                if(isnull(count(`bd`.`card_id`)) = 1,
+                                    null,
+                                    count(`bd`.`card_id`)
+                                        &lt; (select sum(count)
+                                           from `special_package_coupon_item` `spci`
+                                           where `spci`.`coupon_id` = `cci`.`id`
+                                           group by `spci`.`coupon_id`)
+                                  )
+                          from `card_benefit` `bd`
+                          where `bd`.`card_id` = `c`.`id`
+                            and `bd`.`benefit_type` = 1
+                            and `bd`.`is_deleted` = 0)
                       else null
                       end      as `itemUseable`,
                   (select
@@ -439,7 +467,7 @@
                 or (`temp`.`useWay` = 1 and
                     (`temp`.`itemUseable` = 1 or isnull(`temp`.`itemUseable`) = 1))))
           and `temp`.`useClinicCount` > 0
-          and `temp`.`useDeadline` >= date_format(now(), '%Y-%m-%d')
+          and (isnull(`temp`.`useDeadline`) = 1 or `temp`.`useDeadline` >= date_format(now(), '%Y-%m-%d'))
     </select>
 
     <select id="getUseClinicIdStr" resultType="com.yunya.feign.discount.domain.bo.UseClinicBo">

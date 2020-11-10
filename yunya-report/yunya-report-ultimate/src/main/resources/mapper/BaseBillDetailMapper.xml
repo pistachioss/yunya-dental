@@ -104,6 +104,38 @@
     </select>
     <!-- 根据条件查询员工工作量列表 -->
     <select id="selectEmployeeWorkloadList" resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
-
+        SELECT
+            be.user_id AS employeeId,
+            bup.postNames AS postNames,
+            be.employee_name AS employeeName,
+            actualWorkload,
+            receivedWorkload,
+            supplementWorkload,
+            refundWorkload,
+            processingFee,
+            largeMaterialCost,
+            be.work_amount AS baseWorkload,
+            be.bonus_coefficient AS bonusCoefficient,
+            actualBonusBase,
+            receivedBonusBase,
+            actualBonus,
+            receivedBonus
+        FROM
+            base_employee be
+            LEFT JOIN (
+            SELECT bup.user_id, GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS postNames
+            FROM base_user_post bup
+            <where>
+                <if test="query.orgId != null">
+                    and bup.company_id = #{query.orgId}
+                </if>
+                <if test="query.employeeIds != null and query.employeeIds.length > 0">
+                    and bup.user_id in
+                    <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            GROUP BY bup.user_id ) bup ON be.user_id = bup.user_id
     </select>
 </mapper>
