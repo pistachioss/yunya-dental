@@ -28,4 +28,33 @@
         order_record ord
       WHERE ord.org_id = #{orgId} AND DATE_FORMAT(ord.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d')
     </select>
+
+    <!-- 订单处理查询（门诊端-订单处理） -->
+    <select id="selectOrderProcess" resultType="com.yunya.feign.treatment.domain.vo.OrderProcessVO">
+        select ord.id,ord.org_id as orgId,
+            ord.patient_id as patientId,
+            ord.treatment_record_id as treatmentRecordId,
+            ord.order_record_num as orderRecordNum,
+            ord.status,ord.total_amount as totalAmount,
+            date_format(ord.crt_time,'%Y-%m-%d') as crtTime,
+            ord.crt_name as crtNames
+        from order_record ord
+        <where>
+            <if test="orderRecordNum != null and orderRecordNum != ''">
+                and ord.order_record_num = #{orderRecordNum}
+            </if>
+            <if test="orgIds != null and orgIds.length &gt; 0">
+                and ord.org_id in
+                <foreach collection="orgIds" open="(" separator="," close=")" index="i">
+                    #{orgIds[i]}
+                </foreach>
+            </if>
+            <if test="patientIds != null and patientIds.length &gt; 0">
+                and ord.patient_id in
+                <foreach collection="patientIds" open="(" separator="," close=")" index="pIdx">
+                    #{patientIds[pIdx]}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>
