@@ -4,8 +4,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.BillExceptionHandleRecordBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,11 +35,8 @@ public class BillExceptionHandleRecordController {
    * @param billHandleRecordId 账单异常处理记录ID
    * @return
    */
-  @ApiOperation("账单异常处理记录详情查询")
-  @ApiImplicitParams({
-    @ApiImplicitParam(name = "billHandleRecordId", value = "账单异常处理记录ID", required = true)
-  })
-  @GetMapping(value = "/detail/{billHandleRecordId}", name = "账单异常处理记录详情查询")
+  @ApiOperation("根据账单异常处理记录ID查询账单异常处理详情")
+  @GetMapping(value = "/detail/{billHandleRecordId}", name = "根据账单异常处理记录ID查询账单异常处理详情")
   public ResponseResult<Map<String, Object>> findBillHandleDetailById(
       @PathVariable(value = "billHandleRecordId") Integer billHandleRecordId) {
     Map<String, Object> resultMap =

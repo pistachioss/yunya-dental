@@ -143,34 +143,47 @@ public class BasePatientMemberOccurLogBiz
   public void pullOccurLogData(PullForm form) {
     Integer type = form.getDataType();
     if (type == 0) {
-      pullMemberRecharge(form, type);
+      // （基础表-充值表）充值
+      pullMemberRecharge(form, type,1,0);
+      // （基础表-充值表）撤销
+      pullMemberRecharge(form, type,4,1);
+      // （基础表-充值表）账单退费
+      pullMemberRecharge(form, type,5,2);
+      // 消费
       pullMemberExpendRecord(form, type, 2);
-      pullMemberReturnRecord(form, type);
-      pullMemberExpendRecord(form, type, 4);
+      // 退费
+      pullMemberReturnRecord(form, type,3);
     }
     if (type == 1) {
-      pullPrepaymentRecharge(form, type);
+      // （基础表-充值表）充值
+      pullPrepaymentRecharge(form, type,1,0);
+      // （基础表-充值表）撤销
+      pullPrepaymentRecharge(form, type,4,1);
+      // （基础表-充值表）账单退费
+      pullPrepaymentRecharge(form, type,5,2);
+      // 消费
       pullPrepaymentExpendRecord(form, type, 2);
-      pullPrepaymentReturn(form, type);
-      pullPrepaymentExpendRecord(form, type, 4);
+      // 退费
+      pullPrepaymentReturn(form, type,3);
     }
   }
 
   /**
    * 会员-批量拉取-充值记录
-   *
-   * @param form
-   * @param type
+   * @param form 条件
+   * @param type 会员类型
+   * @param occurType 会员log操作类型
+   * @param rechargeType 充值表中 充值分类类型
    */
-  public void pullMemberRecharge(PullForm form, Integer type) {
+  public void pullMemberRecharge(PullForm form, Integer type, Integer occurType,Integer rechargeType) {
     List<MemberRechargeRecord> memberRechargeRecordList =
-        (List<MemberRechargeRecord>) getMemberInfoLog(form, 1);
+        (List<MemberRechargeRecord>) getMemberInfoLog(form, occurType,rechargeType);
     if (StringHelper.isNotEmpty(memberRechargeRecordList)) {
       memberRechargeRecordList.forEach(
           memberRechargeRecord -> {
             Integer id = memberRechargeRecord.getId();
-            mapper.deleteByPrimaryKeyAndtype(id, type, 1);
-            BasePatientMemberOccurLog memberOccurLog = getMemberRechargeRecordInfoLog(id, type, 1);
+            mapper.deleteByPrimaryKeyAndtype(id, type, occurType);
+            BasePatientMemberOccurLog memberOccurLog = getMemberRechargeRecordInfoLog(id, type, occurType);
             if (memberOccurLog != null) {
               mapper.insertSelective(memberOccurLog);
             }
@@ -186,7 +199,7 @@ public class BasePatientMemberOccurLogBiz
    */
   public void pullMemberExpendRecord(PullForm form, Integer type, Integer occurType) {
     List<MemberExpendRecord> memberExpendRecordList =
-        (List<MemberExpendRecord>) getMemberInfoLog(form, occurType);
+        (List<MemberExpendRecord>) getMemberInfoLog(form, occurType,null);
     if (StringHelper.isNotEmpty(memberExpendRecordList)) {
       memberExpendRecordList.forEach(
           memberExpendRecord -> {
@@ -207,9 +220,9 @@ public class BasePatientMemberOccurLogBiz
    * @param form
    * @param type
    */
-  public void pullMemberReturnRecord(PullForm form, Integer type) {
+  public void pullMemberReturnRecord(PullForm form, Integer type,Integer occurType) {
     List<MemberReturnRecord> memberReturnRecordList =
-        (List<MemberReturnRecord>) getMemberInfoLog(form, 3);
+        (List<MemberReturnRecord>) getMemberInfoLog(form,occurType,null);
     if (StringHelper.isNotEmpty(memberReturnRecordList)) {
       memberReturnRecordList.forEach(
           memberReturnRecord -> {
@@ -229,10 +242,10 @@ public class BasePatientMemberOccurLogBiz
    * @param form 拉取时间和type
    * @return List<MemberRechargeRecord>
    */
-  public List<? extends Object> getMemberInfoLog(PullForm form, Integer occurType) {
-    if (occurType == 1) {
+  public List<? extends Object> getMemberInfoLog(PullForm form, Integer occurType,Integer rechargeType) {
+    if (occurType == 1 || occurType == 4 || occurType == 5) {
       Example emp = new Example(MemberRechargeRecord.class);
-      Example example = getExample(form, emp);
+      Example example = getRevocationExample(form, emp, rechargeType);
       List<MemberRechargeRecord> memberRechargeRecordList =
           memberRechargeRecordMapper.selectByExample(example);
       if (StringHelper.isNotEmpty(memberRechargeRecordList)) {
@@ -262,18 +275,6 @@ public class BasePatientMemberOccurLogBiz
       }
       return null;
     }
-
-    if (occurType == 4) {
-      Example emp = new Example(MemberExpendRecord.class);
-      Example example = getRevocationExample(form, emp, 1);
-      List<MemberExpendRecord> memberExpendRecordList =
-          memberExpendRecordMapper.selectByExample(example);
-      if (StringHelper.isNotEmpty(memberExpendRecordList)) {
-        return memberExpendRecordList;
-      }
-      return null;
-    }
-
     return null;
   }
 
@@ -418,6 +419,7 @@ public class BasePatientMemberOccurLogBiz
     switch (operationType) {
         // 充值
       case 1:
+      case 4:
         BasePatientMemberOccurLog memberRechargeLog =
             getMemberRechargeRecordInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberRechargeLog)) {
@@ -427,7 +429,6 @@ public class BasePatientMemberOccurLogBiz
         break;
         // 消费
       case 2:
-      case 4:
         BasePatientMemberOccurLog memberExpendLog =
             getMemberExpendAndRevocation(id, type, operationType);
         if (StringHelper.isNotNull(memberExpendLog)) {
@@ -456,9 +457,9 @@ public class BasePatientMemberOccurLogBiz
    * @param form 拉取时间
    * @param type 会员类型
    */
-  private void pullPrepaymentRecharge(PullForm form, Integer type) {
+  private void pullPrepaymentRecharge(PullForm form, Integer type,Integer occurType,Integer rechargeType) {
     List<PrepaidRechargeRecord> prepaidRechargeRecordList =
-        (List<PrepaidRechargeRecord>) getPrepaymentInfoLog(form, 1);
+        (List<PrepaidRechargeRecord>) getPrepaymentInfoLog(form, occurType,rechargeType);
     if (StringHelper.isNotEmpty(prepaidRechargeRecordList)) {
       prepaidRechargeRecordList.forEach(
           prepaidRechargeRecord -> {
@@ -480,7 +481,7 @@ public class BasePatientMemberOccurLogBiz
    */
   private void pullPrepaymentExpendRecord(PullForm form, Integer type, Integer occurType) {
     List<PrepaidExpendRecord> prepaidExpendRecordList =
-        (List<PrepaidExpendRecord>) getPrepaymentInfoLog(form, occurType);
+        (List<PrepaidExpendRecord>) getPrepaymentInfoLog(form, occurType,null);
     if (StringHelper.isNotEmpty(prepaidExpendRecordList)) {
       prepaidExpendRecordList.forEach(
           prepaidExpendRecord -> {
@@ -501,9 +502,9 @@ public class BasePatientMemberOccurLogBiz
    * @param form
    * @param type
    */
-  private void pullPrepaymentReturn(PullForm form, Integer type) {
+  private void pullPrepaymentReturn(PullForm form, Integer type,Integer occurType) {
     List<PrepaidReturnRecord> prepaidReturnRecordList =
-        (List<PrepaidReturnRecord>) getPrepaymentInfoLog(form, 3);
+        (List<PrepaidReturnRecord>) getPrepaymentInfoLog(form, occurType,null);
     if (StringHelper.isNotEmpty(prepaidReturnRecordList)) {
       prepaidReturnRecordList.forEach(
           prepaidReturnRecord -> {
@@ -523,10 +524,10 @@ public class BasePatientMemberOccurLogBiz
    * @param form 拉取时间和type
    * @return List<MemberRechargeRecord>
    */
-  public List<? extends Object> getPrepaymentInfoLog(PullForm form, Integer occurType) {
-    if (occurType == 1) {
+  public List<? extends Object> getPrepaymentInfoLog(PullForm form, Integer occurType,Integer rechargeType) {
+    if (occurType == 1 || occurType == 4 || occurType == 5) {
       Example emp = new Example(PrepaidRechargeRecord.class);
-      Example example = getExample(form, emp);
+      Example example = getRevocationExample(form, emp, rechargeType);
       List<PrepaidRechargeRecord> prepaidRechargeRecordList =
           prepaidRechargeRecordMapper.selectByExample(example);
       if (StringHelper.isNotEmpty(prepaidRechargeRecordList)) {
@@ -556,18 +557,6 @@ public class BasePatientMemberOccurLogBiz
       }
       return null;
     }
-
-    if (occurType == 4) {
-      Example emp = new Example(PrepaidExpendRecord.class);
-      Example example = getRevocationExample(form, emp, 1);
-      List<PrepaidExpendRecord> memberRechargeRecordList =
-          prepaidExpendRecordMapper.selectByExample(example);
-      if (StringHelper.isNotEmpty(memberRechargeRecordList)) {
-        return memberRechargeRecordList;
-      }
-      return null;
-    }
-
     return null;
   }
 
@@ -712,8 +701,9 @@ public class BasePatientMemberOccurLogBiz
    */
   private void addPrepaymentOccurLog(Integer id, Integer type, Integer operationType) {
     switch (operationType) {
-        // 充值
+        // 充值 //撤销
       case 1:
+      case 4:
         BasePatientMemberOccurLog prepaidRechargeRecord =
             getPrepaidRechargeRecord(id, type, operationType);
         if (StringHelper.isNotNull(prepaidRechargeRecord)) {
@@ -726,7 +716,6 @@ public class BasePatientMemberOccurLogBiz
         break;
         // 消费
       case 2:
-      case 4:
         BasePatientMemberOccurLog memberOccurLog =
             getPrepaidExpendAndRevocation(id, type, operationType);
         if (StringHelper.isNotNull(memberOccurLog)) {

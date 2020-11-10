@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
+import com.yunya.feign.treatment.domain.vo.BillPaymentAdjustDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
@@ -46,16 +47,20 @@ public class BillExceptionHandleRecordBiz
     if (null == handleRecord) {
       throw new ClientServiceException("请选择正确的账单异常处理记录！", PARAMETERS_IS_ILLEGAL);
     }
+    // 被处理数据ID
     Integer handledRecordId = handleRecord.getHandledRecordId();
+    // 上一条异常处理记录ID
     Integer preExceptionHandleRecordId = handleRecord.getPreExceptionHandleRecordId();
+    // 异常处理类型
     Byte operateType = handleRecord.getOperateType();
     Map<String, Object> resultMap = new HashMap<>(16);
     switch (operateType) {
         // 调整入账方式
       case 0:
-        resultMap =
+        BillPaymentAdjustDetailVO billPaymentAdjustDetail =
             billExceptionHandleDetailRecordBiz.findBillPaymentAdjustDetail(
-                handledRecordId, billHandleRecordId,preExceptionHandleRecordId);
+                handledRecordId, billHandleRecordId, preExceptionHandleRecordId);
+        resultMap.put("billPaymentAdjustDetail", billPaymentAdjustDetail);
         break;
         // 账单撤销
       case 1:
