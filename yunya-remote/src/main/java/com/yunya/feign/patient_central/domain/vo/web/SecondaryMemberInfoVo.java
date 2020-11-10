@@ -54,4 +54,9 @@ public class SecondaryMemberInfoVo implements Serializable {
      * 折扣率（价目表自动调价的折扣率）
      */
     private Float rate;
+
+    /**
+     * 会员卡图片
+     */
+    private String pictureCode;
 }

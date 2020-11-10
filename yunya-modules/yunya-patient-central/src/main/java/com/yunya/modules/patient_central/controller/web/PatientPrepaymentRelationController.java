@@ -186,5 +186,17 @@ public class PatientPrepaymentRelationController {
     return ResponseUtil.success(patientPrepaymentBiz.expendList(queryForm));
   }
 
+  /**
+   * 会员卡撤销收费
+   * @param model 撤销收费参数模型
+   * @return ResponseResult
+   */
+  @CurrentUser
+  @ApiOperation("预付款撤销收费")
+  @RequestMapping(value = "revocationFee", method = RequestMethod.POST)
+  public ResponseResult revocationFee(@RequestBody PrepaidRevocationFeeModel model) {
+    return patientPrepaymentBiz.revocationFee(model);
+  }
+
 
 }

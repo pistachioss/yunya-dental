@@ -1176,7 +1176,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							if (benefitBo.getFace().compareTo(BigDecimal.valueOf(0)) > 0) {
 								benefitAmount = receivableAmount.compareTo(benefitBo.getFace()) >= 0 ? benefitBo.getFace() : receivableAmount;
 								buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
-								return TRUE.getCode();
 							}
 						}
 					}
@@ -1445,8 +1444,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					memberCardVo.setOwner(obj.getSecondaryName());
 					memberCardVo.setMemberCardRate(null);
 					memberCardVo.setMemberCardRate(BigDecimal.valueOf(obj.getRate()).setScale(2, BigDecimal.ROUND_HALF_UP));
-					//todo
-					memberCardVo.setPath(null);
+					memberCardVo.setPath(obj.getPictureCode());
 					return memberCardVo;
 				}).collect(toList());
 			}
@@ -1457,8 +1455,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				//卡号
 				memberCardVo.setMemberCardNumber(masertMemberInfoVo.getMasterCardNumber());
 				memberCardVo.setMemberCardRate(BigDecimal.valueOf(masertMemberInfoVo.getRate()).setScale(2, BigDecimal.ROUND_HALF_UP));
-				//todo
-				memberCardVo.setPath(null);
+				memberCardVo.setPath(masertMemberInfoVo.getPictureCode());
 				memberCardVos.add(memberCardVo);
 			}
 		}
