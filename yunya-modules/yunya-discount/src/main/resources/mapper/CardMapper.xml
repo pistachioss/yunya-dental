@@ -316,7 +316,9 @@
             `temp`.`limitCount`
         from (select
                   `c`.`id`         as `cardId`,
-                  `c`.`card_number`,
+                  if(`c`.`org_id` = 0,
+                        `c`.`third_card_number`,
+                        `c`.`card_number`) as `card_number`,
                   `c`.`patient_id` as `ownerId`,
                   `cci`.id         as `couponId`,
                   `cci`.`name`     as `couponName`,

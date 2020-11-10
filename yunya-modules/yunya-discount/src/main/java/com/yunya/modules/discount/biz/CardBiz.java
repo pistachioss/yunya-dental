@@ -1043,11 +1043,19 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 						BigDecimal memberPrice = BigDecimal.ZERO;
 						if (ZERO.equals(orderItem.getType())) {
 							ClinicTariffMemberPrice tariff = treatmentServiceFeign.findClinicTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
-							memberPrice = tariff.getDiscountPrice();
+							if (tariff == null) {
+								memberPrice = originalPrice.multiply(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP));
+							} else {
+								memberPrice = tariff.getDiscountPrice();
+							}
 						}
 						if (ONE.equals(orderItem.getType())) {
 							ClinicOralTariffMemberPrice oral = treatmentServiceFeign.findClinicOralTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
-							memberPrice = oral.getDiscountPrice();
+							if (oral == null) {
+								memberPrice = originalPrice.multiply(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP));
+							} else {
+								memberPrice = oral.getDiscountPrice();
+							}
 						}
 						//订单项目id对应的可用的优惠券信息
 						benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -1121,7 +1129,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				Integer couponType = benefitBo.getCouponType();
 				if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
 					//订单项目原价
-					BigDecimal originalPrice = orderItem.getReceivableAmount();
+					BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()),4, BigDecimal.ROUND_HALF_UP);
 					////订单项目已优惠金额
 					BigDecimal oldBenefitAmount = orderItem.getBenefitAmount() == null ? BigDecimal.ZERO : orderItem.getBenefitAmount();
 					//订单项目应收金额（原价 - 已优惠金额）
@@ -1145,11 +1153,19 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							BigDecimal memberPrice = BigDecimal.ZERO;
 							if (ZERO.equals(orderItem.getType())) {
 								ClinicTariffMemberPrice tariff = treatmentServiceFeign.findClinicTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
-								memberPrice = tariff.getDiscountPrice();
+								if (tariff == null) {
+									memberPrice = originalPrice.multiply(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP));
+								} else {
+									memberPrice = tariff.getDiscountPrice();
+								}
 							}
 							if (ONE.equals(orderItem.getType())) {
 								ClinicOralTariffMemberPrice oral = treatmentServiceFeign.findClinicOralTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
-								memberPrice = oral.getDiscountPrice();
+								if (oral == null) {
+									memberPrice = originalPrice.multiply(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP));
+								} else {
+									memberPrice = oral.getDiscountPrice();
+								}
 							}
 							//订单项目id对应的可用的优惠券信息
 							benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -1229,7 +1245,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 		}
 		//排序（截止时间 asc）
-		Comparator<PatientBenefitBo> comparator = Comparator.comparing(PatientBenefitBo::getUseDeadline, Comparator.nullsLast(String::compareTo))
+		Comparator<PatientBenefitBo> comparator = Comparator.comparing(PatientBenefitBo::getUseDeadline)
 				.thenComparing(obj -> patientId.equals(obj.getOwnerId()) ? 0 : 1);
 		benefitBos.sort(comparator);
 		//患者优惠信息转换
@@ -1745,8 +1761,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	/**
 	 * 自有平台卡券激活
 	 *
-	 * @param patientId patientId
-	 * @param form form
+	 * @param patientId   patientId
+	 * @param form        form
 	 * @param loginUserId loginUserId
 	 */
 	private void updateOwnActiveCard(Integer patientId, OwnCardActiveForm form, Integer loginUserId) {
@@ -1944,8 +1960,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private RestErrorBo checkCardForOtherActive(String cardNumber) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		Example example = new Example(Card.class);
-		example.createCriteria().andEqualTo("cardNumber", cardNumber)
-				.andNotEqualTo("orgId", ZERO);
+		example.createCriteria().andEqualTo("cardNumber", cardNumber);
+//				.andNotEqualTo("orgId", ZERO);
 		Card card = mapper.selectOneByExample(example);
 		if (card != null) {
 			log.warn("【第三方平台激活失败】自有平台卡券{}不允许在第三方平台激活", cardNumber);
@@ -2588,6 +2604,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 						PatientUseBenefitBo memberCard = BeanCopierUtils.generalCopyBean(obj, PatientUseBenefitBo.class);
 						//会员卡类型id
 						memberCard.setCardId(obj.getMemberCardId());
+						memberCard.setDiscountRate(obj.getMemberCardRate());
 						memberCard.setCouponName(obj.getMemberCardName());
 						memberCard.setCouponType(MEMBER_CARD.getCode());
 						memberCard.setMixable(TRUE.getCode());
