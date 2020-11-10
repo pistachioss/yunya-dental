@@ -300,6 +300,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       vo.setAge(patientData.getAge());
       vo.setBirthday(patientData.getBirthday());
       vo.setPatientRemark(patientData.getRemarks());
+      vo.setPatientKind(patientData.getPatientKindName());
       String medicalNumber = patientData.getMedicalNumber();
       vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
       vo.setAllergen(patientData.getAllergens());
@@ -702,6 +703,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /**
    * 查询指定时间段内每个医生每天患者就诊人数
+   *
    * @param form 查询条件表单
    * @return 返回实体列表
    */
@@ -709,8 +711,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer dentistId = form.getDentistId();
     Date startDate = form.getStartDate();
     Date endDate = form.getEndDate();
-    return mapper.treatInfoForMonth(dentistId,startDate,endDate);
+    return mapper.treatInfoForMonth(dentistId, startDate, endDate);
   }
-
-
 }
