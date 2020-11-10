@@ -118,4 +118,14 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public ResponseResult billRefund(PrepaidBillRechargeModel prepaidBillRechargeModel) {
         return null;
     }
+
+    @Override
+    public ResponseResult revocationFee(MemberRevocationFeeModel model) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult revocationFee(PrepaidRevocationFeeModel model) {
+        return null;
+    }
 }
