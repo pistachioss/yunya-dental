@@ -27,5 +27,5 @@ public class FileForm {
    * 文档
    */
   @ApiModelProperty("文档")
-  private List<String> docs;
+  private List<FileInfo> docs;
 }

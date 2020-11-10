@@ -20,7 +20,7 @@ public class PatientCardBo implements Serializable {
     private Integer productTypeId;
     private Integer saleChannelId;
     private Integer useWay;
-    private LocalDate useDeadline;
+    private String useDeadline;
     private LocalDate activeDate;
     private Integer share;
     private Integer cardOwner;
