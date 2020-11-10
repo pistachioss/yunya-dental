@@ -28,7 +28,7 @@ public class PatientCardBaseVo implements Serializable {
     @ApiModelProperty(value = "使用方式")
     private String useWayName;
     @ApiModelProperty(value = "使用截止时间")
-    private LocalDate useDeadline;
+    private String useDeadline;
     @ApiModelProperty(value = "激活时间")
     private LocalDate activeDate;
 }

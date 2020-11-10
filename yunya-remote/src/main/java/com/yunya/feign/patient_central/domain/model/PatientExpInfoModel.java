@@ -4,6 +4,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Pattern;
 import java.io.Serializable;
 
 /**
@@ -70,6 +71,7 @@ public class PatientExpInfoModel implements Serializable {
      * 每日刷牙次数
      */
     @ApiModelProperty(value = "每日刷牙次数")
+    @Pattern(regexp = "^[1-9]\\d*|0$")
     private Integer brushTimes;
 
     /**
@@ -88,12 +90,14 @@ public class PatientExpInfoModel implements Serializable {
      * 烟龄
      */
     @ApiModelProperty(value = "烟龄")
+    @Pattern(regexp = "^[1-9]\\d*|0$")
     private Byte smokingAge;
 
     /**
      * 每日吸烟数量
      */
     @ApiModelProperty(value = "每日吸烟数量")
+    @Pattern(regexp = "^[1-9]\\d*|0$")
     private Integer smokingNum;
 
     /**

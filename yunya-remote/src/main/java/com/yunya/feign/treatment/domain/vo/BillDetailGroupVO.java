@@ -18,7 +18,7 @@ import java.util.List;
 @ToString
 public class BillDetailGroupVO implements Serializable {
   /** 开单明细列表 */
-  private List<OrderDetailVO> orderDetails;
+  private List<OrderDetailChargeVO> orderDetails;
 
   /** 收费记录列表 */
   private List<BillPayRecordVO> billPayRecords;

@@ -1,9 +1,9 @@
 package com.yunya.feign.discount.domain.bo;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.io.*;
-import java.time.*;
+import java.io.Serializable;
 
 /**
  * @author xiangyang
@@ -19,7 +19,7 @@ public class PatientBenefitBo implements Serializable {
     private String couponName;
     private Integer mixable;
     private Integer useWay;
-    private LocalDate useDeadline;
+    private String useDeadline;
     private Integer couponType;
     private Integer itemUsable;
     private String path;

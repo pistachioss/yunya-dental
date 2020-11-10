@@ -3,7 +3,7 @@ package com.yunya.modules.treatment.other.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -41,7 +41,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -62,7 +61,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
 
     /** 注入患者服务feign */
     @Autowired
-    private PatientCentralServiceFeign patientCentralServiceFeign;
+    private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
     /** 注入系统基础服务feign */
     @Autowired
@@ -276,7 +275,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 组合患者信息
         Integer patientId = visitingRecordVo.getPatientId();
         if (patientId != null) {
-            PatientTotalInfoVo patientTotalInfo = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+            PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
             if (patientTotalInfo != null){
                 visitingRecordVo.setPatientName(patientTotalInfo.getName());
                 visitingRecordVo.setMobile(patientTotalInfo.getMobile());
@@ -326,7 +325,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             }
         }
         // 设置患者过敏源
-        PatientTotalInfoVo patientTotalInfo = this.patientCentralServiceFeign.findPatientTotalInfo(patientId);
+        PatientTotalInfoVo patientTotalInfo = this.remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
         if (patientTotalInfo != null) {
             visitingRecordVo.setAllergen(patientTotalInfo.getAllergensDescriptions());
         }
@@ -345,7 +344,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 组合患者信息
         Integer patientId = visitingRecord.getPatientId();
         if (patientId != null) {
-            PatientTotalInfoVo patientTotalInfo = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+            PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
             if (patientTotalInfo != null){
                 build.setPatientName(patientTotalInfo.getName());
                 build.setMobile(patientTotalInfo.getMobile());

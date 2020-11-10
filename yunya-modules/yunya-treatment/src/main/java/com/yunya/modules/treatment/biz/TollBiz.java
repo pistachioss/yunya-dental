@@ -6,9 +6,10 @@ import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.AuthItemBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
+import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -31,6 +32,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
@@ -54,7 +56,7 @@ public class TollBiz {
   /** 系统关联服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 患者服务调用 */
-  @Autowired private PatientCentralServiceFeign patientCentralServiceFeign;
+  @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
   /** 优惠服务调用 */
   @Autowired private RemoteDiscountFeign discountFeign;
   /** 开单记录 */
@@ -80,7 +82,7 @@ public class TollBiz {
    */
   public List<OrderDetailChargeVO> matchOrderTailPrivilege(OrderPrivilegeQuery query) {
     Integer orderRecordId = query.getOrderRecordId();
-    List<OrderDetailChargeVO> detailList = orderDetailBiz.findChargeOrderDetailList(orderRecordId);
+    List<OrderDetailChargeVO> detailList = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
     if (StringHelper.isEmpty(detailList)) {
       throw new ClientServiceException("适用优惠失败，未查询到当前就诊开单数据！", PARAMETERS_IS_ILLEGAL);
     }
@@ -90,13 +92,11 @@ public class TollBiz {
     // 校验优惠参数
     checkPrivilegeParam(discountType, generalDiscountModel, accreditDiscountModel);
     switch (discountType) {
-      case 0:
-        // todo 返回无优惠信息订单明细列表
-        break;
       case 1:
-        // todo 匹配订单普通优惠
-        matchGeneralDiscountOrderDetailValue();
+        // 匹配卡券优惠
+        matchGeneralDiscountOrderDetailValue(orderRecordId, detailList, generalDiscountModel);
         break;
+        // 匹配授权折扣
       case 2:
         matchAccreditDiscountOrderDetailValue(detailList, accreditDiscountModel);
         break;
@@ -106,7 +106,82 @@ public class TollBiz {
     return detailList;
   }
 
-  private void matchGeneralDiscountOrderDetailValue() {}
+  /**
+   * 匹配普通折扣订单详情信息列表
+   *
+   * @param orderRecordId 订单记录ID
+   * @param detailList 订单详情列表
+   * @param generalDiscountModel 卡券列表
+   */
+  private void matchGeneralDiscountOrderDetailValue(
+      Integer orderRecordId,
+      List<OrderDetailChargeVO> detailList,
+      GeneralDiscountModel generalDiscountModel) {
+    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
+    PatientChooseBenefitForm form = new PatientChooseBenefitForm();
+    form.setPatientId(orderRecord.getPatientId());
+    form.setOrderId(orderRecordId);
+    form.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+    form.setMemberCardId(generalDiscountModel.getMemberTypeId());
+    form.setDiscountId(generalDiscountModel.getDiscountCouponId());
+    List<Integer> voucherIds = Lists.newArrayList();
+    List<Integer> exchangeIds = Lists.newArrayList();
+    List<Integer> packageIds = Lists.newArrayList();
+    List<CouponDiscountInfoModel> discountInfoModels =
+        generalDiscountModel.getCouponDiscountInfoModels();
+    setCouponListValue(discountInfoModels, voucherIds, exchangeIds, packageIds);
+    form.setVoucherIds(voucherIds);
+    form.setExchangeIds(exchangeIds);
+    form.setPackageIds(packageIds);
+    ResponseResult<PatientOrderBenefitVo> responseResult = discountFeign.choiceBenefit(form);
+    PatientOrderBenefitVo resultData = responseResult.getData();
+    // 卡券优惠为空
+    if (null == resultData) {
+      throw new ClientServiceException(responseResult.getMsg(), responseResult.getStatus());
+    }
+    List<PatientItemBenefitVo> itemList = resultData.getItemList();
+    for (OrderDetailChargeVO vo : detailList) {
+      for (PatientItemBenefitVo benefitVo : itemList) {
+        BigDecimal receivableAmount = vo.getReceivableAmount();
+        BigDecimal actualAmount = vo.getActualAmount();
+        List<PrivilegeCouponInfoVO> discountAppliesCoupon = vo.getDiscountAppliesCoupons();
+        if (vo.getOrderDetailId().equals(benefitVo.getOrderDetailId())) {
+          BigDecimal discountAmount = benefitVo.getItemBenefitAmount();
+          actualAmount = actualAmount.subtract(discountAmount);
+          // 设置折扣率
+          vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+          // 设置订单明细卡券匹配信息
+          List<ItemUseBenefitVo> benefitList = benefitVo.getItemBenefitList();
+          if (StringHelper.isNotEmpty(benefitList)) {
+            setPrivilegeCouponInfoValue(discountAppliesCoupon, benefitList);
+          }
+        }
+        vo.setActualAmount(actualAmount);
+        vo.setDiscountAppliesCoupons(discountAppliesCoupon);
+      }
+    }
+  }
+
+  /**
+   * 设置订单卡券优惠信息
+   *
+   * @param discountAppliesCoupon 订单卡券优惠匹配信息
+   * @param benefitList 匹配卡券列表
+   */
+  private void setPrivilegeCouponInfoValue(
+      List<PrivilegeCouponInfoVO> discountAppliesCoupon, List<ItemUseBenefitVo> benefitList) {
+    benefitList.forEach(
+        benefitVo -> {
+          PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
+          couponInfoVO.setBenefitId(benefitVo.getBenefitId());
+          Integer benefitType = benefitVo.getBenefitType();
+          couponInfoVO.setCouponType(
+              0 == benefitType ? Integer.valueOf(99) : benefitVo.getCouponType());
+          couponInfoVO.setBenefitName(benefitVo.getBenefitName());
+          couponInfoVO.setBenefitAmount(benefitVo.getBenefitAmount());
+          discountAppliesCoupon.add(couponInfoVO);
+        });
+  }
 
   /**
    * 匹配授权折扣订单详情信息
@@ -118,32 +193,34 @@ public class TollBiz {
       List<OrderDetailChargeVO> detailList, AccreditDiscountModel accreditDiscountModel) {
     List<AccreditDiscountDetailModel> models =
         accreditDiscountModel.getAccreditDiscountDetailModels();
-    detailList.forEach(
-        vo ->
-            models.stream()
-                .filter(model -> vo.getOrderDetailId().equals(model.getOrderDetailId()))
-                .map(AccreditDiscountDetailModel::getActualAmount)
-                .forEachOrdered(
-                    actualAmount -> {
-                      vo.setActualAmount(actualAmount);
-                      BigDecimal receivableAmount = vo.getReceivableAmount();
-                      // 设置折扣率
-                      vo.setDiscountRate(
-                          actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_DOWN));
-                      // 设置优惠匹配信息
-                      List<PrivilegeCouponInfoVO> discountAppliesCoupon = Lists.newArrayList();
-                      PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
-                      Integer warrantId = accreditDiscountModel.getWarrantId();
-                      couponInfoVO.setBenefitId(warrantId);
-                      couponInfoVO.setCouponType((byte) 5);
-                      SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
-                      if (null != employee) {
-                        couponInfoVO.setBenefitName(employee.getName());
-                      }
-                      couponInfoVO.setBenefitAmount(receivableAmount.subtract(actualAmount));
-                      discountAppliesCoupon.add(couponInfoVO);
-                      vo.setDiscountAppliesCoupons(discountAppliesCoupon);
-                    }));
+    detailList.stream()
+        .<Consumer<? super AccreditDiscountDetailModel>>map(
+            vo ->
+                model -> {
+                  List<PrivilegeCouponInfoVO> discountAppliesCoupon =
+                      vo.getDiscountAppliesCoupons();
+                  if (vo.getOrderDetailId().equals(model.getOrderDetailId())) {
+                    BigDecimal actualAmount = model.getActualAmount();
+                    vo.setActualAmount(actualAmount);
+                    BigDecimal receivableAmount = vo.getReceivableAmount();
+                    // 设置折扣率
+                    vo.setDiscountRate(
+                        actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+                    // 设置优惠匹配信息
+                    PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
+                    Integer warrantId = accreditDiscountModel.getWarrantId();
+                    couponInfoVO.setBenefitId(warrantId);
+                    couponInfoVO.setCouponType(5);
+                    SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
+                    if (null != employee) {
+                      couponInfoVO.setBenefitName(employee.getName());
+                    }
+                    couponInfoVO.setBenefitAmount(receivableAmount.subtract(actualAmount));
+                    discountAppliesCoupon.add(couponInfoVO);
+                  }
+                  vo.setDiscountAppliesCoupons(discountAppliesCoupon);
+                })
+        .forEach(models::forEach);
   }
 
   /**
@@ -174,7 +251,7 @@ public class TollBiz {
     BigDecimal outstandingAmount = model.getOutstandingAmount();
     checkTotalChargeAndActualReceivedAmount(totalCharge, actualReceivableAmount, outstandingAmount);
     // 开始收费
-    redisUtils.set(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId, 300);
+    // redisUtils.set(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId, 300);
     Integer patientId = orderRecord.getPatientId();
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
@@ -629,10 +706,10 @@ public class TollBiz {
         throw new ClientServiceException("收费失败，未填写发票编号！", PARAMETERS_IS_ILLEGAL);
       }
     }
-    String redisValue = redisUtils.get(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+    /*  String redisValue = redisUtils.get(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     if (StringHelper.isNotBlank(redisValue)) {
-      throw new ClientServiceException("收费失败，当前账单正在被收费！请勿重复收费！", PARAMETERS_IS_ILLEGAL);
-    }
+      throw new ClientServiceException("收费失败，当前账单正在被收费！", PARAMETERS_IS_ILLEGAL);
+    }*/
     return orderRecord;
   }
 
@@ -845,7 +922,7 @@ public class TollBiz {
           memberExpendRecordModel.setBillRecordId(billRecordId);
           memberExpendRecordModel.setBillPayRecordId(billPayRecordId);
           memberExpendRecordModel.setType(1);
-          patientCentralServiceFeign.expend(memberExpendRecordModel);
+          remotePatientCentralServiceFeign.expend(memberExpendRecordModel);
         });
   }
 
@@ -874,7 +951,7 @@ public class TollBiz {
           prepaidExpendRecordModel.setBillRecordId(billRecordId);
           prepaidExpendRecordModel.setBillPayRecordId(billPayRecordId);
           prepaidExpendRecordModel.setType(1);
-          patientCentralServiceFeign.expend(prepaidExpendRecordModel);
+          remotePatientCentralServiceFeign.expend(prepaidExpendRecordModel);
         });
   }
 
@@ -1253,12 +1330,13 @@ public class TollBiz {
    * @param orderRecordId 开单记录ID
    */
   public void cancelCharge(Integer orderRecordId) {
-    OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
+    redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+    /*OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
     if (null != orderRecord) {
       orderRecord.setStatus((byte) 1);
       orderRecordBiz.updateSelectiveById(orderRecord);
     } else {
       throw new ClientServiceException("取消收费失败，该账单不存在！", PARAMETERS_IS_ILLEGAL);
-    }
+    }*/
   }
 }

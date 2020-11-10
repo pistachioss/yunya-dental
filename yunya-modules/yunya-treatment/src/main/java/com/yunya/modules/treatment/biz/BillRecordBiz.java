@@ -1,6 +1,13 @@
 package com.yunya.modules.treatment.biz;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
+import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.model.MemberBillRechargeModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidBillRechargeModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -18,11 +25,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseRefund;
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
@@ -40,8 +47,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
 
   /** 消息中间件调用 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
-  /** 系统服务 */
+  /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
+  /** 患者服务调用 */
+  @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
+  /** 优惠服务调用 */
+  @Autowired private RemoteDiscountFeign discountFeign;
   /** 开单详情 */
   @Autowired private OrderDetailBiz orderDetailBiz;
   /** 账单支付明细 */
@@ -80,9 +91,28 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    */
   public BillDetailGroupVO findOrderDetailAndBillDetail(Integer orderRecordId) {
     BillDetailGroupVO resultData = new BillDetailGroupVO();
-    List<OrderDetailVO> orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId, null);
+    List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
     if (StringHelper.isEmpty(orderDetails)) {
       orderDetails = new ArrayList<>();
+    } else {
+      List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
+      if (null != orderBenefitD) {
+        for (OrderDetailChargeVO orderDetail : orderDetails) {
+          for (OrderBenefitDetailVo benefitDetailVo : orderBenefitD) {
+            if (orderDetail.getOrderDetailId().equals(benefitDetailVo.getOrderDetailId())) {
+              BigDecimal receivableAmount = orderDetail.getReceivableAmount();
+              BigDecimal actualAmount = orderDetail.getActualAmount();
+              BigDecimal itemBenefitAmount = benefitDetailVo.getItemBenefitAmount();
+              actualAmount = actualAmount.subtract(itemBenefitAmount);
+              orderDetail.setActualAmount(actualAmount);
+              orderDetail.setDiscountRate(
+                  actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+              List<ItemUseBenefitVo> benefitList = benefitDetailVo.getItemBenefitList();
+              setPrivilegeCouponInfo(orderDetail, benefitList);
+            }
+          }
+        }
+      }
     }
     resultData.setOrderDetails(orderDetails);
 
@@ -133,6 +163,42 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   }
 
   /**
+   * 设置订单优惠信息
+   *
+   * @param orderDetail 订单详情
+   * @param benefitList 优惠信息
+   */
+  private void setPrivilegeCouponInfo(
+      OrderDetailChargeVO orderDetail, List<ItemUseBenefitVo> benefitList) {
+    List<PrivilegeCouponInfoVO> couponInfo = Lists.newArrayList();
+    if (StringHelper.isNotEmpty(benefitList)) {
+      benefitList.forEach(
+          vo -> {
+            PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
+            couponInfoVO.setBenefitId(vo.getBenefitId());
+            Integer benefitType = vo.getBenefitType();
+            switch (benefitType) {
+              case 0:
+                couponInfoVO.setCouponType(99);
+                break;
+              case 1:
+                couponInfoVO.setCouponType(vo.getCouponType());
+                break;
+              case 2:
+                couponInfoVO.setCouponType(5);
+                break;
+              default:
+                break;
+            }
+            couponInfoVO.setBenefitName(vo.getBenefitName());
+            couponInfoVO.setBenefitAmount(vo.getBenefitAmount());
+            couponInfo.add(couponInfoVO);
+          });
+      orderDetail.setDiscountAppliesCoupons(couponInfo);
+    }
+  }
+
+  /**
    * 账单退费
    *
    * @param model 退费参数
@@ -150,6 +216,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     Integer billRecordId = billRecord.getId();
     Integer patientId = billRecord.getPatientId();
     Integer orderRecordId = billRecord.getOrderRecordId();
+    // 计算退费开单总额
     BigDecimal refundOrderDetailAmount = calculateRefundOrderDetailAmount(refundOrderDetailModels);
     // 计算退费总额
     BigDecimal refundTotalAmount =
@@ -160,6 +227,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     String name = BaseContextHandler.getName();
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    // 保存退费记录
     BillRefundRecord billRefundRecord = new BillRefundRecord();
     billRefundRecord.setPatientId(patientId);
     billRefundRecord.setOrgId(orgId);
@@ -168,13 +236,13 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     billRefundRecord.setReason(refundReason);
     billRefundRecord.setTotalRefundAmount(refundTotalAmount);
     Joiner joiner = Joiner.on(",");
-    if (!StringHelper.isEmpty(refundAnnex)) {
+    if (StringHelper.isNotEmpty(refundAnnex)) {
       billRefundRecord.setRefundCertificate(joiner.join(refundAnnex));
     }
     billRefundRecord.setCrtId(userId);
     billRefundRecord.setCrtName(name);
     int result = billRefundRecordMapper.insertSelective(billRefundRecord);
-
+    // 保存退费开单明细
     Integer billRefundRecordId = billRefundRecord.getId();
     BillRefundOrderDetail refundOrderDetail = new BillRefundOrderDetail();
     refundOrderDetail.setCrtId(userId);
@@ -187,14 +255,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
           refundOrderDetail.setBillRefundRecordId(billRefundRecordId);
           billRefundOrderDetailMapper.insertSelective(refundOrderDetail);
         });
-
-    BillRefundPayDetailRecord refundPayDetailRecord = new BillRefundPayDetailRecord();
-    refundPayDetailRecord.setBillRefundRecordId(billRefundRecordId);
-    refundPayDetailRecord.setCrtId(userId);
-    refundPayDetailRecord.setCrtName(name);
     // 保存账单退费付款明细记录
     saveBillRefundPayDetailRecord(
-        memberRefundModel, prepaymentRefundModel, refundPaymentModels, refundPayDetailRecord);
+        billRefundRecordId, memberRefundModel, prepaymentRefundModel, refundPaymentModels);
+    // 保存账单退费异常处理记录
     BillExceptionHandleRecord exceptionHandleRecord = new BillExceptionHandleRecord();
     exceptionHandleRecord.setOrgId(orgId);
     exceptionHandleRecord.setPatientId(patientId);
@@ -204,6 +268,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     exceptionHandleRecord.setCrtId(userId);
     exceptionHandleRecord.setCrtName(name);
     billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
+    // 保存账单退费异常处理明细
     Integer exceptionHandleRecordId = exceptionHandleRecord.getId();
     BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
     handleDetailRecord.setBillHandleRecordId(exceptionHandleRecordId);
@@ -213,42 +278,63 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
     // 发送消息同步退费
     if (result > 0) {
-      rabbitMqServiceFeign.sendMessage(billRefundRecordId, 0, BaseRefund);
+//      rabbitMqServiceFeign.sendMessage(billRefundRecordId, 0, BaseRefund);
     }
   }
 
   /**
    * 保存账单退费付款明细记录
    *
+   * @param billRefundRecordId 退费记录ID
    * @param memberRefundModel 会员卡退费
    * @param prepaymentRefundModel 预付款踢飞
    * @param refundPaymentModels 其他方式退费
-   * @param refundPayDetailRecord 退费明细付款记录
    */
   private void saveBillRefundPayDetailRecord(
+      Integer billRefundRecordId,
       MemberRefundModel memberRefundModel,
       PrepaymentRefundModel prepaymentRefundModel,
-      List<PaymentModel> refundPaymentModels,
-      BillRefundPayDetailRecord refundPayDetailRecord) {
+      List<PaymentModel> refundPaymentModels) {
+    BillRefundPayDetailRecord refundPayDetailRecord = new BillRefundPayDetailRecord();
+    refundPayDetailRecord.setBillRefundRecordId(billRefundRecordId);
+    refundPayDetailRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+    refundPayDetailRecord.setCrtName(BaseContextHandler.getName());
+    // 会员费退费
     if (null != memberRefundModel) {
       refundPayDetailRecord.setAccountItemId(memberRefundModel.getAccountItemId());
-      refundPayDetailRecord.setRemark(memberRefundModel.getMemberNum());
+      String memberNum = memberRefundModel.getMemberNum();
+      refundPayDetailRecord.setRemark(memberNum);
       BigDecimal principalAmount = memberRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = memberRefundModel.getGiftAmount();
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
+      // 会员卡退费金额返还
+      MemberBillRechargeModel memberModel = new MemberBillRechargeModel();
+      memberModel.setMemberId(memberNum);
+      memberModel.setRechargePrincipal(principalAmount);
+      memberModel.setRechargeBonus(giftAmount);
+      memberModel.setRemarks(billRefundRecordId.toString());
+      patientCentralServiceFeign.billRefund(memberModel);
     }
-
+    // 预付款退费
     if (null != prepaymentRefundModel) {
       refundPayDetailRecord.setAccountItemId(prepaymentRefundModel.getAccountItemId());
-      refundPayDetailRecord.setRemark(prepaymentRefundModel.getPrepaymentNum());
+      String prepaymentNum = prepaymentRefundModel.getPrepaymentNum();
+      refundPayDetailRecord.setRemark(prepaymentNum);
       BigDecimal principalAmount = prepaymentRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = prepaymentRefundModel.getGiftAmount();
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
+      // 预付款退费金额返还
+      PrepaidBillRechargeModel prepaidModel = new PrepaidBillRechargeModel();
+      prepaidModel.setPrepaidId(prepaymentNum);
+      prepaidModel.setRechargePrincipal(principalAmount);
+      prepaidModel.setRechargeBonus(giftAmount);
+      prepaidModel.setRemarks(billRefundRecordId.toString());
+      patientCentralServiceFeign.billRefund(prepaidModel);
     }
-
-    if (!StringHelper.isNotEmpty(refundPaymentModels)) {
+    // 其它方式退款
+    if (StringHelper.isNotEmpty(refundPaymentModels)) {
       refundPaymentModels.forEach(
           paymentModel -> {
             refundPayDetailRecord.setAccountItemId(paymentModel.getAccountItemId());

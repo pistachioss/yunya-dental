@@ -14,7 +14,7 @@ public class FileInfo {
   /**
    * 图片地址
    */
-  @ApiModelProperty("图片地址")
+  @ApiModelProperty("图片或文件地址")
   private String path;
 
   @ApiModelProperty("描述")

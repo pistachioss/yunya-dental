@@ -224,7 +224,7 @@
                 when `cci`.`type` = 0 then
                     (select
                         if(isnull(`c`.`active_date`), null,
-                            if(isnull(`vc`.`activation_deadline`), date_format(date_add(`c`.`active_date`, interval ifnull(`vc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                            if(isnull(`vc`.`activation_deadline`), if(`vc`.`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `vc`.`effective_days` day), '%Y-%m-%d')),
                                 if(date_format(`vc`.`activation_deadline`, '%Y-%m-%d') &gt;
                                 date_format(date_add(`c`.`active_date`, interval ifnull(`vc`.`effective_days`, 0) day), '%Y-%m-%d'),
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`vc`.`effective_days`, 0) day), '%Y-%m-%d'),
@@ -234,7 +234,7 @@
                 when `cci`.`type` = 1 then
                     (select
                         if(isnull(`c`.`active_date`), null,
-                            if(isnull(`dc`.`activation_deadline`), date_format(date_add(`c`.`active_date`, interval ifnull(`dc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                            if(isnull(`dc`.`activation_deadline`), if(`dc`.`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `dc`.`effective_days` day), '%Y-%m-%d')),
                                 if(date_format(`dc`.`activation_deadline`, '%Y-%m-%d') &gt;
                                 date_format(date_add(`c`.`active_date`, interval ifnull(`dc`.`effective_days`, 0) day), '%Y-%m-%d'),
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`dc`.`effective_days`, 0) day), '%Y-%m-%d'),
@@ -244,7 +244,7 @@
                 when `cci`.`type` = 2 then
                     (select
                         if(isnull(`c`.`active_date`), null,
-                            if(isnull(`pc`.`activation_deadline`), date_format(date_add(`c`.`active_date`, interval ifnull(`pc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                            if(isnull(`pc`.`activation_deadline`), if(`pc`.`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `pc`.`effective_days` day), '%Y-%m-%d')),
                                 if(date_format(`pc`.`activation_deadline`, '%Y-%m-%d') &gt;
                                 date_format(date_add(`c`.`active_date`, interval ifnull(`pc`.`effective_days`, 0) day), '%Y-%m-%d'),
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`pc`.`effective_days`, 0) day), '%Y-%m-%d'),
@@ -254,7 +254,7 @@
                 when `cci`.`type` = 3 then
                     (select
                         if(isnull(`c`.`active_date`), null,
-                            if(isnull(`spc`.`activation_deadline`), date_format(date_add(`c`.`active_date`, interval ifnull(`spc`.`effective_days`, 0) day), '%Y-%m-%d'),
+                            if(isnull(`spc`.`activation_deadline`), if(`spc`.`effective_days` = 0, null, date_format(date_add(`c`.`active_date`, interval `spc`.`effective_days` day), '%Y-%m-%d')),
                                 if(date_format(`spc`.`activation_deadline`, '%Y-%m-%d') &gt;
                                 date_format(date_add(`c`.`active_date`, interval ifnull(`spc`.`effective_days`, 0) day), '%Y-%m-%d'),
                                     date_format(date_add(`c`.`active_date`, interval ifnull(`spc`.`effective_days`, 0) day), '%Y-%m-%d'),
@@ -309,14 +309,16 @@
             `temp`.`ownerId`,
             `temp`.`couponName`,
             `temp`.`couponType`,
-            `temp`.`useDeadline`,
+            ifnull(`temp`.`useDeadline`, '永久有效') as `useDeadline`,
             `temp`.`useWay`,
             `temp`.`mixable`,
             `temp`.`path`,
             `temp`.`limitCount`
         from (select
                   `c`.`id`         as `cardId`,
-                  `c`.`card_number`,
+                  if(`c`.`org_id` = 0,
+                        `c`.`third_card_number`,
+                        `c`.`card_number`) as `card_number`,
                   `c`.`patient_id` as `ownerId`,
                   `cci`.id         as `couponId`,
                   `cci`.`name`     as `couponName`,

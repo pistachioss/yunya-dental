@@ -1,7 +1,7 @@
 package com.yunya.feign.patient_central.factory;
 
 
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class PatientCentralServiceFallBackFactory implements PatientCentralServiceFeign {
+public class RemotePatientCentralServiceFallBackFactory implements RemotePatientCentralServiceFeign {
 
     @Override
     public List<PatientBaseInfoVo> findPatientByNameAndMobile(PatientLikeFinleQueryForm patientBaseInfoQueryForm) {

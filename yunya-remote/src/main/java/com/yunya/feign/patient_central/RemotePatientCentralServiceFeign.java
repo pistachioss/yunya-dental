@@ -8,7 +8,7 @@ import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
-import com.yunya.feign.patient_central.factory.PatientCentralServiceFallBackFactory;
+import com.yunya.feign.patient_central.factory.RemotePatientCentralServiceFallBackFactory;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
@@ -25,8 +25,8 @@ import java.util.List;
  */
 @FeignClient(
         name = YunyaServiceNameConstants.YUNYA_PATIENT,
-        fallbackFactory = PatientCentralServiceFallBackFactory.class)
-public interface PatientCentralServiceFeign {
+        fallbackFactory = RemotePatientCentralServiceFallBackFactory.class)
+public interface RemotePatientCentralServiceFeign {
 
     /**
      * 患者信息模糊查询暴露接口

@@ -7,7 +7,7 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.Map;
 
 /**
  * 简介: 账单支付方式调整兴趣VO
@@ -42,6 +42,7 @@ public class BillPaymentAdjustDetailVO implements Serializable {
   /** 收款金额 */
   @ApiModelProperty("收款金额")
   private BigDecimal receivedAmount;
-  /** 付款明细 */
-  private List<BillPayDetailRecordVO> billPayDetailRecords;
+  /** 账单收费调整明细(调整前/后) */
+  @ApiModelProperty("账单收费调整明细(调整前/后)")
+  private Map<String, Object> billPayDetailRecords;
 }

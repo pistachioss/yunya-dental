@@ -1,9 +1,13 @@
 package com.yunya.modules.treatment.controller.web;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.OrderRecordForm;
 import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
+import com.yunya.feign.treatment.domain.query.OrderProcessQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
+import com.yunya.feign.treatment.domain.vo.OrderProcessVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -13,6 +17,8 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介: 患者就诊开单管理
@@ -121,4 +127,21 @@ public class OrderRecordController {
     orderRecordBiz.adjust(model);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 订单处理（门诊端-订单处理）
+   * @param query 订单处理参数模型
+   * @return 返回订单处理列表
+   */
+  @ApiOperation("订单处理（门诊端-订单处理）")
+  @CurrentUser
+  @PostMapping("/process")
+  public ResponseResult<PageInfo<OrderProcessVO>> OrderProcess(@RequestBody OrderProcessQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(),query.getPageSize());
+    }
+    List<OrderProcessVO> orderProcessList = orderRecordBiz.orderProcess(query);
+    return ResponseUtil.success(new PageInfo<>(orderProcessList));
+  }
+
 }

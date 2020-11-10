@@ -1,19 +1,26 @@
 package com.yunya.modules.treatment.biz;
 
+import cn.hutool.core.util.ArrayUtil;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.treatment.domain.form.OrderRecordForm;
 import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
+import com.yunya.feign.treatment.domain.query.OrderProcessQuery;
 import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
+import com.yunya.feign.treatment.domain.vo.OrderProcessVO;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.mapper.*;
@@ -66,6 +73,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   @Autowired private BillExceptionHandleRecordMapper billExceptionHandleRecordMapper;
   /** 账单异常处理详情记录 */
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
+  /** 患者服务 */
+  @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
   /**
    * 根据就诊ID查询开单详情信息
@@ -77,6 +86,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     OrderDetailInfoVO resultData = new OrderDetailInfoVO();
     OrderRecord entity = new OrderRecord();
     entity.setTreatmentRecordId(treatmentRecordId);
+    entity.setInservice(true);
     // 订单详情信息
     OrderRecord orderRecord = mapper.selectOne(entity);
     List<OrderDetailVO> orderDetails = new ArrayList<>();
@@ -547,4 +557,49 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       throw new ClientServiceException("调整账单失败，当前账单开单明细的项目与数量未发生任何变动！", PARAMETERS_IS_ILLEGAL);
     }
   }
+
+  /**
+   * 订单处理（门诊端-订单处理）
+   * @param query 参数封装模型
+   * @return 返回订单处理列表
+   */
+  public List<OrderProcessVO> orderProcess(OrderProcessQuery query) {
+    String search = query.getSearch();
+    String orderRecordNum = query.getOrderRecordNum();
+    Integer[] orgIds = query.getOrgIds();
+    PatientLikeFinleQueryForm likeFinleQueryForm = new PatientLikeFinleQueryForm();
+    likeFinleQueryForm.setCondition(search);
+    List<PatientBaseInfoVo> patientByNameAndMobile = patientCentralServiceFeign.findPatientByNameAndMobile(likeFinleQueryForm);
+    Integer[] patientArr = new Integer[0];
+    if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
+      List<Integer> patientIds = new ArrayList<>();
+      patientByNameAndMobile.forEach(patientBaseInfoVo -> {
+        patientIds.add(patientBaseInfoVo.getId());
+      });
+      patientArr = ArrayUtil.toArray(patientIds, Integer.class);
+    }
+    List<OrderProcessVO> orderProcessVOS = mapper.selectOrderProcess(patientArr,orderRecordNum,orgIds);
+    if (StringHelper.isNotEmpty(orderProcessVOS)) {
+      orderProcessVOS.forEach(orderProcessVO -> {
+        Integer id = orderProcessVO.getId();
+        if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
+          List<PatientBaseInfoVo> collect = patientByNameAndMobile.stream()
+                  .filter(patientBaseInfoVo -> patientBaseInfoVo.getId().equals(id)).collect(Collectors.toList());
+          PatientBaseInfoVo patientBaseInfoVo = collect.get(0);
+          orderProcessVO.setPatientName(patientBaseInfoVo.getName());
+          orderProcessVO.setPatientMobile(patientBaseInfoVo.getMobile());
+        } else {
+          PatientBaseInfo patientInfoById = patientCentralServiceFeign.findPatientInfoById(id);
+          if (null != patientInfoById) {
+            orderProcessVO.setPatientName(patientInfoById.getName());
+            orderProcessVO.setPatientMobile(patientInfoById.getMobile());
+          }
+        }
+      });
+    }
+    return orderProcessVOS;
+  }
+
+
+
 }

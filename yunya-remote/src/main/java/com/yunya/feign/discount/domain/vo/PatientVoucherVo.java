@@ -1,10 +1,10 @@
 package com.yunya.feign.discount.domain.vo;
 
-import io.swagger.annotations.*;
-import lombok.*;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.io.*;
-import java.time.*;
+import java.io.Serializable;
 
 /**
  * @author xiangyang
@@ -22,7 +22,7 @@ public class PatientVoucherVo implements Serializable {
     @ApiModelProperty(value = "优惠券名称")
     private String couponName;
     @ApiModelProperty(value = "使用有效截止时间")
-    private LocalDate useDeadline;
+    private String useDeadline;
     @ApiModelProperty(value = "产品共用（0：不共用 1：共用）")
     private Integer mixable;
     @ApiModelProperty(value = "账单单次使用限制数量（页面不用显示）")

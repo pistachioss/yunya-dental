@@ -3,9 +3,8 @@ package com.yunya.modules.system.biz;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
-import com.yunya.feign.patient_central.domain.model.PersonModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -27,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.List;
 
-import org.springframework.core.env.Environment;
-
 /**
  * 简单介绍:</br> 设备信息业务成
  *
@@ -47,7 +44,7 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
     @Autowired RedisUtils redisUtils;
 
     @Autowired
-    PatientCentralServiceFeign patientCentralServiceFeign;
+    RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
     /**
      * 添加设备信息
@@ -107,7 +104,7 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
      * @param model 设备model
      */
     private void setCallback(HttpServletRequest request,EquipmentInfoModel model){
-        String portNumber = patientCentralServiceFeign.portNumberGet();
+        String portNumber = remotePatientCentralServiceFeign.portNumberGet();
         if (StringHelper.isNotNull(portNumber)){
             String ip = HttpIpUtils.getClientIpAddr(request);
             String callbackIpAdd = "http://"+ip+":"+portNumber+"/api/patient/callback/heartbeatCallback";
@@ -131,7 +128,7 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
      * @param model 设备model
      */
     private void setTaskCallback(HttpServletRequest request,EquipmentInfoModel model){
-        String portNumber = patientCentralServiceFeign.portNumberGet();
+        String portNumber = remotePatientCentralServiceFeign.portNumberGet();
         if (StringHelper.isNotNull(portNumber)){
             String ip = HttpIpUtils.getClientIpAddr(request);
             String callbackIpAdd = "http://"+ip+":"+portNumber+"/api/patient/callback/getTask";
@@ -155,7 +152,7 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
      * @param model 设备model
      */
     private void setResultCallback(HttpServletRequest request,EquipmentInfoModel model){
-        String portNumber = patientCentralServiceFeign.portNumberGet();
+        String portNumber = remotePatientCentralServiceFeign.portNumberGet();
         if (StringHelper.isNotNull(portNumber)){
             String ip = HttpIpUtils.getClientIpAddr(request);
             String callbackIpAdd = "http://"+ip+":"+portNumber+"/api/patient/callback/taskProcessingResultsAddress";
@@ -178,7 +175,7 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
      * @param model 设备model
      */
     private void setPhotographCallback(HttpServletRequest request,EquipmentInfoModel model){
-        String portNumber = patientCentralServiceFeign.portNumberGet();
+        String portNumber = remotePatientCentralServiceFeign.portNumberGet();
         if (StringHelper.isNotNull(portNumber)){
             String ip = HttpIpUtils.getClientIpAddr(request);
             String callbackIpAdd = "http://"+ip+":"+portNumber+"/api/patient/callback/takePictures";
@@ -202,7 +199,7 @@ public class EquipmentBiz extends BaseBiz<EquipmentInfoMapper, EquipmentInfo> {
      * @param model 设备model
      */
     private void setFaceRecognitionCallback(HttpServletRequest request,EquipmentInfoModel model){
-        String portNumber = patientCentralServiceFeign.portNumberGet();
+        String portNumber = remotePatientCentralServiceFeign.portNumberGet();
         if (StringHelper.isNotNull(portNumber)){
             String ip = HttpIpUtils.getClientIpAddr(request);
             String callbackIpAdd = "http://"+ip+":"+portNumber+"/api/patient/callback/faceRecognition";

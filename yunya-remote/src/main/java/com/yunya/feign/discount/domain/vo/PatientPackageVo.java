@@ -22,7 +22,7 @@ public class PatientPackageVo implements Serializable {
     @ApiModelProperty(value = "优惠券名称")
     private String couponName;
     @ApiModelProperty(value = "使用有效截止时间")
-    private LocalDate useDeadline;
+    private String useDeadline;
     @ApiModelProperty(value = "产品共用（0：不共用 1：共用）")
     private Integer mixable;
     @ApiModelProperty(value = "使用方式（0：一次使用 1：多次使用）")

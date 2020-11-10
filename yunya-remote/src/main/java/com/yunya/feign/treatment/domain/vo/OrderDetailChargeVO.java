@@ -54,7 +54,7 @@ public class OrderDetailChargeVO implements Serializable {
   /** 实收金额 */
   @ApiModelProperty("实收金额（原价-优惠）")
   private BigDecimal actualAmount;
-  /** 添加来源（0-开单；1-收费）*/
+  /** 添加来源（0-开单；1-收费） */
   @ApiModelProperty("添加来源（0-开单添加；1-收费（添加商品）添加）")
   private Byte sourceType;
   /** 执行人ID */

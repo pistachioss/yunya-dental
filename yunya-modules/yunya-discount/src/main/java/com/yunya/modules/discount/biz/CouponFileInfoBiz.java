@@ -59,12 +59,13 @@ public class CouponFileInfoBiz extends BaseBiz<CouponFileInfoMapper, CouponFileI
         }
         //文档信息
         if (fileForm.getDocs() != null && fileForm.getDocs().size() > 0) {
-            for (String doc : fileForm.getDocs()) {
+            for (FileInfo fileInfo : fileForm.getDocs()) {
                 CouponFileInfo couponFileInfo = new CouponFileInfo();
+                couponFileInfo.setFileName(fileInfo.getFileName());
                 couponFileInfo.setCouponId(fileForm.getId());
                 couponFileInfo.setInservice(true);
                 couponFileInfo.setFileType(new Byte("1"));
-                couponFileInfo.setPath(doc);
+                couponFileInfo.setPath(fileInfo.getPath());
                 couponFileInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
                 couponFileInfo.setCrtTime(new Date());
                 list.add(couponFileInfo);

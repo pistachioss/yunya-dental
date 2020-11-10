@@ -2,7 +2,7 @@ package com.yunya.modules.treatment.other.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -51,7 +51,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
 
     /** 注入患者服务 */
     @Autowired
-    private PatientCentralServiceFeign patientCentralServiceFeign;
+    private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
     /** 注入系统基础服务 */
     @Autowired
@@ -156,7 +156,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         }
         VisitingRemindContentVo build = EntityUtils.build(visitingRemind, VisitingRemindContentVo.class);
         if (id != null){
-            PatientTotalInfoVo patientTotalInfo = patientCentralServiceFeign.findPatientTotalInfo(id);
+            PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(id);
             if (patientTotalInfo != null){
                 build.setMobile(patientTotalInfo.getMobile());
             } else {
@@ -195,7 +195,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 // 设置患者信息
                 Integer patientId = build.getPatientId();
                 if (patientId != null){
-                    PatientTotalInfoVo patientTotalInfo = patientCentralServiceFeign.findPatientTotalInfo(patientId);
+                    PatientTotalInfoVo patientTotalInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
                     if (patientTotalInfo != null){
                         build.setPatientName(patientTotalInfo.getName());
                         build.setAge(patientTotalInfo.getAge());

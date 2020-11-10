@@ -4,7 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -66,7 +66,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Autowired private RedisUtils redisUtils;
 
   /** 患者服务调用 */
-  @Autowired private PatientCentralServiceFeign patientServiceFeign;
+  @Autowired private RemotePatientCentralServiceFeign patientServiceFeign;
 
   /** 消息中间件调用 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
@@ -308,6 +308,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
         if (null != memberType) {
           vo.setMemberIcon(String.valueOf(memberType.getIcon()));
+          vo.setMemberCardName(memberType.getName());
         }
       }
     }
