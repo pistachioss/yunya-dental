@@ -2,10 +2,7 @@ package com.yunya.feign.patient_central;
 
 
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
-import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
-import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
@@ -35,14 +32,14 @@ public interface PatientCentralServiceFeign {
      * 患者信息模糊查询暴露接口
      *
      * @param patientBaseInfoQueryForm 参数封装
-     * @return
+     * @return List<PatientBaseInfoVo>
      */
     @RequestMapping(value = "/api/findPatientByNameAndMobile", method = RequestMethod.POST)
     List<PatientBaseInfoVo> findPatientByNameAndMobile(@RequestBody PatientLikeFinleQueryForm patientBaseInfoQueryForm);
 
     /**
      * 根据患者id查询患者信息
-     * @param id
+     * @param id 条件
      * @return PatientBaseInfo
      */
     @RequestMapping (value = "/api/findPatientInfoById/{id}",method = RequestMethod.GET)
@@ -50,7 +47,7 @@ public interface PatientCentralServiceFeign {
 
     /**
      * 根据患者id集合查询患者list
-     * @param ids
+     * @param ids 条件
      * @return List<PatientBaseInfoVo>
      */
     @RequestMapping (value = "/api/findPatientInfoByIds",method = RequestMethod.POST)
@@ -58,47 +55,47 @@ public interface PatientCentralServiceFeign {
 
     /**
      * 根据患者id查询患者资料
-     * @param id
-     * @return
+     * @param id 条件
+     * @return PatientTotalInfoVo
      */
     @RequestMapping (value = "/api/total/patientInfo/{id}", method = RequestMethod.GET)
     PatientTotalInfoVo findPatientTotalInfo(@PathVariable(value = "id") Integer id);
 
     /**
      * 根据患者id查询患者资料
-     * @param patientMemberInfo
-     * @return
+     * @param patientMemberInfo 条件
+     * @return List<PatientMemberInfo>
      */
     @RequestMapping (value = "/api/findPatientMemberInfo",method = RequestMethod.POST)
     List<PatientMemberInfo> findPatientMemberInfo(@RequestBody PatientMemberInfo patientMemberInfo);
 
     /**
      * 修改患者信息
-     * @param patientBaseInfo
+     * @param patientBaseInfo 条件
      */
     @RequestMapping (value = "/api/updatePatientInfo",method = RequestMethod.POST)
     void updatePatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
 
     /**
      * 查询患者信息
-     * @param patientBaseInfo
-     * @return
+     * @param patientBaseInfo 条件
+     * @return PatientBaseInfo
      */
     @RequestMapping (value = "/api/findPatientInfo",method = RequestMethod.POST)
     PatientBaseInfo findPatientInfo(@RequestBody PatientBaseInfo patientBaseInfo);
 
     /**
      * 查询患者信息列表
-     * @param patientBaseInfo
-     * @return
+     * @param patientBaseInfo 条件
+     * @return  List<PatientBaseInfo>
      */
     @RequestMapping (value = "/api/findPatientInfoList",method = RequestMethod.POST)
     List<PatientBaseInfo> findPatientInfoList(@RequestBody PatientBaseInfo patientBaseInfo);
 
     /**
      * 根据门诊id获取病历号后六位
-     * @param orgId
-     * @return
+     * @param orgId 条件
+     * @return String
      */
     @RequestMapping (value = "/api/medical/{orgId}",method = RequestMethod.GET)
     String findMedicalNumberByOrgId(@PathVariable(value = "orgId") Integer orgId);
@@ -115,7 +112,7 @@ public interface PatientCentralServiceFeign {
 
     /**
      * 会员卡消费
-     * @param model
+     * @param model 条件
      * @return ResponseResult
      */
     @RequestMapping(value = "/api/member/expend",method = RequestMethod.POST)
@@ -133,22 +130,22 @@ public interface PatientCentralServiceFeign {
 
     /**
      * 预付款消费
-     * @param model
-     * @return
+     * @param model 条件
+     * @return ResponseResult
      */
     @RequestMapping(value = "/api/prepaid/expend",method = RequestMethod.POST)
     ResponseResult expend(@RequestBody PrepaidExpendRecordModel model );
 
     /**
      * 修改硬件设备密码
-     * @param form
+     * @param form 条件
      */
     @RequestMapping(value = "/api/updPass",method = RequestMethod.POST)
     void updPass(@RequestBody UpdPassForm form );
 
     /**
      *  查询会员卡绑定信息
-     * @param form
+     * @param form 条件
      * @return List<MemberInfoVo>
      */
     @RequestMapping(value = "/api/findMemberInfo",method = RequestMethod.POST)
@@ -160,6 +157,23 @@ public interface PatientCentralServiceFeign {
      */
     @RequestMapping(value = "/api/portNumberGet",method = RequestMethod.GET)
     String portNumberGet();
+
+    /**
+     * 会员账单退费
+     * @param memberBillRechargeModel 会员账单退费model
+     * @return ResponseResult
+     */
+    @RequestMapping(value = "/member/billRefund", method = RequestMethod.POST)
+    ResponseResult billRefund(@RequestBody MemberBillRechargeModel memberBillRechargeModel);
+
+
+    /**
+     * 预付款账单退费
+     * @param prepaidBillRechargeModel 预付款账单退费model
+     * @return ResponseResult
+     */
+    @PostMapping("/prepayment/billRefund")
+    ResponseResult billRefund(@RequestBody PrepaidBillRechargeModel prepaidBillRechargeModel);
 
 
 }

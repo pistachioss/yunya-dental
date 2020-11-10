@@ -244,4 +244,16 @@ public class PatientMemberInfoController {
   public ResponseResult expend(@RequestBody MemberExpendRecordModel model) {
     return patientMemberInfoBiz.expend(model);
   }
+
+ /* *//**
+   *  会员卡消费
+   * @param model 消费model
+   * @return ResponseResult
+   *//*
+  @CurrentUser
+  @ApiOperation("会员卡消费")
+  @RequestMapping(value = "/member/expend", method = RequestMethod.POST)
+  public ResponseResult expend(@RequestBody MemberExpendRecordModel model) {
+    return patientMemberInfoBiz.expend(model);
+  }*/
 }

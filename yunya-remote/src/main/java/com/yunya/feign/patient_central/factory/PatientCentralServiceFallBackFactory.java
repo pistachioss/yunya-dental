@@ -3,10 +3,7 @@ package com.yunya.feign.patient_central.factory;
 
 import com.yunya.feign.patient_central.PatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.form.UpdPassForm;
-import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
-import com.yunya.feign.patient_central.domain.model.MemberRechargeModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
-import com.yunya.feign.patient_central.domain.model.PrepaidRechargeModel;
+import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
@@ -109,6 +106,16 @@ public class PatientCentralServiceFallBackFactory implements PatientCentralServi
 
     @Override
     public String portNumberGet() {
+        return null;
+    }
+
+    @Override
+    public ResponseResult billRefund(MemberBillRechargeModel memberBillRechargeModel) {
+        return null;
+    }
+
+    @Override
+    public ResponseResult billRefund(PrepaidBillRechargeModel prepaidBillRechargeModel) {
         return null;
     }
 }

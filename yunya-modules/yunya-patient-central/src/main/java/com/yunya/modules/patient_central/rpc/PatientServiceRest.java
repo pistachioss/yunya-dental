@@ -119,7 +119,7 @@ public class PatientServiceRest {
 
     @CurrentUser
     @ApiOperation("会员账单退费")
-    @RequestMapping(value = "/billRefund", method = RequestMethod.POST)
+    @RequestMapping(value = "/member/billRefund", method = RequestMethod.POST)
     public ResponseResult billRefund(@RequestBody MemberBillRechargeModel memberBillRechargeModel) {
         patientMemberInfoBiz.billRefund(memberBillRechargeModel);
         return ResponseUtil.success();
@@ -137,7 +137,7 @@ public class PatientServiceRest {
 
     @CurrentUser
     @ApiOperation("预付款账单退费")
-    @PostMapping("/billRefund")
+    @PostMapping("/prepayment/billRefund")
     public ResponseResult billRefund(@RequestBody PrepaidBillRechargeModel prepaidBillRechargeModel) {
         patientPrepaymentRelationBiz.billRefund(prepaidBillRechargeModel);
         return ResponseUtil.success();
