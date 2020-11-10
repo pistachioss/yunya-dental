@@ -1,7 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import cn.hutool.core.util.ArrayUtil;
-import com.yunya.feign.patient_central.PatientCentralServiceFeign;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -28,7 +28,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -75,7 +74,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   /** 账单异常处理详情记录 */
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
   /** 患者服务 */
-  @Autowired private PatientCentralServiceFeign patientCentralServiceFeign;
+  @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
   /**
    * 根据就诊ID查询开单详情信息
@@ -87,6 +86,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     OrderDetailInfoVO resultData = new OrderDetailInfoVO();
     OrderRecord entity = new OrderRecord();
     entity.setTreatmentRecordId(treatmentRecordId);
+    entity.setInservice(true);
     // 订单详情信息
     OrderRecord orderRecord = mapper.selectOne(entity);
     List<OrderDetailVO> orderDetails = new ArrayList<>();
