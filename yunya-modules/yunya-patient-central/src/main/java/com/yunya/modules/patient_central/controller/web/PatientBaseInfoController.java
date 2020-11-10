@@ -14,10 +14,7 @@ import com.yunya.feign.patient_central.domain.model.PicturesCallbackInfoModel;
 import com.yunya.feign.patient_central.domain.query.PatientBaseInfoQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLabelRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.PatientExtendInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientLabelRecordVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientPublicInfoVo;
-import com.yunya.feign.patient_central.domain.vo.web.PatientVisitInfoVo;
+import com.yunya.feign.patient_central.domain.vo.web.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -118,6 +115,12 @@ public class PatientBaseInfoController {
   @GetMapping("/patientDataInfoFind/{id}")
   public ResponseResult<PatientExtendInfoVo> findPatientData(@PathVariable("id") Integer id) {
     return this.patientBaseInfoBiz.findPatientData(id);
+  }
+
+  @ApiOperation("根据患者id查询患者资料")
+  @RequestMapping (value = "/total/patientInfo/{id}", method = RequestMethod.GET)
+  public PatientTotalInfoVo findPatientTotalInfo(@PathVariable(value = "id") Integer id){
+    return patientBaseInfoBiz.findPatientTotalInfo(id);
   }
 
   /**

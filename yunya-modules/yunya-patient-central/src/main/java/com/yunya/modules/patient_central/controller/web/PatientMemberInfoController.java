@@ -253,7 +253,7 @@ public class PatientMemberInfoController {
    */
   @CurrentUser
   @ApiOperation("会员卡撤销收费")
-  @RequestMapping(value = "/member/expend", method = RequestMethod.POST)
+  @RequestMapping(value = "/member/revocationFee", method = RequestMethod.POST)
   public ResponseResult revocationFee(@RequestBody MemberRevocationFeeModel model) {
     return patientMemberInfoBiz.revocationFee(model);
   }

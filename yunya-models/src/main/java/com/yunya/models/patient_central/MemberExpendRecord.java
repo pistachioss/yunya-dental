@@ -1,7 +1,5 @@
 package com.yunya.models.patient_central;
 
-import io.swagger.models.auth.In;
-
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;

@@ -193,7 +193,7 @@ public class PatientPrepaymentRelationController {
    */
   @CurrentUser
   @ApiOperation("预付款撤销收费")
-  @RequestMapping(value = "revocationFee", method = RequestMethod.POST)
+  @RequestMapping(value = "prepaid/revocationFee", method = RequestMethod.POST)
   public ResponseResult revocationFee(@RequestBody PrepaidRevocationFeeModel model) {
     return patientPrepaymentBiz.revocationFee(model);
   }

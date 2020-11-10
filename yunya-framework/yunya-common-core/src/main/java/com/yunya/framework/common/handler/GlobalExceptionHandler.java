@@ -11,6 +11,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.converter.HttpMessageConversionException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -92,4 +93,12 @@ public class GlobalExceptionHandler {
     logger.error("error in \n url:{} \nmsg:{}",request.getRequestURL(),exp.getCause());
     return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE,"非法请求参数类型",null);
   }
+
+  @ExceptionHandler(HttpMessageConversionException.class)
+  public ResponseResult httpMessageConversionExceptionHandler(
+          HttpMessageConversionException exp, HttpServletRequest request) {
+    logger.error("error in \n url:{} \n msg:{}",request.getRequestURL(),exp.getCause());
+    return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE,"类型转换异常",null);
+  }
+
 }

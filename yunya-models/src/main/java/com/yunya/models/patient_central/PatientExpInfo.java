@@ -1,9 +1,9 @@
 package com.yunya.models.patient_central;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "patient_exp_info")
 public class PatientExpInfo {

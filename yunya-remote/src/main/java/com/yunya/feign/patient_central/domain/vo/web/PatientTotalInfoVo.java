@@ -53,6 +53,9 @@ public class PatientTotalInfoVo implements Serializable {
   /** 患者类型 患者类型对应字典ID */
   private Integer patientKind;
 
+  /** 患者类型 患者类型对应字典ID名称 */
+  private String patientKindName;
+
   /** 常用电话 常用电话 */
   private String usefulPhone;
 

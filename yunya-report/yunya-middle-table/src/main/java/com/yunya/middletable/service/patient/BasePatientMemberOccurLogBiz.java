@@ -420,6 +420,7 @@ public class BasePatientMemberOccurLogBiz
         // 充值
       case 1:
       case 4:
+      case 5:
         BasePatientMemberOccurLog memberRechargeLog =
             getMemberRechargeRecordInfoLog(id, type, operationType);
         if (StringHelper.isNotNull(memberRechargeLog)) {
@@ -701,9 +702,10 @@ public class BasePatientMemberOccurLogBiz
    */
   private void addPrepaymentOccurLog(Integer id, Integer type, Integer operationType) {
     switch (operationType) {
-        // 充值 //撤销
+        // 充值 //撤销 //账单退款
       case 1:
       case 4:
+      case 5:
         BasePatientMemberOccurLog prepaidRechargeRecord =
             getPrepaidRechargeRecord(id, type, operationType);
         if (StringHelper.isNotNull(prepaidRechargeRecord)) {

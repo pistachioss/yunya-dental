@@ -20,6 +20,9 @@
         <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="current_recharge_principal" property="currentRechargePrincipal" jdbcType="DECIMAL"/>
+        <result column="current_recharge_bonus" property="currentRechargeBonus" jdbcType="DECIMAL"/>
+        <result column="type" property="type" jdbcType="INTEGER"/>
     </resultMap>
 
     <!-- 预付款充值记录查询 -->

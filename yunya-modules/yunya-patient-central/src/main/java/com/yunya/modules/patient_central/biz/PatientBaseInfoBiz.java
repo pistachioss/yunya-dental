@@ -300,6 +300,13 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     // 扩展信息
     PatientExpInfoVo patientExpInfoVo = patientExpInfoMapper.selectIdByPatientId(id);
     if (patientExpInfoVo != null) {
+      if (patientExpInfoVo.getPatientKind() != null){
+        DictionaryItem item =
+                remoteSystemServiceFeign.findDictionaryItemById(patientExpInfoVo.getPatientKind());
+        if (item != null){
+          patientExpInfoVo.setPatientKindName(item.getName());
+        }
+      }
       patientExtendInfoVo.setPatientExpInfoVo(patientExpInfoVo);
     }
     // 标签
@@ -532,6 +539,13 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public PatientTotalInfoVo findPatientTotalInfo(Integer id) {
     PatientTotalInfoVo patientData = mapper.selectPatientDataById(id);
     if (null != patientData) {
+      if (patientData.getPatientKind() != null){
+        DictionaryItem item =
+                remoteSystemServiceFeign.findDictionaryItemById(patientData.getPatientKind());
+        if (item != null){
+          patientData.setPatientKindName(item.getName());
+        }
+      }
       PatientExtInfo patientExtInfo = new PatientExtInfo();
       patientExtInfo.setPatientId(id);
       List<PatientExtInfo> extInfos = patientExtInfoMapper.select(patientExtInfo);
