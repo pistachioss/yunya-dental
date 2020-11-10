@@ -29,13 +29,13 @@
         insert into
         `card_benefit`
             (`org_id`, `order_id`, `order_detail_id`, `coupon_id`, `patient_id`, `card_id`, `item_id`, `item_type`,
-            `coupon_type`, `benefit_type`, `item_index`, `benefit_amount`, `supply_workload`, `operate_type`,
+            `coupon_type`, `benefit_type`, `item_index`, `benefit_amount`, `supply_workload`, `operate_type`,`sort`,
             `crt_id`, `upd_id`)
         values
         <foreach collection="List" item="item" separator=",">
             (#{item.orgId}, #{item.orderId}, #{item.orderDetailId}, #{item.couponId}, #{item.patientId}, #{item.cardId},
             #{item.itemId}, #{item.itemType}, #{item.couponType}, #{item.benefitType}, #{item.itemIndex}, #{item.benefitAmount},
-            #{item.supplyWorkload}, #{item.operateType}, #{item.crtId}, #{item.updId})
+            #{item.supplyWorkload}, #{item.operateType}, #{item.sort}, #{item.crtId}, #{item.updId})
         </foreach>
     </insert>
 </mapper>
