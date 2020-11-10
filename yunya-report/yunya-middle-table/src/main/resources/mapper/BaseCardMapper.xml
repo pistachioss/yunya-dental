@@ -193,7 +193,7 @@
         </trim>
         where `card_id` in
         <foreach collection="list" item="item" open="(" separator="," close=")">
-            #{item.couponId}
+            #{item.cardId}
         </foreach>
     </update>
 

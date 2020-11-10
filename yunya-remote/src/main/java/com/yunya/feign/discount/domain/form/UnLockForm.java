@@ -17,7 +17,7 @@ public class UnLockForm {
 	@ApiModelProperty(value = "操作人", required = true)
 	@NotNull
 	private Integer requestId;
-	@ApiModelProperty(value = "加锁对象，卡券售出:lock:card:sold", required = true)
+	@ApiModelProperty(value = "加锁对象，卡券售出：lock:card:sold 选择优惠：lock:choice:card", required = true)
 	@NotBlank
 	private String lockPrefix;
 }

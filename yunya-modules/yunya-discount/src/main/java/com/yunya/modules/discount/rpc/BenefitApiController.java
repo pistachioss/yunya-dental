@@ -5,12 +5,15 @@ import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
+import com.yunya.feign.emr.domain.bo.RestErrorBo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.discount.biz.BenefitBiz;
 import com.yunya.modules.discount.biz.CardBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,9 +59,20 @@ public class BenefitApiController {
     }
 
     @ApiOperation(value = "查询订单优惠明细")
-    @PostMapping("/benefit/{orderId}")
+    @GetMapping("/benefit/{orderId}")
     public List<OrderBenefitDetailVo> getOrderBenefitD(@PathVariable(value = "orderId") Integer orderId) {
         return benefitBiz.getOrderBenefit(orderId);
+    }
+
+    @ApiOperation(value = "撤销优惠")
+    @GetMapping("/benefit/revoke/{orderId}")
+    @CurrentUser
+    public ResponseResult revokeBenefit(@PathVariable(value = "orderId") Integer orderId) {
+        RestErrorBo errorBo = benefitBiz.revokeBenefit(orderId);
+        if (errorBo.getError() != null) {
+            return ResponseUtil.error(errorBo.getError());
+        }
+        return ResponseUtil.success();
     }
 
 }

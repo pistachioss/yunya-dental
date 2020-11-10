@@ -19,6 +19,7 @@ public class OrderItemUseBo {
     private Integer quantity;
     //应收原价
     private BigDecimal receivableAmount;
+    //0-价目表；1-商品
     private Integer type;
     private BigDecimal benefitDiscountRate;
     //订单优惠金额

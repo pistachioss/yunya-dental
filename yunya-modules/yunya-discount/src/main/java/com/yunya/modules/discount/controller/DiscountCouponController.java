@@ -96,7 +96,7 @@ public class DiscountCouponController {
 
         CouponAllocate couponAllocate = new CouponAllocate();
         couponAllocate.setCouponId(id);
-        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
+        if (couponAllocateMapper.findAllocate(couponAllocate)==0) {
             // 未完成分配
             discountCouponForm.setIsDistribution(false);
         }
