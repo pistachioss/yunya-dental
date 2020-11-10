@@ -163,7 +163,7 @@ public interface RemotePatientCentralServiceFeign {
      * @param memberBillRechargeModel 会员账单退费model
      * @return ResponseResult
      */
-    @RequestMapping(value = "/member/billRefund", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/member/billRefund", method = RequestMethod.POST)
     ResponseResult billRefund(@RequestBody MemberBillRechargeModel memberBillRechargeModel);
 
 
@@ -172,7 +172,7 @@ public interface RemotePatientCentralServiceFeign {
      * @param prepaidBillRechargeModel 预付款账单退费model
      * @return ResponseResult
      */
-    @PostMapping("/prepayment/billRefund")
+    @PostMapping("/api/prepayment/billRefund")
     ResponseResult billRefund(@RequestBody PrepaidBillRechargeModel prepaidBillRechargeModel);
 
 

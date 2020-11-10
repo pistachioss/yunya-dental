@@ -706,9 +706,9 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       memberRechargeRecord.setCrtName(BaseContextHandler.getName());
       memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
       memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+      memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
       // 发送消息 账单退费
       sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 5);
-      memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
     }
   }
 
