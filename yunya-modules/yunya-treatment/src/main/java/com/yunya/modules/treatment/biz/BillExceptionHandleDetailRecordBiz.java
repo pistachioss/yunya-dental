@@ -111,6 +111,12 @@ public class BillExceptionHandleDetailRecordBiz
     return billAdjustDetailInfo;
   }
 
+  /**
+   * 设置调整账单信息账单收费方式
+   *
+   * @param billExceptionHandleRecordId 账单异常处理记录ID
+   * @param payDetailList 收费方式列表
+   */
   private void setBillPaymentValue(
       Integer billExceptionHandleRecordId, List<BillPayDetailRecordVO> payDetailList) {
     BillExceptionHandleDetailRecord entity = new BillExceptionHandleDetailRecord();

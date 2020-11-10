@@ -60,7 +60,7 @@ public class BillExceptionHandleRecordBiz
         BillPaymentAdjustDetailVO billPaymentAdjustDetail =
             billExceptionHandleDetailRecordBiz.findBillPaymentAdjustDetail(
                 handledRecordId, billHandleRecordId, preExceptionHandleRecordId);
-        resultMap.put("billPaymentAdjustRecord", billPaymentAdjustDetail);
+        resultMap.put("billPaymentAdjustDetail", billPaymentAdjustDetail);
         break;
         // 账单撤销
       case 1:
