@@ -5,14 +5,12 @@ spring:
         username: sa
         password: Admin001!
         name: ivy2_yunya_employee_expand
-
     cloud:
         nacos:
             discovery:
                 server-addr: 172.16.17.177:8848
             config:
                 server-addr: 172.16.17.177:8848
-
     redis:
         database: 2
         host: 172.16.17.177
