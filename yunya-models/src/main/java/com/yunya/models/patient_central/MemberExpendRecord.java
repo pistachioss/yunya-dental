@@ -1,7 +1,5 @@
 package com.yunya.models.patient_central;
 
-import io.swagger.models.auth.In;
-
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -122,6 +120,28 @@ public class MemberExpendRecord {
      */
     @Column(name = "current_recharge_bonus")
     private BigDecimal currentBonus;
+
+    /**
+     * 是否有效 是否有效
+     */
+    @Column(name = "inservice")
+    private Boolean inservice;
+
+    /**
+     * 获取是否有效
+     * @return
+     */
+    public Boolean getInservice() {
+        return inservice;
+    }
+
+    /**
+     * 设置是否有效
+     * @param inservice
+     */
+    public void setInservice(Boolean inservice) {
+        this.inservice = inservice;
+    }
 
     /**
      * 获取type

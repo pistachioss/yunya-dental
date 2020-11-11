@@ -36,93 +36,95 @@ import java.util.List;
 @RequestMapping("/employee_schedule")
 @CrossOrigin
 public class EmployeeScheduleController {
-  @Autowired
-  private EmployeeScheduleBiz employeeScheduleBiz;
+    @Autowired
+    private EmployeeScheduleBiz employeeScheduleBiz;
 
-  /**
-   * 删除排班表
-   *
-   * @param employeeScheduleDeleteForm
-   */
-  @DeleteMapping
-  @ApiOperation("删除排班表")
-  public ResponseResult delete(@RequestBody @Validated EmployeeScheduleDeleteForm employeeScheduleDeleteForm) {
+    /**
+     * 删除排班表
+     *
+     * @param employeeScheduleDeleteForm
+     */
+    @DeleteMapping
+    @ApiOperation("删除排班表")
+    public ResponseResult delete(@RequestBody @Validated EmployeeScheduleDeleteForm employeeScheduleDeleteForm) {
 
-    EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleDeleteForm, EmployeeSchedule.class);
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");//注意月份是MM
-    try {
-      employeeSchedule.setWorkDate(simpleDateFormat.parse(employeeScheduleDeleteForm.getWorkDateString()));
-    } catch (ParseException e) {
-      throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleDeleteForm, EmployeeSchedule.class);
+        //注意月份是MM
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            employeeSchedule.setWorkDate(simpleDateFormat.parse(employeeScheduleDeleteForm.getWorkDateString()));
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        }
+        employeeScheduleBiz.delete(employeeSchedule);
+        return ResponseUtil.success();
     }
-    employeeScheduleBiz.delete(employeeSchedule);
-    return ResponseUtil.success();
-  }
 
-  /**
-   * 查看员工排班列表
-   * @param employeeScheduleQueryForm
-   * @return
-   */
-  @PostMapping("/findList")
-  @ApiOperation("查看员工排班列表")
-  public ResponseResult findList(@RequestBody @Validated EmployeeScheduleQueryForm employeeScheduleQueryForm) {
-    return ResponseUtil.success(employeeScheduleBiz.findList(employeeScheduleQueryForm));
-  }
+    /**
+     * 查看员工排班列表
+     *
+     * @param employeeScheduleQueryForm
+     * @return
+     */
+    @PostMapping("/findList")
+    @ApiOperation("查看员工排班列表")
+    public ResponseResult findList(@RequestBody @Validated EmployeeScheduleQueryForm employeeScheduleQueryForm) {
+        return ResponseUtil.success(employeeScheduleBiz.findList(employeeScheduleQueryForm));
+    }
 
-  /**
-   * 复制排班表
-   *
-   * @param employeeScheduleCopyForm
-   * @return
-   */
-  @PostMapping("/copy")
-  @ApiOperation("复制排班表")
-  public ResponseResult copy(@RequestBody @Validated EmployeeScheduleCopyForm employeeScheduleCopyForm) {
-    return ResponseUtil.success(employeeScheduleBiz.copy(employeeScheduleCopyForm));
-  }
+    /**
+     * 复制排班表
+     *
+     * @param employeeScheduleCopyForm
+     * @return
+     */
+    @PostMapping("/copy")
+    @ApiOperation("复制排班表")
+    public ResponseResult copy(@RequestBody @Validated EmployeeScheduleCopyForm employeeScheduleCopyForm) {
+        return ResponseUtil.success(employeeScheduleBiz.copy(employeeScheduleCopyForm));
+    }
 
-  /**
-   * 添加
-   *
-   * @param employeeScheduleForm
-   */
-  @PostMapping("/create")
-  @ApiOperation("添加")
-  @RepeatSubmit
-  public ResponseResult create(@RequestBody EmployeeScheduleForm employeeScheduleForm) throws ParseException {
-    employeeScheduleBiz.create(employeeScheduleForm);
-    return ResponseUtil.success();
-  }
+    /**
+     * 添加
+     *
+     * @param employeeScheduleForm
+     */
+    @PostMapping("/create")
+    @ApiOperation("添加")
+    @RepeatSubmit
+    public ResponseResult create(@RequestBody EmployeeScheduleForm employeeScheduleForm) throws ParseException {
+        employeeScheduleBiz.create(employeeScheduleForm);
+        return ResponseUtil.success();
+    }
 
 
-  /**
-   * 导出员工排班
-   *
-   * @param
-   * @throws Exception
-   */
-  @PostMapping("/export")
-  @ApiOperation("导出员工排班")
-  public void export(
-          HttpServletResponse response, @RequestBody EmployeeScheduleQueryForm employeeScheduleQueryForm
-  ) throws Exception {
-    employeeScheduleBiz.export(response, employeeScheduleQueryForm);
-  }
+    /**
+     * 导出员工排班
+     *
+     * @param
+     * @throws Exception
+     */
+    @PostMapping("/export")
+    @ApiOperation("导出员工排班")
+    public void export(
+            HttpServletResponse response, @RequestBody EmployeeScheduleQueryForm employeeScheduleQueryForm
+    ) throws Exception {
+        employeeScheduleBiz.export(response, employeeScheduleQueryForm);
+    }
 
-  /**
-   * 导出复制排班冲突
-   *
-   * @param
-   * @throws Exception
-   */
-  @PostMapping("/exportconflict")
-  @ApiOperation("导出复制排班冲突")
-  public void exportConflict(
-          HttpServletResponse response,
-          @RequestBody List<EmployeeScheduleExportVO>employeeConflict
-  ) throws Exception {
-    employeeScheduleBiz.exportConflict(response, employeeConflict);
-  }
+    /**
+     * 导出复制排班冲突
+     *
+     * @param
+     * @throws Exception
+     */
+    @PostMapping("/exportconflict")
+    @ApiOperation("导出复制排班冲突")
+    public void exportConflict(
+            HttpServletResponse response,
+            @RequestBody List<EmployeeScheduleExportVO> employeeConflict
+    ) throws Exception {
+        employeeScheduleBiz.exportConflict(response, employeeConflict);
+    }
 
 }

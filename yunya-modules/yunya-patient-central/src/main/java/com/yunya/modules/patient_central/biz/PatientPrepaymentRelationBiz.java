@@ -550,9 +550,9 @@ public class PatientPrepaymentRelationBiz
         prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
         prepaidRechargeRecord.setCurrentRechargePrincipal(prepaidRechargeRecord.getRechargePrincipal());
         prepaidRechargeRecord.setCurrentRechargeBonus(prepaidRechargeRecord.getRechargeBonus());
+        prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
         // 发送消息 撤销收费
         sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 5);
-        prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
       }
     }
 
@@ -577,6 +577,7 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeRecord.setRechargePrincipal(model.getRechargePrincipal());
         // 撤销赠金
       prepaidRechargeRecord.setRechargeBonus(model.getRechargeBonus());
+      prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
       prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());

@@ -30,25 +30,41 @@
     <select id="selectBillPayDetailRecord"
             resultType="com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO">
         select
-            bpdr.bill_pay_record_id as billPayRecordId,
-            bpdr.id as billPayDetailRecordId,
-            bpdr.account_item_id as accountItemId,
-            bpdr.amount as amount
+        bpdr.bill_pay_record_id as billPayRecordId,
+        bpdr.id as billPayDetailRecordId,
+        bpdr.account_item_id as accountItemId,
+        bpdr.amount as amount,
+        bpdr.remark
         from
-            bill_pay_detail_record bpdr
-        where bpdr.inservice = #{inservice} and bpdr.bill_pay_record_id = #{billPayRecordId}
+        bill_pay_detail_record bpdr
+        <where>
+            <if test="inservice != null">
+                and bpdr.inservice = #{inservice}
+            </if>
+            <if test="billPayRecordId != null">
+                and bpdr.bill_pay_record_id = #{billPayRecordId}
+            </if>
+        </where>
     </select>
 
     <!-- 账单异常处理数据详情记录ID查询异常处理记录 -->
     <select id="selectPreBillPayDetailRecord" resultMap="BaseResultMap">
         select
-            bpdr.bill_pay_record_id as billPayRecordId,
-            bpdr.id as billPayDetailRecordId,
-            bpdr.account_item_id as accountItemId,
-            bpdr.amount as amount
+        bpdr.bill_pay_record_id as billPayRecordId,
+        bpdr.id as billPayDetailRecordId,
+        bpdr.account_item_id as accountItemId,
+        bpdr.amount as amount,
+        bpdr.remark
         from
-            bill_pay_detail_record bpdr
-        where bpdr.inservice = #{inservice} and bpdr.id = #{id}
+        bill_pay_detail_record bpdr
+        <where>
+            <if test="inservice != null">
+                and bpdr.inservice = #{inservice}
+            </if>
+            <if test="id != null">
+                and bpdr.id = #{id}
+            </if>
+        </where>
     </select>
 
 </mapper>

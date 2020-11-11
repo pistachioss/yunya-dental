@@ -45,7 +45,7 @@ public class PatientServiceRest {
     @Autowired private PatientMemberInfoBiz patientMemberInfoBiz;
 
     /** 预付款关联 */
-    @Autowired private PatientPrepaymentRelationBiz patientPrepaymentRelationBiz;
+    @Autowired private PatientPrepaymentRelationBiz patientPrepaymentBiz;
 
     /** 回调中心 */
     @Autowired private InformationCallbackBiz informationCallbackBiz;
@@ -121,6 +121,13 @@ public class PatientServiceRest {
     }
 
     @CurrentUser
+    @ApiOperation("会员卡撤销收费")
+    @RequestMapping(value = "/member/revocationFee", method = RequestMethod.POST)
+    public ResponseResult revocationFee(@RequestBody MemberRevocationFeeModel model) {
+        return patientMemberInfoBiz.revocationFee(model);
+    }
+
+    @CurrentUser
     @ApiOperation("会员账单退费")
     @RequestMapping(value = "/member/billRefund", method = RequestMethod.POST)
     public ResponseResult billRefund(@RequestBody MemberBillRechargeModel memberBillRechargeModel) {
@@ -133,7 +140,7 @@ public class PatientServiceRest {
     @ApiOperation("预付款充值")
     @RequestMapping(value = "/prepayment/recharge", method = RequestMethod.POST)
     public ResponseResult recharge(@RequestBody PrepaidRechargeModel memberRechargeModel) {
-        this.patientPrepaymentRelationBiz.recharge(memberRechargeModel);
+        this.patientPrepaymentBiz.recharge(memberRechargeModel);
         return ResponseUtil.success();
     }
 
@@ -142,7 +149,7 @@ public class PatientServiceRest {
     @ApiOperation("预付款账单退费")
     @PostMapping("/prepayment/billRefund")
     public ResponseResult billRefund(@RequestBody PrepaidBillRechargeModel prepaidBillRechargeModel) {
-        patientPrepaymentRelationBiz.billRefund(prepaidBillRechargeModel);
+        patientPrepaymentBiz.billRefund(prepaidBillRechargeModel);
         return ResponseUtil.success();
     }
 
@@ -150,7 +157,14 @@ public class PatientServiceRest {
     @ApiOperation("预付款消费")
     @RequestMapping(value = "/prepaid/expend",method = RequestMethod.POST)
     public ResponseResult expend(@RequestBody PrepaidExpendRecordModel model ){
-        return patientPrepaymentRelationBiz.expend(model);
+        return patientPrepaymentBiz.expend(model);
+    }
+
+    @CurrentUser
+    @ApiOperation("预付款撤销收费")
+    @RequestMapping(value = "prepaid/revocationFee", method = RequestMethod.POST)
+    public ResponseResult revocationFee(@RequestBody PrepaidRevocationFeeModel model) {
+        return patientPrepaymentBiz.revocationFee(model);
     }
 
 

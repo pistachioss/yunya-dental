@@ -194,4 +194,21 @@ public interface RemotePatientCentralServiceFeign {
     @RequestMapping(value = "/api/prepayment/prepaid/paymentRecord",method = RequestMethod.POST)
     PrepaidExpendRecord prePaidPaymentRecordDetail(@RequestBody PaymentRecordDetailQuery query);
 
+    /**
+     * 会员卡撤销收费
+     * @param model 参数模型
+     * @return ResponseResult
+     */
+    @RequestMapping(value = "/member/revocationFee", method = RequestMethod.POST)
+    ResponseResult revocationFee(@RequestBody MemberRevocationFeeModel model);
+
+
+    /**
+     * 预付款撤销收费
+     * @param model 参数模型
+     * @return ResponseResult
+     */
+    @RequestMapping(value = "prepaid/revocationFee", method = RequestMethod.POST)
+    ResponseResult revocationFee(@RequestBody PrepaidRevocationFeeModel model);
+
 }

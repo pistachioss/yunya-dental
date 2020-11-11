@@ -4,6 +4,7 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
 import com.yunya.feign.treatment.domain.query.PaymentRecordQuery;
@@ -18,6 +19,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.system.AccountItem;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
 import com.yunya.models.treatment.BillExceptionHandleRecord;
 import com.yunya.models.treatment.BillPayDetailRecord;
@@ -26,6 +28,7 @@ import com.yunya.modules.treatment.mapper.BillExceptionHandleDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,10 +89,22 @@ public class BillPayDetailRecordBiz
     if (null != billPayRecord) {
       if (billPayRecord.getInservice()) {
         resultData.setBillPayRecordId(billPayRecordId);
+        resultData.setChargeDate(new DateTime(billPayRecord.getCrtTime()).toString("yyyy-MM-dd"));
+        Integer orgId = billPayRecord.getOrgId();
+        resultData.setOrgId(orgId);
+        OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+        if (null != orgInfo) {
+          resultData.setOrgName(orgInfo.getAbbreviation());
+        }
+        Integer payeeId = billPayRecord.getCrtId();
+        resultData.setPayeeId(payeeId);
+        SysEmployee employee = systemServiceFeign.findSysEmployeeById(payeeId);
+        resultData.setPayeeName(employee.getName());
         resultData.setReceivedAmount(billPayRecord.getReceivedAmount());
+        resultData.setStillOweAmount(billPayRecord.getStillOweAmount());
+        List<BillPayDetailRecordVO> detailRecords = getBillPayDetailRecordList(billPayRecordId);
+        resultData.setBillPayDetailRecords(detailRecords);
       }
-      List<BillPayDetailRecordVO> detailRecords = getBillPayDetailRecordList(billPayRecordId);
-      resultData.setBillPayDetailRecords(detailRecords);
     }
     return resultData;
   }
@@ -184,10 +199,7 @@ public class BillPayDetailRecordBiz
     exceptionHandleRecord.setCrtName(name);
     // 上一次修改账单记录ID
     Integer preExceptionHandleRecordId =
-        billExceptionHandleRecordMapper.selectPreExpectionHandleRecordId(billPayRecordId, (byte) 0);
-    if (preExceptionHandleRecordId == null) {
-      preExceptionHandleRecordId = 0;
-    }
+        billExceptionHandleRecordMapper.selectPreExceptionHandleRecordId(billPayRecordId, (byte) 0);
     exceptionHandleRecord.setPreExceptionHandleRecordId(preExceptionHandleRecordId);
     billExceptionHandleRecordMapper.insertSelective(exceptionHandleRecord);
 

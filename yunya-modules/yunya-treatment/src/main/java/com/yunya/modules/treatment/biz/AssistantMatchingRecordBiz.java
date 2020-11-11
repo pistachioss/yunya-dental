@@ -63,8 +63,10 @@ public class AssistantMatchingRecordBiz
    * @return AssistantMatchingRecord
    */
   public AssistantMatchingRecord selectOneByTreatmentIdAndType(
-      Integer treatmentRecordId, int type) {
-
-    return null;
+      Integer treatmentRecordId, Byte type) {
+    AssistantMatchingRecord entity = new AssistantMatchingRecord();
+    entity.setTreatmentRecordId(treatmentRecordId);
+    entity.setType(type);
+    return mapper.selectOne(entity);
   }
 }

@@ -4,7 +4,6 @@ import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPaymentAdjustDetailVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
 import com.yunya.models.treatment.BillExceptionHandleRecord;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,19 +30,17 @@ public class BillExceptionHandleRecordBiz
 
   /** 账单异常处理详情 */
   @Autowired private BillExceptionHandleDetailRecordBiz billExceptionHandleDetailRecordBiz;
-  /** 账单支付记录详情 */
-  @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
   /** 账单退费 */
   @Autowired private BillRefundRecordBiz billRefundRecordBiz;
 
   /**
    * 根据账单异常处理记录查询处理详情
    *
-   * @param billHandleRecordId 账单异常处理记录ID
+   * @param billExceptionHandleRecordId 账单异常处理记录ID
    * @return map
    */
-  public Map<String, Object> findBillHandleDetail(Integer billHandleRecordId) {
-    BillExceptionHandleRecord handleRecord = mapper.selectByPrimaryKey(billHandleRecordId);
+  public Map<String, Object> findBillHandleDetail(Integer billExceptionHandleRecordId) {
+    BillExceptionHandleRecord handleRecord = mapper.selectByPrimaryKey(billExceptionHandleRecordId);
     if (null == handleRecord) {
       throw new ClientServiceException("请选择正确的账单异常处理记录！", PARAMETERS_IS_ILLEGAL);
     }
@@ -59,31 +56,24 @@ public class BillExceptionHandleRecordBiz
       case 0:
         BillPaymentAdjustDetailVO billPaymentAdjustDetail =
             billExceptionHandleDetailRecordBiz.findBillPaymentAdjustDetail(
-                handledRecordId, billHandleRecordId, preExceptionHandleRecordId);
+                handledRecordId, billExceptionHandleRecordId, preExceptionHandleRecordId);
         resultMap.put("billPaymentAdjustDetail", billPaymentAdjustDetail);
         break;
         // 账单撤销
       case 1:
-        BillPayRecordVO billPayDetails = new BillPayRecordVO();
-        BillExceptionHandleDetailRecord entity = new BillExceptionHandleDetailRecord();
-        entity.setBillHandleRecordId(billHandleRecordId);
-        BillExceptionHandleDetailRecord billExceptionHandleDetailRecord =
-            billExceptionHandleDetailRecordBiz.selectOne(entity);
-        if (null != billExceptionHandleDetailRecord) {
-          Integer associateRecordId = billExceptionHandleDetailRecord.getAssociateRecordId();
-          billPayDetails = billPayDetailRecordBiz.findBillPayDetailList(associateRecordId);
-        }
-        resultMap.put("revokeBillPayRecord", billPayDetails);
+        BillPayRecordVO revokePayRecord =
+            billExceptionHandleDetailRecordBiz.findBillRevokePayRecord(billExceptionHandleRecordId);
+        resultMap.put("revokeBillPayRecord", revokePayRecord);
         break;
         // 账单调整
       case 2:
         resultMap =
             billExceptionHandleDetailRecordBiz.findBillOrderDetailAdjustDetails(
-                handledRecordId, billHandleRecordId);
+                handledRecordId, billExceptionHandleRecordId, preExceptionHandleRecordId);
         break;
         // 账单退费
       case 3:
-        resultMap = billRefundRecordBiz.findBillRefundRecordInfo(billHandleRecordId);
+        resultMap = billRefundRecordBiz.findBillRefundRecordInfo(billExceptionHandleRecordId);
         break;
       default:
         break;

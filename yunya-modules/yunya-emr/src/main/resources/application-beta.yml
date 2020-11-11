@@ -1,0 +1,20 @@
+spring:
+    datasource:
+        host: community.yunya365.com
+        port: 3306
+        username: sa
+        password: Admin001!
+        name: ivy2_yunya_emr
+
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 172.16.17.177:8848
+            config:
+                server-addr: 172.16.17.177:8848
+
+    redis:
+        database: 2
+        host: 172.16.17.177
+        port: 6379
+        password: foobared

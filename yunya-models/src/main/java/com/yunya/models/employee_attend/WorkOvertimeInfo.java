@@ -1,0 +1,264 @@
+package com.yunya.models.employee_attend;
+
+import java.util.Date;
+import javax.persistence.*;
+
+@Table(name = "work_overtime_info")
+public class WorkOvertimeInfo {
+    @Id
+    private Integer id;
+
+    /**
+     * 门诊id
+     */
+    @Column(name = "company_id")
+    private Integer companyId;
+
+    /**
+     * 班次id
+     */
+    @Column(name = "schedule_id")
+    private Integer scheduleId;
+
+    /**
+     * 加班时长
+     */
+    @Column(name = "overtime_hours")
+    private Integer overtimeHours;
+
+    /**
+     * 加班事由
+     */
+    @Column(name = "overtime_reason")
+    private String overtimeReason;
+
+    /**
+     * 审批人id（直接存员工id 与审批人员表没有关系）
+     */
+    @Column(name = "approval_people_id")
+    private Integer approvalPeopleId;
+
+    /**
+     * 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
+     */
+    @Column(name = "apprpval_status")
+    private String apprpvalStatus;
+
+    /**
+     * 创建人
+     */
+    @Column(name = "crt_id")
+    private Integer crtId;
+
+    /**
+     * 创建时间
+     */
+    @Column(name = "crt_time")
+    private Date crtTime;
+
+    /**
+     * 更新人
+     */
+    @Column(name = "upd_id")
+    private Integer updId;
+
+    /**
+     * 更新时间
+     */
+    @Column(name = "upd_time")
+    private Date updTime;
+
+    /**
+     * @return id
+     */
+    public Integer getId() {
+        return id;
+    }
+
+    /**
+     * @param id
+     */
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    /**
+     * 获取门诊id
+     *
+     * @return company_id - 门诊id
+     */
+    public Integer getCompanyId() {
+        return companyId;
+    }
+
+    /**
+     * 设置门诊id
+     *
+     * @param companyId 门诊id
+     */
+    public void setCompanyId(Integer companyId) {
+        this.companyId = companyId;
+    }
+
+    /**
+     * 获取班次id
+     *
+     * @return schedule_id - 班次id
+     */
+    public Integer getScheduleId() {
+        return scheduleId;
+    }
+
+    /**
+     * 设置班次id
+     *
+     * @param scheduleId 班次id
+     */
+    public void setScheduleId(Integer scheduleId) {
+        this.scheduleId = scheduleId;
+    }
+
+    /**
+     * 获取加班时长
+     *
+     * @return overtime_hours - 加班时长
+     */
+    public Integer getOvertimeHours() {
+        return overtimeHours;
+    }
+
+    /**
+     * 设置加班时长
+     *
+     * @param overtimeHours 加班时长
+     */
+    public void setOvertimeHours(Integer overtimeHours) {
+        this.overtimeHours = overtimeHours;
+    }
+
+    /**
+     * 获取加班事由
+     *
+     * @return overtime_reason - 加班事由
+     */
+    public String getOvertimeReason() {
+        return overtimeReason;
+    }
+
+    /**
+     * 设置加班事由
+     *
+     * @param overtimeReason 加班事由
+     */
+    public void setOvertimeReason(String overtimeReason) {
+        this.overtimeReason = overtimeReason;
+    }
+
+    /**
+     * 获取审批人id（直接存员工id 与审批人员表没有关系）
+     *
+     * @return approval_people_id - 审批人id（直接存员工id 与审批人员表没有关系）
+     */
+    public Integer getApprovalPeopleId() {
+        return approvalPeopleId;
+    }
+
+    /**
+     * 设置审批人id（直接存员工id 与审批人员表没有关系）
+     *
+     * @param approvalPeopleId 审批人id（直接存员工id 与审批人员表没有关系）
+     */
+    public void setApprovalPeopleId(Integer approvalPeopleId) {
+        this.approvalPeopleId = approvalPeopleId;
+    }
+
+    /**
+     * 获取审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
+     *
+     * @return apprpval_status - 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
+     */
+    public String getApprpvalStatus() {
+        return apprpvalStatus;
+    }
+
+    /**
+     * 设置审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
+     *
+     * @param apprpvalStatus 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
+     */
+    public void setApprpvalStatus(String apprpvalStatus) {
+        this.apprpvalStatus = apprpvalStatus;
+    }
+
+    /**
+     * 获取创建人
+     *
+     * @return crt_id - 创建人
+     */
+    public Integer getCrtId() {
+        return crtId;
+    }
+
+    /**
+     * 设置创建人
+     *
+     * @param crtId 创建人
+     */
+    public void setCrtId(Integer crtId) {
+        this.crtId = crtId;
+    }
+
+    /**
+     * 获取创建时间
+     *
+     * @return crt_time - 创建时间
+     */
+    public Date getCrtTime() {
+        return crtTime;
+    }
+
+    /**
+     * 设置创建时间
+     *
+     * @param crtTime 创建时间
+     */
+    public void setCrtTime(Date crtTime) {
+        this.crtTime = crtTime;
+    }
+
+    /**
+     * 获取更新人
+     *
+     * @return upd_id - 更新人
+     */
+    public Integer getUpdId() {
+        return updId;
+    }
+
+    /**
+     * 设置更新人
+     *
+     * @param updId 更新人
+     */
+    public void setUpdId(Integer updId) {
+        this.updId = updId;
+    }
+
+    /**
+     * 获取更新时间
+     *
+     * @return upd_time - 更新时间
+     */
+    public Date getUpdTime() {
+        return updTime;
+    }
+
+    /**
+     * 设置更新时间
+     *
+     * @param updTime 更新时间
+     */
+    public void setUpdTime(Date updTime) {
+        this.updTime = updTime;
+    }
+}

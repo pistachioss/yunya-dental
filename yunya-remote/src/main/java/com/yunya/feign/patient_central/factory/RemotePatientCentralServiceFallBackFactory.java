@@ -126,9 +126,18 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     public MemberExpendRecord memberPaymentRecordDetail(PaymentRecordDetailQuery query) {
         return null;
     }
+    @Override
+    public ResponseResult revocationFee(MemberRevocationFeeModel model) {
+        return null;
+    }
 
     @Override
-    public PrepaidExpendRecord prePaidPaymentRecordDetail(PaymentRecordDetailQuery query) {
+    public ResponseResult revocationFee(PrepaidRevocationFeeModel model) {
+        return null;
+    }
+
+    @Override
+    public PrepaidExpendRecord prePaidPaymentRecordDetail(PaymentRecordDetailQuery query){
         return null;
     }
 }

@@ -86,13 +86,6 @@ public class PatientBaseInfoModel implements Serializable {
     @ApiModelProperty(value = "性别 0-男；1-女；2-未知",required = false)
     private Byte gender;
 
-    /**
-     * 年龄
-     */
-    @ApiModelProperty(value = "年龄")
-    @Min(value = 0,message = "年龄不能为小数")
-    @Max(value = 2147483647,message = "年龄超过了允许输入的最大整数,请重新输入")
-    private Integer age;
 
     /**
      * 出生日期
