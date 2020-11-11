@@ -25,12 +25,12 @@ public class EmployeeScheduleForm {
 
   @NotNull(message = "排班日期不允许为空")
   @ApiModelProperty("排班日期")
-  private String WorkDate;
+  private String workDate;
 
   /**
    * 公司端对应的诊所ID
    */
-  @NotNull(message = "员工ID不允许为空")
+  @NotNull(message = "公司端对应的诊所ID不允许为空")
   @ApiModelProperty("公司端对应的诊所ID")
   private Integer clinicId;
 }

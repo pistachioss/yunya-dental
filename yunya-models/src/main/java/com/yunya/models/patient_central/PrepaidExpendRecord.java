@@ -119,6 +119,23 @@ public class PrepaidExpendRecord {
     private BigDecimal currentBonus;
 
     /**
+     * 是否启用 是否有效
+     */
+    private Boolean inservice;
+
+    /**
+     * 获取
+     * @return
+     */
+    public Boolean getInservice() {
+        return inservice;
+    }
+
+    public void setInservice(Boolean inservice) {
+        this.inservice = inservice;
+    }
+
+    /**
      * 获取当前本金
      * @return BigDecimal
      */

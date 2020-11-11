@@ -39,7 +39,7 @@
                 <!--<table tableName="vouche_coupon" domainObjectName="VoucheCoupon"/>-->
                 <!--<table tableName="voucher_discount_item" domainObjectName="VoucherDiscountItem"/>-->
         <!--<table tableName="coupon_file_info" domainObjectName="CouponFileInfo"/>-->
-        <table tableName="vacation_set" domainObjectName="VacationSet"/>
+        <table tableName="approval_people" domainObjectName="ApprovalPeople"/>
 
     </context>
 </generatorConfiguration>

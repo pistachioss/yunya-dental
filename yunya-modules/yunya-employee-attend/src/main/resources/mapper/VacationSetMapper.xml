@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.employeeattend.mapper.VacationSetMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.VacationSet" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="vacation_status" property="vacationStatus" jdbcType="INTEGER" />
+    <result column="vacation_name" property="vacationName" jdbcType="VARCHAR" />
+    <result column="vacation_range" property="vacationRange" jdbcType="INTEGER" />
+    <result column="vacation_enable" property="vacationEnable" jdbcType="INTEGER" />
+    <result column="vacation_explain" property="vacationExplain" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>
