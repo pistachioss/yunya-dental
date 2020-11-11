@@ -72,6 +72,8 @@ public class PatientPrepaymentRelationBiz
 
   /** 注入服务 */
   @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
+  /** 注入会员卡消费记录Mapper */
+  @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
 
   /**
    * 患者预付款基本信息查询
@@ -280,7 +282,6 @@ public class PatientPrepaymentRelationBiz
     }
     return new PageInfo<>(resultList);
   }
-
   /**
    * 预付款退费
    *

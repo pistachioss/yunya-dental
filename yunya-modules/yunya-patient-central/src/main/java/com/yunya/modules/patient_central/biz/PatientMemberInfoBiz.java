@@ -760,5 +760,18 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到消费记录", memberExpend);
     }
 
-
+  /**
+   * 根据会员卡号和账单记录ID查询支付详情（外部服务调用）
+   * @param query
+   * @return 返回支付详情
+   */
+  public MemberExpendRecord memberPaymentRecordDetail(PaymentRecordDetailQuery query) {
+    MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
+    memberExpendRecord.setMemberId(query.getCardId());
+    memberExpendRecord.setBillPayRecordId(query.getBillRecordId());
+    return memberExpendRecordMapper.selectOne(memberExpendRecord);
   }
+
+
+
+}
