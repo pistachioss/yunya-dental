@@ -71,14 +71,25 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             throw new ClientServiceException("排班冲突", OperationCodeConstants.SAME_DATA_EXIST);
         }
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        try {
+            date = simpleDateFormat.parse(employeeScheduleForm.getWorkDate());
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        }
         EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleForm, EmployeeSchedule.class);
         employeeSchedule.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
         employeeSchedule.setClinicId(employeeScheduleForm.getClinicId());
+        employeeSchedule.setWorkDate(date);
         employeeSchedule.setScheduleId(Integer.valueOf(employeeScheduleForm.getScheduleId()));
-        try {
-            employeeSchedule.setWorkDate(simpleDateFormat.parse(employeeScheduleForm.getWorkDate()));
-        } catch (ParseException e) {
-            throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        //查询当前日期的排班个数 超过两个则不能继续添加排班
+        EmployeeSchedule find = new  EmployeeSchedule();
+        find.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
+        find.setClinicId(employeeScheduleForm.getClinicId());
+        find.setWorkDate(date);
+        int a = mapper.selectCount(find);
+        if(a>=2){
+            throw new ClientServiceException("每天最多排两个班次", OperationCodeConstants.INSERT_MODEL);
         }
         mapper.insertSelective(employeeSchedule);
     }
