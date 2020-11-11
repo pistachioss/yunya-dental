@@ -19,7 +19,6 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.AuthDiscountBenefit;
 import com.yunya.models.discount.CardBenefit;
 import com.yunya.models.discount.CouponCommonInfo;
@@ -28,6 +27,7 @@ import com.yunya.models.discount.OrderBenefit;
 import com.yunya.models.discount.PackageCouponItem;
 import com.yunya.models.discount.SpecialPackageCouponItem;
 import com.yunya.models.discount.VoucheCoupon;
+import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.discount.enums.DiscountError;
@@ -91,8 +91,6 @@ public class BenefitBiz {
 	private RemoteSystemServiceFeign systemServiceFeign;
 	@Resource
 	private RemoteTreatmentServiceFeign treatmentServiceFeign;
-	@Resource
-	private RedisUtils redisUtils;
 
 	private static final Integer AUTH_BENEFIT_TYPE = 2;
 
@@ -254,8 +252,14 @@ public class BenefitBiz {
 						benefitVo.setBenefitId(obj.getCardId());
 						benefitVo.setBenefitType(obj.getBenefitType());
 						benefitVo.setCouponType(obj.getCouponType());
-						CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
-						benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
+						if (MEMBER_TYPE.equals(obj.getBenefitType())) {
+							MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCardId());
+							benefitVo.setBenefitName(memberType == null ? null : memberType.getName());
+						}
+						if (COUPON_TYPE.equals(obj.getBenefitType())) {
+							CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(obj.getCouponId());
+							benefitVo.setBenefitName(coupon == null ? null : coupon.getName());
+						}
 						benefitVo.setBenefitAmount(obj.getBenefitAmount());
 						return benefitVo;
 					}).collect(toList());
