@@ -29,3 +29,8 @@ spring:
         host: 172.16.17.177
         port: 6379
         password: foobared
+    rabbitmq:
+        host: 172.16.17.177
+        port: 5672
+        username: admin
+        password: admin
