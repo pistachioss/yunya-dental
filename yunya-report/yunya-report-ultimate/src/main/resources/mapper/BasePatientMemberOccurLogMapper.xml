@@ -335,20 +335,20 @@
         JOIN base_patient_member bpm ON bpm.patient_id = bpt.patient_Id
         <where>
             bpmol.type = 1
-            AND bpmol.occur_type = 3
+            and bpmol.occur_type = 3
             <if test="form.orgId != null and form.orgId != ''">
-                AND bpmol.org_id = #{form.orgId}
+                and bpmol.org_id = #{form.orgId}
             </if>
 
             <if test="patientIds != null and patientIds.size() > 0 ">
-                AND bpmol.patient_id in
+                and bpmol.patient_id in
                 <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
                     #{ids}
                 </foreach>
             </if>
 
             <if test="form.cardNumber != null and form.cardNumber != ''">
-                AND bpm.card_number = #{form.cardNumber}
+                and bpm.card_number = #{form.cardNumber}
             </if>
 
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
@@ -370,30 +370,30 @@
         ( SELECT current_recharge_principal FROM base_patient_member_occur_log
           WHERE occur_date =
           (
-          SELECT Max( a.occur_date ) FROM base_patient_member_occur_log a
+          SELECT Max( w.occur_date ) FROM base_patient_member_occur_log w
             <where>
-              a.type = #{form.type}
-              and a.card_id = bpm.card_id
+              w.type = #{form.type}
+              and w.card_id = bpm.card_id
               <if test="form.startDate != null and form.startDate != ''">
-                  <![CDATA[ AND date_format(a.occur_date, '%Y-%m-%d' ) &lt;= date_format(#{form.startDate}, '%Y-%m-%d' )   ]]>
+                  and date_format(w.occur_date, '%Y-%m-%d' ) &lt;= date_format(#{form.startDate}, '%Y-%m-%d' )
               </if>
             </where>
-          GROUP BY a.card_id
+          GROUP BY w.card_id
           )
         ) earlyCurrentRechargePrincipal,
 
         ( SELECT current_recharge_bonus FROM base_patient_member_occur_log
           WHERE occur_date =
           (
-          SELECT Max( a.occur_date ) FROM base_patient_member_occur_log a
+          SELECT Max( b.occur_date ) FROM base_patient_member_occur_log b
             <where>
-                a.type = #{form.type}
-                and a.card_id = bpm.card_id
+                b.type = #{form.type}
+                and b.card_id = bpm.card_id
                 <if test="form.startDate != null and form.startDate != ''">
-                    <![CDATA[ AND date_format( a.occur_date, '%Y-%m-%d' ) &lt;= date_format(#{form.startDate}, '%Y-%m-%d' )   ]]>
+                    and date_format( b.occur_date, '%Y-%m-%d' ) &lt;= date_format(#{form.startDate}, '%Y-%m-%d' )
                 </if>
             </where>
-          GROUP BY a.card_id
+          GROUP BY b.card_id
           )
         ) earlyCurrentRechargeBonus,
 
@@ -403,8 +403,8 @@
                 and a.occur_type = 1
                 and a.card_id = bpm.card_id
                 <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )   ]]>
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )   ]]>
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
                 </if>
             </where>
         ) thisRechargePrincipalAmount,
@@ -415,8 +415,8 @@
                 and a.occur_type = 1
                 and a.card_id = bpm.card_id
                 <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )   ]]>
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )   ]]>
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
                 </if>
             </where>
         ) thisRechargeBonusAmount,
@@ -427,8 +427,8 @@
                 and a.occur_type = 2
                 and a.card_id = bpm.card_id
                 <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )   ]]>
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )   ]]>
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
                 </if>
             </where>
         ) thisExpendPrincipalAmount,
@@ -439,8 +439,8 @@
                 and a.occur_type = 2
                 and a.card_id = bpm.card_id
                 <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )   ]]>
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )   ]]>
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
                 </if>
             </where>
         ) thisExpendBonusAmount,
@@ -451,8 +451,8 @@
             and a.occur_type = 3
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )   ]]>
-                <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )   ]]>
+                 and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
+                 and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         ) thisReturnPrincipalAmount,
@@ -463,8 +463,8 @@
             and a.occur_type = 3
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )   ]]>
-                <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )   ]]>
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         ) thisReturnBonusAmount,
@@ -477,7 +477,7 @@
                 a.type = #{form.type}
                 and a.card_id = bpm.card_id
                 <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )   ]]>
+                     and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
                 </if>
             </where>
            )
@@ -492,7 +492,7 @@
                 a.type = #{form.type}
                 and a.card_id = bpm.card_id
                 <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                    <![CDATA[ AND DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )   ]]>
+                    and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
                 </if>
             </where>
             )
@@ -503,22 +503,22 @@
         <where>
             bpm.type = #{form.type}
             <if test="form.orgId != null and form.orgId != ''">
-                AND bpm.org_id = #{form.orgId}
+                and bpm.org_id = #{form.orgId}
             </if>
 
             <if test="patientIds != null and patientIds.size() > 0 ">
-                AND bp.patient_id in
+                and bp.patient_id in
                 <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
                     #{ids}
                 </foreach>
             </if>
 
             <if test="form.cardNumber != null and form.cardNumber != ''">
-                AND bpm.card_number = #{form.cardNumber}
+                and bpm.card_number = #{form.cardNumber}
             </if>
 
             <if test="form.memberLevelIds != null ">
-                AND bpm.member_level_id in
+                and bpm.member_level_id in
                 <foreach collection="memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
                     #{levelIds}
                 </foreach>
