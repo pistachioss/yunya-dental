@@ -1,4 +1,5 @@
 package com.yunya.feign.appointment.vo;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -71,6 +72,7 @@ public class AppointOperationRecordVo implements Serializable {
 
     /** 创建时间 */
     @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private Date crtTime;
 
     /** 创建人名 */

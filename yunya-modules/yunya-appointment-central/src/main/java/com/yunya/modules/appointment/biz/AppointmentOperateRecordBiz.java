@@ -15,7 +15,9 @@ import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.appointment.AppointmentOperateRecord;
+import com.yunya.models.system.DepartmentRoom;
 import com.yunya.modules.appointment.mapper.AppointmentOperateRecordMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +37,7 @@ import java.util.List;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecordMapper, AppointmentOperateRecord> {
 
     @Autowired
@@ -149,32 +152,32 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         // 保存 预约科室 修改记录
         Integer deptRoomIdBefore = appointment.getDeptRoomId();
         Integer deptRoomIdAfter = appointmentBaseForm.getDeptRoomId();
-        ClinicDepartmentRoomVO beforeModifyDepartmentRoomInfo = null;
-        ClinicDepartmentRoomVO afterModifyDepartmentRoomtInfo = null;
+        DepartmentRoom beforeModifyDepartmentRoomInfo = null;
+        DepartmentRoom afterModifyDepartmentRoomtInfo = null;
         if (null == deptRoomIdBefore && null != deptRoomIdAfter && !deptRoomIdAfter.equals(deptRoomIdBefore)) {
-            afterModifyDepartmentRoomtInfo = systemServiceFeign.findClinicDepartmentRoomById(deptRoomIdAfter);
+            afterModifyDepartmentRoomtInfo = systemServiceFeign.findDepartmentRoomById(deptRoomIdAfter);
             record.setBeforeOperation("");
             if (null != afterModifyDepartmentRoomtInfo) {
-                record.setAfterOperation(afterModifyDepartmentRoomtInfo.getDeptRoomName());
+                record.setAfterOperation(afterModifyDepartmentRoomtInfo.getName());
             }
             record.setOperateItem("预约科室");
             operateRecords.add(record);
         } else if (null != deptRoomIdBefore && null == deptRoomIdAfter && !deptRoomIdBefore.equals(deptRoomIdAfter)) {
-            beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(deptRoomIdBefore);
+            beforeModifyDepartmentRoomInfo = systemServiceFeign.findDepartmentRoomById(deptRoomIdBefore);
             if (null != beforeModifyDepartmentRoomInfo) {
-                record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
+                record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getName());
             }
             record.setAfterOperation("");
             record.setOperateItem("预约科室");
             operateRecords.add(record);
         } else if (null != deptRoomIdBefore && null != deptRoomIdAfter && !deptRoomIdBefore.equals(deptRoomIdAfter)) {
-            afterModifyDepartmentRoomtInfo = systemServiceFeign.findClinicDepartmentRoomById(deptRoomIdAfter);
-            beforeModifyDepartmentRoomInfo = systemServiceFeign.findClinicDepartmentRoomById(deptRoomIdBefore);
+            afterModifyDepartmentRoomtInfo = systemServiceFeign.findDepartmentRoomById(deptRoomIdAfter);
+            beforeModifyDepartmentRoomInfo = systemServiceFeign.findDepartmentRoomById(deptRoomIdBefore);
             if (null != beforeModifyDepartmentRoomInfo) {
-                record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getDeptRoomName());
+                record.setBeforeOperation(beforeModifyDepartmentRoomInfo.getName());
             }
             if (null != afterModifyDepartmentRoomtInfo) {
-                record.setAfterOperation(afterModifyDepartmentRoomtInfo.getDeptRoomName());
+                record.setAfterOperation(afterModifyDepartmentRoomtInfo.getName());
             }
             record.setOperateItem("预约科室");
             operateRecords.add(record);
