@@ -4,6 +4,8 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import com.yunya.framework.common.handler.GlobalExceptionHandler;
+import com.yunya.framework.common.interceptor.RepeatSubmitInterceptor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -27,6 +29,9 @@ import java.util.List;
 @Primary
 public class WebConfiguration implements WebMvcConfigurer {
 
+  @Autowired
+  RepeatSubmitInterceptor repeatSubmitInterceptor;
+
   @Bean
   GlobalExceptionHandler getGlobalExceptionHandler() {
     return new GlobalExceptionHandler();
@@ -35,6 +40,7 @@ public class WebConfiguration implements WebMvcConfigurer {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(getUserAuthRestInterceptor()).addPathPatterns("/**");
+    registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
   }
 
   @Override

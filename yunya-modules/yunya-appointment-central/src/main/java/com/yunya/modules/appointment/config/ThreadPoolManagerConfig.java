@@ -6,10 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -39,6 +36,10 @@ public class ThreadPoolManagerConfig {
     /** 缓冲队列大小 = (CORE_POOL_SIZE / 每个任务花费时间) * 系统允许容忍的最大响应时间 */
     private static final int QUEUE_CAPACITY = (int) (CORE_POOL_SIZE / 0.1 * 5);
 
+    /**
+     * 异步定时任务线程池
+     * @return
+     */
     @Bean("customizeExecutor")
     public ThreadPoolTaskExecutor customizeExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -49,6 +50,29 @@ public class ThreadPoolManagerConfig {
         executor.setRejectedExecutionHandler(customizeRejectedHandler());
         executor.setQueueCapacity(QUEUE_CAPACITY);
         return executor;
+    }
+
+    /**
+     * 线程池
+     * @return
+     */
+    @Bean("poolExecutor")
+    public ThreadPoolExecutor poolExecutor() {
+        /*
+         * corePoolSize:核心线程数
+         * maximumPoolSize：线程池所容纳最大线程数(workQueue队列满了之后才开启)
+         * keepAliveTime：非核心线程闲置时间超时时长
+         * unit：keepAliveTime的单位
+         * workQueue：等待队列，存储还未执行的任务
+         * threadFactory：线程创建的工厂
+         * handler：异常处理机制
+         *
+         */
+        return new ThreadPoolExecutor(CORE_POOL_SIZE,MAXIMUM_POOL_SIZE,KEEP_ALIVE,
+                TimeUnit.SECONDS,
+                blockQueue,
+                customizeThreadFactory(),
+                customizeRejectedHandler());
     }
 
     /**

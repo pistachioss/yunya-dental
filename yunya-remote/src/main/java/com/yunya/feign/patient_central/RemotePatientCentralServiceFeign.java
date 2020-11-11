@@ -5,6 +5,7 @@ import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
@@ -12,8 +13,10 @@ import com.yunya.feign.patient_central.factory.RemotePatientCentralServiceFallBa
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
+import com.yunya.models.patient_central.PrepaidExpendRecord;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
@@ -163,7 +166,7 @@ public interface RemotePatientCentralServiceFeign {
      * @param memberBillRechargeModel 会员账单退费model
      * @return ResponseResult
      */
-    @RequestMapping(value = "/member/billRefund", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/member/billRefund", method = RequestMethod.POST)
     ResponseResult billRefund(@RequestBody MemberBillRechargeModel memberBillRechargeModel);
 
 
@@ -172,8 +175,23 @@ public interface RemotePatientCentralServiceFeign {
      * @param prepaidBillRechargeModel 预付款账单退费model
      * @return ResponseResult
      */
-    @PostMapping("/prepayment/billRefund")
+    @PostMapping("/api/prepayment/billRefund")
     ResponseResult billRefund(@RequestBody PrepaidBillRechargeModel prepaidBillRechargeModel);
 
+    /**
+     * 根据会员卡号和账单记录ID查询支付详情（外部服务调用）
+     * @return 返回支付详情
+     */
+    @ApiOperation("根据会员卡号和账单记录ID查询支付详情（外部服务调用）")
+    @RequestMapping(value = "/api/prepayment/member/paymentRecord",method = RequestMethod.POST)
+    MemberExpendRecord memberPaymentRecordDetail(@RequestBody PaymentRecordDetailQuery query);
+
+    /**
+     * 根据账单记录ID和预付款ID查询支付记录详细（外部服务调用）
+     * @return 预付款支付记录
+     */
+    @ApiOperation("根据账单记录ID和预付款ID查询支付记录详细（外部服务调用）")
+    @RequestMapping(value = "/api/prepayment/prepaid/paymentRecord",method = RequestMethod.POST)
+    PrepaidExpendRecord prePaidPaymentRecordDetail(@RequestBody PaymentRecordDetailQuery query);
 
 }

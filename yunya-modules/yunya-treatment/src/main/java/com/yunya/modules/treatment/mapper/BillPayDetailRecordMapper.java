@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
+import com.yunya.feign.treatment.domain.vo.PaymentRecordVO;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;

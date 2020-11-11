@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
 import cn.hutool.core.util.ArrayUtil;
+import com.github.pagehelper.PageHelper;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
@@ -564,6 +565,9 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @return 返回订单处理列表
    */
   public List<OrderProcessVO> orderProcess(OrderProcessQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(),query.getPageSize());
+    }
     String search = query.getSearch();
     String orderRecordNum = query.getOrderRecordNum();
     Integer[] orgIds = query.getOrgIds();
@@ -578,6 +582,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
       });
       patientArr = ArrayUtil.toArray(patientIds, Integer.class);
     }
+
     List<OrderProcessVO> orderProcessVOS = mapper.selectOrderProcess(patientArr,orderRecordNum,orgIds);
     if (StringHelper.isNotEmpty(orderProcessVOS)) {
       orderProcessVOS.forEach(orderProcessVO -> {

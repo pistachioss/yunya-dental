@@ -229,4 +229,13 @@ public class ClinicDepartmentRoomBiz
       mapper.updateByPrimaryKeySelective(result);
     }
   }
+
+  /**
+   * 批量添加门诊科室
+   * @param list 门诊科室列表
+   */
+  public void addBatch(List<ClinicDepartmentRoom> list) {
+    mapper.insertBatch(list);
+  }
+
 }

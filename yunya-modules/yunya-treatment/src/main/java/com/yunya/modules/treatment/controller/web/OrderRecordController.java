@@ -136,10 +136,7 @@ public class OrderRecordController {
   @ApiOperation("订单处理（门诊端-订单处理）")
   @CurrentUser
   @PostMapping("/process")
-  public ResponseResult<PageInfo<OrderProcessVO>> OrderProcess(@RequestBody OrderProcessQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(),query.getPageSize());
-    }
+  public ResponseResult<PageInfo<OrderProcessVO>> orderProcess(@RequestBody OrderProcessQuery query) {
     List<OrderProcessVO> orderProcessList = orderRecordBiz.orderProcess(query);
     return ResponseUtil.success(new PageInfo<>(orderProcessList));
   }

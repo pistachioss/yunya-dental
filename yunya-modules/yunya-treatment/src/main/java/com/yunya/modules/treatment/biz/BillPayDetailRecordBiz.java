@@ -1,16 +1,22 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.model.PaymentModel;
+import com.yunya.feign.treatment.domain.query.PaymentRecordQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
+import com.yunya.feign.treatment.domain.vo.PaymentRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.patient_central.MemberExpendRecord;
+import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
 import com.yunya.models.treatment.BillExceptionHandleRecord;
@@ -65,6 +71,8 @@ public class BillPayDetailRecordBiz
 
   /** 账单异常处理详情记录 */
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
+  /** 患者服务 */
+  @Autowired private RemotePatientCentralServiceFeign remotePatientCentralServiceFeign;
 
   /**
    * 根据收费记录ID查询入账明细列表
@@ -283,4 +291,43 @@ public class BillPayDetailRecordBiz
     }
     return amount;
   }
+
+  /**
+   * 会员卡信息查询(患者档案-就诊记录-账单详情-收费信息-预付款/会员卡
+   * @param query 查询参数
+   * @return 返回会员账户信息
+   */
+  public List<PaymentRecordVO> memberAccountPaymentRecordInfo(PaymentRecordQuery query) {
+    Integer billPayRecordId = query.getBillPayRecordId();
+    Byte type = query.getType();
+    BillPayDetailRecord payDetailRecord = new BillPayDetailRecord();
+    payDetailRecord.setBillPayRecordId(billPayRecordId);
+    payDetailRecord.setType(type);
+    List<BillPayDetailRecord> billPayDetailRecords = mapper.select(payDetailRecord);
+    List<PaymentRecordVO> paymentRecordVOS = new ArrayList<>();
+    if (StringHelper.isNotEmpty(billPayDetailRecords)) {
+      billPayDetailRecords.forEach(billPayDetailRecord -> {
+        PaymentRecordVO paymentRecordVO = new PaymentRecordVO();
+        PaymentRecordDetailQuery queryParams = new PaymentRecordDetailQuery();
+        queryParams.setCardId(billPayDetailRecord.getRemark());
+        queryParams.setBillRecordId(billPayDetailRecord.getBillPayRecordId());
+        if (billPayDetailRecord.getType() == 1) {
+          MemberExpendRecord memberExpendRecord = remotePatientCentralServiceFeign.memberPaymentRecordDetail(queryParams);
+          paymentRecordVO.setCardNumber(billPayDetailRecord.getRemark());
+          paymentRecordVO.setPrincipalAmount(memberExpendRecord.getExpendPrincipal());
+          paymentRecordVO.setBonusAmount(memberExpendRecord.getExpendGift());
+
+        } else if (billPayDetailRecord.getType() == 0) {
+          PrepaidExpendRecord prepaidExpendRecord = remotePatientCentralServiceFeign.prePaidPaymentRecordDetail(queryParams);
+          paymentRecordVO.setCardNumber(billPayDetailRecord.getRemark());
+          paymentRecordVO.setPrincipalAmount(prepaidExpendRecord.getExpendPrincipal());
+          paymentRecordVO.setBonusAmount(prepaidExpendRecord.getExpendGift());
+        }
+        paymentRecordVOS.add(paymentRecordVO);
+      });
+    }
+    return paymentRecordVOS;
+  }
+
+
 }

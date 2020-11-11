@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.validation.constraints.NotNull;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -77,8 +78,9 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
         Date appointDateBefore = appointment.getAppointDate();
         Date appointDateAfter = appointmentBaseForm.getAppointDate();
         if (null != appointDateBefore && null != appointDateAfter && !appointDateBefore.equals(appointDateAfter)){
-            record.setBeforeOperation(appointment.getAppointDate().toString());
-            record.setAfterOperation(appointmentBaseForm.getAppointDate().toString());
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            record.setBeforeOperation(dateFormat.format(appointment.getAppointDate()));
+            record.setAfterOperation(dateFormat.format(appointmentBaseForm.getAppointDate()));
             record.setOperateItem("预约日期");
             operateRecords.add(record);
         }

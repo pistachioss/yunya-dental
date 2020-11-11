@@ -15,6 +15,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -22,7 +23,6 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
-import io.swagger.models.auth.In;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -437,10 +437,20 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     PatientMemberInfo patientMemberInfo =
         patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
     if (patientMemberInfo != null) {
-      patientMemberInfo.setPrincipalAmount(
-          patientMemberInfo.getPrincipalAmount().subtract(model.getReturnPrincipalAmount()));
-      patientMemberInfo.setBonusAmount(
-          patientMemberInfo.getBonusAmount().subtract(model.getReturnGiftAmount()));
+      BigDecimal principalAmount = patientMemberInfo.getPrincipalAmount();
+      BigDecimal returnPrincipalAmount = model.getReturnPrincipalAmount();
+      BigDecimal principalSubtract = principalAmount.subtract(returnPrincipalAmount);
+      if (principalSubtract.intValue() < 0) {
+        throw new ClientServiceException("会员卡本金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
+      }
+      patientMemberInfo.setPrincipalAmount(principalSubtract);
+      BigDecimal bonusAmount = patientMemberInfo.getBonusAmount();
+      BigDecimal returnGiftAmount = model.getReturnGiftAmount();
+      BigDecimal bonusSubtract = bonusAmount.subtract(returnGiftAmount);
+      if (bonusSubtract.intValue() < 0) {
+        throw new ClientServiceException("会员卡赠金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
+      }
+      patientMemberInfo.setBonusAmount(bonusSubtract);
       patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
 
       // 添加会员卡退费记录
@@ -625,6 +635,19 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     }
     return new PageInfo<>(resultList);
   }
+
+  /**
+   * 根据会员卡号和账单记录ID查询支付详情（外部服务调用）
+   * @param query
+   * @return 返回支付详情
+   */
+  public MemberExpendRecord memberPaymentRecordDetail(PaymentRecordDetailQuery query) {
+    MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
+    memberExpendRecord.setMemberId(query.getCardId());
+    memberExpendRecord.setBillPayRecordId(query.getBillRecordId());
+    return memberExpendRecordMapper.selectOne(memberExpendRecord);
+  }
+
 
   /**
    * 查询会员卡绑定信息

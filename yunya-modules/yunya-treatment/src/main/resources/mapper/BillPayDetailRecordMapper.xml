@@ -40,7 +40,7 @@
     </select>
 
     <!-- 账单异常处理数据详情记录ID查询异常处理记录 -->
-    <select id="selectPreBillPayDetailRecord" resultType="com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO">
+    <select id="selectPreBillPayDetailRecord" resultMap="BaseResultMap">
         select
             bpdr.bill_pay_record_id as billPayRecordId,
             bpdr.id as billPayDetailRecordId,
@@ -50,4 +50,5 @@
             bill_pay_detail_record bpdr
         where bpdr.inservice = #{inservice} and bpdr.id = #{id}
     </select>
+
 </mapper>

@@ -50,4 +50,10 @@ public interface ClinicDepartmentRoomMapper extends Mapper<ClinicDepartmentRoom>
       @Param("orgId") Integer orgId,
       @Param("departmentRoomId") Integer departmentRoomId,
       @Param("inservice") boolean inservice);
+
+  /**
+   * 批量添加门诊科室
+   * @param list 门诊科室列表
+   */
+  void insertBatch(@Param("list") List<ClinicDepartmentRoom> list);
 }

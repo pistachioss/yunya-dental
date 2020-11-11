@@ -6,16 +6,21 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.ClinicDepartmentRoom;
+import com.yunya.models.system.ClinicExtInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.modules.system.domain.form.DepartmentRoomForm;
 import com.yunya.modules.system.domain.model.DepartmentRoomModel;
 import com.yunya.modules.system.domain.query.DepartmentRoomQueryForm;
+import com.yunya.modules.system.mapper.ClinicExtInfoMapper;
 import com.yunya.modules.system.mapper.DepartmentRoomMapper;
 import com.yunya.modules.system.vo.DepartmentRoomVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -33,6 +38,8 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
 
   /** 注入对象 */
   private final ClinicDepartmentRoomBiz clinicDepartmentRoomBiz;
+  @Autowired
+  private ClinicExtInfoBiz clinicExtInfoBiz;
 
   public DepartmentRoomBiz(ClinicDepartmentRoomBiz clinicDepartmentRoomBiz) {
     this.clinicDepartmentRoomBiz = clinicDepartmentRoomBiz;
@@ -79,7 +86,24 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
     }
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
-    mapper.insertSelective(entity);
+    int i = mapper.insertSelective(entity);
+    if (i>0) {
+      List<ClinicDepartmentRoom> clinicDepartmentRooms = new ArrayList<>();
+      List<ClinicExtInfo> clinicExtInfos = clinicExtInfoBiz.selectListAll();
+      Integer id = entity.getId();
+      if (StringHelper.isNotEmpty(clinicExtInfos)) {
+        clinicExtInfos.forEach(clinicExtInfo -> {
+          ClinicDepartmentRoom clinicDepartmentRoom = new ClinicDepartmentRoom();
+          clinicDepartmentRoom.setCompanyId(clinicExtInfo.getId());
+          clinicDepartmentRoom.setDeptRoomId(id);
+          clinicDepartmentRoom.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+          clinicDepartmentRoom.setCrtName(BaseContextHandler.getName());
+          clinicDepartmentRoom.setCrtTime(new Date(System.currentTimeMillis()));
+          clinicDepartmentRooms.add(clinicDepartmentRoom);
+        });
+      }
+      clinicDepartmentRoomBiz.addBatch(clinicDepartmentRooms);
+    }
   }
 
   /**

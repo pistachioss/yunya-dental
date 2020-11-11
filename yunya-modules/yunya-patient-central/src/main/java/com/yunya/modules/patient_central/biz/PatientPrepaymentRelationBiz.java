@@ -3,6 +3,7 @@ package com.yunya.modules.patient_central.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.model.*;
+import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidMeturnRecordQueryForm;
 import com.yunya.feign.patient_central.domain.query.PrepaidRechargeRecordQueryForm;
@@ -15,6 +16,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -290,12 +292,20 @@ public class PatientPrepaymentRelationBiz
         patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(
             model.getPrepaidId(), model.getPatientId());
     if (patientPrepaymentsInfo != null) {
-      patientPrepaymentsInfo.setPrepaymentPrincipal(
-          patientPrepaymentsInfo
-              .getPrepaymentPrincipal()
-              .subtract(model.getReturnPrincipalAmount()));
-      patientPrepaymentsInfo.setPrepaymentBonus(
-          patientPrepaymentsInfo.getPrepaymentBonus().subtract(model.getReturnGiftAmount()));
+      BigDecimal prepaymentPrincipal = patientPrepaymentsInfo.getPrepaymentPrincipal();
+      BigDecimal returnPrincipalAmount = model.getReturnPrincipalAmount();
+      BigDecimal principalSubtract = prepaymentPrincipal.subtract(returnPrincipalAmount);
+      if (principalSubtract.intValue() < 0) {
+        throw new ClientServiceException("预付款本金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
+      }
+      patientPrepaymentsInfo.setPrepaymentPrincipal(principalSubtract);
+      BigDecimal prepaymentBonus = patientPrepaymentsInfo.getPrepaymentBonus();
+      BigDecimal returnGiftAmount = model.getReturnGiftAmount();
+      BigDecimal bonusSubtract = prepaymentBonus.subtract(returnGiftAmount);
+      if (bonusSubtract.intValue() < 0) {
+        throw new ClientServiceException("预付款赠金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
+      }
+      patientPrepaymentsInfo.setPrepaymentBonus(bonusSubtract);
       patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
       // 添加会员卡退费记录
       PrepaidReturnRecord prepaidReturnRecord = new PrepaidReturnRecord();
@@ -371,6 +381,19 @@ public class PatientPrepaymentRelationBiz
     }
     return new PageInfo<>(resultList);
   }
+
+  /**
+   * 根据账单记录ID和预付款ID查询支付记录详细
+   * @param query
+   * @return 预付款支付记录
+   */
+  public PrepaidExpendRecord prePaidPaymentRecordDetail(PaymentRecordDetailQuery query) {
+    PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
+    prepaidExpendRecord.setBillPayRecordId(query.getBillRecordId());
+    prepaidExpendRecord.setPrepaidId(query.getCardId());
+    return prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
+  }
+
 
   /**
    * 预付款消费记录

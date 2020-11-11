@@ -85,4 +85,15 @@
         WHERE  cdr.inservice = #{inservice} and
             cdr.dept_room_id = #{departmentRoomId} and cdr.company_id = #{orgId}
     </select>
+
+    <!-- 批量添加门诊科室 -->
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into clinic_department_room (company_id,dept_room_id,inservice,crt_id,crt_name,crt_time)
+        values
+        <foreach collection="list" item="clinicDepartmentRoom" separator=",">
+            (#{clinicDepartmentRoom.companyId},#{clinicDepartmentRoom.deptRoomId},
+            #{clinicDepartmentRoom.inservice},#{clinicDepartmentRoom.crtId},#{clinicDepartmentRoom.crtName},
+            #{clinicDepartmentRoom.crtTime})
+        </foreach>
+    </insert>
 </mapper>

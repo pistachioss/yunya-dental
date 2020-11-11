@@ -4,14 +4,17 @@ import com.yunya.feign.patient_central.domain.form.UpdPassForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.query.PatientMemberInfoQueryForm;
+import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.patient_central.domain.vo.web.MemberInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
+import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.modules.patient_central.biz.InformationCallbackBiz;
 import com.yunya.modules.patient_central.biz.PatientBaseInfoBiz;
 import com.yunya.modules.patient_central.biz.PatientMemberInfoBiz;
@@ -168,6 +171,30 @@ public class PatientServiceRest {
     @RequestMapping(value = "/portNumberGet",method = RequestMethod.GET)
     public String portNumberGet(){
         return informationCallbackBiz.portNumberGet();
+    }
+
+    /**
+     * 根据会员卡号和账单记录ID查询支付详情（外部服务调用）
+     * @param memberId 会员卡号
+     * @param billRecordId 账单记录ID
+     * @return 返回支付详情
+     */
+    @ApiOperation("根据会员卡号和账单记录ID查询支付详情（外部服务调用）")
+    @RequestMapping(value = "/member/paymentRecord",method = RequestMethod.POST)
+    public MemberExpendRecord memberPaymentRecordDetail(@RequestBody PaymentRecordDetailQuery query) {
+        return patientMemberInfoBiz.memberPaymentRecordDetail(query);
+    }
+
+    /**
+     * 根据账单记录ID和预付款ID查询支付记录详细（外部服务调用）
+     * @param billRecordId 账单记录ID
+     * @param prePaidId 预付款ID
+     * @return 预付款支付记录
+     */
+    @ApiOperation("根据账单记录ID和预付款ID查询支付记录详细（外部服务调用）")
+    @RequestMapping(value = "/prepaid/paymentRecord",method = RequestMethod.POST)
+    public PrepaidExpendRecord prePaidPaymentRecordDetail(@RequestBody PaymentRecordDetailQuery query) {
+        return patientPrepaymentRelationBiz.prePaidPaymentRecordDetail(query);
     }
 
 
