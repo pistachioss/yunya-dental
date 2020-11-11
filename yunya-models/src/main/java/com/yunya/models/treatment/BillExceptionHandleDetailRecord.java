@@ -26,6 +26,11 @@ public class BillExceptionHandleDetailRecord {
     private Integer associateRecordId;
 
     /**
+     * 备注
+     */
+    private String remark;
+
+    /**
      * 是否有效
      */
     private Boolean inservice;
@@ -118,6 +123,24 @@ public class BillExceptionHandleDetailRecord {
      */
     public void setAssociateRecordId(Integer associateRecordId) {
         this.associateRecordId = associateRecordId;
+    }
+
+    /**
+     * 获取备注
+     *
+     * @return remark 备注
+     */
+    public String getRemark() {
+        return remark;
+    }
+
+    /**
+     * 设置备注
+     *
+     * @param remark 备注
+     */
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
     /**
