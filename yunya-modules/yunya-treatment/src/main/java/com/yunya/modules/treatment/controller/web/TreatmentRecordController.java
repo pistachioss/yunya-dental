@@ -20,6 +20,8 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 /**
  * 简介: 患者接诊管理控制器
  *
@@ -120,14 +122,45 @@ public class TreatmentRecordController {
 
   /**
    * 根据患者ID查询患者最后一次就诊信息
+   *
    * @param patientId 患者ID
    * @return 实体
    */
   @ApiOperation("根据患者ID查询患者最后一次就诊信息(随访管理、随访提醒--添加)")
   @GetMapping(value = "/last/treatment/info/{patientId}", name = "患者ID")
-  public ResponseResult<LastTreatmentInfoVO> lastTreatmentInfo(@PathVariable("patientId") Integer patientId) {
+  public ResponseResult<LastTreatmentInfoVO> lastTreatmentInfo(
+      @PathVariable("patientId") Integer patientId) {
     LastTreatmentInfoVO lastTreatmentInfoVO = this.treatmentRecordBiz.lastTreatmentInfo(patientId);
     return ResponseUtil.success(lastTreatmentInfoVO);
   }
 
+  /**
+   * 查询门诊某天的就诊列表数量
+   *
+   * @param orgId 组织ID
+   * @param queryDate 查询日期
+   * @return
+   */
+  @ApiOperation("就诊列表数量统计")
+  @ApiImplicitParams({
+    @ApiImplicitParam(
+        name = "orgId",
+        value = "组织ID",
+        required = true,
+        dataType = "int",
+        paramType = "path"),
+    @ApiImplicitParam(
+        name = "queryDate",
+        value = "查询日期（yyyy-MM-dd）",
+        required = true,
+        dataType = "String",
+        paramType = "path")
+  })
+  @GetMapping(value = "/count/{orgId}/{queryDate}", name = "就诊列表数量统计")
+  public ResponseResult<Map<String, Integer>> count(
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "queryDate") String queryDate) {
+    Map<String, Integer> resultMap = treatmentRecordBiz.countTreatList(orgId, queryDate);
+    return ResponseUtil.success(resultMap);
+  }
 }

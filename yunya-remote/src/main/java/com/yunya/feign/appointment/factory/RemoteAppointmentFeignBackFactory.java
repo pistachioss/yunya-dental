@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.models.appointment.AppointType;
@@ -59,6 +60,11 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
 
     @Override
     public List<Appointment> findAppointmentList(AppAppointmentInfoQuery query) {
+        return null;
+    }
+
+    @Override
+    public Integer countAppointNotArrived(AppointmentCurrentListQuery queryForm) {
         return null;
     }
 }

@@ -3,6 +3,7 @@ package com.yunya.feign.appointment;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
@@ -10,7 +11,10 @@ import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
@@ -100,4 +104,13 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "/api/appoint/app/list", method = RequestMethod.POST)
   List<Appointment> findAppointmentList(@RequestBody AppAppointmentInfoQuery query);
+
+  /**
+   * 计算预约未到列表数量
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/api/appoint/count", method = RequestMethod.POST)
+  Integer countAppointNotArrived(@RequestBody AppointmentCurrentListQuery queryForm);
 }

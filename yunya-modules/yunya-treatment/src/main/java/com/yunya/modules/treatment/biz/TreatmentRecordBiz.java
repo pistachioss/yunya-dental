@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -64,34 +65,24 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
-
   /** 患者服务调用 */
   @Autowired private RemotePatientCentralServiceFeign patientServiceFeign;
-
-  /** 消息中间件调用 */
-  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
-
-  /** 系统服务调用 */
-  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
-
   /** 预约服务调用 */
   @Autowired private RemoteAppointmentFeign appointmentFeign;
-
+  /** 消息中间件调用 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+  /** 系统服务调用 */
+  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 就诊其他信息服务调用 */
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
-
   /** 基础价目表 */
   @Autowired private BaseTariffBiz baseTariffBiz;
-
   /** 挂号 */
   @Autowired private RegisteredBiz registeredBiz;
-
   /** 开单 */
   @Autowired private OrderRecordMapper orderRecordMapper;
-
   /** 开单明细 */
   @Autowired private OrderDetailMapper orderDetailMapper;
-
   /** 就诊关联助手 */
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
 
@@ -667,7 +658,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * 根据条件查询APP端就诊列表
+   * 根据条件查询APP端就诊列表(方法未完成)
    *
    * @param query 查询条件
    * @return list
@@ -712,5 +703,39 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Date startDate = form.getStartDate();
     Date endDate = form.getEndDate();
     return mapper.treatInfoForMonth(dentistId, startDate, endDate);
+  }
+
+  /**
+   * 根据条件统计就诊列表数量
+   *
+   * @param orgId 组织ID
+   * @param queryDate 查询日期
+   * @return
+   */
+  public Map<String, Integer> countTreatList(Integer orgId, String queryDate) {
+    Map<String, Integer> resultMap = new HashMap<>(16);
+    TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();
+    queryForm.setWhetherPage(false);
+    queryForm.setOrgId(orgId);
+    queryForm.setCurrentDate(queryDate);
+    queryForm.setTreatmentStatus(new Byte[] {0});
+    List<TreatmentPatientInfoVO> waitingForTreat = mapper.selectTreatingList(queryForm);
+    queryForm.setTreatmentStatus(new Byte[] {1});
+    List<TreatmentPatientInfoVO> treatReceiving = mapper.selectTreatingList(queryForm);
+    queryForm.setTreatmentStatus(new Byte[] {2});
+    List<TreatmentPatientInfoVO> treatCompleted = mapper.selectTreatingList(queryForm);
+    queryForm.setTreatmentStatus(new Byte[] {3});
+    List<TreatmentPatientInfoVO> treatmentPatientInfos = mapper.selectTreatingList(queryForm);
+    AppointmentCurrentListQuery form = new AppointmentCurrentListQuery();
+    form.setWhetherPage(false);
+    form.setOrgId(orgId);
+    form.setCurrentDate(queryDate);
+    Integer appointNotArrived = appointmentFeign.countAppointNotArrived(form);
+    resultMap.put("appointNotArrived", appointNotArrived);
+    resultMap.put("waitingForTreat", waitingForTreat.size());
+    resultMap.put("treatReceiving", treatReceiving.size());
+    resultMap.put("treatCompleted", treatCompleted.size());
+    resultMap.put("checkedOut", treatmentPatientInfos.size());
+    return resultMap;
   }
 }
