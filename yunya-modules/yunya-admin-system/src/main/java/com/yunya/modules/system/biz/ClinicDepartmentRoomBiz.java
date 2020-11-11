@@ -171,11 +171,13 @@ public class ClinicDepartmentRoomBiz
       resultData.setOrgId(organizationInfo.getId());
       resultData.setOrgName(organizationInfo.getAbbreviation());
       List<DeptRoomVO> clinicDeptRooms = Lists.newArrayList();
-      List<DepartmentRoom> departmentRooms = departmentRoomMapper.selectAll();
+      ClinicDepartmentRoom clinicDepartmentRoom = new ClinicDepartmentRoom();
+      clinicDepartmentRoom.setCompanyId(orgId);
+      List<ClinicDepartmentRoom> departmentRooms = mapper.select(clinicDepartmentRoom);
       if (StringHelper.isNotEmpty(departmentRooms)) {
         clinicDeptRooms =
             departmentRooms.stream()
-                .map(DepartmentRoom::getId)
+                .map(ClinicDepartmentRoom::getDeptRoomId)
                 .<DeptRoomVO>map(
                     departmentRoomId -> mapper.selectDeptRoomVO(orgId, departmentRoomId, true))
                 .filter(Objects::nonNull)
