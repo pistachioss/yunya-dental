@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberRevocationFeeModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -68,25 +70,6 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     Integer treatmentRecordId = billPayRecord.getTreatmentRecordId();
     Integer billRecordId = billPayRecord.getBillRecordId();
     BigDecimal receivedAmount = billPayRecord.getReceivedAmount();
-
-    BillExceptionHandleRecord handleRecord = new BillExceptionHandleRecord();
-    handleRecord.setOrgId(orgId);
-    handleRecord.setPatientId(patientId);
-    handleRecord.setTreatmentRecordId(treatmentRecordId);
-    handleRecord.setHandledRecordId(billPayRecordId);
-    handleRecord.setOperateType((byte) 1);
-    handleRecord.setCrtId(userId);
-    handleRecord.setCrtName(name);
-    billExceptionHandleRecordMapper.insertSelective(handleRecord);
-
-    Integer handleRecordId = handleRecord.getId();
-    BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
-    handleDetailRecord.setBillHandleRecordId(handleRecordId);
-    handleDetailRecord.setAssociateRecordId(billPayRecordId);
-    handleDetailRecord.setCrtId(userId);
-    handleDetailRecord.setCrtName(name);
-    billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
-
     BillRecord billRecord = billRecordBiz.selectById(billRecordId);
     BigDecimal currentReceivedAmount = billRecord.getReceivedAmount();
     billRecord.setReceivableAmount(currentReceivedAmount.subtract(receivedAmount));
@@ -103,11 +86,14 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
 
     BillPayDetailRecord billPayDetail = new BillPayDetailRecord();
     billPayDetail.setBillPayRecordId(billPayRecordId);
+    billPayDetail.setInservice(true);
     List<BillPayDetailRecord> payDetailRecords = billPayDetailRecordBiz.selectList(billPayDetail);
+    List<Integer> payDetailIds = Lists.newArrayList();
     if (StringHelper.isNotEmpty(payDetailRecords)) {
       // todo 会员卡、预付款需退还到原先账号
       payDetailRecords.forEach(
           detailRecord -> {
+            payDetailIds.add(detailRecord.getId());
             Byte type = detailRecord.getType();
             String cardNum = detailRecord.getRemark();
             switch (type) {
@@ -119,7 +105,6 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
                 break;
                 // 会员卡
               case 1:
-
                 break;
               default:
                 break;
@@ -130,6 +115,26 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
             billPayDetailRecordBiz.updateSelectiveById(detailRecord);
           });
     }
+
+    BillExceptionHandleRecord handleRecord = new BillExceptionHandleRecord();
+    handleRecord.setOrgId(orgId);
+    handleRecord.setPatientId(patientId);
+    handleRecord.setTreatmentRecordId(treatmentRecordId);
+    handleRecord.setHandledRecordId(billPayRecordId);
+    handleRecord.setOperateType((byte) 1);
+    handleRecord.setCrtId(userId);
+    handleRecord.setCrtName(name);
+    billExceptionHandleRecordMapper.insertSelective(handleRecord);
+
+    Joiner joiner = Joiner.on(",");
+    Integer handleRecordId = handleRecord.getId();
+    BillExceptionHandleDetailRecord handleDetailRecord = new BillExceptionHandleDetailRecord();
+    handleDetailRecord.setBillHandleRecordId(handleRecordId);
+    handleDetailRecord.setAssociateRecordId(billPayRecordId);
+    handleDetailRecord.setRemark(joiner.join(payDetailIds));
+    handleDetailRecord.setCrtId(userId);
+    handleDetailRecord.setCrtName(name);
+    billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
     // 发送消息同步中间表账单相关数据
     if (result > 0) {
       rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 1, BaseBill);

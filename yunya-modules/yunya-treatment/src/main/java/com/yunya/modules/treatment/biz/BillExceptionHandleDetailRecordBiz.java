@@ -22,9 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 简介: 账单异常处理详情业务层
@@ -141,8 +139,23 @@ public class BillExceptionHandleDetailRecordBiz
         }
         billPayInfo.setReceivedAmount(billPayRecord.getReceivedAmount());
         billPayInfo.setStillOweAmount(billPayRecord.getStillOweAmount());
-        List<BillPayDetailRecordVO> payDetailList =
-            billPayDetailRecordMapper.selectBillPayDetailRecord(billPayRecordId, null);
+        String detailRecordRemark = billExceptionHandleDetailRecord.getRemark();
+        String[] ids = detailRecordRemark.split(",");
+        List<BillPayDetailRecordVO> payDetailList = Lists.newArrayList();
+        if (StringHelper.isNotEmpty(ids)) {
+          Arrays.stream(ids)
+              .map(id -> billPayDetailRecordMapper.selectPreBillPayDetailRecord(id, null))
+              .filter(Objects::nonNull)
+              .forEachOrdered(
+                  vo -> {
+                    Integer accountItemId = vo.getAccountItemId();
+                    AccountItem item = systemServiceFeign.findAccountItemById(accountItemId);
+                    if (null != item) {
+                      vo.setAccountItemName(item.getName());
+                    }
+                    payDetailList.add(vo);
+                  });
+        }
         billPayInfo.setBillPayDetailRecords(payDetailList);
       }
     }
