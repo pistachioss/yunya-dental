@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
@@ -221,6 +222,10 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     if (StringHelper.isEmpty(memberUniteDiscountForms)) {
       throw new ClientServiceException("统一设置门诊商品项目折扣失败,当前未选择任何会员卡类型", PARAMETERS_IS_ILLEGAL);
     }
+    boolean b = checkMemberUniteDiscountForms(memberUniteDiscountForms);
+    if (!b) {
+      throw new ClientServiceException("同一会员卡不能提交两条折扣率！",PARAMETERS_IS_ILLEGAL);
+    }
 
     Integer orgId = form.getOrgId();
     BigDecimal price;
@@ -258,6 +263,25 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
         }
       }
     }
+  }
+
+  /**
+   * 返回会员折扣检测结果
+   * @param memberUniteDiscountForms
+   * @return 正常返回true，异常返回false
+   */
+  private boolean checkMemberUniteDiscountForms(List<MemberUniteDiscountForm> memberUniteDiscountForms) {
+    for(MemberUniteDiscountForm memberUniteDiscountForm : memberUniteDiscountForms){
+      List<MemberUniteDiscountForm> collect = memberUniteDiscountForms.stream()
+              .filter(memberUniteDiscountForm1 ->
+                      memberUniteDiscountForm1.getMemberTypeId().equals(memberUniteDiscountForm.getMemberTypeId())
+                              && memberUniteDiscountForm1.getRate().equals(memberUniteDiscountForm.getRate()))
+              .collect(Collectors.toList());
+      if (StringHelper.isNotEmpty(collect) && collect.size()>1) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
