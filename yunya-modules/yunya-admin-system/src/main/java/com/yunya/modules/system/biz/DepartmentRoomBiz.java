@@ -96,6 +96,7 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
           ClinicDepartmentRoom clinicDepartmentRoom = new ClinicDepartmentRoom();
           clinicDepartmentRoom.setCompanyId(clinicExtInfo.getId());
           clinicDepartmentRoom.setDeptRoomId(id);
+          clinicDepartmentRoom.setInservice(true);
           clinicDepartmentRoom.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
           clinicDepartmentRoom.setCrtName(BaseContextHandler.getName());
           clinicDepartmentRoom.setCrtTime(new Date(System.currentTimeMillis()));
