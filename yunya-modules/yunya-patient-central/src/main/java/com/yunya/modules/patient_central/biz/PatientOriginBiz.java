@@ -45,7 +45,6 @@ import java.util.List;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
-@PropertySource("classpath:application.yml")
 public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin> {
 
   /** 注入患者来源Mapper */

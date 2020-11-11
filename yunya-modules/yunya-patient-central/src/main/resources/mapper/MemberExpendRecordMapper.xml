@@ -21,6 +21,7 @@
         <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
     </resultMap>
 
     <!-- 消费记录 条件（消费者id（患者），会员卡号） -->

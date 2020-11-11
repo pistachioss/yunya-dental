@@ -122,6 +122,12 @@ public class MemberExpendRecord {
     private BigDecimal currentBonus;
 
     /**
+     * 是否有效 是否有效
+     */
+    @Column(name = "inservice")
+    private Boolean inservice;
+
+    /**
      * 获取type
      * @return type
      */

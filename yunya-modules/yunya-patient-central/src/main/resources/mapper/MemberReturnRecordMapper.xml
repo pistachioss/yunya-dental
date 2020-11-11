@@ -20,6 +20,7 @@
         <result column="upt_id" property="uptId" jdbcType="INTEGER"/>
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+
     </resultMap>
 
     <sql id="Column_List">
