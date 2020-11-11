@@ -5,3 +5,16 @@ spring:
         username: sa
         password: Admin001!
         name: yunya_treatment
+
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 192.168.31.215:8848
+            config:
+                server-addr: 192.168.31.215:8848
+
+    redis:
+        database: 2
+        host: 192.168.31.90
+        port: 6379
+        password: foobared
