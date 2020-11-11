@@ -4,11 +4,13 @@ import com.google.common.collect.Lists;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.vo.BillPayDetailRecordVO;
+import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
 import com.yunya.feign.treatment.domain.vo.BillPaymentAdjustDetailVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.AccountItem;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.BillExceptionHandleDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
 import com.yunya.models.treatment.OrderRecord;
@@ -41,8 +43,6 @@ public class BillExceptionHandleDetailRecordBiz
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 开单记录 */
   @Autowired private OrderRecordBiz orderRecordBiz;
-  /** 开单详情 */
-  @Autowired private OrderDetailBiz orderDetailBiz;
   /** 账单记录 */
   @Autowired private BillRecordBiz billRecordBiz;
   /** 账单支付记录 */
@@ -111,7 +111,46 @@ public class BillExceptionHandleDetailRecordBiz
   }
 
   /**
-   * 设置调整账单信息账单收费方式
+   * 根据异常处理记录ID查询账单收费撤销详情
+   *
+   * @param billExceptionHandleRecordId 账单异常处理记录ID
+   * @return
+   */
+  public BillPayRecordVO findBillRevokePayRecord(Integer billExceptionHandleRecordId) {
+    BillPayRecordVO billPayInfo = new BillPayRecordVO();
+    BillExceptionHandleDetailRecord entity = new BillExceptionHandleDetailRecord();
+    entity.setBillHandleRecordId(billExceptionHandleRecordId);
+    BillExceptionHandleDetailRecord billExceptionHandleDetailRecord = mapper.selectOne(entity);
+    if (null != billExceptionHandleDetailRecord) {
+      Integer billPayRecordId = billExceptionHandleDetailRecord.getAssociateRecordId();
+      BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(billPayRecordId);
+      if (null != billPayRecord) {
+        billPayInfo.setBillPayRecordId(billPayRecordId);
+        billPayInfo.setChargeDate(new DateTime(billPayRecord.getCrtTime()).toString("yyyy-MM-dd"));
+        Integer orgId = billPayRecord.getOrgId();
+        billPayInfo.setOrgId(orgId);
+        OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+        if (null != orgInfo) {
+          billPayInfo.setOrgName(orgInfo.getAbbreviation());
+        }
+        Integer payeeId = billPayRecord.getCrtId();
+        billPayInfo.setPayeeId(payeeId);
+        SysEmployee employee = systemServiceFeign.findSysEmployeeById(payeeId);
+        if (null != employee) {
+          billPayInfo.setPayeeName(employee.getName());
+        }
+        billPayInfo.setReceivedAmount(billPayRecord.getReceivedAmount());
+        billPayInfo.setStillOweAmount(billPayRecord.getStillOweAmount());
+        List<BillPayDetailRecordVO> payDetailList =
+            billPayDetailRecordMapper.selectBillPayDetailRecord(billPayRecordId, null);
+        billPayInfo.setBillPayDetailRecords(payDetailList);
+      }
+    }
+    return billPayInfo;
+  }
+
+  /**
+   * 设置调整账单信息的账单收费方式
    *
    * @param billExceptionHandleRecordId 账单异常处理记录ID
    * @param payDetailList 收费方式列表

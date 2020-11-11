@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.biz;
 
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.model.MemberRevocationFeeModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -37,19 +39,16 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
 
   /** 消息中间件调用 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
-
+  /** 患者服务调用 */
+  @Autowired private RemotePatientCentralServiceFeign patientCentralServiceFeign;
   /** 缓存调用 */
   @Autowired private RedisUtils redisUtils;
-
   /** 账单记录 */
   @Autowired private BillRecordBiz billRecordBiz;
-
   /** 账单支付明细 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
-
   /** 账单异常处理记录 */
   @Autowired private BillExceptionHandleRecordMapper billExceptionHandleRecordMapper;
-
   /** 账单异常处理详情 */
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
 
@@ -109,6 +108,22 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
       // todo 会员卡、预付款需退还到原先账号
       payDetailRecords.forEach(
           detailRecord -> {
+            Byte type = detailRecord.getType();
+            String cardNum = detailRecord.getRemark();
+            switch (type) {
+                // 预付款
+              case 0:
+                MemberRevocationFeeModel prepaidModel = new MemberRevocationFeeModel();
+
+                patientCentralServiceFeign.revocationFee(prepaidModel);
+                break;
+                // 会员卡
+              case 1:
+
+                break;
+              default:
+                break;
+            }
             detailRecord.setInservice(false);
             detailRecord.setUpdId(userId);
             detailRecord.setUpdName(name);
