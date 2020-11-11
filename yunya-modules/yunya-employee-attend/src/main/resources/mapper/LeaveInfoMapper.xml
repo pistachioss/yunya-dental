@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.employeeattend.mapper.LeaveInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.LeaveInfo" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="vacation_id" property="vacationId" jdbcType="INTEGER" />
+    <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
+    <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
+    <result column="leave_time" property="leaveTime" jdbcType="INTEGER" />
+    <result column="leave_reason" property="leaveReason" jdbcType="VARCHAR" />
+    <result column="leave_picture" property="leavePicture" jdbcType="VARCHAR" />
+    <result column="approval_criteria_id" property="approvalCriteriaId" jdbcType="INTEGER" />
+    <result column="apprpval_status" property="apprpvalStatus" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

@@ -22,7 +22,7 @@ mydb:
     patient: yunya_patient_central
     discount: yunya_discount
     treatment: yunya_treatment
-    employee-expand: employee_expand
+    employee-expand: yunya_employee_expand
     appointment: yunya_appointment_central
     treatment-other: yunya_treatment_other
 

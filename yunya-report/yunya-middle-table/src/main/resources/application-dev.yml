@@ -1,0 +1,36 @@
+## 数据源连接
+myjdbc:
+    host: 192.168.31.90
+    port: 3306
+    username: sa
+    password: Admin001!
+    jdbc-url-ext: useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai&useSSL=false
+
+## 数据库列表
+mydb:
+    report: yunya_report
+    system: yunya_system
+    patient: yunya_patient_central
+    discount: yunya_discount
+    treatment: yunya_treatment
+    employee-expand: yunya_employee_expand
+    appointment: yunya_appointment_central
+    treatment-other: yunya_treatment_other
+
+spring:
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 192.168.31.215:8848
+            config:
+                server-addr: 192.168.31.215:8848
+    redis:
+        database: 2
+        host: 192.168.31.90
+        port: 6379
+        password: foobared
+    rabbitmq:
+        host: 192.168.31.200
+        port: 5672
+        username: admin
+        password: admin

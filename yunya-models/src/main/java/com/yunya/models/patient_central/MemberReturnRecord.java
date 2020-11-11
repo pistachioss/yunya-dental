@@ -110,6 +110,12 @@ public class MemberReturnRecord {
     private BigDecimal currentBonus;
 
     /**
+     * 是否有效 是否有效
+     */
+    @Column(name = "inservice")
+    private Boolean inservice;
+
+    /**
      * @return id
      */
     public Integer getId() {
