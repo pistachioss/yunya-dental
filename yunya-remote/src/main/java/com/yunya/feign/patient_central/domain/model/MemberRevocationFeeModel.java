@@ -29,16 +29,10 @@ public class MemberRevocationFeeModel implements Serializable {
     private String memberId;
 
     /**
-     * 撤销本金
+     * 账单付款记录id
      */
-    @ApiModelProperty(value = "撤销本金",required = true)
-    private BigDecimal rechargePrincipal;
-
-    /**
-     * 撤销赠金
-     */
-    @ApiModelProperty(value = "撤销赠金",required = true)
-    private BigDecimal rechargeBonus;
+    @ApiModelProperty(value = "账单付款记录id",required = true)
+    private Integer billPayRecordId;
 
     /**
      * 备注

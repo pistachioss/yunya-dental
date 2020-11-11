@@ -128,6 +128,22 @@ public class MemberExpendRecord {
     private Boolean inservice;
 
     /**
+     * 获取是否有效
+     * @return
+     */
+    public Boolean getInservice() {
+        return inservice;
+    }
+
+    /**
+     * 设置是否有效
+     * @param inservice
+     */
+    public void setInservice(Boolean inservice) {
+        this.inservice = inservice;
+    }
+
+    /**
      * 获取type
      * @return type
      */
