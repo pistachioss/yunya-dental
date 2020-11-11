@@ -164,7 +164,9 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
               actualAmount = actualAmount.subtract(itemBenefitAmount);
               orderDetail.setActualAmount(actualAmount);
               orderDetail.setDiscountRate(
-                  actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+                  actualAmount
+                      .divide(receivableAmount, 4, RoundingMode.HALF_UP)
+                      .multiply(BigDecimal.valueOf(100)));
               List<ItemUseBenefitVo> benefitList = benefitDetailVo.getItemBenefitList();
               setPrivilegeCouponInfo(orderDetail, benefitList);
             }

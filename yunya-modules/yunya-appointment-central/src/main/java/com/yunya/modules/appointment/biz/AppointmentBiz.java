@@ -1553,7 +1553,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         List<AppointmentUnDonePatientInfoVO> resultList =
                 mapper.selectAppointmentUnDonePatientInfoList(queryForm);
-        if (resultList.size() > 0) {
+        if (StringHelper.isNotEmpty(resultList)) {
             String redisKeyAppointmentUnDone = RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE;
             resultList.forEach(
                     vo -> {
@@ -1566,6 +1566,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     });
         }
         return new PageInfo<>(resultList);
+    }
+
+    /**
+     * 计算预约未到列表数量
+     *
+     * @param queryForm 查询条件
+     * @return
+     */
+    public Integer countAppointNotArrived(AppointmentCurrentListQuery queryForm){
+      List<AppointmentUnDonePatientInfoVO> resultList =
+              mapper.selectAppointmentUnDonePatientInfoList(queryForm);
+      return resultList.size();
     }
 
     /**

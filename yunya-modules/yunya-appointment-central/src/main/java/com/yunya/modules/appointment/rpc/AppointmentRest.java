@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
+import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.models.appointment.AppointType;
@@ -132,5 +133,16 @@ public class AppointmentRest {
   @RequestMapping(value = "/appoint/app/list", method = RequestMethod.POST)
   public PageInfo<Appointment> findAppointmentList(@RequestBody AppAppointmentInfoQuery query) {
     return appointmentBiz.findAppointmentList(query);
+  }
+
+  /**
+   * 计算预约未到列表数量
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/appoint/count", method = RequestMethod.POST)
+  public Integer countAppointNotArrived(@RequestBody AppointmentCurrentListQuery queryForm){
+    return appointmentBiz.countAppointNotArrived(queryForm);
   }
 }
