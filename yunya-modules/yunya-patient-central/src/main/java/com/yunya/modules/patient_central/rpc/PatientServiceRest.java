@@ -189,8 +189,7 @@ public class PatientServiceRest {
 
     /**
      * 根据会员卡号和账单记录ID查询支付详情（外部服务调用）
-     * @param memberId 会员卡号
-     * @param billRecordId 账单记录ID
+     * @param query
      * @return 返回支付详情
      */
     @ApiOperation("根据会员卡号和账单记录ID查询支付详情（外部服务调用）")
@@ -201,14 +200,13 @@ public class PatientServiceRest {
 
     /**
      * 根据账单记录ID和预付款ID查询支付记录详细（外部服务调用）
-     * @param billRecordId 账单记录ID
-     * @param prePaidId 预付款ID
+     * @param query
      * @return 预付款支付记录
      */
     @ApiOperation("根据账单记录ID和预付款ID查询支付记录详细（外部服务调用）")
     @RequestMapping(value = "/prepaid/paymentRecord",method = RequestMethod.POST)
     public PrepaidExpendRecord prePaidPaymentRecordDetail(@RequestBody PaymentRecordDetailQuery query) {
-        return patientPrepaymentRelationBiz.prePaidPaymentRecordDetail(query);
+        return patientPrepaymentBiz.prePaidPaymentRecordDetail(query);
     }
 
 
