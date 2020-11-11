@@ -16,3 +16,16 @@ mydb:
     employee-expand: ivy2_yunya_employee_expand
     appointment: ivy2_yunya_appointment_central
     treatment-other: ivy2_yunya_treatment_other
+
+spring:
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 172.16.17.177:8848
+            config:
+                server-addr: 172.16.17.177:8848
+    redis:
+        database: 2
+        host: 172.16.17.177
+        port: 6379
+        password: foobared
