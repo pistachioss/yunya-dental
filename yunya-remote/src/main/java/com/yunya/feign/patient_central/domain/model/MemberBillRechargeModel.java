@@ -29,10 +29,16 @@ public class MemberBillRechargeModel implements Serializable {
     private String memberId;
 
     /**
-     * 账单付款记录id
+     * 充值本金
      */
-    @ApiModelProperty(value = "账单付款记录id",required = true)
-    private Integer billPayRecordId;
+    @ApiModelProperty(value = "充值本金",required = true)
+    private BigDecimal rechargePrincipal;
+
+    /**
+     * 充值赠金
+     */
+    @ApiModelProperty(value = "充值赠金",required = true)
+    private BigDecimal rechargeBonus;
 
     /**
      * 备注

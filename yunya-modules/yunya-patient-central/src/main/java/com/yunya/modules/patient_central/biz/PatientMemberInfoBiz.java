@@ -15,7 +15,6 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -437,20 +436,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     PatientMemberInfo patientMemberInfo =
         patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
     if (patientMemberInfo != null) {
-      BigDecimal principalAmount = patientMemberInfo.getPrincipalAmount();
-      BigDecimal returnPrincipalAmount = model.getReturnPrincipalAmount();
-      BigDecimal principalSubtract = principalAmount.subtract(returnPrincipalAmount);
-      if (principalSubtract.intValue() < 0) {
-        throw new ClientServiceException("会员卡本金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
-      }
-      patientMemberInfo.setPrincipalAmount(principalSubtract);
-      BigDecimal bonusAmount = patientMemberInfo.getBonusAmount();
-      BigDecimal returnGiftAmount = model.getReturnGiftAmount();
-      BigDecimal bonusSubtract = bonusAmount.subtract(returnGiftAmount);
-      if (bonusSubtract.intValue() < 0) {
-        throw new ClientServiceException("会员卡赠金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
-      }
-      patientMemberInfo.setBonusAmount(bonusSubtract);
+      patientMemberInfo.setPrincipalAmount(
+          patientMemberInfo.getPrincipalAmount().subtract(model.getReturnPrincipalAmount()));
+      patientMemberInfo.setBonusAmount(
+          patientMemberInfo.getBonusAmount().subtract(model.getReturnGiftAmount()));
       patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
 
       // 添加会员卡退费记录
@@ -637,19 +626,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   }
 
   /**
-   * 根据会员卡号和账单记录ID查询支付详情（外部服务调用）
-   * @param query
-   * @return 返回支付详情
-   */
-  public MemberExpendRecord memberPaymentRecordDetail(PaymentRecordDetailQuery query) {
-    MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
-    memberExpendRecord.setMemberId(query.getCardId());
-    memberExpendRecord.setBillPayRecordId(query.getBillRecordId());
-    return memberExpendRecordMapper.selectOne(memberExpendRecord);
-  }
-
-
-  /**
    * 查询会员卡绑定信息
    *
    * @param form 查询患者会员信息form
@@ -716,38 +692,27 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param model
    */
   public void billRefund(MemberBillRechargeModel model) {
-    MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
-    memberExpendRecord.setMemberId(model.getMemberId());
-    memberExpendRecord.setBillPayRecordId(model.getBillPayRecordId());
-    MemberExpendRecord memberExpend = memberExpendRecordMapper.selectOne(memberExpendRecord);
-    if (memberExpend != null){
-      memberExpend.setInservice(false);
-      memberExpendRecordMapper.updateByPrimaryKeySelective(memberExpend);
-      PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByCardNumber(model.getMemberId());
-      if (patientMemberInfo != null){
-        patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().add(memberExpend.getExpendPrincipal()));
-        patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(memberExpend.getExpendGift()));
-        patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
-        MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
-        BeanUtils.copyProperties(model,memberRechargeRecord);
-        memberRechargeRecord.setRechargePrincipal(memberExpend.getExpendPrincipal());
-        memberRechargeRecord.setRechargeBonus(memberExpend.getExpendGift());
-        memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        memberRechargeRecord.setType(2);
-        memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        memberRechargeRecord.setCrtName(BaseContextHandler.getName());
-        memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
-        memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
-        memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
-        // 发送消息 账单退费
-        sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 5);
-      }
+    PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByCardNumber(model.getMemberId());
+    if (patientMemberInfo != null){
+      patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
+      patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
+      patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
+      MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
+      BeanUtils.copyProperties(model,memberRechargeRecord);
+      memberRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+      memberRechargeRecord.setType(2);
+      memberRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+      memberRechargeRecord.setCrtName(BaseContextHandler.getName());
+      memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
+      memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
+      memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+      // 发送消息 账单退费
+      sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 5);
     }
   }
 
   /**
    * 会员卡撤销收费
-   *
    * @param model 撤销收费model
    */
   public ResponseResult revocationFee(MemberRevocationFeeModel model) {
@@ -755,25 +720,25 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     memberExpendRecord.setMemberId(model.getMemberId());
     memberExpendRecord.setBillPayRecordId(model.getBillPayRecordId());
     MemberExpendRecord memberExpend = memberExpendRecordMapper.selectOne(memberExpendRecord);
-    if (memberExpend != null) {
+    if (memberExpend != null){
       memberExpend.setInservice(false);
       memberExpendRecordMapper.updateByPrimaryKeySelective(memberExpend);
 
-      PatientMemberInfo patientMemberInfo =
-          patientMemberInfoMapper.selectOneByCardNumber(model.getMemberId());
+      PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByCardNumber(model.getMemberId());
       if (patientMemberInfo != null) {
-        if (memberExpend.getExpendPrincipal() != null) {
+        if (memberExpend.getExpendPrincipal() != null){
           patientMemberInfo.setPrincipalAmount(
-              patientMemberInfo.getPrincipalAmount().add(memberExpend.getExpendPrincipal()));
+                  patientMemberInfo.getPrincipalAmount().add(memberExpend.getExpendPrincipal()));
         }
-        if (memberExpend.getExpendGift() != null) {
+        if (memberExpend.getExpendGift() != null){
           patientMemberInfo.setBonusAmount(
-              patientMemberInfo.getBonusAmount().add(memberExpend.getExpendGift()));
+                  patientMemberInfo.getBonusAmount().add(memberExpend.getExpendGift()));
         }
         patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
 
+
         MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
-        BeanUtils.copyProperties(model, memberRechargeRecord);
+        BeanUtils.copyProperties(model,memberRechargeRecord);
         // 撤销本金
         memberRechargeRecord.setRechargePrincipal(memberExpend.getExpendPrincipal());
         // 撤销赠金
@@ -788,13 +753,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         // 发送会员卡撤销收费消息
         sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 4);
         return ResponseUtil.success();
-      } else {
-        return ResponseUtil.fail(
-            OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员卡", patientMemberInfo);
+      }else {
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员卡", patientMemberInfo);
       }
     }
-    return ResponseUtil.fail(
-            OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员的消费记录", memberExpend);
+    return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到消费记录", memberExpend);
     }
+
 
   }
