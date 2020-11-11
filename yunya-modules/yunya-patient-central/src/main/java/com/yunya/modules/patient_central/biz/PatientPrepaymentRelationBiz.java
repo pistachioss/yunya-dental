@@ -561,35 +561,49 @@ public class PatientPrepaymentRelationBiz
    * @param model 撤销model
    */
   public ResponseResult revocationFee(PrepaidRevocationFeeModel model) {
-    PatientPrepaymentsInfo patientPrepaymentsInfo =
-            patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
-    if (patientPrepaymentsInfo != null) {
-      // 撤销消费
+    PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
+    prepaidExpendRecord.setPrepaidId(model.getPrepaidCard());
+    prepaidExpendRecord.setBillPayRecordId(model.getBillPayRecordId());
+    PrepaidExpendRecord prepaidExpend = prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
+    if (prepaidExpend != null){
+      prepaidExpend.setInservice(false);
+      prepaidExpendRecordMapper.updateByPrimaryKeySelective(prepaidExpend);
+
+      PatientPrepaymentsInfo patientPrepaymentsInfo =
+              patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
+      if (patientPrepaymentsInfo != null) {
+        // 撤销消费
         patientPrepaymentsInfo.setPrepaymentPrincipal(
-                patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
+                patientPrepaymentsInfo.getPrepaymentPrincipal().add(prepaidExpend.getExpendPrincipal()));
         patientPrepaymentsInfo.setPrepaymentBonus(
-                patientPrepaymentsInfo.getPrepaymentBonus().add(model.getRechargeBonus()));
+                patientPrepaymentsInfo.getPrepaymentBonus().add(prepaidExpend.getExpendGift()));
         patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
         // 创建消费记录对象
         PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
         BeanUtils.copyProperties(model, prepaidRechargeRecord);
         // 撤销本金
-      prepaidRechargeRecord.setRechargePrincipal(model.getRechargePrincipal());
+        prepaidRechargeRecord.setRechargePrincipal(prepaidExpend.getExpendPrincipal());
         // 撤销赠金
-      prepaidRechargeRecord.setRechargeBonus(model.getRechargeBonus());
-      prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
-      prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-      prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-      prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
-      prepaidRechargeRecord.setCurrentRechargePrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
-      prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
-      prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-      prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
-      prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
-      // 发送消息 撤销收费
-      sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 4);
-      return ResponseUtil.success();
-    }else {
-      return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员卡", patientPrepaymentsInfo);}
+        prepaidRechargeRecord.setRechargeBonus(prepaidExpend.getExpendGift());
+        prepaidRechargeRecord.setInservice(false);
+        prepaidRechargeRecord.setType(1);
+        prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
+        prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
+        prepaidRechargeRecord.setCurrentRechargePrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
+        prepaidRechargeRecord.setCurrentRechargeBonus(patientPrepaymentsInfo.getPrepaymentBonus());
+        prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
+        prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
+        // 发送消息 撤销收费
+        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 4);
+        return ResponseUtil.success();
+      }else {
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款", patientPrepaymentsInfo);
+      }
+    }
+    return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款消费记录", prepaidExpend);
   }
+
 }

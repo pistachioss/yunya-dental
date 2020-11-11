@@ -21,24 +21,17 @@ import java.math.BigDecimal;
 @ApiModel("预付款撤销收费Model")
 public class PrepaidRevocationFeeModel implements Serializable {
 
-
     /**
      * 会员卡号
      */
-    @ApiModelProperty(value = "会员卡号",required = true)
+    @ApiModelProperty(value = "预付款卡号",required = true)
     private String prepaidCard;
 
     /**
-     * 撤销本金
+     * 账单付款记录id
      */
-    @ApiModelProperty(value = "撤销本金",required = true)
-    private BigDecimal rechargePrincipal;
-
-    /**
-     * 撤销赠金
-     */
-    @ApiModelProperty(value = "撤销赠金",required = true)
-    private BigDecimal rechargeBonus;
+    @ApiModelProperty(value = "账单付款记录id",required = true)
+    private Integer billPayRecordId;
 
     /**
      * 备注
