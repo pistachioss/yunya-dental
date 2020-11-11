@@ -73,8 +73,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
-  /** 预约服务调用 */
-  @Autowired private RemoteAppointmentFeign appointmentFeign;
   /** 就诊其他信息服务调用 */
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
   /** 基础价目表 */
