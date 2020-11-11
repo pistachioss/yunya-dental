@@ -9,11 +9,14 @@ spring:
     time-zone: GMT+8
     default-property-inclusion: always
   datasource:
-    driver-class-name: com.mysql.jdbc.Driver
-    type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:mysql://192.168.31.90:3306/yunya_treatment_other?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
+    host: 192.168.31.90
+    port: 3306
     username: sa
     password: Admin001!
+    name: yunya_treatment_other
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
   redis:
     host: 192.168.31.90
     port: 6379
