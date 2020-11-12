@@ -21,12 +21,6 @@ public class FieldInfo {
     private Date endTime;
 
     /**
-     * 外勤时长
-     */
-    @Column(name = "field_time")
-    private Integer fieldTime;
-
-    /**
      * 外勤原因
      */
     @Column(name = "field_reason")
@@ -126,24 +120,6 @@ public class FieldInfo {
      */
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
-    }
-
-    /**
-     * 获取外勤时长
-     *
-     * @return field_time - 外勤时长
-     */
-    public Integer getFieldTime() {
-        return fieldTime;
-    }
-
-    /**
-     * 设置外勤时长
-     *
-     * @param fieldTime 外勤时长
-     */
-    public void setFieldTime(Integer fieldTime) {
-        this.fieldTime = fieldTime;
     }
 
     /**

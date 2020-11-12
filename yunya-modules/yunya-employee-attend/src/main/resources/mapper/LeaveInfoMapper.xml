@@ -9,7 +9,6 @@
     <result column="vacation_id" property="vacationId" jdbcType="INTEGER" />
     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
-    <result column="leave_time" property="leaveTime" jdbcType="INTEGER" />
     <result column="leave_reason" property="leaveReason" jdbcType="VARCHAR" />
     <result column="leave_picture" property="leavePicture" jdbcType="VARCHAR" />
     <result column="approval_criteria_id" property="approvalCriteriaId" jdbcType="INTEGER" />

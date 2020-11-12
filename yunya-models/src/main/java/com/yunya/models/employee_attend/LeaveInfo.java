@@ -27,12 +27,6 @@ public class LeaveInfo {
     private Date endTime;
 
     /**
-     * 请假时长
-     */
-    @Column(name = "leave_time")
-    private Integer leaveTime;
-
-    /**
      * 请假原因
      */
     @Column(name = "leave_reason")
@@ -146,24 +140,6 @@ public class LeaveInfo {
      */
     public void setEndTime(Date endTime) {
         this.endTime = endTime;
-    }
-
-    /**
-     * 获取请假时长
-     *
-     * @return leave_time - 请假时长
-     */
-    public Integer getLeaveTime() {
-        return leaveTime;
-    }
-
-    /**
-     * 设置请假时长
-     *
-     * @param leaveTime 请假时长
-     */
-    public void setLeaveTime(Integer leaveTime) {
-        this.leaveTime = leaveTime;
     }
 
     /**

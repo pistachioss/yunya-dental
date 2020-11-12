@@ -9,7 +9,6 @@
     <result column="field_address" property="fieldAddress" jdbcType="VARCHAR" />
     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
-    <result column="field_time" property="fieldTime" jdbcType="INTEGER" />
     <result column="field_reason" property="fieldReason" jdbcType="VARCHAR" />
     <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER" />
     <result column="apprpval_status" property="apprpvalStatus" jdbcType="VARCHAR" />
