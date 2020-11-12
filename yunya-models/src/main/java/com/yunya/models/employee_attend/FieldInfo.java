@@ -1,5 +1,7 @@
 package com.yunya.models.employee_attend;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -7,7 +9,8 @@ import javax.persistence.*;
 public class FieldInfo {
     @Id
     private Integer id;
-
+    @Column(name = "user_id")
+    private Integer userId;
     /**
      * 外勤地址
      */

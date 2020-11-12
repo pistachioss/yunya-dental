@@ -7,7 +7,8 @@ import javax.persistence.*;
 public class LeaveInfo {
     @Id
     private Integer id;
-
+    @Column(name = "user_id")
+    private Integer userId;
     /**
      * 假期类型id
      */

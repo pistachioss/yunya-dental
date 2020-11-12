@@ -7,7 +7,8 @@ import javax.persistence.*;
 public class WorkOvertimeInfo {
     @Id
     private Integer id;
-
+    @Column(name = "user_id")
+    private Integer userId;
     /**
      * 门诊id
      */
