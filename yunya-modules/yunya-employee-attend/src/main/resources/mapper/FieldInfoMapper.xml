@@ -7,6 +7,7 @@
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="field_address" property="fieldAddress" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
     <result column="field_reason" property="fieldReason" jdbcType="VARCHAR" />
