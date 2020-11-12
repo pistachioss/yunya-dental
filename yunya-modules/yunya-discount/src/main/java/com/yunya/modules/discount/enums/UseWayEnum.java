@@ -7,8 +7,8 @@ import java.util.*;
  * @date 2020/8/31
  */
 public enum  UseWayEnum {
-    one_time_use(0, "一次使用"),
-    many_time_use(1, "多次使用"),
+    ONE_TIME_USE(0, "一次使用"),
+    MANY_TIME_USE(1, "多次使用"),
     ;
 
     private Integer code;

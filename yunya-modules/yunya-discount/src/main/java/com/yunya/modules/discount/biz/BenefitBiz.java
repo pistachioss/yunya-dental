@@ -1,6 +1,8 @@
 package com.yunya.modules.discount.biz;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.yunya.feign.discount.domain.bo.CardUseBo;
 import com.yunya.feign.discount.domain.bo.ItemUseBenefitBo;
 import com.yunya.feign.discount.domain.bo.OrderItemUseBo;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
@@ -11,6 +13,7 @@ import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.emr.domain.bo.RestErrorBo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
@@ -20,6 +23,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.BeanCopierUtils;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.discount.AuthDiscountBenefit;
+import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CardBenefit;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DiscountCoupon;
@@ -33,6 +37,7 @@ import com.yunya.models.treatment.OrderDetail;
 import com.yunya.modules.discount.enums.DiscountError;
 import com.yunya.modules.discount.mapper.AuthDiscountBenefitMapper;
 import com.yunya.modules.discount.mapper.CardBenefitMapper;
+import com.yunya.modules.discount.mapper.CardMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
 import com.yunya.modules.discount.mapper.DiscountCouponMapper;
 import com.yunya.modules.discount.mapper.OrderBenefitMapper;
@@ -53,12 +58,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.BusinessConstants.*;
 import static com.yunya.modules.discount.enums.BenefitOperateEnum.*;
 import static com.yunya.modules.discount.enums.BenefitTypeEnum.*;
+import static com.yunya.modules.discount.enums.CardStatusEnum.*;
 import static com.yunya.modules.discount.enums.ChoiceBenefitTypeEnum.*;
 import static com.yunya.modules.discount.enums.CouponTypeEnum.*;
 import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
+import static com.yunya.modules.discount.enums.UseWayEnum.*;
 import static java.util.stream.Collectors.*;
 
 /**
@@ -74,7 +82,7 @@ public class BenefitBiz {
 	@Resource
 	private CardBenefitMapper cardBenefitMapper;
 	@Resource
-    private OrderBenefitMapper orderBenefitMapper;
+	private OrderBenefitMapper orderBenefitMapper;
 	@Resource
 	private AuthDiscountBenefitMapper authDiscountBenefitMapper;
 	@Resource
@@ -88,9 +96,13 @@ public class BenefitBiz {
 	@Resource
 	private CouponCommonInfoMapper couponMapper;
 	@Resource
+	private CardMapper cardMapper;
+	@Resource
 	private RemoteSystemServiceFeign systemServiceFeign;
 	@Resource
 	private RemoteTreatmentServiceFeign treatmentServiceFeign;
+	@Resource
+	private RemoteRabbitMqServiceFeign mqServiceFeign;
 
 	private static final Integer AUTH_BENEFIT_TYPE = 2;
 
@@ -126,6 +138,7 @@ public class BenefitBiz {
 						cardBenefit.setCardId(itemUseBenefitBo.getBenefitId());
 						cardBenefit.setItemId(itemBenefitBo.getItemId());
 						cardBenefit.setItemType(itemBenefitBo.getType());
+						cardBenefit.setCouponType(itemUseBenefitBo.getCouponType());
 						cardBenefit.setBenefitType(itemUseBenefitBo.getBenefitType());
 						cardBenefit.setItemIndex(itemUseBenefitBo.getItemIndex());
 						cardBenefit.setBenefitAmount(itemUseBenefitBo.getBenefitAmount());
@@ -133,23 +146,32 @@ public class BenefitBiz {
 						cardBenefit.setCrtId(loginUserId);
 						cardBenefit.setUpdId(loginUserId);
 						cardBenefit.setSort(itemUseBenefitBo.getId());
+						//计算工作量
 						calculateWordLoad(itemUseBenefitBo, itemBenefitBo, cardBenefit);
 						list.add(cardBenefit);
 					}
 				}
 			}
 			if (CollectionUtils.isNotEmpty(list)) {
-                BigDecimal totalBenefitAmount = data.stream()
-		                .filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
-		                .reduce(BigDecimal.ZERO, BigDecimal::add);
-                OrderBenefit orderBenefit = new OrderBenefit();
-                orderBenefit.setOrderId(orderId);
-                orderBenefit.setTotalAmount(totalBenefitAmount);
+				BigDecimal totalBenefitAmount = data.stream()
+						.filter(obj -> obj.getBenefitAmount() != null).map(OrderItemUseBo::getBenefitAmount)
+						.reduce(BigDecimal.ZERO, BigDecimal::add);
+				OrderBenefit orderBenefit = new OrderBenefit();
+				orderBenefit.setOrderId(orderId);
+				orderBenefit.setTotalAmount(totalBenefitAmount);
 				orderBenefit.setBenefitType(CARD_BENEFIT.getCode());
-                orderBenefit.setCrtId(loginUserId);
-                orderBenefit.setUpdId(loginUserId);
-                orderBenefitMapper.insertSelective(orderBenefit);
+				orderBenefit.setCrtId(loginUserId);
+				orderBenefit.setUpdId(loginUserId);
+				orderBenefitMapper.insertSelective(orderBenefit);
 				cardBenefitMapper.insertList(list);
+				//需要更新的卡券
+				List<Card> updateCards = getUpdateCards(list);
+				if (CollectionUtils.isNotEmpty(updateCards)) {
+					//更新卡券状态
+					updateCards.forEach(obj -> cardMapper.updateByPrimaryKeySelective(obj));
+				}
+				mqServiceFeign.sendMessage(orderId, ADD, BaseBenefit);
+				log.info("【订单使用卡券优惠发送消息成功】：订单id[{}]", orderId);
 			}
 			return ResponseUtil.success();
 		} finally {
@@ -214,6 +236,8 @@ public class BenefitBiz {
 					orderBenefit.setUpdId(loginUserId);
 					orderBenefitMapper.insertSelective(orderBenefit);
 					authDiscountBenefitMapper.insertList(list);
+					mqServiceFeign.sendMessage(orderId, ADD, BaseBenefit);
+					log.info("【订单使用授权优惠发送消息成功】：订单id[{}]", orderId);
 				}
 			}
 			return ResponseUtil.success();
@@ -226,6 +250,7 @@ public class BenefitBiz {
 
 	/**
 	 * 查询订单优惠明细
+	 *
 	 * @param orderId 订单id
 	 * @return list
 	 */
@@ -240,7 +265,7 @@ public class BenefitBiz {
 			List<CardBenefit> cardBenefits = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper);
 			if (CollectionUtils.isNotEmpty(cardBenefits)) {
 				Map<Integer, List<CardBenefit>> listMap = cardBenefits.stream().collect(groupingBy(CardBenefit::getOrderDetailId));
-				listMap.forEach((k,v) -> {
+				listMap.forEach((k, v) -> {
 					OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
 					BigDecimal itemBenefitAmount = v.stream().map(CardBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 					vo.setOrderDetailId(k);
@@ -272,7 +297,7 @@ public class BenefitBiz {
 			List<AuthDiscountBenefit> authBenefit = getOrderBenefitDetail(orderId, AuthDiscountBenefit.class, authDiscountBenefitMapper);
 			if (CollectionUtils.isNotEmpty(authBenefit)) {
 				Map<Integer, List<AuthDiscountBenefit>> listMap = authBenefit.stream().collect(groupingBy(AuthDiscountBenefit::getOrderDetailId));
-				listMap.forEach((k,v) -> {
+				listMap.forEach((k, v) -> {
 					OrderBenefitDetailVo vo = new OrderBenefitDetailVo();
 					BigDecimal itemBenefitAmount = v.stream().map(AuthDiscountBenefit::getBenefitAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
 					vo.setOrderDetailId(k);
@@ -326,6 +351,8 @@ public class BenefitBiz {
 		orderBenefit.setDeleted(TRUE.getCode());
 		orderBenefit.setUpdId(loginUserId);
 		updateOrderBenefit(orderBenefit, orderId, OrderBenefit.class, orderBenefitMapper);
+		mqServiceFeign.sendMessage(orderId, DELETE, BaseBenefit);
+		log.info("【订单撤销优惠发送消息成功】：订单id[{}]", orderId);
 		return errorBo;
 	}
 
@@ -336,8 +363,7 @@ public class BenefitBiz {
 	 * @return PatientChooseBenefitForm
 	 */
 	private PatientChooseBenefitForm benefitTransformToForm(PatientOrderBenefitModel model) {
-		PatientChooseBenefitForm benefitForm = BeanCopierUtils.generalCopyBean(model, PatientChooseBenefitForm.class);
-		return benefitForm;
+		return BeanCopierUtils.generalCopyBean(model, PatientChooseBenefitForm.class);
 	}
 
 	/**
@@ -353,7 +379,6 @@ public class BenefitBiz {
 			Integer couponType = itemUseBenefitBo.getCouponType();
 			Integer couponId = itemUseBenefitBo.getCouponId();
 			cardBenefit.setCouponId(couponId);
-			cardBenefit.setCouponType(couponType);
 			if (VOUCHER.equals(couponType)) {
 				example = new Example(VoucheCoupon.class);
 				example.createCriteria().andEqualTo("couponId", couponId);
@@ -412,8 +437,9 @@ public class BenefitBiz {
 
 	/**
 	 * 查询订单总优惠信息
-	 * @param orderId
-	 * @return
+	 *
+	 * @param orderId orderId
+	 * @return order
 	 */
 	private OrderBenefit getOrderBenefitSummary(Integer orderId) {
 		Example example = new Example(OrderBenefit.class);
@@ -424,9 +450,10 @@ public class BenefitBiz {
 
 	/**
 	 * 获取订单优惠明细（优惠券或授权折扣）
-	 * @param orderId
-	 * @param clazz
-	 * @param mapper
+	 *
+	 * @param orderId orderId
+	 * @param clazz clazz
+	 * @param mapper mapper
 	 */
 	private List getOrderBenefitDetail(Integer orderId, Class<?> clazz, Mapper mapper) {
 		Example example = new Example(clazz);
@@ -442,4 +469,58 @@ public class BenefitBiz {
 		mapper.updateByExampleSelective(t, example);
 	}
 
+	/**
+	 * 获取卡券使用情况
+	 * @param list list
+	 * @return map
+	 */
+	private Map<Integer, CardUseBo> getCardUseList(List<CardBenefit> list) {
+		List<Integer> exchangeCards = list.stream()
+				.filter(obj -> EXCHANGE.equals(obj.getCouponType()))
+				.map(CardBenefit::getCardId).collect(toList());
+		List<Integer> packageCards = list.stream()
+				.filter(obj -> SPECIAL_PACKAGE.equals(obj.getCouponType()))
+				.map(CardBenefit::getCardId).collect(toList());
+		Map<Integer, CardUseBo> map = Maps.newHashMapWithExpectedSize(list.size());
+		if (CollectionUtils.isNotEmpty(exchangeCards)) {
+			List<CardUseBo> useList = cardBenefitMapper.getCardUseInfo(exchangeCards, EXCHANGE.getCode());
+			Map<Integer, CardUseBo> useBoMap = useList.stream().collect(toMap(CardUseBo::getCardId, Function.identity()));
+			if (!useBoMap.isEmpty()) {
+				map.putAll(useBoMap);
+			}
+		}
+		if (CollectionUtils.isNotEmpty(packageCards)) {
+			List<CardUseBo> useList = cardBenefitMapper.getCardUseInfo(packageCards, SPECIAL_PACKAGE.getCode());
+			Map<Integer, CardUseBo> useBoMap = useList.stream().collect(toMap(CardUseBo::getCardId, Function.identity()));
+			if (!useBoMap.isEmpty()) {
+				map.putAll(useBoMap);
+			}
+		}
+		return map;
+	}
+
+	/**
+	 * 返回设置卡券更新信息
+	 * @param list list
+	 * @return list
+	 */
+	private List<Card> getUpdateCards(List<CardBenefit> list) {
+		//查询兑换券，套餐券的使用信息
+		Map<Integer, CardUseBo> useBoMap = getCardUseList(list);
+		//更新卡券状态
+		return list.stream().filter(obj -> !MEMBER_CARD.equals(obj.getCouponType())).map(obj -> {
+			Card card = new Card();
+			CardUseBo cardUseBo = useBoMap.get(obj.getCardId());
+			card.setId(obj.getCardId());
+			if (VOUCHER.equals(obj.getCouponType()) || DISCOUNT.equals(obj.getCouponType())) {
+				card.setStatus(USE_ALL.getCode());
+			}
+			if (EXCHANGE.equals(obj.getCouponType()) || SPECIAL_PACKAGE.equals(obj.getCouponType())) {
+				card.setStatus(ONE_TIME_USE.equals(cardUseBo.getUseWay()) ?
+						USE_ALL.getCode() : ZERO.equals(cardUseBo.getUsable()) ?
+						USE_ALL.getCode() : PARTIAL_USE.getCode());
+			}
+			return card;
+		}).collect(toList());
+	}
 }

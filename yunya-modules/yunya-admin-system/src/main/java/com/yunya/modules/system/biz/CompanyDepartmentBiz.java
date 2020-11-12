@@ -3,10 +3,9 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.TreeUtil;
 import com.yunya.models.system.CompanyDepartment;
 import com.yunya.modules.system.domain.form.CompanyDepartmentForm;
@@ -22,6 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.BusinessConstants.DEFAULT_PARENT_ID;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简单介绍:</br> 组织部门业务层
@@ -56,7 +58,7 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
    */
   private List<OrgDeptTreeVO> initTree(List<OrgDeptVO> vos) {
     List<OrgDeptTreeVO> trees = new ArrayList<>();
-    if (vos.size() > 0) {
+    if (StringHelper.isNotEmpty(vos)) {
       OrgDeptTreeVO node;
       for (OrgDeptVO vo : vos) {
         node = new OrgDeptTreeVO();
@@ -64,7 +66,7 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
         trees.add(node);
       }
     }
-    return TreeUtil.buildByRecursive(trees, BusinessConstants.DEFAULT_PARENT_ID);
+    return TreeUtil.buildByRecursive(trees, DEFAULT_PARENT_ID);
   }
 
   /**
@@ -94,15 +96,13 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
     entity.setCompanyId(companyId);
     int count = mapper.selectCount(entity);
     if (count > 0) {
-      throw new ClientServiceException(
-          "新增部门失败，当前组织已存在该部门", OperationCodeConstants.NAME_IS_OCCUPIED);
+      throw new ClientServiceException("新增部门失败，当前组织已存在该部门", NAME_IS_OCCUPIED);
     }
     Integer parentId = resource.getParentId();
-    if (!BusinessConstants.DEFAULT_PARENT_ID.equals(parentId)) {
+    if (!DEFAULT_PARENT_ID.equals(parentId) && null != parentId) {
       CompanyDepartment resultData = mapper.selectByPrimaryKey(parentId);
       if (resultData.getDepartmentId().equals(departmentId)) {
-        throw new ClientServiceException(
-            "新增组织部门失败，当前新增部门与上级部门相同", OperationCodeConstants.SAME_DATA_EXIST);
+        throw new ClientServiceException("新增组织部门失败，当前新增部门与上级部门相同", SAME_DATA_EXIST);
       }
     }
     Integer orderNum = resource.getOrderNum();
@@ -122,16 +122,14 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
   public void edit(Integer id, CompanyDepartmentForm form) {
     CompanyDepartment result = mapper.selectByPrimaryKey(id);
     if (null == result) {
-      throw new ClientServiceException(
-          "修改组织部门，组织部门ID为'" + id + "'的数据不存在", OperationCodeConstants.QUERY_RESULT_INVALID);
+      throw new ClientServiceException("修改组织部门，组织部门ID为'" + id + "'的数据不存在", QUERY_RESULT_INVALID);
     }
     Integer parentId = form.getParentId();
-    if (null != parentId && !BusinessConstants.DEFAULT_PARENT_ID.equals(parentId)) {
+    if (null != parentId && !DEFAULT_PARENT_ID.equals(parentId)) {
       Integer departmentId = result.getDepartmentId();
       CompanyDepartment parentResult = mapper.selectByPrimaryKey(parentId);
       if (parentResult.getDepartmentId().equals(departmentId)) {
-        throw new ClientServiceException(
-            "编辑组织部门失败，上级部门不能是自身", OperationCodeConstants.SAME_DATA_EXIST);
+        throw new ClientServiceException("编辑组织部门失败，上级部门不能是自身", SAME_DATA_EXIST);
       }
       CompanyDepartment entity = new CompanyDepartment();
       entity.setParentId(parentId);
@@ -160,8 +158,7 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
           .filter(department -> department.getDepartmentId().equals(departmentId))
           .forEach(
               department -> {
-                throw new ClientServiceException(
-                    "编辑组织部门失败，该父级下已存在相同部门", OperationCodeConstants.SAME_DATA_EXIST);
+                throw new ClientServiceException("编辑组织部门失败，该父级下已存在相同部门", SAME_DATA_EXIST);
               });
     }
   }
@@ -176,8 +173,7 @@ public class CompanyDepartmentBiz extends BaseBiz<CompanyDepartmentMapper, Compa
     entity.setParentId(id);
     List<CompanyDepartment> departments = mapper.select(entity);
     if (departments.size() > 0) {
-      throw new ClientServiceException(
-          "删除组织部门失败，该部门下存在子级部门", OperationCodeConstants.DELETE_NOT_ALLOW);
+      throw new ClientServiceException("删除组织部门失败，该部门下存在子级部门", DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
   }
