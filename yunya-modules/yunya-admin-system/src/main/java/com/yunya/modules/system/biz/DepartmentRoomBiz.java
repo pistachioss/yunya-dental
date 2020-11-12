@@ -94,8 +94,9 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
       if (StringHelper.isNotEmpty(clinicExtInfos)) {
         clinicExtInfos.forEach(clinicExtInfo -> {
           ClinicDepartmentRoom clinicDepartmentRoom = new ClinicDepartmentRoom();
-          clinicDepartmentRoom.setCompanyId(clinicExtInfo.getId());
+          clinicDepartmentRoom.setCompanyId(clinicExtInfo.getCompanyId());
           clinicDepartmentRoom.setDeptRoomId(id);
+          clinicDepartmentRoom.setInservice(true);
           clinicDepartmentRoom.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
           clinicDepartmentRoom.setCrtName(BaseContextHandler.getName());
           clinicDepartmentRoom.setCrtTime(new Date(System.currentTimeMillis()));

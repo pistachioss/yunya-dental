@@ -1,5 +1,6 @@
 package com.yunya.models.employee_attend;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -38,6 +39,7 @@ public class EmployeeSchedule {
      * 工作日
      */
     @Column(name = "work_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date workDate;
 
     /**

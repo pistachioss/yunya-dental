@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberRevocationFeeModel;
+import com.yunya.feign.patient_central.domain.model.PrepaidRevocationFeeModel;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -90,7 +91,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     List<BillPayDetailRecord> payDetailRecords = billPayDetailRecordBiz.selectList(billPayDetail);
     List<Integer> payDetailIds = Lists.newArrayList();
     if (StringHelper.isNotEmpty(payDetailRecords)) {
-      // todo 会员卡、预付款需退还到原先账号
+      // 会员卡、预付款需退还到原先账号
       payDetailRecords.forEach(
           detailRecord -> {
             payDetailIds.add(detailRecord.getId());
@@ -99,12 +100,20 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
             switch (type) {
                 // 预付款
               case 0:
-                MemberRevocationFeeModel prepaidModel = new MemberRevocationFeeModel();
-
-                patientCentralServiceFeign.revocationFee(prepaidModel);
+                PrepaidRevocationFeeModel prepaidRevocationFeeModel =
+                    new PrepaidRevocationFeeModel();
+                prepaidRevocationFeeModel.setPrepaidCard(cardNum);
+                prepaidRevocationFeeModel.setBillPayRecordId(billPayRecordId);
+                prepaidRevocationFeeModel.setRemarks("撤销预付款收费");
+                patientCentralServiceFeign.revocationFee(prepaidRevocationFeeModel);
                 break;
                 // 会员卡
               case 1:
+                MemberRevocationFeeModel memberRevocationFeeModel = new MemberRevocationFeeModel();
+                memberRevocationFeeModel.setMemberId(cardNum);
+                memberRevocationFeeModel.setBillPayRecordId(billPayRecordId);
+                memberRevocationFeeModel.setRemarks("撤销会员卡收费");
+                patientCentralServiceFeign.revocationFee(memberRevocationFeeModel);
                 break;
               default:
                 break;

@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -51,11 +52,19 @@ public class EmployeeScheduleController {
         EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleDeleteForm, EmployeeSchedule.class);
         //注意月份是MM
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
         try {
-            employeeSchedule.setWorkDate(simpleDateFormat.parse(employeeScheduleDeleteForm.getWorkDateString()));
+            date  = simpleDateFormat.parse(employeeScheduleDeleteForm.getWorkDateString());
         } catch (ParseException e) {
             throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
         }
+        if(date.before(new Date())){
+            throw new ClientServiceException("今天之前的排班不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
+        }
+        if(true){
+            throw new ClientServiceException("当前排班处于申请流程中，不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
+        }
+        employeeSchedule.setWorkDate(date);
         employeeScheduleBiz.delete(employeeSchedule);
         return ResponseUtil.success();
     }

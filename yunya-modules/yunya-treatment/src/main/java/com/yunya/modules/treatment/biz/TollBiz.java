@@ -149,7 +149,10 @@ public class TollBiz {
           BigDecimal discountAmount = benefitVo.getItemBenefitAmount();
           actualAmount = actualAmount.subtract(discountAmount);
           // 设置折扣率
-          vo.setDiscountRate(actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+          vo.setDiscountRate(
+              actualAmount
+                  .divide(receivableAmount, 4, RoundingMode.HALF_UP)
+                  .multiply(BigDecimal.valueOf(100)));
           // 设置订单明细卡券匹配信息
           List<ItemUseBenefitVo> benefitList = benefitVo.getItemBenefitList();
           if (StringHelper.isNotEmpty(benefitList)) {
@@ -205,18 +208,22 @@ public class TollBiz {
                     BigDecimal receivableAmount = vo.getReceivableAmount();
                     // 设置折扣率
                     vo.setDiscountRate(
-                        actualAmount.divide(receivableAmount, 4, RoundingMode.HALF_UP));
+                        actualAmount
+                            .divide(receivableAmount, 4, RoundingMode.HALF_UP)
+                            .multiply(BigDecimal.valueOf(100)));
                     // 设置优惠匹配信息
-                    PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
-                    Integer warrantId = accreditDiscountModel.getWarrantId();
-                    couponInfoVO.setBenefitId(warrantId);
-                    couponInfoVO.setCouponType(5);
-                    SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
-                    if (null != employee) {
-                      couponInfoVO.setBenefitName(employee.getName());
+                    if (receivableAmount.compareTo(actualAmount) != 0) {
+                      PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
+                      Integer warrantId = accreditDiscountModel.getWarrantId();
+                      couponInfoVO.setBenefitId(warrantId);
+                      couponInfoVO.setCouponType(5);
+                      SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
+                      if (null != employee) {
+                        couponInfoVO.setBenefitName(employee.getName());
+                      }
+                      couponInfoVO.setBenefitAmount(receivableAmount.subtract(actualAmount));
+                      discountAppliesCoupon.add(couponInfoVO);
                     }
-                    couponInfoVO.setBenefitAmount(receivableAmount.subtract(actualAmount));
-                    discountAppliesCoupon.add(couponInfoVO);
                   }
                   vo.setDiscountAppliesCoupons(discountAppliesCoupon);
                 })
