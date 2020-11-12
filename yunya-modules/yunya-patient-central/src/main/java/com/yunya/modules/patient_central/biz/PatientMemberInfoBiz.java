@@ -719,6 +719,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
     memberExpendRecord.setMemberId(model.getMemberId());
     memberExpendRecord.setBillPayRecordId(model.getBillPayRecordId());
+    memberExpendRecord.setInservice(true);
     MemberExpendRecord memberExpend = memberExpendRecordMapper.selectOne(memberExpendRecord);
     if (memberExpend != null){
       memberExpend.setInservice(false);

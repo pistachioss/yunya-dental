@@ -565,6 +565,7 @@ public class PatientPrepaymentRelationBiz
     PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
     prepaidExpendRecord.setPrepaidId(model.getPrepaidCard());
     prepaidExpendRecord.setBillPayRecordId(model.getBillPayRecordId());
+    prepaidExpendRecord.setInservice(true);
     PrepaidExpendRecord prepaidExpend = prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
     if (prepaidExpend != null){
       prepaidExpend.setInservice(false);
