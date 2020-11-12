@@ -2065,8 +2065,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             if (patientInfo != null){
                 build.setAge(patientInfo.getAge());
                 try {
-                    Date parse = dateFormat.parse(patientInfo.getBirthday());
-                    build.setBirthday(dateFormat.format(parse));
+                    String birthday = patientInfo.getBirthday();
+                    if (StringHelper.isNotEmpty(birthday)) {
+                        Date parse = dateFormat.parse(patientInfo.getBirthday());
+                        build.setBirthday(dateFormat.format(parse));
+                    }
                 } catch (ParseException e) {
                     throw new ClientServiceException("时间格式转化异常！",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
                 }
