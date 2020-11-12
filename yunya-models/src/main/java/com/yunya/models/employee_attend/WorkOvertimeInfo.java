@@ -20,11 +20,6 @@ public class WorkOvertimeInfo {
     @Column(name = "schedule_id")
     private Integer scheduleId;
 
-    /**
-     * 加班时长
-     */
-    @Column(name = "overtime_hours")
-    private Integer overtimeHours;
 
     /**
      * 加班事由
@@ -118,23 +113,6 @@ public class WorkOvertimeInfo {
         this.scheduleId = scheduleId;
     }
 
-    /**
-     * 获取加班时长
-     *
-     * @return overtime_hours - 加班时长
-     */
-    public Integer getOvertimeHours() {
-        return overtimeHours;
-    }
-
-    /**
-     * 设置加班时长
-     *
-     * @param overtimeHours 加班时长
-     */
-    public void setOvertimeHours(Integer overtimeHours) {
-        this.overtimeHours = overtimeHours;
-    }
 
     /**
      * 获取加班事由

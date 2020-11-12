@@ -8,7 +8,6 @@
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="company_id" property="companyId" jdbcType="INTEGER" />
     <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
-    <result column="overtime_hours" property="overtimeHours" jdbcType="INTEGER" />
     <result column="overtime_reason" property="overtimeReason" jdbcType="VARCHAR" />
     <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER" />
     <result column="apprpval_status" property="apprpvalStatus" jdbcType="VARCHAR" />
