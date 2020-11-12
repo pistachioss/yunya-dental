@@ -108,6 +108,8 @@ public class ReceiverMessageController {
           break;
         case BaseCardBatch:
           baseCardService.operateBatch(messageModel);
+        case BaseCardSingle:
+          baseCardService.operateSingle(messageModel);
           break;
         case BaseCoupon:
           baseCouponService.operateBaseCoupon(messageModel);

@@ -56,6 +56,8 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
@@ -103,6 +105,8 @@ public class BenefitBiz {
 	private RemoteTreatmentServiceFeign treatmentServiceFeign;
 	@Resource
 	private RemoteRabbitMqServiceFeign mqServiceFeign;
+	@Resource(name = "customizeThreadPool")
+	private ExecutorService cardThreadPool;
 
 	private static final Integer AUTH_BENEFIT_TYPE = 2;
 
@@ -165,13 +169,11 @@ public class BenefitBiz {
 				orderBenefitMapper.insertSelective(orderBenefit);
 				cardBenefitMapper.insertList(list);
 				//需要更新的卡券
-				List<Card> updateCards = getUpdateCards(list);
-				if (CollectionUtils.isNotEmpty(updateCards)) {
-					//更新卡券状态
-					updateCards.forEach(obj -> cardMapper.updateByPrimaryKeySelective(obj));
-				}
+				Set<Card> updateCards = updateCardStatus(list);
 				mqServiceFeign.sendMessage(orderId, ADD, BaseBenefit);
 				log.info("【订单使用卡券优惠发送消息成功】：订单id[{}]", orderId);
+				updateCards.forEach(obj -> cardThreadPool.execute(() -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle)));
+				log.info("【订单使用卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
 			}
 			return ResponseUtil.success();
 		} finally {
@@ -332,11 +334,16 @@ public class BenefitBiz {
 		}
 		//更新优惠券
 		if (CARD_BENEFIT.equals(summary.getBenefitType())) {
+			List<CardBenefit> revokeCards = getOrderBenefitDetail(orderId, CardBenefit.class, cardBenefitMapper);
 			CardBenefit cardBenefit = new CardBenefit();
 			cardBenefit.setDeleted(TRUE.getCode());
 			cardBenefit.setOperateType(MODIFY_BILL.getCode());
 			cardBenefit.setUpdId(loginUserId);
 			updateOrderBenefit(cardBenefit, orderId, CardBenefit.class, cardBenefitMapper);
+			//更新卡券状态
+			Set<Card> updateCards = updateCardStatus(revokeCards);
+			updateCards.forEach(obj -> cardThreadPool.execute(() -> mqServiceFeign.sendMessage(obj.getId(), UPDATE, BaseCardSingle)));
+			log.info("【订单撤销卡券优惠，更新卡券发送消息成功】：卡券ids：{}", updateCards.stream().map(Card::getId).collect(toList()));
 		}
 		//更新授权
 		if (AUTH_BENEFIT.equals(summary.getBenefitType())) {
@@ -452,8 +459,8 @@ public class BenefitBiz {
 	 * 获取订单优惠明细（优惠券或授权折扣）
 	 *
 	 * @param orderId orderId
-	 * @param clazz clazz
-	 * @param mapper mapper
+	 * @param clazz   clazz
+	 * @param mapper  mapper
 	 */
 	private List getOrderBenefitDetail(Integer orderId, Class<?> clazz, Mapper mapper) {
 		Example example = new Example(clazz);
@@ -471,6 +478,7 @@ public class BenefitBiz {
 
 	/**
 	 * 获取卡券使用情况
+	 *
 	 * @param list list
 	 * @return map
 	 */
@@ -501,14 +509,15 @@ public class BenefitBiz {
 
 	/**
 	 * 返回设置卡券更新信息
+	 *
 	 * @param list list
 	 * @return list
 	 */
-	private List<Card> getUpdateCards(List<CardBenefit> list) {
+	private Set<Card> getUpdateCards(List<CardBenefit> list) {
 		//查询兑换券，套餐券的使用信息
 		Map<Integer, CardUseBo> useBoMap = getCardUseList(list);
 		//更新卡券状态
-		return list.stream().filter(obj -> !MEMBER_CARD.equals(obj.getCouponType())).map(obj -> {
+		return list.stream().filter(obj -> COUPON_TYPE.equals(obj.getCouponType())).map(obj -> {
 			Card card = new Card();
 			CardUseBo cardUseBo = useBoMap.get(obj.getCardId());
 			card.setId(obj.getCardId());
@@ -521,6 +530,20 @@ public class BenefitBiz {
 						USE_ALL.getCode() : PARTIAL_USE.getCode());
 			}
 			return card;
-		}).collect(toList());
+		}).collect(toSet());
 	}
+
+	/**
+	 * 更新卡券状态
+	 * @param cardBenefits 优惠卡券集合
+	 */
+	private Set<Card> updateCardStatus(List<CardBenefit> cardBenefits) {
+		Set<Card> updateCards = getUpdateCards(cardBenefits);
+		if (CollectionUtils.isNotEmpty(updateCards)) {
+			//更新卡券状态
+			updateCards.forEach(obj -> cardMapper.updateByPrimaryKeySelective(obj));
+		}
+		return updateCards;
+	}
+
 }
