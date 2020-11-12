@@ -21,6 +21,7 @@
     <result column="upt_id" property="uptId" jdbcType="INTEGER" />
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <result column="inservice" property="inservice" jdbcType="BIT"/>
   </resultMap>
 
     <!-- 查询预付款消费记录 -->
@@ -45,5 +46,6 @@
             JOIN patient_base_info pbio ON perd.patient_id = pbio.id
         WHERE
             perd.prepaid_id = #{form.prepaidId} and perd.patient_id = #{form.patientId}
+            and perd.inservice = 1
     </select>
 </mapper>
