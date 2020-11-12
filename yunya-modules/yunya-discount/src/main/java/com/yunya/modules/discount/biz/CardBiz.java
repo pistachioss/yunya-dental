@@ -1170,7 +1170,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							}
 							//订单项目id对应的可用的优惠券信息
 							benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
-							buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), null, itemIndex);
+							buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), MEMBER_CARD.getCode(), itemIndex);
 							mark = 1;
 						}
 						if (VOUCHER.equals(couponType)) {
