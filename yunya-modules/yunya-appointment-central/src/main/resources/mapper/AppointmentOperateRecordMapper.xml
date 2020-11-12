@@ -37,7 +37,7 @@
 		  aor.inservice,
 		  aor.remarks,
 		  aor.crt_name as crtName,
-		  date_format(aor.crt_time,'%Y-%m-%d') as crtTime
+		  date_format(aor.crt_time,'%Y-%m-%d %H:%m') as crtTime
 		FROM appointment_operate_record aor
 		<where>
           <if test="query.orgId != null">

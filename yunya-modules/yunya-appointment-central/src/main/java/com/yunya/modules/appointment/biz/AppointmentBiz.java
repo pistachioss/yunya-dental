@@ -432,7 +432,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
         // 发送消息更新中间表就诊流程
-//        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
+        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
         // 保存预约更新被修改的日期、医生
         appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
@@ -1069,10 +1069,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     private ResponseResult dentistConflictInfo(Integer id, Integer dentistId, Date appointStartTime, Date appointEndTime) {
         List<AppointConflictInfoVo> dentisList;
         if (null != id) {
-            // 添加预约医生冲突检测
+            // 编辑预约医生冲突检测
             dentisList = mapper.editCheckDentistConflict(id,dentistId,appointStartTime,appointEndTime);
         } else {
-            // 修改预约医生冲突检测
+            // 添加预约医生冲突检测
             dentisList = mapper.findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime(
                     dentistId, appointStartTime, appointEndTime);
         }
@@ -2065,8 +2065,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             if (patientInfo != null){
                 build.setAge(patientInfo.getAge());
                 try {
-                    Date parse = dateFormat.parse(patientInfo.getBirthday());
-                    build.setBirthday(dateFormat.format(parse));
+                    String birthday = patientInfo.getBirthday();
+                    if (StringHelper.isNotEmpty(birthday)) {
+                        Date parse = dateFormat.parse(patientInfo.getBirthday());
+                        build.setBirthday(dateFormat.format(parse));
+                    }
                 } catch (ParseException e) {
                     throw new ClientServiceException("时间格式转化异常！",OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
                 }

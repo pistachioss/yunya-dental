@@ -165,7 +165,7 @@
 
     <select id="getOrgCardSoldInfoByParam" resultType="int">
         select
-            count(`id`) - sum(`status` in (1, 2))
+            count(`id`) - ifnull(sum(`status` in (1, 2)),0)
         from `card`
         where `coupon_id` = #{couponId}
           and `org_id` = #{orgId}
@@ -390,7 +390,7 @@
                              and `bd`.`is_deleted` = 0)
                        when `cci`.`type` = 2 then
                           (select
-                                if(isnull(count(`bd`.`card_id`)) = 1,
+                                if(count(`bd`.`card_id`) = 0,
                                    null,
                                    count(`bd`.`card_id`)
                                        &lt; (select sum(count)
@@ -404,7 +404,7 @@
                             and `bd`.`is_deleted` = 0)
                       when `cci`.`type` = 3 then
                           (select
-                                if(isnull(count(`bd`.`card_id`)) = 1,
+                                if(count(`bd`.`card_id`) = 0,
                                     null,
                                     count(`bd`.`card_id`)
                                         &lt; (select sum(count)
@@ -557,16 +557,14 @@
                 pci.item_id                                      as itemId,
                 pci.type,
                 pci.count                                        as originCount,
-                if(if(isnull(temp.useCount) = 1, 0,
-                    temp.useCount) >= pci.count, 0, 1)           as usable,
+                if(temp.useCount >= pci.count, 0, 1)             as usable,
             </if>
             <if test="couponType != null and couponType == 3">
                 spci.coupon_id                                    as couponId,
                 spci.item_id                                      as itemId,
                 spci.type,
                 spci.count                                        as originCount,
-                if(if(isnull(temp.useCount) = 1, 0,
-                    temp.useCount) >= spci.count, 0, 1)           as usable,
+                if(temp.useCount >= spci.count, 0, 1)             as usable,
                 spci.package_unit_price                           as packageUnitPrice,
             </if>
             if(isnull(temp.card_id) = 1, #{cardId}, temp.card_id) as cardId,

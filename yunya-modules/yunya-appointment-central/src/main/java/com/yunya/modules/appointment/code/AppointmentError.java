@@ -1,6 +1,7 @@
 package com.yunya.modules.appointment.code;
 
 import com.yunya.framework.common.constant.PreFixCode;
+import com.yunya.framework.common.utils.StringHelper;
 
 /**
  * @program: yunya-dental
@@ -95,11 +96,12 @@ public enum AppointmentError {
      * @return
      */
     public String paddingParams(String ...args) {
+        String msg = value;
         if (args.length > 0) {
             for (int i = 0; i< args.length; i++) {
-                value = value.replace("{" +i+ "}",args[i]);
+                msg = msg.replace("{" +i+ "}",args[i]);
             }
         }
-        return value;
+        return msg;
     }
 }

@@ -38,4 +38,39 @@
             #{item.supplyWorkload}, #{item.operateType}, #{item.sort}, #{item.crtId}, #{item.updId})
         </foreach>
     </insert>
+
+    <select id="getCardUseInfo" resultType="com.yunya.feign.discount.domain.bo.CardUseBo">
+        select
+            `temp`.`card_id`,
+            `temp`.`coupon_id`,
+            `pc`.`use_way`,
+            ifnull(sum(`pci`.`count`),0) as `total`,
+            `temp`.`usecount`,
+            if(ifnull(sum(`pci`.`count`), 0) > `temp`.`usecount`,
+               1,
+               0)          as `usable`
+        from (
+                 select
+                     `cb`.`card_id`,
+                     `cb`.`coupon_id`,
+                     count(`cb`.`coupon_type`) as `usecount`
+                 from `card_benefit` `cb`
+                 where `cb`.`card_id` in
+                    <foreach collection="couponIds" item="item" open="(" separator="," close=")">
+                        #{item}
+                    </foreach>
+                   and `cb`.`coupon_type` = #{couponType}
+                   and `cb`.`is_deleted` = 0
+                 group by `cb`.`card_id`
+             ) temp
+             <if test="couponType != null and couponType == 2">
+                 inner join `package_coupon` `pc` on `pc`.`coupon_id` = `temp`.`coupon_id`
+                 inner join `package_coupon_item` `pci` on `pc`.`coupon_id` = `pci`.`coupon_id`
+             </if>
+             <if test="couponType != null and couponType == 3">
+                 inner join `special_package_coupon` `spc` on `spc`.`coupon_id` = `temp`.`coupon_id`
+                 inner join `special_package_coupon_item` `spci` on `spc`.`coupon_id` = `spci`.`coupon_id`
+             </if>
+        group by `pci`.`coupon_id`
+    </select>
 </mapper>

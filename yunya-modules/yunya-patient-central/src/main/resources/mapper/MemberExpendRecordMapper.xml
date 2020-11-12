@@ -46,6 +46,7 @@
             JOIN patient_base_info pbio ON merd.patient_id = pbio.id
         WHERE
             merd.member_id = #{form.memberId} and merd.patient_id = #{form.patientId}
+            and merd.inservice = 1
     </select>
 
 </mapper>
