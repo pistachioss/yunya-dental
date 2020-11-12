@@ -468,7 +468,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<AppointmentListItemVo> appointmentList = new ArrayList<>();
         AppointmentQuery appointmentQuery = new AppointmentQuery();
         appointmentQuery.setAppointDate(query.getAppointDate());
-        appointmentQuery.setAppointType(query.getAppointType());
         appointmentQuery.setOrgId(query.getOrgId());
         List<AppointmentVo> appointmentVos = mapper.findAppointmentByExample(appointmentQuery);
         // 设置预约医生/助手信息
@@ -481,6 +480,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 || !StringHelper.isEmpty(query.getDentistName())
                 || !StringHelper.isEmpty(query.getMedicalNumber())
                 || !StringHelper.isEmpty(query.getSearch())){
+            Byte appointType = query.getAppointType();
             collect = appointmentList.stream()
                     .filter(
                             appointmentListItemVo -> {
@@ -513,6 +513,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                     } else if (search.matches(BusinessConstants.PINYIN_REGEXP) && !StringHelper.isEmpty(pinyinName)){
                                         // 按拼音名字检索
                                         result = result |  pinyinName.contains(search);
+                                    } else {
+                                        result = false;
                                     }
                                 }
                                 return result;

@@ -240,6 +240,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         // 随访记录结果列表
         List<VisitingRecordVo> visitingRecordVoList = new ArrayList<>();
          List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
             // 组合随访记录信息
             for(VisitingRecordVo visitingRecordVo : visitingRecordVos){
@@ -253,17 +254,16 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
                 // 排序
                 searchVisitingRecordVo = this.sort(visitingRecordVoList);
+                visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
             } else {
                 // 按患者姓名、手机号、病历号、医生名字检索
                 searchVisitingRecordVo = this.searchAndOrder(visitingRecordVoList, search, medicalNumber, distentName);
                 // 将检索结果列表排序
                 searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
+                visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
             }
         }
-        if (StringHelper.isEmpty(searchVisitingRecordVo)) {
-            searchVisitingRecordVo = new ArrayList<>();
-        }
-        return ResponseUtil.success(new PageInfo<>(searchVisitingRecordVo));
+        return ResponseUtil.success(visitingRecordVoPageInfo);
     }
 
     /**
