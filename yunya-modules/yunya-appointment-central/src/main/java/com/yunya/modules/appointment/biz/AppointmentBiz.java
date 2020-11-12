@@ -491,7 +491,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                                 }
                                 // 按病历号检索
                                 if (!StringHelper.isEmpty(query.getMedicalNumber())){
-                                    result = result | appointmentListItemVo.getMedicalNumber().equals(query.getMedicalNumber());
+                                    String medicalNumber = appointmentListItemVo.getMedicalNumber();
+                                    if (StringHelper.isNotEmpty(medicalNumber)) {
+                                        result = result | medicalNumber.equals(query.getMedicalNumber());
+                                    }
                                 }
                                 // 按预约医生检索
                                 if (!StringHelper.isEmpty(query.getDentistName())) {
