@@ -1068,11 +1068,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     private ResponseResult dentistConflictInfo(Integer id, Integer dentistId, Date appointStartTime, Date appointEndTime) {
         List<AppointConflictInfoVo> dentisList;
-        if (null == id) {
-            // 添加预约医生冲突检测
+        if (null != id) {
+            // 编辑预约医生冲突检测
             dentisList = mapper.editCheckDentistConflict(id,dentistId,appointStartTime,appointEndTime);
         } else {
-            // 修改预约医生冲突检测
+            // 添加预约医生冲突检测
             dentisList = mapper.findAppointListByDentistIdAndAppointStartTimeAndAppointEndTime(
                     dentistId, appointStartTime, appointEndTime);
         }
