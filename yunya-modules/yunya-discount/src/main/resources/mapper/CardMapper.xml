@@ -135,7 +135,6 @@
             `sold_target`,
             `sold_phone_number`,
             `sold_type`,
-            `link`,
             `status`,
             `is_pay`,
             `sold_way`

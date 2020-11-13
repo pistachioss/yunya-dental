@@ -127,6 +127,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -216,6 +217,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private CardBenefitMapper cardBenefitMapper;
 	@Resource
 	private RemoteRabbitMqServiceFeign mqServiceFeign;
+	/** 卡券二维码前缀 */
+	@Value("${codeUrl.url}")
+	private String serverPort;
 
 	/**
 	 * 产品生成分配分页查询
@@ -511,39 +515,26 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	/**
 	 * 校验卡券二维码信息
 	 *
-	 * @param cardQrData 卡券二维码信息
+	 * @param cardId 卡券二维码信息
 	 * @return vo
 	 */
-	public CardQrCodeVo cardQrCodeCheck(String cardQrData) {
+	public CardQrCodeVo cardQrCodeCheck(Integer cardId) {
 		CardQrCodeVo vo = new CardQrCodeVo();
 		vo.setCardQrCodeType(QR_CODE_NORMAL.getCode());
-		String qrCodeData = new String(Base64.getDecoder().decode(cardQrData));
-		List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
-		if (data.size() != 2) {
-			log.warn("卡券二维码数据异常");
-			vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
-			vo.setErrorMsg("卡券二维码数据异常");
-			return vo;
-		}
-		Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
+		Card card = mapper.selectByPrimaryKey(cardId);
 		if (card == null) {
 			vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
 			vo.setErrorMsg("卡券不存在");
 			return vo;
 		}
 		//已失效
-		if (!cardQrData.equals(card.getLink())) {
+		if (SALE_PENDING.equals(card.getStatus())) {
 			vo.setCardQrCodeType(QR_CODE_INVALID.getCode());
 			return vo;
 		}
 		//已核销
-		if (ACTIVATED.equals(card.getStatus())) {
+		if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
 			vo.setCardQrCodeType(QR_CODE_DESTROY.getCode());
-			return vo;
-		}
-		if (!ACTIVE_PENDING.equals(card.getStatus())) {
-			vo.setCardQrCodeType(QR_CODE_OTHER.getCode());
-			vo.setErrorMsg("卡券售出状态异常");
 			return vo;
 		}
 		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
@@ -1720,6 +1711,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		vo.setSoldStatusName(CardStatusEnum.getValue(card.getStatus()));
 		vo.setPayStatus(TrueFalseEnum.getValue(card.getPay()));
 		vo.setSoldWayName(SoldWayEnum.getValue(card.getSoldWay()));
+		vo.setLink(serverPort + "/#/cardQrData?"+"cardId="+card.getId());
 		return vo;
 	}
 

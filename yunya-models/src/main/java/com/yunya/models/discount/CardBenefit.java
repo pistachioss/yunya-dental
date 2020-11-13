@@ -102,7 +102,7 @@ public class CardBenefit implements Serializable {
     private BigDecimal supplyWorkload;
 
     /**
-     * 操作方式
+     * 操作方式（1-收费  2-撤销账单）
      */
     @Column(name = "operate_type")
     private Integer operateType;

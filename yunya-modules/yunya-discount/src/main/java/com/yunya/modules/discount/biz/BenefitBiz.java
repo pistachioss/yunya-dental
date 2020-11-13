@@ -121,6 +121,11 @@ public class BenefitBiz {
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		Integer orderId = model.getOrderId();
 		try {
+			//校验是否使用过优惠
+			int count = countOrder(orderId);
+			if (count != 0) {
+				return ResponseUtil.error(DiscountError.ORDER_HAS_BENEFIT);
+			}
 			List<CardBenefit> list = Lists.newArrayList();
 			PatientChooseBenefitForm benefitForm = benefitTransformToForm(model);
 			//查询订单项目对应的优惠
@@ -194,14 +199,19 @@ public class BenefitBiz {
 		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
 		Integer orderId = model.getOrderId();
 		try {
+			//校验是否使用过优惠
+			int count = countOrder(orderId);
+			if (count != 0) {
+				return ResponseUtil.error(DiscountError.ORDER_HAS_BENEFIT);
+			}
 			SysEmployee employee = systemServiceFeign.findSysEmployeeById(model.getAuthorizedId());
-			if (employee == null || employee.getDiscount()) {
+			if (employee == null || !employee.getDiscount()) {
 				log.warn("【授权折扣优惠】授权人没有权限进行授权折扣");
 				return ResponseUtil.error(DiscountError.EMPLOYEE_NO_AUTH_DISCOUNT);
 			}
 			//获取订单明细
 			List<OrderDetail> orderDetails = treatmentServiceFeign.findOrderDetailByOrderRecordId(orderId);
-			if (CollectionUtils.isNotEmpty(orderDetails)) {
+			if (CollectionUtils.isEmpty(orderDetails)) {
 				return ResponseUtil.error(DiscountError.ORDER_NOT_EXIST);
 			}
 			List<AuthItemBenefitModel> itemBenefits = model.getItemBenefits();
@@ -592,4 +602,15 @@ public class BenefitBiz {
 		return updateCards;
 	}
 
+	/**
+	 * 查询订单使用优惠数量
+	 * @param orderId orderId
+	 * @return int
+	 */
+	private int countOrder(Integer orderId) {
+		Example example = new Example(OrderBenefit.class);
+		example.createCriteria().andEqualTo("orderId", orderId)
+				.andEqualTo("deleted", ZERO);
+		return orderBenefitMapper.selectCountByExample(example);
+	}
 }
