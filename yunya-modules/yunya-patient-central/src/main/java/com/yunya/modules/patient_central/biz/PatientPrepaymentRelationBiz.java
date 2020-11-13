@@ -203,11 +203,9 @@ public class PatientPrepaymentRelationBiz
    *
    * @param model
    */
-  public void recharge(PrepaidRechargeModel model) {
+  public ResponseResult recharge(PrepaidRechargeModel model) {
     // 查询预付款余额 增加余额
-    PatientPrepaymentsInfo patientPrepaymentsInfo =
-        patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(
-            model.getPrepaidId(), model.getPatientId());
+    PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
     if (patientPrepaymentsInfo != null) {
       BigDecimal rechargePrincipal = model.getRechargePrincipal();
       if (rechargePrincipal == null) {
@@ -226,6 +224,7 @@ public class PatientPrepaymentRelationBiz
       // 添加预付款充值记录
       PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
       BeanUtils.copyProperties(model, prepaidRechargeRecord);
+      prepaidRechargeRecord.setPrepaidId(model.getPrepaidCard());
       prepaidRechargeRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       prepaidRechargeRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeRecord.setCrtName(BaseContextHandler.getName());
@@ -241,6 +240,7 @@ public class PatientPrepaymentRelationBiz
       PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
       BeanUtils.copyProperties(
           model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
+      prepaidRechargeTollRecord.setCreditAmount(prepaidRechargeRecord.getRechargePrincipal().add(prepaidRechargeRecord.getRechargeBonus()));
       prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
       prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
@@ -249,6 +249,7 @@ public class PatientPrepaymentRelationBiz
       // 发送消息 预付款充值
       sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
     }
+    return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款记录", "");
   }
 
   /**
