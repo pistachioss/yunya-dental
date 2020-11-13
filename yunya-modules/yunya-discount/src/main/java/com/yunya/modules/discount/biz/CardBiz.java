@@ -2769,7 +2769,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		log.info("【手动解锁】锁信息：[{}]，需要解锁的keys：{}", lockPrefix, existLock);
 		if (CollectionUtils.isNotEmpty(existLock)) {
 			unLockByIds(existLock, lockPrefix, requestId);
-			log.info("手动解锁完成");
 		}
 	}
 

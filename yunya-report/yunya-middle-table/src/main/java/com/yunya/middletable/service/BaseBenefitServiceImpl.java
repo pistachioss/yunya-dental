@@ -221,7 +221,10 @@ public class BaseBenefitServiceImpl extends BaseBiz<BaseBenefitMapper, BaseBenef
 	private List<BaseBenefit> cardTransform(List<CardBenefit> cardBenefits) {
 		return cardBenefits.stream().map(obj -> {
 			BaseBenefit benefit = BeanCopierUtils.generalCopyBean(obj, BaseBenefit.class, getBenefitConvert());
+			benefit.setItemType(obj.getItemType().byteValue());
 			benefit.setChoiceBenefitType(CARD_BENEFIT.getCode());
+			benefit.setOperateUserId(obj.getCrtId());
+			benefit.setUseDate(obj.getCrtTime());
 			return benefit;
 		}).collect(toList());
 	}
