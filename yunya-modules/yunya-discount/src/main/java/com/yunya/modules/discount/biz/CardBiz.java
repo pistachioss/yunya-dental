@@ -2162,7 +2162,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					if (!exchangeIdsForItem.contains(exchangeId)) {
 						errorBo.setError(DiscountError.PATIENT_NOT_OWN_EXCHANGE);
 						Card card = mapper.selectByPrimaryKey(exchangeId);
-						errorBo.setMsg(card == null ? null : card.getCardNumber());
+						errorBo.setMsg(card == null ? null : card.getOrgId() == 0 ? card.getThirdCardNumber() : card.getCardNumber());
 						return errorBo;
 					}
 				}
@@ -2191,7 +2191,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					if (!packageIdsForItem.contains(packageId)) {
 						errorBo.setError(DiscountError.PATIENT_NOT_OWN_PACKAGE);
 						Card card = mapper.selectByPrimaryKey(packageId);
-						errorBo.setMsg(card == null ? null : card.getCardNumber());
+						errorBo.setMsg(card == null ? null : card.getOrgId() == 0 ? card.getThirdCardNumber() : card.getCardNumber());
 						return errorBo;
 					} else {
 						choiceCardIds.add(packageId);
@@ -2222,7 +2222,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					if (!voucherIdsForItem.contains(voucherId)) {
 						errorBo.setError(DiscountError.PATIENT_NOT_OWN_VOUCHER);
 						Card card = mapper.selectByPrimaryKey(voucherId);
-						errorBo.setMsg(card == null ? null : card.getCardNumber());
+						errorBo.setMsg(card == null ? null : card.getOrgId() == 0 ? card.getThirdCardNumber() : card.getCardNumber());
 						return errorBo;
 					} else {
 						choiceCardIds.add(voucherId);
@@ -2274,7 +2274,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		boolean locked = redisUtils.setLock(lockKey, lockVal, MEDICAL_APPLY_LOCK_SEC, TimeUnit.SECONDS);
 		if (!locked) {
 			Card card = mapper.selectByPrimaryKey(key);
-			String cardNumber = (card == null) ? null : card.getCardNumber();
+			String cardNumber = (card == null) ? null : card.getOrgId() == 0 ? card.getThirdCardNumber() : card.getCardNumber();
 			log.warn("【锁定失败】卡号是[{}]的卡券正在被使用，请取消使用该卡券！", cardNumber);
 			return cardNumber;
 		}
