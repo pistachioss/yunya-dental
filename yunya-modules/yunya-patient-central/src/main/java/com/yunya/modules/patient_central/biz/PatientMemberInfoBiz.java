@@ -412,11 +412,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         StringBuilder labels = new StringBuilder(16);
         if (!StringHelper.isEmpty(memberRechargeTollRecordList)) {
           for (MemberRechargeTollRecord memberRechargeTollRecord : memberRechargeTollRecordList) {
-            AccountItem accountItem =
-                remoteSystemServiceFeign.findAccountItemById(
-                    memberRechargeTollRecord.getPaymentId());
-            if (accountItem != null) {
-              labels.append(accountItem.getName());
+            if (memberRechargeTollRecord.getPaymentId() != null){
+              AccountItem accountItem =
+                      remoteSystemServiceFeign.findAccountItemById(
+                              memberRechargeTollRecord.getPaymentId());
+              if (accountItem != null) {
+                labels.append(accountItem.getName());
+              }
             }
           }
         }

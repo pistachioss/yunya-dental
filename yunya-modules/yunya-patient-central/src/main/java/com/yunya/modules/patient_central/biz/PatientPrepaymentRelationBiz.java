@@ -2,6 +2,8 @@ package com.yunya.modules.patient_central.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.patient_central.domain.model.*;
 import com.yunya.feign.patient_central.domain.query.PaymentRecordDetailQuery;
 import com.yunya.feign.patient_central.domain.query.PrepaidExpendRecordQueryForm;
@@ -63,6 +65,9 @@ public class PatientPrepaymentRelationBiz
 
   /** 注入系统服务 */
   @Autowired RemoteSystemServiceFeign remoteSystemServiceFeign;
+
+  /** 注入服务 */
+  @Autowired RemoteDiscountFeign remoteDiscountFeign;
 
   /** 注入预付款退款信息Mapper */
   @Autowired PrepaidReturnRecordMapper prepaidReturnRecordMapper;
@@ -245,7 +250,12 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
-      prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
+      if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null){
+        prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
+        OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
+        ownCardActiveForm.setCardId(model.getCardId());
+        remoteDiscountFeign.ownActiveCard(patientPrepaymentsInfo.getPatientId(),ownCardActiveForm);
+      }
       // 发送消息 预付款充值
       sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
     }
@@ -273,13 +283,16 @@ public class PatientPrepaymentRelationBiz
         if (organizationInfo != null) {
           prepaidRechargeRecordVo.setOrgName(organizationInfo.getAbbreviation());
         }
-        AccountItem accountItem =
-            remoteSystemServiceFeign.findAccountItemById(prepaidRechargeRecordVo.getPaymentId());
-        if (accountItem != null) {
-          // 获取支付方式名称
-          prepaidRechargeRecordVo.setPaymentName(accountItem.getName());
+        if (prepaidRechargeRecordVo.getPaymentId() != null){
+          AccountItem accountItem =
+                  remoteSystemServiceFeign.findAccountItemById(prepaidRechargeRecordVo.getPaymentId());
+          if (accountItem != null) {
+            // 获取支付方式名称
+            prepaidRechargeRecordVo.setPaymentName(accountItem.getName());
+          }
         }
       }
+
     }
     return new PageInfo<>(resultList);
   }
