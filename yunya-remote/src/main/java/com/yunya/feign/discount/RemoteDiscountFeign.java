@@ -26,7 +26,7 @@ import java.util.List;
 public interface RemoteDiscountFeign {
 
     @ApiOperation(value = "患者档案-产品管理-激活-自有平台激活")
-    @PutMapping("/patient/{patientId}/product/card/owner/activation")
+    @PutMapping("/{patientId}/product/card/owner/activation")
     public ResponseResult ownActiveCard(@PathVariable(value = "patientId") Integer patientId, @Valid @RequestBody OwnCardActiveForm form);
 
     @ApiOperation(value = "收费-选择优惠")

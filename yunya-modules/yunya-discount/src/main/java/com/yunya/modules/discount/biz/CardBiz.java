@@ -549,6 +549,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		vo = checkCouponDeadline(card.getCouponId(), couponType);
 		if (QR_CODE_NORMAL.equals(vo.getCardQrCodeType())) {
 			vo.setCouponName(coupon.getName());
+			vo.setQrCode(card.getLink());
 		}
 		return vo;
 	}
