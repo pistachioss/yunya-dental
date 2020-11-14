@@ -36,7 +36,7 @@
             perd.remarks remarks,
             perd.crt_id operatorId,
             perd.crt_name operatorName,
-            perd.crt_time operatingTime,
+            date_format(perd.crt_time,'%Y-%m-%d %H:%i') operatingTime,
             perd.upt_id uptId,
             perd.upd_name updName,
             perd.upd_time updTime,
@@ -47,5 +47,6 @@
         WHERE
             perd.prepaid_id = #{form.prepaidId} and perd.patient_id = #{form.patientId}
             and perd.inservice = 1
+            order by perd.crt_time desc
     </select>
 </mapper>

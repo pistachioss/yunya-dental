@@ -31,7 +31,7 @@
     <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberReturnRecordVo">
       SELECT
         id,
-        date_format(crt_time,'%Y-%m-%d %H:%m:%s') as operatingTime,
+        date_format(crt_time,'%Y-%m-%d %H:%i') as operatingTime,
         return_principal_amount returnPrincipalAmount,
         return_gift_amount returnGiftAmount,
         org_id orgId,
