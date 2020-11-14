@@ -25,9 +25,24 @@
 
     <!-- 查询充值记录 -->
     <select id="RechargeRecord" resultType="com.yunya.feign.patient_central.domain.vo.web.RechargeRecordVo">
-        select mrrd.id,mrrd.crt_time operatingTime,mrrd.recharge_principal rechargePrincipal,mrrd.recharge_bonus rechargeBonus,mrrd.org_id orgId,mrrd.crt_id operatorId,mrrd.crt_name operatorName,mrrd.remarks,
-               mrrd.current_recharge_principal currentRechargePrincipal,mrrd.current_recharge_bonus currentRechargeBonus,mrrd.type
-        from member_recharge_record mrrd
-        where mrrd.member_id = #{form.cardNumber}
+       SELECT
+            mrrd.id,
+            date_format( mrrd.crt_time, '%Y-%m-%d %H:%i' ) operatingTime,
+            mrrd.recharge_principal rechargePrincipal,
+            mrrd.recharge_bonus rechargeBonus,
+            mrrd.org_id orgId,
+            mrrd.crt_id operatorId,
+            mrrd.crt_name operatorName,
+            mrrd.remarks,
+            mrrd.current_recharge_principal currentRechargePrincipal,
+            mrrd.current_recharge_bonus currentRechargeBonus,
+            mrrd.type
+        FROM
+            member_recharge_record mrrd
+        WHERE
+            mrrd.member_id = #{form.cardNumber}
+
+        ORDER BY
+            mrrd.crt_time DESC
     </select>
 </mapper>

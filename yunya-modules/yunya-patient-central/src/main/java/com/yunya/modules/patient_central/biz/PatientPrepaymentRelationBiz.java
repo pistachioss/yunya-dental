@@ -250,12 +250,12 @@ public class PatientPrepaymentRelationBiz
       prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
-      if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null){
-        prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
+      prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
+     /* if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null){
         OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
         ownCardActiveForm.setCardId(model.getCardId());
         remoteDiscountFeign.ownActiveCard(patientPrepaymentsInfo.getPatientId(),ownCardActiveForm);
-      }
+      }*/
       // 发送消息 预付款充值
       sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
     }
@@ -421,32 +421,6 @@ public class PatientPrepaymentRelationBiz
         patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(
             model.getPrepaidId(), model.getPatientId());
     if (patientPrepaymentsInfo != null) {
-      // 撤销消费
-      if (model.getType() <= 0) {
-        patientPrepaymentsInfo.setPrepaymentPrincipal(
-            patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getPrincipalAmount()));
-        patientPrepaymentsInfo.setPrepaymentBonus(
-            patientPrepaymentsInfo.getPrepaymentBonus().add(model.getBonusAmount()));
-        patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
-        // 创建消费记录对象
-        PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
-        BeanUtils.copyProperties(model, prepaidExpendRecord);
-        // 撤销本金
-        prepaidExpendRecord.setExpendPrincipal(model.getPrincipalAmount());
-        // 撤销赠金
-        prepaidExpendRecord.setExpendGift(model.getBonusAmount());
-        prepaidExpendRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        prepaidExpendRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        prepaidExpendRecord.setCrtName(BaseContextHandler.getName());
-        prepaidExpendRecord.setCurrentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal());
-        prepaidExpendRecord.setCurrentBonus(patientPrepaymentsInfo.getPrepaymentBonus());
-        prepaidExpendRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
-        prepaidExpendRecord.setUpdName(BaseContextHandler.getName());
-        prepaidExpendRecordMapper.insertSelective(prepaidExpendRecord);
-        // 发送消息 撤销收费
-        sendPrepaidLogMessages(prepaidExpendRecord.getId(), 0, 1, 4);
-        return ResponseUtil.success();
-      }
       if (patientPrepaymentsInfo
               .getPrepaymentPrincipal()
               .add(patientPrepaymentsInfo.getPrepaymentBonus())

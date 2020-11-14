@@ -36,10 +36,10 @@
             merd.remarks remarks,
             merd.crt_id operatorId,
             merd.crt_name operatorName,
-            merd.crt_time operatingTime,
+            date_format(merd.crt_time,'%Y-%m-%d %H:%i') operatingTime,
             merd.upt_id uptId,
             merd.upd_name updName,
-            merd.upd_time updTime,
+            merd.upd_time, updTime,
             pbio.name expendName
         FROM
             member_expend_record merd
@@ -47,6 +47,7 @@
         WHERE
             merd.member_id = #{form.memberId} and merd.patient_id = #{form.patientId}
             and merd.inservice = 1
+            order by crt_time desc
     </select>
 
 </mapper>
