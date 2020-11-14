@@ -65,30 +65,28 @@ public class ClinicTariffController {
   /**
    * 修改门诊价目表价格信息
    *
-   * @param id 门诊价目表ID
    * @param form 修改参数
    * @return
    */
   @CurrentUser
   @ApiOperation("修改门诊价目表价格信息")
-  @PutMapping("/modify/{id}")
-  public ResponseResult<T> modify(
-      @PathVariable(value = "id") Integer id, @RequestBody @Validated ClinicTariffForm form) {
-    clinicTariffBiz.modify(id, form);
+  @PutMapping("/modify")
+  public ResponseResult<T> modify(@RequestBody @Validated ClinicTariffForm form) {
+    clinicTariffBiz.modify(form);
     return ResponseUtil.success(null);
   }
 
   /**
    * 设置门诊价目表是否启用
    *
-   * @param id 门诊价目表ID
+   * @param tariffId 基础价目表ID
    * @return
    */
   @CurrentUser
   @ApiOperation("设置门诊价目表项目是否启用")
-  @GetMapping("/switch/{id}")
-  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "id") Integer id) {
-    clinicTariffBiz.switchClinicTariff(id);
+  @GetMapping("/switch/{tariffId}")
+  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "tariffId") Integer tariffId) {
+    clinicTariffBiz.switchClinicTariff(tariffId);
     return ResponseUtil.success(null);
   }
 

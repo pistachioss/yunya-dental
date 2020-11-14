@@ -23,6 +23,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.modules.treatment.mapper.BaseTariffMapper;
@@ -38,7 +39,6 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 
 /**
  * 描述: 门诊价目表业务层
@@ -175,34 +175,46 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   /**
    * 修改门诊价目表
    *
-   * @param id 门诊价目表ID
    * @param form 修改参数
    */
-  public void modify(Integer id, ClinicTariffForm form) {
-    ClinicTariff resultData = mapper.selectByPrimaryKey(id);
-    if (null == resultData) {
-      throw new ClientServiceException("修改失败，ID为'" + id + "'的门诊价目表不存在！", QUERY_RESULT_INVALID);
-    }
-    BigDecimal resultDataPrice = resultData.getPrice();
-    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
-    if (!resultDataPrice.equals(form.getPrice())) {
-      BigDecimal price = form.getPrice();
-      resultData.setPrice(price);
-      resultData.setUpdId(userId);
-      resultData.setUpdName(name);
-    }
-    mapper.updateByPrimaryKeySelective(resultData);
+  public void modify(ClinicTariffForm form) {
     List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
     if (StringHelper.isEmpty(memberPrices)) {
       throw new ClientServiceException("修改失败，门诊价目表会员卡价格不能为空！", PARAMETERS_IS_ILLEGAL);
     }
+    Integer tariffId = form.getTariffId();
+    BaseTariff tariff = baseTariffMapper.selectByPrimaryKey(tariffId);
+    if (null == tariff) {
+      throw new ClientServiceException("门诊价目表修改失败，价目表不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+    BigDecimal formPrice = form.getPrice();
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    ClinicTariff entity = new ClinicTariff();
+    entity.setClinicId(orgId);
+    entity.setTariffId(tariffId);
+    ClinicTariff resultData = mapper.selectOne(entity);
+    if (null == resultData) {
+      entity.setPrice(formPrice);
+      entity.setCrtId(userId);
+      entity.setCrtName(name);
+      mapper.insertSelective(entity);
+    } else {
+      BigDecimal resultDataPrice = resultData.getPrice();
+      if (!resultDataPrice.equals(formPrice)) {
+        resultData.setPrice(formPrice);
+        resultData.setUpdId(userId);
+        resultData.setUpdName(name);
+        mapper.updateByPrimaryKeySelective(resultData);
+      }
+    }
+
     ClinicTariffMemberPrice clinicTariffMemberPrice;
     ClinicTariffMemberPrice resultClinicTariffMemberPrice;
-    Integer tariffId = form.getTariffId();
     for (ClinicItemMemberPriceForm memberPrice : memberPrices) {
       clinicTariffMemberPrice = new ClinicTariffMemberPrice();
-      clinicTariffMemberPrice.setClinicId(resultData.getClinicId());
+      clinicTariffMemberPrice.setClinicId(orgId);
       clinicTariffMemberPrice.setTariffId(tariffId);
       Integer memberTypeId = memberPrice.getMemberTypeId();
       clinicTariffMemberPrice.setMemberTypeId(memberTypeId);
@@ -225,18 +237,31 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   /**
    * 设置门诊价目表是否启用
    *
-   * @param id 价目表ID
+   * @param tariffId 价目表ID
    */
-  public void switchClinicTariff(Integer id) {
-    ClinicTariff resultData = mapper.selectByPrimaryKey(id);
-    if (null == resultData) {
-      throw new ClientServiceException("更新失败，ID为'" + id + "'的门诊价目表不存在！", QUERY_RESULT_INVALID);
+  public void switchClinicTariff(Integer tariffId) {
+    BaseTariff tariff = baseTariffMapper.selectByPrimaryKey(tariffId);
+    if (null == tariff) {
+      throw new ClientServiceException("门诊价目表启用设置失败，价目表不存在！", PARAMETERS_IS_ILLEGAL);
     }
-    resultData.setInservice(!resultData.getInservice());
-    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    resultData.setUpdName(BaseContextHandler.getName());
-    resultData.setUpdTime(new Date(System.currentTimeMillis()));
-    mapper.updateByPrimaryKeySelective(resultData);
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    ClinicTariff entity = new ClinicTariff();
+    entity.setClinicId(orgId);
+    entity.setTariffId(tariffId);
+    ClinicTariff resultData = mapper.selectOne(entity);
+    if (null == resultData) {
+      entity.setCrtId(userId);
+      entity.setCrtName(name);
+      entity.setInservice(false);
+      mapper.insertSelective(entity);
+    } else {
+      resultData.setInservice(!resultData.getInservice());
+      resultData.setUpdId(userId);
+      resultData.setUpdName(name);
+      mapper.updateByPrimaryKeySelective(resultData);
+    }
   }
 
   /**

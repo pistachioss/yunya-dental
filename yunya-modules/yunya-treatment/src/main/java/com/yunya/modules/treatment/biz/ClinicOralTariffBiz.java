@@ -20,6 +20,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
@@ -35,7 +36,6 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 
 /**
  * 描述: 门诊商品项目管理业务层
@@ -173,33 +173,43 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
   /**
    * 修改门诊商品项目
    *
-   * @param id 门诊商品项目ID
    * @param form 修改参数
    */
-  public void modify(Integer id, ClinicOralTariffForm form) {
-    ClinicOralTariff resultData = mapper.selectByPrimaryKey(id);
-    if (null == resultData) {
-      throw new ClientServiceException("修改失败，ID为'" + id + "'的门诊商品项目不存在！", QUERY_RESULT_INVALID);
-    }
-    BigDecimal resultDataPrice = resultData.getPrice();
-    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-    String name = BaseContextHandler.getName();
-    if (!resultDataPrice.equals(form.getPrice())) {
-      BigDecimal price = form.getPrice();
-      resultData.setPrice(price);
-      resultData.setUpdId(userId);
-      resultData.setUpdName(name);
-      resultData.setUpdTime(new Date(System.currentTimeMillis()));
-    }
-    mapper.updateByPrimaryKeySelective(resultData);
+  public void modify(ClinicOralTariffForm form) {
     List<ClinicItemMemberPriceForm> memberPrices = form.getClinicItemMemberPrices();
     if (StringHelper.isEmpty(memberPrices)) {
-      throw new ClientServiceException("修改失败，门诊商品项目会员卡价格不能为空！", PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("修改失败，门诊价目表会员卡价格不能为空！", PARAMETERS_IS_ILLEGAL);
     }
+    Integer oralTariffId = form.getOralTariffId();
+    BaseOralTariff oralTariff = baseOralTariffMapper.selectByPrimaryKey(oralTariffId);
+    if (null == oralTariff) {
+      throw new ClientServiceException("门诊商品表修改失败，商品不存在！", PARAMETERS_IS_ILLEGAL);
+    }
+    BigDecimal formPrice = form.getPrice();
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    ClinicOralTariff entity = new ClinicOralTariff();
+    entity.setClinicId(orgId);
+    entity.setOralTariffId(oralTariffId);
+    ClinicOralTariff resultData = mapper.selectOne(entity);
+    if (null == resultData) {
+      entity.setPrice(formPrice);
+      entity.setCrtId(userId);
+      entity.setCrtName(name);
+      mapper.insertSelective(entity);
+    } else {
+      BigDecimal resultDataPrice = resultData.getPrice();
+      if (!resultDataPrice.equals(formPrice)) {
+        resultData.setPrice(formPrice);
+        resultData.setUpdId(userId);
+        resultData.setUpdName(name);
+        mapper.updateByPrimaryKeySelective(resultData);
+      }
+    }
+
     ClinicOralTariffMemberPrice clinicOralTariffMemberPrice;
     ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice;
-    Integer oralTariffId = form.getOralTariffId();
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     for (ClinicItemMemberPriceForm memberPrice : memberPrices) {
       clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
       clinicOralTariffMemberPrice.setClinicId(orgId);
@@ -226,18 +236,31 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
   /**
    * 设置门诊商品项目是否启用
    *
-   * @param id 商品项目ID
+   * @param oralTariffId 商品项目ID
    */
-  public void switchClinicOralTariff(Integer id) {
-    ClinicOralTariff resultData = mapper.selectByPrimaryKey(id);
-    if (null == resultData) {
-      throw new ClientServiceException("更新失败，ID为'" + id + "'的门诊商品项目不存在！", QUERY_RESULT_INVALID);
+  public void switchClinicOralTariff(Integer oralTariffId) {
+    BaseOralTariff oralTariff = baseOralTariffMapper.selectByPrimaryKey(oralTariffId);
+    if (null == oralTariff) {
+      throw new ClientServiceException("门诊商品启用设置失败，商品不存在！", PARAMETERS_IS_ILLEGAL);
     }
-    resultData.setInservice(!resultData.getInservice());
-    resultData.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-    resultData.setUpdName(BaseContextHandler.getName());
-    resultData.setUpdTime(new Date(System.currentTimeMillis()));
-    mapper.updateByPrimaryKeySelective(resultData);
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    ClinicOralTariff entity = new ClinicOralTariff();
+    entity.setClinicId(orgId);
+    entity.setOralTariffId(oralTariffId);
+    ClinicOralTariff resultData = mapper.selectOne(entity);
+    if (null == resultData) {
+      entity.setCrtId(userId);
+      entity.setCrtName(name);
+      entity.setInservice(false);
+      mapper.insertSelective(entity);
+    } else {
+      resultData.setInservice(!resultData.getInservice());
+      resultData.setUpdId(userId);
+      resultData.setUpdName(name);
+      mapper.updateByPrimaryKeySelective(resultData);
+    }
   }
 
   /**

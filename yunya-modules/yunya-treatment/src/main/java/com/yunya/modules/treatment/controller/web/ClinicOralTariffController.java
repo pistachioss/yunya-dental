@@ -68,30 +68,28 @@ public class ClinicOralTariffController {
   /**
    * 修改门诊商品项目价格信息
    *
-   * @param id 门诊商品项目ID
    * @param form 修改参数
    * @return
    */
   @CurrentUser
   @ApiOperation("修改门诊商品项目价格信息")
-  @PutMapping("/modify/{id}")
-  public ResponseResult<T> modify(
-      @PathVariable(value = "id") Integer id, @RequestBody @Validated ClinicOralTariffForm form) {
-    clinicOralTariffBiz.modify(id, form);
+  @PostMapping("/modify")
+  public ResponseResult<T> modify(@RequestBody @Validated ClinicOralTariffForm form) {
+    clinicOralTariffBiz.modify(form);
     return ResponseUtil.success(null);
   }
 
   /**
    * 设置门诊商品项目是否启用
    *
-   * @param id 门诊商品项目ID
+   * @param oralTariffId 商品项目ID
    * @return
    */
   @CurrentUser
   @ApiOperation("设置门诊商品项目项目是否启用")
-  @GetMapping("/switch/{id}")
-  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "id") Integer id) {
-    clinicOralTariffBiz.switchClinicOralTariff(id);
+  @GetMapping("/switch/{oralTariffId}")
+  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "oralTariffId") Integer oralTariffId) {
+    clinicOralTariffBiz.switchClinicOralTariff(oralTariffId);
     return ResponseUtil.success(null);
   }
 

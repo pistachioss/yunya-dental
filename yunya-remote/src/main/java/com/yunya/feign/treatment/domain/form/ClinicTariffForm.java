@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -34,5 +35,6 @@ public class ClinicTariffForm implements Serializable {
 
   /** 门诊价目表（商品项目）会员卡价格 */
   @ApiModelProperty(value = "门诊价目表（商品项目）会员卡价格", required = true)
+  @Size(min = 1, message = "会员卡价格不能为空！")
   private List<ClinicItemMemberPriceForm> clinicItemMemberPrices;
 }
