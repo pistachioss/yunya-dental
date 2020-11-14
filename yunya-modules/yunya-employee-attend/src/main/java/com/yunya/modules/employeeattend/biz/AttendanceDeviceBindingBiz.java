@@ -160,8 +160,10 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         String name = sysUserInfoDetail.getName();
         String mobilePhone = sysUserInfoDetail.getMobilePhone();
         AttendanceDeviceBindingVO attendanceDeviceBindingVO = findEmployeeBindingDeviceById(userId);
-        attendanceDeviceBindingVO.setMobile(mobilePhone);
-        attendanceDeviceBindingVO.setUserName(name);
+        if (attendanceDeviceBindingVO != null) {
+            attendanceDeviceBindingVO.setMobile(mobilePhone);
+            attendanceDeviceBindingVO.setUserName(name);
+        }
         return attendanceDeviceBindingVO;
     }
 

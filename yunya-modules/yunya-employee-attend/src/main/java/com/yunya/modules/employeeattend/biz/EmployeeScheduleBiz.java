@@ -21,6 +21,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.EntityUtils;
 
 import com.yunya.framework.common.utils.poi.ExcelUtil;
+import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleCopyForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleForm;
@@ -234,6 +235,26 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             return employeeConflict;
         }
         return employeeConflict;
+    }
+
+    /**
+     * 根据工作日期和员工id查询员工排班列表
+     * @param userId
+     * @param workDate
+     * @return
+     */
+    public List<EmployeeScheduleVO> findEmployeeSchedulesByDateAndEmpId(Integer userId, Date workDate) {
+        return findEmployeeSchedulesByDateAndEmpId(Arrays.asList(userId), Arrays.asList(workDate));
+    }
+
+    /**
+     * 根据工作日期和员工id查询员工排班列表
+     * @param userIds
+     * @param workDates
+     * @return
+     */
+    public List<EmployeeScheduleVO> findEmployeeSchedulesByDateAndEmpId(List<Integer> userIds, List<Date> workDates) {
+        return mapper.selectEmployeeScheduleVOByDateAndCompEmpId(userIds, workDates);
     }
 
     /**
@@ -644,4 +665,34 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
     }
 
+    /**
+     * 根据排班id获取班次模板信息
+     * @param id 排班id
+     * @return
+     */
+    public BaseSchedule findBaseScheduleById(Integer id) {
+        return mapper.selectBaseScheduleById(id);
+    }
+
+    /**
+     * 根据日期范围查询指定员工的休息排班信息
+     *
+     * @param userId
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public List<EmployeeScheduleVO> findRestEmployeeScheduleListInDate(Integer userId, Date startDate, Date endDate) {
+        return mapper.findRestEmployeeScheduleListInDate(userId, startDate, endDate);
+    }
+
+    /**
+     * 根据主键id列表查询员工排班信息
+     *
+     * @param ids
+     * @return
+     */
+    public List<EmployeeScheduleVO> selectInIds(List<Integer> ids) {
+        return mapper.selectInIds(ids);
+    }
 }

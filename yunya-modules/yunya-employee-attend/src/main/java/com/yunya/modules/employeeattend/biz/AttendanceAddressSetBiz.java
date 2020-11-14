@@ -49,11 +49,21 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
      * @param queryForm 查询参数
      * @return
      */
+    public List<AttendanceAddressSetVO> findAttendanceAddressSets(AttendanceAddressSetQueryForm queryForm) {
+        return mapper.findAttendanceAddressSetList(queryForm);
+    }
+
+    /**
+     * 分页查询考勤地址设置列表
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
     public PageInfo<AttendanceAddressSetVO> findAttendanceAddressSetList(AttendanceAddressSetQueryForm queryForm) {
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
         }
-        List<AttendanceAddressSetVO> attendanceAddressSetVOList = mapper.findAttendanceAddressSetList(queryForm);
+        List<AttendanceAddressSetVO> attendanceAddressSetVOList = findAttendanceAddressSets(queryForm);
         List<Integer> orgIds = new ArrayList<>(10);
         attendanceAddressSetVOList.forEach(attendanceAddressSetVO->{
             Integer orgId = attendanceAddressSetVO.getOrgId();

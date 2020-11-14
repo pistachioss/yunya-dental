@@ -13,6 +13,10 @@ import java.util.Date;
 @Data
 public class EmployeeScheduleVO {
   /**
+   * id
+   */
+  private Integer id;
+  /**
    * 用户id
    */
   private Integer employeeId;
@@ -32,4 +36,19 @@ public class EmployeeScheduleVO {
    * 班次属性
    */
   private String type;
+  
+  /** 班次名称 */
+  private String name;
+  
+  /** 开始时间点1 */
+  private Date firstStartTime;
+
+  /** 结束时间点1 */
+  private Date firstEndTime;
+
+  /** 开始时间点2 */
+  private Date secondStartTime;
+
+  /** 结束时间点2 */
+  private Date secondEndTime;
 }
