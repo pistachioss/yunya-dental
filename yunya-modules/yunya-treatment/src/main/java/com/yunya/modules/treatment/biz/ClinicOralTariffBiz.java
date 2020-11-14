@@ -58,11 +58,11 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    * 根据门诊商品项目ID获取门诊商品项目信息
    *
    * @param orgId 组织ID
-   * @param clinicOralTariffId 门诊商品项目ID
+   * @param oralTariffId 门诊商品项目ID
    * @return
    */
-  public ClinicOralTariffVO findById(Integer orgId, Integer clinicOralTariffId) {
-    ClinicOralTariffVO resultData = mapper.selectClinicOralTariffById(clinicOralTariffId);
+  public ClinicOralTariffVO findById(Integer orgId, Integer oralTariffId) {
+    ClinicOralTariffVO resultData = mapper.selectClinicOralTariffById(oralTariffId);
     if (null != resultData) {
       List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
       if (StringHelper.isNotEmpty(memberTypes)) {
@@ -186,7 +186,7 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
       throw new ClientServiceException("门诊商品表修改失败，商品不存在！", PARAMETERS_IS_ILLEGAL);
     }
     BigDecimal formPrice = form.getPrice();
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    Integer orgId = form.getOrgId();
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     ClinicOralTariff entity = new ClinicOralTariff();
@@ -236,14 +236,14 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
   /**
    * 设置门诊商品项目是否启用
    *
+   * @param orgId 组织ID
    * @param oralTariffId 商品项目ID
    */
-  public void switchClinicOralTariff(Integer oralTariffId) {
+  public void switchClinicOralTariff(Integer orgId, Integer oralTariffId) {
     BaseOralTariff oralTariff = baseOralTariffMapper.selectByPrimaryKey(oralTariffId);
     if (null == oralTariff) {
       throw new ClientServiceException("门诊商品启用设置失败，商品不存在！", PARAMETERS_IS_ILLEGAL);
     }
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     ClinicOralTariff entity = new ClinicOralTariff();

@@ -187,8 +187,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     if (null == tariff) {
       throw new ClientServiceException("门诊价目表修改失败，价目表不存在！", PARAMETERS_IS_ILLEGAL);
     }
+    Integer orgId = form.getOrgId();
     BigDecimal formPrice = form.getPrice();
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     ClinicTariff entity = new ClinicTariff();
@@ -237,14 +237,14 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
   /**
    * 设置门诊价目表是否启用
    *
+   * @param orgId 组织ID
    * @param tariffId 价目表ID
    */
-  public void switchClinicTariff(Integer tariffId) {
+  public void switchClinicTariff(Integer orgId, Integer tariffId) {
     BaseTariff tariff = baseTariffMapper.selectByPrimaryKey(tariffId);
     if (null == tariff) {
       throw new ClientServiceException("门诊价目表启用设置失败，价目表不存在！", PARAMETERS_IS_ILLEGAL);
     }
-    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     ClinicTariff entity = new ClinicTariff();

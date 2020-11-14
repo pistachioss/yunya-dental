@@ -70,7 +70,7 @@ public class ClinicTariffController {
    */
   @CurrentUser
   @ApiOperation("修改门诊价目表价格信息")
-  @PutMapping("/modify")
+  @PostMapping("/modify")
   public ResponseResult<T> modify(@RequestBody @Validated ClinicTariffForm form) {
     clinicTariffBiz.modify(form);
     return ResponseUtil.success(null);
@@ -79,14 +79,17 @@ public class ClinicTariffController {
   /**
    * 设置门诊价目表是否启用
    *
+   * @param orgId 组织ID
    * @param tariffId 基础价目表ID
    * @return
    */
   @CurrentUser
   @ApiOperation("设置门诊价目表项目是否启用")
-  @GetMapping("/switch/{tariffId}")
-  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "tariffId") Integer tariffId) {
-    clinicTariffBiz.switchClinicTariff(tariffId);
+  @GetMapping("/switch/{orgId}/{tariffId}")
+  public ResponseResult<T> switchClinicTariff(
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "tariffId") Integer tariffId) {
+    clinicTariffBiz.switchClinicTariff(orgId, tariffId);
     return ResponseUtil.success(null);
   }
 

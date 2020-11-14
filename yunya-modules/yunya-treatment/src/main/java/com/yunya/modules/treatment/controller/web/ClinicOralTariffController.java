@@ -82,14 +82,17 @@ public class ClinicOralTariffController {
   /**
    * 设置门诊商品项目是否启用
    *
+   * @param orgId 组织ID
    * @param oralTariffId 商品项目ID
    * @return
    */
   @CurrentUser
   @ApiOperation("设置门诊商品项目项目是否启用")
-  @GetMapping("/switch/{oralTariffId}")
-  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "oralTariffId") Integer oralTariffId) {
-    clinicOralTariffBiz.switchClinicOralTariff(oralTariffId);
+  @GetMapping("/switch/{orgId}/{oralTariffId}")
+  public ResponseResult<T> switchClinicTariff(
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "oralTariffId") Integer oralTariffId) {
+    clinicOralTariffBiz.switchClinicOralTariff(orgId, oralTariffId);
     return ResponseUtil.success(null);
   }
 
