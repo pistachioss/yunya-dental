@@ -349,4 +349,35 @@
         </where>
         order by user_info.userId desc
     </select>
+
+    <select id="selectSysEmployeeWithOrgList" resultType="com.yunya.feign.system.vo.SysUserInfoDetail">
+        SELECT
+            t2.user_id as userId,
+            t2.name,
+            t4.id AS companyIds,
+            t4.name AS companys
+        FROM sys_user t1
+        LEFT JOIN sys_employee t2 ON t1.id = t2.user_id
+        LEFT JOIN sys_user_post t3 ON t1.id = t3.user_id
+        LEFT JOIN company t4 ON t3.company_id = t4.id
+        <where>
+            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
+                and CONCAT(IFNULL(t2.name, ''), IFNULL(user_info.mobilePhone, ''), IFNULL(user_info.pinyin, ''))
+                like concat('%', #{queryForm.keyWord} ,'%')
+            </if>
+            <if test="queryForm.orgIds!=null and queryForm.orgIds.size()>0">
+                and t4.id in
+                <foreach collection="queryForm.orgIds" item="item" index="index" open="(" close=")" separator="or">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.workStatus != null and queryForm.workStatus.length > 0">
+                and t2.workStatus in
+                <foreach collection="queryForm.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        order by t1.id desc;
+    </select>
 </mapper>

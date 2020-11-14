@@ -2,6 +2,7 @@ package com.yunya.modules.employeeattend.mapper;
 
 
 
+import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleCopyVO;
@@ -60,5 +61,36 @@ public interface EmployeeScheduleMapper extends Mapper<EmployeeSchedule> {
    */
   List<EmployeeScheduleVO> selectVOByDateAndCompEmpId(@Param("startDate") Date startDate, @Param("endDate") Date endDate, @Param("clinicId") Date clinicId, @Param("employeeId") String employeeId);
 
+  /**
+   * 根据工作日期和员工id查询员工排班信息。
+   * @param employeeIds
+   * @param workDates
+   * @return
+   */
+  List<EmployeeScheduleVO> selectEmployeeScheduleVOByDateAndCompEmpId(@Param("employeeIds") List<Integer> employeeIds, @Param("workDates") List<Date> workDates);
 
+  /**
+   * 根据排班id获取班次模板信息
+   * @param id 排班id
+   * @return
+   */
+  BaseSchedule selectBaseScheduleById(@Param("id") Integer id);
+
+  /**
+   * 根据日期范围查询指定员工的休息排班信息
+   *
+   * @param userId
+   * @param startDate
+   * @param endDate
+   * @return
+   */
+  List<EmployeeScheduleVO> findRestEmployeeScheduleListInDate(@Param("userId") Integer userId, @Param("startDate") Date startDate, @Param("firstDate") Date endDate);
+
+  /**
+   * 根据主键id列表查询员工排班信息
+   *
+   * @param ids
+   * @return
+   */
+  List<EmployeeScheduleVO> selectInIds(@Param("ids") List<Integer> ids);
 }

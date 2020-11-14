@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.employeeattend.mapper.AttendancePunchRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.AttendancePunchRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="punch_date" property="punchDate" jdbcType="DATE" />
+    <result column="punch_time" property="punchTime" jdbcType="TIME" />
+    <result column="start_time" property="startTime" jdbcType="TIME" />
+    <result column="end_time" property="endTime" jdbcType="TIME" />
+    <result column="punch_type" property="punchType" jdbcType="TINYINT" />
+    <result column="punch_status" property="punchStatus" jdbcType="TINYINT" />
+    <result column="source" property="source" jdbcType="TINYINT" />
+    <result column="attendance_address_id" property="attendanceAddressId" jdbcType="INTEGER" />
+    <result column="longitude" property="longitude" jdbcType="VARCHAR" />
+    <result column="latitude" property="latitude" jdbcType="VARCHAR" />
+    <result column="punch_address" property="punchAddress" jdbcType="VARCHAR" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="source_id" property="sourceId" jdbcType="INTEGER" />
+    <result column="is_punch" property="isPunch" jdbcType="TINYINT" />
+    <result column="wifi_mac_address" property="wifiMacAddress" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="findAttendancePunchRecordList" resultType="com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.name,
+        t.user_id as userId,
+        t.punch_date as punchDate,
+        t.punch_time as punchTime,
+        t.start_time as startTime,
+        t.end_time as endTime,
+        t.punch_type as punchType,
+        t.punch_status as punchStatus,
+        t.source,
+        t.attendance_address_id as attendanceAddressId,
+        t.longitude,
+        t.latitude,
+        t.punch_address as punchAddress,
+        t.org_id as orgId,
+        t.source_id as sourceId,
+        t.is_punch as isPunch,
+        t.wifi_mac_address as wifiMacAddress
+    from attendance_punch_record t
+    <where>
+      <if test="queryForm.userId != null" >
+        and t.user_id = #{queryForm.userId}
+      </if>
+      <if test="queryForm.punchDate != null" >
+        and t.punch_date = DATE_FORMAT(#{queryForm.punchDate},'%Y-%m-%d')
+      </if>
+      <if test="queryForm.betweenDate!=null and queryForm.betweenDate!='' and queryForm.andDate!=null and queryForm.andDate!=''" >
+        and t.punch_date between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
+      </if>
+      <if test="queryForm.notEqualPunchStatus != null">
+        and t.punch_status &lt;&gt; #{queryForm.notEqualPunchStatus}
+      </if>
+      <if test="queryForm.punchStatusList!=null and queryForm.punchStatusList.length>0">
+        and t.punch_status in
+        <foreach collection="queryForm.punchStatusList" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
+
+  <select id="findAttendancePunchRecordWithScheduleIdList" resultType="com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.name,
+        t.user_id as userId,
+        t.punch_date as punchDate,
+        t.punch_time as punchTime,
+        t.start_time as startTime,
+        t.end_time as endTime,
+        t.punch_type as punchType,
+        t.punch_status as punchStatus,
+        t.source,
+        t.attendance_address_id as attendanceAddressId,
+        t.longitude,
+        t.latitude,
+        t.punch_address as punchAddress,
+        t.org_id as orgId,
+        t.source_id as sourceId,
+        t.is_punch as isPunch,
+        t.wifi_mac_address as wifiMacAddress,
+        case when t.source=0 then t.source_id
+        when t.source=1 then (select schedule_id from leave_schedule where leave_id=t.source_id)
+        when t.source=2 then (select schedule_id from work_overtime_info where id=t.source_id)
+        when t.source=3 then null end scheduleId
+      from attendance_punch_record t
+      <where>
+        <if test="queryForm.userId != null" >
+            and t.user_id = #{queryForm.userId}
+        </if>
+        <if test="queryForm.punchDate != null" >
+            and t.punch_date = DATE_FORMAT(#{queryForm.punchDate},'%Y-%m-%d')
+        </if>
+        <if test="queryForm.betweenDate!=null and queryForm.betweenDate!='' and queryForm.andDate!=null and queryForm.andDate!=''" >
+            and t.punch_date between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
+        </if>
+        <if test="queryForm.notEqualPunchStatus != null">
+            and t.punch_status &lt;&gt; #{queryForm.notEqualPunchStatus}
+        </if>
+        <if test="queryForm.punchStatusList!=null and queryForm.punchStatusList.length>0">
+            and t.punch_status in
+            <foreach collection="queryForm.punchStatusList" item="item" index="index" open="(" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+     </where>
+  </select>
+    
+  <select id="selectAttendanceStatisticsPunchRecord" resultType="com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO">
+      t.id,
+      t.org_id as orgId,
+      t.name,
+      t.user_id as userId,
+      t.punch_date as punchDate,
+      t.punch_time as punchTime,
+      t.start_time as startTime,
+      t.end_time as endTime,
+      t.punch_type as punchType,
+      t.punch_status as punchStatus,
+      t.source,
+      t.attendance_address_id as attendanceAddressId,
+      t.longitude,
+      t.latitude,
+      t.punch_address as punchAddress,
+      t.org_id as orgId,
+      t.source_id as sourceId,
+      t.is_punch as isPunch,
+      t.wifi_mac_address as wifiMacAddress,
+      case when t.source=0 then t.source_id
+      when t.source=1 then (select schedule_id from leave_schedule where leave_id=t.source_id)
+      when t.source=2 then (select schedule_id from work_overtime_info where id=t.source_id)
+      when t.source=3 then null end scheduleId
+      from attendance_punch_record t
+      <where>
+          <if test="queryForm.org_id != null">
+            and t.org_id = #{queryForm.org_id}
+          </if>
+          <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
+            and DATE_FORMAT(t.punchDate,'%y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%y-%m-%d')
+          </if>
+      </where>
+  </select>
+</mapper>

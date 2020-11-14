@@ -215,6 +215,15 @@ public interface RemoteSystemServiceFeign {
   List<SysUserInfoDetail> findSysUserEmployeeInfoList(@RequestBody SysUserEmployeeModel model);
 
   /**
+   * 根据条件查询用户组织信息
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/api/userWithOrg/list", method = RequestMethod.POST)
+  List<SysUserInfoDetail> findSysUserEmployeeWithOrgList(@RequestBody SysUserEmployeeModel model);
+
+  /**
    * 根据科室ID查询科室
    *
    * @param id 科室模板ID

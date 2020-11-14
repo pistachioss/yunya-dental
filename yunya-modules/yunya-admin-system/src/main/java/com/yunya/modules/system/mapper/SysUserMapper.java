@@ -21,6 +21,15 @@ public interface SysUserMapper extends Mapper<SysUser> {
       @Param("queryForm") SysUserInfoDetailQueryFrom queryForm);
 
   /**
+   * 根据条件查询员工组织信息列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  List<SysUserInfoDetail> selectSysEmployeeWithOrgList(
+      @Param("queryForm") SysUserInfoDetailQueryFrom queryForm);
+
+  /**
    * 校验用户名是否存在
    *
    * @param name 用户名

@@ -4,9 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceWifiSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceWifiSetQueryForm;
-import com.yunya.feign.employee_attend.model.AttendanceAddressSetModel;
 import com.yunya.feign.employee_attend.model.AttendanceWifiSetModel;
-import com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO;
 import com.yunya.feign.employee_attend.vo.AttendanceWifiSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
@@ -15,7 +13,6 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.employee_attend.AttendanceAddressSet;
 import com.yunya.models.employee_attend.AttendanceWifiSet;
 import com.yunya.modules.employeeattend.mapper.AttendanceWifiSetMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,13 +42,23 @@ public class AttendanceWifiSetBiz extends BaseBiz<AttendanceWifiSetMapper, Atten
      * 分页查询考勤Wifi设置列表
      *
      * @param queryForm 查询参数
+     * @return
+     */
+    public List<AttendanceWifiSetVO> findAttendanceWifiSets(AttendanceWifiSetQueryForm queryForm) {
+        return mapper.findAttendanceWifiSetList(queryForm);
+    }
+
+    /**
+     * 分页查询考勤Wifi设置列表
+     *
+     * @param queryForm 查询参数
      * @return 
      */
     public PageInfo<AttendanceWifiSetVO> findAttendanceWifiSetList(AttendanceWifiSetQueryForm queryForm) {
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
         }
-        List<AttendanceWifiSetVO> attendanceWifiSetVOList = mapper.findAttendanceWifiSetList(queryForm);
+        List<AttendanceWifiSetVO> attendanceWifiSetVOList = findAttendanceWifiSets(queryForm);
         List<Integer> orgIds = new ArrayList<>(10);
         attendanceWifiSetVOList.forEach(attendanceAddressSetVO->{
             Integer orgId = attendanceAddressSetVO.getOrgId();
