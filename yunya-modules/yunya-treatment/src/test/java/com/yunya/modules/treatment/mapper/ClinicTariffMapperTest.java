@@ -27,9 +27,8 @@ public class ClinicTariffMapperTest {
   @Test
   public void list() {
     ClinicTariffQueryForm form = new ClinicTariffQueryForm();
-    form.setOrgId(35);
-    form.setKeyWord("yy");
+    form.setOrgId(123);
     List<ClinicTariffVO> tariffVOS = clinicTariffMapper.selectClinicTariffList(form);
-    System.out.println(tariffVOS);
+    System.out.println(tariffVOS.size());
   }
 }

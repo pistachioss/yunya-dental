@@ -64,52 +64,52 @@
     <!-- 根据条件查询门诊价目表信息列表 -->
     <select id="selectClinicTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffVO">
         select
-            ct.id,
-            ct.orgId,
-            ct.tariffCategoryId,
-            ct.tariffCategoryName,
-            ct.tariffCategoryNumber,
-            ct.tariffId,
-            ct.`name`,
-            ct.englishName,
-            ct.`number`,
-            ct.unit,
-            ct.price,
-            ct.inservice
-        from 
-            (
-            select 
-                ct.id,
-                ct.clinic_id as orgId,
-                btbtc.tariffCategoryId,
-                btbtc.tariffCategoryName,
-                btbtc.tariffCategoryNumber,
-                btbtc.tariffId,
-                btbtc.`name`,
-                btbtc.pinyin,
-                btbtc.englishName,
-                btbtc.`number`,
-                btbtc.unit,
-                ct.price,
-                ct.inservice 
-            from 
-                clinic_tariff ct
-                left join (
-                select 
-                    bt.id as tariffId,
-                    btc.id as tariffCategoryId,
-                    btc.`name` as tariffCategoryName,
-                    btc.number as tariffCategoryNumber,
-                    bt.item_number as number,
-                    bt.`name`,
-                    bt.pinyin,
-                    bt.english_name as englishName,
-                    unit 
-                from
-                    base_tariff bt
-                    left join base_tariff_category btc on bt.tariff_category_id = btc.id
-                ) btbtc on ct.tariff_id = btbtc.tariffId
-            ) ct
+        ct.id,
+        ct.orgId,
+        ct.tariffCategoryId,
+        ct.tariffCategoryName,
+        ct.tariffCategoryNumber,
+        ct.tariffId,
+        ct.`name`,
+        ct.englishName,
+        ct.`number`,
+        ct.unit,
+        ct.price,
+        ct.inservice
+        from
+        (
+        select
+        ct.id,
+        ct.clinic_id as orgId,
+        btbtc.tariffCategoryId,
+        btbtc.tariffCategoryName,
+        btbtc.tariffCategoryNumber,
+        btbtc.tariffId,
+        btbtc.`name`,
+        btbtc.pinyin,
+        btbtc.englishName,
+        btbtc.`number`,
+        btbtc.unit,
+        ct.price,
+        ct.inservice
+        from
+        clinic_tariff ct
+        left join (
+        select
+        bt.id as tariffId,
+        btc.id as tariffCategoryId,
+        btc.`name` as tariffCategoryName,
+        btc.number as tariffCategoryNumber,
+        bt.item_number as number,
+        bt.`name`,
+        bt.pinyin,
+        bt.english_name as englishName,
+        unit
+        from
+        base_tariff bt
+        left join base_tariff_category btc on bt.tariff_category_id = btc.id
+        ) btbtc on ct.tariff_id = btbtc.tariffId
+        ) ct
         <where>
             <if test="queryForm.id != null">
                 and ct.id = #{queryForm.id}
@@ -130,19 +130,19 @@
             <if test="queryForm.inservice != null">
                 and ct.inservice = #{queryForm.inservice}
             </if>
-        </where>    
+        </where>
     </select>
     <!-- 根据条件查询门诊价目表导出列表 -->
     <select id="selectClinicTariffExportList"
             resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO">
         select
-            ct.`number` as itemNumber,
-            ct.`name`,
-            ct.tariffCategoryNumber,
-            ct.tariffCategoryName,
-            ct.englishName,
-            ct.unit,
-            ct.price
+        ct.`number` as itemNumber,
+        ct.`name`,
+        ct.tariffCategoryNumber,
+        ct.tariffCategoryName,
+        ct.englishName,
+        ct.unit,
+        ct.price
         from
         (
         select
@@ -200,18 +200,18 @@
     <!-- 根据条件查询价目表列表 -->
     <select id="selectTariffList" resultMap="categoryInfoMap">
         SELECT
-            btc.id as categoryId,
-            btc.NAME as categoryName,
-            btc.number as categoryNumber,
-            bt.id,
-            bt.item_number,
-            bt.name,
-            bt.unit,
-            bt.pinyin,
-            bt.price
+        btc.id as categoryId,
+        btc.NAME as categoryName,
+        btc.number as categoryNumber,
+        bt.id,
+        bt.item_number,
+        bt.name,
+        bt.unit,
+        bt.pinyin,
+        bt.price
         FROM base_tariff_category btc
-	    LEFT JOIN base_tariff bt ON bt.tariff_category_id = btc.id
-	    <where>
+        LEFT JOIN base_tariff bt ON bt.tariff_category_id = btc.id
+        <where>
             CASE #{search} REGEXP "^[A-Za-z]+$"
             WHEN 1 THEN
             bt.pinyin = #{search}
@@ -238,9 +238,9 @@
         <where>
             CASE #{search} REGEXP "^[A-Za-z]+$"
             WHEN 1 THEN
-                bt.pinyin = #{search}
+            bt.pinyin = #{search}
             ELSE
-                bt.name like CONCAT('%',#{search},'%')
+            bt.name like CONCAT('%',#{search},'%')
             END
         </where>
     </select>

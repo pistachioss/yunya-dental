@@ -2,13 +2,16 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.ClinicItemMemberPriceForm;
 import com.yunya.feign.treatment.domain.form.ClinicOralTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicOralTariffUniteDiscountForm;
 import com.yunya.feign.treatment.domain.form.MemberUniteDiscountForm;
+import com.yunya.feign.treatment.domain.query.BaseOralTariffQueryForm;
 import com.yunya.feign.treatment.domain.query.ClinicOralTariffQueryForm;
+import com.yunya.feign.treatment.domain.vo.BaseOralTariffVO;
 import com.yunya.feign.treatment.domain.vo.ClinicOralTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -19,6 +22,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.tariff.ClinicOralTariff;
 import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
+import com.yunya.modules.treatment.mapper.BaseOralTariffMapper;
 import com.yunya.modules.treatment.mapper.ClinicOralTariffMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -43,6 +47,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_R
 @Transactional(rollbackFor = Exception.class)
 public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicOralTariff> {
 
+  /** 基础商品 */
+  @Autowired private BaseOralTariffMapper baseOralTariffMapper;
   /** 门诊商品项目会员价 */
   @Autowired private ClinicOralTariffMemberPriceBiz clinicOralTariffMemberPriceBiz;
   /** 系统服务调用 */
@@ -77,16 +83,49 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-    List<ClinicOralTariffVO> resultList = mapper.selectClinicOralTariffList(queryForm);
-    if (StringHelper.isNotEmpty(resultList)) {
-      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      if (StringHelper.isNotEmpty(memberTypes)) {
-        Integer orgId = queryForm.getOrgId();
-        resultList.forEach(
-            tariffVO -> {
-              Map<Integer, Object> memberPrices = new HashMap<>(16);
-              setClinicOralTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
-            });
+    Integer orgId = queryForm.getOrgId();
+    BaseOralTariffQueryForm form = new BaseOralTariffQueryForm();
+    form.setOralTariffCategoryId(queryForm.getOralTariffCategoryId());
+    form.setKeyWord(queryForm.getKeyWord());
+    List<BaseOralTariffVO> baseOralTariffs = baseOralTariffMapper.selectBaseOralTariffList(form);
+    List<ClinicOralTariffVO> resultList = Lists.newArrayList();
+    if (StringHelper.isNotEmpty(baseOralTariffs)) {
+      baseOralTariffs.forEach(
+          baseOralTariff -> {
+            Integer tariffId = baseOralTariff.getId();
+            ClinicOralTariff entity = new ClinicOralTariff();
+            entity.setOralTariffId(tariffId);
+            entity.setClinicId(orgId);
+            ClinicOralTariff clinicOralTariff = mapper.selectOne(entity);
+            ClinicOralTariffVO vo = new ClinicOralTariffVO();
+            vo.setOrgId(orgId);
+            vo.setOralTariffCategoryId(baseOralTariff.getOralTariffCategoryId());
+            vo.setOralTariffCategoryName(baseOralTariff.getOralTariffCategoryName());
+            vo.setOralTariffCategoryNumber(baseOralTariff.getOralTariffCategoryNumber());
+            vo.setOralTariffId(tariffId);
+            vo.setName(baseOralTariff.getName());
+            vo.setEnglishName(baseOralTariff.getEnglishName());
+            vo.setNumber(baseOralTariff.getItemNumber());
+            vo.setUnit(baseOralTariff.getUnit());
+            if (null != clinicOralTariff) {
+              vo.setId(clinicOralTariff.getId());
+              vo.setPrice(clinicOralTariff.getPrice());
+              vo.setInservice(clinicOralTariff.getInservice());
+            } else {
+              vo.setPrice(baseOralTariff.getPrice());
+              vo.setInservice(baseOralTariff.getInservice());
+            }
+            resultList.add(vo);
+          });
+      if (StringHelper.isNotEmpty(resultList)) {
+        List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+        if (StringHelper.isNotEmpty(memberTypes)) {
+          resultList.forEach(
+              tariffVO -> {
+                Map<Integer, Object> memberPrices = new HashMap<>(16);
+                setClinicOralTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
+              });
+        }
       }
     }
     return new PageInfo<>(resultList);
@@ -161,22 +200,19 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     ClinicOralTariffMemberPrice resultClinicOralTariffMemberPrice;
     Integer oralTariffId = form.getOralTariffId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-    Integer memberTypeId;
-    BigDecimal discountPrice;
     for (ClinicItemMemberPriceForm memberPrice : memberPrices) {
       clinicOralTariffMemberPrice = new ClinicOralTariffMemberPrice();
       clinicOralTariffMemberPrice.setClinicId(orgId);
       clinicOralTariffMemberPrice.setOralTariffId(oralTariffId);
-      memberTypeId = memberPrice.getMemberTypeId();
+      Integer memberTypeId = memberPrice.getMemberTypeId();
       clinicOralTariffMemberPrice.setMemberTypeId(memberTypeId);
-      discountPrice = memberPrice.getDiscountPrice();
+      BigDecimal discountPrice = memberPrice.getDiscountPrice();
       resultClinicOralTariffMemberPrice =
           clinicOralTariffMemberPriceBiz.selectOne(clinicOralTariffMemberPrice);
       clinicOralTariffMemberPrice.setDiscountPrice(discountPrice);
       if (null != resultClinicOralTariffMemberPrice) {
         clinicOralTariffMemberPrice.setUpdId(userId);
         clinicOralTariffMemberPrice.setUpdName(name);
-        clinicOralTariffMemberPrice.setUpdTime(new Date(System.currentTimeMillis()));
         clinicOralTariffMemberPrice.setId(resultClinicOralTariffMemberPrice.getId());
         clinicOralTariffMemberPriceBiz.updateSelectiveById(clinicOralTariffMemberPrice);
       } else {

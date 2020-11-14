@@ -2,14 +2,17 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.collect.Lists;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.ClinicItemMemberPriceForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffForm;
 import com.yunya.feign.treatment.domain.form.ClinicTariffUniteDiscountForm;
 import com.yunya.feign.treatment.domain.form.MemberUniteDiscountForm;
+import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.BaseCategoryInfoVO;
+import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -22,6 +25,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
+import com.yunya.modules.treatment.mapper.BaseTariffMapper;
 import com.yunya.modules.treatment.mapper.ClinicTariffMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,6 +50,8 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_R
 @Transactional(rollbackFor = Exception.class)
 public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
 
+  /** 基础价目表 */
+  @Autowired private BaseTariffMapper baseTariffMapper;
   /** 门诊价目表会员价 */
   @Autowired private ClinicTariffMemberPriceBiz clinicTariffMemberPriceBiz;
   /** 系统服务调用 */
@@ -80,16 +86,49 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-    List<ClinicTariffVO> resultList = mapper.selectClinicTariffList(queryForm);
-    if (StringHelper.isNotEmpty(resultList)) {
-      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      if (StringHelper.isNotEmpty(memberTypes)) {
-        Integer orgId = queryForm.getOrgId();
-        resultList.forEach(
-            tariffVO -> {
-              Map<Integer, Object> memberPrices = new HashMap<>(16);
-              setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
-            });
+    Integer orgId = queryForm.getOrgId();
+    BaseTariffQueryForm form = new BaseTariffQueryForm();
+    form.setTariffCategoryId(queryForm.getTariffCategoryId());
+    form.setKeyWord(queryForm.getKeyWord());
+    List<BaseTariffVO> baseTariffs = baseTariffMapper.selectBaseTariffList(form);
+    List<ClinicTariffVO> resultList = Lists.newArrayList();
+    if (StringHelper.isNotEmpty(baseTariffs)) {
+      baseTariffs.forEach(
+          baseTariff -> {
+            Integer tariffId = baseTariff.getId();
+            ClinicTariff entity = new ClinicTariff();
+            entity.setTariffId(tariffId);
+            entity.setClinicId(orgId);
+            ClinicTariff clinicTariff = mapper.selectOne(entity);
+            ClinicTariffVO vo = new ClinicTariffVO();
+            vo.setOrgId(orgId);
+            vo.setTariffCategoryId(baseTariff.getTariffCategoryId());
+            vo.setTariffCategoryName(baseTariff.getTariffCategoryName());
+            vo.setTariffCategoryNumber(baseTariff.getTariffCategoryNumber());
+            vo.setTariffId(tariffId);
+            vo.setName(baseTariff.getName());
+            vo.setEnglishName(baseTariff.getEnglishName());
+            vo.setNumber(baseTariff.getItemNumber());
+            vo.setUnit(baseTariff.getUnit());
+            if (null != clinicTariff) {
+              vo.setId(clinicTariff.getId());
+              vo.setPrice(clinicTariff.getPrice());
+              vo.setInservice(clinicTariff.getInservice());
+            } else {
+              vo.setPrice(baseTariff.getPrice());
+              vo.setInservice(baseTariff.getInservice());
+            }
+            resultList.add(vo);
+          });
+      if (StringHelper.isNotEmpty(resultList)) {
+        List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+        if (StringHelper.isNotEmpty(memberTypes)) {
+          resultList.forEach(
+              tariffVO -> {
+                Map<Integer, Object> memberPrices = new HashMap<>(16);
+                setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
+              });
+        }
       }
     }
     return new PageInfo<>(resultList);
@@ -161,15 +200,13 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     ClinicTariffMemberPrice clinicTariffMemberPrice;
     ClinicTariffMemberPrice resultClinicTariffMemberPrice;
     Integer tariffId = form.getTariffId();
-    Integer memberTypeId;
-    BigDecimal discountPrice;
     for (ClinicItemMemberPriceForm memberPrice : memberPrices) {
       clinicTariffMemberPrice = new ClinicTariffMemberPrice();
       clinicTariffMemberPrice.setClinicId(resultData.getClinicId());
       clinicTariffMemberPrice.setTariffId(tariffId);
-      memberTypeId = memberPrice.getMemberTypeId();
+      Integer memberTypeId = memberPrice.getMemberTypeId();
       clinicTariffMemberPrice.setMemberTypeId(memberTypeId);
-      discountPrice = memberPrice.getDiscountPrice();
+      BigDecimal discountPrice = memberPrice.getDiscountPrice();
       resultClinicTariffMemberPrice = clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
       clinicTariffMemberPrice.setDiscountPrice(discountPrice);
       if (null != resultClinicTariffMemberPrice) {
