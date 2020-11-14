@@ -6,8 +6,10 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 门诊价目表统一折扣设置参数模型
@@ -28,8 +30,10 @@ public class ClinicTariffUniteDiscountForm implements Serializable {
   private Integer orgId;
   /** 门诊价目表ID数组 */
   @ApiModelProperty(value = "门诊价目表ID数组", required = true)
+  @Size(min = 1, message = "门诊价目表ID不能为空！")
   private List<Integer> clinicTariffIds;
   /** 会员折扣信息 */
   @ApiModelProperty(value = "会员折扣信息", required = true)
-  private List<MemberUniteDiscountForm> memberUniteDiscountForms;
+  @Size(min = 1, message = "会员折扣信息不能为空！")
+  private Set<MemberUniteDiscountForm> memberUniteDiscountForms;
 }

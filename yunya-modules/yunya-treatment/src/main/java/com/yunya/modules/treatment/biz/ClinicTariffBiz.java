@@ -31,8 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.function.Consumer;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
@@ -213,69 +212,63 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     if (StringHelper.isEmpty(clinicTariffIds)) {
       throw new ClientServiceException("统一设置门诊价目表折扣失败，当前未选择任何门诊价目表项目！", PARAMETERS_IS_ILLEGAL);
     }
-    List<MemberUniteDiscountForm> memberUniteDiscountForms = form.getMemberUniteDiscountForms();
+
+    Set<MemberUniteDiscountForm> memberUniteDiscountForms = form.getMemberUniteDiscountForms();
     if (StringHelper.isEmpty(memberUniteDiscountForms)) {
       throw new ClientServiceException("统一设置门诊价目表折扣失败,当前未选择任何会员卡类型", PARAMETERS_IS_ILLEGAL);
     }
-
-    boolean b = checkMemberUniteDiscountForms(memberUniteDiscountForms);
-    if (!b) {
-      throw new ClientServiceException("同一会员卡不能提交两条折扣率！",PARAMETERS_IS_ILLEGAL);
-    }
+    // 检查是否有相同会员卡折扣
+    checkMemberUniteDiscountForms(memberUniteDiscountForms);
 
     Integer orgId = form.getOrgId();
-    BigDecimal price;
-    Integer memberType;
-    for (Integer clinicTariffId : clinicTariffIds) {
-      for (MemberUniteDiscountForm discountForm : memberUniteDiscountForms) {
-        ClinicTariff resultData = mapper.selectByPrimaryKey(clinicTariffId);
-        if (null != resultData) {
-          ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
-          clinicTariffMemberPrice.setClinicId(orgId);
-          clinicTariffMemberPrice.setTariffId(resultData.getTariffId());
-          memberType = discountForm.getMemberTypeId();
-          clinicTariffMemberPrice.setMemberTypeId(memberType);
-          ClinicTariffMemberPrice resultClinicTariffMemberPrice =
-              clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
-          price = resultData.getPrice();
-          BigDecimal discountPrice =
-              price
-                  .multiply(BigDecimal.valueOf(discountForm.getRate()))
-                  .divide(BigDecimal.valueOf(100), 2);
-          clinicTariffMemberPrice.setDiscountPrice(discountPrice);
-          if (resultClinicTariffMemberPrice == null) {
-            clinicTariffMemberPrice.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-            clinicTariffMemberPrice.setCrtName(BaseContextHandler.getName());
-            clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
-          } else {
-            resultClinicTariffMemberPrice.setDiscountPrice(discountPrice);
-            resultClinicTariffMemberPrice.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-            resultClinicTariffMemberPrice.setUpdName(BaseContextHandler.getName());
-            resultClinicTariffMemberPrice.setUpdTime(new Date(System.currentTimeMillis()));
-            clinicTariffMemberPriceBiz.updateSelectiveById(resultClinicTariffMemberPrice);
-          }
-        }
-      }
-    }
+    clinicTariffIds.stream()
+        .<Consumer<? super MemberUniteDiscountForm>>map(
+            clinicTariffId ->
+                discountForm -> {
+                  ClinicTariff resultData = mapper.selectByPrimaryKey(clinicTariffId);
+                  if (null != resultData) {
+                    ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
+                    clinicTariffMemberPrice.setClinicId(orgId);
+                    clinicTariffMemberPrice.setTariffId(resultData.getTariffId());
+                    Integer memberType = discountForm.getMemberTypeId();
+                    clinicTariffMemberPrice.setMemberTypeId(memberType);
+                    ClinicTariffMemberPrice resultClinicTariffMemberPrice =
+                        clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
+                    BigDecimal price = resultData.getPrice();
+                    BigDecimal discountPrice =
+                        price
+                            .multiply(BigDecimal.valueOf(discountForm.getRate()))
+                            .divide(BigDecimal.valueOf(100), 2);
+                    clinicTariffMemberPrice.setDiscountPrice(discountPrice);
+                    if (resultClinicTariffMemberPrice == null) {
+                      clinicTariffMemberPrice.setCrtId(
+                          Integer.valueOf(BaseContextHandler.getUserID()));
+                      clinicTariffMemberPrice.setCrtName(BaseContextHandler.getName());
+                      clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
+                    } else {
+                      resultClinicTariffMemberPrice.setDiscountPrice(discountPrice);
+                      resultClinicTariffMemberPrice.setUpdId(
+                          Integer.valueOf(BaseContextHandler.getUserID()));
+                      resultClinicTariffMemberPrice.setUpdName(BaseContextHandler.getName());
+                      clinicTariffMemberPriceBiz.updateSelectiveById(resultClinicTariffMemberPrice);
+                    }
+                  }
+                })
+        .forEach(memberUniteDiscountForms::forEach);
   }
 
   /**
    * 返回会员折扣检测结果
-   * @param memberUniteDiscountForms
-   * @return 正常返回true，异常返回false
+   *
+   * @param memberUniteDiscounts 会员卡折扣列表
    */
-  private boolean checkMemberUniteDiscountForms(List<MemberUniteDiscountForm> memberUniteDiscountForms) {
-    for(MemberUniteDiscountForm memberUniteDiscountForm : memberUniteDiscountForms){
-      List<MemberUniteDiscountForm> collect = memberUniteDiscountForms.stream()
-              .filter(memberUniteDiscountForm1 ->
-                      memberUniteDiscountForm1.getMemberTypeId().equals(memberUniteDiscountForm.getMemberTypeId())
-                              && memberUniteDiscountForm1.getRate().equals(memberUniteDiscountForm.getRate()))
-              .collect(Collectors.toList());
-      if (StringHelper.isNotEmpty(collect) && collect.size()>1) {
-        return false;
-      }
+  private void checkMemberUniteDiscountForms(Set<MemberUniteDiscountForm> memberUniteDiscounts) {
+    Set<MemberUniteDiscountForm> forms =
+        new TreeSet<>(Comparator.comparing(MemberUniteDiscountForm::getMemberTypeId));
+    forms.addAll(memberUniteDiscounts);
+    if (forms.size() < memberUniteDiscounts.size()) {
+      throw new ClientServiceException("统一门诊价目表折扣失败，同一个会员卡不能设置两条折扣！", PARAMETERS_IS_ILLEGAL);
     }
-    return true;
   }
 
   /**

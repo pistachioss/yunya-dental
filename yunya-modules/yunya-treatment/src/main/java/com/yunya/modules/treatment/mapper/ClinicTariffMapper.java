@@ -39,6 +39,7 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
 
   /**
    * 根据条件查询价目表列表
+   *
    * @param search
    * @return
    */
@@ -46,9 +47,9 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
 
   /**
    * 根据条件查询基础商品表列表
+   *
    * @param search
    * @return
    */
   List<BaseCategoryInfoVO> selectBaseOralTariffList(@Param("search") String search);
-
 }

@@ -3,11 +3,14 @@ package com.yunya.feign.treatment.domain.form;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * 简介: 门诊商品项目统一折扣设置参数模型
@@ -20,6 +23,7 @@ import java.util.List;
 @ApiModel("门诊商品项目统一折扣设置参数模型")
 @Data
 @ToString
+@EqualsAndHashCode
 public class ClinicOralTariffUniteDiscountForm implements Serializable {
 
   /** 组织ID */
@@ -28,8 +32,10 @@ public class ClinicOralTariffUniteDiscountForm implements Serializable {
   private Integer orgId;
   /** 门诊商品项目ID数组 */
   @ApiModelProperty(value = "门诊商品项目ID数组", required = true)
+  @Size(min = 1, message = "门诊商品项目ID列表不能为空！")
   private List<Integer> clinicOralTariffIds;
   /** 会员折扣信息 */
   @ApiModelProperty(value = "会员折扣信息", required = true)
-  private List<MemberUniteDiscountForm> memberUniteDiscountForms;
+  @Size(min = 1, message = "会员折扣信息不能为空！")
+  private Set<MemberUniteDiscountForm> memberUniteDiscountForms;
 }
