@@ -11,10 +11,7 @@ import com.yunya.feign.treatment.domain.form.ClinicTariffUniteDiscountForm;
 import com.yunya.feign.treatment.domain.form.MemberUniteDiscountForm;
 import com.yunya.feign.treatment.domain.query.BaseTariffQueryForm;
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
-import com.yunya.feign.treatment.domain.vo.BaseCategoryInfoVO;
-import com.yunya.feign.treatment.domain.vo.BaseTariffVO;
-import com.yunya.feign.treatment.domain.vo.ClinicTariffExportVO;
-import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -61,17 +58,30 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    * 根据门诊价目表ID获取门诊价目表信息
    *
    * @param orgId 组织ID
-   * @param clinicTariffId 门诊价目表ID
+   * @param tariffId 门诊价目表ID
    * @return
    */
-  public ClinicTariffVO findById(Integer orgId, Integer clinicTariffId) {
-    ClinicTariffVO resultData = mapper.selectClinicTariffById(clinicTariffId);
-    if (null != resultData) {
-      List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
-      if (StringHelper.isNotEmpty(memberTypes)) {
-        Map<Integer, Object> memberPrices = new HashMap<>(16);
-        setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, resultData);
-      }
+  public ClinicTariffVO findById(Integer orgId, Integer tariffId) {
+    ClinicTariffVO resultData = mapper.selectClinicTariffById(orgId, tariffId);
+    if (null == resultData) {
+      BaseTariffInfoVO baseTariffInfo = baseTariffMapper.selectBaseTariffInfoById(tariffId);
+      resultData = new ClinicTariffVO();
+      resultData.setOrgId(orgId);
+      resultData.setTariffCategoryId(baseTariffInfo.getTariffCategoryId());
+      resultData.setTariffCategoryName(baseTariffInfo.getTariffCategoryName());
+      resultData.setTariffCategoryNumber(baseTariffInfo.getTariffCategoryNumber());
+      resultData.setTariffId(tariffId);
+      resultData.setName(baseTariffInfo.getName());
+      resultData.setEnglishName(baseTariffInfo.getEnglishName());
+      resultData.setNumber(baseTariffInfo.getItemNumber());
+      resultData.setUnit(baseTariffInfo.getUnit());
+      resultData.setPrice(baseTariffInfo.getPrice());
+      resultData.setInservice(true);
+    }
+    List<MemberType> memberTypes = systemServiceFeign.findMemberTypeList(new MemberType());
+    if (StringHelper.isNotEmpty(memberTypes)) {
+      Map<Integer, Object> memberPrices = new HashMap<>(16);
+      setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, resultData);
     }
     return resultData;
   }
@@ -199,6 +209,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       entity.setPrice(formPrice);
       entity.setCrtId(userId);
       entity.setCrtName(name);
+      entity.setUpdId(userId);
+      entity.setUpdName(name);
       mapper.insertSelective(entity);
     } else {
       BigDecimal resultDataPrice = resultData.getPrice();
@@ -210,28 +222,28 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       }
     }
 
-    ClinicTariffMemberPrice clinicTariffMemberPrice;
-    ClinicTariffMemberPrice resultClinicTariffMemberPrice;
-    for (ClinicItemMemberPriceForm memberPrice : memberPrices) {
-      clinicTariffMemberPrice = new ClinicTariffMemberPrice();
-      clinicTariffMemberPrice.setClinicId(orgId);
-      clinicTariffMemberPrice.setTariffId(tariffId);
-      Integer memberTypeId = memberPrice.getMemberTypeId();
-      clinicTariffMemberPrice.setMemberTypeId(memberTypeId);
-      BigDecimal discountPrice = memberPrice.getDiscountPrice();
-      resultClinicTariffMemberPrice = clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
-      clinicTariffMemberPrice.setDiscountPrice(discountPrice);
-      if (null != resultClinicTariffMemberPrice) {
-        clinicTariffMemberPrice.setUpdId(userId);
-        clinicTariffMemberPrice.setUpdName(name);
-        clinicTariffMemberPrice.setId(resultClinicTariffMemberPrice.getId());
-        clinicTariffMemberPriceBiz.updateSelectiveById(clinicTariffMemberPrice);
-      } else {
-        clinicTariffMemberPrice.setCrtId(userId);
-        clinicTariffMemberPrice.setCrtName(name);
-        clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
-      }
-    }
+    memberPrices.forEach(
+        memberPrice -> {
+          ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
+          clinicTariffMemberPrice.setClinicId(orgId);
+          clinicTariffMemberPrice.setTariffId(tariffId);
+          Integer memberTypeId = memberPrice.getMemberTypeId();
+          clinicTariffMemberPrice.setMemberTypeId(memberTypeId);
+          BigDecimal discountPrice = memberPrice.getDiscountPrice();
+          ClinicTariffMemberPrice resultClinicTariffMemberPrice =
+              clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
+          clinicTariffMemberPrice.setDiscountPrice(discountPrice);
+          if (null != resultClinicTariffMemberPrice) {
+            clinicTariffMemberPrice.setUpdId(userId);
+            clinicTariffMemberPrice.setUpdName(name);
+            clinicTariffMemberPrice.setId(resultClinicTariffMemberPrice.getId());
+            clinicTariffMemberPriceBiz.updateSelectiveById(clinicTariffMemberPrice);
+          } else {
+            clinicTariffMemberPrice.setCrtId(userId);
+            clinicTariffMemberPrice.setCrtName(name);
+            clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
+          }
+        });
   }
 
   /**
@@ -252,9 +264,11 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     entity.setTariffId(tariffId);
     ClinicTariff resultData = mapper.selectOne(entity);
     if (null == resultData) {
+      entity.setInservice(false);
       entity.setCrtId(userId);
       entity.setCrtName(name);
-      entity.setInservice(false);
+      entity.setUpdId(userId);
+      entity.setUpdName(name);
       mapper.insertSelective(entity);
     } else {
       resultData.setInservice(!resultData.getInservice());
@@ -270,8 +284,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    * @param form 统一折扣设置参数
    */
   public void uniteMemberDiscount(ClinicTariffUniteDiscountForm form) {
-    List<Integer> clinicTariffIds = form.getClinicTariffIds();
-    if (StringHelper.isEmpty(clinicTariffIds)) {
+    List<Integer> tariffIds = form.getTariffIds();
+    if (StringHelper.isEmpty(tariffIds)) {
       throw new ClientServiceException("统一设置门诊价目表折扣失败，当前未选择任何门诊价目表项目！", PARAMETERS_IS_ILLEGAL);
     }
 
@@ -281,42 +295,49 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     }
     // 检查是否有相同会员卡折扣
     checkMemberUniteDiscountForms(memberUniteDiscountForms);
-
+    // 设置门诊价目表会员折扣价
     Integer orgId = form.getOrgId();
-    clinicTariffIds.stream()
+    tariffIds.stream()
         .<Consumer<? super MemberUniteDiscountForm>>map(
-            clinicTariffId ->
+            tariffId ->
                 discountForm -> {
-                  ClinicTariff resultData = mapper.selectByPrimaryKey(clinicTariffId);
+                  ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
+                  clinicTariffMemberPrice.setClinicId(orgId);
+                  clinicTariffMemberPrice.setTariffId(tariffId);
+                  Integer memberType = discountForm.getMemberTypeId();
+                  clinicTariffMemberPrice.setMemberTypeId(memberType);
+                  ClinicTariffMemberPrice resultClinicTariffMemberPrice =
+                      clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
+                  BigDecimal price;
+                  ClinicTariff entity = new ClinicTariff();
+                  entity.setClinicId(orgId);
+                  entity.setTariffId(tariffId);
+                  ClinicTariff resultData = mapper.selectOne(entity);
                   if (null != resultData) {
-                    ClinicTariffMemberPrice clinicTariffMemberPrice = new ClinicTariffMemberPrice();
-                    clinicTariffMemberPrice.setClinicId(orgId);
-                    clinicTariffMemberPrice.setTariffId(resultData.getTariffId());
-                    Integer memberType = discountForm.getMemberTypeId();
-                    clinicTariffMemberPrice.setMemberTypeId(memberType);
-                    ClinicTariffMemberPrice resultClinicTariffMemberPrice =
-                        clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
-                    BigDecimal price = resultData.getPrice();
-                    BigDecimal discountPrice =
-                        price
-                            .multiply(BigDecimal.valueOf(discountForm.getRate()))
-                            .divide(BigDecimal.valueOf(100), 2);
-                    clinicTariffMemberPrice.setDiscountPrice(discountPrice);
-                    if (resultClinicTariffMemberPrice == null) {
-                      clinicTariffMemberPrice.setCrtId(
-                          Integer.valueOf(BaseContextHandler.getUserID()));
-                      clinicTariffMemberPrice.setCrtName(BaseContextHandler.getName());
-                      clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
-                    } else {
-                      resultClinicTariffMemberPrice.setDiscountPrice(discountPrice);
-                      resultClinicTariffMemberPrice.setUpdId(
-                          Integer.valueOf(BaseContextHandler.getUserID()));
-                      resultClinicTariffMemberPrice.setUpdName(BaseContextHandler.getName());
-                      clinicTariffMemberPriceBiz.updateSelectiveById(resultClinicTariffMemberPrice);
-                    }
+                    price = resultData.getPrice();
+                  } else {
+                    BaseTariff tariff = baseTariffMapper.selectByPrimaryKey(tariffId);
+                    price = tariff.getPrice();
+                  }
+                  BigDecimal discountPrice =
+                      price
+                          .multiply(BigDecimal.valueOf(discountForm.getRate()))
+                          .divide(BigDecimal.valueOf(100), 2);
+                  clinicTariffMemberPrice.setDiscountPrice(discountPrice);
+                  if (resultClinicTariffMemberPrice == null) {
+                    clinicTariffMemberPrice.setCrtId(
+                        Integer.valueOf(BaseContextHandler.getUserID()));
+                    clinicTariffMemberPrice.setCrtName(BaseContextHandler.getName());
+                    clinicTariffMemberPriceBiz.insertSelective(clinicTariffMemberPrice);
+                  } else {
+                    resultClinicTariffMemberPrice.setDiscountPrice(discountPrice);
+                    resultClinicTariffMemberPrice.setUpdId(
+                        Integer.valueOf(BaseContextHandler.getUserID()));
+                    resultClinicTariffMemberPrice.setUpdName(BaseContextHandler.getName());
+                    clinicTariffMemberPriceBiz.updateSelectiveById(resultClinicTariffMemberPrice);
                   }
                 })
-        .forEach(memberUniteDiscountForms::forEach);
+        .forEachOrdered(memberUniteDiscountForms::forEach);
   }
 
   /**

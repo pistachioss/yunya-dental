@@ -29,9 +29,9 @@ public class ClinicTariffUniteDiscountForm implements Serializable {
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
   /** 门诊价目表ID数组 */
-  @ApiModelProperty(value = "门诊价目表ID数组", required = true)
-  @Size(min = 1, message = "门诊价目表ID不能为空！")
-  private List<Integer> clinicTariffIds;
+  @ApiModelProperty(value = "价目表ID数组", required = true)
+  @Size(min = 1, message = "价目表ID不能为空！")
+  private List<Integer> tariffIds;
   /** 会员折扣信息 */
   @ApiModelProperty(value = "会员折扣信息", required = true)
   @Size(min = 1, message = "会员折扣信息不能为空！")

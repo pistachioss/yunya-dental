@@ -40,14 +40,15 @@ public class ClinicOralTariffController {
    * 根据门诊商品项目ID获取门诊商品项目信息
    *
    * @param orgId 组织ID
-   * @param id 门诊商品项目ID
+   * @param oralTariffId 商品项目ID
    * @return
    */
   @ApiOperation("根据门诊商品项目ID获取信息")
-  @GetMapping("/one/{orgId}/{id}")
+  @GetMapping("/one/{orgId}/{oralTariffId}")
   public ResponseResult<ClinicOralTariffVO> findById(
-      @PathVariable(value = "orgId") Integer orgId, @PathVariable(value = "id") Integer id) {
-    ClinicOralTariffVO resultData = clinicOralTariffBiz.findById(orgId, id);
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "oralTariffId") Integer oralTariffId) {
+    ClinicOralTariffVO resultData = clinicOralTariffBiz.findById(orgId, oralTariffId);
     return ResponseUtil.success(resultData);
   }
 

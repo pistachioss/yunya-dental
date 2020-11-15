@@ -59,7 +59,7 @@
             from base_tariff bt
             left join base_tariff_category btc on bt.tariff_category_id = btc.id
         ) btbtc on ct.tariff_id = btbtc.tariffId
-        where id = #{clinicTariffId}
+        where ct.clinic_id = #{orgId} and btbtc.tariffId = #{tariffId}
     </select>
     <!-- 根据条件查询门诊价目表信息列表 -->
     <select id="selectClinicTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicTariffVO">

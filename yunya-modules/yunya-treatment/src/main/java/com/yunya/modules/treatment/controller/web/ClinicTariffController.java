@@ -37,14 +37,15 @@ public class ClinicTariffController {
    * 根据门诊价目表ID获取门诊价目表信息
    *
    * @param orgId 组织ID
-   * @param id 门诊价目表ID
+   * @param tariffId 价目表ID
    * @return
    */
   @ApiOperation("根据门诊价目表ID获取信息")
-  @GetMapping("/one/{orgId}/{id}")
+  @GetMapping("/one/{orgId}/{tariffId}")
   public ResponseResult<ClinicTariffVO> findById(
-      @PathVariable(value = "orgId") Integer orgId, @PathVariable(value = "id") Integer id) {
-    ClinicTariffVO resultData = clinicTariffBiz.findById(orgId, id);
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "tariffId") Integer tariffId) {
+    ClinicTariffVO resultData = clinicTariffBiz.findById(orgId, tariffId);
     return ResponseUtil.success(resultData);
   }
 
