@@ -67,7 +67,9 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   public ResponseResult add(PatientOriginModel patientOriginModel) {
     PatientOrigin patientOrigin = new PatientOrigin();
     BeanUtils.copyProperties(patientOriginModel, patientOrigin);
-    patientOrigin.setLimitEndDate(getEndTimeOfDate(patientOrigin.getLimitEndDate()));
+    if (patientOrigin.getLimitEndDate() != null){
+      patientOrigin.setLimitEndDate(getEndTimeOfDate(patientOrigin.getLimitEndDate()));
+    }
     PatientOrigin patientOriginv =
         patientOriginMapper.findPatientOriginByName(patientOrigin.getName());
     if (patientOriginv != null) {
