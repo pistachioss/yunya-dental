@@ -25,7 +25,7 @@
 
     <!-- 查询充值记录 -->
     <select id="RechargeRecord" resultType="com.yunya.feign.patient_central.domain.vo.web.RechargeRecordVo">
-       SELECT
+        SELECT
             mrrd.id,
             date_format( mrrd.crt_time, '%Y-%m-%d %H:%i' ) operatingTime,
             mrrd.recharge_principal rechargePrincipal,
@@ -39,10 +39,7 @@
             mrrd.type
         FROM
             member_recharge_record mrrd
-        WHERE
-            mrrd.member_id = #{form.cardNumber}
-
-        ORDER BY
-            mrrd.crt_time DESC
+        where mrrd.member_id = #{form.cardNumber}
+        order by mrrd.crt_time desc
     </select>
 </mapper>

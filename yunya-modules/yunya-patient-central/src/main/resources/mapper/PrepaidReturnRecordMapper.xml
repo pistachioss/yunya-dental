@@ -43,8 +43,7 @@
           prepaid_return_record
       WHERE
           prepaid_id = #{form.prepaidId} and patient_id = #{form.patientId}
-      ORDER BY
-          crt_time DESC
+      ORDER BY crt_time DESC
   </select>
 
 </mapper>

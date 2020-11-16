@@ -10,10 +10,7 @@ import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 简介:报表中间表患者信息控制器
@@ -38,7 +35,7 @@ public class BasePatientController {
   @PostMapping("/operate")
   public ResponseResult<T> operate(@RequestBody @Validated MessageModel model) {
     basePatientBiz.operate(model);
-    return ResponseUtil.success(null);
+    return ResponseUtil.success();
   }
 
   /**
@@ -51,7 +48,7 @@ public class BasePatientController {
   @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
   public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
     basePatientBiz.pullPatientData(form);
-    return ResponseUtil.success(null);
+    return ResponseUtil.success();
   }
 
   /**
@@ -60,9 +57,23 @@ public class BasePatientController {
    * @param basePatient 患者消息
    * @return ResponseResult<T>
    */
+  @ApiOperation("修改患者信息")
   @PostMapping("/upd")
   public ResponseResult<T> upd(@RequestBody BasePatient basePatient) {
     basePatientBiz.upd(basePatient);
-    return ResponseUtil.success(null);
+    return ResponseUtil.success();
   }
+
+  /**
+   * 查询患者资料信息
+   * @param id 患者id
+   * @return BasePatient
+   */
+  @ApiOperation("查询患者资料信息")
+  @GetMapping("/patientInfo/{id}")
+  public ResponseResult<BasePatient> patientInfo(@PathVariable("id") Integer id) {
+    BasePatient basePatient = basePatientBiz.selectPatientInfo(id);
+    return ResponseUtil.success(basePatient);
+  }
+
 }

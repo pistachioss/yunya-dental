@@ -28,7 +28,7 @@ public class PrepaidRechargeRecordVo implements Serializable {
     /**
      * 操作时间
      */
-    private Date operatingTime;
+    private String operatingTime;
 
     /**
      * 充值本金

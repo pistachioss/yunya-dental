@@ -35,7 +35,7 @@ public class PrepaidExpendRecordModel implements Serializable {
     /**
      * 消费总额
      */
-    @ApiModelProperty(value = "消费总额",required = true)
+    @ApiModelProperty(value = "消费总额",required = false)
     private BigDecimal expendTotal;
 
     /**

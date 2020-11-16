@@ -91,7 +91,7 @@
         <include refid="Patient_Column_List"/>
         from patient_base_info where concat(IFNULL(name,''),
         IFNULL(medical_number,''),IFNULL(pinyin_name,''),IFNULL(mobile,'')) like
-        concat(concat('%',#{form.condition}),'%')
+        concat(concat('%',#{form.condition}),'%') LIMIT 0,10
     </select>
 
     <!-- 根据患者id集合查询患者list -->

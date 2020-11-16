@@ -47,6 +47,6 @@
         WHERE
             perd.prepaid_id = #{form.prepaidId} and perd.patient_id = #{form.patientId}
             and perd.inservice = 1
-            order by perd.crt_time desc
+        order by perd.crt_time desc
     </select>
 </mapper>
