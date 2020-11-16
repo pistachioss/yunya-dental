@@ -535,7 +535,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     ).collect(Collectors.toList());
         }
         // 如果不为空，则有内容过滤，返回过滤之后的结果
-        if (collect != null) {
+        if (StringHelper.isNotEmpty(collect)) {
             pageInfo.setList(collect);
         } else {
             pageInfo.setList(appointmentList);
