@@ -712,9 +712,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /**
    * 根据条件统计就诊列表数量
-   *
-   * @param orgId 组织ID
-   * @param queryDate 查询日期
+   * @param query 查询参数
    * @return
    */
   public Map<String, Integer> countTreatList(TreatmentCountQuery query) {
@@ -722,8 +720,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();
     queryForm.setWhetherPage(false);
     queryForm.setOrgId(query.getOrgId());
+    queryForm.setDentistId(query.getUserId());
     queryForm.setCurrentDate(query.getQueryDate());
-    queryForm.setUserId(query.getUserId());
     queryForm.setTreatmentStatus(new Byte[] {0});
     List<TreatmentPatientInfoVO> waitingForTreat = mapper.selectTreatingList(queryForm);
     queryForm.setTreatmentStatus(new Byte[] {1});

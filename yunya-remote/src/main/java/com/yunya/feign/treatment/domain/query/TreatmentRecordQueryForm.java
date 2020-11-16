@@ -36,9 +36,6 @@ public class TreatmentRecordQueryForm implements Serializable {
   @ApiModelProperty(value = "组织（门诊）ID", required = true)
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
-  @ApiModelProperty(value = "用户ID", required = true)
-  @NotNull(message = "用户ID不能为空")
-  private Integer userId;
 
   @ApiModelProperty(value = "查询日期(yyyy-MM-dd)", required = true)
   @NotBlank(message = "查询日期不能为空！")

@@ -137,26 +137,10 @@ public class TreatmentRecordController {
 
   /**
    * 查询门诊某天的就诊列表数量
-   *
-   * @param orgId 组织ID
-   * @param queryDate 查询日期
+   * @param query 查询
    * @return
    */
   @ApiOperation("就诊列表数量统计")
-  @ApiImplicitParams({
-    @ApiImplicitParam(
-        name = "orgId",
-        value = "组织ID",
-        required = true,
-        dataType = "int",
-        paramType = "path"),
-    @ApiImplicitParam(
-        name = "queryDate",
-        value = "查询日期（yyyy-MM-dd）",
-        required = true,
-        dataType = "String",
-        paramType = "path")
-  })
   @PostMapping(value = "/count", name = "就诊列表数量统计")
   public ResponseResult<Map<String, Integer>> count(@RequestBody TreatmentCountQuery query) {
     Map<String, Integer> resultMap = treatmentRecordBiz.countTreatList(query);
