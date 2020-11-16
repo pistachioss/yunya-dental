@@ -59,19 +59,14 @@ public class BillPayDetailRecordBiz
 
   /** 消息中间件调用 */
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
-
   /** 系统服务调用 */
   @Autowired private RemoteSystemServiceFeign systemServiceFeign;
-
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
-
   /** 收费记录 */
   @Autowired private BillPayRecordMapper billPayRecordMapper;
-
   /** 账单异常处理记录 */
   @Autowired private BillExceptionHandleRecordMapper billExceptionHandleRecordMapper;
-
   /** 账单异常处理详情记录 */
   @Autowired private BillExceptionHandleDetailRecordMapper billExceptionHandleDetailRecordMapper;
   /** 患者服务 */
@@ -306,6 +301,7 @@ public class BillPayDetailRecordBiz
 
   /**
    * 会员卡信息查询(患者档案-就诊记录-账单详情-收费信息-预付款/会员卡
+   *
    * @param query 查询参数
    * @return 返回会员账户信息
    */
@@ -318,28 +314,37 @@ public class BillPayDetailRecordBiz
     List<BillPayDetailRecord> billPayDetailRecords = mapper.select(payDetailRecord);
     List<PaymentRecordVO> paymentRecordVOS = new ArrayList<>();
     if (StringHelper.isNotEmpty(billPayDetailRecords)) {
-      billPayDetailRecords.forEach(billPayDetailRecord -> {
-        PaymentRecordVO paymentRecordVO = new PaymentRecordVO();
-        PaymentRecordDetailQuery queryParams = new PaymentRecordDetailQuery();
-        queryParams.setCardId(billPayDetailRecord.getRemark());
-        queryParams.setBillRecordId(billPayDetailRecord.getBillPayRecordId());
-        if (billPayDetailRecord.getType() == 1) {
-          MemberExpendRecord memberExpendRecord = remotePatientCentralServiceFeign.memberPaymentRecordDetail(queryParams);
-          paymentRecordVO.setCardNumber(billPayDetailRecord.getRemark());
-          paymentRecordVO.setPrincipalAmount(memberExpendRecord.getExpendPrincipal());
-          paymentRecordVO.setBonusAmount(memberExpendRecord.getExpendGift());
-
-        } else if (billPayDetailRecord.getType() == 0) {
-          PrepaidExpendRecord prepaidExpendRecord = remotePatientCentralServiceFeign.prePaidPaymentRecordDetail(queryParams);
-          paymentRecordVO.setCardNumber(billPayDetailRecord.getRemark());
-          paymentRecordVO.setPrincipalAmount(prepaidExpendRecord.getExpendPrincipal());
-          paymentRecordVO.setBonusAmount(prepaidExpendRecord.getExpendGift());
-        }
-        paymentRecordVOS.add(paymentRecordVO);
-      });
+      billPayDetailRecords.forEach(
+          billPayDetailRecord -> {
+            PaymentRecordVO paymentRecordVO = new PaymentRecordVO();
+            PaymentRecordDetailQuery queryParams = new PaymentRecordDetailQuery();
+            queryParams.setCardId(billPayDetailRecord.getRemark());
+            queryParams.setBillRecordId(billPayDetailRecord.getBillPayRecordId());
+            switch (billPayDetailRecord.getType()) {
+              case 1:
+                MemberExpendRecord memberExpendRecord =
+                    remotePatientCentralServiceFeign.memberPaymentRecordDetail(queryParams);
+                paymentRecordVO.setCardNumber(billPayDetailRecord.getRemark());
+                if (null != memberExpendRecord) {
+                  paymentRecordVO.setPrincipalAmount(memberExpendRecord.getExpendPrincipal());
+                  paymentRecordVO.setBonusAmount(memberExpendRecord.getExpendGift());
+                }
+                break;
+              case 0:
+                PrepaidExpendRecord prepaidExpendRecord =
+                    remotePatientCentralServiceFeign.prePaidPaymentRecordDetail(queryParams);
+                paymentRecordVO.setCardNumber(billPayDetailRecord.getRemark());
+                if (null != prepaidExpendRecord) {
+                  paymentRecordVO.setPrincipalAmount(prepaidExpendRecord.getExpendPrincipal());
+                  paymentRecordVO.setBonusAmount(prepaidExpendRecord.getExpendGift());
+                }
+                break;
+              default:
+                break;
+            }
+            paymentRecordVOS.add(paymentRecordVO);
+          });
     }
     return paymentRecordVOS;
   }
-
-
 }
