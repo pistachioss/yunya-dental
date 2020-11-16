@@ -41,7 +41,7 @@ public class AppointmentItemVo implements Serializable {
     private Integer appointTypeId;
 
     @ApiModelProperty("默认时长,单位分钟")
-    private Integer duration;
+    private String duration;
 
     @ApiModelProperty("是否启用 是否有效")
     private Boolean inservice;

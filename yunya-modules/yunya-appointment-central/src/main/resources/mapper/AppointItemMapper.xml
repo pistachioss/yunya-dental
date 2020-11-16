@@ -79,7 +79,7 @@
         item.name,
         atype.name as typeName,
         item.appoint_type_id as appointTypeId,
-        item.duration,
+        IFNULL(item.duration,'无') as duration,
         item.inservice,
         item.remarks
         from appoint_item item
