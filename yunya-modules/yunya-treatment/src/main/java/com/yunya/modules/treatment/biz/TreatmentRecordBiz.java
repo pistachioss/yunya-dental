@@ -98,7 +98,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (null == regResult || !regResult.getInservice()) {
       throw new ClientServiceException("接诊失败，您当前未选择接诊患者或传入参数有误！", QUERY_RESULT_INVALID);
     }
-
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    Integer dentistId = regResult.getDentistId();
+    if (!dentistId.equals(userId)) {
+      throw new ClientServiceException("接诊失败，当前挂号医生与接诊医生不是同一个人！", PARAMETERS_IS_ILLEGAL);
+    }
     String treatingKey = REDIS_KEY_TREATMENT_ING + regId;
     String treatingValue = redisUtils.get(treatingKey);
     if (StringHelper.isNotBlank(treatingValue)) {
@@ -128,7 +132,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         patientServiceFeign.updatePatientInfo(patientBaseInfo);
       }
     }
-    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     entity.setTreatStartTime(new Date(System.currentTimeMillis()));
     entity.setCrtId(userId);
