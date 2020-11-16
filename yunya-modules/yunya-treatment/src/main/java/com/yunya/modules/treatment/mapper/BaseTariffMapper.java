@@ -53,4 +53,18 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
    */
   List<BaseTariffAssociationExportVO> selectExportBaseTariffAssociationList(
       @Param("queryForm") BaseTariffAssociationQueryForm queryForm);
+
+  /**
+   * 批量插入价目表
+   * @param list 价目表列表
+   * @return 返回影响行数
+   */
+  int insertBaseItems(@Param("list") List<BaseTariff> list);
+
+  /**
+   * 批量更新价目表
+   * @param list 价目表列表
+   * @return 返回影响行数
+   */
+  int updateBaseItems(@Param("list") List<BaseTariff> list);
 }

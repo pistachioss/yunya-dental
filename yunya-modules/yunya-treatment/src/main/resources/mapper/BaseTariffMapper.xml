@@ -173,4 +173,140 @@
             </if>
         </where>
     </select>
+
+    <!-- 批量插入价目表 -->
+    <insert id="insertBaseItems" useGeneratedKeys="true" keyProperty="id">
+        insert into base_tariff
+        (tariff_category_id,item_number,`name`,pinyin,english_name,unit,price,adjust,achie,emr,attention,fellow_up,inservice,
+        crt_id,crt_name)
+        values
+        <foreach collection="list" item="obj" separator=",">
+            (#{obj.tariffCategoryId},#{obj.itemNumber},#{obj.name},#{obj.pinyin},#{obj.englishName},#{obj.unit},#{obj.price},
+            #{obj.adjust},#{obj.achie},#{obj.emr},#{obj.attention},#{obj.fellowUp},#{obj.inservice},#{obj.crtId},
+            #{obj.crtName})
+        </foreach>
+    </insert>
+
+    <!-- 批量更新价目表 -->
+    <update id="updateBaseItems" keyProperty="id" useGeneratedKeys="true">
+        update base_tariff
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="tariff_category_id=case" suffix="end,">
+                <foreach collection="list" item="obj" index="index">
+                    <if test="obj.tariffCategoryId != null">
+                        when id=#{obj.id} then #{obj.tariffCategoryId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="item_number=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.itemNumber != null and obj.itemNumber != ''">
+                        when id=#{obj.id} then #{obj.itemNumber}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.name != null and obj.name != ''">
+                        when id=#{obj.id} then #{obj.name}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="pinyin=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.pinyin != null and obj.pinyin=''">
+                        when id=#{obj.id} then #{obj.pinyin}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="english_name=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.englishName != null and obj.englishName=''">
+                        when id=#{obj.id} then #{obj.englishName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="unit=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.unit != null and obj.unit=''">
+                        when id=#{obj.id} then #{obj.unit}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="price=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.price != null">
+                        when id=#{obj.id} then #{obj.price}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="adjust=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.adjust != null and obj.adjust=''">
+                        when id=#{obj.id} then #{obj.adjust}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="achie=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.achie != null and obj.achie=''">
+                        when id=#{obj.id} then #{obj.achie}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="emr=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.emr != null and obj.emr=''">
+                        when id=#{obj.id} then #{obj.emr}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="attention=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.attention != null and obj.attention=''">
+                        when id=#{obj.id} then #{obj.attention}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="fellow_up=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.fellowUp != null and obj.fellowUp=''">
+                        when id=#{obj.id} then #{obj.fellowUp}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="inservice=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.inservice != null">
+                        when id=#{obj.id} then #{obj.inservice}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_id=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updId != null">
+                        when id=#{obj.id} then #{obj.updId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_name=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updName != null and obj.updName != ''">
+                        when id=#{obj.id} then #{obj.updName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_time=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updTime != null">
+                        when id=#{obj.id} then date_format(#{obj.updTime},'%Y-%m-%d %H:%m:%s')
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach collection="list" item="obj" open="(" separator="," close=")">
+            #{obj.id}
+        </foreach>
+    </update>
 </mapper>

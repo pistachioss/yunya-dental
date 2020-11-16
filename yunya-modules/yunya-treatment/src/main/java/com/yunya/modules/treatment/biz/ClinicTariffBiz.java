@@ -391,4 +391,13 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     }
     return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL, "参数错误", null);
   }
+
+  /**
+   * 批量插入数据
+   * @param list
+   */
+  public int insertEntities(List<ClinicTariff> list) {
+   return mapper.insertEntities(list);
+  }
+
 }

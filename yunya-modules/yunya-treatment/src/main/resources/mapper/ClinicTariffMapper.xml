@@ -244,4 +244,13 @@
             END
         </where>
     </select>
+
+    <!--  批量插入数据 -->
+    <insert id="insertEntities" useGeneratedKeys="true" keyProperty="id" parameterType="list">
+        insert into clinic_tariff (id,clinic_id,tariff_id,price,crt_id,crt_name)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.id},#{item.clinicId},#{item.tariffId},#{item.price},#{item.crtId},#{item.crtName})
+        </foreach>
+    </insert>
 </mapper>
