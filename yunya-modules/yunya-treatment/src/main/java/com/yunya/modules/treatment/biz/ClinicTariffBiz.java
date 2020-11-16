@@ -264,6 +264,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     entity.setTariffId(tariffId);
     ClinicTariff resultData = mapper.selectOne(entity);
     if (null == resultData) {
+      entity.setPrice(tariff.getPrice());
       entity.setInservice(false);
       entity.setCrtId(userId);
       entity.setCrtName(name);

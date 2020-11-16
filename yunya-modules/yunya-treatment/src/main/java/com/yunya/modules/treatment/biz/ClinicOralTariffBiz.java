@@ -268,6 +268,7 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     entity.setOralTariffId(oralTariffId);
     ClinicOralTariff resultData = mapper.selectOne(entity);
     if (null == resultData) {
+      entity.setPrice(oralTariff.getPrice());
       entity.setInservice(false);
       entity.setCrtId(userId);
       entity.setCrtName(name);
