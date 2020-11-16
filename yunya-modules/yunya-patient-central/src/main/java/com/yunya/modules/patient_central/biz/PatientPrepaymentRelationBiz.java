@@ -35,6 +35,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.yunya.framework.common.constant.BusinessConstants.*;
+
 /**
  * 简单介绍:</br> 患者预付款
  *
@@ -245,17 +247,23 @@ public class PatientPrepaymentRelationBiz
       PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
       BeanUtils.copyProperties(
           model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
+      if (prepaidRechargeRecord.getRechargeBonus() == null){
+        prepaidRechargeRecord.setRechargeBonus(new BigDecimal(0));
+      }
       prepaidRechargeTollRecord.setCreditAmount(prepaidRechargeRecord.getRechargePrincipal().add(prepaidRechargeRecord.getRechargeBonus()));
       prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
       prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
       prepaidRechargeTollRecord.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       prepaidRechargeTollRecord.setCrtName(BaseContextHandler.getName());
       prepaidRechargeTollRecordMapper.insertSelective(prepaidRechargeTollRecord);
-     /* if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null){
+      if (patientPrepaymentsInfo.getPatientId() != null && model.getCardId() != null){
         OwnCardActiveForm ownCardActiveForm = new OwnCardActiveForm();
         ownCardActiveForm.setCardId(model.getCardId());
-        remoteDiscountFeign.ownActiveCard(patientPrepaymentsInfo.getPatientId(),ownCardActiveForm);
-      }*/
+        ResponseResult result = remoteDiscountFeign.ownActiveCard(patientPrepaymentsInfo.getPatientId(), ownCardActiveForm);
+        if (!result.getStatus().equals(ZERO)) {
+          return result;
+        }
+      }
       // 发送消息 预付款充值
       sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 1);
     }

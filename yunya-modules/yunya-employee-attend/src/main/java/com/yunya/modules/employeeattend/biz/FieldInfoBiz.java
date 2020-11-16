@@ -4,6 +4,41 @@ import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.FieldInfoQueryForm;
 import com.yunya.feign.employee_attend.vo.FieldInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.employee_attend.EmployeeSchedule;
+import com.yunya.models.employee_attend.FieldInfo;
+import com.yunya.modules.employeeattend.form.FieldInfoForm;
+import com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper;
+import com.yunya.modules.employeeattend.mapper.FieldInfoMapper;
+import com.yunya.modules.employeeattend.vo.EmListVO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
+
+/**
+ * 简介:
+ * <$>
+ *
+ * @author: 杨柳絮
+ * @date: $ $
+ * @description:
+ * @since: 1.0.0
+ * @param: $
+ * @return: $
+import com.github.pagehelper.PageHelper;
+import com.yunya.feign.employee_attend.form.FieldInfoQueryForm;
+import com.yunya.feign.employee_attend.vo.FieldInfoVO;
+import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.models.employee_attend.FieldInfo;
 import com.yunya.modules.employeeattend.mapper.FieldInfoMapper;
 import org.springframework.stereotype.Service;
@@ -24,26 +59,109 @@ import java.util.List;
 @Transactional(rollbackFor = Exception.class)
 public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
 
-    /**
-     * 根据日期和用户id列表查询外勤列表
-     *
-     * @param userIds 用户id
-     * @param date 日期
-     * @return
-     */
-    public List<FieldInfoVO> findFieldInfosByUserIdAndDate(List<Integer> userIds, Date date) {
-        return mapper.findFieldInfosByUserIdAndDate(userIds,date);
-    }
+    @Autowired
+    private EmployeeScheduleBiz employeeScheduleBiz;
+    @Autowired
+    private EmployeeScheduleMapper employeeScheduleMapper;
 
-    /**
-     * 根据查询条件分页查询外勤列表
-     * @param queryForm 查询条件
-     * @return
-     */
-    public List<FieldInfoVO> findFieldInfoList(FieldInfoQueryForm queryForm) {
-        if (queryForm.getWhetherPage()) {
-            PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
+    public int create(FieldInfoForm fieldInfoForm) {
+        //没有其他类型的申请
+        if (true) {
+            FieldInfo field = new FieldInfo();
+            field.setUserId(fieldInfoForm.getUserId());
+            List<FieldInfo> fieldInfoList = mapper.findList(field);
+            boolean timeConflict = true;
+            //判断是否与同类型其他申请时间冲突
+            for (FieldInfo fie : fieldInfoList) {
+                if (fieldInfoForm.getStartTime().before(fie.getEndTime())
+                        && fieldInfoForm.getEndTime().after(fie.getStartTime())) {
+                    timeConflict = false;
+                }
+            }
+            //与同类型其他申请时间不冲突
+            if (timeConflict) {
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                String dateString = simpleDateFormat.format(fieldInfoForm.getStartTime());
+                String nowString = simpleDateFormat.format(new Date());
+                Date date = null;
+                Date now = new Date();
+                try {
+                    date = simpleDateFormat.parse(dateString);
+                    now = simpleDateFormat.parse(nowString);
+                } catch (ParseException e) {
+                    throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+                }
+                //必须提前一天申请
+                if (now.before(date)) {
+                    //获取申请外勤当天的排班信息
+                    EmployeeSchedule employeeSchedule = new EmployeeSchedule();
+                    employeeSchedule.setWorkDate(date);
+                    employeeSchedule.setEmployeeId(fieldInfoForm.getUserId());
+                    List<EmListVO> emlist = employeeScheduleMapper.findemList(employeeSchedule);
+                    //比较外勤开启以及结束时间是否在当天的排班时间内
+//                  SimpleDateFormat dateFormat = new SimpleDateFormat("hh:mm:ss");
+                    //只显示出时分秒
+                    DateFormat df = DateFormat.getTimeInstance();
+                    Boolean start = false;
+                    Boolean end = false;
+                    Date startTime = null;
+                    Date endTime = null;
+                    try {
+                        startTime = df.parse(df.format(fieldInfoForm.getStartTime()));
+                        endTime = df.parse(df.format(fieldInfoForm.getEndTime()));
+                    } catch (ParseException e) {
+                        throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+                    }
+                    for (EmListVO emListVO : emlist) {
+                        //判断外勤开始时间是否在班次时间内
+                        if (startTime.before(emListVO.getEndTime())
+                                && (startTime.after(emListVO.getStartTime()) || startTime.equals(emListVO.getStartTime()))
+                        ) {
+                            start = true;
+                        }
+                        //判断外勤结束时间是否在班次时间内
+                        if (endTime.after(emListVO.getStartTime())
+                                && (endTime.before(emListVO.getEndTime()) || endTime.equals(emListVO.getEndTime()))
+                        ) {
+                            end = true;
+                        }
+                    }
+                    //若外勤开始时间和结束时间都在班次时间段内才能进行外勤申请
+                    if (start && end) {
+                        FieldInfo fieldInfo = new FieldInfo();
+                        BeanUtils.copyProperties(fieldInfoForm, fieldInfo);
+                        fieldInfo.setCrtId(fieldInfoForm.getUserId());
+                        fieldInfo.setUpdTime(new Date());
+                        return mapper.insert(fieldInfo);
+                    }
+                    throw new ClientServiceException("外勤申请的开始时间以及结束时间应在当天班次时间段内", INSERT_MODEL);
+                }
+                throw new ClientServiceException("不可以申请当天及以前的申请事项", INSERT_MODEL);
+            }
         }
-        return mapper.findFieldInfoList(queryForm);
+        throw new ClientServiceException("该申请与其他外勤申请时间冲突", INSERT_MODEL);
     }
+        /**
+         * 根据日期和用户id列表查询外勤列表
+         *
+         * @param userIds 用户id
+         * @param date 日期
+         * @return
+         */
+        public List<FieldInfoVO> findFieldInfosByUserIdAndDate (List < Integer > userIds, Date date){
+            return mapper.findFieldInfosByUserIdAndDate(userIds, date);
+        }
+
+        /**
+         * 根据查询条件分页查询外勤列表
+         * @param queryForm 查询条件
+         * @return
+         */
+        public List<FieldInfoVO> findFieldInfoList(FieldInfoQueryForm queryForm){
+            if (queryForm.getWhetherPage()) {
+                PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+            }
+            return mapper.findFieldInfoList(queryForm);
+        }
 }
+

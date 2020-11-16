@@ -1,5 +1,6 @@
 package com.yunya.modules.patient_central.biz;
 
+import cn.hutool.core.lang.Assert;
 import com.yunya.feign.patient_central.domain.form.PatientOriginForm;
 import com.yunya.feign.patient_central.domain.model.PatientOriginModel;
 import com.yunya.feign.patient_central.domain.query.OriginTypeQueryForm;
@@ -30,10 +31,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * 简单介绍:</br> 患者来源业务层
@@ -68,6 +67,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
   public ResponseResult add(PatientOriginModel patientOriginModel) {
     PatientOrigin patientOrigin = new PatientOrigin();
     BeanUtils.copyProperties(patientOriginModel, patientOrigin);
+    patientOrigin.setLimitEndDate(getEndTimeOfDate(patientOrigin.getLimitEndDate()));
     PatientOrigin patientOriginv =
         patientOriginMapper.findPatientOriginByName(patientOrigin.getName());
     if (patientOriginv != null) {
@@ -95,6 +95,18 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
     }
     return ResponseUtil.success();
   }
+
+
+  public static Date getEndTimeOfDate(Date endDate) {
+    Calendar calendar = Calendar.getInstance();
+    calendar.setTime(endDate);
+    calendar.set(Calendar.HOUR_OF_DAY, 23);
+    calendar.set(Calendar.MINUTE, 59);
+    calendar.set(Calendar.SECOND, 59);
+    calendar.set(Calendar.MILLISECOND, 59);
+    Date endTime = calendar.getTime();
+    return endTime;
+    }
 
   /**
    * 查询患者来源树状结构列表
@@ -222,9 +234,7 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
       while (PatientOriginIterator.hasNext()) {
         PatientOrigin origin = PatientOriginIterator.next();
         if (origin.getTimeLimit() == 1) {
-          if (DateUtil.isEffectiveDate(
-                  new Date(), origin.getLimitStartDate(), origin.getLimitEndDate())
-              == false) {
+          if (!DateUtil.isEffectiveDate(new Date(), origin.getLimitStartDate(), origin.getLimitEndDate())) {
             PatientOriginIterator.remove(); // 使用迭代器的删除方法删除
           }
         }

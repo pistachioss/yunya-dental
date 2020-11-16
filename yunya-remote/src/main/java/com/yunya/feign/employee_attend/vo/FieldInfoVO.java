@@ -41,10 +41,6 @@ public class FieldInfoVO implements Serializable {
     @ApiModelProperty(value = "结束时间")
     private Date endTime;
 
-    /** 外勤时长 */
-    @ApiModelProperty(value = "外勤时长")
-    private Integer fieldTime;
-
     /** 外勤原因 */
     @ApiModelProperty(value = "外勤原因")
     private Integer fieldReason;
