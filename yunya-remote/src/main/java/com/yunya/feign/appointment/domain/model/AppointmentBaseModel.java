@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
+import org.hibernate.validator.constraints.Length;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
@@ -96,10 +97,12 @@ public class AppointmentBaseModel implements Serializable {
 
     /** 预约内容 */
     @ApiModelProperty(value = "预约内容")
+    @Length(max = 500,message = "预约内容不能超过500个字符")
     private String appointContent;
 
     /** 备注 */
     @ApiModelProperty(value = "备注")
+    @Length(max = 500,message = "预约内容不能超过500个字符")
     private String remarks;
 
     /** 时长分解列表 */
