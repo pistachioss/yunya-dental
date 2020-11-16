@@ -668,8 +668,13 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void billRefund(MemberBillRechargeModel model) {
     PatientMemberInfo patientMemberInfo = patientMemberInfoMapper.selectOneByCardNumber(model.getMemberId());
     if (patientMemberInfo != null){
-      patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
-      patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
+
+      if (model.getRechargePrincipal() != null){
+        patientMemberInfo.setPrincipalAmount(patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
+      }
+      if (model.getRechargeBonus() != null){
+        patientMemberInfo.setBonusAmount(patientMemberInfo.getBonusAmount().add(model.getRechargeBonus()));
+      }
       patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
       MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
       BeanUtils.copyProperties(model,memberRechargeRecord);
