@@ -35,6 +35,7 @@
         bill_record br
       WHERE br.org_id = #{orgId} AND DATE_FORMAT(br.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d')
     </select>
+    
     <!-- 根据开单记录ID查询订单支付记录列表信息 -->
     <select id="selectBillPayRecord" resultType="com.yunya.feign.treatment.domain.vo.BillPayRecordVO">
       SELECT
@@ -51,12 +52,13 @@
     </select>
 
     <!-- 通过患者ID批量查询患者欠费总额 -->
-    <select id="selectPatientDebtAmountList" parameterType="list" resultType="com.yunya.feign.treatment.domain.model.DebtAmountModel">
+    <select id="selectPatientDebtAmountList" parameterType="list"
+            resultType="com.yunya.feign.treatment.domain.model.DebtAmountModel">
         SELECT
-            br.patient_id as patientId,
-            SUM( br.debt_amount ) AS debtAmount
+        br.patient_id as patientId,
+        SUM( br.debt_amount ) AS debtAmount
         FROM
-            `bill_record` br
+        `bill_record` br
         <where>
             <if test="patientIds != null and patientIds.size &gt; 0">
                 br.patient_id in
@@ -66,6 +68,18 @@
             </if>
         </where>
         GROUP BY
-            br.patient_id
+        br.patient_id
+    </select>
+
+    <!-- 根据患者ID查询患者账单统计数据 -->
+    <select id="selectPatientBillStatistics"
+            resultType="com.yunya.feign.treatment.domain.vo.PatientBillStatistics">
+        select
+            sum (br.receivable_amount) as billTotalOriginalPrice,
+            sum (br.privilege_amount) as billTotalPrivilegePrice,
+            sum (br.actual_receivable_amount) as billTotalActualPrice,
+            sum (br.received_amount) as billTotalArrears
+        from bill_record br
+        where br.patient_id = #{patientId}
     </select>
 </mapper>
