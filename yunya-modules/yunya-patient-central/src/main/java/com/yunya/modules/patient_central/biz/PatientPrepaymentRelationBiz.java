@@ -245,6 +245,9 @@ public class PatientPrepaymentRelationBiz
       PrepaidRechargeTollRecord prepaidRechargeTollRecord = new PrepaidRechargeTollRecord();
       BeanUtils.copyProperties(
           model.getPrepaidRechargeTollRecordModel(), prepaidRechargeTollRecord);
+      if (prepaidRechargeRecord.getRechargeBonus() == null){
+        prepaidRechargeRecord.setRechargeBonus(new BigDecimal(0));
+      }
       prepaidRechargeTollRecord.setCreditAmount(prepaidRechargeRecord.getRechargePrincipal().add(prepaidRechargeRecord.getRechargeBonus()));
       prepaidRechargeTollRecord.setRechargeRecordId(prepaidRechargeRecord.getId());
       prepaidRechargeTollRecord.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
