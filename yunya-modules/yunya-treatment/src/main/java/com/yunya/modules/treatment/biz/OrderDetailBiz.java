@@ -320,6 +320,11 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             ClinicTariff clinicTariff = clinicTariffBiz.selectOne(tariff);
             if (null != clinicTariff) {
               price = clinicTariff.getPrice();
+            } else {
+              BaseTariff baseTariff = baseTariffBiz.selectById(itemId);
+              if (null != baseTariff) {
+                price = baseTariff.getPrice();
+              }
             }
             break;
           case 1:
@@ -328,6 +333,11 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             ClinicOralTariff clinicOralTariff = clinicOralTariffBiz.selectOne(oralTariff);
             if (null != clinicOralTariff) {
               price = clinicOralTariff.getPrice();
+            } else {
+              BaseOralTariff baseOralTariff = baseOralTariffBiz.selectById(itemId);
+              if (null != baseOralTariff) {
+                price = baseOralTariff.getPrice();
+              }
             }
             break;
           default:
