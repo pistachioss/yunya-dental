@@ -2,7 +2,9 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.system.MemberType;
@@ -12,6 +14,7 @@ import com.yunya.modules.system.domain.query.MemberTypeQueryForm;
 import com.yunya.modules.system.mapper.MemberTypeMapper;
 import com.yunya.modules.system.vo.MemberTypeVO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +34,10 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_R
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
+
+  /** 患者服务 */
+  @Autowired
+  private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
   /**
    * 根据ID查询会员卡类型信息
@@ -109,7 +116,10 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
    * @param id 会员卡类型ID
    */
   public void deleteMemberTypeById(Integer id) {
-    // todo 校验是否被关联（调患者feign）
+    boolean b = patientCentralServiceFeign.memberInfoCount(id);
+    if (b) {
+      throw new ClientServiceException("该类型会员卡正在使用中,不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
+    }
     mapper.deleteByPrimaryKey(id);
   }
 }
