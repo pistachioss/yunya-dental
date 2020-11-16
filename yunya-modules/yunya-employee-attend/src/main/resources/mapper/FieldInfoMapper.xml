@@ -23,7 +23,6 @@
     select
         t.id,
         t.user_id as userId,
-        t.field_time as fieldTime,
         t.field_reason as fieldReason,
         t.field_address as fieldAddress,
         t.start_time as startTime,

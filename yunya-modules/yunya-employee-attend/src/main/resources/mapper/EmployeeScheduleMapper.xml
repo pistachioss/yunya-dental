@@ -153,7 +153,7 @@
     where es.id = #{id}
   </select>
 
-  <select id="findRestEmployeeScheduleListInDate" resultType="com.yunya.models.employee_attend.BaseSchedule">
+  <select id="findRestEmployeeScheduleListInDate" resultType="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO">
     select
         bs.name,
         bs.type,
@@ -166,14 +166,14 @@
     from base_schedule bs left join employee_schedule es on bs.id=es.schedule_id
     where es.inservice = 1 and bs.inservice and type='休息'
     <if test="userId != null">
-        and es.user_id = #{userId}
+        and es.employee_id = #{userId}
     </if>
     <if test="startDate!=null and endDate!=null">
-        and DATE_FORMATE(es.work_date,'%y-%m-%d') between DATE_FORMATE(#{startDate},'%y-%m-%d') and DATE_FORMATE(#{endDate},'%y-%m-%d')
+        and DATE_FORMAT(es.work_date,'%y-%m-%d') between DATE_FORMAT(#{startDate},'%y-%m-%d') and DATE_FORMAT(#{endDate},'%y-%m-%d')
     </if>
   </select>
 
-  <select id="selectInIds" resultType="com.yunya.models.employee_attend.EmployeeScheduleVO">
+  <select id="selectInIds" resultType="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO">
     select
       es.id,
       es.employee_id,

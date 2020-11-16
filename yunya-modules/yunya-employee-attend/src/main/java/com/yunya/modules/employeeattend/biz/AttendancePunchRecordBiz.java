@@ -369,7 +369,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
         queryForm.setPunchDate(date);
         queryForm.setUserId(userId);
-        queryForm.setPunchStatusList(new Byte[]{0,1,2,3});
+//        queryForm.setPunchStatusList(new Byte[]{0,1,2,3});
         List<AttendancePunchRecordVO> attendancePunchRecordVOS = mapper.findAttendancePunchRecordList(queryForm);
         List<AttendancePunchItemVO> attendancePunchItemVOS = new ArrayList<>(5);
         AttendancePunchRecordVO firstPunchRecord = null;
@@ -382,8 +382,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 lastPunchRecord = attendancePunchRecordVO;
             }
         }
-        attendancePunchItemVOS.add(createPunchItem(firstPunchRecord));
-        attendancePunchItemVOS.add(createPunchItem(lastPunchRecord));
+        if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
+            attendancePunchItemVOS.add(createPunchItem(firstPunchRecord));
+            attendancePunchItemVOS.add(createPunchItem(lastPunchRecord));
+        }
         long[] computeValue = compute(firstPunchRecord,lastPunchRecord);
         result.setWorkLength(computeValue[0]);
         result.setPunchCount((int) computeValue[1]);
@@ -399,16 +401,29 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      */
     private long[] compute(AttendancePunchRecordVO firstPunchRecord, AttendancePunchRecordVO lastPunchRecord) {
         long[] result = new long[2];
+        if (firstPunchRecord == null || lastPunchRecord == null) {
+            return result;
+        }
         Byte firstIsPunch = firstPunchRecord.getIsPunch();
         Byte lastIsPunch = lastPunchRecord.getIsPunch();
         if (firstIsPunch == 0) {// 上班未打卡，则0;
             return result;
         }
         long workLength = 0;
-        long length = lastPunchRecord.getPunchTime().getTime()-firstPunchRecord.getPunchTime().getTime();
+        Date punchTime = lastPunchRecord.getPunchTime();
+        long startTime = 0;
+        if (punchTime != null) {
+            startTime = punchTime.getTime();
+        }
+        long length = startTime - firstPunchRecord.getPunchTime().getTime();
         long punchCount = 2;
+        punchTime = firstPunchRecord.getPunchTime();
+        long endTime = 0;
+        if (punchTime != null) {
+            endTime = punchTime.getTime();
+        }
         if (lastIsPunch == 0) {// 下班未打卡，待确认
-            length = firstPunchRecord.getEndTime().getTime()-firstPunchRecord.getPunchTime().getTime();
+            length = firstPunchRecord.getEndTime().getTime() - endTime;
             punchCount = 1;
         }
         workLength = DateUtil.micro2Min(length);
@@ -459,7 +474,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         // 打卡记录
         AttendancePunchRecordQueryForm recordQueryForm = new AttendancePunchRecordQueryForm();
         recordQueryForm.setUserId(userId);
-        recordQueryForm.setPunchStatusList(new Byte[]{0,1,2,3});
+//        recordQueryForm.setPunchStatusList(new Byte[]{0,1,2,3});
         recordQueryForm.setBetweenDate(firstDate);
         recordQueryForm.setAndDate(endDate);
         List<AttendancePunchRecordVO> attendancePunchRecordVOS = mapper.findAttendancePunchRecordList(recordQueryForm);
@@ -514,50 +529,52 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             } else {
                 attendanceCalendarInfoVO.setName("缺卡");
                 attendanceCalendarInfoVO.setType(exception);
+                employeeScheduleVOS.forEach(restVO -> {
+                    Date workDate = restVO.getWorkDate();
+                    if (date.compareTo(workDate) == 0) {
+                        attendanceCalendarInfoVO.setName("休息");
+                        attendanceCalendarInfoVO.setType(normal);
+                    }
+                });
             }
-            employeeScheduleVOS.forEach(restVO -> {
-                Date workDate = restVO.getWorkDate();
-                if (date.compareTo(workDate) == 0) {
-                    attendanceCalendarInfoVO.setName("休息");
-                    attendanceCalendarInfoVO.setType(normal);
-                }
-            });
             String state = stateMap.get(date);
-            switch (state) {
-                case "正常":{
-                    attendanceCalendarInfoVO.setName("正常");
-                    attendanceCalendarInfoVO.setType(normal);
-                    break;
+            if (StringHelper.isNotEmpty(state)) {
+                switch (state) {
+                    case "正常": {
+                        attendanceCalendarInfoVO.setName("正常");
+                        attendanceCalendarInfoVO.setType(normal);
+                        break;
+                    }
+                    case "迟到": {
+                        attendanceCalendarInfoVO.setName("迟到");
+                        attendanceCalendarInfoVO.setType(exception);
+                        break;
+                    }
+                    case "早退": {
+                        attendanceCalendarInfoVO.setName("早退");
+                        attendanceCalendarInfoVO.setType(exception);
+                        break;
+                    }
+                    case "缺卡": {
+                        attendanceCalendarInfoVO.setName("缺卡");
+                        attendanceCalendarInfoVO.setType(exception);
+                        break;
+                    }
+                    case "请假": {
+                        attendanceCalendarInfoVO.setName("请假");
+                        attendanceCalendarInfoVO.setType(exception);
+                        break;
+                    }
+                    case "外勤": {
+                        attendanceCalendarInfoVO.setName("外勤");
+                        attendanceCalendarInfoVO.setType(exception);
+                        break;
+                    }
+                    default:
                 }
-                case "迟到":{
-                    attendanceCalendarInfoVO.setName("迟到");
-                    attendanceCalendarInfoVO.setType(exception);
-                    break;
-                }
-                case "早退":{
-                    attendanceCalendarInfoVO.setName("早退");
-                    attendanceCalendarInfoVO.setType(exception);
-                    break;
-                }
-                case "缺卡":{
-                    attendanceCalendarInfoVO.setName("缺卡");
-                    attendanceCalendarInfoVO.setType(exception);
-                    break;
-                }
-                case "请假":{
-                    attendanceCalendarInfoVO.setName("请假");
-                    attendanceCalendarInfoVO.setType(exception);
-                    break;
-                }
-                case "外勤":{
-                    attendanceCalendarInfoVO.setName("外勤");
-                    attendanceCalendarInfoVO.setType(exception);
-                    break;
-                }
-                default:
             }
             Integer count = unPunchCount.get(date);
-            if (2 == count) {
+            if (count!=null && 2==count) {
                 attendanceCalendarInfoVO.setName("旷工");
                 attendanceCalendarInfoVO.setType(exception);
             }
@@ -1135,5 +1152,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             count = 0;
         }
         nums.put(userId, orgId, ++count);
+    }
+
+    @Override
+    public void insertSelective(AttendancePunchRecord entity) {
+        mapper.insertSelective(entity);
     }
 }

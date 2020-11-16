@@ -8,12 +8,16 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.employeeattend.controller.AttendancePunchRecordController;
 import com.yunya.modules.employeeattend.controller.BaseScheduleController;
 import com.yunya.modules.employeeattend.form.ScheduleForm;
+import org.joda.time.Days;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import zipkin2.Call;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -54,6 +58,28 @@ public class AttendancePunchRecordControllerTest {
         queryForm.setLongitude("");
         queryForm.setLatitude("");
         ResponseResult result = attendancePunchRecordController.punchInfo(queryForm);
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @Test
+    public void testPunchRecordByDate() throws ParseException {
+        BaseContextHandler.setUserID("569");
+        Date date = new SimpleDateFormat("yyyy-MM-dd").parse("2020-11-12");
+//        ResponseResult result = attendancePunchRecordController.punchRecordByDate(date);
+//        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @Test
+    public void testPunchRecordCalendarByMonth() {
+        BaseContextHandler.setUserID("569");
+        ResponseResult result = attendancePunchRecordController.punchRecordCalendarByMonth("2020-11-12");
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @Test
+    public void testPunchRecordByMonth() {
+        BaseContextHandler.setUserID("569");
+        ResponseResult result = attendancePunchRecordController.punchRecordByMonth("2020-11-12");
         System.out.println(JSONObject.toJSON(result));
     }
 
