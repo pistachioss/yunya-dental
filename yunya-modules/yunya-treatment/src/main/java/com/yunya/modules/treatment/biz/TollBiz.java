@@ -449,43 +449,43 @@ public class TollBiz {
       List<PatientItemBenefitVo> benefitVos = benefitVo.getItemList();
       if (StringHelper.isNotEmpty(benefitVos)) {
         for (OrderDetail detail : orderDetails) {
+          OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
+          detailPayRecord.setOrgId(orgId);
+          detailPayRecord.setPatientId(patientId);
+          detailPayRecord.setTreatmentRecordId(treatmentRecordId);
+          detailPayRecord.setOrderRecordId(orderRecordId);
+          Integer detailId = detail.getId();
+          detailPayRecord.setOrderDetailId(detailId);
+          detailPayRecord.setBillRecordId(billRecordId);
+          BigDecimal receivableAmount = detail.getReceivableAmount();
+          detailPayRecord.setReceivableAmount(receivableAmount);
+          BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+          BigDecimal actualAmount = receivableAmount;
           for (PatientItemBenefitVo vo : benefitVos) {
-            OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
-            detailPayRecord.setOrgId(orgId);
-            detailPayRecord.setPatientId(patientId);
-            detailPayRecord.setTreatmentRecordId(treatmentRecordId);
-            detailPayRecord.setOrderRecordId(orderRecordId);
-            Integer detailId = detail.getId();
-            detailPayRecord.setOrderDetailId(detailId);
-            detailPayRecord.setBillRecordId(billRecordId);
-            BigDecimal receivableAmount = detail.getReceivableAmount();
-            detailPayRecord.setReceivableAmount(receivableAmount);
-            BigDecimal privilegeAmount = BigDecimal.valueOf(0);
             Integer orderDetailId = vo.getOrderDetailId();
-            BigDecimal actualAmount = receivableAmount;
             if (detailId.equals(orderDetailId)) {
               privilegeAmount = vo.getItemBenefitAmount();
               actualAmount = receivableAmount.subtract(privilegeAmount);
             }
-            detailPayRecord.setPrivilegeAmount(privilegeAmount);
-            detailPayRecord.setActualReceivable(actualAmount);
-            // 设置已收
-            if (totalCharge.compareTo(actualAmount) >= 0) {
-              detailPayRecord.setReceivedAmount(actualAmount);
-              totalCharge = totalCharge.subtract(actualAmount);
-            } else {
-              detailPayRecord.setReceivedAmount(totalCharge);
-              totalCharge = BigDecimal.valueOf(0);
-            }
-            detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
-            Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-            detailPayRecord.setCrtId(userId);
-            String name = BaseContextHandler.getName();
-            detailPayRecord.setCrtName(name);
-            detailPayRecord.setUpdId(userId);
-            detailPayRecord.setUpdName(name);
-            orderDetailPayRecordBiz.insertSelective(detailPayRecord);
           }
+          detailPayRecord.setPrivilegeAmount(privilegeAmount);
+          detailPayRecord.setActualReceivable(actualAmount);
+          // 设置已收
+          if (totalCharge.compareTo(actualAmount) >= 0) {
+            detailPayRecord.setReceivedAmount(actualAmount);
+            totalCharge = totalCharge.subtract(actualAmount);
+          } else {
+            detailPayRecord.setReceivedAmount(totalCharge);
+            totalCharge = BigDecimal.valueOf(0);
+          }
+          detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
+          Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+          detailPayRecord.setCrtId(userId);
+          String name = BaseContextHandler.getName();
+          detailPayRecord.setCrtName(name);
+          detailPayRecord.setUpdId(userId);
+          detailPayRecord.setUpdName(name);
+          orderDetailPayRecordBiz.insertSelective(detailPayRecord);
         }
       } else {
         throw new ClientServiceException("收费失败，当前选择卡券未匹配任何优惠！", PARAMETERS_IS_ILLEGAL);
@@ -553,43 +553,43 @@ public class TollBiz {
         accreditDiscount.getAccreditDiscountDetailModels();
     if (StringHelper.isNotEmpty(orderDetails)) {
       for (OrderDetail detail : orderDetails) {
+        OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
+        detailPayRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+        detailPayRecord.setPatientId(orderRecord.getPatientId());
+        detailPayRecord.setTreatmentRecordId(orderRecord.getTreatmentRecordId());
+        detailPayRecord.setOrderRecordId(orderRecordId);
+        Integer detailId = detail.getId();
+        detailPayRecord.setOrderDetailId(detailId);
+        detailPayRecord.setBillRecordId(billRecordId);
+        BigDecimal receivableAmount = detail.getReceivableAmount();
+        detailPayRecord.setReceivableAmount(receivableAmount);
+        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+        BigDecimal actualAmount = receivableAmount;
         for (AccreditDiscountDetailModel discountDetailModel : discountDetailModels) {
-          OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
-          detailPayRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-          detailPayRecord.setPatientId(orderRecord.getPatientId());
-          detailPayRecord.setTreatmentRecordId(orderRecord.getTreatmentRecordId());
-          detailPayRecord.setOrderRecordId(orderRecordId);
-          Integer detailId = detail.getId();
-          detailPayRecord.setOrderDetailId(detailId);
-          detailPayRecord.setBillRecordId(billRecordId);
-          BigDecimal receivableAmount = detail.getReceivableAmount();
-          detailPayRecord.setReceivableAmount(receivableAmount);
-          BigDecimal privilegeAmount = BigDecimal.valueOf(0);
           Integer orderDetailId = discountDetailModel.getOrderDetailId();
-          BigDecimal actualAmount = receivableAmount;
           if (detailId.equals(orderDetailId)) {
             actualAmount = discountDetailModel.getActualAmount();
             privilegeAmount = receivableAmount.subtract(actualAmount);
           }
-          detailPayRecord.setPrivilegeAmount(privilegeAmount);
-          detailPayRecord.setActualReceivable(actualAmount);
-          // 设置已收
-          if (totalCharge.compareTo(actualAmount) >= 0) {
-            detailPayRecord.setReceivedAmount(actualAmount);
-            totalCharge = totalCharge.subtract(actualAmount);
-          } else {
-            detailPayRecord.setReceivedAmount(totalCharge);
-            totalCharge = BigDecimal.valueOf(0);
-          }
-          detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
-          Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
-          detailPayRecord.setCrtId(userId);
-          String name = BaseContextHandler.getName();
-          detailPayRecord.setCrtName(name);
-          detailPayRecord.setUpdId(userId);
-          detailPayRecord.setUpdName(name);
-          orderDetailPayRecordBiz.insertSelective(detailPayRecord);
         }
+        detailPayRecord.setPrivilegeAmount(privilegeAmount);
+        detailPayRecord.setActualReceivable(actualAmount);
+        detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
+        // 设置已收
+        if (totalCharge.compareTo(actualAmount) >= 0) {
+          detailPayRecord.setReceivedAmount(actualAmount);
+          totalCharge = totalCharge.subtract(actualAmount);
+        } else {
+          detailPayRecord.setReceivedAmount(totalCharge);
+          totalCharge = BigDecimal.valueOf(0);
+        }
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        detailPayRecord.setCrtId(userId);
+        String name = BaseContextHandler.getName();
+        detailPayRecord.setCrtName(name);
+        detailPayRecord.setUpdId(userId);
+        detailPayRecord.setUpdName(name);
+        orderDetailPayRecordBiz.insertSelective(detailPayRecord);
       }
     }
   }

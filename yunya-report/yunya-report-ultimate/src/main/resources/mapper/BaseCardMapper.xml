@@ -264,7 +264,7 @@
 
     <select id="listCouponActiveByParam" resultType="com.yunya.feign.report.domain.vo.CouponActiveDetailVo">
         select
-            date_format(`bc`.`active_date`, '%Y-%m-%d') as `activeDate`,,
+            date_format(`bc`.`active_date`, '%Y-%m-%d') as `activeDate`,
             (select
                 `abbreviation`
              from `base_organization`
