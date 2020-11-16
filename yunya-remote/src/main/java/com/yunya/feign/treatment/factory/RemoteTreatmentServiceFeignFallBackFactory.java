@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment.factory;
 
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
@@ -130,6 +131,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
 
   @Override
   public List<OrderDetail> findOrderDetailByOrderRecordId(Integer orderRecordId) {
+    return null;
+  }
+
+  @Override
+  public List<DebtAmountModel> findDebtAmountList(List<Integer> patientIds) {
     return null;
   }
 }

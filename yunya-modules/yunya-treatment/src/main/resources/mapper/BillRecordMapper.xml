@@ -49,4 +49,23 @@
         bill_pay_record bpr
       WHERE bpr.inservice = 1 and bpr.order_record_id = #{orderRecordId}
     </select>
+
+    <!-- 通过患者ID批量查询患者欠费总额 -->
+    <select id="selectPatientDebtAmountList" parameterType="list" resultType="com.yunya.feign.treatment.domain.model.DebtAmountModel">
+        SELECT
+            br.patient_id as patientId,
+            SUM( br.debt_amount ) AS debtAmount
+        FROM
+            `bill_record` br
+        <where>
+            <if test="patientIds != null and patientIds.size &gt; 0">
+                br.patient_id in
+                <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
+                    #{patientId}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+            br.patient_id
+    </select>
 </mapper>

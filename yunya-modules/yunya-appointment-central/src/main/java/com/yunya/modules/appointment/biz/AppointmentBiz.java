@@ -25,6 +25,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -535,7 +536,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     ).collect(Collectors.toList());
         }
         // 如果不为空，则有内容过滤，返回过滤之后的结果
-        if (collect != null) {
+        if (StringHelper.isNotEmpty(collect)) {
             pageInfo.setList(collect);
         } else {
             pageInfo.setList(appointmentList);
@@ -2131,8 +2132,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             build.setAppointContent("--");
         }
 
-        // 欠费金额 服务还没做，先空着，后面补上 TODO
-
+        // 欠费金额
+        List<Integer> patientIds = new ArrayList<>();
+        patientIds.add(patientId);
+        List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
+        if (StringHelper.isNotEmpty(debtAmountList)) {
+            build.setArrears(debtAmountList.get(0).getDebtAmount());
+        }
         return build;
     }
 

@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment;
 
+import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.tariff.*;
@@ -234,4 +235,12 @@ public interface RemoteTreatmentServiceFeign {
   @RequestMapping(value = "/rpc/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
   List<OrderDetail> findOrderDetailByOrderRecordId(
       @PathVariable(value = "orderRecordId") Integer orderRecordId);
+
+  /**
+   * 通过患者ID批量查询患者欠费总额
+   * @param patientIds 患者ID
+   * @return 返回患者欠费集合
+   */
+  @RequestMapping(value = "/rpc/patient/debt/amount", method = RequestMethod.POST)
+  List<DebtAmountModel> findDebtAmountList(@RequestBody List<Integer> patientIds);
 }

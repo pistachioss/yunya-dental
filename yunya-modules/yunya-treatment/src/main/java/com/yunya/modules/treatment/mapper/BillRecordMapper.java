@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
 import com.yunya.models.treatment.BillRecord;
 import org.apache.ibatis.annotations.Param;
@@ -26,4 +27,11 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @return
    */
   List<BillPayRecordVO> selectBillPayRecord(@Param("orderRecordId") Integer orderRecordId);
+
+  /**
+   * 通过患者ID批量查询患者欠费总额
+   * @param patientIds 患者ID集合
+   * @return 返回欠费总额集合
+   */
+  List<DebtAmountModel> selectPatientDebtAmountList(@Param("patientIds") List<Integer> patientIds);
 }
