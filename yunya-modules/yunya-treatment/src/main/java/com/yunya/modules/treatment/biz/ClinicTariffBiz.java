@@ -93,6 +93,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    * @return
    */
   public PageInfo<ClinicTariffVO> findList(ClinicTariffQueryForm queryForm) {
+    PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
@@ -101,6 +102,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     form.setTariffCategoryId(queryForm.getTariffCategoryId());
     form.setKeyWord(queryForm.getKeyWord());
     List<BaseTariffVO> baseTariffs = baseTariffMapper.selectBaseTariffList(form);
+    pageInfo = new PageInfo(baseTariffs);
     List<ClinicTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseTariffs)) {
       baseTariffs.forEach(
@@ -140,8 +142,11 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
               });
         }
       }
+      pageInfo.setList(resultList);
+    } else {
+      pageInfo.setList(new ArrayList());
     }
-    return new PageInfo<>(resultList);
+    return pageInfo;
   }
 
   /**
@@ -264,6 +269,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     entity.setTariffId(tariffId);
     ClinicTariff resultData = mapper.selectOne(entity);
     if (null == resultData) {
+      entity.setPrice(tariff.getPrice());
       entity.setInservice(false);
       entity.setCrtId(userId);
       entity.setCrtName(name);
@@ -390,4 +396,13 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     }
     return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL, "参数错误", null);
   }
+
+  /**
+   * 批量插入数据
+   * @param list
+   */
+  public int insertEntities(List<ClinicTariff> list) {
+   return mapper.insertEntities(list);
+  }
+
 }

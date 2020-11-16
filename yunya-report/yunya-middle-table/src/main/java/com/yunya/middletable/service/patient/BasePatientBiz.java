@@ -169,4 +169,20 @@ public class BasePatientBiz extends BaseBiz<BasePatientMapper, BasePatient> {
   public void upd(BasePatient basePatient) {
     mapper.updateByPrimaryKeySelective(basePatient);
   }
+
+  /**
+   * 查询患者质料信息
+   *
+   * @param id 患者id
+   * @return BasePatient
+   */
+  public BasePatient selectPatientInfo(Integer id) {
+    BasePatient basePatient = new BasePatient();
+    basePatient.setPatientId(id);
+    BasePatient basePatientVO = mapper.selectOne(basePatient);
+    if (basePatient != null) {
+      return basePatientVO;
+    }
+    return null;
+  }
 }

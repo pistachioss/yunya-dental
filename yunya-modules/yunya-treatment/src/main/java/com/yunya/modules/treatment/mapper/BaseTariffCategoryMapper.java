@@ -26,4 +26,11 @@ public interface BaseTariffCategoryMapper extends Mapper<BaseTariffCategory> {
    */
   List<BaseTariffCategoryVO> selectBaseTariffCategoryList(
       @Param("queryForm") BaseTariffCategoryQueryForm queryForm);
+
+  /**
+   * 批量添加价目表分类列表
+   * @param list
+   * @return
+   */
+  Integer insertBaseTariffCategoryList(@Param("list") List<BaseTariffCategory> list);
 }

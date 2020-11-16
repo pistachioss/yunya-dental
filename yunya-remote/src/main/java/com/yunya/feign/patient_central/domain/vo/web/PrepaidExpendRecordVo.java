@@ -30,7 +30,7 @@ public class PrepaidExpendRecordVo implements Serializable {
     /**
      * 操作时间
      */
-    private Date operatingTime;
+    private String operatingTime;
 
     /**
      * 消费本金

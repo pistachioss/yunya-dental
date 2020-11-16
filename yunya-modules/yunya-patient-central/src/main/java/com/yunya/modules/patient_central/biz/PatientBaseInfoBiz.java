@@ -112,7 +112,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (patientPublicInfoVo != null && patientPublicInfoVo.getMemberTypeId() != null) {
       MemberType memberType =
           this.remoteSystemServiceFeign.findMemberTypeById(patientPublicInfoVo.getMemberTypeId());
-      if (memberType.getName() != null) {
+      if (memberType != null) {
         patientPublicInfoVo.setMemberCardName(memberType.getName());
       }
     }

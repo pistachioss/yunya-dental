@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -74,6 +75,7 @@ public class CustomerRegistrationModel implements Serializable {
      */
     @ApiModelProperty(value = "患者来源关联ID",required = false)
     private Integer originId;
+
 
     /**
      * 推荐来源id

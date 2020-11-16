@@ -40,6 +40,7 @@ public class TollController {
    * @param query 匹配条件
    * @return
    */
+  @CurrentUser
   @ApiOperation("匹配订单列表优惠信息")
   @PostMapping(value = "/privilege/match", name = "匹配订单列表优惠信息")
   public ResponseResult<List<OrderDetailChargeVO>> matchOrderTailPrivilegeList(

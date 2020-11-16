@@ -54,4 +54,11 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
    * @return
    */
   List<BaseCategoryInfoVO> selectBaseOralTariffList(@Param("search") String search);
+
+  /**
+   * 批量插入数据
+   * @param list 数据集合
+   * @return 返回影响行数
+   */
+  int insertEntities(@Param("list") List<ClinicTariff> list);
 }

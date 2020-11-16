@@ -757,6 +757,7 @@ public class TollBiz {
         if (null == memberTypeId && StringHelper.isEmpty(discountInfoModels)) {
           throw new ClientServiceException("当前未选择任何卡券！", PARAMETERS_IS_ILLEGAL);
         }
+        break;
       case 2:
         Integer warrantId = accreditDiscountModel.getWarrantId();
         SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
@@ -772,6 +773,7 @@ public class TollBiz {
         } else {
           throw new ClientServiceException("授权人不存在！", PARAMETERS_IS_ILLEGAL);
         }
+        break;
       default:
         break;
     }

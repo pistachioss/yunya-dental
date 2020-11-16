@@ -212,12 +212,8 @@ public class AppointmentController {
   @PostMapping("/find/list")
   public ResponseResult<PageInfo<AppointmentListItemVo>> findAppointmentListByExample(
       @RequestBody @Validated AppointListQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(), query.getPageSize());
-    }
-    List<AppointmentListItemVo> appointmentList =
+    PageInfo<AppointmentListItemVo> pageInfo =
         appointmentBiz.findAppointmentListByExample(query);
-    PageInfo<AppointmentListItemVo> pageInfo = new PageInfo<>(appointmentList);
     return ResponseUtil.success(pageInfo);
   }
 
