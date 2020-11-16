@@ -469,6 +469,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         AppointmentQuery appointmentQuery = new AppointmentQuery();
         appointmentQuery.setAppointDate(query.getAppointDate());
         appointmentQuery.setOrgId(query.getOrgId());
+        appointmentQuery.setAppointType(query.getAppointType());
         if (query.getWhetherPage()) {
             PageHelper.startPage(query.getPageNum(), query.getPageSize());
         }
@@ -484,15 +485,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 || !StringHelper.isEmpty(query.getDentistName())
                 || !StringHelper.isEmpty(query.getMedicalNumber())
                 || !StringHelper.isEmpty(query.getSearch())){
-            Byte appointType = query.getAppointType();
             collect = appointmentList.stream()
                     .filter(
                             appointmentListItemVo -> {
                                 boolean result = false;
-                                // 按预约类型检索
-                                if (query.getAppointType() != null && (query.getAppointType() == 0 || query.getAppointType() == 1)){
-                                    result = appointmentListItemVo.getAppointType().equals(query.getAppointType());
-                                }
                                 // 按病历号检索
                                 if (!StringHelper.isEmpty(query.getMedicalNumber())){
                                     String medicalNumber = appointmentListItemVo.getMedicalNumber();
