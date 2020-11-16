@@ -73,7 +73,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   /** 基础价目表 */
   @Autowired private BaseTariffBiz baseTariffBiz;
   /** 挂号 */
-  @Autowired private RegisteredBiz registeredBiz;
+  @Autowired private RegisteredMapper registeredMapper;
   /** 开单 */
   @Autowired private OrderRecordMapper orderRecordMapper;
   /** 开单明细 */
@@ -91,7 +91,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   public void startTreatment(TreatmentModel model) {
     Integer regId = model.getRegId();
     Byte postType = model.getPostType();
-    Registered regResult = registeredBiz.selectById(regId);
+    Registered regResult = registeredMapper.selectByPrimaryKey(regId);
     if (null == regResult || !regResult.getInservice()) {
       throw new ClientServiceException("接诊失败，您当前未选择接诊患者或传入参数有误！", QUERY_RESULT_INVALID);
     }
@@ -156,7 +156,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     regResult.setStatus((byte) 1);
     regResult.setUpdId(userId);
     regResult.setUpdName(name);
-    registeredBiz.updateSelectiveById(regResult);
+    registeredMapper.updateByPrimaryKeySelective(regResult);
     // todo 发送消息更新患者数据
     if (i > 0) {
       if (null != appointmentId) {
@@ -353,7 +353,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    */
   private void setRegisteredInfo(TreatmentPatientInfoVO vo) {
     Integer registeredId = vo.getRegisteredId();
-    Registered registered = registeredBiz.selectById(registeredId);
+    Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
     if (null != registered) {
       Integer regDentistId = registered.getDentistId();
       vo.setRegDentistId(regDentistId);
@@ -563,7 +563,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                       visitRecord.setOrgId(treatmentRecord.getOrgId());
                       visitRecord.setTreatmentDate(treatmentRecord.getTreatStartTime());
                       Registered registered =
-                          registeredBiz.selectById(treatmentRecord.getRegisteredId());
+                          registeredMapper.selectByPrimaryKey(treatmentRecord.getRegisteredId());
                       if (null != registered) {
                         visitRecord.setDentistId(registered.getDentistId());
                         visitRecord.setDeptRoomId(registered.getDeptRoomId());
@@ -712,28 +712,45 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /**
    * 根据条件统计就诊列表数量
+   *
    * @param query 查询参数
    * @return
    */
   public Map<String, Integer> countTreatList(TreatmentCountQuery query) {
     Map<String, Integer> resultMap = new HashMap<>(16);
+
+    Integer orgId = query.getOrgId();
+    Integer userId = query.getUserId();
+    String queryDate = query.getQueryDate();
+    // 查询就诊中列表
+    RegisteredQueryForm regQuery = new RegisteredQueryForm();
+    regQuery.setWhetherPage(false);
+    regQuery.setOrgId(orgId);
+    regQuery.setCurrentDate(queryDate);
+    regQuery.setDentistId(userId);
+    List<WaitingPatientInfoVO> waitingForTreat =
+        registeredMapper.selectRegisteredList((byte) 0, regQuery);
+
     TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();
     queryForm.setWhetherPage(false);
-    queryForm.setOrgId(query.getOrgId());
-    queryForm.setDentistId(query.getUserId());
-    queryForm.setCurrentDate(query.getQueryDate());
+    queryForm.setOrgId(orgId);
+    queryForm.setDentistId(userId);
+    queryForm.setCurrentDate(queryDate);
+    // 就诊中
     queryForm.setTreatmentStatus(new Byte[] {0});
-    List<TreatmentPatientInfoVO> waitingForTreat = mapper.selectTreatingList(queryForm);
-    queryForm.setTreatmentStatus(new Byte[] {1});
     List<TreatmentPatientInfoVO> treatReceiving = mapper.selectTreatingList(queryForm);
+    // 接诊完成
     queryForm.setTreatmentStatus(new Byte[] {2});
     List<TreatmentPatientInfoVO> treatCompleted = mapper.selectTreatingList(queryForm);
+    // 已结账
     queryForm.setTreatmentStatus(new Byte[] {3});
     List<TreatmentPatientInfoVO> treatmentPatientInfos = mapper.selectTreatingList(queryForm);
+    // 预约未到数量
     AppointmentCurrentListQuery form = new AppointmentCurrentListQuery();
     form.setWhetherPage(false);
-    form.setOrgId(query.getOrgId());
-    form.setCurrentDate(query.getQueryDate());
+    form.setOrgId(orgId);
+    form.setDentistId(userId);
+    form.setCurrentDate(queryDate);
     Integer appointNotArrived = appointmentFeign.countAppointNotArrived(form);
     resultMap.put("appointNotArrived", appointNotArrived);
     resultMap.put("waitingForTreat", waitingForTreat.size());
