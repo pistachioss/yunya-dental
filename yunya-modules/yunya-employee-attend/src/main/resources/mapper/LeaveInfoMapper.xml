@@ -68,8 +68,8 @@
       <if test="queryForm.userId!=null">
         and t.user_id = #{queryForm.userId}
       </if>
-      <if test="date != null">
-        and DATE_FORMAT(t.start_time,'yyyy-MM-dd') between DATE_FORMAT(#{queryForm.betweenDate},'%y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%y-%m-%d')
+      <if test="queryForm.betweenStartDate!= null and queryForm.andStartDate!=null">
+        and DATE_FORMAT(t.start_time,'%y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%y-%m-%d') and DATE_FORMAT(#{queryForm.andStartDate},'%y-%m-%d')
       </if>
     </where>
     order by start_time asc

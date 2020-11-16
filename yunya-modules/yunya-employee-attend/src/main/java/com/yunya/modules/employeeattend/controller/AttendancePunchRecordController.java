@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -94,7 +96,13 @@ public class AttendancePunchRecordController {
     @ApiImplicitParam(value = "该月的某一天，例如2020-11-01")
     @GetMapping("/punchRecordByDate/{date}")
     @CurrentUser
-    public ResponseResult<AttendancePunchInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotNull Date date) {
+    public ResponseResult<AttendancePunchInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotNull String dateStr) {
+        Date date = null;
+        try {
+            date = new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
         AttendancePunchInfoVO attendancePunchInfoVO = attendancePunchRecordBiz.punchRecordByDate(date);
         return ResponseUtil.success(attendancePunchInfoVO);
     }

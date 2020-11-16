@@ -80,11 +80,11 @@ public class AttendancePunchRecordVO implements Serializable {
 
     /** 打卡经度 */
     @ApiModelProperty(value = "打卡经度")
-    private Integer longitude;
+    private String longitude;
 
     /** 打卡纬度 */
     @ApiModelProperty(value = "打卡纬度")
-    private Integer latitude;
+    private String latitude;
 
     /** 打卡地址（或者wifi名称） */
     @ApiModelProperty(value = "打卡地址（或者wifi名称）")
