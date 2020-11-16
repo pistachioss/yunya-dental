@@ -38,7 +38,7 @@
         </foreach>
       </if>
       <if test="date != null">
-        and DATE_FORMAT(t.work_date,'%y-%m-%d') = #{date}
+        and DATE_FORMAT(t.work_date,'%y-%m-%d') = DATE_FORMAT(#{date},'%y-%m-%d')
       </if>
     </where>
       order by bs.first_start_time asc

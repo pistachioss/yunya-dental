@@ -312,7 +312,7 @@ public class SystemServiceRest {
    * @param model 查询条件
    * @return
    */
-  @RequestMapping(value = "/userWithOrg/list")
+  @RequestMapping(value = "/userWithOrg/list", method = RequestMethod.POST)
   public List<SysUserInfoDetail> findUserDetailWithOrgList(@RequestBody SysUserEmployeeModel model) {
     SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
     BeanUtils.copyProperties(model, from);

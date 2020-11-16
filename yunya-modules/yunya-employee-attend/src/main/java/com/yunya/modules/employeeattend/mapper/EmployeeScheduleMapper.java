@@ -87,11 +87,12 @@ public interface EmployeeScheduleMapper extends Mapper<EmployeeSchedule> {
    * 根据日期范围查询指定员工的休息排班信息
    *
    * @param userId
+   * @param type
    * @param startDate
    * @param endDate
    * @return
    */
-  List<EmployeeScheduleVO> findRestEmployeeScheduleListInDate(@Param("userId") Integer userId, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
+  List<EmployeeScheduleVO> findEmployeeScheduleListInDate(@Param("userId") Integer userId, @Param("type") String type, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
   /**
    * 根据主键id列表查询员工排班信息

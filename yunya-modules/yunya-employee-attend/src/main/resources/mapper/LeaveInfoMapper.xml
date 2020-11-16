@@ -43,7 +43,7 @@
           </foreach>
       </if>
       <if test="date != null">
-          and DATE_FORMAT(t.start_time,'%y-%m-%d') &lt;= #{date} and DATE_FORMAT(t.end_time,'%y-%m-%d') &gt;= #{date}
+          and DATE_FORMAT(t.start_time,'%y-%m-%d') &lt;= DATE_FORMAT(#{date},'%y-%m-%d') and DATE_FORMAT(t.end_time,'%y-%m-%d') &gt;= DATE_FORMAT(#{date},'%y-%m-%d')
       </if>
     </where>
     order by start_time asc
@@ -70,6 +70,9 @@
       </if>
       <if test="queryForm.betweenStartDate!= null and queryForm.andStartDate!=null">
         and DATE_FORMAT(t.start_time,'%y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%y-%m-%d') and DATE_FORMAT(#{queryForm.andStartDate},'%y-%m-%d')
+      </if>
+      <if test="queryForm.vacationStatus != null">
+        and vs.vacation_status = #{queryForm.vacationStatus}
       </if>
     </where>
     order by start_time asc

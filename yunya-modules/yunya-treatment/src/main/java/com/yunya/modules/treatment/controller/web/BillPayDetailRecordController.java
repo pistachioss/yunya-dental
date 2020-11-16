@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.controller.web;
 
-import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.BillPayDetailForm;
 import com.yunya.feign.treatment.domain.query.PaymentRecordQuery;
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
@@ -67,10 +66,18 @@ public class BillPayDetailRecordController {
     return ResponseUtil.success(null);
   }
 
+  /**
+   * 会员卡信息查询(患者档案-就诊记录-账单详情-收费信息-预付款/会员卡
+   *
+   * @param query 查询条件
+   * @return
+   */
   @ApiOperation("会员卡信息查询(患者档案-就诊记录-账单详情-收费信息-预付款/会员卡")
   @GetMapping(value = "/member/account")
-  public ResponseResult memberAccountInfo(PaymentRecordQuery query) {
-    List<PaymentRecordVO> memberAccountVOList = billPayDetailRecordBiz.memberAccountPaymentRecordInfo(query);
+  public ResponseResult<List<PaymentRecordVO>> memberAccountInfo(
+      @RequestBody @Validated PaymentRecordQuery query) {
+    List<PaymentRecordVO> memberAccountVOList =
+        billPayDetailRecordBiz.memberAccountPaymentRecordInfo(query);
     return ResponseUtil.success(memberAccountVOList);
   }
 }

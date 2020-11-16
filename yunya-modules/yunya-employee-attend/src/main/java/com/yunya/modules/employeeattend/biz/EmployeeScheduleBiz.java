@@ -678,12 +678,13 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
      * 根据日期范围查询指定员工的休息排班信息
      *
      * @param userId
+     * @param type
      * @param startDate
      * @param endDate
      * @return
      */
-    public List<EmployeeScheduleVO> findRestEmployeeScheduleListInDate(Integer userId, Date startDate, Date endDate) {
-        return mapper.findRestEmployeeScheduleListInDate(userId, startDate, endDate);
+    public List<EmployeeScheduleVO> findEmployeeScheduleListInDate(Integer userId, String type, Date startDate, Date endDate) {
+        return mapper.findEmployeeScheduleListInDate(userId, type, startDate, endDate);
     }
 
     /**

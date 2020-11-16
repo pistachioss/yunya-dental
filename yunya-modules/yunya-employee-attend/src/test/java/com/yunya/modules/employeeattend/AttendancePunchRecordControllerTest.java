@@ -3,6 +3,7 @@ package com.yunya.modules.employeeattend;
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordForm;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
+import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.employeeattend.controller.AttendancePunchRecordController;
@@ -80,6 +81,15 @@ public class AttendancePunchRecordControllerTest {
     public void testPunchRecordByMonth() {
         BaseContextHandler.setUserID("569");
         ResponseResult result = attendancePunchRecordController.punchRecordByMonth("2020-11-12");
+        System.out.println(JSONObject.toJSON(result));
+    }
+
+    @Test
+    public void testStatisticsPunchRecord() {
+        BaseContextHandler.setUserID("569");
+        AttendanceStatisticsQueryForm queryForm = new AttendanceStatisticsQueryForm();
+        queryForm.setDate("2020-11-16");
+        ResponseResult result = attendancePunchRecordController.statisticsPunchRecord(queryForm);
         System.out.println(JSONObject.toJSON(result));
     }
 

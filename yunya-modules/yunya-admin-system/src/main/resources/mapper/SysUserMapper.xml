@@ -371,8 +371,8 @@
                     #{item}
                 </foreach>
             </if>
-            <if test="queryForm.workStatus != null and queryForm.workStatus.length > 0">
-                and t2.workStatus in
+            <if test="queryForm.workStatus!=null and queryForm.workStatus.length>0">
+                and t2.work_status in
                 <foreach collection="queryForm.workStatus" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>

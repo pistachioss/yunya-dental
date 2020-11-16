@@ -177,10 +177,33 @@ public class DateUtil {
 
     /**
      * 毫秒转分钟
-     * @param restMinute
+     * @param timeStamp
      * @return
      */
-    public static Long micro2Min(Long restMinute) {
-        return restMinute/60000;
+    public static Long micro2Min(Long timeStamp) {
+        return timeStamp / 60000;
+    }
+
+
+    /**
+     * 毫秒转小时分钟或者分钟
+     * @param timeStamp
+     * @return
+     */
+    public static String micro2HourMin(Long timeStamp) {
+        long min = micro2Min(timeStamp);
+        long hours = (long) Math.floor(min / 60);
+        long minute = min % 60;
+        String result = "";
+        if (hours >0) {
+            result = hours + "小时";
+        }
+        if (minute > 0) {
+            result += minute + "分钟";
+        }
+        if (StringHelper.isEmpty(result)) {
+            result = "0分钟";
+        }
+        return result;
     }
 }
