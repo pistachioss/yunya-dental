@@ -5,6 +5,7 @@ package com.yunya.modules.employeeattend.mapper;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 
+import com.yunya.modules.employeeattend.vo.EmListVO;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleCopyVO;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
 import org.apache.ibatis.annotations.Param;
@@ -75,6 +76,12 @@ public interface EmployeeScheduleMapper extends Mapper<EmployeeSchedule> {
    * @return
    */
   BaseSchedule selectBaseScheduleById(@Param("id") Integer id);
+  /**
+   * 获取当天的全部排班
+   * @param employeeSchedule
+   * @return
+   */
+  List<EmListVO> findemList(EmployeeSchedule employeeSchedule);
 
   /**
    * 根据日期范围查询指定员工的休息排班信息
@@ -84,7 +91,7 @@ public interface EmployeeScheduleMapper extends Mapper<EmployeeSchedule> {
    * @param endDate
    * @return
    */
-  List<EmployeeScheduleVO> findRestEmployeeScheduleListInDate(@Param("userId") Integer userId, @Param("startDate") Date startDate, @Param("firstDate") Date endDate);
+  List<EmployeeScheduleVO> findRestEmployeeScheduleListInDate(@Param("userId") Integer userId, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
 
   /**
    * 根据主键id列表查询员工排班信息

@@ -6,10 +6,15 @@ import com.yunya.models.employee_attend.FieldInfo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.List;
+
 import java.util.Date;
 import java.util.List;
 
 public interface FieldInfoMapper extends Mapper<FieldInfo> {
+
+    public List<FieldInfo> findList(FieldInfo fieldInfo);
+
     /**
      * 根据日期和用户id列表查询外勤列表
      *
