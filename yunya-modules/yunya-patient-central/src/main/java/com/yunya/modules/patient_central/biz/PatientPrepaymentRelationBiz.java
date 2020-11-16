@@ -536,8 +536,13 @@ public class PatientPrepaymentRelationBiz
     public void billRefund(PrepaidBillRechargeModel model) {
       PatientPrepaymentsInfo patientPrepaymentsInfo = patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidId());
       if (patientPrepaymentsInfo != null){
-        patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
-        patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(model.getRechargeBonus()));
+
+        if (model.getRechargePrincipal() != null){
+          patientPrepaymentsInfo.setPrepaymentPrincipal(patientPrepaymentsInfo.getPrepaymentPrincipal().add(model.getRechargePrincipal()));
+        }
+        if (model.getRechargeBonus() != null){
+          patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(model.getRechargeBonus()));
+        }
         patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
         PrepaidRechargeRecord prepaidRechargeRecord = new PrepaidRechargeRecord();
         BeanUtils.copyProperties(model,prepaidRechargeRecord);
