@@ -108,6 +108,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (StringHelper.isNotBlank(treatingValue)) {
       throw new ClientServiceException("接诊失败，当前挂号正在被操作，请稍后再试！", SAME_DATA_EXIST);
     }
+    int count = mapper.selectCountByRegisteredId(regId);
+    if (count > 0) {
+      throw new ClientServiceException("接诊失败，该挂号已被接诊，无法再次接诊！", DATA_EXIST);
+    }
     redisUtils.set(treatingKey, regId, 5);
 
     TreatmentRecord entity = new TreatmentRecord();
@@ -136,11 +140,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     entity.setTreatStartTime(new Date(System.currentTimeMillis()));
     entity.setCrtId(userId);
     entity.setCrtName(name);
-
-    int count = mapper.selectCountByRegisteredId(regId);
-    if (count > 0) {
-      throw new ClientServiceException("接诊失败，该挂号已被接诊，无法再次接诊！", DATA_EXIST);
-    }
 
     int i = mapper.insertSelective(entity);
     redisUtils.delete(treatingKey);
