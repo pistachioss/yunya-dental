@@ -18,6 +18,12 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+  <select id="findList" resultType="com.yunya.models.employee_attend.FieldInfo">
+  select * from field_info where apprpval_status in (0,1,2)
+    <if test="userId !=null and userId != ''">
+      and user_id = #{userId}
+    </if>
+  </select>
 
   <select id="findFieldInfosByUserIdAndDate" resultType="com.yunya.feign.employee_attend.vo.FieldInfoVO">
     select

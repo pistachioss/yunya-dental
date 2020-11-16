@@ -108,6 +108,17 @@
     order by es.work_date
   </select>
 
+  <select id="findemList" resultType="com.yunya.modules.employeeattend.vo.EmListVO">
+    select es.employee_id,es.clinic_id,es.work_date ,es.schedule_id  ,bs.type,bs.first_start_time startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime from employee_schedule es
+    left join base_schedule bs on es.schedule_id = bs.id
+    where
+    es.work_date = #{workDate} and es.employee_id = #{employeeId}
+    <if test="clinicId != null">
+      and es.clinic_id = #{clinicId}
+    </if>
+    order by es.work_date
+  </select>
+
   <select id="selectEmployeeScheduleVOByDateAndCompEmpId" resultMap="EmployeeScheduleVOResultMap">
     select
         es.id,

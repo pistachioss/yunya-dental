@@ -695,4 +695,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     public List<EmployeeScheduleVO> selectInIds(List<Integer> ids) {
         return mapper.selectInIds(ids);
     }
+
+
+
 }
