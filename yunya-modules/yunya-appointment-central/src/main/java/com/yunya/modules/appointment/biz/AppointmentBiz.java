@@ -488,20 +488,30 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             collect = appointmentList.stream()
                     .filter(
                             appointmentListItemVo -> {
+                                int icount = 0;
                                 boolean result = false;
                                 // 按病历号检索
                                 if (!StringHelper.isEmpty(query.getMedicalNumber())){
                                     String medicalNumber = appointmentListItemVo.getMedicalNumber();
                                     if (StringHelper.isNotEmpty(medicalNumber)) {
                                         result = result | medicalNumber.equals(query.getMedicalNumber());
+                                        icount++;
                                     }
                                 }
                                 // 按预约医生检索
                                 if (!StringHelper.isEmpty(query.getDentistName())) {
-                                    result = result | appointmentListItemVo.getDentistName().equals(query.getDentistName());
+                                    if (icount == 1 && !result) {
+                                        return false;
+                                    } else {
+                                        result = result | appointmentListItemVo.getDentistName().equals(query.getDentistName());
+                                    }
+                                    icount++;
                                 }
                                 // 按姓名/手机号/姓名拼音
                                 if (!StringHelper.isEmpty(query.getSearch())){
+                                    if (icount == 2 && !result) {
+                                        return false;
+                                    }
                                     // 检索值
                                     String search = query.getSearch();
                                     String mobile = appointmentListItemVo.getMobile();
