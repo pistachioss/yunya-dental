@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -121,6 +122,7 @@ public class ClinicDepartmentRoomBiz
     List<ClinicDepartmentRoomVO> resultList = Lists.newArrayList();
     Integer deptRoomId = queryForm.getDeptRoomId();
     DepartmentRoom departmentRoom = departmentRoomMapper.selectByPrimaryKey(deptRoomId);
+    PageInfo pageInfo;
     if (null != departmentRoom) {
       if (queryForm.getWhetherPage()) {
         PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
@@ -128,6 +130,7 @@ public class ClinicDepartmentRoomBiz
       OrganizationQueryForm form = new OrganizationQueryForm();
       form.setTypes(new Byte[] {2});
       List<OrganizationInfoVO> organizations = companyMapper.selectOrganizationByExample(form);
+      pageInfo = new PageInfo<>(organizations);
       if (StringHelper.isNotEmpty(organizations)) {
         organizations.forEach(
             vo -> {
@@ -140,8 +143,11 @@ public class ClinicDepartmentRoomBiz
               }
             });
       }
+    } else {
+      pageInfo = new PageInfo(new ArrayList());
     }
-    return new PageInfo<>(resultList);
+    pageInfo.setList(resultList);
+    return pageInfo;
   }
 
   /**

@@ -27,9 +27,23 @@
 
     <!-- 预付款充值记录查询 -->
     <select id="RechargeRecord" resultType="com.yunya.feign.patient_central.domain.vo.web.PrepaidRechargeRecordVo">
-      select prrd.id id,date_format(prrd.crt_time,'%Y-%m-%d %H:%i') operatingTime,prrd.recharge_principal rechargePrincipal,prrd.recharge_bonus rechargeBonus,
-             prrd.org_id orgId,prrd.crt_id operatorId,prrd.crt_name operatorName,prtrd.payment_id paymentId,prtrd.remarks remarks,recharge_type rechargeType,prrd.recharge_card_number rechargeCardNumber
-      from prepaid_recharge_record prrd join prepaid_recharge_toll_record prtrd on prrd.id = prtrd.recharge_record_id
-      where prrd.prepaid_id = #{form.prepaidId}  order by prrd.crt_time desc
+      SELECT
+            prrd.id id,
+            date_format(prrd.crt_time, '%Y-%m-%d %H:%i' ) operatingTime,
+            prrd.recharge_principal rechargePrincipal,
+            prrd.recharge_bonus rechargeBonus,
+            prrd.org_id orgId,
+            prrd.crt_id operatorId,
+            prrd.crt_name operatorName,
+            prtrd.payment_id paymentId,
+            prtrd.remarks remarks,
+            recharge_type rechargeType,
+            prrd.recharge_card_number rechargeCardNumber
+        FROM
+            prepaid_recharge_record prrd
+            JOIN prepaid_recharge_toll_record prtrd ON prrd.id = prtrd.recharge_record_id
+        WHERE
+            prrd.prepaid_id = #{form.prepaidId}
+        order by prrd.crt_time desc
     </select>
 </mapper>

@@ -255,10 +255,10 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       if (memberRelation != null) {
         Integer relationId =
             patientMemberRelationMapper.selectMemberRelationId(
-                memberRelation.getSecondaryCardId(), memberRelation.getMasterCardId());
+                memberRelation.getSecondaryCardId(), memberRelation.getMasterCardId(),1);
         if (relationId != null) {
           this.patientMemberRelationMapper.deleteMemberRelation(
-              memberRelation.getSecondaryCardId(), memberRelation.getMasterCardId());
+              memberRelation.getSecondaryCardId(), memberRelation.getMasterCardId(),1);
           // 发送会员关联删除消息
           remoteRabbitMqServiceFeign.sendMessage(
               relationId, 0, 2, MsgCategoryEnum.BasePatientMemberRelation);

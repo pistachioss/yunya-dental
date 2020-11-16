@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -108,6 +109,7 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
   public PageInfo<ClinicAccountItemVO> configure(ClinicAccountItemConfigureQueryForm queryForm) {
     Integer accountItemId = queryForm.getAccountItemId();
     List<ClinicAccountItemVO> resultList = Lists.newArrayList();
+    PageInfo pageInfo;
     // todo 从缓存中查询
     AccountItem accountItem = accountItemMapper.selectByPrimaryKey(accountItemId);
     if (null != accountItem) {
@@ -117,6 +119,7 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
       OrganizationQueryForm form = new OrganizationQueryForm();
       form.setTypes(new Byte[] {0, 2});
       List<OrganizationInfoVO> organizations = companyMapper.selectOrganizationByExample(form);
+      pageInfo = new PageInfo(organizations);
       if (StringHelper.isNotEmpty(organizations)) {
         organizations.forEach(
             vo -> {
@@ -128,9 +131,12 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
                 resultList.add(item);
               }
             });
+        pageInfo.setList(resultList);
       }
+    } else {
+      pageInfo = new PageInfo(new ArrayList());
     }
-    return new PageInfo<>(resultList);
+    return pageInfo;
   }
 
   /**

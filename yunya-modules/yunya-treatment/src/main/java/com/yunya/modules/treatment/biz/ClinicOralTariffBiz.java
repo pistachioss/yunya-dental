@@ -95,6 +95,7 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
    * @return
    */
   public PageInfo<ClinicOralTariffVO> findList(ClinicOralTariffQueryForm queryForm) {
+    PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
@@ -103,6 +104,7 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
     form.setOralTariffCategoryId(queryForm.getOralTariffCategoryId());
     form.setKeyWord(queryForm.getKeyWord());
     List<BaseOralTariffVO> baseOralTariffs = baseOralTariffMapper.selectBaseOralTariffList(form);
+    pageInfo = new PageInfo(baseOralTariffs);
     List<ClinicOralTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseOralTariffs)) {
       baseOralTariffs.forEach(
@@ -142,8 +144,11 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
               });
         }
       }
+      pageInfo.setList(resultList);
+    } else {
+      pageInfo.setList(new ArrayList());
     }
-    return new PageInfo<>(resultList);
+    return pageInfo;
   }
 
   /**

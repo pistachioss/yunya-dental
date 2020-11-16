@@ -93,6 +93,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
    * @return
    */
   public PageInfo<ClinicTariffVO> findList(ClinicTariffQueryForm queryForm) {
+    PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
@@ -101,6 +102,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
     form.setTariffCategoryId(queryForm.getTariffCategoryId());
     form.setKeyWord(queryForm.getKeyWord());
     List<BaseTariffVO> baseTariffs = baseTariffMapper.selectBaseTariffList(form);
+    pageInfo = new PageInfo(baseTariffs);
     List<ClinicTariffVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(baseTariffs)) {
       baseTariffs.forEach(
@@ -140,8 +142,11 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
               });
         }
       }
+      pageInfo.setList(resultList);
+    } else {
+      pageInfo.setList(new ArrayList());
     }
-    return new PageInfo<>(resultList);
+    return pageInfo;
   }
 
   /**

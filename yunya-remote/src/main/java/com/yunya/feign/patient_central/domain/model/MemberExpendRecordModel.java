@@ -36,25 +36,25 @@ public class MemberExpendRecordModel implements Serializable {
     /**
      * 消费总额
      */
-    @ApiModelProperty(value = "消费总额",required = true)
+    @ApiModelProperty(value = "消费总额",required = false)
     private BigDecimal expendTotal;
 
     /**
      * 就诊id
      */
-    @ApiModelProperty(value = "就诊id",required = true)
+    @ApiModelProperty(value = "就诊id",required = false)
     private Integer treatmentRecordId;
 
     /**
      * 账单id
      */
-    @ApiModelProperty(value = "账单id",required = true)
+    @ApiModelProperty(value = "账单id",required = false)
     private Integer billRecordId;
 
     /**
      * 账单付款记录id
      */
-    @ApiModelProperty(value = "账单付款记录id",required = true)
+    @ApiModelProperty(value = "账单付款记录id",required = false)
     private Integer billPayRecordId;
     /**
      * 备注
