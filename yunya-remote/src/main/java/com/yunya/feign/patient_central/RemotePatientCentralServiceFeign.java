@@ -199,7 +199,7 @@ public interface RemotePatientCentralServiceFeign {
      * @param model 参数模型
      * @return ResponseResult
      */
-    @RequestMapping(value = "/member/revocationFee", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/member/revocationFee", method = RequestMethod.POST)
     ResponseResult revocationFee(@RequestBody MemberRevocationFeeModel model);
 
 
@@ -208,7 +208,7 @@ public interface RemotePatientCentralServiceFeign {
      * @param model 参数模型
      * @return ResponseResult
      */
-    @RequestMapping(value = "prepaid/revocationFee", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/prepaid/revocationFee", method = RequestMethod.POST)
     ResponseResult revocationFee(@RequestBody PrepaidRevocationFeeModel model);
 
     /**
