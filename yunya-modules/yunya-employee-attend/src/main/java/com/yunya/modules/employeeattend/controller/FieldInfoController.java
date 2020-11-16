@@ -43,4 +43,17 @@ public class FieldInfoController {
     public ResponseResult create(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
         return ResponseUtil.success(fieldInfoBiz.create(fieldInfoForm));
     }
+
+    /**
+     * 获取外勤申请列表
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findList")
+    @ApiOperation("获取外勤申请列表")
+    @RepeatSubmit
+    public ResponseResult findList(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
+        return ResponseUtil.success(fieldInfoBiz.findList(fieldInfoForm));
+    }
 }
