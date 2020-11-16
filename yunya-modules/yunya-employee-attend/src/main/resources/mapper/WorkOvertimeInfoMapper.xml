@@ -6,9 +6,9 @@
       WARNING - @mbg.generated
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
     <result column="company_id" property="companyId" jdbcType="INTEGER" />
     <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
-    <result column="overtime_hours" property="overtimeHours" jdbcType="INTEGER" />
     <result column="overtime_reason" property="overtimeReason" jdbcType="VARCHAR" />
     <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER" />
     <result column="apprpval_status" property="apprpvalStatus" jdbcType="VARCHAR" />
@@ -17,4 +17,30 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="findWorkOvertimeInfoByUserIdsAndDate" resultType="com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO">
+    select
+        t.id,
+        t.user_id as userId,
+        t.work_date as workDate,
+        t.company_id as companyId,
+        t.schedule_id as scheduleId,
+        t.overtime_reason as overtimeReason,
+        t.approval_people_id as approvalPeopleId,
+        t.apprpval_status as apprpvalStatus
+    from work_overtime_info t left join employee_schedule es on t.schedule_id=es.id left join base_schedule bs on es.schedule_id=bs.id
+    <where>
+      t.apprpval_status = 1
+      <if test="userIds!=null and userIds.size()>0">
+        and t.user_id in
+        <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="date != null">
+        and DATE_FORMAT(t.work_date,'%y-%m-%d') = #{date}
+      </if>
+    </where>
+      order by bs.first_start_time asc
+  </select>
 </mapper>

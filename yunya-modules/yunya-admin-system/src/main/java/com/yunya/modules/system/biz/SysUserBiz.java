@@ -84,6 +84,20 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   }
 
   /**
+   * 根据条件查询员工组织信息列表
+   *
+   * @param queryForm 查询条件
+   * @return
+   */
+  public PageInfo<SysUserInfoDetail> findUserDetailWithOrgList(SysUserInfoDetailQueryFrom queryForm) {
+    if (queryForm.getWhetherPage()) {
+      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+    }
+    List<SysUserInfoDetail> result = mapper.selectSysEmployeeWithOrgList(queryForm);
+    return new PageInfo<>(result);
+  }
+
+  /**
    * 新增用户
    *
    * @param resource 参数封装

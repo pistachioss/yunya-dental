@@ -5,7 +5,6 @@
 
 package com.yunya.modules.patient_central.controller.web;
 
-import cn.hutool.db.Page;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.domain.model.PatientBaseInfoModel;
 import com.yunya.feign.patient_central.domain.model.PatientExtendInfoModel;

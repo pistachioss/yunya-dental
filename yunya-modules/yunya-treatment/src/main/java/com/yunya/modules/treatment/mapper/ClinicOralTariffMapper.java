@@ -14,11 +14,12 @@ public interface ClinicOralTariffMapper extends Mapper<ClinicOralTariff> {
   /**
    * 根据门诊商品项目ID获取门诊商品项目信息
    *
-   * @param clinicOralTariffId 门诊商品项目ID
+   * @param orgId 组织ID
+   * @param oralTariffId 门诊商品项目ID
    * @return
    */
   ClinicOralTariffVO selectClinicOralTariffById(
-      @Param("clinicOralTariffId") Integer clinicOralTariffId);
+      @Param("orgId") Integer orgId, @Param("oralTariffId") Integer oralTariffId);
 
   /**
    * 根据条件查询门诊商品项目信息列表

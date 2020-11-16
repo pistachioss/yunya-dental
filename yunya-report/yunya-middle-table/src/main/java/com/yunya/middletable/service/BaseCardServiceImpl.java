@@ -260,6 +260,7 @@ public class BaseCardServiceImpl{
 	private BaseCard singleEntityTransform(Card card, Map<Integer, String> accountMap, List<CouponAllocate> allocates,
 	                                       List<BaseCardBo> deadlineBo) {
 		BaseCard baseCard = BeanCopierUtils.generalCopyBean(card, BaseCard.class, getCardConvert());
+		baseCard.setCardNumber(card.getCardNumber() == null ? card.getThirdCardNumber() : card.getCardNumber());
 		baseCard.setCardId(card.getId());
 		baseCard.setAllocateOrgId(card.getOrgId());
 		baseCard.setGenerateDate(card.getCrtTime());

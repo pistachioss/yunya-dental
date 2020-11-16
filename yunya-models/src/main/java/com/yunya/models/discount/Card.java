@@ -10,8 +10,7 @@ import java.time.*;
  * @author 
  * 优惠卡
  */
-@Setter
-@Getter
+@Data
 @Table(name = "card")
 public class Card implements Serializable {
 

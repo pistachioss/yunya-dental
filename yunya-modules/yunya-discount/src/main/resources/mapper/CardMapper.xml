@@ -135,7 +135,6 @@
             `sold_target`,
             `sold_phone_number`,
             `sold_type`,
-            `link`,
             `status`,
             `is_pay`,
             `sold_way`
@@ -459,7 +458,7 @@
               from `card` `c`
                    inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
               where `cci`.`is_inservice` = 1
-                and `c`.`status` = 2
+                and `c`.`status` in (2,3)
                 and `cci`.`type` != 4
                 and (`c`.`patient_id` = #{patientId}
                   or (find_in_set(#{patientId}, `c`.`sharer`)))) `temp`

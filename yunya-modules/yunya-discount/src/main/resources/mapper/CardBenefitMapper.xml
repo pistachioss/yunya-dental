@@ -41,36 +41,36 @@
 
     <select id="getCardUseInfo" resultType="com.yunya.feign.discount.domain.bo.CardUseBo">
         select
-            `temp`.`card_id`,
-            `temp`.`coupon_id`,
+            `c`.`id`                    as `cardId`,
+            `c`.`coupon_id`,
             `pc`.`use_way`,
             ifnull(sum(`pci`.`count`),0) as `total`,
-            `temp`.`usecount`,
+            ifnull(`temp`.`usecount`,0)  as `usecount`,
             if(ifnull(sum(`pci`.`count`), 0) > `temp`.`usecount`,
                1,
                0)          as `usable`
-        from (
+        from `card` `c`
+             left join (
                  select
                      `cb`.`card_id`,
-                     `cb`.`coupon_id`,
                      count(`cb`.`coupon_type`) as `usecount`
                  from `card_benefit` `cb`
-                 where `cb`.`card_id` in
-                    <foreach collection="couponIds" item="item" open="(" separator="," close=")">
-                        #{item}
-                    </foreach>
-                   and `cb`.`coupon_type` = #{couponType}
-                   and `cb`.`is_deleted` = 0
+                 where `cb`.`coupon_type` = #{couponType}
+                    and `cb`.`is_deleted` = 0
                  group by `cb`.`card_id`
-             ) temp
+             ) temp on `c`.`id` = `temp`.`card_id`
              <if test="couponType != null and couponType == 2">
-                 inner join `package_coupon` `pc` on `pc`.`coupon_id` = `temp`.`coupon_id`
+                 inner join `package_coupon` `pc` on `pc`.`coupon_id` = `c`.`coupon_id`
                  inner join `package_coupon_item` `pci` on `pc`.`coupon_id` = `pci`.`coupon_id`
              </if>
              <if test="couponType != null and couponType == 3">
-                 inner join `special_package_coupon` `spc` on `spc`.`coupon_id` = `temp`.`coupon_id`
+                 inner join `special_package_coupon` `spc` on `spc`.`coupon_id` = `c`.`coupon_id`
                  inner join `special_package_coupon_item` `spci` on `spc`.`coupon_id` = `spci`.`coupon_id`
              </if>
+        where c.id in
+            <foreach collection="cardIds" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
         group by `pci`.`coupon_id`
     </select>
 </mapper>

@@ -15,10 +15,12 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
   /**
    * 根据门诊价目表ID获取门诊价目表信息
    *
-   * @param clinicTariffId 门诊价目表ID
+   * @param orgId 组织ID
+   * @param tariffId 价目表ID
    * @return
    */
-  ClinicTariffVO selectClinicTariffById(@Param("clinicTariffId") Integer clinicTariffId);
+  ClinicTariffVO selectClinicTariffById(
+      @Param("orgId") Integer orgId, @Param("tariffId") Integer tariffId);
 
   /**
    * 根据条件查询门诊价目表信息列表
@@ -39,6 +41,7 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
 
   /**
    * 根据条件查询价目表列表
+   *
    * @param search
    * @return
    */
@@ -46,6 +49,7 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
 
   /**
    * 根据条件查询基础商品表列表
+   *
    * @param search
    * @return
    */
@@ -57,5 +61,4 @@ public interface ClinicTariffMapper extends Mapper<ClinicTariff> {
    * @return 返回影响行数
    */
   int insertEntities(@Param("list") List<ClinicTariff> list);
-
 }

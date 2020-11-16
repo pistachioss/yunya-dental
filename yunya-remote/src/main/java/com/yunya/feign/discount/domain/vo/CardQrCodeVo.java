@@ -17,6 +17,8 @@ public class CardQrCodeVo {
     private String couponName;
     @ApiModelProperty(value = "产品有效期")
     private String activationDeadline;
+    @ApiModelProperty(value = "二维码code")
+    private String qrCode;
     @ApiModelProperty(value = "其他错误信息")
     private String errorMsg;
 }

@@ -37,14 +37,15 @@ public class ClinicTariffController {
    * 根据门诊价目表ID获取门诊价目表信息
    *
    * @param orgId 组织ID
-   * @param id 门诊价目表ID
+   * @param tariffId 价目表ID
    * @return
    */
   @ApiOperation("根据门诊价目表ID获取信息")
-  @GetMapping("/one/{orgId}/{id}")
+  @GetMapping("/one/{orgId}/{tariffId}")
   public ResponseResult<ClinicTariffVO> findById(
-      @PathVariable(value = "orgId") Integer orgId, @PathVariable(value = "id") Integer id) {
-    ClinicTariffVO resultData = clinicTariffBiz.findById(orgId, id);
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "tariffId") Integer tariffId) {
+    ClinicTariffVO resultData = clinicTariffBiz.findById(orgId, tariffId);
     return ResponseUtil.success(resultData);
   }
 
@@ -65,30 +66,31 @@ public class ClinicTariffController {
   /**
    * 修改门诊价目表价格信息
    *
-   * @param id 门诊价目表ID
    * @param form 修改参数
    * @return
    */
   @CurrentUser
   @ApiOperation("修改门诊价目表价格信息")
-  @PutMapping("/modify/{id}")
-  public ResponseResult<T> modify(
-      @PathVariable(value = "id") Integer id, @RequestBody @Validated ClinicTariffForm form) {
-    clinicTariffBiz.modify(id, form);
+  @PostMapping("/modify")
+  public ResponseResult<T> modify(@RequestBody @Validated ClinicTariffForm form) {
+    clinicTariffBiz.modify(form);
     return ResponseUtil.success(null);
   }
 
   /**
    * 设置门诊价目表是否启用
    *
-   * @param id 门诊价目表ID
+   * @param orgId 组织ID
+   * @param tariffId 基础价目表ID
    * @return
    */
   @CurrentUser
   @ApiOperation("设置门诊价目表项目是否启用")
-  @GetMapping("/switch/{id}")
-  public ResponseResult<T> switchClinicTariff(@PathVariable(value = "id") Integer id) {
-    clinicTariffBiz.switchClinicTariff(id);
+  @GetMapping("/switch/{orgId}/{tariffId}")
+  public ResponseResult<T> switchClinicTariff(
+      @PathVariable(value = "orgId") Integer orgId,
+      @PathVariable(value = "tariffId") Integer tariffId) {
+    clinicTariffBiz.switchClinicTariff(orgId, tariffId);
     return ResponseUtil.success(null);
   }
 

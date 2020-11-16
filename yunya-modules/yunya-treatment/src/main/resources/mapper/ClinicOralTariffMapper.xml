@@ -44,7 +44,7 @@
             from base_oral_tariff bot
             left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
         ) botbotc on cot.oral_tariff_id = botbotc.oralTariffId
-        where id = #{clinicOralTariffId}
+        where cot.clinic_id = #{orgId} and botbotc.oralTariffId = #{oralTariffId}
     </select>
     <!-- 根据条件查询门诊商品项目信息列表 -->
     <select id="selectClinicOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.ClinicOralTariffVO">

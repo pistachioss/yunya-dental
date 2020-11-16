@@ -307,6 +307,19 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据条件查询用户组织信息
+   *
+   * @param model 查询条件
+   * @return
+   */
+  @RequestMapping(value = "/userWithOrg/list")
+  public List<SysUserInfoDetail> findUserDetailWithOrgList(@RequestBody SysUserEmployeeModel model) {
+    SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
+    BeanUtils.copyProperties(model, from);
+    return sysUserBiz.findUserDetailWithOrgList(from).getList();
+  }
+
+  /**
    * 根据用户ID查询员工信息
    *
    * @param userId 用户ID

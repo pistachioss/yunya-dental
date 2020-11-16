@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper
 public interface CardBenefitMapper extends tk.mybatis.mapper.common.Mapper<CardBenefit> {
@@ -14,9 +15,9 @@ public interface CardBenefitMapper extends tk.mybatis.mapper.common.Mapper<CardB
 
     /**
      * 获取卡券使用情况
-     * @param couponIds couponIds
+     * @param cardIds cardIds
      * @param couponType couponType
      * @return list
      */
-    List<CardUseBo> getCardUseInfo(@Param("couponIds") List<Integer> couponIds, @Param("couponType")Integer couponType);
+    List<CardUseBo> getCardUseInfo(@Param("cardIds") Set<Integer> cardIds, @Param("couponType")Integer couponType);
 }

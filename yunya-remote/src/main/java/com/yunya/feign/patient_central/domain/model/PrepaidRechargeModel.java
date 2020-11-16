@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
@@ -31,8 +32,8 @@ public class PrepaidRechargeModel implements Serializable {
     /**
      * 预付款卡号ID
      */
-    @ApiModelProperty(value = "预付款卡号ID",required = true)
-    private String prepaidId;
+    @ApiModelProperty(value = "预付款卡号",required = true)
+    private String prepaidCard;
 
     /**
      * 充值本金
@@ -69,5 +70,10 @@ public class PrepaidRechargeModel implements Serializable {
      */
     @ApiModelProperty(value = "充值类型 0普通充值 1充值卡充值")
     private Byte rechargeType;
+
+
+    @ApiModelProperty(value = "充值卡卡券id", required = true)
+    @NotNull
+    private Integer cardId;
 
 }

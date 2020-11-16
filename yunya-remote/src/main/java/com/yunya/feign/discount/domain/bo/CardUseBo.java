@@ -13,5 +13,6 @@ public class CardUseBo {
 	private Integer useWay;
 	private Long total;
 	private Long useCount;
+	//是否可用 0-否 1-是
 	private Integer usable;
 }

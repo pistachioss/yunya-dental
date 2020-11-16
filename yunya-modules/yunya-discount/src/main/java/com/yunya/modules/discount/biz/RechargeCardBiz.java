@@ -165,9 +165,9 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
         // 判断是否完成分配
         CouponAllocate couponAllocate = new CouponAllocate();
         couponAllocate.setCouponId(id);
-        if (!couponAllocateMapper.select(couponAllocate).isEmpty()) {
-            throw new BaseException("卡券已完成分配，无法删除", DELETE_NOT_ALLOW);
-        }
+//        if (!couponAllocateMapper.select(couponAllocate).isEmpty()) {
+//            throw new BaseException("卡券已完成分配，无法删除", DELETE_NOT_ALLOW);
+//        }
         RechargeCard rechargeCard = new RechargeCard();
         rechargeCard.setCouponId(id);
         CouponFileInfo couponFiledelete = new CouponFileInfo();

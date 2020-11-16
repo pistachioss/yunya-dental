@@ -46,6 +46,20 @@
     <result column="scheduleName" property="scheduleName" jdbcType="VARCHAR"/>
   </resultMap>
 
+  <resultMap id="EmployeeScheduleVOResultMap" type="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="clinic_id" property="clinicId" jdbcType="INTEGER" />
+    <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
+    <result column="employee_id" property="employeeId" jdbcType="INTEGER" />
+    <result column="work_date" property="workDate" jdbcType="DATE" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="first_start_time" property="firstStartTime" jdbcType="TIME" />
+    <result column="first_end_time" property="firstEndTime" jdbcType="TIME" />
+    <result column="second_start_time" property="secondStartTime" jdbcType="TIME" />
+    <result column="second_end_time" property="secondEndTime" jdbcType="TIME" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+  </resultMap>
+
   <select id="selectAllByDate" resultMap="BaseResultCopyMap">
         select es.*,bs.first_start_time,bs.first_end_time,bs.second_start_time,bs.second_end_time,bs.name as scheduleName from employee_schedule es
         left join base_schedule bs on es.schedule_id = bs.id
@@ -92,5 +106,87 @@
       and es.clinic_id = #{clinicId}
     </if>
     order by es.work_date
+  </select>
+
+  <select id="selectEmployeeScheduleVOByDateAndCompEmpId" resultMap="EmployeeScheduleVOResultMap">
+    select
+        es.id,
+        es.employee_id,
+        es.clinic_id,
+        es.work_date,
+        es.schedule_id,
+        bs.type,
+        bs.name,
+        bs.first_start_time,
+        bs.first_end_time,
+        bs.second_start_time,
+        bs.second_end_time
+    from employee_schedule es left join base_schedule bs on es.schedule_id = bs.id
+    <where>
+      bs.type = '上班'
+      <if test="employeeIds != null">
+        and es.employee_id in
+        <foreach item="item" index="index" collection="employeeIds" open="(" separator="," close=")">
+          #{item}
+        </foreach>
+      </if>
+      <if test="workDates!=null and workDates.size()>0">
+        and DATE_FORMAT(es.work_date,'%Y-%m-%d') in
+        <foreach item="item" index="index" collection="workDates" open="(" separator="," close=")">
+          DATE_FORMAT(#{item},'%Y-%m-%d')
+        </foreach>
+      </if>
+    </where>
+    order by bs.first_start_time asc;
+  </select>
+
+  <select id="selectBaseScheduleById" resultType="com.yunya.models.employee_attend.BaseSchedule">
+    select
+        bs.name,
+        bs.type,
+        bs.first_start_time as firstStartTime,
+        bs.first_end_time as firstEndTime,
+        bs.second_start_time as secondStartTime,
+        bs.second_end_time as secondEndTime,
+        bs.inservice
+    from base_schedule bs left join employee_schedule es on bs.id=es.schedule_id
+    where es.id = #{id}
+  </select>
+
+  <select id="findRestEmployeeScheduleListInDate" resultType="com.yunya.models.employee_attend.BaseSchedule">
+    select
+        bs.name,
+        bs.type,
+        es.work_date as workDate,
+        bs.first_start_time as firstStartTime,
+        bs.first_end_time as firstEndTime,
+        bs.second_start_time as secondStartTime,
+        bs.second_end_time as secondEndTime,
+        bs.inservice
+    from base_schedule bs left join employee_schedule es on bs.id=es.schedule_id
+    where es.inservice = 1 and bs.inservice and type='休息'
+    <if test="userId != null">
+        and es.user_id = #{userId}
+    </if>
+    <if test="startDate!=null and endDate!=null">
+        and DATE_FORMATE(es.work_date,'%y-%m-%d') between DATE_FORMATE(#{startDate},'%y-%m-%d') and DATE_FORMATE(#{endDate},'%y-%m-%d')
+    </if>
+  </select>
+
+  <select id="selectInIds" resultType="com.yunya.models.employee_attend.EmployeeScheduleVO">
+    select
+      es.id,
+      es.employee_id,
+      es.clinic_id,
+      es.work_date,
+      es.schedule_id,
+    from employee_schedule es
+    where es.inservice = 1
+    <if test="ids!= null">
+        and es.id in
+        <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </if>
   </select>
 </mapper>

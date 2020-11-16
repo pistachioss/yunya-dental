@@ -15,16 +15,16 @@ import java.math.BigDecimal;
 @Data
 @ToString
 public class BaseTariffVO implements Serializable {
-  /** 商品项目ID */
+  /** 基础项目ID */
   private Integer id;
 
-  /** 商品分类id */
+  /** 基础分类id */
   private Integer tariffCategoryId;
 
-  /** 商品分类名称 */
+  /** 基础分类名称 */
   private String tariffCategoryName;
 
-  /** 商品分类编号 */
+  /** 基础分类编号 */
   private String tariffCategoryNumber;
 
   /** 项目编码 */

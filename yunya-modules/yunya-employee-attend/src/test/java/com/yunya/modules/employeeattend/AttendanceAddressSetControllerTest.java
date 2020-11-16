@@ -6,7 +6,10 @@ import com.yunya.feign.employee_attend.form.AttendanceAddressSetQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceAddressSetModel;
 import com.yunya.feign.employee_attend.model.AttendanceSetModel;
 import com.yunya.feign.employee_attend.model.AttendanceWifiSetModel;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.employeeattend.controller.AttendanceAddressSetController;
@@ -17,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * 简介：
@@ -31,6 +35,8 @@ import java.util.Arrays;
 public class AttendanceAddressSetControllerTest {
     @Autowired
     private AttendanceAddressSetController attendanceAddressSetController;
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
     @Test
     public void testAdd() {
@@ -123,5 +129,15 @@ public class AttendanceAddressSetControllerTest {
         model.setPageSize(5);
         ResponseResult result = attendanceAddressSetController.findOrganizationAttendanceAddressSetList(model);
         System.out.println(result);
+    }
+
+    @Test
+    public void test() {
+        SysUserEmployeeModel model = new SysUserEmployeeModel();
+        model.setWhetherPage(true);
+        model.setPageNum(1);
+        model.setPageSize(5);
+        List<SysUserInfoDetail> result = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+        System.out.println(JSONObject.toJSON(result));
     }
 }

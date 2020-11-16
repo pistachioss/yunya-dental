@@ -7,9 +7,9 @@
     -->
     <id column="id" property="id" jdbcType="INTEGER" />
     <result column="field_address" property="fieldAddress" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
     <result column="start_time" property="startTime" jdbcType="TIMESTAMP" />
     <result column="end_time" property="endTime" jdbcType="TIMESTAMP" />
-    <result column="field_time" property="fieldTime" jdbcType="INTEGER" />
     <result column="field_reason" property="fieldReason" jdbcType="VARCHAR" />
     <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER" />
     <result column="apprpval_status" property="apprpvalStatus" jdbcType="VARCHAR" />
@@ -18,4 +18,55 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+
+  <select id="findFieldInfosByUserIdAndDate" resultType="com.yunya.feign.employee_attend.vo.FieldInfoVO">
+    select
+        t.id,
+        t.user_id as userId,
+        t.field_time as fieldTime,
+        t.field_reason as fieldReason,
+        t.field_address as fieldAddress,
+        t.start_time as startTime,
+        t.end_time as endTime,
+        t.approval_people_id as approvalPeopleId,
+        t.apprpval_status as apprpvalStatus
+    from field_info t
+    <where>
+        t.apprpval_status = 1
+        <if test="userIds!=null and userIds.size()>0">
+          and t.user_id in
+          <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+          </foreach>
+        </if>
+        <if test="date != null">
+          and DATE_FORMAT(t.start_time,'%y-%m-%d') = DATE_FORMAT(#{date},'%y-%m-%d')
+        </if>
+    </where>
+    order by t.start_time asc
+  </select>
+
+  <select id="findFieldInfoList" resultType="com.yunya.feign.employee_attend.vo.FieldInfoVO">
+    select
+        t.id,
+        t.user_id as userId,
+        t.field_time as fieldTime,
+        t.field_reason as fieldReason,
+        t.field_address as fieldAddress,
+        t.start_time as startTime,
+        t.end_time as endTime,
+        t.approval_people_id as approvalPeopleId,
+        t.apprpval_status as apprpvalStatus
+    from field_info t
+    <where>
+        t.apprpval_status = 1
+        <if test="queryForm.userId!=null">
+          and t.user_id = #{queryForm.userId}
+        </if>
+        <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
+          and DATE_FORMAT(t.start_time,'%y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%y-%m-%d')
+        </if>
+    </where>
+    order by t.start_time asc
+  </select>
 </mapper>

@@ -163,9 +163,9 @@ public class PackageCouponBiz extends BaseBiz<PackageCouponMapper, PackageCoupon
         // 判断是否完成分配
         CouponAllocate couponAllocate = new CouponAllocate();
         couponAllocate.setCouponId(id);
-        if (!couponAllocateMapper.select(couponAllocate).isEmpty()) {
-            throw new BaseException("卡券已完成分配，无法删除", DELETE_NOT_ALLOW);
-        }
+//        if (!couponAllocateMapper.select(couponAllocate).isEmpty()) {
+//            throw new BaseException("卡券已完成分配，无法删除", DELETE_NOT_ALLOW);
+//        }
         PackageCoupon packageCoupon = new PackageCoupon();
         packageCoupon.setCouponId(id);
         CouponFileInfo couponFiledelete = new CouponFileInfo();
