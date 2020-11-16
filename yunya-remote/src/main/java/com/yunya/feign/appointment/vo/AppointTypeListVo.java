@@ -32,6 +32,12 @@ public class AppointTypeListVo implements Serializable {
     private String name;
 
     /**
+     * 项目分类背景色
+     */
+    @ApiModelProperty(value = "项目分类背景色")
+    private String bgColor;
+
+    /**
      * 是否启用
      */
     @ApiModelProperty(value = "是否启用")
