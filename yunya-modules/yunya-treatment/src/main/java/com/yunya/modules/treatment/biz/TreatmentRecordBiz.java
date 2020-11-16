@@ -12,10 +12,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
-import com.yunya.feign.treatment.domain.query.AppTreatListQuery;
-import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.query.TreatmentInfoForMonthForm;
-import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -720,12 +717,13 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param queryDate 查询日期
    * @return
    */
-  public Map<String, Integer> countTreatList(Integer orgId, String queryDate) {
+  public Map<String, Integer> countTreatList(TreatmentCountQuery query) {
     Map<String, Integer> resultMap = new HashMap<>(16);
     TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();
     queryForm.setWhetherPage(false);
-    queryForm.setOrgId(orgId);
-    queryForm.setCurrentDate(queryDate);
+    queryForm.setOrgId(query.getOrgId());
+    queryForm.setCurrentDate(query.getQueryDate());
+    queryForm.setUserId(query.getUserId());
     queryForm.setTreatmentStatus(new Byte[] {0});
     List<TreatmentPatientInfoVO> waitingForTreat = mapper.selectTreatingList(queryForm);
     queryForm.setTreatmentStatus(new Byte[] {1});
@@ -736,8 +734,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     List<TreatmentPatientInfoVO> treatmentPatientInfos = mapper.selectTreatingList(queryForm);
     AppointmentCurrentListQuery form = new AppointmentCurrentListQuery();
     form.setWhetherPage(false);
-    form.setOrgId(orgId);
-    form.setCurrentDate(queryDate);
+    form.setOrgId(query.getOrgId());
+    form.setCurrentDate(query.getQueryDate());
     Integer appointNotArrived = appointmentFeign.countAppointNotArrived(form);
     resultMap.put("appointNotArrived", appointNotArrived);
     resultMap.put("waitingForTreat", waitingForTreat.size());

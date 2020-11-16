@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.controller.web;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
+import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
@@ -156,11 +157,9 @@ public class TreatmentRecordController {
         dataType = "String",
         paramType = "path")
   })
-  @GetMapping(value = "/count/{orgId}/{queryDate}", name = "就诊列表数量统计")
-  public ResponseResult<Map<String, Integer>> count(
-      @PathVariable(value = "orgId") Integer orgId,
-      @PathVariable(value = "queryDate") String queryDate) {
-    Map<String, Integer> resultMap = treatmentRecordBiz.countTreatList(orgId, queryDate);
+  @PostMapping(value = "/count", name = "就诊列表数量统计")
+  public ResponseResult<Map<String, Integer>> count(@RequestBody TreatmentCountQuery query) {
+    Map<String, Integer> resultMap = treatmentRecordBiz.countTreatList(query);
     return ResponseUtil.success(resultMap);
   }
 }

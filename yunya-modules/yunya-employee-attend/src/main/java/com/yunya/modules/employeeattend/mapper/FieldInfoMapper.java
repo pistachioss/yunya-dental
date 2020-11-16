@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.mapper;
 
 import com.yunya.feign.employee_attend.form.FieldInfoQueryForm;
+import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
 import com.yunya.feign.employee_attend.vo.FieldInfoVO;
 import com.yunya.models.employee_attend.FieldInfo;
 import org.apache.ibatis.annotations.Param;
@@ -13,7 +14,9 @@ import java.util.List;
 
 public interface FieldInfoMapper extends Mapper<FieldInfo> {
 
-    public List<FieldInfo> findList(FieldInfo fieldInfo);
+    List<FieldInfo> findList(FieldInfo fieldInfo);
+
+    List<FieldInfoListVO> findVOList(FieldInfo fieldInfo);
 
     /**
      * 根据日期和用户id列表查询外勤列表
