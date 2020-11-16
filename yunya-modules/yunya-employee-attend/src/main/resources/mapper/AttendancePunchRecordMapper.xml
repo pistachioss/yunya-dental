@@ -123,6 +123,7 @@
   </select>
     
   <select id="selectAttendanceStatisticsPunchRecord" resultType="com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO">
+    select
       t.id,
       t.org_id as orgId,
       t.name,
@@ -148,11 +149,11 @@
       when t.source=3 then null end scheduleId
       from attendance_punch_record t
       <where>
-          <if test="queryForm.org_id != null">
+          <if test="queryForm.orgId != null">
             and t.org_id = #{queryForm.org_id}
           </if>
           <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
-            and DATE_FORMAT(t.punchDate,'%y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%y-%m-%d')
+            and DATE_FORMAT(t.punch_date,'%y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%y-%m-%d')
           </if>
       </where>
   </select>

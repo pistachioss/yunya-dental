@@ -45,6 +45,8 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
     private static final String FIELD = "3";
     /** 按天请假 */
     private static final Integer USEDAY = 1;
+    private static final String START_TIME = "08:00";
+    private static final String END_TIME = "18:00";
     /** 注入日志对象 */
     private final Logger logger = LoggerFactory.getLogger(AttendancePunchRecordScheduledTask.class);
     /** 注入对象 */
@@ -134,6 +136,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
      * @param restMap
      */
     private void appendLeaveList(Map<Integer, List<EmployeeScheduleVO>> punchItemMap, Map<Integer, EmployeeScheduleVO> restMap) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         List<LeaveInfoVO> leaveInfoVOS = leaveInfoBiz.findLeaveInfosByUserIdsAndDate(null, new Date(System.currentTimeMillis()));
         leaveInfoVOS.forEach(leaveInfoVO -> {
             Integer userId = leaveInfoVO.getUserId();
@@ -145,8 +148,16 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             if (USEDAY.equals(vacationStatus)) {//按天请假
                 EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
                 punchItem.setType(LEAVE);
-                punchItem.setFirstStartTime(leaveInfoVO.getStartTime());
-                punchItem.setFirstEndTime(leaveInfoVO.getEndTime());
+                Date startTime = null;
+                Date endTime = null;
+                try {
+                    startTime = sdf.parse(START_TIME);
+                    endTime = sdf.parse(END_TIME);
+                } catch (ParseException e) {
+                    logger.error("Date parse Error",e);
+                }
+                punchItem.setFirstStartTime(startTime);
+                punchItem.setFirstEndTime(endTime);
                 punchItem.setId(leaveInfoVO.getId());
                 punchItem.setEmployeeId(userId);
                 punchItem.setName("请假");
@@ -297,7 +308,6 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 punchRecord1.setName(employeeScheduleVO.getName());
                 attendancePunchRecordBiz.insertSelective(punchRecord1);
 
-                String dateStr = DateFormatUtils.format(new Date(), "yyyy-MM-dd 23:59:59");
                 AttendancePunchRecord punchRecord2 = new AttendancePunchRecord();
                 punchRecord2.setPunchDate(now);
                 punchRecord2.setUptTime(now);
@@ -311,16 +321,12 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 if (LEAVE.equals(typeStr)) {
                     punchRecord2.setPunchStatus(unvalid);
                 }
-                punchRecord1.setSource(Byte.valueOf(typeStr));
+                punchRecord2.setSource(Byte.valueOf(typeStr));
                 punchRecord2.setSourceId(employeeScheduleVO.getId());
-                punchRecord2.setStartTime(endTime);
+                punchRecord2.setStartTime(startTime);
+                punchRecord2.setEndTime(endTime);
                 punchRecord2.setOrgId(employeeScheduleVO.getClinicId());
                 punchRecord2.setName(employeeScheduleVO.getName());
-                try {
-                    punchRecord2.setEndTime(sdf.parse(dateStr));
-                } catch (ParseException e) {
-                    logger.error("<====== AttendancePunchRecordScheduledTask.insertDefaultPunchRecord Error: {} ======>",e);
-                }
                 attendancePunchRecordBiz.insertSelective(punchRecord2);
             } else if (list.size() > 1) {//取首尾
                 EmployeeScheduleVO firstItem = list.get(0);
@@ -359,7 +365,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 if (LEAVE.equals(typeStr)) {
                     punchRecord2.setPunchStatus(unvalid);
                 }
-                punchRecord1.setSource(Byte.valueOf(typeStr));
+                punchRecord2.setSource(Byte.valueOf(typeStr));
                 punchRecord2.setSourceId(lastItem.getId());
                 punchRecord2.setStartTime(lastItem.getFirstStartTime());
                 punchRecord2.setEndTime(lastItem.getFirstEndTime());
