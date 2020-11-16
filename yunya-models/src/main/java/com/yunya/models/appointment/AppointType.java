@@ -17,6 +17,12 @@ public class AppointType {
     private String name;
 
     /**
+     * 项目分类背景色
+     */
+    @Column(name = "bg_color")
+    private String bgColor;
+
+    /**
      * 备注 备注
      */
     private String remarks;
@@ -240,5 +246,21 @@ public class AppointType {
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;
+    }
+
+    /**
+     * 项目分类背景色
+     * @return 项目分类背景色
+     */
+    public String getBgColor() {
+        return bgColor;
+    }
+
+    /**
+     * 项目分类背景色
+     * @param bgColor 项目分类背景色
+     */
+    public void setBgColor(String bgColor) {
+        this.bgColor = bgColor;
     }
 }

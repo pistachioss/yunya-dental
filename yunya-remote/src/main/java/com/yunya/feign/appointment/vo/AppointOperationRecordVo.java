@@ -72,7 +72,8 @@ public class AppointOperationRecordVo implements Serializable {
 
     /** 创建时间 */
     @ApiModelProperty(value = "创建时间")
-    private String crtTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
+    private Date crtTime;
 
     /** 创建人名 */
     @ApiModelProperty(value = "创建人名")
