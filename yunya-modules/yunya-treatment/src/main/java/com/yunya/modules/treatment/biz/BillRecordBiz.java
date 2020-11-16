@@ -154,7 +154,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       orderDetails = new ArrayList<>();
     } else {
       List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
-      if (null != orderBenefitD) {
+      if (StringHelper.isNotEmpty(orderBenefitD)) {
         for (OrderDetailChargeVO orderDetail : orderDetails) {
           for (OrderBenefitDetailVo benefitDetailVo : orderBenefitD) {
             if (orderDetail.getOrderDetailId().equals(benefitDetailVo.getOrderDetailId())) {
