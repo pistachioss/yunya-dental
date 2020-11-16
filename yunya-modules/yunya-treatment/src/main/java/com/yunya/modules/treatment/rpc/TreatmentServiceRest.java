@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.rpc;
 
+import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
@@ -51,6 +52,8 @@ public class TreatmentServiceRest {
   @Autowired private OrderRecordBiz orderRecordBiz;
   /** 开单明细 */
   @Autowired private OrderDetailBiz orderDetailBiz;
+  /** 账单记录 */
+  @Autowired private BillRecordBiz billRecordBiz;
 
   /**
    * 根据商品分类ID查询商品分类信息
@@ -316,4 +319,15 @@ public class TreatmentServiceRest {
     entity.setOrderRecordId(orderRecordId);
     return orderDetailBiz.selectList(entity);
   }
+
+  /**
+   * 通过患者ID批量查询患者欠费总额
+   * @param patientIds 患者ID
+   * @return 返回患者欠费集合
+   */
+  @RequestMapping(value = "/patient/debt/amount", method = RequestMethod.POST)
+  public List<DebtAmountModel> selectDebtAmountList(@RequestBody List<Integer> patientIds) {
+    return billRecordBiz.selectDebtAmountList(patientIds);
+  }
+
 }

@@ -46,8 +46,8 @@
             </if>
             <if test="orgIds != null and orgIds.length &gt; 0">
                 and ord.org_id in
-                <foreach collection="orgIds" open="(" separator="," close=")" index="i">
-                    #{orgIds[i]}
+                <foreach collection="orgIds" open="(" separator="," close=")" item="orgId">
+                    #{orgId}
                 </foreach>
             </if>
             <if test="patientIds != null and patientIds.length &gt; 0">
