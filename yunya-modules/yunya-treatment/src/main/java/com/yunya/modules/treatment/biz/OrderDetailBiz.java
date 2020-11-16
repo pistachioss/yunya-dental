@@ -157,10 +157,10 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     String redisKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
     String redisValue = redisUtils.get(redisKey);
     if (StringHelper.isNotBlank(redisValue)) {
-      throw new ClientServiceException("收费失败，当前就诊在收费中！", PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收费失败，当前就诊正在收费中！", PARAMETERS_IS_ILLEGAL);
     }
     List<OrderDetailChargeVO> chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
-    // 设置10分钟（该段时间内不允许收费，解锁）
+    // 设置10分钟（该段时间内不允许重复收费，解锁）
     redisUtils.set(redisKey, orderRecordId, 600);
     return chargeOrderDetailList;
   }
@@ -175,27 +175,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
-            // todo 从缓存中获取开单项目信息
-            Integer billingItemId = vo.getBillingItemId();
-            Byte type = vo.getType();
-            switch (type) {
-              case 0:
-                BaseTariff tariff = baseTariffBiz.selectById(billingItemId);
-                if (null != tariff) {
-                  vo.setBillingItemName(tariff.getName());
-                  vo.setUnit(tariff.getUnit());
-                }
-                break;
-              case 1:
-                BaseOralTariff oralTariff = baseOralTariffBiz.selectById(billingItemId);
-                if (null != oralTariff) {
-                  vo.setBillingItemName(oralTariff.getName());
-                  vo.setUnit(oralTariff.getUnit());
-                }
-                break;
-              default:
-                break;
-            }
+            // 设置订单明细项目属性
+            setOrderDetailItemValue(vo);
             // todo 从缓存中获取用户（员工）信息
             Integer executorId = vo.getExecutorId();
             if (null != executorId) {
@@ -209,6 +190,35 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
           });
     }
     return resultList;
+  }
+
+  /**
+   * 设置订单明细属性
+   *
+   * @param vo 订单明细
+   */
+  private void setOrderDetailItemValue(OrderDetailChargeVO vo) {
+    // todo 从缓存中获取开单项目信息
+    Integer billingItemId = vo.getBillingItemId();
+    Byte type = vo.getType();
+    switch (type) {
+      case 0:
+        BaseTariff tariff = baseTariffBiz.selectById(billingItemId);
+        if (null != tariff) {
+          vo.setBillingItemName(tariff.getName());
+          vo.setUnit(tariff.getUnit());
+        }
+        break;
+      case 1:
+        BaseOralTariff oralTariff = baseOralTariffBiz.selectById(billingItemId);
+        if (null != oralTariff) {
+          vo.setBillingItemName(oralTariff.getName());
+          vo.setUnit(oralTariff.getUnit());
+        }
+        break;
+      default:
+        break;
+    }
   }
 
   /**

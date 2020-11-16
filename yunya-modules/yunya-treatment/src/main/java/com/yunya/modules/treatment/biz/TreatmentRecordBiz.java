@@ -419,7 +419,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    *
    * @param vo 就诊患者信息
    */
-  private void setChargeInfo(TreatmentPatientInfoVO vo) {}
+  private void setChargeInfo(TreatmentPatientInfoVO vo) {
+
+  }
 
   /**
    * 更新就诊记录电子病历书写状态
