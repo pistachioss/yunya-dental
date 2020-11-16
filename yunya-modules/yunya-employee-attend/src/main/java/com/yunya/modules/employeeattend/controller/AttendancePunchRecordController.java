@@ -5,6 +5,7 @@ import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordForm;
 import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
 import com.yunya.feign.employee_attend.vo.AttendanceCalendarInfoVO;
+import com.yunya.feign.employee_attend.vo.AttendancePunchCalendarInfoVO;
 import com.yunya.feign.employee_attend.vo.AttendancePunchInfoVO;
 import com.yunya.feign.employee_attend.vo.AttendanceStatisticsVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -96,14 +97,14 @@ public class AttendancePunchRecordController {
     @ApiImplicitParam(value = "该月的某一天，例如2020-11-01")
     @GetMapping("/punchRecordByDate/{date}")
     @CurrentUser
-    public ResponseResult<AttendancePunchInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotNull String dateStr) {
+    public ResponseResult<AttendancePunchCalendarInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotNull String dateStr) {
         Date date = null;
         try {
             date = new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        AttendancePunchInfoVO attendancePunchInfoVO = attendancePunchRecordBiz.punchRecordByDate(date);
+        AttendancePunchCalendarInfoVO attendancePunchInfoVO = attendancePunchRecordBiz.punchRecordByDate(date);
         return ResponseUtil.success(attendancePunchInfoVO);
     }
 
@@ -131,7 +132,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("根据条件分页查询考勤汇总")
     @ApiImplicitParam(value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecord")
-    public ResponseResult<PageInfo<AttendanceStatisticsVO>> statisticsPunchRecord(AttendanceStatisticsQueryForm queryForm) {
+    public ResponseResult<PageInfo<AttendanceStatisticsVO>> statisticsPunchRecord(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         PageInfo<AttendanceStatisticsVO> result = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
         return ResponseUtil.success(result);
     }

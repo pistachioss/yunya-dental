@@ -164,8 +164,9 @@
     where es.id = #{id}
   </select>
 
-  <select id="findRestEmployeeScheduleListInDate" resultType="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO">
+  <select id="findEmployeeScheduleListInDate" resultType="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO">
     select
+        es.clinic_id as clinicId,
         bs.name,
         bs.type,
         es.work_date as workDate,
@@ -175,7 +176,10 @@
         bs.second_end_time as secondEndTime,
         bs.inservice
     from base_schedule bs left join employee_schedule es on bs.id=es.schedule_id
-    where es.inservice = 1 and bs.inservice and type='休息'
+    where es.inservice = 1 and bs.inservice
+    <if test="type!=null and type!=''">
+        and bs.type = #{type}
+    </if>
     <if test="userId != null">
         and es.employee_id = #{userId}
     </if>
@@ -190,10 +194,10 @@
       es.employee_id,
       es.clinic_id,
       es.work_date,
-      es.schedule_id,
+      es.schedule_id
     from employee_schedule es
     where es.inservice = 1
-    <if test="ids!= null">
+    <if test="ids!=null and ids.size()>0">
         and es.id in
         <foreach item="item" index="index" collection="ids" open="(" separator="," close=")">
             #{item}
