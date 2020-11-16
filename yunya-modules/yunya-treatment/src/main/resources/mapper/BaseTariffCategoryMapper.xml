@@ -49,4 +49,13 @@
             </if>
         </where>
     </select>
+
+    <!-- 批量添加价目表分类列表 -->
+    <insert id="insertBaseTariffCategoryList" parameterType="list" keyProperty="id" useGeneratedKeys="true">
+        insert into base_tariff_category (`name`,`number`,inservice,crt_id,crt_name)
+        values
+        <foreach collection="list" item="obj" separator=",">
+            (#{obj.name},#{obj.number},#{obj.inservice},#{obj.crtId},#{obj.crtName})
+        </foreach>
+    </insert>
 </mapper>
