@@ -31,16 +31,14 @@ import com.yunya.models.system.SysEmployee;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
-import com.yunya.modules.treatment.mapper.AssistantMatchingRecordMapper;
-import com.yunya.modules.treatment.mapper.OrderDetailMapper;
-import com.yunya.modules.treatment.mapper.OrderRecordMapper;
-import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
+import com.yunya.modules.treatment.mapper.*;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -83,6 +81,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Autowired private OrderRecordMapper orderRecordMapper;
   /** 开单明细 */
   @Autowired private OrderDetailMapper orderDetailMapper;
+  /** 账单记录 */
+  @Autowired private BillRecordMapper billRecordMapper;
   /** 就诊关联助手 */
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
 
@@ -415,12 +415,16 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * todo 设置收费信息
+   * 设置收费信息(收费金额)
    *
    * @param vo 就诊患者信息
    */
   private void setChargeInfo(TreatmentPatientInfoVO vo) {
-
+    Integer id = vo.getId();
+    BillRecord billRecord = new BillRecord();
+    billRecord.setTreatmentRecordId(id);
+    BillRecord record = billRecordMapper.selectOne(billRecord);
+    vo.setReceivedAmount(null != record ? record.getReceivedAmount() : BigDecimal.valueOf(0));
   }
 
   /**
