@@ -211,4 +211,13 @@ public interface RemotePatientCentralServiceFeign {
     @RequestMapping(value = "prepaid/revocationFee", method = RequestMethod.POST)
     ResponseResult revocationFee(@RequestBody PrepaidRevocationFeeModel model);
 
+    /**
+     * 根据会员卡类型查询该会员卡数量
+     * @param memberTypeId
+     * @return 会员卡大于0 返回true;否则返回false
+     */
+    @ApiOperation("根据会员卡类型查询该会员卡是否有在使用")
+    @RequestMapping(value = "/api/member/count/{memberTypeId}",method = RequestMethod.GET)
+    boolean memberInfoCount(@PathVariable(value = "memberTypeId") Integer memberTypeId);
+
 }

@@ -209,5 +209,20 @@ public class PatientServiceRest {
         return patientPrepaymentBiz.prePaidPaymentRecordDetail(query);
     }
 
+    /**
+     * 根据会员卡类型查询该会员卡数量
+     * @param memberTypeId
+     * @return 会员卡大于0 返回true;否则返回false
+     */
+    @ApiOperation("根据会员卡类型查询该会员卡是否有在使用")
+    @RequestMapping(value = "/member/count/{memberTypeId}",method = RequestMethod.GET)
+    public boolean memberInfoCount(@PathVariable(value = "memberTypeId") Integer memberTypeId) {
+        PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
+        patientMemberInfo.setMemberTypeId(memberTypeId);
+        Long aLong = patientMemberInfoBiz.selectCount(patientMemberInfo);
+        return aLong > 0;
+    }
+
+
 
 }

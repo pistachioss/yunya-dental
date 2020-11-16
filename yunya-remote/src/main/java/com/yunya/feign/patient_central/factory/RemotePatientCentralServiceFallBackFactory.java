@@ -137,6 +137,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
+    public boolean memberInfoCount(Integer memberTypeId) {
+        return true;
+    }
+
+    @Override
     public PrepaidExpendRecord prePaidPaymentRecordDetail(PaymentRecordDetailQuery query){
         return null;
     }
