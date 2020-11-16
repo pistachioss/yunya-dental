@@ -38,7 +38,7 @@ public class PrepaidRechargeModel implements Serializable {
     /**
      * 充值本金
      */
-    @ApiModelProperty(value = "充值本金",required = true)
+    @ApiModelProperty(value = "充值本金",required = false)
     private BigDecimal rechargePrincipal;
 
     /**

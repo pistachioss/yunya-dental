@@ -35,15 +35,16 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
      * @param masterCardId 主卡人id
      * @return int
      */
-    int deleteMemberRelation(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId);
+    int deleteMemberRelation(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId,@Param("bindType") Integer bindType);
 
     /**
      * 查询关系id
      * @param secondaryCardId 副卡人id
      * @param masterCardId 主卡人id
+     * @param bindType 绑定类型
      * @return int
      */
-    int selectMemberRelationId(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId);
+    int selectMemberRelationId(@Param("masterCardId") Integer secondaryCardId,@Param("secondaryCardId") Integer masterCardId,@Param("bindType") Integer bindType);
 
     /**
      * 查询关联关系是否已经存在

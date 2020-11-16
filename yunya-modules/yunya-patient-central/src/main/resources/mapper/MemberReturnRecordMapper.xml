@@ -44,8 +44,7 @@
           member_return_record
       WHERE
           member_id = #{form.memberId} and patient_id =#{form.patientId}
-      ORDER BY
-          crt_time DESC
+      ORDER BY crt_time DESC
   </select>
 
 </mapper>

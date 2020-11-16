@@ -32,7 +32,7 @@
 
     <!-- 删除关系 -->
     <delete id="deleteMemberRelation">
-       delete from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId}
+       delete from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId} and bind_type =#{bindType}
     </delete>
 
     <!-- 查询关联关系是否已经存在 -->
@@ -59,6 +59,6 @@
 
     <!-- 查询关系id -->
     <select id="selectMemberRelationId" resultType="java.lang.Integer">
-        select  id  from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId}
+        select  id  from patient_member_relation where master_card_id =#{masterCardId} and secondary_card_id = #{secondaryCardId} and bind_type = #{bindType}
     </select>
 </mapper>

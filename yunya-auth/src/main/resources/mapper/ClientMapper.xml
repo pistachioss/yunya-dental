@@ -51,4 +51,7 @@
     WHERE
     gcs.client_id = #{clientId}
     </select>
+
+    <!--
+     -->
 </mapper>

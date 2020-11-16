@@ -34,19 +34,19 @@ public class MemberReturnRecordModel implements Serializable {
     /**
      * 退还本金
      */
-    @ApiModelProperty(value = "退还本金",required = true)
+    @ApiModelProperty(value = "退还本金",required = false)
     private BigDecimal returnPrincipalAmount;
 
     /**
      * 退还赠金
      */
-    @ApiModelProperty(value = "退还赠金",required = true)
+    @ApiModelProperty(value = "退还赠金",required = false)
     private BigDecimal returnGiftAmount;
 
     /**
      * 退费方式ID
      */
-    @ApiModelProperty(value = "退费方式ID",required = true)
+    @ApiModelProperty(value = "退费方式ID",required = false)
     private Integer returnWayId;
 
     /**
