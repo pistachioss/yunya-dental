@@ -21,13 +21,12 @@ import java.util.Date;
 @Data
 @ToString
 public class PhotoServiceForm {
-
-
     @ApiModelProperty(value = "主键id")
+    @NotNull(message = "主键id不能为空")
     private Integer id;
 
     @ApiModelProperty(value = "图片上传日期",required = true)
-    @NotNull
+    @NotNull(message = "图片上传日期不能为空")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date uploadTime;
 }
