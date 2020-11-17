@@ -17,7 +17,7 @@ public class OnceCardUseVo {
 	@ApiModelProperty(value = "项目id")
 	private Integer itemId;
 	@ApiModelProperty(value = "项目名称")
-	private Integer itemName;
+	private String itemName;
 	@ApiModelProperty(value = "项目类型")
 	private Integer itemType;
 	@ApiModelProperty(value = "数量")
