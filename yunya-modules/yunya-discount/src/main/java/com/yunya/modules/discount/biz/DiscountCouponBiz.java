@@ -99,7 +99,7 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
         List<CouponAllocate> coList = couponAllocateMapper.select(couponAllocate);
         for(CouponAllocate fco:coList){
             if (fco.getAllocateUserId()!=null) {
-                // 未完成分配
+                // 完成分配
                 flag = true;
             }
         }

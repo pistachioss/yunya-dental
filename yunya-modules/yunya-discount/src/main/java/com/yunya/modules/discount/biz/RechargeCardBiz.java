@@ -96,7 +96,7 @@ public class RechargeCardBiz extends BaseBiz<RechargeCardMapper, RechargeCard> {
         List<CouponAllocate> coList = couponAllocateMapper.select(couponAllocate);
         for(CouponAllocate fco:coList){
             if (fco.getAllocateUserId()!=null) {
-                // 未完成分配
+                // 完成分配
                 flag = true;
             }
         }
