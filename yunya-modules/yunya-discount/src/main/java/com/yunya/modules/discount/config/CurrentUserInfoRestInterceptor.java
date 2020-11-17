@@ -61,7 +61,7 @@ public class CurrentUserInfoRestInterceptor extends HandlerInterceptorAdapter {
     }
     UserInfo userInfo = redisUtils.get(RedisConstants.REDIS_KEY_USER_TOKEN + token, UserInfo.class);
     if (null == userInfo) {
-      throw new UserAuthException("您还没有登陆，请先登陆！");
+      throw new UserAuthException("您还没有登录，请先登录！");
     }
     BaseContextHandler.setUsername(userInfo.getUsername());
     BaseContextHandler.setName(userInfo.getName());

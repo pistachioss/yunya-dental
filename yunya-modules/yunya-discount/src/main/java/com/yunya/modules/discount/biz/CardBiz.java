@@ -165,7 +165,9 @@ import static com.yunya.modules.discount.enums.BenefitTypeEnum.*;
 import static com.yunya.modules.discount.enums.CardQrCodeEnum.*;
 import static com.yunya.modules.discount.enums.CardStatusEnum.*;
 import static com.yunya.modules.discount.enums.CouponTypeEnum.*;
+import static com.yunya.modules.discount.enums.CouponTypeEnum.EXCHANGE;
 import static com.yunya.modules.discount.enums.RangTypeEnum.*;
+import static com.yunya.modules.discount.enums.SoldTypeEnum.*;
 import static com.yunya.modules.discount.enums.TrueFalseEnum.*;
 import static java.util.stream.Collectors.*;
 
@@ -855,6 +857,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
 		}
 		PatientOrderBenefitVo result = transformBenefitInfo(responseResult.getData());
+		log.info("操作人员选择的优惠信息：[{}]", result);
 		return ResponseUtil.success(result);
 	}
 
@@ -1719,8 +1722,21 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private void updateCardForSold(Card card, CardSoldForm form, Integer loginUserId) {
 		Card updateCard = BeanCopierUtils.generalCopyBean(form, Card.class);
 		updateCard.setStatus(ACTIVE_PENDING.getCode());
-		if (SoldTypeEnum.SOLD.equals(form.getSoldType())) {
+		if (SOLD.equals(form.getSoldType())) {
 			updateCard.setPay(TRUE.equals(form.getSoldAndPay()) ? TRUE.getCode() : FALSE.getCode());
+		}
+		if (SOLD.equals(form.getSoldType())) {
+			if (ONE.equals(form.getSoldAndPay())) {
+				updateCard.setSoldAndPay(ONE);
+				updateCard.setPayId(form.getPayId());
+			}
+			if (ZERO.equals(form.getSoldAndPay())) {
+				updateCard.setSoldAndPay(ZERO);
+				updateCard.setPayId(null);
+			}
+		} else {
+			updateCard.setSoldAndPay(null);
+			updateCard.setPayId(null);
 		}
 		updateCard.setSoldDate(LocalDateTime.now());
 		updateCard.setSellerUserId(loginUserId);
