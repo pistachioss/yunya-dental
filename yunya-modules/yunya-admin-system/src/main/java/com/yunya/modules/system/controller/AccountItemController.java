@@ -1,6 +1,7 @@
 package com.yunya.modules.system.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.AccountItemVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -9,7 +10,6 @@ import com.yunya.modules.system.biz.AccountItemBiz;
 import com.yunya.modules.system.domain.form.AccountItemForm;
 import com.yunya.modules.system.domain.model.AccountItemModel;
 import com.yunya.modules.system.domain.query.AccountItemQueryForm;
-import com.yunya.modules.system.vo.AccountItemVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;

@@ -16,10 +16,12 @@ import com.yunya.models.system.ClinicDepartmentRoom;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.modules.system.domain.model.ClinicDepartmentRoomModel;
 import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
+import com.yunya.modules.system.domain.query.DepartmentRoomQueryForm;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
 import com.yunya.modules.system.mapper.ClinicDepartmentRoomMapper;
 import com.yunya.modules.system.mapper.CompanyMapper;
 import com.yunya.modules.system.mapper.DepartmentRoomMapper;
+import com.yunya.modules.system.vo.DepartmentRoomVO;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -157,11 +159,45 @@ public class ClinicDepartmentRoomBiz
    * @return list
    */
   public PageInfo<ClinicDepartmentRoomVO> findList(ClinicDepartmentRoomQueryForm queryForm) {
+    PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-    List<ClinicDepartmentRoomVO> resultList = mapper.selectClinicDepartmentRoomList(queryForm);
-    return new PageInfo<>(resultList);
+    Integer orgId = queryForm.getOrgId();
+    DepartmentRoomQueryForm form = new DepartmentRoomQueryForm();
+    form.setId(queryForm.getDeptRoomId());
+    List<DepartmentRoomVO> departmentRoomVOS = departmentRoomMapper.selectList(form);
+    pageInfo = new PageInfo(departmentRoomVOS);
+    List<ClinicDepartmentRoomVO> resultList = Lists.newArrayList();
+    if (StringHelper.isNotEmpty(departmentRoomVOS)) {
+      departmentRoomVOS.forEach(
+        departmentRoomVO -> {
+          Integer deptId = departmentRoomVO.getId();
+          ClinicDepartmentRoom entity = new ClinicDepartmentRoom();
+          entity.setDeptRoomId(deptId);
+          entity.setCompanyId(orgId);
+          ClinicDepartmentRoom clinicDepartmentRoom = mapper.selectOne(entity);
+          ClinicDepartmentRoomVO vo = new ClinicDepartmentRoomVO();
+          vo.setOrgId(orgId);
+          vo.setDeptRoomId(deptId);
+          vo.setDeptRoomName(departmentRoomVO.getName());
+          OrganizationInfo organizationInfo = companyMapper.selectOrgInfoById(orgId);
+          if (null != organizationInfo) {
+            vo.setOrgName(organizationInfo.getAbbreviation());
+          }
+          if (null != clinicDepartmentRoom) {
+            vo.setClinicDeptRoomId(clinicDepartmentRoom.getId());
+            vo.setInservice(clinicDepartmentRoom.getInservice());
+          } else {
+            vo.setInservice(departmentRoomVO.getInservice());
+          }
+          resultList.add(vo);
+        });
+      pageInfo.setList(resultList);
+    } else {
+      pageInfo.setList(new ArrayList());
+    }
+    return pageInfo;
   }
 
   /**

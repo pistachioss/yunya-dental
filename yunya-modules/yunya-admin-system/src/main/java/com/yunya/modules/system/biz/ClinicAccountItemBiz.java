@@ -8,13 +8,17 @@ import com.yunya.feign.system.vo.AccountItemVO;
 import com.yunya.feign.system.vo.ClinicAccountItemListVO;
 import com.yunya.feign.system.vo.ClinicAccountItemVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.ClinicAccountItem;
+import com.yunya.models.system.MemberType;
+import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.modules.system.domain.model.ClinicAccountItemModel;
+import com.yunya.modules.system.domain.query.AccountItemQueryForm;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
 import com.yunya.modules.system.domain.query.OrganizationQueryForm;
 import com.yunya.modules.system.mapper.AccountItemMapper;
@@ -25,10 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
@@ -67,11 +68,46 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
    * @return
    */
   public PageInfo<ClinicAccountItemVO> findList(ClinicAccountItemQueryForm queryForm) {
+    PageInfo pageInfo;
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-    List<ClinicAccountItemVO> resultList = mapper.selectClinicAccountItemList(queryForm);
-    return new PageInfo<>(resultList);
+    Integer orgId = queryForm.getOrgId();
+    AccountItemQueryForm form = new AccountItemQueryForm();
+    form.setId(queryForm.getAccountItemId());
+    /** 入账方式分类ID */
+    form.setAccountTypeId(queryForm.getAccountTypeId());
+    List<AccountItemVO> accountItemVOS = accountItemMapper.selectAccountItemList(form);
+    pageInfo = new PageInfo(accountItemVOS);
+    List<ClinicAccountItemVO> resultList = Lists.newArrayList();
+    if (StringHelper.isNotEmpty(accountItemVOS)) {
+      accountItemVOS.forEach(
+              accountItemVO -> {
+                Integer accountItemId = accountItemVO.getAccountItemId();
+                ClinicAccountItem entity = new ClinicAccountItem();
+                entity.setAccountItemId(accountItemId);
+                entity.setCompanyId(orgId);
+                ClinicAccountItem clinicTariff = mapper.selectOne(entity);
+                ClinicAccountItemVO vo = new ClinicAccountItemVO();
+                vo.setOrgId(orgId);
+                vo.setAccountTypeId(accountItemVO.getAccountTypeId());
+                vo.setAccountTypeName(accountItemVO.getAccountTypeName());
+                vo.setAccountItemId(accountItemVO.getAccountItemId());
+                vo.setAccountItemName(accountItemVO.getAccountItemName());
+                vo.setType(accountItemVO.getType());
+                if (null != clinicTariff) {
+                  vo.setId(clinicTariff.getId());
+                  vo.setInservice(clinicTariff.getInservice());
+                } else {
+                  vo.setInservice(accountItemVO.getInservice());
+                }
+                resultList.add(vo);
+              });
+      pageInfo.setList(resultList);
+    } else {
+      pageInfo.setList(new ArrayList());
+    }
+    return pageInfo;
   }
 
   /**

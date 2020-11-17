@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -22,6 +23,8 @@ public class PrintInfoVo implements Serializable {
     private String medicalNumber;
     @ApiModelProperty(value = "会员类型名称")
     private String memberTypeName;
+    @ApiModelProperty(value = "末诊日期")
+    private Date lastTreatmentDate;
     @ApiModelProperty(value = "病历记录详情")
     private List<PatientMedicalRecordDetailVo> medicalRecordDetails;
 }

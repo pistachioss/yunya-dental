@@ -32,13 +32,13 @@ public class ClinicAccountItemQueryForm implements Serializable {
   @ApiModelProperty("组织入账方式ID")
   private Integer id;
   /** 入账方式分类ID */
-  @ApiModelProperty("入账方式分类ID")
+  @ApiModelProperty(value = "入账方式分类ID",required = true)
   private Integer accountTypeId;
   /** 入账方式ID */
   @ApiModelProperty(value = "入账方式ID")
   private Integer accountItemId;
   /** 组织ID */
-  @ApiModelProperty("组织ID")
+  @ApiModelProperty(value = "组织ID",required = true)
   private Integer orgId;
   /** 是否启用 */
   @ApiModelProperty("是否启用")

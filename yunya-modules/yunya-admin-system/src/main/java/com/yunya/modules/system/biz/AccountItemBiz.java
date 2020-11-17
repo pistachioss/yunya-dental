@@ -2,6 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.vo.AccountItemVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -14,7 +15,6 @@ import com.yunya.modules.system.domain.model.AccountItemModel;
 import com.yunya.modules.system.domain.query.AccountItemQueryForm;
 import com.yunya.modules.system.mapper.AccountItemMapper;
 import com.yunya.modules.system.mapper.AccountTypeMapper;
-import com.yunya.modules.system.vo.AccountItemVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

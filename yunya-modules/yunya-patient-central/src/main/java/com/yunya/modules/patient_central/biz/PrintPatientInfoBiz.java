@@ -15,9 +15,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @program: yunya-dental
@@ -57,6 +59,13 @@ public class PrintPatientInfoBiz {
             if (null != memberType) {
                 printInfoVo.setMemberTypeName(memberType.getName());
             }
+
+            // 就诊记录按就诊日期降序排列
+            List<TreatmentRecord> collect = treatmentRecords.stream().sorted(Comparator.comparing(TreatmentRecord::getTreatStartTime).reversed()).collect(Collectors.toList());
+            TreatmentRecord treatmentRecord = collect.get(0);
+            // 设置末诊日期
+            printInfoVo.setLastTreatmentDate(treatmentRecord.getTreatStartTime());
+
             // 设置患者末诊医生和末诊时间
             treatmentRecords.forEach(item -> {
                 PatientMedicalRecordDetailVo patientMedicalRecordDetailVo = new PatientMedicalRecordDetailVo();

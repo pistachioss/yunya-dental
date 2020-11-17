@@ -1,8 +1,8 @@
 package com.yunya.modules.system.mapper;
 
+import com.yunya.feign.system.vo.AccountItemVO;
 import com.yunya.models.system.AccountItem;
 import com.yunya.modules.system.domain.query.AccountItemQueryForm;
-import com.yunya.modules.system.vo.AccountItemVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
