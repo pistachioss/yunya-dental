@@ -446,6 +446,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
 
   /**
    * 通过患者ID批量查询患者欠费总额
+   *
    * @param patientIds 患者ID
    * @return 返回患者欠费集合
    */
@@ -453,4 +454,14 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     return mapper.selectPatientDebtAmountList(patientIds);
   }
 
+  /**
+   * 根据患者ID查询患者账单消费信息
+   *
+   * @param patientId 患者ID
+   * @return
+   */
+  public PatientBillStatistics statisticsBill(Integer patientId) {
+    PatientBillStatistics patientBillStatistics = mapper.selectPatientBillStatistics(patientId);
+    return patientBillStatistics;
+  }
 }

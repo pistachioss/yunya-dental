@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.model.BillRefundModel;
 import com.yunya.feign.treatment.domain.vo.BillDetailGroupVO;
+import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -64,5 +65,25 @@ public class BillRecordController {
   public ResponseResult<T> billRefund(@RequestBody @Validated BillRefundModel model) {
     billRecordBiz.refund(model);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据患者ID查询患者账单消费信息
+   *
+   * @param patientId 患者ID
+   * @return
+   */
+  @ApiOperation("根据患者ID查询患者账单消费信息")
+  @ApiImplicitParam(
+      name = "patientId",
+      value = "患者ID",
+      required = true,
+      dataType = "int",
+      paramType = "path")
+  @GetMapping(value = "/count/{patientId}", name = "根据患者ID查询患者账单消费信息")
+  public ResponseResult<PatientBillStatistics> statisticsBill(
+      @PathVariable(value = "patientId") Integer patientId) {
+    PatientBillStatistics statistics = billRecordBiz.statisticsBill(patientId);
+    return ResponseUtil.success(statistics);
   }
 }
