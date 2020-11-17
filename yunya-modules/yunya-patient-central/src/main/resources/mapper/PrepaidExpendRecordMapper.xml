@@ -45,7 +45,7 @@
             prepaid_expend_record perd
             JOIN patient_base_info pbio ON perd.patient_id = pbio.id
         WHERE
-            perd.prepaid_id = #{form.prepaidId} and perd.patient_id = #{form.patientId}
+            perd.prepaid_id = #{form.prepaidId}
             and perd.inservice = 1
         order by perd.crt_time desc
     </select>

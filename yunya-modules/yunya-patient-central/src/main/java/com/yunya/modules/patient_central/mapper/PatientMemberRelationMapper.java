@@ -61,7 +61,7 @@ public interface PatientMemberRelationMapper extends Mapper<PatientMemberRelatio
     PatientMemberRelation findMemberBindingRelation(@Param("form") MemberBindingRelationInfoModel form);
 
     /**
-     * 查询会员卡绑定信息
+     * 以副卡人身份查询主卡人集合
      * @param form 查询患者会员信息form
      * @return  List<MemberInfoVo>
      */

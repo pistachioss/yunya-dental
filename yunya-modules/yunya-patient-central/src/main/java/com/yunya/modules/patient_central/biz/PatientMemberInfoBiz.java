@@ -15,6 +15,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -438,6 +439,12 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
     PatientMemberInfo patientMemberInfo =
         patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
     if (patientMemberInfo != null) {
+      if (patientMemberInfo.getPrincipalAmount().compareTo(model.getReturnPrincipalAmount()) < 0){
+        throw new ClientServiceException("会员卡本金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
+      }
+      if (patientMemberInfo.getBonusAmount().compareTo(model.getReturnGiftAmount()) < 0){
+        throw new ClientServiceException("会员卡赠金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
+      }
       patientMemberInfo.setPrincipalAmount(
           patientMemberInfo.getPrincipalAmount().subtract(model.getReturnPrincipalAmount()));
       patientMemberInfo.setBonusAmount(
