@@ -26,7 +26,7 @@ public class PrepaymentRefundModel implements Serializable {
   /** 预付款账户ID */
   @ApiModelProperty(value = "预付款卡号", required = true)
   @NotBlank(message = "预付款卡号不能为空！")
-  private String prepaymentNum;
+  private String prepaymentAccountId;
 
   @ApiModelProperty(value = "预付款入账方式ID", required = true)
   @NotNull(message = "预付款入账方式ID不能为空！")

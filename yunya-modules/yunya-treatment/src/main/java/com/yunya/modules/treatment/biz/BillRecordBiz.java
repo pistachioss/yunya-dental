@@ -93,7 +93,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   public BillDetailGroupVO findOrderDetailAndBillDetail(Integer orderRecordId) {
     BillDetailGroupVO resultData = new BillDetailGroupVO();
     // 获取开单优惠详情
-    List<OrderDetailChargeVO> orderDetails = getOrderDetailChargeVOS(orderRecordId);
+    List<OrderDetailChargeVO> orderDetails = getOrderDetailCharges(orderRecordId);
     resultData.setOrderDetails(orderDetails);
 
     List<BillPayRecordVO> billPayRecords = mapper.selectBillPayRecord(orderRecordId);
@@ -148,7 +148,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @param orderRecordId 开单详情
    * @return
    */
-  public List<OrderDetailChargeVO> getOrderDetailChargeVOS(Integer orderRecordId) {
+  public List<OrderDetailChargeVO> getOrderDetailCharges(Integer orderRecordId) {
     List<OrderDetailChargeVO> orderDetails = orderDetailBiz.getChargeOrderDetailList(orderRecordId);
     if (StringHelper.isEmpty(orderDetails)) {
       orderDetails = new ArrayList<>();
@@ -317,7 +317,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     // 会员费退费
     if (null != memberRefundModel) {
       refundPayDetailRecord.setAccountItemId(memberRefundModel.getAccountItemId());
-      String memberNum = memberRefundModel.getMemberNum();
+      String memberNum = memberRefundModel.getMemberAccountId();
       refundPayDetailRecord.setRemark(memberNum);
       BigDecimal principalAmount = memberRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = memberRefundModel.getGiftAmount();
@@ -334,7 +334,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     // 预付款退费
     if (null != prepaymentRefundModel) {
       refundPayDetailRecord.setAccountItemId(prepaymentRefundModel.getAccountItemId());
-      String prepaymentNum = prepaymentRefundModel.getPrepaymentNum();
+      String prepaymentNum = prepaymentRefundModel.getPrepaymentAccountId();
       refundPayDetailRecord.setRemark(prepaymentNum);
       BigDecimal principalAmount = prepaymentRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = prepaymentRefundModel.getGiftAmount();
