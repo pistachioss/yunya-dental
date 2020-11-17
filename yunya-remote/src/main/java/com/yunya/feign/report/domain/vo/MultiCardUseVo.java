@@ -4,6 +4,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author xiangyang
  * @date 2020/11/16
@@ -12,7 +14,7 @@ import lombok.Data;
 @ApiModel(value = "患者档案产品管理使用记录（兑换、套餐）返回")
 public class MultiCardUseVo {
 	@ApiModelProperty(value = "项目详情")
-	private BenefitItemVo itemVo;
+	private List<BenefitItemVo> itemVos;
 	@ApiModelProperty(value = "使用记录")
-	private OnceCardUseVo useVo;
+	private List<OnceCardUseVo> useVos;
 }

@@ -12,7 +12,7 @@ public class BenefitItemVo {
 	@ApiModelProperty("开单日期")
 	private Integer itemId;
 	@ApiModelProperty("项目名称")
-	private Integer itemName;
+	private String itemName;
 	@ApiModelProperty("数量")
 	private Integer originalQuantity;
 	@ApiModelProperty("剩余可使用数量")

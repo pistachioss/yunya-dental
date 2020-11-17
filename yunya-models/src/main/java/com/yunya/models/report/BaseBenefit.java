@@ -67,6 +67,12 @@ public class BaseBenefit {
     private Integer benefitType;
 
     /**
+     * 优惠券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券；99-会员卡）
+     */
+    @Column(name = "coupon_type")
+    private Integer couponType;
+
+    /**
      * 项目使用优惠下标（记录哪一个数量）
      */
     @Column(name = "item_index")
