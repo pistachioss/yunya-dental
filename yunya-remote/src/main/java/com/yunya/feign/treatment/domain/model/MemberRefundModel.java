@@ -27,7 +27,7 @@ public class MemberRefundModel implements Serializable {
   /** 会员卡账户ID */
   @ApiModelProperty(value = "会员卡卡号", required = true)
   @NotBlank(message = "会员卡卡号不能为空！")
-  private String memberNum;
+  private String memberAccountId;
   /** 会员卡入账方式ID */
   @ApiModelProperty(value = "会员卡入账方式ID", required = true)
   @NotNull(message = "会员卡入账方式ID不能为空！")

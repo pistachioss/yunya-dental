@@ -35,7 +35,7 @@
         bill_record br
       WHERE br.org_id = #{orgId} AND DATE_FORMAT(br.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d')
     </select>
-    
+
     <!-- 根据开单记录ID查询订单支付记录列表信息 -->
     <select id="selectBillPayRecord" resultType="com.yunya.feign.treatment.domain.vo.BillPayRecordVO">
       SELECT
@@ -75,11 +75,11 @@
     <select id="selectPatientBillStatistics"
             resultType="com.yunya.feign.treatment.domain.vo.PatientBillStatistics">
         select
-            sum (br.receivable_amount) as billTotalOriginalPrice,
-            sum (br.privilege_amount) as billTotalPrivilegePrice,
-            sum (br.actual_receivable_amount) as billTotalActualPrice,
-            sum (br.received_amount) as billTotalArrears
+        ifnull(sum(br.receivable_amount), 0) as billTotalOriginalPrice,
+        ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
+        ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
+        ifnull(sum(br.received_amount), 0) as billTotalArrears
         from bill_record br
-        where br.patient_id = #{patientId}
+        where br.patient_id = = #{patientId}
     </select>
 </mapper>
