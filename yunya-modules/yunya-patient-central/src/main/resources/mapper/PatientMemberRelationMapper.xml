@@ -51,10 +51,19 @@
 
     <!-- 查询会员卡绑定信息 -->
     <select id="findMemberInfo" resultType="com.yunya.feign.patient_central.domain.vo.web.SecondaryMemberInfoVo">
-      select  pmio.id,pmrn.secondary_card_id secondaryCardId,pmio.card_number secondaryCardNumber,pmio.member_type_id secondaryMemberTypeId,
-			 pbio.name secondaryName
-      from patient_member_relation pmrn join patient_member_info pmio on pmrn.secondary_card_id = pmio.patient_id join patient_base_info pbio on pmrn.secondary_card_id = pbio.id
-      where pmrn.master_card_id = #{form.patientId} and pmrn.bind_type = #{form.bindType}
+        SELECT
+            pmio.id,
+            pmrn.secondary_card_id secondaryCardId,
+            pmio.card_number secondaryCardNumber,
+            pmio.member_type_id secondaryMemberTypeId,
+            pbio.NAME secondaryName
+        FROM
+            patient_member_relation pmrn
+            JOIN patient_member_info pmio ON pmrn.master_card_id = pmio.patient_id
+            JOIN patient_base_info pbio ON pmrn.master_card_id = pbio.id
+        WHERE
+            pmrn.secondary_card_id = #{form.patientId}
+            AND pmrn.bind_type = #{form.bindType}
     </select>
 
     <!-- 查询关系id -->

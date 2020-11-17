@@ -1,5 +1,6 @@
 package com.yunya.models.employee_attend;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
@@ -23,7 +24,12 @@ public class WorkOvertimeInfo {
      */
     @Column(name = "schedule_id")
     private Integer scheduleId;
-
+    /**
+     * 班次id
+     */
+    @Column(name = "work_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date workDate;
 
     /**
      * 加班事由
