@@ -99,14 +99,16 @@ public class VoucherBiz extends BaseBiz<VoucheCouponMapper, VoucheCoupon> {
      * @param discountUpdateForm
      */
     public void updateVoucher(VoucheCouponForm discountUpdateForm) {
-        Integer id = discountUpdateForm.getId();
-        boolean flag = true;
+        boolean flag = false;
         // 判断是否完成分配
         CouponAllocate couponAllocate = new CouponAllocate();
         couponAllocate.setCouponId(discountUpdateForm.getId());
-        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
-            // 未完成分配
-            flag = false;
+        List<CouponAllocate> coList = couponAllocateMapper.select(couponAllocate);
+        for(CouponAllocate fco:coList){
+            if (fco.getAllocateUserId()!=null) {
+                // 未完成分配
+                flag = true;
+            }
         }
         VoucheCoupon voucheCoupon = new VoucheCoupon();
         CouponCommonInfo couponCommonInfo = new CouponCommonInfo();
