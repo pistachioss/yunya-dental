@@ -13,6 +13,7 @@ import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
 import com.yunya.feign.report.domain.query.CouponUsedQuery;
+import com.yunya.feign.report.domain.query.MultiCardUseQuery;
 import com.yunya.feign.report.domain.query.OnceCardUseQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
 import com.yunya.feign.report.domain.query.RechargeDetailQuery;
@@ -28,6 +29,7 @@ import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
+import com.yunya.feign.report.domain.vo.MultiCardUseVo;
 import com.yunya.feign.report.domain.vo.OnceCardUseVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
 import com.yunya.feign.report.domain.vo.RechargeDetailVo;
@@ -222,13 +224,13 @@ public class DiscountController {
 	@ApiOperation(value = "患者档案-产品管理-使用记录（代金券，折扣券）")
 	@PostMapping("/{cardId}/benefit/record/once")
 	public ResponseResult<PageInfo<OnceCardUseVo>> getUseRecord(@PathVariable(value = "cardId") Integer cardId, @RequestBody OnceCardUseQuery query) {
-		return ResponseUtil.success(discountBiz.getOnceCardUsePage(cardId, query));
+		return ResponseUtil.success(discountBiz.getCardUsePage(cardId, query));
 	}
 
-//	@ApiOperation(value = "患者档案-产品管理-使用记录（兑换券，套餐券）")
-//	@PostMapping("/{cardId}/benefit/record/multi")
-//	public ResponseResult<PageInfo<OnceCardUseVo>> getUseRecord(@PathVariable(value = "cardId") Integer cardId, @RequestBody MultiCardUseQuery query) {
-//		return ResponseUtil.success(discountBiz.getOnceCardUsePage(cardId, query));
-//	}
+	@ApiOperation(value = "患者档案-产品管理-使用记录（兑换券，套餐券）")
+	@PostMapping("/{cardId}/benefit/record/multi")
+	public ResponseResult<MultiCardUseVo> getUseRecord(@PathVariable(value = "cardId") Integer cardId, @RequestBody MultiCardUseQuery query) {
+		return ResponseUtil.success(discountBiz.getMultiCardUsePage(cardId, query));
+	}
 
 }

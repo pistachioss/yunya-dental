@@ -56,4 +56,32 @@ public class FieldInfoController {
     public ResponseResult findList(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
         return ResponseUtil.success(fieldInfoBiz.findList(fieldInfoForm));
     }
+
+    /**
+     * 审核外勤申请
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/examine")
+    @ApiOperation("审核外勤申请")
+    @RepeatSubmit
+    @CurrentUser
+    public ResponseResult examine(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
+        return ResponseUtil.success(fieldInfoBiz.examine(fieldInfoForm));
+    }
+
+    /**
+     * 撤销外勤申请
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/revoke")
+    @ApiOperation("撤销外勤申请")
+    @RepeatSubmit
+    @CurrentUser
+    public ResponseResult revoke(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
+        return ResponseUtil.success(fieldInfoBiz.revoke(fieldInfoForm));
+    }
 }

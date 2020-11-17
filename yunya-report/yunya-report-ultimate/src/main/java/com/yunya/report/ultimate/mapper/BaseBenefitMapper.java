@@ -1,5 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
 import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
@@ -37,7 +38,12 @@ public interface BaseBenefitMapper extends Mapper<BaseBenefit> {
 	                                                 @Param("couponTypes") List<Integer> couponTypes, @Param("saleChannelIds") List<Integer> saleChannelIds);
 
 	/**
-	 * 查询代金、折扣券的使用记录
+	 * 查询卡券的使用记录
 	 */
 	List<OnceCardUseVo> listCardUseById(@Param("cardId") Integer cardId);
+
+	/**
+	 * 查询卡券项目的使用详情
+	 */
+	List<BenefitItemVo> listItemUseById(@Param("cardId") Integer cardId);
 }

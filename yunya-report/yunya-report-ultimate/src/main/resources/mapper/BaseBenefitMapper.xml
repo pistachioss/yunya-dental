@@ -14,6 +14,7 @@
         <result column="item_id" property="itemId" jdbcType="INTEGER"/>
         <result column="item_type" property="itemType" jdbcType="TINYINT"/>
         <result column="benefit_type" property="benefitType" jdbcType="TINYINT"/>
+        <result column="coupon_type" property="couponType" jdbcType="TINYINT"/>
         <result column="item_index" property="itemIndex" jdbcType="INTEGER"/>
         <result column="benefit_amount" property="benefitAmount" jdbcType="DECIMAL"/>
         <result column="choice_benefit_type" property="choiceBenefitType" jdbcType="TINYINT"/>
@@ -240,5 +241,31 @@
             and `bf`.`choice_benefit_type` = 0
         group by `bf`.`order_id`, `bf`.`order_detail_id`
         order by `bf`.`use_date` asc
+    </select>
+
+    <select id="listItemUseById" resultType="com.yunya.feign.report.domain.vo.BenefitItemVo">
+        select
+            `bci`.`item_id`,
+            `bti`.`item_name`,
+            `bci`.`quantity`                                as `originalQuantity`,
+            `bci`.`quantity` - ifnull(`temp`.`useCount`, 0) as `remainingQuantity`
+        from `base_card` `c`
+             inner join `base_coupon_item` `bci` on `bci`.`coupon_id` = `c`.`coupon_id`
+             left join `base_tariff_info` `bti` on `bti`.`item_id` = `bci`.`item_id`
+                                            and `bti`.`item_type` = `bci`.`type`
+             left join (select
+                            `bb`.`item_id`,
+                            `bb`.`item_type`,
+                            `bb`.`card_id`,
+                            count(*) as `useCount`
+                        from `base_benefit` `bb`
+                        where `bb`.`card_id` = #{cardId}
+                          and `bb`.`choice_benefit_type` = 0
+                          and `bb`.`coupon_type` in (2, 3)
+                        group by `bb`.`item_id`, `bb`.`item_type`) `temp`
+                       on `bci`.`item_id` = `temp`.`item_id`
+                       and `temp`.`item_type` = `bci`.`type`
+        where `c`.`card_id` = #{cardId}
+        group by `bci`.`item_id`, `bci`.`type`
     </select>
 </mapper>

@@ -1,6 +1,5 @@
 package com.yunya.models.employee_attend;
 
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;

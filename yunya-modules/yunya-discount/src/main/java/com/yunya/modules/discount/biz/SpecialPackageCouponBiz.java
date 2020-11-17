@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseCoupon;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -90,13 +91,16 @@ public class SpecialPackageCouponBiz  extends BaseBiz<SpecialPackageCouponMapper
      * @param specialPackageCouponForm
      */
     public void updateSpecialPackageCoupon(SpecialPackageCouponForm specialPackageCouponForm) {
-        boolean flag = true;
+        boolean flag = false;
         // 判断是否完成分配
         CouponAllocate couponAllocate = new CouponAllocate();
         couponAllocate.setCouponId(specialPackageCouponForm.getId());
-        if (couponAllocateMapper.select(couponAllocate).isEmpty()) {
-            // 未完成分配
-            flag = false;
+        List<CouponAllocate> coList = couponAllocateMapper.select(couponAllocate);
+        for(CouponAllocate fco:coList){
+            if (fco.getAllocateUserId()!=null) {
+                // 完成分配
+                flag = true;
+            }
         }
         SpecialPackageCoupon specialPackageCoupon = new SpecialPackageCoupon();
         CouponCommonInfo couponCommonInfo = new CouponCommonInfo();

@@ -387,7 +387,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   }
 
   /**
-   * 根据姓名/手机号/姓名拼音模糊查询患者
+   * 模糊查询患者
    *
    * @param form 患者模糊查询模板
    * @return List<PatientBaseInfoVo>

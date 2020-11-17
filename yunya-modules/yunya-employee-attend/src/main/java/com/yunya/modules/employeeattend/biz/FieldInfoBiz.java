@@ -8,6 +8,7 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.FieldInfo;
@@ -25,8 +26,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简介:
@@ -197,6 +197,46 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
             }
         }
         return list;
+    }
+
+    /**
+     * 审批外勤
+     *
+     * @param fieldInfoForm
+     * @return
+     */
+    public Integer examine(FieldInfoForm fieldInfoForm) {
+        FieldInfo fieldInfo = new FieldInfo();
+        fieldInfo.setId(fieldInfoForm.getId());
+        fieldInfo = mapper.selectByPrimaryKey(fieldInfo);
+        if(fieldInfo.getApprpvalStatus()==0){
+            if(fieldInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))){
+                fieldInfo.setApprpvalStatus(fieldInfoForm.getApprpvalStatus());
+                return mapper.updateByPrimaryKey(fieldInfo);
+            }
+            throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
+        }
+        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+    }
+
+    /**
+     * 撤销外勤
+     *
+     * @param fieldInfoForm
+     * @return
+     */
+    public Integer revoke(FieldInfoForm fieldInfoForm) {
+        FieldInfo fieldInfo = new FieldInfo();
+        fieldInfo.setId(fieldInfoForm.getId());
+        fieldInfo = mapper.selectByPrimaryKey(fieldInfo);
+        if(fieldInfo.getApprpvalStatus()==0){
+            if(fieldInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))){
+                fieldInfo.setApprpvalStatus(3);
+                return mapper.updateByPrimaryKey(fieldInfo);
+            }
+            throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);
+        }
+        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
     }
 }
 

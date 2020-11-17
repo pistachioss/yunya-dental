@@ -19,6 +19,7 @@ import com.yunya.feign.report.domain.query.OnceCardUseQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
 import com.yunya.feign.report.domain.query.RechargeDetailQuery;
 import com.yunya.feign.report.domain.query.RechargeQuery;
+import com.yunya.feign.report.domain.vo.BenefitItemVo;
 import com.yunya.feign.report.domain.vo.CardSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardStatisticsVo;
 import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
@@ -359,18 +360,24 @@ public class DiscountBiz {
 	}
 
 	/**
-	 * 查询代金、折扣卡券优惠项目分页
+	 * 查询卡券的使用记录
 	 * @param cardId cardId
 	 * @param query query
 	 * @return page
 	 */
-	public PageInfo<OnceCardUseVo> getOnceCardUsePage(Integer cardId, OnceCardUseQuery query) {
+	public PageInfo<OnceCardUseVo> getCardUsePage(Integer cardId, OnceCardUseQuery query) {
 		Page<OnceCardUseVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
 		benefitMapper.listCardUseById(cardId);
 		return new PageInfo<>(page);
 	}
 
-//	public PageInfo<MultiCardUseVo> getMultiCardUsePage(Integer cardId, MultiCardUseQuery query) {
-//		Page<OnceCardUseVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
-//	}
+	public MultiCardUseVo getMultiCardUsePage(Integer cardId, MultiCardUseQuery query) {
+		MultiCardUseVo vo = new MultiCardUseVo();
+		Page<OnceCardUseVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCardUseById(cardId);
+		vo.setUseVos(new PageInfo<>(page));
+		List<BenefitItemVo> itemVos = benefitMapper.listItemUseById(cardId);
+		vo.setItemVos(itemVos);
+		return vo;
+	}
 }
