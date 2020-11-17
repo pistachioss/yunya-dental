@@ -910,7 +910,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			List<PatientUseBenefitBo> packageBenefitBos = benefitUseBo.getPackageBenefitBos();
 			//按售出套餐单价正序排序
 			sortPackageBySoldUnit(packageBenefitBos, orderItem);
-			setUpSingleBenefitInfoForOrder(orderItem, orgId, exchangeBenefitBos);
+			setUpSingleBenefitInfoForOrder(orderItem, orgId, packageBenefitBos);
 		}
 		//会员卡项目
 		PatientUseBenefitBo memberBenefitBo = benefitUseBo.getMemberBenefitBo();
