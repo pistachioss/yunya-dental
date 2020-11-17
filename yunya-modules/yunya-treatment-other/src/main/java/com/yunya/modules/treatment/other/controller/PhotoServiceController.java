@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -84,7 +85,7 @@ public class PhotoServiceController {
      */
     @ApiOperation("删除图片影像记录")
     @DeleteMapping("/del/{id}")
-    public ResponseResult upd(@PathVariable("id") Integer id, String uploadTime){
+    public ResponseResult del(@PathVariable("id") Integer id, String uploadTime) throws ParseException {
         photoServiceBiz.del(id,uploadTime);
         return ResponseUtil.success();
     }
