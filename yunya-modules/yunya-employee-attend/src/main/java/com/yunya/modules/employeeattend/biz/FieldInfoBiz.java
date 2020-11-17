@@ -10,9 +10,11 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.employee_attend.CopyInfo;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.FieldInfo;
 import com.yunya.modules.employeeattend.form.FieldInfoForm;
+import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
 import com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper;
 import com.yunya.modules.employeeattend.mapper.FieldInfoMapper;
 import com.yunya.modules.employeeattend.vo.EmListVO;
@@ -67,9 +69,11 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
     private EmployeeScheduleMapper employeeScheduleMapper;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private CopyInfoMapper copyInfoMapper;
 
     public int create(FieldInfoForm fieldInfoForm) {
-        //没有其他类型的申请
+        //判断是否有其他类型的申请
         if (true) {
             FieldInfo field = new FieldInfo();
             field.setUserId(fieldInfoForm.getUserId());
@@ -116,34 +120,47 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     } catch (ParseException e) {
                         throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                     }
-                    for (EmListVO emListVO : emlist) {
-                        //判断外勤开始时间是否在班次时间内
-                        if (startTime.before(emListVO.getEndTime())
-                                && (startTime.after(emListVO.getStartTime()) || startTime.equals(emListVO.getStartTime()))
-                        ) {
-                            start = true;
+                    if(emlist.size()>0){
+                        for (EmListVO emListVO : emlist) {
+                            //判断外勤开始时间是否在班次时间内
+                            if (startTime.before(emListVO.getEndTime())
+                                    && (startTime.after(emListVO.getStartTime()) || startTime.equals(emListVO.getStartTime()))
+                            ) {
+                                start = true;
+                            }
+                            //判断外勤结束时间是否在班次时间内
+                            if (endTime.after(emListVO.getStartTime())
+                                    && (endTime.before(emListVO.getEndTime()) || endTime.equals(emListVO.getEndTime()))
+                            ) {
+                                end = true;
+                            }
                         }
-                        //判断外勤结束时间是否在班次时间内
-                        if (endTime.after(emListVO.getStartTime())
-                                && (endTime.before(emListVO.getEndTime()) || endTime.equals(emListVO.getEndTime()))
-                        ) {
-                            end = true;
-                        }
+                    }else{
+                        throw new ClientServiceException("申请当天无排班", INSERT_MODEL);
                     }
                     //若外勤开始时间和结束时间都在班次时间段内才能进行外勤申请
                     if (start && end) {
                         FieldInfo fieldInfo = new FieldInfo();
                         BeanUtils.copyProperties(fieldInfoForm, fieldInfo);
                         fieldInfo.setCrtId(fieldInfoForm.getUserId());
-                        fieldInfo.setUpdTime(new Date());
-                        return mapper.insert(fieldInfo);
+                        fieldInfo.setCrtTime(new Date());
+                        int num = mapper.insertSelective(fieldInfo);
+                        //生成抄送信息
+                        CopyInfo copyInfo = new CopyInfo();
+                        copyInfo.setApplyId(num);
+                        copyInfo.setApplyType(1);
+                        copyInfo.setCrtId(fieldInfoForm.getUserId());
+                        copyInfo.setCrtTime(new Date());
+                        copyInfoMapper.insertSelective(copyInfo);
+                        return num;
                     }
                     throw new ClientServiceException("外勤申请的开始时间以及结束时间应在当天班次时间段内", INSERT_MODEL);
                 }
-                throw new ClientServiceException("不可以申请当天及以前的申请事项", INSERT_MODEL);
+                throw new ClientServiceException("不可以发起申请当天及以前的申请事项", INSERT_MODEL);
             }
+            throw new ClientServiceException("该申请与其他外勤申请时间冲突", INSERT_MODEL);
         }
-        throw new ClientServiceException("该申请与其他外勤申请时间冲突", INSERT_MODEL);
+        throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
     }
 
     /**

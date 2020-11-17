@@ -8,6 +8,7 @@ import javax.persistence.*;
 @Table(name = "work_overtime_info")
 public class WorkOvertimeInfo {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
     @Column(name = "user_id")
     private Integer userId;

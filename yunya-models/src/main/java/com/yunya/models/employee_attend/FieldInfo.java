@@ -1,5 +1,6 @@
 package com.yunya.models.employee_attend;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -8,6 +9,8 @@ import javax.persistence.*;
 @Table(name = "field_info")
 public class FieldInfo {
     @Id
+    @ApiModelProperty("主键ID")
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     @Column(name = "user_id")

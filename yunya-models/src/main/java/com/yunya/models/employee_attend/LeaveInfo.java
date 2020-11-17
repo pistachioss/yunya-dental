@@ -8,6 +8,7 @@ import javax.persistence.*;
 @Table(name = "leave_info")
 public class LeaveInfo {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
     @Column(name = "user_id")
     private Integer userId;

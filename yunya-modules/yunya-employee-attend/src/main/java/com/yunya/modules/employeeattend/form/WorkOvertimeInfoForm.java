@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.form;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -24,12 +25,19 @@ public class WorkOvertimeInfoForm {
 
     @ApiModelProperty("申请人ID")
     private Integer userId;
+
+    @ApiModelProperty("申请日期")
+    private Date workDay;
     /**
      * 门诊id
      */
     @ApiModelProperty("门诊id")
     private Integer companyId;
-
+    /**
+     * 休息班次id
+     */
+    @ApiModelProperty("休息班次id")
+    private Integer restScheduleId;
     /**
      * 班次id
      */
