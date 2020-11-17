@@ -80,6 +80,6 @@
         ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
         ifnull(sum(br.received_amount), 0) as billTotalArrears
         from bill_record br
-        where br.patient_id = = #{patientId}
+        where br.patient_id = #{patientId}
     </select>
 </mapper>
