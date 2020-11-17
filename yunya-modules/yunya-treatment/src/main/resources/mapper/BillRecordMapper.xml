@@ -56,7 +56,7 @@
             resultType="com.yunya.feign.treatment.domain.model.DebtAmountModel">
         SELECT
         br.patient_id as patientId,
-        SUM( br.debt_amount ) AS debtAmount
+        ifnull(SUM( br.debt_amount ), 0) AS debtAmount
         FROM
         `bill_record` br
         <where>

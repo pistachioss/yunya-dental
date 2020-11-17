@@ -220,7 +220,7 @@ public class BillExceptionHandleDetailRecordBiz
       OrderRecord orderRecord = orderRecordBiz.selectOne(order);
       if (null != orderRecord) {
         Integer id = orderRecord.getId();
-        afterAdjustBillDetail = billRecordBiz.getOrderdetailCharges(id);
+        afterAdjustBillDetail = billRecordBiz.getOrderDetailCharges(id);
       }
     } else {
       // 调整前订单明细列表
@@ -245,7 +245,7 @@ public class BillExceptionHandleDetailRecordBiz
     entity.setBillHandleRecordId(billExceptionHandleRecordId);
     BillExceptionHandleDetailRecord billExceptionHandleDetailRecords = mapper.selectOne(entity);
     Integer associateRecordId = billExceptionHandleDetailRecords.getAssociateRecordId();
-    beforeAdjustBillDetail = billRecordBiz.getOrderdetailCharges(associateRecordId);
+    beforeAdjustBillDetail = billRecordBiz.getOrderDetailCharges(associateRecordId);
     return beforeAdjustBillDetail;
   }
 }
