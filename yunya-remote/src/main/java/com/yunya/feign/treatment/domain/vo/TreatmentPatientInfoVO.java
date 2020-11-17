@@ -178,7 +178,13 @@ public class TreatmentPatientInfoVO implements Serializable {
   /** 账单（开单）状态 */
   @ApiModelProperty("订单状态（0-账单未锁定 ；1-账单锁定；2-结算完成状态；3-收费中）")
   private Byte orderStatus;
+  /** 优惠总额 */
+  @ApiModelProperty("优惠总额")
+  private BigDecimal privilegeAmount;
   /** 本次收费总额 */
   @ApiModelProperty("本次收费总额")
   private BigDecimal receivedAmount;
+  /** 结账时间 */
+  @ApiModelProperty("结账时间")
+  private String checkOutTime;
 }

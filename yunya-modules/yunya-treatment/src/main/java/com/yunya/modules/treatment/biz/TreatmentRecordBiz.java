@@ -394,6 +394,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     SysUserInfoDetail treatDentistInfo =
         systemServiceFeign.findSysUserEmployeeInfoByUserId(treatDentistId);
     vo.setTreatDentistName(null != treatDentistInfo ? treatDentistInfo.getName() : "--");
+    Integer patientId = vo.getPatientId();
+    // 查询患者欠费总额
+    PatientBillStatistics billStatistics = billRecordMapper.selectPatientBillStatistics(patientId);
+    vo.setArrears(billStatistics.getBillTotalArrears());
   }
 
   /**
@@ -423,7 +427,15 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     BillRecord billRecord = new BillRecord();
     billRecord.setTreatmentRecordId(id);
     BillRecord record = billRecordMapper.selectOne(billRecord);
-    vo.setReceivedAmount(null != record ? record.getReceivedAmount() : BigDecimal.valueOf(0));
+    if (null != record) {
+      vo.setPrivilegeAmount(record.getPrivilegeAmount());
+      vo.setReceivedAmount(record.getReceivedAmount());
+      vo.setCheckOutTime(new DateTime(record.getCrtTime()).toString("HH:mm"));
+    } else {
+      vo.setPrivilegeAmount(BigDecimal.valueOf(0));
+      vo.setReceivedAmount(BigDecimal.valueOf(0));
+      vo.setCheckOutTime("--");
+    }
   }
 
   /**
