@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -107,12 +108,18 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                             workOvertimeInfo.setCrtTime(new Date());
                             int num = mapper.insertSelective(workOvertimeInfo);
                             //生成抄送信息
-                            CopyInfo copyInfo = new CopyInfo();
-                            copyInfo.setApplyId(num);
-                            copyInfo.setApplyType(1);
-                            copyInfo.setCrtId(workOvertimeInfo.getUserId());
-                            copyInfo.setCrtTime(new Date());
-                            copyInfoMapper.insertSelective(copyInfo);
+                            if (workOvertimeInfoForm.getCopyList().size()>0){
+                                List<CopyInfo>copyInfoList = new ArrayList<>();
+                                for(Integer copyId:workOvertimeInfoForm.getCopyList()){
+                                    CopyInfo copyInfo = new CopyInfo();
+                                    copyInfo.setApplyId(num);
+                                    copyInfo.setApplyType(1);
+                                    copyInfo.setUserId(copyId);
+                                    copyInfo.setCrtId(workOvertimeInfo.getUserId());
+                                    copyInfo.setCrtTime(new Date());
+                                }
+                                copyInfoMapper.batchInsert(copyInfoList);
+                            }
                             return num;
                         }
                         throw new ClientServiceException("加班班次时间应处于休息班次时间段之内", DATA_TRANSFORMATION_EXIST);

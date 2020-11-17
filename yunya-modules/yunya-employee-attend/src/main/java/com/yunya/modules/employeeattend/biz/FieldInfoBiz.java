@@ -146,12 +146,18 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         fieldInfo.setCrtTime(new Date());
                         int num = mapper.insertSelective(fieldInfo);
                         //生成抄送信息
-                        CopyInfo copyInfo = new CopyInfo();
-                        copyInfo.setApplyId(num);
-                        copyInfo.setApplyType(1);
-                        copyInfo.setCrtId(fieldInfoForm.getUserId());
-                        copyInfo.setCrtTime(new Date());
-                        copyInfoMapper.insertSelective(copyInfo);
+                        if (fieldInfoForm.getCopyList().size()>0){
+                            List<CopyInfo>copyInfoList = new ArrayList<>();
+                            for(Integer copyId:fieldInfoForm.getCopyList()){
+                                CopyInfo copyInfo = new CopyInfo();
+                                copyInfo.setApplyId(num);
+                                copyInfo.setApplyType(1);
+                                copyInfo.setUserId(copyId);
+                                copyInfo.setCrtId(fieldInfoForm.getUserId());
+                                copyInfo.setCrtTime(new Date());
+                            }
+                            copyInfoMapper.batchInsert(copyInfoList);
+                        }
                         return num;
                     }
                     throw new ClientServiceException("外勤申请的开始时间以及结束时间应在当天班次时间段内", INSERT_MODEL);

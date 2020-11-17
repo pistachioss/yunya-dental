@@ -63,7 +63,7 @@ public class LeaveInfoQueryForm implements Serializable {
 
     /** 审批状态 0 审批中 1通过 2拒绝 3撤回 4异常 */
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝 3撤回 4异常")
-    private String apprpvalStatus;
+    private Integer apprpvalStatus;
 
     /** 请假方式：0-按班次请假，1-按天请假*/
     @ApiModelProperty(value = "请假方式：0-按班次请假，1-按天请假")
