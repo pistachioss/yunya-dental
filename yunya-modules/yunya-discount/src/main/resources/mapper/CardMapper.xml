@@ -280,7 +280,7 @@
         from `card` `c`
              inner join `coupon_common_info` `cci` on `c`.`coupon_id` = `cci`.`id`
         where `cci`.`is_inservice` = 1
-            and `c`.`status` = 2
+            and `c`.`status` in (2,3,4)
             <!-- 0：自有产品 1：共享产品-->
             <if test="queryType != null and queryType == 0">
                 and `c`.`patient_id` = #{patientId}
