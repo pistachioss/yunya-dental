@@ -852,6 +852,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @return res
 	 */
 	public ResponseResult<PatientOrderBenefitVo> choiceBenefit(PatientChooseBenefitForm form) {
+		log.info("订单选择的优惠信息：[{}]", form);
 		ResponseResult<List<OrderItemUseBo>> responseResult = choiceBenefitBo(form);
 		if (!FALSE.equals(responseResult.getStatus())) {
 			return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
