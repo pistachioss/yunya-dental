@@ -3,8 +3,7 @@ package com.yunya.feign.discount.domain.form;
 import com.yunya.feign.discount.valid.CardSoldGroupSequenceProvider;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import org.hibernate.validator.group.GroupSequenceProvider;
 
 import javax.validation.constraints.NotBlank;
@@ -20,8 +19,7 @@ import java.util.List;
  * @author xiangyang
  * @date 2020/8/26
  */
-@Getter
-@Setter
+@Data
 @ApiModel(value = "卡券售出模型")
 @GroupSequenceProvider(CardSoldGroupSequenceProvider.class)
 public class CardSoldForm implements Serializable {
