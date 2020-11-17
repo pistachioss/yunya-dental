@@ -28,7 +28,7 @@ public enum DiscountError implements RestError {
     CARD_IS_ACTIVATED(19, "该卡券已被激活，无需再次激活！"),
     CARD_ACTIVE_STATUS_ERROR(20, "该卡券未售出，不可以激活！"),
     CARD_BEYOND_DEADLINE(21, "该卡券已过产品有效期，不可以激活！"),
-    CARD_NOT_CHARGE(22, "卡券未收费"),
+    CARD_NOT_CHARGE(22, "该卡券未收费，请收费后再激活！"),
     CARD_IS_CHARGED(23, "卡券已收费"),
     OTHER_ALLOW_ACTIVE_OWN(24, "自有平台卡券不允许在第三方平台激活"),
     CARD_NOT_ACTIVATED(25, "卡券未激活"),

@@ -375,7 +375,7 @@ public class DiscountBiz {
 		MultiCardUseVo vo = new MultiCardUseVo();
 		Page<OnceCardUseVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
 		benefitMapper.listCardUseById(cardId);
-		vo.setUseVos(page);
+		vo.setUseVos(new PageInfo<>(page));
 		List<BenefitItemVo> itemVos = benefitMapper.listItemUseById(cardId);
 		vo.setItemVos(itemVos);
 		return vo;

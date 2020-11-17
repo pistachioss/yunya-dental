@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.github.pagehelper.PageInfo;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -16,5 +17,5 @@ public class MultiCardUseVo {
 	@ApiModelProperty(value = "项目详情")
 	private List<BenefitItemVo> itemVos;
 	@ApiModelProperty(value = "使用记录")
-	private List<OnceCardUseVo> useVos;
+	private PageInfo<OnceCardUseVo> useVos;
 }
