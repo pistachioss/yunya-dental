@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.report.domain.vo.CardUsedRecordVo;
 import com.yunya.feign.report.domain.vo.CardUsedStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
+import com.yunya.feign.report.domain.vo.OnceCardUseVo;
 import com.yunya.models.report.BaseBenefit;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -34,4 +35,9 @@ public interface BaseBenefitMapper extends Mapper<BaseBenefit> {
 	                                                 @Param("usedEndDate") LocalDate usedEndDate, @Param("couponName") String couponName,
 	                                                 @Param("cardNumber") String cardNumber, @Param("patientKeyword") String patientKeyword,
 	                                                 @Param("couponTypes") List<Integer> couponTypes, @Param("saleChannelIds") List<Integer> saleChannelIds);
+
+	/**
+	 * 查询代金、折扣券的使用记录
+	 */
+	List<OnceCardUseVo> listCardUseById(@Param("cardId") Integer cardId);
 }

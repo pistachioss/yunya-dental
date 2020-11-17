@@ -2,17 +2,18 @@ package com.yunya.report.ultimate.controller;
 
 import com.alibaba.excel.EasyExcel;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.CardSoldRecordQuery;
 import com.yunya.feign.report.domain.query.CardSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CardStatisticsQuery;
-import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
 import com.yunya.feign.report.domain.query.CardUsedRecordQuery;
+import com.yunya.feign.report.domain.query.CardUsedStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponActiveDetailQuery;
 import com.yunya.feign.report.domain.query.CouponSoldDetailQuery;
-import com.yunya.feign.report.domain.query.CardSoldRecordQuery;
 import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
 import com.yunya.feign.report.domain.query.CouponUsedQuery;
+import com.yunya.feign.report.domain.query.OnceCardUseQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
 import com.yunya.feign.report.domain.query.RechargeDetailQuery;
 import com.yunya.feign.report.domain.query.RechargeQuery;
@@ -27,6 +28,7 @@ import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
+import com.yunya.feign.report.domain.vo.OnceCardUseVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
 import com.yunya.feign.report.domain.vo.RechargeDetailVo;
 import com.yunya.feign.report.domain.vo.RechargeVo;
@@ -217,5 +219,16 @@ public class DiscountController {
 				.sheet("sheet").doWrite(discountBiz.getRechargeDetailList(couponId, query));
 	}
 
+	@ApiOperation(value = "患者档案-产品管理-使用记录（代金券，折扣券）")
+	@PostMapping("/{cardId}/benefit/record/once")
+	public ResponseResult<PageInfo<OnceCardUseVo>> getUseRecord(@PathVariable(value = "cardId") Integer cardId, @RequestBody OnceCardUseQuery query) {
+		return ResponseUtil.success(discountBiz.getOnceCardUsePage(cardId, query));
+	}
+
+//	@ApiOperation(value = "患者档案-产品管理-使用记录（兑换券，套餐券）")
+//	@PostMapping("/{cardId}/benefit/record/multi")
+//	public ResponseResult<PageInfo<OnceCardUseVo>> getUseRecord(@PathVariable(value = "cardId") Integer cardId, @RequestBody MultiCardUseQuery query) {
+//		return ResponseUtil.success(discountBiz.getOnceCardUsePage(cardId, query));
+//	}
 
 }

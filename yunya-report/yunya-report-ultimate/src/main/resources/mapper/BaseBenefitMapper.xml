@@ -213,4 +213,32 @@
         group by `bf`.`card_id`, `bf`.`order_id`
         order by `bf`.`use_date` desc
     </select>
+
+    <select id="listCardUseById" resultType="com.yunya.feign.report.domain.vo.OnceCardUseVo">
+        select
+            `bti`.`item_id`,
+            `bti`.`item_name`,
+            `bti`.`item_type`,
+            count(*)                                    as useQuantity,
+            date_format(`bf`.`use_date`, '%Y-%m-%d')    as `usedDate`,
+            `bo`.`abbreviation`                         as `usedClinicName`,
+            `bp`.`name`                                 as `usedPatientName`,
+            `be`.`employee_name`                        as `dentistName`,
+            ifnull(sum(`bf`.`benefit_amount`), 0)       as `benefitAmount`
+        from `base_benefit` `bf`
+            inner join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+            inner join `base_treatment_process` `btp` on `btp`.`treatment_id` = `bb`.`treatment_id`
+                                                and `btp`.`patient_id` = `bf`.`patient_id`
+            <!-- 挂号医生 -->
+            inner join `base_employee` `be` on `be`.`user_id` = `btp`.`registered_dentist_id`
+            inner join `base_tariff_info` `bti` on `bti`.`item_id` = `bf`.`item_id`
+                                                and `bti`.`item_type` = `bf`.`item_type`
+            <!-- 优惠券使用患者 -->
+            inner join `base_patient` `bp` on `bp`.`patient_id` = `bf`.`patient_id`
+            inner join `base_organization` `bo` on `bo`.`org_id` = `bf`.`org_id`
+        where  `bf`.`card_id` = #{cardId}
+            and `bf`.`choice_benefit_type` = 0
+        group by `bf`.`order_id`, `bf`.`order_detail_id`
+        order by `bf`.`use_date` asc
+    </select>
 </mapper>

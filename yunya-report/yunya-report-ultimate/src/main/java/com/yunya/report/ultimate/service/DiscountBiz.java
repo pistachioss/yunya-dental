@@ -14,6 +14,8 @@ import com.yunya.feign.report.domain.query.CouponSoldStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponStatisticsQuery;
 import com.yunya.feign.report.domain.query.CouponUsedDetailQuery;
 import com.yunya.feign.report.domain.query.CouponUsedQuery;
+import com.yunya.feign.report.domain.query.MultiCardUseQuery;
+import com.yunya.feign.report.domain.query.OnceCardUseQuery;
 import com.yunya.feign.report.domain.query.RechargeCardStatisticsQuery;
 import com.yunya.feign.report.domain.query.RechargeDetailQuery;
 import com.yunya.feign.report.domain.query.RechargeQuery;
@@ -28,6 +30,8 @@ import com.yunya.feign.report.domain.vo.CouponSoldStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponStatisticsVo;
 import com.yunya.feign.report.domain.vo.CouponUsedDetailVo;
 import com.yunya.feign.report.domain.vo.CouponUsedVo;
+import com.yunya.feign.report.domain.vo.MultiCardUseVo;
+import com.yunya.feign.report.domain.vo.OnceCardUseVo;
 import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
 import com.yunya.feign.report.domain.vo.RechargeDetailVo;
 import com.yunya.feign.report.domain.vo.RechargeVo;
@@ -353,4 +357,20 @@ public class DiscountBiz {
 		return cardMapper.listRechargeDetailByParam(query.getCardNumber(), query.getPatientKeyWord(), query.getRechargeOrgIds(),
 				query.getRechargeAccount(), query.getRechargeStartDate(), query.getRechargeEndDate(), couponId);
 	}
+
+	/**
+	 * 查询代金、折扣卡券优惠项目分页
+	 * @param cardId cardId
+	 * @param query query
+	 * @return page
+	 */
+	public PageInfo<OnceCardUseVo> getOnceCardUsePage(Integer cardId, OnceCardUseQuery query) {
+		Page<OnceCardUseVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+		benefitMapper.listCardUseById(cardId);
+		return new PageInfo<>(page);
+	}
+
+//	public PageInfo<MultiCardUseVo> getMultiCardUsePage(Integer cardId, MultiCardUseQuery query) {
+//		Page<OnceCardUseVo> page = PageHelper.startPage(query.getPageNum(), query.getPageSize());
+//	}
 }

@@ -177,10 +177,11 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
-            tariffVO
+                (tariffVO
                 .getPrice()
                 .multiply(BigDecimal.valueOf(memberType.getRate()))
-                .divide(BigDecimal.valueOf(100), 2);
+                .divide(BigDecimal.valueOf(100), 2))
+                .setScale(2,BigDecimal.ROUND_HALF_UP);
       }
       memberPrices.put(memberTypeId, memberPrice);
     }
