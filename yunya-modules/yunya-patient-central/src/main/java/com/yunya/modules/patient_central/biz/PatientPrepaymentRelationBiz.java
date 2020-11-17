@@ -419,7 +419,7 @@ public class PatientPrepaymentRelationBiz
 
 
   /**
-   * 预付款消费记录
+   * 预付款
    *
    * @param model 预付款消费Model
    * @return ResponseResult
@@ -455,20 +455,17 @@ public class PatientPrepaymentRelationBiz
     // 消费赠金
     BigDecimal expendeBonus = null;
     // 账户本金
-    BigDecimal principalAmount = null;
+    BigDecimal principalAmount = patientPrepaymentsInfo.getPrepaymentPrincipal();
     // 账户赠金
     BigDecimal bonusAmount = null;
 
     PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord(); // 创建消费记录对象
     BeanUtils.copyProperties(model, prepaidExpendRecord);
-    // 会员卡余额 小于 消费金额
-    if (patientPrepaymentsInfo.getPrepaymentPrincipal().compareTo(model.getExpendTotal()) < 0) {
+    // 会员卡本金余额 小于 消费金额
+    if (principalAmount.compareTo(model.getExpendTotal()) < 0) {
       // 小于的情况下 依然先用本金去抵扣消费金额
-      // 获取本金
-      principalAmount = patientPrepaymentsInfo.getPrepaymentPrincipal();
       // 本金-消费总额
-      BigDecimal surplus =
-          patientPrepaymentsInfo.getPrepaymentPrincipal().subtract(model.getExpendTotal());
+      BigDecimal surplus = principalAmount.subtract(model.getExpendTotal());
       // 本金已用完
       patientPrepaymentsInfo.setPrepaymentPrincipal(new BigDecimal(0));
       // 获取消费本金
@@ -476,20 +473,15 @@ public class PatientPrepaymentRelationBiz
       // 获取赠金
       bonusAmount = patientPrepaymentsInfo.getPrepaymentBonus();
       // 用赠金去抵扣
-      patientPrepaymentsInfo.setPrepaymentBonus(
-          patientPrepaymentsInfo.getPrepaymentBonus().add(surplus));
+      patientPrepaymentsInfo.setPrepaymentBonus(patientPrepaymentsInfo.getPrepaymentBonus().add(surplus));
       // 原账户赠金-抵扣后赠金余额 = 用了多少赠金
       expendeBonus = bonusAmount.subtract(patientPrepaymentsInfo.getPrepaymentBonus());
       // 获取消费赠金
       prepaidExpendRecord.setExpendGift(expendeBonus);
     } else {
-      principalAmount = patientPrepaymentsInfo.getPrepaymentPrincipal();
-      patientPrepaymentsInfo.setPrepaymentPrincipal(
-          patientPrepaymentsInfo.getPrepaymentPrincipal().subtract(model.getExpendTotal()));
-      // 消费金额
-      expendePrincipal = principalAmount.subtract(patientPrepaymentsInfo.getPrepaymentPrincipal());
+      patientPrepaymentsInfo.setPrepaymentPrincipal(principalAmount.subtract(model.getExpendTotal()));
       // 获取消费本金
-      prepaidExpendRecord.setExpendPrincipal(expendePrincipal);
+      prepaidExpendRecord.setExpendPrincipal(model.getExpendTotal());
     }
     patientPrepaymentsInfoMapper.updateByPrimaryKeySelective(patientPrepaymentsInfo);
     // 添加消费记录
