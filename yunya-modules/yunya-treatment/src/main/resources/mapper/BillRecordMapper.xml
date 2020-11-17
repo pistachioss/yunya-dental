@@ -78,7 +78,8 @@
         ifnull(sum(br.receivable_amount), 0) as billTotalOriginalPrice,
         ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
         ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
-        ifnull(sum(br.received_amount), 0) as billTotalArrears
+        ifnull(sum(br.received_amount), 0) as billTotalReceivedPrice,
+        ifnull(sum(br.debt_amount), 0) as billTotalArrears
         from bill_record br
         where br.patient_id = #{patientId}
     </select>

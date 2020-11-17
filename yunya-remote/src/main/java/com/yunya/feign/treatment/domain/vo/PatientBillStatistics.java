@@ -32,4 +32,7 @@ public class PatientBillStatistics implements Serializable {
   /** 账单欠费合计 */
   @ApiModelProperty("账单欠费合计")
   private BigDecimal billTotalArrears;
+  /** 已收金额合计 */
+  @ApiModelProperty("账单已收金额合计")
+  private BigDecimal billTotalReceivedPrice;
 }

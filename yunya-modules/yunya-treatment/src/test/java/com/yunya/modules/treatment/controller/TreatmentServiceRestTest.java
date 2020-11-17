@@ -4,7 +4,7 @@ import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.controller.web.TreatmentRecordController;
-import com.yunya.modules.treatment.rpc.TreatmentServiceRest;
+import com.yunya.modules.treatment.controller.rpc.TreatmentServiceRest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
