@@ -8,6 +8,7 @@ import javax.persistence.*;
 @Table(name = "work_overtime_info")
 public class WorkOvertimeInfo {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
     @Column(name = "user_id")
     private Integer userId;
@@ -40,7 +41,7 @@ public class WorkOvertimeInfo {
      * 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
      */
     @Column(name = "apprpval_status")
-    private String apprpvalStatus;
+    private Integer apprpvalStatus;
 
     /**
      * 创建人

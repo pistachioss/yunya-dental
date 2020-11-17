@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介:
@@ -50,6 +51,8 @@ public class FieldInfoForm {
     @ApiModelProperty("审批人id （直接存员工id 与审批人员表无关）")
     private Integer approvalPeopleId;
 
+    @ApiModelProperty("抄送人Id集合")
+    private List<Integer> copyList;
     /**
      * 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
      */

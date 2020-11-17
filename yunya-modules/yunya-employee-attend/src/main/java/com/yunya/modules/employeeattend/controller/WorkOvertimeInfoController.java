@@ -41,10 +41,8 @@ public class WorkOvertimeInfoController {
     @PostMapping("/add")
     @ApiOperation("新增加班申请")
     @RepeatSubmit
-    @CurrentUser
     public ResponseResult create(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
-//        return ResponseUtil.success(workOvertimeInfoBiz.create(workOvertimeInfoForm));
-        return null;
+        return ResponseUtil.success(workOvertimeInfoBiz.create(workOvertimeInfoForm));
     }
 
 

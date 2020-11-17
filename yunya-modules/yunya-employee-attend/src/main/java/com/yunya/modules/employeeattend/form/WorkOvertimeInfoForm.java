@@ -1,10 +1,12 @@
 package com.yunya.modules.employeeattend.form;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.persistence.Column;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介:
@@ -24,12 +26,19 @@ public class WorkOvertimeInfoForm {
 
     @ApiModelProperty("申请人ID")
     private Integer userId;
+
+    @ApiModelProperty("申请日期")
+    private Date workDay;
     /**
      * 门诊id
      */
     @ApiModelProperty("门诊id")
     private Integer companyId;
-
+    /**
+     * 休息班次id
+     */
+    @ApiModelProperty("休息班次id")
+    private Integer restScheduleId;
     /**
      * 班次id
      */
@@ -48,11 +57,14 @@ public class WorkOvertimeInfoForm {
     @ApiModelProperty("审批人id（直接存员工id 与审批人员表没有关系）")
     private Integer approvalPeopleId;
 
+    @ApiModelProperty("抄送人Id集合")
+    private List<Integer> copyList;
+
     /**
      * 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
      */
     @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回 4过期")
-    private String apprpvalStatus;
+    private Integer apprpvalStatus = 0;
 
     /**
      * 创建人

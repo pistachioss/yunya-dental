@@ -8,6 +8,7 @@ import javax.persistence.*;
 @Table(name = "leave_info")
 public class LeaveInfo {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
     @Column(name = "user_id")
     private Integer userId;
@@ -51,7 +52,7 @@ public class LeaveInfo {
      * 审批状态 0 审批中 1通过 2拒绝 3撤回
      */
     @Column(name = "apprpval_status")
-    private String apprpvalStatus;
+    private Integer apprpvalStatus;
 
     /**
      * 创建人
