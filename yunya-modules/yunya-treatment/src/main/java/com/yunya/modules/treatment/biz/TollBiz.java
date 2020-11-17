@@ -960,7 +960,10 @@ public class TollBiz {
           prepaidExpendRecordModel.setBillRecordId(billRecordId);
           prepaidExpendRecordModel.setBillPayRecordId(billPayRecordId);
           prepaidExpendRecordModel.setType(1);
-          remotePatientCentralServiceFeign.expend(prepaidExpendRecordModel);
+          ResponseResult result = remotePatientCentralServiceFeign.expend(prepaidExpendRecordModel);
+          if (!result.getStatus().equals(0)) {
+            throw new ClientServiceException(result.getMsg(), result.hashCode());
+          }
         });
   }
 
