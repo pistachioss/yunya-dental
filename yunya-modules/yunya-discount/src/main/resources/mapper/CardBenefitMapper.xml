@@ -43,12 +43,21 @@
         select
             `c`.`id`                    as `cardId`,
             `c`.`coupon_id`,
-            `pc`.`use_way`,
-            ifnull(sum(`pci`.`count`),0) as `total`,
-            ifnull(`temp`.`usecount`,0)  as `usecount`,
-            if(ifnull(sum(`pci`.`count`), 0) > `temp`.`usecount`,
-               1,
-               0)          as `usable`
+            <if test="couponType != null and couponType == 2">
+                `pc`.`use_way`,
+                ifnull(sum(`pci`.`count`),0) as `total`,
+                if(ifnull(sum(`pci`.`count`), 0) > `temp`.`usecount`,
+                    1,
+                    0)          as `usable`,
+            </if>
+            <if test="couponType != null and couponType == 3">
+                `spc`.`use_way`,
+                ifnull(sum(`spci`.`count`),0) as `total`,
+                if(ifnull(sum(`spci`.`count`), 0) > `temp`.`usecount`,
+                    1,
+                    0)          as `usable`,
+            </if>
+            ifnull(`temp`.`usecount`,0)  as `usecount`
         from `card` `c`
              left join (
                  select
@@ -71,6 +80,6 @@
             <foreach collection="cardIds" item="item" open="(" separator="," close=")">
                 #{item}
             </foreach>
-        group by `pci`.`coupon_id`
+        group by `c`.`coupon_id`
     </select>
 </mapper>
