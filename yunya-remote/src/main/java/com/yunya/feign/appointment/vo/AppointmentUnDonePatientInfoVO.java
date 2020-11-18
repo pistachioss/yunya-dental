@@ -1,7 +1,6 @@
 package com.yunya.feign.appointment.vo;
 
 import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -52,7 +51,7 @@ public class AppointmentUnDonePatientInfoVO implements Serializable {
   private String medicalNumber;
 
   /** 患者类型 */
-  private Integer patientKind;
+  private String patientKind;
 
   /** 患者过敏原 */
   private String allergen;

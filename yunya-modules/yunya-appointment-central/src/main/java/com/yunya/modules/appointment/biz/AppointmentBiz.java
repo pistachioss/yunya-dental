@@ -1617,7 +1617,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
             vo.setAllergenDescription(patientData.getAllergensDescriptions());
             vo.setAllergen(patientData.getAllergens());
-            vo.setPatientKind(patientData.getPatientKind());
+            vo.setPatientKind(patientData.getPatientKindName());
             Integer memberTypeId = patientData.getMemberTypeId();
             if (null != memberTypeId) {
                 MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
