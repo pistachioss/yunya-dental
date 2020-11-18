@@ -2,6 +2,7 @@ package com.yunya.feign.treatment_other.domain.query;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.ToString;
 
@@ -23,10 +24,10 @@ import java.util.Date;
 public class PhotoServiceQuery {
     @ApiModelProperty(value = "患者id")
     @NotNull(message = "患者ID不能为空")
-    private int patientId;
+    private Integer patientId;
     @ApiModelProperty(value = "图片类型(0=照片,1=根尖片,2=全景片,3=正位片,4=侧位片,5=关节片,6=正畸片,7=其他片)")
     @NotNull(message = "图片类型不能为空")
-    private int photoType;
+    private Integer photoType;
 
 
 
