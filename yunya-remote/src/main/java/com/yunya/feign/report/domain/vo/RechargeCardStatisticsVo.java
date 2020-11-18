@@ -29,13 +29,10 @@ public class RechargeCardStatisticsVo {
 	private String soldPhoneNumber;
 	@ApiModelProperty(value = "售出类型（0-售出 1-置换 2-赠送）")
 	@ExcelProperty("售出类型")
-	private Integer soldType;
+	private String soldType;
 	@ApiModelProperty(value = "售出方式（0-线上 1-线下）")
 	@ExcelProperty("售出方式")
-	private Integer soldWay;
-	@ApiModelProperty(value = "收费状态（0-否 1-是）")
-	@ExcelProperty("收费状态")
-	private Integer chargeStatus;
+	private String soldWay;
 	@ApiModelProperty(value = "售出人")
 	@ExcelProperty("售出人")
 	private String soldUser;

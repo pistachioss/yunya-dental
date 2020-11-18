@@ -1,26 +1,47 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.employeeattend.mapper.WorkOvertimeInfoMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.WorkOvertimeInfo" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="user_id" property="userId" jdbcType="VARCHAR" />
-    <result column="company_id" property="companyId" jdbcType="INTEGER" />
-    <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
-    <result column="rest_schedule_id" property="restScheduleId" jdbcType="INTEGER" />
-    <result column="overtime_reason" property="overtimeReason" jdbcType="VARCHAR" />
-    <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER" />
-    <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
-
-  <select id="findWorkOvertimeInfoByUserIdsAndDate" resultType="com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO">
-    select
+<mapper namespace="com.yunya.modules.employeeattend.mapper.WorkOvertimeInfoMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.WorkOvertimeInfo">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="VARCHAR"/>
+        <result column="company_id" property="companyId" jdbcType="INTEGER"/>
+        <result column="schedule_id" property="scheduleId" jdbcType="INTEGER"/>
+        <result column="rest_schedule_id" property="restScheduleId" jdbcType="INTEGER"/>
+        <result column="overtime_reason" property="overtimeReason" jdbcType="VARCHAR"/>
+        <result column="refuse_reason" property="refuseReason" jdbcType="VARCHAR"/>
+        <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER"/>
+        <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <resultMap id="findListMap" type="com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="VARCHAR"/>
+        <result column="company_id" property="companyId" jdbcType="INTEGER"/>
+        <result column="schedule_id" property="scheduleId" jdbcType="INTEGER"/>
+        <result column="rest_schedule_id" property="restScheduleId" jdbcType="INTEGER"/>
+        <result column="overtime_reason" property="overtimeReason" jdbcType="VARCHAR"/>
+        <result column="work_date" property="workDate" jdbcType="DATE"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="workOverTime" property="workOverTime" jdbcType="VARCHAR"/>
+        <result column="refuse_reason" property="refuseReason" jdbcType="VARCHAR"/>
+        <result column="startTime" property="startTime" jdbcType="TIMESTAMP"/>
+        <result column="endTime" property="endTime" jdbcType="TIMESTAMP"/>
+        <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER"/>
+        <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="findWorkOvertimeInfoByUserIdsAndDate"
+            resultType="com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO">
+        select
         t.id,
         t.user_id as userId,
         t.work_date as workDate,
@@ -29,19 +50,56 @@
         t.overtime_reason as overtimeReason,
         t.approval_people_id as approvalPeopleId,
         t.apprpval_status as apprpvalStatus
-    from work_overtime_info t left join employee_schedule es on t.schedule_id=es.id left join base_schedule bs on es.schedule_id=bs.id
-    <where>
-      t.apprpval_status = 1
-      <if test="userIds!=null and userIds.size()>0">
-        and t.user_id in
-        <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
-          #{item}
-        </foreach>
-      </if>
-      <if test="date != null">
-        and DATE_FORMAT(t.work_date,'%y-%m-%d') = DATE_FORMAT(#{date},'%y-%m-%d')
-      </if>
-    </where>
-      order by bs.first_start_time asc
+        from work_overtime_info t left join employee_schedule es on t.schedule_id=es.id left join base_schedule bs on
+        es.schedule_id=bs.id
+        <where>
+            t.apprpval_status = 1
+            <if test="userIds!=null and userIds.size()>0">
+                and t.user_id in
+                <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="date != null">
+                and DATE_FORMAT(t.work_date,'%y-%m-%d') = DATE_FORMAT(#{date},'%y-%m-%d')
+            </if>
+        </where>
+        order by bs.first_start_time asc
+    </select>
+    <select id="findList" resultMap="findListMap">
+    SELECT
+	t.id,
+	t.user_id,
+	t.work_date,
+	t.company_id,
+	t.schedule_id,
+	t.overtime_reason,
+	t.refuse_reason,
+	t.approval_people_id,
+	t.apprpval_status,
+	b.first_start_time startTime,
+	IFNULL(
+		b.second_end_time,
+		b.first_end_time
+	) endTime,
+    TIMESTAMPDIFF(HOUR,b.first_start_time,IFNULL(
+        b.second_end_time,
+        b.first_end_time
+        )) workOverTime,
+        b.name
+    FROM
+	work_overtime_info t
+    LEFT JOIN base_schedule b ON t.schedule_id = b.id
+        <where>
+            <if test="id !=null and id != ''">
+                and t.id = #{id}
+            </if>
+            <if test="userId !=null and userId != ''">
+                and t.user_id = #{userId}
+            </if>
+            <if test="approvalPeopleId !=null and approvalPeopleId != ''">
+                and t.approval_people_id = #{approvalPeopleId}
+            </if>
+        </where>
   </select>
 </mapper>

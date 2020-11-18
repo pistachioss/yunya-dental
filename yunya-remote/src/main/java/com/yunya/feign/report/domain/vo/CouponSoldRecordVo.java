@@ -28,7 +28,7 @@ public class CouponSoldRecordVo {
 	private String couponName;
 	@ApiModelProperty(value = "产品类型")
 	@ExcelProperty("产品类型")
-	private Integer couponType;
+	private String couponType;
 	@ApiModelProperty(value = "卡号")
 	@ExcelProperty("卡号")
 	private String cardNumber;
@@ -37,11 +37,14 @@ public class CouponSoldRecordVo {
 	private BigDecimal soldAmount;
 	@ApiModelProperty(value = "售出类型（0-售出 1-置换 2-赠送）")
 	@ExcelProperty("售出类型")
-	private Integer soldType;
+	private String soldType;
 	@ApiModelProperty(value = "收费状态（0-否 1-是）")
 	@ExcelProperty("收费状态")
-	private Integer chargeStatus;
+	private String chargeStatus;
 	@ApiModelProperty(value = "入账方式")
 	@ExcelProperty("入账方式")
 	private String payName;
+	@ApiModelProperty(value = "售出人")
+	@ExcelProperty("售出人")
+	private String sellerUserName;
 }

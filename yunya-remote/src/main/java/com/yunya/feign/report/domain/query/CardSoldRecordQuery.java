@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,10 +17,13 @@ import java.util.List;
 @Data
 public class CardSoldRecordQuery extends PageQuery {
 	@ApiModelProperty(value = "门诊")
+	@NotNull(message = "请选择门诊")
 	private Integer orgId;
 	@ApiModelProperty(value = "售出开始日期")
+	@NotNull(message = "请选择售出开始日期")
 	private LocalDate soldStartDate;
 	@ApiModelProperty(value = "售出结束日期")
+	@NotNull(message = "请选择选择售出结束日期")
 	private LocalDate soldEndDate;
 	@ApiModelProperty(value = "产品名称")
 	private String couponName;

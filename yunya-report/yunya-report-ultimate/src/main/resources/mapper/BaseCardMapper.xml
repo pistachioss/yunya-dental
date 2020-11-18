@@ -41,9 +41,22 @@
              where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
             `bc`.`sold_target`,
             `bc`.`sold_phone_number`,
-            `bc`.`sold_type`,
-            `bc`.`sold_way`,
-            `bc`.`charge_status`,
+            case
+                when `bc`.`sold_type` = 0 then '售卖'
+                when `bc`.`sold_type` = 1 then '置换'
+                when `bc`.`sold_type` = 2 then '赠送'
+                else null
+                end                                   as `sold_type`,
+            case
+                when `bc`.`sold_way` = 0 then '线上'
+                when `bc`.`sold_way` = 1 then '线下'
+                else null
+                end                                   as `sold_way`,
+            case
+                when `bc`.`charge_status` = 0 then '未收费'
+                when `bc`.`charge_status` = 1 then '已收费'
+                else null
+                end                                   as `charge_status`,
             (select
                  `employee_name`
              from `base_employee`
@@ -72,8 +85,8 @@
                             date_format(date_add(`bc`.`active_date`, interval ifnull(`b`.`effective_days`, 0) day), '%Y-%m-%d'),
                             date_format(`b`.`activation_deadline`, '%Y-%m-%d'))))  as `activationDeadline`,
             case
-                when `bc`.`status` in (3, 4) then 1
-                else 0
+                when `bc`.`status` in (3, 4) then '是'
+                else '否'
                 end                            as `used`
         from `base_card` `bc`
             inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
@@ -134,9 +147,17 @@
              where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
             `bc`.`sold_target`,
             `bc`.`sold_phone_number`,
-            `bc`.`sold_type`,
-            `bc`.`sold_way`,
-            `bc`.`charge_status`,
+            case
+                when `bc`.`sold_type` = 0 then '售卖'
+                when `bc`.`sold_type` = 1 then '置换'
+                when `bc`.`sold_type` = 2 then '赠送'
+                else null
+                end                                   as `sold_type`,
+            case
+                when `bc`.`sold_way` = 0 then '线上'
+                when `bc`.`sold_way` = 1 then '线下'
+                else null
+                end                                   as `sold_way`,
             (select
                  `employee_name`
              from `base_employee`
@@ -212,9 +233,22 @@
              where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
             `bc`.`sold_target`,
             `bc`.`sold_phone_number`,
-            `bc`.`sold_type`,
-            `bc`.`sold_way`,
-            `bc`.`charge_status`,
+            case
+                when `bc`.`sold_type` = 0 then '售卖'
+                when `bc`.`sold_type` = 1 then '置换'
+                when `bc`.`sold_type` = 2 then '赠送'
+                else null
+                end                                   as `sold_type`,
+            case
+                when `bc`.`sold_way` = 0 then '线上'
+                when `bc`.`sold_way` = 1 then '线下'
+                else null
+                end                                   as `sold_way`,
+            case
+                when `bc`.`charge_status` = 0 then '未收费'
+                when `bc`.`charge_status` = 1 then '已收费'
+                else null
+                end                                   as `charge_status`,
             `bc`.`pay_name`,
             (select
                 `employee_name`
@@ -317,6 +351,14 @@
             date_format(`bc`.`sold_date`, '%Y-%m-%d') as `soldDate`,
             `b`.`coupon_name`,
             `b`.`sold_amount`,
+            case
+                when `b`.`coupon_type` = 0 then '代金券'
+                when `b`.`coupon_type` = 1 then '折扣券'
+                when `b`.`coupon_type` = 2 then '兑换券'
+                when `b`.`coupon_type` = 3 then '套餐券'
+                when `b`.`coupon_type` = 4 then '充值卡'
+                else null
+                end                                   as `coupon_type`,
             `bc`.`card_number`,
             (select
                 `abbreviation`
@@ -324,9 +366,22 @@
              where `org_id` = `bc`.`allocate_org_id`) as `allocateOrgName`,
             `bc`.`sold_target`,
             `bc`.`sold_phone_number`,
-            `bc`.`sold_type`,
-            `bc`.`sold_way`,
-            `bc`.`charge_status`,
+            case
+                when `bc`.`sold_type` = 0 then '售卖'
+                when `bc`.`sold_type` = 1 then '置换'
+                when `bc`.`sold_type` = 2 then '赠送'
+                else null
+                end                                   as `sold_type`,
+            case
+                when `bc`.`sold_way` = 0 then '线上'
+                when `bc`.`sold_way` = 1 then '线下'
+                else null
+                end                                   as `sold_way`,
+            case
+                when `bc`.`charge_status` = 0 then '未收费'
+                when `bc`.`charge_status` = 1 then '已收费'
+                else null
+                end                                   as `charge_status`,
             (select
                 `employee_name`
              from `base_employee`
@@ -387,14 +442,32 @@
             `bc`.`sold_target`,
             `bc`.`sold_phone_number`,
             `b`.`coupon_name`,
-            `b`.`coupon_type`,
+            case
+                when `b`.`coupon_type` = 0 then '代金券'
+                when `b`.`coupon_type` = 1 then '折扣券'
+                when `b`.`coupon_type` = 2 then '兑换券'
+                when `b`.`coupon_type` = 3 then '套餐券'
+                when `b`.`coupon_type` = 4 then '充值卡'
+                else null
+                end                                   as `coupon_type`,
             `bc`.`card_number`,
             `b`.`sold_amount`,
-            `bc`.`sold_type`,
-            `bc`.`charge_status`,
-            `bc`.`pay_name`
+            case
+                when `bc`.`sold_type` = 0 then '售卖'
+                when `bc`.`sold_type` = 1 then '置换'
+                when `bc`.`sold_type` = 2 then '赠送'
+                else null
+                end                                   as `sold_type`,
+            case
+                when `bc`.`charge_status` = 0 then '未收费'
+                when `bc`.`charge_status` = 1 then '已收费'
+                else null
+                end                                   as `charge_status`,
+            `bc`.`pay_name`,
+            `be`.`employee_name`                          as `sellerUserName`
         from `base_card` `bc`
             inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+            inner join `base_employee` `be` on `be`.`user_id` = `bc`.`seller_user_id`
         where
             `bc`.`status` != 0
             and `bc`.`allocate_org_id` != 0

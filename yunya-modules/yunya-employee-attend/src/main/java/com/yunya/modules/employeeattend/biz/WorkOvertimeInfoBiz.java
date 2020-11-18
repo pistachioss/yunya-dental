@@ -1,6 +1,12 @@
 package com.yunya.modules.employeeattend.biz;
 
+import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.BaseSchedule;
@@ -22,9 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
@@ -47,6 +51,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private BaseScheduleMapper baseScheduleMapper;
     @Autowired
     private CopyInfoMapper copyInfoMapper;
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -72,7 +78,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
             one.setRestScheduleId(workOvertimeInfoForm.getRestScheduleId());
             int a = mapper.selectCount(one);
             //每个休息班只能排一个加班
-            if (a==0) {
+            if (a == 0) {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = simpleDateFormat.format(workOvertimeInfoForm.getWorkDate());
                 String nowString = simpleDateFormat.format(new Date());
@@ -148,4 +154,34 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         }
         throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
     }
+
+    public List<WorkOvertimeInfoListVO> findList(WorkOvertimeInfoForm workOvertimeInfoForm) {
+        List<WorkOvertimeInfoListVO> list = mapper.findList(workOvertimeInfoForm);
+        if (list.size() > 0) {
+            //获取用户信息
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            model.setWhetherPage(false);
+            List<Integer> orgIds = new ArrayList<>();
+            model.setOrgIds(orgIds);
+            Byte[] userStatus = {0, 1, 3};
+            model.setWorkStatus(userStatus);
+            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            Map<String, SysUserInfoDetail> emMap = new HashMap(16);
+            employees.forEach(z -> emMap.put(z.getUserId() + "", z));
+            //获取门诊信息
+            OrganizationModel organizationModel = new OrganizationModel();
+            organizationModel.setWhetherPage(false);
+            List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+            Map<String, OrganizationInfoDetail> clinicMap = new HashMap(16);
+            clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
+
+            for (WorkOvertimeInfoListVO workOvertimeInfoListVO : list) {
+                workOvertimeInfoListVO.setCompanyName(clinicMap.get(workOvertimeInfoListVO.getCompanyId()+"").getName());
+                workOvertimeInfoListVO.setApprovalPeopleName(emMap.get(workOvertimeInfoListVO.getApprovalPeopleId() + "").getName());
+                workOvertimeInfoListVO.setUserName(emMap.get(workOvertimeInfoListVO.getUserId() + "").getName());
+            }
+        }
+        return list;
+    }
+
 }

@@ -151,11 +151,27 @@ public class DiscountController {
 		return ResponseUtil.success(discountBiz.getCardUsedRecordPage(query));
 	}
 
+	@ApiOperation(value = "产品记录-产品售出记录 - 导出")
+	@PostMapping("/coupon/sold/record/export")
+	public void exportCouponSold(HttpServletResponse response, @Valid @RequestBody CardSoldRecordQuery query) throws IOException {
+		discountBiz.buildResponse(response, discountBiz.getOrgName(query.getOrgId()) + "产品售出记录表");
+		EasyExcel.write(response.getOutputStream(), RechargeCardStatisticsVo.class)
+				.sheet("sheet").doWrite(discountBiz.getCardSoldRecordList(query));
+	}
+
+	@ApiOperation(value = "产品记录-产品使用记录 - 导出")
+	@PostMapping("/coupon/used/record/export")
+	public void exportCouponUsedRecord(HttpServletResponse response, @Valid @RequestBody CardUsedRecordQuery query) throws IOException {
+		discountBiz.buildResponse(response, discountBiz.getOrgName(query.getOrgId()) + "产品使用记录表");
+		EasyExcel.write(response.getOutputStream(), CardSoldStatisticsVo.class)
+				.sheet("sheet").doWrite(discountBiz.getCardUsedRecordList(query));
+	}
+
 	@ApiOperation(value = "产品售出激活统计-售出激活统计（代金、折扣、兑换、套餐）- 导出")
 	@PostMapping("/{couponId}/card/export")
 	public void exportCard(HttpServletResponse response, @PathVariable(value = "couponId") Integer couponId,
 	                       @Valid @RequestBody CardStatisticsQuery query) throws IOException {
-		discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "售出激活统计");
+		discountBiz.buildResponse(response, discountBiz.getCouponName(couponId) + "产品使用记录表");
 		EasyExcel.write(response.getOutputStream(), CardStatisticsVo.class)
 				.sheet("sheet").doWrite(discountBiz.getCardStatisticsList(couponId, query));
 	}

@@ -25,7 +25,14 @@
     <select id="listCardUsedByParam" resultType="com.yunya.feign.report.domain.vo.CardUsedStatisticsVo">
         select
             `bco`.`coupon_name`,
-            `bco`.coupon_type,
+            case
+                when `bco`.`coupon_type` = 0 then '代金券'
+                when `bco`.`coupon_type` = 1 then '折扣券'
+                when `bco`.`coupon_type` = 2 then '兑换券'
+                when `bco`.`coupon_type` = 3 then '套餐券'
+                when `bco`.`coupon_type` = 4 then '充值卡'
+                else null
+                end                              as coupon_type,
             `bcd`.`card_number`,
             `bp`.`name`                          as `cardOwner`,
             `bcd`.`sale_channel_name`,
@@ -170,7 +177,14 @@
                 `bp`.`name`                         as `usedPatientName`,
                 `bp`.`mobile`                       as `usedPatientMobile`,
             `bco`.`coupon_name`,
-            `bco`.coupon_type,
+            case
+                when `bco`.`coupon_type` = 0 then '代金券'
+                when `bco`.`coupon_type` = 1 then '折扣券'
+                when `bco`.`coupon_type` = 2 then '兑换券'
+                when `bco`.`coupon_type` = 3 then '套餐券'
+                when `bco`.`coupon_type` = 4 then '充值卡'
+                else null
+                end                                   as coupon_type,
             `bcd`.`sale_channel_name`,
             `bcd`.`card_number`,
             `be`.`employee_name`                    as `operateBenefitUser`

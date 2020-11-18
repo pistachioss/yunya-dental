@@ -102,6 +102,7 @@ import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariffMemberPrice;
 import com.yunya.models.tariff.ClinicTariffMemberPrice;
 import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderRecord;
 import com.yunya.modules.discount.enums.CardStatusEnum;
 import com.yunya.modules.discount.enums.CouponTypeEnum;
 import com.yunya.modules.discount.enums.DiscountError;
@@ -873,6 +874,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 */
 	public ResponseResult<PatientOrderBenefitVo> choiceBenefit(PatientChooseBenefitForm form) {
 		log.info("订单选择的优惠信息：[{}]", form);
+		form.setOrgId(treatmentServiceFeign.findOrderRecordById(form.getOrderId()).getOrgId());
 		ResponseResult<List<OrderItemUseBo>> responseResult = choiceBenefitBo(form);
 		if (!FALSE.equals(responseResult.getStatus())) {
 			return ResponseUtil.error(responseResult.getStatus(), responseResult.getMsg());
@@ -1211,12 +1213,12 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @return PatientOptionalBenefitVo
 	 */
 	public PatientOptionalBenefitVo initBenefit(PatientBenefitQuery query) {
-		int orgId = Integer.parseInt(BaseContextHandler.getOrgId());
 		int count = countByBenefit(query.getOrderId());
 		if (count != 0) {
 			return null;
 		}
-		return getPatientBenefit(query.getPatientId(), query.getOrderId(), orgId);
+		OrderRecord record = treatmentServiceFeign.findOrderRecordById(query.getOrderId());
+		return getPatientBenefit(query.getPatientId(), query.getOrderId(), record.getOrgId());
 	}
 
 	private PatientOptionalBenefitVo getPatientBenefit(Integer patientId, Integer orderId, Integer orgId) {

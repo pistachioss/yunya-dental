@@ -37,10 +37,12 @@ import com.yunya.feign.report.domain.vo.RechargeCardStatisticsVo;
 import com.yunya.feign.report.domain.vo.RechargeDetailVo;
 import com.yunya.feign.report.domain.vo.RechargeVo;
 import com.yunya.models.report.BaseCoupon;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.mapper.BaseBenefitMapper;
 import com.yunya.report.ultimate.mapper.BaseCardMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponItemMapper;
 import com.yunya.report.ultimate.mapper.BaseCouponMapper;
+import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +67,8 @@ public class DiscountBiz {
 	private BaseCouponItemMapper itemMapper;
 	@Resource
 	private BaseBenefitMapper benefitMapper;
+	@Resource
+	private BaseOrganizationMapper orgMapper;
 
 	/**
 	 * 产品售出激活统计
@@ -265,6 +269,11 @@ public class DiscountBiz {
 		return coupon == null ? "未知" : coupon.getCouponName();
 	}
 
+	public String getOrgName(Integer couponId) {
+		BaseOrganization org = orgMapper.selectByPrimaryKey(couponId);
+		return org == null ? "未知" : org.getAbbreviation();
+	}
+
 	/**
 	 * 产品售出激活卡券明细（代金、折扣、兑换、套餐）- 导出
 	 *
@@ -379,5 +388,29 @@ public class DiscountBiz {
 		List<BenefitItemVo> itemVos = benefitMapper.listItemUseById(cardId);
 		vo.setItemVos(itemVos);
 		return vo;
+	}
+
+	/**
+	 * 产品记录-产品售出记录-导出
+	 *
+	 * @param query query
+	 * @return List
+	 */
+	public List<CouponSoldRecordVo> getCardSoldRecordList(CardSoldRecordQuery query) {
+		return cardMapper.listCardSoldRecord(query.getOrgId(), query.getSoldStartDate(), query.getSoldEndDate(),
+				query.getCouponName(), query.getCardNumber(), query.getSoldTarget(), query.getSoldPhoneNumber(),
+				query.getCouponTypes());
+	}
+
+	/**
+	 * 产品记录-产品使用记录-导出
+	 *
+	 * @param query query
+	 * @return page
+	 */
+	public List<CardUsedRecordVo> getCardUsedRecordList(CardUsedRecordQuery query) {
+		return benefitMapper.listCardUsedRecordByParam(query.getOrgId(), query.getUsedStartDate(), query.getUsedEndDate(),
+				query.getCouponName(), query.getCardNumber(), query.getPatientKeyword(), query.getCouponTypes(),
+				query.getSaleChannelIds());
 	}
 }

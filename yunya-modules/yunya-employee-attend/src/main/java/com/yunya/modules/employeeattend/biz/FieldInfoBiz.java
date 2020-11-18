@@ -5,7 +5,9 @@ import com.yunya.feign.employee_attend.form.FieldInfoQueryForm;
 import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
 import com.yunya.feign.employee_attend.vo.FieldInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -215,7 +217,15 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
             List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
             Map<String, SysUserInfoDetail> emMap = new HashMap(16);
             employees.forEach(z -> emMap.put(z.getUserId() + "", z));
+            //获取门诊信息
+            OrganizationModel organizationModel = new OrganizationModel();
+            organizationModel.setWhetherPage(false);
+            List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+            Map<String, OrganizationInfoDetail> clinicMap = new HashMap(16);
+            clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
+
             for (FieldInfoListVO fieldInfoListVO : list) {
+                fieldInfoListVO.setCompanyName(clinicMap.get(fieldInfoListVO.getCompanyId()+"").getName());
                 fieldInfoListVO.setApprovalPeopleName(emMap.get(fieldInfoListVO.getApprovalPeopleId() + "").getName());
                 fieldInfoListVO.setUserName(emMap.get(fieldInfoListVO.getUserId() + "").getName());
             }

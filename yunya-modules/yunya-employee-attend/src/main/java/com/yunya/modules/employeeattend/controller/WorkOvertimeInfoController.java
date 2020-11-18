@@ -44,6 +44,17 @@ public class WorkOvertimeInfoController {
     public ResponseResult create(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
         return ResponseUtil.success(workOvertimeInfoBiz.create(workOvertimeInfoForm));
     }
-
+    /**
+     * 获取加班申请列表
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findList")
+    @ApiOperation("获取加班申请列表")
+    @RepeatSubmit
+    public ResponseResult findList(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
+        return ResponseUtil.success(workOvertimeInfoBiz.findList(workOvertimeInfoForm));
+    }
 
 }
