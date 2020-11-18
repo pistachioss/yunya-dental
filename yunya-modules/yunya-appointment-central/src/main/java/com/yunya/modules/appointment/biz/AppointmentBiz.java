@@ -1537,7 +1537,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     operationRecordContent = "[" + crtTime + "]" + appointOperationRecordVo.getCrtName() + "新建了这条预约";
                     break;
                 case 1:
-                    operationRecordContent = "[" + crtTime + "]" +  "修改了【" + appointOperationRecordVo.getRemarks() +
+                    operationRecordContent = "[" + crtTime + "]" +  "修改了【" + appointOperationRecordVo.getOperateItem() +
                             "】，将\"" + appointOperationRecordVo.getBeforeOperation() + "\"改成了\"" +
                             appointOperationRecordVo.getAfterOperation() + "\"";
                     break;
