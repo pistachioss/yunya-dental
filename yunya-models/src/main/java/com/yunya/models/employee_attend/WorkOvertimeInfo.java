@@ -20,12 +20,18 @@ public class WorkOvertimeInfo {
     private Integer companyId;
 
     /**
-     * 班次id
+     * 加班班次id
      */
     @Column(name = "schedule_id")
     private Integer scheduleId;
+
     /**
-     * 班次id
+     * 要加班的休息班次id
+     */
+    @Column(name = "rest_schedule_id")
+    private Integer restScheduleId;
+    /**
+     * 加班日期
      */
     @Column(name = "work_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
