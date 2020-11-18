@@ -35,13 +35,16 @@
     and
     photo_type = #{photoType}
   </select>
-  <insert id="add" parameterType="com.yunya.models.treatment_other.PhotoService">
+  <insert id="addBatch" parameterType="list">
     INSERT
     INTO
     photo_service
-    (dentist_id,uri,photo_type,crt_id,org_id,treatment_record_id,patient_id,upload_time,film_name)
+    (dentist_id,uri,photo_type,crt_id,org_id,treatment_record_id,patient_id,film_name)
     VALUES
-    (#{dentistId},#{uri},#{photoType},#{crtId},#{orgId},#{treatmentRecordId},#{patientId},#{uploadTime},#{filmName})
+      <foreach collection="list" item="obj" separator=",">
+        (#{obj.dentistId},#{obj.uri},#{obj.photoType},#{obj.crtId},
+        #{obj.orgId},#{obj.treatmentRecordId},#{obj.patientId},#{obj.filmName})
+      </foreach>
   </insert>
 
   <update id="upd" parameterType="com.yunya.models.treatment_other.PhotoService">

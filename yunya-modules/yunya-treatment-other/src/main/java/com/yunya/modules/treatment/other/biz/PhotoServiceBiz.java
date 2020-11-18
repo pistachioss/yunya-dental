@@ -1,22 +1,28 @@
 package com.yunya.modules.treatment.other.biz;
 
 import com.yunya.feign.treatment_other.domain.form.PhotoServiceForm;
+import com.yunya.feign.treatment_other.domain.model.PhotoDetailListModel;
 import com.yunya.feign.treatment_other.domain.model.PhotoServiceModel;
 import com.yunya.feign.treatment_other.domain.query.PhotoServiceQuery;
 import com.yunya.feign.treatment_other.domain.vo.PhotoServiceVo;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.emr.MedicalOrthodonticsRecord;
 import com.yunya.models.treatment_other.PhotoService;
 import com.yunya.modules.treatment.other.mapper.PhotoServiceMapper;
+import io.swagger.models.auth.In;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -32,12 +38,24 @@ public class PhotoServiceBiz {
         return data;
     }
 
-    public void  add(PhotoServiceModel model){
-        Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
+    public void addBatch(PhotoServiceModel model){
+        List<PhotoDetailListModel> photoDetailListModels = model.getPhotoDetailListModels();
         PhotoService photoService = new PhotoService();
-        photoService.setCrtId((crtId));
-        BeanUtils.copyProperties(model,photoService);
-        photoServiceMapper.add(photoService);
+        photoService.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        photoService.setDentistId(model.getDentistId());
+        photoService.setPatientId(model.getPatientId());
+        photoService.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
+        photoService.setTreatmentRecordId(model.getTreatmentRecordId());
+        photoService.setPhotoType(model.getPhotoType());
+        List<PhotoService> photoServices = new ArrayList<>();
+        photoDetailListModels.forEach(photoDetailListModel -> {
+            PhotoService entity = new PhotoService();
+            BeanUtils.copyProperties(photoService,entity);
+            entity.setFilmName(photoDetailListModel.getFilmName());
+            entity.setUri(photoDetailListModel.getUri());
+            photoServices.add(entity);
+        });
+        photoServiceMapper.addBatch(photoServices);
     }
     public void upd(PhotoServiceForm form){
         Integer updId = Integer.valueOf(BaseContextHandler.getUserID());

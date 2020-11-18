@@ -6,9 +6,11 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介: 牙周期列表模型
@@ -43,11 +45,7 @@ public class PhotoServiceModel {
     @NotNull(message = "图片类型不能为空")
     private Integer photoType;
 
-    @ApiModelProperty(value = "图片uri")
-    @NotBlank(message = "图片uri不能为空")
-    private String uri;
-
-    @ApiModelProperty(value = "图片名称")
-    @NotBlank(message = "图片名称不能为空")
-    private String filmName;
+    @ApiModelProperty(value = "照片列表")
+    @Valid
+    private List<PhotoDetailListModel> photoDetailListModels;
 }

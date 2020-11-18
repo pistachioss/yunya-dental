@@ -59,8 +59,8 @@ public class PhotoServiceController {
     @ApiOperation("添加图片影像")
     @PostMapping("/add")
     @CurrentUser
-    public ResponseResult add(@RequestBody @Validated PhotoServiceModel model){
-        photoServiceBiz.add(model);
+    public ResponseResult addBatch(@RequestBody @Validated PhotoServiceModel model){
+        photoServiceBiz.addBatch(model);
         return ResponseUtil.success();
     }
     /**
