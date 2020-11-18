@@ -12,7 +12,7 @@ import java.time.LocalDate;
  * @date 2020/11/16
  */
 @Data
-@ApiModel(value = "患者档案产品管理使用记录（代金券、折扣券）返回")
+@ApiModel(value = "患者档案产品管理使用记录返回")
 public class OnceCardUseVo {
 	@ApiModelProperty(value = "项目id")
 	private Integer itemId;

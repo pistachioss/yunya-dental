@@ -38,14 +38,13 @@ public class CardUsedRecordVo {
 	private String couponName;
 	@ApiModelProperty(value = "产品类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）")
 	@ExcelProperty(value = "产品类型")
-	private Integer couponType;
+	private String couponType;
 	@ApiModelProperty(value = "销售渠道")
 	@ExcelProperty(value = "销售渠道")
 	private String saleChannelName;
 	@ApiModelProperty(value = "卡号")
 	@ExcelProperty(value = "卡号")
 	private String cardNumber;
-	@ApiModelProperty(value = "优惠操作人")
-	@ExcelProperty(value = "优惠操作人")
+	@ApiModelProperty(value = "收费人")
 	private String operateBenefitUser;
 }
