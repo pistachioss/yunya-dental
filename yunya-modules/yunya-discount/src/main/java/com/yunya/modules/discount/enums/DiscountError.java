@@ -59,6 +59,11 @@ public enum DiscountError implements RestError {
     CARD_PASSWORD_ERROR(50,"卡密错误，请输入正确的卡密！"),
     ORDER_NO_BENEFIT(51,"订单没有优惠信息"),
     ORDER_HAS_BENEFIT(52,"订单已经使用过优惠，不能重复使用"),
+    RECHARGE_NOT_ALLOW(53, "该卡券属于充值卡，不可以激活，需要充值！"),
+    OTHER_CARD_NOT_ALLOW(54, "只有充值卡卡券才能充值，其它类型卡券不允许充值！"),
+    RECHARGE_TIME_OUT(55, "该卡券已过充值截止时间，不可以充值！"),
+    RECHARGE_HAS_RECHARGED(56,"该卡券已被充值，不可以再次充值！"),
+    RECHARGE_NOT_SOLD(57, "该充值卡未售出，不可以充值！"),
     ;
     private Integer code;
     private String value;

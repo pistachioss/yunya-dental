@@ -68,8 +68,11 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     public int create(WorkOvertimeInfoForm workOvertimeInfoForm) {
         //判断是否有其他类型的申请
         if (true) {
-            //判断是否与同类型其他申请时间冲突
-            if (true) {
+            WorkOvertimeInfo one = new WorkOvertimeInfo();
+            one.setRestScheduleId(workOvertimeInfoForm.getRestScheduleId());
+            int a = mapper.selectCount(one);
+            //每个休息班只能排一个加班
+            if (a==0) {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
                 String dateString = simpleDateFormat.format(workOvertimeInfoForm.getWorkDate());
                 String nowString = simpleDateFormat.format(new Date());
