@@ -43,13 +43,17 @@ public class PhotoServiceBiz {
         Integer updId = Integer.valueOf(BaseContextHandler.getUserID());
         PhotoService photoService = new PhotoService();
         photoService.setUpdId((updId));
+        photoService.setUpdTime(new Date(System.currentTimeMillis()));
         BeanUtils.copyProperties(form,photoService);
         photoServiceMapper.upd(photoService);
     }
 
-    public void  del(Integer id, String uploadTime) throws ParseException {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:MM:ss");
-        long uploadTimeMs = dateFormat.parse(uploadTime).getTime();
+    public void  del(Integer id) {
+        PhotoService photoService = photoServiceMapper.selectByPrimaryKey(id);
+        if (null == photoService) {
+            throw new ClientServiceException("数据不存在",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        long uploadTimeMs = photoService.getCrtTime().getTime();
         long currentTimeMs = System.currentTimeMillis();
         long diffTimeMs = currentTimeMs - uploadTimeMs;
         int dayMs = 24 * 3600 * 1000;
