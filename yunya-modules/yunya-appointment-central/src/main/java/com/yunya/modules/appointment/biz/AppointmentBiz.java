@@ -423,6 +423,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return ResponseResult
      */
     public ResponseResult continueUpdateAppointment(AppointmentBaseForm appointmentForm) {
+        // 检查预约是否已经挂号，如果已经挂号，则不允许修改操作
+        Integer id = appointmentForm.getId();
+        Registered registerQuery = new Registered();
+        registerQuery.setAppointmentId(id);
+        Registered registeredByExample = this.remoteTreatmentServiceFeign.findRegisteredByExample(registerQuery);
+        if (null != registeredByExample) {
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_REGISTRATERED.getCode(),
+                    AppointmentError.APPOINTMENT_REGISTRATERED.getMessage(),null);
+        }
         // 检测预约分解参数是否正常
         List<AppointmentSplitBaseInfo> splits = this.checkAppointSplitField(appointmentForm.getSplitList());
         if (!StringHelper.isEmpty(splits)) {
