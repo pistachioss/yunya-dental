@@ -31,6 +31,10 @@ public class PhotoServiceVo {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date uploadTime;
 
+    @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date crtTime;
+
     @ApiModelProperty(value = "图片名称")
     private String filmName;
 

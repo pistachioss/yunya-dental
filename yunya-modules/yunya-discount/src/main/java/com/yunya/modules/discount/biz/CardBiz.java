@@ -219,7 +219,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private CardBenefitMapper cardBenefitMapper;
 	@Resource
 	private RemoteRabbitMqServiceFeign mqServiceFeign;
-	/** 卡券二维码前缀 */
+	/**
+	 * 卡券二维码前缀
+	 */
 	@Value("${codeUrl.url}")
 	private String serverPort;
 
@@ -586,41 +588,59 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return ResponseUtil.success();
 	}
 
+	/**
+	 * 查询代金、充值、套餐、兑换卡券详情
+	 * @param query query
+	 * @return res
+	 */
 	public ResponseResult<CardActiveDetailVo> getCardDetailByManual(CardActiveQuery query) {
-		String cardPassEncode = Base64.getEncoder().encodeToString(query.getCardPassword().getBytes());
-		Example example = new Example(Card.class);
-		Example.Criteria criteria = example.createCriteria().andEqualTo("cardNumber", query.getCardNumber());
-		int countNum = mapper.selectCountByExample(example);
-		if (countNum == 0) {
-			return ResponseUtil.error(DiscountError.CARD_NUMBER_ERROR);
-		}
-		criteria.andEqualTo("cardPassword", cardPassEncode);
-		Card card = mapper.selectOneByExample(example);
-		if (card == null) {
-			return ResponseUtil.error(DiscountError.CARD_PASSWORD_ERROR);
-		}
-		if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
-			return ResponseUtil.error(DiscountError.CARD_IS_ACTIVATED);
-		}
-		if (!ACTIVE_PENDING.equals(card.getStatus())) {
-			return ResponseUtil.error(DiscountError.CARD_ACTIVE_STATUS_ERROR);
-		}
-		//校验卡券有效期
-		RestErrorBo errorBo = checkCouponForActive(card.getCouponId());
+		RestErrorBo errorBo = RestErrorBo.getInstance();
+		//校验卡号卡密
+		errorBo = checkCardActiveInfo(query);
 		if (errorBo.getError() != null) {
-			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
+			return ResponseUtil.error(errorBo.getError());
 		}
-		return ResponseUtil.success(mapper.findByCardNumAndPass(query.getCardNumber(), cardPassEncode));
+		String cardPass = (String) errorBo.getMsg()[0];
+		return ResponseUtil.success(mapper.findByCardNumAndPass(query.getCardNumber(), cardPass));
 	}
 
-	public CardActiveDetailVo getCardDetailByMachine(String qrCode) {
-		String qrCodeData = new String(Base64.getDecoder().decode(qrCode));
+	/**
+	 * 查询充值卡详情
+	 * @param query query
+	 * @return res
+	 */
+	public ResponseResult<CardActiveDetailVo> getRechargeDetailByManual(CardActiveQuery query) {
+		RestErrorBo errorBo = RestErrorBo.getInstance();
+		errorBo = checkRechargeActiveInfo(query);
+		if (errorBo.getError() != null) {
+			return ResponseUtil.error(errorBo.getError());
+		}
+		String cardPass = (String) errorBo.getMsg()[0];
+		return ResponseUtil.success(mapper.findByCardNumAndPass(query.getCardNumber(), cardPass));
+	}
+
+	public ResponseResult<CardActiveDetailVo> getCardDetailByMachine(String qrCode) {
+		String qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
 		List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
 		Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
-		if (card == null || !ACTIVE_PENDING.equals(card.getStatus())) {
-			return null;
+		//校验卡券
+		RestErrorBo errorBo = checkCardInfo(card);
+		if (errorBo.getError() != null) {
+			return ResponseUtil.error(errorBo.getError());
 		}
-		return mapper.findByCardNumAndPass(card.getCardNumber(), card.getCardPassword());
+		return ResponseUtil.success(mapper.findByCardNumAndPass(card.getCardNumber(), card.getCardPassword()));
+	}
+
+	public ResponseResult<CardActiveDetailVo> getRechargeDetailByMachine(String qrCode) {
+		String qrCodeData = new String(Base64.getDecoder().decode(qrCode.trim()));
+		List<String> data = Lists.newArrayList(Splitter.on(":").trimResults().omitEmptyStrings().split(qrCodeData));
+		Card card = mapper.selectByPrimaryKey(Integer.valueOf(data.get(1)));
+		//校验充值卡券
+		RestErrorBo errorBo = checkRechargeCardInfo(card);
+		if (errorBo.getError() != null) {
+			return ResponseUtil.error(errorBo.getError());
+		}
+		return ResponseUtil.success(mapper.findByCardNumAndPass(card.getCardNumber(), card.getCardPassword()));
 	}
 
 	/**
@@ -655,7 +675,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
 			}
 			//2. 检查优惠券
-			errorBo = checkCouponForActive(card.getCouponId());
+			errorBo = checkCouponForActive(card.getCouponId(), DiscountError.CARD_BEYOND_DEADLINE);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
 			}
@@ -703,7 +723,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				return ResponseUtil.error(errorBo.getError());
 			}
 			//2. 检查优惠券
-			errorBo = checkCouponForActive(form.getCouponId());
+			errorBo = checkCouponForActive(form.getCouponId(), DiscountError.CARD_BEYOND_DEADLINE);
 			if (errorBo.getError() != null) {
 				return ResponseUtil.error(errorBo.getError());
 			}
@@ -1126,7 +1146,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				Integer couponType = benefitBo.getCouponType();
 				if (benefitUseDetailBo != null || MEMBER_CARD.equals(couponType)) {
 					//订单项目原价
-					BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()),4, BigDecimal.ROUND_HALF_UP);
+					BigDecimal originalPrice = orderItem.getReceivableAmount().divide(BigDecimal.valueOf(orderItem.getQuantity()), 4, BigDecimal.ROUND_HALF_UP);
 					//订单项目index已优惠金额
 					OrderItemChangeBo changeBo = getItemBenefitByIndex(orderItem, itemIndex);
 					//订单项目应收金额（原价 - 已优惠金额）
@@ -1716,7 +1736,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		vo.setSoldStatusName(CardStatusEnum.getValue(card.getStatus()));
 		vo.setPayStatus(TrueFalseEnum.getValue(card.getPay()));
 		vo.setSoldWayName(SoldWayEnum.getValue(card.getSoldWay()));
-		vo.setLink(serverPort + "/#/cardQrData?"+"cardId="+card.getId());
+		vo.setLink(serverPort + "/#/cardQrData?" + "cardId=" + card.getId());
 		return vo;
 	}
 
@@ -1868,7 +1888,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 *
 	 * @return RestErrorBo
 	 */
-	private RestErrorBo checkCouponForActive(Integer couponId) {
+	private RestErrorBo checkCouponForActive(Integer couponId, RestError error) {
 		RestErrorBo errorBo = RestErrorBo.getInstance();
 		CouponCommonInfo couponInfo = couponMapper.selectByPrimaryKey(couponId);
 		if (couponInfo == null || !couponInfo.getIsInservice()) {
@@ -1881,7 +1901,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		Date now = Date.from(LocalDate.now().atStartOfDay(ZoneOffset.ofHours(8)).toInstant());
 		if (deadline != null && now.after(deadline)) {
 			log.warn("优惠券{}已过期", couponInfo.getName());
-			errorBo.setError(DiscountError.CARD_BEYOND_DEADLINE);
+			errorBo.setError(error);
 			return errorBo;
 		}
 		return errorBo;
@@ -2793,5 +2813,109 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		List<OrderItemChangeBo> changeBos = orderItem.getChangeBos();
 		Optional<OrderItemChangeBo> first = changeBos.stream().filter(obj -> index.equals(obj.getIndex())).findFirst();
 		return first.orElse(null);
+	}
+
+	/**
+	 * 校验卡券激活信息
+	 * @param query query
+	 * @return error
+	 */
+	private RestErrorBo checkCardActiveInfo(CardActiveQuery query) {
+		RestErrorBo errorBo = RestErrorBo.getInstance();
+		String cardPassEncode = Base64.getEncoder().encodeToString(query.getCardPassword().getBytes());
+		Example example = new Example(Card.class);
+		Example.Criteria criteria = example.createCriteria().andEqualTo("cardNumber", query.getCardNumber());
+		int countNum = mapper.selectCountByExample(example);
+		if (countNum == 0) {
+			errorBo.setError(DiscountError.CARD_NUMBER_ERROR);
+			return errorBo;
+		}
+		criteria.andEqualTo("cardPassword", cardPassEncode);
+		Card card = mapper.selectOneByExample(example);
+		if (card == null) {
+			errorBo.setError(DiscountError.CARD_PASSWORD_ERROR);
+			return errorBo;
+		}
+		errorBo = checkCardInfo(card);
+		//传递优惠券id、卡密
+		errorBo.setMsg(card.getCardPassword());
+		return errorBo;
+	}
+
+	/**
+	 * 校验代金、折扣、兑换、套餐的卡券售卖信息
+	 * @param card card
+	 * @return error
+	 */
+	private RestErrorBo checkCardInfo(Card card) {
+		RestErrorBo errorBo = RestErrorBo.getInstance();
+		if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
+			errorBo.setError(DiscountError.CARD_IS_ACTIVATED);
+			return errorBo;
+		}
+		if (!ACTIVE_PENDING.equals(card.getStatus())) {
+			errorBo.setError(DiscountError.CARD_ACTIVE_STATUS_ERROR);
+			return errorBo;
+		}
+		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
+		if (RECHARGE.equals(coupon.getType().intValue())) {
+			errorBo.setError(DiscountError.RECHARGE_NOT_ALLOW);
+			return errorBo;
+		}
+		//校验卡券有效期
+		errorBo = checkCouponForActive(card.getCouponId(), DiscountError.CARD_BEYOND_DEADLINE);
+		return errorBo;
+	}
+
+	/**
+	 * 校验充值卡激活信息
+	 * @param query query
+	 * @return error
+	 */
+	private RestErrorBo checkRechargeActiveInfo(CardActiveQuery query) {
+		RestErrorBo errorBo = RestErrorBo.getInstance();
+		String cardPassEncode = Base64.getEncoder().encodeToString(query.getCardPassword().getBytes());
+		Example example = new Example(Card.class);
+		Example.Criteria criteria = example.createCriteria().andEqualTo("cardNumber", query.getCardNumber());
+		int countNum = mapper.selectCountByExample(example);
+		if (countNum == 0) {
+			errorBo.setError(DiscountError.CARD_NUMBER_ERROR);
+			return errorBo;
+		}
+		criteria.andEqualTo("cardPassword", cardPassEncode);
+		Card card = mapper.selectOneByExample(example);
+		if (card == null) {
+			errorBo.setError(DiscountError.CARD_PASSWORD_ERROR);
+			return errorBo;
+		}
+		errorBo = checkRechargeCardInfo(card);
+		//传递优惠券id、卡密
+		errorBo.setMsg(card.getCardPassword());
+		return errorBo;
+	}
+
+	/**
+	 * 校验充值的卡券售卖信息
+	 * @param card
+	 * @return error
+	 */
+	private RestErrorBo checkRechargeCardInfo(Card card) {
+		RestErrorBo errorBo = RestErrorBo.getInstance();
+		if (ACTIVATED.equals(card.getStatus()) || PARTIAL_USE.equals(card.getStatus()) || USE_ALL.equals(card.getStatus())) {
+			errorBo.setError(DiscountError.RECHARGE_HAS_RECHARGED);
+			return errorBo;
+		}
+		if (!ACTIVE_PENDING.equals(card.getStatus())) {
+			errorBo.setError(DiscountError.RECHARGE_NOT_SOLD);
+			return errorBo;
+		}
+		CouponCommonInfo coupon = couponMapper.selectByPrimaryKey(card.getCouponId());
+		if (!RECHARGE.equals(coupon.getType().intValue())) {
+			errorBo.setError(DiscountError.OTHER_CARD_NOT_ALLOW);
+			return errorBo;
+		}
+		//校验充值卡券有效期
+		errorBo = checkCouponForActive(card.getCouponId(), DiscountError.RECHARGE_TIME_OUT);
+		return errorBo;
 	}
 }

@@ -18,10 +18,10 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
     <!-- 根据ID查询入账方式 -->
-    <select id="selectById" resultType="com.yunya.modules.system.vo.AccountItemVO">
+    <select id="selectById" resultType="com.yunya.feign.system.vo.AccountItemVO">
       select
-        ai.id,
-        ai.name,
+        ai.id as accountItemId,
+        ai.name as accountItemName,
         ai.account_type_id as accountTypeId,
         act.name as accountTypeName,
         ai.type,
@@ -31,10 +31,10 @@
       where ai.id = #{id}
     </select>
     <!-- 根据条件查询入账方式列表 -->
-    <select id="selectAccountItemList" resultType="com.yunya.modules.system.vo.AccountItemVO">
+    <select id="selectAccountItemList" resultType="com.yunya.feign.system.vo.AccountItemVO">
         select
-            ai.id,
-            ai.name,
+            ai.id as accountItemId,
+            ai.name as accountItemName,
             ai.account_type_id as accountTypeId,
             act.name as accountTypeName,
             ai.type,

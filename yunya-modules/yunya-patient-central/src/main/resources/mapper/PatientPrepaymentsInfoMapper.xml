@@ -54,7 +54,7 @@
             ppio.upd_time updTime
         FROM
             patient_prepayments_info ppio
-        where ppio.prepayment_number =#{prepaymentNumber} and ppio.patient_id =#{patientId}
+        where ppio.prepayment_number =#{prepaymentNumber}
     </select>
 
     <!-- 根据主卡人id 查询副卡人信息  -->

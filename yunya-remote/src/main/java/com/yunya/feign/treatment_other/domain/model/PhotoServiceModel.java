@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
 
@@ -23,35 +24,30 @@ import java.util.Date;
 public class PhotoServiceModel {
 
     @ApiModelProperty(value = "诊所id",required = true)
-    @NotNull
-    private int orgId;
+    @NotNull(message = "诊所id不能为空")
+    private Integer orgId;
 
     @ApiModelProperty(value = "患者id",required = true)
-    @NotNull
-    private int patientId;
+    @NotNull(message = "患者id不能为空")
+    private Integer patientId;
 
     @ApiModelProperty(value = "就诊id",required = true)
-    @NotNull
-    private int treatmentRecordId;
+    @NotNull(message = "就诊id不能为空")
+    private Integer treatmentRecordId;
 
-    @ApiModelProperty(value = "牙医id",required = true)
-    @NotNull
-    private int dentistId;
-
-    @ApiModelProperty(value = "图片上传日期",required = true)
-    @NotNull
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date uploadTime;
+    @ApiModelProperty(value = "医生id",required = true)
+    @NotNull(message = "医生id不能为空")
+    private Integer dentistId;
 
     @ApiModelProperty(value = "图片类型(0=照片,1=根尖片,2=全景片,3=正位片,4=侧位片,5=关节片,6=正畸片,7=其他片)")
-    @NotNull
+    @NotNull(message = "图片类型不能为空")
     private Integer photoType;
 
     @ApiModelProperty(value = "图片uri")
-    @NotNull
+    @NotBlank(message = "图片uri不能为空")
     private String uri;
 
     @ApiModelProperty(value = "图片名称")
-    @NotNull
+    @NotBlank(message = "图片名称不能为空")
     private String filmName;
 }

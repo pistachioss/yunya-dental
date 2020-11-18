@@ -321,6 +321,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       refundPayDetailRecord.setRemark(memberNum);
       BigDecimal principalAmount = memberRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = memberRefundModel.getGiftAmount();
+      if (principalAmount == null){
+        principalAmount = new BigDecimal(0);
+      }
+      if (giftAmount == null){
+        giftAmount = new BigDecimal(0);
+      }
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
       // 会员卡退费金额返还
@@ -338,6 +344,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       refundPayDetailRecord.setRemark(prepaymentNum);
       BigDecimal principalAmount = prepaymentRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = prepaymentRefundModel.getGiftAmount();
+      if (principalAmount == null){
+        principalAmount = new BigDecimal(0);
+      }
+      if (giftAmount == null){
+        giftAmount = new BigDecimal(0);
+      }
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
       billRefundPayDetailRecordMapper.insertSelective(refundPayDetailRecord);
       // 预付款退费金额返还
@@ -434,6 +446,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     if (null != prepaymentAccountModel) {
       BigDecimal principalAmount = prepaymentAccountModel.getPrincipalAmount();
       BigDecimal giftAmount = prepaymentAccountModel.getGiftAmount();
+      if (principalAmount == null){
+        principalAmount = new BigDecimal(0);
+      }
+      if (giftAmount == null){
+        giftAmount = new BigDecimal(0);
+      }
       totalAmount = totalAmount.add(principalAmount).add(giftAmount);
     }
     if (StringHelper.isNotEmpty(refundPaymentModels)) {

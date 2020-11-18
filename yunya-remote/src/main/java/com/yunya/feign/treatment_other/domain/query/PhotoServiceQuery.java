@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
+import java.security.MessageDigest;
 import java.util.Date;
 
 /**
@@ -20,12 +21,11 @@ import java.util.Date;
 @Data
 @ToString
 public class PhotoServiceQuery {
-
     @ApiModelProperty(value = "患者id")
-    @NotNull
+    @NotNull(message = "患者ID不能为空")
     private int patientId;
     @ApiModelProperty(value = "图片类型(0=照片,1=根尖片,2=全景片,3=正位片,4=侧位片,5=关节片,6=正畸片,7=其他片)")
-    @NotNull
+    @NotNull(message = "图片类型不能为空")
     private int photoType;
 
 

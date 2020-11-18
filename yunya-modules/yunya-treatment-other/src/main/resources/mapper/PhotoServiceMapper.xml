@@ -23,8 +23,9 @@
           resultType="com.yunya.feign.treatment_other.domain.vo.PhotoServiceVo">
     SELECT
     uri,
-    upload_time,
-    film_name,
+    upload_time as uploadTime,
+    crt_time as crtTime,
+    film_name as filmName,
     id
     FROM
     photo_service

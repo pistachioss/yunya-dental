@@ -17,7 +17,6 @@ import java.util.List;
 @ApiModel(value = "PrintInfoQuery",description = "打印信息参数模型")
 @Data
 public class PrintInfoQuery implements Serializable {
-    @ApiModelProperty(value = "就诊ID列表",required = true)
-    @NotNull(message = "就诊ID列表不能为空")
+    @ApiModelProperty(value = "就诊ID列表")
     private List<Integer> treatmentIds;
 }

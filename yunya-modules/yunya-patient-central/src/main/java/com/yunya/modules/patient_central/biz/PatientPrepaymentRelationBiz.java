@@ -312,8 +312,7 @@ public class PatientPrepaymentRelationBiz
   public void refund(PrepaidMeturnRecordModel model) {
     // 查询会员余额 退减余额
     PatientPrepaymentsInfo patientPrepaymentsInfo =
-        patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(
-            model.getPrepaidId(), model.getPatientId());
+        patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(model.getPrepaidId());
     if (patientPrepaymentsInfo != null) {
       BigDecimal prepaymentPrincipal = patientPrepaymentsInfo.getPrepaymentPrincipal();
       BigDecimal returnPrincipalAmount = model.getReturnPrincipalAmount();
@@ -427,7 +426,7 @@ public class PatientPrepaymentRelationBiz
   public ResponseResult expend(PrepaidExpendRecordModel model) {
     PatientPrepaymentsInfo patientPrepaymentsInfo =
         patientPrepaymentsInfoMapper.selectOneByPrepaymentNumberAndPatientId(
-            model.getPrepaidId(), model.getPatientId());
+            model.getPrepaidId());
     if (patientPrepaymentsInfo != null) {
       if (patientPrepaymentsInfo
               .getPrepaymentPrincipal()

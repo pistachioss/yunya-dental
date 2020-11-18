@@ -3,11 +3,13 @@ package com.yunya.modules.employeeattend.biz;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.CopyInfo;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.WorkOvertimeInfo;
 
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
+import com.yunya.modules.employeeattend.mapper.BaseScheduleMapper;
 import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
 import com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper;
 import com.yunya.modules.employeeattend.mapper.WorkOvertimeInfoMapper;
@@ -42,9 +44,10 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_
 @Transactional(rollbackFor = Exception.class)
 public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOvertimeInfo> {
     @Autowired
-    private EmployeeScheduleMapper employeeScheduleMapper;
+    private BaseScheduleMapper baseScheduleMapper;
     @Autowired
     private CopyInfoMapper copyInfoMapper;
+
     /**
      * 根据日期和用户id列表查询加班列表
      *
@@ -65,10 +68,13 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     public int create(WorkOvertimeInfoForm workOvertimeInfoForm) {
         //判断是否有其他类型的申请
         if (true) {
-            //判断是否与同类型其他申请时间冲突
-            if (true) {
+            WorkOvertimeInfo one = new WorkOvertimeInfo();
+            one.setRestScheduleId(workOvertimeInfoForm.getRestScheduleId());
+            int a = mapper.selectCount(one);
+            //每个休息班只能排一个加班
+            if (a==0) {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-                String dateString = simpleDateFormat.format(workOvertimeInfoForm.getWorkDay());
+                String dateString = simpleDateFormat.format(workOvertimeInfoForm.getWorkDate());
                 String nowString = simpleDateFormat.format(new Date());
                 Date date = null;
                 Date now = new Date();
@@ -79,24 +85,33 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                 }
                 if (now.before(date)) {
-                    EmployeeSchedule employeeSchedule = new EmployeeSchedule();
-                    employeeSchedule.setId(workOvertimeInfoForm.getRestScheduleId());
+                    BaseSchedule baseSchedule = new BaseSchedule();
+                    baseSchedule.setId(workOvertimeInfoForm.getRestScheduleId());
                     //休息班的班次信息
-                    List<EmListVO> relist = employeeScheduleMapper.findemList(employeeSchedule);
-                    employeeSchedule.setId(workOvertimeInfoForm.getScheduleId());
+                    BaseSchedule reba = baseScheduleMapper.selectByPrimaryKey(baseSchedule);
+                    baseSchedule.setId(workOvertimeInfoForm.getScheduleId());
                     //加班的班次信息
-                    List<EmListVO> emlist = employeeScheduleMapper.findemList(employeeSchedule);
-                    if (relist.size() > 0 && emlist.size() > 0) {
+                    BaseSchedule ba = baseScheduleMapper.selectByPrimaryKey(baseSchedule);
+
+                    if (reba != null && ba != null) {
                         DateFormat df = DateFormat.getTimeInstance();
                         Date restartTime = null;
                         Date reendTime = null;
                         Date startTime = null;
                         Date endTime = null;
                         try {
-                            startTime = df.parse(df.format(emlist.get(0).getStartTime()));
-                            endTime = df.parse(df.format(emlist.get(0).getEndTime()));
-                            restartTime = df.parse(df.format(relist.get(0).getStartTime()));
-                            reendTime = df.parse(df.format(relist.get(0).getEndTime()));
+                            startTime = df.parse(df.format(ba.getFirstStartTime()));
+                            if (ba.getSecondEndTime() != null) {
+                                endTime = df.parse(df.format(ba.getSecondEndTime()));
+                            } else {
+                                endTime = df.parse(df.format(ba.getFirstEndTime()));
+                            }
+                            restartTime = df.parse(df.format(reba.getFirstStartTime()));
+                            if (reba.getSecondEndTime() != null) {
+                                reendTime = df.parse(df.format(reba.getSecondEndTime()));
+                            } else {
+                                reendTime = df.parse(df.format(reba.getFirstEndTime()));
+                            }
                         } catch (ParseException e) {
                             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                         }
@@ -108,15 +123,16 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                             workOvertimeInfo.setCrtTime(new Date());
                             int num = mapper.insertSelective(workOvertimeInfo);
                             //生成抄送信息
-                            if (workOvertimeInfoForm.getCopyList().size()>0){
-                                List<CopyInfo>copyInfoList = new ArrayList<>();
-                                for(Integer copyId:workOvertimeInfoForm.getCopyList()){
+                            if (workOvertimeInfoForm.getCopyList().size() > 0) {
+                                List<CopyInfo> copyInfoList = new ArrayList<>();
+                                for (Integer copyId : workOvertimeInfoForm.getCopyList()) {
                                     CopyInfo copyInfo = new CopyInfo();
                                     copyInfo.setApplyId(num);
                                     copyInfo.setApplyType(1);
                                     copyInfo.setUserId(copyId);
                                     copyInfo.setCrtId(workOvertimeInfo.getUserId());
                                     copyInfo.setCrtTime(new Date());
+                                    copyInfoList.add(copyInfo);
                                 }
                                 copyInfoMapper.batchInsert(copyInfoList);
                             }

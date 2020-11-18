@@ -111,17 +111,28 @@ public class CardController {
         return cardBiz.cancelCardSold(cardId);
     }
 
-    @ApiOperation(value = "患者档案-产品管理-激活-手动查询卡券详情")
+    @ApiOperation(value = "患者档案-产品管理-激活-手动查询卡券详情（代金、折扣、兑换、套餐）")
     @PostMapping("/patient/product/card/manual/detail")
     public ResponseResult<CardActiveDetailVo> cardManualDetail(@Valid @RequestBody CardActiveQuery query) {
         return cardBiz.getCardDetailByManual(query);
     }
 
-    @ApiOperation(value = "患者档案-产品管理-激活-扫码枪卡券详情")
+    @ApiOperation(value = "患者档案-产品管理-激活-手动查询卡券详情（充值）")
+    @PostMapping("/patient/product/recharge/manual/detail")
+    public ResponseResult<CardActiveDetailVo> rechargeCardManualDetail(@Valid @RequestBody CardActiveQuery query) {
+        return cardBiz.getRechargeDetailByManual(query);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-激活-扫码枪卡券详情（代金、折扣、兑换、套餐）")
     @GetMapping("/patient/product/card/machine/detail")
     public ResponseResult<CardActiveDetailVo> cardMachineDetail(@NotBlank @RequestParam String cardQrCode) {
-        CardActiveDetailVo detail = cardBiz.getCardDetailByMachine(cardQrCode);
-        return ResponseUtil.success(detail);
+        return cardBiz.getCardDetailByMachine(cardQrCode);
+    }
+
+    @ApiOperation(value = "患者档案-产品管理-激活-扫码枪卡券详情（充值）")
+    @GetMapping("/patient/product/recharge/machine/detail")
+    public ResponseResult<CardActiveDetailVo> rechargeMachineDetail(@NotBlank @RequestParam String cardQrCode) {
+        return cardBiz.getRechargeDetailByMachine(cardQrCode);
     }
 
     @ApiOperation(value = "患者档案-产品管理-激活-自有平台激活")

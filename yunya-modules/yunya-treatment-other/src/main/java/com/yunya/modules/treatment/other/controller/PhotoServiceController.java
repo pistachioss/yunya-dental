@@ -14,9 +14,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -44,7 +46,7 @@ public class PhotoServiceController {
      */
     @ApiOperation("查询图片影像列表")
     @PostMapping("/findCycleList")
-    public ResponseResult findPhotoServiceData(PhotoServiceQuery query){
+    public ResponseResult findPhotoServiceData(@RequestBody @Validated PhotoServiceQuery query){
         List<PhotoServiceVo> data = photoServiceBiz.findPhotoServiceData(query);
         return ResponseUtil.success(data);
     }
@@ -57,12 +59,8 @@ public class PhotoServiceController {
     @ApiOperation("添加图片影像")
     @PostMapping("/add")
     @CurrentUser
-    public ResponseResult add(@Valid @RequestBody PhotoServiceModel model){
-        Integer crtId = Integer.valueOf(BaseContextHandler.getUserID());
-        PhotoService photoService = new PhotoService();
-        photoService.setCrtId((crtId));
-        BeanUtils.copyProperties(model,photoService);
-        photoServiceBiz.add(photoService);
+    public ResponseResult add(@RequestBody @Validated PhotoServiceModel model){
+        photoServiceBiz.add(model);
         return ResponseUtil.success();
     }
     /**
@@ -74,12 +72,8 @@ public class PhotoServiceController {
     @ApiOperation("修改图片影像")
     @PutMapping("/upd")
     @CurrentUser
-    public ResponseResult upd(@Valid @RequestBody PhotoServiceForm form){
-        Integer updId = Integer.valueOf(BaseContextHandler.getUserID());
-        PhotoService photoService = new PhotoService();
-        photoService.setUpdId((updId));
-        BeanUtils.copyProperties(form,photoService);
-        photoServiceBiz.upd(photoService);
+    public ResponseResult upd(@RequestBody @Validated PhotoServiceForm form){
+        photoServiceBiz.upd(form);
         return ResponseUtil.success();
     }
 
@@ -90,9 +84,9 @@ public class PhotoServiceController {
      * @return
      */
     @ApiOperation("删除图片影像记录")
-    @DeleteMapping("/del")
-    public ResponseResult upd(Integer id){
-        photoServiceBiz.del(id);
+    @DeleteMapping("/del/{id}")
+    public ResponseResult del(@PathVariable("id") Integer id, String uploadTime) throws ParseException {
+        photoServiceBiz.del(id,uploadTime);
         return ResponseUtil.success();
     }
 
