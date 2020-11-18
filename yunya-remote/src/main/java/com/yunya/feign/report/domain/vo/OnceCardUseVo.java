@@ -26,6 +26,8 @@ public class OnceCardUseVo {
 	private LocalDate useDate;
 	@ApiModelProperty(value = "使用门诊")
 	private String usedClinicName;
+	@ApiModelProperty(value = "患者")
+	private String usedPatientName;
 	@ApiModelProperty(value = "接诊医生")
 	private String dentistName;
 	@ApiModelProperty(value = "优惠金额")
