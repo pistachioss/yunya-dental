@@ -59,6 +59,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -307,6 +308,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return ResponseResult
      */
     public ResponseResult appointmentCancel(Integer id, String cause){
+        // 检查预约是否已经挂号，如果已经挂号，则不允许修改操作
+        Registered registerQuery = new Registered();
+        registerQuery.setAppointmentId(id);
+        Registered registeredByExample = this.remoteTreatmentServiceFeign.findRegisteredByExample(registerQuery);
+        if (null != registeredByExample) {
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_REGISTRATERED.getCode(),
+                    AppointmentError.APPOINTMENT_REGISTRATERED.getMessage(),null);
+        }
+        // 检查取消原因内容长度
         if (null != cause && cause.length() > 500) {
             return ResponseUtil.fail(AppointmentError.TEXT_MAX_LENGTH_ERROR.getCode(),
                     AppointmentError.TEXT_MAX_LENGTH_ERROR.getMessage(),null);
@@ -350,6 +360,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @return ResponseResult
      */
     public ResponseResult updateAppointment(AppointmentBaseForm form){
+        // 检查预约是否已经挂号，如果已经挂号，则不允许修改操作
+        Integer id = form.getId();
+        Registered registerQuery = new Registered();
+        registerQuery.setAppointmentId(id);
+        Registered registeredByExample = this.remoteTreatmentServiceFeign.findRegisteredByExample(registerQuery);
+        if (null != registeredByExample) {
+            return ResponseUtil.fail(AppointmentError.APPOINTMENT_REGISTRATERED.getCode(),
+                    AppointmentError.APPOINTMENT_REGISTRATERED.getMessage(),null);
+        }
         AppointmentBaseModel appointBaseModel = EntityUtils.build(form, AppointmentBaseModel.class);
         // 检查预约当天预约的医生是否排班
         ResponseResult dentistSchedulingConflict = this.checkScheduling(appointBaseModel);
