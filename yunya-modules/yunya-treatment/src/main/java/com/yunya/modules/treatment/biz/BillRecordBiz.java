@@ -440,7 +440,13 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BigDecimal totalAmount = BigDecimal.valueOf(0);
     if (null != memberAccountModel) {
       BigDecimal principalAmount = memberAccountModel.getPrincipalAmount();
+      if (null == principalAmount) {
+        principalAmount = new BigDecimal(0);
+      }
       BigDecimal giftAmount = memberAccountModel.getGiftAmount();
+      if (null == giftAmount) {
+        giftAmount = new BigDecimal(0);
+      }
       totalAmount = totalAmount.add(principalAmount).add(giftAmount);
     }
     if (null != prepaymentAccountModel) {
