@@ -67,4 +67,9 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
    * @return 返回影响行数
    */
   int updateBaseItems(@Param("list") List<BaseTariff> list);
+
+
+  List<BaseTariff> ssss();
+
+
 }

@@ -14,6 +14,7 @@ import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -47,40 +48,42 @@ public class PrintPatientInfoBiz {
     public PrintInfoVo printInfo(Integer patientId, PrintInfoQuery treatmentIds) {
         PrintInfoVo printInfoVo = new PrintInfoVo();
         List<PatientMedicalRecordDetailVo> medicalRecordDetails = new ArrayList<>();
-        List<TreatmentRecord> treatmentRecords = this.treatmentServiceFeign.findTreatmentRecordByIds(new HashSet<>(treatmentIds.getTreatmentIds()));
-        if (StringHelper.isNotEmpty(treatmentRecords)) {
-            // 设置患者名字和病历编号
-            PatientTotalInfoVo patientTotalInfo = this.patientBaseInfoBiz.findPatientTotalInfo(patientId);
-            printInfoVo.setMedicalNumber(patientTotalInfo.getMedicalNumber());
-            printInfoVo.setPatientName(patientTotalInfo.getName());
-            // 设置患者会员类型
-            Integer memberTypeId = patientTotalInfo.getMemberTypeId();
-            MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-            if (null != memberType) {
-                printInfoVo.setMemberTypeName(memberType.getName());
+        // 设置患者名字和病历编号
+        PatientTotalInfoVo patientTotalInfo = this.patientBaseInfoBiz.findPatientTotalInfo(patientId);
+        printInfoVo.setMedicalNumber(patientTotalInfo.getMedicalNumber());
+        printInfoVo.setPatientName(patientTotalInfo.getName());
+        // 设置患者会员类型
+        Integer memberTypeId = patientTotalInfo.getMemberTypeId();
+        MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
+        if (null != memberType) {
+            printInfoVo.setMemberTypeName(memberType.getName());
+        }
+        List<Integer> treatmentRecordParams = treatmentIds.getTreatmentIds();
+        if (StringHelper.isNotEmpty(treatmentRecordParams)) {
+            List<TreatmentRecord> treatmentRecords = this.treatmentServiceFeign.findTreatmentRecordByIds(new HashSet<>(treatmentIds.getTreatmentIds()));
+            if (StringHelper.isNotEmpty(treatmentRecords)) {
+                // 就诊记录按就诊日期降序排列
+                List<TreatmentRecord> collect = treatmentRecords.stream().sorted(Comparator.comparing(TreatmentRecord::getTreatStartTime).reversed()).collect(Collectors.toList());
+                TreatmentRecord treatmentRecord = collect.get(0);
+                // 设置末诊日期
+                printInfoVo.setLastTreatmentDate(treatmentRecord.getTreatStartTime());
+
+                // 设置患者末诊医生和末诊时间
+                treatmentRecords.forEach(item -> {
+                    PatientMedicalRecordDetailVo patientMedicalRecordDetailVo = new PatientMedicalRecordDetailVo();
+                    // 设置就诊ID
+                    patientMedicalRecordDetailVo.setTreatmentId(item.getId());
+                    Integer dentistId = item.getDentistId();
+                    SysEmployee sysEmployee = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
+                    if (null != sysEmployee) {
+                        // 设置医生名字
+                        patientMedicalRecordDetailVo.setDentistName(sysEmployee.getName());
+                    }
+                    patientMedicalRecordDetailVo.setTreatmentDate(item.getTreatStartTime());
+                    medicalRecordDetails.add(patientMedicalRecordDetailVo);
+                });
+                printInfoVo.setMedicalRecordDetails(medicalRecordDetails);
             }
-
-            // 就诊记录按就诊日期降序排列
-            List<TreatmentRecord> collect = treatmentRecords.stream().sorted(Comparator.comparing(TreatmentRecord::getTreatStartTime).reversed()).collect(Collectors.toList());
-            TreatmentRecord treatmentRecord = collect.get(0);
-            // 设置末诊日期
-            printInfoVo.setLastTreatmentDate(treatmentRecord.getTreatStartTime());
-
-            // 设置患者末诊医生和末诊时间
-            treatmentRecords.forEach(item -> {
-                PatientMedicalRecordDetailVo patientMedicalRecordDetailVo = new PatientMedicalRecordDetailVo();
-                // 设置就诊ID
-                patientMedicalRecordDetailVo.setTreatmentId(item.getId());
-                Integer dentistId = item.getDentistId();
-                SysEmployee sysEmployee = this.remoteSystemServiceFeign.findSysEmployeeById(dentistId);
-                if (null != sysEmployee) {
-                    // 设置医生名字
-                    patientMedicalRecordDetailVo.setDentistName(sysEmployee.getName());
-                }
-                patientMedicalRecordDetailVo.setTreatmentDate(item.getTreatStartTime());
-                medicalRecordDetails.add(patientMedicalRecordDetailVo);
-            });
-            printInfoVo.setMedicalRecordDetails(medicalRecordDetails);
         }
         return printInfoVo;
     }
