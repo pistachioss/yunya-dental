@@ -50,6 +50,7 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
+import lombok.var;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
@@ -1537,9 +1538,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     operationRecordContent = "[" + crtTime + "]" + appointOperationRecordVo.getCrtName() + "新建了这条预约";
                     break;
                 case 1:
+                    String beforeOperation = appointOperationRecordVo.getBeforeOperation();
+                    String afterOperation = appointOperationRecordVo.getAfterOperation();
                     operationRecordContent = "[" + crtTime + "]" +  "修改了【" + appointOperationRecordVo.getOperateItem() +
-                            "】，将\"" + appointOperationRecordVo.getBeforeOperation() + "\"改成了\"" +
-                            appointOperationRecordVo.getAfterOperation() + "\"";
+                            "】，将\"" + (StringHelper.isEmpty(beforeOperation) ? "无" : beforeOperation) + "" +
+                            "\"改成了\"" + (StringHelper.isEmpty(afterOperation) ? "无" : afterOperation) + "\"";
                     break;
                 case 2:
                     operationRecordContent = "[" + crtTime + "]" + appointOperationRecordVo.getCrtName() + "取消了这条预约";
