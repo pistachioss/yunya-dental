@@ -311,6 +311,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 检查预约是否已经挂号，如果已经挂号，则不允许修改操作
         Registered registerQuery = new Registered();
         registerQuery.setAppointmentId(id);
+        registerQuery.setInservice(true);
         Registered registeredByExample = this.remoteTreatmentServiceFeign.findRegisteredByExample(registerQuery);
         if (null != registeredByExample) {
             return ResponseUtil.fail(AppointmentError.APPOINTMENT_REGISTRATERED.getCode(),
@@ -364,6 +365,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Integer id = form.getId();
         Registered registerQuery = new Registered();
         registerQuery.setAppointmentId(id);
+        registerQuery.setInservice(true);
         Registered registeredByExample = this.remoteTreatmentServiceFeign.findRegisteredByExample(registerQuery);
         if (null != registeredByExample) {
             return ResponseUtil.fail(AppointmentError.APPOINTMENT_REGISTRATERED.getCode(),
@@ -427,6 +429,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Integer id = appointmentForm.getId();
         Registered registerQuery = new Registered();
         registerQuery.setAppointmentId(id);
+        registerQuery.setInservice(true);
         Registered registeredByExample = this.remoteTreatmentServiceFeign.findRegisteredByExample(registerQuery);
         if (null != registeredByExample) {
             return ResponseUtil.fail(AppointmentError.APPOINTMENT_REGISTRATERED.getCode(),
