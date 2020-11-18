@@ -86,7 +86,7 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     int count = mapper.selectCount(entity);
     if (count > 0) {
       throw new ClientServiceException(
-          "新增失败，当前入账方式分类下已存在名称为'" + name + "'的入账方式", OperationCodeConstants.SAME_DATA_EXIST);
+          "新增失败，系统中已存在名称为'" + name + "'的入账方式", OperationCodeConstants.SAME_DATA_EXIST);
     }
     entity.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
     entity.setCrtName(BaseContextHandler.getName());
@@ -115,7 +115,7 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
       int count = mapper.selectCount(resultData);
       if (count > 0) {
         throw new ClientServiceException(
-            "修改失败，当前入账方式分类下已存在名称为'" + name + "'的入账方式", OperationCodeConstants.SAME_DATA_EXIST);
+            "修改失败，系统中已存在名称为'" + name + "'的入账方式", OperationCodeConstants.SAME_DATA_EXIST);
       }
     }
     Byte type = form.getType();
