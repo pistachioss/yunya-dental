@@ -27,13 +27,13 @@ public class PhotoServiceVo {
     @ApiModelProperty(value = "主键id")
     private Integer id;
 
-    @ApiModelProperty(value = "图片上传日期")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    private Date uploadTime;
-
-    @ApiModelProperty(value = "创建时间")
+    @ApiModelProperty(value = "创建时间(当有修改上传时间时，则前端显示更新时间，否则一律显示创建时间)")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date crtTime;
+
+    @ApiModelProperty(value = "更新时间(当有修改上传时间时，则前端显示更新时间，否则一律显示创建时间)")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date updTime;
 
     @ApiModelProperty(value = "图片名称")
     private String filmName;

@@ -26,6 +26,7 @@
     upload_time as uploadTime,
     crt_time as crtTime,
     film_name as filmName,
+    upd_time as updTime,
     id
     FROM
     photo_service
