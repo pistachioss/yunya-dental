@@ -454,7 +454,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
 
         // 查询修改前的预约信息，方便做操作记录使用
-        Integer id = appointmentForm.getId();
         Appointment appointment = mapper.selectByPrimaryKey(id);
 
         int num = mapper.updateByPrimaryKeySelective(appointEntity);
