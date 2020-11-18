@@ -42,7 +42,7 @@ public class WorkOvertimeInfoVO implements Serializable {
 
     /** 加班事由 */
     @ApiModelProperty(value = "加班事由")
-    private Integer overtimeReason;
+    private String overtimeReason;
 
     /** 审批人id（直接存员工id 与审批人员表没有关系） */
     @ApiModelProperty(value = "审批人id（直接存员工id 与审批人员表没有关系）")

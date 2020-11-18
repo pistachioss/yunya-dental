@@ -39,6 +39,10 @@ public class FieldInfoForm {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date endTime;
 
+    /** 门诊id */
+    @ApiModelProperty(value = "门诊id")
+    private Integer companyId;
+
     /**
      * 外勤原因
      */

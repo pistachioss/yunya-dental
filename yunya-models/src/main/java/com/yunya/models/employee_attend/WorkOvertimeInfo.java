@@ -1,6 +1,7 @@
 package com.yunya.models.employee_attend;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -54,6 +55,11 @@ public class WorkOvertimeInfo {
      */
     @Column(name = "apprpval_status")
     private Integer apprpvalStatus;
+    /**
+     * 拒绝原因
+     */
+    @Column(name = "refuse_reason")
+    private String refuseReason;
 
     /**
      * 创建人

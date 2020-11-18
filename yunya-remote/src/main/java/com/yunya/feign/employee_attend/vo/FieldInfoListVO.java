@@ -1,5 +1,6 @@
 package com.yunya.feign.employee_attend.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -36,11 +37,21 @@ public class FieldInfoListVO {
 
     /** 开始时间 */
     @ApiModelProperty(value = "开始时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH", timezone = "GMT+8")
     private Date startTime;
 
     /** 结束时间 */
     @ApiModelProperty(value = "结束时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH", timezone = "GMT+8")
     private Date endTime;
+
+    /** 门诊id */
+    @ApiModelProperty(value = "门诊id")
+    private Integer companyId;
+
+    /** 门诊名称 */
+    @ApiModelProperty(value = "门诊名称")
+    private String companyName;
 
     /** 外勤原因 */
     @ApiModelProperty(value = "外勤原因")
@@ -50,8 +61,8 @@ public class FieldInfoListVO {
     @ApiModelProperty(value = "审批人id（直接存员工id 与审批人员表没有关系）")
     private Integer approvalPeopleId;
 
-    /** 审批人id（直接存员工id 与审批人员表没有关系） */
-    @ApiModelProperty(value = "审批人id（直接存员工id 与审批人员表没有关系）")
+    /** 审批人名称 */
+    @ApiModelProperty(value = "审批人名称")
     private String approvalPeopleName;
 
     /** 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期*/
