@@ -6,6 +6,7 @@ import io.swagger.models.auth.In;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.security.MessageDigest;
 import java.util.Date;
@@ -18,10 +19,20 @@ import java.util.Date;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("查询牙周期列表模型")
+@ApiModel(value = "PhotoServiceQuery",description = "查询牙周期列表模型")
 @Data
 @ToString
 public class PhotoServiceQuery {
+    @ApiModelProperty(value = "是否分页,默认true")
+    private Boolean whetherPage = true;
+
+    @ApiModelProperty("页码，默认第1页")
+    @Min(message = "最小值", value = 1)
+    private Integer pageNum = 1;
+
+    @ApiModelProperty("每页显示数量，默认显示10条")
+    @Min(message = "最小值", value = 1)
+    private Integer pageSize = 10;
     @ApiModelProperty(value = "患者id")
     @NotNull(message = "患者ID不能为空")
     private Integer patientId;

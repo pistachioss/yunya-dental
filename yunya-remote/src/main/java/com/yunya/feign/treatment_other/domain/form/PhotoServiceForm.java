@@ -17,7 +17,7 @@ import java.util.Date;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("修改图片影像模块")
+@ApiModel(value = "PhotoServiceForm",description = "修改图片影像模块")
 @Data
 @ToString
 public class PhotoServiceForm {

@@ -20,7 +20,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("添加图片影像模块")
+@ApiModel(value = "PhotoServiceModel",description = "添加图片影像模块")
 @Data
 @ToString
 public class PhotoServiceModel {
@@ -45,7 +45,7 @@ public class PhotoServiceModel {
     @NotNull(message = "图片类型不能为空")
     private Integer photoType;
 
-    @ApiModelProperty(value = "照片列表")
+    @ApiModelProperty(value = "照片列表",required = true)
     @Valid
     private List<PhotoDetailListModel> photoDetailListModels;
 }

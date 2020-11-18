@@ -1,5 +1,7 @@
 package com.yunya.modules.treatment.other.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.PhotoServiceForm;
 import com.yunya.feign.treatment_other.domain.model.PhotoDetailListModel;
 import com.yunya.feign.treatment_other.domain.model.PhotoServiceModel;
@@ -33,9 +35,12 @@ public class PhotoServiceBiz {
     @Resource
     private PhotoServiceMapper photoServiceMapper;
 
-    public List<PhotoServiceVo> findPhotoServiceData(PhotoServiceQuery query){
+    public PageInfo<PhotoServiceVo> findPhotoServiceData(PhotoServiceQuery query){
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
         List<PhotoServiceVo> data = photoServiceMapper.findPhotoServiceData(query);
-        return data;
+        return new PageInfo(data);
     }
 
     public void addBatch(PhotoServiceModel model){

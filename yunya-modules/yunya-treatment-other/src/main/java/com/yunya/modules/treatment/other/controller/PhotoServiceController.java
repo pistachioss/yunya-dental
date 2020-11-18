@@ -1,25 +1,21 @@
 package com.yunya.modules.treatment.other.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.PhotoServiceForm;
 import com.yunya.feign.treatment_other.domain.model.PhotoServiceModel;
 import com.yunya.feign.treatment_other.domain.query.PhotoServiceQuery;
 import com.yunya.feign.treatment_other.domain.vo.PhotoServiceVo;
 import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.treatment_other.PhotoService;
 import com.yunya.modules.treatment.other.biz.PhotoServiceBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.text.ParseException;
-import java.util.List;
 
 /**
  * 简介: 就诊牙周期模块管理
@@ -31,9 +27,8 @@ import java.util.List;
  */
 @Api(tags = "图片影像模块(增删改查)")
 @RestController
-@RequestMapping("photo")
+@RequestMapping("/photo")
 public class PhotoServiceController {
-
 
     @Autowired
     private PhotoServiceBiz photoServiceBiz;
@@ -46,8 +41,8 @@ public class PhotoServiceController {
      */
     @ApiOperation("查询图片影像列表")
     @PostMapping("/findCycleList")
-    public ResponseResult findPhotoServiceData(@RequestBody @Validated PhotoServiceQuery query){
-        List<PhotoServiceVo> data = photoServiceBiz.findPhotoServiceData(query);
+    public ResponseResult<PageInfo<PhotoServiceVo>> findPhotoServiceData(@RequestBody @Validated PhotoServiceQuery query){
+        PageInfo<PhotoServiceVo> data = photoServiceBiz.findPhotoServiceData(query);
         return ResponseUtil.success(data);
     }
     /**
@@ -56,8 +51,8 @@ public class PhotoServiceController {
      * @param
      * @return
      */
-    @ApiOperation("添加图片影像")
-    @PostMapping("/add")
+    @ApiOperation("添加图片影像批量上传")
+    @PostMapping("/add/batch")
     @CurrentUser
     public ResponseResult addBatch(@RequestBody @Validated PhotoServiceModel model){
         photoServiceBiz.addBatch(model);
@@ -85,6 +80,7 @@ public class PhotoServiceController {
      */
     @ApiOperation("删除图片影像记录")
     @DeleteMapping("/del/{id}")
+    @ApiImplicitParams({@ApiImplicitParam(name = "id",value = "照片记录ID")})
     public ResponseResult del(@PathVariable("id") Integer id) {
         photoServiceBiz.del(id);
         return ResponseUtil.success();

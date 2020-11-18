@@ -16,11 +16,11 @@ import java.io.Serializable;
 @ApiModel(value = "PhotoDetailListModel",description = "照片列表参数模型")
 @Data
 public class PhotoDetailListModel implements Serializable {
-    @ApiModelProperty(value = "图片uri")
+    @ApiModelProperty(value = "图片uri",required = true)
     @NotBlank(message = "图片uri不能为空")
     private String uri;
 
-    @ApiModelProperty(value = "图片名称")
+    @ApiModelProperty(value = "图片名称",required = true)
     @NotBlank(message = "图片名称不能为空")
     private String filmName;
 }
