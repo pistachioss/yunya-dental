@@ -206,6 +206,7 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                         build.setAllergen(patientTotalInfo.getAllergens());
                         build.setPatientRemark(patientTotalInfo.getRemarks());
                         build.setPinyinName(patientTotalInfo.getPinyinName());
+                        build.setPatientKind(patientTotalInfo.getPatientKindName());
                         // 设置会员图标
                         Integer memberTypeId = patientTotalInfo.getMemberTypeId();
                         if (memberTypeId != null){

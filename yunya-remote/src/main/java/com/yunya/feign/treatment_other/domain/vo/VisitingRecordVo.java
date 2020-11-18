@@ -182,4 +182,8 @@ public class VisitingRecordVo implements Serializable {
     @ApiModelProperty(value = "档案备注")
     private String patientRemark;
 
+    /** 患者类型 */
+    @ApiModelProperty(value = "患者类型")
+    private String patientKind;
+
 }
