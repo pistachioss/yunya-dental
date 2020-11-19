@@ -82,12 +82,12 @@ public class VisitingRemindForm implements Serializable {
     private String remarks;
 
     /** 提醒状态 0-待提醒；1-提醒完成 */
-    @ApiModelProperty(value = "提醒状态 0-待提醒；1-提醒完成")
-    private Boolean status;
+    @ApiModelProperty(value = "提醒状态(默认0-待提醒) 0-待提醒；1-提醒完成")
+    private Boolean status=false;
 
     /**
      * 是否启用 0-不启用；1-启用
      */
-    @ApiModelProperty(value = "是否启用 0-不启用；1-启用")
-    private Boolean inservice;
+    @ApiModelProperty(value = "是否启用(默认0-不启用) 0-不启用；1-启用")
+    private Boolean inservice=true;
 }

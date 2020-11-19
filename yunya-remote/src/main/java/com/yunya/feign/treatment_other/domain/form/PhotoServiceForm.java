@@ -29,4 +29,10 @@ public class PhotoServiceForm {
     @NotNull(message = "图片上传日期不能为空")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date uploadTime;
+
+    @ApiModelProperty(value = "当前操作时间",required = true)
+    @NotNull(message = "当前操作时间不能为空")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date currentTime;
+
 }

@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -34,6 +35,10 @@ public class PhotoServiceVo {
     @ApiModelProperty(value = "更新时间(当有修改上传时间时，则前端显示更新时间，否则一律显示创建时间)")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date updTime;
+
+    @ApiModelProperty(value = "图片上传日期")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date uploadTime;
 
     @ApiModelProperty(value = "图片名称")
     private String filmName;

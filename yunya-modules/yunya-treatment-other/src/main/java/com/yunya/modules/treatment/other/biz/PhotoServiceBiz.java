@@ -21,10 +21,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -63,6 +65,11 @@ public class PhotoServiceBiz {
         photoServiceMapper.addBatch(photoServices);
     }
     public void upd(PhotoServiceForm form){
+        long currentTimeMs = form.getCurrentTime().getTime();
+        long currentTimeInMillis = currentTimeInMillis();
+        if (currentTimeMs > currentTimeInMillis) {
+            throw new ClientServiceException("已经错过修改日期，不允许修改",OperationCodeConstants.OBJECT_EDIT_FAIL);
+        }
         Integer updId = Integer.valueOf(BaseContextHandler.getUserID());
         PhotoService photoService = new PhotoService();
         photoService.setUpdId((updId));
@@ -84,5 +91,18 @@ public class PhotoServiceBiz {
             throw new ClientServiceException("上传图片时间已经超过24小时,不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
         photoServiceMapper.del(id);
+    }
+
+    /**
+     * 获取当前时间(yyyy-MM-dd 23:59:59)距离格林尼治时间的毫秒数
+     * @return 获取当前时间距离格林尼治时间的毫秒数
+     */
+    private long currentTimeInMillis() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY,23);
+        calendar.set(Calendar.MINUTE,59);
+        calendar.set(Calendar.SECOND,59);
+        return calendar.getTimeInMillis();
     }
 }

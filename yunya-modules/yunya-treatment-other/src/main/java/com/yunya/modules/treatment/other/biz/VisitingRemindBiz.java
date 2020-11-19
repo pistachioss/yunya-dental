@@ -128,10 +128,15 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
             try{
                 redisUtils.setLock(RedisConstants.LOCK_VISITING_REMIND,String.valueOf(id), BusinessConstants.MEDICAL_APPLY_LOCK_SEC,TimeUnit.SECONDS);
                 VisitingRemind build = EntityUtils.build(form, VisitingRemind.class);
+                build.setCrtId(visitingRemind.getCrtId());
+                build.setCrtName(visitingRemind.getCrtName());
+                build.setCrtTime(visitingRemind.getCrtTime());
                 build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
                 build.setUpdName(BaseContextHandler.getName());
                 build.setUpdTime(new Date(System.currentTimeMillis()));
-                int result = mapper.updateByPrimaryKeySelective(build);
+                build.setInservice(form.getInservice());
+                build.setStatus(form.getStatus());
+                int result = mapper.updateByPrimaryKey(build);
                 if (result <= 0){
                     return ResponseUtil.success("数据修改失败！");
                 } else {
