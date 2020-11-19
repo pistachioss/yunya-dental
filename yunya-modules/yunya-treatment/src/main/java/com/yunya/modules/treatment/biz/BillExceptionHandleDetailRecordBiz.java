@@ -144,7 +144,7 @@ public class BillExceptionHandleDetailRecordBiz
         List<BillPayDetailRecordVO> payDetailList = Lists.newArrayList();
         if (StringHelper.isNotEmpty(ids)) {
           Arrays.stream(ids)
-              .map(id -> billPayDetailRecordMapper.selectPreBillPayDetailRecord(id, null))
+              .map(id -> billPayDetailRecordMapper.selectPreBillPayDetailRecord(Integer.valueOf(id), null))
               .filter(Objects::nonNull)
               .forEachOrdered(
                   vo -> {

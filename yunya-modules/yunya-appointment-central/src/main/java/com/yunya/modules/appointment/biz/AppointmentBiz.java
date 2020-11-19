@@ -2133,6 +2133,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setPatientRemark(patientInfo.getRemarks()==null ? "--" : patientInfo.getRemarks());
                 build.setAllergen(patientInfo.getAllergens());
                 build.setPinyinName(patientInfo.getPinyinName());
+                build.setPatientKind(patientInfo.getPatientKindName());
                 // 设置会员卡图标类型
                 Integer memberTypeId = patientInfo.getMemberTypeId();
                 if (memberTypeId != null) {
