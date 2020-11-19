@@ -37,6 +37,122 @@
         <result column="inservice" property="inservice" jdbcType="BIT"/>
     </resultMap>
 
+    <!-- 批量插入商品项目列表 -->
+    <insert id="insertBaseItems">
+        insert into base_oral_tariff
+        (oral_tariff_category_id, item_number, `name`, pinyin, english_name, unit, quantity,
+        price, adjust, achie, inservice, crt_id, crt_name)
+        values
+        <foreach collection="list" item="obj" separator=",">
+            (#{obj.oralTariffCategoryId}, #{obj.itemNumber}, #{obj.name},
+            #{obj.pinyin}, #{obj.englishName}, #{obj.unit}, #{obj.quantity},
+            #{obj.price}, #{obj.adjust}, #{obj.achie}, #{obj.inservice}, #{obj.crtId}, #{obj.crtName})
+        </foreach>
+    </insert>
+
+    <!-- 批量更新商品项目列表 -->
+    <update id="updateBaseItems">
+        update base_tariff
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="oral_tariff_category_id=case" suffix="end,">
+                <foreach collection="list" item="obj" index="index">
+                    <if test="obj.oralTariffCategoryId != null">
+                        when id=#{obj.id} then #{obj.oralTariffCategoryId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="item_number=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.itemNumber != null and obj.itemNumber != ''">
+                        when id=#{obj.id} then #{obj.itemNumber}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="name=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.name != null and obj.name != ''">
+                        when id=#{obj.id} then #{obj.name}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="pinyin=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.pinyin != null and obj.pinyin=''">
+                        when id=#{obj.id} then #{obj.pinyin}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="english_name=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.englishName != null and obj.englishName=''">
+                        when id=#{obj.id} then #{obj.englishName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="unit=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.unit != null and obj.unit=''">
+                        when id=#{obj.id} then #{obj.unit}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="price=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.price != null">
+                        when id=#{obj.id} then #{obj.price}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="adjust=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.adjust != null and obj.adjust=''">
+                        when id=#{obj.id} then #{obj.adjust}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="achie=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.achie != null and obj.achie=''">
+                        when id=#{obj.id} then #{obj.achie}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="inservice=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.inservice != null">
+                        when id=#{obj.id} then #{obj.inservice}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_id=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updId != null">
+                        when id=#{obj.id} then #{obj.updId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_name=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updName != null and obj.updName != ''">
+                        when id=#{obj.id} then #{obj.updName}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_time=case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updTime != null">
+                        when id=#{obj.id} then date_format(#{obj.updTime},'%Y-%m-%d %H:%m:%s')
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach collection="list" item="obj" open="(" separator="," close=")">
+            #{obj.id}
+        </foreach>
+
+    </update>
+
     <!-- 根据商品项目ID查询商品项目信息 -->
     <select id="selectBaseOralTariffInfoById" resultMap="BaseOralTariffInfoResultMap">
         select
@@ -55,6 +171,7 @@
         left join base_oral_tariff_category botc on bot.oral_tariff_category_id = botc.id
         where bot.id = #{id}
     </select>
+
     <!-- 根据条件查询商品项目列表(不含门诊商品项目价格信息) -->
     <select id="selectBaseOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffVO">
         select
@@ -80,7 +197,8 @@
                 and bot.oral_tariff_category_id = #{queryForm.oralTariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and CONCAT(IFNULL( bot.name, '' ), IFNULL( bot.item_number, '' ), IFNULL( bot.pinyin, '' )) like concat('%',
+                and CONCAT(IFNULL( bot.name, '' ), IFNULL( bot.item_number, '' ), IFNULL( bot.pinyin, '' )) like
+                concat('%',
                 #{queryForm.keyWord}, '%')
             </if>
             <if test="queryForm.inservice != null">
@@ -88,6 +206,7 @@
             </if>
         </where>
     </select>
+
     <!-- 根据条件查询商品项目列表（导出用） -->
     <select id="selectExportBaseOralTariffList" resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffExportVO">
         select
@@ -110,9 +229,16 @@
                 and bot.oral_tariff_category_id = #{queryForm.oralTariffCategoryId}
             </if>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and CONCAT(IFNULL( bot.name, '' ), IFNULL( bot.item_number, '' ), IFNULL( bot.pinyin, '' )) like concat('%',
+                and CONCAT(IFNULL( bot.name, '' ), IFNULL( bot.item_number, '' ), IFNULL( bot.pinyin, '' )) like
+                concat('%',
                 #{queryForm.keyWord}, '%')
             </if>
         </where>
+    </select>
+
+    <!-- 查询基础商品表视图列表 -->
+    <select id="selectBaseOralTariffView" resultType="com.yunya.models.tariff.BaseOralTariff">
+        select id, tariff_category_id as tariffCategoryId, item_number as itemNumber, `name`
+        from base_tariff_view
     </select>
 </mapper>

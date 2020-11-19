@@ -37,4 +37,25 @@ public interface BaseOralTariffMapper extends Mapper<BaseOralTariff> {
    */
   List<BaseOralTariffExportVO> selectExportBaseOralTariffList(
       @Param("queryForm") BaseOralTariffQueryForm queryForm);
+
+  /**
+   * 查询基础商品表视图列表
+   *
+   * @return List<BaseOralTariff>
+   */
+  List<BaseOralTariff> selectBaseOralTariffView();
+
+  /**
+   * 批量插入商品项目列表
+   *
+   * @param list 商品项目列表
+   */
+  void insertBaseItems(@Param("list") List<BaseOralTariff> list);
+
+  /**
+   * 批量更新商品项目列表
+   *
+   * @param list 商品项目列表
+   */
+  void updateBaseItems(@Param("list") List<BaseOralTariff> list);
 }
