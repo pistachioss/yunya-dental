@@ -44,6 +44,7 @@ public class WorkOvertimeInfoController {
     public ResponseResult create(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
         return ResponseUtil.success(workOvertimeInfoBiz.create(workOvertimeInfoForm));
     }
+
     /**
      * 获取加班申请列表
      *
@@ -55,6 +56,34 @@ public class WorkOvertimeInfoController {
     @RepeatSubmit
     public ResponseResult findList(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
         return ResponseUtil.success(workOvertimeInfoBiz.findList(workOvertimeInfoForm));
+    }
+
+    /**
+     * 审核加班申请
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/examine")
+    @ApiOperation("审核加班申请")
+    @RepeatSubmit
+    @CurrentUser
+    public ResponseResult examine(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
+        return ResponseUtil.success(workOvertimeInfoBiz.examine(workOvertimeInfoForm));
+    }
+
+    /**
+     * 撤销外勤申请
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/revoke")
+    @ApiOperation("撤销外勤申请")
+    @RepeatSubmit
+    @CurrentUser
+    public ResponseResult revoke(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
+        return ResponseUtil.success(workOvertimeInfoBiz.revoke(workOvertimeInfoForm));
     }
 
 }

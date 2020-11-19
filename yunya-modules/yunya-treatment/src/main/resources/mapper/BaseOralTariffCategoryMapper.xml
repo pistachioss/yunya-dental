@@ -16,6 +16,62 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+
+    <!-- 批量插入商品分类列表 -->
+    <insert id="insertBaseOralTariffCategoryList" parameterType="list" keyProperty="id" useGeneratedKeys="true">
+        insert into base_oral_tariff_category (`name`, `number`, inservice, crt_id, crt_name)
+        values
+        <foreach collection="list" item="obj" separator=",">
+            (#{obj.name}, #{obj.number}, #{obj.inservice}, #{obj.crtId}, #{obj.crtName})
+        </foreach>
+    </insert>
+
+    <!-- 批量更新商品分类列表 -->
+    <update id="updateBaseOralTariffCategoryList">
+        update base_oral_tariff_category
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="name = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.name != null and obj.name != ''">
+                        when id=#{obj.id} then #{obj.name}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="number = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.number != null and obj.number != ''">
+                        when id=#{obj.id} then #{obj.number}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="inservice = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.inservice != null">
+                        when id=#{obj.id} then #{obj.inservice}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_id = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updId != null">
+                        when id=#{obj.id} then #{obj.updId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_name = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updName != null and obj.updName != ''">
+                        when id=#{obj.id} then #{obj.updName}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach collection="list" item="obj" open="(" separator="," close=")">
+            #{obj.id}
+        </foreach>
+    </update>
+
     <!-- 根据ID查询商品分类信息 -->
     <select id="selectBaseOralTariffCategoryById"
             resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffCategoryVO">
@@ -27,6 +83,7 @@
       from base_oral_tariff_category botc
       where botc.id = #{id}
     </select>
+
     <!-- 根据条件查询商品分类列表信息 -->
     <select id="selectBaseOralTariffCategoryList"
             resultType="com.yunya.feign.treatment.domain.vo.BaseOralTariffCategoryVO">
@@ -48,5 +105,11 @@
                 and botc.inservice = #{queryForm.inservice}
             </if>
         </where>
+    </select>
+
+    <!-- 查询基础商品分类视图列表 -->
+    <select id="selectBaseOralTariffCategoryView" resultType="com.yunya.models.tariff.BaseOralTariffCategory">
+        select `name`, `number`, id
+        from base_oral_tariff_category_view
     </select>
 </mapper>

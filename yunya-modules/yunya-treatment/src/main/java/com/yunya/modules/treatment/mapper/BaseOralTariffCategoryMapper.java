@@ -26,4 +26,25 @@ public interface BaseOralTariffCategoryMapper extends Mapper<BaseOralTariffCateg
    */
   List<BaseOralTariffCategoryVO> selectBaseOralTariffCategoryList(
       @Param("queryForm") BaseOralTariffCategoryQueryForm queryForm);
+
+  /**
+   * 查询基础价目表分类视图列表
+   *
+   * @return List<BaseOralTariffCategory>
+   */
+  List<BaseOralTariffCategory> selectBaseOralTariffCategoryView();
+
+  /**
+   * 批量插入商品分类列表
+   *
+   * @param list 商品分类列表
+   */
+  void insertBaseOralTariffCategoryList(@Param("list") List<BaseOralTariffCategory> list);
+
+  /**
+   * 批量更新商品分类列表
+   *
+   * @param list 商品分类列表
+   */
+  void updateBaseOralTariffCategoryList(@Param("list") List<BaseOralTariffCategory> list);
 }
