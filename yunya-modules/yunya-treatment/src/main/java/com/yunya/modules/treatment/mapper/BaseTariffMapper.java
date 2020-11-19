@@ -56,6 +56,7 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
 
   /**
    * 批量插入价目表
+   *
    * @param list 价目表列表
    * @return 返回影响行数
    */
@@ -63,13 +64,16 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
 
   /**
    * 批量更新价目表
+   *
    * @param list 价目表列表
    * @return 返回影响行数
    */
   int updateBaseItems(@Param("list") List<BaseTariff> list);
 
-
-  List<BaseTariff> ssss();
-
-
+  /**
+   * 查询基础价目表视图列表
+   *
+   * @return List<BaseTariff>
+   */
+  List<BaseTariff> selectBaseTariffView();
 }

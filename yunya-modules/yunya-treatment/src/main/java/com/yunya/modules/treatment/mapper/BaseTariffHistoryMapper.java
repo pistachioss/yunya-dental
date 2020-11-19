@@ -16,4 +16,11 @@ public interface BaseTariffHistoryMapper extends Mapper<BaseTariffHistory> {
    * @return
    */
   List<BaseTariffHistoryVO> selectBaseTariffHistoryList(@Param("tariffId") Integer tariffId);
+
+  /**
+   * 批量插入基础价目表变更记录列表
+   *
+   * @param list 基础价目表变更记录列表
+   */
+  void insertBaseTariffHistory(@Param("list") List<BaseTariffHistory> list);
 }

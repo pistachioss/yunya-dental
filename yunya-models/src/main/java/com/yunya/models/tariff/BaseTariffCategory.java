@@ -1,11 +1,14 @@
 package com.yunya.models.tariff;
 
+import lombok.EqualsAndHashCode;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.util.Date;
 
+@EqualsAndHashCode
 @Table(name = "base_tariff_category")
 public class BaseTariffCategory {
   /** 主键 */

@@ -16,6 +16,7 @@
         <result column="upd_name" jdbcType="VARCHAR" property="updName"/>
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
     </resultMap>
+
     <!-- 根据ID查询价目表分类信息 -->
     <select id="selectBaseTariffCategoryById"
             resultType="com.yunya.feign.treatment.domain.vo.BaseTariffCategoryVO">
@@ -27,6 +28,7 @@
       from base_tariff_category btc
       where btc.id = #{id}
     </select>
+
     <!-- 根据条件查询价目表分类列表 -->
     <select id="selectBaseTariffCategoryList"
             resultType="com.yunya.feign.treatment.domain.vo.BaseTariffCategoryVO">
@@ -52,10 +54,63 @@
 
     <!-- 批量添加价目表分类列表 -->
     <insert id="insertBaseTariffCategoryList" parameterType="list" keyProperty="id" useGeneratedKeys="true">
-        insert into base_tariff_category (`name`,`number`,inservice,crt_id,crt_name)
+        insert into base_tariff_category (`name`, `number`, inservice, crt_id, crt_name)
         values
         <foreach collection="list" item="obj" separator=",">
-            (#{obj.name},#{obj.number},#{obj.inservice},#{obj.crtId},#{obj.crtName})
+            (#{obj.name}, #{obj.number}, #{obj.inservice}, #{obj.crtId}, #{obj.crtName})
         </foreach>
     </insert>
+
+    <!-- 批量更新价目表分类列表 -->
+    <update id="updateBaseTariffCategoryList">
+        update base_tariff_category
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="name = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.name != null and obj.name != ''">
+                        when id=#{obj.id} then #{obj.name}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="number = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.number != null and obj.number != ''">
+                        when id=#{obj.id} then #{obj.number}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="inservice = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.inservice != null">
+                        when id=#{obj.id} then #{obj.inservice}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_id = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updId != null">
+                        when id=#{obj.id} then #{obj.updId}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="upd_name = case" suffix="end,">
+                <foreach collection="list" item="obj">
+                    <if test="obj.updName != null and obj.updName != ''">
+                        when id=#{obj.id} then #{obj.updName}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where id in
+        <foreach collection="list" item="obj" open="(" separator="," close=")">
+            #{obj.id}
+        </foreach>
+    </update>
+
+    <!-- 查询基础价目表分类视图列表 -->
+    <select id="selectBaseTariffCategoryView" resultType="com.yunya.models.tariff.BaseTariffCategory">
+        select `name`, `number`, id
+        from base_tariff_category_view
+    </select>
+
 </mapper>

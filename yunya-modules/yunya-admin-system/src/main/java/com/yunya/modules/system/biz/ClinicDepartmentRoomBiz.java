@@ -146,7 +146,7 @@ public class ClinicDepartmentRoomBiz
             });
       }
     } else {
-      pageInfo = new PageInfo(new ArrayList());
+      pageInfo = new PageInfo<>(new ArrayList<>());
     }
     pageInfo.setList(resultList);
     return pageInfo;
@@ -166,36 +166,36 @@ public class ClinicDepartmentRoomBiz
     Integer orgId = queryForm.getOrgId();
     DepartmentRoomQueryForm form = new DepartmentRoomQueryForm();
     form.setId(queryForm.getDeptRoomId());
-    List<DepartmentRoomVO> departmentRoomVOS = departmentRoomMapper.selectList(form);
-    pageInfo = new PageInfo(departmentRoomVOS);
+    List<DepartmentRoomVO> roomVOS = departmentRoomMapper.selectList(form);
+    pageInfo = new PageInfo<>(roomVOS);
     List<ClinicDepartmentRoomVO> resultList = Lists.newArrayList();
-    if (StringHelper.isNotEmpty(departmentRoomVOS)) {
-      departmentRoomVOS.forEach(
-        departmentRoomVO -> {
-          Integer deptId = departmentRoomVO.getId();
-          ClinicDepartmentRoom entity = new ClinicDepartmentRoom();
-          entity.setDeptRoomId(deptId);
-          entity.setCompanyId(orgId);
-          ClinicDepartmentRoom clinicDepartmentRoom = mapper.selectOne(entity);
-          ClinicDepartmentRoomVO vo = new ClinicDepartmentRoomVO();
-          vo.setOrgId(orgId);
-          vo.setDeptRoomId(deptId);
-          vo.setDeptRoomName(departmentRoomVO.getName());
-          OrganizationInfo organizationInfo = companyMapper.selectOrgInfoById(orgId);
-          if (null != organizationInfo) {
-            vo.setOrgName(organizationInfo.getAbbreviation());
-          }
-          if (null != clinicDepartmentRoom) {
-            vo.setClinicDeptRoomId(clinicDepartmentRoom.getId());
-            vo.setInservice(clinicDepartmentRoom.getInservice());
-          } else {
-            vo.setInservice(departmentRoomVO.getInservice());
-          }
-          resultList.add(vo);
-        });
+    if (StringHelper.isNotEmpty(roomVOS)) {
+      roomVOS.forEach(
+          departmentRoomVO -> {
+            Integer deptId = departmentRoomVO.getId();
+            ClinicDepartmentRoom entity = new ClinicDepartmentRoom();
+            entity.setDeptRoomId(deptId);
+            entity.setCompanyId(orgId);
+            ClinicDepartmentRoom clinicDepartmentRoom = mapper.selectOne(entity);
+            ClinicDepartmentRoomVO vo = new ClinicDepartmentRoomVO();
+            vo.setOrgId(orgId);
+            vo.setDeptRoomId(deptId);
+            vo.setDeptRoomName(departmentRoomVO.getName());
+            OrganizationInfo organizationInfo = companyMapper.selectOrgInfoById(orgId);
+            if (null != organizationInfo) {
+              vo.setOrgName(organizationInfo.getAbbreviation());
+            }
+            if (null != clinicDepartmentRoom) {
+              vo.setClinicDeptRoomId(clinicDepartmentRoom.getId());
+              vo.setInservice(clinicDepartmentRoom.getInservice());
+            } else {
+              vo.setInservice(departmentRoomVO.getInservice());
+            }
+            resultList.add(vo);
+          });
       pageInfo.setList(resultList);
     } else {
-      pageInfo.setList(new ArrayList());
+      pageInfo.setList(new ArrayList<>());
     }
     return pageInfo;
   }
@@ -276,10 +276,10 @@ public class ClinicDepartmentRoomBiz
 
   /**
    * 批量添加门诊科室
+   *
    * @param list 门诊科室列表
    */
   public void addBatch(List<ClinicDepartmentRoom> list) {
     mapper.insertBatch(list);
   }
-
 }

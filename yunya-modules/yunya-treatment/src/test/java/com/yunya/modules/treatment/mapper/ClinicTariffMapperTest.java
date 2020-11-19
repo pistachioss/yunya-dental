@@ -2,7 +2,6 @@ package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.treatment.domain.query.ClinicTariffQueryForm;
 import com.yunya.feign.treatment.domain.vo.ClinicTariffVO;
-import com.yunya.models.tariff.BaseTariff;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,11 +33,4 @@ public class ClinicTariffMapperTest {
     List<ClinicTariffVO> tariffVOS = clinicTariffMapper.selectClinicTariffList(form);
     System.out.println(tariffVOS.size());
   }
-
-  @Test
-  public void list1() {
-    List<BaseTariff> tariffVOS = baseTariffMapper.ssss();
-    System.out.println(tariffVOS.size());
-  }
-
 }

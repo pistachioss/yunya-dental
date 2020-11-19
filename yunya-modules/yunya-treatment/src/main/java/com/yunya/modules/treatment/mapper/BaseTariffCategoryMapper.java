@@ -29,8 +29,24 @@ public interface BaseTariffCategoryMapper extends Mapper<BaseTariffCategory> {
 
   /**
    * 批量添加价目表分类列表
-   * @param list
+   *
+   * @param list 基础价目表分类列表
    * @return
    */
   Integer insertBaseTariffCategoryList(@Param("list") List<BaseTariffCategory> list);
+
+  /**
+   * 批量更新价目表分类列表
+   *
+   * @param list 基础价目表分类列表
+   * @return
+   */
+  Integer updateBaseTariffCategoryList(@Param("list") List<BaseTariffCategory> list);
+
+  /**
+   * 查询基础价目表分类视图列表
+   *
+   * @return List<BaseTariffCategory>
+   */
+  List<BaseTariffCategory> selectBaseTariffCategoryView();
 }

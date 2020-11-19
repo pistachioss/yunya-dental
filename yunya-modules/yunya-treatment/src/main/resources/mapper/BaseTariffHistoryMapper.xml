@@ -18,6 +18,18 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+
+    <!-- 批量插入基础价目表变更记录列表 -->
+    <insert id="insertBaseTariffHistory">
+        insert into base_tariff_history
+        (tariff_id, tariff_category_id, item_number, `name`, crt_id, crt_name)
+        values
+        <foreach collection="list" item="obj" separator=",">
+            (#{obj.tariffId}, #{obj.tariffCategoryId}, #{obj.itemNumber}, #{obj.name}, #{obj.crtId}, #{obj.crtName})
+        </foreach>
+    </insert>
+
+    <!-- 根据基础价目表ID查询变更历史记录 -->
     <select id="selectBaseTariffHistoryList" resultType="com.yunya.feign.treatment.domain.vo.BaseTariffHistoryVO">
         select
             bth.id,
