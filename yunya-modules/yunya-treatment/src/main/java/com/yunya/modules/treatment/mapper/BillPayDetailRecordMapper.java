@@ -28,5 +28,5 @@ public interface BillPayDetailRecordMapper extends Mapper<BillPayDetailRecord> {
    * @return
    */
   BillPayDetailRecordVO selectPreBillPayDetailRecord(
-      @Param("id") String id, @Param("inservice") Boolean inservice);
+      @Param("id") Integer id, @Param("inservice") Boolean inservice);
 }
