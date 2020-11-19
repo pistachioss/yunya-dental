@@ -8,6 +8,7 @@ import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.CopyInfo;
@@ -30,8 +31,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
 
 /**
  * 简介:
@@ -176,7 +177,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
             clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
 
             for (WorkOvertimeInfoListVO workOvertimeInfoListVO : list) {
-                workOvertimeInfoListVO.setCompanyName(clinicMap.get(workOvertimeInfoListVO.getCompanyId()+"").getName());
+                workOvertimeInfoListVO.setCompanyName(clinicMap.get(workOvertimeInfoListVO.getCompanyId() + "").getName());
                 workOvertimeInfoListVO.setApprovalPeopleName(emMap.get(workOvertimeInfoListVO.getApprovalPeopleId() + "").getName());
                 workOvertimeInfoListVO.setUserName(emMap.get(workOvertimeInfoListVO.getUserId() + "").getName());
             }
@@ -184,4 +185,43 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         return list;
     }
 
+    /**
+     * 审批加班
+     *
+     * @param workOvertimeInfoForm
+     * @return
+     */
+    public Integer examine(WorkOvertimeInfoForm workOvertimeInfoForm) {
+        WorkOvertimeInfo workOvertimeInfo = new WorkOvertimeInfo();
+        workOvertimeInfo.setId(workOvertimeInfoForm.getId());
+        workOvertimeInfo = mapper.selectByPrimaryKey(workOvertimeInfo);
+        if (workOvertimeInfo.getApprpvalStatus() == 0) {
+            if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                workOvertimeInfo.setApprpvalStatus(workOvertimeInfoForm.getApprpvalStatus());
+                return mapper.updateByPrimaryKey(workOvertimeInfo);
+            }
+            throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
+        }
+        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+    }
+
+    /**
+     * 撤销加班
+     *
+     * @param workOvertimeInfoForm
+     * @return
+     */
+    public Integer revoke(WorkOvertimeInfoForm workOvertimeInfoForm) {
+        WorkOvertimeInfo workOvertimeInfo = new WorkOvertimeInfo();
+        workOvertimeInfo.setId(workOvertimeInfoForm.getId());
+        workOvertimeInfo = mapper.selectByPrimaryKey(workOvertimeInfo);
+        if (workOvertimeInfo.getApprpvalStatus() == 0) {
+            if (workOvertimeInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                workOvertimeInfo.setApprpvalStatus(3);
+                return mapper.updateByPrimaryKey(workOvertimeInfo);
+            }
+            throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);
+        }
+        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+    }
 }
