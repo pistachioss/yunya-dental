@@ -30,6 +30,7 @@ import com.yunya.models.tariff.ClinicTariff;
 import com.yunya.modules.treatment.mapper.BaseTariffCategoryMapper;
 import com.yunya.modules.treatment.mapper.BaseTariffHistoryMapper;
 import com.yunya.modules.treatment.mapper.BaseTariffMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,6 +60,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
 
   /** 消息中间件调用 */
@@ -367,8 +369,21 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     StringBuilder failureMsg = new StringBuilder();
     CountDownLatch stepLatch_1 = new CountDownLatch(size);
     // 1异步校验价目表分类参数合法性
-    synCheckExcelData(models, dataNum, failureMsg, stepLatch_1);
+    List<Future> futureList = synCheckExcelData(models, dataNum, failureMsg, stepLatch_1);
     stepLatch_1.await();
+
+    // 1.1 检测校验是否通过
+    futureList.forEach(future -> {
+      try {
+        Object o = future.get();
+        if (o instanceof ClientServiceException) {
+          ClientServiceException cexp = (ClientServiceException) o;
+          log.info(cexp.getMessage());
+        }
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    });
 
     // 2.添加基础价目表分类
     // 2-1.异步构建基础价目表目录实体集合
@@ -414,7 +429,7 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
 
     // 3.异步校验价目表参数合法性
     CountDownLatch stepLatch_5 = new CountDownLatch(size);
-    synCheckItemParams(models, dataNum, failureMsg, userId, name, stepLatch_5);
+    synCheckItemParams(models, dataNum, failureMsg, stepLatch_5);
     stepLatch_5.await();
 
     // 4.异步更新基础价目表
@@ -448,15 +463,15 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
       throws InterruptedException {
     CountDownLatch latch = new CountDownLatch(baseTariffs.size());
     List<Future> futureList = synBaseTariffHistoryBuilder(baseTariffs, userId, name, latch);
-    latch.wait();
+    latch.await();
     List<BaseTariffHistory> tariffHistories = future2List(futureList);
+    List<List<BaseTariffHistory>> partition = Lists.partition(tariffHistories, 1000);
+    CountDownLatch insertLatch = new CountDownLatch(partition.size());
     // 保存变更记录
     if (StringHelper.isNotEmpty(tariffHistories)) {
-      List<List<BaseTariffHistory>> partition = Lists.partition(tariffHistories, 1000);
-      CountDownLatch insertLatch = new CountDownLatch(partition.size());
       insertBaseTariffHistory(partition, insertLatch);
-      insertLatch.wait();
     }
+    insertLatch.await();
   }
 
   /**
@@ -466,16 +481,16 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    * @param latch 计数器
    */
   private void insertBaseTariffHistory(List<List<BaseTariffHistory>> datas, CountDownLatch latch) {
-    datas.forEach(
-        list ->
-            importExcelThreadPool.submit(
-                () -> {
-                  try {
-                    baseTariffHistoryMapper.insertBaseTariffHistory(list);
-                  } finally {
-                    latch.countDown();
-                  }
-                }));
+    datas.forEach(list->{
+      importExcelThreadPool.submit(
+              () -> {
+                try {
+                  baseTariffHistoryMapper.insertBaseTariffHistory(list);
+                } finally {
+                  latch.countDown();
+                }
+              });
+    });
   }
 
   /**
@@ -489,30 +504,27 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    */
   private List<Future> synBaseTariffHistoryBuilder(
       List<BaseTariff> baseTariffs, String userId, String name, CountDownLatch latch) {
-    List<Future> futures =
-        baseTariffs.stream()
-            .map(
-                tariff ->
-                    importExcelThreadPool.submit(
-                        () -> {
-                          try {
-                            BaseTariffHistory tariffHistory =
-                                checkBaseTariffHistory(
-                                    tariff.getId(),
-                                    tariff.getName(),
-                                    tariff.getItemNumber(),
-                                    tariff.getTariffCategoryId());
-                            if (tariffHistory != null) {
-                              tariffHistory.setCrtId(Integer.valueOf(userId));
-                              tariffHistory.setCrtName(name);
-                              return tariffHistory;
-                            }
-                            return null;
-                          } finally {
-                            latch.countDown();
-                          }
-                        }))
-            .collect(Collectors.toList());
+    List<Future> futures = new ArrayList<>();
+    baseTariffs.forEach(baseTariff -> {
+      futures.add(importExcelThreadPool.submit(()->{
+        try {
+          BaseTariffHistory tariffHistory =
+                  checkBaseTariffHistory(
+                          baseTariff.getId(),
+                          baseTariff.getName(),
+                          baseTariff.getItemNumber(),
+                          baseTariff.getTariffCategoryId());
+          if (tariffHistory != null) {
+            tariffHistory.setCrtId(Integer.valueOf(userId));
+            tariffHistory.setCrtName(name);
+            return tariffHistory;
+          }
+          return null;
+        } finally {
+          latch.countDown();
+        }
+      }));
+    });
     return futures;
   }
 
@@ -624,15 +636,16 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    * @param dataNum 数据序号
    * @param failureMsg 失败信息
    */
-  private void synCheckExcelData(
+  private List<Future> synCheckExcelData(
       List<BaseTariffImportModel> models,
       AtomicInteger dataNum,
       StringBuilder failureMsg,
       CountDownLatch latch) {
     dataNum.set(0);
+    List<Future> resultFutures = new ArrayList<>();
     models.forEach(
         model ->
-            importExcelThreadPool.submit(
+                resultFutures.add(importExcelThreadPool.submit(
                 () -> {
                   try {
                     dataNum.getAndIncrement();
@@ -650,37 +663,11 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
                     // 校验导入项目与数据库项目信息的编号、名称
                     checkItemNumAndNameWithDataBase(
                         dataNum.get(), failureMsg, itemNumber, itemName);
-                    /*          IntStream.range(1, models.size())
-                    .forEach(
-                        i -> {
-                          BaseTariffImportModel model1 = models.get(i);
-                          String categoryNumber1 = model1.getTariffCategoryNumber();
-                          String categoryName1 = model1.getTariffCategoryName();
-                          String itemNumber1 = model1.getItemNumber();
-                          String itemName1 = model1.getName();
-                          // 校验excel列表中的项目分类编号与分类名称
-                          checkItemCategoryNumAndName(
-                              dataNum.get(),
-                              failureMsg,
-                              categoryNumber,
-                              categoryName,
-                              i,
-                              categoryNumber1,
-                              categoryName1);
-                          // 校验excel列表重的项目编号与项目名称
-                          checkItemNumAndName(
-                              dataNum.get(),
-                              failureMsg,
-                              itemNumber,
-                              itemName,
-                              i,
-                              itemNumber1,
-                              itemName1);
-                        });*/
                   } finally {
                     latch.countDown();
                   }
-                }));
+                })));
+    return resultFutures;
   }
 
   /**
@@ -759,94 +746,6 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
                 }
               }
             });
-      }
-    }
-  }
-
-  /**
-   * 校验excel列表重的项目编号与项目名称
-   *
-   * @param dataNum 当前行
-   * @param failureMsg 错误信息
-   * @param itemNumber 项目编号
-   * @param itemName 项目名称
-   * @param i 下一行
-   * @param itemNumber1 下一行项目编号
-   * @param itemName1 下一行项目名称
-   */
-  private void checkItemNumAndName(
-      int dataNum,
-      StringBuilder failureMsg,
-      String itemNumber,
-      String itemName,
-      int i,
-      String itemNumber1,
-      String itemName1) {
-    if (itemNumber.equals(itemNumber1)) {
-      failureMsg
-          .append("数据错误，Excel表中第")
-          .append(i)
-          .append("'条数据与第'")
-          .append(dataNum)
-          .append("'条数据的'")
-          .append("项目编号相同！");
-      // todo 将该行数据加入到错误数据集合中
-      throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
-    } else if (itemName.equals(itemName1)) {
-      failureMsg
-          .append("数据错误，Excel表中第")
-          .append(i)
-          .append("'条数据与第'")
-          .append(dataNum)
-          .append("'条数据的'")
-          .append("项目名称相同！");
-      // todo 将该行数据加入到错误数据集合中
-      throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
-    }
-  }
-
-  /**
-   * 校验excel列表中的项目分类编号与分类名称
-   *
-   * @param dataNum 当前行
-   * @param failureMsg 错误信息
-   * @param categoryNumber 当前分类编号
-   * @param categoryName 当前分类名称
-   * @param i 下一行
-   * @param categoryNumber1 下一行分类编号
-   * @param categoryName1 下一行分类名称
-   */
-  private void checkItemCategoryNumAndName(
-      int dataNum,
-      StringBuilder failureMsg,
-      String categoryNumber,
-      String categoryName,
-      int i,
-      String categoryNumber1,
-      String categoryName1) {
-    if (categoryNumber.equals(categoryNumber1)) {
-      if (!categoryName.equals(categoryName1)) {
-        failureMsg
-            .append("数据错误，Excel表中第")
-            .append(i)
-            .append("'条数据与第'")
-            .append(dataNum)
-            .append("'条数据的'")
-            .append("项目分类编号相同，但分类名称不同！");
-        // todo 将该行数据加入到错误数据集合中
-        throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
-      }
-    } else {
-      if (categoryName.equals(categoryName1)) {
-        failureMsg
-            .append("数据错误，Excel表中第")
-            .append(i)
-            .append("'条数据与第'")
-            .append(dataNum)
-            .append("'条数据的'")
-            .append("项目分类名称相同，但分类编号不同！");
-        // todo 将该行数据加入到错误数据集合中
-        throw new ClientServiceException(failureMsg.toString(), PARAMETERS_IS_ILLEGAL);
       }
     }
   }
@@ -1010,16 +909,12 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
    * 异步校验价目表参数合法性
    *
    * @param models 导入数据集合
-   * @param userId 用户ID
-   * @param name 用户名
    */
   private void synCheckItemParams(
-      List<BaseTariffImportModel> models,
-      AtomicInteger dataNum,
-      StringBuilder failureMsg,
-      String userId,
-      String name,
-      CountDownLatch stepLatch) {
+          List<BaseTariffImportModel> models,
+          AtomicInteger dataNum,
+          StringBuilder failureMsg,
+          CountDownLatch stepLatch) {
     dataNum.set(0);
     models.forEach(
         model ->
@@ -1093,70 +988,6 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
                     latch.countDown();
                   }
                 }));
-  }
-
-  /**
-   * 分片插入门诊价目表
-   *
-   * @param datas 门诊价目表集合
-   * @throws InterruptedException 异常
-   */
-  private void insertClinicTariffBySplices(List<List<ClinicTariff>> datas, CountDownLatch latch)
-      throws InterruptedException {
-    for (List<ClinicTariff> list : datas) {
-      importExcelThreadPool.submit(
-          () -> {
-            try {
-              clinicTariffBiz.insertEntities(list);
-            } finally {
-              latch.countDown();
-            }
-          });
-    }
-  }
-
-  /**
-   * 门诊价目表实体构造器
-   *
-   * @param baseTariffs 基础价目表集合
-   * @param orgInfos 门诊信息集合
-   * @param userId 用户ID
-   * @param name 用户名
-   * @return 返回门诊价目表结果集
-   * @throws InterruptedException 异常
-   */
-  private List<Future> clinicTariffBatchBuilder(
-      List<BaseTariff> baseTariffs,
-      List<OrganizationInfoDetail> orgInfos,
-      String userId,
-      String name)
-      throws InterruptedException {
-    List<Future> futureClinicTariffs = new ArrayList<>();
-    CountDownLatch clinicTariffLatch = new CountDownLatch(baseTariffs.size() * orgInfos.size());
-    for (BaseTariff baseTariff : baseTariffs) {
-      for (OrganizationInfoDetail organizationInfoDetail : orgInfos) {
-        futureClinicTariffs.add(
-            importExcelThreadPool.submit(
-                () -> {
-                  try {
-                    if (baseTariff != null) {
-                      // 新增门诊节目表
-                      return insertClinicTariff(
-                          organizationInfoDetail.getId(),
-                          baseTariff.getId(),
-                          baseTariff.getPrice(),
-                          userId,
-                          name);
-                    }
-                    return null;
-                  } finally {
-                    clinicTariffLatch.countDown();
-                  }
-                }));
-      }
-    }
-    clinicTariffLatch.await();
-    return futureClinicTariffs;
   }
 
   /**
@@ -1285,141 +1116,6 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
     Integer categoryId = getCategoryId(categoryName, categoryNumber);
     // 校验价目表参数合法性
     checkItemParams(dataNum.get(), failureMsg, itemName, itemNumber, categoryId);
-  }
-
-  /**
-   * 新增/更新基础价目表或同步门诊价目表
-   *
-   * @param itemName 价目表名称
-   * @param itemNumber 价目表编号
-   * @param englishName 价目表英文名
-   * @param unit 单位
-   * @param price 单价
-   * @param categoryId 价目表分类ID
-   */
-  private BaseTariff addOrUpdBaseItemAndClinicItem(
-      String itemName,
-      String itemNumber,
-      String englishName,
-      String unit,
-      BigDecimal price,
-      Integer categoryId,
-      String userId,
-      String name) {
-    BaseTariff itemEntity;
-    itemEntity = new BaseTariff();
-    itemEntity.setTariffCategoryId(categoryId);
-    itemEntity.setName(itemName);
-    itemEntity.setItemNumber(itemNumber);
-    BaseTariff itemResult = mapper.selectOne(itemEntity);
-
-    itemEntity = new BaseTariff();
-    itemEntity.setTariffCategoryId(categoryId);
-    itemEntity.setName(itemName);
-    itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
-    itemEntity.setItemNumber(itemNumber);
-    itemEntity.setEnglishName(englishName);
-    itemEntity.setPrice(price);
-    itemEntity.setUnit(unit);
-
-    if (null == itemResult) {
-      // 新增价目表
-      itemEntity.setCrtId(Integer.valueOf(userId));
-      itemEntity.setCrtName(name);
-      //      itemId = itemEntity.getId();
-      //      if (i > 0) {
-      //        rabbitMqServiceFeign.sendMessage(itemId, 0, 0, BaseTariffInfo);
-      //      }
-    } else {
-      // 更新价目表
-      itemEntity.setId(itemResult.getId());
-      itemEntity.setUpdId(Integer.valueOf(userId));
-      itemEntity.setUpdName(name);
-      itemEntity.setUpdTime(new Date(System.currentTimeMillis()));
-      //      int i = mapper.updateByPrimaryKeySelective(itemEntity);
-      //      itemId = itemResult.getId();
-      //      if (i > 0) {
-      ////        rabbitMqServiceFeign.sendMessage(itemId, 0, 1, BaseTariffInfo);
-      //      }
-    }
-    return itemEntity;
-  }
-
-  /**
-   * 添加门诊价目表
-   *
-   * @param orgId
-   * @param itemId
-   * @param price
-   * @param userId
-   * @param name
-   */
-  public ClinicTariff insertClinicTariff(
-      Integer orgId, Integer itemId, BigDecimal price, String userId, String name) {
-    ClinicTariff clinicItem = new ClinicTariff();
-    clinicItem.setClinicId(orgId);
-    clinicItem.setTariffId(itemId);
-    ClinicTariff clinicTariff = clinicTariffBiz.selectOne(clinicItem);
-    if (null == clinicTariff) {
-      clinicItem.setPrice(price);
-      clinicItem.setCrtId(Integer.valueOf(userId));
-      clinicItem.setCrtName(name);
-      //      clinicTariffBiz.insertSelective(clinicItem);
-      return clinicItem;
-    }
-    return null;
-  }
-
-  /**
-   * 新增或更新价目表信息
-   *
-   * @param itemName 价目表名称
-   * @param itemNumber 价目表编号
-   * @param englishName 价目表英文名
-   * @param unit 单位
-   * @param price 单价
-   * @param categoryId 价目表分类ID
-   */
-  private BaseTariff addOrUpdBaseItem(
-      String itemName,
-      String itemNumber,
-      String englishName,
-      String unit,
-      BigDecimal price,
-      Integer categoryId,
-      String userId,
-      String name) {
-    BaseTariff itemEntity = new BaseTariff();
-    itemEntity.setTariffCategoryId(categoryId);
-    itemEntity.setName(itemName);
-    itemEntity.setItemNumber(itemNumber);
-    BaseTariff itemResult = mapper.selectOne(itemEntity);
-
-    itemEntity.setPinyin(HanyuPinyinHelper.getFirstLettersLo(itemName));
-    itemEntity.setEnglishName(englishName);
-    itemEntity.setPrice(price);
-    itemEntity.setUnit(unit);
-
-    if (null == itemResult) {
-      // 新增价目表
-      itemEntity.setCrtId(Integer.valueOf(userId));
-      itemEntity.setCrtName(name);
-      //      int i = mapper.insertSelective(itemEntity);
-      //      if (i > 0) {
-      //        rabbitMqServiceFeign.sendMessage(itemEntity.getId(), 0, 0, BaseTariffInfo);
-      //      }
-    } else {
-      // 更新价目表
-      Integer id = itemResult.getId();
-      itemEntity.setId(id);
-      itemEntity.setUpdId(Integer.valueOf(userId));
-      itemEntity.setUpdName(name);
-      //      int i = mapper.updateByPrimaryKeySelective(itemEntity);
-      //      if (i > 0) {
-      //        rabbitMqServiceFeign.sendMessage(id, 0, 1, BaseTariffInfo);
-      //      }
-    }
-    return itemEntity;
   }
 
   /**
