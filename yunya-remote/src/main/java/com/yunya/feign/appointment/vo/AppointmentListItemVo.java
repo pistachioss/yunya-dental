@@ -80,6 +80,9 @@ public class AppointmentListItemVo implements Serializable {
     /** 档案备注 */
     @ApiModelProperty(value = "档案备注")
     private String patientRemark;
+    /** 患者等级 */
+    @ApiModelProperty(value = "患者等级")
+    private String patientKind;
 
     /********************************  预约信息 *********************************/
 
