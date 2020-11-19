@@ -53,6 +53,7 @@ public class OrderDetailController {
    * @param orderRecordId 开单记录ID
    * @return
    */
+  @CurrentUser
   @ApiOperation("根据开单记录ID查询开单详情列表（收费订单明细查询）")
   @GetMapping("/list/{orderRecordId}")
   public ResponseResult<List<OrderDetailChargeVO>> findChargeOrderList(
