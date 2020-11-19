@@ -752,9 +752,12 @@ public class TollBiz {
     switch (discountType) {
       case 1:
         Integer memberTypeId = generalDiscountModel.getMemberTypeId();
+        Integer discountCouponId = generalDiscountModel.getDiscountCouponId();
         List<CouponDiscountInfoModel> discountInfoModels =
             generalDiscountModel.getCouponDiscountInfoModels();
-        if (null == memberTypeId && StringHelper.isEmpty(discountInfoModels)) {
+        if (null == memberTypeId
+            && null == discountCouponId
+            && StringHelper.isEmpty(discountInfoModels)) {
           throw new ClientServiceException("当前未选择任何卡券！", PARAMETERS_IS_ILLEGAL);
         }
         break;
