@@ -1,27 +1,30 @@
 package com.yunya.models.employee_attend;
 
-import io.swagger.annotations.ApiModelProperty;
-
 import java.util.Date;
 import javax.persistence.*;
 
-@Table(name = "approval_people")
-public class ApprovalPeople {
+@Table(name = "approval_info")
+public class ApprovalInfo {
     @Id
     private Integer id;
 
     /**
-     * 用户id
+     * 请假信息表id
      */
-    @Column(name = "user_id")
-    private Integer userId;
+    @Column(name = "vacation_id")
+    private Integer vacationId;
 
     /**
-     * 审批人级别设置表id
+     * 审批级别人员Id
      */
-    @Column(name = "approval_level_id")
-    @ApiModelProperty("审批人级别设置表id")
-    private Integer approvalLevelId;
+    @Column(name = "approval_people_id")
+    private Integer approvalPeopleId;
+
+    /**
+     * 此审批人给予当前请假的审批状态
+     */
+    @Column(name = "approval_status")
+    private Integer approvalStatus;
 
     /**
      * 创建人
@@ -62,39 +65,57 @@ public class ApprovalPeople {
     }
 
     /**
-     * 获取用户id
+     * 获取请假信息表id
      *
-     * @return user_id - 用户id
+     * @return vacation_id - 请假信息表id
      */
-    public Integer getUserId() {
-        return userId;
+    public Integer getVacationId() {
+        return vacationId;
     }
 
     /**
-     * 设置用户id
+     * 设置请假信息表id
      *
-     * @param userId 用户id
+     * @param vacationId 请假信息表id
      */
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setVacationId(Integer vacationId) {
+        this.vacationId = vacationId;
     }
 
     /**
-     * 获取审批人级别设置表id
+     * 获取审批级别人员Id
      *
-     * @return approval_level_id - 审批人级别设置表id
+     * @return approval_people_id - 审批级别人员Id
      */
-    public Integer getApprovalLevelId() {
-        return approvalLevelId;
+    public Integer getApprovalPeopleId() {
+        return approvalPeopleId;
     }
 
     /**
-     * 设置审批人级别设置表id
+     * 设置审批级别人员Id
      *
-     * @param approvalLevelId 审批人级别设置表id
+     * @param approvalPeopleId 审批级别人员Id
      */
-    public void setApprovalLevelId(Integer approvalLevelId) {
-        this.approvalLevelId = approvalLevelId;
+    public void setApprovalPeopleId(Integer approvalPeopleId) {
+        this.approvalPeopleId = approvalPeopleId;
+    }
+
+    /**
+     * 获取此审批人给予当前请假的审批状态
+     *
+     * @return approval_status - 此审批人给予当前请假的审批状态
+     */
+    public Integer getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    /**
+     * 设置此审批人给予当前请假的审批状态
+     *
+     * @param approvalStatus 此审批人给予当前请假的审批状态
+     */
+    public void setApprovalStatus(Integer approvalStatus) {
+        this.approvalStatus = approvalStatus;
     }
 
     /**
