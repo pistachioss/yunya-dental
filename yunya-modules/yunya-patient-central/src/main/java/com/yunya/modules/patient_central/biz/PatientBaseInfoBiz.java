@@ -151,6 +151,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
       return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
+    if (patientBaseInfo.getOriginType() == 1 || patientBaseInfo.getOriginType() == 2){
+      patientBaseInfo.setOriginId(patientBaseInfoModel.getSourceId());
+    }
     patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
     patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientBaseInfo.setCrtName(BaseContextHandler.getName());
@@ -214,7 +217,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setUpdName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     patientBaseInfo.setUpdTime(new Date());
-
+    if (patientBaseInfo.getOriginType() == 1 || patientBaseInfo.getOriginType() == 2){
+      patientBaseInfo.setOriginId(patientExtendInfoModel.getPatientBaseInfoModel().getSourceId());
+    }
     // 完善患者基本信息  对补全信息进行更新
     this.mapper.updateByPrimaryKeySelective(patientBaseInfo);
     sendMessages(patientBaseInfo.getId(), 1);
@@ -330,6 +335,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
    */
   private PatientBaseInfoVo getTypeName(PatientBaseInfoVo patientBaseInfoVo) {
     if (patientBaseInfoVo.getOriginType() != null) {
+      PatientOrigin patientOrig ;
       PatientOrigin patientOrigin =
           patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
       if (patientOrigin != null) {
@@ -347,6 +353,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
               if (!StringHelper.isEmpty(list)) {
                 patientBaseInfoVo.setOriginName(list.get(0).getName());
               }
+              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
+              patientOrig = patientOriginMapper.getTypeName(1);
+              if (patientOrig != null){
+                patientBaseInfoVo.setOriginId(patientOrig.getId());
+              }
             break;
             // 查询患者
           case 2:
@@ -354,6 +365,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
                   patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
               if (patientBaseInfo != null) {
                 patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
+              }
+              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
+              patientOrig = patientOriginMapper.getTypeName(2);
+              if (patientOrig != null){
+                patientBaseInfoVo.setOriginId(patientOrig.getId());
               }
             break;
           default:
