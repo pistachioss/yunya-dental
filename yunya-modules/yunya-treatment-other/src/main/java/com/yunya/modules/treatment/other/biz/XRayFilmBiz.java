@@ -1,0 +1,127 @@
+package com.yunya.modules.treatment.other.biz;
+
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.treatment_other.domain.form.XRayFilmForm;
+import com.yunya.feign.treatment_other.domain.model.XRayFilmModel;
+import com.yunya.feign.treatment_other.domain.query.ToothRootQuery;
+import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothRootVo;
+import com.yunya.feign.treatment_other.domain.vo.XRayFilmVo;
+import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.treatment_other.XRayFilm;
+import com.yunya.modules.treatment.other.mapper.XRayFilmMapper;
+import com.yunya.modules.treatment.other.utils.TreatmentOtherUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Service
+@Transactional(rollbackFor = Exception.class)
+public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
+
+    /**
+     * 查询图片列表
+     * @param query 查询条件
+     * @return 返回数据列表
+     */
+    public PageInfo<XRayFilmVo> findList(XRayFilmQuery query){
+        if (query.getWhetherPage()) {
+            PageHelper.startPage(query.getPageNum(),query.getPageSize());
+        }
+        List<XRayFilmVo> data = mapper.findList(query);
+        return new PageInfo(data);
+    }
+
+    /**
+     * 批量上传（可单独上传）
+     * @param patientId 患者ID
+     * @param models 参数模型
+     */
+    public void addBatch(Integer patientId,List<XRayFilmModel> models){
+        List<XRayFilm> xRayFilms = new ArrayList<>();
+        Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
+        String username = BaseContextHandler.getName();
+        models.forEach(xRayFilmModel -> {
+            Byte type = xRayFilmModel.getType();
+            Integer toothNo = xRayFilmModel.getToothNo();
+            if (type == 1 && toothNo == null) {
+                throw new ClientServiceException("根尖片牙位编号不能位空",OperationCodeConstants.PARAM_NOT_ALLOW_EMPTY);
+            }
+            XRayFilm xRayFilm = new XRayFilm();
+            xRayFilm.setCrtId(userID);
+            xRayFilm.setCrtName(username);
+            xRayFilm.setPatientId(patientId);
+            xRayFilm.setPhotoName(xRayFilm.getPhotoName());
+            xRayFilm.setToothNo(xRayFilmModel.getToothNo());
+            xRayFilm.setType(xRayFilmModel.getType());
+            xRayFilm.setUrl(xRayFilmModel.getUrl());
+            xRayFilms.add(xRayFilm);
+        });
+        mapper.addBatch(xRayFilms);
+    }
+
+    /**
+     * 修改图片影像
+     * @param id 图片ID
+     * @param form 图片信息
+     */
+    public Integer upd(Integer id, XRayFilmForm form){
+        XRayFilm xRayFilm = mapper.selectByPrimaryKey(id);
+        if (null == xRayFilm) {
+            throw new ClientServiceException("数据不存在",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        Date crtTime = xRayFilm.getCrtTime();
+        // 判断图片是否可以编辑
+        TreatmentOtherUtils.enableEditImage(crtTime);
+        Integer updId = Integer.valueOf(BaseContextHandler.getUserID());
+        XRayFilm entity = new XRayFilm();
+        entity.setUpdId((updId));
+        entity.setCrtName(BaseContextHandler.getName());
+        entity.setUpdTime(new Date(System.currentTimeMillis()));
+        entity.setType(form.getType());
+        entity.setUploadTime(form.getUploadTime());
+        return mapper.updateByPrimaryKeySelective(entity);
+    }
+
+    /**
+     * 删除照片（逻辑删除）
+     * @param id 图片ID
+     */
+    public Integer del(Integer id) {
+        XRayFilm xRayFilm = mapper.selectByPrimaryKey(id);
+        if (null == xRayFilm) {
+            throw new ClientServiceException("数据不存在",OperationCodeConstants.DATA_NOT_EXIST);
+        }
+        Date crtTime = xRayFilm.getCrtTime();
+        // 判断图片是否可以编辑
+        TreatmentOtherUtils.enableEditImage(crtTime);
+        xRayFilm.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+        xRayFilm.setUpdName(BaseContextHandler.getName());
+        xRayFilm.setUpdTime(new Date(System.currentTimeMillis()));
+        xRayFilm.setInservice(false);
+        return mapper.updateByPrimaryKey(xRayFilm);
+    }
+
+    /**
+     * 牙根尖图列表
+     * @param patientId 患者ID
+     * @param query 查询及分页参数
+     * @return 牙根尖图列表
+     */
+    public PageInfo<ToothRootVo> findToothRootPhotos(Integer patientId, ToothRootQuery query) {
+        Integer toothNo = query.getToothNo();
+        if (query.getWhetherPage()) {
+            PageHelper.offsetPage(query.getPageNum()-1,query.getPageSize());
+        }
+        List<ToothRootVo> toothRootPhotos = mapper.findToothRootPhotos(patientId, toothNo);
+        return new PageInfo<>(toothRootPhotos);
+    }
+}

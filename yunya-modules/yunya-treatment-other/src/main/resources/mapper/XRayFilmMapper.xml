@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.XRayFilmMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.XRayFilm" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="tooth_no" property="toothNo" jdbcType="INTEGER" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="photo_name" property="photoName" jdbcType="VARCHAR" />
+    <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
+    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+    <result column="inservice" property="inservice" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!-- 牙根尖照片映射关系 -->
+  <resultMap id="toothRootMap" type="com.yunya.feign.treatment_other.domain.vo.ToothRootVo">
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="tooth_no" property="toothNo" jdbcType="INTEGER" />
+    <result column="count" property="count" jdbcType="INTEGER" />
+    <collection property="toothRootDetails" ofType="com.yunya.feign.treatment_other.domain.vo.ToothRootDetailVo">
+      <id column="id" property="id" jdbcType="INTEGER" />
+      <result column="url" property="url" jdbcType="VARCHAR" />
+      <result column="photo_name" property="photoName" jdbcType="VARCHAR" />
+      <result column="upload_time" property="uploadTime" jdbcType="TIMESTAMP" />
+      <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+      <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    </collection>
+  </resultMap>
+
+  <!-- 查询图片列表 -->
+  <select id="findList" resultType="com.yunya.feign.treatment_other.domain.vo.XRayFilmVo">
+    SELECT
+    id,
+    patient_id as patientId,
+    `type`,
+    tooth_no as toothNo,
+    url,
+    photo_name as photoName,
+    upload_time as uploadTime,
+    crt_time as crtTime,
+    upd_time as updTime
+    FROM
+    x_ray_film
+    <where>
+      <if test="query.patientId != null">
+        and patient_id = #{query.patientId}
+      </if>
+      <if test="query.type != null">
+        and type = #{query.type}
+      </if>
+    </where>
+    order by uploadTime desc
+  </select>
+
+  <!-- 批量添加图片 -->
+  <insert id="addBatch" parameterType="list" keyProperty="id" useGeneratedKeys="true">
+    insert into
+    x_ray_film (patient_id,`type`,tooth_no,url,photo_name,crt_id,crt_name)
+    values
+    <foreach collection="list" item="obj" separator=",">
+      (#{obj.patientId},#{obj.type},#{obj.toothNo},#{obj.url},#{obj.photoName},#{obj.crtId},#{obj.crtTime})
+    </foreach>
+  </insert>
+
+  <!-- 条件查询牙根尖图列表 -->
+  <select id="findToothRootPhotos" resultMap="toothRootMap" >
+    SELECT DISTINCT
+        xrf.patient_id,
+        xrf.tooth_no,
+        xrf.type,
+        xrf2.id,
+        xrf2.url,
+        xrf2.photo_name,
+        xrf2.upload_time,
+        xrf2.crt_time,
+        xrf2.upd_time,
+        ( SELECT COUNT( id ) FROM x_ray_film WHERE type = 1 AND tooth_no = xrf.tooth_no ) AS `count`
+    FROM
+        `x_ray_film` xrf
+        LEFT JOIN ( SELECT id, tooth_no, url, photo_name, upload_time, crt_time, upd_time
+                     FROM x_ray_film
+                     WHERE type = 1
+                     <if test="toothNo == null">
+                         GROUP BY tooth_no
+                     </if>
+                  ) xrf2 ON xrf2.tooth_no = xrf.tooth_no
+    WHERE
+        xrf.type = 1
+        and xrf.patient_id = #{patientId}
+        <if test="toothNo!=null">
+            and xrf.tooth_no = #{toothNo}
+        </if>
+    ORDER BY upload_time desc
+  </select>
+
+
+</mapper>
