@@ -151,24 +151,16 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
       return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
-    if (patientBaseInfo.getOriginId() != null) {
-      PatientOrigin patientOrigin =
-          this.patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
-      if (patientOrigin != null) {
-        patientBaseInfo.setOriginType(patientOrigin.getOriginType());
-      }
-    }
     patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
     patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientBaseInfo.setCrtName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     mapper.insertPatientInfo(patientBaseInfo);
-
     PatientBaseInfoVo patientBaseInfoVo =
         this.patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     // 创建预付款 并发送消息
-    sendMessages(patientBaseInfo.getId(), 0);
     this.addPatientPrepaymentsInfo(patientBaseInfo);
+    sendMessages(patientBaseInfo.getId(), 0);
     return patientBaseInfoVo;
   }
 
@@ -284,14 +276,17 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     }
     PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
-    if (patientBaseInfo.getOriginId() != null) {
-      PatientOrigin patientOrigin =
-          patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
-      if (patientOrigin == null) {
-        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者来源信息", "");
+    int originType = 2;
+    if (patientBaseInfo.getOriginType() != null && patientBaseInfo.getOriginType() > originType){
+      if (patientBaseInfo.getOriginId() != null) {
+        PatientOrigin patientOrigin =
+                patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+        if (patientOrigin == null) {
+          return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者来源信息", "");
+        }
+        // 获取患者来源的父级id
+        patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
       }
-      // 获取患者来源的父级id
-      patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
     }
 
     // 获取患者来源name
@@ -309,6 +304,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       }
       patientExtendInfoVo.setPatientExpInfoVo(patientExpInfoVo);
     }
+
     // 标签
     List<PatientExtInfoVo> patientExtInfoVos = patientExtInfoMapper.patientExtInfoListByid(id);
     if (!StringHelper.isEmpty(patientExtInfoVos)) {
@@ -344,34 +340,28 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
             // 查询员工
           case 1:
             SysUserEmployeeModel model = new SysUserEmployeeModel();
-            if (patientBaseInfoVo.getSourceId() != null) {
-              model.setUserId(patientBaseInfoVo.getSourceId());
+              model.setUserId(patientBaseInfoVo.getOriginId());
               model.setWhetherPage(false);
               List<SysUserInfoDetail> list =
                   remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
               if (!StringHelper.isEmpty(list)) {
                 patientBaseInfoVo.setOriginName(list.get(0).getName());
               }
-            }
             break;
             // 查询患者
           case 2:
-            if (patientBaseInfoVo.getSourceId() != null) {
               PatientBaseInfo patientBaseInfo =
-                  patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getSourceId());
+                  patientBaseInfoMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
               if (patientBaseInfo != null) {
                 patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
               }
-            }
             break;
           default:
-            if (patientBaseInfoVo.getOriginId() != null) {
               PatientOrigin activity =
                   patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
               if (activity != null) {
                 patientBaseInfoVo.setOriginName(activity.getName());
               }
-            }
             break;
         }
       }
