@@ -59,7 +59,7 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
             xRayFilm.setCrtId(userID);
             xRayFilm.setCrtName(username);
             xRayFilm.setPatientId(patientId);
-            xRayFilm.setPhotoName(xRayFilm.getPhotoName());
+            xRayFilm.setPhotoName(xRayFilmModel.getPhotoName());
             xRayFilm.setToothNo(xRayFilmModel.getToothNo());
             xRayFilm.setType(xRayFilmModel.getType());
             xRayFilm.setUrl(xRayFilmModel.getUrl());
