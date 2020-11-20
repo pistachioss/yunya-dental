@@ -1,10 +1,10 @@
-package com.yunya.feign.treatment_other.domain.model;
+package com.yunya.models.treatment_other;
 
 import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "x_ray_film")
-public class XRayFilmModel {
+public class XRayFilm {
     /**
      * 主键
      */
@@ -53,7 +53,7 @@ public class XRayFilmModel {
     /**
      * 是否有效
      */
-    private String inservice;
+    private Boolean inservice;
 
     /**
      * 创建人ID
@@ -222,7 +222,7 @@ public class XRayFilmModel {
      *
      * @return inservice - 是否有效
      */
-    public String getInservice() {
+    public Boolean getInservice() {
         return inservice;
     }
 
@@ -231,7 +231,7 @@ public class XRayFilmModel {
      *
      * @param inservice 是否有效
      */
-    public void setInservice(String inservice) {
+    public void setInservice(Boolean inservice) {
         this.inservice = inservice;
     }
 
