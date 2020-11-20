@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.other.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.XRayFilmForm;
+import com.yunya.feign.treatment_other.domain.model.XRayFilmInfoModel;
 import com.yunya.feign.treatment_other.domain.model.XRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.ToothRootQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
@@ -45,7 +46,7 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
      * @param patientId 患者ID
      * @param models 参数模型
      */
-    public void addBatch(Integer patientId,List<XRayFilmModel> models){
+    public void addBatch(Integer patientId, List<XRayFilmInfoModel> models){
         List<XRayFilm> xRayFilms = new ArrayList<>();
         Integer userID = Integer.valueOf(BaseContextHandler.getUserID());
         String username = BaseContextHandler.getName();

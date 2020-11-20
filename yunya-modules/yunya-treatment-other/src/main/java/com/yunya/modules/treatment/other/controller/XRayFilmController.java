@@ -51,10 +51,8 @@ public class XRayFilmController {
     @CurrentUser
     public ResponseResult addBatch(@PathVariable("patientId") Integer patientId,
                                    @RequestBody
-                                   @Validated
-                                   @NotNull(message = "照片列表不能为空")
-                                   List<XRayFilmModel> models){
-        this.XRayFilmBiz.addBatch(patientId,models);
+                                   @Validated XRayFilmModel models){
+        this.XRayFilmBiz.addBatch(patientId,models.getXRayFilmInfoList());
         return ResponseUtil.success();
     }
     /**

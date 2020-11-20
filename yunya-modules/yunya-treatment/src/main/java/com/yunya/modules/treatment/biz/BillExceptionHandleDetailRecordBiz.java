@@ -21,6 +21,7 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.util.*;
 
@@ -140,9 +141,9 @@ public class BillExceptionHandleDetailRecordBiz
         billPayInfo.setReceivedAmount(billPayRecord.getReceivedAmount());
         billPayInfo.setStillOweAmount(billPayRecord.getStillOweAmount());
         String detailRecordRemark = billExceptionHandleDetailRecord.getRemark();
-        String[] ids = detailRecordRemark.split(",");
         List<BillPayDetailRecordVO> payDetailList = Lists.newArrayList();
-        if (StringHelper.isNotEmpty(ids)) {
+        if (StringHelper.isNotBlank(detailRecordRemark)) {
+          String[] ids = detailRecordRemark.split(",");
           Arrays.stream(ids)
               .map(id -> billPayDetailRecordMapper.selectPreBillPayDetailRecord(Integer.valueOf(id), null))
               .filter(Objects::nonNull)

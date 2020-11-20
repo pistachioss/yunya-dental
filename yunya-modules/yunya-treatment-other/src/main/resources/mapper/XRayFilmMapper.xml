@@ -53,6 +53,7 @@
     FROM
     x_ray_film
     <where>
+      inservice = true
       <if test="query.patientId != null">
         and patient_id = #{query.patientId}
       </if>
