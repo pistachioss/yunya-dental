@@ -5,6 +5,7 @@ import com.yunya.feign.treatment_other.domain.form.XRayFilmForm;
 import com.yunya.feign.treatment_other.domain.model.XRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.ToothRootQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootVo;
 import com.yunya.feign.treatment_other.domain.vo.XRayFilmVo;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -50,10 +51,8 @@ public class XRayFilmController {
     @CurrentUser
     public ResponseResult addBatch(@PathVariable("patientId") Integer patientId,
                                    @RequestBody
-                                   @Validated
-                                   @NotNull(message = "照片列表不能为空")
-                                   List<XRayFilmModel> models){
-        this.XRayFilmBiz.addBatch(patientId,models);
+                                   @Validated XRayFilmModel models){
+        this.XRayFilmBiz.addBatch(patientId,models.getXRayFilmInfoList());
         return ResponseUtil.success();
     }
     /**
@@ -90,6 +89,14 @@ public class XRayFilmController {
                                                            @RequestBody ToothRootQuery query) {
         PageInfo<ToothRootVo> toothRootPhotos = this.XRayFilmBiz.findToothRootPhotos(patientId, query);
         return ResponseUtil.success(toothRootPhotos);
+    }
+
+    @ApiOperation("牙位根尖片数量(APP)用")
+    @GetMapping("/count/{patientId}")
+    @CurrentUser
+    public ResponseResult<List<ToothRootCountVo>> toothRootCount(@PathVariable("patientId") Integer patientId){
+        List<ToothRootCountVo> toothRootCountVoList = this.XRayFilmBiz.toothRootCount(patientId);
+        return ResponseUtil.success(toothRootCountVoList);
     }
 
 

@@ -5,12 +5,20 @@ import com.yunya.feign.employee_attend.form.LeaveInfoQueryForm;
 import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.models.employee_attend.ApprovalInfo;
+import com.yunya.models.employee_attend.ApprovalPeople;
+import com.yunya.models.employee_attend.CopyInfo;
 import com.yunya.models.employee_attend.LeaveInfo;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
+import com.yunya.modules.employeeattend.mapper.ApprovalInfoMapper;
+import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
 import com.yunya.modules.employeeattend.mapper.LeaveInfoMapper;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +35,11 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
+
+    @Autowired
+    private ApprovalInfoMapper approvalInfoMapper;
+    @Autowired
+    private CopyInfoMapper copyInfoMapper;
 
     /**
      * 根据日期和用户id列表查询请假列表
@@ -63,7 +76,34 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         if (true) {
             //判断是否与同类型其他申请时间冲突
             if (true) {
-
+                LeaveInfo leaveInfo = new LeaveInfo();
+                BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
+                leaveInfo.setCrtTime(new Date());
+                int num = mapper.insert(leaveInfo);
+                //插入审批人信息
+                int leaveId = leaveInfo.getId();
+                List<ApprovalInfo>list = leaveInfoForm.getApprpvalPeopleList();
+                for (ApprovalInfo approvalInfo : list) {
+                    approvalInfo.setCrtId(leaveInfoForm.getCrtId());
+                    approvalInfo.setCrtTime(new Date());
+                    approvalInfo.setLeaveId(leaveId);
+                }
+                approvalInfoMapper.batchInsert(list);
+                //插入抄送人信息
+                if (leaveInfoForm.getCopyList().size() > 0) {
+                    List<CopyInfo> copyInfoList = new ArrayList<>();
+                    for (Integer copyId : leaveInfoForm.getCopyList()) {
+                        CopyInfo copyInfo = new CopyInfo();
+                        copyInfo.setApplyId(leaveId);
+                        copyInfo.setApplyType(0);
+                        copyInfo.setUserId(copyId);
+                        copyInfo.setCrtId(leaveInfoForm.getUserId());
+                        copyInfo.setCrtTime(new Date());
+                        copyInfoList.add(copyInfo);
+                    }
+                    copyInfoMapper.batchInsert(copyInfoList);
+                }
+                return num;
             }
             throw new ClientServiceException("该申请与其他请假申请时间冲突", INSERT_MODEL);
         }
