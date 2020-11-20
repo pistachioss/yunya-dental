@@ -159,6 +159,10 @@ public class PatientBaseInfoVo implements Serializable {
      */
     private String lastVisit;
 
+    /**
+     * 来源id
+     */
+    private Integer sourceId;
 
     /**
      * 来源父级id
