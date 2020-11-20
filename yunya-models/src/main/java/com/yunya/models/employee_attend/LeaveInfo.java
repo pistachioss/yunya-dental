@@ -12,6 +12,9 @@ public class LeaveInfo {
     private Integer id;
     @Column(name = "user_id")
     private Integer userId;
+
+    @Column(name = "company_id")
+    private Integer companyId;
     /**
      * 假期类型id
      */
