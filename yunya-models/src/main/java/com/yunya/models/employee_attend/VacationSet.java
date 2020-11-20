@@ -9,7 +9,7 @@ public class VacationSet {
     private Integer id;
 
     /**
-     * 申请类型 0：小时 1：班次 2：天
+     * 申请类型 0：班次 1：天
      */
     @Column(name = "vacation_status")
     private Integer vacationStatus;
