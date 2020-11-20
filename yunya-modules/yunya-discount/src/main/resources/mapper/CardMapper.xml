@@ -103,7 +103,7 @@
             `cci`.`sold_amount`                                                            as `soldAmount`,
             sum(`ca`.`allocate_num`)                                                       as `allocateNum`,
             (select
-                 sum(`c`.`status` in (1, 2))
+                 sum(`c`.`status` in (1, 2, 3, 4))
              from `card` `c`
              where `c`.`coupon_id` = `ca`.`coupon_id`
                and `c`.`org_id` = `ca`.`org_id`
@@ -164,7 +164,7 @@
 
     <select id="getOrgCardSoldInfoByParam" resultType="int">
         select
-            count(`id`) - ifnull(sum(`status` in (1, 2)),0)
+            count(`id`) - ifnull(sum(`status` in (1, 2, 3 , 4)),0)
         from `card`
         where `coupon_id` = #{couponId}
           and `org_id` = #{orgId}
