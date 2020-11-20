@@ -62,8 +62,8 @@ public class DiscountCouponBiz extends BaseBiz<DiscountCouponMapper, DiscountCou
             throw new BaseException("折扣券名称与系统中已有折扣券重复，不允许新增!", NAME_IS_OCCUPIED);
         }
         BigDecimal discountRate = discountCouponForm.getDiscountRate();
-        int i = discountRate.compareTo(new BigDecimal(100));
-        if (i < 0) {
+        int i = discountRate.compareTo(new BigDecimal("99.99"));
+        if (i > 0) {
             throw new BaseException("折扣率不能大于100", PARAMETERS_IS_ILLEGAL);
         }
 
