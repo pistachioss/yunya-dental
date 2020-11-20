@@ -91,13 +91,13 @@
         `x_ray_film` xrf
         LEFT JOIN ( SELECT id, tooth_no, url, photo_name, upload_time, crt_time, upd_time
                      FROM x_ray_film
-                     WHERE type = 1
+                     WHERE type = 1 and inservice = true
                      <if test="toothNo == null">
                          GROUP BY tooth_no
                      </if>
                   ) xrf2 ON xrf2.tooth_no = xrf.tooth_no
     WHERE
-        xrf.type = 1
+        xrf.type = 1 and xrf.inservice = true
         and xrf.patient_id = #{patientId}
         <if test="toothNo!=null">
             and xrf.tooth_no = #{toothNo}
@@ -107,8 +107,17 @@
 
     <!-- 牙位根尖片数量(APP)用 -->
     <select id="findToothRootCountByPatientId" parameterType="integer" resultType="com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo">
-        select xrf.tooth_no as toothNo, count(xrf.id) as `count` from x_ray_film xrf where xrf.patient_id = #{patientId} and xrf.type = 1
+        SELECT
+            xrf.tooth_no AS toothNo,
+            COUNT( xrf.tooth_no ) AS `count`
+        FROM
+            x_ray_film xrf
+        WHERE
+            xrf.patient_id = #{patientId}
+            AND xrf.type = 1
+            AND xrf.inservice = TRUE
+        GROUP BY
+            tooth_no
     </select>
-
 
 </mapper>
