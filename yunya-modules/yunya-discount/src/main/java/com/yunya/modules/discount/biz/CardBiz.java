@@ -1144,7 +1144,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
 	private int setUpMultiItemForOrder(List<PatientUseBenefitBo> benefitBos, OrderItemUseBo orderItem, Integer orgId,
 	                                   Integer itemIndex) {
-		int mark = 0;
 		for (PatientUseBenefitBo benefitBo : benefitBos) {
 			if (itemIndex == 1 || checkMixUsed(benefitBo)) {
 				//订单项目id对应的可用的优惠券信息
@@ -1164,13 +1163,13 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							benefitAmount = receivableAmount.compareTo(packageUnitPrice) > 0 ? benefitAmount = receivableAmount.subtract(packageUnitPrice)
 									: BigDecimal.valueOf(0);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
-							mark = 1;
+							return TRUE.getCode();
 						}
 						if (DISCOUNT.equals(couponType)) {
 							benefitAmount = receivableAmount.multiply(BigDecimal.valueOf(1).subtract(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
 									.setScale(2, BigDecimal.ROUND_HALF_UP);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), DISCOUNT.getCode(), itemIndex);
-							mark = 1;
+							return TRUE.getCode();
 						}
 						if (MEMBER_CARD.equals(couponType)) {
 							BigDecimal memberPrice = BigDecimal.ZERO;
@@ -1193,7 +1192,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							//订单项目id对应的可用的优惠券信息
 							benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), MEMBER_CARD.getCode(), itemIndex);
-							mark = 1;
+							return TRUE.getCode();
 						}
 						if (VOUCHER.equals(couponType)) {
 							if (benefitBo.getFace().compareTo(BigDecimal.valueOf(0)) > 0) {
@@ -1214,7 +1213,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				}
 			}
 		}
-		return mark;
+		return FALSE.getCode();
 	}
 
 	private boolean checkMixUsed(PatientUseBenefitBo benefitBo) {
