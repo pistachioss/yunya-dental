@@ -1,12 +1,15 @@
 package com.yunya.modules.employeeattend.form;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yunya.models.employee_attend.ApprovalInfo;
+import com.yunya.models.employee_attend.ApprovalPeople;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介:
@@ -61,16 +64,18 @@ public class LeaveInfoForm {
     private String leavePicture;
 
     /**
-     * 审批条件表id
-     */
-    @ApiModelProperty("审批条件表id")
-    private Integer approvalCriteriaId;
-
-    /**
      * 审批状态 0 审批中 1通过 2拒绝 3撤回
      */
     @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝 3撤回")
     private Integer apprpvalStatus;
+    /**
+     * 审批人信息列表
+     */
+    @ApiModelProperty("审批人信息列表")
+    private List<ApprovalInfo> apprpvalPeopleList;
+
+    @ApiModelProperty("抄送人Id集合")
+    private List<Integer> copyList;
 
     /**
      * 创建人

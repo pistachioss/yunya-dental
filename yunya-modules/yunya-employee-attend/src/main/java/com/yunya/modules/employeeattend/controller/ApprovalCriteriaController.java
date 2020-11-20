@@ -5,6 +5,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.employee_attend.VacationSet;
 import com.yunya.modules.employeeattend.biz.ApprovalCriteriaBiz;
+import com.yunya.modules.employeeattend.form.ApprovalCriteriaByDayForm;
 import com.yunya.modules.employeeattend.form.ApprovalCriteriaForm;
 import com.yunya.modules.employeeattend.form.VacationSetQuery;
 import io.swagger.annotations.Api;
@@ -46,6 +47,18 @@ public class ApprovalCriteriaController {
     }
 
     /**
+     * 根据请假日期获取审批条件
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findByDate")
+    @ApiOperation("根据请假日期获取审批条件")
+    public ResponseResult findByDate(@RequestBody @Validated ApprovalCriteriaByDayForm approvalCriteriaByDayForm) {
+        return ResponseUtil.success(approvalCriteriaBiz.findByDate(approvalCriteriaByDayForm));
+    }
+
+    /**
      * 查看假期设置列表
      *
      * @param
@@ -80,4 +93,6 @@ public class ApprovalCriteriaController {
     public ResponseResult delete(@RequestBody @Validated ApprovalCriteriaForm approvalCriteriaForm) {
         return ResponseUtil.success(approvalCriteriaBiz.delete(approvalCriteriaForm));
     }
+
+
 }
