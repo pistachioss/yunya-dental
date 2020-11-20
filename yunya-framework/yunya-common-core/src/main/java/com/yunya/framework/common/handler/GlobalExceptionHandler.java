@@ -3,6 +3,7 @@ package com.yunya.framework.common.handler;
 import com.yunya.framework.common.constant.CommonConstants;
 import com.yunya.framework.common.exception.BaseException;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.exception.auth.ClientInvalidException;
 import com.yunya.framework.common.exception.auth.ClientTokenException;
 import com.yunya.framework.common.exception.auth.UserAuthException;
 import com.yunya.framework.common.exception.auth.UserTokenException;
@@ -89,16 +90,22 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler(HttpMessageNotReadableException.class)
   public ResponseResult httpMessageNotReadableExceptionHandler(
-          HttpMessageNotReadableException exp, HttpServletRequest request) {
-    logger.error("error in \n url:{} \nmsg:{}",request.getRequestURL(),exp.getCause());
-    return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE,"非法请求参数类型",null);
+      HttpMessageNotReadableException exp, HttpServletRequest request) {
+    logger.error("error in \n url:{} \nmsg:{}", request.getRequestURL(), exp.getCause());
+    return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE, "非法请求参数类型", null);
   }
 
   @ExceptionHandler(HttpMessageConversionException.class)
   public ResponseResult httpMessageConversionExceptionHandler(
-          HttpMessageConversionException exp, HttpServletRequest request) {
-    logger.error("error in \n url:{} \n msg:{}",request.getRequestURL(),exp.getCause());
-    return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE,"类型转换异常",null);
+      HttpMessageConversionException exp, HttpServletRequest request) {
+    logger.error("error in \n url:{} \n msg:{}", request.getRequestURL(), exp.getCause());
+    return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE, "类型转换异常", null);
   }
 
+  @ExceptionHandler(ClientInvalidException.class)
+  public ResponseResult httpClientInvalidExceptionHandler(
+      ClientInvalidException exp, HttpServletRequest request) {
+    logger.error("error in \n url:{} \n msg:{}", request.getRequestURL(), exp.getCause());
+    return ResponseUtil.fail(CommonConstants.ILLEGAL_PARAMETERS_CODE, "服务验证异常！", null);
+  }
 }

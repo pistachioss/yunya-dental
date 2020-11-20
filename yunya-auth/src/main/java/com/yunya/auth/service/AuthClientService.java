@@ -1,5 +1,7 @@
 package com.yunya.auth.service;
 
+import com.yunya.models.auth.Client;
+
 import java.util.List;
 
 /**
@@ -27,6 +29,7 @@ public interface AuthClientService {
    * @param clientId 客户端ID
    * @param secret 密钥
    * @throws Exception
+   * @return Client
    */
-  void validate(String clientId, String secret) throws Exception;
+  Client validate(String clientId, String secret) throws Exception;
 }

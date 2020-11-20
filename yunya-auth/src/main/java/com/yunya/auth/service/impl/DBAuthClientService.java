@@ -27,7 +27,7 @@ public class DBAuthClientService implements AuthClientService {
 
   /** 注入对象 */
   @Autowired private ClientMapper clientMapper;
-
+  /** 服务发现客户端 */
   @Autowired private DiscoveryClient discovery;
 
   private ApplicationContext context;
@@ -42,16 +42,13 @@ public class DBAuthClientService implements AuthClientService {
    *
    * @param clientId 客户端ID
    * @param secret 密钥
-   * @throws Exception
    */
   @Override
-  public void validate(String clientId, String secret) throws Exception {
+  public Client validate(String clientId, String secret) {
     Client client = new Client();
     client.setCode(clientId);
-    client = clientMapper.selectOne(client);
-    if (client == null || !client.getSecret().equals(secret)) {
-      throw new ClientInvalidException("Client not found or Client secret is error!");
-    }
+    client.setSecret(secret);
+    return clientMapper.selectOne(client);
   }
 
   /**

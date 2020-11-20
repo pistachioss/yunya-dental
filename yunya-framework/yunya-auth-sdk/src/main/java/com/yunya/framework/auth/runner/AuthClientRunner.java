@@ -3,6 +3,7 @@ package com.yunya.framework.auth.runner;
 import com.yunya.feign.auth.RemoteServiceAuthFeign;
 import com.yunya.framework.auth.config.ServiceAuthConfig;
 import com.yunya.framework.auth.config.UserAuthConfig;
+import com.yunya.framework.common.exception.auth.ClientInvalidException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
@@ -42,6 +43,9 @@ public class AuthClientRunner implements CommandLineRunner {
     String clientId = serviceAuthConfig.getClientId();
     String secret = serviceAuthConfig.getClientSecret();
     byte[] userPublicKey = serviceAuthFeign.getUserPublicKey(clientId, secret);
+    if (userPublicKey.length <= 0) {
+      throw new ClientInvalidException("Client not found or Client secret is error!");
+    }
     this.userAuthConfig.setPubKeyByte(userPublicKey);
   }
 }
