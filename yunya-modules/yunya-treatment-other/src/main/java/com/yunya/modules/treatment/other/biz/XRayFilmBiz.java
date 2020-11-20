@@ -6,6 +6,7 @@ import com.yunya.feign.treatment_other.domain.form.XRayFilmForm;
 import com.yunya.feign.treatment_other.domain.model.XRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.ToothRootQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootVo;
 import com.yunya.feign.treatment_other.domain.vo.XRayFilmVo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -18,7 +19,6 @@ import com.yunya.modules.treatment.other.utils.TreatmentOtherUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,7 +37,7 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
             PageHelper.startPage(query.getPageNum(),query.getPageSize());
         }
         List<XRayFilmVo> data = mapper.findList(query);
-        return new PageInfo(data);
+        return new PageInfo<>(data);
     }
 
     /**
@@ -123,5 +123,14 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
         }
         List<ToothRootVo> toothRootPhotos = mapper.findToothRootPhotos(patientId, toothNo);
         return new PageInfo<>(toothRootPhotos);
+    }
+
+    /**
+     * 牙位根尖片数量(APP)用
+     * @param patientId 患者ID
+     * @return 返回列表
+     */
+    public List<ToothRootCountVo> toothRootCount(Integer patientId) {
+        return mapper.findToothRootCountByPatientId(patientId);
     }
 }

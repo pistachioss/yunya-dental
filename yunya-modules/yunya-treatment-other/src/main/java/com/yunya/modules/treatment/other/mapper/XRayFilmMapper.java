@@ -1,11 +1,11 @@
 package com.yunya.modules.treatment.other.mapper;
 
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
+import com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootVo;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.feign.treatment_other.domain.vo.XRayFilmVo;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.web.bind.annotation.PathVariable;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
@@ -34,4 +34,11 @@ public interface XRayFilmMapper extends Mapper<XRayFilm> {
     List<ToothRootVo>findToothRootPhotos(
                                          @Param("patientId") Integer patientId,
                                          @Param("toothNo") Integer toothNo);
+
+    /**
+     * 牙位根尖片数量(APP)用
+     * @param patientId 患者ID
+     * @return 返回列表
+     */
+    List<ToothRootCountVo> findToothRootCountByPatientId(@Param("patientId") Integer patientId);
 }
