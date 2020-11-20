@@ -226,6 +226,9 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	@Value("${codeUrl.url}")
 	private String serverPort;
 
+	//优惠券是否共用
+	private static final Map<Integer, List<Integer>> mixUsedMap = Maps.newHashMap();
+
 	/**
 	 * 产品生成分配分页查询
 	 *
@@ -910,6 +913,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				for (int i = 1; i <= quantity; i++) {
 					multiItemUseBenefit(benefitUseBo, orderItem, orgId, i);
 				}
+				mixUsedMap.clear();
 			}
 		}
 	}
@@ -1142,7 +1146,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	                                   Integer itemIndex) {
 		int mark = 0;
 		for (PatientUseBenefitBo benefitBo : benefitBos) {
-			if (TRUE.equals(orderItem.getPreMixAble()) && (TRUE.equals(benefitBo.getMixable()) || itemIndex == 1)) {
+			if (itemIndex == 1 || checkMixUsed(benefitBo)) {
 				//订单项目id对应的可用的优惠券信息
 				ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
 				Integer couponType = benefitBo.getCouponType();
@@ -1199,11 +1203,25 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 						}
 						//设置项目index已使用金额
 						changeBo.setDiscountedAmount(changeBo.getDiscountedAmount().add(benefitAmount));
+						mixUsedMap.compute(benefitBo.getCouponId(), (k,v) -> {
+							if (CollectionUtils.isEmpty(v)) {
+								return Lists.newArrayList(benefitBo.getMixable());
+							}
+							v.add(benefitBo.getMixable());
+							return v;
+						});
 					}
 				}
 			}
 		}
 		return mark;
+	}
+
+	private boolean checkMixUsed(PatientUseBenefitBo benefitBo) {
+		List<Integer> mixUsedList = mixUsedMap.get(benefitBo.getCouponId());
+		//当前个体被优惠的卡券共用属性
+		Set<Integer> set = Sets.newHashSet(mixUsedMap.values().stream().flatMap(obj -> obj.stream()).collect(toSet()));
+		return CollectionUtils.isNotEmpty(mixUsedList) || !set.contains(FALSE.getCode());
 	}
 
 	/**
