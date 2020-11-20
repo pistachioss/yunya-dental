@@ -102,7 +102,7 @@ public class PatientBaseInfoVo implements Serializable {
     private Integer originId;
 
     /**
-     * 患者来源(子级)名称
+     * 来源名称 或 推荐人名称
      */
     private String originName;
 
@@ -159,10 +159,6 @@ public class PatientBaseInfoVo implements Serializable {
      */
     private String lastVisit;
 
-    /**
-     * 来源id
-     */
-    private Integer sourceId;
 
     /**
      * 来源父级id
