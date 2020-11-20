@@ -78,12 +78,15 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
             if (true) {
                 LeaveInfo leaveInfo = new LeaveInfo();
                 BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
-                mapper.insert(leaveInfo);
+                leaveInfo.setCrtTime(new Date());
+                int num = mapper.insert(leaveInfo);
                 //插入审批人信息
                 int leaveId = leaveInfo.getId();
                 List<ApprovalInfo>list = leaveInfoForm.getApprpvalPeopleList();
                 for (ApprovalInfo approvalInfo : list) {
-                    approvalInfo.setVacationId(leaveId);
+                    approvalInfo.setCrtId(leaveInfoForm.getCrtId());
+                    approvalInfo.setCrtTime(new Date());
+                    approvalInfo.setLeaveId(leaveId);
                 }
                 approvalInfoMapper.batchInsert(list);
                 //插入抄送人信息
@@ -100,6 +103,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     }
                     copyInfoMapper.batchInsert(copyInfoList);
                 }
+                return num;
             }
             throw new ClientServiceException("该申请与其他请假申请时间冲突", INSERT_MODEL);
         }
