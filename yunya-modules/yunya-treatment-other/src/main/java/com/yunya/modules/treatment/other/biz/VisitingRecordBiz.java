@@ -8,6 +8,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment_other.domain.form.FinishVisitingForm;
 import com.yunya.feign.treatment_other.domain.form.VisitingRecordForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingContentModel;
@@ -294,8 +295,14 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                         visitingRecordVo.setMemberIcon(memberType.getIcon());
                     }
                 }
-
-                // 欠费总额 TODO
+                // 欠费总额
+                List<Integer> patientIds = new ArrayList<>();
+                patientIds.add(patientId);
+                List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
+                if (StringHelper.isNotEmpty(debtAmountList)) {
+                    DebtAmountModel debtAmountModel = debtAmountList.get(0);
+                    visitingRecordVo.setArrears(debtAmountModel.getDebtAmount());
+                }
             }
         }
 
