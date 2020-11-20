@@ -200,6 +200,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       String medicalNumber = patientData.getMedicalNumber();
       vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
       vo.setAllergen(patientData.getAllergens());
+      vo.setPatientKind(patientData.getPatientKindName());
       Integer memberTypeId = patientData.getMemberTypeId();
       if (null != memberTypeId) {
         MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
