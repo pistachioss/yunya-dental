@@ -91,7 +91,7 @@
         `x_ray_film` xrf
         LEFT JOIN ( SELECT id, tooth_no, url, photo_name, upload_time, crt_time, upd_time
                      FROM x_ray_film
-                     WHERE type = 1
+                     WHERE type = 1 and inservice = true
                      <if test="toothNo == null">
                          GROUP BY tooth_no
                      </if>
