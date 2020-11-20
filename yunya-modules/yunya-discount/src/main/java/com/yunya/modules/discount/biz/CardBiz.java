@@ -1283,8 +1283,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			}
 		}
 		//排序（截止时间 asc）
-		Comparator<PatientBenefitBo> comparator = Comparator.comparing(PatientBenefitBo::getUseDeadline)
-				.thenComparing(obj -> patientId.equals(obj.getOwnerId()) ? 0 : 1);
+		Comparator<PatientBenefitBo> comparator = Comparator.comparing(PatientBenefitBo::getItemUsable, Comparator.reverseOrder())
+				.thenComparing(PatientBenefitBo::getUseDeadline).thenComparing(obj -> patientId.equals(obj.getOwnerId()) ? 0 : 1);
 		benefitBos.sort(comparator);
 		//患者优惠信息转换
 		return benefitBoConvertVo(patientId, benefitBos);
