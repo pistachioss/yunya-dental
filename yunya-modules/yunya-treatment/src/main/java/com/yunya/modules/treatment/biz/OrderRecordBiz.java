@@ -7,6 +7,8 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
 import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.OrderRecordForm;
 import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
@@ -61,6 +63,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 就诊其他信息服务调用 */
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+  /** 系统服务调用 */
+  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 优惠服务调用 */
   @Autowired private RemoteDiscountFeign discountFeign;
   /** 就诊记录 */
@@ -578,7 +582,7 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    */
   public List<OrderProcessVO> orderProcess(OrderProcessQuery query) {
     if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(),query.getPageSize());
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     String search = query.getSearch();
     String orderRecordNum = query.getOrderRecordNum();
@@ -596,7 +600,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
           });
       patientArr = ArrayUtil.toArray(patientIds, Integer.class);
     }
-    List<OrderProcessVO> orderProcessVOS = mapper.selectOrderProcess(patientArr, orderRecordNum, orgIds);
+    List<OrderProcessVO> orderProcessVOS =
+        mapper.selectOrderProcess(patientArr, orderRecordNum, orgIds);
     if (StringHelper.isNotEmpty(orderProcessVOS)) {
       orderProcessVOS.forEach(
           orderProcessVO -> {
@@ -610,11 +615,16 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
               orderProcessVO.setPatientName(patientBaseInfoVo.getName());
               orderProcessVO.setPatientMobile(patientBaseInfoVo.getMobile());
             } else {
-              PatientBaseInfo patientInfoById = patientCentralServiceFeign.findPatientInfoById(id);
-              if (null != patientInfoById) {
-                orderProcessVO.setPatientName(patientInfoById.getName());
-                orderProcessVO.setPatientMobile(patientInfoById.getMobile());
+              PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(id);
+              if (null != patientInfo) {
+                orderProcessVO.setPatientName(patientInfo.getName());
+                orderProcessVO.setPatientMobile(patientInfo.getMobile());
               }
+            }
+            OrganizationInfo orgInfo =
+                systemServiceFeign.findOrgInfoByOrgId(orderProcessVO.getOrgId());
+            if (null != orgInfo) {
+              orderProcessVO.setOrgName(orgInfo.getAbbreviation());
             }
           });
     }

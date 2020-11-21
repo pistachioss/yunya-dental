@@ -1,6 +1,5 @@
 package com.yunya.modules.treatment.controller.web;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.form.OrderRecordForm;
 import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
@@ -130,15 +129,15 @@ public class OrderRecordController {
 
   /**
    * 订单处理（门诊端-订单处理）
+   *
    * @param query 订单处理参数模型
    * @return 返回订单处理列表
    */
   @ApiOperation("订单处理（门诊端-订单处理）")
-  @CurrentUser
   @PostMapping("/process")
-  public ResponseResult<PageInfo<OrderProcessVO>> orderProcess(@RequestBody OrderProcessQuery query) {
+  public ResponseResult<PageInfo<OrderProcessVO>> orderProcess(
+      @RequestBody OrderProcessQuery query) {
     List<OrderProcessVO> orderProcessList = orderRecordBiz.orderProcess(query);
     return ResponseUtil.success(new PageInfo<>(orderProcessList));
   }
-
 }
