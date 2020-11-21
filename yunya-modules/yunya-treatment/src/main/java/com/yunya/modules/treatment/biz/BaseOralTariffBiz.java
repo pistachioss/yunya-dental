@@ -126,6 +126,11 @@ public class BaseOralTariffBiz extends BaseBiz<BaseOralTariffMapper, BaseOralTar
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     List<BaseOralTariffVO> resultList = mapper.selectBaseOralTariffList(queryForm);
+    resultList.forEach(baseOralTariffVO -> {
+      BigDecimal price = baseOralTariffVO.getPrice();
+      BigDecimal bigDecimal = price.setScale(2, BigDecimal.ROUND_HALF_UP);
+      baseOralTariffVO.setPrice(bigDecimal);
+    });
     return new PageInfo<>(resultList);
   }
 
