@@ -84,8 +84,9 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
         TreatmentOtherUtils.enableEditImage(crtTime);
         Integer updId = Integer.valueOf(BaseContextHandler.getUserID());
         XRayFilm entity = new XRayFilm();
+        entity.setId(id);
         entity.setUpdId((updId));
-        entity.setCrtName(BaseContextHandler.getName());
+        entity.setUpdName(BaseContextHandler.getName());
         entity.setUpdTime(new Date(System.currentTimeMillis()));
         entity.setType(form.getType());
         entity.setUploadTime(form.getUploadTime());

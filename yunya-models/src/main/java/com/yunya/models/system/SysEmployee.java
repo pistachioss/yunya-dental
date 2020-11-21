@@ -32,7 +32,7 @@ public class SysEmployee {
   /**
    * 生日
    */
-  private Date birthday;
+  private String birthday;
 
   /**
    * 地址
@@ -79,11 +79,11 @@ public class SysEmployee {
 
   /** 合同签署日期 */
   @Column(name = "contract_signing_date")
-  private Date contractSigningDate;
+  private String contractSigningDate;
 
   /** 入职时间 */
   @Column(name = "entry_date")
-  private Date entryDate;
+  private String entryDate;
 
   /** 毕业院校 */
   @Column(name = "graduated_school")
@@ -94,7 +94,7 @@ public class SysEmployee {
 
   /** 离职日期 */
   @Column(name = "leave_time")
-  private Date leaveTime;
+  private String leaveTime;
 
   /** 职称 */
   private String title;
@@ -264,11 +264,11 @@ public class SysEmployee {
     this.gender = gender;
   }
 
-  public Date getBirthday() {
+  public String getBirthday() {
     return birthday;
   }
 
-  public void setBirthday(Date birthday) {
+  public void setBirthday(String birthday) {
     this.birthday = birthday;
   }
 
@@ -387,7 +387,7 @@ public class SysEmployee {
    *
    * @return contract_signing_date - 合同签署日期
    */
-  public Date getContractSigningDate() {
+  public String getContractSigningDate() {
     return contractSigningDate;
   }
 
@@ -396,7 +396,7 @@ public class SysEmployee {
    *
    * @param contractSigningDate 合同签署日期
    */
-  public void setContractSigningDate(Date contractSigningDate) {
+  public void setContractSigningDate(String contractSigningDate) {
     this.contractSigningDate = contractSigningDate;
   }
 
@@ -405,7 +405,7 @@ public class SysEmployee {
    *
    * @return entry_date - 入职时间
    */
-  public Date getEntryDate() {
+  public String getEntryDate() {
     return entryDate;
   }
 
@@ -414,7 +414,7 @@ public class SysEmployee {
    *
    * @param entryDate 入职时间
    */
-  public void setEntryDate(Date entryDate) {
+  public void setEntryDate(String entryDate) {
     this.entryDate = entryDate;
   }
 
@@ -459,7 +459,7 @@ public class SysEmployee {
    *
    * @return leave_time - 离职日期
    */
-  public Date getLeaveTime() {
+  public String getLeaveTime() {
     return leaveTime;
   }
 
@@ -468,7 +468,7 @@ public class SysEmployee {
    *
    * @param leaveTime 离职日期
    */
-  public void setLeaveTime(Date leaveTime) {
+  public void setLeaveTime(String leaveTime) {
     this.leaveTime = leaveTime;
   }
 

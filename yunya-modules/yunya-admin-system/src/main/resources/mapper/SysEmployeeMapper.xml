@@ -12,7 +12,7 @@
         <result column="mobile_phone" property="mobilePhone" jdbcType="VARCHAR"/>
         <result column="telephone" property="telephone" jdbcType="VARCHAR"/>
         <result column="gender" property="gender" jdbcType="TINYINT"/>
-        <result column="birthday" property="birthday" jdbcType="DATE"/>
+        <result column="birthday" property="birthday" jdbcType="VARCHAR"/>
         <result column="address" property="address" jdbcType="VARCHAR"/>
         <result column="province" property="province" jdbcType="VARCHAR"/>
         <result column="city" property="city" jdbcType="VARCHAR"/>
@@ -23,11 +23,11 @@
         <result column="work_type" property="workType" jdbcType="TINYINT"/>
         <result column="bonus_coefficient" property="bonusCoefficient" jdbcType="DOUBLE"/>
         <result column="work_amount" property="workAmount" jdbcType="DOUBLE"/>
-        <result column="contract_signing_date" property="contractSigningDate" jdbcType="DATE"/>
-        <result column="entry_date" property="entryDate" jdbcType="DATE"/>
+        <result column="contract_signing_date" property="contractSigningDate" jdbcType="VARCHAR"/>
+        <result column="entry_date" property="entryDate" jdbcType="VARCHAR"/>
         <result column="graduated_school" property="graduatedSchool" jdbcType="VARCHAR"/>
         <result column="education" property="education" jdbcType="INTEGER"/>
-        <result column="leave_time" property="leaveTime" jdbcType="DATE"/>
+        <result column="leave_time" property="leaveTime" jdbcType="VARCHAR"/>
         <result column="title" property="title" jdbcType="VARCHAR"/>
         <result column="post_level" property="postLevel" jdbcType="VARCHAR"/>
         <result column="emergency_contact" property="emergencyContact" jdbcType="VARCHAR"/>

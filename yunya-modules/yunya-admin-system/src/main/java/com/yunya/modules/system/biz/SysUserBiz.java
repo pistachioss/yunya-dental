@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -120,10 +121,15 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployee.setUserId(userId);
       // 新增员工就职状态为离职处理
       if (USER_RESIGNATION_STATUS.equals(resource.getWorkStatus())) {
-        sysEmployee.setLeaveTime(
-            null == resource.getLeaveTime()
-                ? new Date(System.currentTimeMillis())
-                : resource.getLeaveTime());
+        String leaveTime = resource.getLeaveTime();
+        if (StringHelper.isBlank(leaveTime)) {
+          SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+          String systemTime = format.format(new Date(System.currentTimeMillis()));
+          sysEmployee.setLeaveTime(systemTime);
+        } else {
+          sysEmployee.setLeaveTime(leaveTime);
+        }
+
       }
       sysEmployee.setPinyin(HanyuPinyinHelper.getFirstLettersLo(resource.getName()));
       sysEmployee.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
