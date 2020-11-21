@@ -1,7 +1,9 @@
 package com.yunya.modules.discount.biz;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.yunya.feign.discount.domain.bo.BillUsedCouponBo;
 import com.yunya.feign.discount.domain.bo.CardUseBo;
 import com.yunya.feign.discount.domain.bo.ItemUseBenefitBo;
 import com.yunya.feign.discount.domain.bo.OrderItemUseBo;
@@ -371,6 +373,26 @@ public class BenefitBiz {
 		mqServiceFeign.sendMessage(orderId, DELETE, BaseBenefit);
 		log.info("【订单撤销优惠发送消息成功】：订单id[{}]", orderId);
 		return errorBo;
+	}
+
+	/**
+	 * 查询账单的使用优惠券信息
+	 * @param orderId orderId
+	 * @return String
+	 */
+	public String getOrderCoupon(Integer orderId) {
+		List<BillUsedCouponBo> billCoupons = cardBenefitMapper.getBillCoupons(orderId);
+		List<String> cardNames = billCoupons.stream().map(obj -> {
+			if (MEMBER_TYPE.equals(obj.getBenefitType())) {
+				MemberType memberType = systemServiceFeign.findMemberTypeById(obj.getCouponId());
+				return memberType != null ? memberType.getName() : null;
+			}
+			return obj.getCouponName();
+		}).collect(toList());
+		if (CollectionUtils.isNotEmpty(cardNames)) {
+			return Joiner.on(",").join(cardNames);
+		}
+		return null;
 	}
 
 	/**

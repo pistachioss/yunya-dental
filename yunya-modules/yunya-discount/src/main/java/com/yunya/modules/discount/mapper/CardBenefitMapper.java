@@ -1,5 +1,6 @@
 package com.yunya.modules.discount.mapper;
 
+import com.yunya.feign.discount.domain.bo.BillUsedCouponBo;
 import com.yunya.feign.discount.domain.bo.CardUseBo;
 import com.yunya.models.discount.CardBenefit;
 import org.apache.ibatis.annotations.Mapper;
@@ -20,4 +21,9 @@ public interface CardBenefitMapper extends tk.mybatis.mapper.common.Mapper<CardB
      * @return list
      */
     List<CardUseBo> getCardUseInfo(@Param("cardIds") Set<Integer> cardIds, @Param("couponType")Integer couponType);
+
+    /**
+     * 查询账单的优惠券使用详情
+     */
+    List<BillUsedCouponBo> getBillCoupons(@Param("orderId") Integer orderId);
 }

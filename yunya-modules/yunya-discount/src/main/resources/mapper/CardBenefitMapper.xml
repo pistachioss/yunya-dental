@@ -82,4 +82,23 @@
             </foreach>
         group by `c`.`coupon_id`
     </select>
+
+    <select id="getBillCoupons" resultType="com.yunya.feign.discount.domain.bo.BillUsedCouponBo">
+        select
+            `temp`.`coupon_id`,
+            `cci`.`name`         as `couponName`,
+            `temp`.`benefit_type`
+        from (select
+                  case
+                      when isnull(`cb`.`coupon_id`) = 1 then `cb`.`card_id`
+                      else `cb`.`coupon_id`
+                      end as `coupon_id`,
+                  `cb`.`benefit_type`
+              from `card_benefit` `cb`
+              where `cb`.`order_id` = #{orderId}
+                and `cb`.`is_deleted` = 0
+              order by `cb`.`order_detail_id` asc, `cb`.`sort`) `temp`
+             left join `coupon_common_info` `cci` on `cci`.`id` = `temp`.`coupon_id`
+        group by `temp`.`coupon_id`, `temp`.`benefit_type`
+    </select>
 </mapper>
