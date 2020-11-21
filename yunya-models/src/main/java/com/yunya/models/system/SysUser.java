@@ -28,7 +28,7 @@ public class SysUser {
     /**
      * 生日
      */
-    private Date birthday;
+    private String birthday;
 
     /**
      * 地址
@@ -184,7 +184,7 @@ public class SysUser {
      *
      * @return birthday - 生日
      */
-    public Date getBirthday() {
+    public String getBirthday() {
         return birthday;
     }
 
@@ -193,7 +193,7 @@ public class SysUser {
      *
      * @param birthday 生日
      */
-    public void setBirthday(Date birthday) {
+    public void setBirthday(String birthday) {
         this.birthday = birthday;
     }
 

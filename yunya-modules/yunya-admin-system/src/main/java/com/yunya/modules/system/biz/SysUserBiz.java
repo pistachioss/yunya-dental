@@ -35,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -120,10 +121,15 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployee.setUserId(userId);
       // 新增员工就职状态为离职处理
       if (USER_RESIGNATION_STATUS.equals(resource.getWorkStatus())) {
-        sysEmployee.setLeaveTime(
-            null == resource.getLeaveTime()
-                ? new Date(System.currentTimeMillis())
-                : resource.getLeaveTime());
+        String leaveTime = resource.getLeaveTime();
+        if (StringHelper.isBlank(leaveTime)) {
+          SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+          String systemTime = format.format(new Date(System.currentTimeMillis()));
+          sysEmployee.setLeaveTime(systemTime);
+        } else {
+          sysEmployee.setLeaveTime(leaveTime);
+        }
+
       }
       sysEmployee.setPinyin(HanyuPinyinHelper.getFirstLettersLo(resource.getName()));
       sysEmployee.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -136,7 +142,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
         insertUserLoginOrganization(userId, organizationForms);
       }
       // 发送消息同步员工信息
-      rabbitMqServiceFeign.sendMessage(userId, 0, BaseEmployee);
+//      rabbitMqServiceFeign.sendMessage(userId, 0, BaseEmployee);
     }
   }
 
@@ -233,7 +239,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
       sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
       // 发送消息同步员工信息
-      rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
+//      rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
     }
     // 用户名被修改或就职状态改为离职,将当前用户从缓存中移除
     if (!currentUsername.equals(form.getMobilePhone())

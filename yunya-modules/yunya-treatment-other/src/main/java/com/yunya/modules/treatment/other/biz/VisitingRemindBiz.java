@@ -6,6 +6,8 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment_other.domain.form.VisitingRemindForm;
 import com.yunya.feign.treatment_other.domain.model.VisitingRemindModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRemindQuery;
@@ -56,6 +58,9 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     /** 注入系统基础服务 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    /** 就诊服务 */
+    @Autowired
+    private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
 
     /**
      * 新增随访提醒
@@ -220,8 +225,14 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                                 build.setMemberIcon(memberType.getIcon());
                             }
                         }
-
-                        // 设置会员金额 TODO
+                        // 欠费总额
+                        List<Integer> patientIds = new ArrayList<>();
+                        patientIds.add(patientId);
+                        List<DebtAmountModel> debtAmountList = this.remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
+                        if (StringHelper.isNotEmpty(debtAmountList)) {
+                            DebtAmountModel debtAmountModel = debtAmountList.get(0);
+                            build.setArrears(debtAmountModel.getDebtAmount());
+                        }
                     }
                 }
                 visitingRemindVos.add(build);

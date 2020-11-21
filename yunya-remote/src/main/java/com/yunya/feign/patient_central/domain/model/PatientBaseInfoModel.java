@@ -155,8 +155,8 @@ public class PatientBaseInfoModel implements Serializable {
     private Date updTime;
 
     /**
-     * 推荐来源id
+     * 员工 老患者
      */
-    @ApiModelProperty(value = "推荐来源id")
+    @ApiModelProperty(value = "推荐来源（员工 老患者）")
     private Integer sourceId;
 }

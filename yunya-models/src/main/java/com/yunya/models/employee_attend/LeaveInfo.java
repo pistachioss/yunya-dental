@@ -12,6 +12,9 @@ public class LeaveInfo {
     private Integer id;
     @Column(name = "user_id")
     private Integer userId;
+
+    @Column(name = "company_id")
+    private Integer companyId;
     /**
      * 假期类型id
      */
@@ -52,7 +55,7 @@ public class LeaveInfo {
      * 审批状态 0 审批中 1通过 2拒绝 3撤回
      */
     @Column(name = "apprpval_status")
-    private Integer apprpvalStatus;
+    private Integer apprpvalStatus = 0;
 
     /**
      * 创建人

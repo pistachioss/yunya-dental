@@ -1,5 +1,7 @@
 package com.yunya.models.employee_attend;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -18,6 +20,7 @@ public class ApprovalPeople {
      * 审批人级别设置表id
      */
     @Column(name = "approval_level_id")
+    @ApiModelProperty("审批人级别设置表id")
     private Integer approvalLevelId;
 
     /**

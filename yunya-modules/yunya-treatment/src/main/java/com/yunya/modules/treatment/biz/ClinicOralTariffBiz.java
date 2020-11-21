@@ -126,10 +126,10 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
             vo.setUnit(baseOralTariff.getUnit());
             if (null != clinicOralTariff) {
               vo.setId(clinicOralTariff.getId());
-              vo.setPrice(clinicOralTariff.getPrice());
+              vo.setPrice(clinicOralTariff.getPrice().setScale(2,BigDecimal.ROUND_HALF_UP));
               vo.setInservice(clinicOralTariff.getInservice());
             } else {
-              vo.setPrice(baseOralTariff.getPrice());
+              vo.setPrice(baseOralTariff.getPrice().setScale(2,BigDecimal.ROUND_HALF_UP));
               vo.setInservice(baseOralTariff.getInservice());
             }
             resultList.add(vo);
@@ -183,10 +183,9 @@ public class ClinicOralTariffBiz extends BaseBiz<ClinicOralTariffMapper, ClinicO
                 (tariffVO
                 .getPrice()
                 .multiply(BigDecimal.valueOf(memberType.getRate()))
-                .divide(BigDecimal.valueOf(100), 2))
-                        .setScale(2,BigDecimal.ROUND_HALF_UP);
+                .divide(BigDecimal.valueOf(100), 2));
       }
-      memberPrices.put(memberTypeId, memberPrice);
+      memberPrices.put(memberTypeId, memberPrice.setScale(2,BigDecimal.ROUND_HALF_UP));
     }
     tariffVO.setMemberPrices(memberPrices);
   }

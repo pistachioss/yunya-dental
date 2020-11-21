@@ -168,9 +168,15 @@ public class PatientOriginBiz extends BaseBiz<PatientOriginMapper, PatientOrigin
         return ResponseUtil.fail(
             OperationCodeConstants.OBJECT_EDIT_FAIL, "该患者来源不可编辑", patientOriginv);
       }
-      if (patientOrigin.getTimeLimit() == 0) {
-        patientOrigin.setLimitStartDate(null);
-        patientOrigin.setLimitEndDate(null);
+      if (patientOriginForm.getInservice() == false){
+        patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
+        patientOrigin.setUpdName(BaseContextHandler.getName());
+        patientOrigin.setUpdTime(new Date());
+        mapper.updateByPrimaryKeySelective(patientOrigin);
+        return ResponseUtil.success();
+      }
+      if (patientOrigin.getTimeLimit() != null && patientOrigin.getTimeLimit() == 1) {
+        patientOrigin.setLimitEndDate(getEndTimeOfDate(patientOrigin.getLimitEndDate()));
       }
       patientOrigin.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientOrigin.setUpdName(BaseContextHandler.getName());

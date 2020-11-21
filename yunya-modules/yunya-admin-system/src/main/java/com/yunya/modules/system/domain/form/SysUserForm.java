@@ -37,8 +37,8 @@ public class SysUserForm implements Serializable {
   /** 出生日期 */
   @ApiModelProperty(value = "出生日期", required = true)
   @NotNull(message = "出生日期不能为空！")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-  private Date birthday;
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  private String birthday;
   /** 身份证号 */
   @ApiModelProperty(value = "身份证号", required = true)
   @NotBlank(message = "身份证号不能为空！")
@@ -67,16 +67,16 @@ public class SysUserForm implements Serializable {
   /** 合同签署日期 */
   @ApiModelProperty(value = "合同签署日期", required = true)
   @NotNull(message = "合同签署日期不能为空！")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-  private Date contractSigningDate;
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  private String contractSigningDate;
   /** 入职日期 */
   @ApiModelProperty(value = "入职日期", required = true)
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-  private Date entryDate;
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  private String entryDate;
   /** 离职日期 */
   @ApiModelProperty("离职日期（当就职状态为离职时传入）")
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
-  private Date leaveTime;
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+  private String leaveTime;
   /** 毕业院校 */
   @ApiModelProperty(value = "毕业院校", required = true)
   @NotBlank(message = "毕业院校不能为空！")
