@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -24,9 +25,9 @@ import java.util.Set;
 public class TollDebtModel implements Serializable {
 
   /** 账单（开单）记录ID */
-  @ApiModelProperty(value = "账单记录ID ", required = true)
-  @NotNull(message = "账单记录ID不能为空！")
-  private Integer billRecordId;
+  @ApiModelProperty(value = "就诊记录ID ", required = true)
+  @NotNull(message = "就诊记录ID不能为空！")
+  private Integer treatmentRecordId;
 
   /** 普通优惠信息 */
   private GeneralDiscountModel generalDiscountModel;
@@ -46,6 +47,7 @@ public class TollDebtModel implements Serializable {
   /** 挂帐金额 */
   @ApiModelProperty(value = "挂帐金额", required = true)
   @NotNull(message = "挂帐金额不能为空！")
+  @Min(value = 0, message = "输入金额不能小于0！")
   private BigDecimal outstandingAmount;
 
   /** 发票信息 */

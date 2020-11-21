@@ -15,6 +15,7 @@ import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleDetailRecordMapper;
 import com.yunya.modules.treatment.mapper.BillExceptionHandleRecordMapper;
 import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
+import com.yunya.modules.treatment.mapper.BillRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,7 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
   /** 缓存调用 */
   @Autowired private RedisUtils redisUtils;
   /** 账单记录 */
-  @Autowired private BillRecordBiz billRecordBiz;
+  @Autowired private BillRecordMapper billRecordMapper;
   /** 账单支付明细 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
   /** 账单异常处理记录 */
@@ -71,15 +72,14 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     Integer treatmentRecordId = billPayRecord.getTreatmentRecordId();
     Integer billRecordId = billPayRecord.getBillRecordId();
     BigDecimal receivedAmount = billPayRecord.getReceivedAmount();
-    BillRecord billRecord = billRecordBiz.selectById(billRecordId);
-    BigDecimal currentReceivedAmount = billRecord.getReceivedAmount();
-    billRecord.setReceivableAmount(currentReceivedAmount.subtract(receivedAmount));
+    BillRecord billRecord = billRecordMapper.selectByPrimaryKey(billRecordId);
+    BigDecimal totalReceivedAmount = billRecord.getReceivedAmount();
+    billRecord.setReceivedAmount(totalReceivedAmount.subtract(receivedAmount));
     BigDecimal debtAmount = billRecord.getDebtAmount();
     billRecord.setDebtAmount(debtAmount.add(receivedAmount));
     billRecord.setUpdId(userId);
     billRecord.setUpdName(name);
-    billRecordBiz.updateSelectiveById(billRecord);
-
+    billRecordMapper.updateByPrimaryKeySelective(billRecord);
     billPayRecord.setInservice(false);
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
@@ -91,38 +91,8 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     List<BillPayDetailRecord> payDetailRecords = billPayDetailRecordBiz.selectList(billPayDetail);
     List<Integer> payDetailIds = Lists.newArrayList();
     if (StringHelper.isNotEmpty(payDetailRecords)) {
-      // 会员卡、预付款需退还到原先账号
-      payDetailRecords.forEach(
-          detailRecord -> {
-            payDetailIds.add(detailRecord.getId());
-            Byte type = detailRecord.getType();
-            String cardNum = detailRecord.getRemark();
-            switch (type) {
-                // 预付款
-              case 0:
-                PrepaidRevocationFeeModel prepaidRevocationFeeModel =
-                    new PrepaidRevocationFeeModel();
-                prepaidRevocationFeeModel.setPrepaidCard(cardNum);
-                prepaidRevocationFeeModel.setBillPayRecordId(billPayRecordId);
-                prepaidRevocationFeeModel.setRemarks("撤销预付款收费");
-                patientCentralServiceFeign.revocationFee(prepaidRevocationFeeModel);
-                break;
-                // 会员卡
-              case 1:
-                MemberRevocationFeeModel memberRevocationFeeModel = new MemberRevocationFeeModel();
-                memberRevocationFeeModel.setMemberId(cardNum);
-                memberRevocationFeeModel.setBillPayRecordId(billPayRecordId);
-                memberRevocationFeeModel.setRemarks("撤销会员卡收费");
-                patientCentralServiceFeign.revocationFee(memberRevocationFeeModel);
-                break;
-              default:
-                break;
-            }
-            detailRecord.setInservice(false);
-            detailRecord.setUpdId(userId);
-            detailRecord.setUpdName(name);
-            billPayDetailRecordBiz.updateSelectiveById(detailRecord);
-          });
+      //  撤销账单收费方式明细
+      revokeBillPaymentDetail(billPayRecordId, userId, name, payDetailRecords, payDetailIds);
     }
 
     BillExceptionHandleRecord handleRecord = new BillExceptionHandleRecord();
@@ -149,6 +119,54 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
       rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 1, BaseBill);
     }
     redisUtils.delete(redisKey);
+  }
+
+  /**
+   * 撤销账单收费方式明细
+   *
+   * @param billPayRecordId 账单收费记录ID
+   * @param userId 用户ID
+   * @param name 用户姓名
+   * @param payDetailRecords 支付方式列表
+   * @param payDetailIds 支付方式ID列表
+   */
+  private void revokeBillPaymentDetail(
+      Integer billPayRecordId,
+      Integer userId,
+      String name,
+      List<BillPayDetailRecord> payDetailRecords,
+      List<Integer> payDetailIds) {
+    // 会员卡、预付款需退还到原先账号
+    payDetailRecords.forEach(
+        detailRecord -> {
+          payDetailIds.add(detailRecord.getId());
+          Byte type = detailRecord.getType();
+          String cardNum = detailRecord.getRemark();
+          switch (type) {
+              // 预付款
+            case 0:
+              PrepaidRevocationFeeModel prepaidRevocationFeeModel = new PrepaidRevocationFeeModel();
+              prepaidRevocationFeeModel.setPrepaidCard(cardNum);
+              prepaidRevocationFeeModel.setBillPayRecordId(billPayRecordId);
+              prepaidRevocationFeeModel.setRemarks("撤销预付款收费");
+              patientCentralServiceFeign.revocationFee(prepaidRevocationFeeModel);
+              break;
+              // 会员卡
+            case 1:
+              MemberRevocationFeeModel memberRevocationFeeModel = new MemberRevocationFeeModel();
+              memberRevocationFeeModel.setMemberId(cardNum);
+              memberRevocationFeeModel.setBillPayRecordId(billPayRecordId);
+              memberRevocationFeeModel.setRemarks("撤销会员卡收费");
+              patientCentralServiceFeign.revocationFee(memberRevocationFeeModel);
+              break;
+            default:
+              break;
+          }
+          detailRecord.setInservice(false);
+          detailRecord.setUpdId(userId);
+          detailRecord.setUpdName(name);
+          billPayDetailRecordBiz.updateSelectiveById(detailRecord);
+        });
   }
 
   /**

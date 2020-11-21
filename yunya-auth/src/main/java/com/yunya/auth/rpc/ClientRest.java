@@ -2,6 +2,7 @@ package com.yunya.auth.rpc;
 
 import com.yunya.auth.configuration.KeyConfiguration;
 import com.yunya.auth.service.AuthClientService;
+import com.yunya.models.auth.Client;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +22,7 @@ public class ClientRest {
 
   /** 注入服务 */
   private final AuthClientService authClientService;
-
+  /** 密钥配置信息 */
   private final KeyConfiguration keyConfiguration;
 
   public ClientRest(AuthClientService authClientService, KeyConfiguration keyConfiguration) {
@@ -41,7 +42,11 @@ public class ClientRest {
   public byte[] getUserPublicKey(
       @RequestParam("clientId") String clientId, @RequestParam("secret") String secret)
       throws Exception {
-    authClientService.validate(clientId, secret);
-    return keyConfiguration.getUserPubKey();
+    byte[] result = {};
+    Client validate = authClientService.validate(clientId, secret);
+    if (null != validate) {
+      result = keyConfiguration.getUserPubKey();
+    }
+    return result;
   }
 }

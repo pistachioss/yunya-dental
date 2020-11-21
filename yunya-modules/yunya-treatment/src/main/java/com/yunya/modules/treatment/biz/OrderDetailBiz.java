@@ -156,12 +156,13 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   public List<OrderDetailChargeVO> findChargeOrderDetailList(Integer orderRecordId) {
     String redisKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
     String redisValue = redisUtils.get(redisKey);
-    if (StringHelper.isNotBlank(redisValue)) {
+    String userId = BaseContextHandler.getUserID();
+    if (StringHelper.isNotBlank(redisValue) && !redisValue.equals(orderRecordId + ":" + userId)) {
       throw new ClientServiceException("收费失败，当前就诊正在收费中！", PARAMETERS_IS_ILLEGAL);
     }
     List<OrderDetailChargeVO> chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
-    // 设置10分钟（该段时间内不允许重复收费，解锁）
-    redisUtils.set(redisKey, orderRecordId, 600);
+    // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
+    redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
     return chargeOrderDetailList;
   }
 

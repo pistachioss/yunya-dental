@@ -426,6 +426,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer id = vo.getId();
     BillRecord billRecord = new BillRecord();
     billRecord.setTreatmentRecordId(id);
+    billRecord.setInservice(true);
     BillRecord record = billRecordMapper.selectOne(billRecord);
     if (null != record) {
       vo.setPrivilegeAmount(record.getPrivilegeAmount());
