@@ -24,6 +24,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
+import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,13 +73,13 @@ public class TollBiz {
   /** 账单支付明细记录 */
   @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
   /** 就诊记录 */
-  @Autowired private TreatmentRecordBiz treatmentRecordBiz;
+  @Autowired private TreatmentRecordMapper treatmentRecordMapper;
 
   /**
    * 根据优惠信息匹配订单优惠
    *
    * @param query 优惠条件
-   * @return
+   * @return List<OrderDetailChargeVO>
    */
   public List<OrderDetailChargeVO> matchOrderTailPrivilege(OrderPrivilegeQuery query) {
     Integer orderRecordId = query.getOrderRecordId();
@@ -256,7 +257,7 @@ public class TollBiz {
     BigDecimal actualReceivableAmount = totalAmount.subtract(privilegeAmount);
     // 比较实际应收与总入账金额
     BigDecimal outstandingAmount = model.getOutstandingAmount();
-    checkTotalChargeAndActualReceivedAmount(totalCharge, actualReceivableAmount, outstandingAmount);
+    checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, outstandingAmount);
     // 开始收费
     // redisUtils.set(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId, 300);
     Integer patientId = orderRecord.getPatientId();
@@ -283,7 +284,7 @@ public class TollBiz {
     billRecord.setCrtId(userId);
     billRecord.setCrtName(name);
     billRecordBiz.insertSelective(billRecord);
-    // 保存账单收费记录
+    // 保存账单记录
     Integer billRecordId = billRecord.getId();
     BillPayRecord billPayRecord = new BillPayRecord();
     billPayRecord.setOrgId(orgId);
@@ -319,9 +320,9 @@ public class TollBiz {
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, payments);
     orderRecord.setStatus((byte) 2);
     orderRecordBiz.updateSelectiveById(orderRecord);
-    TreatmentRecord treatmentRecord = treatmentRecordBiz.selectById(treatmentRecordId);
+    TreatmentRecord treatmentRecord = treatmentRecordMapper.selectByPrimaryKey(treatmentRecordId);
     treatmentRecord.setStatus((byte) 3);
-    treatmentRecordBiz.updateSelectiveById(treatmentRecord);
+    treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
   }
 
@@ -713,10 +714,6 @@ public class TollBiz {
         throw new ClientServiceException("收费失败，未填写发票编号！", PARAMETERS_IS_ILLEGAL);
       }
     }
-    /*  String redisValue = redisUtils.get(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
-    if (StringHelper.isNotBlank(redisValue)) {
-      throw new ClientServiceException("收费失败，当前账单正在被收费！", PARAMETERS_IS_ILLEGAL);
-    }*/
     return orderRecord;
   }
 
@@ -1065,128 +1062,267 @@ public class TollBiz {
    * @param model 收费参数
    */
   public void collectDebt(TollDebtModel model) {
-    Integer billRecordId = model.getBillRecordId();
-    GeneralDiscountModel generalDiscountModel = model.getGeneralDiscountModel();
-    AccreditDiscountModel accreditDiscountModel = model.getAccreditDiscountModel();
+    Integer treatmentId = model.getTreatmentRecordId();
+    GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
+    AccreditDiscountModel accreditDiscount = model.getAccreditDiscountModel();
+    // 校验收欠费参数合法性
     BillRecord billRecordResult =
-        checkCollectDebtParams(billRecordId, generalDiscountModel, accreditDiscountModel);
-    Set<PrepaymentAccountModel> prepaymentAccountModels = model.getPrepaymentAccountModels();
-    Set<MemberAccountModel> memberAccountModels = model.getMemberAccountModels();
+        checkCollectDebtParams(treatmentId, generalDiscount, accreditDiscount);
+    Set<PrepaymentAccountModel> prepaymentAccounts = model.getPrepaymentAccountModels();
+    Set<MemberAccountModel> memberAccounts = model.getMemberAccountModels();
     Set<PaymentModel> paymentModels = model.getPaymentModels();
+    // 计算并校验收欠费入账总额
     BigDecimal totalCharge =
-        calculateAndCheckReceivedAmount(
-            prepaymentAccountModels, memberAccountModels, paymentModels);
+        calculateAndCheckReceivedAmount(prepaymentAccounts, memberAccounts, paymentModels);
     BigDecimal outstandingAmount = model.getOutstandingAmount();
-    Boolean inservice = billRecordResult.getInservice();
-    Integer patientId = billRecordResult.getPatientId();
-    Integer treatmentRecordId = billRecordResult.getTreatmentRecordId();
-    Integer orderRecordId = billRecordResult.getOrderRecordId();
-    if (inservice) {
-      BigDecimal debtAmount = billRecordResult.getDebtAmount();
-      checkTotalChargeAndActualReceivedAmount(totalCharge, debtAmount, outstandingAmount);
-      checkCollectDebtAvailable(debtAmount);
+    InvoiceModel invoiceModel = model.getInvoiceModel();
+    byte discountType = 0;
+    Integer billRecordId;
+    Integer patientId;
+    Integer orderRecordId;
+    BigDecimal debtAmount;
+    Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+    String name = BaseContextHandler.getName();
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    if (null != billRecordResult) {
+      BigDecimal privilegeAmount = billRecordResult.getPrivilegeAmount();
+      BigDecimal actualReceivableAmount = billRecordResult.getActualReceivableAmount();
       BigDecimal receivedAmount = billRecordResult.getReceivedAmount();
+      patientId = billRecordResult.getPatientId();
       if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0) {
-        checkDiscountAvailable(generalDiscountModel, accreditDiscountModel);
-        billRecordResult.setReceivedAmount(receivedAmount.add(totalCharge));
-        billRecordResult.setDebtAmount(debtAmount.subtract(totalCharge));
+        debtAmount = billRecordResult.getDebtAmount();
+        checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
+        debtAmount = debtAmount.subtract(totalCharge);
       } else {
-        BigDecimal privilegeAmount =
-            reDiscountOrderRecord(billRecordResult, generalDiscountModel, accreditDiscountModel);
-        billRecordResult.setPrivilegeAmount(privilegeAmount);
-        billRecordResult.setReceivableAmount(debtAmount);
-        BigDecimal actualReceivableAmount = debtAmount.subtract(privilegeAmount);
-        billRecordResult.setActualReceivableAmount(actualReceivableAmount);
-        billRecordResult.setReceivedAmount(receivedAmount.add(totalCharge));
-        billRecordResult.setDebtAmount(actualReceivableAmount.subtract(totalCharge));
+        // 账单未使用过优惠，重新使用优惠
+        orderRecordId = billRecordResult.getOrderRecordId();
+        discountType =
+            saveDiscountDetail(
+                generalDiscount, accreditDiscount, discountType, patientId, orderRecordId);
+        privilegeAmount =
+            calculatePrivilegeAmount(
+                discountType, orderRecordId, generalDiscount, accreditDiscount);
+        // 实际应收 = 实际应收 - 优惠
+        actualReceivableAmount = actualReceivableAmount.subtract(privilegeAmount);
+        // 比较实收与实际应收
+        checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, outstandingAmount);
+        debtAmount = actualReceivableAmount.subtract(totalCharge);
       }
-      BillPayRecord billPayRecord = setBillPayRecordValue(billRecordId, totalCharge, debtAmount);
-      billPayRecordBiz.insertSelective(billPayRecord);
-      Integer billPayRecordId = billPayRecord.getId();
-      if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
-        usePrepaymentAccount(
-            prepaymentAccountModels, patientId, treatmentRecordId, billRecordId, billPayRecordId);
+      billRecordResult.setPrivilegeType(discountType);
+      // 设置优惠总额
+      billRecordResult.setPrivilegeAmount(privilegeAmount);
+      // 设置实际应收
+      billRecordResult.setActualReceivableAmount(actualReceivableAmount);
+      // 设置已收
+      billRecordResult.setReceivedAmount(receivedAmount.add(totalCharge));
+      // 设置欠费总额
+      billRecordResult.setDebtAmount(debtAmount);
+      if (null != invoiceModel) {
+        billRecordResult.setInvoice(invoiceModel.getInvoice());
+        billRecordResult.setInvoiceNumber(invoiceModel.getInvoiceNumber());
       }
-      if (StringHelper.isNotEmpty(memberAccountModels)) {
-        useMemberAccount(
-            memberAccountModels, patientId, treatmentRecordId, billRecordId, billPayRecordId);
-      }
-      saveBillPayDetailRecord(
-          billPayRecordId, prepaymentAccountModels, memberAccountModels, paymentModels);
-      billRecordResult.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
-      billRecordResult.setUpdName(BaseContextHandler.getName());
+      billRecordResult.setUpdId(userId);
+      billRecordResult.setUpdName(name);
       billRecordBiz.updateSelectiveById(billRecordResult);
+      // 保存收费记录
+      billRecordId = billRecordResult.getId();
+      orderRecordId = billRecordResult.getOrderRecordId();
+      // 更新订单明细收费记录
+      updateOrderDetailPayRecord(orderRecordId, totalCharge);
     } else {
-      OrderRecord orderRecord = new OrderRecord();
-      orderRecord.setTreatmentRecordId(treatmentRecordId);
-      orderRecord.setInservice(true);
-      OrderRecord orderRecordResult = orderRecordBiz.selectOne(orderRecord);
+      // 调整账单重新收费
+      OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
+      // 获取开单总额
       BigDecimal totalAmount = orderRecordResult.getTotalAmount();
-      checkTotalChargeAndActualReceivedAmount(totalCharge, totalAmount, outstandingAmount);
-      reChargeBillRecord(
-          patientId,
-          treatmentRecordId,
-          orderRecordId,
-          totalAmount,
-          totalCharge,
-          prepaymentAccountModels,
-          memberAccountModels,
-          paymentModels);
+      orderRecordId = orderRecordResult.getId();
+      patientId = orderRecordResult.getPatientId();
+      discountType =
+          saveDiscountDetail(
+              generalDiscount, accreditDiscount, discountType, patientId, orderRecordId);
+      // 计算优惠总额
+      BigDecimal privilegeAmount =
+          calculatePrivilegeAmount(discountType, orderRecordId, generalDiscount, accreditDiscount);
+      BillRecord billRecord = new BillRecord();
+      billRecord.setOrgId(orgId);
+      billRecord.setPatientId(patientId);
+      billRecord.setTreatmentRecordId(treatmentId);
+      billRecord.setOrderRecordId(orderRecordId);
+      String billNumber = billRecordBiz.generateBillNumber(orgId);
+      billRecord.setBillNumber(billNumber);
+      billRecord.setReceivableAmount(totalAmount);
+      billRecord.setPrivilegeType(discountType);
+      billRecord.setPrivilegeAmount(privilegeAmount);
+      BigDecimal actualReceivableAmount = totalAmount.subtract(privilegeAmount);
+      billRecord.setActualReceivableAmount(actualReceivableAmount);
+      billRecord.setReceivedAmount(totalCharge);
+      debtAmount = actualReceivableAmount.subtract(totalCharge);
+      billRecord.setDebtAmount(debtAmount);
+      if (null != invoiceModel) {
+        billRecord.setInvoice(invoiceModel.getInvoice());
+        billRecord.setInvoiceNumber(invoiceModel.getInvoiceNumber());
+      }
+      billRecord.setCrtId(userId);
+      billRecord.setCrtName(name);
+      billRecord.setUpdId(userId);
+      billRecord.setUpdName(name);
+      billRecordBiz.insertSelective(billRecord);
+      billRecordId = billRecord.getId();
+      // 更新订单为已收费
       orderRecordResult.setStatus((byte) 2);
       orderRecordBiz.updateSelectiveById(orderRecordResult);
+      // 保存订单明细收费记录
+      saveOrderDetailPayRecord(
+          totalCharge,
+          discountType,
+          orderRecordId,
+          billRecordId,
+          generalDiscount,
+          accreditDiscount);
     }
+    BillPayRecord billPayRecord = new BillPayRecord();
+    billPayRecord.setOrgId(orgId);
+    billPayRecord.setPatientId(patientId);
+    billPayRecord.setTreatmentRecordId(treatmentId);
+    billPayRecord.setOrderRecordId(orderRecordId);
+    billPayRecord.setBillRecordId(billRecordId);
+    billPayRecord.setReceivedAmount(totalCharge);
+    billPayRecord.setStillOweAmount(debtAmount);
+    billPayRecord.setCrtId(userId);
+    billPayRecord.setCrtName(name);
+    billPayRecord.setUpdId(userId);
+    billPayRecord.setUpdName(name);
+    billPayRecordBiz.insertSelective(billPayRecord);
+    // 保存收费记录入账明细¬
+    Integer billPayRecordId = billPayRecord.getId();
+    if (StringHelper.isNotEmpty(paymentModels)) {
+      usePrepaymentAccount(
+          prepaymentAccounts, patientId, treatmentId, billRecordId, billPayRecordId);
+    }
+    if (StringHelper.isNotEmpty(memberAccounts)) {
+      useMemberAccount(memberAccounts, patientId, treatmentId, billRecordId, billPayRecordId);
+    }
+    // 保存收费记录支付方式明细
+    saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
   }
 
   /**
-   * 对订单进行重新优惠
+   * 保存优惠明细
    *
-   * @param billRecordResult 账单记录
-   * @param generalDiscountModel 优惠信息
-   * @param accreditDiscountModel 折扣信息
-   * @return
+   * @param generalDiscount 卡券优惠
+   * @param accreditDiscount 授权折扣
+   * @param discountType 优惠类型
+   * @param patientId 患者ID
+   * @param orderRecordId 订单ID
+   * @return discountType
    */
-  private BigDecimal reDiscountOrderRecord(
-      BillRecord billRecordResult,
-      GeneralDiscountModel generalDiscountModel,
-      AccreditDiscountModel accreditDiscountModel) {
-    BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+  private byte saveDiscountDetail(
+      GeneralDiscountModel generalDiscount,
+      AccreditDiscountModel accreditDiscount,
+      byte discountType,
+      Integer patientId,
+      Integer orderRecordId) {
+    if (null != generalDiscount) {
+      discountType = 1;
+      saveCouponPrivilege(patientId, orderRecordId, generalDiscount);
+    }
+    if (accreditDiscount != null) {
+      discountType = 2;
+      saveAccreditPrivilege(patientId, orderRecordId, accreditDiscount);
+    }
+    return discountType;
+  }
 
-    // todo 根据优惠类型获取优惠金额
-    if (null != generalDiscountModel) {
-      billRecordResult.setPrivilegeType((byte) 1);
+  /**
+   * 校验订单是否能重新收费
+   *
+   * @param treatmentRecordId 就诊记录ID
+   * @return OrderRecord
+   */
+  private OrderRecord checkOrderRecord(Integer treatmentRecordId) {
+    OrderRecord orderRecord = new OrderRecord();
+    orderRecord.setTreatmentRecordId(treatmentRecordId);
+    orderRecord.setInservice(true);
+    OrderRecord orderRecordResult = orderRecordBiz.selectOne(orderRecord);
+    if (null == orderRecordResult) {
+      throw new ClientServiceException("收欠费失败，当前就诊未查询到开单记录！", PARAMETERS_IS_ILLEGAL);
     }
-    if (null != accreditDiscountModel) {
-      billRecordResult.setPrivilegeType((byte) 2);
+    return orderRecordResult;
+  }
+
+  /**
+   * 更新订单明细收费记录
+   *
+   * @param orderRecordId 开单记录ID
+   * @param totalCharge 总入账金额
+   */
+  private void updateOrderDetailPayRecord(Integer orderRecordId, BigDecimal totalCharge) {
+    OrderDetailPayRecord orderDetailPayRecord = new OrderDetailPayRecord();
+    orderDetailPayRecord.setOrderRecordId(orderRecordId);
+    orderDetailPayRecord.setInservice(true);
+    List<OrderDetailPayRecord> detailPayRecords =
+        orderDetailPayRecordBiz.selectList(orderDetailPayRecord);
+    if (StringHelper.isNotEmpty(detailPayRecords)) {
+      for (OrderDetailPayRecord detailPayRecord : detailPayRecords) {
+        BigDecimal actualReceivable = detailPayRecord.getActualReceivable();
+        BigDecimal receivedAmount = detailPayRecord.getReceivedAmount();
+        if (actualReceivable.compareTo(receivedAmount) > 0) {
+          // 本项目剩余应收
+          BigDecimal restReceivedAmount = actualReceivable.subtract(receivedAmount);
+          // 已收大于等于该项目剩余应收（实收=实际应收）；已收小于剩余应收，（实收=该项目已收+总的收款）
+          if (totalCharge.compareTo(restReceivedAmount) >= 0) {
+            detailPayRecord.setReceivedAmount(actualReceivable);
+            totalCharge = totalCharge.subtract(restReceivedAmount);
+          } else {
+            detailPayRecord.setReceivedAmount(receivedAmount.add(totalCharge));
+            totalCharge = BigDecimal.valueOf(0);
+          }
+          detailPayRecord.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+          detailPayRecord.setUpdName(BaseContextHandler.getName());
+          orderDetailPayRecordBiz.updateSelectiveById(detailPayRecord);
+        }
+      }
     }
-    return privilegeAmount;
   }
 
   /**
    * 校验账单是否允许收欠费
    *
-   * @param billRecordId 账单记录ID
+   * @param treatmentRecordId 就诊记录ID
    * @param generalDiscountModel 优惠
    * @param accreditDiscountModel 授权折扣
    */
   private BillRecord checkCollectDebtParams(
-      Integer billRecordId,
+      Integer treatmentRecordId,
       GeneralDiscountModel generalDiscountModel,
       AccreditDiscountModel accreditDiscountModel) {
-    BillRecord billRecordResult = billRecordBiz.selectById(billRecordId);
-    if (null == billRecordResult) {
-      throw new ClientServiceException("当前账单不存在，请选择正确的账单进行收欠费操作！", QUERY_RESULT_INVALID);
+    TreatmentRecord treatmentRecord = treatmentRecordMapper.selectByPrimaryKey(treatmentRecordId);
+    if (null == treatmentRecord) {
+      throw new ClientServiceException("收欠费失败，就诊记录不存在！", PARAMETERS_IS_ILLEGAL);
     }
-    if (null != generalDiscountModel && null != accreditDiscountModel) {
-      throw new ClientServiceException("收欠费失败，优惠与授权折扣不能同时使用！", PARAMETERS_IS_ILLEGAL);
+    // 只有收过费的订单才能收欠费
+    BillRecord billRecord = new BillRecord();
+    billRecord.setTreatmentRecordId(treatmentRecordId);
+    Long count = billRecordBiz.selectCount(billRecord);
+    if (count <= 0) {
+      throw new ClientServiceException("收欠费失败，当前就诊还未收费，请到就诊列表进行收费！", QUERY_RESULT_INVALID);
     }
-    Byte privilegeType = billRecordResult.getPrivilegeType();
-    if (null != generalDiscountModel || null != accreditDiscountModel) {
-      if (0 != privilegeType) {
+    // 未欠费的账单不能收欠费
+    billRecord.setInservice(true);
+    BillRecord record = billRecordBiz.selectOne(billRecord);
+    if (null != record) {
+      BigDecimal debtAmount = record.getDebtAmount();
+      if (debtAmount.compareTo(BigDecimal.valueOf(0)) <= 0) {
+        throw new ClientServiceException("收欠费失败，当前账单不存在欠费！", QUERY_RESULT_INVALID);
+      }
+      // 只能使用一种优惠
+      Byte privilegeType = record.getPrivilegeType();
+      if (0 != privilegeType && (null != generalDiscountModel || null != accreditDiscountModel)) {
         throw new ClientServiceException("收欠费失败，当前账单已使用优惠，不能继续使用优惠！", PARAMETERS_IS_ILLEGAL);
       }
+      // todo 校验发票
+      return record;
     }
-
-    return billRecordResult;
+    return null;
   }
 
   /**
@@ -1204,123 +1340,23 @@ public class TollBiz {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
     if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
-      throw new ClientServiceException("收欠费失败，请输入正确的入账金额！", PARAMETERS_IS_ILLEGAL);
+      throw new ClientServiceException("收欠费失败，收欠费总额不能小于等于0！", PARAMETERS_IS_ILLEGAL);
     }
     return totalCharge;
   }
 
   /**
-   * 比较实际应收与总入账金额
+   * 比较欠账总额与总入账金额
    *
    * @param totalCharge 总入账
-   * @param actualReceivedAmount 实际应收
+   * @param debtAmount 欠费总额
    * @param outstandingAmount 挂帐金额
    */
-  private void checkTotalChargeAndActualReceivedAmount(
-      BigDecimal totalCharge, BigDecimal actualReceivedAmount, BigDecimal outstandingAmount) {
-    if (totalCharge.add(outstandingAmount).compareTo(actualReceivedAmount) != 0) {
+  private void checkTotalChargeAndDebtAmount(
+      BigDecimal totalCharge, BigDecimal debtAmount, BigDecimal outstandingAmount) {
+    if (totalCharge.add(outstandingAmount).compareTo(debtAmount) != 0) {
       throw new ClientServiceException("入账方式金额与挂账金额之和不等于剩余应付金额合计！", PARAMETERS_IS_ILLEGAL);
     }
-  }
-
-  /**
-   * 检查是否能收欠费
-   *
-   * @param debtAmount 欠费金额
-   */
-  private void checkCollectDebtAvailable(BigDecimal debtAmount) {
-    if (BigDecimal.valueOf(0).compareTo(debtAmount) >= 0) {
-      throw new ClientServiceException("收欠费失败，当前账单已全部结清，无法进行收欠费操作！", PARAMETERS_IS_ILLEGAL);
-    }
-  }
-
-  /**
-   * 校验能否使用优惠
-   *
-   * @param generalDiscountModel 优惠信息
-   * @param accreditDiscountModel 授权折扣信息
-   */
-  private void checkDiscountAvailable(
-      GeneralDiscountModel generalDiscountModel, AccreditDiscountModel accreditDiscountModel) {
-    if (null != generalDiscountModel || null != accreditDiscountModel) {
-      throw new ClientServiceException("收欠费失败，已完成结算的账单，无法继续使用优惠", PARAMETERS_IS_ILLEGAL);
-    }
-  }
-
-  /**
-   * 对订单进行重新收费
-   *
-   * @param patientId 患者ID
-   * @param treatmentRecordId 就诊记录ID
-   * @param orderRecordId 订单记录ID
-   * @param debtAmount 欠费总额
-   * @param totalCharge 入账合计
-   * @param prepaymentAccountModels 预付款账户列表
-   * @param memberAccountModels 会员账户列表
-   * @param paymentModels 其他入账方式列表
-   */
-  private void reChargeBillRecord(
-      Integer patientId,
-      Integer treatmentRecordId,
-      Integer orderRecordId,
-      BigDecimal debtAmount,
-      BigDecimal totalCharge,
-      Set<PrepaymentAccountModel> prepaymentAccountModels,
-      Set<MemberAccountModel> memberAccountModels,
-      Set<PaymentModel> paymentModels) {
-    BillRecord billRecord = new BillRecord();
-    BigDecimal privilegeAmount = BigDecimal.valueOf(0);
-    // todo 确认优惠信息
-    billRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-    billRecord.setPatientId(patientId);
-    billRecord.setTreatmentRecordId(treatmentRecordId);
-    billRecord.setOrderRecordId(orderRecordId);
-    billRecord.setReceivableAmount(debtAmount);
-    BigDecimal actualReceivedAmount = debtAmount.subtract(privilegeAmount);
-    billRecord.setActualReceivableAmount(actualReceivedAmount);
-    String billNumber =
-        billRecordBiz.generateBillNumber(Integer.valueOf(BaseContextHandler.getOrgId()));
-    billRecord.setBillNumber(billNumber);
-    billRecordBiz.insertSelective(billRecord);
-    Integer billRecordId = billRecord.getId();
-    BillPayRecord billPayRecord =
-        setBillPayRecordValue(billRecordId, totalCharge, actualReceivedAmount);
-    billPayRecordBiz.insertSelective(billPayRecord);
-    Integer billPayRecordId = billPayRecord.getId();
-    if (StringHelper.isNotEmpty(prepaymentAccountModels)) {
-      usePrepaymentAccount(
-          prepaymentAccountModels, patientId, treatmentRecordId, billRecordId, billPayRecordId);
-    }
-    if (StringHelper.isNotEmpty(memberAccountModels)) {
-      useMemberAccount(
-          memberAccountModels, patientId, treatmentRecordId, billRecordId, billPayRecordId);
-    }
-    saveBillPayDetailRecord(
-        billPayRecordId, prepaymentAccountModels, memberAccountModels, paymentModels);
-  }
-
-  /**
-   * 设置账单支付记录值
-   *
-   * @param billRecordId 账单记录ID
-   * @param totalCharge 入账金额总额
-   * @param debtAmount 欠费总额
-   * @return
-   */
-  private BillPayRecord setBillPayRecordValue(
-      Integer billRecordId, BigDecimal totalCharge, BigDecimal debtAmount) {
-    BillRecord billRecord = billRecordBiz.selectById(billRecordId);
-    BillPayRecord billPayRecord = new BillPayRecord();
-    billPayRecord.setOrgId(Integer.valueOf(BaseContextHandler.getOrgId()));
-    billPayRecord.setPatientId(billRecord.getPatientId());
-    billPayRecord.setTreatmentRecordId(billRecord.getTreatmentRecordId());
-    billPayRecord.setOrderRecordId(billRecord.getOrderRecordId());
-    billPayRecord.setBillRecordId(billRecordId);
-    billPayRecord.setReceivedAmount(totalCharge);
-    billPayRecord.setStillOweAmount(debtAmount.subtract(totalCharge));
-    billPayRecord.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-    billPayRecord.setCrtName(BaseContextHandler.getName());
-    return billPayRecord;
   }
 
   /**
@@ -1346,12 +1382,5 @@ public class TollBiz {
    */
   public void cancelCharge(Integer orderRecordId) {
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
-    /*OrderRecord orderRecord = orderRecordBiz.selectById(orderRecordId);
-    if (null != orderRecord) {
-      orderRecord.setStatus((byte) 1);
-      orderRecordBiz.updateSelectiveById(orderRecord);
-    } else {
-      throw new ClientServiceException("取消收费失败，该账单不存在！", PARAMETERS_IS_ILLEGAL);
-    }*/
   }
 }

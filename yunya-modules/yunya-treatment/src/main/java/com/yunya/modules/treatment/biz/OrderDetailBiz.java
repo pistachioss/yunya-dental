@@ -161,7 +161,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       throw new ClientServiceException("收费失败，当前就诊正在收费中！", PARAMETERS_IS_ILLEGAL);
     }
     List<OrderDetailChargeVO> chargeOrderDetailList = getChargeOrderDetailList(orderRecordId);
-    // 设置10分钟（该段时间内不允许重复收费，解锁）
+    // 设置10分钟（该段时间内不允许其他用户重复收费，解锁）
     redisUtils.set(redisKey, orderRecordId + ":" + userId, 600);
     return chargeOrderDetailList;
   }
