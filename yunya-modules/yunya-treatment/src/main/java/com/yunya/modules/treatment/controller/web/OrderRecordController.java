@@ -138,6 +138,20 @@ public class OrderRecordController {
   public ResponseResult<PageInfo<OrderProcessVO>> orderProcess(
       @RequestBody OrderProcessQuery query) {
     List<OrderProcessVO> orderProcessList = orderRecordBiz.orderProcess(query);
+    if (query.getWhetherPage()) {
+      Integer pageNum = query.getPageNum();
+      Integer pageSize = query.getPageSize();
+      int total = orderProcessList.size();
+      PageInfo<OrderProcessVO> pageInfo = new PageInfo<>();
+      pageInfo.setPageNum(pageNum);
+      pageInfo.setPageSize(pageSize);
+      pageInfo.setTotal(total);
+      List<OrderProcessVO> list =
+          orderProcessList.subList(
+              pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+      pageInfo.setList(list);
+      return ResponseUtil.success(pageInfo);
+    }
     return ResponseUtil.success(new PageInfo<>(orderProcessList));
   }
 }

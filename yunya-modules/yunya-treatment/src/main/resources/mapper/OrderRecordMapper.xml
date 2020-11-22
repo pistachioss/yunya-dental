@@ -56,12 +56,7 @@
                     #{orgId}
                 </foreach>
             </if>
-            <if test="patientIds != null and patientIds.length &gt; 0">
-                and ord.patient_id in
-                <foreach collection="patientIds" open="(" separator="," close=")" index="pIdx">
-                    #{pIdx}
-                </foreach>
-            </if>
         </where>
+        order by ord.crt_time desc
     </select>
 </mapper>

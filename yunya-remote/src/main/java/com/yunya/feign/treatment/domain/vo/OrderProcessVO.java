@@ -26,6 +26,7 @@ public class OrderProcessVO implements Serializable {
   private Integer patientId;
   @ApiModelProperty(value = "患者名字")
   private String patientName;
+  private String pinyinName;
   @ApiModelProperty(value = "患者手机号")
   private String patientMobile;
   @ApiModelProperty(value = "原价合计")

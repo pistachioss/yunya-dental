@@ -21,13 +21,11 @@ public interface OrderRecordMapper extends Mapper<OrderRecord> {
   /**
    * 订单处理查询（门诊端-订单处理）
    *
-   * @param patientIds 患者ID
    * @param orderRecordNum 订单编号
    * @param orgIds 门诊ID列表
    * @return 订单处理列表
    */
   List<OrderProcessVO> selectOrderProcess(
-      @Param("patientIds") Integer[] patientIds,
       @Param("orderRecordNum") String orderRecordNum,
       @Param("orgIds") Integer[] orgIds);
 }
