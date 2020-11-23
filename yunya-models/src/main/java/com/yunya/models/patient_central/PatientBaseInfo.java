@@ -142,12 +142,6 @@ public class PatientBaseInfo {
     private Date updTime;
 
     /**
-     * 推荐来源id
-     */
-    @Column(name = "source_id")
-    private Integer sourceId;
-
-    /**
      * 新跳版-人员id
      */
     @Column(name = "person_id")
@@ -545,22 +539,6 @@ public class PatientBaseInfo {
      */
     public void setFaceUrl(String faceUrl) {
         this.faceUrl = faceUrl;
-    }
-
-    /**
-     * 获取来源id
-     * @return
-     */
-    public Integer getSourceId() {
-        return sourceId;
-    }
-
-    /**
-     * 设置来源id
-     * @param sourceId
-     */
-    public void setSourceId(Integer sourceId) {
-        this.sourceId = sourceId;
     }
 
 
