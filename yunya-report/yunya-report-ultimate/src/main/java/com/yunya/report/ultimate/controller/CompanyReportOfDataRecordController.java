@@ -158,7 +158,7 @@ public class CompanyReportOfDataRecordController {
   @ApiOperation("根据条件导出账单退费记录-数据记录-账单记录-账单退费记录")
   @PostMapping(value = "/bill/refund/export", name = "根据条件导出账单退费记录")
   public ResponseResult<T> exportBillRefundRecord(
-      HttpServletResponse response, @RequestBody @Validated BillRefundRecordQuery query) {
+      HttpServletResponse response, @RequestBody @Validated BillRefundRecordQuery query) throws IOException {
     baseRefundBiz.exportBillRefundRecord(response, query);
     return ResponseUtil.success(null);
   }
