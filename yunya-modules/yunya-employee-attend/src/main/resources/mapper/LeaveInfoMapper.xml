@@ -78,4 +78,27 @@
     </where>
     order by start_time asc
   </select>
+    <select id="findLeaveListByDay" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
+        select
+        t.id,
+        t.user_id as userId,
+        t.vacation_id as vacationId,
+        t.start_time as startTime,
+        t.end_time as endTime,
+        t.leave_reason as leaveReason,
+        t.leave_picture as leavePicture,
+        t.approval_criteria_id as approvalCriteriaId,
+        t.apprpval_status as apprpvalStatus
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id
+        <where>
+            t.apprpval_status in(0,1) and vs.vacation_enable=1
+            <if test="queryForm.userId!=null">
+                and t.user_id = #{queryForm.userId}
+            </if>
+            <if test="queryForm.vacationStatus != null">
+                and vs.vacation_status = #{queryForm.vacationStatus}
+            </if>
+        </where>
+        order by start_time asc
+    </select>
 </mapper>
