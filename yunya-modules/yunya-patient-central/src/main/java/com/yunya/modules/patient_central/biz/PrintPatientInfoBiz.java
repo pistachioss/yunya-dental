@@ -54,9 +54,11 @@ public class PrintPatientInfoBiz {
         printInfoVo.setPatientName(patientTotalInfo.getName());
         // 设置患者会员类型
         Integer memberTypeId = patientTotalInfo.getMemberTypeId();
-        MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-        if (null != memberType) {
-            printInfoVo.setMemberTypeName(memberType.getName());
+        if (memberTypeId != null) {
+            MemberType memberType = this.remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
+            if (null != memberType) {
+                printInfoVo.setMemberTypeName(memberType.getName());
+            }
         }
         List<Integer> treatmentRecordParams = treatmentIds.getTreatmentIds();
         if (StringHelper.isNotEmpty(treatmentRecordParams)) {
