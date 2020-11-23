@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.DeviceTypeForm;
@@ -8,7 +8,7 @@ import com.yunya.feign.appointment.vo.DeviceTypeVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.appointment.biz.ClinicDeviceTypeBiz;
+import com.yunya.modules.appointment.biz.web.ClinicDeviceTypeBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.Min;
-import java.util.List;
 
 /**
  * 预约设备类型Controller

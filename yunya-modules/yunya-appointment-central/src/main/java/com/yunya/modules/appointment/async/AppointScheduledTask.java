@@ -1,5 +1,5 @@
 package com.yunya.modules.appointment.async;
-import com.yunya.modules.appointment.biz.AppointmentBiz;
+import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

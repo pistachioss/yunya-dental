@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.biz;
+package com.yunya.modules.appointment.biz.web;
 
 import com.yunya.feign.appointment.domain.form.AppointOperationForm;
 import com.yunya.feign.appointment.domain.form.AppointmentBaseForm;
@@ -7,7 +7,6 @@ import com.yunya.feign.appointment.domain.query.AppointOperationQuery;
 import com.yunya.feign.appointment.vo.AppointOperationRecordVo;
 import com.yunya.feign.appointment.vo.DeviceItemVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.ClinicDepartmentRoomVO;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -23,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.NotNull;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

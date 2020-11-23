@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 
 import com.yunya.feign.appointment.domain.form.AppointTypeForm;
 import com.yunya.feign.appointment.domain.model.AppointTypeModel;
@@ -8,7 +8,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppointType;
-import com.yunya.modules.appointment.biz.AppointTypeBiz;
+import com.yunya.modules.appointment.biz.web.AppointTypeBiz;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;

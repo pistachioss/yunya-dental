@@ -8,9 +8,8 @@
  * <author>          <time>          <version>          <desc>
  * 作者姓名           修改时间           版本号              描述
  */
-package com.yunya.modules.appointment.biz;
+package com.yunya.modules.appointment.biz.web;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
@@ -30,7 +29,6 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointItem;
 import com.yunya.models.appointment.ClinicAppointItem;
-import com.yunya.models.emr.MedicalOrthodonticsRecord;
 import com.yunya.modules.appointment.mapper.AppointItemMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

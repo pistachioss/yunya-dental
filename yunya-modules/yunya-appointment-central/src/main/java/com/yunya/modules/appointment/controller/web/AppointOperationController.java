@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -9,7 +9,7 @@ import com.yunya.feign.appointment.vo.AppointOperationRecordVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.appointment.biz.AppointmentOperateRecordBiz;
+import com.yunya.modules.appointment.biz.web.AppointmentOperateRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

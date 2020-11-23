@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.biz;
+package com.yunya.modules.appointment.biz.web;
 
 import com.yunya.feign.appointment.domain.form.AppointTypeForm;
 import com.yunya.feign.appointment.domain.model.AppointTypeModel;

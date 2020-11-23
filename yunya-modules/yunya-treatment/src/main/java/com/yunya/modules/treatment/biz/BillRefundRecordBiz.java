@@ -136,8 +136,7 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
   private void setBillRefundGroupInfoValue(
       BillRefundGroupInfoVO billRefundGroupInfo, Integer billRefundRecordId) {
     // 获取退费订单详情
-    List<BillRefundOrderDetailVO> billRefundOrderDetails =
-        getBillRefundOrderDetails(billRefundRecordId);
+    List<BillRefundOrderDetailVO> billRefundOrderDetails = getBillRefundOrderDetails(billRefundRecordId);
     billRefundGroupInfo.setBillRefundOrderDetails(
         StringHelper.isEmpty(billRefundOrderDetails)
             ? Lists.newArrayList()

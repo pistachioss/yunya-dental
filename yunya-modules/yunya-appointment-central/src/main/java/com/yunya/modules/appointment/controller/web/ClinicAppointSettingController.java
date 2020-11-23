@@ -1,16 +1,13 @@
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 
 import com.yunya.feign.appointment.domain.form.AppointSettingForm;
-import com.yunya.feign.appointment.domain.model.AppointSettingModel;
-import com.yunya.feign.appointment.domain.query.AppointSettingQuery;
 import com.yunya.feign.appointment.vo.AppointSettingVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.appointment.biz.ClinicAppointSettingBiz;
+import com.yunya.modules.appointment.biz.web.ClinicAppointSettingBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
