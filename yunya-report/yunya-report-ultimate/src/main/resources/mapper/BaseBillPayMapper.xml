@@ -31,6 +31,7 @@
         SELECT
             brp.toolDate,
             brp.orderDate,
+            brp.billDate,
             brp.billPayId,
             brp.billNum,
             brp.patientId,
@@ -52,6 +53,7 @@
             SELECT
                 DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) AS toolDate,
                 DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS orderDate,
+                DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
                 bbp.bill_pay_id AS billPayId,
                 bb.bill_num AS billNum,
                 tp.patient_id AS patientId,
@@ -106,11 +108,11 @@
             <if test="query.tollEndDate != null and query.tollEndDate != ''">
                 and brp.toolDate &lt;= #{query.orderEndDate}
             </if>
-            <if test="query.orderStartDate != null and query.orderStartDate != ''">
-                and brp.orderDate &gt;= #{query.orderStartDate}
+            <if test="query.billStartDate != null and query.billStartDate != ''">
+                and brp.billDate &gt;= #{query.billStartDate}
             </if>
-            <if test="query.orderEndDate != null and query.orderEndDate != ''">
-                and brp.orderDate &lt;= #{query.orderEndDate}
+            <if test="query.billEndDate != null and query.billEndDate != ''">
+                and brp.billDate &lt;= #{query.billEndDate}
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
                 and brp.regDentistId in
