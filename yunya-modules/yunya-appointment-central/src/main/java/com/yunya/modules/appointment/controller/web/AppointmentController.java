@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
@@ -12,7 +12,7 @@ import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.appointment.biz.AppointmentBiz;
+import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import io.swagger.annotations.Api;

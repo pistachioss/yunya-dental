@@ -22,6 +22,9 @@ public class AppointmentItemEnableModelVo implements Serializable {
     @ApiModelProperty(value = "预约项目分类ID")
     private Integer typeId;
 
+    @ApiModelProperty(value = "预约项目分类色值(十六进制)")
+    private String bgColor;
+
     @ApiModelProperty("预约类型")
     private String typeName;
 

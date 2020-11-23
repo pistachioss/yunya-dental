@@ -4,11 +4,13 @@ import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.LeaveInfoQueryForm;
 import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.ApprovalInfo;
 import com.yunya.models.employee_attend.ApprovalPeople;
 import com.yunya.models.employee_attend.CopyInfo;
 import com.yunya.models.employee_attend.LeaveInfo;
+import com.yunya.modules.employeeattend.form.LeaveInfoFindForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import com.yunya.modules.employeeattend.mapper.ApprovalInfoMapper;
 import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
@@ -18,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -75,7 +79,32 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         //判断是否有其他类型的申请
         if (true) {
             //判断是否与同类型其他申请时间冲突
-            if (true) {
+            LeaveInfo find = new LeaveInfo();
+            find.setUserId(leaveInfoForm.getUserId());
+            List<LeaveInfo>findlist = mapper.select(find);
+            Boolean flag = true;
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            Date listartTime = null;
+            Date liendTime = null;
+            Date startTime = leaveInfoForm.getStartTime();
+            Date endTime = leaveInfoForm.getEndTime();
+            for(LeaveInfo li:findlist){
+                try {
+                    listartTime = format.parse(format.format(li.getStartTime()));
+                    liendTime = format.parse(format.format(li.getEndTime()));
+                } catch (ParseException e) {
+                    throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+                }
+                if((startTime.before(liendTime)&&startTime.after(listartTime))||
+                        (leaveInfoForm.getEndTime().before(liendTime)&&endTime.after(listartTime))||
+                        startTime.equals(listartTime)||endTime.equals(liendTime)||
+                        (startTime.before(listartTime)&&endTime.after(liendTime))
+                ){
+                    flag = false;
+                    break;
+                }
+            }
+            if (flag) {
                 LeaveInfo leaveInfo = new LeaveInfo();
                 BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
                 leaveInfo.setCrtTime(new Date());

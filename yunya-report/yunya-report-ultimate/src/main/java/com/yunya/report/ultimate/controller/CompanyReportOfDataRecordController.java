@@ -1,18 +1,13 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.BillPayRecordQuery;
-import com.yunya.feign.report.domain.query.OrderRecordQuery;
-import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
-import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
-import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
-import com.yunya.feign.report.domain.vo.BillOfPayRecordVO;
-import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
-import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.BaseBillPayBiz;
+import com.yunya.report.ultimate.biz.BaseRefundBiz;
 import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -35,7 +30,7 @@ import java.io.IOException;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "数据统计（就诊记录；账单记录；配诊记录）")
+@Api(tags = "数据记录（就诊记录；账单记录；配诊记录）")
 @RestController
 @RequestMapping("record")
 public class CompanyReportOfDataRecordController {
@@ -46,6 +41,8 @@ public class CompanyReportOfDataRecordController {
   @Autowired private BaseBillBiz billBiz;
   /** 账单收费 */
   @Autowired private BaseBillPayBiz billPayBiz;
+  /** 账单退费 */
+  @Autowired private BaseRefundBiz baseRefundBiz;
 
   /**
    * 根据条件查询就诊记录列表
@@ -62,7 +59,7 @@ public class CompanyReportOfDataRecordController {
   }
 
   /**
-   * 根据条件查询就诊列表并导出Excel
+   * 根据条件查询就诊记录列表并导出Excel
    *
    * @param response 响应
    * @param query 查询条件
@@ -134,6 +131,35 @@ public class CompanyReportOfDataRecordController {
       HttpServletResponse response, @RequestBody @Validated BillPayRecordQuery query)
       throws IOException {
     billPayBiz.exportBillOfPayRecord(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询账单退费记录
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("数据记录-账单记录-账单退费记录")
+  @PostMapping(value = "/bill/refund/list", name = "数据记录-账单记录-账单退费记录")
+  public ResponseResult<PageInfo<BillOfRefundRecordVO>> findBillRefundRecordList(
+      @RequestBody @Validated BillRefundRecordQuery query) {
+    PageInfo<BillOfRefundRecordVO> resultList = baseRefundBiz.findBillRefundRecord(query);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件导出账单退费记录-数据记录-账单记录-账单退费记录
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("根据条件导出账单退费记录-数据记录-账单记录-账单退费记录")
+  @PostMapping(value = "/bill/refund/export", name = "根据条件导出账单退费记录")
+  public ResponseResult<T> exportBillRefundRecord(
+      HttpServletResponse response, @RequestBody @Validated BillRefundRecordQuery query) throws IOException {
+    baseRefundBiz.exportBillRefundRecord(response, query);
     return ResponseUtil.success(null);
   }
 

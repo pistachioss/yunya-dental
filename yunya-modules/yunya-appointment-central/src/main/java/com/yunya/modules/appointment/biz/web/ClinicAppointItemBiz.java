@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.biz;
+package com.yunya.modules.appointment.biz.web;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;

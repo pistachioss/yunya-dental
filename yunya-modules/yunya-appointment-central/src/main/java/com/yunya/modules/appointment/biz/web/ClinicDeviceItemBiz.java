@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.biz;
+package com.yunya.modules.appointment.biz.web;
 
 import com.yunya.feign.appointment.domain.form.DeviceItemManageForm;
 import com.yunya.feign.appointment.domain.model.DeviceItemModel;

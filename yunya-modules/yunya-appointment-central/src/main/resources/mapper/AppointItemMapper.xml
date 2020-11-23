@@ -23,6 +23,7 @@
         <result column="orgId" jdbcType="INTEGER" property="orgId" />
         <result column="typeName" jdbcType="VARCHAR" property="typeName" />
         <result column="typeId" jdbcType="INTEGER" property="typeId"/>
+        <result column="bg_color" jdbcType="INTEGER" property="bgColor"/>
         <collection ofType="com.yunya.feign.appointment.vo.AppointmentItemVo" property="appointmentItems">
             <id column="id" jdbcType="INTEGER" property="id" />
             <result column="name" jdbcType="VARCHAR" property="name" />
@@ -56,6 +57,7 @@
         item.name,
         atype.name as typeName,
         atype.id as typeId,
+        atype.bg_color,
         item.duration,
         item.remarks,
         item.inservice

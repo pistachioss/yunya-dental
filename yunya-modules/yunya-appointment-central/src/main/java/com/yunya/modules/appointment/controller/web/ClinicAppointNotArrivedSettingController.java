@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 
 import com.yunya.feign.appointment.domain.form.AppointNotArrivedSettingForm;
 import com.yunya.feign.appointment.domain.model.AppointNotArrivedSettingModel;
@@ -6,7 +6,7 @@ import com.yunya.feign.appointment.vo.AppointNotArrivedSettingVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.appointment.biz.ClinicAppointNotArrivedSettingBiz;
+import com.yunya.modules.appointment.biz.web.ClinicAppointNotArrivedSettingBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

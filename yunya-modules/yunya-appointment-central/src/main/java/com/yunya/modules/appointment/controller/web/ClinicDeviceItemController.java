@@ -1,19 +1,16 @@
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.appointment.domain.form.DeviceEditForm;
 import com.yunya.feign.appointment.domain.form.DeviceItemManageForm;
-import com.yunya.feign.appointment.domain.form.DeviceTypeForm;
 import com.yunya.feign.appointment.domain.model.DeviceItemModel;
 import com.yunya.feign.appointment.domain.query.DeviceItemQuery;
 import com.yunya.feign.appointment.vo.DeviceItemVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.models.appointment.ClinicDeviceType;
-import com.yunya.modules.appointment.biz.ClinicDeviceItemBiz;
-import com.yunya.modules.appointment.biz.ClinicDeviceTypeBiz;
+import com.yunya.modules.appointment.biz.web.ClinicDeviceItemBiz;
+import com.yunya.modules.appointment.biz.web.ClinicDeviceTypeBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;

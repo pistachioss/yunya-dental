@@ -3,7 +3,7 @@
  * 2019/8/15 14:20 Description: APP端预约项目Controller History: <author> <time> <version> <desc>
  * Perter_Chou 14:20 Since 1.0 版权信息
  */
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.form.AppointItemModifyForm;
@@ -12,14 +12,13 @@ import com.yunya.feign.appointment.domain.model.AppointItemBatchConfigModel;
 import com.yunya.feign.appointment.domain.query.AppointItemConfigQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
 import com.yunya.feign.appointment.vo.AppointmentVo;
-import com.yunya.feign.appointment.vo.ClinicAppointItemConfigVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.appointment.biz.AppointItemBiz;
-import com.yunya.modules.appointment.biz.AppointmentBiz;
-import com.yunya.modules.appointment.biz.ClinicAppointItemBiz;
+import com.yunya.modules.appointment.biz.web.AppointItemBiz;
+import com.yunya.modules.appointment.biz.web.AppointmentBiz;
+import com.yunya.modules.appointment.biz.web.ClinicAppointItemBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentItemModel;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;

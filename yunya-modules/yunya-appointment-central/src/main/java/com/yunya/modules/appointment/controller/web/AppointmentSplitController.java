@@ -1,4 +1,4 @@
-package com.yunya.modules.appointment.controller;
+package com.yunya.modules.appointment.controller.web;
 
 import com.yunya.feign.appointment.domain.form.AppointSplitCheckForm;
 import com.yunya.feign.appointment.domain.form.AppointmentSplitForm;
@@ -7,7 +7,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.appointment.AppointmentSplit;
-import com.yunya.modules.appointment.biz.AppointmentSplitBiz;
+import com.yunya.modules.appointment.biz.web.AppointmentSplitBiz;
 import com.yunya.feign.appointment.domain.model.AppointmentSplitModel;
 import com.yunya.feign.appointment.domain.query.AppointmentSplitQuery;
 import com.yunya.feign.appointment.vo.AppointmentSplitVo;

@@ -151,8 +151,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);
       return patientBaseInfoMapper.selectPatientInfoByNameAndMobileAndOrgId(patientBaseInfo);
     }
-    if (patientBaseInfo.getOriginType() == 1 || patientBaseInfo.getOriginType() == 2){
-      patientBaseInfo.setOriginId(patientBaseInfoModel.getSourceId());
+    Integer originType = patientBaseInfo.getOriginType();
+    if (null != originType) {
+      if (patientBaseInfo.getOriginType() == 1 || patientBaseInfo.getOriginType() == 2) {
+        patientBaseInfo.setOriginId(patientBaseInfoModel.getSourceId());
+      }
     }
     patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));
     patientBaseInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));

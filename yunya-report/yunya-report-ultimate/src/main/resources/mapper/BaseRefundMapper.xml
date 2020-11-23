@@ -1,15 +1,99 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BaseRefundMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseRefund" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="refund_id" property="refundId" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
-    <result column="bill_id" property="billId" jdbcType="INTEGER" />
-    <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL" />
-  </resultMap>
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseRefundMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseRefund">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="refund_id" property="refundId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="treatment_id" property="treatmentId" jdbcType="INTEGER"/>
+        <result column="bill_id" property="billId" jdbcType="INTEGER"/>
+        <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!-- 根据条件查询账单退费记录列表 -->
+    <select id="selectBillRefundRecord" resultType="com.yunya.feign.report.domain.vo.BillOfRefundRecordVO">
+        SELECT
+            billRefundRecordId,
+            refundDate,
+            orderDate,
+            orgId,
+            billId,
+            billNum,
+            patientId,
+            patientName,
+            gender,
+            mobile,
+            treatmentId,
+            regDentistId,
+            regDentistName,
+            actualAmount,
+            receivedAmount,
+            refundAmount,
+            refundOperatorId,
+            refundOperatorName,
+            refundReason
+        FROM
+            (
+            SELECT
+                br.refund_id AS billRefundRecordId,
+                DATE_FORMAT(br.refund_date, '%Y-%m-d%') AS refundDate,
+                DATE_FORMAT( bb.order_date, '%Y-%m-%d' ) AS orderDate,
+                DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
+                br.org_id AS orgId,
+                br.bill_id AS billId,
+                bb.bill_num AS billNum,
+                br.patient_id AS patientId,
+                bp.`name` AS patientName,
+                bp.pinyin_name AS pinyinName,
+                bp.gender AS gender,
+                bp.mobile AS mobile,
+                br.treatment_id AS treatmentId,
+                btp.registered_dentist_id AS regDentistId,
+                btp.regDentistName AS regDentistName,
+                bb.actual_amount AS actualAmount,
+                bb.received_amount AS receivedAmount,
+                br.refund_amount AS refundAmount,
+                br.refund_opterator_id AS refundOperatorId,
+                be.employee_name AS refundOperatorName,
+                br.refund_reason AS refundReason
+            FROM
+                base_refund br
+                LEFT JOIN base_patient bp ON br.patient_id = bp.patient_id
+                LEFT JOIN ( SELECT btp.treatment_id, btp.registered_dentist_id, be.employee_name AS regDentistName FROM base_treatment_process btp LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id ) btp ON br.treatment_id = btp.treatment_id
+                LEFT JOIN base_bill bb ON br.bill_id = bb.bill_id
+            LEFT JOIN base_employee be ON br.refund_opterator_id = be.user_id
+            ) br
+        <where>
+            <if test="query.orgId != null">
+                and br.orgId = #{orgId}
+            </if>
+            <if test="query.keyWord != null and query.keyWord != ''">
+                and concat(ifnull(br.patientName, ''), ifnull(br.pinyinName, ''), ifnull(br.mobile, '')) like concat('%', #{query.keyWord}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and br.billNum = #{query.billNum}
+            </if>
+            <if test="query.refundStartDate != null and query.refundStartDate != ''">
+                and br.refundDate &gt;= #{query.refundStartDate}
+            </if>
+            <if test="query.refundEndDate != null and query.refundEndDate != ''">
+                and br.refundDate &lt;= #{query.refundEndDate}
+            </if>
+            <if test="query.billStartDate != null and query.billStartDate != ''">
+                and br.billDate &gt;= #{query.billStartDate}
+            </if>
+            <if test="query.billEndDate != null and query.billEndDate != ''">
+                and br.billDate &lt;= #{query.billEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and br.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>
