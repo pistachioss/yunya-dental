@@ -42,5 +42,5 @@ public class ClinicAccountItemQueryForm implements Serializable {
   private Integer orgId;
   /** 是否启用 */
   @ApiModelProperty("是否启用，过滤门诊不启用的入账方式传true,不过滤则不传")
-  private Boolean inservice;
+  private Boolean inservice = true;
 }

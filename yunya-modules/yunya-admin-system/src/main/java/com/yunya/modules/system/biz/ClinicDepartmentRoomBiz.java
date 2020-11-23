@@ -166,11 +166,11 @@ public class ClinicDepartmentRoomBiz
     Integer orgId = queryForm.getOrgId();
     DepartmentRoomQueryForm form = new DepartmentRoomQueryForm();
     form.setId(queryForm.getDeptRoomId());
-    List<DepartmentRoomVO> roomVOS = departmentRoomMapper.selectList(form);
-    pageInfo = new PageInfo<>(roomVOS);
+    List<DepartmentRoomVO> roomVOList = departmentRoomMapper.selectList(form);
+    pageInfo = new PageInfo<>(roomVOList);
     List<ClinicDepartmentRoomVO> resultList = Lists.newArrayList();
-    if (StringHelper.isNotEmpty(roomVOS)) {
-      roomVOS.forEach(
+    if (StringHelper.isNotEmpty(roomVOList)) {
+      roomVOList.forEach(
           departmentRoomVO -> {
             Integer deptId = departmentRoomVO.getId();
             ClinicDepartmentRoom entity = new ClinicDepartmentRoom();
@@ -193,7 +193,7 @@ public class ClinicDepartmentRoomBiz
             }
             resultList.add(vo);
           });
-      if (queryForm.getInservice() && StringHelper.isNotEmpty(resultList)) {
+      if (queryForm.getInservice().equals(true) && StringHelper.isNotEmpty(resultList)) {
         resultList.removeIf(vo -> !vo.getInservice());
       }
       pageInfo.setList(resultList);
