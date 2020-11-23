@@ -40,6 +40,6 @@ public class ClinicDepartmentRoomQueryForm implements Serializable {
   @ApiModelProperty("科室ID")
   private Integer deptRoomId;
   /** 是否启用 */
-  @ApiModelProperty("是否启用(默认启用)")
-  private Boolean inservice=true;
+  @ApiModelProperty("是否启用(默认启用)，门诊科室如需过滤不启用，则传true")
+  private Boolean inservice;
 }
