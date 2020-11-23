@@ -1651,6 +1651,13 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             vo.setAllergenDescription(patientData.getAllergensDescriptions());
             vo.setAllergen(patientData.getAllergens());
             vo.setPatientKind(patientData.getPatientKindName());
+            // 欠费金额
+            List<Integer> patientIds = new ArrayList<>();
+            patientIds.add(patientId);
+            List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
+            if (StringHelper.isNotEmpty(debtAmountList)) {
+                vo.setArrears(debtAmountList.get(0).getDebtAmount());
+            }
             Integer memberTypeId = patientData.getMemberTypeId();
             if (null != memberTypeId) {
                 MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);

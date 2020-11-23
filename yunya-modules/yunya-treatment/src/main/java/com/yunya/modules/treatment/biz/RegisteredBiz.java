@@ -8,6 +8,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -59,6 +61,8 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+  /** 账单记录 */
+  @Autowired private BillRecordBiz billRecordBiz;
 
   /**
    * 新增患者挂号
@@ -201,6 +205,13 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
       vo.setAllergen(patientData.getAllergens());
       vo.setPatientKind(patientData.getPatientKindName());
+      // 欠费金额
+      List<Integer> patientIds = new ArrayList<>();
+      patientIds.add(patientId);
+      List<DebtAmountModel> debtAmountList = billRecordBiz.selectDebtAmountList(patientIds);
+      if (StringHelper.isNotEmpty(debtAmountList)) {
+        vo.setArrears(debtAmountList.get(0).getDebtAmount());
+      }
       Integer memberTypeId = patientData.getMemberTypeId();
       if (null != memberTypeId) {
         MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
