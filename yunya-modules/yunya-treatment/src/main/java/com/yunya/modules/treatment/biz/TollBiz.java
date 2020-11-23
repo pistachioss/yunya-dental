@@ -1061,6 +1061,7 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
+  @Transactional(rollbackFor = Exception.class)
   public void collectDebt(TollDebtModel model) {
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -1194,7 +1195,7 @@ public class TollBiz {
     billPayRecordBiz.insertSelective(billPayRecord);
     // 保存收费记录入账明细¬
     Integer billPayRecordId = billPayRecord.getId();
-    if (StringHelper.isNotEmpty(paymentModels)) {
+    if (StringHelper.isNotEmpty(prepaymentAccounts)) {
       usePrepaymentAccount(
           prepaymentAccounts, patientId, treatmentId, billRecordId, billPayRecordId);
     }
