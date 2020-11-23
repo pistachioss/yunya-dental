@@ -283,18 +283,13 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
     int originType = 2;
     if (patientBaseInfo.getOriginType() != null && patientBaseInfo.getOriginType() > originType){
-      if (patientBaseInfo.getOriginId() != null) {
-        PatientOrigin patientOrigin =
-                patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
-        if (patientOrigin == null) {
-          return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者来源信息", "");
+        PatientOrigin patientOrigin = patientOriginMapper.selectByPrimaryKey(patientBaseInfo.getOriginId());
+        if (patientOrigin != null){
+          // 获取患者来源的父级id
+          patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
+          patientBaseInfoVo.setSourceName(patientOrigin.getName());
         }
-        // 获取患者来源的父级id
-        patientBaseInfoVo.setSourceParentId(patientOrigin.getParentId());
-      }
     }
-
-    // 获取患者来源name
     // 基本信息
     patientExtendInfoVo.setPatientBaseInfoVo(getTypeName(patientBaseInfoVo));
     // 扩展信息
@@ -336,8 +331,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   private PatientBaseInfoVo getTypeName(PatientBaseInfoVo patientBaseInfoVo) {
     if (patientBaseInfoVo.getOriginType() != null) {
       PatientOrigin patientOrig ;
-      PatientOrigin patientOrigin =
-          patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
+      PatientOrigin patientOrigin = patientOriginMapper.getTypeName(patientBaseInfoVo.getOriginType());
       if (patientOrigin != null) {
         patientBaseInfoVo.setOriginTypeName(patientOrigin.getName());
       }
@@ -357,6 +351,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
               patientOrig = patientOriginMapper.getTypeName(1);
               if (patientOrig != null){
                 patientBaseInfoVo.setOriginId(patientOrig.getId());
+                patientBaseInfoVo.setSourceName(patientOrig.getName());
               }
             break;
             // 查询患者
@@ -370,6 +365,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
               patientOrig = patientOriginMapper.getTypeName(2);
               if (patientOrig != null){
                 patientBaseInfoVo.setOriginId(patientOrig.getId());
+                patientBaseInfoVo.setSourceName(patientOrig.getName());
               }
             break;
           default:
@@ -377,6 +373,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
                   patientOriginMapper.selectByPrimaryKey(patientBaseInfoVo.getOriginId());
               if (activity != null) {
                 patientBaseInfoVo.setOriginName(activity.getName());
+                patientBaseInfoVo.setSourceName(activity.getName());
               }
             break;
         }

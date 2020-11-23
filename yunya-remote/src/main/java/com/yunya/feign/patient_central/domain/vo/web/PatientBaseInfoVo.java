@@ -169,4 +169,9 @@ public class PatientBaseInfoVo implements Serializable {
      */
     private Integer sourceParentId;
 
+    /**
+     * 来源名称（活动名称 或者 患者来源类型名称）
+     */
+    private String sourceName;
+
 }

@@ -20,7 +20,6 @@
         <result column="birthday" property="birthday" jdbcType="DATE"/>
         <result column="origin_type" property="originType" jdbcType="INTEGER"/>
         <result column="origin_id" property="originId" jdbcType="INTEGER"/>
-        <result column="source_id" property="sourceId" jdbcType="INTEGER"/>
         <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
