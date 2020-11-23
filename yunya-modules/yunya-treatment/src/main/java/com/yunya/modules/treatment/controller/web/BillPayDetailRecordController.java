@@ -72,8 +72,8 @@ public class BillPayDetailRecordController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("会员卡信息查询(患者档案-就诊记录-账单详情-收费信息-预付款/会员卡")
-  @GetMapping(value = "/member/account")
+  @ApiOperation("会员卡-预付款信息查询(患者档案-就诊记录-账单详情-收费信息-预付款/会员卡")
+  @PostMapping(value = "/member/account")
   public ResponseResult<List<PaymentRecordVO>> memberAccountInfo(
       @RequestBody @Validated PaymentRecordQuery query) {
     List<PaymentRecordVO> memberAccountVOList =
