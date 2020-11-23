@@ -227,7 +227,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private String serverPort;
 
 	//优惠券是否共用
-	private static final Map<Integer, List<Integer>> mixUsedMap = Maps.newHashMap();
+	private static final ThreadLocal<Map<Integer, List<Integer>>> mixUsedThreadLocal = ThreadLocal.withInitial(Maps::newHashMap);
 
 	/**
 	 * 产品生成分配分页查询
@@ -252,7 +252,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		example.createCriteria().andEqualTo("couponId", query.getCouponId())
 				.andEqualTo("crtTime", query.getSubmitDate());
 		List<CouponAllocate> allocateList = allocateMapper.selectByExample(example);
-		List<GenerateAllocateDetailVo> list = allocateList.stream().map(obj -> {
+		return allocateList.stream().map(obj -> {
 			GenerateAllocateDetailVo vo = new GenerateAllocateDetailVo();
 			OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(obj.getOrgId());
 			vo.setOrgId(obj.getOrgId());
@@ -261,7 +261,6 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			vo.setOrgName(orgInfo == null ? null : orgInfo.getName());
 			return vo;
 		}).collect(toList());
-		return list;
 	}
 
 	/**
@@ -895,26 +894,30 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param orderItemBos orderItemBos
 	 */
 	private void calculateBenefit(PatientChooseBenefitForm form, PatientOptionalBenefitVo benefitVo, List<OrderItemUseBo> orderItemBos) {
-		Integer orgId = form.getOrgId();
-		BenefitUseBo benefitUseBo = BenefitUseBo.getInstance();
-		//设置患者选择优惠券的相关信息
-		this.assignedBenefitBos(benefitUseBo, benefitVo, form);
-		//设置优惠券的优惠项目明细
-		this.assignedCouponItemDetail(benefitUseBo);
-		//计算订单项目优惠信息
-		for (OrderItemUseBo orderItem : orderItemBos) {
-			Integer quantity = orderItem.getQuantity();
-			//单个个体优惠
-			if (quantity == 1) {
-				singleItemUseBenefit(benefitUseBo, orderItem, orgId);
-			}
-			//多个数量项目优惠
-			if (quantity > 1) {
-				for (int i = 1; i <= quantity; i++) {
-					multiItemUseBenefit(benefitUseBo, orderItem, orgId, i);
+		try {
+			Integer orgId = form.getOrgId();
+			BenefitUseBo benefitUseBo = BenefitUseBo.getInstance();
+			//设置患者选择优惠券的相关信息
+			this.assignedBenefitBos(benefitUseBo, benefitVo, form);
+			//设置优惠券的优惠项目明细
+			this.assignedCouponItemDetail(benefitUseBo);
+			//计算订单项目优惠信息
+			for (OrderItemUseBo orderItem : orderItemBos) {
+				Integer quantity = orderItem.getQuantity();
+				//单个个体优惠
+				if (quantity == 1) {
+					singleItemUseBenefit(benefitUseBo, orderItem, orgId);
 				}
-				mixUsedMap.clear();
+				//多个数量项目优惠
+				if (quantity > 1) {
+					for (int i = 1; i <= quantity; i++) {
+						multiItemUseBenefit(benefitUseBo, orderItem, orgId, i);
+					}
+				}
+				mixUsedThreadLocal.get().clear();
 			}
+		} finally {
+			mixUsedThreadLocal.remove();
 		}
 	}
 
@@ -1034,62 +1037,66 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	 * @param orgId      组织id
 	 * @param benefitBos 优惠券信息
 	 */
-	private void setUpSingleBenefitInfoForOrder(OrderItemUseBo orderItem, Integer orgId, List<PatientUseBenefitBo> benefitBos) {
+	private void  setUpSingleBenefitInfoForOrder(OrderItemUseBo orderItem, Integer orgId, List<PatientUseBenefitBo> benefitBos) {
 		for (PatientUseBenefitBo benefitBo : benefitBos) {
-			//订单项目id对应的可用的优惠券信息
-			ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
-			Integer couponType = benefitBo.getCouponType();
-			if (MEMBER_CARD.equals(couponType) || benefitUseDetailBo != null) {
-				//订单项目原价
-				BigDecimal originalPrice = orderItem.getReceivableAmount();
-				//订单项目已优惠金额
-				BigDecimal oldBenefitAmount = orderItem.getBenefitAmount() == null ? BigDecimal.ZERO : orderItem.getBenefitAmount();
-				//订单项目应收金额（原价 - 已优惠金额）
-				BigDecimal receivableAmount = originalPrice.subtract(oldBenefitAmount);
-				BigDecimal benefitAmount;
-				if (receivableAmount.compareTo(BigDecimal.valueOf(0)) > 0) {
-					if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType)) {
-						BigDecimal packageUnitPrice = benefitUseDetailBo.getPackageUnitPrice();
-						benefitAmount = receivableAmount.compareTo(packageUnitPrice) > 0 ? receivableAmount.subtract(packageUnitPrice) : BigDecimal.valueOf(0);
-						//个体项目设置优惠相关信息
-						buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, TRUE.getCode());
-						break;
-					}
-					if (DISCOUNT.equals(couponType)) {
-						benefitAmount = receivableAmount.multiply(BigDecimal.valueOf(1).subtract(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
-								.setScale(2, BigDecimal.ROUND_HALF_UP);
-						//个体项目设置优惠相关信息
-						buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, TRUE.getCode());
-						break;
-					}
-					if (MEMBER_CARD.equals(couponType)) {
-						BigDecimal memberPrice = BigDecimal.ZERO;
-						if (ZERO.equals(orderItem.getType())) {
-							ClinicTariffMemberPrice tariff = treatmentServiceFeign.findClinicTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
-							if (tariff == null) {
-								memberPrice = originalPrice.multiply(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP));
-							} else {
-								memberPrice = tariff.getDiscountPrice();
-							}
-						}
-						if (ONE.equals(orderItem.getType())) {
-							ClinicOralTariffMemberPrice oral = treatmentServiceFeign.findClinicOralTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
-							if (oral == null) {
-								memberPrice = originalPrice.multiply(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP));
-							} else {
-								memberPrice = oral.getDiscountPrice();
-							}
-						}
-						//订单项目id对应的可用的优惠券信息
-						benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
-						buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), MEMBER_CARD.getCode(), TRUE.getCode());
-					}
-					if (VOUCHER.equals(couponType)) {
-						if (benefitBo.getFace().compareTo(BigDecimal.valueOf(0)) > 0) {
-							benefitAmount = receivableAmount.compareTo(benefitBo.getFace()) >= 0 ? benefitBo.getFace() : receivableAmount;
+			if (checkMixUsed(benefitBo)) {
+				//订单项目id对应的可用的优惠券信息
+				ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
+				Integer couponType = benefitBo.getCouponType();
+				if (MEMBER_CARD.equals(couponType) || benefitUseDetailBo != null) {
+					//订单项目原价
+					BigDecimal originalPrice = orderItem.getReceivableAmount();
+					//订单项目已优惠金额
+					BigDecimal oldBenefitAmount = orderItem.getBenefitAmount() == null ? BigDecimal.ZERO : orderItem.getBenefitAmount();
+					//订单项目应收金额（原价 - 已优惠金额）
+					BigDecimal receivableAmount = originalPrice.subtract(oldBenefitAmount);
+					BigDecimal benefitAmount;
+					if (receivableAmount.compareTo(BigDecimal.valueOf(0)) > 0) {
+						if (EXCHANGE.equals(couponType) || SPECIAL_PACKAGE.equals(couponType)) {
+							BigDecimal packageUnitPrice = benefitUseDetailBo.getPackageUnitPrice();
+							benefitAmount = receivableAmount.compareTo(packageUnitPrice) > 0 ? receivableAmount.subtract(packageUnitPrice) : BigDecimal.valueOf(0);
 							//个体项目设置优惠相关信息
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, TRUE.getCode());
+							putUseMixMapIfPresent(benefitBo);
 						}
+						if (DISCOUNT.equals(couponType)) {
+							benefitAmount = receivableAmount.multiply(BigDecimal.valueOf(1).subtract(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
+									.setScale(2, BigDecimal.ROUND_HALF_UP);
+							//个体项目设置优惠相关信息
+							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, TRUE.getCode());
+							putUseMixMapIfPresent(benefitBo);
+						}
+						if (MEMBER_CARD.equals(couponType)) {
+							BigDecimal memberPrice = BigDecimal.ZERO;
+							if (ZERO.equals(orderItem.getType())) {
+								ClinicTariffMemberPrice tariff = treatmentServiceFeign.findClinicTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
+								if (tariff == null) {
+									memberPrice = originalPrice.multiply(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP));
+								} else {
+									memberPrice = tariff.getDiscountPrice();
+								}
+							}
+							if (ONE.equals(orderItem.getType())) {
+								ClinicOralTariffMemberPrice oral = treatmentServiceFeign.findClinicOralTariffMemberPrice(orgId, benefitBo.getCardId(), orderItem.getItemId());
+								if (oral == null) {
+									memberPrice = originalPrice.multiply(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP));
+								} else {
+									memberPrice = oral.getDiscountPrice();
+								}
+							}
+							//订单项目id对应的可用的优惠券信息
+							benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
+							buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), MEMBER_CARD.getCode(), TRUE.getCode());
+						}
+						if (VOUCHER.equals(couponType)) {
+							if (benefitBo.getFace().compareTo(BigDecimal.valueOf(0)) > 0) {
+								benefitAmount = receivableAmount.compareTo(benefitBo.getFace()) >= 0 ? benefitBo.getFace() : receivableAmount;
+								//个体项目设置优惠相关信息
+								buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, TRUE.getCode());
+								putUseMixMapIfPresent(benefitBo);
+							}
+						}
+						break;
 					}
 				}
 			}
@@ -1163,12 +1170,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							benefitAmount = receivableAmount.compareTo(packageUnitPrice) > 0 ? benefitAmount = receivableAmount.subtract(packageUnitPrice)
 									: BigDecimal.valueOf(0);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
+							putUseMixMapIfPresent(benefitBo);
 							return TRUE.getCode();
 						}
 						if (DISCOUNT.equals(couponType)) {
 							benefitAmount = receivableAmount.multiply(BigDecimal.valueOf(1).subtract(benefitBo.getDiscountRate().divide(BigDecimal.valueOf(100), 4, BigDecimal.ROUND_HALF_UP)))
 									.setScale(2, BigDecimal.ROUND_HALF_UP);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), DISCOUNT.getCode(), itemIndex);
+							putUseMixMapIfPresent(benefitBo);
 							return TRUE.getCode();
 						}
 						if (MEMBER_CARD.equals(couponType)) {
@@ -1198,17 +1207,11 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							if (benefitBo.getFace().compareTo(BigDecimal.valueOf(0)) > 0) {
 								benefitAmount = receivableAmount.compareTo(benefitBo.getFace()) >= 0 ? benefitBo.getFace() : receivableAmount;
 								buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
+								putUseMixMapIfPresent(benefitBo);
 							}
 						}
 						//设置项目index已使用金额
 						changeBo.setDiscountedAmount(changeBo.getDiscountedAmount().add(benefitAmount));
-						mixUsedMap.compute(benefitBo.getCouponId(), (k,v) -> {
-							if (CollectionUtils.isEmpty(v)) {
-								return Lists.newArrayList(benefitBo.getMixable());
-							}
-							v.add(benefitBo.getMixable());
-							return v;
-						});
 					}
 				}
 			}
@@ -1217,6 +1220,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	}
 
 	private boolean checkMixUsed(PatientUseBenefitBo benefitBo) {
+		Map<Integer, List<Integer>> mixUsedMap = mixUsedThreadLocal.get();
 		List<Integer> mixUsedList = mixUsedMap.get(benefitBo.getCouponId());
 		//当前个体被优惠的卡券共用属性
 		Set<Integer> set = Sets.newHashSet(mixUsedMap.values().stream().flatMap(obj -> obj.stream()).collect(toSet()));
@@ -2915,7 +2919,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 
 	/**
 	 * 校验充值的卡券售卖信息
-	 * @param card
+	 * @param card card
 	 * @return error
 	 */
 	private RestErrorBo checkRechargeCardInfo(Card card) {
@@ -2936,5 +2940,19 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		//校验充值卡券有效期
 		errorBo = checkCouponForActive(card.getCouponId(), DiscountError.RECHARGE_TIME_OUT);
 		return errorBo;
+	}
+
+	/**
+	 * 本地线程变量存入优惠券的共用属性
+	 * @param benefitBo benefitBo
+	 */
+	private void putUseMixMapIfPresent(PatientUseBenefitBo benefitBo) {
+		mixUsedThreadLocal.get().compute(benefitBo.getCouponId(), (k,v) -> {
+			if (CollectionUtils.isEmpty(v)) {
+				return Lists.newArrayList(benefitBo.getMixable());
+			}
+			v.add(benefitBo.getMixable());
+			return v;
+		});
 	}
 }
