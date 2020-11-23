@@ -28,7 +28,7 @@
     <select id="selectBillRefundList" resultType="com.yunya.feign.treatment.domain.vo.BillRefundRecordVO">
         SELECT
         br.billRefundRecordId,
-        br.billRefundDate,
+        DATE_FORMAT(br.billRefundDate,'%Y-%m-%d') AS billRefundDate,
         br.orgId,
         br.billNum,
         br.totalRefundAmount,
@@ -40,7 +40,7 @@
         SELECT
         brr.patient_id as patientId,
         brr.id AS billRefundRecordId,
-        DATE_FORMAT( brr.crt_time, '%Y-%m-%d' ) AS billRefundDate,
+        brr.crt_time AS billRefundDate,
         brr.org_id AS orgId,
         br.bill_number AS billNum,
         brr.total_refund_amount AS totalRefundAmount,
