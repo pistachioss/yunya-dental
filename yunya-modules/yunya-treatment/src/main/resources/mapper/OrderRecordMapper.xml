@@ -21,6 +21,8 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+
+    <!-- 查询门诊最大订单编号 -->
     <select id="selectOrderNumberByOrgId" resultType="java.lang.String">
       SELECT
         IFNULL( MAX( SUBSTR( ord.order_record_num, 13, 4 )), '0000' ) AS maxNum
@@ -31,18 +33,22 @@
 
     <!-- 订单处理查询（门诊端-订单处理） -->
     <select id="selectOrderProcess" resultType="com.yunya.feign.treatment.domain.vo.OrderProcessVO">
-        select ord.id,ord.org_id as orgId,
+        select
+        ord.id,
+        ord.order_record_num as orderRecordNum,
+        date_format(ord.crt_time,'%Y-%m-%d') as crtTime,
+        ord.org_id as orgId,
         ord.patient_id as patientId,
         ord.treatment_record_id as treatmentRecordId,
-        ord.order_record_num as orderRecordNum,
-        ord.status,ord.total_amount as totalAmount,
-        date_format(ord.crt_time,'%Y-%m-%d') as crtTime,
-        ord.crt_name as crtNames
-        from order_record ord  LEFT JOIN treatment_record tr ON ord.treatment_record_id = tr.id AND tr.`status` = 2
+        tr.`status` as treatmentStatus,
+        ord.`status`,
+        ord.total_amount as totalAmount,
+        ord.crt_name as crtName
+        from order_record ord LEFT JOIN treatment_record tr ON ord.treatment_record_id = tr.id AND tr.`status` = 2
         <where>
             ord.status = 1
             <if test="orderRecordNum != null and orderRecordNum != ''">
-                and ord.order_record_num = #{orderRecordNum}
+                and ord.order_record_num like concat('%', #{orderRecordNum}, '%')
             </if>
             <if test="orgIds != null and orgIds.length &gt; 0">
                 and ord.org_id in
@@ -50,12 +56,7 @@
                     #{orgId}
                 </foreach>
             </if>
-            <if test="patientIds != null and patientIds.length &gt; 0">
-                and ord.patient_id in
-                <foreach collection="patientIds" open="(" separator="," close=")" index="pIdx">
-                    #{patientIds[pIdx]}
-                </foreach>
-            </if>
         </where>
+        order by ord.crt_time desc
     </select>
 </mapper>

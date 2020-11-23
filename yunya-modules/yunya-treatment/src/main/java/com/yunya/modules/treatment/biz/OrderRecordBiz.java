@@ -1,12 +1,11 @@
 package com.yunya.modules.treatment.biz;
 
-import cn.hutool.core.util.ArrayUtil;
-import com.github.pagehelper.PageHelper;
+import com.google.common.collect.Lists;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.form.OrderRecordForm;
 import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
@@ -35,6 +34,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
@@ -61,6 +62,8 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
   @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 就诊其他信息服务调用 */
   @Autowired private RemoteTreatmentOtherFeign treatmentOtherFeign;
+  /** 系统服务调用 */
+  @Autowired private RemoteSystemServiceFeign systemServiceFeign;
   /** 优惠服务调用 */
   @Autowired private RemoteDiscountFeign discountFeign;
   /** 就诊记录 */
@@ -577,47 +580,41 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
    * @return 返回订单处理列表
    */
   public List<OrderProcessVO> orderProcess(OrderProcessQuery query) {
-    if (query.getWhetherPage()) {
-      PageHelper.startPage(query.getPageNum(),query.getPageSize());
-    }
-    String search = query.getSearch();
     String orderRecordNum = query.getOrderRecordNum();
     Integer[] orgIds = query.getOrgIds();
-    PatientLikeFinleQueryForm likeFinleQueryForm = new PatientLikeFinleQueryForm();
-    likeFinleQueryForm.setCondition(search);
-    List<PatientBaseInfoVo> patientByNameAndMobile =
-        patientCentralServiceFeign.findPatientByNameAndMobile(likeFinleQueryForm);
-    Integer[] patientArr = new Integer[0];
-    if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
-      List<Integer> patientIds = new ArrayList<>();
-      patientByNameAndMobile.forEach(
-          patientBaseInfoVo -> {
-            patientIds.add(patientBaseInfoVo.getId());
-          });
-      patientArr = ArrayUtil.toArray(patientIds, Integer.class);
-    }
-    List<OrderProcessVO> orderProcessVOS = mapper.selectOrderProcess(patientArr, orderRecordNum, orgIds);
-    if (StringHelper.isNotEmpty(orderProcessVOS)) {
-      orderProcessVOS.forEach(
-          orderProcessVO -> {
-            Integer id = orderProcessVO.getId();
-            if (StringHelper.isNotEmpty(patientByNameAndMobile)) {
-              List<PatientBaseInfoVo> collect =
-                  patientByNameAndMobile.stream()
-                      .filter(patientBaseInfoVo -> patientBaseInfoVo.getId().equals(id))
-                      .collect(Collectors.toList());
-              PatientBaseInfoVo patientBaseInfoVo = collect.get(0);
-              orderProcessVO.setPatientName(patientBaseInfoVo.getName());
-              orderProcessVO.setPatientMobile(patientBaseInfoVo.getMobile());
-            } else {
-              PatientBaseInfo patientInfoById = patientCentralServiceFeign.findPatientInfoById(id);
-              if (null != patientInfoById) {
-                orderProcessVO.setPatientName(patientInfoById.getName());
-                orderProcessVO.setPatientMobile(patientInfoById.getMobile());
-              }
+    String search = query.getSearch();
+    List<OrderProcessVO> orderProcesses = mapper.selectOrderProcess(orderRecordNum, orgIds);
+    if (StringHelper.isNotEmpty(orderProcesses)) {
+      orderProcesses.forEach(
+          vo -> {
+            Integer patientId = vo.getPatientId();
+            PatientBaseInfo patientInfo = patientCentralServiceFeign.findPatientInfoById(patientId);
+            if (null != patientInfo) {
+              vo.setPatientName(patientInfo.getName());
+              vo.setPinyinName(patientInfo.getPinyinName());
+              vo.setPatientMobile(patientInfo.getMobile());
+            }
+            Integer orgId = vo.getOrgId();
+            OrganizationInfo orgInfo = systemServiceFeign.findOrgInfoByOrgId(orgId);
+            if (null != orgInfo) {
+              vo.setOrgName(orgInfo.getAbbreviation());
             }
           });
+      if (StringHelper.isNotBlank(search)) {
+        List<OrderProcessVO> resultList = Lists.newArrayList();
+        Pattern pattern = Pattern.compile(search, Pattern.CASE_INSENSITIVE);
+        orderProcesses.forEach(
+            vo -> {
+              Matcher matcherName = pattern.matcher(vo.getPatientName());
+              Matcher matcherPinyinName = pattern.matcher(vo.getPinyinName());
+              Matcher matcherMobile = pattern.matcher(vo.getPatientMobile());
+              if (matcherName.find() || matcherMobile.find() || matcherPinyinName.find()) {
+                resultList.add(vo);
+              }
+            });
+        return resultList;
+      }
     }
-    return orderProcessVOS;
+    return orderProcesses;
   }
 }

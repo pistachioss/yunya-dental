@@ -103,6 +103,9 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
             }
             resultList.add(vo);
           });
+      if (queryForm.getInservice().equals(true) && StringHelper.isNotEmpty(resultList)) {
+        resultList.removeIf(vo -> !vo.getInservice());
+      }
       pageInfo.setList(resultList);
     } else {
       pageInfo.setList(new ArrayList());

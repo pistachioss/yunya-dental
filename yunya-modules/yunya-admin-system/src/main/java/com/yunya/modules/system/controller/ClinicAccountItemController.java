@@ -59,7 +59,12 @@ public class ClinicAccountItemController {
    * @return
    */
   @ApiOperation("根据门诊ID查询门诊可用的支付方式列表")
-  @ApiImplicitParams({@ApiImplicitParam(name = "orgId", value = "组织ID", required = true)})
+  @ApiImplicitParam(
+      name = "orgId",
+      value = "组织ID",
+      required = true,
+      dataType = "int",
+      paramType = "path")
   @GetMapping(value = "/clinic/list/{orgId}", name = "根据门诊ID查询门诊可用的支付方式列表")
   public ResponseResult<ClinicAccountItemListVO> clinicAccountItemList(
       @PathVariable(value = "orgId") Integer orgId) {
@@ -120,7 +125,8 @@ public class ClinicAccountItemController {
   @CurrentUser
   @ApiOperation("一键新增门诊入账方式")
   @GetMapping("/clinic/batch/{accountItemId}")
-  public ResponseResult<T> oneClickAdd(@PathVariable(value = "accountItemId") Integer accountItemId) {
+  public ResponseResult<T> oneClickAdd(
+      @PathVariable(value = "accountItemId") Integer accountItemId) {
     clinicAccountItemBiz.batchSave(accountItemId);
     return ResponseUtil.success(null);
   }
