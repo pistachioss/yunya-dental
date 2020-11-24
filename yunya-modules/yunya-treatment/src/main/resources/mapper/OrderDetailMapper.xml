@@ -34,6 +34,7 @@
         <result column="totalActualReceivableAmount" property="totalActualReceivableAmount" jdbcType="DECIMAL"/>
         <result column="totalReceivedAmount" property="totalReceivedAmount" jdbcType="DECIMAL"/>
         <result column="totalDebtAmount" property="totalDebtAmount" jdbcType="DECIMAL"/>
+        <result column="invoice_number" property="invoiceNumber" jdbcType="VARCHAR"/>
         <collection property="billDetail" ofType="com.yunya.feign.treatment.domain.vo.BillDetailPrintInfoVO">
             <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL" />
             <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
@@ -94,14 +95,15 @@
 
     <!-- 打印账单信息 -->
     <select id="billPrintInfo" resultMap="billPrintMap">
-        select a.*, case a.type
-                        when 0 then bt.name
-                        when 1 then bot.name
+        select a.*,
+            case a.type
+                when 0 then bt.name
+                when 1 then bot.name
             end as name,
-               case a.type
-                   when 0 then bt.english_name
-                   when 1 then bot.english_name
-                   end as english_name
+            case a.type
+                when 0 then bt.english_name
+                when 1 then bot.english_name
+            end as english_name
         from (
                  SELECT
                      br.received_amount AS totalReceivedAmount,
@@ -109,6 +111,7 @@
                      br.privilege_amount AS totalPrivilegeAmount,
                      br.actual_receivable_amount AS actualReceivableAmount,
                      br.debt_amount AS totalDebtAmount,
+                     br.invoice_number,
                      od.tooth_bit AS toothBit,
                      od.type,
                      od.billing_item_id,

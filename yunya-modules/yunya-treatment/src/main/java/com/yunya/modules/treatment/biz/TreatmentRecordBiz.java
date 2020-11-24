@@ -452,6 +452,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       vo.setPrivilegeAmount(record.getPrivilegeAmount());
       vo.setReceivedAmount(record.getReceivedAmount());
       vo.setCheckOutTime(new DateTime(record.getCrtTime()).toString("HH:mm"));
+      vo.setBillNumber(record.getBillNumber());
     } else {
       vo.setPrivilegeAmount(BigDecimal.valueOf(0));
       vo.setReceivedAmount(BigDecimal.valueOf(0));

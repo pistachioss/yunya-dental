@@ -27,6 +27,8 @@ public class BillPrintInfoVO implements Serializable {
     private BigDecimal totalReceivedAmount;
     @ApiModelProperty("欠费金额（本单欠费）")
     private BigDecimal totalDebtAmount;
+    @ApiModelProperty("发票编号")
+    private String invoiceNumber;
     @ApiModelProperty("账单明细打印列表")
     List<BillDetailPrintInfoVO> billDetail;
 }
