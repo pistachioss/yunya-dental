@@ -386,7 +386,7 @@
                 and a.dentist_id = #{queryForm.dentistId}
             </if>
             <if test="queryForm.patientId != null">
-                and a.patientId = #{queryForm.patientId}
+                and a.patient_id = #{queryForm.patientId}
             </if>
             <if test="queryForm.orgId != null">
                 and a.org_id = #{queryForm.orgId}
