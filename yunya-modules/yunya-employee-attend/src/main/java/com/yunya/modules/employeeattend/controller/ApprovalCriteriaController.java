@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.employee_attend.VacationSet;
@@ -66,6 +67,7 @@ public class ApprovalCriteriaController {
      */
     @PostMapping("/add")
     @ApiOperation("新增审批条件")
+    @CurrentUser
     public ResponseResult create(@RequestBody @Validated ApprovalCriteriaForm approvalCriteriaForm) {
         return ResponseUtil.success(approvalCriteriaBiz.create(approvalCriteriaForm));
     }

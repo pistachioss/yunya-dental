@@ -1,16 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.employeeattend.mapper.LeaveScheduleMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.LeaveSchedule" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="leave_id" property="leaveId" jdbcType="INTEGER" />
-    <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.employeeattend.mapper.LeaveScheduleMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.LeaveSchedule">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="leave_id" property="leaveId" jdbcType="INTEGER"/>
+        <result column="schedule_id" property="scheduleId" jdbcType="INTEGER"/>
+        <result column="start_time" property="startTime" jdbcType="TIMESTAMP"/>
+        <result column="end_time" property="endTime" jdbcType="TIMESTAMP"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <insert id="batchInsert">
+        insert into leave_schedule (
+        leave_id,
+        schedule_id,
+        start_time,
+        end_time,
+        crt_id,
+        crt_time
+        )
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (#{item.leaveId},
+            #{item.scheduleId},
+            #{item.startTime},
+            #{item.endTime},
+            #{item.crtId},
+            #{item.crtTime})
+        </foreach>
+    </insert>
+    <select id="selectNum" resultType="integer" parameterType="java.util.List">
+      select count(*) from leave_schedule ls left join leave_info li on ls.leave_id = li.id
+      where li.apprpval_status in (0,1) and ls.schedule_id in (
+        <foreach collection="list" index="index" item="item" separator=",">
+        #{item.scheduleId}
+        </foreach>
+        )
+    </select>
 </mapper>

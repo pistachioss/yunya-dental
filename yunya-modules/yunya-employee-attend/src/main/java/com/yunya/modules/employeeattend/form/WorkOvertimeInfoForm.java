@@ -27,7 +27,7 @@ public class WorkOvertimeInfoForm {
     @ApiModelProperty("申请人ID")
     private Integer userId;
 
-    @ApiModelProperty("申请日期")
+    @ApiModelProperty("申请要加班的日期")
     private Date workDate;
     /**
      * 门诊id
