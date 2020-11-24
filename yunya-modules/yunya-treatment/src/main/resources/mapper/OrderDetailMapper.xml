@@ -110,9 +110,9 @@
         from (
                  SELECT
                      br.received_amount AS totalReceivedAmount,
-                     br.receivable_amount AS totalActualReceivableAmount,
+                     br.receivable_amount AS totalReceivableAmount,
                      br.privilege_amount AS totalPrivilegeAmount,
-                     br.actual_receivable_amount AS actualReceivableAmount,
+                     br.actual_receivable_amount AS totalActualReceivableAmount,
                      br.debt_amount AS totalDebtAmount,
                      date_format(br.crt_time,'%Y-%m-%d') as crt_time,
                      br.invoice_number,
