@@ -5,6 +5,7 @@ import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
+import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class TreatmentOtherServiceRest {
     /** 随访管理服务 */
     @Autowired
     private VisitingRecordBiz visitingRecordBiz;
+    /** mapper */
+    @Autowired
+    private VisitingRecordMapper visitingRecordMapper;
 
     /**
      * 插入随访记录
@@ -57,6 +61,17 @@ public class TreatmentOtherServiceRest {
     @RequestMapping(value = "/visiting/record/delete/{treatmentId}", method = RequestMethod.DELETE)
     public void deleteVisitingRecordByTreatmentIdRest(@PathVariable(value = "treatmentId") Integer treatmentId) {
         visitingRecordBiz.deleteVisitingRecordByTreatmentId(treatmentId);
+    }
+
+    /**
+     * 统计后续随访个数
+     * @param patientId 患者ID
+     * @return 返回统计个数
+     */
+    @ApiOperation(value = "统计后续随访个数")
+    @RequestMapping(value = "/visiting/count/{patientId}",method = RequestMethod.GET)
+    public Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId) {
+        return this.visitingRecordMapper.countNextVisiting(patientId);
     }
 
 }

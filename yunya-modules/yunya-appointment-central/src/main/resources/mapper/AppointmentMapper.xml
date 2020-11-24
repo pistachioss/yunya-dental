@@ -378,17 +378,21 @@
         from appointment a
         <where>
             and a.appoint_status = 0
+            and a.inservice = 1
             <if test="queryForm.id != null">
                 and a.id = #{queryForm.id}
             </if>
             <if test="queryForm.dentistId != null">
                 and a.dentist_id = #{queryForm.dentistId}
             </if>
+            <if test="queryForm.patientId != null">
+                and a.patientId = #{queryForm.patientId}
+            </if>
             <if test="queryForm.orgId != null">
                 and a.org_id = #{queryForm.orgId}
             </if>
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
-                and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
+                and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
 
         </where>

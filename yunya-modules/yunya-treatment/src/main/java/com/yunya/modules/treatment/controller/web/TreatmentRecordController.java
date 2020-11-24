@@ -21,6 +21,7 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.Map;
 
 /**
@@ -80,7 +81,7 @@ public class TreatmentRecordController {
   @ApiOperation("根据条件查询就诊患者列表信息（可分页）")
   @PostMapping("/list")
   public ResponseResult<PageInfo<TreatmentPatientInfoVO>> findTreatList(
-      @RequestBody @Validated TreatmentRecordQueryForm queryForm) {
+      @RequestBody @Validated TreatmentRecordQueryForm queryForm) throws ParseException {
     PageInfo<TreatmentPatientInfoVO> resultList = treatmentRecordBiz.findTreatList(queryForm);
     return ResponseUtil.success(resultList);
   }

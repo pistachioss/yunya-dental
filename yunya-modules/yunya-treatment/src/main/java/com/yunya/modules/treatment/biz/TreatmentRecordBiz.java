@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
+import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
@@ -21,6 +22,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
+import com.yunya.models.emr.MedicalRecordHistory;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
@@ -35,7 +37,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.xml.crypto.Data;
 import java.math.BigDecimal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -82,6 +86,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Autowired private BillRecordMapper billRecordMapper;
   /** 就诊关联助手 */
   @Autowired private AssistantMatchingRecordMapper assistantMatchingRecordMapper;
+  /** 随访提醒，图片影像 */
+  @Autowired private RemoteTreatmentOtherFeign remoteTreatmentOther;
+  /** 电子病历 */
+  @Autowired private RemoteEmrServiceFeign remoteEmrServiceFeign;
 
   /**
    * 开始接诊
@@ -228,7 +236,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param queryForm 查询条件
    * @return
    */
-  public PageInfo<TreatmentPatientInfoVO> findTreatList(TreatmentRecordQueryForm queryForm) {
+  public PageInfo<TreatmentPatientInfoVO> findTreatList(TreatmentRecordQueryForm queryForm) throws ParseException {
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
@@ -280,7 +288,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    *
    * @param vo 患者候诊
    */
-  private void setPatientInfo(TreatmentPatientInfoVO vo) {
+  private void setPatientInfo(TreatmentPatientInfoVO vo) throws ParseException {
     Integer patientId = vo.getPatientId();
     PatientTotalInfoVo patientData = patientServiceFeign.findPatientTotalInfo(patientId);
     if (null != patientData) {
@@ -294,6 +302,18 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       String medicalNumber = patientData.getMedicalNumber();
       vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
       vo.setAllergen(patientData.getAllergens());
+      // 设置后续预约未到数量
+      AppointmentCurrentListQuery countAppointQuery = new AppointmentCurrentListQuery();
+      countAppointQuery.setPatientId(patientData.getId());
+      Date date  = new Date(System.currentTimeMillis());
+      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+      countAppointQuery.setCurrentDate(dateFormat.format(date));
+      countAppointQuery.setWhetherPage(false);
+      Integer appointCount = this.appointmentFeign.countAppointNotArrived(countAppointQuery);
+      vo.setNextAppointment(appointCount);
+      // 设置后续随访数量
+      Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId);
+      vo.setNextInterview(visitingCount);
       Integer memberTypeId = patientData.getMemberTypeId();
       if (null != memberTypeId) {
         MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
