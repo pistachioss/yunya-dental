@@ -110,7 +110,7 @@
         from (
                  SELECT
                      br.received_amount AS totalReceivedAmount,
-                     br.receivable_amount AS totalReceivableAmount,
+                     br.receivable_amount AS totalActualReceivableAmount,
                      br.privilege_amount AS totalPrivilegeAmount,
                      br.actual_receivable_amount AS actualReceivableAmount,
                      br.debt_amount AS totalDebtAmount,
