@@ -33,4 +33,9 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
     public void deleteVisitingRecordByTreatmentIdRest(Integer treatmentId) {
 
     }
+
+    @Override
+    public Integer countNextVisiting(Integer patientId) {
+        return null;
+    }
 }

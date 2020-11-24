@@ -1,5 +1,6 @@
 package com.yunya.models.employee_attend;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -21,6 +22,7 @@ public class LeaveSchedule {
      * 排班id
      */
     @Column(name = "schedule_id")
+    @ApiModelProperty("排班id")
     private Integer scheduleId;
 
     /**
@@ -33,12 +35,14 @@ public class LeaveSchedule {
      * 请假开始时间
      */
     @Column(name = "start_time")
+    @ApiModelProperty("请假开始时间")
     private Date startTime;
 
     /**
      * 请假结束时间
      */
     @Column(name = "end_time")
+    @ApiModelProperty("请假开始时间")
     private Date endTime;
     /**
      * 创建时间

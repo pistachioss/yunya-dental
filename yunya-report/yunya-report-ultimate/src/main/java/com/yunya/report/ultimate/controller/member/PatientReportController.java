@@ -13,6 +13,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.report.ultimate.service.PatientReportBiz;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
+@Api(tags = "公司端-运营报表-患者报表")
 @RestController
 @RequestMapping("patient")
 public class PatientReportController {

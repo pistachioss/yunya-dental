@@ -1,5 +1,7 @@
 package com.yunya.feign.report.domain.vo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -15,12 +17,15 @@ import java.io.Serializable;
  */
 @Data
 @ToString
+@ApiModel("患者年龄Vo")
 public class AnalysisPatientAgeVo implements Serializable {
 
     /** 年龄段 */
+    @ApiModelProperty("年龄段")
     private String ageBracket;
 
     /** 占比 */
+    @ApiModelProperty("占比")
     private String percentage;
 
 }

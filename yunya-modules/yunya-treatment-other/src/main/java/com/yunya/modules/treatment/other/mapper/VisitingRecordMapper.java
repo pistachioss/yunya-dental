@@ -58,4 +58,11 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
             @Param("dentistId") Integer dentistId,
             @Param("startDate") Date startDate,
             @Param("endDate") Date endDate);
+
+    /**
+     * 统计后续随访个数
+     * @param patientId 患者ID
+     * @return 返回统计个数
+     */
+    Integer countNextVisiting(@Param("patientId") Integer patientId);
 }

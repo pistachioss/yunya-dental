@@ -1,67 +1,81 @@
 package com.yunya.models.report;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "base_employee")
+@ApiModel("末次接诊医生Vo")
 public class BaseEmployee {
     /**
      * 用户ID
      */
     @Id
     @Column(name = "user_id")
+    @ApiModelProperty(value = "用户ID")
     private Integer userId;
 
     /**
      * 员工姓名
      */
     @Column(name = "employee_name")
+    @ApiModelProperty(value = "员工姓名")
     private String employeeName;
 
     /**
      * 性别（0-男；1-女；2-其他）
      */
+    @ApiModelProperty(value = "性别（0-男；1-女；2-其他）")
     private Byte gender;
 
     /**
      * 手机号
      */
+    @ApiModelProperty(value = "手机号")
     private String mobile;
 
     /**
      * 就职状态
      */
     @Column(name = "work_status")
+    @ApiModelProperty(value = "就职状态")
     private Byte workStatus;
 
     /**
      * 职称
      */
+    @ApiModelProperty(value = "职称")
     private String title;
 
     /**
      * 职级
      */
     @Column(name = "post_level")
+    @ApiModelProperty(value = "职级")
     private String postLevel;
 
     /**
      * 奖金系数
      */
     @Column(name = "bonus_coefficient")
+    @ApiModelProperty(value = "奖金系数")
     private Double bonusCoefficient;
 
     /**
      * 基本工作量
      */
     @Column(name = "work_amount")
+    @ApiModelProperty(value = "基本工作量")
     private Double workAmount;
 
     /**
      * 工号
      */
     @Column(name = "work_number")
+    @ApiModelProperty(value = "工号")
     private String workNumber;
 
     /**

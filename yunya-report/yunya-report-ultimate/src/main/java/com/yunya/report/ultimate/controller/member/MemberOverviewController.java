@@ -11,6 +11,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.service.MemberOccurLogBiz;
 import com.yunya.report.ultimate.service.MemberOverviewBiz;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,7 @@ import java.util.Map;
  * @description:
  * @since: 1.0.0
  */
+@Api(tags = "公司端-运营报表-会员卡概况")
 @RestController
 @RequestMapping("overview")
 public class MemberOverviewController {
@@ -55,7 +57,7 @@ public class MemberOverviewController {
      * @param memberOverviewQueryForm 患者会员卡概况form
      * @return List<MemberOverviewVo>
      */
-    @ApiOperation("查询患者会员卡/预付款概况")
+    @ApiOperation("会员卡/预付款概况")
     @PostMapping("/patientOverview/list")
     public ResponseResult<PageInfo<BasePatientMemberOverviewVo>> patientOverviewList(@RequestBody MemberOverviewQueryForm memberOverviewQueryForm) throws ParseException {
         PageInfo<BasePatientMemberOverviewVo> basePatientMemberOverviewVos = memberOverviewBiz.patientOverviewList(memberOverviewQueryForm);

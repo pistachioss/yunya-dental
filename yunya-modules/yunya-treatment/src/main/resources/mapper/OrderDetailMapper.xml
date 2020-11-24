@@ -26,6 +26,28 @@
         <result column="upt_name" jdbcType="VARCHAR" property="uptName"/>
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
     </resultMap>
+
+    <!-- 账单信息MAP -->
+    <resultMap id="billPrintMap" type="com.yunya.feign.treatment.domain.vo.BillPrintInfoVO">
+        <result column="totalReceivableAmount" property="totalReceivableAmount" jdbcType="DECIMAL"/>
+        <result column="totalPrivilegeAmount" property="totalPrivilegeAmount" jdbcType="DECIMAL"/>
+        <result column="totalActualReceivableAmount" property="totalActualReceivableAmount" jdbcType="DECIMAL"/>
+        <result column="totalReceivedAmount" property="totalReceivedAmount" jdbcType="DECIMAL"/>
+        <result column="totalDebtAmount" property="totalDebtAmount" jdbcType="DECIMAL"/>
+        <collection property="billDetail" ofType="com.yunya.feign.treatment.domain.vo.BillDetailPrintInfoVO">
+            <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL" />
+            <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
+            <result column="actual_receivable" property="actualReceivable" jdbcType="DECIMAL" />
+            <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
+            <result column="price" property="price" jdbcType="DECIMAL" />
+            <result column="tooth_bit" jdbcType="VARCHAR" property="toothBit"/>
+            <result column="quantity" jdbcType="INTEGER" property="quantity"/>
+            <result column="name" property="name" jdbcType="VARCHAR"/>
+            <result column="english_name" property="englishName" jdbcType="VARCHAR"/>
+        </collection>
+    </resultMap>
+
+
     <!-- 根据开单记录ID查询开单详情列表 -->
     <select id="selectOrderDetailVOList" resultType="com.yunya.feign.treatment.domain.vo.OrderDetailVO">
         select
@@ -68,5 +90,41 @@
         from order_detail od
         left join order_detail_pay_record odpr on od.id = odpr.order_detail_id
         where od.order_record_id = #{orderRecordId}
+    </select>
+
+    <!-- 打印账单信息 -->
+    <select id="billPrintInfo" resultMap="billPrintMap">
+        select a.*, case a.type
+                        when 0 then bt.name
+                        when 1 then bot.name
+            end as name,
+               case a.type
+                   when 0 then bt.english_name
+                   when 1 then bot.english_name
+                   end as english_name
+        from (
+                 SELECT
+                     br.received_amount AS totalReceivedAmount,
+                     br.receivable_amount AS totalReceivableAmount,
+                     br.privilege_amount AS totalPrivilegeAmount,
+                     br.actual_receivable_amount AS actualReceivableAmount,
+                     br.debt_amount AS totalDebtAmount,
+                     od.tooth_bit AS toothBit,
+                     od.type,
+                     od.billing_item_id,
+                     od.quantity,
+                     od.price,
+                     odpr.receivable_amount as receivableAmount,
+                     odpr.privilege_amount as privilegeAmount,
+                     odpr.actual_receivable as actualReceivable,
+                     odpr.received_amount as receivedAmount
+                 FROM
+                     bill_record br
+                         LEFT JOIN order_detail od ON od.treatment_record_id = br.treatment_record_id AND od.order_record_id = br.order_record_id
+                         LEFT JOIN order_detail_pay_record odpr ON odpr.treatment_record_id = br.treatment_record_id and odpr.order_record_id = br.order_record_id and odpr.order_detail_id = od.id and odpr.bill_record_id = br.id
+                 WHERE
+                     br.patient_id = #{patientId} and br.bill_number=#{billNumber}) a
+                 LEFT JOIN base_tariff bt on bt.id = a.billing_item_id
+                 LEFT JOIN base_oral_tariff bot on bot.id = a.billing_item_id
     </select>
 </mapper>

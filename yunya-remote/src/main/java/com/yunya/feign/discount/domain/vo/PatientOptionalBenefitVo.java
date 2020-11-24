@@ -10,8 +10,7 @@ import java.util.*;
  * @author xiangyang
  * @date 2020/9/3
  */
-@Getter
-@Setter
+@Data
 @ApiModel(value = "患者可选优惠模型")
 public class PatientOptionalBenefitVo implements Serializable {
     @ApiModelProperty(value = "会员卡模型")

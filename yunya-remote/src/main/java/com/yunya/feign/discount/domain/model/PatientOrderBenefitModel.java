@@ -2,8 +2,7 @@ package com.yunya.feign.discount.domain.model;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
@@ -13,8 +12,7 @@ import java.util.List;
  * @author xiangyang
  * @date 2020/9/14
  */
-@Getter
-@Setter
+@Data
 @ApiModel(value = "卡券优惠提交")
 public class PatientOrderBenefitModel implements Serializable {
     @ApiModelProperty(value = "订单id", required = true)

@@ -10,6 +10,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.service.MemberOccurLogBiz;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
+@Api(tags = "公司端-数据记录-预付款充值记录")
 @RestController
 @RequestMapping("prepaid")
 public class PrepaidOccurLogController {

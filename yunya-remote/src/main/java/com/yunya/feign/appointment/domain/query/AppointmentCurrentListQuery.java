@@ -47,4 +47,7 @@ public class AppointmentCurrentListQuery implements Serializable {
 
   @ApiModelProperty("预约医生ID")
   private Integer dentistId;
+
+  @ApiModelProperty("患者ID")
+  private Integer patientId;
 }

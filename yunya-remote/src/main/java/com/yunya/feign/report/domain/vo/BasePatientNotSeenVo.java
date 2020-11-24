@@ -1,5 +1,7 @@
 package com.yunya.feign.report.domain.vo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -16,20 +18,26 @@ import java.io.Serializable;
 
 @Data
 @ToString
+@ApiModel("未复诊预约且未提醒Vo")
 public class BasePatientNotSeenVo implements Serializable {
 
     /** 末次就诊日期 */
+    @ApiModelProperty(value = "末次就诊日期")
     private String lastVisitDate;
 
     /** 患者名称 */
+    @ApiModelProperty(value = "患者名称")
     private String name;
 
     /** 手机号 */
+    @ApiModelProperty(value = "手机号")
     private String mobile;
 
     /** 初复诊 */
+    @ApiModelProperty(value = "初复诊")
     private String treatType;
 
     /** 末次接诊医生 */
+    @ApiModelProperty(value = "末次接诊医生")
     private String employeeName;
 }
