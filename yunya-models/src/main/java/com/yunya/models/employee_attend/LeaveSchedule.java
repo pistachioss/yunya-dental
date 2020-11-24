@@ -1,5 +1,6 @@
 package com.yunya.models.employee_attend;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -36,6 +37,7 @@ public class LeaveSchedule {
      */
     @Column(name = "start_time")
     @ApiModelProperty("请假开始时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date startTime;
 
     /**
@@ -43,6 +45,7 @@ public class LeaveSchedule {
      */
     @Column(name = "end_time")
     @ApiModelProperty("请假开始时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss", timezone = "GMT+8")
     private Date endTime;
     /**
      * 创建时间
