@@ -1469,6 +1469,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         AppointListQuery listQuery = EntityUtils.build(exportQuery,AppointListQuery.class);
         PageInfo pageInfo = this.findAppointmentListByExample(listQuery);
         List<AppointmentListItemVo> appointmentListItemVoList = pageInfo.getList();
+        // 预约列表为空抛出异常
+        if (StringHelper.isEmpty(appointmentListItemVoList)) {
+            throw new ClientServiceException(AppointmentError.APPOINTMENT_LIST_EMPTY.getMessage(),
+                    AppointmentError.APPOINTMENT_LIST_EMPTY.getCode());
+        }
         // 预约列表信息
         List<AppointListExportVo> appointListExportVos = new ArrayList<>();
         if (appointmentListItemVoList != null && !appointmentListItemVoList.isEmpty()){
