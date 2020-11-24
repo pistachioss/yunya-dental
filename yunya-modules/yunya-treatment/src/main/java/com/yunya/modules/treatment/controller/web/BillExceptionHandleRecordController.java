@@ -179,7 +179,7 @@ public class BillExceptionHandleRecordController {
   @ApiOperation("数据记录-账单记录-导出入账方式调整记录")
   @PostMapping(value = "/bill/pay/adjust/export", name = "数据记录-账单记录-导出入账方式调整记录")
   public ResponseResult<T> exportBillPayAdjustRecord(
-      HttpServletResponse response, @RequestBody @Validated BillTollRevokeRecordQuery query)
+      HttpServletResponse response, @RequestBody @Validated BillPayRecordAdjustQuery query)
       throws IOException {
     billExceptionHandleRecordBiz.exportBillPayAdjustRecord(response, query);
     return ResponseUtil.success(null);
