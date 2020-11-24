@@ -1,8 +1,7 @@
 package com.yunya.feign.discount.domain.vo;
 
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.io.Serializable;
 
@@ -10,8 +9,7 @@ import java.io.Serializable;
  * @author xiangyang
  * @date 2020/9/9
  */
-@Getter
-@Setter
+@Data
 public class PatientExchangeVo implements Serializable {
     @ApiModelProperty(value = "优惠券id")
     private Integer couponId;

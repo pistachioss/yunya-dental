@@ -10,8 +10,7 @@ import java.time.*;
  * @author xiangyang
  * @date 2020/9/9
  */
-@Getter
-@Setter
+@Data
 public class PatientPackageVo implements Serializable {
     @ApiModelProperty(value = "优惠券id")
     private Integer couponId;

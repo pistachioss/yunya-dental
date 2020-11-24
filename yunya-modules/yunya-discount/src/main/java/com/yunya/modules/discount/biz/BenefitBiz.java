@@ -128,6 +128,7 @@ public class BenefitBiz {
 			if (count != 0) {
 				return ResponseUtil.error(DiscountError.ORDER_HAS_BENEFIT);
 			}
+			log.info("收费时选择的优惠券信息：[{}]", model);
 			List<CardBenefit> list = Lists.newArrayList();
 			PatientChooseBenefitForm benefitForm = benefitTransformToForm(model);
 			//查询订单项目对应的优惠
