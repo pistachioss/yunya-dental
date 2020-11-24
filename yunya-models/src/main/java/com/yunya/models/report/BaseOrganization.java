@@ -1,33 +1,41 @@
 package com.yunya.models.report;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "base_organization")
+@ApiModel("查询门诊列表Vo")
 public class BaseOrganization {
     /**
      * 组织ID
      */
     @Id
     @Column(name = "org_id")
+    @ApiModelProperty(value = "组织ID")
     private Integer orgId;
 
     /**
      * 组织类型（0-公司；1-区域；2-医疗机构；3-其他）
      */
     @Column(name = "org_type")
+    @ApiModelProperty(value = "组织类型（0-公司；1-区域；2-医疗机构；3-其他）")
     private Byte orgType;
 
     /**
      * 组织简称
      */
+    @ApiModelProperty(value = "组织简称")
     private String abbreviation;
 
     /**
      * 门诊编号
      */
     @Column(name = "clinic_number")
+    @ApiModelProperty(value = "门诊编号")
     private String clinicNumber;
 
     /**
