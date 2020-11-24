@@ -35,7 +35,10 @@
         <result column="totalReceivedAmount" property="totalReceivedAmount" jdbcType="DECIMAL"/>
         <result column="totalDebtAmount" property="totalDebtAmount" jdbcType="DECIMAL"/>
         <result column="invoice_number" property="invoiceNumber" jdbcType="VARCHAR"/>
+        <result column="order_record_id" jdbcType="INTEGER" property="orderRecordId"/>
+        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
         <collection property="billDetail" ofType="com.yunya.feign.treatment.domain.vo.BillDetailPrintInfoVO">
+            <id column="id" jdbcType="INTEGER" property="orderDetailId"/>
             <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL" />
             <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
             <result column="actual_receivable" property="actualReceivable" jdbcType="DECIMAL" />
@@ -111,16 +114,19 @@
                      br.privilege_amount AS totalPrivilegeAmount,
                      br.actual_receivable_amount AS actualReceivableAmount,
                      br.debt_amount AS totalDebtAmount,
+                     date_format(br.crt_time,'%Y-%m-%d') as crt_time,
                      br.invoice_number,
-                     od.tooth_bit AS toothBit,
+                     od.tooth_bit,
                      od.type,
                      od.billing_item_id,
                      od.quantity,
                      od.price,
-                     odpr.receivable_amount as receivableAmount,
-                     odpr.privilege_amount as privilegeAmount,
-                     odpr.actual_receivable as actualReceivable,
-                     odpr.received_amount as receivedAmount
+                     od.order_record_id,
+                     od.id,
+                     odpr.receivable_amount,
+                     odpr.privilege_amount,
+                     odpr.actual_receivable,
+                     odpr.received_amount
                  FROM
                      bill_record br
                          LEFT JOIN order_detail od ON od.treatment_record_id = br.treatment_record_id AND od.order_record_id = br.order_record_id
