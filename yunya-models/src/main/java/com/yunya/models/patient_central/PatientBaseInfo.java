@@ -141,8 +141,6 @@ public class PatientBaseInfo {
     @Column(name = "upd_time")
     private Date updTime;
 
-
-
     /**
      * 新跳版-人员id
      */

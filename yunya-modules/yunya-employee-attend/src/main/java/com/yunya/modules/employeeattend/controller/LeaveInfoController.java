@@ -48,13 +48,19 @@ public class LeaveInfoController {
      * @param
      * @return
      */
-//    @PostMapping("/selectBaseByDay")
-//    @ApiOperation("查询按天请假时包含的班次")
-//    @RepeatSubmit
-//    public ResponseResult selectBaseByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
-//        return ResponseUtil.success(leaveInfoBiz.selectBaseByDay(leaveInfoForm));
-//    }
+    @PostMapping("/selectBaseByDay")
+    @ApiOperation("查询按天请假时包含的班次")
+    @RepeatSubmit
+    public ResponseResult selectBaseByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+        return ResponseUtil.success(leaveInfoBiz.selectBaseByDay(leaveInfoForm));
+    }
     /**
      * 根据天数获得审批信息
      */
+    @PostMapping("/selectApprovalByDay")
+    @ApiOperation("根据天数获得审批信息")
+    @RepeatSubmit
+    public ResponseResult selectApprovalByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+        return ResponseUtil.success(leaveInfoBiz.selectApprovalByDay(leaveInfoForm));
+    }
 }

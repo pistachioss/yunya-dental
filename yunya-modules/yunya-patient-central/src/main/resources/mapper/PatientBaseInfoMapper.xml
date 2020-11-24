@@ -20,7 +20,6 @@
         <result column="birthday" property="birthday" jdbcType="DATE"/>
         <result column="origin_type" property="originType" jdbcType="INTEGER"/>
         <result column="origin_id" property="originId" jdbcType="INTEGER"/>
-        <result column="source_id" property="sourceId" jdbcType="INTEGER"/>
         <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
@@ -72,7 +71,7 @@
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientRecommendRelationVo">
         select pbio.id,pbio.origin_id patientId,pbio.name,pbio.gender,pbio.mobile,pbio.crt_time crtTime
         from patient_base_info pbio
-        where pbio.source_id = #{form.patientId} and pbio.origin_type = 2
+        where pbio.origin_id = #{form.patientId} and pbio.origin_type = 2
         order by pbio.crt_time desc
     </select>
 
@@ -230,7 +229,6 @@
             birthday,
             origin_type,
             origin_id,
-            source_id,
             remarks,
             inservice,
             crt_id,
@@ -242,7 +240,7 @@
 	ELSE
 		(DATE_FORMAT(now(),'%Y-%m-%d') - DATE_FORMAT(#{birthday},'%Y-%m-%d'))
 END),#{birthday},#{originType},
-               #{originId},#{sourceId},#{remarks},#{inservice},#{crtId},#{crtName})
+               #{originId},#{remarks},#{inservice},#{crtId},#{crtName})
     </insert>
 
     <!-- 根据患者来源ID查询所有推荐患者 -->
