@@ -30,6 +30,10 @@
     join base_organization bo on bo.org_id = bp.org_id
     <where>
       bpm.type = #{form.type}
+      <if test="form.memberLevelId != null">
+        AND bpm.member_level_id = #{form.memberLevelId}
+      </if>
+
       <if test="form.orgIds != null and from.orgIds.size() > 0">
         AND bp.org_id in
         <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
@@ -56,6 +60,7 @@
   <!-- 查询会员卡状态 -->
   <select id="memberOverviewList" resultType="com.yunya.feign.report.domain.vo.BaseMemberOverviewVo">
     select
+      bpm.member_level_id memberLevelId,
       bpm.member_level_name memberLevelName,
       count(bpm.member_level_name) amount,
       sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,

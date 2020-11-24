@@ -1,5 +1,7 @@
 package com.yunya.feign.report.domain.vo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -15,27 +17,35 @@ import java.math.BigDecimal;
  */
 @Data
 @ToString
+@ApiModel("会员卡/预付款概况Vo")
 public class BasePatientMemberOverviewVo {
 
     /** 患者姓名 */
+    @ApiModelProperty(value = "患者姓名")
     private String name;
 
     /** 手机号 */
+    @ApiModelProperty(value = "手机号")
     private String mobile;
 
     /** 会员卡号 */
+    @ApiModelProperty(value = "会员卡号")
     private String cardNumber;
 
     /** 开卡门诊 */
+    @ApiModelProperty(value = "开卡门诊")
     private String abbreviation;
 
     /** 开卡日期 */
+    @ApiModelProperty(value = "开卡日期")
     private String cardOpeningDate;
 
     /** 会员卡余额（本金） */
+    @ApiModelProperty(value = "会员卡余额（本金）")
     private BigDecimal principalAmount;
 
     /** 会员卡余额（赠金） */
+    @ApiModelProperty(value = "会员卡余额（赠金）")
     private BigDecimal bonusAmount;
     
 }

@@ -10,8 +10,7 @@ import java.math.BigDecimal;
  * @author xiangyang
  * @date 2020/9/3
  */
-@Getter
-@Setter
+@Data
 public class PatientMemberCardVo implements Serializable {
     @ApiModelProperty(value = "会员卡id")
     private Integer memberCardId;

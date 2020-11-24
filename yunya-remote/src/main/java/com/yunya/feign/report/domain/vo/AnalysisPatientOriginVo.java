@@ -1,5 +1,7 @@
 package com.yunya.feign.report.domain.vo;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -15,18 +17,23 @@ import java.io.Serializable;
  */
 @Data
 @ToString
+@ApiModel("患者类型Vo")
 public class AnalysisPatientOriginVo implements Serializable {
 
     /** 患者来源类别 */
+    @ApiModelProperty("患者来源类别")
     private Integer originType;
 
     /** 患者来源名称 */
+    @ApiModelProperty("患者来源名称")
     private String originTypeName;
 
     /** 患者来源类别数量 */
+    @ApiModelProperty("患者来源类别数量")
     private Integer countType;
 
     /** 占比 */
+    @ApiModelProperty("占比")
     private String percentage;
 
 }

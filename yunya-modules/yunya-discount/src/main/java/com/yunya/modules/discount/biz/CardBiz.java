@@ -835,12 +835,14 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		RestErrorBo errorBo;
 		//查询患者可用优惠
 		PatientOptionalBenefitVo benefitVo = this.getPatientBenefit(patientId, orderId, orgId);
+		log.info("患者可使用的优惠券：[{}]", benefitVo);
 		if (CollectionUtils.isEmpty(benefitVo.getDiscountVoList()) && CollectionUtils.isEmpty(benefitVo.getMemberCardVoList()) &&
 				CollectionUtils.isEmpty(benefitVo.getExchangeVoList()) && CollectionUtils.isEmpty(benefitVo.getPackageVoList()) &&
 				CollectionUtils.isEmpty(benefitVo.getVoucherVoList())) {
 			log.info("【选择优惠】，患者没有可使用优惠券信息");
 			return ResponseUtil.error(DiscountError.CANT_USE_BENEFIT);
 		}
+		log.info("订单选择的优惠券：[{}]", form);
 		errorBo = checkChoiceBenefitForItem(benefitVo, form);
 		if (errorBo.getError() != null) {
 			return ResponseUtil.error(errorBo.getError(), errorBo.getMsg());
