@@ -2,8 +2,11 @@ package com.yunya.modules.employeeattend.mapper;
 
 import com.yunya.feign.employee_attend.form.LeaveInfoQueryForm;
 import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
+import com.yunya.models.employee_attend.ApprovalLevelSet;
 import com.yunya.models.employee_attend.LeaveInfo;
 import com.yunya.modules.employeeattend.form.LeaveInfoFindForm;
+import com.yunya.modules.employeeattend.form.LeaveInfoForm;
+import com.yunya.feign.employee_attend.vo.EmLeaveVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -32,4 +35,18 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      * @return
      */
     List<LeaveInfoVO>findLeaveListByDay(LeaveInfoFindForm leaveInfoFindForm);
+
+    /**
+     * 查询按天请假时包含的班次
+     * @param leaveInfoForm
+     * @return
+     */
+    List<EmLeaveVO>selectBaseByDay(LeaveInfoForm leaveInfoForm);
+
+    /**
+     * 根据天数获得审批信息
+     * @param leaveInfoForm
+     * @return
+     */
+    List<ApprovalLevelSet>selectApprovalByDay(LeaveInfoForm leaveInfoForm);
 }
