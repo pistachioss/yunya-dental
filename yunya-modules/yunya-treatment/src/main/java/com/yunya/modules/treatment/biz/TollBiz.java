@@ -13,7 +13,16 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.treatment.domain.model.*;
+import com.yunya.feign.treatment.domain.model.AccreditDiscountDetailModel;
+import com.yunya.feign.treatment.domain.model.AccreditDiscountModel;
+import com.yunya.feign.treatment.domain.model.CouponDiscountInfoModel;
+import com.yunya.feign.treatment.domain.model.GeneralDiscountModel;
+import com.yunya.feign.treatment.domain.model.InvoiceModel;
+import com.yunya.feign.treatment.domain.model.MemberAccountModel;
+import com.yunya.feign.treatment.domain.model.PaymentModel;
+import com.yunya.feign.treatment.domain.model.PrepaymentAccountModel;
+import com.yunya.feign.treatment.domain.model.TollDebtModel;
+import com.yunya.feign.treatment.domain.model.TollModel;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
@@ -23,7 +32,13 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysEmployee;
-import com.yunya.models.treatment.*;
+import com.yunya.models.treatment.BillPayDetailRecord;
+import com.yunya.models.treatment.BillPayRecord;
+import com.yunya.models.treatment.BillRecord;
+import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderDetailPayRecord;
+import com.yunya.models.treatment.OrderRecord;
+import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,10 +50,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
-import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
-import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 
 /**
  * 简介: 就诊收费业务层
@@ -1130,6 +1143,7 @@ public class TollBiz {
       orderRecordId = billRecordResult.getOrderRecordId();
       // 更新订单明细收费记录
       updateOrderDetailPayRecord(orderRecordId, totalCharge);
+      savePrivilegeDetail(discountType, patientId,orderRecordId,generalDiscount,accreditDiscount);
     } else {
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
@@ -1179,6 +1193,7 @@ public class TollBiz {
           billRecordId,
           generalDiscount,
           accreditDiscount);
+      savePrivilegeDetail(discountType, patientId,orderRecordId,generalDiscount,accreditDiscount);
     }
     BillPayRecord billPayRecord = new BillPayRecord();
     billPayRecord.setOrgId(orgId);
@@ -1224,11 +1239,9 @@ public class TollBiz {
       Integer orderRecordId) {
     if (null != generalDiscount) {
       discountType = 1;
-      saveCouponPrivilege(patientId, orderRecordId, generalDiscount);
     }
     if (accreditDiscount != null) {
       discountType = 2;
-      saveAccreditPrivilege(patientId, orderRecordId, accreditDiscount);
     }
     return discountType;
   }

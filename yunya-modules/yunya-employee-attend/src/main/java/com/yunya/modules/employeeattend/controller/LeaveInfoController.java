@@ -4,6 +4,7 @@ import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
+import com.yunya.modules.employeeattend.form.LeaveInfoByEmForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -63,4 +64,18 @@ public class LeaveInfoController {
     public ResponseResult selectApprovalByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.selectApprovalByDay(leaveInfoForm));
     }
+
+    /**
+     * 新增按班次请假申请
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/addEm")
+    @ApiOperation("新增按班次请假申请")
+    @RepeatSubmit
+    public ResponseResult addEm(@RequestBody @Validated LeaveInfoByEmForm leaveInfoForm) {
+        return ResponseUtil.success(leaveInfoBiz.addEm(leaveInfoForm));
+    }
+
 }
