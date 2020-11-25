@@ -80,6 +80,7 @@ public class ApprovalCriteriaController {
      */
     @PutMapping()
     @ApiOperation("修改审批条件")
+    @CurrentUser
     public ResponseResult update(@RequestBody @Validated ApprovalCriteriaForm approvalCriteriaForm) {
         return ResponseUtil.success(approvalCriteriaBiz.update(approvalCriteriaForm));
     }
