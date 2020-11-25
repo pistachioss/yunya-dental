@@ -312,7 +312,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       Integer appointCount = this.appointmentFeign.countAppointNotArrived(countAppointQuery);
       vo.setNextAppointment(appointCount);
       // 设置后续随访数量
-      Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId);
+      Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId,dateFormat.parse(vo.getTreatDate()));
       vo.setNextInterview(visitingCount);
       Integer memberTypeId = patientData.getMemberTypeId();
       if (null != memberTypeId) {
@@ -613,7 +613,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
                     visitRecordPlanList.add(visitRecord);
-                    //                    treatmentOtherFeign.insertVisitingRecord(visitRecord);
+                    treatmentOtherFeign.insertVisitingRecord(visitRecordPlanList);
                   });
         }
       }

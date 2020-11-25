@@ -8,6 +8,7 @@ import com.yunya.models.treatment_other.VisitingRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -35,7 +36,7 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
     }
 
     @Override
-    public Integer countNextVisiting(Integer patientId) {
+    public Integer countNextVisiting(Integer patientId, Date treatmentDate) {
         return null;
     }
 }

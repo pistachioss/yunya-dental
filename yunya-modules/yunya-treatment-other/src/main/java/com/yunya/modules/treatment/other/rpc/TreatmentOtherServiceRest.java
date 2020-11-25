@@ -8,9 +8,11 @@ import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -69,9 +71,9 @@ public class TreatmentOtherServiceRest {
      * @return 返回统计个数
      */
     @ApiOperation(value = "统计后续随访个数")
-    @RequestMapping(value = "/visiting/count/{patientId}",method = RequestMethod.GET)
-    public Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId) {
-        return this.visitingRecordMapper.countNextVisiting(patientId);
+    @RequestMapping(value = "/visiting/count/{patientId}/{treatmentDate}",method = RequestMethod.GET)
+    public Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId, @PathVariable("treatmentDate") Date treatmentDate) {
+        return this.visitingRecordMapper.countNextVisiting(patientId,treatmentDate);
     }
 
 }

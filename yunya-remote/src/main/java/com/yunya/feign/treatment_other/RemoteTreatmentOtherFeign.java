@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -53,6 +54,6 @@ public interface RemoteTreatmentOtherFeign {
      * @return 返回统计个数
      */
     @ApiOperation(value = "统计后续随访个数")
-    @RequestMapping(value = "api/treatment/other/visiting/count/{patientId}",method = RequestMethod.GET)
-    Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId);
+    @RequestMapping(value = "api/treatment/other/visiting/count/{patientId}/{treatmentDate}",method = RequestMethod.GET)
+    Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId, @PathVariable(value = "treatmentDate") Date treatmentDate);
 }
