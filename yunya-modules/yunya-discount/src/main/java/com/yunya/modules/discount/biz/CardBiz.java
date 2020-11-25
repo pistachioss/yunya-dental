@@ -1154,7 +1154,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private int setUpMultiItemForOrder(List<PatientUseBenefitBo> benefitBos, OrderItemUseBo orderItem, Integer orgId,
 	                                   Integer itemIndex) {
 		for (PatientUseBenefitBo benefitBo : benefitBos) {
-			if (itemIndex == 1 || checkMixUsed(benefitBo)) {
+			if (checkMixUsed(benefitBo)) {
 				//订单项目id对应的可用的优惠券信息
 				ItemBenefitUseDetailBo benefitUseDetailBo = findBenefitForOrderItem(orgId, benefitBo, orderItem);
 				Integer couponType = benefitBo.getCouponType();
@@ -1173,6 +1173,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 									: BigDecimal.valueOf(0);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
 							putUseMixMapIfPresent(benefitBo);
+							//设置项目index已使用金额
+							changeBo.setDiscountedAmount(changeBo.getDiscountedAmount().add(benefitAmount));
 							return TRUE.getCode();
 						}
 						if (DISCOUNT.equals(couponType)) {
@@ -1180,6 +1182,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 									.setScale(2, BigDecimal.ROUND_HALF_UP);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), DISCOUNT.getCode(), itemIndex);
 							putUseMixMapIfPresent(benefitBo);
+							//设置项目index已使用金额
+							changeBo.setDiscountedAmount(changeBo.getDiscountedAmount().add(benefitAmount));
 							return TRUE.getCode();
 						}
 						if (MEMBER_CARD.equals(couponType)) {
@@ -1203,6 +1207,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 							//订单项目id对应的可用的优惠券信息
 							benefitAmount = receivableAmount.subtract(memberPrice).setScale(2, BigDecimal.ROUND_HALF_UP);
 							buildOrderProperty(benefitAmount, orderItem, benefitBo, null, MEMBER_TYPE.getCode(), MEMBER_CARD.getCode(), itemIndex);
+							//设置项目index已使用金额
+							changeBo.setDiscountedAmount(changeBo.getDiscountedAmount().add(benefitAmount));
 							return TRUE.getCode();
 						}
 						if (VOUCHER.equals(couponType)) {
@@ -1210,10 +1216,10 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 								benefitAmount = receivableAmount.compareTo(benefitBo.getFace()) >= 0 ? benefitBo.getFace() : receivableAmount;
 								buildOrderProperty(benefitAmount, orderItem, benefitBo, benefitUseDetailBo, COUPON_TYPE.getCode(), couponType, itemIndex);
 								putUseMixMapIfPresent(benefitBo);
+								//设置项目index已使用金额
+								changeBo.setDiscountedAmount(changeBo.getDiscountedAmount().add(benefitAmount));
 							}
 						}
-						//设置项目index已使用金额
-						changeBo.setDiscountedAmount(changeBo.getDiscountedAmount().add(benefitAmount));
 					}
 				}
 			}
