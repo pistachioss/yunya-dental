@@ -127,4 +127,21 @@
 	cs.clinic_id = #{companyId} and bs.first_start_time >= #{startTime} and IFNULL(bs.second_end_time,bs.first_end_time)&lt;=
 	#{endTime}
     </select>
+    <select id="findNoWorkEm" resultType="java.lang.String">
+        SELECT
+        es.work_date
+        FROM
+        base_schedule bs
+        LEFT JOIN employee_schedule es on es.schedule_id = bs.id
+        WHERE bs.type = '休息' and
+        es.employee_id = #{userId} and es.work_date >= #{startTime} and es.work_date &lt;= #{endTime}
+    </select>
+    <select id="findNoWorkEmByDate" resultType="com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO">
+    SELECT
+	bs.id scheduleId,es.clinic_id companyId,es.work_date,bs.first_start_time startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime,bs.name
+    FROM
+	base_schedule bs
+	LEFT JOIN employee_schedule es on es.schedule_id = bs.id
+    WHERE es.employee_id = #{userId} and es.work_date = #{workDate}
+    </select>
 </mapper>
