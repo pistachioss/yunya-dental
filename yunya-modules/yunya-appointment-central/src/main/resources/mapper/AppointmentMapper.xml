@@ -392,7 +392,7 @@
                 and a.org_id = #{queryForm.orgId}
             </if>
             <if test="queryForm.currentDate != null and queryForm.currentDate != ''">
-                and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') &gt;= DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
+                and DATE_FORMAT(a.appoint_date, '%Y-%m-%d') = DATE_FORMAT(#{queryForm.currentDate}, '%Y-%m-%d')
             </if>
 
         </where>

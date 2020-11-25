@@ -15,6 +15,7 @@ import com.yunya.models.employee_attend.CopyInfo;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.WorkOvertimeInfo;
 
+import com.yunya.modules.employeeattend.form.WorkForm;
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
 import com.yunya.modules.employeeattend.mapper.BaseScheduleMapper;
 import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
@@ -223,5 +224,15 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
             throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);
         }
         throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+    }
+
+    /**
+     * 撤销加班
+     *
+     * @param
+     * @return
+     */
+    public List<BaseSchedule> findWorkEm(WorkForm workForm) {
+        return mapper.findWorkEm(workForm);
     }
 }

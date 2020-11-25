@@ -2,9 +2,11 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.BillDetailIncomeDetailQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.vo.BillTariffIncomeDetailVO;
+import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -68,5 +70,32 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     List<EmployeeWorkloadVO> resultList = mapper.selectEmployeeWorkloadList(query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询项目分类收入汇总列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<CategoryInfoIncomeVO>
+   */
+  public PageInfo<CategoryInfoIncomeVO> findCategoryIncomeList(BillCategoryIncomeQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<CategoryInfoIncomeVO> resultList = mapper.selectCategoryIncomeList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 公司端报表-财务报表-分类收入汇总-导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportCategoryIncome(HttpServletResponse response, BillCategoryIncomeQuery query)
+      throws IOException {
+    List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
+    ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
+    excelUtil.exportExcel(response, list, "分类收入汇总列表");
   }
 }

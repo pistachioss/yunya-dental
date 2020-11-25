@@ -2,7 +2,9 @@ package com.yunya.modules.employeeattend.mapper;
 
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
+import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.WorkOvertimeInfo;
+import com.yunya.modules.employeeattend.form.WorkForm;
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -21,4 +23,6 @@ public interface WorkOvertimeInfoMapper extends Mapper<WorkOvertimeInfo> {
     List<WorkOvertimeInfoVO> findWorkOvertimeInfoByUserIdsAndDate(@Param("userIds") List<Integer> userIds, @Param("date") Date date);
 
     List<WorkOvertimeInfoListVO> findList(WorkOvertimeInfoForm workOvertimeInfoForm);
+
+    List<BaseSchedule> findWorkEm(WorkForm workForm);
 }

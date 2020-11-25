@@ -246,6 +246,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   private void setBaseBillDetailValue(OrderDetail detail, BaseBillDetail baseBillDetail) {
     Integer detailId = detail.getId();
     baseBillDetail.setBillDetailId(detailId);
+    baseBillDetail.setOrgId(detail.getOrgId());
     baseBillDetail.setBillId(detail.getOrderRecordId());
     baseBillDetail.setExecutorId(detail.getExecutorId());
     baseBillDetail.setItemId(detail.getBillingItemId());
