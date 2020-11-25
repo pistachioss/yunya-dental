@@ -17,7 +17,9 @@
 
   <!-- 查询会员卡概况 -->
   <select id="selectMemberOverviewList" resultType="com.yunya.feign.report.domain.vo.BasePatientMemberOverviewVo">
+    select t1.* from (
     select
+    bp.patient_id patientId,
     bp.name,
     bp.mobile,
     bpm.card_number cardNumber,
@@ -34,17 +36,10 @@
         AND bpm.member_level_id = #{form.memberLevelId}
       </if>
 
-      <if test="form.orgIds != null and from.orgIds.size() > 0">
+      <if test="form.orgIds != null and form.orgIds.size() > 0">
         AND bp.org_id in
         <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
           #{orgId}
-        </foreach>
-      </if>
-
-      <if test="patientIds != null and patientIds.size() > 0 ">
-        AND bp.patient_id in
-        <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-          #{ids}
         </foreach>
       </if>
 
@@ -55,6 +50,15 @@
 
     </where>
     group by bpm.card_opening_date desc
+    ) t1
+    <where>
+      <if test="patientIds != null and patientIds.size() > 0 ">
+        AND t1.patientId in
+        <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+          #{ids}
+        </foreach>
+      </if>
+    </where>
   </select>
 
   <!-- 查询会员卡状态 -->
