@@ -12,10 +12,12 @@ import java.util.Objects;
  */
 public enum AttendanceSourceEnum {
 
-    EMPLOYEE_SCHEDULE((byte)0, "班次排班"),
-    LEAVE((byte)1, "请假"),
-    WORK_OVERTIME((byte)2, "加班"),
-    FIELD((byte)3,"外勤");
+    WORK_SCHEDULE((byte)0, "上班排班"),
+    REST_SCHEDULE((byte)1, "休息排班"),
+    LEAVE_BYDAY((byte)2, "按天请假"),
+    LEAVE_BYSCHEDULE((byte)3, "按班次请假"),
+    WORK_OVERTIME((byte)4, "加班"),
+    FIELD((byte)5,"外勤");
 
     private final Byte code;
     private final String value;

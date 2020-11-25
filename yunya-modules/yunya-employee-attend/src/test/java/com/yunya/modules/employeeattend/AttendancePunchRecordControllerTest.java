@@ -9,13 +9,11 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.employeeattend.controller.AttendancePunchRecordController;
 import com.yunya.modules.employeeattend.controller.BaseScheduleController;
 import com.yunya.modules.employeeattend.form.ScheduleForm;
-import org.joda.time.Days;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import zipkin2.Call;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,7 +53,7 @@ public class AttendancePunchRecordControllerTest {
     public void testPunchInfo() {
         BaseContextHandler.setUserID("558");
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
-        queryForm.setMacAddress("9C:3D:CF:B0:7F:5D");
+        queryForm.setWifiMacAddress("9C:3D:CF:B0:7F:5D");
         queryForm.setLongitude("");
         queryForm.setLatitude("");
         ResponseResult result = attendancePunchRecordController.punchInfo(queryForm);

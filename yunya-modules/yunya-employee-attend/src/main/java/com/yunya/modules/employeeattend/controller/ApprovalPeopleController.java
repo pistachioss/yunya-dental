@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.ApprovalPeopleBiz;
@@ -50,6 +51,7 @@ public class ApprovalPeopleController {
      */
     @PostMapping("/add")
     @ApiOperation("新增审批人员设置")
+    @CurrentUser
     public ResponseResult create(@RequestBody @Validated ApprovalPeopleForm approvalPeopleForm) {
         return ResponseUtil.success(approvalPeopleBiz.create(approvalPeopleForm));
     }

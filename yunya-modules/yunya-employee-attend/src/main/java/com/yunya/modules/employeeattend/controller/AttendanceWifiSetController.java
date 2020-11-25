@@ -3,6 +3,7 @@ package com.yunya.modules.employeeattend.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceWifiSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceWifiSetQueryForm;
+import com.yunya.feign.employee_attend.model.AttendanceSetModel;
 import com.yunya.feign.employee_attend.model.AttendanceWifiSetModel;
 import com.yunya.feign.employee_attend.vo.AttendanceWifiSetVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -70,6 +71,21 @@ public class AttendanceWifiSetController {
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Validated AttendanceWifiSetModel attendanceWifiSetModel) {
         attendanceWifiSetBiz.add(attendanceWifiSetModel);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 批量添加考勤Wifi设置信息
+     *
+     * @param attendanceSetModel 考勤设置模型列表
+     * @return
+     */
+    @CurrentUser
+    @ApiOperation("批量添加考勤Wifi设置信息")
+    @PostMapping("/batchAdd")
+    @RepeatSubmit
+    public ResponseResult batchAdd(@RequestBody @Validated AttendanceSetModel attendanceSetModel) {
+        attendanceWifiSetBiz.batchAdd(attendanceSetModel);
         return ResponseUtil.success(null);
     }
 

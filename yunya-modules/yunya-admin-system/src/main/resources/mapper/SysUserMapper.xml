@@ -378,6 +378,6 @@
                 </foreach>
             </if>
         </where>
-        order by t1.id desc;
+        order by t1.id desc
     </select>
 </mapper>

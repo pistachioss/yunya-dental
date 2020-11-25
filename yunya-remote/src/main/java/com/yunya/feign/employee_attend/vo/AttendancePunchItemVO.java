@@ -47,6 +47,10 @@ public class AttendancePunchItemVO implements Serializable {
     @ApiModelProperty(value = "是否是即将打卡的项目: false-否，true-是")
     private Boolean isNext;
 
+    /** 打卡的类型: 0-上班，1-休息，2-请假，4-加班，5-外勤 */
+    @ApiModelProperty(value = "打卡的类型: 0-上班，1-下班")
+    private Byte source;
+
     /** 打卡的类型: 0-上班，1-下班 */
     @ApiModelProperty(value = "打卡的类型: 0-上班，1-下班")
     private Byte punchType;
@@ -64,7 +68,11 @@ public class AttendancePunchItemVO implements Serializable {
     @ApiModelProperty(value = "打卡方式: 0-地址打卡，1-Wifi打卡")
     private Byte punchMode;
 
-    /** 打卡状态: 0:上班正常 1：迟到  2:下班正常  3:早退  4:无效卡 */
+    /** 打卡结果: 0:上班正常 1：迟到  2:下班正常  3:早退  4:无效卡 */
     @ApiModelProperty(value = "打卡状态: 0:上班正常 1：迟到  2:下班正常  3:早退  4:无效卡")
     private Byte punchStatus;
+
+    /** 情况: 0:上班 1：休息  2:请假  4:加班 5：外勤 */
+    @ApiModelProperty(value = "情况: 0:上班 1：休息  2:请假  4:加班 5：外勤")
+    private Byte condition;
 }

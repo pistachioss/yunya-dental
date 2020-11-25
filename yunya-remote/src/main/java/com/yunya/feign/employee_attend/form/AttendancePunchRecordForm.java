@@ -53,16 +53,16 @@ public class AttendancePunchRecordForm implements Serializable {
     @ApiModelProperty(value = "打卡状态 0:上班正常 1：迟到  2:下班正常  3:早退  4:无效卡", required = true)
     private Byte punchStatus;
 
-    /** 考勤项目来源: 0:班次 1：请假  2：加班 3：外勤 */
-    @ApiModelProperty(value = "考勤项目来源: 0:班次 1：请假  2：加班 3：外勤", required = true)
+    /** 考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤 */
+    @ApiModelProperty(value = "考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤", required = true)
     private Byte source;
 
     /** 考勤地址id */
     @ApiModelProperty(value = "考勤地址id")
     private Integer attendanceAddressId;
 
-    /** 打卡地址 */
-    @ApiModelProperty(value = "打卡地址")
+    /** 打卡地址/wifi名称 */
+    @ApiModelProperty(value = "打卡地址/wifi名称")
     private String punchAddress;
 
     /** 打卡项目来源：员工排班id、请假id、加班id、外勤id */
