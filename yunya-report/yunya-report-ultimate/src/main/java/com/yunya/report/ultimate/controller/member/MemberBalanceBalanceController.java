@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.controller.member;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.vo.BaseMemberBalanceInfoVo;
+import com.yunya.feign.report.domain.vo.MemberCardInfoVo;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -61,5 +62,5 @@ public class MemberBalanceBalanceController {
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberBalanceInfoVos);
     }
-    /***/
+
 }

@@ -6,7 +6,6 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**

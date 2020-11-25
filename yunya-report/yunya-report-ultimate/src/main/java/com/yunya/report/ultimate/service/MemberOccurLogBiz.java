@@ -8,9 +8,11 @@ import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseOrganization;
+import com.yunya.models.report.BasePatientMember;
 import com.yunya.models.report.BasePatientMemberOccurLog;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
+import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberOccurLogMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -39,6 +42,9 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
     /** 患者Mapper */
     @Autowired private BasePatientMapper basePatientMapper;
 
+    /** 患者会员卡信息 */
+    @Autowired private BasePatientMemberMapper basePatientMemberMapper;
+
 
     /**
      * 预付款充值查询
@@ -46,14 +52,17 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<MemberRechargeLogBizVo>
      */
     public PageInfo<BaseMemberRechargeLogVo> memberRechargeList(MemberQueryForm form) throws ParseException {
+        List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = new ArrayList<>();
+        List<Integer> patientIds = null;
+        if (StringHelper.isNotNull(form.getCombination())){
+            patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<Integer> patientIds = null;
-        if (StringHelper.isNotNull(form.getCombination())){
-           patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        if (patientIds == null || patientIds.size() > 0 ){
+            memberRechargeLogBizVos = mapper.selectMemberRechargeList(form,patientIds);
         }
-        List<BaseMemberRechargeLogVo> memberRechargeLogBizVos = mapper.selectMemberRechargeList(form,patientIds);
         return new PageInfo<>(memberRechargeLogBizVos);
     }
 
@@ -63,12 +72,12 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return
      */
     public PageInfo<BaseMemberExpendLogVo> memberExpendList(MemberQueryForm form) throws ParseException {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
         List<BaseMemberExpendLogVo> baseMemberExpendLogVos = mapper.selectMemberExpendtList(form,patientIds);
         return new PageInfo<>(baseMemberExpendLogVos);
@@ -80,12 +89,12 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<MemberReturnLogBizVo>
      */
     public PageInfo<BaseMemberReturnLogVo> memberReturnList(MemberQueryForm form) throws ParseException {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
         List<BaseMemberReturnLogVo> baseMemberReturnLogVos = mapper.selectMemberReturnList(form,patientIds);
         return new PageInfo<>(baseMemberReturnLogVos);
@@ -98,12 +107,12 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<PrepaidRechargeLogBizVo>
      */
     public PageInfo<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form) throws ParseException {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
         List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form,patientIds);
         return new PageInfo<>(basePrepaidRechargeLogVoList);
@@ -115,13 +124,12 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<PrepaidExpendLogBizVo>
      */
     public PageInfo<BasePrepaidExpendLogVo> prepaidExpendList(PrepaidQueryForm form) throws ParseException {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
-
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
         List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = mapper.selectPrepaidExpendList(form,patientIds);
         return new PageInfo<>(basePrepaidExpendLogVoList);
@@ -134,12 +142,12 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<PrepaidReturnLogBizVo>
      */
     public PageInfo<BasePrepaidReturnLogVo> prepaidReturnList(PrepaidQueryForm form) throws ParseException {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
         List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = mapper.selectPrepaidReturnList(form,patientIds);
         return new PageInfo<>(basePrepaidReturnLogVoList);
@@ -160,14 +168,18 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<BaseMemberBalanceInfoVo>
      */
     public PageInfo<BaseMemberBalanceInfoVo> memberBalanceList(MemberQueryForm form) {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
         List<Integer> patientIds = null;
+        List<BaseMemberBalanceInfoVo> basePrepaidReturnLogVoList = new ArrayList<>();
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
-        List<BaseMemberBalanceInfoVo> basePrepaidReturnLogVoList = mapper.selectMemberBalanceList(form,patientIds);
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
+        }
+        if (patientIds == null || patientIds.size() > 0 ){
+            basePrepaidReturnLogVoList = mapper.selectMemberBalanceList(form,patientIds);
+        }
         return new PageInfo<>(basePrepaidReturnLogVoList);
     }
+
 }

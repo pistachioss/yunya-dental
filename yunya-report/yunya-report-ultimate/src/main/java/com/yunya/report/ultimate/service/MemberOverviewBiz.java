@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,14 +45,17 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
      * @return List<MemberOverviewVo>
      */
     public PageInfo<BasePatientMemberOverviewVo> patientOverviewList(MemberOverviewQueryForm form) throws ParseException {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
+        List<BasePatientMemberOverviewVo> basePatientMemberOverviewVoList = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
-        List<BasePatientMemberOverviewVo> basePatientMemberOverviewVoList = mapper.selectMemberOverviewList(form,patientIds);
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
+        }
+        if (patientIds == null || patientIds.size() > 0 ){
+            basePatientMemberOverviewVoList = mapper.selectMemberOverviewList(form,patientIds);
+        }
         return new PageInfo<>(basePatientMemberOverviewVoList);
     }
 

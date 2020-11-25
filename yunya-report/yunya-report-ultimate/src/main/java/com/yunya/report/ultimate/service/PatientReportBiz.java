@@ -57,12 +57,12 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      * @return List<BaseBasePatientNotSeenVo>
      */
     public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form) {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
         List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form,patientIds);
         return new PageInfo<>(basePatientNotSeenVoList);
@@ -74,12 +74,12 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      * @return List<ArrearsVo>
      */
     public PageInfo<ArrearsVo> arrears(ArrearsQueryForm form) {
-        if (form.getWhetherPage()) {
-            PageHelper.startPage(form.getPageNum(), form.getPageSize());
-        }
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (form.getWhetherPage()) {
+            PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
         List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form,patientIds);
         return new PageInfo<>(arrearsVoList);
