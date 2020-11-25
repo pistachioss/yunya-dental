@@ -69,6 +69,9 @@
       <if test="query.dentistId != null">
         and vr.dentist_id = #{query.dentistId}
       </if>
+      <if test="query.dentistId == null">
+        and vr.crt_id = #{query.dentistId}
+      </if>
       <if test="query.inservice != null">
         and vr.inservice = #{query.inservice}
       </if>
