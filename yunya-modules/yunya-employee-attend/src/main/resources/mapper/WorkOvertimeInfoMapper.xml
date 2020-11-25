@@ -142,6 +142,6 @@
     FROM
 	base_schedule bs
 	LEFT JOIN employee_schedule es on es.schedule_id = bs.id
-    WHERE es.employee_id = #{userId} and es.work_date = #{workDate}
+    WHERE es.employee_id = #{userId} and es.work_date = #{workDate} and bs.type = '休息'
     </select>
 </mapper>
