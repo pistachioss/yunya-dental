@@ -72,6 +72,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return
      */
     public PageInfo<BaseMemberExpendLogVo> memberExpendList(MemberQueryForm form) throws ParseException {
+        List<BaseMemberExpendLogVo> baseMemberExpendLogVos = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -79,7 +80,9 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<BaseMemberExpendLogVo> baseMemberExpendLogVos = mapper.selectMemberExpendtList(form,patientIds);
+        if (patientIds == null || patientIds.size() > 0 ){
+            baseMemberExpendLogVos = mapper.selectMemberExpendtList(form,patientIds);
+        }
         return new PageInfo<>(baseMemberExpendLogVos);
     }
 
@@ -89,6 +92,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<MemberReturnLogBizVo>
      */
     public PageInfo<BaseMemberReturnLogVo> memberReturnList(MemberQueryForm form) throws ParseException {
+        List<BaseMemberReturnLogVo> baseMemberReturnLogVos = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -96,7 +100,9 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<BaseMemberReturnLogVo> baseMemberReturnLogVos = mapper.selectMemberReturnList(form,patientIds);
+        if (patientIds == null || patientIds.size() > 0 ){
+            baseMemberReturnLogVos = mapper.selectMemberReturnList(form,patientIds);
+        }
         return new PageInfo<>(baseMemberReturnLogVos);
     }
 
@@ -107,6 +113,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<PrepaidRechargeLogBizVo>
      */
     public PageInfo<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form) throws ParseException {
+        List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -114,7 +121,9 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<BasePrepaidRechargeLogVo> basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form,patientIds);
+        if (patientIds == null || patientIds.size() > 0 ){
+            basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form,patientIds);
+        }
         return new PageInfo<>(basePrepaidRechargeLogVoList);
     }
 
@@ -124,6 +133,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<PrepaidExpendLogBizVo>
      */
     public PageInfo<BasePrepaidExpendLogVo> prepaidExpendList(PrepaidQueryForm form) throws ParseException {
+        List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -131,7 +141,9 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<BasePrepaidExpendLogVo> basePrepaidExpendLogVoList = mapper.selectPrepaidExpendList(form,patientIds);
+        if (patientIds == null || patientIds.size() > 0 ){
+            basePrepaidExpendLogVoList = mapper.selectPrepaidExpendList(form,patientIds);
+        }
         return new PageInfo<>(basePrepaidExpendLogVoList);
     }
 
@@ -142,6 +154,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return List<PrepaidReturnLogBizVo>
      */
     public PageInfo<BasePrepaidReturnLogVo> prepaidReturnList(PrepaidQueryForm form) throws ParseException {
+        List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -149,7 +162,9 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<BasePrepaidReturnLogVo> basePrepaidReturnLogVoList = mapper.selectPrepaidReturnList(form,patientIds);
+        if (patientIds == null || patientIds.size() > 0 ){
+            basePrepaidReturnLogVoList = mapper.selectPrepaidReturnList(form,patientIds);
+        }
         return new PageInfo<>(basePrepaidReturnLogVoList);
     }
 
