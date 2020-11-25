@@ -106,7 +106,7 @@
                 and brp.toolDate &gt;= #{query.tollStartDate}
             </if>
             <if test="query.tollEndDate != null and query.tollEndDate != ''">
-                and brp.toolDate &lt;= #{query.orderEndDate}
+                and brp.toolDate &lt;= #{query.tollEndDate}
             </if>
             <if test="query.billStartDate != null and query.billStartDate != ''">
                 and brp.billDate &gt;= #{query.billStartDate}
