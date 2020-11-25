@@ -33,7 +33,7 @@
     <!--患者表中的全部字段-->
     <sql id="Patient_Column_List">
         id,org_id orgId,name,pinyin_name pinyinName,face_url faceUrl,wo_guid woGuid,mobile,Mobile_owner mobileOwner,medical_number medicalNumber,gender,age,birthday,origin_type originType,origin_id originId,remarks,
-        inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,source_id sourceId,person_id personId
+        inservice,crt_id crtId,crt_name crtName,crt_time crtTime,upt_id uptId,upd_name updName,upd_time updTime,person_id personId
     </sql>
 
     <!--根据手机号查询用户是否纯在-->
