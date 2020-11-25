@@ -1635,6 +1635,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
+     * 计算后续指定患者的预约数量
+     * @param patientId 患者ID
+     * @return 返回预约数量
+     */
+    public Integer countNextAppoint(Integer patientId) {
+        return mapper.selectCountNextAppoint(patientId);
+    }
+
+    /**
      * 设置候诊患者患者信息
      * @param vo 患者候诊
      */

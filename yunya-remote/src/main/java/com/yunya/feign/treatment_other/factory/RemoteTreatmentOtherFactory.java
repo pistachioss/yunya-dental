@@ -36,7 +36,7 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
     }
 
     @Override
-    public Integer countNextVisiting(Integer patientId, Date treatmentDate) {
+    public Integer countNextVisiting(Integer patientId) {
         return null;
     }
 }

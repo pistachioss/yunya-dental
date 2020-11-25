@@ -64,5 +64,5 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
      * @param patientId 患者ID
      * @return 返回统计个数
      */
-    Integer countNextVisiting(@Param("patientId") Integer patientId,@Param("treatmentDate") Date treatmentDate);
+    Integer countNextVisiting(@Param("patientId") Integer patientId);
 }

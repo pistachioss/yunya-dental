@@ -145,4 +145,14 @@ public class AppointmentRest {
   public Integer countAppointNotArrived(@RequestBody AppointmentCurrentListQuery queryForm){
     return appointmentBiz.countAppointNotArrived(queryForm);
   }
+
+  /**
+   * 计算后续指定患者的预约数量
+   * @param patientId 患者ID
+   * @return 返回预约数量
+   */
+  @RequestMapping(value = "/appoint/count/{patientId}", method = RequestMethod.GET)
+  public Integer countNextAppoint(@PathVariable("patientId") Integer patientId){
+    return appointmentBiz.countNextAppoint(patientId);
+  }
 }

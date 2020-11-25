@@ -71,9 +71,9 @@ public class TreatmentOtherServiceRest {
      * @return 返回统计个数
      */
     @ApiOperation(value = "统计后续随访个数")
-    @RequestMapping(value = "/visiting/count/{patientId}/{treatmentDate}",method = RequestMethod.GET)
-    public Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId, @PathVariable("treatmentDate") Date treatmentDate) {
-        return this.visitingRecordMapper.countNextVisiting(patientId,treatmentDate);
+    @RequestMapping(value = "/visiting/count/{patientId}",method = RequestMethod.GET)
+    public Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId) {
+        return this.visitingRecordMapper.countNextVisiting(patientId);
     }
 
 }
