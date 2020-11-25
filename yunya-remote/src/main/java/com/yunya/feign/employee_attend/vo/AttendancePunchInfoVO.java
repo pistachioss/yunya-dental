@@ -31,8 +31,8 @@ public class AttendancePunchInfoVO implements Serializable {
     @ApiModelProperty(value = "是否绑定了考勤设备")
     private boolean hasDeviceBinding;
 
-    /** 打卡类型：0:上班打卡 1：迟到打卡  2:下班打卡  3:早退打卡  4:无效卡  5:不在考勤范围 */
-    @ApiModelProperty(value = "打卡类型: 0:上班打卡 1：迟到打卡  2:下班打卡  3:早退打卡  4:无效卡  5:不在考勤范围")
+    /** 打卡类型：0:上班打卡 1：迟到打卡  2:下班打卡  3:早退打卡  4:无效卡  5:不在考勤范围  6：未排班*/
+    @ApiModelProperty(value = "打卡类型: 0:上班打卡 1：迟到打卡  2:下班打卡  3:早退打卡  4:无效卡  5:不在考勤范围  6：未排班")
     private Byte punchStatus;
 
     /** 打卡地址或者打卡Wifi名称 */
@@ -47,8 +47,8 @@ public class AttendancePunchInfoVO implements Serializable {
     @ApiModelProperty(value = "组织名称")
     private String orgName;
 
-    /** 打卡来源：0-班次；1-请假；2-加班；3-外勤 */
-    @ApiModelProperty(value = "打卡来源：0-班次；1-请假；2-加班；3-外勤")
+    /** 考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤 */
+    @ApiModelProperty(value = "考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤")
     private Byte source;
 
     /** 开始时间 */

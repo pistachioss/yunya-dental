@@ -38,6 +38,10 @@ public class AttendancePunchRecordQueryForm implements Serializable {
     @ApiModelProperty(value = "员工id")
     private Integer userId;
 
+    /** 组织id */
+    @ApiModelProperty(value = "组织id")
+    private Integer orgId;
+
     /** 打卡日期 */
     @ApiModelProperty(value = "打卡日期")
     private Date punchDate;
@@ -60,11 +64,15 @@ public class AttendancePunchRecordQueryForm implements Serializable {
 
     /** Wifi的mac地址 */
     @ApiModelProperty(value = "Wifi的mac地址")
-    private String macAddress;
+    private String wifiMacAddress;
 
     /** Wifi的名称 */
     @ApiModelProperty(value = "Wifi的名称")
     private String wifiName;
+
+    /** 打卡状态 */
+    @ApiModelProperty(value = "打卡状态")
+    private Byte punchStatus;
 
     /** 打卡状态列表 */
     @ApiModelProperty(value = "打卡状态列表", required = true)

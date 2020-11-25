@@ -6,15 +6,13 @@ import com.alibaba.excel.metadata.Table;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-
-
+import com.github.pagehelper.PageHelper;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
@@ -235,16 +233,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             return employeeConflict;
         }
         return employeeConflict;
-    }
-
-    /**
-     * 根据工作日期和员工id查询员工排班列表
-     * @param userId
-     * @param workDate
-     * @return
-     */
-    public List<EmployeeScheduleVO> findEmployeeSchedulesByDateAndEmpId(Integer userId, Date workDate) {
-        return findEmployeeSchedulesByDateAndEmpId(Arrays.asList(userId), Arrays.asList(workDate));
     }
 
     /**
@@ -666,28 +654,6 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     }
 
     /**
-     * 根据排班id获取班次模板信息
-     * @param id 排班id
-     * @return
-     */
-    public BaseSchedule findBaseScheduleById(Integer id) {
-        return mapper.selectBaseScheduleById(id);
-    }
-
-    /**
-     * 根据日期范围查询指定员工的休息排班信息
-     *
-     * @param userId
-     * @param type
-     * @param startDate
-     * @param endDate
-     * @return
-     */
-    public List<EmployeeScheduleVO> findEmployeeScheduleListInDate(Integer userId, String type, Date startDate, Date endDate) {
-        return mapper.findEmployeeScheduleListInDate(userId, type, startDate, endDate);
-    }
-
-    /**
      * 根据主键id列表查询员工排班信息
      *
      * @param ids
@@ -697,6 +663,16 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         return mapper.selectInIds(ids);
     }
 
-
-
+    /**
+     * 根据条件进行分页查询
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    public List<EmployeeScheduleVO> findEmployeeScheduleList(EmployeeScheduleQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPage(),queryForm.getSize());
+        }
+        return mapper.findEmployeeScheduleList(queryForm);
+    }
 }

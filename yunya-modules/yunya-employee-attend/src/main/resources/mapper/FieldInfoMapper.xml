@@ -61,6 +61,7 @@
     <select id="findFieldInfosByUserIdAndDate" resultType="com.yunya.feign.employee_attend.vo.FieldInfoVO">
         select
         t.id,
+        t.company_id as companyId,
         t.user_id as userId,
         t.field_reason as fieldReason,
         t.field_address as fieldAddress,
@@ -78,7 +79,7 @@
                 </foreach>
             </if>
             <if test="date != null">
-                and DATE_FORMAT(t.start_time,'%y-%m-%d') = DATE_FORMAT(#{date},'%y-%m-%d')
+                and DATE_FORMAT(t.start_time,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d')
             </if>
         </where>
         order by t.start_time asc
@@ -102,8 +103,8 @@
                 and t.user_id = #{queryForm.userId}
             </if>
             <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
-                and DATE_FORMAT(t.start_time,'%y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%y-%m-%d') and
-                DATE_FORMAT(#{queryForm.andDate},'%y-%m-%d')
+                and DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and
+                DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
             </if>
         </where>
         order by t.start_time asc

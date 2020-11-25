@@ -1,5 +1,7 @@
 package com.yunya.framework.common.utils;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.*;
@@ -150,7 +152,7 @@ public class DateUtil {
     /**
      * 获取指定年月的开始日期
      * @param year
-     * @param month
+     * @param month 1-12月
      * @return
      */
     public static Date getBeginTime(int year, int month) {
@@ -203,6 +205,42 @@ public class DateUtil {
         }
         if (StringHelper.isEmpty(result)) {
             result = "0分钟";
+        }
+        return result;
+    }
+
+    /**
+     * 获取两个日期内所有日期
+     * @param start
+     * @param end
+     * @return
+     */
+    public static List<Date> getBetweenDate(Date start, Date end) {
+        List<Date> result = new ArrayList<Date>();
+        Calendar tempStart = Calendar.getInstance();
+        tempStart.setTime(start);
+        tempStart.add(Calendar.DAY_OF_YEAR, 1);
+        Calendar tempEnd = Calendar.getInstance();
+        tempEnd.setTime(end);
+        while (tempStart.before(tempEnd)) {
+            result.add(tempStart.getTime());
+            tempStart.add(Calendar.DAY_OF_YEAR, 1);
+        }
+        return result;
+    }
+
+    /**
+     * 转换成1970-01-01当天的时间
+     * @param date
+     * @return
+     */
+    public static Date dateTo19700101(Date date) {
+        String dateStr = DateFormatUtils.format(date, "HH:mm:ss");
+        Date result = null;
+        try {
+            result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1970-01-01 " + dateStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
         return result;
     }

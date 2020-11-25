@@ -5,7 +5,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceDeviceBindingQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceDeviceBindingModel;
 import com.yunya.feign.employee_attend.vo.AttendanceDeviceBindingVO;
-import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -19,8 +18,6 @@ import com.yunya.modules.employeeattend.mapper.AttendanceDeviceBindingMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,9 +37,6 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
     /** 注入对象 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-    @Autowired
-    @Resource
-    private RemoteRabbitMqServiceFeign mqServiceFeign;
     /** 注入对象 */
     @Autowired
     private RedisUtils redisUtils;

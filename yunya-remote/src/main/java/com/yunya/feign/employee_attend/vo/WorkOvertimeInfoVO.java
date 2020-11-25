@@ -36,8 +36,12 @@ public class WorkOvertimeInfoVO implements Serializable {
     @ApiModelProperty(value = "门诊id")
     private Integer companyId;
 
-    /** 班次id */
-    @ApiModelProperty(value = "班次id")
+    /** 休息班次id */
+    @ApiModelProperty(value = "休息班次id")
+    private Integer restScheduleId;
+
+    /** 加班班次id */
+    @ApiModelProperty(value = "加班班次id")
     private Integer scheduleId;
 
     /** 加班事由 */

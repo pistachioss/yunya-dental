@@ -59,4 +59,30 @@ public class EmployeeScheduleQueryForm {
     @ApiModelProperty("是否分页")
     private Boolean whetherPage = false;
 
+    /** 类型 */
+    @ApiModelProperty(value = "类型")
+    private String type;
+
+    /** 工作日期 */
+    @ApiModelProperty(value = "工作日期")
+    private Date workDate;
+
+
+    /** 工作开始日期 */
+    @ApiModelProperty(value = "工作开始日期")
+    private Date betweenWorkDate;
+
+    /** 工作结束日期 */
+    @ApiModelProperty(value = "工作结束日期")
+    private Date andWorkDate;
+
+    /** 工作日期列表 */
+    @ApiModelProperty(value = "工作日期列表")
+    private Date workDates;
+
+    /**
+     * 医生或助手id列表
+     */
+    @ApiModelProperty("医生或助手id列表")
+    private List<Integer> userIds;
 }

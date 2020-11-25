@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceWifiSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceWifiSetQueryForm;
+import com.yunya.feign.employee_attend.model.AttendanceSetModel;
 import com.yunya.feign.employee_attend.model.AttendanceWifiSetModel;
 import com.yunya.feign.employee_attend.vo.AttendanceWifiSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -168,5 +169,20 @@ public class AttendanceWifiSetBiz extends BaseBiz<AttendanceWifiSetMapper, Atten
      */
     public void delete(Integer id) {
         mapper.deleteByPrimaryKey(id);
+    }
+
+    /**
+     * 批量添加考勤Wifi设置信息
+     *
+     * @param attendanceSetModel 考勤设置模型
+     * @return
+     */
+    public void batchAdd(AttendanceSetModel attendanceSetModel) {
+        List<AttendanceWifiSetModel> attendanceWifiSetModels = attendanceSetModel.getAttendanceWifiSetModels();
+        if (attendanceWifiSetModels!=null && !attendanceWifiSetModels.isEmpty()) {
+            attendanceWifiSetModels.forEach(attendanceWifiSetModel -> {
+                add(attendanceWifiSetModel);
+            });
+        }
     }
 }

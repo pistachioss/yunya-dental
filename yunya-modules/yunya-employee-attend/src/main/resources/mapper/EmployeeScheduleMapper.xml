@@ -119,38 +119,6 @@
     order by es.work_date
   </select>
 
-  <select id="selectEmployeeScheduleVOByDateAndCompEmpId" resultMap="EmployeeScheduleVOResultMap">
-    select
-        es.id,
-        es.employee_id,
-        es.clinic_id,
-        es.work_date,
-        es.schedule_id,
-        bs.type,
-        bs.name,
-        bs.first_start_time,
-        bs.first_end_time,
-        bs.second_start_time,
-        bs.second_end_time
-    from employee_schedule es left join base_schedule bs on es.schedule_id = bs.id
-    <where>
-      bs.type = '上班'
-      <if test="employeeIds != null">
-        and es.employee_id in
-        <foreach item="item" index="index" collection="employeeIds" open="(" separator="," close=")">
-          #{item}
-        </foreach>
-      </if>
-      <if test="workDates!=null and workDates.size()>0">
-        and DATE_FORMAT(es.work_date,'%Y-%m-%d') in
-        <foreach item="item" index="index" collection="workDates" open="(" separator="," close=")">
-          DATE_FORMAT(#{item},'%Y-%m-%d')
-        </foreach>
-      </if>
-    </where>
-    order by bs.first_start_time asc;
-  </select>
-
   <select id="selectBaseScheduleById" resultType="com.yunya.models.employee_attend.BaseSchedule">
     select
         bs.name,
@@ -164,37 +132,13 @@
     where es.id = #{id}
   </select>
 
-  <select id="findEmployeeScheduleListInDate" resultType="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO">
-    select
-        es.clinic_id as clinicId,
-        bs.name,
-        bs.type,
-        es.work_date as workDate,
-        bs.first_start_time as firstStartTime,
-        bs.first_end_time as firstEndTime,
-        bs.second_start_time as secondStartTime,
-        bs.second_end_time as secondEndTime,
-        bs.inservice
-    from base_schedule bs left join employee_schedule es on bs.id=es.schedule_id
-    where es.inservice = 1 and bs.inservice
-    <if test="type!=null and type!=''">
-        and bs.type = #{type}
-    </if>
-    <if test="userId != null">
-        and es.employee_id = #{userId}
-    </if>
-    <if test="startDate!=null and endDate!=null">
-        and DATE_FORMAT(es.work_date,'%y-%m-%d') between DATE_FORMAT(#{startDate},'%y-%m-%d') and DATE_FORMAT(#{endDate},'%y-%m-%d')
-    </if>
-  </select>
-
   <select id="selectInIds" resultType="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO">
     select
       es.id,
-      es.employee_id,
-      es.clinic_id,
-      es.work_date,
-      es.schedule_id
+      es.employee_id as employeeId,
+      es.clinic_id as clinicId,
+      es.work_date as workDate,
+      es.schedule_id as scheduleId
     from employee_schedule es
     where es.inservice = 1
     <if test="ids!=null and ids.size()>0">
@@ -203,5 +147,51 @@
             #{item}
         </foreach>
     </if>
+  </select>
+
+  <select id="findEmployeeScheduleList" resultType="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO">
+      select
+          es.id,
+          es.employee_id as employeeId,
+          es.clinic_id as clinicId,
+          es.work_date as workDate,
+          es.schedule_id as scheduleId,
+          bs.type,
+          bs.name,
+          bs.first_start_time as firstStartTime,
+          bs.first_end_time as firstEndTime,
+          bs.second_start_time as secondStartTime,
+          bs.second_end_time as secondEndTime,
+          bs.inservice
+      from employee_schedule es left join base_schedule bs on es.schedule_id = bs.id
+      <where>
+          es.inservice = 1 and bs.inservice = 1
+          <if test="queryForm.type!=null and queryForm.type!=''">
+              and bs.type = #{queryForm.type}
+          </if>
+          <if test="queryForm.userId != null">
+              and es.employee_id = #{queryForm.userId}
+          </if>
+          <if test="queryForm.userIds != null">
+              and es.employee_id in
+              <foreach item="item" index="index" collection="queryForm.userIds" open="(" separator="," close=")">
+                  #{item}
+              </foreach>
+          </if>
+          <if test="queryForm.workDate != null">
+              and DATE_FORMAT(es.work_date,'%Y-%m-%d') = DATE_FORMAT(#{queryForm.workDate},'%Y-%m-%d')
+          </if>
+          <if test="queryForm.workDates!=null and queryForm.workDates.size()>0">
+              and DATE_FORMAT(es.work_date,'%Y-%m-%d') in
+              <foreach item="item" index="index" collection="queryForm.workDates" open="(" separator="," close=")">
+                  DATE_FORMAT(#{item},'%Y-%m-%d')
+              </foreach>
+          </if>
+          <if test="queryForm.betweenWorkDate!=null and queryForm.andWorkDate!=null">
+              and DATE_FORMAT(es.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenWorkDate},'%Y-%m-%d') and
+              DATE_FORMAT(#{queryForm.andWorkDate},'%Y-%m-%d')
+          </if>
+      </where>
+      order by bs.first_start_time asc;
   </select>
 </mapper>
