@@ -240,10 +240,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         List<VisitingRecordVo> searchVisitingRecordVo = null;
         // 随访记录结果列表
         List<VisitingRecordVo> visitingRecordVoList = new ArrayList<>();
-        if (query.getDentistId() == null) {
-            String userID = BaseContextHandler.getUserID();
-            query.setCrtId(Integer.valueOf(userID));
-        }
          List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
