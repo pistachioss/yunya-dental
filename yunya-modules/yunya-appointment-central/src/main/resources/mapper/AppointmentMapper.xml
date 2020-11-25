@@ -386,7 +386,7 @@
                 and a.dentist_id = #{queryForm.dentistId}
             </if>
             <if test="queryForm.patientId != null">
-                and a.patientId = #{queryForm.patientId}
+                and a.patient_id = #{queryForm.patientId}
             </if>
             <if test="queryForm.orgId != null">
                 and a.org_id = #{queryForm.orgId}
@@ -497,6 +497,13 @@
                 and a.appoint_status = #{query.appointStatus}
             </if>
         </where>
+    </select>
+
+    <!-- 计算后续患者预约数量 -->
+    <select id="selectCountNextAppoint" parameterType="Integer" resultType="Integer">
+        select count(id) from appointment where patient_id = #{patientId}
+        and date_format(appoint_date,'%Y-%m-%d') &gt; date_format(now(),'%Y-%m-%d')
+        and appoint_status = 0
     </select>
 
 

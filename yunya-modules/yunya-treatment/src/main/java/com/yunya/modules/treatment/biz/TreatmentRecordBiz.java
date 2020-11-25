@@ -303,13 +303,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
       vo.setAllergen(patientData.getAllergens());
       // 设置后续预约未到数量
-      AppointmentCurrentListQuery countAppointQuery = new AppointmentCurrentListQuery();
-      countAppointQuery.setPatientId(patientData.getId());
-      Date date  = new Date(System.currentTimeMillis());
-      SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-      countAppointQuery.setCurrentDate(dateFormat.format(date));
-      countAppointQuery.setWhetherPage(false);
-      Integer appointCount = this.appointmentFeign.countAppointNotArrived(countAppointQuery);
+      Integer appointCount = this.appointmentFeign.countNextAppoint(patientData.getId());
       vo.setNextAppointment(appointCount);
       // 设置后续随访数量
       Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId);
@@ -452,6 +446,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       vo.setPrivilegeAmount(record.getPrivilegeAmount());
       vo.setReceivedAmount(record.getReceivedAmount());
       vo.setCheckOutTime(new DateTime(record.getCrtTime()).toString("HH:mm"));
+      vo.setBillNumber(record.getBillNumber());
     } else {
       vo.setPrivilegeAmount(BigDecimal.valueOf(0));
       vo.setReceivedAmount(BigDecimal.valueOf(0));
@@ -612,7 +607,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
                     visitRecordPlanList.add(visitRecord);
-                    //                    treatmentOtherFeign.insertVisitingRecord(visitRecord);
+                    treatmentOtherFeign.insertVisitingRecord(visitRecordPlanList);
                   });
         }
       }

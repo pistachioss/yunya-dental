@@ -46,6 +46,7 @@
         t.user_id as userId,
         t.work_date as workDate,
         t.company_id as companyId,
+        t.rest_schedule_id as restScheduleId,
         t.schedule_id as scheduleId,
         t.overtime_reason as overtimeReason,
         t.approval_people_id as approvalPeopleId,
@@ -61,7 +62,7 @@
                 </foreach>
             </if>
             <if test="date != null">
-                and DATE_FORMAT(t.work_date,'%y-%m-%d') = DATE_FORMAT(#{date},'%y-%m-%d')
+                and DATE_FORMAT(t.work_date,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d')
             </if>
         </where>
         order by bs.first_start_time asc

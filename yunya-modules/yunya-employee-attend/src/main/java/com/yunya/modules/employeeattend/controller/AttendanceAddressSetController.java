@@ -60,22 +60,6 @@ public class AttendanceAddressSetController {
         return ResponseUtil.success(result);
     }
 
-
-    /**
-     * 批量添加考勤地址设置和考勤Wifi设置信息
-     *
-     * @param attendanceSetModel 考勤设置模型列表
-     * @return
-     */
-    @CurrentUser
-    @ApiOperation("批量添加考勤地址设置和考勤Wifi设置信息")
-    @PostMapping("/batchAdd")
-    @RepeatSubmit
-    public ResponseResult batchAdd(@RequestBody @Validated AttendanceSetModel attendanceSetModel) {
-        attendanceAddressSetBiz.batchAdd(attendanceSetModel);
-        return ResponseUtil.success(null);
-    }
-
     /**
      * 根据id查询考勤地址设置信息
      *

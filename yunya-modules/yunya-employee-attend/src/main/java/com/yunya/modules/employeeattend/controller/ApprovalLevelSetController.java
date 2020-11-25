@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.ApprovalLevelSetBiz;
@@ -50,6 +51,7 @@ public class ApprovalLevelSetController {
      */
     @PostMapping("/add")
     @ApiOperation("新增审批人级别设置")
+    @CurrentUser
     public ResponseResult create(@RequestBody @Validated ApprovalLevelSetQuery approvalLevelSetQuery) {
         return ResponseUtil.success(approvalLevelSetBiz.create(approvalLevelSetQuery));
     }
@@ -62,6 +64,7 @@ public class ApprovalLevelSetController {
      */
     @PutMapping()
     @ApiOperation("修改审批人级别设置")
+    @CurrentUser
     public ResponseResult update(@RequestBody @Validated ApprovalLevelSetQuery approvalLevelSetQuery) {
         return ResponseUtil.success(approvalLevelSetBiz.update(approvalLevelSetQuery));
     }

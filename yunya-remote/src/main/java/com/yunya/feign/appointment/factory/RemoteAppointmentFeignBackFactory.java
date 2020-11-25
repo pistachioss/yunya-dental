@@ -67,4 +67,9 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
     public Integer countAppointNotArrived(AppointmentCurrentListQuery queryForm) {
         return null;
     }
+
+    @Override
+    public Integer countNextAppoint(Integer patientId) {
+        return null;
+    }
 }

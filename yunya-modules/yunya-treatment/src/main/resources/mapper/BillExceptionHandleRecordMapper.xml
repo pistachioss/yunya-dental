@@ -50,4 +50,229 @@
             behr.crt_time DESC
             LIMIT 1
     </select>
+
+    <!-- 根据条件查询账单调整记录列表 -->
+    <select id="selectBillAdjustRecord" resultType="com.yunya.feign.treatment.domain.vo.BillOfAdjustRecordVO">
+        SELECT
+        bar.billExceptionHandleRecordId,
+        bar.adjustDate,
+        bar.orderDate,
+        bar.billNum,
+        bar.patientId,
+        bar.regDentistId,
+        bar.adjustOperatorId
+        FROM
+        (
+        SELECT
+        behr.id AS billExceptionHandleRecordId,
+        behdr.orgId,
+        DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) adjustDate,
+        behdr.orderDate AS orderDate,
+        behdr.billNumber AS billNum,
+        behdr.patientId patientId,
+        tr.dentist_id AS regDentistId,
+        behr.crt_id AS adjustOperatorId
+        FROM
+        ( SELECT id, treatment_record_id, crt_id, crt_time FROM bill_exception_handle_record WHERE operate_type = 2 )
+        behr
+        LEFT JOIN (
+        SELECT
+        behdr.bill_handle_record_id AS billExceptionhandleRecordId,
+        br.patient_id AS patientId,
+        br.org_id as orgId,
+        br.bill_number AS billNumber,
+        DATE_FORMAT( br.crt_time, '%Y-%m-%d' ) AS billDate,
+        DATE_FORMAT( ord.crt_time, '%Y-%m-%d' ) AS orderDate
+        FROM
+        bill_exception_handle_detail_record behdr
+        LEFT JOIN bill_record br ON behdr.associate_record_id = br.order_record_id
+        LEFT JOIN order_record ord ON behdr.associate_record_id = ord.id
+        ) behdr ON behr.id = behdr.billExceptionhandleRecordId
+        LEFT JOIN treatment_record tr ON behr.treatment_record_id = tr.id
+        ) bar
+        <where>
+            <if test="query.orgId != null">
+                and bar.orgId = #{query.orgId}
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and bar.billNum like concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.adjustStartDate != null and query.adjustStartDate != ''">
+                and bar.adjustDate &gt;= #{query.adjustStartDate}
+            </if>
+            <if test="query.adjustEndDate != null and query.adjustEndDate != ''">
+                and bar.adjustDate &lt;= #{query.adjustEndDate}
+            </if>
+            <if test="query.billStartDate != null and query.billStartDate != ''">
+                and bar.billDate &gt;= #{query.billStartDate}
+            </if>
+            <if test="query.billEndDate != null and query.billEndDate != ''">
+                and bar.billDate &lt;= #{query.billEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and bar.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        bar.adjustDate DESC
+    </select>
+
+    <!-- 根据条件查询账单撤销 -->
+    <select id="selectBillRevokeRecordList"
+            resultType="com.yunya.feign.treatment.domain.vo.BillOfTollRevokeRecordVO">
+        SELECT
+        bar.billExceptionHandleRecordId,
+        bar.revokeDate,
+        bar.orderDate,
+        bar.actualAmount,
+        bar.receivedAmount,
+        bar.chargeDate,
+        bar.billNum,
+        bar.patientId,
+        bar.regDentistId,
+        bar.revokeOperatorId
+        FROM
+        (
+        SELECT
+        behr.id AS billExceptionHandleRecordId,
+        bpr.orgId,
+        DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) revokeDate,
+        bpr.orderDate AS orderDate,
+        bpr.actualAmount,
+        bpr.receivedAmount,
+        bpr.chargeDate,
+        bpr.billNum,
+        bpr.patientId patientId,
+        tr.dentist_id AS regDentistId,
+        behr.crt_id AS revokeOperatorId
+        FROM
+        ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_time FROM bill_exception_handle_record WHERE
+        operate_type = 1 ) behr
+        LEFT JOIN (
+        SELECT
+        bpr.id,
+        bpr.org_id AS orgId,
+        bpr.patient_id AS patientId,
+        bpr.received_amount AS receivedAmount,
+        br.actual_receivable_amount AS actualAmount,
+        br.bill_number AS billNum,
+        DATE_FORMAT( bpr.crt_time, '%Y-%m-%d' ) AS chargeDate,
+        DATE_FORMAT( ord.crt_time, '%Y-%m-%d' ) AS orderDate
+        FROM
+        bill_pay_record bpr
+        LEFT JOIN bill_record br ON bpr.bill_record_id = br.id
+        LEFT JOIN order_record ord ON bpr.order_record_id = ord.id
+        ) bpr ON behr.handled_record_id = bpr.id
+        LEFT JOIN treatment_record tr ON behr.treatment_record_id = tr.id
+        ) bar
+        <where>
+            <if test="query.orgId != null">
+                and bar.orgId = #{query.orgId}
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and bar.billNum like concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.revokeStartDate != null and query.revokeStartDate != ''">
+                and bar.revokeDate &gt;= #{query.revokeStartDate}
+            </if>
+            <if test="query.revokeEndDate != null and query.revokeEndDate != ''">
+                and bar.revokeDate &lt;= #{query.revokeEndDate}
+            </if>
+            <if test="query.chargeStartDate != null and query.chargeStartDate != ''">
+                and bar.chargeDate &gt;= #{query.chargeStartDate}
+            </if>
+            <if test="query.chargeEndDate != null and query.chargeEndDate != ''">
+                and bar.chargeDate &lt;= #{query.chargeEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and bar.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        bar.revokeDate DESC
+    </select>
+
+    <!--  -->
+    <select id="selectBillPayAdjustRecordList"
+            resultType="com.yunya.feign.treatment.domain.vo.BillOfPayRecordAdjustVO">
+        SELECT
+        bar.billExceptionHandleRecordId,
+        bar.adjustDate,
+        bar.orderDate,
+        bar.actualAmount,
+        bar.receivedAmount,
+        bar.chargeDate,
+        bar.billNum,
+        bar.patientId,
+        bar.regDentistId,
+        bar.revokeOperatorId
+        FROM
+        (
+        SELECT
+        behr.id AS billExceptionHandleRecordId,
+        bpr.orgId,
+        DATE_FORMAT( behr.crt_time, '%Y-%m-%d' ) adjustDate,
+        bpr.orderDate AS orderDate,
+        bpr.actualAmount,
+        bpr.receivedAmount,
+        bpr.chargeDate,
+        bpr.billNum,
+        bpr.patientId patientId,
+        tr.dentist_id AS regDentistId,
+        behr.crt_id AS revokeOperatorId
+        FROM
+        ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_time FROM bill_exception_handle_record WHERE
+        operate_type = 0 ) behr
+        LEFT JOIN (
+        SELECT
+        bpr.id,
+        bpr.org_id AS orgId,
+        bpr.patient_id AS patientId,
+        bpr.received_amount AS receivedAmount,
+        br.actual_receivable_amount AS actualAmount,
+        br.bill_number AS billNum,
+        DATE_FORMAT( bpr.crt_time, '%Y-%m-%d' ) AS chargeDate,
+        DATE_FORMAT( ord.crt_time, '%Y-%m-%d' ) AS orderDate
+        FROM
+        bill_pay_record bpr
+        LEFT JOIN bill_record br ON bpr.bill_record_id = br.id
+        LEFT JOIN order_record ord ON bpr.order_record_id = ord.id
+        ) bpr ON behr.handled_record_id = bpr.id
+        LEFT JOIN treatment_record tr ON behr.treatment_record_id = tr.id
+        ) bar
+        <where>
+            <if test="query.orgId != null">
+                and bar.orgId = #{query.orgId}
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and bar.billNum like concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.adjustStartDate != null and query.adjustStartDate != ''">
+                and bar.adjustDate &gt;= #{query.adjustStartDate}
+            </if>
+            <if test="query.adjustEndDate != null and query.adjustEndDate != ''">
+                and bar.adjustDate &lt;= #{query.adjustEndDate}
+            </if>
+            <if test="query.chargeStartDate != null and query.chargeStartDate != ''">
+                and bar.chargeDate &gt;= #{query.chargeStartDate}
+            </if>
+            <if test="query.chargeEndDate != null and query.chargeEndDate != ''">
+                and bar.chargeDate &lt;= #{query.chargeEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and bar.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        bar.adjustDate DESC
+    </select>
 </mapper>

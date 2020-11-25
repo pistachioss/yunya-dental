@@ -5,6 +5,7 @@ package com.yunya.modules.employeeattend.mapper;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 
+import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.vo.EmListVO;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleCopyVO;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
@@ -84,21 +85,18 @@ public interface EmployeeScheduleMapper extends Mapper<EmployeeSchedule> {
   List<EmListVO> findemList(EmployeeSchedule employeeSchedule);
 
   /**
-   * 根据日期范围查询指定员工的休息排班信息
-   *
-   * @param userId
-   * @param type
-   * @param startDate
-   * @param endDate
-   * @return
-   */
-  List<EmployeeScheduleVO> findEmployeeScheduleListInDate(@Param("userId") Integer userId, @Param("type") String type, @Param("startDate") Date startDate, @Param("endDate") Date endDate);
-
-  /**
    * 根据主键id列表查询员工排班信息
    *
    * @param ids
    * @return
    */
   List<EmployeeScheduleVO> selectInIds(@Param("ids") List<Integer> ids);
+
+  /**
+   * 根据条件进行分页查询
+   *
+   * @param queryForm 查询参数
+   * @return
+   */
+  List<EmployeeScheduleVO> findEmployeeScheduleList(@Param("queryForm")EmployeeScheduleQueryForm queryForm);
 }

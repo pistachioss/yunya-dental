@@ -1469,60 +1469,64 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         AppointListQuery listQuery = EntityUtils.build(exportQuery,AppointListQuery.class);
         PageInfo pageInfo = this.findAppointmentListByExample(listQuery);
         List<AppointmentListItemVo> appointmentListItemVoList = pageInfo.getList();
-        // 预约列表信息
-        List<AppointListExportVo> appointListExportVos = new ArrayList<>();
-        if (appointmentListItemVoList != null && !appointmentListItemVoList.isEmpty()){
-            List<AppointListExportVo> appointListExportVoList = new ArrayList<>();
-            // 设置预约患者信息
-            appointmentListItemVoList.forEach(appointmentListItemVo -> {
-               AppointListExportVo appointListExportVo = appointListItemTransformExportEntity(appointmentListItemVo);
-                appointListExportVoList.add(appointListExportVo);
-            });
-            // 对预约列表信息排序
-            appointListExportVos = appointListExportVoList.stream().sorted(Comparator.comparingInt(AppointListExportVo::getDentistId)).collect(Collectors.toList());
-        }
+        // 预约列表为空抛出异常
+        if (StringHelper.isNotEmpty(appointmentListItemVoList)) {
 
-        Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-
-        SimpleDateFormat exportAppointDateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String exportAppointDate = exportAppointDateFormat.format(new Date(System.currentTimeMillis()));
-        // 合并行
-        List<CellRangeAddress> mergeCells = new ArrayList<>();
-        // 将列表中第一个医生的名字作为初始值
-        String firstDentistName = appointListExportVos.get(0).getDentistName();
-        int firstRow = 1;
-        int lastRow = 1;
-        int firstCol = 0;
-        int lastCol = 0;
-        boolean isSameName = false;
-        for (int index = 0; index < appointListExportVos.size() - 1; index++){
-            String nextDentistName = appointListExportVos.get(index + 1).getDentistName();
-            // 如果第一个医生和下一个医生是同一个医生，lastRow + 1
-            if (!firstDentistName.equalsIgnoreCase(nextDentistName)){
-                // 判断是否存在合并行， 如果lastRow - firstRow > 1 说明存在合并行 ，进行合并
-                if (lastRow - firstRow >= 1 && isSameName) {
-                    CellRangeAddress mergeCell = new CellRangeAddress(firstRow,lastRow,firstCol,lastCol);
-                    mergeCells.add(mergeCell);
-                    isSameName = false;
-                }
-                // 更新第一行指针到最后一行
-                firstRow = ++lastRow;
-                firstDentistName = nextDentistName;
-            } else {
-                isSameName = true;
-                lastRow++;
+            // 预约列表信息
+            List<AppointListExportVo> appointListExportVos = new ArrayList<>();
+            if (appointmentListItemVoList != null && !appointmentListItemVoList.isEmpty()) {
+                List<AppointListExportVo> appointListExportVoList = new ArrayList<>();
+                // 设置预约患者信息
+                appointmentListItemVoList.forEach(appointmentListItemVo -> {
+                    AppointListExportVo appointListExportVo = appointListItemTransformExportEntity(appointmentListItemVo);
+                    appointListExportVoList.add(appointListExportVo);
+                });
+                // 对预约列表信息排序
+                appointListExportVos = appointListExportVoList.stream().sorted(Comparator.comparingInt(AppointListExportVo::getDentistId)).collect(Collectors.toList());
             }
+
+            Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+
+            SimpleDateFormat exportAppointDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String exportAppointDate = exportAppointDateFormat.format(new Date(System.currentTimeMillis()));
+            // 合并行
+            List<CellRangeAddress> mergeCells = new ArrayList<>();
+            // 将列表中第一个医生的名字作为初始值
+            String firstDentistName = appointListExportVos.get(0).getDentistName();
+            int firstRow = 1;
+            int lastRow = 1;
+            int firstCol = 0;
+            int lastCol = 0;
+            boolean isSameName = false;
+            for (int index = 0; index < appointListExportVos.size() - 1; index++) {
+                String nextDentistName = appointListExportVos.get(index + 1).getDentistName();
+                // 如果第一个医生和下一个医生是同一个医生，lastRow + 1
+                if (!firstDentistName.equalsIgnoreCase(nextDentistName)) {
+                    // 判断是否存在合并行， 如果lastRow - firstRow > 1 说明存在合并行 ，进行合并
+                    if (lastRow - firstRow >= 1 && isSameName) {
+                        CellRangeAddress mergeCell = new CellRangeAddress(firstRow, lastRow, firstCol, lastCol);
+                        mergeCells.add(mergeCell);
+                        isSameName = false;
+                    }
+                    // 更新第一行指针到最后一行
+                    firstRow = ++lastRow;
+                    firstDentistName = nextDentistName;
+                } else {
+                    isSameName = true;
+                    lastRow++;
+                }
+            }
+            ExcelUtil<AppointListExportVo> appointExcelExport = new ExcelUtil<>(AppointListExportVo.class);
+            appointExcelExport.setMergeRegion(mergeCells);
+            OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+            String orgName = null;
+            if (orgInfo != null) {
+                orgName = orgInfo.getName();
+            }
+            // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
+            String excelName = orgName + "预约报表(" + exportAppointDate + ")";
+            appointExcelExport.exportExcel(response, appointListExportVos, excelName, excelName);
         }
-        ExcelUtil<AppointListExportVo> appointExcelExport = new ExcelUtil<>(AppointListExportVo.class);
-        appointExcelExport.setMergeRegion(mergeCells);
-        OrganizationInfo orgInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-        String orgName = null;
-        if (orgInfo != null) {
-            orgName = orgInfo.getName();
-        }
-        // 导出excel文件名  "XXX门诊预约报表（2020-06-10）"
-        String excelName = orgName + "预约报表(" + exportAppointDate + ")";
-        appointExcelExport.exportExcel(response,appointListExportVos,excelName,excelName);
     }
 
     /**
@@ -1628,6 +1632,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
       List<AppointmentUnDonePatientInfoVO> resultList =
               mapper.selectAppointmentUnDonePatientInfoList(queryForm);
       return resultList.size();
+    }
+
+    /**
+     * 计算后续指定患者的预约数量
+     * @param patientId 患者ID
+     * @return 返回预约数量
+     */
+    public Integer countNextAppoint(Integer patientId) {
+        return mapper.selectCountNextAppoint(patientId);
     }
 
     /**

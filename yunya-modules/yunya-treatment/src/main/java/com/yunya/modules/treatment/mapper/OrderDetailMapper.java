@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.models.treatment.OrderDetail;
@@ -28,4 +29,12 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    */
   List<OrderDetailChargeVO> selectChargeOrderDetailList(
       @Param("orderRecordId") Integer orderRecordId);
+
+  /**
+   * 打印账单信息
+   * @param patientId 患者ID
+   * @param billNumber 账单编号
+   * @return 返回账单信息
+   */
+  BillPrintInfoVO billPrintInfo(@Param("patientId") Integer patientId, @Param("billNumber") String billNumber);
 }

@@ -37,6 +37,10 @@ public class AttendanceStatisticsQueryForm implements Serializable {
     @ApiModelProperty(value = "员工姓名")
     private String employeeName;
 
+    /** 员工id */
+    @ApiModelProperty(value = "员工id")
+    private Integer userId;
+
     /** 组织id */
     @ApiModelProperty(value = "组织id")
     private Integer orgId;

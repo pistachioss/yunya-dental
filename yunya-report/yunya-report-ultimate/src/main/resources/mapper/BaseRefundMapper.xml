@@ -95,5 +95,6 @@
                 </foreach>
             </if>
         </where>
+        order by br.refundDate desc
     </select>
 </mapper>

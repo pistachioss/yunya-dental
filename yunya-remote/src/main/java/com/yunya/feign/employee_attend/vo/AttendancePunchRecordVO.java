@@ -70,8 +70,8 @@ public class AttendancePunchRecordVO implements Serializable {
     @ApiModelProperty(value = "打卡状态: 0:上班正常 1：迟到  2:下班正常  3:早退  4:无效卡")
     private Byte punchStatus;
 
-    /** 打卡项目来源: 0:班次 1：请假  2：加班 3：外勤 */
-    @ApiModelProperty(value = "打卡项目来源: 0:班次 1：请假  2：加班 3：外勤")
+    /** 考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤 */
+    @ApiModelProperty(value = "考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤")
     private Byte source;
 
     /** 考勤地址Id */

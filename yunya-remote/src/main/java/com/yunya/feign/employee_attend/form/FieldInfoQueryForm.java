@@ -59,7 +59,7 @@ public class FieldInfoQueryForm implements Serializable {
 
     /** 外勤原因 */
     @ApiModelProperty(value = "外勤原因")
-    private Date fieldReason;
+    private String fieldReason;
 
     /** 审批人id （直接存员工id 与审批人员表无关） */
     @ApiModelProperty(value = "审批人id （直接存员工id 与审批人员表无关）")

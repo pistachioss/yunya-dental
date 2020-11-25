@@ -32,6 +32,10 @@ public class LeaveInfoVO implements Serializable {
     @ApiModelProperty(value = "申请人id")
     private Integer userId;
 
+    /** 组织id */
+    @ApiModelProperty(value = "组织id")
+    private Integer orgId;
+
     /**
      * 假期类型id
      */

@@ -190,6 +190,10 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         List<VisitingRemindVo> visitingRemindVos = new ArrayList<>();
         // 检索随访提醒内容列表
         List<VisitingRemindVo> searchVisitingRemindVo = null;
+        if (query.getDentistId() == null) {
+            String userID = BaseContextHandler.getUserID();
+            query.setCrtId(Integer.valueOf(userID));
+        }
         List<VisitingRemind> visitingReminds = mapper.findVisitingRemindByCondition(query);
         if (!StringHelper.isEmpty(visitingReminds)) {
             visitingReminds.forEach(visitingRemind -> {

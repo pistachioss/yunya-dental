@@ -80,5 +80,8 @@ public class VisitingRecordQuery implements Serializable {
     /** 随访状态 0-待随访；1-随访完成 */
     @ApiModelProperty(value = "随访状态 false-待随访；true-随访完成")
     private Boolean status;
+    /** 创建人ID */
+    @ApiModelProperty(value = "创建人ID")
+    private Integer crtId;
 
 }

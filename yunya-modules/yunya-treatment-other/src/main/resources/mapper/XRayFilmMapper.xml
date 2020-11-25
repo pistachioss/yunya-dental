@@ -86,12 +86,12 @@
         xrf2.upload_time,
         xrf2.crt_time,
         xrf2.upd_time,
-        ( SELECT COUNT( id ) FROM x_ray_film WHERE type = 1 AND tooth_no = xrf.tooth_no and inservice=true) AS `count`
+        ( SELECT COUNT( id ) FROM x_ray_film WHERE type = 1 AND patient_id=#{patientId} AND tooth_no = xrf.tooth_no and inservice=true) AS `count`
     FROM
         `x_ray_film` xrf
-        LEFT JOIN ( SELECT id, tooth_no, url, photo_name, upload_time, crt_time, upd_time
+        LEFT JOIN ( SELECT id, tooth_no, url, photo_name, upload_time, crt_time, upd_time,patient_id
                      FROM x_ray_film
-                     WHERE type = 1 and inservice = true
+                     WHERE type = 1 and inservice = true and patient_id = #{patientId}
                      <if test="toothNo == null">
                          GROUP BY tooth_no
                      </if>

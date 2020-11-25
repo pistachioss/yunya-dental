@@ -1,7 +1,6 @@
 package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.yunya.feign.employee_attend.form.*;
@@ -16,11 +15,13 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
 import com.yunya.modules.employeeattend.enums.AttendanceSourceEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceStateEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceStatusEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceTypeEnum;
+import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.AttendancePunchRecordMapper;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
 import org.springframework.beans.BeanUtils;
@@ -28,6 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -72,9 +75,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     private FieldInfoBiz fieldInfoBiz;
     /** 注入对象 */
     @Autowired
-    private WorkOvertimeInfoBiz workOvertimeInfoBiz;
-    /** 注入对象 */
-    @Autowired
     private AttendanceDeviceBindingBiz attendanceDeviceBindingBiz;
 
     /**
@@ -107,7 +107,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
 
         // 根据考勤地址或Wifi的mac地址抽取用户当天的打卡项目（上班班次、加班、请假、外勤）
-        String macAddress = queryForm.getMacAddress();
+        String macAddress = queryForm.getWifiMacAddress();
         String longitude = queryForm.getLongitude();
         String latitude = queryForm.getLatitude();
         if (StringHelper.isEmpty(macAddress) && (StringHelper.isEmpty(longitude) || StringHelper.isEmpty(latitude))) {
@@ -154,6 +154,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 punchName = attendanceAddressSetVO.getAttendanceAddress();
             }
         }
+        result.setPunchName(punchName);
+        result.setPunchMode(punchMode);
         AttendancePunchRecordQueryForm recordQueryForm = new AttendancePunchRecordQueryForm();
         recordQueryForm.setUserId(userId);
         recordQueryForm.setPunchDate(new Date(System.currentTimeMillis()));
@@ -162,11 +164,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             setOrgName(attendancePunchRecordVOS);
             setCurItemInfo(attendancePunchRecordVOS, result);
             result.setAttendancePunchItemVOS(findPunchItem(attendancePunchRecordVOS));
-        } else {
-
+        } else {//未排班
+            result.setPunchStatus((byte) 6);
+            return result;
         }
-        result.setPunchName(punchName);
-        result.setPunchMode(punchMode);
         Byte source = result.getSource();
         if (orgId==null || (AttendanceSourceEnum.FIELD.getCode()!=source&&!orgId.equals(result.getOrgId()))) {//不在考勤范围内
             result.setPunchStatus((byte) 5);
@@ -209,6 +210,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<AttendancePunchItemVO> result = new ArrayList<>();
         AttendancePunchRecordVO onDutyPunchRecord = attendancePunchRecordVOS.get(0);
         AttendancePunchRecordVO offDutyPunchRecord = attendancePunchRecordVOS.get(1);
+        Byte source = onDutyPunchRecord.getSource();
 
         AttendancePunchItemVO onDutyPunchItem = new AttendancePunchItemVO();
         AttendancePunchItemVO offDutyPunchItem = new AttendancePunchItemVO();
@@ -216,6 +218,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         onDutyPunchItem.setId(onDutyPunchRecord.getId());
         onDutyPunchItem.setStartTime(onDutyPunchRecord.getStartTime());
         onDutyPunchItem.setEndTime(onDutyPunchRecord.getEndTime());
+        Byte condition = onDutyPunchRecord.getSource();
+        if (source==AttendanceSourceEnum.LEAVE_BYDAY.getCode() || source==AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode()) {
+            condition = 2;
+        }
+        onDutyPunchItem.setCondition(condition);
         boolean isNext = false;
         if (onDutyPunchRecord.getIsPunch() == 1) {//已打卡
             onDutyPunchItem.setPunchType(onDutyPunchRecord.getPunchType());
@@ -233,11 +240,17 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             onDutyPunchItem.setPunchType((byte) 0);
         }
         onDutyPunchItem.setIsNext(isNext);
+
         offDutyPunchItem.setOrgName(offDutyPunchRecord.getOrgName());
         offDutyPunchItem.setId(offDutyPunchRecord.getId());
         offDutyPunchItem.setStartTime(offDutyPunchRecord.getStartTime());
         offDutyPunchItem.setEndTime(offDutyPunchRecord.getEndTime());
         offDutyPunchItem.setIsNext(!isNext);
+        condition = offDutyPunchRecord.getSource();
+        if (source==AttendanceSourceEnum.LEAVE_BYDAY.getCode() || source==AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode()) {
+            condition = 2;
+        }
+        offDutyPunchItem.setCondition(condition);
         if (offDutyPunchRecord.getIsPunch() == 1) {//已打卡
             byte punchMode = 0;
             if (offDutyPunchRecord.getWifiMacAddress()!=null) {
@@ -372,12 +385,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     public AttendancePunchCalendarInfoVO punchRecordByDate(Date date) {
         AttendancePunchCalendarInfoVO result = new AttendancePunchCalendarInfoVO();
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        // 打卡记录
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
         queryForm.setPunchDate(date);
         queryForm.setUserId(userId);
         List<AttendancePunchRecordVO> attendancePunchRecordVOS = mapper.findAttendancePunchRecordList(queryForm);
         setOrgName(attendancePunchRecordVOS);
-        List<AttendancePunchItemVO> attendancePunchItemVOS = new ArrayList<>(5);
+
         AttendancePunchRecordVO firstPunchRecord = null;
         AttendancePunchRecordVO lastPunchRecord = null;
         for (AttendancePunchRecordVO attendancePunchRecordVO : attendancePunchRecordVOS) {
@@ -388,32 +402,33 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 lastPunchRecord = attendancePunchRecordVO;
             }
         }
+        List<AttendancePunchItemVO> attendancePunchItemVOS = new ArrayList<>(2);
         List<AttendancePunchRecordVO> attendancePunchRecordVOList = new ArrayList<>(2);
         if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
-            attendancePunchRecordVOList = todayEmployeeSchedule(firstPunchRecord, lastPunchRecord);
+            attendancePunchRecordVOList = employeeScheduleList(firstPunchRecord, lastPunchRecord);
             attendancePunchItemVOS.add(createPunchItem(firstPunchRecord));
             attendancePunchItemVOS.add(createPunchItem(lastPunchRecord));
         }
-        long[] computeValue = compute(firstPunchRecord,lastPunchRecord);
-        result.setWorkLength(computeValue[0]);
-        result.setPunchCount((int) computeValue[1]);
+        long workLen = computeWorkLen(firstPunchRecord,lastPunchRecord);
+        result.setWorkLength(workLen);
         result.setAttendancePunchRecordVOS(attendancePunchRecordVOList);
         result.setAttendancePunchItemVOS(attendancePunchItemVOS);
         return result;
     }
 
     /**
-     * 今日排班列表
+     * 排班信息列表
      * @param firstPunchRecord
      * @param lastPunchRecord
      * @return
      */
-    private List<AttendancePunchRecordVO> todayEmployeeSchedule(AttendancePunchRecordVO firstPunchRecord, AttendancePunchRecordVO lastPunchRecord) {
+    private List<AttendancePunchRecordVO> employeeScheduleList(AttendancePunchRecordVO firstPunchRecord, AttendancePunchRecordVO lastPunchRecord) {
         List<AttendancePunchRecordVO> result = new ArrayList<>();
         if (firstPunchRecord!=null && lastPunchRecord!=null) {
             if (firstPunchRecord.getSourceId().equals(lastPunchRecord.getSourceId())) {// 全天班
                 AttendancePunchRecordVO attendancePunchRecordVO = new AttendancePunchRecordVO();
                 attendancePunchRecordVO.setName(firstPunchRecord.getName());
+
                 attendancePunchRecordVO.setOrgName(firstPunchRecord.getOrgName());
                 attendancePunchRecordVO.setStartTime(firstPunchRecord.getStartTime());
                 attendancePunchRecordVO.setEndTime(firstPunchRecord.getEndTime());
@@ -451,29 +466,26 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     }
 
     /**
-     * 计算工作时长和打卡次数
+     * 计算工作时长
      * @param firstPunchRecord
      * @param lastPunchRecord
      * @return
      */
-    private long[] compute(AttendancePunchRecordVO firstPunchRecord, AttendancePunchRecordVO lastPunchRecord) {
-        long[] result = new long[2];
+    private long computeWorkLen(AttendancePunchRecordVO firstPunchRecord, AttendancePunchRecordVO lastPunchRecord) {
         if (firstPunchRecord == null || lastPunchRecord == null) {
-            return result;
+            return 0;
         }
         Byte firstIsPunch = firstPunchRecord.getIsPunch();
         Byte lastIsPunch = lastPunchRecord.getIsPunch();
         if (firstIsPunch == 0) {// 上班未打卡，则0;
-            return result;
+            return 0;
         }
-        long workLength = 0;
         Date punchTime = lastPunchRecord.getPunchTime();
         long startTime = 0;
         if (punchTime != null) {
             startTime = punchTime.getTime();
         }
         long length = startTime - firstPunchRecord.getPunchTime().getTime();
-        long punchCount = 2;
         punchTime = firstPunchRecord.getPunchTime();
         long endTime = 0;
         if (punchTime != null) {
@@ -481,12 +493,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
         if (lastIsPunch == 0) {// 下班未打卡，待确认
             length = firstPunchRecord.getEndTime().getTime() - endTime;
-            punchCount = 1;
         }
-        workLength = DateUtil.micro2Min(length);
-        result[0] = workLength;
-        result[1] = punchCount;
-        return result;
+        return DateUtil.micro2Min(length);
     }
 
     /**
@@ -506,12 +514,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
         punchItem.setOrgName(attendancePunchRecordVO.getOrgName());
         punchItem.setPunchMode(punchMode);
-        Date startTime = attendancePunchRecordVO.getStartTime();
-        Date endTime = attendancePunchRecordVO.getEndTime();
-        String itemName = attendancePunchRecordVO.getName();
-        punchItem.setStartTime(startTime);
-        punchItem.setEndTime(endTime);
-        punchItem.setItemName(itemName);
+        Byte source = attendancePunchRecordVO.getSource();
+        if (source==AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode()
+                || source==AttendanceSourceEnum.LEAVE_BYDAY.getCode()) {
+            source = 2;
+        }
+        punchItem.setSource(source);
+        punchItem.setStartTime(attendancePunchRecordVO.getStartTime());
+        punchItem.setEndTime(attendancePunchRecordVO.getEndTime());
+        punchItem.setItemName(attendancePunchRecordVO.getName());
         return punchItem;
     }
 
@@ -528,7 +539,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Date firstDate = dateList.get(0);
         Date endDate = dateList.get(dateList.size()-1);
         // 休息班次
-        List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleListInDate(userId, "休息", firstDate, endDate);
+        EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+        employeeScheduleQueryForm.setUserId(userId);
+        employeeScheduleQueryForm.setType(REST);
+        employeeScheduleQueryForm.setBetweenWorkDate(firstDate);
+        employeeScheduleQueryForm.setAndWorkDate(endDate);
+        List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(employeeScheduleQueryForm);
         // 打卡记录
         AttendancePunchRecordQueryForm recordQueryForm = new AttendancePunchRecordQueryForm();
         recordQueryForm.setUserId(userId);
@@ -562,11 +578,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     temp = "早退";
                 }
             }
-            if (source == 1) {
+            if (source==AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode()
+                    || source==AttendanceSourceEnum.LEAVE_BYDAY.getCode()) {
                 temp = "请假";
-            } else if (source == 3) {
+            }/* else if (source == AttendanceSourceEnum.FIELD.getCode()) {
                 temp = "外勤";
-            }
+            }*/
             if (state==null|| !"正常".equals(state)) {
                 state = temp;
             }
@@ -576,6 +593,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         });
 
         dateList.forEach(date->{
+            byte rest = AttendanceStateEnum.REST.getCode();
             byte normal = AttendanceStateEnum.NORMAL.getCode();
             byte exception = AttendanceStateEnum.EXCEPTION.getCode();
             byte unknown = AttendanceStateEnum.UNKNOWN.getCode();
@@ -585,13 +603,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 attendanceCalendarInfoVO.setName("未开始");
                 attendanceCalendarInfoVO.setType(unknown);
             } else {
-                attendanceCalendarInfoVO.setName("缺卡");
+                attendanceCalendarInfoVO.setName("未排班");
                 attendanceCalendarInfoVO.setType(exception);
                 employeeScheduleVOS.forEach(restVO -> {
                     Date workDate = restVO.getWorkDate();
                     if (date.compareTo(workDate) == 0) {
                         attendanceCalendarInfoVO.setName("休息");
-                        attendanceCalendarInfoVO.setType(normal);
+                        attendanceCalendarInfoVO.setType(rest);
                     }
                 });
             }
@@ -623,19 +641,19 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         attendanceCalendarInfoVO.setType(exception);
                         break;
                     }
-                    case "外勤": {
+                    /*case "外勤": {
                         attendanceCalendarInfoVO.setName("外勤");
                         attendanceCalendarInfoVO.setType(exception);
                         break;
-                    }
+                    }*/
                     default:
                 }
             }
-            Integer count = unPunchCount.get(date);
+            /*Integer count = unPunchCount.get(date);
             if (count!=null && 2==count) {
                 attendanceCalendarInfoVO.setName("旷工");
                 attendanceCalendarInfoVO.setType(exception);
-            }
+            }*/
             result.add(attendanceCalendarInfoVO);
         });
         return result;
@@ -653,8 +671,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<Date> dateList = DateUtil.getMonthFullDay(dateStr);
         Date firstDate = dateList.get(0);
         Date endDate = dateList.get(dateList.size()-1);
+        EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+        employeeScheduleQueryForm.setBetweenWorkDate(firstDate);
+        employeeScheduleQueryForm.setAndWorkDate(endDate);
+        employeeScheduleQueryForm.setUserId(userId);
         // 班次列表
-        List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleListInDate(userId,null,firstDate,endDate);
+        List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(employeeScheduleQueryForm);
         Map<Integer, EmployeeScheduleVO> restMap = new LinkedHashMap<>(employeeScheduleVOS.size());
         Map<Integer, EmployeeScheduleVO> workMap = new LinkedHashMap<>(employeeScheduleVOS.size());
         List<Integer> orgIds = new ArrayList<>();
@@ -723,6 +745,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             fieldStatistics.setMinutes(DateUtil.micro2HourMin(diff));
             fieldStatisticsList.add(fieldStatistics);
         });
+
         int attendanceNum = 0;
         List<AttendancePunchRecordVO> lateStatisticsList = new ArrayList<>(16);
         List<AttendancePunchRecordVO> earlyStatisticsList = new ArrayList<>(16);
@@ -737,7 +760,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             String orgName = orgMap.get(orgId);
             Byte source = attendancePunchRecordVO.getSource();
             if (isPunch == 0) {
-                if (source == AttendanceSourceEnum.LEAVE.getCode()) {// 按天请假
+                if (source == AttendanceSourceEnum.LEAVE_BYDAY.getCode()) {// 按天请假
                     AttendancePunchRecordVO leaveStatistics = new AttendancePunchRecordVO();
                     leaveStatistics.setOrgName(orgName);
                     leaveStatistics.setName("全天请假");
@@ -751,7 +774,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             } else {
                 Date punchTime = attendancePunchRecordVO.getPunchTime();
                 Integer sourceId = attendancePunchRecordVO.getSourceId();
-                if (source == AttendanceSourceEnum.EMPLOYEE_SCHEDULE.getCode()) {
+                if (source==AttendanceSourceEnum.WORK_SCHEDULE.getCode()) {
                     Byte punchStatus = attendancePunchRecordVO.getPunchStatus();
                     switch (punchStatus) {
                         case 0: {
@@ -783,7 +806,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         }
                         default:
                     }
-                } else if (source == AttendanceSourceEnum.WORK_OVERTIME.getCode()) {
+                } else if (source==AttendanceSourceEnum.REST_SCHEDULE.getCode()) {
+                    attendancePunchRecordVO.setOrgName(orgName);
+                    unpunchStatisticsList.add(attendancePunchRecordVO);
+                } else if (source==AttendanceSourceEnum.WORK_OVERTIME.getCode()) {
                     Integer scheduleId = attendancePunchRecordVO.getScheduleId();
                     if (scheduleId!=null) {
                         restMap.remove(scheduleId);
@@ -828,40 +854,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     }
 
     /**
-     * 根据条件分页查询考勤汇总
+     * 根据条件查询考勤汇总
      *
      * @param queryForm 查询参数
      * @return
      */
-    public PageInfo<AttendanceStatisticsVO> statisticsPunchRecord(AttendanceStatisticsQueryForm queryForm) {
+    public List<AttendanceStatisticsVO> statisticsPunchRecord(AttendanceStatisticsQueryForm queryForm) {
         String name = queryForm.getEmployeeName();
-        String dateStr = queryForm.getDate();
-        Date startTime = null;
-        Date endTime = null;
-        if (StringHelper.isNotEmpty(dateStr)) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            if (dateStr.length() == 4) {//按年查
-                int year = Integer.parseInt(dateStr);
-                startTime = DateUtil.getBeginTime(year,0);
-                endTime = DateUtil.getEndTime(year,11);
-            } else if (dateStr.length() == 7) {
-                String[] dateTmp = dateStr.split("-");
-                int year = Integer.parseInt(dateTmp[0]);
-                int month = Integer.parseInt(dateTmp[1]) - 1;
-                startTime = DateUtil.getBeginTime(year,month);
-                endTime = DateUtil.getEndTime(year,month);
-            } else if (dateStr.length() == 10) {
-                try {
-                    endTime = startTime = sdf.parse(dateStr);
-                } catch (ParseException e) {
-                    throw new ClientServiceException("日期参数格式转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-                }
-            } else {
-                throw new ClientServiceException("日期参数格式错误", PARAMETERS_IS_ILLEGAL);
-            }
-            queryForm.setBetweenDate(startTime);
-            queryForm.setAndDate(endTime);
-        }
+        setQueryFormDate(queryForm);
         List<AttendancePunchRecordVO> attendancePunchRecordVOS = mapper.selectAttendanceStatisticsPunchRecord(queryForm);
         List<AttendancePunchDateVO> attendancePunchDateVOS = punchRecord2PunchDate(attendancePunchRecordVOS);
         Table<Integer,Integer, Long> workDateMinuteMap = HashBasedTable.create();
@@ -878,16 +878,20 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Table<Integer,Integer, Boolean> isFullMap = HashBasedTable.create();
 
         LeaveInfoQueryForm leaveQueryForm = new LeaveInfoQueryForm();
-        leaveQueryForm.setBetweenStartDate(startTime);
-        leaveQueryForm.setAndStartDate(endTime);
+        leaveQueryForm.setBetweenStartDate(queryForm.getBetweenDate());
+        leaveQueryForm.setAndStartDate(queryForm.getAndDate());
         List<LeaveInfoVO> leaveInfoVOS = leaveInfoBiz.findLeaveInfoList(leaveQueryForm);
         List<Integer> employeeScheduleIds = new ArrayList<>();
-        leaveInfoVOS.forEach(leaveInfoVO -> {
+        leaveInfoVOS = leaveInfoVOS.stream().filter(leaveInfoVO -> {
             Integer employeeScheduleId = leaveInfoVO.getScheduleId();
-            if (employeeScheduleId!=null && !employeeScheduleIds.contains(employeeScheduleId)) {
+            if (employeeScheduleId == null) {
+                return false;
+            }
+            if (!employeeScheduleIds.contains(employeeScheduleId)) {
                 employeeScheduleIds.add(employeeScheduleId);
             }
-        });
+            return true;
+        }).collect(Collectors.toList());
         List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.selectInIds(employeeScheduleIds);
         for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
             Integer userId = leaveInfoVO.getUserId();
@@ -966,7 +970,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     }
                     long diff = offPunchTime.getTime() - offStartTime.getTime();
                     workDateMinuteMap.put(userId, offDutyOrgId, length+diff);
-                    if (offPunchTime.getTime()-offEndTime.getTime() > 3600) {//至少工作日加班1小时
+                    if (offPunchTime.getTime()-offEndTime.getTime() > 0) {//至少工作日加班1小时
                         Long overtime = workDateOvertimeMinuteMap.get(userId, offDutyOrgId);
                         if (overtime == null) {
                             overtime = 0L;
@@ -1080,20 +1084,25 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         model.setWhetherPage(queryForm.getWhetherPage());
         model.setPageNum(queryForm.getPageNum());
         model.setPageSize(queryForm.getPageSize());
-        model.setOrgIds(Arrays.asList(queryForm.getOrgId()));
+        if (queryForm.getOrgId() != null) {
+            model.setOrgIds(Arrays.asList(queryForm.getOrgId()));
+        }
         model.setKeyWord(name);
         model.setWorkStatus(new Byte[]{0, 1, 3});
         List<SysUserInfoDetail> userList = remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model);
         List<AttendanceStatisticsVO> result = new ArrayList<>();
         userList.forEach(user->{
             Integer userId = user.getUserId();
-            Integer orgId = Integer.parseInt(user.getCompanyIds());
+            String companyIds = user.getCompanyIds();
+            Integer orgId = null;
+            if (StringHelper.isNotEmpty(companyIds)) {
+                orgId = Integer.parseInt(companyIds);
+            }
             AttendanceStatisticsVO statistics = new AttendanceStatisticsVO();
             statistics.setUserId(userId);
             statistics.setEmployeeName(user.getName());
             statistics.setOrgId(orgId);
             statistics.setOrgName(user.getCompanys());
-
             Long restMinute = restDateOvertimeMap.get(userId, orgId);
             if (restMinute != null) {
                 statistics.setRestDateOvertimeMinute(DateUtil.micro2Min(restMinute));
@@ -1110,7 +1119,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             statistics.setIsFull(isFull==null?true:isFull);
             Long workDateOvertimeMinute = workDateOvertimeMinuteMap.get(userId, orgId);
             if (workDateOvertimeMinute != null) {
-                statistics.setWorkDateOvertimeMinute(workDateOvertimeMinute);
+                statistics.setWorkDateOvertimeMinute(DateUtil.micro2Min(workDateOvertimeMinute));
             }
             Long workDate30Minute = workDateOvertime30MinuteMap.get(userId, orgId);
             if (workDate30Minute != null) {
@@ -1118,15 +1127,46 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
             Long workDateMinute = workDateMinuteMap.get(userId, orgId);
             if (workDateMinute != null) {
-                statistics.setWorkDateMinute(workDateMinute);
+                statistics.setWorkDateMinute(DateUtil.micro2Min(workDateMinute));
             }
             statistics.setAttendanceNum(attendancNumMap.get(userId, orgId));
             statistics.setLateNum(laterNumMap.get(userId, orgId));
             statistics.setEarlyNum(earlyNumMap.get(userId, orgId));
             statistics.setUnpunchNum(unpunchNumMap.get(userId, orgId));
             statistics.setInvalidNum(invalidNumMap.get(userId, orgId));
+            result.add(statistics);
         });
-        return new PageInfo<>(result);
+        return result;
+    }
+
+    private void setQueryFormDate(AttendanceStatisticsQueryForm queryForm) {
+        String dateStr = queryForm.getDate();
+        if (StringHelper.isNotEmpty(dateStr)) {
+            Date startTime = null;
+            Date endTime = null;
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            if (dateStr.length() == 4) {//按年查
+                int year = Integer.parseInt(dateStr);
+                startTime = DateUtil.getBeginTime(year,1);
+                endTime = DateUtil.getEndTime(year,12);
+            } else if (dateStr.length() == 7) {
+                String[] dateTmp = dateStr.split("-");
+                int year = Integer.parseInt(dateTmp[0]);
+                int month = Integer.parseInt(dateTmp[1]);
+                startTime = DateUtil.getBeginTime(year,month);
+                endTime = DateUtil.getEndTime(year,month);
+            } else if (dateStr.length() == 10) {
+                try {
+                    endTime = startTime = sdf.parse(dateStr);
+                } catch (ParseException e) {
+                    throw new ClientServiceException("日期参数格式转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+                }
+            } else {
+                throw new ClientServiceException("日期参数格式错误", PARAMETERS_IS_ILLEGAL);
+            }
+            queryForm.setBetweenDate(startTime);
+            queryForm.setAndDate(endTime);
+        }
     }
 
     /**
@@ -1166,27 +1206,21 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         punchDate.setOnDutyPunchTime(punchTime);
                         punchDate.setOnDutyOrgId(orgId);
                         punchDate.setOnDutyName(name);
-                        switch (source) {
-                            case 1:{
-                                punchDate.setLeave((byte) 2);
-                                break;
+                        if (source==AttendanceSourceEnum.LEAVE_BYDAY.getCode()
+                                ||source==AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode()) {
+                            punchDate.setLeave((byte) 2);
+                        } else if (source==AttendanceSourceEnum.WORK_OVERTIME.getCode()) {
+                            byte wokOvertime = 0;
+                            if (punchDate.getWorkOvertime() != null) {
+                                wokOvertime = 2;
                             }
-                            case 2:{
-                                byte wokOvertime = 0;
-                                if (punchDate.getWorkOvertime()!=null) {
-                                    wokOvertime = 2;
-                                }
-                                punchDate.setWorkOvertime(wokOvertime);
-                                break;
+                            punchDate.setWorkOvertime(wokOvertime);
+                        } else if (source==AttendanceSourceEnum.FIELD.getCode()) {
+                            byte field = 0;
+                            if (punchDate.getField()!=null) {
+                                field = 2;
                             }
-                            case 3:{
-                                byte field = 0;
-                                if (punchDate.getField()!=null) {
-                                    field = 2;
-                                }
-                                punchDate.setField(field);
-                                break;
-                            }
+                            punchDate.setField(field);
                         }
                         punchDate.setOnDutyEndTime(vo.getEndTime());
                         Byte status = 5;
@@ -1198,27 +1232,21 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         punchDate.setOffDutyPunchTime(punchTime);
                         punchDate.setOffDutyOrgId(orgId);
                         punchDate.setOffDutyName(name);
-                        switch (source) {
-                            case 1:{
-                                punchDate.setLeave((byte) 2);
-                                break;
+                        if (source==AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode()
+                                ||source==AttendanceSourceEnum.LEAVE_BYDAY.getCode()) {
+                            punchDate.setLeave((byte) 2);
+                        } else if (source==AttendanceSourceEnum.WORK_OVERTIME.getCode()) {
+                            byte wokOvertime = 1;
+                            if (punchDate.getWorkOvertime()!=null) {
+                                wokOvertime = 2;
                             }
-                            case 2:{
-                                byte wokOvertime = 1;
-                                if (punchDate.getWorkOvertime()!=null) {
-                                    wokOvertime = 2;
-                                }
-                                punchDate.setWorkOvertime(wokOvertime);
-                                break;
+                            punchDate.setWorkOvertime(wokOvertime);
+                        } else if (source==AttendanceSourceEnum.FIELD.getCode()) {
+                            byte field = 1;
+                            if (punchDate.getField()!=null) {
+                                field = 2;
                             }
-                            case 3:{
-                                byte field = 1;
-                                if (punchDate.getField()!=null) {
-                                    field = 2;
-                                }
-                                punchDate.setField(field);
-                                break;
-                            }
+                            punchDate.setField(field);
                         }
                         punchDate.setOffDutyEndTime(vo.getEndTime());
                         punchDate.setOffDutyStartTime(vo.getStartTime());
@@ -1235,6 +1263,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         return result;
     }
 
+    /**
+     * 对员工+组织的指标进行计数
+     * @param nums
+     * @param userId
+     * @param orgId
+     */
     private void incrNum(Table<Integer, Integer, Integer> nums, Integer userId, Integer orgId) {
         Integer count = nums.get(userId, orgId);
         if (count == null) {
@@ -1246,5 +1280,124 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     @Override
     public void insertSelective(AttendancePunchRecord entity) {
         mapper.insertSelective(entity);
+    }
+
+    /**
+     * 根据条件分页查询考勤汇总导出
+     *
+     * @param queryForm 查询参数
+     */
+    public void statisticsPunchRecordExport(HttpServletResponse response, AttendanceStatisticsQueryForm queryForm) throws IOException {
+        queryForm.setWhetherPage(false);
+        List<AttendanceStatisticsVO> list = statisticsPunchRecord(queryForm);
+        ExcelUtil<AttendanceStatisticsVO> excelUtil = new ExcelUtil<>(AttendanceStatisticsVO.class);
+        excelUtil.exportExcel(response, list, "考勤汇总表");
+    }
+
+
+    /**
+     * 根据统计次数类型的分页查询考勤汇总明细
+     *
+     * @param type 统计次数类型：0-缺卡，1-迟到，3-早退，4-无效卡，5-异常
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendancePunchCountVO>>
+     */
+    public List<AttendancePunchCountVO> statisticsPunchRecordByCount(byte type, AttendanceStatisticsQueryForm queryForm) {
+        setQueryFormDate(queryForm);
+        AttendancePunchRecordQueryForm recordQueryForm = new AttendancePunchRecordQueryForm();
+        recordQueryForm.setWhetherPage(queryForm.getWhetherPage());
+        recordQueryForm.setPageNum(queryForm.getPageNum());
+        recordQueryForm.setPageSize(queryForm.getPageSize());
+        recordQueryForm.setUserId(queryForm.getUserId());
+        recordQueryForm.setOrgId(queryForm.getOrgId());
+        recordQueryForm.setBetweenDate(queryForm.getBetweenDate());
+        recordQueryForm.setAndDate(queryForm.getAndDate());
+        if (type==0 || type==5) {
+            recordQueryForm.setIsPunch((byte) 0);
+        } else {
+            recordQueryForm.setIsPunch((byte) 1);
+            recordQueryForm.setPunchStatus(type);
+        }
+        List<AttendancePunchRecordVO> attendancePunchRecordVOS = findAttendancePunchRecordList(recordQueryForm);
+        Map<Integer, EmployeeScheduleVO> employeeScheduleMap = new HashMap<>();
+        if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
+            EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+            employeeScheduleQueryForm.setUserId(queryForm.getUserId());
+            employeeScheduleQueryForm.setType(WORK);
+            employeeScheduleQueryForm.setBetweenWorkDate(queryForm.getBetweenDate());
+            employeeScheduleQueryForm.setAndWorkDate(queryForm.getAndDate());
+            List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(employeeScheduleQueryForm);
+            employeeScheduleVOS.forEach(employeeScheduleVO -> {
+                if (employeeScheduleVO.getSecondEndTime() != null) {
+                    employeeScheduleVO.setFirstEndTime(employeeScheduleVO.getSecondEndTime());
+                }
+                employeeScheduleMap.put(employeeScheduleVO.getId(), employeeScheduleVO);
+            });
+        }
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        List<AttendancePunchCountVO> result = new ArrayList<>();
+        attendancePunchRecordVOS.forEach(attendancePunchRecordVO -> {
+            AttendancePunchCountVO attendancePunchCountVO = new AttendancePunchCountVO();
+            Date punchTime = attendancePunchRecordVO.getPunchTime();
+            attendancePunchCountVO.setDate(attendancePunchRecordVO.getPunchDate());
+            attendancePunchCountVO.setPunchTime(punchTime);
+            attendancePunchCountVO.setPunchAddress(attendancePunchRecordVO.getPunchAddress());
+            Date attendanceTime = attendancePunchRecordVO.getStartTime();
+            Byte isPunch = attendancePunchRecordVO.getIsPunch();
+            Byte punchStatus = attendancePunchRecordVO.getPunchStatus();
+            if (isPunch == 0) {
+                punchStatus = 0;
+                if (attendancePunchRecordVO.getPunchType() == AttendanceTypeEnum.OFFDUTY.getCode()) {
+                    punchStatus = 2;
+                }
+                attendancePunchCountVO.setPunchStatus(punchStatus);
+            }
+            if (attendancePunchRecordVO.getPunchType() == AttendanceTypeEnum.OFFDUTY.getCode()) {
+                attendanceTime = attendancePunchRecordVO.getEndTime();
+            }
+            if (punchTime!=null && attendanceTime!=null) {
+                long minute = Math.abs(punchTime.getTime() - attendanceTime.getTime());
+                attendancePunchCountVO.setAttendanceTime(attendanceTime);
+                attendancePunchCountVO.setMinutes(DateUtil.micro2Min(minute));
+            }
+            attendancePunchCountVO.setPunchStatus(punchStatus);
+            Integer sourceId = attendancePunchRecordVO.getSourceId();
+            EmployeeScheduleVO employeeScheduleVO = employeeScheduleMap.get(sourceId);
+            String name = null;
+            if (employeeScheduleVO != null) {
+                Date firstStartTime = employeeScheduleVO.getFirstStartTime();
+                Date firstEndTime = employeeScheduleVO.getFirstEndTime();
+                name = employeeScheduleVO.getName() + "("+ sdf.format(firstStartTime) + "-" + sdf.format(firstEndTime) + ")";
+            }
+            attendancePunchCountVO.setName(name);
+            result.add(attendancePunchCountVO);
+        });
+        return result;
+    }
+
+    /**
+     * 根据统计时长类型的分页查询考勤汇总明细
+     *
+     * @param type 统计次数类型：0-工作日时长，1-工作日加班时长，2-工作日加班超30分钟，3-休息日加班时长，4-请假时长，5-外勤时长
+     * @param queryForm 查询参数
+     * @return
+     */
+    public List<AttendancePunchMinuteVO> statisticsPunchRecordByMinute(byte type, AttendanceStatisticsQueryForm queryForm) {
+        EmployeeScheduleQueryForm scheduleQueryForm = new EmployeeScheduleQueryForm();
+        scheduleQueryForm.setWhetherPage(queryForm.getWhetherPage());
+        scheduleQueryForm.setPage(queryForm.getPageNum());
+        scheduleQueryForm.setSize(queryForm.getPageSize());
+        scheduleQueryForm.setUserId(queryForm.getUserId());
+        scheduleQueryForm.setClinicId(queryForm.getOrgId());
+        setQueryFormDate(queryForm);
+        scheduleQueryForm.setBetweenWorkDate(queryForm.getBetweenDate());
+        scheduleQueryForm.setAndWorkDate(queryForm.getAndDate());
+        List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(scheduleQueryForm);
+        List<AttendancePunchMinuteVO> result = new ArrayList<>();
+
+        switch (type) {
+
+        }
+        return null;
     }
 }

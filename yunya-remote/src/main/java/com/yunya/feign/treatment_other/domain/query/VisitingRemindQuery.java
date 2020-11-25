@@ -82,5 +82,7 @@ public class VisitingRemindQuery implements Serializable {
     @ApiModelProperty(value = "提醒状态 false-待提醒；true-提醒完成")
     private Boolean status;
 
-
+    /** 创建人ID */
+    @ApiModelProperty(value = "创建人ID")
+    private Integer crtId;
 }

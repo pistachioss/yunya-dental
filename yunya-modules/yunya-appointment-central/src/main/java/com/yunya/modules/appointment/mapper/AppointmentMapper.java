@@ -218,4 +218,11 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return List<Appointment>
    */
   List<Appointment> selectAppointmentList(@Param("query") AppAppointmentInfoQuery query);
+
+  /**
+   * 计算后续患者预约数量
+   * @param patientId 患者ID
+   * @return 后续患者预约数量
+   */
+  Integer selectCountNextAppoint(@Param("patientId") Integer patientId);
 }

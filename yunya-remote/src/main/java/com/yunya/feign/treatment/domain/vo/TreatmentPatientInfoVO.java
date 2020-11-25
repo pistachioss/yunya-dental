@@ -187,4 +187,6 @@ public class TreatmentPatientInfoVO implements Serializable {
   /** 结账时间 */
   @ApiModelProperty("结账时间")
   private String checkOutTime;
+  @ApiModelProperty("账单编号")
+  private String billNumber;
 }

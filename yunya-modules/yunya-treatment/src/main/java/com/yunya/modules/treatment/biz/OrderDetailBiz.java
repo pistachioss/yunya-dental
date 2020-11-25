@@ -1,11 +1,15 @@
 package com.yunya.modules.treatment.biz;
 
 import com.google.common.collect.Lists;
+import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
+import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
+import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
@@ -33,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
@@ -65,6 +70,8 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
   @Autowired private OrderRecordMapper orderRecordMapper;
   /** 账单收费记录 */
   @Autowired private BillPayRecordMapper billPayRecordMapper;
+  /** 优惠 */
+  @Autowired private RemoteDiscountFeign discountFeign;
 
   /**
    * 根据账单（开单）记录ID查询商品开单详情列表
@@ -420,5 +427,32 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
             mapper.updateByPrimaryKey(orderDetail);
           }
         });
+  }
+
+  /**
+   * 打印账单信息
+   * @param patientId 患者ID
+   * @param billNumber 账单编号
+   * @return 返回账单信息
+   */
+  public BillPrintInfoVO billPrintInfo(Integer patientId,String billNumber) {
+    BillPrintInfoVO billPrintInfoVO = mapper.billPrintInfo(patientId,billNumber);
+    Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
+    List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
+    billPrintInfoVO.getBillDetail().forEach(billDetailPrintInfoVO -> {
+      List<OrderBenefitDetailVo> collect = orderBenefitD.stream().filter(orderBenefitDetailVo -> {
+        return orderBenefitDetailVo.getOrderDetailId().equals(billDetailPrintInfoVO.getOrderDetailId());
+      }).collect(Collectors.toList());
+      if (StringHelper.isNotEmpty(collect)) {
+        OrderBenefitDetailVo orderBenefitDetailVo = collect.get(0);
+        List<ItemUseBenefitVo> itemBenefitList = orderBenefitDetailVo.getItemBenefitList();
+        List<Integer> couponTypes = new ArrayList<>();
+        itemBenefitList.forEach(itemUseBenefitVo -> {
+          couponTypes.add(itemUseBenefitVo.getCouponType());
+        });
+        billDetailPrintInfoVO.setCouponTypes(couponTypes);
+      }
+    });
+    return billPrintInfoVO;
   }
 }

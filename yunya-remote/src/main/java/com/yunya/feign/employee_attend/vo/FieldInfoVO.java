@@ -29,6 +29,10 @@ public class FieldInfoVO implements Serializable {
     @ApiModelProperty(value = "申请人ID")
     private Integer userId;
 
+    /** 组织ID */
+    @ApiModelProperty(value = "组织ID")
+    private Integer companyId;
+
     /** 外勤地址 */
     @ApiModelProperty(value = "外勤地址")
     private String fieldAddress;
@@ -43,7 +47,7 @@ public class FieldInfoVO implements Serializable {
 
     /** 外勤原因 */
     @ApiModelProperty(value = "外勤原因")
-    private Integer fieldReason;
+    private String fieldReason;
 
     /** 审批人id（直接存员工id 与审批人员表没有关系） */
     @ApiModelProperty(value = "审批人id（直接存员工id 与审批人员表没有关系）")

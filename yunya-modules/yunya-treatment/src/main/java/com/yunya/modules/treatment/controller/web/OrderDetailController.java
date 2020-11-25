@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.web;
 
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
+import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -104,4 +105,20 @@ public class OrderDetailController {
     orderDetailBiz.modificationExecutor(form);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 打印账单信息
+   * @param patientId 患者ID
+   * @param billNumber 账单编号
+   * @return 返回账单信息
+   */
+  @ApiOperation("打印账单信息")
+  @GetMapping("/bill/print/{patientId}/{billNumber}")
+  public ResponseResult<BillPrintInfoVO> billPrintInfo(@PathVariable("patientId") Integer patientId,
+                                                       @PathVariable("billNumber") String billNumber) {
+    BillPrintInfoVO billPrintInfoVO = orderDetailBiz.billPrintInfo(patientId,billNumber);
+    return ResponseUtil.success(billPrintInfoVO);
+  }
+
+
 }

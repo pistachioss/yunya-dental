@@ -21,7 +21,6 @@ import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.Assert;
 
 import java.util.*;
 
@@ -209,7 +208,7 @@ public class BillExceptionHandleDetailRecordBiz
       Integer billExceptionHandleRecordId,
       Integer preExceptionHandleRecordId) {
     Map<String, Object> resultMap = new HashMap<>(16);
-    List<OrderDetailChargeVO> beforeAdjustBillDetail = Lists.newArrayList();
+    List<OrderDetailChargeVO> beforeAdjustBillDetail;
     List<OrderDetailChargeVO> afterAdjustBillDetail = Lists.newArrayList();
     if (0 == preExceptionHandleRecordId) {
       // 第一次调整，当前异常记录ID对应的订单ID
@@ -241,12 +240,10 @@ public class BillExceptionHandleDetailRecordBiz
    * @return
    */
   private List<OrderDetailChargeVO> getOrderDetailChargeList(Integer billExceptionHandleRecordId) {
-    List<OrderDetailChargeVO> beforeAdjustBillDetail;
     BillExceptionHandleDetailRecord entity = new BillExceptionHandleDetailRecord();
     entity.setBillHandleRecordId(billExceptionHandleRecordId);
     BillExceptionHandleDetailRecord billExceptionHandleDetailRecords = mapper.selectOne(entity);
     Integer associateRecordId = billExceptionHandleDetailRecords.getAssociateRecordId();
-    beforeAdjustBillDetail = billRecordBiz.getOrderDetailCharges(associateRecordId);
-    return beforeAdjustBillDetail;
+    return billRecordBiz.getOrderDetailCharges(associateRecordId);
   }
 }

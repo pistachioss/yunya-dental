@@ -8,17 +8,16 @@ import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.employee_attend.ApprovalInfo;
-import com.yunya.models.employee_attend.ApprovalLevelSet;
-import com.yunya.models.employee_attend.CopyInfo;
-import com.yunya.models.employee_attend.LeaveInfo;
+import com.yunya.models.employee_attend.*;
 import com.yunya.modules.employeeattend.form.LeaveInfoByEmForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import com.yunya.modules.employeeattend.mapper.ApprovalInfoMapper;
 import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
 import com.yunya.modules.employeeattend.mapper.LeaveInfoMapper;
 import com.yunya.feign.employee_attend.vo.EmLeaveVO;
+import com.yunya.modules.employeeattend.mapper.LeaveScheduleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +47,8 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private CopyInfoMapper copyInfoMapper;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private LeaveScheduleMapper leaveScheduleMapper;
 
     /**
      * 根据日期和用户id列表查询请假列表
@@ -175,36 +176,46 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     /**
      * 根据天数获得审批信息
      *
-     * @param leaveInfoForm
+     * @param leaveInfoByEmForm
      * @return
      */
-    public Integer addEm(LeaveInfoByEmForm leaveInfoForm) {
+    public Integer addEm(LeaveInfoByEmForm leaveInfoByEmForm) {
         //判断是否有其他类型的申请
         if (true) {
             //判断是否与同类型其他申请时间冲突
-            if(true){
+            List<LeaveSchedule>scList = leaveInfoByEmForm.getScList();
+            int isConflict = leaveScheduleMapper.selectNum(scList);
+            if(isConflict==0){
                 LeaveInfo leaveInfo = new LeaveInfo();
-                BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
+                BeanUtils.copyProperties(leaveInfoByEmForm, leaveInfo);
+                leaveInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
                 leaveInfo.setCrtTime(new Date());
                 int num = mapper.insert(leaveInfo);
-                //插入审批人信息
                 int leaveId = leaveInfo.getId();
-                List<ApprovalInfo> list = leaveInfoForm.getApprpvalPeopleList();
+                //插入班次请假信息
+                for(LeaveSchedule leaveSchedule:scList){
+                    leaveSchedule.setCrtId(leaveInfoByEmForm.getCrtId());
+                    leaveSchedule.setCrtTime(new Date());
+                    leaveSchedule.setLeaveId(leaveId);
+                }
+                leaveScheduleMapper.batchInsert(scList);
+                //插入审批人信息
+                List<ApprovalInfo> list = leaveInfoByEmForm.getApprpvalPeopleList();
                 for (ApprovalInfo approvalInfo : list) {
-                    approvalInfo.setCrtId(leaveInfoForm.getCrtId());
+                    approvalInfo.setCrtId(leaveInfoByEmForm.getCrtId());
                     approvalInfo.setCrtTime(new Date());
                     approvalInfo.setLeaveId(leaveId);
                 }
                 approvalInfoMapper.batchInsert(list);
                 //插入抄送人信息
-                if (leaveInfoForm.getCopyList().size() > 0) {
+                if (leaveInfoByEmForm.getCopyList().size() > 0) {
                     List<CopyInfo> copyInfoList = new ArrayList<>();
-                    for (Integer copyId : leaveInfoForm.getCopyList()) {
+                    for (Integer copyId : leaveInfoByEmForm.getCopyList()) {
                         CopyInfo copyInfo = new CopyInfo();
                         copyInfo.setApplyId(leaveId);
                         copyInfo.setApplyType(0);
                         copyInfo.setUserId(copyId);
-                        copyInfo.setCrtId(leaveInfoForm.getUserId());
+                        copyInfo.setCrtId(leaveInfoByEmForm.getUserId());
                         copyInfo.setCrtTime(new Date());
                         copyInfoList.add(copyInfo);
                     }

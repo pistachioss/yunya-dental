@@ -34,7 +34,7 @@
       INSERT INTO sys_user (
         username,
         password,
-        name,
+        `name`,
         birthday,
         address,
         mobile_phone,
@@ -378,6 +378,6 @@
                 </foreach>
             </if>
         </where>
-        order by t1.id desc;
+        order by t1.id desc
     </select>
 </mapper>

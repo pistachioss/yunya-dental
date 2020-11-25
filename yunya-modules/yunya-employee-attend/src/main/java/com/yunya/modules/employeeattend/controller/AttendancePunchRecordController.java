@@ -4,10 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordForm;
 import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
-import com.yunya.feign.employee_attend.vo.AttendanceCalendarInfoVO;
-import com.yunya.feign.employee_attend.vo.AttendancePunchCalendarInfoVO;
-import com.yunya.feign.employee_attend.vo.AttendancePunchInfoVO;
-import com.yunya.feign.employee_attend.vo.AttendanceStatisticsVO;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -19,10 +16,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -97,13 +94,7 @@ public class AttendancePunchRecordController {
     @ApiImplicitParam(value = "该月的某一天，例如2020-11-01")
     @GetMapping("/punchRecordByDate/{date}")
     @CurrentUser
-    public ResponseResult<AttendancePunchCalendarInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotNull String dateStr) {
-        Date date = null;
-        try {
-            date = new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+    public ResponseResult<AttendancePunchCalendarInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotNull Date date) {
         AttendancePunchCalendarInfoVO attendancePunchInfoVO = attendancePunchRecordBiz.punchRecordByDate(date);
         return ResponseUtil.success(attendancePunchInfoVO);
     }
@@ -133,7 +124,54 @@ public class AttendancePunchRecordController {
     @ApiImplicitParam(value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecord")
     public ResponseResult<PageInfo<AttendanceStatisticsVO>> statisticsPunchRecord(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        PageInfo<AttendanceStatisticsVO> result = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
-        return ResponseUtil.success(result);
+        List<AttendanceStatisticsVO> result = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
+        PageInfo<AttendanceStatisticsVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据条件分页查询考勤汇总导出
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    @ApiOperation("根据条件分页查询考勤汇总导出")
+    @ApiImplicitParam(value = "查询参数", required = true)
+    @PostMapping("/statisticsPunchRecordExport")
+    public ResponseResult statisticsPunchRecordExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
+        attendancePunchRecordBiz.statisticsPunchRecordExport(response, queryForm);
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 根据统计次数类型的分页查询考勤汇总明细
+     *
+     * @param type 统计次数类型：0-缺卡，1-迟到，3-早退，4-无效卡，5-异常
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendancePunchCountVO>>
+     */
+    @ApiOperation("根据统计次数类型的分页查询考勤汇总明细")
+    @ApiImplicitParam(value = "查询参数", required = true)
+    @PostMapping("/statisticsPunchRecordByCount/{type}")
+    public ResponseResult<PageInfo<AttendancePunchCountVO>> statisticsPunchRecordByCount(@PathVariable(value = "type") @NotNull byte type, @RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendancePunchCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByCount(type, queryForm);
+        PageInfo<AttendancePunchCountVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 根据统计时长类型的分页查询考勤汇总明细
+     *
+     * @param type 统计次数类型：0-工作日时长，1-工作日加班时长，2-工作日加班超30分钟，3-休息日加班时长，4-请假时长，5-外勤时长
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendancePunchMinuteVO>>
+     */
+    @ApiOperation("根据统计时长类型的分页查询考勤汇总明细")
+    @ApiImplicitParam(value = "查询参数", required = true)
+    @PostMapping("/statisticsPunchRecordByMinute/{type}")
+    public ResponseResult<PageInfo<AttendancePunchMinuteVO>> statisticsPunchRecordByMinute(@PathVariable(value = "countType") @NotNull byte type, @RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendancePunchMinuteVO> result = attendancePunchRecordBiz.statisticsPunchRecordByMinute(type, queryForm);
+        PageInfo<AttendancePunchMinuteVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
     }
 }
