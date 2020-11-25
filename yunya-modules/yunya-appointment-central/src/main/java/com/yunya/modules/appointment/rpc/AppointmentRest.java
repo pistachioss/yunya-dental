@@ -152,7 +152,7 @@ public class AppointmentRest {
    * @return 返回预约数量
    */
   @RequestMapping(value = "/appoint/count/{patientId}", method = RequestMethod.GET)
-  public Integer countNextAppoint(@PathVariable("patientId") Integer patientId){
+  public Integer countNextAppoint(@PathVariable(value = "patientId") Integer patientId){
     return appointmentBiz.countNextAppoint(patientId);
   }
 }
