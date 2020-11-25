@@ -29,6 +29,10 @@ public class BillPrintInfoVO implements Serializable {
     private BigDecimal totalDebtAmount;
     @ApiModelProperty("发票编号")
     private String invoiceNumber;
+    @ApiModelProperty("账单记录ID")
+    private Integer orderRecordId;
+    @ApiModelProperty("账单日期")
+    private String crtTime;
     @ApiModelProperty("账单明细打印列表")
     List<BillDetailPrintInfoVO> billDetail;
 }

@@ -77,7 +77,7 @@ public class MemberOccurLogController {
         if (StringHelper.isNotNull(baseMemberExpendLogVos)){
             return ResponseUtil.success(baseMemberExpendLogVos);
         }
-        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberExpendLogVos);
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,  "暂无相关数据",baseMemberExpendLogVos);
     }
 
 

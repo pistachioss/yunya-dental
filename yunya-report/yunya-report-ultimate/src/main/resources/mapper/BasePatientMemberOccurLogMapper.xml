@@ -34,9 +34,11 @@
 
     <!-- 查询会员卡充值记录列表 -->
     <select id="selectMemberRechargeList" resultType="com.yunya.feign.report.domain.vo.BaseMemberRechargeLogVo">
+        select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
         bpmol.occur_date occurDate,
+        bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
         bpm.member_level_id memberLevelId,
@@ -66,13 +68,6 @@
                 AND bpm.card_number = #{form.cardNumber}
             </if>
 
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND bpmol.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-
             <if test="form.memberLevelIds != null ">
                 AND bpm.member_level_id in
                 <foreach collection="form.memberLevelIds" item="levelIds" index="index" open="(" close=")"
@@ -87,6 +82,15 @@
             </if>
         </where>
         group by bpmol.occur_date desc
+        ) t1
+        <where>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                AND t1.patientId in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <!-- 查询会员卡消费记录列表 -->
@@ -361,7 +365,9 @@
     </select>
 
     <select id="selectMemberBalanceList" resultType="com.yunya.feign.report.domain.vo.BaseMemberBalanceInfoVo">
+    select t1.* from (
         SELECT DISTINCT
+        bp. patient_id patientId,
         bp.NAME,
         bp.mobile,
         bpm.card_number cardNumber,
@@ -506,26 +512,28 @@
                 and bpm.org_id = #{form.orgId}
             </if>
 
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                and bp.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-
             <if test="form.cardNumber != null and form.cardNumber != ''">
                 and bpm.card_number = #{form.cardNumber}
             </if>
 
-            <if test="form.memberLevelIds != null ">
+            <if test="form.memberLevelIds != null and form.memberLevelIds.size() > 0 ">
                 and bpm.member_level_id in
-                <foreach collection="memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
+                <foreach collection="form.memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
                     #{levelIds}
                 </foreach>
             </if>
 
         </where>
         ORDER BY currentRechargeBonus DESC
+        ) t1
+        <where>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                and t1.patientId in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
+        </where>
     </select>
 
 </mapper>

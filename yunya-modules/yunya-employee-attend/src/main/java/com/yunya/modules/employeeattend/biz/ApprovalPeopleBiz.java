@@ -47,7 +47,9 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
         if (approvalPeopleQuery.getWhetherPage()) {
             PageHelper.startPage(approvalPeopleQuery.getPage(), approvalPeopleQuery.getSize());
         }
-        List<ApprovalPeople> reList = mapper.selectAll();
+        ApprovalPeople approvalPeople = new ApprovalPeople();
+        BeanUtils.copyProperties(approvalPeopleQuery, approvalPeople);
+        List<ApprovalPeople> reList = mapper.select(approvalPeople);
         //获取员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);

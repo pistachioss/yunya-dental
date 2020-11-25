@@ -113,4 +113,12 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "/api/appoint/count", method = RequestMethod.POST)
   Integer countAppointNotArrived(@RequestBody AppointmentCurrentListQuery queryForm);
+
+  /**
+   * 计算后续指定患者的预约数量
+   * @param patientId 患者ID
+   * @return 返回预约数量
+   */
+  @RequestMapping(value = "/api/appoint/count/{patientId}", method = RequestMethod.GET)
+  Integer countNextAppoint(@PathVariable(value = "patientId") Integer patientId);
 }

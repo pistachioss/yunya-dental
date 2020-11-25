@@ -61,7 +61,7 @@ public class EmployeeScheduleController {
         if(date.before(new Date())){
             throw new ClientServiceException("今天之前的排班不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
-        if(true){
+        if(false){
             throw new ClientServiceException("当前排班处于申请流程中，不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
         employeeSchedule.setWorkDate(date);

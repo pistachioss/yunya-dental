@@ -27,17 +27,13 @@ import java.util.List;
 @ApiModel("考勤打卡日历信息响应模型")
 public class AttendancePunchCalendarInfoVO implements Serializable {
     
-    /** 今日排班 */
-    @ApiModelProperty(value = "今日排班")
+    /** 排班信息 */
+    @ApiModelProperty(value = "排班信息")
     private List<AttendancePunchRecordVO> attendancePunchRecordVOS;
 
     /** 工作时长*/
     @ApiModelProperty(value = "工作时长")
     private Long workLength;
-
-    /** 打卡次数 */
-    @ApiModelProperty(value = "打卡次数")
-    private Integer punchCount;
 
     /** 打卡项目列表 */
     @ApiModelProperty(value = "打卡项目列表")

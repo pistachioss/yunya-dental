@@ -499,5 +499,12 @@
         </where>
     </select>
 
+    <!-- 计算后续患者预约数量 -->
+    <select id="selectCountNextAppoint" parameterType="Integer" resultType="Integer">
+        select count(id) from appointment where patient_id = #{patientId}
+        and date_format(appoint_date,'%Y-%m-%d') &gt; date_format(now(),'%Y-%m-%d')
+        and appoint_status = 0
+    </select>
+
 
 </mapper>

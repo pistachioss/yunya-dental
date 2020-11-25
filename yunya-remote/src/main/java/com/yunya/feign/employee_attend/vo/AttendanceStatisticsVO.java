@@ -1,11 +1,12 @@
 package com.yunya.feign.employee_attend.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import java.util.Date;
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -19,7 +20,7 @@ import java.util.List;
 @Data
 @ToString
 @ApiModel("考勤统计响应模型")
-public class AttendanceStatisticsVO {
+public class AttendanceStatisticsVO implements Serializable {
 
     /** 员工id */
     @ApiModelProperty(value = "员工id")
@@ -29,55 +30,67 @@ public class AttendanceStatisticsVO {
     @ApiModelProperty(value = "组织id")
     private Integer orgId;
 
-    /** 员工姓名 */
-    @ApiModelProperty(value = "员工姓名")
+    /** 姓名 */
+    @Excel(name = "姓名")
+    @ApiModelProperty(value = "姓名")
     private String employeeName;
 
-    /** 组织名称 */
-    @ApiModelProperty(value = "组织名称")
+    /** 门诊 */
+    @Excel(name = "门诊")
+    @ApiModelProperty(value = "门诊")
     private String orgName;
 
-    /** 是否满勤：false-否，true-是 */
+    /** 出勤次数/出勤天数 */
+    @Excel(name = "出勤天数")
+    @ApiModelProperty(value = "出勤次数/出勤天数")
+    private Integer attendanceNum;
+
+    /** 是否满勤：false=否,true=是 */
+    @Excel(name = "是否满勤", readConverterExp ="false=否,true=是")
     @ApiModelProperty(value = "是否满勤：false-否，true-是")
     private Boolean isFull;
 
-    /** 工作日时长（分钟）*/
-    @ApiModelProperty(value = "工作日时长（分钟）")
+    /** 工作日时长/分钟*/
+    @Excel(name = "工作日时长/分钟")
+    @ApiModelProperty(value = "工作日时长/分钟")
     private Long workDateMinute;
 
-    /** 工作日加班时长（分钟）*/
-    @ApiModelProperty(value = "工作日加班时长（分钟）")
+    /** 工作日加班时长/分钟*/
+    @Excel(name = "工作日加班时长/分钟")
+    @ApiModelProperty(value = "工作日加班时长/分钟")
     private Long workDateOvertimeMinute;
 
-    /** 休息日加班时长（分钟）*/
-    @ApiModelProperty(value = "休息日加班时长（分钟）")
-    private Long restDateOvertimeMinute;
-
-    /** 工作日加班超30分钟以上的时长（分钟）*/
-    @ApiModelProperty(value = "工作日加班超30分钟以上的时长（分钟）")
+    /** 其中工作日加班超30分钟以上的时长/分钟*/
+    @Excel(name = "其中工作日加班超30分钟以上的时长/分钟")
+    @ApiModelProperty(value = "其中工作日加班超30分钟以上的时长/分钟")
     private Long workDateOvertime30Minute;
 
-    /** 请假时长（分钟）*/
-    @ApiModelProperty(value = "请假时长（分钟）")
+    /** 休息日加班时长/分钟*/
+    @Excel(name = "休息日加班时长/分钟")
+    @ApiModelProperty(value = "休息日加班时长/分钟")
+    private Long restDateOvertimeMinute;
+
+    /** 请假时长/分钟*/
+    @Excel(name = "请假时长/分钟")
+    @ApiModelProperty(value = "请假时长/分钟")
     private Long leaveMinute;
 
-    /** 外勤时长（分钟）*/
-    @ApiModelProperty(value = "外勤时长（分钟）")
+    /** 外勤时长/分钟*/
+    @Excel(name = "外勤时长/分钟")
+    @ApiModelProperty(value = "外勤时长/分钟")
     private Long fieldMinute;
-
-    /** 出勤次数/出勤天数 */
-    @ApiModelProperty(value = "出勤次数/出勤天数")
-    private Integer attendanceNum;
 
     /** 休息天数 */
     @ApiModelProperty(value = "休息天数")
     private Integer restNum;
 
     /** 迟到次数 */
+    @Excel(name = "迟到次数")
     @ApiModelProperty(value = "迟到次数")
     private Integer lateNum;
 
     /** 早退次数 */
+    @Excel(name = "早退次数")
     @ApiModelProperty(value = "早退次数")
     private Integer earlyNum;
 
@@ -90,6 +103,7 @@ public class AttendanceStatisticsVO {
     private Integer workOvertimeNum;
 
     /** 缺卡次数 */
+    @Excel(name = "缺卡次数")
     @ApiModelProperty(value = "缺卡次数")
     private Integer unpunchNum;
 
@@ -98,6 +112,7 @@ public class AttendanceStatisticsVO {
     private Integer fieldNum;
 
     /** 无效卡次数 */
+    @Excel(name = "无效卡次数")
     @ApiModelProperty(value = "无效卡次数")
     private Integer invalidNum;
 

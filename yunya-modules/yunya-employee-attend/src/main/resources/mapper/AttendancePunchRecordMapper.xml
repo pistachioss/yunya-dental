@@ -56,11 +56,20 @@
       <if test="queryForm.userId != null" >
         and t.user_id = #{queryForm.userId}
       </if>
+      <if test="queryForm.orgId != null" >
+        and t.org_id = #{queryForm.orgId}
+      </if>
       <if test="queryForm.punchDate != null" >
         and t.punch_date = DATE_FORMAT(#{queryForm.punchDate},'%Y-%m-%d')
       </if>
       <if test="queryForm.betweenDate!=null and queryForm.andDate!=null" >
         and t.punch_date between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
+      </if>
+      <if test="queryForm.punchStatus!=null">
+        and t.punch_status = #{queryForm.punchStatus}
+      </if>
+      <if test="queryForm.isPunch!=null">
+        and t.is_punch = #{queryForm.isPunch}
       </if>
       <if test="queryForm.notEqualPunchStatus != null">
         and t.punch_status &lt;&gt; #{queryForm.notEqualPunchStatus}
@@ -96,9 +105,11 @@
         t.is_punch as isPunch,
         t.wifi_mac_address as wifiMacAddress,
         case when t.source=0 then t.source_id
-        when t.source=1 then (select schedule_id from leave_schedule where leave_id=t.source_id)
-        when t.source=2 then (select schedule_id from work_overtime_info where id=t.source_id)
-        when t.source=3 then null end scheduleId
+        when t.source=1 then t.source_id
+        when t.source=2 then (select schedule_id from leave_schedule where leave_id=t.source_id)
+        when t.source=3 then (select schedule_id from leave_schedule where leave_id=t.source_id)
+        when t.source=4 then (select schedule_id from work_overtime_info where id=t.source_id)
+        when t.source=5 then null end scheduleId
       from attendance_punch_record t
       <where>
         <if test="queryForm.userId != null" >
@@ -144,16 +155,18 @@
       t.is_punch as isPunch,
       t.wifi_mac_address as wifiMacAddress,
       case when t.source=0 then t.source_id
-      when t.source=1 then (select schedule_id from leave_schedule where leave_id=t.source_id)
-      when t.source=2 then (select schedule_id from work_overtime_info where id=t.source_id)
-      when t.source=3 then null end scheduleId
+      when t.source=1 then t.source_id
+      when t.source=2 then (select schedule_id from leave_schedule where leave_id=t.source_id)
+      when t.source=3 then (select schedule_id from leave_schedule where leave_id=t.source_id)
+      when t.source=4 then (select schedule_id from work_overtime_info where id=t.source_id)
+      when t.source=5 then null end scheduleId
       from attendance_punch_record t
       <where>
           <if test="queryForm.orgId != null">
             and t.org_id = #{queryForm.org_id}
           </if>
           <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
-            and DATE_FORMAT(t.punch_date,'%y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%y-%m-%d')
+            and DATE_FORMAT(t.punch_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
           </if>
       </where>
   </select>

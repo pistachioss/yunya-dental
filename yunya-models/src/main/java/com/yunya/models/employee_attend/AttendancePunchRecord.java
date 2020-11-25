@@ -50,7 +50,7 @@ public class AttendancePunchRecord {
     private Byte punchStatus;
 
     /**
-     * 考勤项目来源: 0:班次 1：请假  2：加班 3：外勤
+     * 考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
      */
     private Byte source;
 
@@ -77,7 +77,7 @@ public class AttendancePunchRecord {
     private String punchAddress;
 
     /**
-     * 打卡项目来源：员工排班id、请假id、加班id、外勤id
+     * 打卡考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
      */
     @Column(name = "source_id")
     private Integer sourceId;
@@ -263,18 +263,18 @@ public class AttendancePunchRecord {
     }
 
     /**
-     * 获取考勤项目来源: 0:班次 1：请假  2：加班 3：外勤
+     * 获取考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
      *
-     * @return source - 考勤项目来源: 0:班次 1：请假  2：加班 3：外勤
+     * @return source - 考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
      */
     public Byte getSource() {
         return source;
     }
 
     /**
-     * 设置考勤项目来源: 0:班次 1：请假  2：加班 3：外勤
+     * 设置考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
      *
-     * @param source 考勤项目来源: 0:班次 1：请假  2：加班 3：外勤
+     * @param source 考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
      */
     public void setSource(Byte source) {
         this.source = source;

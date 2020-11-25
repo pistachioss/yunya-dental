@@ -34,7 +34,6 @@ public class ApprovalLevelSetQuery {
      * 审批级别名称
      */
     @ApiModelProperty("审批级别名称")
-    @NotNull(message = "审批级别名称不能为空")
     private String approvalLevelName;
 
     /**
