@@ -178,4 +178,20 @@ public class CompanyReportOfFinanceController {
     PageInfo<BillOfDiscountDetailVO> resultList = baseBillBiz.findBillDiscountDetailList(query);
     return ResponseUtil.success(resultList);
   }
+
+  /**
+   * 根据条件导出账单优惠明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-账单优惠明细-导出")
+  @PostMapping(value = "/bill/privilege/export", name = "根据条件导出账单优惠明细列表")
+  public ResponseResult<T> exportDiscountDetailList(
+          HttpServletResponse response, @RequestBody @Validated BillOfDiscountDetailQuery query)
+          throws IOException {
+    baseBillBiz.exportDiscountDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
 }

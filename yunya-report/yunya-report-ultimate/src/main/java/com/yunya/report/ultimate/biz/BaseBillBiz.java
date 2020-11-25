@@ -69,4 +69,17 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
     return new PageInfo<>(resultList);
   }
+
+  /**
+   * 根据条件导出账单优惠明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportDiscountDetailList(
+      HttpServletResponse response, BillOfDiscountDetailQuery query) throws IOException {
+    List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
+    ExcelUtil<BillOfDiscountDetailVO> excelUtil = new ExcelUtil<>(BillOfDiscountDetailVO.class);
+    excelUtil.exportExcel(response, resultList, "账单优惠明细列表");
+  }
 }
