@@ -6,6 +6,7 @@ import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.WorkOvertimeInfoBiz;
+import com.yunya.modules.employeeattend.form.WorkForm;
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -73,17 +74,30 @@ public class WorkOvertimeInfoController {
     }
 
     /**
-     * 撤销外勤申请
+     * 撤销加班申请
      *
      * @param
      * @return
      */
     @PostMapping("/revoke")
-    @ApiOperation("撤销外勤申请")
+    @ApiOperation("撤销加班申请")
     @RepeatSubmit
     @CurrentUser
     public ResponseResult revoke(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
         return ResponseUtil.success(workOvertimeInfoBiz.revoke(workOvertimeInfoForm));
+    }
+
+    /**
+     * 获取时间段和门诊iD获取加班班次列表
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findWorkEm")
+    @ApiOperation("获取时间段和门诊iD获取加班班次列表")
+    @RepeatSubmit
+    public ResponseResult findWorkEm(@RequestBody @Validated WorkForm workForm) {
+        return ResponseUtil.success(workOvertimeInfoBiz.findWorkEm(workForm));
     }
 
 }

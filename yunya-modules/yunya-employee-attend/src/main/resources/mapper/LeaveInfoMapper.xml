@@ -113,10 +113,18 @@
         startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime ,bs.type emType,bs.`name` emName
         from employee_schedule es
         LEFT JOIN base_schedule bs on es.schedule_id = bs.id
-        where es.work_date BETWEEN #{startTime} and #{endTime}
+        LEFT JOIN leave_schedule ls on ls.schedule_id = es.id
+        <where>
+        <if test="startTime!= null">
+            es.work_date BETWEEN #{startTime} and #{endTime}
+        </if>
         <if test="userId!= null">
             and es.employee_id = #{userId}
         </if>
+        <if test="id!= null">
+            and ls.leave_id = #{id}
+        </if>
+        </where>
     </select>
 
     <select id="selectApprovalByDay" resultMap="AlResultMap">
@@ -124,4 +132,5 @@
         left JOIN approval_level_set als on als.approval_criteria_id = ac.id
         where ac.start_day &lt; TIMESTAMPDIFF(day,#{startTime},#{endTime})  and ac.end_day>=TIMESTAMPDIFF(day,#{startTime},#{endTime})
     </select>
+
 </mapper>

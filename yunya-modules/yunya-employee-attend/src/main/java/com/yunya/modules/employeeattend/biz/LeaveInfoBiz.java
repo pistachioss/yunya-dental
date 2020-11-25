@@ -2,10 +2,13 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.LeaveInfoQueryForm;
+import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -28,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
 
 /**
  * 简介：请假信息业务层
@@ -183,9 +187,9 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         //判断是否有其他类型的申请
         if (true) {
             //判断是否与同类型其他申请时间冲突
-            List<LeaveSchedule>scList = leaveInfoByEmForm.getScList();
+            List<LeaveSchedule> scList = leaveInfoByEmForm.getScList();
             int isConflict = leaveScheduleMapper.selectNum(scList);
-            if(isConflict==0){
+            if (isConflict == 0) {
                 LeaveInfo leaveInfo = new LeaveInfo();
                 BeanUtils.copyProperties(leaveInfoByEmForm, leaveInfo);
                 leaveInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -193,7 +197,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 int num = mapper.insert(leaveInfo);
                 int leaveId = leaveInfo.getId();
                 //插入班次请假信息
-                for(LeaveSchedule leaveSchedule:scList){
+                for (LeaveSchedule leaveSchedule : scList) {
                     leaveSchedule.setCrtId(leaveInfoByEmForm.getCrtId());
                     leaveSchedule.setCrtTime(new Date());
                     leaveSchedule.setLeaveId(leaveId);
@@ -226,5 +230,79 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
             throw new ClientServiceException("该申请与其他请假申请时间冲突", INSERT_MODEL);
         }
         throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
+    }
+
+    /**
+     * 审批加班
+     *
+     * @param
+     * @return
+     */
+    public Integer examine(LeaveInfoForm leaveInfoForm) {
+        LeaveInfo leaveInfo = new LeaveInfo();
+        leaveInfo.setId(leaveInfoForm.getId());
+        leaveInfo = mapper.selectByPrimaryKey(leaveInfo);
+        if (leaveInfo.getApprpvalStatus() == 0) {
+            leaveInfo.setApprpvalStatus(leaveInfoForm.getApprpvalStatus());
+            return mapper.updateByPrimaryKey(leaveInfo);
+        }
+        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+    }
+
+    /**
+     * 撤销加班
+     *
+     * @param leaveInfoForm
+     * @return
+     */
+    public Integer revoke(LeaveInfoForm leaveInfoForm) {
+        LeaveInfo leaveInfo = new LeaveInfo();
+        leaveInfo.setId(leaveInfoForm.getId());
+        leaveInfo = mapper.selectByPrimaryKey(leaveInfo);
+        if (leaveInfo.getApprpvalStatus() == 0) {
+            if (leaveInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                leaveInfo.setApprpvalStatus(3);
+                return mapper.updateByPrimaryKey(leaveInfo);
+            }
+            throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);
+        }
+        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+    }
+
+    public List<LeaveInfoListVO> findList(LeaveInfoForm leaveInfoForm) {
+        LeaveInfo leaveInfo = new LeaveInfo();
+        BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
+        List<LeaveInfo> list = mapper.select(leaveInfo);
+        List<LeaveInfoListVO> reList = new ArrayList<>();
+        if (list.size() > 0) {
+            //获取用户信息
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            model.setWhetherPage(false);
+            List<Integer> orgIds = new ArrayList<>();
+            model.setOrgIds(orgIds);
+            Byte[] userStatus = {0, 1, 3};
+            model.setWorkStatus(userStatus);
+            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            Map<String, SysUserInfoDetail> emMap = new HashMap(16);
+            employees.forEach(z -> emMap.put(z.getUserId() + "", z));
+            for (LeaveInfo li : list) {
+                LeaveInfoListVO leaveInfoListVO = new LeaveInfoListVO();
+                BeanUtils.copyProperties(li, leaveInfoListVO);
+                leaveInfoListVO.setUserName(emMap.get(li.getUserId() + "").getName());
+                reList.add(leaveInfoListVO);
+            }
+        }
+        return reList;
+    }
+    /**
+     * 获取请假的审批明细
+     *
+     * @param
+     * @return
+     */
+    public List<LeaveSchedule> findApproval(LeaveInfoForm leaveInfoForm) {
+        LeaveSchedule leaveSchedule = new LeaveSchedule();
+        leaveSchedule.setLeaveId(leaveInfoForm.getId());
+        return leaveScheduleMapper.select(leaveSchedule);
     }
 }
