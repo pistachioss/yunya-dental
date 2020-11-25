@@ -2,7 +2,9 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.BillOfDiscountDetailQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
+import com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -51,5 +53,20 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BillOfOrderRecordVO> list = mapper.selectBillRecordOfOrderList(query);
     ExcelUtil<BillOfOrderRecordVO> excelUtil = new ExcelUtil<>(BillOfOrderRecordVO.class);
     excelUtil.exportExcel(response, list, "开单记录表");
+  }
+
+  /**
+   * 根据条件查询账单优惠明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public PageInfo<BillOfDiscountDetailVO> findBillDiscountDetailList(
+      BillOfDiscountDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
+    return new PageInfo<>(resultList);
   }
 }

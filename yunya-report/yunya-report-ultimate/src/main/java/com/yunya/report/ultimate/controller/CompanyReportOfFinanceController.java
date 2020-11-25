@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
 import com.yunya.report.ultimate.service.DiscountBiz;
 import io.swagger.annotations.Api;
@@ -32,6 +33,8 @@ import java.io.IOException;
 @RequestMapping("finance")
 public class CompanyReportOfFinanceController {
 
+  /** 账单 */
+  @Autowired private BaseBillBiz baseBillBiz;
   /** 账单详情 */
   @Autowired private BaseBillDetailBiz billDetailBiz;
   /** 卡券 */
@@ -139,7 +142,7 @@ public class CompanyReportOfFinanceController {
    * @return
    */
   @ApiOperation("公司端报表-财务报表-分类收入汇总")
-  @PostMapping(value = "/billDetailBiz", name = "billDetailBiz")
+  @PostMapping(value = "/category/income/list", name = "billDetailBiz")
   public ResponseResult<PageInfo<CategoryInfoIncomeVO>> categoryIncomeList(
       @RequestBody @Validated BillCategoryIncomeQuery query) {
     PageInfo<CategoryInfoIncomeVO> resultList = billDetailBiz.findCategoryIncomeList(query);
@@ -154,11 +157,25 @@ public class CompanyReportOfFinanceController {
    * @return
    */
   @ApiOperation("公司端报表-财务报表-分类收入汇总-导出")
-  @PostMapping(value = "/tariff/income/export", name = "根据条件导出项目分类收入汇总列表")
+  @PostMapping(value = "/category/income/export", name = "根据条件导出项目分类收入汇总列表")
   public ResponseResult<T> exportCategoryIncome(
       HttpServletResponse response, @RequestBody @Validated BillCategoryIncomeQuery query)
       throws IOException {
     billDetailBiz.exportCategoryIncome(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询账单优惠明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-账单优惠明细")
+  @PostMapping(value = "/bill/privilege/list", name = "根据条件查询账单优惠明细")
+  public ResponseResult<PageInfo<BillOfDiscountDetailVO>> billDiscountDetailList(
+      @RequestBody @Validated BillOfDiscountDetailQuery query) {
+    PageInfo<BillOfDiscountDetailVO> resultList = baseBillBiz.findBillDiscountDetailList(query);
+    return ResponseUtil.success(resultList);
   }
 }
