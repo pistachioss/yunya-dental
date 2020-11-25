@@ -138,11 +138,27 @@ public class CompanyReportOfFinanceController {
    * @param query 查询条件
    * @return
    */
-  @ApiOperation("billDetailBiz")
+  @ApiOperation("公司端报表-财务报表-分类收入汇总")
   @PostMapping(value = "/billDetailBiz", name = "billDetailBiz")
   public ResponseResult<PageInfo<CategoryInfoIncomeVO>> categoryIncomeList(
       @RequestBody @Validated BillCategoryIncomeQuery query) {
     PageInfo<CategoryInfoIncomeVO> resultList = billDetailBiz.findCategoryIncomeList(query);
     return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件导出项目分类收入汇总列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-分类收入汇总-导出")
+  @PostMapping(value = "/tariff/income/export", name = "根据条件导出项目分类收入汇总列表")
+  public ResponseResult<T> exportCategoryIncome(
+      HttpServletResponse response, @RequestBody @Validated BillCategoryIncomeQuery query)
+      throws IOException {
+    billDetailBiz.exportCategoryIncome(response, query);
+    return ResponseUtil.success(null);
   }
 }

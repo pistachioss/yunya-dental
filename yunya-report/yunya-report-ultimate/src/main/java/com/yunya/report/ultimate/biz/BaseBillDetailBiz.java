@@ -85,4 +85,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<CategoryInfoIncomeVO> resultList = mapper.selectCategoryIncomeList(query);
     return new PageInfo<>(resultList);
   }
+
+  /**
+   * 公司端报表-财务报表-分类收入汇总-导出
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportCategoryIncome(HttpServletResponse response, BillCategoryIncomeQuery query)
+      throws IOException {
+    List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
+    ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
+    excelUtil.exportExcel(response, list, "分类收入汇总列表");
+  }
 }
