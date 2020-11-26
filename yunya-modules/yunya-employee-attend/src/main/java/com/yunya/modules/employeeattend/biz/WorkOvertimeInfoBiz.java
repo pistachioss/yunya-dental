@@ -78,6 +78,9 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
      */
     public int create(WorkOvertimeInfoForm workOvertimeInfoForm) {
         //判断是否有其他类型的申请
+
+
+
         if (true) {
             WorkOvertimeInfo one = new WorkOvertimeInfo();
             one.setRestScheduleId(workOvertimeInfoForm.getRestScheduleId());
@@ -155,7 +158,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                 }
                 throw new ClientServiceException("不可以发起申请当天及以前的申请事项", INSERT_MODEL);
             }
-            throw new ClientServiceException("该申请与其他外勤申请时间冲突", INSERT_MODEL);
+            throw new ClientServiceException("该申请与其他加班申请时间冲突", INSERT_MODEL);
         }
         throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
     }
