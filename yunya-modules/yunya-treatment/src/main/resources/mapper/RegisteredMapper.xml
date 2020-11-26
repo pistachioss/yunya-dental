@@ -34,7 +34,7 @@
             re.dentist_id as regDentistId,
             re.assistant_id as regAssistantId,
             re.dept_room_id as regDeptRoomId,
-            date_format(re.reg_time,'%H:%m') as regTime,
+            time_format(re.reg_time,'%H:%i') as regTime,
             re.first_visit as firstVisit
         from registered re
         <where>
