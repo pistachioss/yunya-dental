@@ -68,7 +68,7 @@
             ) br
         <where>
             <if test="query.orgId != null">
-                and br.orgId = #{orgId}
+                and br.orgId = #{query.orgId}
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
                 and concat(ifnull(br.patientName, ''), ifnull(br.pinyinName, ''), ifnull(br.mobile, '')) like concat('%', #{query.keyWord}, '%')
