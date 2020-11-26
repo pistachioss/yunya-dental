@@ -33,4 +33,10 @@ public interface FieldInfoMapper extends Mapper<FieldInfo> {
      * @return
      */
     List<FieldInfoVO> findFieldInfoList(@Param("queryForm") FieldInfoQueryForm queryForm);
+
+    /**
+     * 判断员工某天是否有外勤申请
+     * @return
+     */
+    int countByDay(FieldInfo fieldInfo);
 }
