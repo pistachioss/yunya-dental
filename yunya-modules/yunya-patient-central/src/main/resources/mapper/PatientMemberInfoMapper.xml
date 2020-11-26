@@ -54,7 +54,7 @@
     <!-- 根据门诊id获取病历号后六位 -->
     <select id="generateCardNumber" resultType="java.lang.String">
       select
-      IFNULL( MAX( substr( ${memberNo}, 6, 6 )), '000000' ) as maxnum
+      IFNULL( substr( MAX( ${memberNo}), 6, 6 ), '000000' ) as maxnum
       from
       ${from}
       where
