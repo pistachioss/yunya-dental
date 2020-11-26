@@ -121,7 +121,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                     punchItemMap.put(userId, list);
                 } else {
                     employeeScheduleVO.setType(REST);
-                    List<EmployeeScheduleVO> list = punchItemMap.get(userId);
+                    List<EmployeeScheduleVO> list = restItemMap.get(userId);
                     if (list == null) {
                         list = new ArrayList<>();
                     }
@@ -312,7 +312,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 for (EmployeeScheduleVO scheduleVO : list) {
                     Date firstTime = scheduleVO.getFirstStartTime();
                     Date lastTime = scheduleVO.getFirstEndTime();
-                    if (startTime.before(firstTime)) {
+                    if (startTime.compareTo(firstTime)<=0 && endTime.compareTo(lastTime)>=0) {//外勤覆盖
                         EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
                         punchItem.setType(FIELD);
                         punchItem.setFirstStartTime(startTime);
@@ -322,18 +322,32 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                         punchItem.setName("外勤");
                         punchItem.setClinicId(fieldInfoVO.getCompanyId());
                         punchItemList.add(punchItem);
-                        punchItemList.add(scheduleVO);
-                    } else if (endTime.after(lastTime)) {
-                        punchItemList.add(scheduleVO);
-                        EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
-                        punchItem.setType(FIELD);
-                        punchItem.setFirstStartTime(startTime);
-                        punchItem.setFirstEndTime(endTime);
-                        punchItem.setId(fieldInfoVO.getId());
-                        punchItem.setEmployeeId(userId);
-                        punchItem.setName("外勤");
-                        punchItem.setClinicId(fieldInfoVO.getCompanyId());
-                        punchItemList.add(punchItem);
+                    } else {
+                        if (startTime.compareTo(firstTime)<=0) {
+                            EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
+                            punchItem.setType(FIELD);
+                            punchItem.setFirstStartTime(startTime);
+                            punchItem.setFirstEndTime(endTime);
+                            punchItem.setId(fieldInfoVO.getId());
+                            punchItem.setEmployeeId(userId);
+                            punchItem.setName("外勤");
+                            punchItem.setClinicId(fieldInfoVO.getCompanyId());
+                            punchItemList.add(punchItem);
+                            punchItemList.add(scheduleVO);
+                        } else if (endTime.compareTo(lastTime) >= 0) {
+                            punchItemList.add(scheduleVO);
+                            EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
+                            punchItem.setType(FIELD);
+                            punchItem.setFirstStartTime(startTime);
+                            punchItem.setFirstEndTime(endTime);
+                            punchItem.setId(fieldInfoVO.getId());
+                            punchItem.setEmployeeId(userId);
+                            punchItem.setName("外勤");
+                            punchItem.setClinicId(fieldInfoVO.getCompanyId());
+                            punchItemList.add(punchItem);
+                        } else {// 覆盖外勤
+                            punchItemList.add(scheduleVO);
+                        }
                     }
                 }
             }

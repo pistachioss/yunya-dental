@@ -78,11 +78,10 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
                 Integer orgId = organizationInfoDetail.getId();
                 attendanceAddressSetVOList.forEach(attendanceAddressSetVO -> {
                     Integer attendOrgId = attendanceAddressSetVO.getOrgId();
-                    String orgName = "";
-                    if (orgId.equals(attendOrgId)) {
-                        orgName = organizationInfoDetail.getName();
+                    if (orgId == attendOrgId) {
+                        attendanceAddressSetVO.setOrganizationName(organizationInfoDetail.getName());
+                        return;
                     }
-                    attendanceAddressSetVO.setOrganizationName(orgName);
                 });
             });
         }

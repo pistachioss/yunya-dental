@@ -31,6 +31,10 @@ public class AttendanceAddressSetForm implements Serializable {
     @NotNull(message = "组织ID不能为空！")
     private Integer orgId;
 
+    /** 组织名称 */
+    @ApiModelProperty(value = "组织名称")
+    private Integer organizationName;
+
     /** 考勤地址 */
     @NotBlank(message = "考勤地址不能为空！")
     @ApiModelProperty(value = "考勤地址", required = true)

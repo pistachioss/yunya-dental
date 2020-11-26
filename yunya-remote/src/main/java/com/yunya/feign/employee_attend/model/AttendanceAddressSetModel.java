@@ -28,6 +28,10 @@ public class AttendanceAddressSetModel implements Serializable {
     @ApiModelProperty(value = "组织id", required = true)
     private Integer orgId;
 
+    /** 组织名称 */
+    @ApiModelProperty(value = "组织名称")
+    private Integer organizationName;
+
     /** 考勤地址 */
     @ApiModelProperty(value = "考勤地址", required = true)
     private String attendanceAddress;
