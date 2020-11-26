@@ -101,7 +101,8 @@
         b.second_end_time,
         b.first_end_time
         )) workOverTime,
-        b.name
+        b.name,
+        t.crt_time
         FROM
         work_overtime_info t
         LEFT JOIN base_schedule b ON t.schedule_id = b.id
