@@ -124,7 +124,24 @@
 	base_schedule bs
     LEFT JOIN clinic_schedule cs ON cs.schedule_id = bs.id
     WHERE bs.type = '上班' and
-	cs.clinic_id = #{companyId} and bs.first_start_time >= #{startTime} and IFNULL(bs.second_end_time,bs.first_end_time)&lt;=
-	#{endTime}
+	cs.clinic_id = #{companyId} and bs.first_start_time >= DATE_FORMAT(#{startTime},'%H:%i:%s') and IFNULL(bs.second_end_time,bs.first_end_time)&lt;=
+	DATE_FORMAT(#{endTime},'%H:%i:%s')
+    </select>
+    <select id="findNoWorkEm" resultType="java.lang.String">
+        SELECT
+        es.work_date
+        FROM
+        base_schedule bs
+        LEFT JOIN employee_schedule es on es.schedule_id = bs.id
+        WHERE bs.type = '休息' and
+        es.employee_id = #{userId} and es.work_date >= #{startTime} and es.work_date &lt;= #{endTime}
+    </select>
+    <select id="findNoWorkEmByDate" resultType="com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO">
+    SELECT
+	bs.id scheduleId,es.clinic_id companyId,es.work_date,bs.first_start_time startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime,bs.name
+    FROM
+	base_schedule bs
+	LEFT JOIN employee_schedule es on es.schedule_id = bs.id
+    WHERE es.employee_id = #{userId} and es.work_date = #{workDate} and bs.type = '休息'
     </select>
 </mapper>

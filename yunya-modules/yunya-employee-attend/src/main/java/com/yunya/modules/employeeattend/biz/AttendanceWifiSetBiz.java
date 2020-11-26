@@ -74,11 +74,10 @@ public class AttendanceWifiSetBiz extends BaseBiz<AttendanceWifiSetMapper, Atten
                 Integer orgId = organizationInfoDetail.getId();
                 attendanceWifiSetVOList.forEach(attendanceAddressSetVO -> {
                     Integer attendOrgId = attendanceAddressSetVO.getOrgId();
-                    String orgName = "";
                     if (orgId.equals(attendOrgId)) {
-                        orgName = organizationInfoDetail.getName();
+                        attendanceAddressSetVO.setOrganizationName(organizationInfoDetail.getName());
+                        return;
                     }
-                    attendanceAddressSetVO.setOrganizationName(orgName);
                 });
             });
         }
