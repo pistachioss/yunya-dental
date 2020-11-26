@@ -23,6 +23,7 @@ import com.yunya.models.patient_central.*;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.patient_central.mapper.*;
+import org.slf4j.Logger;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * 简单介绍:</br> 患者会员卡信息 业务层
@@ -46,6 +48,7 @@ import java.util.Map;
 @Transactional(rollbackFor = Exception.class)
 public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, PatientMemberInfo> {
 
+  private static final Logger log = org.slf4j.LoggerFactory.getLogger(PatientMemberInfoBiz.class);
   /** 注入会员卡Mapper */
   @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
   /** 注入会员绑定关系Mapper */
@@ -500,26 +503,34 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   }
 
   /**
-   * 消费
+   * 消费 同步操作
    *
    * @param model 消费Model
    * @return ResponseResult
    */
   public ResponseResult expend(MemberExpendRecordModel model) {
-    PatientMemberInfo patientMemberInfo =
-        patientMemberInfoMapper.selectCardNumber(model.getMemberId());
-    if (patientMemberInfo != null) {
-      BigDecimal num =
-          patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount());
-      // 如果本金+赠金 小于 消费金额
-      if (num.compareTo(model.getExpendTotal()) < 0) {
+    ReentrantLock reentrantLock = new ReentrantLock(true);
+    try {
+      reentrantLock.lock();
+      log.info("============消费加锁操作===================");
+      PatientMemberInfo patientMemberInfo =
+              patientMemberInfoMapper.selectCardNumber(model.getMemberId());
+      if (patientMemberInfo != null) {
+        BigDecimal num =
+                patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount());
+        // 如果本金+赠金 小于 消费金额
+        if (num.compareTo(model.getExpendTotal()) < 0) {
+          return ResponseUtil.fail(
+                  OperationCodeConstants.BALANCE_INSUFFICIENT, "会员卡余额不足", patientMemberInfo);
+        }
+        spending(model, patientMemberInfo);
+      } else {
         return ResponseUtil.fail(
-            OperationCodeConstants.BALANCE_INSUFFICIENT, "会员卡余额不足", patientMemberInfo);
+                OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员卡", patientMemberInfo);
       }
-      spending(model, patientMemberInfo);
-    } else {
-      return ResponseUtil.fail(
-          OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到会员卡", patientMemberInfo);
+    } finally {
+      reentrantLock.unlock();
+      log.info("============消费锁释放操作===================");
     }
     return ResponseUtil.success();
   }
