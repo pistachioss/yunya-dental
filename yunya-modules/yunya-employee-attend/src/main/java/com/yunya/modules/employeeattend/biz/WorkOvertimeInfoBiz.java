@@ -58,6 +58,8 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private CopyInfoMapper copyInfoMapper;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private EmployeeScheduleMapper employeeScheduleMapper;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -99,8 +101,11 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                 }
                 if (now.before(date)) {
+                    EmployeeSchedule employeeSchedule = new EmployeeSchedule();
+                    employeeSchedule.setId(workOvertimeInfoForm.getRestScheduleId());
+                    employeeSchedule = employeeScheduleMapper.selectByPrimaryKey(employeeSchedule);
                     BaseSchedule baseSchedule = new BaseSchedule();
-                    baseSchedule.setId(workOvertimeInfoForm.getRestScheduleId());
+                    baseSchedule.setId(employeeSchedule.getScheduleId());
                     //休息班的班次信息
                     BaseSchedule reba = baseScheduleMapper.selectByPrimaryKey(baseSchedule);
                     baseSchedule.setId(workOvertimeInfoForm.getScheduleId());
