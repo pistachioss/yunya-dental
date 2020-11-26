@@ -36,4 +36,9 @@ public interface WorkOvertimeInfoMapper extends Mapper<WorkOvertimeInfo> {
     List<findNoWorkEmByDateVO> findNoWorkEmByDate(NoWorkByDateForm noWorkByDateForm);
 
     int selectCountById(WorkOvertimeInfo workOvertimeInfo);
+    /**
+     * 判断员工某天是否有加班申请
+     * @return
+     */
+    int countByDay(WorkOvertimeInfo workOvertimeInfo);
 }

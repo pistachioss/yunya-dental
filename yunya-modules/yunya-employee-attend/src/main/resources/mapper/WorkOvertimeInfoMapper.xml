@@ -149,4 +149,8 @@
     <select id="selectCountById" resultType="Integer">
         select count(*) from work_overtime_info where apprpval_status in (0,1,2) and rest_schedule_id = #{restScheduleId}
     </select>
+    <select id="countByDay" resultType="Integer">
+        select count(*) from work_overtime_info where apprpval_status in (0,1)
+         AND DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{work_date}, '%Y-%m-%d')
+    </select>
 </mapper>
