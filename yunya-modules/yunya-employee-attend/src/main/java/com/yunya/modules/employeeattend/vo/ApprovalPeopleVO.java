@@ -21,7 +21,7 @@ public class ApprovalPeopleVO {
 
     private Integer userId;
     @ApiModelProperty("员工姓名")
-    private String userName;
+    private String name;
     @ApiModelProperty("岗位")
     private String posts;
     @ApiModelProperty("手机号")

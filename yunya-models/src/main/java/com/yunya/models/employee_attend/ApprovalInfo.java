@@ -1,5 +1,6 @@
 package com.yunya.models.employee_attend;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import java.util.Date;
@@ -15,18 +16,21 @@ public class ApprovalInfo {
      * 请假信息表id
      */
     @Column(name = "leave_id")
+    @ApiModelProperty("请假信息表id")
     private Integer leaveId;
 
     /**
      * 审批级别人员Id
      */
     @Column(name = "approval_people_id")
+    @ApiModelProperty("审批级别人员Id")
     private Integer approvalPeopleId;
 
     /**
      * 此审批人给予当前请假的审批状态
      */
     @Column(name = "approval_status")
+    @ApiModelProperty("此审批人给予当前请假的审批状态")
     private Integer approvalStatus = 0;
 
     /**
