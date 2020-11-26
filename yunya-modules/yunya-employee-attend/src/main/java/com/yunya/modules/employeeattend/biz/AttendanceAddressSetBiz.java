@@ -39,9 +39,6 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
     /** 注入对象 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-    /** 注入对象 */
-    @Autowired
-    private AttendanceWifiSetBiz attendanceWifiSetBiz;
 
     /**
      * 分页查询考勤地址设置列表
@@ -78,11 +75,10 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
                 Integer orgId = organizationInfoDetail.getId();
                 attendanceAddressSetVOList.forEach(attendanceAddressSetVO -> {
                     Integer attendOrgId = attendanceAddressSetVO.getOrgId();
-                    String orgName = "";
-                    if (orgId.equals(attendOrgId)) {
-                        orgName = organizationInfoDetail.getName();
+                    if (orgId == attendOrgId) {
+                        attendanceAddressSetVO.setOrganizationName(organizationInfoDetail.getName());
+                        return;
                     }
-                    attendanceAddressSetVO.setOrganizationName(orgName);
                 });
             });
         }
@@ -97,7 +93,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
      */
     public AttendanceAddressSetVO findAttendanceAddressSetById(Integer id) {
         AttendanceAddressSetVO attendanceAddressSetVO = mapper.findAttendanceAddressSetById(id);
-        if (attendanceAddressSetVO != null) {
+        /*if (attendanceAddressSetVO != null) {
             Integer orgId = attendanceAddressSetVO.getOrgId();
             OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
             String organizationName = "";
@@ -105,7 +101,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
                 organizationName = organizationInfo.getName();
             }
             attendanceAddressSetVO.setOrganizationName(organizationName);
-        }
+        }*/
         return attendanceAddressSetVO;
     }
 
@@ -134,28 +130,8 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         attendanceAddressSet.setCrtTime(now);
         attendanceAddressSet.setUpdId(userid);
         attendanceAddressSet.setUpdTime(now);
+        attendanceAddressSet.setOrganizationName(attendanceAddressSetModel.getOrganizationName());
         mapper.insertSelective(attendanceAddressSet);
-    }
-
-    /**
-     * 批量添加考勤地址设置和考勤Wifi设置信息
-     *
-     * @param attendanceSetModel 考勤设置模型
-     * @return
-     */
-    public void batchAdd(AttendanceSetModel attendanceSetModel) {
-        List<AttendanceWifiSetModel> attendanceWifiSetModels = attendanceSetModel.getAttendanceWifiSetModels();
-        List<AttendanceAddressSetModel> attendanceAddressSetModels = attendanceSetModel.getAttendanceAddressSetModels();
-        if (attendanceAddressSetModels!=null && !attendanceAddressSetModels.isEmpty()) {
-            attendanceAddressSetModels.forEach(attendanceAddressSetModel -> {
-                add(attendanceAddressSetModel);
-            });
-        }
-        if (attendanceWifiSetModels!=null && !attendanceWifiSetModels.isEmpty()) {
-            attendanceWifiSetModels.forEach(attendanceWifiSetModel -> {
-                attendanceWifiSetBiz.add(attendanceWifiSetModel);
-            });
-        }
     }
 
     /**
@@ -188,6 +164,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
         attendanceAddressSet.setAttendanceRange(attendanceAddressSetForm.getAttendanceRange());
         attendanceAddressSet.setUpdId(userid);
         attendanceAddressSet.setUpdTime(now);
+        attendanceAddressSet.setOrganizationName(attendanceAddressSetForm.getOrganizationName());
         mapper.updateByPrimaryKey(attendanceAddressSet);
     }
 

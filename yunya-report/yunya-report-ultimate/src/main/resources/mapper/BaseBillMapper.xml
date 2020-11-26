@@ -1,28 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBill" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="bill_id" property="billId" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="treatment_id" property="treatmentId" jdbcType="INTEGER" />
-    <result column="bill_status" property="billStatus" jdbcType="TINYINT" />
-    <result column="order_num" property="orderNum" jdbcType="VARCHAR" />
-    <result column="order_amount" property="orderAmount" jdbcType="DECIMAL" />
-    <result column="order_date" property="orderDate" jdbcType="TIMESTAMP" />
-    <result column="privilege_type" property="privilegeType" jdbcType="TINYINT" />
-    <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL" />
-    <result column="bill_num" property="billNum" jdbcType="VARCHAR" />
-    <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL" />
-    <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL" />
-    <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL" />
-  </resultMap>
-  <!-- 欠费查询 -->
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseBillMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseBill">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="bill_id" property="billId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="treatment_id" property="treatmentId" jdbcType="INTEGER"/>
+        <result column="bill_status" property="billStatus" jdbcType="TINYINT"/>
+        <result column="order_num" property="orderNum" jdbcType="VARCHAR"/>
+        <result column="order_amount" property="orderAmount" jdbcType="DECIMAL"/>
+        <result column="order_date" property="orderDate" jdbcType="TIMESTAMP"/>
+        <result column="privilege_type" property="privilegeType" jdbcType="TINYINT"/>
+        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+        <result column="bill_num" property="billNum" jdbcType="VARCHAR"/>
+        <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL"/>
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+        <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL"/>
+    </resultMap>
+
+    <!-- 欠费查询 -->
     <select id="arrears" resultType="com.yunya.feign.report.domain.vo.ArrearsVo">
-      select
+        select
         bb.bill_id billId,
         be.employee_name employeeName,
         bb.order_date orderDate,
@@ -34,36 +35,37 @@
         bb.actual_amount actualAmount,
         bb.received_amount receivedAmount,
         bb.debt_amount debtAmount
-      from  base_bill bb
-        join  base_patient bp on bp.patient_id = bb.patient_id
-        join  base_treatment_process btpr on btpr.patient_id = bp.patient_id
-        join  base_employee be on btpr.registered_dentist_id = be.user_id
-      <where>
-        <if test="form.orgId != null and form.orgId != ''">
-          AND bb.org_id = #{form.orgId}
-        </if>
+        from base_bill bb
+        join base_patient bp on bp.patient_id = bb.patient_id
+        join base_treatment_process btpr on btpr.patient_id = bp.patient_id
+        join base_employee be on btpr.registered_dentist_id = be.user_id
+        <where>
+            <if test="form.orgId != null and form.orgId != ''">
+                AND bb.org_id = #{form.orgId}
+            </if>
 
-        <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-          and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
-          and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
-        </if>
+            <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+                and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
+                and DATE_FORMAT(bb.order_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
+            </if>
 
-        <if test="form.registeredDentistIds != null and form.registeredDentistIds.size() > 0 ">
-          AND btpr.registered_dentist_id in
-          <foreach collection="form.registeredDentistIds" item="registeredDentistId" index="index" open="(" close=")" separator=",">
-            #{registeredDentistId}
-          </foreach>
-        </if>
+            <if test="form.registeredDentistIds != null and form.registeredDentistIds.size() > 0 ">
+                AND btpr.registered_dentist_id in
+                <foreach collection="form.registeredDentistIds" item="registeredDentistId" index="index" open="("
+                         close=")" separator=",">
+                    #{registeredDentistId}
+                </foreach>
+            </if>
 
-        <if test="patientIds != null and patientIds.size() > 0 ">
-          AND bp.patient_id in
-          <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-            #{ids}
-          </foreach>
-        </if>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                AND bp.patient_id in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
 
-      </where>
-      group by bb.order_date asc
+        </where>
+        group by bb.order_date asc
     </select>
 
     <!-- 根据条件查询开单记录列表 -->
@@ -111,7 +113,8 @@
         be.employee_name AS biller
         FROM
         base_bill bb
-        LEFT JOIN ( SELECT btp.treatment_id, btp.registered_dentist_id, be.employee_name FROM base_treatment_process btp LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id ) btp ON bb.treatment_id = btp.treatment_id
+        LEFT JOIN ( SELECT btp.treatment_id, btp.registered_dentist_id, be.employee_name FROM base_treatment_process btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id ) btp ON bb.treatment_id = btp.treatment_id
         LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
         LEFT JOIN base_employee be ON bb.biller_id = be.user_id
         ) bor
@@ -123,10 +126,11 @@
                 and bor.orderNum = #{query.orderNum}
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and bor.billNum = #{query.billNum}
+                and bor.billNum like concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(bor.patientName, ''), ifnull(bor.pinyinName, ''), ifnull(bor.mobile, '')) like concat('%', #{query.keyWord}, '%')
+                and concat(ifnull(bor.patientName, ''), ifnull(bor.pinyinName, ''), ifnull(bor.mobile, '')) like
+                concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.orderStartDate != null and query.orderStartDate != ''">
                 and bor.orderDate &gt;= #{query.orderStartDate}
@@ -142,5 +146,87 @@
             </if>
         </where>
         ORDER BY bor.orderDate DESC
+    </select>
+
+    <!-- 根据条件查询账单优惠明细列表 -->
+    <select id="selectBillDiscountDetailList"
+            resultType="com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO">
+        SELECT
+        bpr.billId,
+        bpr.orderDate,
+        bpr.billNum,
+        bpr.orgId,
+        bpr.orgName,
+        bpr.patientId,
+        bpr.patientName,
+        bpr.mobile,
+        bpr.regDentistId,
+        bpr.regDentistName,
+        bpr.originalAmount,
+        bpr.discountAmount,
+        bpr.actualAmount,
+        bpr.privilegeType,
+        bpr.payeeId,
+        bpr.payeeName
+        FROM
+        (SELECT
+        bb.id AS billId,
+        bb.order_date AS orderDate,
+        bb.bill_num AS billNum,
+        bb.org_id AS orgId,
+        bo.abbreviation AS orgName,
+        bb.patient_id AS patientId,
+        bp.`name` AS patientName,
+        bp.pinyin_name as pinyinName,
+        bp.mobile AS mobile,
+        btp.registered_dentist_id AS regDentistId,
+        btp.employee_name AS regDentistName,
+        bb.order_amount AS originalAmount,
+        bb.privilege_amount AS discountAmount,
+        bb.actual_amount AS actualAmount,
+        bb.privilege_type AS privilegeType,
+        bbp.payee_user_id AS payeeId,
+        bbp.employee_name AS payeeName
+        FROM
+        base_bill bb
+        LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
+        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+        LEFT JOIN ( SELECT btp.registered_dentist_id, btp.treatment_id, be.employee_name FROM base_treatment_process btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id ) btp ON bb.treatment_id = btp.treatment_id
+        LEFT JOIN ( SELECT bbp.payee_user_id, be.employee_name FROM base_bill_pay bbp LEFT JOIN base_employee be ON
+        bbp.payee_user_id = be.user_id ) bbp ON bb.bill_id = bbp.bill_id) bpr
+        <where>
+            <if test="query.keyWord != null and query.keyWord != ''">
+                and concat(ifnull(bpr.patientName, ''), ifnull(bpr.pinyinName, ''), ifnull(bpr.mobile, '')) like
+                concat('%', #{query.keyWord}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and bpr.billNum like concat('%', #{query.billNum} ,'%')
+            </if>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bpr.orgId in
+                <foreach collection="query.orgIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.orderStartDate != null and query.orderStartDate != ''">
+                and bpr.orderDate &gt;= #{query.orderStartDate}
+            </if>
+            <if test="query.orderEndDate != null and query.orderEndDate != ''">
+                and bpr.orderDate &lt;= #{query.orderEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and bpr.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.privilegeTypes != null and query.privilegeTypes.length > 0">
+                and bpr.privilegeType in
+                <foreach collection="query.privilegeTypes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>

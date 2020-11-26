@@ -6,6 +6,9 @@ import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.WorkOvertimeInfoBiz;
+import com.yunya.modules.employeeattend.form.NoWorkByDateForm;
+import com.yunya.modules.employeeattend.form.NoWorkForm;
+import com.yunya.modules.employeeattend.form.WorkForm;
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -73,17 +76,56 @@ public class WorkOvertimeInfoController {
     }
 
     /**
-     * 撤销外勤申请
+     * 撤销加班申请
      *
      * @param
      * @return
      */
     @PostMapping("/revoke")
-    @ApiOperation("撤销外勤申请")
+    @ApiOperation("撤销加班申请")
     @RepeatSubmit
     @CurrentUser
     public ResponseResult revoke(@RequestBody @Validated WorkOvertimeInfoForm workOvertimeInfoForm) {
         return ResponseUtil.success(workOvertimeInfoBiz.revoke(workOvertimeInfoForm));
+    }
+
+    /**
+     * 根据时间段和门诊iD获取加班班次列表
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findWorkEm")
+    @ApiOperation("根据时间段和门诊iD获取加班班次列表")
+    @RepeatSubmit
+    public ResponseResult findWorkEm(@RequestBody @Validated WorkForm workForm) {
+        return ResponseUtil.success(workOvertimeInfoBiz.findWorkEm(workForm));
+    }
+
+    /**
+     * 根据日期时间段和用户id获取休息班班次列表
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findNoWorkEm")
+    @ApiOperation("根据日期时间段和用户id获取休息班班次列表")
+    @RepeatSubmit
+    public ResponseResult findNoWorkEm(@RequestBody @Validated NoWorkForm noWorkForm) {
+        return ResponseUtil.success(workOvertimeInfoBiz.findNoWorkEm(noWorkForm));
+    }
+
+    /**
+     * 根据日期和用户id获取当天的休息班次以及门诊信息
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findNoWorkEmByDate")
+    @ApiOperation("根据日期和用户id获取当天的休息班次以及对应的门诊信息")
+    @RepeatSubmit
+    public ResponseResult findNoWorkEmByDate(@RequestBody @Validated NoWorkByDateForm noWorkByDateForm) {
+        return ResponseUtil.success(workOvertimeInfoBiz.findNoWorkEmByDate(noWorkByDateForm));
     }
 
 }

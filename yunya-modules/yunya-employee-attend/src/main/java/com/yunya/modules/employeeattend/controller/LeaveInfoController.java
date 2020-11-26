@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.controller;
 
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -50,7 +51,7 @@ public class LeaveInfoController {
      * @return
      */
     @PostMapping("/selectBaseByDay")
-    @ApiOperation("查询按天请假时包含的班次")
+    @ApiOperation("查询按天请假时包含的班次（参数为开始时间，结束时间，用户ID，请假Id 按需求传）")
     @RepeatSubmit
     public ResponseResult selectBaseByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.selectBaseByDay(leaveInfoForm));
@@ -76,6 +77,60 @@ public class LeaveInfoController {
     @RepeatSubmit
     public ResponseResult addEm(@RequestBody @Validated LeaveInfoByEmForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.addEm(leaveInfoForm));
+    }
+
+    /**
+     * 审核请假申请
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/examine")
+    @ApiOperation("审核请假申请")
+    @RepeatSubmit
+    @CurrentUser
+    public ResponseResult examine(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+        return ResponseUtil.success(leaveInfoBiz.examine(leaveInfoForm));
+    }
+
+    /**
+     * 撤销请假申请
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/revoke")
+    @ApiOperation("撤销请假申请")
+    @RepeatSubmit
+    @CurrentUser
+    public ResponseResult revoke(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+        return ResponseUtil.success(leaveInfoBiz.revoke(leaveInfoForm));
+    }
+
+    /**
+     * 获取请假申请列表
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findList")
+    @ApiOperation("获取请假申请列表")
+    @RepeatSubmit
+    public ResponseResult findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+        return ResponseUtil.success(leaveInfoBiz.findList(leaveInfoForm));
+    }
+
+    /**
+     * 获取请假的审批明细
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findApproval")
+    @ApiOperation("获取请假的审批明细 传参数 id")
+    @RepeatSubmit
+    public ResponseResult findApproval(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+        return ResponseUtil.success(leaveInfoBiz.findApproval(leaveInfoForm));
     }
 
 }

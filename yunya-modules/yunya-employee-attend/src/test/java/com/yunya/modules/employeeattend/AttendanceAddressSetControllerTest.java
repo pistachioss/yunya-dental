@@ -81,9 +81,9 @@ public class AttendanceAddressSetControllerTest {
         AttendanceAddressSetQueryForm queryForm = new AttendanceAddressSetQueryForm();
         queryForm.setWhetherPage(true);
         queryForm.setPageNum(1);
-        queryForm.setPageSize(5);
+        queryForm.setPageSize(10);
         ResponseResult result = attendanceAddressSetController.findAttendanceAddressSetList(queryForm);
-        System.out.println(result);
+        System.out.println(JSONObject.toJSON(result));
     }
 
     @Test
@@ -128,7 +128,7 @@ public class AttendanceAddressSetControllerTest {
         model.setPageNum(1);
         model.setPageSize(5);
         ResponseResult result = attendanceAddressSetController.findOrganizationAttendanceAddressSetList(model);
-        System.out.println(result);
+        System.out.println(JSONObject.toJSON(result));
     }
 
     @Test

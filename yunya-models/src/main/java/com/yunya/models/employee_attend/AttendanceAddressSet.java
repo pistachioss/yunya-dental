@@ -17,6 +17,13 @@ public class AttendanceAddressSet {
     private Integer orgId;
 
     /**
+     * 组织名称（前端使用）
+     */
+    @Column(name = "organization_name")
+    private String organizationName;
+
+
+    /**
      * 考勤地址
      */
     @Column(name = "attendance_address")
@@ -92,6 +99,23 @@ public class AttendanceAddressSet {
      */
     public void setOrgId(Integer orgId) {
         this.orgId = orgId;
+    }
+
+    /**
+     * 获取组织名称（前端使用）
+     *
+     * @return
+     */
+    public String getOrganizationName() {
+        return organizationName;
+    }
+
+    /**
+     * 设置组织名称（前端使用）
+     * @param organizationName 组织名称（前端使用）
+     */
+    public void setOrganizationName(String organizationName) {
+        this.organizationName = organizationName;
     }
 
     /**

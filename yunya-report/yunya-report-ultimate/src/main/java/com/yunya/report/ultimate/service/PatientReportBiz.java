@@ -57,6 +57,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      * @return List<BaseBasePatientNotSeenVo>
      */
     public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form) {
+        List<BasePatientNotSeenVo> basePatientNotSeenVoList = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
@@ -64,7 +65,9 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form,patientIds);
+        if (patientIds == null || patientIds.size() > 0 ){
+            basePatientNotSeenVoList = mapper.selectNotSeenList(form,patientIds);
+        }
         return new PageInfo<>(basePatientNotSeenVoList);
     }
 

@@ -15,6 +15,12 @@ public class BaseBillDetail {
     private Integer billDetailId;
 
     /**
+     * 组织ID
+     */
+    @Column(name = "org_id")
+    private Integer orgId;
+
+    /**
      * 账单ID
      */
     @Column(name = "bill_id")
@@ -82,6 +88,24 @@ public class BaseBillDetail {
      */
     public void setBillDetailId(Integer billDetailId) {
         this.billDetailId = billDetailId;
+    }
+
+    /**
+     * 获取组织ID
+     *
+     * @return orgId - 组织ID
+     */
+    public Integer getOrgId() {
+        return orgId;
+    }
+
+    /**
+     * 设置组织ID
+     *
+     * @param orgId 组织ID
+     */
+    public void setOrgId(Integer orgId) {
+        this.orgId = orgId;
     }
 
     /**

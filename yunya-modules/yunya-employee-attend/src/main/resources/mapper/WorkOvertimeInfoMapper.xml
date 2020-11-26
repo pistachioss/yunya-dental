@@ -2,9 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.yunya.modules.employeeattend.mapper.WorkOvertimeInfoMapper">
     <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.WorkOvertimeInfo">
-        <!--
-          WARNING - @mbg.generated
-        -->
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="user_id" property="userId" jdbcType="VARCHAR"/>
         <result column="company_id" property="companyId" jdbcType="INTEGER"/>
@@ -39,6 +36,23 @@
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+    <resultMap id="BSMap" type="com.yunya.models.employee_attend.BaseSchedule">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="color" property="color" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="first_start_time" property="firstStartTime" jdbcType="TIMESTAMP"/>
+        <result column="first_end_time" property="firstEndTime" jdbcType="TIMESTAMP"/>
+        <result column="second_start_time" property="secondStartTime" jdbcType="TIMESTAMP"/>
+        <result column="second_end_time" property="secondEndTime" jdbcType="TIMESTAMP"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
     <select id="findWorkOvertimeInfoByUserIdsAndDate"
             resultType="com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO">
         select
@@ -68,29 +82,29 @@
         order by bs.first_start_time asc
     </select>
     <select id="findList" resultMap="findListMap">
-    SELECT
-	t.id,
-	t.user_id,
-	t.work_date,
-	t.company_id,
-	t.schedule_id,
-	t.overtime_reason,
-	t.refuse_reason,
-	t.approval_people_id,
-	t.apprpval_status,
-	b.first_start_time startTime,
-	IFNULL(
-		b.second_end_time,
-		b.first_end_time
-	) endTime,
-    TIMESTAMPDIFF(HOUR,b.first_start_time,IFNULL(
+        SELECT
+        t.id,
+        t.user_id,
+        t.work_date,
+        t.company_id,
+        t.schedule_id,
+        t.overtime_reason,
+        t.refuse_reason,
+        t.approval_people_id,
+        t.apprpval_status,
+        b.first_start_time startTime,
+        IFNULL(
+        b.second_end_time,
+        b.first_end_time
+        ) endTime,
+        TIMESTAMPDIFF(HOUR,b.first_start_time,IFNULL(
         b.second_end_time,
         b.first_end_time
         )) workOverTime,
         b.name
-    FROM
-	work_overtime_info t
-    LEFT JOIN base_schedule b ON t.schedule_id = b.id
+        FROM
+        work_overtime_info t
+        LEFT JOIN base_schedule b ON t.schedule_id = b.id
         <where>
             <if test="id !=null and id != ''">
                 and t.id = #{id}
@@ -102,5 +116,32 @@
                 and t.approval_people_id = #{approvalPeopleId}
             </if>
         </where>
-  </select>
+    </select>
+    <select id="findWorkEm" resultMap="BSMap">
+    SELECT
+	bs.*
+    FROM
+	base_schedule bs
+    LEFT JOIN clinic_schedule cs ON cs.schedule_id = bs.id
+    WHERE bs.type = '上班' and
+	cs.clinic_id = #{companyId} and bs.first_start_time >= DATE_FORMAT(#{startTime},'%H:%i:%s') and IFNULL(bs.second_end_time,bs.first_end_time)&lt;=
+	DATE_FORMAT(#{endTime},'%H:%i:%s')
+    </select>
+    <select id="findNoWorkEm" resultType="java.lang.String">
+        SELECT
+        es.work_date
+        FROM
+        base_schedule bs
+        LEFT JOIN employee_schedule es on es.schedule_id = bs.id
+        WHERE bs.type = '休息' and
+        es.employee_id = #{userId} and es.work_date >= #{startTime} and es.work_date &lt;= #{endTime}
+    </select>
+    <select id="findNoWorkEmByDate" resultType="com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO">
+    SELECT
+	bs.id scheduleId,es.clinic_id companyId,es.work_date,bs.first_start_time startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime,bs.name
+    FROM
+	base_schedule bs
+	LEFT JOIN employee_schedule es on es.schedule_id = bs.id
+    WHERE es.employee_id = #{userId} and es.work_date = #{workDate} and bs.type = '休息'
+    </select>
 </mapper>

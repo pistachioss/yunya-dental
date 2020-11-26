@@ -1,6 +1,8 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.BillOfDiscountDetailQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
+import com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.vo.ArrearsVo;
@@ -19,11 +21,22 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return
    */
   List<BillOfOrderRecordVO> selectBillRecordOfOrderList(@Param("query") OrderRecordQuery query);
-    /**
-     * 欠费查询
-     * @param form 欠费查询
-     * @param patientIds 患者id
-     * @return List<ArrearsVo>
-     */
-    List<ArrearsVo> arrears(@Param("form") ArrearsQueryForm form,@Param("patientIds") List<Integer> patientIds);
+
+  /**
+   * 欠费查询
+   *
+   * @param form 欠费查询
+   * @param patientIds 患者id
+   * @return List<ArrearsVo>
+   */
+  List<ArrearsVo> arrears(
+      @Param("form") ArrearsQueryForm form, @Param("patientIds") List<Integer> patientIds);
+
+  /**
+   * 根据条件查询账单优惠明细列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  List<BillOfDiscountDetailVO> selectBillDiscountDetailList(@Param("query") BillOfDiscountDetailQuery query);
 }

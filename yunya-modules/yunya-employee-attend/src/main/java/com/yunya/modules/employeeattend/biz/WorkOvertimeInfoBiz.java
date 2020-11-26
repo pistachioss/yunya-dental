@@ -2,6 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
+import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -15,6 +16,9 @@ import com.yunya.models.employee_attend.CopyInfo;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.models.employee_attend.WorkOvertimeInfo;
 
+import com.yunya.modules.employeeattend.form.NoWorkByDateForm;
+import com.yunya.modules.employeeattend.form.NoWorkForm;
+import com.yunya.modules.employeeattend.form.WorkForm;
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
 import com.yunya.modules.employeeattend.mapper.BaseScheduleMapper;
 import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
@@ -223,5 +227,45 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
             throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);
         }
         throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+    }
+
+    /**
+     * 根据时间段和门诊iD获取加班班次列表
+     *
+     * @param
+     * @return
+     */
+    public List<BaseSchedule> findWorkEm(WorkForm workForm) {
+        return mapper.findWorkEm(workForm);
+    }
+
+    /**
+     * 根据日期时间段和用户id获取休息班班次列表
+     *
+     * @param
+     * @return
+     */
+    public Set<String> findNoWorkEm(NoWorkForm NoWorkForm) {
+        return mapper.findNoWorkEm(NoWorkForm);
+    }
+
+    /**
+     * 根据日期时间段和用户id获取休息班班次列表
+     *
+     * @param
+     * @return
+     */
+    public List<findNoWorkEmByDateVO> findNoWorkEmByDate(NoWorkByDateForm noWorkByDateForm) {
+        List<findNoWorkEmByDateVO>list = mapper.findNoWorkEmByDate(noWorkByDateForm);
+        //获取门诊信息
+        OrganizationModel organizationModel = new OrganizationModel();
+        organizationModel.setWhetherPage(false);
+        List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
+        Map<String, OrganizationInfoDetail> clinicMap = new HashMap(16);
+        clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
+        for(findNoWorkEmByDateVO vo:list){
+            vo.setCompanyName(clinicMap.get(vo.getCompanyId()+"").getName());
+        }
+        return list;
     }
 }

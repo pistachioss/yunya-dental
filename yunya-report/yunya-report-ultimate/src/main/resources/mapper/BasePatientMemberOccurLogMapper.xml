@@ -95,11 +95,13 @@
 
     <!-- 查询会员卡消费记录列表 -->
     <select id="selectMemberExpendtList" resultType="com.yunya.feign.report.domain.vo.BaseMemberExpendLogVo">
+        select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
         bpmol.occur_date occurDate,
         bb.order_date orderDate,
         bb.order_num orderNum,
+        bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
         ( SELECT NAME FROM base_patient WHERE patient_id = bpm.patient_id ) masterCardName,
@@ -127,13 +129,6 @@
                 AND bpm.card_number = #{form.cardNumber}
             </if>
 
-            <if test="patientIds != null">
-                AND bpmol.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-
             <if test="form.memberLevelIds != null ">
                 AND bpm.member_level_id in
                 <foreach collection="form.memberLevelIds" item="levelIds" index="index" open="(" close=")"
@@ -148,13 +143,24 @@
             </if>
         </where>
         group by bpmol.occur_date desc
+        ) t1
+        <where>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                AND t1.patientId in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <!-- 查询会员卡退费记录列表 -->
     <select id="selectMemberReturnList" resultType="com.yunya.feign.report.domain.vo.BaseMemberReturnLogVo">
+        select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
         bpmol.occur_date occurDate,
+        bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
         bpm.card_number cardNumber,
@@ -184,13 +190,6 @@
                 AND bpm.card_number = #{form.cardNumber}
             </if>
 
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND bpmol.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-
             <if test="form.memberLevelIds != null ">
                 AND bpm.member_level_id in
                 <foreach collection="memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
@@ -204,13 +203,24 @@
             </if>
         </where>
         group by bpmol.occur_date desc
+        ) t1
+        <where>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                AND t1.patientId in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <!-- 查询预付款充值记录列表 -->
     <select id="selectPrepaidRechargeList" resultType="com.yunya.feign.report.domain.vo.BasePrepaidRechargeLogVo">
+        select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
         bpmol.occur_date occurDate,
+        bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
         bpm.card_number cardNumber,
@@ -239,13 +249,6 @@
                 AND bpmol.org_id = #{form.orgId}
             </if>
 
-            <if test="patientIds != null">
-                AND bpmol.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-
             <if test="form.cardNumber != null and form.cardNumber != ''">
                 AND bpm.card_number = #{form.cardNumber}
             </if>
@@ -265,15 +268,26 @@
 
         </where>
         group by bpmol.occur_date desc
+        ) t1
+        <where>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                AND t1.patientId in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <!-- 查询预付款消费记录列表 -->
     <select id="selectPrepaidExpendList" resultType="com.yunya.feign.report.domain.vo.BasePrepaidExpendLogVo">
+        select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
         bpmol.occur_date occurDate,
         bb.order_date orderDate,
         bb.order_num orderNum,
+        bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
         ( SELECT NAME FROM base_patient WHERE patient_id = bpm.patient_id ) masterCardName,
@@ -296,13 +310,6 @@
                 AND bpmol.org_id = #{form.orgId}
             </if>
 
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                AND bpmol.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-
             <if test="form.cardNumber != null and form.cardNumber != ''">
                 AND bpm.card_number = #{form.cardNumber}
             </if>
@@ -313,11 +320,20 @@
             </if>
 
         </where>
-        group by bpmol.occur_date desc
+        group by bpmol.occur_date desc) t1
+        <where>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                AND t1.patientId in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <!-- 查询预付款退费记录列表 -->
     <select id="selectPrepaidReturnList" resultType="com.yunya.feign.report.domain.vo.BasePrepaidReturnLogVo">
+        select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
         bpmol.occur_date occurDate,
@@ -344,13 +360,6 @@
                 and bpmol.org_id = #{form.orgId}
             </if>
 
-            <if test="patientIds != null and patientIds.size() > 0 ">
-                and bpmol.patient_id in
-                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-                    #{ids}
-                </foreach>
-            </if>
-
             <if test="form.cardNumber != null and form.cardNumber != ''">
                 and bpm.card_number = #{form.cardNumber}
             </if>
@@ -361,7 +370,15 @@
             </if>
 
         </where>
-        group by bpmol.occur_date desc
+        group by bpmol.occur_date desc) t1
+        <where>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                AND t1.patientId in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
+        </where>
     </select>
 
     <select id="selectMemberBalanceList" resultType="com.yunya.feign.report.domain.vo.BaseMemberBalanceInfoVo">
