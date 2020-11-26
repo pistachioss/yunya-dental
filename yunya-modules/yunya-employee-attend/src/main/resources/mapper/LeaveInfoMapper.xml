@@ -139,10 +139,31 @@
         FROM
         leave_info
         WHERE
-        user_id = 572
+        user_id = #{userId}
         AND DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
         AND DATE_FORMAT(end_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
         AND apprpval_status IN (0, 1)
     </select>
-
+    <select id="countFiWi" resultType="Integer">
+        select sum(num) from
+        (SELECT
+        count(*) num
+        FROM
+        field_info
+        WHERE
+        user_id = #{userId}
+        AND DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+        AND DATE_FORMAT(start_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+        AND apprpval_status IN (0, 1)
+        union
+        SELECT
+        count(*) num
+        FROM
+        work_overtime_info
+        WHERE
+        user_id = #{userId}
+        AND DATE_FORMAT(work_date,'%Y-%m-%d')  &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
+        AND DATE_FORMAT(work_date,'%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+        AND apprpval_status IN (0, 1)) a
+    </select>
 </mapper>

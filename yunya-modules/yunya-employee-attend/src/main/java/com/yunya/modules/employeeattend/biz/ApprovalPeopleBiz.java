@@ -65,7 +65,7 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
             ApprovalPeopleVO approvalPeopleVO = new ApprovalPeopleVO();
             approvalPeopleVO.setId(ap.getId());
             approvalPeopleVO.setUserId(ap.getUserId());
-            approvalPeopleVO.setUserName(employeeMap.get(ap.getUserId().toString()).getName());
+            approvalPeopleVO.setName(employeeMap.get(ap.getUserId().toString()).getName());
             approvalPeopleVO.setIphone(employeeMap.get(ap.getUserId().toString()).getMobilePhone());
             approvalPeopleVO.setPosts(employeeMap.get(ap.getUserId().toString()).getPosts());
             list.add(approvalPeopleVO);
