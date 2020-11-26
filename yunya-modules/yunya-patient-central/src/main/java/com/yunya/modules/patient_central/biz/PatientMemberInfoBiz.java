@@ -351,7 +351,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public void recharge(MemberRechargeModel model) {
     // 查询会员余额 余额增加
     PatientMemberInfo patientMemberInfo =
-        patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
+        patientMemberInfoMapper.selectCardNumber(model.getMemberId());
     if (patientMemberInfo != null) {
       patientMemberInfo.setPrincipalAmount(
           patientMemberInfo.getPrincipalAmount().add(model.getRechargePrincipal()));
@@ -437,7 +437,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   public ResponseResult refund(MemberReturnRecordModel model) {
     // 查询会员余额 退减余额和赠金
     PatientMemberInfo patientMemberInfo =
-        patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
+        patientMemberInfoMapper.selectCardNumber(model.getMemberId());
     if (patientMemberInfo != null) {
       if (patientMemberInfo.getPrincipalAmount().compareTo(model.getReturnPrincipalAmount()) < 0){
         throw new ClientServiceException("会员卡本金余额不足",OperationCodeConstants.OBJECT_EDIT_FAIL);
@@ -507,7 +507,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    */
   public ResponseResult expend(MemberExpendRecordModel model) {
     PatientMemberInfo patientMemberInfo =
-        patientMemberInfoMapper.selectCardNumber(model.getMemberId(), model.getPatientId());
+        patientMemberInfoMapper.selectCardNumber(model.getMemberId());
     if (patientMemberInfo != null) {
       BigDecimal num =
           patientMemberInfo.getPrincipalAmount().add(patientMemberInfo.getBonusAmount());
