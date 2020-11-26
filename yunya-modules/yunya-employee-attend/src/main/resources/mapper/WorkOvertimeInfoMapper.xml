@@ -151,6 +151,6 @@
     </select>
     <select id="countByDay" resultType="Integer">
         select count(*) from work_overtime_info where apprpval_status in (0,1)
-         AND DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate}, '%Y-%m-%d')
+         AND DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate}, '%Y-%m-%d') and user_id = #{userId}
     </select>
 </mapper>
