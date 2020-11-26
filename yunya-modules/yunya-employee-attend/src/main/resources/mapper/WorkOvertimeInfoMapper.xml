@@ -97,7 +97,7 @@
         b.second_end_time,
         b.first_end_time
         ) endTime,
-        TIMESTAMPDIFF(HOUR,b.first_start_time,IFNULL(
+        TIMESTAMPDIFF(MINUTE,b.first_start_time,IFNULL(
         b.second_end_time,
         b.first_end_time
         )) workOverTime,
@@ -144,5 +144,9 @@
 	base_schedule bs
 	LEFT JOIN employee_schedule es on es.schedule_id = bs.id
     WHERE es.employee_id = #{userId} and es.work_date = #{workDate} and bs.type = '休息'
+    </select>
+
+    <select id="selectCountById" resultType="Integer">
+        select count(*) from work_overtime_info where apprpval_status in (0,1,2) and rest_schedule_id = #{restScheduleId}
     </select>
 </mapper>

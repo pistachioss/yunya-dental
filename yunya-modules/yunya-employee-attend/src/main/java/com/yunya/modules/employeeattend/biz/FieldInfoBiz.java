@@ -138,7 +138,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             }
                         }
                     }else{
-                        throw new ClientServiceException("申请当天无排班", INSERT_MODEL);
+                        throw new ClientServiceException("申请的门诊当天无排班", INSERT_MODEL);
                     }
                     //若外勤开始时间和结束时间都在班次时间段内才能进行外勤申请
                     if (start && end) {

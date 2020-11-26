@@ -1,5 +1,7 @@
 package com.yunya.models.employee_attend;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Date;
 import javax.persistence.*;
 
@@ -12,30 +14,35 @@ public class VacationSet {
      * 申请类型 0：班次 1：天
      */
     @Column(name = "vacation_status")
+    @ApiModelProperty("申请类型 0：班次 1：天")
     private Integer vacationStatus;
 
     /**
      * 假期名称
      */
     @Column(name = "vacation_name")
+    @ApiModelProperty("假期名称")
     private String vacationName;
 
     /**
      * 适用范围 0：在职员工 1:正式员工 2：试用期员工
      */
     @Column(name = "vacation_range")
+    @ApiModelProperty("适用范围 0：在职员工 1:正式员工 2：试用期员工")
     private Integer vacationRange;
 
     /**
      * 启用状态 0否 1是
      */
     @Column(name = "vacation_enable")
+    @ApiModelProperty("启用状态 0否 1是")
     private Integer vacationEnable;
 
     /**
      * 假期说明
      */
     @Column(name = "vacation_explain")
+    @ApiModelProperty("假期说明")
     private String vacationExplain;
 
     /**

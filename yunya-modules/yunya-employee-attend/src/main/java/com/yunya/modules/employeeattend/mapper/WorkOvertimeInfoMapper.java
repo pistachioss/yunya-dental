@@ -34,4 +34,6 @@ public interface WorkOvertimeInfoMapper extends Mapper<WorkOvertimeInfo> {
     Set<String> findNoWorkEm(NoWorkForm NoWorkForm);
 
     List<findNoWorkEmByDateVO> findNoWorkEmByDate(NoWorkByDateForm noWorkByDateForm);
+
+    int selectCountById(WorkOvertimeInfo workOvertimeInfo);
 }

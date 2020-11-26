@@ -133,4 +133,16 @@
         where ac.start_day &lt; TIMESTAMPDIFF(day,#{startTime},#{endTime})  and ac.end_day>=TIMESTAMPDIFF(day,#{startTime},#{endTime})
     </select>
 
+    <select id="countByDay" resultType="Integer">
+        SELECT
+        count(*)
+        FROM
+        leave_info
+        WHERE
+        user_id = 572
+        AND DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+        AND DATE_FORMAT(end_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
+        AND apprpval_status IN (0, 1)
+    </select>
+
 </mapper>

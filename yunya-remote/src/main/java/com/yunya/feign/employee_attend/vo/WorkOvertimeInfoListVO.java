@@ -59,7 +59,7 @@ public class WorkOvertimeInfoListVO {
     @ApiModelProperty(value = "拒绝原因")
     private String refuseReason;
 
-    /** 外勤时长*/
+    /** 加班时长*/
     @ApiModelProperty(value = "加班时长")
     private Integer workOverTime;
 

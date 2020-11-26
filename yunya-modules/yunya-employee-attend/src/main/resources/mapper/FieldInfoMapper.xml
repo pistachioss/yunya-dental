@@ -43,7 +43,7 @@
 
     <select id="findVOList" resultMap="FindVOMap">
         select id,field_address,user_id,start_time,company_id,
-        end_time,field_reason,approval_people_id,apprpval_status,TIMESTAMPDIFF(HOUR,start_time,end_time) fieldTime from
+        end_time,field_reason,approval_people_id,apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) fieldTime from
         field_info
         <where>
             <if test="id !=null and id != ''">
@@ -108,5 +108,9 @@
             </if>
         </where>
         order by t.start_time asc
+    </select>
+
+    <select id="countByDay" resultType="Integer">
+        select count(*) from field_info where user_id = #{userId} and  DATE_FORMAT(start_time,'%Y-%m-%d') = #{startTime}  and apprpval_status in (0,1)
     </select>
 </mapper>
