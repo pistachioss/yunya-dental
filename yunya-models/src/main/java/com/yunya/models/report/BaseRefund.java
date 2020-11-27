@@ -4,6 +4,7 @@ import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.util.Date;
 
 @Table(name = "base_refund")
 public class BaseRefund {
@@ -43,6 +44,24 @@ public class BaseRefund {
      */
     @Column(name = "refund_amount")
     private BigDecimal refundAmount;
+
+    /**
+     * 退费操作人ID
+     */
+    @Column(name = "refund_operator_id")
+    private Integer refundOperatorId;
+
+    /**
+     * 退费日期
+     */
+    @Column(name = "refund_date")
+    private Date refundDate;
+
+    /**
+     * 退费原因
+     */
+    @Column(name = "refund_reason")
+    private String refundReason;
 
     /**
      * 获取退费记录ID
@@ -150,5 +169,59 @@ public class BaseRefund {
      */
     public void setRefundAmount(BigDecimal refundAmount) {
         this.refundAmount = refundAmount;
+    }
+
+    /**
+     * 获取退费操作人ID
+     *
+     * @return refundOperatorId -退费操作人ID
+     */
+    public Integer getRefundOperatorId() {
+        return refundOperatorId;
+    }
+
+    /**
+     * 设置退费操作人ID
+     *
+     * @param refundOperatorId 退费操作人ID
+     */
+    public void setRefundOperatorId(Integer refundOperatorId) {
+        this.refundOperatorId = refundOperatorId;
+    }
+
+    /**
+     * 获取退费日期
+     *
+     * @return 退费日期
+     */
+    public Date getRefundDate() {
+        return refundDate;
+    }
+
+    /**
+     * 设置退费日期
+     *
+     * @param refundDate 退费日期
+     */
+    public void setRefundDate(Date refundDate) {
+        this.refundDate = refundDate;
+    }
+
+    /**
+     * 获取退费原因
+     *
+     * @return 退费原因
+     */
+    public String getRefundReason() {
+        return refundReason;
+    }
+
+    /**
+     * 设置退费原因
+     *
+     * @param refundReason 退费原因
+     */
+    public void setRefundReason(String refundReason) {
+        this.refundReason = refundReason;
     }
 }

@@ -5,6 +5,7 @@ import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
+import com.yunya.modules.employeeattend.form.FindApprovalByMeForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoByEmForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import io.swagger.annotations.Api;
@@ -135,4 +136,17 @@ public class LeaveInfoController {
         return ResponseUtil.success(leaveInfoBiz.findApproval(leaveInfoForm));
     }
 
+
+//    /**
+//     * 待我审批
+//     *
+//     * @param
+//     * @return
+//     */
+//    @PostMapping("/findApprovalByMe")
+//    @ApiOperation("待我审批 传用户id")
+//    @RepeatSubmit
+//    public ResponseResult findApprovalByMe(@RequestBody @Validated FindApprovalByMeForm findApprovalByMeForm) {
+//        return ResponseUtil.success(leaveInfoBiz.findApprovalByMe(findApprovalByMeForm));
+//    }
 }

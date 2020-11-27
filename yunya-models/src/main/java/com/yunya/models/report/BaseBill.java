@@ -58,6 +58,12 @@ public class BaseBill {
     private Date orderDate;
 
     /**
+     * 账单日期
+     */
+    @Column(name = "bill_date")
+    private Date billDate;
+
+    /**
      * 优惠类型（0-普通优惠；1-授权折扣）
      */
     @Column(name = "privilege_type")
@@ -93,6 +99,9 @@ public class BaseBill {
     @Column(name = "debt_amount")
     private BigDecimal debtAmount;
 
+    /**
+     * 账单创建人ID
+     */
     @Column(name = "biller_id")
     private Integer billerId;
 
@@ -286,6 +295,24 @@ public class BaseBill {
     }
 
     /**
+     * 获取账单日期
+     *
+     * @return billDate -账单日期
+     */
+    public Date getBillDate() {
+        return billDate;
+    }
+
+    /**
+     * 设置账单日期
+     *
+     * @param billDate 账单日期
+     */
+    public void setBillDate(Date billDate) {
+        this.billDate = billDate;
+    }
+
+    /**
      * 设置优惠总额
      *
      * @param privilegeAmount 优惠总额
@@ -351,7 +378,7 @@ public class BaseBill {
     /**
      * 获取开单人ID
      *
-     * @return billerId
+     * @return billerId -开单人ID
      */
     public Integer getBillerId() {
         return billerId;

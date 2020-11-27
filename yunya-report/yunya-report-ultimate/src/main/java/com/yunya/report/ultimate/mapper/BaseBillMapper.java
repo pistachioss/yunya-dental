@@ -1,11 +1,13 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.BillOfDiscountDetailQuery;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
 import com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.vo.ArrearsVo;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.models.report.BaseBill;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -18,7 +20,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * 根据条件查询开单记录列表
    *
    * @param query 查询条件
-   * @return
+   * @return List<BillOfOrderRecordVO>
    */
   List<BillOfOrderRecordVO> selectBillRecordOfOrderList(@Param("query") OrderRecordQuery query);
 
@@ -36,7 +38,17 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * 根据条件查询账单优惠明细列表
    *
    * @param query 查询条件
-   * @return
+   * @return List<BillOfDiscountDetailVO>
    */
-  List<BillOfDiscountDetailVO> selectBillDiscountDetailList(@Param("query") BillOfDiscountDetailQuery query);
+  List<BillOfDiscountDetailVO> selectBillDiscountDetailList(
+      @Param("query") BillOfDiscountDetailQuery query);
+
+  /**
+   * 根据条件查询应收账款余额表
+   *
+   * @param query 查询条件
+   * @return List<BillRestReceivableAmountVO>
+   */
+  List<BillRestReceivableAmountVO> selectBillReceivableAmountList(
+      @Param("query") BillOfReceivableQuery query);
 }

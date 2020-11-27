@@ -42,12 +42,12 @@ public class BillPayRecordAdjustQuery extends PageQuery implements Serializable 
   @ApiModelProperty(value = "调整结束时间", example = "2021-01-01", required = true)
   @NotBlank(message = "结束时间不能为空！")
   private String adjustEndDate;
-  /** 查询账单开始时间 */
-  @ApiModelProperty(value = "账单开始时间", example = "2020-01-01")
-  private String billStartDate;
-  /** 查询账单结束时间 */
-  @ApiModelProperty(value = "账单结束时间", example = "2021-01-01")
-  private String billEndDate;
+  /** 收费开始日期 */
+  @ApiModelProperty(value = "收费开始日期", example = "2020-01-01")
+  private String chargeStartDate;
+  /** 收费结束日期 */
+  @ApiModelProperty(value = "收费结束日期", example = "2021-01-01")
+  private String chargeEndDate;
   /** 挂号医生ID列表 */
   @ApiModelProperty("挂号医生ID列表")
   private Integer[] regDentistIds;

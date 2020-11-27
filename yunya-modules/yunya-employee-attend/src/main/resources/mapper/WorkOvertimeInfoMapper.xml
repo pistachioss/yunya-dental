@@ -116,6 +116,9 @@
             <if test="approvalPeopleId !=null and approvalPeopleId != ''">
                 and t.approval_people_id = #{approvalPeopleId}
             </if>
+            <if test="apprpvalStatus !=null and apprpvalStatus != ''">
+                and t.apprpval_status = #{apprpvalStatus}
+            </if>
         </where>
     </select>
     <select id="findWorkEm" resultMap="BSMap">

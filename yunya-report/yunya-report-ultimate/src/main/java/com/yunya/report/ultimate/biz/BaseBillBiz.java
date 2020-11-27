@@ -3,9 +3,11 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillOfDiscountDetailQuery;
+import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
 import com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
+import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBill;
@@ -81,5 +83,34 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
     ExcelUtil<BillOfDiscountDetailVO> excelUtil = new ExcelUtil<>(BillOfDiscountDetailVO.class);
     excelUtil.exportExcel(response, resultList, "账单优惠明细列表");
+  }
+
+  /**
+   * 根据条件查询应收账款余额表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillRestReceivableAmountVO>
+   */
+  public PageInfo<BillRestReceivableAmountVO> findBillReceivableAmount(
+      BillOfReceivableQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillRestReceivableAmountVO> resultList = mapper.selectBillReceivableAmountList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出应收账款余额表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportBillReceivableAmountList(
+      HttpServletResponse response, BillOfReceivableQuery query) throws IOException {
+    List<BillRestReceivableAmountVO> resultList = mapper.selectBillReceivableAmountList(query);
+    ExcelUtil<BillRestReceivableAmountVO> excelUtil =
+        new ExcelUtil<>(BillRestReceivableAmountVO.class);
+    excelUtil.exportExcel(response, resultList, "应收账款余额表");
   }
 }

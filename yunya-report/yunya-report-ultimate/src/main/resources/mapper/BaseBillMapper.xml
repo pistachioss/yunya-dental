@@ -15,6 +15,7 @@
         <result column="order_date" property="orderDate" jdbcType="TIMESTAMP"/>
         <result column="privilege_type" property="privilegeType" jdbcType="TINYINT"/>
         <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+        <result column="bill_date" property="billDate" jdbcType="TIMESTAMP"/>
         <result column="bill_num" property="billNum" jdbcType="VARCHAR"/>
         <result column="actual_amount" property="actualAmount" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
@@ -224,6 +225,80 @@
             <if test="query.privilegeTypes != null and query.privilegeTypes.length > 0">
                 and bpr.privilegeType in
                 <foreach collection="query.privilegeTypes" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询应收账款余额表 -->
+    <select id="selectBillReceivableAmountList"
+            resultType="com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO">
+        SELECT
+        billId,
+        orgId,
+        orderDate,
+        billNum,
+        patientId,
+        patientName,
+        mobile,
+        regDentistId,
+        regDentistName,
+        totalOriginalAmount,
+        totalActualAmount,
+        billReceivableAmount
+        FROM
+        (
+        SELECT
+        bb.bill_id AS billId,
+        bb.org_id as orgId,
+        bb.order_date AS orderDate,
+        bb.bill_num AS billNum,
+        bb.patient_id AS patientId,
+        btp.`name` AS patientName,
+        btp.pinyin_name as pinyinName,
+        btp.mobile,
+        btp.registered_dentist_id AS regDentistId,
+        btp.employee_name AS regDentistName,
+        bb.order_amount AS totalOriginalAmount,
+        bb.actual_amount AS totalActualAmount,
+        bb.received_amount AS billReceivableAmount
+        FROM
+        base_bill bb
+        LEFT JOIN (
+        SELECT
+        btp.treatment_id,
+        btp.patient_id,
+        bp.`name`,
+        bp.mobile,
+        bp.gender,
+        bp.pinyin_name,
+        btp.registered_dentist_id,
+        be.employee_name
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        WHERE
+        btp.treatment_id IS NOT NULL
+        GROUP BY
+        btp.treatment_id
+        ) btp ON bb.treatment_id = btp.treatment_id
+        ) brr
+        <where>
+            <if test="query.orgId != null">
+                and brr.orgId = #{query.orgId}
+            </if>
+            <if test="query.orderDate != null and query.orderDate != ''">
+                and brr.orderDate = #{query.orderDate}
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(ifnull(brr.patientName, ''), ifnull(brr.pinyinName, ''), ifnull(brr.mobile, '')) like
+                concat('%', #{query.keyword}, '%')
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and brr.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>
