@@ -50,4 +50,6 @@ public class OperationCodeConstants {
   public static final Integer PASSWORD_ERROR = 30020;
   /** 短信验证码错误 */
   public static final Integer MESSAGE_CODE_ERROR = 30021;
+  /** 非法请求路径 */
+  public static final Integer ILLEGAL_REQUEST_ERROR = 30022;
 }

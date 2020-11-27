@@ -131,7 +131,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 }
                 approvalInfoMapper.batchInsert(list);
                 //插入抄送人信息
-                if (leaveInfoForm.getCopyList().size() > 0) {
+                if (leaveInfoForm.getCopyList()!=null) {
                     List<CopyInfo> copyInfoList = new ArrayList<>();
                     for (Integer copyId : leaveInfoForm.getCopyList()) {
                         CopyInfo copyInfo = new CopyInfo();
@@ -218,7 +218,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 }
                 approvalInfoMapper.batchInsert(list);
                 //插入抄送人信息
-                if (leaveInfoByEmForm.getCopyList().size() > 0) {
+                if (leaveInfoByEmForm.getCopyList()!=null) {
                     List<CopyInfo> copyInfoList = new ArrayList<>();
                     for (Integer copyId : leaveInfoByEmForm.getCopyList()) {
                         CopyInfo copyInfo = new CopyInfo();

@@ -437,22 +437,22 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    */
   public BillPrintInfoVO billPrintInfo(Integer patientId,String billNumber) {
     BillPrintInfoVO billPrintInfoVO = mapper.billPrintInfo(patientId,billNumber);
-    Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
-    List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
-    billPrintInfoVO.getBillDetail().forEach(billDetailPrintInfoVO -> {
-      List<OrderBenefitDetailVo> collect = orderBenefitD.stream().filter(orderBenefitDetailVo -> {
-        return orderBenefitDetailVo.getOrderDetailId().equals(billDetailPrintInfoVO.getOrderDetailId());
-      }).collect(Collectors.toList());
-      if (StringHelper.isNotEmpty(collect)) {
-        OrderBenefitDetailVo orderBenefitDetailVo = collect.get(0);
-        List<ItemUseBenefitVo> itemBenefitList = orderBenefitDetailVo.getItemBenefitList();
-        List<Integer> couponTypes = new ArrayList<>();
-        itemBenefitList.forEach(itemUseBenefitVo -> {
-          couponTypes.add(itemUseBenefitVo.getCouponType());
-        });
-        billDetailPrintInfoVO.setCouponTypes(couponTypes);
-      }
-    });
+    if (billPrintInfoVO != null) {
+      Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
+      List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
+      billPrintInfoVO.getBillDetail().forEach(billDetailPrintInfoVO -> {
+        List<OrderBenefitDetailVo> collect = orderBenefitD.stream().filter(orderBenefitDetailVo -> orderBenefitDetailVo.getOrderDetailId().equals(billDetailPrintInfoVO.getOrderDetailId())).collect(Collectors.toList());
+        if (StringHelper.isNotEmpty(collect)) {
+          OrderBenefitDetailVo orderBenefitDetailVo = collect.get(0);
+          List<ItemUseBenefitVo> itemBenefitList = orderBenefitDetailVo.getItemBenefitList();
+          List<Integer> couponTypes = new ArrayList<>();
+          itemBenefitList.forEach(itemUseBenefitVo -> {
+            couponTypes.add(itemUseBenefitVo.getCouponType());
+          });
+          billDetailPrintInfoVO.setCouponTypes(couponTypes);
+        }
+      });
+    }
     return billPrintInfoVO;
   }
 }

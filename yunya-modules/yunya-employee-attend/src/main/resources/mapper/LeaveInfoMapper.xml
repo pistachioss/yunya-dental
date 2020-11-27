@@ -109,7 +109,7 @@
         order by t.start_time asc
     </select>
     <select id="selectBaseByDay" resultType="com.yunya.feign.employee_attend.vo.EmLeaveVO">
-        select es.work_date date,es.clinic_id companyId,bs.first_start_time
+        select es.id id, es.work_date date,es.clinic_id companyId,bs.first_start_time
         startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime ,bs.type emType,bs.`name` emName
         from employee_schedule es
         LEFT JOIN base_schedule bs on es.schedule_id = bs.id
@@ -125,6 +125,7 @@
             and ls.leave_id = #{id}
         </if>
         </where>
+        order by  es.work_date
     </select>
 
     <select id="selectApprovalByDay" resultMap="AlResultMap">
