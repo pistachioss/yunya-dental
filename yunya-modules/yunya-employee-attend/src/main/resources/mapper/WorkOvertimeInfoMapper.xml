@@ -97,11 +97,12 @@
         b.second_end_time,
         b.first_end_time
         ) endTime,
-        TIMESTAMPDIFF(HOUR,b.first_start_time,IFNULL(
+        TIMESTAMPDIFF(MINUTE,b.first_start_time,IFNULL(
         b.second_end_time,
         b.first_end_time
         )) workOverTime,
-        b.name
+        b.name,
+        t.crt_time
         FROM
         work_overtime_info t
         LEFT JOIN base_schedule b ON t.schedule_id = b.id
@@ -138,10 +139,18 @@
     </select>
     <select id="findNoWorkEmByDate" resultType="com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO">
     SELECT
-	bs.id scheduleId,es.clinic_id companyId,es.work_date,bs.first_start_time startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime,bs.name
+	es.id scheduleId,es.clinic_id companyId,es.work_date,bs.first_start_time startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime,bs.name
     FROM
 	base_schedule bs
 	LEFT JOIN employee_schedule es on es.schedule_id = bs.id
     WHERE es.employee_id = #{userId} and es.work_date = #{workDate} and bs.type = '休息'
+    </select>
+
+    <select id="selectCountById" resultType="Integer">
+        select count(*) from work_overtime_info where apprpval_status in (0,1,2) and rest_schedule_id = #{restScheduleId}
+    </select>
+    <select id="countByDay" resultType="Integer">
+        select count(*) from work_overtime_info where apprpval_status in (0,1)
+         AND DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate}, '%Y-%m-%d') and user_id = #{userId}
     </select>
 </mapper>

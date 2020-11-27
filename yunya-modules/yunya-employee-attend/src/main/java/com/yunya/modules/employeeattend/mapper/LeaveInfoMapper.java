@@ -51,4 +51,16 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      */
     List<ApprovalLevelSet>selectApprovalByDay(LeaveInfoForm leaveInfoForm);
 
+    /**
+     * 判断员工某天是否有请假申请
+     * @return
+     */
+    int countByDay(LeaveInfo leaveInfo);
+
+    /**
+     * 判断时间段内是否有除了请假外其他类型的申请
+     * @param leaveInfo
+     * @return
+     */
+    int countFiWi(LeaveInfo leaveInfo);
 }

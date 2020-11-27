@@ -6,7 +6,8 @@ public enum BucketFolderEnum {
     CLINIC(1, "门诊，比如诊所形象图、证照", "clinic"),
     EMPLOYEE(2, "员工，比如头像、证照", "employee"),
     PATIENT(3, "患者，比如头像、照片影像", "patient"),
-    DISCOUNT(4, "优惠产品，比如设计搞、说明文档", "discount");
+    DISCOUNT(4, "优惠产品，比如设计搞、说明文档", "discount"),
+    ATTENDENCE(5, "考勤，比如请假说明图片", "attendence");
 
 
     private Integer id;

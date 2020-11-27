@@ -12,13 +12,9 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.employee_attend.CopyInfo;
-import com.yunya.models.employee_attend.EmployeeSchedule;
-import com.yunya.models.employee_attend.FieldInfo;
+import com.yunya.models.employee_attend.*;
 import com.yunya.modules.employeeattend.form.FieldInfoForm;
-import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
-import com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper;
-import com.yunya.modules.employeeattend.mapper.FieldInfoMapper;
+import com.yunya.modules.employeeattend.mapper.*;
 import com.yunya.modules.employeeattend.vo.EmListVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,10 +69,24 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private CopyInfoMapper copyInfoMapper;
+    @Autowired
+    private LeaveInfoMapper leaveInfoMapper;
+    @Autowired
+    private WorkOvertimeInfoMapper workOvertimeInfoMapper;
 
     public int create(FieldInfoForm fieldInfoForm) {
         //判断是否有其他类型的申请
-        if (true) {
+        //判断是否有请假申请
+        LeaveInfo leaveInfo = new LeaveInfo();
+        leaveInfo.setStartTime(fieldInfoForm.getStartTime());
+        leaveInfo.setUserId(fieldInfoForm.getUserId());
+        int li = leaveInfoMapper.countByDay(leaveInfo);
+        //判断是否有加班申请
+        WorkOvertimeInfo workOvertimeInfo = new WorkOvertimeInfo();
+        workOvertimeInfo.setWorkDate(fieldInfoForm.getStartTime());
+        workOvertimeInfo.setUserId(fieldInfoForm.getUserId());
+        int wi = workOvertimeInfoMapper.countByDay(workOvertimeInfo);
+        if (li==0&&wi==0) {
             FieldInfo field = new FieldInfo();
             field.setUserId(fieldInfoForm.getUserId());
             List<FieldInfo> fieldInfoList = mapper.findList(field);
@@ -138,7 +148,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             }
                         }
                     }else{
-                        throw new ClientServiceException("申请当天无排班", INSERT_MODEL);
+                        throw new ClientServiceException("申请的门诊当天无排班", INSERT_MODEL);
                     }
                     //若外勤开始时间和结束时间都在班次时间段内才能进行外勤申请
                     if (start && end) {

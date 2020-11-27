@@ -41,17 +41,18 @@ public class LeaveInfoController {
     @PostMapping("/addDay")
     @ApiOperation("新增按天请假申请")
     @RepeatSubmit
+    @CurrentUser
     public ResponseResult create(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.createDay(leaveInfoForm));
     }
     /**
-     * 查询按天请假时包含的班次
+     * 查询请假时包含的班次
      *
      * @param
      * @return
      */
     @PostMapping("/selectBaseByDay")
-    @ApiOperation("查询按天请假时包含的班次（参数为开始时间，结束时间，用户ID，请假Id 按需求传）")
+    @ApiOperation("查询请假时包含的班次（参数为开始时间，结束时间，用户ID，请假Id 按需求传）")
     @RepeatSubmit
     public ResponseResult selectBaseByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.selectBaseByDay(leaveInfoForm));
@@ -75,6 +76,7 @@ public class LeaveInfoController {
     @PostMapping("/addEm")
     @ApiOperation("新增按班次请假申请")
     @RepeatSubmit
+    @CurrentUser
     public ResponseResult addEm(@RequestBody @Validated LeaveInfoByEmForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.addEm(leaveInfoForm));
     }

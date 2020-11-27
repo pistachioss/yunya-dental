@@ -11,19 +11,13 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.employee_attend.BaseSchedule;
-import com.yunya.models.employee_attend.CopyInfo;
-import com.yunya.models.employee_attend.EmployeeSchedule;
-import com.yunya.models.employee_attend.WorkOvertimeInfo;
+import com.yunya.models.employee_attend.*;
 
 import com.yunya.modules.employeeattend.form.NoWorkByDateForm;
 import com.yunya.modules.employeeattend.form.NoWorkForm;
 import com.yunya.modules.employeeattend.form.WorkForm;
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
-import com.yunya.modules.employeeattend.mapper.BaseScheduleMapper;
-import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
-import com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper;
-import com.yunya.modules.employeeattend.mapper.WorkOvertimeInfoMapper;
+import com.yunya.modules.employeeattend.mapper.*;
 import com.yunya.modules.employeeattend.vo.EmListVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,6 +52,12 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
     private CopyInfoMapper copyInfoMapper;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private EmployeeScheduleMapper employeeScheduleMapper;
+    @Autowired
+    private FieldInfoMapper fieldInfoMapper;
+    @Autowired
+    private LeaveInfoMapper leaveInfoMapper;
 
     /**
      * 根据日期和用户id列表查询加班列表
@@ -78,10 +78,20 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
      */
     public int create(WorkOvertimeInfoForm workOvertimeInfoForm) {
         //判断是否有其他类型的申请
-        if (true) {
+        //判断当天是否有外勤申请
+        FieldInfo fieldInfo = new FieldInfo();
+        fieldInfo.setStartTime(workOvertimeInfoForm.getWorkDate());
+        fieldInfo.setUserId(workOvertimeInfoForm.getUserId());
+        int fi = fieldInfoMapper.countByDay(fieldInfo);
+        //判断是否有请假申请
+        LeaveInfo leaveInfo = new LeaveInfo();
+        leaveInfo.setStartTime(workOvertimeInfoForm.getWorkDate());
+        leaveInfo.setUserId(workOvertimeInfoForm.getUserId());
+        int li = leaveInfoMapper.countByDay(leaveInfo);
+        if (fi==0&&li==0) {
             WorkOvertimeInfo one = new WorkOvertimeInfo();
             one.setRestScheduleId(workOvertimeInfoForm.getRestScheduleId());
-            int a = mapper.selectCount(one);
+            int a = mapper.selectCountById(one);
             //每个休息班只能排一个加班
             if (a == 0) {
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -96,8 +106,11 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                     throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                 }
                 if (now.before(date)) {
+                    EmployeeSchedule employeeSchedule = new EmployeeSchedule();
+                    employeeSchedule.setId(workOvertimeInfoForm.getRestScheduleId());
+                    employeeSchedule = employeeScheduleMapper.selectByPrimaryKey(employeeSchedule);
                     BaseSchedule baseSchedule = new BaseSchedule();
-                    baseSchedule.setId(workOvertimeInfoForm.getRestScheduleId());
+                    baseSchedule.setId(employeeSchedule.getScheduleId());
                     //休息班的班次信息
                     BaseSchedule reba = baseScheduleMapper.selectByPrimaryKey(baseSchedule);
                     baseSchedule.setId(workOvertimeInfoForm.getScheduleId());
@@ -155,7 +168,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                 }
                 throw new ClientServiceException("不可以发起申请当天及以前的申请事项", INSERT_MODEL);
             }
-            throw new ClientServiceException("该申请与其他外勤申请时间冲突", INSERT_MODEL);
+            throw new ClientServiceException("该申请与其他加班申请时间冲突", INSERT_MODEL);
         }
         throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
     }

@@ -350,7 +350,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
               if (!StringHelper.isEmpty(list)) {
                 patientBaseInfoVo.setOriginName(list.get(0).getName());
               }
-              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
+//              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
               patientOrig = patientOriginMapper.getTypeName(1);
               if (patientOrig != null){
                 patientBaseInfoVo.setOriginId(patientOrig.getId());
@@ -364,7 +364,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
               if (patientBaseInfo != null) {
                 patientBaseInfoVo.setOriginName(patientBaseInfo.getName());
               }
-              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
+//              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
               patientOrig = patientOriginMapper.getTypeName(2);
               if (patientOrig != null){
                 patientBaseInfoVo.setOriginId(patientOrig.getId());

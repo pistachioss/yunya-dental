@@ -423,6 +423,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer id = vo.getId();
     OrderRecord orderRecord = new OrderRecord();
     orderRecord.setTreatmentRecordId(id);
+    orderRecord.setInservice(true);
     OrderRecord orderRecordResult = orderRecordMapper.selectOne(orderRecord);
     if (null != orderRecordResult) {
       vo.setOrderRecordId(orderRecordResult.getId());

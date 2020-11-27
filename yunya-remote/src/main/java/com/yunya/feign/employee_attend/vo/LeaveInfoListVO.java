@@ -1,5 +1,6 @@
 package com.yunya.feign.employee_attend.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.yunya.models.employee_attend.ApprovalInfo;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -84,5 +85,8 @@ public class LeaveInfoListVO {
      */
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝 3撤回")
     private Integer apprpvalStatus;
+    @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date crtTime;
 
 }

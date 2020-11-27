@@ -17,6 +17,7 @@ public class LeaveSchedule {
      * 请假id
      */
     @Column(name = "leave_id")
+    @ApiModelProperty("请假id")
     private Integer leaveId;
 
     /**

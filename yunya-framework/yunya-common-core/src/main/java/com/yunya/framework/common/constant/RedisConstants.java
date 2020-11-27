@@ -85,8 +85,12 @@ public class RedisConstants implements Serializable {
   public static final String LOCK_CHOICE_CARD = "lock:choice:card";
   public static final String LOCK_SUBMIT_BENEFIT = "lock:submit:benefit";
 
+  /**-----------------------------------------------------------------------------*/
+  public static final String lock_cashier_pay = "LOCK:CASHIER:PAY";
+
   /** ---------------------------用户短信验证码----------------------------------------------- */
   public static final String FORGET_PWD_AUTHORIZATION = "forget_pwd_authorization_";
   /** 考勤设备绑定短信验证码 */
   public static final String ATTENDANCE_DEVICE_BINDING_AUTHORIZATION = "attendance_device_binding_authorization_";
+
 }

@@ -59,7 +59,7 @@ public class WorkOvertimeInfoListVO {
     @ApiModelProperty(value = "拒绝原因")
     private String refuseReason;
 
-    /** 外勤时长*/
+    /** 加班时长*/
     @ApiModelProperty(value = "加班时长")
     private Integer workOverTime;
 
@@ -83,4 +83,11 @@ public class WorkOvertimeInfoListVO {
     /** 申请人名称 */
     @ApiModelProperty(value = "申请人名称")
     private String userName;
+
+    /**
+     * 创建时间
+     */
+    @ApiModelProperty(value = "创建时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date crtTime;
 }

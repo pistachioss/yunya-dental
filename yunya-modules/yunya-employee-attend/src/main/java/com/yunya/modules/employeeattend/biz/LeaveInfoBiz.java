@@ -16,11 +16,8 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
 import com.yunya.modules.employeeattend.form.LeaveInfoByEmForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
-import com.yunya.modules.employeeattend.mapper.ApprovalInfoMapper;
-import com.yunya.modules.employeeattend.mapper.CopyInfoMapper;
-import com.yunya.modules.employeeattend.mapper.LeaveInfoMapper;
+import com.yunya.modules.employeeattend.mapper.*;
 import com.yunya.feign.employee_attend.vo.EmLeaveVO;
-import com.yunya.modules.employeeattend.mapper.LeaveScheduleMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,7 +50,10 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private LeaveScheduleMapper leaveScheduleMapper;
-
+    @Autowired
+    private FieldInfoMapper fieldInfoMapper;
+    @Autowired
+    private WorkOvertimeInfoMapper workOvertimeInfoMapper;
     /**
      * 根据日期和用户id列表查询请假列表
      *
@@ -86,7 +86,10 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
      */
     public Integer createDay(LeaveInfoForm leaveInfoForm) {
         //判断是否有其他类型的申请
-        if (true) {
+        LeaveInfo copy = new LeaveInfo();
+        BeanUtils.copyProperties(leaveInfoForm, copy);
+        int fiwi = mapper.countFiWi(copy);
+        if (fiwi==0) {
             //判断是否与同类型其他申请时间冲突
             LeaveInfo find = new LeaveInfo();
             find.setUserId(leaveInfoForm.getUserId());
@@ -128,7 +131,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 }
                 approvalInfoMapper.batchInsert(list);
                 //插入抄送人信息
-                if (leaveInfoForm.getCopyList().size() > 0) {
+                if (leaveInfoForm.getCopyList()!=null) {
                     List<CopyInfo> copyInfoList = new ArrayList<>();
                     for (Integer copyId : leaveInfoForm.getCopyList()) {
                         CopyInfo copyInfo = new CopyInfo();
@@ -178,14 +181,17 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     }
 
     /**
-     * 根据天数获得审批信息
+     * 新增按班次请假
      *
      * @param leaveInfoByEmForm
      * @return
      */
     public Integer addEm(LeaveInfoByEmForm leaveInfoByEmForm) {
         //判断是否有其他类型的申请
-        if (true) {
+        LeaveInfo li = new LeaveInfo();
+        BeanUtils.copyProperties(leaveInfoByEmForm, li);
+        int fiwi = mapper.countFiWi(li);
+        if (fiwi==0) {
             //判断是否与同类型其他申请时间冲突
             List<LeaveSchedule> scList = leaveInfoByEmForm.getScList();
             int isConflict = leaveScheduleMapper.selectNum(scList);
@@ -212,7 +218,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 }
                 approvalInfoMapper.batchInsert(list);
                 //插入抄送人信息
-                if (leaveInfoByEmForm.getCopyList().size() > 0) {
+                if (leaveInfoByEmForm.getCopyList()!=null) {
                     List<CopyInfo> copyInfoList = new ArrayList<>();
                     for (Integer copyId : leaveInfoByEmForm.getCopyList()) {
                         CopyInfo copyInfo = new CopyInfo();

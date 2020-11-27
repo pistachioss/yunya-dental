@@ -29,6 +29,7 @@ import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysEmployee;
@@ -40,12 +41,14 @@ import com.yunya.models.treatment.OrderDetailPayRecord;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -63,6 +66,7 @@ import static com.yunya.framework.common.constant.RedisConstants.*;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class TollBiz {
 
   /** 缓存 */
@@ -327,7 +331,12 @@ public class TollBiz {
           prepaymentAccounts, patientId, treatmentRecordId, billRecordId, billPayRecordId);
     }
     if (StringHelper.isNotEmpty(memberAccounts)) {
-      useMemberAccount(memberAccounts, patientId, treatmentRecordId, billRecordId, billPayRecordId);
+      ResponseResult expend = useMemberAccount(memberAccounts, patientId, treatmentRecordId, billRecordId, billPayRecordId);
+      if (expend.getStatus() > 0) {
+        log.info("===================就诊收费异常======================");
+        log.info("response: {}",expend);
+        throw new ClientServiceException(expend.getMsg(),expend.getStatus());
+      }
     }
     // 保存收费明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, payments);
@@ -927,25 +936,34 @@ public class TollBiz {
    * @param treatmentRecordId 就诊记录ID
    * @param billRecordId 账单记录ID
    * @param billPayRecordId 账单支付记录ID
+   * @return 处理结果
    */
-  private void useMemberAccount(
+  private ResponseResult useMemberAccount(
       Set<MemberAccountModel> memberAccountModels,
       Integer patientId,
       Integer treatmentRecordId,
       Integer billRecordId,
       Integer billPayRecordId) {
     MemberExpendRecordModel memberExpendRecordModel = new MemberExpendRecordModel();
-    memberAccountModels.forEach(
-        memberAccountModel -> {
-          memberExpendRecordModel.setPatientId(patientId);
-          memberExpendRecordModel.setMemberId(memberAccountModel.getMemberNum());
-          memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
-          memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
-          memberExpendRecordModel.setBillRecordId(billRecordId);
-          memberExpendRecordModel.setBillPayRecordId(billPayRecordId);
-          memberExpendRecordModel.setType(1);
-          remotePatientCentralServiceFeign.expend(memberExpendRecordModel);
-        });
+    Iterator<MemberAccountModel> iterator = memberAccountModels.iterator();
+    ResponseResult responseResult = null;
+    while (iterator.hasNext()) {
+      MemberAccountModel memberAccountModel = iterator.next();
+      memberExpendRecordModel.setPatientId(patientId);
+      memberExpendRecordModel.setMemberId(memberAccountModel.getMemberNum());
+      memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
+      memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+      memberExpendRecordModel.setBillRecordId(billRecordId);
+      memberExpendRecordModel.setBillPayRecordId(billPayRecordId);
+      memberExpendRecordModel.setType(1);
+      ResponseResult expend = remotePatientCentralServiceFeign.expend(memberExpendRecordModel);
+      // 服务调用成功返回0，否则返回大于0的状态码
+      if (expend.getStatus() > 0) {
+        responseResult = expend;
+        break;
+      }
+    }
+    return responseResult != null ? responseResult : ResponseUtil.success();
   }
 
   /**

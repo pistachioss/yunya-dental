@@ -72,7 +72,7 @@
     <select id="selectCardNumber" resultType="com.yunya.models.patient_central.PatientMemberInfo">
         select
         <include refid="Find_Colum_List"/>
-        from patient_member_info pmio where pmio.card_number = #{memberId} and pmio.patient_id =#{patientId}
+        from patient_member_info pmio where pmio.card_number = #{memberId}
     </select>
 
     <!-- 通过患者id查询会员卡全部信息 -->
