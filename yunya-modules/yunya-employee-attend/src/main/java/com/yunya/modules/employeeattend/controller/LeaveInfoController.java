@@ -123,13 +123,13 @@ public class LeaveInfoController {
     }
 
     /**
-     * 获取请假的审批明细
+     * 根据请假ID获取审批信息
      *
      * @param
      * @return
      */
     @PostMapping("/findApproval")
-    @ApiOperation("获取请假的审批明细 传参数 id")
+    @ApiOperation("根据请假ID获取审批信息 传参数 id")
     @RepeatSubmit
     public ResponseResult findApproval(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.findApproval(leaveInfoForm));

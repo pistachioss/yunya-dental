@@ -17,15 +17,15 @@
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
-    <resultMap id="AlResultMap" type="com.yunya.models.employee_attend.ApprovalLevelSet" >
-        <id column="id" property="id" jdbcType="INTEGER" />
-        <result column="approval_criteria_id" property="approvalCriteriaId" jdbcType="INTEGER" />
-        <result column="approval_level_name" property="approvalLevelName" jdbcType="VARCHAR" />
-        <result column="approval_priority" property="approvalPriority" jdbcType="INTEGER" />
-        <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-        <result column="upd_id" property="updId" jdbcType="INTEGER" />
-        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+    <resultMap id="AlResultMap" type="com.yunya.models.employee_attend.ApprovalLevelSet">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="approval_criteria_id" property="approvalCriteriaId" jdbcType="INTEGER"/>
+        <result column="approval_level_name" property="approvalLevelName" jdbcType="VARCHAR"/>
+        <result column="approval_priority" property="approvalPriority" jdbcType="INTEGER"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
     <select id="findLeaveInfosByUserIdsAndDate" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
@@ -41,21 +41,23 @@
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
-    from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
-    <where>
-      t.apprpval_status = 1 and vs.vacation_enable=1
-      <if test="userIds!=null and userIds.size()>0">
-        and t.user_id in
-          <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
-              #{item}
-          </foreach>
-      </if>
-      <if test="date != null">
-          and DATE_FORMAT(t.start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{date},'%Y-%m-%d') and DATE_FORMAT(t.end_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{date},'%Y-%m-%d')
-      </if>
-    </where>
-    order by t.start_time asc
-  </select>
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
+        t.id=ls.leave_id
+        <where>
+            t.apprpval_status = 1 and vs.vacation_enable=1
+            <if test="userIds!=null and userIds.size()>0">
+                and t.user_id in
+                <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="date != null">
+                and DATE_FORMAT(t.start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{date},'%Y-%m-%d') and
+                DATE_FORMAT(t.end_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{date},'%Y-%m-%d')
+            </if>
+        </where>
+        order by t.start_time asc
+    </select>
 
     <select id="findLeaveInfoList" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
@@ -70,21 +72,23 @@
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
-    from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
-    <where>
-      t.apprpval_status = 1 and vs.vacation_enable=1
-      <if test="queryForm.userId!=null">
-        and t.user_id = #{queryForm.userId}
-      </if>
-      <if test="queryForm.betweenStartDate!= null and queryForm.andStartDate!=null">
-        and DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d')
-      </if>
-      <if test="queryForm.vacationStatus != null">
-        and vs.vacation_status = #{queryForm.vacationStatus}
-      </if>
-    </where>
-    order by t.start_time asc
-  </select>
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
+        t.id=ls.leave_id
+        <where>
+            t.apprpval_status = 1 and vs.vacation_enable=1
+            <if test="queryForm.userId!=null">
+                and t.user_id = #{queryForm.userId}
+            </if>
+            <if test="queryForm.betweenStartDate!= null and queryForm.andStartDate!=null">
+                and DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d')
+                and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d')
+            </if>
+            <if test="queryForm.vacationStatus != null">
+                and vs.vacation_status = #{queryForm.vacationStatus}
+            </if>
+        </where>
+        order by t.start_time asc
+    </select>
     <select id="findLeaveListByDay" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
         t.id,
@@ -115,17 +119,17 @@
         LEFT JOIN base_schedule bs on es.schedule_id = bs.id
         LEFT JOIN leave_schedule ls on ls.schedule_id = es.id
         <where>
-        <if test="startTime!= null">
-            es.work_date BETWEEN #{startTime} and #{endTime}
-        </if>
-        <if test="userId!= null">
-            and es.employee_id = #{userId}
-        </if>
-        <if test="id!= null">
-            and ls.leave_id = #{id}
-        </if>
+            <if test="startTime!= null">
+                es.work_date BETWEEN #{startTime} and #{endTime}
+            </if>
+            <if test="userId!= null">
+                and es.employee_id = #{userId}
+            </if>
+            <if test="id!= null">
+                and ls.leave_id = #{id}
+            </if>
         </where>
-        order by  es.work_date
+        order by es.work_date
     </select>
 
     <select id="selectApprovalByDay" resultMap="AlResultMap">
@@ -168,11 +172,11 @@
         AND apprpval_status IN (0, 1)) a
     </select>
     <select id="selectLeave" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoListVO">
-      select t.id,
+        select t.id,
         t.user_id as userId,
         t.vacation_id as vacationId,
         t.company_id as companyId,
-		vs.vacation_name as vacationName,
+        vs.vacation_name as vacationName,
         t.start_time as startTime,
         t.end_time as endTime,
         t.leave_reason as leaveReason,
@@ -184,12 +188,28 @@
         LEFT join vacation_set vs on t.vacation_id = vs.id
         <where>
             <if test="id!= null">
-              and  t.id = #{id}
+                and t.id = #{id}
             </if>
             <if test="userId!= null">
-               and t.user_id = #{userId}
+                and t.user_id = #{userId}
             </if>
         </where>
         order by t.crt_time desc
+    </select>
+    <select id="findApproval" resultType="com.yunya.feign.employee_attend.vo.ApprovalInfoVO">
+    SELECT
+	ai.leave_id leaveId,
+	ap.user_id userId,
+	als.approval_priority approvalPriority,
+	ai.approval_status approvalStatus,
+	ai.crt_time crtTime
+    FROM
+	approval_info ai
+    LEFT JOIN approval_people ap ON ai.approval_people_id = ap.id
+    LEFT JOIN approval_level_set als ON ap.approval_level_id = als.id
+    WHERE
+	ai.leave_id = #{id}
+    ORDER BY
+	als.approval_priority
     </select>
 </mapper>

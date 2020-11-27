@@ -2,6 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.LeaveInfoQueryForm;
+import com.yunya.feign.employee_attend.vo.ApprovalInfoVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -54,6 +55,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private FieldInfoMapper fieldInfoMapper;
     @Autowired
     private WorkOvertimeInfoMapper workOvertimeInfoMapper;
+
     /**
      * 根据日期和用户id列表查询请假列表
      *
@@ -89,7 +91,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         LeaveInfo copy = new LeaveInfo();
         BeanUtils.copyProperties(leaveInfoForm, copy);
         int fiwi = mapper.countFiWi(copy);
-        if (fiwi==0) {
+        if (fiwi == 0) {
             //判断是否与同类型其他申请时间冲突
             LeaveInfo find = new LeaveInfo();
             find.setUserId(leaveInfoForm.getUserId());
@@ -131,7 +133,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 }
                 approvalInfoMapper.batchInsert(list);
                 //插入抄送人信息
-                if (leaveInfoForm.getCopyList()!=null) {
+                if (leaveInfoForm.getCopyList() != null) {
                     List<CopyInfo> copyInfoList = new ArrayList<>();
                     for (Integer copyId : leaveInfoForm.getCopyList()) {
                         CopyInfo copyInfo = new CopyInfo();
@@ -191,7 +193,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         LeaveInfo li = new LeaveInfo();
         BeanUtils.copyProperties(leaveInfoByEmForm, li);
         int fiwi = mapper.countFiWi(li);
-        if (fiwi==0) {
+        if (fiwi == 0) {
             //判断是否与同类型其他申请时间冲突
             List<LeaveSchedule> scList = leaveInfoByEmForm.getScList();
             int isConflict = leaveScheduleMapper.selectNum(scList);
@@ -218,7 +220,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 }
                 approvalInfoMapper.batchInsert(list);
                 //插入抄送人信息
-                if (leaveInfoByEmForm.getCopyList()!=null) {
+                if (leaveInfoByEmForm.getCopyList() != null) {
                     List<CopyInfo> copyInfoList = new ArrayList<>();
                     for (Integer copyId : leaveInfoByEmForm.getCopyList()) {
                         CopyInfo copyInfo = new CopyInfo();
@@ -296,15 +298,30 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         }
         return reList;
     }
+
     /**
      * 获取请假的审批明细
      *
      * @param
      * @return
      */
-    public List<LeaveSchedule> findApproval(LeaveInfoForm leaveInfoForm) {
-        LeaveSchedule leaveSchedule = new LeaveSchedule();
-        leaveSchedule.setLeaveId(leaveInfoForm.getId());
-        return leaveScheduleMapper.select(leaveSchedule);
+    public List<ApprovalInfoVO> findApproval(LeaveInfoForm leaveInfoForm) {
+        List<ApprovalInfoVO> reList = mapper.findApproval(leaveInfoForm);
+        if (reList.size() > 0) {
+            //获取用户信息
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            model.setWhetherPage(false);
+            List<Integer> orgIds = new ArrayList<>();
+            model.setOrgIds(orgIds);
+            Byte[] userStatus = {0, 1, 3};
+            model.setWorkStatus(userStatus);
+            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            Map<String, SysUserInfoDetail> emMap = new HashMap(16);
+            employees.forEach(z -> emMap.put(z.getUserId() + "", z));
+            for (ApprovalInfoVO li : reList) {
+                li.setApprovalPeopleName(emMap.get(li.getUserId() + "").getName());
+            }
+        }
+        return reList;
     }
 }
