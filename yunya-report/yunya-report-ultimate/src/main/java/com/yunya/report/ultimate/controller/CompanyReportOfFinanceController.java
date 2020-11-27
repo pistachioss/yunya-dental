@@ -189,9 +189,39 @@ public class CompanyReportOfFinanceController {
   @ApiOperation("公司端报表-财务报表-账单优惠明细-导出")
   @PostMapping(value = "/bill/privilege/export", name = "根据条件导出账单优惠明细列表")
   public ResponseResult<T> exportDiscountDetailList(
-          HttpServletResponse response, @RequestBody @Validated BillOfDiscountDetailQuery query)
-          throws IOException {
+      HttpServletResponse response, @RequestBody @Validated BillOfDiscountDetailQuery query)
+      throws IOException {
     baseBillBiz.exportDiscountDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询应收账款余额表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-应收账款余额表")
+  @PostMapping(value = "/bill/receivable/list", name = "根据条件查询应收账款余额表")
+  public ResponseResult<PageInfo<BillRestReceivableAmountVO>> billReceivableAmount(
+      @RequestBody @Validated BillOfReceivableQuery query) {
+    PageInfo<BillRestReceivableAmountVO> resultList = baseBillBiz.findBillReceivableAmount(query);
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件导出应收账款余额表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-财务报表-应收账款余额表-导出")
+  @PostMapping(value = "/bill/receivable/export", name = "根据条件导出应收账款余额表")
+  public ResponseResult<T> exportBillReceivableAmountList(
+      HttpServletResponse response, @RequestBody @Validated BillOfReceivableQuery query)
+      throws IOException {
+    baseBillBiz.exportBillReceivableAmountList(response, query);
     return ResponseUtil.success(null);
   }
 }
