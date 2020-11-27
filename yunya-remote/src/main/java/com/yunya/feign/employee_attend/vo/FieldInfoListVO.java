@@ -72,4 +72,8 @@ public class FieldInfoListVO {
     /** 外勤时长*/
     @ApiModelProperty(value = "外勤时长")
     private Integer fieldTime;
+
+    @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date crtTime;
 }

@@ -167,4 +167,29 @@
         AND DATE_FORMAT(work_date,'%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
         AND apprpval_status IN (0, 1)) a
     </select>
+    <select id="selectLeave" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoListVO">
+      select t.id,
+        t.user_id as userId,
+        t.vacation_id as vacationId,
+        t.company_id as companyId,
+		vs.vacation_name as vacationName,
+        t.start_time as startTime,
+        t.end_time as endTime,
+        t.leave_reason as leaveReason,
+        t.leave_picture as leavePicture,
+        t.approval_criteria_id as approvalCriteriaId,
+        t.apprpval_status as apprpvalStatus,
+        t.crt_time as crtTime
+        from leave_info t
+        LEFT join vacation_set vs on t.vacation_id = vs.id
+        <where>
+            <if test="id!= null">
+              and  t.id = #{id}
+            </if>
+            <if test="userId!= null">
+               and t.user_id = #{userId}
+            </if>
+        </where>
+        order by t.crt_time desc
+    </select>
 </mapper>

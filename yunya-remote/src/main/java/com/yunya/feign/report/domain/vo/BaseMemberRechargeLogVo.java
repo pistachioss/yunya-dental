@@ -60,9 +60,9 @@ public class BaseMemberRechargeLogVo {
     @ApiModelProperty(value = "充值后会员卡余额（本金）")
     private BigDecimal currentRechargePrincipal;
 
-    /** 充值后会员卡余额（赠金） */
-    @ApiModelProperty(value = "充值后会员卡余额（赠金）")
-    private BigDecimal currentRechargeBonus;
+    /** 剩余会员卡余额（含赠送金额） */
+    @ApiModelProperty(value = "剩余会员卡余额（含赠送金额）")
+    private BigDecimal currentAmount;
 
     /** 入账方式 */
     @ApiModelProperty(value = "入账方式")

@@ -278,9 +278,8 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     public List<LeaveInfoListVO> findList(LeaveInfoForm leaveInfoForm) {
         LeaveInfo leaveInfo = new LeaveInfo();
         BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
-        List<LeaveInfo> list = mapper.select(leaveInfo);
-        List<LeaveInfoListVO> reList = new ArrayList<>();
-        if (list.size() > 0) {
+        List<LeaveInfoListVO> reList = mapper.selectLeave(leaveInfo);
+        if (reList.size() > 0) {
             //获取用户信息
             SysUserEmployeeModel model = new SysUserEmployeeModel();
             model.setWhetherPage(false);
@@ -291,11 +290,8 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
             List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
             Map<String, SysUserInfoDetail> emMap = new HashMap(16);
             employees.forEach(z -> emMap.put(z.getUserId() + "", z));
-            for (LeaveInfo li : list) {
-                LeaveInfoListVO leaveInfoListVO = new LeaveInfoListVO();
-                BeanUtils.copyProperties(li, leaveInfoListVO);
-                leaveInfoListVO.setUserName(emMap.get(li.getUserId() + "").getName());
-                reList.add(leaveInfoListVO);
+            for (LeaveInfoListVO li : reList) {
+                li.setUserName(emMap.get(li.getUserId() + "").getName());
             }
         }
         return reList;

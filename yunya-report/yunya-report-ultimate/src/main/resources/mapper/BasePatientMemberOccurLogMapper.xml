@@ -46,8 +46,8 @@
         bpm.card_number cardNumber,
         bpmol.principal_amount principalAmount,
         bpmol.bonus_amount bonusAmount,
-        bpmol.current_recharge_principal currentRechargePrincipal,
-        bpmol.current_recharge_bonus currentRechargeBonus,
+        (bpmol.current_recharge_principal + bpmol.current_recharge_bonus) currentRechargePrincipal,
+        (select sum(a.principal_amount+ a.bonus_amount) from base_patient_member a where a.card_number = bpm.card_number) currentAmount,
         bpmol.payment_id paymentId,
         bpmol.payment_manner paymentManner,
         bpmol.operator_user_id,
@@ -68,7 +68,12 @@
                 AND bpm.card_number = #{form.cardNumber}
             </if>
 
-            <if test="form.memberLevelIds != null ">
+            <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
+                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
+            </if>
+
+            <if test="form.memberLevelIds != null and form.memberLevelIds.size() > 0 ">
                 AND bpm.member_level_id in
                 <foreach collection="form.memberLevelIds" item="levelIds" index="index" open="(" close=")"
                          separator=",">
@@ -76,10 +81,6 @@
                 </foreach>
             </if>
 
-            <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') >=  DATE_FORMAT(#{form.startDate}, '%Y-%m-%d')   ]]>
-                <![CDATA[   and DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d') <  DATE_FORMAT(#{form.endDate}, '%Y-%m-%d')   ]]>
-            </if>
         </where>
         group by bpmol.occur_date desc
         ) t1
@@ -129,7 +130,7 @@
                 AND bpm.card_number = #{form.cardNumber}
             </if>
 
-            <if test="form.memberLevelIds != null ">
+            <if test="form.memberLevelIds != null and memberLevelIds.size() > 0">
                 AND bpm.member_level_id in
                 <foreach collection="form.memberLevelIds" item="levelIds" index="index" open="(" close=")"
                          separator=",">
@@ -190,7 +191,7 @@
                 AND bpm.card_number = #{form.cardNumber}
             </if>
 
-            <if test="form.memberLevelIds != null ">
+            <if test="form.memberLevelIds != null and memberLevelIds.size() > 0 ">
                 AND bpm.member_level_id in
                 <foreach collection="memberLevelIds" item="levelIds" index="index" open="(" close=")" separator=",">
                     #{levelIds}

@@ -63,4 +63,6 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      * @return
      */
     int countFiWi(LeaveInfo leaveInfo);
+
+    List<LeaveInfoListVO>selectLeave( LeaveInfo leaveInfo);
 }
