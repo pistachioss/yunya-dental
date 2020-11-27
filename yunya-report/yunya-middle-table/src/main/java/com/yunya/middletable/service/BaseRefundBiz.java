@@ -113,6 +113,9 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     refund.setTreatmentId(billRefundRecord.getTreatmentRecordId());
     refund.setBillId(billRefundRecord.getOrderRecordId());
     refund.setRefundAmount(billRefundRecord.getTotalRefundAmount());
+    refund.setRefundOperatorId(billRefundRecord.getCrtId());
+    refund.setRefundDate(billRefundRecord.getCrtTime());
+    refund.setRefundReason(billRefundRecord.getReason());
     return refund;
   }
 

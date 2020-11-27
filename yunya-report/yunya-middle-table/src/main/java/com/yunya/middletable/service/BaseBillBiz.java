@@ -147,12 +147,14 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   private void setBaseBillChargeValue(Integer orderRecordId, BaseBill baseBill) {
     BillRecord bill = new BillRecord();
     bill.setOrderRecordId(orderRecordId);
+    bill.setInservice(true);
     BillRecord billRecord = billRecordMapper.selectOne(bill);
     if (null != billRecord) {
       BigDecimal debtAmount = billRecord.getDebtAmount();
       baseBill.setBillStatus(debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
       baseBill.setPrivilegeType(billRecord.getPrivilegeType());
       baseBill.setPrivilegeAmount(billRecord.getPrivilegeAmount());
+      baseBill.setBillDate(billRecord.getCrtTime());
       baseBill.setBillNum(billRecord.getBillNumber());
       baseBill.setActualAmount(billRecord.getActualReceivableAmount());
       baseBill.setReceivedAmount(billRecord.getReceivedAmount());
@@ -207,6 +209,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   private void saveBaseBillDetail(Integer orderRecordId) {
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
+    orderDetail.setInservice(true);
     List<OrderDetail> details = orderDetailMapper.select(orderDetail);
     if (StringHelper.isNotEmpty(details)) {
       List<BaseBillDetail> billDetails = generateBaseBillDetail(details);
@@ -255,6 +258,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     baseBillDetail.setPrice(detail.getPrice());
     OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();
     detailPayRecord.setOrderDetailId(detailId);
+    detailPayRecord.setInservice(true);
     OrderDetailPayRecord detailPayRecordResult =
         orderDetailPayRecordMapper.selectOne(detailPayRecord);
     if (null != detailPayRecordResult) {
