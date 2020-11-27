@@ -45,13 +45,13 @@ public class LeaveInfoController {
         return ResponseUtil.success(leaveInfoBiz.createDay(leaveInfoForm));
     }
     /**
-     * 查询按天请假时包含的班次
+     * 查询请假时包含的班次
      *
      * @param
      * @return
      */
     @PostMapping("/selectBaseByDay")
-    @ApiOperation("查询按天请假时包含的班次（参数为开始时间，结束时间，用户ID，请假Id 按需求传）")
+    @ApiOperation("查询请假时包含的班次（参数为开始时间，结束时间，用户ID，请假Id 按需求传）")
     @RepeatSubmit
     public ResponseResult selectBaseByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.selectBaseByDay(leaveInfoForm));
