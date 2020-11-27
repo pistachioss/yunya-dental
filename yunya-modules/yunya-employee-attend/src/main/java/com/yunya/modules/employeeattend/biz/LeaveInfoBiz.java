@@ -2,9 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.LeaveInfoQueryForm;
-import com.yunya.feign.employee_attend.vo.ApprovalInfoVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -15,10 +13,10 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
+import com.yunya.modules.employeeattend.form.FindApprovalByMeForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoByEmForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
 import com.yunya.modules.employeeattend.mapper.*;
-import com.yunya.feign.employee_attend.vo.EmLeaveVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -324,4 +322,10 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         }
         return reList;
     }
+
+//    public List<FindApprovalByMeVO> findApprovalByMe(FindApprovalByMeForm findApprovalByMeForm) {
+//
+//       return null;
+//
+//    }
 }

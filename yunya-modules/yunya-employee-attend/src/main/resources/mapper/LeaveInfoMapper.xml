@@ -135,7 +135,7 @@
     <select id="selectApprovalByDay" resultMap="AlResultMap">
         select als.* from approval_criteria ac
         left JOIN approval_level_set als on als.approval_criteria_id = ac.id
-        where ac.start_day &lt; TIMESTAMPDIFF(day,#{startTime},#{endTime})  and ac.end_day>=TIMESTAMPDIFF(day,#{startTime},#{endTime})
+        where ac.start_day &lt; TIMESTAMPDIFF(day,#{startTime},#{endTime})  and IFNULL(ac.end_day,9999)>=TIMESTAMPDIFF(day,#{startTime},#{endTime})
     </select>
 
     <select id="countByDay" resultType="Integer">
