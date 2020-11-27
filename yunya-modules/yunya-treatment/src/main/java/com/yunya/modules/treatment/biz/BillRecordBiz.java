@@ -163,10 +163,12 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
               BigDecimal itemBenefitAmount = benefitDetailVo.getItemBenefitAmount();
               actualAmount = actualAmount.subtract(itemBenefitAmount);
               orderDetail.setActualAmount(actualAmount);
-              orderDetail.setDiscountRate(
-                  actualAmount
-                      .divide(receivableAmount, 4, RoundingMode.HALF_UP)
-                      .multiply(BigDecimal.valueOf(100)));
+              if(receivableAmount.compareTo(new BigDecimal(0))!= 0) {
+                orderDetail.setDiscountRate(
+                        actualAmount
+                                .divide(receivableAmount, 4, RoundingMode.HALF_UP)
+                                .multiply(BigDecimal.valueOf(100)));
+              }
               List<ItemUseBenefitVo> benefitList = benefitDetailVo.getItemBenefitList();
               setPrivilegeCouponInfo(orderDetail, benefitList);
             }

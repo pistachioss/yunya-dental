@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.mapper;
 
 import com.yunya.feign.employee_attend.form.LeaveInfoQueryForm;
+import com.yunya.feign.employee_attend.vo.ApprovalInfoVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
 import com.yunya.models.employee_attend.ApprovalLevelSet;
@@ -63,4 +64,14 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      * @return
      */
     int countFiWi(LeaveInfo leaveInfo);
+
+    List<LeaveInfoListVO>selectLeave( LeaveInfo leaveInfo);
+
+    /**
+     * 根据请假ID获取审批信息
+     * @param leaveInfoForm
+     * @return
+     */
+    List<ApprovalInfoVO>findApproval(LeaveInfoForm leaveInfoForm);
+
 }

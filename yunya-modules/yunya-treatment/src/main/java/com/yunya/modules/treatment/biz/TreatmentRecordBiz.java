@@ -515,6 +515,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     }
     // 新增开单处置的随访
     detail.setType((byte) 0);
+    detail.setInservice(true);
     List<OrderDetail> orderDetails = orderDetailMapper.select(detail);
     List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)) {

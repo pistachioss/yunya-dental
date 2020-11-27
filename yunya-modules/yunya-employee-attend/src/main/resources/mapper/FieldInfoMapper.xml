@@ -43,7 +43,7 @@
 
     <select id="findVOList" resultMap="FindVOMap">
         select id,field_address,user_id,start_time,company_id,
-        end_time,field_reason,approval_people_id,apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) fieldTime from
+        end_time,field_reason,approval_people_id,apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) fieldTime,crt_time from
         field_info
         <where>
             <if test="id !=null and id != ''">
