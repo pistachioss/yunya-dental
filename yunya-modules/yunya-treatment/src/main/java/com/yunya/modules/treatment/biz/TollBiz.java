@@ -1386,6 +1386,11 @@ public class TollBiz {
    */
   private void checkTotalChargeAndDebtAmount(
       BigDecimal totalCharge, BigDecimal debtAmount, BigDecimal outstandingAmount) {
+    log.info("========com.yunya.modules.treatment.biz.TollBiz.checkTotalChargeAndDebtAmount ================== ");
+    log.info("==> param:totalCharge={},debtAmount={},outstandingAmount={}",totalCharge,debtAmount,outstandingAmount);
+    log.info("==> err_code:{}",PARAMETERS_IS_ILLEGAL);
+    log.info("==> msg:入账方式金额与挂账金额之和不等于剩余应付金额合计！");
+    log.info("==================================================================================================");
     if (totalCharge.add(outstandingAmount).compareTo(debtAmount) != 0) {
       throw new ClientServiceException("入账方式金额与挂账金额之和不等于剩余应付金额合计！", PARAMETERS_IS_ILLEGAL);
     }
