@@ -198,7 +198,7 @@
         bar.revokeDate DESC
     </select>
 
-    <!--  -->
+    <!-- 根据条件查询调整入账方式记录 -->
     <select id="selectBillPayAdjustRecordList"
             resultType="com.yunya.feign.treatment.domain.vo.BillOfPayRecordAdjustVO">
         SELECT
@@ -211,7 +211,7 @@
         bar.billNum,
         bar.patientId,
         bar.regDentistId,
-        bar.revokeOperatorId
+        bar.adjustOperatorId
         FROM
         (
         SELECT
@@ -225,7 +225,7 @@
         bpr.billNum,
         bpr.patientId patientId,
         tr.dentist_id AS regDentistId,
-        behr.crt_id AS revokeOperatorId
+        behr.crt_id AS adjustOperatorId
         FROM
         ( SELECT id, treatment_record_id, handled_record_id, crt_id, crt_time FROM bill_exception_handle_record WHERE
         operate_type = 0 ) behr

@@ -52,7 +52,7 @@ public interface BillExceptionHandleRecordMapper extends Mapper<BillExceptionHan
       @Param("query") BillTollRevokeRecordQuery query);
 
   /**
-   * 根据条件查询账单收费调整记录列表
+   * 根据条件查询调整入账方式记录
    *
    * @param query 查询条件
    * @return List<BillOfPayRecordAdjustVO>
