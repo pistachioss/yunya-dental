@@ -7,6 +7,7 @@
     -->
     <id column="id" jdbcType="INTEGER" property="id" />
     <result column="org_id" jdbcType="INTEGER" property="orgId" />
+    <result column="organization_name" jdbcType="VARCHAR" property="organizationName" />
     <result column="attendance_address" jdbcType="VARCHAR" property="attendanceAddress" />
     <result column="longitude" jdbcType="VARCHAR" property="longitude" />
     <result column="latitude" jdbcType="VARCHAR" property="latitude" />
@@ -43,6 +44,7 @@
         select
             t.id,
             t.org_id as orgId,
+            t.organization_name as organizationName,
             t.attendance_address as attendanceAddress,
             t.longitude,
             t.latitude,
