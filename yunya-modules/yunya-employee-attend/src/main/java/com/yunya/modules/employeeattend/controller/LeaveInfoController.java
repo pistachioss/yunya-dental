@@ -41,6 +41,7 @@ public class LeaveInfoController {
     @PostMapping("/addDay")
     @ApiOperation("新增按天请假申请")
     @RepeatSubmit
+    @CurrentUser
     public ResponseResult create(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.createDay(leaveInfoForm));
     }
@@ -75,6 +76,7 @@ public class LeaveInfoController {
     @PostMapping("/addEm")
     @ApiOperation("新增按班次请假申请")
     @RepeatSubmit
+    @CurrentUser
     public ResponseResult addEm(@RequestBody @Validated LeaveInfoByEmForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.addEm(leaveInfoForm));
     }
