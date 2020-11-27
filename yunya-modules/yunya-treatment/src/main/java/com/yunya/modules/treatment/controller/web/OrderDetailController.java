@@ -6,16 +6,20 @@ import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.modules.treatment.biz.OrderDetailBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -29,6 +33,7 @@ import java.util.List;
 @Api(tags = "开单明细管理（新增、修改、删除、查询）")
 @RestController
 @RequestMapping("details")
+@Slf4j
 public class OrderDetailController {
 
   /** 注入对象 */
@@ -117,6 +122,15 @@ public class OrderDetailController {
   public ResponseResult<BillPrintInfoVO> billPrintInfo(@PathVariable("patientId") Integer patientId,
                                                        @PathVariable("billNumber") String billNumber) {
     BillPrintInfoVO billPrintInfoVO = orderDetailBiz.billPrintInfo(patientId,billNumber);
+    if (billPrintInfoVO == null) {
+      log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓账单打印异常信息↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+      log.info("==> path:/details/bill/print/{}/{}",patientId,billNumber);
+      log.info("==> param:patientId={},billNumber={}",patientId,billNumber);
+      log.info("==> Msg:没有查询到账单信息");
+      log.info("==> status:{}",OperationCodeConstants.DATA_NOT_EXIST);
+      log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+      return ResponseUtil.fail(OperationCodeConstants.DATA_NOT_EXIST,"没有查询到账单信息",null);
+    }
     return ResponseUtil.success(billPrintInfoVO);
   }
 

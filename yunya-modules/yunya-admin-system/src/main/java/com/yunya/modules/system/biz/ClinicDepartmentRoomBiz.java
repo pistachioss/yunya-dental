@@ -8,9 +8,11 @@ import com.yunya.feign.system.vo.ClinicDepartmentRoomVO;
 import com.yunya.feign.system.vo.ClinicDeptRoomListVO;
 import com.yunya.feign.system.vo.DeptRoomVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
+import com.yunya.feign.treatment.domain.vo.BillOfAdjustRecordVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.ClinicDepartmentRoom;
 import com.yunya.models.system.DepartmentRoom;
@@ -159,15 +161,10 @@ public class ClinicDepartmentRoomBiz
    * @return list
    */
   public PageInfo<ClinicDepartmentRoomVO> findList(ClinicDepartmentRoomQueryForm queryForm) {
-    PageInfo pageInfo;
-    if (queryForm.getWhetherPage()) {
-      PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
-    }
     Integer orgId = queryForm.getOrgId();
     DepartmentRoomQueryForm form = new DepartmentRoomQueryForm();
     form.setId(queryForm.getDeptRoomId());
     List<DepartmentRoomVO> roomVOList = departmentRoomMapper.selectList(form);
-    pageInfo = new PageInfo<>(roomVOList);
     List<ClinicDepartmentRoomVO> resultList = Lists.newArrayList();
     if (StringHelper.isNotEmpty(roomVOList)) {
       roomVOList.forEach(
@@ -196,11 +193,22 @@ public class ClinicDepartmentRoomBiz
       if (queryForm.getInservice().equals(true) && StringHelper.isNotEmpty(resultList)) {
         resultList.removeIf(vo -> !vo.getInservice());
       }
-      pageInfo.setList(resultList);
-    } else {
-      pageInfo.setList(new ArrayList<>());
     }
-    return pageInfo;
+    if (queryForm.getWhetherPage()) {
+      Integer pageNum = queryForm.getPageNum();
+      Integer pageSize = queryForm.getPageSize();
+      int total = resultList.size();
+      PageInfo<ClinicDepartmentRoomVO> pageInfo = new PageInfo<>();
+      pageInfo.setPageNum(pageNum);
+      pageInfo.setPageSize(pageSize);
+      pageInfo.setTotal(total);
+      List<ClinicDepartmentRoomVO> list =
+              resultList.subList(pageSize * (pageNum - 1), (Math.min((pageSize * pageNum), total)));
+      pageInfo.setList(list);
+      return pageInfo;
+    }
+
+    return  new PageInfo<>(resultList);
   }
 
   /**
