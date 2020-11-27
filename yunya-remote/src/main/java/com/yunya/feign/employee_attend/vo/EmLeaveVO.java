@@ -20,6 +20,7 @@ import java.util.Date;
 @Data
 public class EmLeaveVO {
 
+    private Integer id;
     @ApiModelProperty("日期")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date date;
