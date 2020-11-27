@@ -240,10 +240,10 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             DeviceItemVo beforeModifyDeviceItemInfo = clinicDeviceItemBiz.selectDeviceItemById(appointment.getClinicDeviceItemId());
             AppointmentOperateRecord clinicDeviceRecord = new AppointmentOperateRecord();
             BeanUtils.copyProperties(record,clinicDeviceRecord);
-            if (null != beforeModifyDepartmentRoomInfo) {
+            if (null != beforeModifyDeviceItemInfo) {
                 clinicDeviceRecord.setBeforeOperation(beforeModifyDeviceItemInfo.getName());
             }
-            if (null != afterModifyDepartmentRoomtInfo) {
+            if (null != afterModifyDeviceItemtInfo) {
                 clinicDeviceRecord.setAfterOperation(afterModifyDeviceItemtInfo.getName());
             }
             clinicDeviceRecord.setOperateItem("预约设备");

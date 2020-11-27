@@ -8,6 +8,7 @@ import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +24,7 @@ import java.util.List;
  **/
 @Api(tags = "就诊扩展外部服务调用接口")
 @RestController
+@Slf4j
 @RequestMapping("api/treatment/other")
 public class TreatmentOtherServiceRest {
     /** 随访管理服务 */
@@ -40,6 +42,9 @@ public class TreatmentOtherServiceRest {
     @RequestMapping(value = "/visiting/record/add",method = RequestMethod.POST)
     public void insertVisitingRecordRest(@RequestBody List<VisitingRecord> visitingRecords){
         if (StringHelper.isNotEmpty(visitingRecords)) {
+            log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓插入随访记录Feign调用↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+            log.info("==> visitingRecords:{}",visitingRecords);
+            log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
             visitingRecordBiz.insertEntity(visitingRecords);
         }
     }
