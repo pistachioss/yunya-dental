@@ -56,7 +56,7 @@ public class CompanyReportOfPersonnelController {
    * @return
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-导出")
-  @PostMapping(value = "/bill/receivable/export", name = "根据条件导出员工工作量列表")
+  @PostMapping(value = "/employee/workload/export", name = "根据条件导出员工工作量列表")
   public ResponseResult<T> exportEmployeeWorkloadList(
           HttpServletResponse response, @RequestBody @Validated EmployeeWorkloadQuery query)
           throws IOException {
