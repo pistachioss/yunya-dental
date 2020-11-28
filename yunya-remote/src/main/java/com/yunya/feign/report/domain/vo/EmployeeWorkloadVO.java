@@ -66,18 +66,18 @@ public class EmployeeWorkloadVO implements Serializable {
   private BigDecimal bonusCoefficient;
   /** 实收奖金基数（元） */
   @Excel(name = "实收奖金基数（元）")
-  @ApiModelProperty("实收奖金基数（元）")
+  @ApiModelProperty("实收奖金基数（元）= 实收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量")
   private BigDecimal actualBonusBase;
   /** 已收奖金基数（元） */
   @Excel(name = "已收奖金基数（元）")
-  @ApiModelProperty("已收奖金基数（元）")
+  @ApiModelProperty("已收奖金基数（元）= 已收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量")
   private BigDecimal receivedBonusBase;
   /** 实收奖金（元） */
   @Excel(name = "实收奖金（元）")
-  @ApiModelProperty("实收奖金（元）")
+  @ApiModelProperty("实收奖金（元）= 实收奖金基数*奖金系数")
   private BigDecimal actualBonus;
   /** 已收奖金（元） */
   @Excel(name = "已收奖金（元）")
-  @ApiModelProperty("已收奖金（元）")
+  @ApiModelProperty("已收奖金（元）= 已收奖金基数*奖金系数")
   private BigDecimal receivedBonus;
 }
