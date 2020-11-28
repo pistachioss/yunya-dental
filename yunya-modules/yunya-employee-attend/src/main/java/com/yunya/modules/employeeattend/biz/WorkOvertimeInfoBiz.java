@@ -1,5 +1,7 @@
 package com.yunya.modules.employeeattend.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
 import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
@@ -280,5 +282,17 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
             vo.setCompanyName(clinicMap.get(vo.getCompanyId()+"").getName());
         }
         return list;
+    }
+
+    /**
+     * 分页条件查询
+     * @param queryForm 查询参数
+     * @return
+     */
+    public List<WorkOvertimeInfoVO> findWorkOvertimeInfoList(WorkOvertimeInfoQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
+        }
+        return mapper.findWorkOvertimeInfoList(queryForm);
     }
 }

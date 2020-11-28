@@ -1,5 +1,6 @@
 package com.yunya.feign.employee_attend.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -30,7 +31,16 @@ public class WorkOvertimeInfoVO implements Serializable {
 
     /** 加班日期 */
     @ApiModelProperty(value = "加班日期")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date workDate;
+
+    /** 开始日期 */
+    @ApiModelProperty(value = "开始日期")
+    private Date startTime;
+
+    /** 结束日期 */
+    @ApiModelProperty(value = "结束日期")
+    private Date endTime;
 
     /** 门诊id */
     @ApiModelProperty(value = "门诊id")

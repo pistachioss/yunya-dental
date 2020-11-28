@@ -172,7 +172,7 @@
           <if test="queryForm.userId != null">
               and es.employee_id = #{queryForm.userId}
           </if>
-          <if test="queryForm.userIds != null">
+          <if test="queryForm.userIds!=null and queryForm.userIds.size()>0">
               and es.employee_id in
               <foreach item="item" index="index" collection="queryForm.userIds" open="(" separator="," close=")">
                   #{item}

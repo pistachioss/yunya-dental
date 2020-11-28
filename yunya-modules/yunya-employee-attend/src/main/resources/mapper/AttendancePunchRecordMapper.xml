@@ -80,6 +80,12 @@
           #{item}
         </foreach>
       </if>
+      <if test="queryForm.notInIds!=null and queryForm.notInIds.size()>0">
+        and t.id not in
+        <foreach collection="queryForm.notInIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
     </where>
   </select>
 

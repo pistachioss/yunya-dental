@@ -38,6 +38,11 @@ public class AttendancePunchDateVO implements Serializable {
     @ApiModelProperty(value = "上班打卡组织id")
     private Integer onDutyOrgId;
 
+    /** 上班开始时间 */
+    @ApiModelProperty(value = "上班开始时间")
+    @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
+    private Date onDutyStartTime;
+
     /** 上班结束时间 */
     @ApiModelProperty(value = "上班结束时间")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
@@ -79,15 +84,33 @@ public class AttendancePunchDateVO implements Serializable {
     @ApiModelProperty(value = "下班班次名称（或者请假、或者外勤、或者加班） ")
     private String offDutyName;
 
-    /** 请假情况：0-上午请假，1-下午请假，2-全天请假 */
-    @ApiModelProperty(value = "请假情况：0-上午请假，1-下午请假，2-全天请假")
+    /** 请假情况：0-上午请假，1-下午请假，2-全天请假（当天只有该类型），3-按天请假 */
+    @ApiModelProperty(value = "请假情况：0-上午请假，1-下午请假，2-全天请假（当天只有该类型），3-按天请假")
     private Byte leave;
 
-    /** 加班情况：0-上午加班，1-下午加班，2-全天加班 */
-    @ApiModelProperty(value = "加班情况：0-上午加班，1-下午加班，2-全天加班")
-    private Byte workOvertime;
+    /** 加班情况：0-上午加班，1-下午加班，2-全天加班（当天只有该类型） */
+    @ApiModelProperty(value = "加班情况：0-上午加班，1-下午加班，2-全天加班（当天只有该类型）")
+    private Byte workDateOvertime;
 
-    /** 外勤情况：0-上午外勤，1-下午外勤，2-全天外勤 */
-    @ApiModelProperty(value = "外勤情况：0-上午外勤，1-下午外勤，2-全天外勤")
+    /** 外勤情况：0-上午外勤，1-下午外勤，2-全天外勤（当天只有该类型） */
+    @ApiModelProperty(value = "外勤情况：0-上午外勤，1-下午外勤，2-全天外勤（当天只有该类型）")
     private Byte field;
+
+    /** 上班项目来源id */
+    @ApiModelProperty(value = "上班来源id")
+    private Integer onDutySourceId;
+
+    /** 下班项目来源id */
+    @ApiModelProperty(value = "下班来源id")
+    private Integer offDutySourceId;
+
+    /**
+     * 上班项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
+     */
+    private Byte onDutySource;
+
+    /**
+     * 下班项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
+     */
+    private Byte offDutySource;
 }

@@ -156,4 +156,33 @@
         select count(*) from work_overtime_info where apprpval_status in (0,1)
          AND DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate}, '%Y-%m-%d') and user_id = #{userId}
     </select>
+
+    <select id="findWorkOvertimeInfoList" resultType="com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO">
+        select
+            t.id,
+            t.user_id as userId,
+            t.work_date as workDate,
+            t.company_id as companyId,
+            t.rest_schedule_id as restScheduleId,
+            t.schedule_id as scheduleId,
+            t.overtime_reason as overtimeReason,
+            t.approval_people_id as approvalPeopleId,
+            t.apprpval_status as apprpvalStatus,
+            t.refuse_reason as refuseReason,
+            bs.first_start_time as startTime,
+            ifnull(bs.second_end_time,bs.first_end_time) as endTime
+        from work_overtime_info t left join employee_schedule es on t.rest_schedule_id=es.id left join base_schedule bs on es.schedule_id=bs.id
+        <where>
+            <if test="queryForm.apprpvalStatus!=null">
+                and t.apprpval_status = #{queryForm.apprpvalStatus}
+            </if>
+            <if test="queryForm.userId!=null">
+                and t.user_id = #{queryForm.userId}
+            </if>
+            <if test="queryForm.startTime!= null and queryForm.endTime!= null">
+                and DATE_FORMAT(t.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.startTime},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.endTime},'%Y-%m-%d')
+            </if>
+        </where>
+        order by t.crt_time desc
+    </select>
 </mapper>

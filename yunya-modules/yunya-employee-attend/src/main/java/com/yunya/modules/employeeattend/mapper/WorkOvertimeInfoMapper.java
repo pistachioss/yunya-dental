@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.mapper;
 
+import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
 import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
@@ -41,4 +42,10 @@ public interface WorkOvertimeInfoMapper extends Mapper<WorkOvertimeInfo> {
      * @return
      */
     int countByDay(WorkOvertimeInfo workOvertimeInfo);
+    /**
+     * 分页条件查询
+     * @param queryForm 查询参数
+     * @return
+     */
+    List<WorkOvertimeInfoVO> findWorkOvertimeInfoList(@Param("queryForm") WorkOvertimeInfoQueryForm queryForm);
 }

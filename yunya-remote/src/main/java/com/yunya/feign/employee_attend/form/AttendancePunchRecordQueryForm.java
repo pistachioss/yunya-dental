@@ -9,6 +9,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介：考勤打卡记录查询参数模型
@@ -85,4 +86,13 @@ public class AttendancePunchRecordQueryForm implements Serializable {
     /** 是否打卡：0-否，1-是 */
     @ApiModelProperty(value = "是否打卡：0-否，1-是", required = true)
     private Byte isPunch;
+
+    /** 打卡类型 0：上班 1：下班 */
+    @ApiModelProperty(value = "打卡类型 0：上班 1：下班")
+    private Byte punchType;
+
+
+    /** 不属于的id列表 */
+    @ApiModelProperty(value = "不属于的id列表")
+    private List<Integer> notInIds;
 }

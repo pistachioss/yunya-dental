@@ -22,28 +22,38 @@ import java.util.Date;
 @ApiModel("考勤打卡次数统计响应模型")
 public class AttendancePunchCountVO implements Serializable {
     private static final long serialVersionUID = -3781575532862391245L;
-    /** 时间 */
-    @ApiModelProperty("时间")
+    /** 日期 */
+    @ApiModelProperty("日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date date;
 
-    /** 班次名称*/
-    @ApiModelProperty(value = "班次名称")
+    /** 排班 */
+    @ApiModelProperty(value = "排班")
     private String name;
 
-    /** 考勤时间 */
-    @ApiModelProperty("考勤时间")
+    /** 上班卡考勤时间 */
+    @ApiModelProperty("上班卡考勤时间")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
-    private Date attendanceTime;
+    private Date onAttendanceTime;
 
-    /** 打卡时间 */
-    @ApiModelProperty("打卡时间")
+    /** 下班卡考勤时间 */
+    @ApiModelProperty("下班卡考勤时间")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
-    private Date punchTime;
+    private Date offAttendanceTime;
 
-    /** 打卡结果: 0-上班缺卡，1-迟到，2-下班缺卡，3-早退，4-无效卡，5-异常 */
-    @ApiModelProperty(value = "打卡结果: 0-上班缺卡，1-迟到，2-下班缺卡，3-早退，4-无效卡，5-异常")
-    private Byte punchStatus;
+    /** 上班卡打卡时间 */
+    @ApiModelProperty("上班卡打卡时间")
+    @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
+    private Date onPunchTime;
+
+    /** 下班卡打卡时间 */
+    @ApiModelProperty("下班卡打卡时间")
+    @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
+    private Date offPunchTime;
+
+    /** 打卡结果 */
+    @ApiModelProperty(value = "打卡结果")
+    private String punchResult;
 
     /** 迟到或者早退时长/分钟 */
     @ApiModelProperty(value = "迟到或者早退时长/分钟")
@@ -52,4 +62,8 @@ public class AttendancePunchCountVO implements Serializable {
     /** 打卡地址/wifi */
     @ApiModelProperty(value = "打卡地址/wifi")
     private String punchAddress;
+
+    /** 缺卡次数/无效卡次数 */
+    @ApiModelProperty(value = "缺卡次数/无效卡次数")
+    private Integer count;
 }
