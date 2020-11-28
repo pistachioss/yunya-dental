@@ -70,7 +70,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<EmployeeWorkloadVO> resultList = mapper.selectEmployeeWorkloadList(query);
+    Byte dateType = query.getDateType();
+    List<EmployeeWorkloadVO> resultList;
+    if (dateType == 0) {
+      resultList = mapper.selectEmployeeWorkloadListByMonth(query);
+    } else {
+      resultList = mapper.selectEmployeeWorkloadListByYear(query);
+    }
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
@@ -114,6 +120,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
+   * 根据条件导出员工工作量列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportEmployeeWorkloadList(HttpServletResponse response, EmployeeWorkloadQuery query)
+      throws IOException {
+    PageInfo<EmployeeWorkloadVO> workloadList = findEmployeeWorkloadList(query);
+    List<EmployeeWorkloadVO> resultList = workloadList.getList();
+    ExcelUtil<EmployeeWorkloadVO> excelUtil = new ExcelUtil<>(EmployeeWorkloadVO.class);
+    excelUtil.exportExcel(response, resultList, "应收账款余额表");
+  }
+
+  /**
    * 根据条件查询项目分类收入汇总列表
    *
    * @param query 查询条件
@@ -137,6 +157,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       throws IOException {
     List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
-    excelUtil.exportExcel(response, list, "分类收入汇总列表");
+    excelUtil.exportExcel(response, list, "员工工作量统计");
   }
 }
