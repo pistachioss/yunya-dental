@@ -85,6 +85,7 @@ public class TollController {
    * @param orderRecordId 开单记录ID
    * @return
    */
+  @Deprecated
   @ApiOperation("点击收费修改账单状态为收费中-（接口作废）")
   @GetMapping(value = "/change/{orderRecordId}", name = "点击收费修改账单状态")
   public ResponseResult<T> changeOrderRecordStatus(

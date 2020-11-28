@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -46,5 +47,6 @@ public class TollModel implements Serializable {
   @NotNull(message = "挂帐金额不能为空！")
   private BigDecimal outstandingAmount;
   /** 发票信息 */
+  @Valid
   private InvoiceModel invoiceModel;
 }

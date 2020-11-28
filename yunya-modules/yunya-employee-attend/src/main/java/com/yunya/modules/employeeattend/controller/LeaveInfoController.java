@@ -31,7 +31,8 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin
 public class LeaveInfoController {
 
-    @Autowired private LeaveInfoBiz leaveInfoBiz;
+    @Autowired
+    private LeaveInfoBiz leaveInfoBiz;
 
     /**
      * 新增按天请假申请
@@ -46,6 +47,7 @@ public class LeaveInfoController {
     public ResponseResult create(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.createDay(leaveInfoForm));
     }
+
     /**
      * 查询请假时包含的班次
      *
@@ -58,6 +60,7 @@ public class LeaveInfoController {
     public ResponseResult selectBaseByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.selectBaseByDay(leaveInfoForm));
     }
+
     /**
      * 根据天数获得审批信息
      */
@@ -137,16 +140,30 @@ public class LeaveInfoController {
     }
 
 
-//    /**
-//     * 待我审批
-//     *
-//     * @param
-//     * @return
-//     */
-//    @PostMapping("/findApprovalByMe")
-//    @ApiOperation("待我审批 传用户id")
-//    @RepeatSubmit
-//    public ResponseResult findApprovalByMe(@RequestBody @Validated FindApprovalByMeForm findApprovalByMeForm) {
-//        return ResponseUtil.success(leaveInfoBiz.findApprovalByMe(findApprovalByMeForm));
-//    }
+    /**
+     * 待我审批
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findApprovalByMe")
+    @ApiOperation("待我审批 传用户id")
+    @RepeatSubmit
+    public ResponseResult findApprovalByMe(@RequestBody @Validated FindApprovalByMeForm findApprovalByMeForm) {
+        return ResponseUtil.success(leaveInfoBiz.findApprovalByMe(findApprovalByMeForm));
+    }
+
+
+    /**
+     * 我已审批
+     *
+     * @param
+     * @return
+     */
+    @PostMapping("/findOverApprovalByMe")
+    @ApiOperation("我已审批 传用户id")
+    @RepeatSubmit
+    public ResponseResult findOverApprovalByMe(@RequestBody @Validated FindApprovalByMeForm findApprovalByMeForm) {
+        return ResponseUtil.success(leaveInfoBiz.findOverApprovalByMe(findApprovalByMeForm));
+    }
 }

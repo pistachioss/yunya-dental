@@ -1,14 +1,12 @@
 package com.yunya.modules.employeeattend.mapper;
 
 import com.yunya.feign.employee_attend.form.LeaveInfoQueryForm;
-import com.yunya.feign.employee_attend.vo.ApprovalInfoVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
-import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
+import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.models.employee_attend.ApprovalLevelSet;
 import com.yunya.models.employee_attend.LeaveInfo;
+import com.yunya.modules.employeeattend.form.FindApprovalByMeForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoFindForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoForm;
-import com.yunya.feign.employee_attend.vo.EmLeaveVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
@@ -74,4 +72,17 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      */
     List<ApprovalInfoVO>findApproval(LeaveInfoForm leaveInfoForm);
 
+    /**
+     * 待我审批或已经审批列表
+     * @param findApprovalByMeForm
+     * @return
+     */
+    List<LeaveAppVO> findApprovalByMe(FindApprovalByMeForm findApprovalByMeForm);
+
+    /**
+     * 待我审批或已经审批列表
+     * @param findApprovalByMeForm
+     * @return
+     */
+    List<LeaveAppVO> findOverApprovalByMe(FindApprovalByMeForm findApprovalByMeForm);
 }

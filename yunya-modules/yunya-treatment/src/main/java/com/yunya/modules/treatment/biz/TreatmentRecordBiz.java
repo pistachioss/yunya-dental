@@ -31,6 +31,7 @@ import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.mapper.*;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,7 @@ import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_TREAT
  * @since: 1.0.0
  */
 @Service
+@Slf4j
 @Transactional(rollbackFor = Exception.class)
 public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, TreatmentRecord> {
 
@@ -558,6 +560,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         });
     // 设置分组计划
     List<VisitingRecord> collect = new ArrayList<>(groupVisitRecordMap.values());
+    log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓系统新建随访↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+    log.info("==> groupVisitRecordMap.values():{}",groupVisitRecordMap.values());
+    log.info("==> collect:{}",collect);
+    log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
     treatmentOtherFeign.insertVisitingRecord(collect);
   }
 
@@ -606,10 +612,10 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
                     visitRecord.setVisitingTime("09:00");
                     visitRecord.setReason(baseTariff.getName());
                     visitRecord.setStatus(false);
+                    visitRecord.setInservice(true);
                     visitRecord.setVisitingDate(
                         DateUtils.addDays(new Date(System.currentTimeMillis()), nn));
                     visitRecordPlanList.add(visitRecord);
-                    treatmentOtherFeign.insertVisitingRecord(visitRecordPlanList);
                   });
         }
       }

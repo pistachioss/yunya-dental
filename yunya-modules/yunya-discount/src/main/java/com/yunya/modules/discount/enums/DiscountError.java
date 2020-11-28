@@ -64,6 +64,7 @@ public enum DiscountError implements RestError {
     RECHARGE_TIME_OUT(55, "该卡券已过充值截止时间，不可以充值！"),
     RECHARGE_HAS_RECHARGED(56,"该卡券已被充值，不可以再次充值！"),
     RECHARGE_NOT_SOLD(57, "该充值卡未售出，不可以充值！"),
+    BENEFIT_PACKAGE_ITEM_EMPTY(58,"套餐券项目为空,请添加项目后再保存"),
     ;
     private Integer code;
     private String value;

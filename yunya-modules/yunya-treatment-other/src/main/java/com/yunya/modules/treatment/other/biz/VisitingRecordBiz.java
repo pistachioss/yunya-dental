@@ -38,6 +38,7 @@ import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.modules.treatment.other.code.TreatmentOtherError;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +55,7 @@ import java.util.stream.Collectors;
  * @create: 2020-08-21 17:52
  **/
 @Service
+@Slf4j
 @Transactional(rollbackFor = Exception.class)
 public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRecord> {
 
@@ -83,6 +85,10 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      * @return
      */
     public void insertEntity(List<VisitingRecord> visitingRecords) {
+        log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓插入随访记录↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+        log.info("==> class: com.yunya.modules.treatment.other.biz.VisitingRecordBiz");
+        log.info("==> visitingRecords:{}",visitingRecords);
+        log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
         mapper.insertEntitys(visitingRecords);
     }
 
@@ -465,10 +471,16 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
             if (!StringHelper.isEmpty(visitingRecordVos)){
                 final String visitingContentStr = visitingRecord.getVisitingContent();
+                String name = BaseContextHandler.getName();
+                String userID = BaseContextHandler.getUserID();
+                Date date = new Date(System.currentTimeMillis());
                 // 合并随访内容
                 visitingRecordVos.forEach(visitingRecordVo -> {
                     VisitingRecord build = EntityUtils.build(visitingRecordVo, VisitingRecord.class);
                     build.setVisitingContent(visitingContentStr);
+                    build.setUpdName(name);
+                    build.setUptId(Integer.valueOf(userID));
+                    build.setUpdTime(date);
                     build.setStatus(true);
                     mapper.updateByPrimaryKeySelective(build);
                 });

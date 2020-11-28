@@ -462,7 +462,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
         // 发送消息更新中间表就诊流程
-        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
+//        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
         // 保存预约更新被修改的日期、医生
         appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
