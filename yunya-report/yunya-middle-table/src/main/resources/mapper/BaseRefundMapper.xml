@@ -12,7 +12,7 @@
     <result column="bill_id" property="billId" jdbcType="INTEGER" />
     <result column="refund_amount" property="refundAmount" jdbcType="DECIMAL" />
     <result column="refund_operator_id" property="refundOperatorId" jdbcType="INTEGER" />
-    <result column="refund_date" property="refundDate" jdbcType="DATETIME" />
+    <result column="refund_date" property="refundDate" jdbcType="TIMESTAMP" />
     <result column="refund_reason" property="refundReason" jdbcType="VARCHAR" />
   </resultMap>
 </mapper>
