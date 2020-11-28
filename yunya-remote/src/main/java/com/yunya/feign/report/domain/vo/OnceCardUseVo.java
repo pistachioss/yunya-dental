@@ -6,6 +6,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 
 /**
  * @author xiangyang
@@ -23,7 +24,7 @@ public class OnceCardUseVo {
 	@ApiModelProperty(value = "数量")
 	private Integer useQuantity;
 	@ApiModelProperty(value = "使用时间")
-	private LocalDate useDate;
+	private Date useDate;
 	@ApiModelProperty(value = "使用门诊")
 	private String usedClinicName;
 	@ApiModelProperty(value = "患者")

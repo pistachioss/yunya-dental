@@ -182,7 +182,7 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     messageModel.setParamMap(map);
     messageModel.setOperateType(operateType);
     messageModel.setMsgCategoryEnum(MsgCategoryEnum.BasePatient);
-//    remoteRabbitMqServiceFeign.sendMessage(messageModel);
+    remoteRabbitMqServiceFeign.sendMessage(messageModel);
   }
 
   /**
@@ -202,8 +202,8 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       patientPrepaymentsInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
       patientPrepaymentsInfo.setCrtName(BaseContextHandler.getName());
       this.patientPrepaymentsInfoMapper.insertSelective(patientPrepaymentsInfo);
-//      remoteRabbitMqServiceFeign.sendMessage(
-//          patientPrepaymentsInfo.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
+      remoteRabbitMqServiceFeign.sendMessage(
+          patientPrepaymentsInfo.getId(), 1, 0, MsgCategoryEnum.BasePatientMember);
     }
   }
 
