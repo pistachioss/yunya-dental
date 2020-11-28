@@ -138,6 +138,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
           resultList.forEach(
               tariffVO -> {
                 Map<Integer, Object> memberPrices = new HashMap<>(16);
+                // 设置门诊价目表会员价,设置价格精度，为小数点后两位四舍五入
                 setClinicTariffMemberPrice(memberPrices, memberTypes, orgId, tariffVO);
               });
         }
@@ -173,7 +174,7 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
           clinicTariffMemberPriceBiz.selectOne(clinicTariffMemberPrice);
       if (null != memberPriceResult) {
         memberTypeId = memberPriceResult.getMemberTypeId();
-        memberPrice = memberPriceResult.getDiscountPrice();
+        memberPrice = memberPriceResult.getDiscountPrice().setScale(2,BigDecimal.ROUND_HALF_UP);
       } else {
         memberTypeId = memberType.getId();
         memberPrice =
@@ -185,6 +186,8 @@ public class ClinicTariffBiz extends BaseBiz<ClinicTariffMapper, ClinicTariff> {
       }
       memberPrices.put(memberTypeId, memberPrice);
     }
+    // 设置价格精度小数点后两位四舍五入，没有在上个方法中设置精度是为了保证会员价计算精确
+    tariffVO.setPrice(tariffVO.getPrice().setScale(2,BigDecimal.ROUND_HALF_UP));
     tariffVO.setMemberPrices(memberPrices);
   }
 

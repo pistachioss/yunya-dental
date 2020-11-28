@@ -62,6 +62,9 @@
             <if test="queryForm.dentistId != null">
                 and tr.dentist_id = #{queryForm.dentistId}
             </if>
+            <if test="queryForm.inservice != null">
+                and tr.inservice = #{queryForm.inservice}
+            </if>
             order by tr.id desc
         </where>
     </select>

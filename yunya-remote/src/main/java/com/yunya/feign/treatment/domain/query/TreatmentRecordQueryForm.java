@@ -49,4 +49,7 @@ public class TreatmentRecordQueryForm implements Serializable {
 
   @ApiModelProperty("挂号医生ID")
   private Integer dentistId;
+
+  @ApiModelProperty("是否有效默认有效(1-有效；0-无效)")
+  private Boolean inservice=true;
 }
