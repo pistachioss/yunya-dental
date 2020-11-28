@@ -323,9 +323,45 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         return reList;
     }
 
-//    public List<FindApprovalByMeVO> findApprovalByMe(FindApprovalByMeForm findApprovalByMeForm) {
-//
-//       return null;
-//
-//    }
+    public List<LeaveAppVO> findApprovalByMe(FindApprovalByMeForm findApprovalByMeForm) {
+        List<LeaveAppVO> reList = mapper.findApprovalByMe(findApprovalByMeForm);
+        if (reList.size() > 0) {
+            //获取用户信息
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            model.setWhetherPage(false);
+            List<Integer> orgIds = new ArrayList<>();
+            model.setOrgIds(orgIds);
+            Byte[] userStatus = {0, 1, 3};
+            model.setWorkStatus(userStatus);
+            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            Map<String, SysUserInfoDetail> emMap = new HashMap(16);
+            employees.forEach(z -> emMap.put(z.getUserId() + "", z));
+            for (LeaveAppVO li : reList) {
+                li.setUserName(emMap.get(li.getUserId() + "").getName());
+            }
+        }
+        return reList;
+
+    }
+
+    public List<LeaveAppVO> findOverApprovalByMe(FindApprovalByMeForm findApprovalByMeForm) {
+        List<LeaveAppVO> reList = mapper.findOverApprovalByMe(findApprovalByMeForm);
+        if (reList.size() > 0) {
+            //获取用户信息
+            SysUserEmployeeModel model = new SysUserEmployeeModel();
+            model.setWhetherPage(false);
+            List<Integer> orgIds = new ArrayList<>();
+            model.setOrgIds(orgIds);
+            Byte[] userStatus = {0, 1, 3};
+            model.setWorkStatus(userStatus);
+            List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            Map<String, SysUserInfoDetail> emMap = new HashMap(16);
+            employees.forEach(z -> emMap.put(z.getUserId() + "", z));
+            for (LeaveAppVO li : reList) {
+                li.setUserName(emMap.get(li.getUserId() + "").getName());
+            }
+        }
+        return reList;
+
+    }
 }

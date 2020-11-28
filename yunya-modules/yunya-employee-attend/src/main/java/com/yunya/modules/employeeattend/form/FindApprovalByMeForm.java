@@ -18,6 +18,4 @@ import lombok.Data;
 public class FindApprovalByMeForm {
     @ApiModelProperty(value = "用户id")
     private Integer userId;
-    @ApiModelProperty(value = "审批状态 0：未审批  1：已审批")
-    private Integer appStatus;
 }

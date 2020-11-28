@@ -9,6 +9,7 @@ import com.yunya.feign.report.domain.vo.BillTariffIncomeDetailVO;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
 import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -68,8 +70,67 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<EmployeeWorkloadVO> resultList = mapper.selectEmployeeWorkloadList(query);
+    Byte dateType = query.getDateType();
+    List<EmployeeWorkloadVO> resultList;
+    if (dateType == 0) {
+      resultList = mapper.selectEmployeeWorkloadListByMonth(query);
+    } else {
+      resultList = mapper.selectEmployeeWorkloadListByYear(query);
+    }
+    if (StringHelper.isNotEmpty(resultList)) {
+      resultList.forEach(
+          vo -> {
+            // 奖金系数
+            BigDecimal bonusCoefficient = vo.getBonusCoefficient();
+            // 补入工作量
+            BigDecimal supplementWorkload = vo.getSupplementWorkload();
+            // 实收工作量
+            BigDecimal actualWorkload = vo.getActualWorkload();
+            // 退费工作量
+            BigDecimal refundWorkload = vo.getRefundWorkload();
+            // 加工费
+            BigDecimal processingFee = vo.getProcessingFee();
+            // 大额材料费
+            BigDecimal largeMaterialCost = vo.getLargeMaterialCost();
+            // 基础工作量
+            BigDecimal baseWorkload = vo.getBaseWorkload();
+            // 已收工作量
+            BigDecimal receivedWorkload = vo.getReceivedWorkload();
+            BigDecimal actualBonusBase =
+                actualWorkload
+                    .add(supplementWorkload)
+                    .subtract(refundWorkload)
+                    .subtract(processingFee)
+                    .subtract(largeMaterialCost)
+                    .subtract(baseWorkload);
+            vo.setActualBonusBase(actualBonusBase);
+            vo.setActualBonus(actualBonusBase.multiply(bonusCoefficient));
+            BigDecimal receivedBonusBase =
+                receivedWorkload
+                    .add(supplementWorkload)
+                    .subtract(refundWorkload)
+                    .subtract(processingFee)
+                    .subtract(largeMaterialCost)
+                    .subtract(baseWorkload);
+            vo.setReceivedBonusBase(receivedBonusBase);
+            vo.setReceivedBonus(receivedBonusBase.multiply(bonusCoefficient));
+          });
+    }
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出员工工作量列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportEmployeeWorkloadList(HttpServletResponse response, EmployeeWorkloadQuery query)
+      throws IOException {
+    PageInfo<EmployeeWorkloadVO> workloadList = findEmployeeWorkloadList(query);
+    List<EmployeeWorkloadVO> resultList = workloadList.getList();
+    ExcelUtil<EmployeeWorkloadVO> excelUtil = new ExcelUtil<>(EmployeeWorkloadVO.class);
+    excelUtil.exportExcel(response, resultList, "应收账款余额表");
   }
 
   /**
@@ -96,6 +157,6 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       throws IOException {
     List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
-    excelUtil.exportExcel(response, list, "分类收入汇总列表");
+    excelUtil.exportExcel(response, list, "员工工作量统计");
   }
 }

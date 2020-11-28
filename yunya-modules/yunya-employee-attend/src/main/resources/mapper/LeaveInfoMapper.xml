@@ -212,4 +212,55 @@
     ORDER BY
 	als.approval_priority
     </select>
+
+    <select id="findApprovalByMe" resultType="com.yunya.feign.employee_attend.vo.LeaveAppVO">
+    SELECT
+    a.id,
+    a.userId,
+    a.vacationName,
+    a.crtTime,
+    a.startTime,
+    a.endTime,
+    a.leaveTime,
+    a.approvalStatus from
+    (SELECT
+    li.id AS id,
+    li.user_id AS userId,
+    vs.vacation_name AS vacationName,
+    li.crt_time AS crtTime,
+    li.start_time AS startTime,
+    li.end_time AS endTime,
+    TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time) AS leaveTime,
+    ai.approval_status AS approvalStatus,
+	MAX(als.approval_priority),
+	ap.user_id AS uid
+    FROM
+	leave_info li
+    LEFT JOIN approval_info ai ON ai.leave_id = li.id
+    LEFT JOIN approval_people ap on ai.approval_people_id = ap.id
+    LEFT JOIN approval_level_set als on ap.approval_level_id = als.id
+    LEFT JOIN vacation_set vs on li.vacation_id = vs.id
+    where ai.approval_status = 0
+    group BY ai.leave_id) a
+    where a.uid = #{userId}
+    </select>
+    <select id="findOverApprovalByMe" resultType="com.yunya.feign.employee_attend.vo.LeaveAppVO">
+    SELECT
+    li.id AS id,
+    li.user_id AS userId,
+    vs.vacation_name AS vacationName,
+    li.crt_time AS crtTime,
+    li.start_time AS startTime,
+    li.end_time AS endTime,
+    TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time) AS leaveTime,
+    ai.approval_status AS approvalStatus
+    FROM
+	leave_info li
+    LEFT JOIN approval_info ai ON ai.leave_id = li.id
+    LEFT JOIN approval_people ap on ai.approval_people_id = ap.id
+    LEFT JOIN approval_level_set als on ap.approval_level_id = als.id
+    LEFT JOIN vacation_set vs on li.vacation_id = vs.id
+    where ai.approval_status in (2,1)
+    and ap.user_id = #{userId} group BY ai.leave_id
+    </select>
 </mapper>
