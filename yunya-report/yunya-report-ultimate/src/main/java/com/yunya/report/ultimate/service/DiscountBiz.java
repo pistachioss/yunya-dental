@@ -49,6 +49,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -259,7 +260,8 @@ public class DiscountBiz {
 	public void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
 		response.setContentType("application/vnd.ms-excel");
 		response.setCharacterEncoding("utf-8");
-		response.setHeader("Content-disposition", "attachment;filename=" + fileName + ".xlsx");
+		String encodeFileName = URLEncoder.encode(fileName, "UTF-8");
+		response.setHeader("Content-disposition", "attachment;filename=" + encodeFileName + ".xlsx");
 	}
 
 	public String getCouponName(Integer couponId) {
