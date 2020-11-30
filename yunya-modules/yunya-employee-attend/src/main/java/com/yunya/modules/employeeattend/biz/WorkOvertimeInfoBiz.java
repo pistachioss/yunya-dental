@@ -1,5 +1,8 @@
 package com.yunya.modules.employeeattend.biz;
 
+import com.github.pagehelper.PageHelper;
+import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
+import com.yunya.feign.employee_attend.vo.AttendanceWorkOvertimeMinuteVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
 import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
@@ -12,13 +15,11 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
-
 import com.yunya.modules.employeeattend.form.NoWorkByDateForm;
 import com.yunya.modules.employeeattend.form.NoWorkForm;
 import com.yunya.modules.employeeattend.form.WorkForm;
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
 import com.yunya.modules.employeeattend.mapper.*;
-import com.yunya.modules.employeeattend.vo.EmListVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
 
 /**
  * 简介:
@@ -147,7 +147,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                             workOvertimeInfo.setCrtTime(new Date());
                             int num = mapper.insertSelective(workOvertimeInfo);
                             //生成抄送信息
-                            if (workOvertimeInfoForm.getCopyList().size() > 0) {
+                            if (workOvertimeInfoForm.getCopyList()!=null) {
                                 List<CopyInfo> copyInfoList = new ArrayList<>();
                                 for (Integer copyId : workOvertimeInfoForm.getCopyList()) {
                                     CopyInfo copyInfo = new CopyInfo();
@@ -212,14 +212,31 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         WorkOvertimeInfo workOvertimeInfo = new WorkOvertimeInfo();
         workOvertimeInfo.setId(workOvertimeInfoForm.getId());
         workOvertimeInfo = mapper.selectByPrimaryKey(workOvertimeInfo);
-        if (workOvertimeInfo.getApprpvalStatus() == 0) {
-            if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
-                workOvertimeInfo.setApprpvalStatus(workOvertimeInfoForm.getApprpvalStatus());
-                return mapper.updateByPrimaryKey(workOvertimeInfo);
-            }
-            throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String dateString = simpleDateFormat.format(workOvertimeInfo.getWorkDate());
+        String nowString = simpleDateFormat.format(new Date());
+        Date date = null;
+        Date now = new Date();
+        try {
+            date = simpleDateFormat.parse(dateString);
+            now = simpleDateFormat.parse(nowString);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
-        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+        //必须提前一天申请或审批
+        if (now.before(date)) {
+
+            if (workOvertimeInfo.getApprpvalStatus() == 0) {
+                if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                    workOvertimeInfo.setApprpvalStatus(workOvertimeInfoForm.getApprpvalStatus());
+                    return mapper.updateByPrimaryKey(workOvertimeInfo);
+                }
+                throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
+            }
+            throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+        }
+        throw new ClientServiceException("当前申请已过期", OBJECT_EDIT_FAIL);
     }
 
     /**
@@ -280,5 +297,24 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
             vo.setCompanyName(clinicMap.get(vo.getCompanyId()+"").getName());
         }
         return list;
+    }
+
+    /**
+     * 分页条件查询
+     * @param queryForm 查询参数
+     * @return
+     */
+    public List<WorkOvertimeInfoVO> findWorkOvertimeInfoList(WorkOvertimeInfoQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
+        }
+        return mapper.findWorkOvertimeInfoList(queryForm);
+    }
+
+    public List<AttendanceWorkOvertimeMinuteVO> statisticsWorkOvertimesByMinute(WorkOvertimeInfoQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
+        }
+        return mapper.statisticsWorkOvertimesByMinute(queryForm);
     }
 }

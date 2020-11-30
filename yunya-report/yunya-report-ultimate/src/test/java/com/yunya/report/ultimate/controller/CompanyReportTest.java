@@ -1,9 +1,11 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
+import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
@@ -25,6 +27,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class CompanyReportTest {
   @Autowired private CompanyReportOfDataRecordController companyReportOfDataRecordController;
 
+  @Autowired private CompanyReportOfPersonnelController personnelController;
+
   @Test
   public void findTreatList() {
     TreatmentRecordQuery query = new TreatmentRecordQuery();
@@ -41,5 +45,19 @@ public class CompanyReportTest {
     ResponseResult<PageInfo<BillOfOrderRecordVO>> result =
         companyReportOfDataRecordController.findBillRecordOfOrderList(query);
     System.out.println(result);
+  }
+
+  /** 员工实收工作量明细列表 */
+  @Test
+  public void findEmpWorkload() {
+    EmployeePersonalActualWorkloadDetailQuery query =
+        new EmployeePersonalActualWorkloadDetailQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 0);
+    query.setQueryDate("2020-10");
+    query.setEmployeeId(521);
+    ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>> list =
+        personnelController.findEmployeePersonalActualWorkloadDetailList(query);
+    System.out.println(list);
   }
 }

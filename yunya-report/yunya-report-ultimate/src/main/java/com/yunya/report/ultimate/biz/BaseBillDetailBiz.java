@@ -4,9 +4,11 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
 import com.yunya.feign.report.domain.query.BillDetailIncomeDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.vo.BillTariffIncomeDetailVO;
 import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
+import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
 import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
@@ -158,5 +160,38 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<CategoryInfoIncomeVO> list = mapper.selectCategoryIncomeList(query);
     ExcelUtil<CategoryInfoIncomeVO> excelUtil = new ExcelUtil<>(CategoryInfoIncomeVO.class);
     excelUtil.exportExcel(response, list, "员工工作量统计");
+  }
+
+  /**
+   * 根据条件查询员工个人实收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeePersonalActualWorkloadDetailVO>
+   */
+  public PageInfo<EmployeePersonalActualWorkloadDetailVO>
+      findEmployeePersonalActualWorkloadDetailList(
+          EmployeePersonalActualWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeePersonalActualWorkloadDetailVO> resultList =
+        mapper.selectEmployeePersonalActualWorkloadDetailList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出员工个人实收工作量明细列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportEmployeePersonalActualWorkloadDetailList(
+      HttpServletResponse response, EmployeePersonalActualWorkloadDetailQuery query)
+      throws IOException {
+    List<EmployeePersonalActualWorkloadDetailVO> resultList =
+        mapper.selectEmployeePersonalActualWorkloadDetailList(query);
+    ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
+    excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表");
   }
 }

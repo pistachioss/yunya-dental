@@ -40,9 +40,9 @@ public class AttendanceStatisticsVO implements Serializable {
     @ApiModelProperty(value = "门诊")
     private String orgName;
 
-    /** 出勤次数/出勤天数 */
+    /** 出勤天数 */
     @Excel(name = "出勤天数")
-    @ApiModelProperty(value = "出勤次数/出勤天数")
+    @ApiModelProperty(value = "出勤天数")
     private Integer attendanceNum;
 
     /** 是否满勤：false=否,true=是 */

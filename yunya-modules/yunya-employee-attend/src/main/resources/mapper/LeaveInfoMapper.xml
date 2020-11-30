@@ -33,8 +33,8 @@
         t.user_id as userId,
         t.company_id as orgId,
         t.vacation_id as vacationId,
-        t.start_time as startTime,
-        t.end_time as endTime,
+        ls.start_time as startTime,
+        ls.end_time as endTime,
         t.leave_reason as leaveReason,
         t.leave_picture as leavePicture,
         t.approval_criteria_id as approvalCriteriaId,
@@ -64,8 +64,8 @@
         t.id,
         t.user_id as userId,
         t.vacation_id as vacationId,
-        t.start_time as startTime,
-        t.end_time as endTime,
+        ls.start_time as startTime,
+        ls.end_time as endTime,
         t.leave_reason as leaveReason,
         t.leave_picture as leavePicture,
         t.approval_criteria_id as approvalCriteriaId,
@@ -135,7 +135,8 @@
     <select id="selectApprovalByDay" resultMap="AlResultMap">
         select als.* from approval_criteria ac
         left JOIN approval_level_set als on als.approval_criteria_id = ac.id
-        where ac.start_day &lt; TIMESTAMPDIFF(day,#{startTime},#{endTime})  and IFNULL(ac.end_day,9999)>=TIMESTAMPDIFF(day,#{startTime},#{endTime})
+        where ac.start_day &lt; IF(TIMESTAMPDIFF(day,#{startTime},#{endTime})=0,1,TIMESTAMPDIFF(day,#{startTime},#{endTime}))
+        and IFNULL(ac.end_day,9999)>=TIMESTAMPDIFF(day,#{startTime},#{endTime})
     </select>
 
     <select id="countByDay" resultType="Integer">
@@ -183,9 +184,12 @@
         t.leave_picture as leavePicture,
         t.approval_criteria_id as approvalCriteriaId,
         t.apprpval_status as apprpvalStatus,
-        t.crt_time as crtTime
+        t.crt_time as crtTime,
+        IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)), TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))
+        AS leaveTime
         from leave_info t
         LEFT join vacation_set vs on t.vacation_id = vs.id
+        LEFT JOIN leave_schedule ls on ls.leave_id = t.id
         <where>
             <if test="id!= null">
                 and t.id = #{id}
@@ -194,6 +198,7 @@
                 and t.user_id = #{userId}
             </if>
         </where>
+        GROUP BY t.id
         order by t.crt_time desc
     </select>
     <select id="findApproval" resultType="com.yunya.feign.employee_attend.vo.ApprovalInfoVO">

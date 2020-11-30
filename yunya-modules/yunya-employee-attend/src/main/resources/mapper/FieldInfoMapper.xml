@@ -98,7 +98,9 @@
         t.apprpval_status as apprpvalStatus
         from field_info t
         <where>
-            t.apprpval_status = 1
+            <if test="queryForm.apprpvalStatus!=null">
+                and t.apprpval_status = #{queryForm.apprpvalStatus}
+            </if>
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
             </if>

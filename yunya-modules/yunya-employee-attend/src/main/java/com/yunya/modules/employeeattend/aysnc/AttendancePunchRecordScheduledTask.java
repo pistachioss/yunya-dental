@@ -5,6 +5,9 @@ import com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO;
 import com.yunya.feign.employee_attend.vo.FieldInfoVO;
 import com.yunya.feign.employee_attend.vo.LeaveInfoVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.form.SysUserEmployeeModel;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
 import com.yunya.modules.employeeattend.biz.*;
@@ -21,9 +24,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 简介：定时任务：考勤打卡生成今天待打卡记录模板数据，当该服务集群部署需要加分布式锁
@@ -52,10 +54,12 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
     private static final String FIELD = "5";
     /** 按天请假 */
     private static final Integer USEDAY = 1;
-    private static final String START_TIME = "08:00";
-    private static final String END_TIME = "18:00";
+
     /** 注入日志对象 */
     private final Logger logger = LoggerFactory.getLogger(AttendancePunchRecordScheduledTask.class);
+    /** 注入对象 */
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     /** 注入对象 */
     @Autowired
     private AttendancePunchRecordBiz attendancePunchRecordBiz;
@@ -85,61 +89,27 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
             queryForm.setPunchDate(now);
             List<AttendancePunchRecordVO> attendancePunchRecordVOS = attendancePunchRecordBiz.findAttendancePunchRecordList(queryForm);
-            if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
-                return;
-            }
-            /*SysUserEmployeeModel model = new SysUserEmployeeModel();
-            model.setWorkStatus(new Byte[]{0, 1, 3});
-            List<SysUserInfoDetail> userList = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
             List<Integer> userIds = new ArrayList<>();
-            userList.forEach(user->{
-                Integer userId = user.getUserId();
-                if (userIds.contains(userId)) {
-                    userIds.add(userId);
-                }
-            });*/
-
-            //当天班次列表
-            EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
-            employeeScheduleQueryForm.setWorkDate(now);
-            List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(employeeScheduleQueryForm);
-            Map<Integer, EmployeeScheduleVO> employeeScheduleMap = new HashMap<>();
-            Map<Integer, List<EmployeeScheduleVO>> restItemMap = new LinkedHashMap<>();
-            Map<Integer, List<EmployeeScheduleVO>> punchItemMap = new LinkedHashMap<>();
-            employeeScheduleVOS.forEach(employeeScheduleVO -> {
-                Integer userId = employeeScheduleVO.getEmployeeId();
-                if (employeeScheduleVO.getSecondEndTime() != null) {
-                    employeeScheduleVO.setFirstEndTime(employeeScheduleVO.getSecondEndTime());
-                }
-                if (WORK.equals(employeeScheduleVO.getType())) {
-                    employeeScheduleVO.setType(ONDUTY);
-                    List<EmployeeScheduleVO> list = punchItemMap.get(userId);
-                    if (list == null) {
-                        list = new ArrayList<>();
+            if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
+                SysUserEmployeeModel model = new SysUserEmployeeModel();
+                model.setWorkStatus(new Byte[]{0, 1, 3});
+                model.setWhetherPage(false);
+                List<SysUserInfoDetail> userList = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+                userList.forEach(user->{
+                    Integer userId = user.getUserId();
+                    if (!userIds.contains(userId)) {
+                        userIds.add(userId);
                     }
-                    list.add(employeeScheduleVO);
-                    punchItemMap.put(userId, list);
-                } else {
-                    employeeScheduleVO.setType(REST);
-                    List<EmployeeScheduleVO> list = restItemMap.get(userId);
-                    if (list == null) {
-                        list = new ArrayList<>();
-                    }
-                    list.add(employeeScheduleVO);
-                    restItemMap.put(userId, list);
+                });
+                attendancePunchRecordVOS.forEach(attendancePunchRecordVO -> {
+                    Integer userId = attendancePunchRecordVO.getUserId();
+                    userIds.remove(userId);
+                });
+                if (userIds.isEmpty()) {
+                    return;
                 }
-                employeeScheduleMap.put(employeeScheduleVO.getId(), employeeScheduleVO);
-            });
-
-            //当天请假列表追加
-            Map<Integer, List<Object>> leaveByDays = appendLeaveList(punchItemMap, restItemMap);
-            //当天加班列表追加
-            appendWorkOvertimeList(punchItemMap, employeeScheduleMap);
-            //当天外勤列表追加
-            appendFieldList(punchItemMap);
-            if (!punchItemMap.isEmpty() || !restItemMap.isEmpty() || !leaveByDays.isEmpty()) {
-                insertDefaultPunchRecord(punchItemMap, restItemMap, leaveByDays);
             }
+            produceAttendancePunchTemplateData(userIds);
         } catch (Exception e) {
             logger.error("<======AttendancePunchRecordScheduledTask Error: {}=======>",e);
         } finally {
@@ -147,15 +117,63 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
         }
     }
 
+    public void produceAttendancePunchTemplateData(List<Integer> userIds) {
+        Date now = new Date(System.currentTimeMillis());
+        //当天班次列表
+        EmployeeScheduleQueryForm employeeScheduleQueryForm = new EmployeeScheduleQueryForm();
+        employeeScheduleQueryForm.setWorkDate(now);
+        employeeScheduleQueryForm.setUserIds(userIds);
+        List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(employeeScheduleQueryForm);
+        Map<Integer, EmployeeScheduleVO> employeeScheduleMap = new HashMap<>();
+        Map<Integer, List<EmployeeScheduleVO>> restItemMap = new LinkedHashMap<>();
+        Map<Integer, List<EmployeeScheduleVO>> punchItemMap = new LinkedHashMap<>();
+        employeeScheduleVOS.forEach(employeeScheduleVO -> {
+            Integer userId = employeeScheduleVO.getEmployeeId();
+            if (employeeScheduleVO.getSecondEndTime() != null) {
+                employeeScheduleVO.setFirstEndTime(employeeScheduleVO.getSecondEndTime());
+            }
+            if (WORK.equals(employeeScheduleVO.getType())) {
+                employeeScheduleVO.setType(ONDUTY);
+                List<EmployeeScheduleVO> list = punchItemMap.get(userId);
+                if (list == null) {
+                    list = new ArrayList<>();
+                }
+                list.add(employeeScheduleVO);
+                punchItemMap.put(userId, list);
+            } else {
+                employeeScheduleVO.setType(REST);
+                List<EmployeeScheduleVO> list = restItemMap.get(userId);
+                if (list == null) {
+                    list = new ArrayList<>();
+                }
+                list.add(employeeScheduleVO);
+                restItemMap.put(userId, list);
+            }
+            employeeScheduleMap.put(employeeScheduleVO.getId(), employeeScheduleVO);
+        });
+
+        //当天请假列表追加
+        Map<Integer, List<Object>> leaveByDays = appendLeaveList(userIds, punchItemMap, restItemMap);
+        //当天加班列表追加
+        appendWorkOvertimeList(userIds, punchItemMap, employeeScheduleMap);
+        //当天外勤列表追加
+        appendFieldList(userIds, punchItemMap);
+        if (!punchItemMap.isEmpty() || !restItemMap.isEmpty() || !leaveByDays.isEmpty()) {
+            insertDefaultPunchRecord(punchItemMap, restItemMap, leaveByDays);
+        }
+    }
+
     /**
      * 追加请假列表
+     *
+     * @param userIds
      * @param punchItemMap
      * @param restItemMap
      * @return
      */
-    private Map<Integer, List<Object>> appendLeaveList(Map<Integer, List<EmployeeScheduleVO>> punchItemMap, Map<Integer, List<EmployeeScheduleVO>> restItemMap) {
+    private Map<Integer, List<Object>> appendLeaveList(List<Integer> userIds, Map<Integer, List<EmployeeScheduleVO>> punchItemMap, Map<Integer, List<EmployeeScheduleVO>> restItemMap) {
         Map<Integer, List<Object>> leaveByDays = new HashMap<>(5);
-        List<LeaveInfoVO> leaveInfoVOS = leaveInfoBiz.findLeaveInfosByUserIdsAndDate(null, new Date(System.currentTimeMillis()));
+        List<LeaveInfoVO> leaveInfoVOS = leaveInfoBiz.findLeaveInfosByUserIdsAndDate(userIds, new Date(System.currentTimeMillis()));
         leaveInfoVOS.forEach(leaveInfoVO -> {
             Integer userId = leaveInfoVO.getUserId();
             List<EmployeeScheduleVO> list = punchItemMap.get(userId);
@@ -208,6 +226,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                             punchItem.setEmployeeId(userId);
                             punchItem.setClinicId(leaveInfoVO.getOrgId());
                             punchItem.setName("按班次请假");
+                            list.add(punchItem);
                             restItemMap.put(userId, list);
                         } else {
                             if (startTime.compareTo(firstTime) == 0 && endTime.before(lastTime)) {
@@ -229,11 +248,12 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
 
     /**
      * 追加加班列表
+     * @param userIds
      * @param punchItemMap
      * @param employeeScheduleVOMap
      */
-    private void appendWorkOvertimeList(Map<Integer, List<EmployeeScheduleVO>> punchItemMap, Map<Integer, EmployeeScheduleVO> employeeScheduleVOMap) {
-        List<WorkOvertimeInfoVO> workOvertimeInfoVOS = workOvertimeInfoBiz.findWorkOvertimeInfosByUserIdsAndDate(null, new Date(System.currentTimeMillis()));
+    private void appendWorkOvertimeList(List<Integer> userIds, Map<Integer, List<EmployeeScheduleVO>> punchItemMap, Map<Integer, EmployeeScheduleVO> employeeScheduleVOMap) {
+        List<WorkOvertimeInfoVO> workOvertimeInfoVOS = workOvertimeInfoBiz.findWorkOvertimeInfosByUserIdsAndDate(userIds, new Date(System.currentTimeMillis()));
         workOvertimeInfoVOS.forEach(workOvertimeInfoVO -> {
             Integer userId = workOvertimeInfoVO.getUserId();
             List<EmployeeScheduleVO> list = punchItemMap.get(userId);
@@ -291,10 +311,11 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
 
     /**
      * 追加外勤列表
+     * @param userIds
      * @param punchItemMap
      */
-    private void appendFieldList(Map<Integer, List<EmployeeScheduleVO>> punchItemMap) {
-        List<FieldInfoVO> fieldInfoVOS = fieldInfoBiz.findFieldInfosByUserIdAndDate(null, new Date(System.currentTimeMillis()));
+    private void appendFieldList(List<Integer> userIds, Map<Integer, List<EmployeeScheduleVO>> punchItemMap) {
+        List<FieldInfoVO> fieldInfoVOS = fieldInfoBiz.findFieldInfosByUserIdAndDate(userIds, new Date(System.currentTimeMillis()));
         fieldInfoVOS.forEach(fieldInfoVO -> {
             Integer userId = fieldInfoVO.getUserId();
             List<EmployeeScheduleVO> list = punchItemMap.get(userId);
@@ -304,17 +325,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             Date startTime = DateUtil.dateTo19700101(fieldInfoVO.getStartTime());
             Date endTime = DateUtil.dateTo19700101(fieldInfoVO.getEndTime());
             List<EmployeeScheduleVO> punchItemList = new ArrayList<>();
-            if (list.isEmpty()) {
-                EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
-                punchItem.setType(FIELD);
-                punchItem.setFirstStartTime(startTime);
-                punchItem.setFirstEndTime(endTime);
-                punchItem.setId(fieldInfoVO.getId());
-                punchItem.setEmployeeId(userId);
-                punchItem.setName("外勤");
-                punchItem.setClinicId(fieldInfoVO.getCompanyId());
-                punchItemList.add(punchItem);
-            } else {
+            if (!list.isEmpty()) {
                 for (EmployeeScheduleVO scheduleVO : list) {
                     Date firstTime = scheduleVO.getFirstStartTime();
                     Date lastTime = scheduleVO.getFirstEndTime();
@@ -373,21 +384,9 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
         byte unvalid = AttendanceStatusEnum.UNVALID_PUNCH.getCode();
         for (Map.Entry<Integer, List<EmployeeScheduleVO>> entry : punchItemMap.entrySet()) {
             Integer userId = entry.getKey();
-            restItemMap.remove(userId);
             List<EmployeeScheduleVO> list = entry.getValue();
-            if (list.size() == 1) {//一分为二
-                EmployeeScheduleVO employeeScheduleVO = list.get(0);
-                AttendancePunchRecord attendancePunchRecord = createRecord(employeeScheduleVO, now, userId, unvalid, (byte)0);
-                attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                attendancePunchRecord = createRecord(employeeScheduleVO, now, userId, unvalid, (byte)1);
-                attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-            } else if (list.size() > 1) {//取首尾
-                EmployeeScheduleVO firstItem = list.get(0);
-                AttendancePunchRecord attendancePunchRecord = createRecord(firstItem, now, userId, unvalid, (byte)0);
-                attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                EmployeeScheduleVO lastItem = list.get(list.size()-1);
-                attendancePunchRecord = createRecord(lastItem, now, userId, unvalid, (byte)1);
-                attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
+            if (list.size() > 0) {//取首尾
+                restItemMap.remove(userId);
             }
         }
 
@@ -408,71 +407,58 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 }
                 for (EmployeeScheduleVO employeeScheduleVO : list) {
                     EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
-                    punchItem.setType(LEAVE_BYDAY);
+                    punchItem.setType(LEAVE_BYSCHEDULE);
                     punchItem.setFirstStartTime(employeeScheduleVO.getFirstStartTime());
                     punchItem.setFirstEndTime(employeeScheduleVO.getFirstEndTime());
                     punchItem.setId(id);
                     punchItem.setEmployeeId(userId);
                     punchItem.setClinicId(employeeScheduleVO.getClinicId());
-                    punchItem.setName("按天请假");
+                    punchItem.setName("按班次请假");
                     employeeScheduleVOS.add(punchItem);
                     leaveByDays.put(userId, employeeScheduleVOS);
                 }
             } else {
-                if (list.size() == 1) {//一分为二
-                    EmployeeScheduleVO employeeScheduleVO = list.get(0);
-                    AttendancePunchRecord attendancePunchRecord = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 0);
-                    attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                    attendancePunchRecord = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 1);
-                    attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                } else if (list.size() > 1) {//取首尾
-                    EmployeeScheduleVO firstItem = list.get(0);
-                    AttendancePunchRecord attendancePunchRecord = createRecord(firstItem, now, userId, unvalid, (byte) 0);
-                    attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                    EmployeeScheduleVO lastItem = list.get(list.size() - 1);
-                    attendancePunchRecord = createRecord(lastItem, now, userId, unvalid, (byte) 1);
-                    attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
+                List<EmployeeScheduleVO> punchItems = punchItemMap.get(userId);
+                if (punchItems == null) {
+                    punchItems = new ArrayList<>();
+                }
+                punchItems.addAll(list);
+                punchItemMap.put(userId, punchItems);
+            }
+        }
+
+        for (Map.Entry<Integer, List<Object>> entry : leaveByDays.entrySet()) {
+            Integer userId = entry.getKey();
+            List<Object> list = entry.getValue();
+            List<EmployeeScheduleVO> punchItems = punchItemMap.get(userId);
+            if (punchItems == null) {
+                punchItems = new ArrayList<>();
+            }
+            for (Object obj : list) {
+                if (obj instanceof EmployeeScheduleVO) {
+                    punchItems.add((EmployeeScheduleVO) obj);
                 }
             }
         }
 
-        if (!leaveByDays.isEmpty()) {
-            for (Map.Entry<Integer, List<Object>> entry : leaveByDays.entrySet()) {
-                Integer userId = entry.getKey();
-                List<Object> list = entry.getValue();
-                list.stream().sorted((o1, o2)->{
-                    EmployeeScheduleVO evo1 = (EmployeeScheduleVO) o1;
-                    EmployeeScheduleVO evo2 = (EmployeeScheduleVO) o2;
-                    return evo1.getFirstStartTime().compareTo(evo2.getFirstStartTime());
-                });
-                if (list.size() == 1) {//一分为二
-                    Object obj = list.get(0);
-                    if (obj instanceof Integer) {
-                        continue;
-                    }
-                    EmployeeScheduleVO employeeScheduleVO = (EmployeeScheduleVO)obj;
-                    AttendancePunchRecord attendancePunchRecord = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 0);
-                    attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                    attendancePunchRecord = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 1);
-                    attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                } else if (list.size() > 1) {//取首尾
-                    Object obj = list.get(0);
-                    if (obj instanceof Integer) {
-                        continue;
-                    }
-                    EmployeeScheduleVO firstItem = (EmployeeScheduleVO) obj;
-                    AttendancePunchRecord attendancePunchRecord = createRecord(firstItem, now, userId, unvalid, (byte) 0);
-                    attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                    obj = list.get(list.size() - 1);
-                    if (obj instanceof Integer) {
-                        continue;
-                    }
-                    EmployeeScheduleVO lastItem = (EmployeeScheduleVO) obj;
-                    attendancePunchRecord = createRecord(lastItem, now, userId, unvalid, (byte) 1);
-                    attendancePunchRecordBiz.insertSelective(attendancePunchRecord);
-                }
+        punchItemMap.forEach((userId, employeeScheduleVOS)->{
+            employeeScheduleVOS = employeeScheduleVOS.stream().sorted(Comparator.comparing(EmployeeScheduleVO::getFirstStartTime)).collect(Collectors.toList());
+            int index = employeeScheduleVOS.size()-1;
+            if (index == 0) {
+                EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOS.get(0);
+                AttendancePunchRecord firstItem = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 0);
+                attendancePunchRecordBiz.insertSelective(firstItem);
+                AttendancePunchRecord lastItem = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 1);
+                attendancePunchRecordBiz.insertSelective(lastItem);
+            } else if (index > 0) {
+                EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOS.get(0);
+                AttendancePunchRecord firstItem = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 0);
+                attendancePunchRecordBiz.insertSelective(firstItem);
+                EmployeeScheduleVO lastEmployeeScheduleVO = employeeScheduleVOS.get(index);
+                AttendancePunchRecord lastItem = createRecord(lastEmployeeScheduleVO, now, userId, unvalid, (byte) 0);
+                attendancePunchRecordBiz.insertSelective(lastItem);
             }
-        }
+        });
     }
 
     /**
