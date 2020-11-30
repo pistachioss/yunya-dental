@@ -212,14 +212,31 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         WorkOvertimeInfo workOvertimeInfo = new WorkOvertimeInfo();
         workOvertimeInfo.setId(workOvertimeInfoForm.getId());
         workOvertimeInfo = mapper.selectByPrimaryKey(workOvertimeInfo);
-        if (workOvertimeInfo.getApprpvalStatus() == 0) {
-            if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
-                workOvertimeInfo.setApprpvalStatus(workOvertimeInfoForm.getApprpvalStatus());
-                return mapper.updateByPrimaryKey(workOvertimeInfo);
-            }
-            throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String dateString = simpleDateFormat.format(workOvertimeInfo.getWorkDate());
+        String nowString = simpleDateFormat.format(new Date());
+        Date date = null;
+        Date now = new Date();
+        try {
+            date = simpleDateFormat.parse(dateString);
+            now = simpleDateFormat.parse(nowString);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
-        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+        //必须提前一天申请或审批
+        if (now.before(date)) {
+
+            if (workOvertimeInfo.getApprpvalStatus() == 0) {
+                if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
+                    workOvertimeInfo.setApprpvalStatus(workOvertimeInfoForm.getApprpvalStatus());
+                    return mapper.updateByPrimaryKey(workOvertimeInfo);
+                }
+                throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
+            }
+            throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+        }
+        throw new ClientServiceException("当前申请已过期", OBJECT_EDIT_FAIL);
     }
 
     /**
