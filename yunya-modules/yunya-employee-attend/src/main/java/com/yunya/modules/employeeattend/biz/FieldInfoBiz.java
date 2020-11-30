@@ -158,7 +158,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         fieldInfo.setCrtTime(new Date());
                         int num = mapper.insertSelective(fieldInfo);
                         //生成抄送信息
-                        if (fieldInfoForm.getCopyList().size()>0){
+                        if (fieldInfoForm.getCopyList()!=null){
                             List<CopyInfo>copyInfoList = new ArrayList<>();
                             for(Integer copyId:fieldInfoForm.getCopyList()){
                                 CopyInfo copyInfo = new CopyInfo();
