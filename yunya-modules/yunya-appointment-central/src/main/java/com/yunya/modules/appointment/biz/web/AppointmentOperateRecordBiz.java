@@ -221,7 +221,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             BeanUtils.copyProperties(record,clinicDeviceRecord);
             clinicDeviceRecord.setBeforeOperation("");
             if (null != afterModifyDeviceItemtInfo) {
-                clinicDeviceRecord.setAfterOperation(afterModifyDeviceItemtInfo.getName());
+                clinicDeviceRecord.setAfterOperation(afterModifyDeviceItemtInfo.getNumber());
             }
             clinicDeviceRecord.setOperateItem("预约设备");
             operateRecords.add(clinicDeviceRecord);
@@ -230,7 +230,7 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             AppointmentOperateRecord clinicDeviceRecord = new AppointmentOperateRecord();
             BeanUtils.copyProperties(record,clinicDeviceRecord);
             if (null != beforeModifyDeviceItemInfo) {
-                clinicDeviceRecord.setBeforeOperation(beforeModifyDeviceItemInfo.getName());
+                clinicDeviceRecord.setBeforeOperation(beforeModifyDeviceItemInfo.getNumber());
             }
             clinicDeviceRecord.setAfterOperation("");
             clinicDeviceRecord.setOperateItem("预约设备");
@@ -241,10 +241,10 @@ public class AppointmentOperateRecordBiz extends BaseBiz<AppointmentOperateRecor
             AppointmentOperateRecord clinicDeviceRecord = new AppointmentOperateRecord();
             BeanUtils.copyProperties(record,clinicDeviceRecord);
             if (null != beforeModifyDeviceItemInfo) {
-                clinicDeviceRecord.setBeforeOperation(beforeModifyDeviceItemInfo.getName());
+                clinicDeviceRecord.setBeforeOperation(beforeModifyDeviceItemInfo.getNumber());
             }
             if (null != afterModifyDeviceItemtInfo) {
-                clinicDeviceRecord.setAfterOperation(afterModifyDeviceItemtInfo.getName());
+                clinicDeviceRecord.setAfterOperation(afterModifyDeviceItemtInfo.getNumber());
             }
             clinicDeviceRecord.setOperateItem("预约设备");
             operateRecords.add(clinicDeviceRecord);

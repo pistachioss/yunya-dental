@@ -7,6 +7,7 @@ import com.yunya.feign.discount.domain.model.AuthDiscountBenefitModel;
 import com.yunya.feign.discount.domain.model.AuthItemBenefitModel;
 import com.yunya.feign.discount.domain.model.PatientOrderBenefitModel;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
+import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
 import com.yunya.feign.discount.domain.vo.PatientItemBenefitVo;
 import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -26,6 +27,7 @@ import com.yunya.feign.treatment.domain.model.TollModel;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -468,6 +470,7 @@ public class TollBiz {
     if (null != benefitVo) {
       OrderDetail orderDetail = new OrderDetail();
       orderDetail.setOrderRecordId(orderRecordId);
+      orderDetail.setInservice(true);
       List<OrderDetail> orderDetails = orderDetailBiz.selectList(orderDetail);
       List<PatientItemBenefitVo> benefitVos = benefitVo.getItemList();
       if (StringHelper.isNotEmpty(benefitVos)) {
@@ -781,19 +784,31 @@ public class TollBiz {
         }
         break;
       case 2:
-        Integer warrantId = accreditDiscountModel.getWarrantId();
-        SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
-        if (null != employee) {
-          if (!employee.getDiscount()) {
-            throw new ClientServiceException("您当前选择的授权人不具备授权折扣权限！", PARAMETERS_IS_ILLEGAL);
-          }
-          List<AccreditDiscountDetailModel> discountDetailModels =
-              accreditDiscountModel.getAccreditDiscountDetailModels();
-          if (StringHelper.isEmpty(discountDetailModels)) {
-            throw new ClientServiceException("授权折扣订单列表不能为空！", PARAMETERS_IS_ILLEGAL);
+        if (accreditDiscountModel != null) {
+          Integer warrantId = accreditDiscountModel.getWarrantId();
+          SysEmployee employee = systemServiceFeign.findSysEmployeeById(warrantId);
+          if (null != employee) {
+            if (!employee.getDiscount()) {
+              throw new ClientServiceException("您当前选择的授权人不具备授权折扣权限！", PARAMETERS_IS_ILLEGAL);
+            }
+            List<AccreditDiscountDetailModel> discountDetailModels =
+                    accreditDiscountModel.getAccreditDiscountDetailModels();
+            if (StringHelper.isEmpty(discountDetailModels)) {
+              throw new ClientServiceException("授权折扣订单列表不能为空！", PARAMETERS_IS_ILLEGAL);
+            }
+          } else {
+            throw new ClientServiceException("授权人不存在！", PARAMETERS_IS_ILLEGAL);
           }
         } else {
-          throw new ClientServiceException("授权人不存在！", PARAMETERS_IS_ILLEGAL);
+          log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓校验优惠参数↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+          log.info("==> [class]:com.yunya.modules.treatment.biz.TollBiz");
+          log.info("==> [method]: private void checkPrivilegeParam(Byte discountType," +
+                  "GeneralDiscountModel generalDiscountModel, " +
+                  "AccreditDiscountModel accreditDiscountModel)");
+          log.info("==> [params]:discountType={},generalDiscountModel={},accreditDiscountModel{}",
+                  discountType,generalDiscountModel,accreditDiscountModel);
+          log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+          throw new ClientServiceException("授权折扣异常", PARAMETERS_IS_ILLEGAL);
         }
         break;
       default:
@@ -1159,9 +1174,15 @@ public class TollBiz {
       // 保存收费记录
       billRecordId = billRecordResult.getId();
       orderRecordId = billRecordResult.getOrderRecordId();
+
+      savePrivilegeDetail(discountType, patientId,orderRecordId,generalDiscount,accreditDiscount);
+
       // 更新订单明细收费记录
       updateOrderDetailPayRecord(orderRecordId, totalCharge);
-      savePrivilegeDetail(discountType, patientId,orderRecordId,generalDiscount,accreditDiscount);
+
+
+
+
     } else {
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
@@ -1293,7 +1314,59 @@ public class TollBiz {
     orderDetailPayRecord.setInservice(true);
     List<OrderDetailPayRecord> detailPayRecords =
         orderDetailPayRecordBiz.selectList(orderDetailPayRecord);
-    if (StringHelper.isNotEmpty(detailPayRecords)) {
+    // 根据订单号查询优惠列表
+    List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
+    log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单号查询优惠列表[orderBenefitD]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+    orderBenefitD.forEach(orderBenefitDetailVo -> {
+      log.info("==> {}",orderBenefitDetailVo);
+    });
+    log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+
+    log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+    detailPayRecords.forEach(orderDetailPayRecord1 -> {
+      log.info("==> {}",orderDetailPayRecord1);
+    });
+    log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+
+    if(StringHelper.isNotEmpty(orderBenefitD)) {
+      for (OrderDetailPayRecord detail : detailPayRecords) {
+        BigDecimal receivableAmount = detail.getReceivableAmount();
+        BigDecimal privilegeAmount = BigDecimal.valueOf(0);
+        BigDecimal actualAmount = receivableAmount;
+        for (OrderBenefitDetailVo vo : orderBenefitD) {
+          Integer orderDetailId = vo.getOrderDetailId();
+          if (detail.getOrderDetailId().equals(orderDetailId)) {
+            privilegeAmount = vo.getItemBenefitAmount();
+            actualAmount = receivableAmount.subtract(privilegeAmount);
+            // TODO 补入工作量
+            detail.setCouponWorkload(BigDecimal.valueOf(0));
+          }
+        }
+        detail.setPrivilegeAmount(privilegeAmount);
+        detail.setActualReceivable(actualAmount);
+        // 设置已收
+        if (totalCharge.compareTo(actualAmount) >= 0) {
+          detail.setReceivedAmount(actualAmount);
+          totalCharge = totalCharge.subtract(actualAmount);
+        } else {
+          detail.setReceivedAmount(totalCharge);
+          totalCharge = BigDecimal.valueOf(0);
+        }
+
+        Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
+        String name = BaseContextHandler.getName();
+        detail.setUpdId(userId);
+        detail.setUpdName(name);
+
+        log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+        detailPayRecords.forEach(orderDetailPayRecord1 -> {
+          log.info("==> {}",orderDetailPayRecord1);
+        });
+        log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+        orderDetailPayRecordBiz.updateSelectiveById(detail);
+      }
+    } else{
+      // 没有使用优惠情况
       for (OrderDetailPayRecord detailPayRecord : detailPayRecords) {
         BigDecimal actualReceivable = detailPayRecord.getActualReceivable();
         BigDecimal receivedAmount = detailPayRecord.getReceivedAmount();
@@ -1386,12 +1459,12 @@ public class TollBiz {
    */
   private void checkTotalChargeAndDebtAmount(
       BigDecimal totalCharge, BigDecimal debtAmount, BigDecimal outstandingAmount) {
-    log.info("========com.yunya.modules.treatment.biz.TollBiz.checkTotalChargeAndDebtAmount ================== ");
-    log.info("==> param:totalCharge={},debtAmount={},outstandingAmount={}",totalCharge,debtAmount,outstandingAmount);
-    log.info("==> err_code:{}",PARAMETERS_IS_ILLEGAL);
-    log.info("==> msg:入账方式金额与挂账金额之和不等于剩余应付金额合计！");
-    log.info("==================================================================================================");
     if (totalCharge.add(outstandingAmount).compareTo(debtAmount) != 0) {
+      log.info("========com.yunya.modules.treatment.biz.TollBiz.checkTotalChargeAndDebtAmount ================== ");
+      log.info("==> param:totalCharge={},debtAmount={},outstandingAmount={}",totalCharge,debtAmount,outstandingAmount);
+      log.info("==> err_code:{}",PARAMETERS_IS_ILLEGAL);
+      log.info("==> msg:入账方式金额与挂账金额之和不等于剩余应付金额合计！");
+      log.info("==================================================================================================");
       throw new ClientServiceException("入账方式金额与挂账金额之和不等于剩余应付金额合计！", PARAMETERS_IS_ILLEGAL);
     }
   }

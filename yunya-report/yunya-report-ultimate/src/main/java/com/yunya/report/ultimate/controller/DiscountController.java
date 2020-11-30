@@ -246,7 +246,8 @@ public class DiscountController {
 	@ApiOperation(value = "患者档案-产品管理-使用记录（兑换券，套餐券）")
 	@PostMapping("/{cardId}/benefit/record/multi")
 	public ResponseResult<MultiCardUseVo> getUseRecord(@PathVariable(value = "cardId") Integer cardId, @RequestBody MultiCardUseQuery query) {
-		return ResponseUtil.success(discountBiz.getMultiCardUsePage(cardId, query));
+		MultiCardUseVo multiCardUsePage = discountBiz.getMultiCardUsePage(cardId, query);
+		return ResponseUtil.success(multiCardUsePage);
 	}
 
 }

@@ -34,8 +34,17 @@
   </select>
 
   <!-- 根据预约项目id 查询记录 -->
-  <select id="findClinicAppointItemByAppointItemId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
-    select cai.* from clinic_appoint_item cai where cai.appoint_item_id = #{appointItemId}
+  <select id="findClinicAppointItemByAppointItemId" resultMap="BaseResultMap">
+    select cai.*
+    from clinic_appoint_item cai
+    <where>
+      <if test="appointItemId != null">
+        cai.appoint_item_id = #{appointItemId}
+      </if>
+      <if test="inservice != null">
+        and cai.inservice = #{inservice}
+      </if>
+    </where>
   </select>
 
   <!-- 批量查询门使用项目 -->

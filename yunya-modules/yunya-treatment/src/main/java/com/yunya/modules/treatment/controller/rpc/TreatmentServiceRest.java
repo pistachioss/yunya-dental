@@ -328,6 +328,7 @@ public class TreatmentServiceRest {
    */
   @RequestMapping(value = "/patient/debt/amount", method = RequestMethod.POST)
   public List<DebtAmountModel> selectDebtAmountList(@RequestBody List<Integer> patientIds) {
-    return billRecordBiz.selectDebtAmountList(patientIds);
+    List<DebtAmountModel> debtAmountModels = billRecordBiz.selectDebtAmountList(patientIds);
+    return debtAmountModels;
   }
 }

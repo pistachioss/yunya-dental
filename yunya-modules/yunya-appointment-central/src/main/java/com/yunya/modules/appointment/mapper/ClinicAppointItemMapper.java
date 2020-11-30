@@ -27,9 +27,11 @@ public interface ClinicAppointItemMapper extends Mapper<ClinicAppointItem> {
     /**
      * 根据预约项目id 查询记录
      * @param appointItemId
+     * @param inservice
      * @return
      */
-    List<ClinicAppointItem> findClinicAppointItemByAppointItemId(@Param("appointItemId") Integer appointItemId);
+    List<ClinicAppointItem> findClinicAppointItemByAppointItemId(@Param("appointItemId") Integer appointItemId,
+                                                                 @Param("inservice") Byte inservice);
 
     /**
      * 批量查询门使用项目

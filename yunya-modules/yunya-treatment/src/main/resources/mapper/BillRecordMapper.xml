@@ -60,8 +60,9 @@
         FROM
         `bill_record` br
         <where>
+            br.inservice = 1
             <if test="patientIds != null and patientIds.size &gt; 0">
-                br.patient_id in
+                and br.patient_id in
                 <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
                     #{patientId}
                 </foreach>

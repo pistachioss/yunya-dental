@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Min;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -246,6 +247,10 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         List<VisitingRecordVo> searchVisitingRecordVo = null;
         // 随访记录结果列表
         List<VisitingRecordVo> visitingRecordVoList = new ArrayList<>();
+        // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
+        String search = query.getSearch();
+        String medicalNumber = query.getMedicalNumber();
+        String distentName = query.getDistentName();
          List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
@@ -254,10 +259,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 VisitingRecordVo recordVo = this.comboVisitingRecord(visitingRecordVo);
                 visitingRecordVoList.add(recordVo);
             }
-            // 按患者姓名、手机号、病历号、医生名字检索，并将检索之后的结果排序
-            String search = query.getSearch();
-            String medicalNumber = query.getMedicalNumber();
-            String distentName = query.getDistentName();
             if (StringHelper.isEmpty(search) && StringHelper.isEmpty(medicalNumber) && StringHelper.isEmpty(distentName)) {
                 // 排序
                 searchVisitingRecordVo = this.sort(visitingRecordVoList);
@@ -269,6 +270,26 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 searchVisitingRecordVo = this.sort(searchVisitingRecordVo);
                 visitingRecordVoPageInfo.setList(searchVisitingRecordVo);
             }
+
+            // 设置分页参数
+            int size = searchVisitingRecordVo.size();
+            if (size == 0) {
+                visitingRecordVoPageInfo.setTotal(size);
+            }
+            long total = visitingRecordVoPageInfo.getTotal();
+            Integer pageSize = query.getPageSize();
+            int pages = (int) (total % pageSize == 0 ? total / pageSize : (total / pageSize) + 1);
+            visitingRecordVoPageInfo.setPages(pages);
+            if (pages >= 1) {
+                int[] navPagesNum = new int[pages];
+                for (int i = 0;i < pages;i++) {
+                    navPagesNum[i] = i+1;
+                }
+                visitingRecordVoPageInfo.setNavigatepageNums(navPagesNum);
+            } else {
+                visitingRecordVoPageInfo.setNavigatepageNums(new int[0]);
+            }
+
         }
         return ResponseUtil.success(visitingRecordVoPageInfo);
     }
@@ -336,6 +357,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             TreatmentRecord treatmentRecord = remoteTreatmentServiceFeign.findTreatmentRecordById(treatmentId);
             if (treatmentRecord != null){
                 visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatEndTime());
+                // 设置初复诊
+                visitingRecordVo.setType(treatmentRecord.getType());
             }
         }
         // 设置患者过敏源

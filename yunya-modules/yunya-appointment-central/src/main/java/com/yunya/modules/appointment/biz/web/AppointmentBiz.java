@@ -50,6 +50,7 @@ import com.yunya.modules.appointment.code.AppointmentError;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.joda.time.DateTime;
@@ -73,6 +74,7 @@ import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
  * @create 2020-07-28 10:46
  * @update yunya-lihuibin    2020-07-28    新建
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
@@ -462,7 +464,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             return ResponseUtil.fail(AppointmentError.APPOINT_EDIT_FAIL.getCode(),AppointmentError.APPOINT_EDIT_FAIL.getMessage(),null);
         }
         // 发送消息更新中间表就诊流程
-//        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
+        rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
         // 保存预约更新被修改的日期、医生
         appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
@@ -1668,6 +1670,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
             if (StringHelper.isNotEmpty(debtAmountList)) {
                 vo.setArrears(debtAmountList.get(0).getDebtAmount());
+                log.info("==> 【{}】的欠费金额为{}",patientData.getName(),vo.getArrears());
             }
             Integer memberTypeId = patientData.getMemberTypeId();
             if (null != memberTypeId) {
