@@ -70,8 +70,8 @@ public class CouponAllocateController {
     @CurrentUser
     public ResponseResult UpdateAllocate(@RequestBody @Valid CouponAllocateForm couponAllocateForm) {
         CouponAllocate find = new CouponAllocate();
-        find.setCouponId(couponAllocateForm.getId());
-        if (couponAllocateBiz.findAllocate(find)>0) {
+        find.setId(couponAllocateForm.getId());
+        if (couponAllocateBiz.selectOne(find).getAllocateDate()!=null) {
             // 未完成分配
             throw new ClientServiceException("本次配给计划已在财务部生成卡券，不允许修改配给数量！", OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
