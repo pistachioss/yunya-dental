@@ -65,6 +65,9 @@
       <if test="queryForm.betweenDate!=null and queryForm.andDate!=null" >
         and t.punch_date between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
       </if>
+      <if test="queryForm.source!=null">
+        and t.source = #{queryForm.source}
+      </if>
       <if test="queryForm.punchStatus!=null">
         and t.punch_status = #{queryForm.punchStatus}
       </if>
@@ -137,43 +140,5 @@
             </foreach>
         </if>
      </where>
-  </select>
-    
-  <select id="selectAttendanceStatisticsPunchRecord" resultType="com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO">
-    select
-      t.id,
-      t.org_id as orgId,
-      t.name,
-      t.user_id as userId,
-      t.punch_date as punchDate,
-      t.punch_time as punchTime,
-      t.start_time as startTime,
-      t.end_time as endTime,
-      t.punch_type as punchType,
-      t.punch_status as punchStatus,
-      t.source,
-      t.attendance_address_id as attendanceAddressId,
-      t.longitude,
-      t.latitude,
-      t.punch_address as punchAddress,
-      t.org_id as orgId,
-      t.source_id as sourceId,
-      t.is_punch as isPunch,
-      t.wifi_mac_address as wifiMacAddress,
-      case when t.source=0 then t.source_id
-      when t.source=1 then t.source_id
-      when t.source=2 then (select schedule_id from leave_schedule where leave_id=t.source_id)
-      when t.source=3 then (select schedule_id from leave_schedule where leave_id=t.source_id)
-      when t.source=4 then (select schedule_id from work_overtime_info where id=t.source_id)
-      when t.source=5 then null end scheduleId
-      from attendance_punch_record t
-      <where>
-          <if test="queryForm.orgId != null">
-            and t.org_id = #{queryForm.org_id}
-          </if>
-          <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
-            and DATE_FORMAT(t.punch_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
-          </if>
-      </where>
   </select>
 </mapper>

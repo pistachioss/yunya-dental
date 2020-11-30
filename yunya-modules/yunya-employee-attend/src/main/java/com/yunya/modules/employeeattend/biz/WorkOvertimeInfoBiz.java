@@ -2,6 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
+import com.yunya.feign.employee_attend.vo.AttendanceWorkOvertimeMinuteVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
 import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
@@ -14,13 +15,11 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
-
 import com.yunya.modules.employeeattend.form.NoWorkByDateForm;
 import com.yunya.modules.employeeattend.form.NoWorkForm;
 import com.yunya.modules.employeeattend.form.WorkForm;
 import com.yunya.modules.employeeattend.form.WorkOvertimeInfoForm;
 import com.yunya.modules.employeeattend.mapper.*;
-import com.yunya.modules.employeeattend.vo.EmListVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -32,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
 
 /**
  * 简介:
@@ -294,5 +292,12 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
             PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
         }
         return mapper.findWorkOvertimeInfoList(queryForm);
+    }
+
+    public List<AttendanceWorkOvertimeMinuteVO> statisticsWorkOvertimesByMinute(WorkOvertimeInfoQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
+        }
+        return mapper.statisticsWorkOvertimesByMinute(queryForm);
     }
 }

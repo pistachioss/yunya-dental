@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.employeeattend.mapper.AttendanceManualMakeupMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.employee_attend.AttendanceManualMakeup" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="makeup_date" property="makeupDate" jdbcType="DATE" />
+    <result column="user_id" property="userId" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="minute" property="minute" jdbcType="INTEGER" />
+    <result column="makeup_desc" property="makeupDesc" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!-- 插入数据:返回记录主键id值 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into attendance_manual_makeup
+        (id,makeup_date,user_id,org_id,minute,makeup_desc,type,crt_id,crt_time,upt_id,upt_time)
+    values
+        (null,#{makeupDate},#{userId},#{orgId},#{minute},#{makeupDesc},#{type},#{crtId},#{crtTime},#{uptId},#{uptTime})
+  </insert>
+</mapper>

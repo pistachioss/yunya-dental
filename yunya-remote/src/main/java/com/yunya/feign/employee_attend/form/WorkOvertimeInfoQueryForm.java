@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介：加班信息查询参数模型
@@ -65,4 +66,8 @@ public class WorkOvertimeInfoQueryForm implements Serializable {
     /** 审批状态 0 审批中 1通过 2拒绝 3撤回 4异常 */
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝 3撤回 4异常")
     private Integer apprpvalStatus;
+
+    /** 不包含的id列表 */
+    @ApiModelProperty(value = "不包含的id列表")
+    private List<Integer> notIds;
 }

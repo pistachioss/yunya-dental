@@ -1961,16 +1961,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         StringBuilder result = new StringBuilder();
         if (employeeScheduleVO != null) {
             Byte source = attendancePunchRecordVO.getSource();
-            String tail = "【请假】";
-            if (source==AttendanceSourceEnum.WORK_SCHEDULE.getCode()) {
-                tail = "【上班】";
-            } else if (source==AttendanceSourceEnum.REST_SCHEDULE.getCode()) {
-                tail = "【休息】";
-            } else if (source==AttendanceSourceEnum.WORK_OVERTIME.getCode()) {
-                tail = "【加班】";
-            } else if (source==AttendanceSourceEnum.FIELD.getCode()) {
-                tail = "【外勤】";
-            }
+            String tail = getSourceName(source);
             Date firstStartTime = employeeScheduleVO.getFirstStartTime();
             Date firstEndTime = employeeScheduleVO.getFirstEndTime();
             result.append(employeeScheduleVO.getName()).append("(")
@@ -2004,5 +1995,182 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
 
         }
         return null;
+    }
+
+    public List<AttendanceWorkOvertimeMinuteVO> statisticsWorkOvertimesByMinute(AttendanceStatisticsQueryForm queryForm) {
+        AttendancePunchRecordQueryForm recordQueryForm = new AttendancePunchRecordQueryForm();
+        recordQueryForm.setUserId(queryForm.getUserId());
+        recordQueryForm.setOrgId(queryForm.getOrgId());
+        setQueryFormDate(queryForm);
+        recordQueryForm.setBetweenDate(queryForm.getBetweenDate());
+        recordQueryForm.setAndDate(queryForm.getAndDate());
+        List<AttendancePunchRecordVO> attendancePunchRecordVOS = findAttendancePunchRecordList(recordQueryForm);
+        Table<Date, String, List<AttendancePunchRecordVO>> attendancePunchRecordVOMap = HashBasedTable.create();
+        attendancePunchRecordVOS.forEach(attendancePunchRecordVO -> {
+            Date punchDate = attendancePunchRecordVO.getPunchDate();
+            String key = attendancePunchRecordVO.getUserId() + "," + attendancePunchRecordVO.getOrgId();
+            List<AttendancePunchRecordVO> list = attendancePunchRecordVOMap.get(punchDate, key);
+            if (list == null) {
+                list = new ArrayList<>();
+            }
+            list.add(attendancePunchRecordVO);
+            attendancePunchRecordVOMap.put(punchDate, key,list);
+        });
+
+        WorkOvertimeInfoQueryForm workQueryForm = new WorkOvertimeInfoQueryForm();
+        workQueryForm.setWhetherPage(queryForm.getWhetherPage());
+        workQueryForm.setPageNum(queryForm.getPageNum());
+        workQueryForm.setPageSize(queryForm.getPageSize());
+        workQueryForm.setUserId(queryForm.getUserId());
+        workQueryForm.setCompanyId(queryForm.getOrgId());
+        setQueryFormDate(queryForm);
+        workQueryForm.setStartTime(queryForm.getBetweenDate());
+        workQueryForm.setEndTime(queryForm.getAndDate());
+        workQueryForm.setApprpvalStatus(1);
+        List<AttendanceWorkOvertimeMinuteVO> workOvertimeMinutes = workOvertimeInfoBiz.statisticsWorkOvertimesByMinute(workQueryForm);
+        List<Integer> notIds = new ArrayList<>();
+        workOvertimeMinutes.forEach(workOvertime-> {
+            Integer id = workOvertime.getId();
+            if (!notIds.contains(id)) {
+                notIds.add(id);
+            }
+        });
+        workQueryForm.setNotIds(notIds);
+        List<WorkOvertimeInfoVO> otherWorkOvertimeInfos = workOvertimeInfoBiz.findWorkOvertimeInfoList(workQueryForm);
+        Map<Date, WorkOvertimeInfoVO> workOvertimeInfoVOMap = new HashMap<>(otherWorkOvertimeInfos.size());
+        otherWorkOvertimeInfos.forEach(workOvertimeInfoVO -> {
+            Date date = workOvertimeInfoVO.getWorkDate();
+            workOvertimeInfoVOMap.put(date, workOvertimeInfoVO);
+        });
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        StringBuilder scheduleName = new StringBuilder();
+        StringBuilder employeeScheduleName = new StringBuilder();
+        workOvertimeMinutes.forEach(workOvertime->{
+            Date workDate = workOvertime.getWorkDate();
+            Integer id = workOvertime.getId();
+            Date startTime = workOvertime.getOnPunchTime();
+            Date endTime = workOvertime.getOffPunchTime();
+            scheduleName.append(workOvertime.getSheduleName()).append("（").append(startTime).append("-").append(endTime).append("）");
+            Date onPunchTime = null;
+            Date offPunchTime = null;
+            WorkOvertimeInfoVO workOvertimeInfoVO = workOvertimeInfoVOMap.get(workDate);
+            long diff = 0;
+            String key = workOvertime.getUserId() + "," + workOvertime.getCompanyId();
+            List<AttendancePunchRecordVO> list = attendancePunchRecordVOMap.get(workDate, key);
+            AttendancePunchRecordVO first = list.get(0);
+            AttendancePunchRecordVO last = list.get(1);
+            Integer onSourceId = first.getSourceId();
+            Integer offSourceId = last.getSourceId();
+            if (workOvertimeInfoVO != null) {
+                if (scheduleName.length() > 0) {
+                    scheduleName.append(" ");
+                }
+                scheduleName.append(workOvertimeInfoVO.getRestScheduleName()).append("（").append(workOvertimeInfoVO.getStartTime()).append("-").append(workOvertimeInfoVO.getEndTime()).append("）");
+                Date sTime = first.getStartTime();
+                Date eTime = first.getEndTime();
+                onPunchTime = first.getPunchTime();
+                if (onPunchTime != null) {
+                    if (sTime.before(onPunchTime)) {
+                        sTime = onPunchTime;
+                    }
+                } else {
+                    sTime = eTime;
+                }
+                long onDiff = eTime.getTime() - sTime.getTime();
+                sTime = last.getStartTime();
+                eTime = last.getEndTime();
+                offPunchTime = last.getPunchTime();
+                if (offPunchTime != null) {
+                    if (eTime.after(offPunchTime)) {
+                        eTime = offPunchTime;
+                    }
+                } else {
+                    eTime = sTime;
+                }
+                long offDiff = eTime.getTime() - sTime.getTime();
+                diff = onDiff + offDiff;
+                employeeScheduleName.append(first.getName()).append("（").append(sdf.format(first.getStartTime())).append("-").append(sdf.format(first.getEndTime())).append("）【加班】")
+                        .append(last.getName()).append("（").append(sdf.format(last.getStartTime())).append("-").append(sdf.format(last.getEndTime())).append("）").append(getSourceName(last.getSource()));
+            } else {
+                Date sTime = first.getStartTime();
+                Date eTime = last.getEndTime();
+                if (onSourceId==id && offSourceId==id) {
+                    onPunchTime = first.getPunchTime();
+                    offPunchTime = last.getPunchTime();
+                    if (onPunchTime != null) {
+                        if (sTime.before(onPunchTime)) {
+                            sTime = onPunchTime;
+                        }
+                    } else {
+                        sTime = eTime;
+                    }
+                    if (offPunchTime != null) {
+                        if (eTime.after(offPunchTime)) {
+                            eTime = offPunchTime;
+                        }
+                    } else {
+                        eTime = sTime;
+                    }
+                    employeeScheduleName.append(first.getName()).append("（").append(sdf.format(first.getStartTime())).append("-").append(sdf.format(last.getEndTime())).append("）【加班】");
+                } else if (onSourceId == id) {
+                    onPunchTime = first.getPunchTime();
+                    eTime = first.getEndTime();
+                    if (onPunchTime != null) {
+                        if (sTime.before(onPunchTime)) {
+                            sTime = onPunchTime;
+                        }
+                    } else {
+                        sTime = eTime;
+                    }
+                    scheduleName.append(first.getName()).append("（").append(sdf.format(first.getStartTime())).append("-").append(sdf.format(first.getEndTime())).append("）");
+                    employeeScheduleName.append(first.getName()).append("（").append(sdf.format(first.getStartTime())).append("-").append(sdf.format(first.getEndTime())).append("）【加班】")
+                        .append(last.getName()).append("（").append(sdf.format(last.getStartTime())).append("-").append(sdf.format(last.getEndTime())).append("）").append(getSourceName(last.getSource()));
+                } else if (offSourceId == id) {
+                    sTime = last.getStartTime();
+                    offPunchTime = last.getPunchTime();
+                    if (offPunchTime != null) {
+                        if (eTime.after(offPunchTime)) {
+                            eTime = offPunchTime;
+                        }
+                    } else {
+                        eTime = sTime;
+                    }
+                    scheduleName.append(last.getName()).append("（").append(sdf.format(last.getStartTime())).append("-").append(sdf.format(last.getEndTime())).append("）");
+                    employeeScheduleName.append(first.getName()).append("（").append(sdf.format(first.getStartTime())).append("-").append(sdf.format(first.getEndTime())).append("）").append(getSourceName(first.getSource()))
+                            .append(last.getName()).append("（").append(sdf.format(last.getStartTime())).append("-").append(sdf.format(last.getEndTime())).append("）【加班】");
+                }
+                diff = eTime.getTime() - sTime.getTime();
+            }
+            workOvertime.setSheduleName(scheduleName.toString());
+            workOvertime.setOnPunchTime(onPunchTime);
+            workOvertime.setOffPunchTime(offPunchTime);
+            workOvertime.setMinutes(DateUtil.micro2Min(diff));
+            workOvertime.setEmployeeScheduleName(employeeScheduleName.toString());
+        });
+        return workOvertimeMinutes;
+    }
+
+    /**
+     * 获取标签名称
+     *
+     * @param source
+     * @return
+     */
+    private String getSourceName(Byte source) {
+        String result = "";
+        if (source == null) {
+            return result;
+        }
+        result = "【请假】";
+        if (source==AttendanceSourceEnum.WORK_SCHEDULE.getCode()) {
+            result = "【上班】";
+        } else if (source==AttendanceSourceEnum.REST_SCHEDULE.getCode()) {
+            result = "【休息】";
+        } else if (source==AttendanceSourceEnum.WORK_OVERTIME.getCode()) {
+            result = "【加班】";
+        } else if (source==AttendanceSourceEnum.FIELD.getCode()) {
+            result = "【外勤】";
+        }
+        return result;
     }
 }

@@ -179,4 +179,19 @@ public class AttendancePunchRecordController {
         PageInfo<AttendancePunchMinuteVO> pageInfo = new PageInfo<>(result);
         return ResponseUtil.success(pageInfo);
     }
+
+    /**
+     * 分页查询休息日加班时长的考勤汇总明细
+     *
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendanceWorkOvertimeMinuteVO>>
+     */
+    @ApiOperation("分页查询休息日加班时长的考勤汇总明细")
+    @ApiImplicitParam(value = "查询参数", required = true)
+    @PostMapping("/statisticsWorkOvertimesByMinute")
+    public ResponseResult<PageInfo<AttendanceWorkOvertimeMinuteVO>> statisticsWorkOvertimesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceWorkOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkOvertimesByMinute(queryForm);
+        PageInfo<AttendanceWorkOvertimeMinuteVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
 }

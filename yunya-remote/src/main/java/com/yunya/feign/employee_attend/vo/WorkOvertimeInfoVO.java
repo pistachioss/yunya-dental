@@ -34,12 +34,14 @@ public class WorkOvertimeInfoVO implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date workDate;
 
-    /** 开始日期 */
+    /** 开始时间 */
     @ApiModelProperty(value = "开始日期")
+    @JsonFormat(pattern = "HH:mm",timezone = "GMT+8")
     private Date startTime;
 
-    /** 结束日期 */
+    /** 结束时间 */
     @ApiModelProperty(value = "结束日期")
+    @JsonFormat(pattern = "HH:mm",timezone = "GMT+8")
     private Date endTime;
 
     /** 门诊id */
@@ -49,6 +51,10 @@ public class WorkOvertimeInfoVO implements Serializable {
     /** 休息班次id */
     @ApiModelProperty(value = "休息班次id")
     private Integer restScheduleId;
+
+    /** 休息班次名称 */
+    @ApiModelProperty(value = "休息班次名称")
+    private Integer restScheduleName;
 
     /** 加班班次id */
     @ApiModelProperty(value = "加班班次id")
@@ -65,4 +71,9 @@ public class WorkOvertimeInfoVO implements Serializable {
     /** 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期*/
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝  3撤回 4过期")
     private Integer apprpvalStatus;
+
+    /** 申请时间 */
+    @ApiModelProperty(value = "申请时间")
+    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private Date crtTime;
 }
