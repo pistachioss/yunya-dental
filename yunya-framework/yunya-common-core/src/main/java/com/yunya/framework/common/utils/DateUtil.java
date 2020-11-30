@@ -244,4 +244,25 @@ public class DateUtil {
         }
         return result;
     }
+
+    /**
+     * 将第一个参数和第二个参数合成一个时间
+     * @param date
+     * @param time
+     * @return
+     */
+    public static Date timetoDate(Date date, Date time) {
+        String dateStr = DateFormatUtils.format(date, "yyyy-MM-dd");
+        String timeStr = DateFormatUtils.format(time, "HH:mm:ss");
+        if (dateStr==null || timeStr==null) {
+            return null;
+        }
+        Date result = null;
+        try {
+            result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateStr + " " + timeStr);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

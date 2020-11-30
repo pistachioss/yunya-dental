@@ -98,4 +98,11 @@ public class CouponAllocateBiz extends BaseBiz<CouponAllocateMapper, CouponAlloc
         return list;
     }
 
+     /**
+     * 查询是否有生成分配的配给计划
+     */
+     public int findAllocate(CouponAllocate couponAllocate){
+         return mapper.findAllocate(couponAllocate);
+     }
+
 }

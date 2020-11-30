@@ -33,8 +33,8 @@
         t.user_id as userId,
         t.company_id as orgId,
         t.vacation_id as vacationId,
-        t.start_time as startTime,
-        t.end_time as endTime,
+        ls.start_time as startTime,
+        ls.end_time as endTime,
         t.leave_reason as leaveReason,
         t.leave_picture as leavePicture,
         t.approval_criteria_id as approvalCriteriaId,
@@ -64,8 +64,8 @@
         t.id,
         t.user_id as userId,
         t.vacation_id as vacationId,
-        t.start_time as startTime,
-        t.end_time as endTime,
+        ls.start_time as startTime,
+        ls.end_time as endTime,
         t.leave_reason as leaveReason,
         t.leave_picture as leavePicture,
         t.approval_criteria_id as approvalCriteriaId,
@@ -135,7 +135,8 @@
     <select id="selectApprovalByDay" resultMap="AlResultMap">
         select als.* from approval_criteria ac
         left JOIN approval_level_set als on als.approval_criteria_id = ac.id
-        where ac.start_day &lt; TIMESTAMPDIFF(day,#{startTime},#{endTime})  and IFNULL(ac.end_day,9999)>=TIMESTAMPDIFF(day,#{startTime},#{endTime})
+        where ac.start_day &lt; IF(TIMESTAMPDIFF(day,#{startTime},#{endTime})=0,1,TIMESTAMPDIFF(day,#{startTime},#{endTime}))
+        and IFNULL(ac.end_day,9999)>=TIMESTAMPDIFF(day,#{startTime},#{endTime})
     </select>
 
     <select id="countByDay" resultType="Integer">

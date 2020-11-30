@@ -764,6 +764,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     regQuery.setOrgId(orgId);
     regQuery.setCurrentDate(queryDate);
     regQuery.setDentistId(userId);
+    regQuery.setInservice(true);
     List<WaitingPatientInfoVO> waitingForTreat =
         registeredMapper.selectRegisteredList((byte) 0, regQuery);
 
@@ -772,6 +773,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     queryForm.setOrgId(orgId);
     queryForm.setDentistId(userId);
     queryForm.setCurrentDate(queryDate);
+    queryForm.setInservice(true);
     // 就诊中
     queryForm.setTreatmentStatus(new Byte[] {0});
     List<TreatmentPatientInfoVO> treatReceiving = mapper.selectTreatingList(queryForm);

@@ -6,9 +6,9 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介：考勤打卡记录查询参数模型
@@ -85,4 +85,16 @@ public class AttendancePunchRecordQueryForm implements Serializable {
     /** 是否打卡：0-否，1-是 */
     @ApiModelProperty(value = "是否打卡：0-否，1-是", required = true)
     private Byte isPunch;
+
+    /** 打卡类型 0：上班 1：下班 */
+    @ApiModelProperty(value = "打卡类型 0：上班 1：下班")
+    private Byte punchType;
+
+    /** 考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤 */
+    @ApiModelProperty(value = "考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤")
+    private Byte source;
+
+    /** 不属于的id列表 */
+    @ApiModelProperty(value = "不属于的id列表")
+    private List<Integer> notInIds;
 }

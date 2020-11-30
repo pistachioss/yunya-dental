@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class OnceCardUseVo {
 	@ApiModelProperty(value = "数量")
 	private Integer useQuantity;
 	@ApiModelProperty(value = "使用时间")
+	@JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
 	private Date useDate;
 	@ApiModelProperty(value = "使用门诊")
 	private String usedClinicName;
