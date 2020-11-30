@@ -1,8 +1,10 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.EmployeeOrderDetailWorkloadQuery;
 import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.vo.EmployeeOrderDetailWorkloadVO;
 import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
 import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -74,8 +76,9 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-实收工作量明细")
   @PostMapping(value = "/employee/workload/detail/list", name = "根据条件查询员工个人实收工作量明细列表")
-  public ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>> findEmployeePersonalActualWorkloadDetailList(
-      @RequestBody @Validated EmployeePersonalActualWorkloadDetailQuery query) {
+  public ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>>
+      findEmployeePersonalActualWorkloadDetailList(
+          @RequestBody @Validated EmployeePersonalActualWorkloadDetailQuery query) {
     PageInfo<EmployeePersonalActualWorkloadDetailVO> pageInfo =
         billDetailBiz.findEmployeePersonalActualWorkloadDetailList(query);
     return ResponseUtil.success(pageInfo);
@@ -91,10 +94,25 @@ public class CompanyReportOfPersonnelController {
   @ApiOperation("公司端报表-人事报表-员工工作量-实收工作量明细-导出")
   @PostMapping(value = "/employee/workload/detail/export", name = "根据条件导出员工个人实收工作量明细列表")
   public ResponseResult<T> exportEmployeePersonalActualWorkloadDetailList(
-          HttpServletResponse response, @RequestBody @Validated EmployeePersonalActualWorkloadDetailQuery query)
-          throws IOException {
+      HttpServletResponse response,
+      @RequestBody @Validated EmployeePersonalActualWorkloadDetailQuery query)
+      throws IOException {
     billDetailBiz.exportEmployeePersonalActualWorkloadDetailList(response, query);
     return ResponseUtil.success(null);
   }
 
+  /**
+   * 根据条件查询员工工作量开单明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeOrderDetailWorkloadVO> 分页列表
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-实收工作量明细-查看明细")
+  @PostMapping(value = "/employee/order/detail/list", name = "公司端报表-人事报表-员工工作量-实收工作量明细-查看详情")
+  public ResponseResult<PageInfo<EmployeeOrderDetailWorkloadVO>> orderDetailList(
+      @RequestBody @Validated EmployeeOrderDetailWorkloadQuery query) {
+    PageInfo<EmployeeOrderDetailWorkloadVO> pageInfo =
+        billDetailBiz.findOrderDetailWorkloadList(query);
+    return ResponseUtil.success(pageInfo);
+  }
 }

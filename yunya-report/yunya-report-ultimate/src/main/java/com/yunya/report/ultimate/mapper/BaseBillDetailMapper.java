@@ -1,13 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
-import com.yunya.feign.report.domain.query.BillDetailIncomeDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.vo.BillTariffIncomeDetailVO;
-import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBillDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -60,4 +54,13 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<EmployeePersonalActualWorkloadDetailVO> selectEmployeePersonalActualWorkloadDetailList(
       @Param("query") EmployeePersonalActualWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工工作量开单明细列表
+   *
+   * @param query 查询条件
+   * @return List<EmployeeOrderDetailWorkloadVO>
+   */
+  List<EmployeeOrderDetailWorkloadVO> selectEmployeeOrderDetailWorkloadList(
+      @Param("query") EmployeeOrderDetailWorkloadQuery query);
 }

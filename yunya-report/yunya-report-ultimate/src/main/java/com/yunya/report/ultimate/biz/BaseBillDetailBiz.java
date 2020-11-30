@@ -2,14 +2,8 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
-import com.yunya.feign.report.domain.query.BillDetailIncomeDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.vo.BillTariffIncomeDetailVO;
-import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -193,5 +187,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
     excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表");
+  }
+
+  /**
+   * 根据条件查询员工工作量开单明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeOrderDetailWorkloadVO>
+   */
+  public PageInfo<EmployeeOrderDetailWorkloadVO> findOrderDetailWorkloadList(
+      EmployeeOrderDetailWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeOrderDetailWorkloadVO> resultList =
+        mapper.selectEmployeeOrderDetailWorkloadList(query);
+    return new PageInfo<>(resultList);
   }
 }
