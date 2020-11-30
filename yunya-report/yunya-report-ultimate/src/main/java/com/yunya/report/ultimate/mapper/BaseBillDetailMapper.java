@@ -47,13 +47,23 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillCategoryIncomeQuery query);
 
   /**
-   * 根据条件查询员工个人实收工作量明细列表
+   * 根据条件查询员工个人实收工作量明细列表（按月查询）
    *
    * @param query 查询条件
    * @return List<EmployeePersonalActualWorkloadDetailVO>
    */
-  List<EmployeePersonalActualWorkloadDetailVO> selectEmployeePersonalActualWorkloadDetailList(
-      @Param("query") EmployeePersonalActualWorkloadDetailQuery query);
+  List<EmployeePersonalActualWorkloadDetailVO>
+      selectEmployeePersonalActualWorkloadDetailListByMonth(
+          @Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工个人实收工作量明细列表（按年查询）
+   *
+   * @param query 查询条件
+   * @return
+   */
+  List<EmployeePersonalActualWorkloadDetailVO> selectEmployeePersonalActualWorkloadDetailListByYear(
+      @Param("query") EmployeePersonalWorkloadDetailQuery query);
 
   /**
    * 根据条件查询员工工作量开单明细列表
@@ -63,4 +73,23 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<EmployeeOrderDetailWorkloadVO> selectEmployeeOrderDetailWorkloadList(
       @Param("query") EmployeeOrderDetailWorkloadQuery query);
+
+  /**
+   * 根据条件查询员工个人已收工作量明细列表（按月查询）
+   *
+   * @param query 查询条件
+   * @return List<EmployeePersonalReceivedWorkloadDetailVO>
+   */
+  List<EmployeePersonalReceivedWorkloadDetailVO>
+      selectEmployeePersonalReceivedWorkloadDetailListByMonth(
+          @Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工个人已收工作量明细列表（按年查询）
+   *
+   * @param query 查询条件
+   * @return List<EmployeePersonalReceivedWorkloadDetailVO>
+   */
+  List<EmployeePersonalReceivedWorkloadDetailVO> selectEmployeePersonalReceivedWorkloadDetailByYear(
+      @Param("query") EmployeePersonalWorkloadDetailQuery query);
 }

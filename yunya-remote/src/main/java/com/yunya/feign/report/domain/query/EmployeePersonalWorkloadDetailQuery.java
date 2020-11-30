@@ -12,18 +12,18 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 简介: 员工个人实收工作量明细查询参数
+ * 简介: 员工个人工作量明细查询参数
  *
  * @author: chow
  * @date: 2020/11/28 16:44
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("员工个人实收工作量明细查询参数")
+@ApiModel("员工个人工作量明细查询参数")
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class EmployeePersonalActualWorkloadDetailQuery extends PageQuery implements Serializable {
+public class EmployeePersonalWorkloadDetailQuery extends PageQuery implements Serializable {
   /** 组织ID */
   @ApiModelProperty(value = "组织ID", required = true)
   @NotNull(message = "组织ID不能为空！")

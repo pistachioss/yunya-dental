@@ -1,7 +1,7 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
@@ -50,12 +50,13 @@ public class CompanyReportTest {
   /** 员工实收工作量明细列表 */
   @Test
   public void findEmpWorkload() {
-    EmployeePersonalActualWorkloadDetailQuery query =
-        new EmployeePersonalActualWorkloadDetailQuery();
+    EmployeePersonalWorkloadDetailQuery query =
+        new EmployeePersonalWorkloadDetailQuery();
     query.setOrgId(35);
     query.setDateType((byte) 0);
-    query.setQueryDate("2020-10");
-    query.setEmployeeId(521);
+    query.setQueryDate("2020-11");
+    query.setEmployeeId(570);
+    query.setBillNum("ZD00352011300001");
     ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>> list =
         personnelController.findEmployeePersonalActualWorkloadDetailList(query);
     System.out.println(list);

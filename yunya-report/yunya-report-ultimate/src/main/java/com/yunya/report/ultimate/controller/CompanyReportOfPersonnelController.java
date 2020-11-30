@@ -2,10 +2,11 @@ package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.EmployeeOrderDetailWorkloadQuery;
-import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.vo.EmployeeOrderDetailWorkloadVO;
 import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
+import com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO;
 import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -78,7 +79,7 @@ public class CompanyReportOfPersonnelController {
   @PostMapping(value = "/employee/workload/detail/list", name = "根据条件查询员工个人实收工作量明细列表")
   public ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>>
       findEmployeePersonalActualWorkloadDetailList(
-          @RequestBody @Validated EmployeePersonalActualWorkloadDetailQuery query) {
+          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
     PageInfo<EmployeePersonalActualWorkloadDetailVO> pageInfo =
         billDetailBiz.findEmployeePersonalActualWorkloadDetailList(query);
     return ResponseUtil.success(pageInfo);
@@ -95,7 +96,7 @@ public class CompanyReportOfPersonnelController {
   @PostMapping(value = "/employee/workload/detail/export", name = "根据条件导出员工个人实收工作量明细列表")
   public ResponseResult<T> exportEmployeePersonalActualWorkloadDetailList(
       HttpServletResponse response,
-      @RequestBody @Validated EmployeePersonalActualWorkloadDetailQuery query)
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
       throws IOException {
     billDetailBiz.exportEmployeePersonalActualWorkloadDetailList(response, query);
     return ResponseUtil.success(null);
@@ -114,5 +115,38 @@ public class CompanyReportOfPersonnelController {
     PageInfo<EmployeeOrderDetailWorkloadVO> pageInfo =
         billDetailBiz.findOrderDetailWorkloadList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询员工个人已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeePersonalReceivedWorkloadDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-已收工作量明细")
+  @PostMapping(value = "/employee/workload/received/list", name = "根据条件查询员工个人已收工作量明细列表")
+  public ResponseResult<PageInfo<EmployeePersonalReceivedWorkloadDetailVO>>
+      findEmployeePersonalReceivedWorkloadDetailList(
+          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
+    PageInfo<EmployeePersonalReceivedWorkloadDetailVO> pageInfo =
+        billDetailBiz.findEmployeePersonalReceivedWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出员工个人已收工作量明细列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-已收工作量明细-导出")
+  @PostMapping(value = "/employee/workload/received/export", name = "根据条件导出员工个人已收工作量明细列表")
+  public ResponseResult<T> exportEmployeePersonalReceivedWorkloadDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
+      throws IOException {
+    billDetailBiz.exportEmployeePersonalReceivedWorkloadDetailList(response, query);
+    return ResponseUtil.success(null);
   }
 }
