@@ -12,6 +12,7 @@ import com.yunya.modules.discount.biz.CardBiz;
 import com.yunya.modules.discount.biz.CouponAllocateBiz;
 import com.yunya.modules.discount.form.CouponAllocateDetailForm;
 import com.yunya.modules.discount.form.CouponAllocateForm;
+import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.vo.CouponAllocateVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -37,8 +38,6 @@ public class CouponAllocateController {
 
     @Autowired
     private CouponAllocateBiz couponAllocateBiz;
-    @Autowired
-    private CardBiz cardBiz;
 
     /**
      * 新增配给信息
@@ -70,12 +69,13 @@ public class CouponAllocateController {
     @ApiOperation("修改配给信息")
     @CurrentUser
     public ResponseResult UpdateAllocate(@RequestBody @Valid CouponAllocateForm couponAllocateForm) {
-        Date date = new Date();
-        Card card = new Card();
-        card.setCouponAllocateId(couponAllocateForm.getId());
-        if (cardBiz.selectList(card).size() > 0) {
+        CouponAllocate find = new CouponAllocate();
+        find.setCouponId(couponAllocateForm.getId());
+        if (couponAllocateBiz.findAllocate(find)>0) {
+            // 未完成分配
             throw new ClientServiceException("本次配给计划已在财务部生成卡券，不允许修改配给数量！", OperationCodeConstants.OBJECT_EDIT_FAIL);
         }
+        Date date = new Date();
         couponAllocateForm.setUpdId(Integer.parseInt(BaseContextHandler.getUserID()));
         couponAllocateForm.setUpdTime(date);
         CouponAllocate couponAllocate = new CouponAllocate();
