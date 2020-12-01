@@ -101,4 +101,23 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<EmployeeReceivedDetailWorkloadVO> selectEmployeeReceivedDetailList(
       @Param("query") EmployeeWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工补入工作量明细列表（按月查询）
+   *
+   * @param query 查询条件
+   * @return List<EmployeePersonalSupplyWorkloadDetailVO>
+   */
+  List<EmployeePersonalSupplyWorkloadDetailVO>
+      selectEmployeePersonalSupplyWorkloadDetailListByMonth(
+          @Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工补入工作量明细列表（按年查询）
+   *
+   * @param query 查询条件
+   * @return List<EmployeePersonalSupplyWorkloadDetailVO>
+   */
+  List<EmployeePersonalSupplyWorkloadDetailVO> selectEmployeePersonalSupplyWorkloadDetailByYear(
+      @Param("query") EmployeePersonalWorkloadDetailQuery query);
 }

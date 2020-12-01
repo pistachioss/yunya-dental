@@ -69,12 +69,12 @@ public class BaseMemberExpendLogVo {
     private BigDecimal bonusAmount;
 
     /** 消费后会员卡余额（本金） */
-    @ApiModelProperty(value = "消费后会员卡余额（本金）")
-    private BigDecimal currentRechargePrincipal;
+    @ApiModelProperty(value = "消费后会员卡余额（含赠送金额）")
+    private BigDecimal currentExpendPrincipal;
 
-    /** 消费后会员卡赠金（赠金） */
-    @ApiModelProperty(value = "消费后会员卡赠金（赠金）")
-    private BigDecimal currentRechargeBonus;
+    /** 剩余会员卡余额（含赠送金额） */
+    @ApiModelProperty(value = "剩余会员卡余额（含赠送金额）")
+    private BigDecimal currentAmount;
 
     /** 消费人 */
     @ApiModelProperty(value = "消费人")

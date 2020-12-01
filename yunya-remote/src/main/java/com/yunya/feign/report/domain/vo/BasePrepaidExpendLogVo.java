@@ -60,13 +60,13 @@ public class BasePrepaidExpendLogVo {
     @ApiModelProperty("消费赠金金额")
     private BigDecimal bonusAmount;
 
-    /** 消费后会员卡余额（本金） */
-    @ApiModelProperty("消费后会员卡余额（本金）")
-    private BigDecimal currentRechargePrincipal;
+    /** 消费后会员卡余额（含赠送金额） */
+    @ApiModelProperty("消费后会员卡余额（含赠送金额）")
+    private BigDecimal currentExpendPrincipal;
 
-    /** 消费后会员卡赠金（赠金） */
-    @ApiModelProperty("消费后会员卡赠金（赠金）")
-    private BigDecimal currentRechargeBonus;
+    /** 剩余会员卡余额（含赠送金额） */
+    @ApiModelProperty("剩余会员卡余额（含赠送金额）")
+    private BigDecimal currentAmount;
 
     /** 收费人 */
     @ApiModelProperty("收费人")
