@@ -2,14 +2,8 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
-import com.yunya.feign.report.domain.query.BillDetailIncomeDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.vo.BillTariffIncomeDetailVO;
-import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -169,13 +163,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return PageInfo<EmployeePersonalActualWorkloadDetailVO>
    */
   public PageInfo<EmployeePersonalActualWorkloadDetailVO>
-      findEmployeePersonalActualWorkloadDetailList(
-          EmployeePersonalActualWorkloadDetailQuery query) {
+      findEmployeePersonalActualWorkloadDetailList(EmployeePersonalWorkloadDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<EmployeePersonalActualWorkloadDetailVO> resultList =
-        mapper.selectEmployeePersonalActualWorkloadDetailList(query);
+    Byte dateType = query.getDateType();
+    List<EmployeePersonalActualWorkloadDetailVO> resultList;
+    if (dateType == 0) {
+      resultList = mapper.selectEmployeePersonalActualWorkloadDetailListByMonth(query);
+    } else {
+      resultList = mapper.selectEmployeePersonalActualWorkloadDetailListByYear(query);
+    }
     return new PageInfo<>(resultList);
   }
 
@@ -186,12 +184,81 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    */
   public void exportEmployeePersonalActualWorkloadDetailList(
-      HttpServletResponse response, EmployeePersonalActualWorkloadDetailQuery query)
-      throws IOException {
-    List<EmployeePersonalActualWorkloadDetailVO> resultList =
-        mapper.selectEmployeePersonalActualWorkloadDetailList(query);
+      HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+    PageInfo<EmployeePersonalActualWorkloadDetailVO> pageInfo =
+        findEmployeePersonalActualWorkloadDetailList(query);
+    List<EmployeePersonalActualWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
     excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表");
+  }
+
+  /**
+   * 根据条件查询员工工作量开单明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeOrderDetailWorkloadVO>
+   */
+  public PageInfo<EmployeeOrderDetailWorkloadVO> findOrderDetailWorkloadList(
+      EmployeeWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeOrderDetailWorkloadVO> resultList =
+        mapper.selectEmployeeOrderDetailWorkloadList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询员工个人已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeePersonalReceivedWorkloadDetailVO>
+   */
+  public PageInfo<EmployeePersonalReceivedWorkloadDetailVO>
+      findEmployeePersonalReceivedWorkloadDetailList(EmployeePersonalWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    Byte dateType = query.getDateType();
+    List<EmployeePersonalReceivedWorkloadDetailVO> resultList;
+    if (dateType == 0) {
+      resultList = mapper.selectEmployeePersonalReceivedWorkloadDetailListByMonth(query);
+    } else {
+      resultList = mapper.selectEmployeePersonalReceivedWorkloadDetailByYear(query);
+    }
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出员工个人已收工作量明细列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportEmployeePersonalReceivedWorkloadDetailList(
+      HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+    PageInfo<EmployeePersonalReceivedWorkloadDetailVO> pageInfo =
+        findEmployeePersonalReceivedWorkloadDetailList(query);
+    List<EmployeePersonalReceivedWorkloadDetailVO> resultList = pageInfo.getList();
+    ExcelUtil<EmployeePersonalReceivedWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(EmployeePersonalReceivedWorkloadDetailVO.class);
+    excelUtil.exportExcel(response, resultList, "员工个人已收工作量明细列表");
+  }
+
+  /**
+   * 根据条件查询员工已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeReceivedDetailWorkloadVO>
+   */
+  public PageInfo<EmployeeReceivedDetailWorkloadVO> findReceivedDetailList(
+      EmployeeWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeReceivedDetailWorkloadVO> resultList =
+        mapper.selectEmployeeReceivedDetailList(query);
+    return null;
   }
 }

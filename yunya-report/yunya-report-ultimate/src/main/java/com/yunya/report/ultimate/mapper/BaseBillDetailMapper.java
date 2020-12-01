@@ -1,13 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.BillCategoryIncomeQuery;
-import com.yunya.feign.report.domain.query.BillDetailIncomeDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeePersonalActualWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.vo.BillTariffIncomeDetailVO;
-import com.yunya.feign.report.domain.vo.CategoryInfoIncomeVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.models.report.BaseBillDetail;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -53,11 +47,58 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillCategoryIncomeQuery query);
 
   /**
-   * 根据条件查询员工个人实收工作量明细列表
+   * 根据条件查询员工个人实收工作量明细列表（按月查询）
    *
    * @param query 查询条件
    * @return List<EmployeePersonalActualWorkloadDetailVO>
    */
-  List<EmployeePersonalActualWorkloadDetailVO> selectEmployeePersonalActualWorkloadDetailList(
-      @Param("query") EmployeePersonalActualWorkloadDetailQuery query);
+  List<EmployeePersonalActualWorkloadDetailVO>
+      selectEmployeePersonalActualWorkloadDetailListByMonth(
+          @Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工个人实收工作量明细列表（按年查询）
+   *
+   * @param query 查询条件
+   * @return
+   */
+  List<EmployeePersonalActualWorkloadDetailVO> selectEmployeePersonalActualWorkloadDetailListByYear(
+      @Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工工作量开单明细列表
+   *
+   * @param query 查询条件
+   * @return List<EmployeeOrderDetailWorkloadVO>
+   */
+  List<EmployeeOrderDetailWorkloadVO> selectEmployeeOrderDetailWorkloadList(
+      @Param("query") EmployeeWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工个人已收工作量明细列表（按月查询）
+   *
+   * @param query 查询条件
+   * @return List<EmployeePersonalReceivedWorkloadDetailVO>
+   */
+  List<EmployeePersonalReceivedWorkloadDetailVO>
+      selectEmployeePersonalReceivedWorkloadDetailListByMonth(
+          @Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工个人已收工作量明细列表（按年查询）
+   *
+   * @param query 查询条件
+   * @return List<EmployeePersonalReceivedWorkloadDetailVO>
+   */
+  List<EmployeePersonalReceivedWorkloadDetailVO> selectEmployeePersonalReceivedWorkloadDetailByYear(
+      @Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工已收工作量明细列表
+   *
+   * @param query 查询参数
+   * @return List<EmployeeReceivedDetailWorkloadVO>
+   */
+  List<EmployeeReceivedDetailWorkloadVO> selectEmployeeReceivedDetailList(
+      @Param("query") EmployeeWorkloadDetailQuery query);
 }
