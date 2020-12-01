@@ -11,8 +11,8 @@ import java.util.Objects;
  * @since: 1.0.0
  */
 public enum AttendanceTypeEnum {
-    ONDUTY((byte)0, "上班"),
-    OFFDUTY((byte)1, "下班");
+    ONDUTY((byte)0, "上班卡"),
+    OFFDUTY((byte)1, "下班卡");
 
     private final Byte code;
     private final String value;
@@ -30,7 +30,7 @@ public enum AttendanceTypeEnum {
         return code;
     }
 
-    public static String getValue(Integer code)
+    public static String getValue(Byte code)
     {
         if(code != null)
         {
@@ -45,7 +45,7 @@ public enum AttendanceTypeEnum {
         return null;
     }
 
-    public boolean equals(Integer code)
+    public boolean equals(Byte code)
     {
         return this.code.equals(code);
     }

@@ -92,6 +92,58 @@
     </where>
   </select>
 
+  <select id="statisticsWorkDateOvertimeByMinute" resultType="com.yunya.feign.employee_attend.vo.AttendanceWorkDateOvertimeMinuteVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.user_id as userId,
+        t.punch_date as date,
+        TIMESTAMPDIFF(MINUTE, t.punch_time, t.end_time) as minutes,
+        t.start_time as startTime,
+        t.end_time as endTime,
+        t.punch_address as punchAddress
+    from attendance_punch_record t
+    <where>
+      TIMESTAMPDIFF(MINUTE, t.punch_time, t.end_time)>=#{minute}
+      <if test="queryForm.userId != null" >
+        and t.user_id = #{queryForm.userId}
+      </if>
+      <if test="queryForm.orgId != null" >
+        and t.org_id = #{queryForm.orgId}
+      </if>
+      <if test="queryForm.punchDate != null" >
+        and t.punch_date = DATE_FORMAT(#{queryForm.punchDate},'%Y-%m-%d')
+      </if>
+      <if test="queryForm.betweenDate!=null and queryForm.andDate!=null" >
+        and t.punch_date between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
+      </if>
+      <if test="queryForm.source!=null">
+        and t.source = #{queryForm.source}
+      </if>
+      <if test="queryForm.punchStatus!=null">
+        and t.punch_status = #{queryForm.punchStatus}
+      </if>
+      <if test="queryForm.isPunch!=null">
+        and t.is_punch = #{queryForm.isPunch}
+      </if>
+      <if test="queryForm.notEqualPunchStatus != null">
+        and t.punch_status &lt;&gt; #{queryForm.notEqualPunchStatus}
+      </if>
+      <if test="queryForm.punchStatusList!=null and queryForm.punchStatusList.length>0">
+        and t.punch_status in
+        <foreach collection="queryForm.punchStatusList" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+      <if test="queryForm.notInIds!=null and queryForm.notInIds.size()>0">
+        and t.id not in
+        <foreach collection="queryForm.notInIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
+
   <select id="findAttendancePunchRecordWithScheduleIdList" resultType="com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO">
     select
         t.id,

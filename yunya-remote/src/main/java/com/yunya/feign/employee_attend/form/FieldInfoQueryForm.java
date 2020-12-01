@@ -37,6 +37,10 @@ public class FieldInfoQueryForm implements Serializable {
     @ApiModelProperty(value = "员工id")
     private Integer userId;
 
+    /** 组织id */
+    @ApiModelProperty(value = "组织id")
+    private Integer companyId;
+
     /** 外勤地址 */
     @ApiModelProperty(value = "外勤地址")
     private Integer fieldAddress;

@@ -106,6 +106,7 @@
         FROM
         work_overtime_info t
         LEFT JOIN base_schedule b ON t.schedule_id = b.id
+        LEFT JOIN copy_info ci ON ci.apply_id = t.id and ci.apply_type = 1
         <where>
             <if test="id !=null and id != ''">
                 and t.id = #{id}
@@ -121,6 +122,9 @@
             </if>
             <if test="apprpvalStatus == 1 or apprpvalStatus == 2 ">
                 and t.apprpval_status in (1,2)
+            </if>
+            <if test="copyId !=null and copyId != '' ">
+                and ci.user_id = #{copyId}
             </if>
         </where>
     </select>
@@ -184,6 +188,9 @@
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
             </if>
+            <if test="queryForm.companyId!=null">
+                and t.company_id = #{queryForm.companyId}
+            </if>
             <if test="queryForm.startTime!= null and queryForm.endTime!= null">
                 and DATE_FORMAT(t.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.startTime},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.endTime},'%Y-%m-%d')
             </if>
@@ -197,10 +204,9 @@
         order by t.crt_time desc
     </select>
 
-    <select id="statisticsWorkOvertimesByMinute" resultType="com.yunya.feign.employee_attend.vo.AttendanceWorkOvertimeMinuteVO">
+    <select id="statisticsWorkOvertimesByMinute" resultType="com.yunya.feign.employee_attend.vo.AttendanceOvertimeMinuteVO">
         select
             t.id,
-            t.user_id as userId,
             t.work_date as workDate,
             t.company_id as companyId,
             t.rest_schedule_id as restScheduleId,
@@ -224,11 +230,13 @@
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
             </if>
+            <if test="queryForm.companyId!=null">
+                and t.company_id = #{queryForm.companyId}
+            </if>
             <if test="queryForm.startTime!= null and queryForm.endTime!= null">
                 and DATE_FORMAT(t.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.startTime},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.endTime},'%Y-%m-%d')
             </if>
         </where>
-        group by t.work_date
         order by t.crt_time desc
     </select>
 </mapper>

@@ -10,7 +10,7 @@ public interface ApprovalInfoMapper extends Mapper<ApprovalInfo> {
     int batchInsert(List<ApprovalInfo> list);
 
     /**
-     * 获取当前请假最后一级别的审批人ID
+     * 获取当前请假最后一级别的审批人信息
      * @return
      */
     ApprovalInfo findMin(LeaveInfoForm leaveInfoForm);

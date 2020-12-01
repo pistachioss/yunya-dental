@@ -44,4 +44,10 @@ public class AppointItemQuery implements Serializable {
     /** 预约项目名称（模糊查询用） */
     @ApiModelProperty(value = "预约项目名称（模糊查询用）")
     private String name;
+
+    @ApiModelProperty(value = "是否启用、是否有效，默认有效；1-有效，0-无效")
+    private Byte inservice = 1;
+
+    @ApiModelProperty(value = "组织ID")
+    private Integer orgId;
 }

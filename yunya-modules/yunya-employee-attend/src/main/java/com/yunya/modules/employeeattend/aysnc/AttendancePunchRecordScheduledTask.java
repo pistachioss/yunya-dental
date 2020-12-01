@@ -8,6 +8,8 @@ import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
+import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
 import com.yunya.modules.employeeattend.biz.*;
@@ -209,8 +211,14 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 for (EmployeeScheduleVO employeeScheduleVO : list) {
                     Integer id = employeeScheduleVO.getId();
                     if (id.equals(scheduleId)) {
-                        Date startTime = DateUtil.dateTo19700101(leaveInfoVO.getStartTime());
-                        Date endTime = DateUtil.dateTo19700101(leaveInfoVO.getEndTime());
+                        Date startTime;
+                        Date endTime;
+                        try {
+                            startTime = leaveInfoVO.getStartTime();
+                            endTime = leaveInfoVO.getEndTime();
+                        } catch (Exception e) {
+                            throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+                        }
                         Date firstTime = employeeScheduleVO.getFirstStartTime();
                         Date lastTime = employeeScheduleVO.getFirstEndTime();
                         if (startTime.compareTo(firstTime)==0 && endTime.compareTo(lastTime)==0) {//请假覆盖，则剔除当前班次
@@ -229,9 +237,9 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                             list.add(punchItem);
                             restItemMap.put(userId, list);
                         } else {
-                            if (startTime.compareTo(firstTime) == 0 && endTime.before(lastTime)) {
+                            if (startTime.compareTo(firstTime)==0 && endTime.before(lastTime)) {
                                 employeeScheduleVO.setFirstStartTime(endTime);
-                            } else if (startTime.after(firstTime) && endTime.compareTo(lastTime) == 0) {
+                            } else if (startTime.after(firstTime) && endTime.compareTo(lastTime)==0) {
                                 employeeScheduleVO.setFirstEndTime(startTime);
                             }
                             punchItemList.add(employeeScheduleVO);
@@ -322,8 +330,14 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             if (list == null) {
                 list = new ArrayList<>();
             }
-            Date startTime = DateUtil.dateTo19700101(fieldInfoVO.getStartTime());
-            Date endTime = DateUtil.dateTo19700101(fieldInfoVO.getEndTime());
+            Date startTime;
+            Date endTime;
+            try {
+                startTime = DateUtil.dateTo19700101(fieldInfoVO.getStartTime());
+                endTime = DateUtil.dateTo19700101(fieldInfoVO.getEndTime());
+            } catch (Exception e) {
+                throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+            }
             List<EmployeeScheduleVO> punchItemList = new ArrayList<>();
             if (!list.isEmpty()) {
                 for (EmployeeScheduleVO scheduleVO : list) {

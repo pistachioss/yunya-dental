@@ -11,6 +11,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.PageHelperUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.system.ClinicAccountItem;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.Min;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -110,6 +112,8 @@ public class ClinicAccountItemBiz extends BaseBiz<ClinicAccountItemMapper, Clini
     } else {
       pageInfo.setList(new ArrayList());
     }
+    // 设置分页
+    PageHelperUtils.pageFromList(pageInfo,pageInfo.getList(),queryForm.getPageSize());
     return pageInfo;
   }
 

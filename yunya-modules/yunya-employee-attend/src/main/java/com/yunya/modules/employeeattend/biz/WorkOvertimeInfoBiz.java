@@ -2,7 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
-import com.yunya.feign.employee_attend.vo.AttendanceWorkOvertimeMinuteVO;
+import com.yunya.feign.employee_attend.vo.AttendanceOvertimeMinuteVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
 import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
@@ -311,7 +311,13 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         return mapper.findWorkOvertimeInfoList(queryForm);
     }
 
-    public List<AttendanceWorkOvertimeMinuteVO> statisticsWorkOvertimesByMinute(WorkOvertimeInfoQueryForm queryForm) {
+    /**
+     * 分页查询休息日加班时长的考勤汇总明细
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    public List<AttendanceOvertimeMinuteVO> statisticsWorkOvertimesByMinute(WorkOvertimeInfoQueryForm queryForm) {
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
         }

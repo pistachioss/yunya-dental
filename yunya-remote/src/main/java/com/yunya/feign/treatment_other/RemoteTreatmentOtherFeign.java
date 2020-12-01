@@ -6,6 +6,7 @@ import com.yunya.feign.treatment_other.factory.RemoteTreatmentOtherFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.treatment_other.VisitingRecord;
 import io.swagger.annotations.ApiOperation;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -54,6 +55,6 @@ public interface RemoteTreatmentOtherFeign {
      * @return 返回统计个数
      */
     @ApiOperation(value = "统计后续随访个数")
-    @RequestMapping(value = "api/treatment/other/visiting/count/{patientId}",method = RequestMethod.GET)
-    Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId);
+    @RequestMapping(value = "api/treatment/other/visiting/count/{patientId}/{regDate}",method = RequestMethod.GET)
+    Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId,@PathVariable(value = "regDate") String regDate);
 }

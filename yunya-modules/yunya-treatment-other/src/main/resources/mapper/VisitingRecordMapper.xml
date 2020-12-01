@@ -140,10 +140,10 @@
   </select>
 
   <!-- 统计后续随访个数 -->
-  <select id="countNextVisiting" parameterType="integer" resultType="integer">
+  <select id="countNextVisiting" resultType="integer">
     select count(id) from `visiting_record` where patient_id = #{patientId}
     and status = 0 and inservice = 1
-    and date_format(visiting_date,'%Y-%m-%d') &gt; date_format(now(),'%Y-%m-%d')
+    and date_format(visiting_date,'%Y-%m-%d') &gt; date_format(#{regDate},'%Y-%m-%d')
   </select>
 
 </mapper>

@@ -28,4 +28,7 @@ public class TreatmentCountQuery implements Serializable {
   @ApiModelProperty(value = "用户ID", required = true)
   @NotNull(message = "用户ID不能为空！")
   private Integer userId;
+
+  @ApiModelProperty(value = "医生ID,助手账号登录情况下，需要传主治医生ID，除此之外可以为空")
+  private Integer dentistId;
 }
