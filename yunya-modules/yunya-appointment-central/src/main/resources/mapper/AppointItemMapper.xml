@@ -65,13 +65,14 @@
         clinic_appoint_item  citem
         ON item.id = citem.appoint_item_id
         LEFT JOIN appoint_type atype ON	atype.id = item.appoint_type_id
-        where citem.org_id = #{form.orgId}
+        where citem.org_id = #{form.orgId} and citem.inservice = 1
         <if test="form.appointItemId != null">
             and citem.id = #{form.appointId}
         </if>
         <if test="form.name != null">
             and citem.name like concat('%',#{form.name},'%')
         </if>
+
     </select>
 
     <!--查询预约分类列表-->

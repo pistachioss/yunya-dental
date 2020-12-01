@@ -73,7 +73,7 @@ public class ClinicAppointItemBiz extends BaseBiz<ClinicAppointItemMapper, Clini
         List<ClinicAppointItemConfigVo> clinicAppointItemConfigVos = new ArrayList<>();
         Integer appointItemId = query.getAppointItemId();
         // 门诊可预约项目列表
-        List<ClinicAppointItem> clinicAppointItems = mapper.findClinicAppointItemByAppointItemId(appointItemId);
+        List<ClinicAppointItem> clinicAppointItems = mapper.findClinicAppointItemByAppointItemId(appointItemId,query.getInservice());
         clinicAppointItems.forEach(clinicAppointItem -> {
             // 查询公司信息
             OrganizationInfo organizationInfo = systemServiceFeign.findOrgInfoByOrgId(clinicAppointItem.getOrgId());

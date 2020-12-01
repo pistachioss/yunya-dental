@@ -1,11 +1,13 @@
 package com.yunya.models.treatment;
 
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-
+@Data
 @Table(name = "order_detail_pay_record")
 public class OrderDetailPayRecord {
     /**

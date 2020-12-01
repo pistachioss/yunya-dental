@@ -184,9 +184,12 @@
         t.leave_picture as leavePicture,
         t.approval_criteria_id as approvalCriteriaId,
         t.apprpval_status as apprpvalStatus,
-        t.crt_time as crtTime
+        t.crt_time as crtTime,
+        IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)), TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))
+        AS leaveTime
         from leave_info t
         LEFT join vacation_set vs on t.vacation_id = vs.id
+        LEFT JOIN leave_schedule ls on ls.leave_id = t.id
         <where>
             <if test="id!= null">
                 and t.id = #{id}
@@ -195,6 +198,7 @@
                 and t.user_id = #{userId}
             </if>
         </where>
+        GROUP BY t.id
         order by t.crt_time desc
     </select>
     <select id="findApproval" resultType="com.yunya.feign.employee_attend.vo.ApprovalInfoVO">

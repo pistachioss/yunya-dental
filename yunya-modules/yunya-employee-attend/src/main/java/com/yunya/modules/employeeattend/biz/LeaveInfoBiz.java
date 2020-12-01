@@ -26,8 +26,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
-import static com.yunya.framework.common.constant.OperationCodeConstants.OBJECT_EDIT_FAIL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简介：请假信息业务层
@@ -85,70 +84,84 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
      * @return
      */
     public Integer createDay(LeaveInfoForm leaveInfoForm) {
-        //判断是否有其他类型的申请
-        LeaveInfo copy = new LeaveInfo();
-        BeanUtils.copyProperties(leaveInfoForm, copy);
-        int fiwi = mapper.countFiWi(copy);
-        if (fiwi == 0) {
-            //判断是否与同类型其他申请时间冲突
-            LeaveInfo find = new LeaveInfo();
-            find.setUserId(leaveInfoForm.getUserId());
-            List<LeaveInfo> findlist = mapper.select(find);
-            Boolean flag = true;
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            Date listartTime = null;
-            Date liendTime = null;
-            Date startTime = leaveInfoForm.getStartTime();
-            Date endTime = leaveInfoForm.getEndTime();
-            for (LeaveInfo li : findlist) {
-                try {
-                    listartTime = format.parse(format.format(li.getStartTime()));
-                    liendTime = format.parse(format.format(li.getEndTime()));
-                } catch (ParseException e) {
-                    throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-                }
-                if ((startTime.before(liendTime) && startTime.after(listartTime)) ||
-                        (leaveInfoForm.getEndTime().before(liendTime) && endTime.after(listartTime)) ||
-                        startTime.equals(listartTime) || endTime.equals(liendTime) ||
-                        (startTime.before(listartTime) && endTime.after(liendTime))
-                ) {
-                    flag = false;
-                    break;
-                }
-            }
-            if (flag) {
-                LeaveInfo leaveInfo = new LeaveInfo();
-                BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
-                leaveInfo.setCrtTime(new Date());
-                int num = mapper.insert(leaveInfo);
-                //插入审批人信息
-                int leaveId = leaveInfo.getId();
-                List<ApprovalInfo> list = leaveInfoForm.getApprpvalPeopleList();
-                for (ApprovalInfo approvalInfo : list) {
-                    approvalInfo.setCrtId(leaveInfoForm.getCrtId());
-                    approvalInfo.setCrtTime(new Date());
-                    approvalInfo.setLeaveId(leaveId);
-                }
-                approvalInfoMapper.batchInsert(list);
-                //插入抄送人信息
-                if (leaveInfoForm.getCopyList() != null) {
-                    List<CopyInfo> copyInfoList = new ArrayList<>();
-                    for (Integer copyId : leaveInfoForm.getCopyList()) {
-                        CopyInfo copyInfo = new CopyInfo();
-                        copyInfo.setApplyId(leaveId);
-                        copyInfo.setApplyType(0);
-                        copyInfo.setUserId(copyId);
-                        copyInfo.setCrtId(leaveInfoForm.getUserId());
-                        copyInfo.setCrtTime(new Date());
-                        copyInfoList.add(copyInfo);
-                    }
-                    copyInfoMapper.batchInsert(copyInfoList);
-                }
-                return num;
-            }
-            throw new ClientServiceException("该申请与其他请假申请时间冲突", INSERT_MODEL);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String dateString = simpleDateFormat.format(leaveInfoForm.getStartTime());
+        String nowString = simpleDateFormat.format(new Date());
+        Date date = null;
+        Date now = new Date();
+        try {
+            date = simpleDateFormat.parse(dateString);
+            now = simpleDateFormat.parse(nowString);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
-        throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
+        if (now.before(date)) {
+            //判断是否有其他类型的申请
+            LeaveInfo copy = new LeaveInfo();
+            BeanUtils.copyProperties(leaveInfoForm, copy);
+            int fiwi = mapper.countFiWi(copy);
+            if (fiwi == 0) {
+                //判断是否与同类型其他申请时间冲突
+                LeaveInfo find = new LeaveInfo();
+                find.setUserId(leaveInfoForm.getUserId());
+                List<LeaveInfo> findlist = mapper.select(find);
+                Boolean flag = true;
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                Date listartTime = null;
+                Date liendTime = null;
+                Date startTime = leaveInfoForm.getStartTime();
+                Date endTime = leaveInfoForm.getEndTime();
+                for (LeaveInfo li : findlist) {
+                    try {
+                        listartTime = format.parse(format.format(li.getStartTime()));
+                        liendTime = format.parse(format.format(li.getEndTime()));
+                    } catch (ParseException e) {
+                        throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+                    }
+                    if ((startTime.before(liendTime) && startTime.after(listartTime)) ||
+                            (leaveInfoForm.getEndTime().before(liendTime) && endTime.after(listartTime)) ||
+                            startTime.equals(listartTime) || endTime.equals(liendTime) ||
+                            (startTime.before(listartTime) && endTime.after(liendTime))
+                    ) {
+                        flag = false;
+                        break;
+                    }
+                }
+                if (flag) {
+                    LeaveInfo leaveInfo = new LeaveInfo();
+                    BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
+                    leaveInfo.setCrtTime(new Date());
+                    int num = mapper.insert(leaveInfo);
+                    //插入审批人信息
+                    int leaveId = leaveInfo.getId();
+                    List<ApprovalInfo> list = leaveInfoForm.getApprpvalPeopleList();
+                    for (ApprovalInfo approvalInfo : list) {
+                        approvalInfo.setCrtId(leaveInfoForm.getCrtId());
+                        approvalInfo.setCrtTime(new Date());
+                        approvalInfo.setLeaveId(leaveId);
+                    }
+                    approvalInfoMapper.batchInsert(list);
+                    //插入抄送人信息
+                    if (leaveInfoForm.getCopyList() != null) {
+                        List<CopyInfo> copyInfoList = new ArrayList<>();
+                        for (Integer copyId : leaveInfoForm.getCopyList()) {
+                            CopyInfo copyInfo = new CopyInfo();
+                            copyInfo.setApplyId(leaveId);
+                            copyInfo.setApplyType(0);
+                            copyInfo.setUserId(copyId);
+                            copyInfo.setCrtId(leaveInfoForm.getUserId());
+                            copyInfo.setCrtTime(new Date());
+                            copyInfoList.add(copyInfo);
+                        }
+                        copyInfoMapper.batchInsert(copyInfoList);
+                    }
+                    return num;
+                }
+                throw new ClientServiceException("该申请与其他请假申请时间冲突", INSERT_MODEL);
+            }
+            throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
+        }
+        throw new ClientServiceException("不可以发起申请当天及以前的申请事项", INSERT_MODEL);
     }
 
     /**
@@ -187,55 +200,69 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
      * @return
      */
     public Integer addEm(LeaveInfoByEmForm leaveInfoByEmForm) {
-        //判断是否有其他类型的申请
-        LeaveInfo li = new LeaveInfo();
-        BeanUtils.copyProperties(leaveInfoByEmForm, li);
-        int fiwi = mapper.countFiWi(li);
-        if (fiwi == 0) {
-            //判断是否与同类型其他申请时间冲突
-            List<LeaveSchedule> scList = leaveInfoByEmForm.getScList();
-            int isConflict = leaveScheduleMapper.selectNum(scList);
-            if (isConflict == 0) {
-                LeaveInfo leaveInfo = new LeaveInfo();
-                BeanUtils.copyProperties(leaveInfoByEmForm, leaveInfo);
-                leaveInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-                leaveInfo.setCrtTime(new Date());
-                int num = mapper.insert(leaveInfo);
-                int leaveId = leaveInfo.getId();
-                //插入班次请假信息
-                for (LeaveSchedule leaveSchedule : scList) {
-                    leaveSchedule.setCrtId(leaveInfoByEmForm.getCrtId());
-                    leaveSchedule.setCrtTime(new Date());
-                    leaveSchedule.setLeaveId(leaveId);
-                }
-                leaveScheduleMapper.batchInsert(scList);
-                //插入审批人信息
-                List<ApprovalInfo> list = leaveInfoByEmForm.getApprpvalPeopleList();
-                for (ApprovalInfo approvalInfo : list) {
-                    approvalInfo.setCrtId(leaveInfoByEmForm.getCrtId());
-                    approvalInfo.setCrtTime(new Date());
-                    approvalInfo.setLeaveId(leaveId);
-                }
-                approvalInfoMapper.batchInsert(list);
-                //插入抄送人信息
-                if (leaveInfoByEmForm.getCopyList() != null) {
-                    List<CopyInfo> copyInfoList = new ArrayList<>();
-                    for (Integer copyId : leaveInfoByEmForm.getCopyList()) {
-                        CopyInfo copyInfo = new CopyInfo();
-                        copyInfo.setApplyId(leaveId);
-                        copyInfo.setApplyType(0);
-                        copyInfo.setUserId(copyId);
-                        copyInfo.setCrtId(leaveInfoByEmForm.getUserId());
-                        copyInfo.setCrtTime(new Date());
-                        copyInfoList.add(copyInfo);
-                    }
-                    copyInfoMapper.batchInsert(copyInfoList);
-                }
-                return num;
-            }
-            throw new ClientServiceException("该申请与其他请假申请时间冲突", INSERT_MODEL);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String dateString = simpleDateFormat.format(leaveInfoByEmForm.getStartTime());
+        String nowString = simpleDateFormat.format(new Date());
+        Date date = null;
+        Date now = new Date();
+        try {
+            date = simpleDateFormat.parse(dateString);
+            now = simpleDateFormat.parse(nowString);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
-        throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
+        if (now.before(date)) {
+            //判断是否有其他类型的申请
+            LeaveInfo li = new LeaveInfo();
+            BeanUtils.copyProperties(leaveInfoByEmForm, li);
+            int fiwi = mapper.countFiWi(li);
+            if (fiwi == 0) {
+                //判断是否与同类型其他申请时间冲突
+                List<LeaveSchedule> scList = leaveInfoByEmForm.getScList();
+                int isConflict = leaveScheduleMapper.selectNum(scList);
+                if (isConflict == 0) {
+                    LeaveInfo leaveInfo = new LeaveInfo();
+                    BeanUtils.copyProperties(leaveInfoByEmForm, leaveInfo);
+                    leaveInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                    leaveInfo.setCrtTime(new Date());
+                    int num = mapper.insert(leaveInfo);
+                    int leaveId = leaveInfo.getId();
+                    //插入班次请假信息
+                    for (LeaveSchedule leaveSchedule : scList) {
+                        leaveSchedule.setCrtId(leaveInfoByEmForm.getCrtId());
+                        leaveSchedule.setCrtTime(new Date());
+                        leaveSchedule.setLeaveId(leaveId);
+                    }
+                    leaveScheduleMapper.batchInsert(scList);
+                    //插入审批人信息
+                    List<ApprovalInfo> list = leaveInfoByEmForm.getApprpvalPeopleList();
+                    for (ApprovalInfo approvalInfo : list) {
+                        approvalInfo.setCrtId(leaveInfoByEmForm.getCrtId());
+                        approvalInfo.setCrtTime(new Date());
+                        approvalInfo.setLeaveId(leaveId);
+                    }
+                    approvalInfoMapper.batchInsert(list);
+                    //插入抄送人信息
+                    if (leaveInfoByEmForm.getCopyList() != null) {
+                        List<CopyInfo> copyInfoList = new ArrayList<>();
+                        for (Integer copyId : leaveInfoByEmForm.getCopyList()) {
+                            CopyInfo copyInfo = new CopyInfo();
+                            copyInfo.setApplyId(leaveId);
+                            copyInfo.setApplyType(0);
+                            copyInfo.setUserId(copyId);
+                            copyInfo.setCrtId(leaveInfoByEmForm.getUserId());
+                            copyInfo.setCrtTime(new Date());
+                            copyInfoList.add(copyInfo);
+                        }
+                        copyInfoMapper.batchInsert(copyInfoList);
+                    }
+                    return num;
+                }
+                throw new ClientServiceException("该申请与其他请假申请时间冲突", INSERT_MODEL);
+            }
+            throw new ClientServiceException("每天只能发起一种类型的申请", INSERT_MODEL);
+        }
+        throw new ClientServiceException("不可以发起申请当天及以前的申请事项", INSERT_MODEL);
     }
 
     /**
@@ -248,11 +275,27 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         LeaveInfo leaveInfo = new LeaveInfo();
         leaveInfo.setId(leaveInfoForm.getId());
         leaveInfo = mapper.selectByPrimaryKey(leaveInfo);
-        if (leaveInfo.getApprpvalStatus() == 0) {
-            leaveInfo.setApprpvalStatus(leaveInfoForm.getApprpvalStatus());
-            return mapper.updateByPrimaryKey(leaveInfo);
+
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String dateString = simpleDateFormat.format(leaveInfo.getStartTime());
+        String nowString = simpleDateFormat.format(new Date());
+        Date date = null;
+        Date now = new Date();
+        try {
+            date = simpleDateFormat.parse(dateString);
+            now = simpleDateFormat.parse(nowString);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
-        throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
+        //必须提前一天申请或审批
+        if (now.before(date)) {
+            if (leaveInfo.getApprpvalStatus() == 0) {
+                leaveInfo.setApprpvalStatus(leaveInfoForm.getApprpvalStatus());
+                return mapper.updateByPrimaryKey(leaveInfo);
+            }
+            throw new ClientServiceException("当前申请已被处理", OBJECT_EDIT_FAIL);
+        }
+        throw new ClientServiceException("当前申请已过期", OBJECT_EDIT_FAIL);
     }
 
     /**

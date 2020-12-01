@@ -260,8 +260,8 @@ public class DiscountBiz {
 	public void buildResponse(HttpServletResponse response, String fileName) throws UnsupportedEncodingException {
 		response.setContentType("application/vnd.ms-excel");
 		response.setCharacterEncoding("utf-8");
-		response.setHeader("Content-disposition", "attachment;filename=" +
-				URLEncoder.encode(fileName, "UTF-8") + ".xlsx");
+		String encodeFileName = URLEncoder.encode(fileName, "UTF-8");
+		response.setHeader("Content-disposition", "attachment;filename=" + encodeFileName + ".xlsx");
 	}
 
 	public String getCouponName(Integer couponId) {

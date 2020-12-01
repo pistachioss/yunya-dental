@@ -186,4 +186,8 @@ public class VisitingRecordVo implements Serializable {
     @ApiModelProperty(value = "患者类型")
     private String patientKind;
 
+    /** 是否初诊，0-初诊，1-复诊 */
+    @ApiModelProperty(value = "是否初诊，0-初诊，1-复诊")
+    private Byte type;
+
 }
