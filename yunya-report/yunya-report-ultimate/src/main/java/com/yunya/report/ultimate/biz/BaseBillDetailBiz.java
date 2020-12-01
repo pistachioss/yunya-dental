@@ -259,6 +259,38 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     }
     List<EmployeeReceivedDetailWorkloadVO> resultList =
         mapper.selectEmployeeReceivedDetailList(query);
-    return null;
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件查询员工补入工作量明细
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeePersonalSupplyWorkloadDetailVO>
+   */
+  public PageInfo<EmployeePersonalSupplyWorkloadDetailVO> findSupplyWorkloadDetailList(
+      EmployeePersonalWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    Byte dateType = query.getDateType();
+    List<EmployeePersonalSupplyWorkloadDetailVO> resultList;
+    if (dateType == 0) {
+      resultList = mapper.selectEmployeePersonalSupplyWorkloadDetailListByMonth(query);
+    } else {
+      resultList = mapper.selectEmployeePersonalSupplyWorkloadDetailByYear(query);
+    }
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出员工个人补入工作量明细
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportEmployeePersonalSupplyWorkloadDetailList(
+      HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) {
+
   }
 }
