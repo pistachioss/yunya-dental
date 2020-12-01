@@ -2,12 +2,14 @@ package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeeRefundWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
+import com.yunya.report.ultimate.biz.BaseRefundBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -34,7 +36,10 @@ import java.io.IOException;
 @RequestMapping("personnel")
 public class CompanyReportOfPersonnelController {
 
+  /** 账单详情 */
   @Autowired private BaseBillDetailBiz billDetailBiz;
+  /** 退费 */
+  @Autowired private BaseRefundBiz refundBiz;
 
   /**
    * 根据条件查询员工工作量报表
@@ -107,7 +112,7 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-实收工作量明细-查看明细")
   @PostMapping(value = "/employee/order/detail/list", name = "公司端报表-人事报表-员工工作量-实收工作量明细-查看详情")
-  public ResponseResult<PageInfo<EmployeeOrderDetailWorkloadVO>> orderDetailList(
+  public ResponseResult<PageInfo<EmployeeOrderDetailWorkloadVO>> actualOrderDetailList(
       @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
     PageInfo<EmployeeOrderDetailWorkloadVO> pageInfo =
         billDetailBiz.findOrderDetailWorkloadList(query);
@@ -155,7 +160,7 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-已收工作量明细-查看明细")
   @PostMapping(value = "/employee/workload/received/detail", name = "公司端报表-人事报表-员工工作量-已收工作量明细-查看详情")
-  public ResponseResult<PageInfo<EmployeeReceivedDetailWorkloadVO>> receivedDetailList(
+  public ResponseResult<PageInfo<EmployeeReceivedDetailWorkloadVO>> receivedOrderDetailList(
       @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
     PageInfo<EmployeeReceivedDetailWorkloadVO> pageInfo =
         billDetailBiz.findReceivedDetailList(query);
@@ -202,9 +207,56 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-补入工作量明细-查看明细")
   @PostMapping(value = "/employee/workload/supply/detail", name = "公司端报表-人事报表-员工工作量-补入工作量明细-查看明细")
-  public ResponseResult<PageInfo<EmployeeSupplyDetailWorkloadVO>> supplyWorkloadDetailList(
+  public ResponseResult<PageInfo<EmployeeSupplyDetailWorkloadVO>> supplyOrderDetailList(
       @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
     PageInfo<EmployeeSupplyDetailWorkloadVO> pageInfo = billDetailBiz.findSupplyDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询员工退费工作量明细
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-退费工作量明细")
+  @PostMapping(value = "/employee/workload/refund/list", name = "公司端报表-人事报表-员工工作量")
+  public ResponseResult<PageInfo<EmployeePersonalRefundWorkloadDetailVO>> refundWorkloadDetailList(
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
+    PageInfo<EmployeePersonalRefundWorkloadDetailVO> pageInfo =
+        refundBiz.findRefundWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出员工个人退费工作量明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-退费工作量明细-导出")
+  @PostMapping(value = "/employee/workload/supply/export", name = "根据条件导出员工个人退费工作量明细")
+  public ResponseResult<T> exportEmployeePersonalRefundWorkloadDetailList(
+      HttpServletResponse response,
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
+      throws IOException {
+    refundBiz.exportEmployeePersonalRefundWorkloadDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工退费工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeSupplyDetailWorkloadVO> 分页列表
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-退费工作量明细-查看明细")
+  @PostMapping(value = "/employee/workload/refund/detail", name = "公司端报表-人事报表-员工工作量-退费工作量明细-查看明细")
+  public ResponseResult<PageInfo<EmployeeRefundDetailWorkloadVO>> refundOrderDetailList(
+      @RequestBody @Validated EmployeeRefundWorkloadDetailQuery query) {
+    PageInfo<EmployeeRefundDetailWorkloadVO> pageInfo =
+        refundBiz.findRefundOrderDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
 }

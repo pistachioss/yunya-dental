@@ -406,7 +406,6 @@
         bbp.privilege_amount AS privilegeAmount,
         bbp.actual_amount AS actualAmount,
         bbd.price * bbd.quantity AS originalAmount,
-        bbd.coupon_workload AS couponWorkload,
         bbd.discount_amount AS discountAmount,
         bbd.executor_id AS executorId
         FROM
