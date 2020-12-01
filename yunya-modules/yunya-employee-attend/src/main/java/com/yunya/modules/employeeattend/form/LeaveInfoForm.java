@@ -28,6 +28,8 @@ public class LeaveInfoForm {
     private Integer id;
     @ApiModelProperty("user_id")
     private Integer userId;
+    @ApiModelProperty("抄送人ID")
+    private Integer copyId;
 
     @ApiModelProperty("门诊ID")
     private Integer companyId;

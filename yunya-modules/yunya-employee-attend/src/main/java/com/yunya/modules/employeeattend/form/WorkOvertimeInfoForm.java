@@ -27,6 +27,9 @@ public class WorkOvertimeInfoForm {
     @ApiModelProperty("申请人ID")
     private Integer userId;
 
+    @ApiModelProperty("抄送人ID")
+    private Integer copyId;
+
     @ApiModelProperty("申请要加班的日期")
     private Date workDate;
     /**

@@ -190,12 +190,16 @@
         from leave_info t
         LEFT join vacation_set vs on t.vacation_id = vs.id
         LEFT JOIN leave_schedule ls on ls.leave_id = t.id
+        LEFT JOIN copy_info ci ON ci.apply_id = t.id and ci.apply_type = 0
         <where>
             <if test="id!= null">
                 and t.id = #{id}
             </if>
             <if test="userId!= null">
                 and t.user_id = #{userId}
+            </if>
+            <if test="copyId !=null and copyId != '' ">
+                and ci.user_id = #{copyId}
             </if>
         </where>
         GROUP BY t.id

@@ -213,9 +213,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
      * @return
      */
     public List<FieldInfoListVO> findList(FieldInfoForm fieldInfoForm) {
-        FieldInfo fieldInfo = new FieldInfo();
-        BeanUtils.copyProperties(fieldInfoForm, fieldInfo);
-        List<FieldInfoListVO> list = mapper.findVOList(fieldInfo);
+//        FieldInfo fieldInfo = new FieldInfo();
+//        BeanUtils.copyProperties(fieldInfoForm, fieldInfo);
+        List<FieldInfoListVO> list = mapper.findVOList(fieldInfoForm);
         if (list.size() > 0) {
             //获取用户信息
             SysUserEmployeeModel model = new SysUserEmployeeModel();
