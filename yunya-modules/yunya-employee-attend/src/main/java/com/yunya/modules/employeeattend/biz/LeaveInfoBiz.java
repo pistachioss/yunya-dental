@@ -52,7 +52,6 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private FieldInfoMapper fieldInfoMapper;
     @Autowired
     private WorkOvertimeInfoMapper workOvertimeInfoMapper;
-
     /**
      * 根据日期和用户id列表查询请假列表
      *
@@ -266,7 +265,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     }
 
     /**
-     * 审批加班
+     * 审批请假
      *
      * @param
      * @return
@@ -290,7 +289,20 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         //必须提前一天申请或审批
         if (now.before(date)) {
             if (leaveInfo.getApprpvalStatus() == 0) {
-                leaveInfo.setApprpvalStatus(leaveInfoForm.getApprpvalStatus());
+                //根据当前登录人Id和请假信息ID 获取审批流中当前登录人的审批流程
+                ApprovalInfo approvalInfo = new ApprovalInfo();
+                approvalInfo.setLeaveId(leaveInfoForm.getId());
+                approvalInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                approvalInfo = approvalInfoMapper.findNow(approvalInfo);
+                //当前审批最后一层级的审批人信息
+                ApprovalInfo Minuser = approvalInfoMapper.findMin(leaveInfoForm);
+                //是否为最后一层审批或者是否为拒绝
+                if(approvalInfo.getId().equals(Minuser.getId())||leaveInfoForm.getApprpvalStatus()==2){
+                    leaveInfo.setApprpvalStatus(leaveInfoForm.getApprpvalStatus());
+                }
+                approvalInfo.setApprovalStatus(leaveInfoForm.getApprpvalStatus());
+                //更新审批流程表中的审批状态
+                approvalInfoMapper.updateByPrimaryKey(approvalInfo);
                 return mapper.updateByPrimaryKey(leaveInfo);
             }
             throw new ClientServiceException("当前申请已被处理", OBJECT_EDIT_FAIL);
