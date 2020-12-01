@@ -185,7 +185,7 @@ public class CompanyReportOfPersonnelController {
    * @return void
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-补入工作量明细-导出")
-  @PostMapping(value = "/employee/workload/received/export", name = "根据条件导出员工个人补入工作量明细")
+  @PostMapping(value = "/employee/workload/supply/export", name = "根据条件导出员工个人补入工作量明细")
   public ResponseResult<T> exportEmployeePersonalSupplyWorkloadDetailList(
           HttpServletResponse response,
           @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
