@@ -200,7 +200,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @return PageInfo<EmployeeOrderDetailWorkloadVO>
    */
   public PageInfo<EmployeeOrderDetailWorkloadVO> findOrderDetailWorkloadList(
-      EmployeeOrderDetailWorkloadQuery query) {
+      EmployeeWorkloadDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -244,5 +244,21 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     ExcelUtil<EmployeePersonalReceivedWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalReceivedWorkloadDetailVO.class);
     excelUtil.exportExcel(response, resultList, "员工个人已收工作量明细列表");
+  }
+
+  /**
+   * 根据条件查询员工已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeReceivedDetailWorkloadVO>
+   */
+  public PageInfo<EmployeeReceivedDetailWorkloadVO> findReceivedDetailList(
+      EmployeeWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeReceivedDetailWorkloadVO> resultList =
+        mapper.selectEmployeeReceivedDetailList(query);
+    return null;
   }
 }

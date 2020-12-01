@@ -11,18 +11,18 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
- * 简介: 员工工作量开单明细
+ * 简介: 员工工作量明细参数
  *
  * @author: chow
  * @date: 2020/11/30 15:40
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("员工工作量开单明细")
+@ApiModel("员工工作量明细参数")
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class EmployeeOrderDetailWorkloadQuery extends PageQuery implements Serializable {
+public class EmployeeWorkloadDetailQuery extends PageQuery implements Serializable {
   /** 账单ID */
   @ApiModelProperty(value = "账单ID", required = true)
   @NotNull(message = "账单ID不能为空！")

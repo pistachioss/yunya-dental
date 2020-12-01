@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.query.OrderRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
 import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
+import com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
@@ -50,8 +51,7 @@ public class CompanyReportTest {
   /** 员工实收工作量明细列表 */
   @Test
   public void findEmpWorkload() {
-    EmployeePersonalWorkloadDetailQuery query =
-        new EmployeePersonalWorkloadDetailQuery();
+    EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
     query.setOrgId(35);
     query.setDateType((byte) 0);
     query.setQueryDate("2020-11");
@@ -59,6 +59,19 @@ public class CompanyReportTest {
     query.setBillNum("ZD00352011300001");
     ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>> list =
         personnelController.findEmployeePersonalActualWorkloadDetailList(query);
+    System.out.println(list);
+  }
+
+  /** 员工已收工作量明细列表 */
+  @Test
+  public void findReceivedWorkload() {
+    EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 1);
+    query.setQueryDate("2020");
+    query.setEmployeeId(521);
+    ResponseResult<PageInfo<EmployeePersonalReceivedWorkloadDetailVO>> list =
+        personnelController.findEmployeePersonalReceivedWorkloadDetailList(query);
     System.out.println(list);
   }
 }

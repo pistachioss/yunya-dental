@@ -72,7 +72,7 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    * @return List<EmployeeOrderDetailWorkloadVO>
    */
   List<EmployeeOrderDetailWorkloadVO> selectEmployeeOrderDetailWorkloadList(
-      @Param("query") EmployeeOrderDetailWorkloadQuery query);
+      @Param("query") EmployeeWorkloadDetailQuery query);
 
   /**
    * 根据条件查询员工个人已收工作量明细列表（按月查询）
@@ -92,4 +92,13 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<EmployeePersonalReceivedWorkloadDetailVO> selectEmployeePersonalReceivedWorkloadDetailByYear(
       @Param("query") EmployeePersonalWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询员工已收工作量明细列表
+   *
+   * @param query 查询参数
+   * @return List<EmployeeReceivedDetailWorkloadVO>
+   */
+  List<EmployeeReceivedDetailWorkloadVO> selectEmployeeReceivedDetailList(
+      @Param("query") EmployeeWorkloadDetailQuery query);
 }

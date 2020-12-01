@@ -1,13 +1,10 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.EmployeeOrderDetailWorkloadQuery;
 import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeeWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.vo.EmployeeOrderDetailWorkloadVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
@@ -111,7 +108,7 @@ public class CompanyReportOfPersonnelController {
   @ApiOperation("公司端报表-人事报表-员工工作量-实收工作量明细-查看明细")
   @PostMapping(value = "/employee/order/detail/list", name = "公司端报表-人事报表-员工工作量-实收工作量明细-查看详情")
   public ResponseResult<PageInfo<EmployeeOrderDetailWorkloadVO>> orderDetailList(
-      @RequestBody @Validated EmployeeOrderDetailWorkloadQuery query) {
+      @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
     PageInfo<EmployeeOrderDetailWorkloadVO> pageInfo =
         billDetailBiz.findOrderDetailWorkloadList(query);
     return ResponseUtil.success(pageInfo);
@@ -148,5 +145,20 @@ public class CompanyReportOfPersonnelController {
       throws IOException {
     billDetailBiz.exportEmployeePersonalReceivedWorkloadDetailList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工已收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeOrderDetailWorkloadVO> 分页列表
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-已收工作量明细-查看明细")
+  @PostMapping(value = "/employee/order/detail/list", name = "公司端报表-人事报表-员工工作量-已收工作量明细-查看详情")
+  public ResponseResult<PageInfo<EmployeeReceivedDetailWorkloadVO>> receivedDetailList(
+      @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
+    PageInfo<EmployeeReceivedDetailWorkloadVO> pageInfo =
+        billDetailBiz.findReceivedDetailList(query);
+    return ResponseUtil.success(pageInfo);
   }
 }
