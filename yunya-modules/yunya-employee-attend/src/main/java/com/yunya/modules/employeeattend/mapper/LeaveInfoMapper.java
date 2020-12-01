@@ -85,4 +85,20 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      * @return
      */
     List<LeaveAppVO> findOverApprovalByMe(FindApprovalByMeForm findApprovalByMeForm);
+
+    /**
+     * 分页查询请假时长的考勤汇总明细
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    List<LeaveInfoVO> statisticsLeavesByMinute(@Param("queryForm") LeaveInfoQueryForm queryForm);
+
+    /**
+     * 条件查询按班次请假的申请
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    List<LeaveInfoVO> findLeaveInfosBySchedule(@Param("queryForm") LeaveInfoQueryForm queryForm);
 }

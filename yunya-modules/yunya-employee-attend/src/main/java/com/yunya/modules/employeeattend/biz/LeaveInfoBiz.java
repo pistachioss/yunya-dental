@@ -419,4 +419,27 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         return reList;
 
     }
+
+    /**
+     * 分页查询请假时长的考勤汇总明细
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    public List<LeaveInfoVO> statisticsLeavesByMinute(LeaveInfoQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+        }
+        return mapper.statisticsLeavesByMinute(queryForm);
+    }
+
+    /**
+     * 条件查询按班次请假的申请
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    public List<LeaveInfoVO> findLeaveInfosBySchedule(LeaveInfoQueryForm queryForm) {
+        return mapper.findLeaveInfosBySchedule(queryForm);
+    }
 }

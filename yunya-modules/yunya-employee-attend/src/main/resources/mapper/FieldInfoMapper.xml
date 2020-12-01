@@ -111,6 +111,9 @@
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
             </if>
+            <if test="queryForm.companyId!=null">
+                and t.company_id = #{queryForm.companyId}
+            </if>
             <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
                 and DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and
                 DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')

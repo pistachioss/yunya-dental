@@ -50,34 +50,34 @@ public class AttendanceStatisticsVO implements Serializable {
     @ApiModelProperty(value = "是否满勤：false-否，true-是")
     private Boolean isFull;
 
-    /** 工作日时长/分钟*/
-    @Excel(name = "工作日时长/分钟")
-    @ApiModelProperty(value = "工作日时长/分钟")
+    /** 工作日时长（分钟）*/
+    @Excel(name = "工作日时长（分钟）")
+    @ApiModelProperty(value = "工作日时长（分钟）")
     private Long workDateMinute;
 
-    /** 工作日加班时长/分钟*/
-    @Excel(name = "工作日加班时长/分钟")
-    @ApiModelProperty(value = "工作日加班时长/分钟")
+    /** 工作日加班时长（分钟）*/
+    @Excel(name = "工作日加班时长（分钟）")
+    @ApiModelProperty(value = "工作日加班时长（分钟）")
     private Long workDateOvertimeMinute;
 
-    /** 其中工作日加班超30分钟以上的时长/分钟*/
-    @Excel(name = "其中工作日加班超30分钟以上的时长/分钟")
-    @ApiModelProperty(value = "其中工作日加班超30分钟以上的时长/分钟")
+    /** 工作日加班超30分钟以上时长（分钟）*/
+    @Excel(name = "工作日加班超30分钟以上时长（分钟）")
+    @ApiModelProperty(value = "工作日加班超30分钟以上时长（分钟）")
     private Long workDateOvertime30Minute;
 
-    /** 休息日加班时长/分钟*/
-    @Excel(name = "休息日加班时长/分钟")
-    @ApiModelProperty(value = "休息日加班时长/分钟")
+    /** 休息日加班时长（分钟）*/
+    @Excel(name = "休息日加班时长（分钟）")
+    @ApiModelProperty(value = "休息日加班时长（分钟）")
     private Long restDateOvertimeMinute;
 
-    /** 请假时长/分钟*/
-    @Excel(name = "请假时长/分钟")
-    @ApiModelProperty(value = "请假时长/分钟")
+    /** 请假时长（分钟）*/
+    @Excel(name = "请假时长（分钟）")
+    @ApiModelProperty(value = "请假时长（分钟）")
     private Long leaveMinute;
 
-    /** 外勤时长/分钟*/
-    @Excel(name = "外勤时长/分钟")
-    @ApiModelProperty(value = "外勤时长/分钟")
+    /** 外勤时长（分钟）*/
+    @Excel(name = "外勤时长（分钟）")
+    @ApiModelProperty(value = "外勤时长（分钟）")
     private Long fieldMinute;
 
     /** 休息天数 */
@@ -89,10 +89,18 @@ public class AttendanceStatisticsVO implements Serializable {
     @ApiModelProperty(value = "迟到次数")
     private Integer lateNum;
 
+    /** 迟到时长（分钟） */
+    @ApiModelProperty(value = " 迟到时长（分钟）")
+    private Long lateMinute;
+
     /** 早退次数 */
     @Excel(name = "早退次数")
     @ApiModelProperty(value = "早退次数")
     private Integer earlyNum;
+
+    /** 早退时长 */
+    @ApiModelProperty(value = "早退时长")
+    private Long earlyMinute;
 
     /** 请假次数 */
     @ApiModelProperty(value = "请假次数")
