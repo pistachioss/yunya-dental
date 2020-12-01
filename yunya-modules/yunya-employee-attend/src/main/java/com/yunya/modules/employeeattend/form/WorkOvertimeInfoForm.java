@@ -27,6 +27,9 @@ public class WorkOvertimeInfoForm {
     @ApiModelProperty("申请人ID")
     private Integer userId;
 
+    @ApiModelProperty("抄送人ID")
+    private Integer copyId;
+
     @ApiModelProperty("申请要加班的日期")
     private Date workDate;
     /**
@@ -61,9 +64,9 @@ public class WorkOvertimeInfoForm {
     private List<Integer> copyList;
 
     /**
-     * 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
+     * 审批状态 0 审批中 1通过 2拒绝  3撤回
      */
-    @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回 4过期")
+    @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回")
     private Integer apprpvalStatus = 0;
 
     @ApiModelProperty("拒绝条件")

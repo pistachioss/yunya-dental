@@ -2,6 +2,7 @@ package com.yunya.models.employee_attend;
 
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 import javax.persistence.*;

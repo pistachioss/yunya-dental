@@ -1,13 +1,14 @@
 package com.yunya.modules.employeeattend.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordForm;
+import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
 import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
 import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.modules.employeeattend.biz.AttendancePunchRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -140,7 +141,10 @@ public class AttendancePunchRecordController {
     @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecordExport")
     public ResponseResult statisticsPunchRecordExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
-        attendancePunchRecordBiz.statisticsPunchRecordExport(response, queryForm);
+        queryForm.setWhetherPage(false);
+        List<AttendanceStatisticsVO> list = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
+        ExcelUtil<AttendanceStatisticsVO> excelUtil = new ExcelUtil<>(AttendanceStatisticsVO.class);
+        excelUtil.exportExcel(response, list, "考勤汇总表");
         return ResponseUtil.success(null);
     }
 
@@ -165,18 +169,64 @@ public class AttendancePunchRecordController {
     }
 
     /**
-     * 根据统计时长类型的分页查询考勤汇总明细
+     * 分页查询工作时长的考勤汇总明细
      *
-     * @param type 统计次数类型：0-工作日时长，1-工作日加班时长，2-工作日加班超30分钟，3-休息日加班时长，4-请假时长，5-外勤时长
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>>
+     */
+    @ApiOperation("分页查询工作时长的考勤汇总明细")
+    @ApiImplicitParam(value = "查询参数", required = true)
+    @PostMapping("/statisticsWorkDateByMinute")
+    public ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>> statisticsWorkDateByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceWorkDateMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
+        PageInfo<AttendanceWorkDateMinuteVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 分页查询工作时长的考勤汇总明细导出
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    @ApiOperation("分页查询工作时长的考勤汇总明细导出")
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
+    @PostMapping("/statisticsWorkDateByMinuteExport")
+    public ResponseResult statisticsWorkDateByMinuteExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
+        queryForm.setWhetherPage(false);
+        List<AttendanceWorkDateMinuteVO> list = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
+        ExcelUtil<AttendanceWorkDateMinuteVO> excelUtil = new ExcelUtil<>(AttendanceWorkDateMinuteVO.class);
+        excelUtil.exportExcel(response, list, "考勤汇总工作时长明细表");
+        return ResponseUtil.success(null);
+    }
+
+    /**
+     * 分页查询工作日加班时长的考勤汇总明细
+     *
      * @param queryForm 查询参数
      * @return ResponseResult<PageInfo<AttendancePunchMinuteVO>>
      */
-    @ApiOperation("根据统计时长类型的分页查询考勤汇总明细")
+    @ApiOperation("分页查询工作日加班时长的考勤汇总明细")
     @ApiImplicitParam(value = "查询参数", required = true)
-    @PostMapping("/statisticsPunchRecordByMinute/{type}")
-    public ResponseResult<PageInfo<AttendancePunchMinuteVO>> statisticsPunchRecordByMinute(@PathVariable(value = "countType") @NotNull byte type, @RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendancePunchMinuteVO> result = attendancePunchRecordBiz.statisticsPunchRecordByMinute(type, queryForm);
-        PageInfo<AttendancePunchMinuteVO> pageInfo = new PageInfo<>(result);
+    @PostMapping("/statisticsWorkDateOvertimeByMinute")
+    public ResponseResult<PageInfo<AttendanceWorkDateOvertimeMinuteVO>> statisticsWorkDateOvertimeByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceWorkDateOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateOvertimeByMinute(1, queryForm);
+        PageInfo<AttendanceWorkDateOvertimeMinuteVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 分页查询工作日加班时长超30分钟的考勤汇总明细
+     *
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendancePunchMinuteVO>>
+     */
+    @ApiOperation("分页查询工作日加班时长超30分钟的考勤汇总明细")
+    @ApiImplicitParam(value = "查询参数", required = true)
+    @PostMapping("/statisticsWorkDateOvertime30ByMinute")
+    public ResponseResult<PageInfo<AttendanceWorkDateOvertimeMinuteVO>> statisticsWorkDateOvertime30ByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceWorkDateOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateOvertimeByMinute(30, queryForm);
+        PageInfo<AttendanceWorkDateOvertimeMinuteVO> pageInfo = new PageInfo<>(result);
         return ResponseUtil.success(pageInfo);
     }
 
@@ -189,9 +239,39 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询休息日加班时长的考勤汇总明细")
     @ApiImplicitParam(value = "查询参数", required = true)
     @PostMapping("/statisticsWorkOvertimesByMinute")
-    public ResponseResult<PageInfo<AttendanceWorkOvertimeMinuteVO>> statisticsWorkOvertimesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceWorkOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkOvertimesByMinute(queryForm);
-        PageInfo<AttendanceWorkOvertimeMinuteVO> pageInfo = new PageInfo<>(result);
+    public ResponseResult<PageInfo<AttendanceOvertimeMinuteVO>> statisticsWorkOvertimesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkOvertimesByMinute(queryForm);
+        PageInfo<AttendanceOvertimeMinuteVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 分页查询请假时长的考勤汇总明细
+     *
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendanceLeaveMinuteVO>>
+     */
+    @ApiOperation("分页查询请假时长的考勤汇总明细")
+    @ApiImplicitParam(value = "查询参数", required = true)
+    @PostMapping("/statisticsLeavesByMinute")
+    public ResponseResult<PageInfo<AttendanceLeaveMinuteVO>> statisticsLeavesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceLeaveMinuteVO> result = attendancePunchRecordBiz.statisticsLeavesByMinute(queryForm);
+        PageInfo<AttendanceLeaveMinuteVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 分页查询外勤时长的考勤汇总明细
+     *
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendanceFieldMinuteVO>>
+     */
+    @ApiOperation("分页查询外勤时长的考勤汇总明细")
+    @ApiImplicitParam(value = "查询参数", required = true)
+    @PostMapping("/statisticsFieldsByMinute")
+    public ResponseResult<PageInfo<AttendanceFieldMinuteVO>> statisticsFieldsByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceFieldMinuteVO> result = attendancePunchRecordBiz.statisticsFieldsByMinute(queryForm);
+        PageInfo<AttendanceFieldMinuteVO> pageInfo = new PageInfo<>(result);
         return ResponseUtil.success(pageInfo);
     }
 }

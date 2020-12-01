@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 
 /**
@@ -32,6 +33,10 @@ public class LeaveInfoQueryForm implements Serializable {
     @ApiModelProperty("每页显示条数，默认10条")
     @Min(message = "最小值", value = 1)
     private Integer pageSize = 10;
+
+    /** 组织id */
+    @ApiModelProperty(value = "组织id")
+    private Integer orgId;
 
     /** 员工id */
     @ApiModelProperty(value = "员工id")
@@ -68,4 +73,8 @@ public class LeaveInfoQueryForm implements Serializable {
     /** 请假方式：0-按班次请假，1-按天请假*/
     @ApiModelProperty(value = "请假方式：0-按班次请假，1-按天请假")
     private Integer vacationStatus;
+
+    /** 主键id列表*/
+    @ApiModelProperty(value = "主键id列表")
+    private Collection<Integer> ids;
 }

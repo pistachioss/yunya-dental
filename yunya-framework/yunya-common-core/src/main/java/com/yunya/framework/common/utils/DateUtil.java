@@ -216,17 +216,63 @@ public class DateUtil {
      * @return
      */
     public static List<Date> getBetweenDate(Date start, Date end) {
+        return getBetweenDate(start, end, -1, -1);
+    }
+
+    /**
+     * 获取两个日期内所有日期
+     * @param startDate
+     * @param endDate
+     * @param start 分页参数，开始位置，如果start和limit同时等于-1，则不限制查询记录条数
+     * @param limit 分页参数，结束位置
+     * @return
+     */
+    public static List<Date> getBetweenDate(Date startDate, Date endDate, int start, int limit) {
         List<Date> result = new ArrayList<Date>();
         Calendar tempStart = Calendar.getInstance();
-        tempStart.setTime(start);
+        tempStart.setTime(startDate);
         tempStart.add(Calendar.DAY_OF_YEAR, 1);
         Calendar tempEnd = Calendar.getInstance();
-        tempEnd.setTime(end);
-        while (tempStart.before(tempEnd)) {
+        tempEnd.setTime(endDate);
+        while (tempStart.before(tempEnd) && start==-1 && limit==-1) {
             result.add(tempStart.getTime());
             tempStart.add(Calendar.DAY_OF_YEAR, 1);
         }
+        if (start!=-1 && limit!=-1) {
+            result = pagination(result, start, limit);
+        }
         return result;
+    }
+
+    /**
+     * 开始分页
+     * @param list 数据列表
+     * @param pageNum 页码
+     * @param pageSize 每页多少条数据
+     * @return
+     */
+    public static List pagination(List list, Integer pageNum, Integer pageSize) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+
+        Integer count = list.size(); // 记录总数
+        Integer pageCount = 0; // 页数
+        if (count % pageSize == 0) {
+            pageCount = count / pageSize;
+        } else {
+            pageCount = count / pageSize + 1;
+        }
+        int fromIndex = 0; // 开始索引
+        int toIndex = 0; // 结束索引
+        if (pageNum != pageCount) {
+            fromIndex = (pageNum - 1) * pageSize;
+            toIndex = fromIndex + pageSize;
+        } else {
+            fromIndex = (pageNum - 1) * pageSize;
+            toIndex = count;
+        }
+        return list.subList(fromIndex, toIndex);
     }
 
     /**
@@ -234,15 +280,9 @@ public class DateUtil {
      * @param date
      * @return
      */
-    public static Date dateTo19700101(Date date) {
+    public static Date dateTo19700101(Date date) throws ParseException {
         String dateStr = DateFormatUtils.format(date, "HH:mm:ss");
-        Date result = null;
-        try {
-            result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1970-01-01 " + dateStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return result;
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse("1970-01-01 " + dateStr);
     }
 
     /**
@@ -251,18 +291,32 @@ public class DateUtil {
      * @param time
      * @return
      */
-    public static Date timetoDate(Date date, Date time) {
+    public static Date timetoDate(Date date, Date time) throws ParseException {
         String dateStr = DateFormatUtils.format(date, "yyyy-MM-dd");
         String timeStr = DateFormatUtils.format(time, "HH:mm:ss");
         if (dateStr==null || timeStr==null) {
             return null;
         }
-        Date result = null;
-        try {
-            result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateStr + " " + timeStr);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        return result;
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(dateStr + " " + timeStr);
+    }
+
+    /**
+     * 计算两个日期之间的天数，包含两个日期
+     * @param smdate
+     * @param bdate
+     * @return
+     * @throws ParseException
+     */
+    public static int daysBetween(Date smdate,Date bdate) throws ParseException {
+        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+        smdate = sdf.parse(sdf.format(smdate));
+        bdate = sdf.parse(sdf.format(bdate));
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(smdate);
+        long time1 = cal.getTimeInMillis();
+        cal.setTime(bdate);
+        long time2 = cal.getTimeInMillis();
+        long between_days=(time2-time1)/(1000*3600*24);
+        return Integer.parseInt(String.valueOf(between_days)) + 1;
     }
 }

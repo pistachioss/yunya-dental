@@ -1,7 +1,7 @@
 package com.yunya.modules.employeeattend.mapper;
 
 import com.yunya.feign.employee_attend.form.WorkOvertimeInfoQueryForm;
-import com.yunya.feign.employee_attend.vo.AttendanceWorkOvertimeMinuteVO;
+import com.yunya.feign.employee_attend.vo.AttendanceOvertimeMinuteVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoListVO;
 import com.yunya.feign.employee_attend.vo.WorkOvertimeInfoVO;
 import com.yunya.feign.employee_attend.vo.findNoWorkEmByDateVO;
@@ -49,5 +49,5 @@ public interface WorkOvertimeInfoMapper extends Mapper<WorkOvertimeInfo> {
      */
     List<WorkOvertimeInfoVO> findWorkOvertimeInfoList(@Param("queryForm") WorkOvertimeInfoQueryForm queryForm);
 
-    List<AttendanceWorkOvertimeMinuteVO> statisticsWorkOvertimesByMinute(@Param("queryForm") WorkOvertimeInfoQueryForm queryForm);
+    List<AttendanceOvertimeMinuteVO> statisticsWorkOvertimesByMinute(@Param("queryForm") WorkOvertimeInfoQueryForm queryForm);
 }

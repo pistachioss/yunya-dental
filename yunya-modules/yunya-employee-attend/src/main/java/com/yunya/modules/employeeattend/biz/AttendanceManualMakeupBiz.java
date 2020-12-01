@@ -1,8 +1,11 @@
 package com.yunya.modules.employeeattend.biz;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.AttendanceManualMakeupForm;
+import com.yunya.feign.employee_attend.form.AttendanceManualMakeupQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceManualMakeupModel;
+import com.yunya.feign.employee_attend.vo.AttendanceManualMakeupVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -14,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介：考勤手动补入时长业务层
@@ -53,5 +57,18 @@ public class AttendanceManualMakeupBiz extends BaseBiz<AttendanceManualMakeupMap
         AttendanceManualMakeup attendanceManualMakeup = new AttendanceManualMakeup();
         BeanUtil.copyProperties(attendanceManualMakeupForm, attendanceManualMakeup);
         updateSelectiveById(attendanceManualMakeup);
+    }
+
+    /**
+     * 分页条件查询
+     *
+     * @param queryForm 查询参数
+     * @return
+     */
+    public List<AttendanceManualMakeupVO> findAttendanceManualMakeupList(AttendanceManualMakeupQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+        }
+        return mapper.findAttendanceManualMakeupList(queryForm);
     }
 }

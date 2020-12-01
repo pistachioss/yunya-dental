@@ -33,7 +33,7 @@ public enum AttendanceStatusEnum {
         return code;
     }
 
-    public static String getValue(Integer code)
+    public static String getValue(Byte code)
     {
         if(code != null)
         {
@@ -48,7 +48,7 @@ public enum AttendanceStatusEnum {
         return null;
     }
 
-    public boolean equals(Integer code)
+    public boolean equals(Byte code)
     {
         return this.code.equals(code);
     }

@@ -27,14 +27,12 @@ public class ApprovalCriteriaForm {
      * 请假跨度起始天数
      */
     @ApiModelProperty("请假跨度起始天数")
-    @NotNull(message = "请假跨度起始天数不能为空")
     private Integer startDay;
 
     /**
      * 请假跨度结束天数
      */
     @ApiModelProperty("请假跨度结束天数")
-    @NotNull(message = "请假跨度结束天数不能为空")
     private Integer endDay;
 
     /**

@@ -20,14 +20,14 @@ import java.util.Date;
 @Data
 @ToString
 @ApiModel("考勤休息日加班时长统计响应模型")
-public class AttendanceWorkOvertimeMinuteVO implements Serializable {
+public class AttendanceOvertimeMinuteVO implements Serializable {
     /** 主键id*/
     @ApiModelProperty(value = "主键id")
     private Integer id;
 
-    /** 员工id*/
-    @ApiModelProperty(value = "员工id")
-    private Integer userId;
+    /** 审批用户id*/
+    @ApiModelProperty(value = "审批用户id")
+    private Integer approvalPeopleId;
 
     /** 组织id*/
     @ApiModelProperty(value = "组织id")
@@ -40,7 +40,7 @@ public class AttendanceWorkOvertimeMinuteVO implements Serializable {
 
     /** 申请加班班次*/
     @ApiModelProperty(value = "申请加班班次")
-    private String sheduleName;
+    private String scheduleName;
 
 
     /** 打上班卡时间 */

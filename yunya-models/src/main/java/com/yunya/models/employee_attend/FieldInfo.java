@@ -12,7 +12,8 @@ public class FieldInfo {
     @ApiModelProperty("主键ID")
     @GeneratedValue(generator = "JDBC")
     private Integer id;
-
+    @Column(name = "company_id")
+    private Integer companyId;
     @Column(name = "user_id")
     private Integer userId;
     /**

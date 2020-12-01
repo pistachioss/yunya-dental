@@ -39,4 +39,27 @@
         </foreach>
         )
     </select>
+
+    <select id="findLeaveScheduleByStatisticsQuery" resultType="com.yunya.feign.employee_attend.vo.LeaveScheduleVO">
+        select
+            ls.id,
+            ls.leave_id as leaveId,
+            ls.start_time as startTime,
+            ls.end_time as endTime,
+            ap.user_id as approvalPeopleId
+        from leave_schedule ls left join employee_schedule es on ls.schedule_id=es.id left join approval_info ai on ai.leave_id=ls.leave_id
+        left join approval_people ap on ap.id=ai.approval_people_id
+        <where>
+            es.inservice = 1
+            <if test="queryForm.userId != null">
+                and es.employee_id = #{queryForm.userId}
+            </if>
+            <if test="queryForm.orgId != null">
+                and es.clinic_id = #{queryForm.orgId}
+            </if>
+            <if test="queryForm.betweenStartDate!=null and queryForm.andStartDate">
+                and DATE_FORMAT(es.work_date,'%Y-%m-%d') between DATE_FORMAT(queryForm.betweenStartDate,'%Y-%m-%d') and DATE_FORMAT(queryForm.andStartDate,'%Y-%m-%d')
+            </if>
+        </where>
+    </select>
 </mapper>

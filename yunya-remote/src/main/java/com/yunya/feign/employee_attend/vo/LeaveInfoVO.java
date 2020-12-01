@@ -1,16 +1,13 @@
 package com.yunya.feign.employee_attend.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 简介：请假信息响应模型
@@ -41,6 +38,20 @@ public class LeaveInfoVO implements Serializable {
      */
     @ApiModelProperty(value = "假期类型id")
     private Integer vacationId;
+
+
+    /**
+     * 开始日期或请假日期
+     */
+    @ApiModelProperty(value = "开始日期或请假日期")
+    private Date startDate;
+
+
+    /**
+     * 结束日期
+     */
+    @ApiModelProperty(value = "结束日期")
+    private Date endDate;
 
     /**
      * 开始时间
@@ -85,8 +96,21 @@ public class LeaveInfoVO implements Serializable {
     private Integer vacationStatus;
 
     /**
+     * 申请类型名称
+     */
+    @ApiModelProperty(value = "申请类型名称")
+    private String vacationName;
+
+    /**
      * 员工排班id
      */
     @ApiModelProperty(value = "员工排班id")
     private Integer scheduleId;
+
+    /**
+     * 申请日期
+     */
+    @ApiModelProperty(value = "申请日期")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    private Date crtTime;
 }

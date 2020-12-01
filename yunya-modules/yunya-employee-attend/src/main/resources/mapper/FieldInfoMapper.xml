@@ -8,6 +8,7 @@
         <id column="id" property="id" jdbcType="INTEGER"/>
         <result column="field_address" property="fieldAddress" jdbcType="VARCHAR"/>
         <result column="user_id" property="userId" jdbcType="VARCHAR"/>
+        <result column="company_id" property="companyId" jdbcType="VARCHAR"/>
         <result column="start_time" property="startTime" jdbcType="TIMESTAMP"/>
         <result column="end_time" property="endTime" jdbcType="TIMESTAMP"/>
         <result column="field_reason" property="fieldReason" jdbcType="VARCHAR"/>
@@ -42,10 +43,13 @@
     </select>
 
     <select id="findVOList" resultMap="FindVOMap">
-        select id,field_address,user_id,start_time,company_id,
-        end_time,field_reason,approval_people_id,apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) fieldTime,crt_time from
-        field_info
+        select fi.id,fi.field_address,fi.user_id,fi.start_time,fi.company_id,
+        fi.end_time,fi.field_reason,fi.approval_people_id,fi.apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) as fieldTime,fi.crt_time from
+        field_info fi  LEFT JOIN copy_info ci ON ci.apply_id = fi.id and ci.apply_type = 2
         <where>
+            <if test="copyId !=null and copyId != '' ">
+                and ci.user_id = #{copyId}
+            </if>
             <if test="id !=null and id != ''">
                 and id = #{id}
             </if>
@@ -54,6 +58,12 @@
             </if>
             <if test="approvalPeopleId !=null and approvalPeopleId != ''">
                 and approval_people_id = #{approvalPeopleId}
+            </if>
+            <if test="apprpvalStatus == 0 ">
+                and apprpval_status = #{apprpvalStatus}
+            </if>
+            <if test="apprpvalStatus == 1 or apprpvalStatus == 2 ">
+                and apprpval_status in (1,2)
             </if>
         </where>
     </select>
@@ -103,6 +113,9 @@
             </if>
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
+            </if>
+            <if test="queryForm.companyId!=null">
+                and t.company_id = #{queryForm.companyId}
             </if>
             <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
                 and DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and
