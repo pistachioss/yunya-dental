@@ -63,7 +63,7 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      */
     int countFiWi(LeaveInfo leaveInfo);
 
-    List<LeaveInfoListVO>selectLeave( LeaveInfo leaveInfo);
+    List<LeaveInfoListVO>selectLeave(LeaveInfoForm leaveInfoForm);
 
     /**
      * 根据请假ID获取审批信息
