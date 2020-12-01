@@ -61,9 +61,9 @@ public class WorkOvertimeInfoForm {
     private List<Integer> copyList;
 
     /**
-     * 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
+     * 审批状态 0 审批中 1通过 2拒绝  3撤回
      */
-    @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回 4过期")
+    @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回")
     private Integer apprpvalStatus = 0;
 
     @ApiModelProperty("拒绝条件")

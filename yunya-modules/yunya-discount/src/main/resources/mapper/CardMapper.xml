@@ -177,10 +177,7 @@
             `c`.`card_number`,
             `c`.`sold_target`,
             `c`.`sold_phone_number`,
-            case
-                when `c`.`is_sold_and_pay` = 1 then `cci`.`sold_amount`
-                else 0
-                end              as `paidAmount`,
+            `cci`.`sold_amount` as `paidAmount`,
             case
                 when `c`.`is_sold_and_pay` = 0 then 1
                 else 0

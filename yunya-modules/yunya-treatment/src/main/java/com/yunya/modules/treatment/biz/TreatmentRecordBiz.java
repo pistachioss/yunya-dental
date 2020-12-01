@@ -521,7 +521,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     List<OrderDetail> orderDetails = orderDetailMapper.select(detail);
     List<VisitingRecord> visitingRecordList = new ArrayList<>();
     if (StringHelper.isNotEmpty(orderDetails)) {
-      treatmentOtherFeign.deleteVisitingRecordByTreatmentIdRest(treatmentRecordId);
       orderDetails.forEach(
           orderDetail -> {
             List<VisitingRecord> orderDetailVisitRecord =
