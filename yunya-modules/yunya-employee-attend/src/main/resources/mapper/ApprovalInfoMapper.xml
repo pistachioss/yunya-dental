@@ -31,15 +31,24 @@
       #{item.crtTime})
     </foreach>
   </insert>
-  <select id="findMin" resultType="Integer">
-    select ap.user_id,MIN(als.approval_priority) from approval_info ai
+  <select id="findMin" resultMap="BaseResultMap">
+    select ai.* from approval_info ai
     LEFT JOIN approval_people ap on ai.approval_people_id = ap.id
     LEFT JOIN approval_level_set als on ap.approval_level_id = als.id
-    where ai.leave_id = #{id}
+    where ai.leave_id = #{id} and als.id =
+    (select als.id from approval_level_set als
+    LEFT JOIN approval_people ap on ap.approval_level_id = als.id
+    LEFT JOIN approval_info ai on ai.approval_people_id = ap.id
+    where ai.leave_id = #{id}  order by als.approval_priority LIMIT 1)
   </select>
   <select id="findNow" resultMap="BaseResultMap">
     select ai.* from approval_info ai
     LEFT JOIN approval_people ap on ai.approval_people_id = ap.id
-    where ai.leave_id = #{id} and ap.user_id = #{crtId}
+    LEFT JOIN approval_level_set als on ap.approval_level_id = als.id
+    where ai.leave_id = #{leaveId} and ap.user_id = #{crtId} and ai.approval_status = 0 and als.id =
+    (select als.id from approval_level_set als
+    LEFT JOIN approval_people ap on ap.approval_level_id = als.id
+    LEFT JOIN approval_info ai on ai.approval_people_id = ap.id
+    where ai.leave_id = #{leaveId} and ap.user_id = #{crtId} and ai.approval_status = 0 order by als.approval_priority desc LIMIT 1)
   </select>
 </mapper>
