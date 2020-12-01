@@ -864,4 +864,16 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据条件查询员工补入工作量明细列表（按月查询） -->
+    <select id="selectEmployeePersonalSupplyWorkloadDetailListByMonth"
+            resultType="com.yunya.feign.report.domain.vo.EmployeePersonalSupplyWorkloadDetailVO">
+
+    </select>
+
+    <!-- 根据条件查询员工补入工作量明细列表（按年查询） -->
+    <select id="selectEmployeePersonalSupplyWorkloadDetailByYear"
+            resultType="com.yunya.feign.report.domain.vo.EmployeePersonalSupplyWorkloadDetailVO">
+
+    </select>
 </mapper>

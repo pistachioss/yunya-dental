@@ -87,7 +87,7 @@ public class CompanyReportOfPersonnelController {
    *
    * @param response 响应
    * @param query 查询条件
-   * @return
+   * @return void
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-实收工作量明细-导出")
   @PostMapping(value = "/employee/workload/detail/export", name = "根据条件导出员工个人实收工作量明细列表")
@@ -135,7 +135,7 @@ public class CompanyReportOfPersonnelController {
    *
    * @param response 响应
    * @param query 查询条件
-   * @return
+   * @return void
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-已收工作量明细-导出")
   @PostMapping(value = "/employee/workload/received/export", name = "根据条件导出员工个人已收工作量明细列表")
@@ -160,5 +160,37 @@ public class CompanyReportOfPersonnelController {
     PageInfo<EmployeeReceivedDetailWorkloadVO> pageInfo =
         billDetailBiz.findReceivedDetailList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询员工补入工作量明细
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeePersonalSupplyWorkloadDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-补入工作量明细")
+  @PostMapping(value = "/employee/workload/supply/list", name = "公司端报表-人事报表-员工工作量-补入工作量明细")
+  public ResponseResult<PageInfo<EmployeePersonalSupplyWorkloadDetailVO>> supplyWorkloadDetailList(
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
+    PageInfo<EmployeePersonalSupplyWorkloadDetailVO> pageInfo =
+        billDetailBiz.findSupplyWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出员工个人补入工作量明细
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-补入工作量明细-导出")
+  @PostMapping(value = "/employee/workload/received/export", name = "根据条件导出员工个人补入工作量明细")
+  public ResponseResult<T> exportEmployeePersonalSupplyWorkloadDetailList(
+          HttpServletResponse response,
+          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
+          throws IOException {
+    billDetailBiz.exportEmployeePersonalSupplyWorkloadDetailList(response, query);
+    return ResponseUtil.success(null);
   }
 }
