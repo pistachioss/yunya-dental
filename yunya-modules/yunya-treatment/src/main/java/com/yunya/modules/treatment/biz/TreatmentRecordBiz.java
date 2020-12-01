@@ -242,7 +242,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
-
+    String currentDate = queryForm.getCurrentDate();
     List<TreatmentPatientInfoVO> treatingList = mapper.selectTreatingList(queryForm);
     if (StringHelper.isNotEmpty(treatingList)) {
       for (TreatmentPatientInfoVO vo : treatingList) {
@@ -251,7 +251,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           case 1:
           case 2:
             // 设置患者信息
-            setPatientInfo(vo);
+            setPatientInfo(vo,currentDate);
             // 设置预约信息
             setAppointmentInfo(vo);
             // 设置挂号信息
@@ -263,7 +263,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             break;
           case 3:
             // 设置患者信息
-            setPatientInfo(vo);
+            setPatientInfo(vo,currentDate);
             // 设置预约信息
             setAppointmentInfo(vo);
             // 设置挂号信息
@@ -290,7 +290,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    *
    * @param vo 患者候诊
    */
-  private void setPatientInfo(TreatmentPatientInfoVO vo) throws ParseException {
+  private void setPatientInfo(TreatmentPatientInfoVO vo, String currentDate) throws ParseException {
     Integer patientId = vo.getPatientId();
     PatientTotalInfoVo patientData = patientServiceFeign.findPatientTotalInfo(patientId);
     if (null != patientData) {
@@ -308,7 +308,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       Integer appointCount = this.appointmentFeign.countNextAppoint(patientData.getId());
       vo.setNextAppointment(appointCount);
       // 设置后续随访数量
-      Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId);
+      Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId,currentDate);
       vo.setNextInterview(visitingCount);
       Integer memberTypeId = patientData.getMemberTypeId();
       if (null != memberTypeId) {
@@ -781,6 +781,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     List<TreatmentPatientInfoVO> treatCompleted = mapper.selectTreatingList(queryForm);
     // 已结账
     queryForm.setTreatmentStatus(new Byte[] {3});
+    queryForm.setDentistId(query.getDentistId());
     List<TreatmentPatientInfoVO> treatmentPatientInfos = mapper.selectTreatingList(queryForm);
     // 预约未到数量
     AppointmentCurrentListQuery form = new AppointmentCurrentListQuery();

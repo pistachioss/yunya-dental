@@ -83,14 +83,18 @@
         atype.name as typeName,
         item.appoint_type_id as appointTypeId,
         IFNULL(item.duration,'无') as duration,
-        item.inservice,
-        item.remarks
-        from appoint_item item
-        LEFT JOIN clinic_appoint_item cai ON cai.appoint_item_id = item.id
-        LEFT JOIN appoint_type atype on  atype.id = item.appoint_type_id
+        cai.inservice,
+        cai.remarks
+        FROM
+        clinic_appoint_item cai
+        inner JOIN appoint_item item ON item.id = cai.appoint_item_id
+        inner JOIN appoint_type atype ON atype.id = item.appoint_type_id
         <where>
             <if test="form.appointTypeId != null">
                 atype.id =#{form.appointTypeId}
+            </if>
+            <if test="form.orgId != null">
+                and cai.org_id = #{form.orgId}
             </if>
             <if test="form.name != null and form.fuzzyQuery == true">
                 and item.name like CONCAT(CONCAT('%', #{form.name}), '%')
@@ -98,9 +102,11 @@
             <if test="form.name != null and form.fuzzyQuery == false">
                 and item.name = #{form.name}
             </if>
+            <if test="form.inservice != null">
+                and cai.inservice = #{form.inservice}
+            </if>
         </where>
     </select>
-
     <!-- 插入实体 -->
     <insert id="insertEntity" parameterType="com.yunya.models.appointment.AppointItem" useGeneratedKeys="true" keyProperty="id">
         insert into appoint_item (appoint_type_id,`name`,duration,remarks,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time)

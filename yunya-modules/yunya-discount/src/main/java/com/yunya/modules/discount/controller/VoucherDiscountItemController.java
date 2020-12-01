@@ -1,6 +1,7 @@
 package com.yunya.modules.discount.controller;
 
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -99,6 +100,9 @@ public class VoucherDiscountItemController {
     @CurrentUser
     public ResponseResult savePackage(@RequestBody @Valid List<PackageCouponItemForm> packageCouponItemItems) {
         Date date = new Date();
+        if (StringHelper.isEmpty(packageCouponItemItems)) {
+            return ResponseUtil.fail(OperationCodeConstants.PARAMETERS_IS_ILLEGAL,"请添加兑换券项目再进行保存",null);
+        }
         if(packageCouponItemItems.size()>0){
             PackageCouponItem packageCouponItem = new PackageCouponItem();
             packageCouponItem.setCouponId(packageCouponItemItems.get(0).getCouponId());

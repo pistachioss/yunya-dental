@@ -24,6 +24,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment_other.VisitingRemind;
 import com.yunya.modules.treatment.other.mapper.VisitingRemindMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -234,6 +235,18 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                             DebtAmountModel debtAmountModel = debtAmountList.get(0);
                             build.setArrears(debtAmountModel.getDebtAmount());
                         }
+                        // 设置初复诊
+                        Registered registered = new Registered();
+                        registered.setPatientId(patientId);
+                        List<Registered> registereds = remoteTreatmentServiceFeign.findRegisteredList(registered);
+                        if (StringHelper.isNotEmpty(registereds)) {
+                            if (registereds.size() > 1) {
+                                build.setFirstVisit((byte) 1);
+                            }else {
+                                build.setFirstVisit((byte) 0);
+                            }
+                        }
+
                     }
                 }
                 visitingRemindVos.add(build);
