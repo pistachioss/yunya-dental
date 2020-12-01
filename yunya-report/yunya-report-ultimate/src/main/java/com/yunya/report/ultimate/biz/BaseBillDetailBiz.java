@@ -290,7 +290,26 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    */
   public void exportEmployeePersonalSupplyWorkloadDetailList(
-      HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) {
+      HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+    PageInfo<EmployeePersonalSupplyWorkloadDetailVO> pageInfo = findSupplyWorkloadDetailList(query);
+    List<EmployeePersonalSupplyWorkloadDetailVO> resultList = pageInfo.getList();
+    ExcelUtil<EmployeePersonalSupplyWorkloadDetailVO> excelUtil =
+        new ExcelUtil<>(EmployeePersonalSupplyWorkloadDetailVO.class);
+    excelUtil.exportExcel(response, resultList, "员工个人补入工作量明细列表");
+  }
 
+  /**
+   * 根据条件查询员工补入工作量开单明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeSupplyDetailWorkloadVO>
+   */
+  public PageInfo<EmployeeSupplyDetailWorkloadVO> findSupplyDetailList(
+      EmployeeWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeSupplyDetailWorkloadVO> resultList = mapper.selectEmployeeSupplyDetailList(query);
+    return new PageInfo<>(resultList);
   }
 }

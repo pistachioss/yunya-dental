@@ -187,10 +187,24 @@ public class CompanyReportOfPersonnelController {
   @ApiOperation("公司端报表-人事报表-员工工作量-补入工作量明细-导出")
   @PostMapping(value = "/employee/workload/supply/export", name = "根据条件导出员工个人补入工作量明细")
   public ResponseResult<T> exportEmployeePersonalSupplyWorkloadDetailList(
-          HttpServletResponse response,
-          @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
-          throws IOException {
+      HttpServletResponse response,
+      @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query)
+      throws IOException {
     billDetailBiz.exportEmployeePersonalSupplyWorkloadDetailList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工补入工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeSupplyDetailWorkloadVO> 分页列表
+   */
+  @ApiOperation("公司端报表-人事报表-员工工作量-补入工作量明细-查看明细")
+  @PostMapping(value = "/employee/workload/supply/detail", name = "公司端报表-人事报表-员工工作量-补入工作量明细-查看明细")
+  public ResponseResult<PageInfo<EmployeeSupplyDetailWorkloadVO>> supplyWorkloadDetailList(
+      @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
+    PageInfo<EmployeeSupplyDetailWorkloadVO> pageInfo = billDetailBiz.findSupplyDetailList(query);
+    return ResponseUtil.success(pageInfo);
   }
 }

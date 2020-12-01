@@ -76,6 +76,10 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           saveBaseBillPay(dataId);
           // 保存账单收费明细
           saveBaseBillDetail(dataId);
+        } else {
+          mapper.deleteByPrimaryKey(dataId);
+          baseBillPayMapper.deleteByBillId(dataId);
+          baseBillDetailMapper.deleteByBillId(dataId);
         }
         break;
       case 1:
@@ -121,7 +125,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    */
   private BaseBill generateBaseBill(Integer dataId) {
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(dataId);
-    if (null != orderRecord) {
+    if (null != orderRecord && orderRecord.getInservice()) {
       BaseBill baseBill = new BaseBill();
       baseBill.setBillId(orderRecord.getId());
       baseBill.setOrgId(orderRecord.getOrgId());
