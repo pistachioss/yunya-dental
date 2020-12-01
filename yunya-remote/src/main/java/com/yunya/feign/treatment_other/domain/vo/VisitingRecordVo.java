@@ -188,6 +188,6 @@ public class VisitingRecordVo implements Serializable {
 
     /** 是否初诊，0-初诊，1-复诊 */
     @ApiModelProperty(value = "是否初诊，0-初诊，1-复诊")
-    private Byte type;
+    private Byte firstVisit;
 
 }
