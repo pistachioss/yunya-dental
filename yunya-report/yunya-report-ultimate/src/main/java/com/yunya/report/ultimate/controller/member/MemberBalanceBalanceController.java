@@ -53,7 +53,7 @@ public class MemberBalanceBalanceController {
      * @param memberQueryForm 查询余额结存form
      * @return List<MemberRechargeLogBizVo>
      */
-    @ApiOperation("会员余/预付款额结存信息列表")
+    @ApiOperation("会员余/预付款余额结存信息列表")
     @PostMapping("/balance/list")
     public ResponseResult<PageInfo<BaseMemberBalanceInfoVo>> memberBalanceList(@RequestBody MemberQueryForm memberQueryForm)  {
         PageInfo<BaseMemberBalanceInfoVo> baseMemberBalanceInfoVos = memberOccurLogBiz.memberBalanceList(memberQueryForm);
