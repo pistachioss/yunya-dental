@@ -358,7 +358,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             if (treatmentRecord != null){
                 visitingRecordVo.setTreatmentDate(treatmentRecord.getTreatEndTime());
                 // 设置初复诊
-                visitingRecordVo.setType(treatmentRecord.getType());
+                visitingRecordVo.setFirstVisit(treatmentRecord.getType());
             }
         }
         // 设置患者过敏源

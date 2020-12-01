@@ -251,7 +251,7 @@
         LEFT JOIN `base_patient` `bp` ON `bp`.`patient_id` = `bf`.`patient_id`
         LEFT JOIN `base_organization` `bo` ON `bo`.`org_id` = `bf`.`org_id`
         WHERE
-        `bf`.`card_id` = 54701
+        `bf`.`card_id` = #{cardId}
         AND `bf`.`choice_benefit_type` = 0
         GROUP BY
         `bf`.`order_id`,
