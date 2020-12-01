@@ -154,7 +154,7 @@ public class CompanyReportOfPersonnelController {
    * @return PageInfo<EmployeeOrderDetailWorkloadVO> 分页列表
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-已收工作量明细-查看明细")
-  @PostMapping(value = "/employee/order/detail/list", name = "公司端报表-人事报表-员工工作量-已收工作量明细-查看详情")
+  @PostMapping(value = "/employee/workload/received/detail", name = "公司端报表-人事报表-员工工作量-已收工作量明细-查看详情")
   public ResponseResult<PageInfo<EmployeeReceivedDetailWorkloadVO>> receivedDetailList(
       @RequestBody @Validated EmployeeWorkloadDetailQuery query) {
     PageInfo<EmployeeReceivedDetailWorkloadVO> pageInfo =
