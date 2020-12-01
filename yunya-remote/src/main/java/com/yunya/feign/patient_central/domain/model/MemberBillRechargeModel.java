@@ -43,7 +43,7 @@ public class MemberBillRechargeModel implements Serializable {
     /**
      * 备注
      */
-    @ApiModelProperty(value = "备注",required = true)
+    @ApiModelProperty(value = "备注",required = false)
     private String remarks;
 
 }

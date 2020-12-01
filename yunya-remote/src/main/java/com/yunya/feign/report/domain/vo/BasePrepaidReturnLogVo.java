@@ -56,13 +56,13 @@ public class BasePrepaidReturnLogVo {
     @ApiModelProperty("退款赠金金额")
     private BigDecimal bonusAmount;
 
-    /** 退款后会员卡余额（本金） */
-    @ApiModelProperty("退款后会员卡余额（本金）")
-    private BigDecimal currentRechargePrincipal;
+    /** 退费后会员卡余额（含赠送金额） */
+    @ApiModelProperty("退费后会员卡余额（含赠送金额）")
+    private BigDecimal currentReturnPrincipal;
 
-    /** 退款后会员卡余额（赠金） */
-    @ApiModelProperty("退款后会员卡余额（赠金）")
-    private BigDecimal currentRechargeBonus;
+    /** 剩余会员卡余额（含赠送金额） */
+    @ApiModelProperty("剩余会员卡余额（含赠送金额）")
+    private BigDecimal currentAmount;
 
     /** 入账方式 */
     @ApiModelProperty("入账方式")
