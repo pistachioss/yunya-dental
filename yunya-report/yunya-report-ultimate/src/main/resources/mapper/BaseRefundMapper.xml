@@ -171,13 +171,13 @@
         ) brd
         <where>
             <if test="query.orgId != null">
-                and ebd.orgId = #{query.orgId}
+                and brd.org_id = #{query.orgId}
             </if>
             <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                and DATE_FORMAT( brd.order_date, '%Y-%m' ) = #{query.queryDate}
             </if>
             <if test="query.employeeId != null">
-                and ebd.executorId = #{query.employeeId}
+                and brd.executor_id = #{query.employeeId}
             </if>
         </where>
         GROUP BY brd.refund_id
@@ -267,13 +267,13 @@
         ) brd
         <where>
             <if test="query.orgId != null">
-                and ebd.orgId = #{query.orgId}
+                and brd.org_id = #{query.orgId}
             </if>
             <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                and DATE_FORMAT( brd.order_date, '%Y' ) = #{query.queryDate}
             </if>
             <if test="query.employeeId != null">
-                and ebd.executorId = #{query.employeeId}
+                and brd.executor_id = #{query.employeeId}
             </if>
         </where>
         GROUP BY brd.refund_id
@@ -319,7 +319,7 @@
         LEFT JOIN base_tariff_info bti ON brd.item_type = bti.item_type
         AND brd.item_id = bti.item_id
         <where>
-            <if test="query.billId != null">
+            <if test="query.refundId != null">
                 and brd.refund_id = #{query.refundId}
             </if>
             <if test="query.employeeId != null">

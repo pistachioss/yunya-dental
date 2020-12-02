@@ -1,10 +1,7 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeRefundWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -255,8 +252,7 @@ public class CompanyReportOfPersonnelController {
   @PostMapping(value = "/employee/workload/refund/detail", name = "公司端报表-人事报表-员工工作量-退费工作量明细-查看明细")
   public ResponseResult<PageInfo<EmployeeRefundDetailWorkloadVO>> refundOrderDetailList(
       @RequestBody @Validated EmployeeRefundWorkloadDetailQuery query) {
-    PageInfo<EmployeeRefundDetailWorkloadVO> pageInfo =
-        refundBiz.findRefundOrderDetailList(query);
+    PageInfo<EmployeeRefundDetailWorkloadVO> pageInfo = refundBiz.findRefundOrderDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
 }
