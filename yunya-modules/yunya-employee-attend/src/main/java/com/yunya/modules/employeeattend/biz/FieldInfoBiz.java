@@ -162,7 +162,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             List<CopyInfo>copyInfoList = new ArrayList<>();
                             for(Integer copyId:fieldInfoForm.getCopyList()){
                                 CopyInfo copyInfo = new CopyInfo();
-                                copyInfo.setApplyId(num);
+                                copyInfo.setApplyId(fieldInfo.getId());
                                 copyInfo.setApplyType(2);
                                 copyInfo.setUserId(copyId);
                                 copyInfo.setCrtId(fieldInfoForm.getUserId());

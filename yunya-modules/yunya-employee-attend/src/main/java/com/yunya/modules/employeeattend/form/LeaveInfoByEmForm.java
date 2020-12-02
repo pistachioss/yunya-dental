@@ -29,6 +29,9 @@ public class LeaveInfoByEmForm {
     @ApiModelProperty("用户id")
     private Integer userId;
 
+    @ApiModelProperty("最高层级审批级别的审批人ID")
+    private Integer approvalNowPeopleId;
+
     @ApiModelProperty("门诊ID")
     private Integer companyId;
     /**

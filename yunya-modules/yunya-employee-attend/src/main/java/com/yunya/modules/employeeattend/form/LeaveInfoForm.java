@@ -28,6 +28,10 @@ public class LeaveInfoForm {
     private Integer id;
     @ApiModelProperty("user_id")
     private Integer userId;
+
+    @ApiModelProperty("最高层级审批级别的审批人ID")
+    private Integer approvalNowPeopleId;
+
     @ApiModelProperty("抄送人ID")
     private Integer copyId;
 

@@ -66,7 +66,7 @@ public class ApprovalLevelSetBiz extends BaseBiz<ApprovalLevelSetMapper, Approva
         }
         approvalLevelSet.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         BeanUtils.copyProperties(approvalLevelSetQuery, approvalLevelSet);
-        int re = mapper.updateByPrimaryKey(approvalLevelSet);
+        int re = mapper.updateByPrimaryKeySelective(approvalLevelSet);
         return re;
     }
 

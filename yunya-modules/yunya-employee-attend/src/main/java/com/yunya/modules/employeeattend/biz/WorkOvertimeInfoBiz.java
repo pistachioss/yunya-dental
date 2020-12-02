@@ -151,7 +151,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                                 List<CopyInfo> copyInfoList = new ArrayList<>();
                                 for (Integer copyId : workOvertimeInfoForm.getCopyList()) {
                                     CopyInfo copyInfo = new CopyInfo();
-                                    copyInfo.setApplyId(num);
+                                    copyInfo.setApplyId(workOvertimeInfo.getId());
                                     copyInfo.setApplyType(1);
                                     copyInfo.setUserId(copyId);
                                     copyInfo.setCrtId(workOvertimeInfo.getUserId());
