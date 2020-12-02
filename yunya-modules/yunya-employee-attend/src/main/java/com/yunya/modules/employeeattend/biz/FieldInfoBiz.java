@@ -271,6 +271,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
             if (fieldInfo.getApprpvalStatus() == 0) {
                 if (fieldInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                     fieldInfo.setApprpvalStatus(fieldInfoForm.getApprpvalStatus());
+                    fieldInfo.setUpdTime(new Date());
                     return mapper.updateByPrimaryKey(fieldInfo);
                 }
                 throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
