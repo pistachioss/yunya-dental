@@ -18,10 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.SAME_DATA_EXIST;
 
@@ -74,14 +71,20 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
     }
 
     public int create(ApprovalPeopleForm approvalPeopleForm) {
-        ApprovalPeople approvalPeople = new ApprovalPeople();
-        BeanUtils.copyProperties(approvalPeopleForm, approvalPeople);
-        int num = mapper.selectCount(approvalPeople);
+        int num = mapper.findCount(approvalPeopleForm);
         if(num>0){
-            throw new ClientServiceException("该用户已经添加在此优先级下", SAME_DATA_EXIST);
+            throw new ClientServiceException("用户已经添加在此优先级下", SAME_DATA_EXIST);
         }
-        approvalPeople.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
-        int re = mapper.insertSelective(approvalPeople);
+        List<ApprovalPeople>list = new ArrayList<>();
+        for(Integer userId:approvalPeopleForm.getUserId()){
+            ApprovalPeople approvalPeople = new ApprovalPeople();
+            approvalPeople.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+            approvalPeople.setApprovalLevelId(approvalPeopleForm.getApprovalLevelId());
+            approvalPeople.setUserId(userId);
+            approvalPeople.setCrtTime(new Date());
+            list.add(approvalPeople);
+        }
+        int re = mapper.batchInsert(list);
         return re;
     }
 

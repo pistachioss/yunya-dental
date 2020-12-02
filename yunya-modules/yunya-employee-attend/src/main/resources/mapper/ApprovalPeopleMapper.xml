@@ -13,4 +13,19 @@
     <result column="upd_id" property="updId" jdbcType="INTEGER" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
+  <select id="findCount" resultType="Integer">
+    select count(*) from approval_people where approval_level_id = #{approvalLevelId} and
+    user_id in
+    <foreach collection="userId" item="item" index="index" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+  </select>
+  <insert id="batchInsert" parameterType="java.util.List">
+    insert into approval_people ( user_id, approval_level_id, crt_id, crt_time, upd_id, upd_time) VALUES
+    <foreach collection="list" item="item" index="index" separator=",">
+      (#{item.userId}, #{item.approvalLevelId}, #{item.crtId},
+      #{item.crtTime}, #{item.updId},#{item.updTime}
+     )
+    </foreach>
+  </insert>
 </mapper>
