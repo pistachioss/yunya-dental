@@ -109,7 +109,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
 
     /**
      * 预付款充值查询
-     * @param memberQueryForm 预付款充值form
+     * @param form 预付款充值form
      * @return List<PrepaidRechargeLogBizVo>
      */
     public PageInfo<BasePrepaidRechargeLogVo> prepaidRechargeList(PrepaidQueryForm form) throws ParseException {
@@ -121,7 +121,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        if (patientIds == null || patientIds.size() > 0 ){
+        if (patientIds != null && patientIds.size() > 0 ){
             basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form,patientIds);
         }
         return new PageInfo<>(basePrepaidRechargeLogVoList);
