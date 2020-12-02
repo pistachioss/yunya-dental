@@ -51,19 +51,19 @@
                 and ci.user_id = #{copyId}
             </if>
             <if test="id !=null and id != ''">
-                and id = #{id}
+                and fi.id = #{id}
             </if>
             <if test="userId !=null and userId != ''">
-                and user_id = #{userId}
+                and fi.user_id = #{userId}
             </if>
             <if test="approvalPeopleId !=null and approvalPeopleId != ''">
-                and approval_people_id = #{approvalPeopleId}
+                and fi.approval_people_id = #{approvalPeopleId}
             </if>
             <if test="apprpvalStatus == 0 ">
-                and apprpval_status = #{apprpvalStatus}
+                and fi.apprpval_status = #{apprpvalStatus}
             </if>
             <if test="apprpvalStatus == 1 or apprpvalStatus == 2 ">
-                and apprpval_status in (1,2)
+                and fi.apprpval_status in (1,2)
             </if>
         </where>
     </select>

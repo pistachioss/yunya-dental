@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 简介:
@@ -27,8 +28,8 @@ public class ApprovalPeopleForm {
     /**
      * 用户id
      */
-    @ApiModelProperty("用户id")
-    @NotNull(message = "用户id不能为空")
-    private Integer userId;
+    @ApiModelProperty("用户id集合")
+    @NotNull(message = "用户id集合不能为空")
+    private List<Integer> userId;
 
 }

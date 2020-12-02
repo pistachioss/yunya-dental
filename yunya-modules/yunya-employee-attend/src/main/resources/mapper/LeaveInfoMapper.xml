@@ -43,7 +43,8 @@
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
-        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
+        t.id=ls.leave_id
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
             t.apprpval_status = 1 and vs.vacation_enable=1
@@ -54,7 +55,8 @@
                 </foreach>
             </if>
             <if test="date != null">
-                and (DATE_FORMAT(t.start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{date},'%Y-%m-%d') and DATE_FORMAT(t.end_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{date},'%Y-%m-%d')
+                and (DATE_FORMAT(t.start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{date},'%Y-%m-%d') and
+                DATE_FORMAT(t.end_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{date},'%Y-%m-%d')
                 or DATE_FORMAT(es.work_date,'%Y-%m-%d') = DATE_FORMAT(#{date},'%Y-%m-%d'))
             </if>
         </where>
@@ -63,20 +65,21 @@
 
     <select id="findLeaveInfoList" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
-            t.id,
-            t.user_id as userId,
-            t.vacation_id as vacationId,
-            if(vs.vacation_status=1,t.start_time,ifnull(es.work_date,t.start_time)) as startDate,
-            t.end_time as endDate,
-            ls.start_time as startTime,
-            ls.end_time as endTime,
-            t.leave_reason as leaveReason,
-            t.leave_picture as leavePicture,
-            t.approval_criteria_id as approvalCriteriaId,
-            t.apprpval_status as apprpvalStatus,
-            vs.vacation_status as vacationStatus,
-            ls.schedule_id as scheduleId
-        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
+        t.id,
+        t.user_id as userId,
+        t.vacation_id as vacationId,
+        if(vs.vacation_status=1,t.start_time,ifnull(es.work_date,t.start_time)) as startDate,
+        t.end_time as endDate,
+        ls.start_time as startTime,
+        ls.end_time as endTime,
+        t.leave_reason as leaveReason,
+        t.leave_picture as leavePicture,
+        t.approval_criteria_id as approvalCriteriaId,
+        t.apprpval_status as apprpvalStatus,
+        vs.vacation_status as vacationStatus,
+        ls.schedule_id as scheduleId
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
+        t.id=ls.leave_id
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
             vs.vacation_enable=1
@@ -87,8 +90,10 @@
                 and t.user_id = #{queryForm.userId}
             </if>
             <if test="queryForm.betweenStartDate!= null and queryForm.andStartDate!=null">
-                and (DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d')
-                or DATE_FORMAT(es.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d'))
+                and (DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d')
+                and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d')
+                or DATE_FORMAT(es.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d')
+                and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d'))
             </if>
             <if test="queryForm.vacationStatus != null">
                 and vs.vacation_status = #{queryForm.vacationStatus}
@@ -99,20 +104,21 @@
 
     <select id="findLeaveInfosBySchedule" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
-            t.id,
-            t.user_id as userId,
-            t.vacation_id as vacationId,
-            es.work_date as startDate,
-            t.end_time as endDate,
-            ls.start_time as startTime,
-            ls.end_time as endTime,
-            t.leave_reason as leaveReason,
-            t.leave_picture as leavePicture,
-            t.approval_criteria_id as approvalCriteriaId,
-            t.apprpval_status as apprpvalStatus,
-            vs.vacation_status as vacationStatus,
-            ls.schedule_id as scheduleId
-        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
+        t.id,
+        t.user_id as userId,
+        t.vacation_id as vacationId,
+        es.work_date as startDate,
+        t.end_time as endDate,
+        ls.start_time as startTime,
+        ls.end_time as endTime,
+        t.leave_reason as leaveReason,
+        t.leave_picture as leavePicture,
+        t.approval_criteria_id as approvalCriteriaId,
+        t.apprpval_status as apprpvalStatus,
+        vs.vacation_status as vacationStatus,
+        ls.schedule_id as scheduleId
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
+        t.id=ls.leave_id
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
             vs.vacation_status=0 and vs.vacation_enable=1
@@ -123,7 +129,8 @@
                 and t.user_id = #{queryForm.userId}
             </if>
             <if test="queryForm.betweenStartDate!= null and queryForm.andStartDate!=null">
-                and DATE_FORMAT(es.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d')
+                and DATE_FORMAT(es.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d')
+                and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d')
             </if>
             <if test="queryForm.vacationStatus != null">
                 and vs.vacation_status = #{queryForm.vacationStatus}
@@ -157,7 +164,8 @@
                 and t.user_id = #{queryForm.userId}
             </if>
             <if test="queryForm.betweenStartDate!= null and queryForm.andStartDate!=null">
-                and DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d')
+                and DATE_FORMAT(t.start_time,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenStartDate},'%Y-%m-%d')
+                and DATE_FORMAT(#{queryForm.andStartDate},'%Y-%m-%d')
             </if>
             <if test="queryForm.vacationStatus != null">
                 and vs.vacation_status = #{queryForm.vacationStatus}
@@ -306,16 +314,7 @@
     </select>
 
     <select id="findApprovalByMe" resultType="com.yunya.feign.employee_attend.vo.LeaveAppVO">
-    SELECT
-    a.id,
-    a.userId,
-    a.vacationName,
-    a.crtTime,
-    a.startTime,
-    a.endTime,
-    a.leaveTime,
-    a.approvalStatus from
-    (SELECT
+   SELECT
     li.id AS id,
     li.user_id AS userId,
     vs.vacation_name AS vacationName,
@@ -324,17 +323,14 @@
     li.end_time AS endTime,
     TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time) AS leaveTime,
     ai.approval_status AS approvalStatus,
-	MAX(als.approval_priority),
 	ap.user_id AS uid
     FROM
 	leave_info li
     LEFT JOIN approval_info ai ON ai.leave_id = li.id
-    LEFT JOIN approval_people ap on ai.approval_people_id = ap.id
-    LEFT JOIN approval_level_set als on ap.approval_level_id = als.id
+    LEFT JOIN approval_people ap on li.approval_now_people_id = ap.id
     LEFT JOIN vacation_set vs on li.vacation_id = vs.id
-    where ai.approval_status = 0
-    group BY ai.leave_id) a
-    where a.uid = #{userId}
+    where ap.user_id = #{userId} and li.apprpval_status = 0
+    group BY li.id
     </select>
     <select id="findOverApprovalByMe" resultType="com.yunya.feign.employee_attend.vo.LeaveAppVO">
     SELECT
