@@ -44,7 +44,7 @@
 
     <select id="findVOList" resultMap="FindVOMap">
         select fi.id,fi.field_address,fi.user_id,fi.start_time,fi.company_id,
-        fi.end_time,fi.field_reason,fi.approval_people_id,fi.apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) as fieldTime,fi.crt_time ,fi.upd_timefrom
+        fi.end_time,fi.field_reason,fi.approval_people_id,fi.apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) as fieldTime,fi.crt_time ,fi.upd_time from
         field_info fi  LEFT JOIN copy_info ci ON ci.apply_id = fi.id and ci.apply_type = 2
         <where>
             <if test="copyId !=null and copyId != '' ">
