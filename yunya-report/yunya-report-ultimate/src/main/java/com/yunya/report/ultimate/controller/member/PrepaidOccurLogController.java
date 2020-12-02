@@ -1,9 +1,10 @@
 package com.yunya.report.ultimate.controller.member;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.query.PrepaidQueryForm;
-import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.report.domain.vo.BasePrepaidExpendLogVo;
+import com.yunya.feign.report.domain.vo.BasePrepaidRechargeLogVo;
+import com.yunya.feign.report.domain.vo.BasePrepaidReturnLogVo;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;

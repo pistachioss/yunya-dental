@@ -37,7 +37,7 @@
         select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
-        bpmol.occur_date occurDate,
+        DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d %h:%i:%s') occurDate,
         bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
@@ -99,7 +99,7 @@
         select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
-        bpmol.occur_date occurDate,
+        DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d %h:%i:%s') occurDate,
         bb.order_date orderDate,
         bb.order_num orderNum,
         bpt.patient_id patientId,
@@ -160,7 +160,7 @@
         select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
-        bpmol.occur_date occurDate,
+        DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d %h:%i:%s') occurDate,
         bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
@@ -220,7 +220,7 @@
         select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
-        bpmol.occur_date occurDate,
+        DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d %h:%i:%s') occurDate,
         bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
@@ -285,7 +285,7 @@
         select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
-        bpmol.occur_date occurDate,
+        DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d %h:%i:%s') occurDate,
         bb.order_date orderDate,
         bb.order_num orderNum,
         bpt.patient_id patientId,
@@ -337,7 +337,7 @@
         select t1.* from (
         SELECT
         bpmol.occur_log_id occurLogId,
-        bpmol.occur_date occurDate,
+        DATE_FORMAT(bpmol.occur_date, '%Y-%m-%d %h:%i:%s') occurDate,
         bpt.patient_id patientId,
         bpt.NAME,
         bpt.mobile,
