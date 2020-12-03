@@ -34,12 +34,12 @@ public class ApprovalAllListController {
     private FieldInfoBiz fieldInfoBiz;
 
     /**
-     * 查看假期设置列表
+     * 申请记录
      * @param
      * @return
      */
     @PostMapping("/findList")
-    @ApiOperation("查看假期设置列表")
+    @ApiOperation("申请记录")
     public ResponseResult findList(@RequestBody @Validated ApprovalAllListForm approvalAllListForm) {
         return ResponseUtil.success(fieldInfoBiz.findApprovalAllList(approvalAllListForm));
     }

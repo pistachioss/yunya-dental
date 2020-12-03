@@ -36,6 +36,6 @@ public class ApprovalAllListForm {
     @ApiModelProperty("申请类型 加班 外勤 请假")
     private String status;
 
-    @ApiModelProperty("审批状态")
+    @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回")
     private Integer apprpvalStatus;
 }
