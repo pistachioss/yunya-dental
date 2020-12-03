@@ -276,6 +276,7 @@
         t.approval_criteria_id as approvalCriteriaId,
         t.apprpval_status as apprpvalStatus,
         t.crt_time as crtTime,
+        vs.vacation_status as vacationStatus,
         IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)), TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))
         AS leaveTime
         from leave_info t

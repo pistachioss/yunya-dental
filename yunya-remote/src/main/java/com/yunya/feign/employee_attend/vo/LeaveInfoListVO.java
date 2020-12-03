@@ -32,6 +32,10 @@ public class LeaveInfoListVO {
      */
     @ApiModelProperty(value = "申请人id")
     private Integer userId;
+
+
+    @ApiModelProperty(value = "假期类型 0：班次 1：天")
+    private Integer vacationStatus;
     /**
      * 申请人
      */
