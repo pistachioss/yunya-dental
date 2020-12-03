@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * @param: $
  * @return: $
  */
-@Api(tags = "审核列表接口")
+@Api(tags = "申请记录接口")
 @RestController
 @RequestMapping("/approval_all_list")
 @CrossOrigin
@@ -34,13 +34,12 @@ public class ApprovalAllListController {
     private FieldInfoBiz fieldInfoBiz;
 
     /**
-     * 查看假期设置列表
+     * 申请记录
      * @param
      * @return
      */
     @PostMapping("/findList")
-    @ApiOperation("查看假期设置列表")
-    @CurrentUser
+    @ApiOperation("申请记录")
     public ResponseResult findList(@RequestBody @Validated ApprovalAllListForm approvalAllListForm) {
         return ResponseUtil.success(fieldInfoBiz.findApprovalAllList(approvalAllListForm));
     }

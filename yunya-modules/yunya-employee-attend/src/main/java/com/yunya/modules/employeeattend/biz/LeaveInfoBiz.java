@@ -304,6 +304,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 if(next!=null){
                     leaveInfo.setApprovalNowPeopleId(next.getApprovalPeopleId());
                 }
+                leaveInfo.setRefuseReason(leaveInfoForm.getRefuseReason());
                 return mapper.updateByPrimaryKey(leaveInfo);
             }
             throw new ClientServiceException("当前申请已被处理", OBJECT_EDIT_FAIL);
