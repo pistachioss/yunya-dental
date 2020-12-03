@@ -275,6 +275,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                 if (fieldInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                     fieldInfo.setApprpvalStatus(fieldInfoForm.getApprpvalStatus());
                     fieldInfo.setUpdTime(new Date());
+                    fieldInfo.setRefuseReason(fieldInfoForm.getRefuseReason());
                     return mapper.updateByPrimaryKey(fieldInfo);
                 }
                 throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
@@ -313,12 +314,14 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         Byte[] userStatus = {0, 1, 3};
         model.setWorkStatus(userStatus);
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-        model.setKeyWord(approvalAllListForm.getUserName());
-        List<SysUserInfoDetail> employeesByName = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-        if(employeesByName.size()==0){
-            throw new ClientServiceException("查无此人", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        if(approvalAllListForm.getUserName()!=null&&approvalAllListForm.getUserName()!=""){
+            model.setKeyWord(approvalAllListForm.getUserName());
+            List<SysUserInfoDetail> employeesByName = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+            if(employeesByName.size()==0){
+                throw new ClientServiceException("查无此人", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+            }
+            approvalAllListForm.setUserId(employeesByName.get(0).getUserId());
         }
-        approvalAllListForm.setUserId(employeesByName.get(0).getUserId());
         List<ApprovalAllListVO>reList = mapper.findApprovalAllList(approvalAllListForm);
         if (reList.size() > 0) {
             Map<String, SysUserInfoDetail> emMapById = new HashMap(16);

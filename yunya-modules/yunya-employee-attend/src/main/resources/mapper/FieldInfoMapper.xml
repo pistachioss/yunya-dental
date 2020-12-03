@@ -143,32 +143,32 @@
         apprpvalStatus from
         (select id,user_id as userId,crt_time as crtTime,work_date as startTime,work_date as endTime,approval_people_id as approvalPeopleId,'加班' as status,apprpval_status as apprpvalStatus from work_overtime_info
         <where>
-            <if test="crtTime!=null">
+            <if test="crtTime!=null and crtTime!=''">
               AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
             </if>
-            <if test="startTime!=null">
+            <if test="startTime!=null and startTime!=''">
                 AND  DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
-            <if test="userId!=null">
+            <if test="userId!=null and userId!=''">
                 AND  user_id = #{userId}
             </if>
-            <if test="apprpvalStatus!=null">
+            <if test="apprpvalStatus!=null and apprpvalStatus!=''">
                 AND  apprpval_status = #{apprpvalStatus}
             </if>
         </where>
         union all
         select id,user_id as userId,crt_time as crtTime,start_time as startTime,end_time as endTime,approval_people_id as approvalPeopleId,'外勤' as status,apprpval_status as apprpvalStatus from field_info
         <where>
-            <if test="crtTime!=null">
+            <if test="crtTime!=null and crtTime!=''">
                 AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
             </if>
-            <if test="startTime!=null">
+            <if test="startTime!=null and startTime!=''">
                 AND  DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
-            <if test="userId!=null">
+            <if test="userId!=null and userId!=''">
                 AND  user_id = #{userId}
             </if>
-            <if test="apprpvalStatus!=null">
+            <if test="apprpvalStatus!=null and apprpvalStatus!=''">
                 AND  apprpval_status = #{apprpvalStatus}
             </if>
         </where>
@@ -177,22 +177,22 @@
         LEFT JOIN approval_info ai on ai.leave_id = li.id
         LEFT JOIN approval_people ap on ap.id = ai.approval_people_id
         <where>
-            <if test="crtTime!=null">
+            <if test="crtTime!=null and crtTime!=''">
                 AND  DATE_FORMAT(li.crt_time,'%Y-%m-%d') =  DATE_FORMAT(#{crtTime},'%Y-%m-%d')
             </if>
-            <if test="startTime!=null">
+            <if test="startTime!=null and startTime!=''">
                 AND  DATE_FORMAT(li.start_time,'%Y-%m-%d') =  DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
-            <if test="userId!=null">
+            <if test="userId!=null and userId!=''">
                 AND  li.user_id = #{userId}
             </if>
-            <if test="apprpvalStatus!=null">
+            <if test="apprpvalStatus!=null and apprpvalStatus!=''">
                 AND  li.apprpval_status = #{apprpvalStatus}
             </if>
         </where>
         GROUP BY li.id) a
         <where>
-            <if test="status!=null">
+            <if test="status!=null and status!='' ">
                 AND  a.status = #{status}
             </if>
         </where>

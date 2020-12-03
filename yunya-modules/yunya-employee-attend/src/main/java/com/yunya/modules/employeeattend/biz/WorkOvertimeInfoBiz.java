@@ -231,6 +231,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                 if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                     workOvertimeInfo.setApprpvalStatus(workOvertimeInfoForm.getApprpvalStatus());
                     workOvertimeInfo.setUpdTime(new Date());
+                    workOvertimeInfo.setRefuseReason(workOvertimeInfoForm.getRefuseReason());
                     return mapper.updateByPrimaryKey(workOvertimeInfo);
                 }
                 throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
