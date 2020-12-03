@@ -2,8 +2,10 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.EmployeeMatchingDetailQuery;
 import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
+import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
 import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -84,5 +86,21 @@ public class BaseTreatmentProcessBiz
     ExcelUtil<TreatmentMatchingRecordVO> excelUtil =
         new ExcelUtil<>(TreatmentMatchingRecordVO.class);
     excelUtil.exportExcel(response, list, "配诊记录表");
+  }
+
+  /**
+   * 根据条件查询助手配诊明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeTreatMatchingDetailVO>
+   */
+  public PageInfo<EmployeeTreatMatchingDetailVO> findAssistantMatchingDetailList(
+      EmployeeMatchingDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeTreatMatchingDetailVO> resultList =
+        mapper.selectAssistantMatchingDetailList(query);
+    return new PageInfo<>(resultList);
   }
 }

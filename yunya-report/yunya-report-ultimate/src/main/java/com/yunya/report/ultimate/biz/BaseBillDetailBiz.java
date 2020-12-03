@@ -66,13 +66,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    Byte dateType = query.getDateType();
-    List<EmployeeWorkloadVO> resultList;
-    if (dateType == 0) {
-      resultList = mapper.selectEmployeeWorkloadListByMonth(query);
-    } else {
-      resultList = mapper.selectEmployeeWorkloadListByYear(query);
-    }
+    List<EmployeeWorkloadVO> resultList = mapper.selectEmployeeWorkloadList(query);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
@@ -167,13 +161,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    Byte dateType = query.getDateType();
-    List<EmployeePersonalActualWorkloadDetailVO> resultList;
-    if (dateType == 0) {
-      resultList = mapper.selectEmployeePersonalActualWorkloadDetailListByMonth(query);
-    } else {
-      resultList = mapper.selectEmployeePersonalActualWorkloadDetailListByYear(query);
-    }
+    List<EmployeePersonalActualWorkloadDetailVO> resultList =
+        mapper.selectEmployeePersonalActualWorkloadDetailList(query);
     return new PageInfo<>(resultList);
   }
 
@@ -220,13 +209,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    Byte dateType = query.getDateType();
-    List<EmployeePersonalReceivedWorkloadDetailVO> resultList;
-    if (dateType == 0) {
-      resultList = mapper.selectEmployeePersonalReceivedWorkloadDetailListByMonth(query);
-    } else {
-      resultList = mapper.selectEmployeePersonalReceivedWorkloadDetailByYear(query);
-    }
+    List<EmployeePersonalReceivedWorkloadDetailVO> resultList =
+        mapper.selectEmployeePersonalReceivedWorkloadDetailList(query);
     return new PageInfo<>(resultList);
   }
 
@@ -273,13 +257,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    Byte dateType = query.getDateType();
-    List<EmployeePersonalSupplyWorkloadDetailVO> resultList;
-    if (dateType == 0) {
-      resultList = mapper.selectEmployeePersonalSupplyWorkloadDetailListByMonth(query);
-    } else {
-      resultList = mapper.selectEmployeePersonalSupplyWorkloadDetailByYear(query);
-    }
+    List<EmployeePersonalSupplyWorkloadDetailVO> resultList =
+        mapper.selectEmployeePersonalSupplyWorkloadDetailList(query);
     return new PageInfo<>(resultList);
   }
 

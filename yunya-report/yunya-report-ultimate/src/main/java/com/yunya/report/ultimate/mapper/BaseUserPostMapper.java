@@ -11,29 +11,11 @@ import java.util.List;
 public interface BaseUserPostMapper extends Mapper<BaseUserPost> {
 
   /**
-   * 根据条件查询配诊统计列表(按日查询)
+   * 根据条件查询配诊统计列表
    *
    * @param query 查询条件
    * @return List<AssistantMatchingStatisticsVO>
    */
-  List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsListByDay(
-      @Param("query") EmployeeMatchingRecordQuery query);
-
-  /**
-   * 根据条件查询配诊统计列表(按月查询)
-   *
-   * @param query 查询条件
-   * @return List<AssistantMatchingStatisticsVO>
-   */
-  List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsListMonth(
-      @Param("query") EmployeeMatchingRecordQuery query);
-
-  /**
-   * 根据条件查询配诊统计列表（按年查询）
-   *
-   * @param query 查询条件
-   * @return List<AssistantMatchingStatisticsVO>
-   */
-  List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsListByYear(
+  List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsList(
       @Param("query") EmployeeMatchingRecordQuery query);
 }

@@ -67,13 +67,8 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    Byte dateType = query.getDateType();
-    List<EmployeePersonalRefundWorkloadDetailVO> resultList;
-    if (dateType == 0) {
-      resultList = mapper.selectEmployeePersonalRefundWorkloadDetailByMonth(query);
-    } else {
-      resultList = mapper.selectEmployeePersonalRefundWorkloadDetailByYear(query);
-    }
+    List<EmployeePersonalRefundWorkloadDetailVO> resultList =
+        mapper.selectEmployeePersonalRefundWorkloadDetail(query);
     return new PageInfo<>(resultList);
   }
 
@@ -96,7 +91,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
    * 根据条件查询员工退费工作量退费明细列表
    *
    * @param query 查询条件
-   * @return
+   * @return PageInfo<EmployeeRefundDetailWorkloadVO>
    */
   public PageInfo<EmployeeRefundDetailWorkloadVO> findRefundOrderDetailList(
       EmployeeRefundWorkloadDetailQuery query) {

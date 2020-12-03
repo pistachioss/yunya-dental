@@ -46,7 +46,7 @@
 
     <select id="findVOList" resultMap="FindVOMap">
         select fi.id,fi.field_address,fi.user_id,fi.start_time,fi.company_id,
-        fi.end_time,fi.refuse_reason as refuseReason,fi.field_reason,fi.approval_people_id,fi.apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) as fieldTime,fi.crt_time ,fi.upd_time
+        fi.end_time,fi.refuse_reason,fi.field_reason,fi.approval_people_id,fi.apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) as fieldTime,fi.crt_time ,fi.upd_time
         from
         field_info fi  LEFT JOIN copy_info ci ON ci.apply_id = fi.id and ci.apply_type = 2
         <where>
@@ -67,6 +67,9 @@
             </if>
             <if test="apprpvalStatus == 1 or apprpvalStatus == 2 ">
                 and fi.apprpval_status in (1,2)
+            </if>
+            <if test="startTime != null ">
+                and fi.crt_time >= #{startTime} and fi.crt_time &lt;= #{endTime}
             </if>
         </where>
     </select>
@@ -130,5 +133,71 @@
 
     <select id="countByDay" resultType="Integer">
         select count(*) from field_info where user_id = #{userId} and  DATE_FORMAT(start_time,'%Y-%m-%d') = #{startTime}  and apprpval_status in (0,1)
+    </select>
+
+    <select id="findApprovalAllList" resultType="com.yunya.feign.employee_attend.vo.ApprovalAllListVO">
+        select id,
+        userId,
+        crtTime,
+        startTime,
+        endTime,
+        approvalPeopleId,
+        STATUS,
+        apprpvalStatus from
+        (select id,user_id as userId,crt_time as crtTime,work_date as startTime,work_date as endTime,approval_people_id as approvalPeopleId,'加班' as status,apprpval_status as apprpvalStatus from work_overtime_info
+        <where>
+            <if test="crtTime!=null">
+              AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
+            </if>
+            <if test="startTime!=null">
+                AND  DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
+            </if>
+            <if test="userId!=null and userId!=''">
+                AND  user_id = #{userId}
+            </if>
+            <if test="apprpvalStatus!=null and apprpvalStatus!=''">
+                AND  apprpval_status = #{apprpvalStatus}
+            </if>
+        </where>
+        union all
+        select id,user_id as userId,crt_time as crtTime,start_time as startTime,end_time as endTime,approval_people_id as approvalPeopleId,'外勤' as status,apprpval_status as apprpvalStatus from field_info
+        <where>
+            <if test="crtTime!=null">
+                AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
+            </if>
+            <if test="startTime!=null">
+                AND  DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
+            </if>
+            <if test="userId!=null and userId!=''">
+                AND  user_id = #{userId}
+            </if>
+            <if test="apprpvalStatus!=null and apprpvalStatus!=''">
+                AND  apprpval_status = #{apprpvalStatus}
+            </if>
+        </where>
+        union all
+        select li.id as id,li.user_id as userId,li.crt_time as crtTime,li.start_time as startTime,li.end_time as endTime,GROUP_CONCAT(ap.user_id) as approvalPeopleId,'请假' as status,li.apprpval_status as apprpvalStatus from leave_info li
+        LEFT JOIN approval_info ai on ai.leave_id = li.id
+        LEFT JOIN approval_people ap on ap.id = ai.approval_people_id
+        <where>
+            <if test="crtTime!=null">
+                AND  DATE_FORMAT(li.crt_time,'%Y-%m-%d') =  DATE_FORMAT(#{crtTime},'%Y-%m-%d')
+            </if>
+            <if test="startTime!=null">
+                AND  DATE_FORMAT(li.start_time,'%Y-%m-%d') =  DATE_FORMAT(#{startTime},'%Y-%m-%d')
+            </if>
+            <if test="userId!=null and userId!=''">
+                AND  li.user_id = #{userId}
+            </if>
+            <if test="apprpvalStatus!=null and apprpvalStatus!=''">
+                AND  li.apprpval_status = #{apprpvalStatus}
+            </if>
+        </where>
+        GROUP BY li.id) a
+        <where>
+            <if test="status!=null and status!='' ">
+                AND  a.status = #{status}
+            </if>
+        </where>
     </select>
 </mapper>

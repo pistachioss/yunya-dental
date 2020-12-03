@@ -37,7 +37,7 @@
         and t.binding_status = #{queryForm.bindingStatus}
       </if>
       <if test="queryForm.bindingTime!=null">
-        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{queryForm.bindingTime},'%Y-%m-%d')
+        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') = DATE_FORMAT(#{queryForm.bindingTime},'%Y-%m-%d')
       </if>
       <if test="queryForm.startDate != null and queryForm.startDate!= ''">
         and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{queryForm.startDate},'%Y-%m-%d')

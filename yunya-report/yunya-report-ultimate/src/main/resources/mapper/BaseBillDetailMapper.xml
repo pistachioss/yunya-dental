@@ -104,8 +104,8 @@
         bdi.billDetailId
     </select>
 
-    <!-- 根据条件查询员工工作量列表（按月查询） -->
-    <select id="selectEmployeeWorkloadListByMonth" resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
+    <!-- 根据条件查询员工工作量列表 -->
+    <select id="selectEmployeeWorkloadList" resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
         SELECT
         bup.org_id,
         bup.user_id AS employeeId,
@@ -153,121 +153,18 @@
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         ) bbd
-        WHERE
-        DATE_FORMAT( bbd.order_date, '%Y-%m' ) = #{query.queryDate}
-        ) bbd ON bup.user_id = bbd.executor_id
-        AND bup.org_id = bbd.org_id
-        LEFT JOIN (
-        SELECT
-        bbd.org_id,
-        bbd.executor_id,
-        bbd.received_amount
-        FROM
-        (
-        SELECT
-        bb.org_id,
-        bb.bill_date,
-        bbd.executor_id,
-        bbd.received_amount
-        FROM
-        base_bill_detail bbd
-        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
-        ) bbd
-        WHERE
-        DATE_FORMAT( bbd.bill_date, '%Y-%m' ) = #{query.queryDate}
-        ) bbd1 ON bup.user_id = bbd1.executor_id
-        AND bup.org_id = bbd1.org_id
-        LEFT JOIN (
-        SELECT
-        brd.org_id,
-        brd.refund_amount,
-        brd.executor_id
-        FROM
-        (
-        SELECT
-        br.org_id,
-        br.refund_date,
-        brd.refund_amount,
-        bbd.executor_id
-        FROM
-        base_refund_detail brd
-        LEFT JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
-        LEFT JOIN base_refund br ON brd.refund_id = br.refund_id
-        ) brd
-        WHERE
-        DATE_FORMAT( refund_date, '%Y-%m' ) = #{query.queryDate}
-        ) brd ON bup.user_id = brd.executor_id
-        AND bup.org_id = bup.org_id
-        LEFT JOIN ( SELECT ewc.org_id, ewc.processing_fee, ewc.material_fee, ewc.user_id FROM employee_workload_cost ewc
-        WHERE DATE_FORMAT( ewc.entry_month, '%Y-%m' ) = #{query.queryDate} ) ewc ON bup.user_id = ewc.user_id
-        AND bup.org_id = ewc.org_id
         <where>
-            <if test="query.orgId != null">
-                and bup.org_id = #{query.orgId}
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( bbd.order_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
             </if>
-            <if test="query.employeeIds != null and query.employeeIds.length > 0">
-                and bup.user_id in
-                <foreach collection="query.employeeIds" item="item" index="index" open="(" close=")" separator=",">
-                    #{item}
-                </foreach>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( bbd.order_date, '%Y' ) = #{query.queryDate}
+                </if>
             </if>
         </where>
-        GROUP BY
-        bup.user_id
-    </select>
-
-    <!-- 根据条件查询员工工作量列表（按年查询） -->
-    <select id="selectEmployeeWorkloadListByYear"
-            resultType="com.yunya.feign.report.domain.vo.EmployeeWorkloadVO">
-        SELECT
-        bup.org_id,
-        bup.user_id AS employeeId,
-        bup.postNames AS postNames,
-        be.employee_name AS employeeName,
-        ifnull(be.work_amount, 0) AS baseWorkload,
-        ifnull(be.bonus_coefficient, 0) AS bonusCoefficient,
-        ifnull(SUM( bbd.totalAmount ) - SUM( bbd.discount_amount ), 0) AS actualWorkload,
-        ifnull(SUM( bbd.coupon_workload ), 0) AS supplementWorkload,
-        ifnull(sum( bbd1.received_amount ), 0) AS receivedWorkload,
-        ifnull(SUM( brd.refund_amount ), 0) AS refundWorkload,
-        ifnull(SUM( ewc.processing_fee ), 0) AS processingFee,
-        ifnull(SUM( ewc.material_fee ), 0) AS largeMaterialCost
-        FROM
-        (
-        SELECT
-        bup.org_id,
-        bup.user_id,
-        GROUP_CONCAT( DISTINCT bup.post_name SEPARATOR ',' ) AS postNames
-        FROM
-        base_user_post bup
-        GROUP BY
-        bup.user_id,
-        bup.org_id
-        ) bup
-        LEFT JOIN base_employee be ON bup.user_id = be.user_id
-        LEFT JOIN (
-        SELECT
-        bbd.org_id,
-        bbd.executor_id,
-        bbd.coupon_workload,
-        bbd.discount_amount,
-        bbd.price * bbd.quantity AS totalAmount
-        FROM
-        (
-        SELECT
-        bb.org_id,
-        bb.order_date,
-        bbd.executor_id,
-        bbd.coupon_workload,
-        bbd.discount_amount,
-        bbd.price,
-        bbd.quantity
-        FROM
-        base_bill_detail bbd
-        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
-        ) bbd
-        WHERE
-        DATE_FORMAT( bbd.order_date, '%Y' ) = #{query.queryDate}
         ) bbd ON bup.user_id = bbd.executor_id
         AND bup.org_id = bbd.org_id
         LEFT JOIN (
@@ -286,8 +183,18 @@
         base_bill_detail bbd
         LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
         ) bbd
-        WHERE
-        DATE_FORMAT( bbd.bill_date, '%Y' ) = #{query.queryDate}
+        <where>
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( bbd.bill_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( bbd.bill_date, '%Y' ) = #{query.queryDate}
+                </if>
+            </if>
+        </where>
         ) bbd1 ON bup.user_id = bbd1.executor_id
         AND bup.org_id = bbd1.org_id
         LEFT JOIN (
@@ -307,12 +214,40 @@
         LEFT JOIN base_bill_detail bbd ON brd.bill_detail_id = bbd.bill_detail_id
         LEFT JOIN base_refund br ON brd.refund_id = br.refund_id
         ) brd
-        WHERE
-        DATE_FORMAT( refund_date, '%Y' ) = #{query.queryDate}
+        <where>
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( refund_date, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( refund_date, '%Y' ) = #{query.queryDate}
+                </if>
+            </if>
+        </where>
         ) brd ON bup.user_id = brd.executor_id
         AND bup.org_id = bup.org_id
-        LEFT JOIN ( SELECT ewc.org_id, ewc.processing_fee, ewc.material_fee, ewc.user_id FROM employee_workload_cost ewc
-        WHERE DATE_FORMAT( ewc.entry_month, '%Y' ) = #{query.queryDate} ) ewc ON bup.user_id = ewc.user_id
+        LEFT JOIN (
+        SELECT
+        ewc.org_id,
+        ewc.processing_fee,
+        ewc.material_fee,
+        ewc.user_id
+        FROM employee_workload_cost ewc
+        <where>
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( ewc.entry_month, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( ewc.entry_month, '%Y' ) = #{query.queryDate}
+                </if>
+            </if>
+        </where>
+        ) ewc ON bup.user_id = ewc.user_id
         AND bup.org_id = ewc.org_id
         <where>
             <if test="query.orgId != null">
@@ -360,8 +295,8 @@
         group by bdp.categoryId
     </select>
 
-    <!-- 根据条件查询员工个人实收工作量明细列表(按月查询) -->
-    <select id="selectEmployeePersonalActualWorkloadDetailListByMonth"
+    <!-- 根据条件查询员工个人实收工作量明细列表 -->
+    <select id="selectEmployeePersonalActualWorkloadDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO">
         SELECT
         orgId,
@@ -456,130 +391,15 @@
             <if test="query.orgId != null">
                 and ebd.orgId = #{query.orgId}
             </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                </if>
             </if>
-            <if test="query.employeeId != null">
-                and ebd.executorId = #{query.employeeId}
-            </if>
-        </where>
-        GROUP BY
-        ebd.billId
-        ) ewd
-        <where>
-            <if test="query.keyword != null and query.keyword != ''">
-                and concat(ifnull(ewd.patientName, ''), ifnull(ewd.pinyinName, ''), ifnull(ewd.mobile, '')) Like
-                concat('%', #{query.keyword}, '%')
-            </if>
-            <if test="query.billNum != null and query.billNum != ''">
-                and ewd.billNum like concat('%', #{query.billNum} ,'%')
-            </if>
-            <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
-            </if>
-        </where>
-        ORDER BY ewd.orderDate DESC
-    </select>
-
-    <!-- 根据条件查询员工个人实收工作量明细列表(按年查询) -->
-    <select id="selectEmployeePersonalActualWorkloadDetailListByYear"
-            resultType="com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO">
-        SELECT
-        orgId,
-        billId,
-        billNum,
-        DATE_FORMAT(orderDate, '%Y-%m-%d'),
-        patientId,
-        patientName,
-        mobile,
-        totalOriginalAmount,
-        privilegeAmount,
-        actualAmount,
-        ewd.actualWorkload,
-        executorId
-        FROM (
-        SELECT
-        ebd.orgId,
-        ebd.billId,
-        ebd.billNum,
-        ebd.orderDate,
-        ebd.patientId,
-        ebd.patientName,
-        ebd.pinyinName,
-        ebd.mobile,
-        SUM( ebd.originalAmount ) AS totalOriginalAmount,
-        ebd.privilegeAmount,
-        ebd.actualAmount,
-        IFNULL( ew.actualWorkload, 0 ) as actualWorkload,
-        ebd.executorId
-        FROM
-        (
-        SELECT
-        bbp.org_id AS orgId,
-        bbp.bill_id AS billId,
-        bbp.bill_num AS billNum,
-        bbp.order_date AS orderDate,
-        bbp.patient_id AS patientId,
-        bbp.`name` AS patientName,
-        bbp.pinyin_name AS pinyinName,
-        bbp.mobile,
-        bbp.order_amount AS totalOriginalAmount,
-        bbp.privilege_amount AS privilegeAmount,
-        bbp.actual_amount AS actualAmount,
-        bbd.price * bbd.quantity AS originalAmount,
-        bbd.coupon_workload AS couponWorkload,
-        bbd.discount_amount AS discountAmount,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        LEFT JOIN (
-        SELECT
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_num,
-        bb.order_date,
-        bb.order_amount,
-        bb.privilege_amount,
-        bb.actual_amount,
-        bb.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name
-        FROM
-        base_bill bb
-        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
-        ) bbp ON bbd.bill_id = bbp.bill_id
-        ) ebd
-        LEFT JOIN (
-        SELECT
-        SUM( ew.originalAmount - ew.discountAmount ) AS actualWorkload,
-        ew.billId,
-        ew.executorId
-        FROM
-        (
-        SELECT
-        bbd.bill_id AS billId,
-        bbd.price * bbd.quantity AS originalAmount,
-        bbd.discount_amount AS discountAmount,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        WHERE
-        bbd.executor_id IS NOT NULL
-        GROUP BY
-        bbd.bill_detail_id
-        ) ew
-        GROUP BY
-        ew.billId,
-        ew.executorId
-        ) ew ON ebd.executorId = ew.executorId
-        AND ebd.billId = ew.billId
-        <where>
-            <if test="query.orgId != null">
-                and ebd.orgId = #{query.orgId}
-            </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                </if>
             </if>
             <if test="query.employeeId != null">
                 and ebd.executorId = #{query.employeeId}
@@ -628,8 +448,8 @@
         </where>
     </select>
 
-    <!-- 根据条件查询员工个人已收工作量明细列表（按月查询） -->
-    <select id="selectEmployeePersonalReceivedWorkloadDetailListByMonth"
+    <!-- 根据条件查询员工个人已收工作量明细列表 -->
+    <select id="selectEmployeePersonalReceivedWorkloadDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO">
         SELECT
             orgId,
@@ -709,8 +529,15 @@
             <if test="query.orgId != null">
                 and ebd.orgId = #{query.orgId}
             </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                </if>
             </if>
             <if test="query.employeeId != null">
                 and ebd.executorId = #{query.employeeId}
@@ -719,112 +546,6 @@
             GROUP BY
                 ebd.billId
             ) ewd
-        <where>
-            <if test="query.keyword != null and query.keyword != ''">
-                and concat(ifnull(ewd.patientName, ''), ifnull(ewd.pinyinName, ''), ifnull(ewd.mobile, '')) Like
-                concat('%', #{query.keyword}, '%')
-            </if>
-            <if test="query.billNum != null and query.billNum != ''">
-                and ewd.billNum like concat('%', #{query.billNum} ,'%')
-            </if>
-            <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
-            </if>
-        </where>
-        ORDER BY ewd.orderDate DESC
-    </select>
-
-    <!-- 根据条件查询员工个人已收工作量明细列表（按年查询） -->
-    <select id="selectEmployeePersonalReceivedWorkloadDetailByYear"
-            resultType="com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO">
-        SELECT
-        orgId,
-        billId,
-        billNum,
-        DATE_FORMAT( orderDate, '%Y-%m-%d %H:%i' ),
-        patientId,
-        patientName,
-        mobile,
-        ewd.receivedWorkload
-        FROM
-        (
-        SELECT
-        ebd.orgId,
-        ebd.billId,
-        ebd.billNum,
-        ebd.orderDate,
-        ebd.patientId,
-        ebd.patientName,
-        ebd.pinyinName,
-        ebd.mobile,
-        IFNULL( ew.receivedWorkload, 0 ) AS receivedWorkload,
-        ebd.executorId
-        FROM
-        (
-        SELECT
-        bbp.org_id AS orgId,
-        bbp.bill_id AS billId,
-        bbp.bill_num AS billNum,
-        bbp.order_date AS orderDate,
-        bbp.patient_id AS patientId,
-        bbp.`name` AS patientName,
-        bbp.pinyin_name AS pinyinName,
-        bbp.mobile,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        LEFT JOIN (
-        SELECT
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_num,
-        bb.order_date,
-        bb.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name
-        FROM
-        base_bill bb
-        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
-        ) bbp ON bbd.bill_id = bbp.bill_id
-        ) ebd
-        LEFT JOIN (
-        SELECT
-        SUM( ew.receivedAmount ) AS receivedWorkload,
-        ew.billId,
-        ew.executorId
-        FROM
-        (
-        SELECT
-        bbd.bill_id AS billId,
-        bbd.received_amount AS receivedAmount,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        WHERE
-        bbd.executor_id IS NOT NULL
-        GROUP BY
-        bbd.bill_detail_id
-        ) ew
-        GROUP BY
-        ew.billId,
-        ew.executorId
-        ) ew ON ebd.executorId = ew.executorId
-        AND ebd.billId = ew.billId
-        <where>
-            <if test="query.orgId != null">
-                and ebd.orgId = #{query.orgId}
-            </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
-            </if>
-            <if test="query.employeeId != null">
-                and ebd.executorId = #{query.employeeId}
-            </if>
-        </where>
-        GROUP BY
-        ebd.billId
-        ) ewd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(ifnull(ewd.patientName, ''), ifnull(ewd.pinyinName, ''), ifnull(ewd.mobile, '')) Like
@@ -864,8 +585,8 @@
         </where>
     </select>
 
-    <!-- 根据条件查询员工补入工作量明细列表（按月查询） -->
-    <select id="selectEmployeePersonalSupplyWorkloadDetailListByMonth"
+    <!-- 根据条件查询员工补入工作量明细列表 -->
+    <select id="selectEmployeePersonalSupplyWorkloadDetailList"
             resultType="com.yunya.feign.report.domain.vo.EmployeePersonalSupplyWorkloadDetailVO">
         SELECT
         orgId,
@@ -959,128 +680,15 @@
             <if test="query.orgId != null">
                 and ebd.orgId = #{query.orgId}
             </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+            <if test="query.dateType == 0">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( ebd.orderDate, '%Y-%m' ) = #{query.queryDate}
+                </if>
             </if>
-            <if test="query.employeeId != null">
-                and ebd.executorId = #{query.employeeId}
-            </if>
-        </where>
-        GROUP BY
-        ebd.billId
-        ) ewd
-        <where>
-            <if test="query.keyword != null and query.keyword != ''">
-                and concat(ifnull(ewd.patientName, ''), ifnull(ewd.pinyinName, ''), ifnull(ewd.mobile, '')) Like
-                concat('%', #{query.keyword}, '%')
-            </if>
-            <if test="query.billNum != null and query.billNum != ''">
-                and ewd.billNum like concat('%', #{query.billNum} ,'%')
-            </if>
-            <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(ewd.orderDate, '%Y-%m-%d') = #{query.orderDate}
-            </if>
-        </where>
-        ORDER BY ewd.orderDate DESC
-    </select>
-
-    <!-- 根据条件查询员工补入工作量明细列表（按年查询） -->
-    <select id="selectEmployeePersonalSupplyWorkloadDetailByYear"
-            resultType="com.yunya.feign.report.domain.vo.EmployeePersonalSupplyWorkloadDetailVO">
-        SELECT
-        orgId,
-        billId,
-        billNum,
-        DATE_FORMAT( orderDate, '%Y-%m-%d' ),
-        patientId,
-        patientName,
-        mobile,
-        totalOriginalAmount,
-        privilegeAmount,
-        actualAmount,
-        supplyWorkload
-        FROM
-        (
-        SELECT
-        ebd.orgId,
-        ebd.billId,
-        ebd.billNum,
-        ebd.orderDate,
-        ebd.patientId,
-        ebd.patientName,
-        ebd.pinyinName,
-        ebd.mobile,
-        SUM( ebd.originalAmount ) AS totalOriginalAmount,
-        ebd.privilegeAmount,
-        ebd.actualAmount,
-        IFNULL( ew.couponWorkload, 0 ) AS supplyWorkload,
-        ebd.executorId
-        FROM
-        (
-        SELECT
-        bbp.org_id AS orgId,
-        bbp.bill_id AS billId,
-        bbp.bill_num AS billNum,
-        bbp.order_date AS orderDate,
-        bbp.patient_id AS patientId,
-        bbp.`name` AS patientName,
-        bbp.pinyin_name AS pinyinName,
-        bbp.mobile,
-        bbp.order_amount AS totalOriginalAmount,
-        bbp.privilege_amount AS privilegeAmount,
-        bbp.actual_amount AS actualAmount,
-        bbd.price * bbd.quantity AS originalAmount,
-        bbd.discount_amount AS discountAmount,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        LEFT JOIN (
-        SELECT
-        bb.org_id,
-        bb.bill_id,
-        bb.bill_num,
-        bb.order_date,
-        bb.order_amount,
-        bb.privilege_amount,
-        bb.actual_amount,
-        bb.patient_id,
-        bp.`name`,
-        bp.mobile,
-        bp.pinyin_name
-        FROM
-        base_bill bb
-        LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
-        ) bbp ON bbd.bill_id = bbp.bill_id
-        ) ebd
-        LEFT JOIN (
-        SELECT
-        SUM( ew.couponWorkload ) AS couponWorkload,
-        ew.billId,
-        ew.executorId
-        FROM
-        (
-        SELECT
-        bbd.bill_id AS billId,
-        bbd.coupon_workload AS couponWorkload,
-        bbd.executor_id AS executorId
-        FROM
-        base_bill_detail bbd
-        WHERE
-        bbd.executor_id IS NOT NULL
-        GROUP BY
-        bbd.bill_detail_id
-        ) ew
-        GROUP BY
-        ew.billId,
-        ew.executorId
-        ) ew ON ebd.executorId = ew.executorId
-        AND ebd.billId = ew.billId
-        <where>
-            <if test="query.orgId != null">
-                and ebd.orgId = #{query.orgId}
-            </if>
-            <if test="query.queryDate != null and query.queryDate != ''">
-                and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+            <if test="query.dateType == 1">
+                <if test="query.queryDate != null and query.queryDate != ''">
+                    and DATE_FORMAT( ebd.orderDate, '%Y' ) = #{query.queryDate}
+                </if>
             </if>
             <if test="query.employeeId != null">
                 and ebd.executorId = #{query.employeeId}

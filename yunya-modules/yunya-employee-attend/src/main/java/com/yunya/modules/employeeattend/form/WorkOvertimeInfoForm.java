@@ -32,6 +32,14 @@ public class WorkOvertimeInfoForm {
 
     @ApiModelProperty("申请要加班的日期")
     private Date workDate;
+
+    @ApiModelProperty("开始时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date startTime;
+
+    @ApiModelProperty("结束时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date endTime;
     /**
      * 门诊id
      */
@@ -67,7 +75,7 @@ public class WorkOvertimeInfoForm {
      * 审批状态 0 审批中 1通过 2拒绝  3撤回
      */
     @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回")
-    private Integer apprpvalStatus = 0;
+    private Integer apprpvalStatus;
 
     @ApiModelProperty("拒绝条件")
     private String refuseReason;
