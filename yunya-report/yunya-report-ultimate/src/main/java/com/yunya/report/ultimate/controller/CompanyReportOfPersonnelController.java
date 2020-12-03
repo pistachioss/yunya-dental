@@ -1,12 +1,18 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeeRefundWorkloadDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeeWorkloadDetailQuery;
+import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
+import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
 import com.yunya.report.ultimate.biz.BaseRefundBiz;
+import com.yunya.report.ultimate.biz.BaseUserPostBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -37,6 +43,8 @@ public class CompanyReportOfPersonnelController {
   @Autowired private BaseBillDetailBiz billDetailBiz;
   /** 退费 */
   @Autowired private BaseRefundBiz refundBiz;
+  /** 员工 */
+  @Autowired private BaseUserPostBiz baseUserPostBiz;
 
   /**
    * 根据条件查询员工工作量报表
@@ -217,7 +225,7 @@ public class CompanyReportOfPersonnelController {
    * @return
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-退费工作量明细")
-  @PostMapping(value = "/employee/workload/refund/list", name = "公司端报表-人事报表-员工工作量")
+  @PostMapping(value = "/employee/workload/refund/list", name = "根据条件查询员工退费工作量明细")
   public ResponseResult<PageInfo<EmployeePersonalRefundWorkloadDetailVO>> refundWorkloadDetailList(
       @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
     PageInfo<EmployeePersonalRefundWorkloadDetailVO> pageInfo =
@@ -254,5 +262,36 @@ public class CompanyReportOfPersonnelController {
       @RequestBody @Validated EmployeeRefundWorkloadDetailQuery query) {
     PageInfo<EmployeeRefundDetailWorkloadVO> pageInfo = refundBiz.findRefundOrderDetailList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询配诊统计列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<AssistantMatchingStatisticsVO>
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计")
+  @PostMapping(value = "/matching/statistics/list", name = "公司端报表-人事报表-配诊统计")
+  public ResponseResult<PageInfo<AssistantMatchingStatisticsVO>> treatMatchingStatisticsList(
+      @RequestBody @Validated EmployeeMatchingRecordQuery query) {
+    PageInfo<AssistantMatchingStatisticsVO> pageInfo =
+        baseUserPostBiz.findTreatMatchingStatisticsList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出助手配诊统计列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计-导出")
+  @PostMapping(value = "/matching/statistics/list/export", name = "根据条件导出助手配诊统计列表")
+  public ResponseResult<T> exportEmployeeTreatMatchingStatisticsList(
+      HttpServletResponse response, @RequestBody @Validated EmployeeMatchingRecordQuery query)
+      throws IOException {
+    baseUserPostBiz.exportEmployeeMatchingStatisticsList(response, query);
+    return ResponseUtil.success(null);
   }
 }
