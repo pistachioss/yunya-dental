@@ -466,8 +466,8 @@
             `bc`.`pay_name`,
             `be`.`employee_name`                          as `sellerUserName`
         from `base_card` `bc`
-            inner join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
-            inner join `base_employee` `be` on `be`.`user_id` = `bc`.`seller_user_id`
+            left join `base_coupon` `b` on `b`.`coupon_id` = `bc`.`coupon_id`
+            left join `base_employee` `be` on `be`.`user_id` = `bc`.`seller_user_id`
         where
             `bc`.`status` != 0
             and `bc`.`allocate_org_id` != 0
@@ -475,7 +475,7 @@
                 and `bc`.`allocate_org_id` = #{orgId}
             </if>
             <if test="soldStartDate != null and soldEndDate != null">
-                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; #{soldEndDate})
+                and (`bc`.`sold_date` &gt;= #{soldStartDate} and `bc`.`sold_date` &lt; date_add(#{soldEndDate}, interval 1 day))
             </if>
             <if test="couponName !=null and couponName != ''">
                 and `b`.`coupon_name` like concat('%', #{couponName}, '%')

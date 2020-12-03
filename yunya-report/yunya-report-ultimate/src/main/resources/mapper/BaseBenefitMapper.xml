@@ -191,17 +191,17 @@
         from `base_benefit` `bf`
             inner join `base_coupon` `bco` on `bco`.`coupon_id` = `bf`.`coupon_id`
             inner join `base_card` `bcd` on `bcd`.`card_id` = `bf`.`card_id`
-            inner join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
+            left join `base_bill` `bb` on `bb`.`bill_id` = `bf`.`order_id`
             <!-- 优惠券使用患者 -->
-            inner join `base_patient` `bp` on `bp`.`patient_id` = `bf`.`patient_id`
+            left join `base_patient` `bp` on `bp`.`patient_id` = `bf`.`patient_id`
             <!-- 优惠券操作人 -->
-            inner join `base_employee` `be` on `be`.`user_id` = `bf`.`operate_user_id`
+            left join `base_employee` `be` on `be`.`user_id` = `bf`.`operate_user_id`
         where `bco`.`coupon_type` != 4
             <if test="orgId != null">
                 and `bf`.`org_id` = #{orgId}
             </if>
             <if test="usedStartDate != null and usedEndDate != null">
-                and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; #{usedEndDate})
+                and (`bf`.`use_date` &gt;= #{usedStartDate} and `bf`.`use_date` &lt; date_add(#{usedEndDate}, interval 1 day))
             </if>
             <if test="couponName !=null and couponName != ''">
                 and `bco`.`coupon_name` like concat('%', #{couponName}, '%')
