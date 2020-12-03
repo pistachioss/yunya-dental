@@ -143,10 +143,10 @@
         apprpvalStatus from
         (select id,user_id as userId,crt_time as crtTime,work_date as startTime,work_date as endTime,approval_people_id as approvalPeopleId,'加班' as status,apprpval_status as apprpvalStatus from work_overtime_info
         <where>
-            <if test="crtTime!=null and crtTime!=''">
+            <if test="crtTime!=null">
               AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
             </if>
-            <if test="startTime!=null and startTime!=''">
+            <if test="startTime!=null">
                 AND  DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
             <if test="userId!=null and userId!=''">
@@ -159,10 +159,10 @@
         union all
         select id,user_id as userId,crt_time as crtTime,start_time as startTime,end_time as endTime,approval_people_id as approvalPeopleId,'外勤' as status,apprpval_status as apprpvalStatus from field_info
         <where>
-            <if test="crtTime!=null and crtTime!=''">
+            <if test="crtTime!=null">
                 AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
             </if>
-            <if test="startTime!=null and startTime!=''">
+            <if test="startTime!=null">
                 AND  DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
             <if test="userId!=null and userId!=''">
@@ -177,10 +177,10 @@
         LEFT JOIN approval_info ai on ai.leave_id = li.id
         LEFT JOIN approval_people ap on ap.id = ai.approval_people_id
         <where>
-            <if test="crtTime!=null and crtTime!=''">
+            <if test="crtTime!=null">
                 AND  DATE_FORMAT(li.crt_time,'%Y-%m-%d') =  DATE_FORMAT(#{crtTime},'%Y-%m-%d')
             </if>
-            <if test="startTime!=null and startTime!=''">
+            <if test="startTime!=null">
                 AND  DATE_FORMAT(li.start_time,'%Y-%m-%d') =  DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
             <if test="userId!=null and userId!=''">
