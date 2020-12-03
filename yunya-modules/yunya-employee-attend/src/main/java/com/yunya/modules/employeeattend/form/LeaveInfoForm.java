@@ -74,6 +74,9 @@ public class LeaveInfoForm {
      */
     @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝 3撤回")
     private Integer apprpvalStatus;
+
+    @ApiModelProperty(value = "拒绝原因")
+    private String refuseReason;
     /**
      * 审批人信息列表
      */

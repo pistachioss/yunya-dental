@@ -45,7 +45,11 @@ public class FieldInfo {
      */
     @Column(name = "apprpval_status")
     private Integer apprpvalStatus;
-
+    /**
+     * 拒绝原因
+     */
+    @Column(name = "refuse_reason")
+    private String refuseReason;
     /**
      * 创建人
      */
