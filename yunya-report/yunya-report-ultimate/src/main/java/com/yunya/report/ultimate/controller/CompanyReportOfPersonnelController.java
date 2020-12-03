@@ -1,17 +1,14 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeRefundWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
+import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
-import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
 import com.yunya.report.ultimate.biz.BaseRefundBiz;
+import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
 import com.yunya.report.ultimate.biz.BaseUserPostBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -45,6 +42,8 @@ public class CompanyReportOfPersonnelController {
   @Autowired private BaseRefundBiz refundBiz;
   /** 员工 */
   @Autowired private BaseUserPostBiz baseUserPostBiz;
+  /** 就诊 */
+  @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
 
   /**
    * 根据条件查询员工工作量报表
@@ -293,5 +292,20 @@ public class CompanyReportOfPersonnelController {
       throws IOException {
     baseUserPostBiz.exportEmployeeMatchingStatisticsList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工配诊时长明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeTreatMatchingDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计-配诊时长明细")
+  @PostMapping(value = "/employee/matching/detail/list", name = "公司端报表-人事报表-配诊统计-配诊时长明细")
+  public ResponseResult<PageInfo<EmployeeTreatMatchingDetailVO>> assistantMatchingDetailList(
+      @RequestBody @Validated EmployeeMatchingDetailQuery query) {
+    PageInfo<EmployeeTreatMatchingDetailVO> pageInfo =
+        treatmentProcessBiz.findAssistantMatchingDetailList(query);
+    return ResponseUtil.success(pageInfo);
   }
 }

@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,33 +27,43 @@ public class AssistantMatchingStatisticsVO implements Serializable {
   @ApiModelProperty("员工ID")
   private Integer assistantId;
   /** 员工姓名 */
+  @Excel(name = "助手")
   @ApiModelProperty("员工姓名")
   private String assistantName;
   /** 助手1配诊时长 */
+  @Excel(name = "助手1配诊时长（分钟）")
   @ApiModelProperty("助手1配诊时长")
   private Integer treatMatchingTimeAsAssistant1;
   /** 助手1配诊实收工作量 */
+  @Excel(name = "助手1配诊实收工作量")
   @ApiModelProperty("助手1配诊实收工作量")
   private BigDecimal treatMatchingActualWorkloadAsAssistant1;
   /** 助手1配诊退费工作量 */
+  @Excel(name = "助手1配诊退费金额")
   @ApiModelProperty("助手1配诊退费工作量")
   private BigDecimal treatMatchingRefundWorkloadAsAssistant1;
-  /** 助手1配诊时长 */
+  /** 助手2配诊时长 */
+  @Excel(name = "助手2配诊时长（分钟）")
   @ApiModelProperty("助手2配诊时长")
   private Integer treatMatchingTimeAsAssistant2;
-  /** 助手1配诊实收工作量 */
+  /** 助手2配诊实收工作量 */
+  @Excel(name = "助手2配诊实收工作量")
   @ApiModelProperty("助手2配诊实收工作量")
   private BigDecimal treatMatchingActualWorkloadAsAssistant2;
-  /** 助手1配诊退费工作量 */
+  /** 助手2配诊退费工作量 */
+  @Excel(name = "助手2配诊退费金额")
   @ApiModelProperty("助手2配诊退费工作量")
   private BigDecimal treatMatchingRefundWorkloadAsAssistant2;
-  /** 助手1配诊时长 */
+  /** 巡回配诊时长 */
+  @Excel(name = "巡回配诊时长（分钟）")
   @ApiModelProperty("巡回配诊时长")
   private Integer treatMatchingTimeAsAssistant3;
-  /** 助手1配诊实收工作量 */
+  /** 巡回配诊实收工作量 */
+  @Excel(name = "巡回配诊实收工作量")
   @ApiModelProperty("巡回配诊实收工作量")
   private BigDecimal treatMatchingActualWorkloadAsAssistant3;
-  /** 助手1配诊退费工作量 */
+  /** 巡回配诊退费工作量 */
+  @Excel(name = "巡回配诊退费金额")
   @ApiModelProperty("巡回配诊退费工作量")
   private BigDecimal treatMatchingRefundWorkloadAsAssistant3;
 }
