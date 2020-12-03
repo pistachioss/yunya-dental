@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -33,41 +34,42 @@ public class BasePatientMemberOccurLogBiz
     extends BaseBiz<BasePatientMemberOccurLogMapper, BasePatientMemberOccurLog> {
 
   /** 注入会员充值日志对象 */
-  @Autowired private MemberRechargeRecordMapper memberRechargeRecordMapper;
+  @Resource private MemberRechargeRecordMapper memberRechargeRecordMapper;
 
   /** 注入会员消费日志对象 */
-  @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
+  @Resource private MemberExpendRecordMapper memberExpendRecordMapper;
 
   /** 注入会员退款日志对象 */
-  @Autowired private MemberReturnRecordMapper memberReturnRecordMapper;
+  @Resource private MemberReturnRecordMapper memberReturnRecordMapper;
 
   /** 注入预付充值作日志对象 */
-  @Autowired private PrepaidRechargeRecordMapper prepaidRechargeRecordMapper;
+  @Resource private PrepaidRechargeRecordMapper prepaidRechargeRecordMapper;
 
   /** 注入预付消费作日志对象 */
-  @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
+  @Resource private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
 
   /** 注入预付退款作日志对象 */
-  @Autowired private PrepaidReturnRecordMapper prepaidReturnRecordMapper;
+  @Resource private PrepaidReturnRecordMapper prepaidReturnRecordMapper;
 
   /** 注入会员卡mapper */
-  @Autowired private PatientMemberInfoMapper patientMemberInfoMapper;
+  @Resource private PatientMemberInfoMapper patientMemberInfoMapper;
 
   /** 注入会员卡充值明细mapper */
-  @Autowired private MemberRechargeTollRecordMapper memberRechargeTollRecordMapper;
+  @Resource private MemberRechargeTollRecordMapper memberRechargeTollRecordMapper;
 
   /** 注入预付款信息mapper */
-  @Autowired private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
+  @Resource private PatientPrepaymentsInfoMapper patientPrepaymentsInfoMapper;
 
   /** 注入系统字典服务 */
-  @Autowired private AccountItemMapper accountItemMapper;
+  @Resource private AccountItemMapper accountItemMapper;
 
   /** 注入预付款充值明细Mapper */
-  @Autowired private PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
+  @Resource private PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
 
-  @Autowired private BasePatientMemberBiz basePatientMemberBiz;
+  @Resource private BasePatientMemberBiz basePatientMemberBiz;
 
-  @Autowired private BasePatientMemberMapper basePatientMemberMapper;
+  @Resource
+  private BasePatientMemberMapper basePatientMemberMapper;
 
   /**
    * 中间表-会员-预付款 信息操作源头
@@ -86,7 +88,8 @@ public class BasePatientMemberOccurLogBiz
       case 2:
         BasePatientMemberOccurLog memberOccurLog = getMemberOccurLog(msg);
         if (null != memberOccurLog) {
-          mapper.delete(memberOccurLog);
+          memberOccurLog.setInservice(false);
+          mapper.updateByPrimaryKeySelective(memberOccurLog);
         }
         break;
       default:
@@ -106,19 +109,22 @@ public class BasePatientMemberOccurLogBiz
     Integer operationType = (Integer) msg.getParamMap().get("operationType");
     // 会员卡操作日志
     if (type == 0) {
-      addMemberOccurLog(id, type, operationType);
-      BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(id, type);
-      if (StringHelper.isNotNull(patientMemberInfo)) {
-        basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo);
+      Integer cardId = addMemberOccurLog(id, type, operationType);
+      if (cardId != null){
+        BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(cardId, type);
+        if (StringHelper.isNotNull(patientMemberInfo)) {
+          basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo);
+        }
       }
-
     }
     // 预付款操作日志
     if (type == 1) {
-      addPrepaymentOccurLog(id, type, operationType);
-      BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(id, type);
-      if (StringHelper.isNotNull(patientMemberInfo)) {
-        basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo);
+      Integer cardId = addPrepaymentOccurLog(id, type, operationType);
+      if (cardId != null){
+        BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(cardId, type);
+        if (StringHelper.isNotNull(patientMemberInfo)) {
+          basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo);
+        }
       }
     }
   }
@@ -430,7 +436,7 @@ public class BasePatientMemberOccurLogBiz
    * @param id 操作方式id
    * @param operationType 操作类型(1充值2消费3退款4撤销收费)
    */
-  private void addMemberOccurLog(Integer id, Integer type, Integer operationType) {
+  private Integer addMemberOccurLog(Integer id, Integer type, Integer operationType) {
     switch (operationType) {
         // 充值
       case 1:
@@ -441,6 +447,7 @@ public class BasePatientMemberOccurLogBiz
         if (StringHelper.isNotNull(memberRechargeLog)) {
           mapper.deleteByPrimaryKey(memberRechargeLog);
           mapper.insertSelective(memberRechargeLog);
+          return memberRechargeLog.getCardId();
         }
         break;
         // 消费
@@ -450,6 +457,7 @@ public class BasePatientMemberOccurLogBiz
         if (StringHelper.isNotNull(memberExpendLog)) {
           mapper.deleteByPrimaryKey(memberExpendLog);
           mapper.insertSelective(memberExpendLog);
+          return memberExpendLog.getCardId();
         }
         break;
         // 退款
@@ -459,12 +467,14 @@ public class BasePatientMemberOccurLogBiz
         if (StringHelper.isNotNull(memberReturnInfoLog)) {
           mapper.deleteByPrimaryKey(memberReturnInfoLog);
           mapper.insertSelective(memberReturnInfoLog);
+          return memberReturnInfoLog.getCardId();
         }
         break;
         // 撤销
       default:
         break;
     }
+    return null;
   }
 
   /**
@@ -715,7 +725,7 @@ public class BasePatientMemberOccurLogBiz
    * @param id 操作方式id
    * @param operationType 操作类型(1充值2消费3退款4撤销收费)
    */
-  private void addPrepaymentOccurLog(Integer id, Integer type, Integer operationType) {
+  private Integer addPrepaymentOccurLog(Integer id, Integer type, Integer operationType) {
     switch (operationType) {
         // 充值 //撤销 //账单退款
       case 1:
@@ -729,6 +739,7 @@ public class BasePatientMemberOccurLogBiz
               prepaidRechargeRecord.getType().intValue(),
               prepaidRechargeRecord.getOccurType().intValue());
           mapper.insertSelective(prepaidRechargeRecord);
+          return prepaidRechargeRecord.getCardId();
         }
         break;
         // 消费
@@ -738,6 +749,7 @@ public class BasePatientMemberOccurLogBiz
         if (StringHelper.isNotNull(memberOccurLog)) {
           mapper.delete(memberOccurLog);
           mapper.insertSelective(memberOccurLog);
+          return memberOccurLog.getCardId();
         }
         break;
         // 退款
@@ -747,11 +759,13 @@ public class BasePatientMemberOccurLogBiz
         if (StringHelper.isNotNull(prepaidReturnInfo)) {
           mapper.delete(prepaidReturnInfo);
           mapper.insertSelective(prepaidReturnInfo);
+          return prepaidReturnInfo.getCardId();
         }
         break;
       default:
         break;
     }
+    return null;
   }
 
   /**

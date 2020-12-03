@@ -155,7 +155,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         // 添加会员双向关联
         sendMemberRelationMessages(patientMemberRelation.getId(), 0);
       }
-
       return ResponseUtil.success();
     }
   }
@@ -200,19 +199,23 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    *
    * @param openCardModel 开卡Model
    */
-  public void addMemberCard(OpenCardModel openCardModel) {
+  public ResponseResult addMemberCard(OpenCardModel openCardModel) {
     PatientMemberInfo patientMemberInfo = new PatientMemberInfo();
     patientMemberInfo.setPatientId(openCardModel.getPatientId());
     patientMemberInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     patientMemberInfo.setMemberTypeId(openCardModel.getMemberTypeId());
-    patientMemberInfo.setCardNumber(
-        this.generateCardNumber("H", "patient_member_info", "card_number"));
+    String card = this.generateCardNumber("H", "patient_member_info", "card_number");
+    if (card == null){
+      return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未获取到门诊id", card);
+    }
+    patientMemberInfo.setCardNumber(card);
     patientMemberInfo.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
     patientMemberInfo.setCrtName(BaseContextHandler.getName());
     this.patientMemberInfoMapper.insertSelective(patientMemberInfo);
     this.cardLog(patientMemberInfo, "开卡", "");
     remoteRabbitMqServiceFeign.sendMessage(
         patientMemberInfo.getId(), 0, 0, MsgCategoryEnum.BasePatientMember);
+    return ResponseUtil.success();
   }
 
   /**
@@ -224,16 +227,19 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @return String 卡号
    */
   public String generateCardNumber(String mark, String tableName, String column) {
-    String number =
-        this.mapper.generateCardNumber(
-            Integer.parseInt(BaseContextHandler.getOrgId()), tableName, column);
-    String suffix = String.format("%06d", Integer.parseInt(number) + 1);
-    // 获取门诊简称
-    OrganizationInfo organizationInfo =
-        this.remoteSystemServiceFeign.findOrgInfoByOrgId(
-            Integer.parseInt(BaseContextHandler.getOrgId()));
-    if (organizationInfo != null) {
-      return mark + organizationInfo.getClinicNumber() + suffix;
+    String orgId = BaseContextHandler.getOrgId();
+    if (orgId != null){
+      String number =
+              this.mapper.generateCardNumber(
+                      Integer.parseInt(orgId), tableName, column);
+      String suffix = String.format("%06d", Integer.parseInt(number) + 1);
+      // 获取门诊简称
+      OrganizationInfo organizationInfo =
+              this.remoteSystemServiceFeign.findOrgInfoByOrgId(
+                      Integer.parseInt(BaseContextHandler.getOrgId()));
+      if (organizationInfo != null) {
+        return mark + organizationInfo.getClinicNumber() + suffix;
+      }
     }
     return null;
   }

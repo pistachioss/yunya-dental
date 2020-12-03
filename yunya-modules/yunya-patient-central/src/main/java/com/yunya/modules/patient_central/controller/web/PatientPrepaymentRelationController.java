@@ -187,7 +187,7 @@ public class PatientPrepaymentRelationController {
   }
 
   /**
-   * 会员卡撤销收费
+   * 预付款撤销收费
    * @param model 撤销收费参数模型
    * @return ResponseResult
    */

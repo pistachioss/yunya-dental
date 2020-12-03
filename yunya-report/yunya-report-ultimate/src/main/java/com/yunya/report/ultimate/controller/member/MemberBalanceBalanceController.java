@@ -3,7 +3,6 @@ package com.yunya.report.ultimate.controller.member;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.vo.BaseMemberBalanceInfoVo;
-import com.yunya.feign.report.domain.vo.MemberCardInfoVo;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -12,12 +11,17 @@ import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.service.MemberOccurLogBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -55,12 +59,29 @@ public class MemberBalanceBalanceController {
      */
     @ApiOperation("会员余/预付款余额结存信息列表")
     @PostMapping("/balance/list")
-    public ResponseResult<PageInfo<BaseMemberBalanceInfoVo>> memberBalanceList(@RequestBody MemberQueryForm memberQueryForm)  {
+    public ResponseResult<PageInfo<BaseMemberBalanceInfoVo>> memberBalanceList(@RequestBody @Validated MemberQueryForm memberQueryForm) throws ParseException {
         PageInfo<BaseMemberBalanceInfoVo> baseMemberBalanceInfoVos = memberOccurLogBiz.memberBalanceList(memberQueryForm);
         if (StringHelper.isNotNull(baseMemberBalanceInfoVos)){
             return ResponseUtil.success(baseMemberBalanceInfoVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberBalanceInfoVos);
     }
+
+
+    /**
+     * 导出就诊配诊记录列表
+     *
+     * @param response 响应
+     * @param memberQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出会员余/预付款余额结存信息记录列表")
+    @PostMapping(value = "/export", name = "公司端-财务报表-余额结存-导出会员卡or预付款记录列表")
+    public ResponseResult<T> exportMemberBalanceList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
+        memberOccurLogBiz.exportMemberBalanceList(response,memberQueryForm);
+        return ResponseUtil.success(null);
+    }
+
+
 
 }

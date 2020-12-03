@@ -109,8 +109,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public void exportBillReceivableAmountList(
       HttpServletResponse response, BillOfReceivableQuery query) throws IOException {
     List<BillRestReceivableAmountVO> resultList = mapper.selectBillReceivableAmountList(query);
-    ExcelUtil<BillRestReceivableAmountVO> excelUtil =
-        new ExcelUtil<>(BillRestReceivableAmountVO.class);
+    ExcelUtil<BillRestReceivableAmountVO> excelUtil = new ExcelUtil<>(BillRestReceivableAmountVO.class);
     excelUtil.exportExcel(response, resultList, "应收账款余额表");
   }
 }

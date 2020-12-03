@@ -18,7 +18,7 @@ import java.math.BigDecimal;
 @Data
 @ToString
 @ApiModel("会员退费列表Vo")
-public class BaseMemberReturnLogVo {
+public class    BaseMemberReturnLogVo {
 
     /** 操作id **/
     @ApiModelProperty(value = "操作id")

@@ -10,13 +10,17 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BasePatient;
+import com.yunya.models.report.BaseUserPost;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
+import com.yunya.report.ultimate.utils.DateConversion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,21 +37,22 @@ import java.util.List;
 public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
     /** 员工Mapper */
-    @Autowired private BaseEmployeeMapper baseEmployeeMapper;
+    @Resource
+    private BaseEmployeeMapper baseEmployeeMapper;
 
     /** 患者Mapper */
-    @Autowired private BasePatientMapper basePatientMapper;
+    @Resource private BasePatientMapper basePatientMapper;
 
     /** 订单mapper */
-    @Autowired private BaseBillMapper baseBillMapper;
+    @Resource private BaseBillMapper baseBillMapper;
 
 
     /**
      * 查询末诊医生列表
      * @return List<BaseEmployee>
      */
-    public List<BaseEmployee> employeeList() {
-        List<BaseEmployee> baseEmployees = baseEmployeeMapper.selectAll();
+    public List<BaseEmployee> employeeList(Integer orgId) {
+        List<BaseEmployee> baseEmployees = baseEmployeeMapper.selectByOrgId(orgId);
         return baseEmployees;
     }
 
@@ -56,10 +61,13 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      * @param form 条件
      * @return List<BaseBasePatientNotSeenVo>
      */
-    public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form) {
+    public PageInfo<BasePatientNotSeenVo> notSeenList(PatientReportQueryForm form) throws ParseException {
+        if (StringHelper.isNotEmpty(form.getEndDate())){
+            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        }
         List<BasePatientNotSeenVo> basePatientNotSeenVoList = new ArrayList<>();
         List<Integer> patientIds = null;
-        if (StringHelper.isNotNull(form.getCombination())){
+        if (StringHelper.isNotEmpty(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         if (form.getWhetherPage()) {
@@ -76,9 +84,12 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
      * @param form 欠费查询form
      * @return List<ArrearsVo>
      */
-    public PageInfo<ArrearsVo> arrears(ArrearsQueryForm form) {
+    public PageInfo<ArrearsVo> arrears(ArrearsQueryForm form) throws ParseException {
+        if (StringHelper.isNotEmpty(form.getEndDate())){
+            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        }
         List<Integer> patientIds = null;
-        if (StringHelper.isNotNull(form.getCombination())){
+        if (StringHelper.isNotEmpty(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
         if (form.getWhetherPage()) {
@@ -90,42 +101,45 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
     /**
      * 就诊患者分析
-     * @param patientAnalysisQueryForm 就诊患者分析查询条件
+     * @param form 就诊患者分析查询条件
      * @return
      */
-    public AnalysisVo analysis(PatientAnalysisQueryForm patientAnalysisQueryForm) {
+    public AnalysisVo analysis(PatientAnalysisQueryForm form) throws ParseException {
+        if (StringHelper.isNotEmpty(form.getEndDate())){
+            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        }
         AnalysisVo analysisVo = new AnalysisVo();
         // 来源类型比例
-        Integer countOriginType =  mapper.selectCountOriginType(patientAnalysisQueryForm);
-        List<AnalysisPatientOriginVo> analysisPatientOriginVoList = mapper.analysis(patientAnalysisQueryForm,countOriginType);
+        Integer countOriginType =  mapper.selectCountOriginType(form);
+        List<AnalysisPatientOriginVo> analysisPatientOriginVoList = mapper.analysis(form,countOriginType);
         if (StringHelper.isNotEmpty(analysisPatientOriginVoList)){
             analysisVo.setAnalysisPatientOriginVoList(analysisPatientOriginVoList);
         }
         // 男女比例
-        Integer countGender = mapper.selectCountGender(patientAnalysisQueryForm);
-        List<AnalysisPatientGenderVo> analysisPatientGenderVoList = mapper.selectAnalysisPatientGender(patientAnalysisQueryForm,countGender);
+        Integer countGender = mapper.selectCountGender(form);
+        List<AnalysisPatientGenderVo> analysisPatientGenderVoList = mapper.selectAnalysisPatientGender(form,countGender);
         if (StringHelper.isNotEmpty(analysisPatientGenderVoList)){
             analysisVo.setAnalysisPatientGenderVoList(analysisPatientGenderVoList);
         }
 
         List<AnalysisPatientAgeVo> analysisPatientAgeVoList = new ArrayList<>();
         AnalysisPatientAgeVo youngVo = new AnalysisPatientAgeVo();
-        Integer count = mapper.selectCountAnalysisAge(patientAnalysisQueryForm);
-        Integer countYoungAge =  mapper.selectAnalysisAge(patientAnalysisQueryForm,14,0,0);
+        Integer count = mapper.selectCountAnalysisAge(form);
+        Integer countYoungAge =  mapper.selectAnalysisAge(form,14,0,0);
         String percentageYoung = mapper.calculateAgePercentage(countYoungAge,count);
         youngVo.setAgeBracket("0-14");
         youngVo.setPercentage(percentageYoung);
         analysisPatientAgeVoList.add(youngVo);
 
         AnalysisPatientAgeVo wrinklyList = new AnalysisPatientAgeVo();
-        Integer countWrinkly =  mapper.selectAnalysisAge(patientAnalysisQueryForm,0,14,60);
+        Integer countWrinkly =  mapper.selectAnalysisAge(form,0,14,60);
         String percentageWrinkly = mapper.calculateAgePercentage(countWrinkly,count);
         wrinklyList.setAgeBracket("14-60");
         wrinklyList.setPercentage(percentageWrinkly);
         analysisPatientAgeVoList.add(wrinklyList);
 
         AnalysisPatientAgeVo oldPeopleList = new AnalysisPatientAgeVo();
-        Integer countOldPeople =  mapper.selectAnalysisAge(patientAnalysisQueryForm,0,60,999);
+        Integer countOldPeople =  mapper.selectAnalysisAge(form,0,60,999);
         String percentageOldPeople = mapper.calculateAgePercentage(countOldPeople,count);
         oldPeopleList.setAgeBracket("60-999");
         oldPeopleList.setPercentage(percentageOldPeople);
