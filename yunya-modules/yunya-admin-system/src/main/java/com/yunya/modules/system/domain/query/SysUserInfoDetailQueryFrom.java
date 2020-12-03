@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -51,5 +52,8 @@ public class SysUserInfoDetailQueryFrom implements Serializable {
   private Byte[] workStatus;
   /** 用户ID列表 */
   @ApiModelProperty("用户ID列表")
-  private Integer[] userIds;
+  private Collection<Integer> userIds;
+  /** 用户ID + "," + 组织ID 列表 */
+  @ApiModelProperty("用户ID + \",\" + 组织ID 列表")
+  private Collection<String> userOrgIds;
 }

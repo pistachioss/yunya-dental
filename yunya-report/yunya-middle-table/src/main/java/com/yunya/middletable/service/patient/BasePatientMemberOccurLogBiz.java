@@ -5,9 +5,11 @@ import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.middletable.dao.patient.*;
+import com.yunya.middletable.dao.report.BasePatientMemberMapper;
 import com.yunya.middletable.dao.report.BasePatientMemberOccurLogMapper;
 import com.yunya.middletable.dao.system.AccountItemMapper;
 import com.yunya.models.patient_central.*;
+import com.yunya.models.report.BasePatientMember;
 import com.yunya.models.report.BasePatientMemberOccurLog;
 import com.yunya.models.system.AccountItem;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,10 @@ public class BasePatientMemberOccurLogBiz
   /** 注入预付款充值明细Mapper */
   @Autowired private PrepaidRechargeTollRecordMapper prepaidRechargeTollRecordMapper;
 
+  @Autowired private BasePatientMemberBiz basePatientMemberBiz;
+
+  @Autowired private BasePatientMemberMapper basePatientMemberMapper;
+
   /**
    * 中间表-会员-预付款 信息操作源头
    *
@@ -101,10 +107,19 @@ public class BasePatientMemberOccurLogBiz
     // 会员卡操作日志
     if (type == 0) {
       addMemberOccurLog(id, type, operationType);
+      BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(id, type);
+      if (StringHelper.isNotNull(patientMemberInfo)) {
+        basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo);
+      }
+
     }
     // 预付款操作日志
     if (type == 1) {
       addPrepaymentOccurLog(id, type, operationType);
+      BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(id, type);
+      if (StringHelper.isNotNull(patientMemberInfo)) {
+        basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo);
+      }
     }
   }
 

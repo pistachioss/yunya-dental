@@ -44,13 +44,22 @@ public class LeaveInfo {
      */
     @Column(name = "leave_picture")
     private String leavePicture;
+    /**
+     * 当前审批人Id（上一次审批人的下一层级） 为了统计待我审批方便
+     */
+    @Column(name = "approval_now_people_id")
+    private Integer approvalNowPeopleId;
 
     /**
      * 审批条件表id
      */
     @Column(name = "approval_criteria_id")
     private Integer approvalCriteriaId;
-
+    /**
+     * 拒绝原因
+     */
+    @Column(name = "refuse_reason")
+    private String refuseReason;
     /**
      * 审批状态 0 审批中 1通过 2拒绝 3撤回
      */

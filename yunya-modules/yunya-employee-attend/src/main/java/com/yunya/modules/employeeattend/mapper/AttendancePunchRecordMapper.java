@@ -1,7 +1,6 @@
 package com.yunya.modules.employeeattend.mapper;
 
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
-import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
 import com.yunya.feign.employee_attend.vo.AttendancePunchRecordVO;
 import com.yunya.feign.employee_attend.vo.AttendanceWorkDateOvertimeMinuteVO;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
@@ -26,14 +25,6 @@ public interface AttendancePunchRecordMapper extends Mapper<AttendancePunchRecor
      * @return
      */
     List<AttendancePunchRecordVO> findAttendancePunchRecordWithScheduleIdList(@Param("queryForm") AttendancePunchRecordQueryForm queryForm);
-
-    /**
-     * 根据条件分页查询考勤汇总
-     *
-     * @param queryForm
-     * @return
-     */
-    List<AttendancePunchRecordVO> selectAttendanceStatisticsPunchRecord(@Param("queryForm") AttendanceStatisticsQueryForm queryForm);
 
     /**
      * 分页查询工作日加班时长的考勤汇总明细

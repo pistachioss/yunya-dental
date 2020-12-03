@@ -99,6 +99,22 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
      * @return
      */
     public List<EmployeeScheduleExportVO> copy(EmployeeScheduleCopyForm employeeScheduleCopyForm) {
+        //注意月份是MM
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            Date checkStartDate = simpleDateFormat.parse(employeeScheduleCopyForm.getStartDate());
+            Date checkEndDate = simpleDateFormat.parse(employeeScheduleCopyForm.getEndDate());
+            Date targetStartDate = simpleDateFormat.parse(employeeScheduleCopyForm.getTargetStartDate());
+            Date targetEndDate = simpleDateFormat.parse(employeeScheduleCopyForm.getTargetEndDate());
+            long betweenDate = (checkStartDate.getTime() - checkEndDate.getTime())/(60*60*24*1000);
+            long betweentargetDate = (targetStartDate.getTime() - targetEndDate.getTime())/(60*60*24*1000);
+            if(betweenDate!=betweentargetDate){
+                throw new ClientServiceException("时间段天数不一致", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+            }
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        }
+
         //冲突列表
         List<EmployeeScheduleExportVO> employeeConflict = new ArrayList<>();
         //复制排班的员工Id列表
@@ -125,8 +141,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         List<OrganizationInfoDetail> clinics = remoteSystemServiceFeign.findOrgInfoList(organizationModel);
         Map<String, OrganizationInfoDetail> clinicMap = new HashMap();
         clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
-        //注意月份是MM
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
         Date startDate = null;
         Date endDate = null;
         Date targetStartDate = null;

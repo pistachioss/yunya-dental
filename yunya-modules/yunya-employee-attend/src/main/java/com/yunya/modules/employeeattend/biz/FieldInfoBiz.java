@@ -2,6 +2,7 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.employee_attend.form.FieldInfoQueryForm;
+import com.yunya.feign.employee_attend.vo.ApprovalAllListVO;
 import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
 import com.yunya.feign.employee_attend.vo.FieldInfoVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -13,6 +14,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
+import com.yunya.modules.employeeattend.form.ApprovalAllListForm;
 import com.yunya.modules.employeeattend.form.FieldInfoForm;
 import com.yunya.modules.employeeattend.mapper.*;
 import com.yunya.modules.employeeattend.vo.EmListVO;
@@ -162,7 +164,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                             List<CopyInfo>copyInfoList = new ArrayList<>();
                             for(Integer copyId:fieldInfoForm.getCopyList()){
                                 CopyInfo copyInfo = new CopyInfo();
-                                copyInfo.setApplyId(num);
+                                copyInfo.setApplyId(fieldInfo.getId());
                                 copyInfo.setApplyType(2);
                                 copyInfo.setUserId(copyId);
                                 copyInfo.setCrtId(fieldInfoForm.getUserId());
@@ -271,6 +273,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
             if (fieldInfo.getApprpvalStatus() == 0) {
                 if (fieldInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                     fieldInfo.setApprpvalStatus(fieldInfoForm.getApprpvalStatus());
+                    fieldInfo.setUpdTime(new Date());
                     return mapper.updateByPrimaryKey(fieldInfo);
                 }
                 throw new ClientServiceException("当前用户无审批该申请的权限", OBJECT_EDIT_FAIL);
@@ -299,5 +302,10 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         }
         throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
     }
+
+    public List<ApprovalAllListVO> findApprovalAllList(ApprovalAllListForm approvalAllListForm){
+        return mapper.findApprovalAllList(approvalAllListForm);
+    }
+
 }
 

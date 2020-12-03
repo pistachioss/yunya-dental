@@ -52,4 +52,5 @@ public class EmployeeScheduleCopyForm {
   @ApiModelProperty("门诊ID")
   @NotNull(message = "门诊ID不能为空")
   private String clinicId;
+
 }

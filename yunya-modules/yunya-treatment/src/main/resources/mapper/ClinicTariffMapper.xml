@@ -212,12 +212,14 @@
         FROM base_tariff_category btc
         LEFT JOIN base_tariff bt ON bt.tariff_category_id = btc.id
         <where>
-            CASE #{search} REGEXP "^[A-Za-z]+$"
-            WHEN 1 THEN
-            bt.pinyin = #{search}
-            ELSE
-            bt.name like CONCAT('%',#{search},'%')
-            END
+            <if test="search != null and search != ''">
+                CASE #{search} REGEXP "^[A-Za-z]+$"
+                WHEN 1 THEN
+                bt.pinyin = #{search}
+                ELSE
+                bt.name = #{search}
+                END
+            </if>
         </where>
     </select>
 

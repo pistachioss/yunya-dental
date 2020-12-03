@@ -44,7 +44,6 @@ public class AttendanceDeviceBindingController {
      * @return ResponseResult<PageInfo<AttendanceDeviceBindingVO>>
      */
     @ApiOperation(value = "分页查询员工考勤设备绑定列表")
-    @ApiImplicitParam(value = "查询参数")
     @PostMapping("/bindingDeviceEmployeeList")
     public ResponseResult<PageInfo<AttendanceDeviceBindingVO>> findBindingDeviceEmployeeList(@RequestBody AttendanceDeviceBindingQueryForm queryForm) {
         PageInfo<AttendanceDeviceBindingVO> result = attendanceDeviceBindingBiz.findBindingDeviceEmployeeList(queryForm);
@@ -59,7 +58,7 @@ public class AttendanceDeviceBindingController {
      * @return ResponseResult<AttendanceDeviceBindingVO>
      */
     @ApiOperation("根据userid查询员工当前绑定的考勤设备信息")
-    @ApiImplicitParam(value = "用户Id", required = true)
+    @ApiImplicitParam(value = "用户Id", name = "userId", required = true)
     @GetMapping("/employeeBindingDevice/{userId}")
     public ResponseResult<AttendanceDeviceBindingVO> findEmployeeBindingDevice(@PathVariable(value = "userId") @Valid Integer userId) {
         AttendanceDeviceBindingVO result = attendanceDeviceBindingBiz.findEmployeeBindingDevice(userId);
@@ -69,15 +68,13 @@ public class AttendanceDeviceBindingController {
     /**
      * 根据userid分页查询员工的考勤设备的绑定记录列表
      *
-     * @param userId 用户id
      * @param queryForm 查询参数
      * @return ResponseResult<PageInfo<AttendanceDeviceBindingVO>>
      */
     @ApiOperation("根据userId查询考勤设备绑定记录列表")
-    @ApiImplicitParam(value = "用户Id")
-    @PostMapping("/employeeBindingDeviceList/{userId}")
-    public ResponseResult<PageInfo<AttendanceDeviceBindingVO>> findEmployeeBindingDeviceList(@PathVariable(value = "userId") Integer userId, @RequestBody AttendanceDeviceBindingQueryForm queryForm) {
-        PageInfo<AttendanceDeviceBindingVO> result = attendanceDeviceBindingBiz.findEmployeeBindingDeviceList(userId, queryForm);
+    @PostMapping("/employeeBindingDeviceList")
+    public ResponseResult<PageInfo<AttendanceDeviceBindingVO>> findEmployeeBindingDeviceList(@RequestBody AttendanceDeviceBindingQueryForm queryForm) {
+        PageInfo<AttendanceDeviceBindingVO> result = attendanceDeviceBindingBiz.findEmployeeBindingDeviceList(queryForm);
         return ResponseUtil.success(result);
     }
 
@@ -87,6 +84,7 @@ public class AttendanceDeviceBindingController {
      * @return 返回短信验证码
      */
     @ApiOperation("发送设备绑定短信验证码")
+    @ApiImplicitParam(value = "手机号码", name = "mobile", required = true)
     @GetMapping("/verifyCode")
     public ResponseResult authorizationCode(
             @Pattern(regexp = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$")
@@ -104,7 +102,6 @@ public class AttendanceDeviceBindingController {
      */
     @CurrentUser
     @ApiOperation("考勤设备绑定")
-    @ApiImplicitParam(value = "考勤地址设置模型")
     @PostMapping("/deviceBinding")
     @RepeatSubmit
     public ResponseResult deviceBinding(@RequestBody @Validated AttendanceDeviceBindingModel attendanceDeviceBindingModel) {

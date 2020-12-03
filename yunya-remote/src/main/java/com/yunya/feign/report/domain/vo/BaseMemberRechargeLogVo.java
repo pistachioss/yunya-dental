@@ -50,19 +50,19 @@ public class BaseMemberRechargeLogVo {
 
     /** 充值本金金额 */
     @ApiModelProperty(value = "充值本金金额")
-    private BigDecimal principalAmount;
+    private BigDecimal principalAmount = new BigDecimal(0);
 
     /** 充值赠金金额 */
     @ApiModelProperty(value = "充值赠金金额")
-    private BigDecimal bonusAmount;
+    private BigDecimal bonusAmount = new BigDecimal(0);
 
     /** 充值后会员卡余额（本金） */
     @ApiModelProperty(value = "充值后会员卡余额（含赠送金额）")
-    private BigDecimal currentRechargePrincipal;
+    private BigDecimal currentRechargePrincipal = new BigDecimal(0);
 
     /** 剩余会员卡余额（含赠送金额） */
     @ApiModelProperty(value = "剩余会员卡余额（含赠送金额）")
-    private BigDecimal currentAmount;
+    private BigDecimal currentAmount = new BigDecimal(0);
 
     /** 入账方式 */
     @ApiModelProperty(value = "入账方式")

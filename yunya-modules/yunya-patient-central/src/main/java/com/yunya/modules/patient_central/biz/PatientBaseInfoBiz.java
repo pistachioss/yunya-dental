@@ -353,9 +353,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 //              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
               patientOrig = patientOriginMapper.getTypeName(1);
               if (patientOrig != null){
-                patientBaseInfoVo.setOriginId(patientOrig.getId());
                 patientBaseInfoVo.setSourceName(patientOrig.getName());
               }
+            patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
             break;
             // 查询患者
           case 2:
@@ -367,9 +367,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
 //              patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
               patientOrig = patientOriginMapper.getTypeName(2);
               if (patientOrig != null){
-                patientBaseInfoVo.setOriginId(patientOrig.getId());
                 patientBaseInfoVo.setSourceName(patientOrig.getName());
               }
+            patientBaseInfoVo.setSourceId(patientBaseInfoVo.getOriginId());
             break;
           default:
               PatientOrigin activity =

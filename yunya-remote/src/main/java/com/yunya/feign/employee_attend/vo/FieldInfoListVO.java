@@ -69,6 +69,9 @@ public class FieldInfoListVO {
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝  3撤回 4过期")
     private Integer apprpvalStatus;
 
+    @ApiModelProperty(value = "拒绝原因")
+    private String refuseReason;
+
     /** 外勤时长*/
     @ApiModelProperty(value = "外勤时长")
     private Integer fieldTime;
@@ -76,4 +79,8 @@ public class FieldInfoListVO {
     @ApiModelProperty(value = "创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date crtTime;
+
+    @ApiModelProperty(value = "创建时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date updTime;
 }
