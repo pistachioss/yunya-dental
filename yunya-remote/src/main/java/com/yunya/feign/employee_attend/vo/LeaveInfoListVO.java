@@ -80,6 +80,9 @@ public class LeaveInfoListVO {
     @ApiModelProperty(value = "请假原因")
     private String leaveReason;
 
+    @ApiModelProperty(value = "拒绝原因")
+    private String refuseReason;
+
     /**
      * 图片（用逗号隔开）
      */

@@ -9,6 +9,7 @@
         <result column="start_time" property="startTime" jdbcType="TIMESTAMP"/>
         <result column="end_time" property="endTime" jdbcType="TIMESTAMP"/>
         <result column="leave_reason" property="leaveReason" jdbcType="VARCHAR"/>
+        <result column="refuse_reason" property="refuseReason" jdbcType="VARCHAR"/>
         <result column="leave_picture" property="leavePicture" jdbcType="VARCHAR"/>
         <result column="approval_criteria_id" property="approvalCriteriaId" jdbcType="INTEGER"/>
         <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER"/>
@@ -275,6 +276,7 @@
         t.approval_criteria_id as approvalCriteriaId,
         t.apprpval_status as apprpvalStatus,
         t.crt_time as crtTime,
+        t.refuse_reason as refuseReason,
         vs.vacation_status as vacationStatus,
         IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)), TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))
         AS leaveTime
