@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  * @param: $
  * @return: $
  */
-@Api(tags = "审核列表接口")
+@Api(tags = "申请记录接口")
 @RestController
 @RequestMapping("/approval_all_list")
 @CrossOrigin
