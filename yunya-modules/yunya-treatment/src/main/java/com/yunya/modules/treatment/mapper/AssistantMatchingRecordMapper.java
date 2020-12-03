@@ -13,7 +13,8 @@ public interface AssistantMatchingRecordMapper extends Mapper<AssistantMatchingR
    * 根据就诊记录ID查询配诊助手列表
    *
    * @param treatmentRecordId 就诊记录ID
-   * @return
+   * @return List<AssistantInfoVO>
    */
-  List<AssistantInfoVO> selectAssistantInfoVOList(@Param("treatmentRecordId") Integer treatmentRecordId);
+  List<AssistantInfoVO> selectAssistantInfoVOList(
+      @Param("treatmentRecordId") Integer treatmentRecordId);
 }
