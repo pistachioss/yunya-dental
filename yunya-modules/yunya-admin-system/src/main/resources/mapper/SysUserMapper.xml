@@ -358,7 +358,7 @@
             t4.name AS companys
         FROM sys_user t1
         LEFT JOIN sys_employee t2 ON t1.id = t2.user_id
-        LEFT JOIN sys_user_post t3 ON t1.id = t3.user_id
+        LEFT JOIN (select company_id,user_id from sys_user_post group by company_id,user_id) t3 ON t1.id = t3.user_id
         LEFT JOIN company t4 ON t3.company_id = t4.id
         <where>
             <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
@@ -374,6 +374,18 @@
             <if test="queryForm.workStatus!=null and queryForm.workStatus.length>0">
                 and t2.work_status in
                 <foreach collection="queryForm.workStatus" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.userIds!=null and queryForm.userIds.size() > 0">
+                and t2.user_id in
+                <foreach collection="queryForm.userIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="queryForm.userOrgIds!=null and queryForm.userOrgIds.size() > 0">
+                and CONCAT(t2.user_id,',',t4.id) in
+                <foreach collection="queryForm.userOrgIds" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>
             </if>

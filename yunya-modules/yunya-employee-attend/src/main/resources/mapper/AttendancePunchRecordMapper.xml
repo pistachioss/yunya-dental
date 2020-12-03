@@ -176,11 +176,14 @@
         <if test="queryForm.userId != null" >
             and t.user_id = #{queryForm.userId}
         </if>
+        <if test="queryForm.orgId != null" >
+            and t.org_id = #{queryForm.orgId}
+        </if>
         <if test="queryForm.punchDate != null" >
-            and t.punch_date = DATE_FORMAT(#{queryForm.punchDate},'%Y-%m-%d')
+            and DATE_FORMAT(t.punch_date,'%Y-%m-%d') = DATE_FORMAT(#{queryForm.punchDate},'%Y-%m-%d')
         </if>
         <if test="queryForm.betweenDate!=null and queryForm.andDate!=null " >
-            and t.punch_date between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
+            and DATE_FORMAT(t.punch_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
         </if>
         <if test="queryForm.notEqualPunchStatus != null">
             and t.punch_status &lt;&gt; #{queryForm.notEqualPunchStatus}

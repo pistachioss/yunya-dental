@@ -45,10 +45,10 @@ public class AttendanceStatisticsVO implements Serializable {
     @ApiModelProperty(value = "出勤天数")
     private Integer attendanceNum;
 
-    /** 是否满勤：false=否,true=是 */
-    @Excel(name = "是否满勤", readConverterExp ="false=否,true=是")
-    @ApiModelProperty(value = "是否满勤：false-否，true-是")
-    private Boolean isFull;
+    /** 是否满勤*/
+    @Excel(name = "是否满勤")
+    @ApiModelProperty(value = "是否满勤")
+    private String isFull;
 
     /** 工作日时长（分钟）*/
     @Excel(name = "工作日时长（分钟）")

@@ -45,9 +45,13 @@ public class AttendanceStatisticsQueryForm implements Serializable {
     @ApiModelProperty(value = "组织id")
     private Integer orgId;
 
-    /** 查询日期 (年查询：2020；月查询：2020-01；日查询：2020-01-01)*/
-    @ApiModelProperty(value = "查询日期 (年查询：2020；月查询：2020-01；日查询：2020-01-01)")
+    /** 查询日期 (年查询：2020；月查询：2020-01)*/
+    @ApiModelProperty(value = "查询日期 (年查询：2020；月查询：2020-01)", required = true)
     private String date;
+
+    /** 日期查询方式：0-按月查询，1-按年查询 */
+    @ApiModelProperty(value = "日期查询方式：0-按月查询，1-按年查询", required = true)
+    private Byte type;
 
     /** 查询开始日期 */
     @ApiModelProperty(value = "查询开始日期")

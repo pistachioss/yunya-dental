@@ -108,7 +108,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         model.setWorkStatus(userStatus);
         if (attendanceDeviceBindingVOMap!=null && !attendanceDeviceBindingVOMap.isEmpty()) {
             Set<Integer> userIds = attendanceDeviceBindingVOMap.keySet();
-            model.setUserIds(userIds.toArray(new Integer[0]));
+            model.setUserIds(userIds);
             List<SysUserInfoDetail> sysUserInfoDetailList = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
 
             //组装主数据

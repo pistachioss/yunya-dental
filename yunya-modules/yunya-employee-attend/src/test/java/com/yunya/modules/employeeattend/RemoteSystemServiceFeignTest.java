@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,9 +37,9 @@ public class RemoteSystemServiceFeignTest {
 
     @Test
     public void testFindSysUserEmployeeListInIds() {
-        Integer[] ids = new Integer[56];
+        List<Integer> ids = new ArrayList<>();
         for (int i = 514; i < 570; i++) {
-            ids[i-514] = i;
+            ids.add(i);
         }
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(true);

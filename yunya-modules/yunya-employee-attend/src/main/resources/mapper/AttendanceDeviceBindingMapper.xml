@@ -36,11 +36,14 @@
       <if test="queryForm.bindingStatus != null">
         and t.binding_status = #{queryForm.bindingStatus}
       </if>
+      <if test="queryForm.bindingTime!=null">
+        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{queryForm.bindingTime},'%Y-%m-%d')
+      </if>
       <if test="queryForm.startDate != null and queryForm.startDate!= ''">
-        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &gt;= #{queryForm.startDate}
+        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &gt;= DATE_FORMAT(#{queryForm.startDate},'%Y-%m-%d')
       </if>
       <if test="queryForm.endDate != null and queryForm.endDate != ''">
-        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &lt;= #{queryForm.endDate}
+        and DATE_FORMAT(t.binding_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{queryForm.endDate},'%Y-%m-%d')
       </if>
     </where>
     order by t.binding_time desc

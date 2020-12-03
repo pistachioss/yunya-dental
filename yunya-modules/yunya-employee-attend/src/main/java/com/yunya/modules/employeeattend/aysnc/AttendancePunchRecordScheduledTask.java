@@ -13,7 +13,9 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
 import com.yunya.modules.employeeattend.biz.*;
+import com.yunya.modules.employeeattend.enums.AttendanceIsPunchEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceStatusEnum;
+import com.yunya.modules.employeeattend.enums.AttendanceTypeEnum;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
 import org.slf4j.Logger;
@@ -184,7 +186,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             }
             int vacationStatus = leaveInfoVO.getVacationStatus();
             if (USEDAY.equals(vacationStatus)) {//按天请假
-                if (list.isEmpty()) {
+                if (list.isEmpty()) {//按天请假的当天不存在上班班次
                     leaveByDays.put(userId, Arrays.asList(leaveInfoVO.getId()));
                 } else {
                     for (EmployeeScheduleVO employeeScheduleVO : list) {
@@ -395,7 +397,6 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
     @Transactional
     public void insertDefaultPunchRecord(Map<Integer, List<EmployeeScheduleVO>> punchItemMap, Map<Integer, List<EmployeeScheduleVO>> restItemMap, Map<Integer, List<Object>> leaveByDays) {
         Date now = new Date(System.currentTimeMillis());
-        byte unvalid = AttendanceStatusEnum.UNVALID_PUNCH.getCode();
         for (Map.Entry<Integer, List<EmployeeScheduleVO>> entry : punchItemMap.entrySet()) {
             Integer userId = entry.getKey();
             List<EmployeeScheduleVO> list = entry.getValue();
@@ -409,7 +410,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             Integer userId = entry.getKey();
             List<EmployeeScheduleVO> list = entry.getValue();
             List<Object> employeeScheduleVOS = leaveByDays.get(userId);
-            if (employeeScheduleVOS!=null && !employeeScheduleVOS.isEmpty()) {
+            if (employeeScheduleVOS!=null && !employeeScheduleVOS.isEmpty()) { //按天请假当天存在休息班次
                 Object object = employeeScheduleVOS.get(0);
                 Integer id = null;
                 if (object instanceof Integer) {
@@ -455,21 +456,22 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             }
         }
 
+        byte unvalid = AttendanceStatusEnum.UNVALID_PUNCH.getCode();
         punchItemMap.forEach((userId, employeeScheduleVOS)->{
             employeeScheduleVOS = employeeScheduleVOS.stream().sorted(Comparator.comparing(EmployeeScheduleVO::getFirstStartTime)).collect(Collectors.toList());
             int index = employeeScheduleVOS.size()-1;
             if (index == 0) {
                 EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOS.get(0);
-                AttendancePunchRecord firstItem = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 0);
+                AttendancePunchRecord firstItem = createRecord(employeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.ONDUTY.getCode());
                 attendancePunchRecordBiz.insertSelective(firstItem);
-                AttendancePunchRecord lastItem = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 1);
+                AttendancePunchRecord lastItem = createRecord(employeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.OFFDUTY.getCode());
                 attendancePunchRecordBiz.insertSelective(lastItem);
             } else if (index > 0) {
                 EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOS.get(0);
-                AttendancePunchRecord firstItem = createRecord(employeeScheduleVO, now, userId, unvalid, (byte) 0);
+                AttendancePunchRecord firstItem = createRecord(employeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.ONDUTY.getCode());
                 attendancePunchRecordBiz.insertSelective(firstItem);
                 EmployeeScheduleVO lastEmployeeScheduleVO = employeeScheduleVOS.get(index);
-                AttendancePunchRecord lastItem = createRecord(lastEmployeeScheduleVO, now, userId, unvalid, (byte) 0);
+                AttendancePunchRecord lastItem = createRecord(lastEmployeeScheduleVO, now, userId, unvalid, AttendanceTypeEnum.OFFDUTY.getCode());
                 attendancePunchRecordBiz.insertSelective(lastItem);
             }
         });
@@ -488,7 +490,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
         AttendancePunchRecord punchRecord = new AttendancePunchRecord();
         punchRecord.setPunchDate(now);
         punchRecord.setUptTime(now);
-        punchRecord.setIsPunch((byte) 0);
+        punchRecord.setIsPunch(AttendanceIsPunchEnum.UNPUNCH.getCode());
         punchRecord.setCrtTime(now);
         punchRecord.setCrtId(-999);
         punchRecord.setUptId(-999);
