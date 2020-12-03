@@ -160,7 +160,6 @@ public class AttendancePunchRecordController {
             @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true),
             @ApiImplicitParam(name = "type", value = "统计次数类型：0-缺卡，1-迟到，3-早退，4-无效卡", required = true)
     })
-    @ApiImplicitParam(value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecordByCount/{type}")
     public ResponseResult<PageInfo<AttendancePunchCountVO>> statisticsPunchRecordByCount(@PathVariable(value = "type") @NotNull byte type, @RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendancePunchCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByCount(type, queryForm);
@@ -175,7 +174,7 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>>
      */
     @ApiOperation("分页查询工作时长的考勤汇总明细")
-    @ApiImplicitParam(value = "查询参数", required = true)
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkDateByMinute")
     public ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>> statisticsWorkDateByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceWorkDateMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
@@ -207,7 +206,7 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendancePunchMinuteVO>>
      */
     @ApiOperation("分页查询工作日加班时长的考勤汇总明细")
-    @ApiImplicitParam(value = "查询参数", required = true)
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkDateOvertimeByMinute")
     public ResponseResult<PageInfo<AttendanceWorkDateOvertimeMinuteVO>> statisticsWorkDateOvertimeByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceWorkDateOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateOvertimeByMinute(1, queryForm);
@@ -222,7 +221,7 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendancePunchMinuteVO>>
      */
     @ApiOperation("分页查询工作日加班时长超30分钟的考勤汇总明细")
-    @ApiImplicitParam(value = "查询参数", required = true)
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkDateOvertime30ByMinute")
     public ResponseResult<PageInfo<AttendanceWorkDateOvertimeMinuteVO>> statisticsWorkDateOvertime30ByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceWorkDateOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateOvertimeByMinute(30, queryForm);
@@ -237,7 +236,7 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceWorkOvertimeMinuteVO>>
      */
     @ApiOperation("分页查询休息日加班时长的考勤汇总明细")
-    @ApiImplicitParam(value = "查询参数", required = true)
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkOvertimesByMinute")
     public ResponseResult<PageInfo<AttendanceOvertimeMinuteVO>> statisticsWorkOvertimesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkOvertimesByMinute(queryForm);
@@ -252,7 +251,7 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceLeaveMinuteVO>>
      */
     @ApiOperation("分页查询请假时长的考勤汇总明细")
-    @ApiImplicitParam(value = "查询参数", required = true)
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsLeavesByMinute")
     public ResponseResult<PageInfo<AttendanceLeaveMinuteVO>> statisticsLeavesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceLeaveMinuteVO> result = attendancePunchRecordBiz.statisticsLeavesByMinute(queryForm);
@@ -267,7 +266,7 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceFieldMinuteVO>>
      */
     @ApiOperation("分页查询外勤时长的考勤汇总明细")
-    @ApiImplicitParam(value = "查询参数", required = true)
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsFieldsByMinute")
     public ResponseResult<PageInfo<AttendanceFieldMinuteVO>> statisticsFieldsByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceFieldMinuteVO> result = attendancePunchRecordBiz.statisticsFieldsByMinute(queryForm);

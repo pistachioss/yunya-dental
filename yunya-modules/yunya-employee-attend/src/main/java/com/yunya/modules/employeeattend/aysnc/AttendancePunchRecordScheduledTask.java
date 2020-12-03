@@ -422,13 +422,13 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 }
                 for (EmployeeScheduleVO employeeScheduleVO : list) {
                     EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
-                    punchItem.setType(LEAVE_BYSCHEDULE);
+                    punchItem.setType(REST);
                     punchItem.setFirstStartTime(employeeScheduleVO.getFirstStartTime());
                     punchItem.setFirstEndTime(employeeScheduleVO.getFirstEndTime());
                     punchItem.setId(id);
                     punchItem.setEmployeeId(userId);
                     punchItem.setClinicId(employeeScheduleVO.getClinicId());
-                    punchItem.setName("按班次请假");
+                    punchItem.setName(employeeScheduleVO.getName());
                     employeeScheduleVOS.add(punchItem);
                     leaveByDays.put(userId, employeeScheduleVOS);
                 }

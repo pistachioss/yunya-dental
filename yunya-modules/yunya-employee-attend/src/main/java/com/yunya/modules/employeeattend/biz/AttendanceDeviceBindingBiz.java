@@ -130,12 +130,10 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
     /**
      * 根据userid分页查询员工的考勤设备的绑定记录列表
      *
-     * @param userId 用户id
      * @param queryForm 查询参数
      * @return
      */
-    public PageInfo<AttendanceDeviceBindingVO> findEmployeeBindingDeviceList(Integer userId, AttendanceDeviceBindingQueryForm queryForm) {
-        queryForm.setUserId(userId);
+    public PageInfo<AttendanceDeviceBindingVO> findEmployeeBindingDeviceList(AttendanceDeviceBindingQueryForm queryForm) {
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
         }

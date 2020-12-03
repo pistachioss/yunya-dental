@@ -58,10 +58,11 @@ public class AttendanceDeviceBindingControllerTest {
         queryForm.setPageNum(2);
         queryForm.setPageSize(5);
         queryForm.setUserName("");
+        queryForm.setUserId(569);
         queryForm.setBindingCount(null);
         queryForm.setStartDate("2020-11-01");
         queryForm.setEndDate("2020-11-06");
-        ResponseResult result = attendanceDeviceBindingController.findEmployeeBindingDeviceList(569, queryForm);
+        ResponseResult result = attendanceDeviceBindingController.findEmployeeBindingDeviceList(queryForm);
         System.out.println(result);
     }
 

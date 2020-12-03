@@ -1850,29 +1850,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
             }
-            for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
-                String startDateStr = sdf.format(leaveInfoVO.getStartDate());
-                String endDateStr = sdf.format(leaveInfoVO.getEndDate());
-                Date startDate;
-                Date endDate;
-                try {
-                    startDate = sdf.parse(startDateStr);
-                    endDate = sdf.parse(endDateStr);
-                } catch (ParseException e) {
-                    throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-                }
-                if (leaveInfoVO.getVacationStatus()==0) {// 按班次请假
-                    if (date.compareTo(startDate) == 0) {
-                        hasApply = 1;
-                        break;
-                    }
-                } else {// 按天请假
-                    if (date.compareTo(startDate)>=0 && date.compareTo(endDate)<=0) {
-                        hasApply = 1;
-                        break;
-                    }
-                }
-            }
             StringBuilder punchResult = new StringBuilder();
             StringBuilder employeeScheduleName = new StringBuilder();
             AttendanceManualMakeupVO manualMakeupVO = manualMakeupMap.get(date);
@@ -1958,6 +1935,33 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             }
                             diff = offEndTime.getTime() - punchRecordVO.getStartTime().getTime();
                         }
+                    }
+                }
+            }
+            for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
+                String startDateStr = sdf.format(leaveInfoVO.getStartDate());
+                String endDateStr = sdf.format(leaveInfoVO.getEndDate());
+                Date startDate;
+                Date endDate;
+                try {
+                    startDate = sdf.parse(startDateStr);
+                    endDate = sdf.parse(endDateStr);
+                } catch (ParseException e) {
+                    throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+                }
+                if (leaveInfoVO.getVacationStatus()==0) {// 按班次请假
+                    if (date.compareTo(startDate) == 0) {
+                        hasApply = 1;
+//                        if ()//被覆盖的请假
+
+
+
+                        break;
+                    }
+                } else {// 按天请假
+                    if (date.compareTo(startDate)>=0 && date.compareTo(endDate)<=0) {
+                        hasApply = 1;
+                        break;
                     }
                 }
             }

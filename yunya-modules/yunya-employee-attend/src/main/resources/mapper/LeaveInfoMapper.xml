@@ -78,8 +78,7 @@
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
-        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
-        t.id=ls.leave_id
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
             vs.vacation_enable=1
