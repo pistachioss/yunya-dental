@@ -48,10 +48,6 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private LeaveScheduleMapper leaveScheduleMapper;
-    @Autowired
-    private FieldInfoMapper fieldInfoMapper;
-    @Autowired
-    private WorkOvertimeInfoMapper workOvertimeInfoMapper;
     /**
      * 根据日期和用户id列表查询请假列表
      *

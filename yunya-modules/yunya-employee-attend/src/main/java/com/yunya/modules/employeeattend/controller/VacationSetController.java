@@ -42,6 +42,7 @@ public class VacationSetController {
      */
     @PostMapping("/findList")
     @ApiOperation("查看假期设置列表")
+    @CurrentUser
     public ResponseResult<PageInfo<VacationSet>> findList(@RequestBody @Validated VacationSetQuery vacationSetQuery) {
         return ResponseUtil.success(vacationSetBiz.findlist(vacationSetQuery));
     }

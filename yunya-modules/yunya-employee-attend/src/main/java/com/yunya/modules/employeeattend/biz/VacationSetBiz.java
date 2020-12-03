@@ -2,6 +2,8 @@ package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -11,6 +13,7 @@ import com.yunya.modules.employeeattend.form.VacationSetForm;
 import com.yunya.modules.employeeattend.form.VacationSetQuery;
 import com.yunya.modules.employeeattend.mapper.VacationSetMapper;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,11 +37,22 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DELETE_
 @Transactional(rollbackFor = Exception.class)
 public class VacationSetBiz extends BaseBiz<VacationSetMapper, VacationSet> {
 
+    @Autowired
+    private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
     public PageInfo<VacationSet> findlist(VacationSetQuery vacationSetQuery){
         if (vacationSetQuery.getWhetherPage()) {
             PageHelper.startPage(vacationSetQuery.getPage(), vacationSetQuery.getSize());
         }
-        List<VacationSet> reList = mapper.selectAll();
+        //当前登陆用户信息
+        SysUserInfoDetail sysUserInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(Integer.valueOf(BaseContextHandler.getUserID()));
+        VacationSet vacationSet = new VacationSet();
+        if(sysUserInfoDetail.getWorkStatus()==0){
+            vacationSet.setVacationRange(1);
+        }else if(sysUserInfoDetail.getWorkStatus()==1){
+            vacationSet.setVacationRange(2);
+        }
+        List<VacationSet> reList = mapper.selectList(vacationSet);
         return new PageInfo<>(reList);
     }
 
