@@ -131,4 +131,70 @@
     <select id="countByDay" resultType="Integer">
         select count(*) from field_info where user_id = #{userId} and  DATE_FORMAT(start_time,'%Y-%m-%d') = #{startTime}  and apprpval_status in (0,1)
     </select>
+
+    <select id="findApprovalAllList" resultType="com.yunya.feign.employee_attend.vo.ApprovalAllListVO">
+        select id,
+        userId,
+        crtTime,
+        startTime,
+        endTime,
+        approvalPeopleId,
+        STATUS,
+        apprpvalStatus from
+        (select id,user_id as userId,crt_time as crtTime,work_date as startTime,work_date as endTime,approval_people_id as approvalPeopleId,'加班' as status,apprpval_status as apprpvalStatus from work_overtime_info
+        <where>
+            <if test="crtTime!=null">
+              AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
+            </if>
+            <if test="startTime!=null">
+                AND  DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
+            </if>
+            <if test="userId!=null">
+                AND  user_id = #{userId}
+            </if>
+            <if test="apprpvalStatus!=null">
+                AND  apprpval_status = #{apprpvalStatus}
+            </if>
+        </where>
+        union all
+        select id,user_id as userId,crt_time as crtTime,start_time as startTime,end_time as endTime,approval_people_id as approvalPeopleId,'外勤' as status,apprpval_status as apprpvalStatus from field_info
+        <where>
+            <if test="crtTime!=null">
+                AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
+            </if>
+            <if test="startTime!=null">
+                AND  DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
+            </if>
+            <if test="userId!=null">
+                AND  user_id = #{userId}
+            </if>
+            <if test="apprpvalStatus!=null">
+                AND  apprpval_status = #{apprpvalStatus}
+            </if>
+        </where>
+        union all
+        select li.id as id,li.user_id as userId,li.crt_time as crtTime,li.start_time as startTime,li.end_time as endTime,GROUP_CONCAT(ap.user_id) as approvalPeopleId,'请假' as status,li.apprpval_status as apprpvalStatus from leave_info li
+        LEFT JOIN approval_info ai on ai.leave_id = li.id
+        LEFT JOIN approval_people ap on ap.id = ai.approval_people_id
+        <where>
+            <if test="crtTime!=null">
+                AND  DATE_FORMAT(li.crt_time,'%Y-%m-%d') =  DATE_FORMAT(#{crtTime},'%Y-%m-%d')
+            </if>
+            <if test="startTime!=null">
+                AND  DATE_FORMAT(li.start_time,'%Y-%m-%d') =  DATE_FORMAT(#{startTime},'%Y-%m-%d')
+            </if>
+            <if test="userId!=null">
+                AND  li.user_id = #{userId}
+            </if>
+            <if test="apprpvalStatus!=null">
+                AND  li.apprpval_status = #{apprpvalStatus}
+            </if>
+        </where>
+        GROUP BY li.id) a
+        <where>
+            <if test="status!=null">
+                AND  a.status = #{status}
+            </if>
+        </where>
+    </select>
 </mapper>

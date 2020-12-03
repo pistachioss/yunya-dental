@@ -11,6 +11,7 @@ import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.*;
@@ -304,7 +305,36 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
     }
 
     public List<ApprovalAllListVO> findApprovalAllList(ApprovalAllListForm approvalAllListForm){
-        return mapper.findApprovalAllList(approvalAllListForm);
+        //获取用户信息
+        SysUserEmployeeModel model = new SysUserEmployeeModel();
+        model.setWhetherPage(false);
+        List<Integer> orgIds = new ArrayList<>();
+        model.setOrgIds(orgIds);
+        Byte[] userStatus = {0, 1, 3};
+        model.setWorkStatus(userStatus);
+        List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+        model.setKeyWord(approvalAllListForm.getUserName());
+        List<SysUserInfoDetail> employeesByName = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
+        if(employeesByName.size()==0){
+            throw new ClientServiceException("查无此人", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        }
+        approvalAllListForm.setUserId(employeesByName.get(0).getUserId());
+        List<ApprovalAllListVO>reList = mapper.findApprovalAllList(approvalAllListForm);
+        if (reList.size() > 0) {
+            Map<String, SysUserInfoDetail> emMapById = new HashMap(16);
+            employees.forEach(z -> emMapById.put(z.getUserId() + "", z));
+
+            for(ApprovalAllListVO approvalAllListVO:reList){
+                approvalAllListVO.setUserName(emMapById.get(approvalAllListVO.getUserId()+"").getName());
+                String approvalName = "";
+                String[] split = approvalAllListVO.getApprovalPeopleId().split(",");
+                for (int i = 0; i < split.length; i++) {
+                    approvalName = approvalName + split[i] + ",";
+                }
+                approvalAllListVO.setApprovalPeopleName(approvalName);
+            }
+        }
+        return reList;
     }
 
 }

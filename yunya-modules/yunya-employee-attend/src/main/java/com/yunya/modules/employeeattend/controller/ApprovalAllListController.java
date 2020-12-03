@@ -40,7 +40,6 @@ public class ApprovalAllListController {
      */
     @PostMapping("/findList")
     @ApiOperation("查看假期设置列表")
-    @CurrentUser
     public ResponseResult findList(@RequestBody @Validated ApprovalAllListForm approvalAllListForm) {
         return ResponseUtil.success(fieldInfoBiz.findApprovalAllList(approvalAllListForm));
     }

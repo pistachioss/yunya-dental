@@ -1,5 +1,6 @@
 package com.yunya.feign.employee_attend.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -24,12 +25,15 @@ public class ApprovalAllListVO {
     @ApiModelProperty("申请人Id")
     private Integer userId;
     @ApiModelProperty("申请人姓名")
-    private Integer userName;
+    private String userName;
     @ApiModelProperty("申请时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date crtTime;
     @ApiModelProperty("开始日期")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date startTime;
     @ApiModelProperty("结束日期")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date endTime;
     @ApiModelProperty("审批人ID集合，用逗号隔开")
     private String approvalPeopleId;
