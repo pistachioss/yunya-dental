@@ -23,21 +23,12 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
   List<BillOfRefundRecordVO> selectBillRefundRecord(@Param("query") BillRefundRecordQuery query);
 
   /**
-   * 根据条件查询员工退费工作量明细列表（按月查询）
+   * 根据条件查询员工退费工作量明细列表
    *
    * @param query 查询条件
    * @return List<EmployeePersonalRefundWorkloadDetailVO>
    */
-  List<EmployeePersonalRefundWorkloadDetailVO> selectEmployeePersonalRefundWorkloadDetailByMonth(
-      @Param("query") EmployeePersonalWorkloadDetailQuery query);
-
-  /**
-   * 根据条件查询员工退费工作量明细列表（按年查询）
-   *
-   * @param query 查询条件
-   * @return List<EmployeePersonalRefundWorkloadDetailVO>
-   */
-  List<EmployeePersonalRefundWorkloadDetailVO> selectEmployeePersonalRefundWorkloadDetailByYear(
+  List<EmployeePersonalRefundWorkloadDetailVO> selectEmployeePersonalRefundWorkloadDetail(
       @Param("query") EmployeePersonalWorkloadDetailQuery query);
 
   /**

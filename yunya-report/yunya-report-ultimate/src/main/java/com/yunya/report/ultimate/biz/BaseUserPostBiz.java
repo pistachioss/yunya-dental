@@ -35,19 +35,8 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    Byte dateType = query.getDateType();
-    List<AssistantMatchingStatisticsVO> resultList;
-    switch (dateType) {
-      case 0:
-        resultList = mapper.selectAssistantMatchingStatisticsListByDay(query);
-        break;
-      case 1:
-        resultList = mapper.selectAssistantMatchingStatisticsListMonth(query);
-        break;
-      default:
-        resultList = mapper.selectAssistantMatchingStatisticsListByYear(query);
-        break;
-    }
+    List<AssistantMatchingStatisticsVO> resultList =
+        mapper.selectAssistantMatchingStatisticsList(query);
     return new PageInfo<>(resultList);
   }
 
