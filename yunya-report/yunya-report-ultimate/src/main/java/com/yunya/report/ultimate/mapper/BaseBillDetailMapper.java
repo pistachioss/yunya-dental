@@ -89,4 +89,13 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<EmployeeSupplyDetailWorkloadVO> selectEmployeeSupplyDetailList(
       @Param("query") EmployeeWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询助手实收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return List<AssistantActualWorkloadDetailVO>
+   */
+  List<AssistantActualWorkloadDetailVO> selectAssistantActualWorkloadDetailList(
+      @Param("query") AssistantActualWorkloadDetailQuery query);
 }

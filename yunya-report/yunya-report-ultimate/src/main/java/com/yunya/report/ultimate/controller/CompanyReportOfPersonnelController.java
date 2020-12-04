@@ -303,9 +303,24 @@ public class CompanyReportOfPersonnelController {
   @ApiOperation("公司端报表-人事报表-配诊统计-配诊时长明细")
   @PostMapping(value = "/employee/matching/detail/list", name = "公司端报表-人事报表-配诊统计-配诊时长明细")
   public ResponseResult<PageInfo<EmployeeTreatMatchingDetailVO>> assistantMatchingDetailList(
-      @RequestBody @Validated EmployeeMatchingDetailQuery query) {
+      @RequestBody @Validated AssistantMatchingDetailQuery query) {
     PageInfo<EmployeeTreatMatchingDetailVO> pageInfo =
         treatmentProcessBiz.findAssistantMatchingDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询助手实收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<AssistantActualWorkloadDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计-实收工作量明细")
+  @PostMapping(value = "/actual/workload/detail/list", name = "公司端报表-人事报表-配诊统计-实收工作量明细")
+  public ResponseResult<PageInfo<AssistantActualWorkloadDetailVO>> assistantActualWorkloadDetail(
+      @RequestBody @Validated AssistantActualWorkloadDetailQuery query) {
+    PageInfo<AssistantActualWorkloadDetailVO> pageInfo =
+        billDetailBiz.findAssistantActualWorkloadDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
 }

@@ -1,6 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.EmployeeMatchingDetailQuery;
+import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
 import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
 import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
@@ -39,5 +39,5 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @return List<EmployeeTreatMatchingDetailVO>
    */
   List<EmployeeTreatMatchingDetailVO> selectAssistantMatchingDetailList(
-      @Param("query") EmployeeMatchingDetailQuery query);
+      @Param("query") AssistantMatchingDetailQuery query);
 }

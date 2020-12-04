@@ -186,7 +186,7 @@
         FROM (
         SELECT
         btp.treatment_id,
-        DATE_FORMAT(btp.treat_start_time,'%Y-%m-%d') as treatDate,
+        DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d') as treatDate,
         btp.patient_id,
         bp.`name` AS patientName,
         bp.mobile,
@@ -260,7 +260,7 @@
                 and btp.treatStartTime &gt;= #{query.treatStartDate}
             </if>
             <if test="query.treatEndDate != null and query.treatEndDate != ''">
-                and btp.treatEndDate &lt;= #{query.treatEndDate}
+                and btp.treatStartTime &lt;= #{query.treatEndDate}
             </if>
         </where>
     </select>

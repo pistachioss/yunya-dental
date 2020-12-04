@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -22,7 +23,7 @@ import java.io.Serializable;
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class EmployeeMatchingDetailQuery extends PageQuery implements Serializable {
+public class AssistantMatchingDetailQuery extends PageQuery implements Serializable {
   /** 门诊ID */
   @ApiModelProperty(value = "门诊ID", required = true)
   @NotNull(message = "门诊ID不能为空！")
@@ -33,6 +34,7 @@ public class EmployeeMatchingDetailQuery extends PageQuery implements Serializab
   private Byte dateType;
   /** 开始时间 */
   @ApiModelProperty(value = "开始时间", required = true)
+  @NotBlank(message = "查询开始时间不能为空！")
   private String startDate;
   /** 结束时间 */
   @ApiModelProperty(value = "结束时间", required = true)

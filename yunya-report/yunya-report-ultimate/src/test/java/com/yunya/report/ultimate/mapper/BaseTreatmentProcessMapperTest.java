@@ -1,6 +1,6 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.EmployeeMatchingDetailQuery;
+import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
 import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +25,7 @@ public class BaseTreatmentProcessMapperTest {
 
   @Test
   public void findMatchingDetailList() {
-    EmployeeMatchingDetailQuery query = new EmployeeMatchingDetailQuery();
+    AssistantMatchingDetailQuery query = new AssistantMatchingDetailQuery();
     query.setOrgId(35);
     query.setDateType((byte) 1);
     query.setStartDate("2020-10-01");

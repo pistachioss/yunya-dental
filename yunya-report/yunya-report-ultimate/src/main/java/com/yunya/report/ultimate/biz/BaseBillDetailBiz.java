@@ -291,4 +291,20 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeeSupplyDetailWorkloadVO> resultList = mapper.selectEmployeeSupplyDetailList(query);
     return new PageInfo<>(resultList);
   }
+
+  /**
+   * 根据条件查询助手实收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<AssistantActualWorkloadDetailVO>
+   */
+  public PageInfo<AssistantActualWorkloadDetailVO> findAssistantActualWorkloadDetailList(
+      AssistantActualWorkloadDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<AssistantActualWorkloadDetailVO> resultList =
+        mapper.selectAssistantActualWorkloadDetailList(query);
+    return new PageInfo<>(resultList);
+  }
 }

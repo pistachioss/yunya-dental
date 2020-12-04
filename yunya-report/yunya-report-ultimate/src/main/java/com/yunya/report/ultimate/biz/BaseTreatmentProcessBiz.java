@@ -2,7 +2,7 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.EmployeeMatchingDetailQuery;
+import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
 import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
 import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
@@ -95,7 +95,7 @@ public class BaseTreatmentProcessBiz
    * @return PageInfo<EmployeeTreatMatchingDetailVO>
    */
   public PageInfo<EmployeeTreatMatchingDetailVO> findAssistantMatchingDetailList(
-      EmployeeMatchingDetailQuery query) {
+      AssistantMatchingDetailQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
