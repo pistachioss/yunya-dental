@@ -53,9 +53,10 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("公司端报表-人事报表-员工工作量")
   @PostMapping(value = "/employee/workload/list", name = "根据条件查询员工工作量列表")
-  public ResponseResult<PageInfo<EmployeeWorkloadVO>> employeeWorkload(
+  public ResponseResult<PageInfo<EmployeeWorkloadOfPersonnelVO>> employeeWorkloadOfPersonnel(
       @RequestBody @Validated EmployeeWorkloadQuery query) {
-    PageInfo<EmployeeWorkloadVO> result = billDetailBiz.findEmployeeWorkloadList(query);
+    PageInfo<EmployeeWorkloadOfPersonnelVO> result =
+        billDetailBiz.findEmployeeWorkloadListOfPersonnel(query);
     return ResponseUtil.success(result);
   }
 
@@ -64,14 +65,14 @@ public class CompanyReportOfPersonnelController {
    *
    * @param response 响应
    * @param query 查询条件
-   * @return
+   * @return void
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-导出")
   @PostMapping(value = "/employee/workload/export", name = "根据条件导出员工工作量列表")
-  public ResponseResult<T> exportEmployeeWorkloadList(
+  public ResponseResult<T> exportEmployeeWorkloadListOfPersonnel(
       HttpServletResponse response, @RequestBody @Validated EmployeeWorkloadQuery query)
       throws IOException {
-    billDetailBiz.exportEmployeeWorkloadList(response, query);
+    billDetailBiz.exportEmployeeWorkloadListOfPersonnel(response, query);
     return ResponseUtil.success(null);
   }
 

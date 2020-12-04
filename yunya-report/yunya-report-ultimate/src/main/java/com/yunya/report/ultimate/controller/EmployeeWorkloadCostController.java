@@ -5,6 +5,7 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.EmployeeWorkloadCostBiz;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @description:
  * @since: 1.0.0
  */
+@Api(tags = "员工工作量消耗成本管理")
 @RestController
 @RequestMapping("workload")
 public class EmployeeWorkloadCostController {

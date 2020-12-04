@@ -62,11 +62,13 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query 查询条件
    * @return
    */
-  public PageInfo<EmployeeWorkloadVO> findEmployeeWorkloadList(EmployeeWorkloadQuery query) {
+  public PageInfo<EmployeeWorkloadOfPersonnelVO> findEmployeeWorkloadListOfPersonnel(
+      EmployeeWorkloadQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
-    List<EmployeeWorkloadVO> resultList = mapper.selectEmployeeWorkloadList(query);
+    List<EmployeeWorkloadOfPersonnelVO> resultList =
+        mapper.selectEmployeeWorkloadListOfPersonnel(query);
     if (StringHelper.isNotEmpty(resultList)) {
       resultList.forEach(
           vo -> {
@@ -110,17 +112,51 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
-   * 根据条件导出员工工作量列表
+   * 根据条件查询员工工作量列表（运营报表）
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeWorkloadOfOperationVO>
+   */
+  public PageInfo<EmployeeWorkloadOfOperationVO> findEmployeeWorkloadListOfOperation(
+      EmployeeWorkloadQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeWorkloadOfOperationVO> resultList =
+        mapper.selectEmployeeWorkloadListOfOperation(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出员工工作量列表（人事报表）
    *
    * @param response http响应
    * @param query 查询条件
    */
-  public void exportEmployeeWorkloadList(HttpServletResponse response, EmployeeWorkloadQuery query)
-      throws IOException {
-    PageInfo<EmployeeWorkloadVO> workloadList = findEmployeeWorkloadList(query);
-    List<EmployeeWorkloadVO> resultList = workloadList.getList();
-    ExcelUtil<EmployeeWorkloadVO> excelUtil = new ExcelUtil<>(EmployeeWorkloadVO.class);
-    excelUtil.exportExcel(response, resultList, "应收账款余额表");
+  public void exportEmployeeWorkloadListOfPersonnel(
+      HttpServletResponse response, EmployeeWorkloadQuery query) throws IOException {
+    PageInfo<EmployeeWorkloadOfPersonnelVO> workloadList =
+        findEmployeeWorkloadListOfPersonnel(query);
+    List<EmployeeWorkloadOfPersonnelVO> resultList = workloadList.getList();
+    ExcelUtil<EmployeeWorkloadOfPersonnelVO> excelUtil =
+        new ExcelUtil<>(EmployeeWorkloadOfPersonnelVO.class);
+    excelUtil.exportExcel(response, resultList, "员工工作量（人事报表）");
+  }
+
+  /**
+   * 根据条件导出员工工作量列表（运营报表）
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportEmployeeWorkloadListOfOperation(
+      HttpServletResponse response, EmployeeWorkloadQuery query) throws IOException {
+    PageInfo<EmployeeWorkloadOfOperationVO> workloadList =
+        findEmployeeWorkloadListOfOperation(query);
+    List<EmployeeWorkloadOfOperationVO> resultList = workloadList.getList();
+    ExcelUtil<EmployeeWorkloadOfOperationVO> excelUtil =
+        new ExcelUtil<>(EmployeeWorkloadOfOperationVO.class);
+    excelUtil.exportExcel(response, resultList, "员工工作量（运营报表）");
   }
 
   /**

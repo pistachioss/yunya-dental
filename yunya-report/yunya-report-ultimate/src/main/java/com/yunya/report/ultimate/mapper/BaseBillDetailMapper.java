@@ -20,12 +20,22 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillDetailIncomeDetailQuery query);
 
   /**
-   * 根据条件查询员工工作量列表
+   * 根据条件查询员工工作量列表（人事报表）
    *
    * @param query 查询条件
-   * @return list
+   * @return List<EmployeeWorkloadOfPersonnelVO>
    */
-  List<EmployeeWorkloadVO> selectEmployeeWorkloadList(@Param("query") EmployeeWorkloadQuery query);
+  List<EmployeeWorkloadOfPersonnelVO> selectEmployeeWorkloadListOfPersonnel(
+      @Param("query") EmployeeWorkloadQuery query);
+
+  /**
+   * 根据条件查询员工工作量列表（运营报表）
+   *
+   * @param query 查询条件
+   * @return List<EmployeeWorkloadOfOperationVO>
+   */
+  List<EmployeeWorkloadOfOperationVO> selectEmployeeWorkloadListOfOperation(
+      @Param("query") EmployeeWorkloadQuery query);
 
   /**
    * 根据条件查询项目分类收入汇总列表
