@@ -1199,7 +1199,6 @@ public class TollBiz {
       // 更新订单明细收费记录
       updateOrderDetailPayRecord(orderRecordId, totalCharge);
       // 发送消息同步账单数据
-      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
     } else {
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
@@ -1249,8 +1248,6 @@ public class TollBiz {
           accreditDiscount);
       savePrivilegeDetail(
           discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
-      // 发送消息同步账单
-      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
     }
     BillPayRecord billPayRecord = new BillPayRecord();
     billPayRecord.setOrgId(orgId);
@@ -1277,6 +1274,8 @@ public class TollBiz {
     }
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
+    // 发送消息同步账单
+    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
   }
 
   /**
