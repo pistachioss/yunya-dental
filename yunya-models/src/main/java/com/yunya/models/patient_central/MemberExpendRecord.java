@@ -1,6 +1,6 @@
 package com.yunya.models.patient_central;
 
-import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -9,6 +9,7 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@Data
 @Table(name = "member_expend_record")
 public class MemberExpendRecord {
     @Id
@@ -98,6 +99,12 @@ public class MemberExpendRecord {
      */
     @Column(name = "bill_record_id")
     private Integer billRecordId;
+
+    /**
+     * 账单id
+     */
+    @Column(name = "order_record_id")
+    private Integer orderRecordId;
 
     /**
      * 账单付款记录id

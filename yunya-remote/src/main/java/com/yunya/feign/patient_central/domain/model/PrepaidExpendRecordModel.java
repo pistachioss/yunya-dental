@@ -63,18 +63,12 @@ public class PrepaidExpendRecordModel implements Serializable {
     private Integer orderRecordId;
 
 
-
     /**
      * 备注
      */
     @ApiModelProperty(value = "备注")
     private String remarks;
 
-    /**
-     * 类型（0：撤销消费 1：消费 ）
-     */
-    @ApiModelProperty(value = "类型（0：撤销消费 1：消费 ）",required = true)
-    private Integer type;
 
     /**
      * 消费本金
