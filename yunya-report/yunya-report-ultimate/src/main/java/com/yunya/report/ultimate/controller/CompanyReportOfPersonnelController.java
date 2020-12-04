@@ -323,4 +323,18 @@ public class CompanyReportOfPersonnelController {
         billDetailBiz.findAssistantActualWorkloadDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
+
+  /**
+   * 根据条件查询助手退费金额明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<AssistantRefundDetailVO> pageInfo
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计-退费金额明细")
+  @PostMapping(value = "/refund/detail/list", name = "公司端报表-人事报表-配诊统计-退费金额明细")
+  public ResponseResult<PageInfo<AssistantRefundDetailVO>> assistantRefundDetailList(
+      @RequestBody @Validated AssistantRefundDetailQuery query) {
+    PageInfo<AssistantRefundDetailVO> pageInfo = refundBiz.findAssistantRefundDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
 }
