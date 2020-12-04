@@ -15,13 +15,12 @@ import com.yunya.models.report.BaseEmployee;
 import com.yunya.report.ultimate.service.PatientReportBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.models.auth.In;
 import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -46,9 +45,9 @@ public class PatientReportController {
      * @return List<BaseOrganization>
      */
     @ApiOperation("末次接诊医生")
-    @PostMapping("/employee/list")
-    public ResponseResult<List<BaseEmployee>> employeeList() {
-        return ResponseUtil.success(this.patientReportBiz.employeeList());
+    @GetMapping("/employee/list/{orgId}")
+    public ResponseResult<List<BaseEmployee>> employeeList(@PathVariable Integer orgId) {
+        return ResponseUtil.success(this.patientReportBiz.employeeList(orgId));
     }
 
 
@@ -59,7 +58,7 @@ public class PatientReportController {
      */
     @ApiOperation("未复诊预约且未提醒")
     @PostMapping("/notSeen/List")
-    public ResponseResult<PageInfo<BasePatientNotSeenVo>> notSeenList(@RequestBody PatientReportQueryForm patientReportQueryForm){
+    public ResponseResult<PageInfo<BasePatientNotSeenVo>> notSeenList(@RequestBody PatientReportQueryForm patientReportQueryForm) throws ParseException {
         PageInfo<BasePatientNotSeenVo> basePatientNotSeenVoList = patientReportBiz.notSeenList(patientReportQueryForm);
         if (StringHelper.isNotNull(basePatientNotSeenVoList)){
             return ResponseUtil.success(basePatientNotSeenVoList);
@@ -74,7 +73,7 @@ public class PatientReportController {
      */
     @ApiOperation("欠费查询")
     @PostMapping("/arrears")
-    public ResponseResult<PageInfo<ArrearsVo>> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm){
+    public ResponseResult<PageInfo<ArrearsVo>> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm) throws ParseException {
         PageInfo<ArrearsVo> arrears = patientReportBiz.arrears(arrearsQueryForm);
         if (StringHelper.isNotNull(arrears)){
             return ResponseUtil.success(arrears);
@@ -90,7 +89,7 @@ public class PatientReportController {
 
     @ApiOperation("就诊患者分析")
     @PostMapping("/analysis")
-    public ResponseResult<AnalysisVo> analysis(@RequestBody PatientAnalysisQueryForm patientAnalysisQueryForm){
+    public ResponseResult<AnalysisVo> analysis(@RequestBody PatientAnalysisQueryForm patientAnalysisQueryForm) throws ParseException {
         return ResponseUtil.success(patientReportBiz.analysis(patientAnalysisQueryForm));
     }
 

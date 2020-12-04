@@ -24,7 +24,7 @@
     bp.mobile,
     bpm.card_number cardNumber,
     bo.abbreviation,
-    bpm.card_opening_date cardOpeningDate,
+    DATE_FORMAT(bpm.card_opening_date, '%Y-%m-%d %h:%i:%s') cardOpeningDate,
     sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
     bpm.bonus_amount bonusAmount
     from base_patient bp

@@ -48,12 +48,12 @@ public class BasePrepaidRechargeLogVo {
     @ApiModelProperty("充值赠金金额")
     private BigDecimal bonusAmount = new BigDecimal(0);
 
-    /** 充值后会员卡余额（含赠送金额） */
-    @ApiModelProperty("充值后会员卡余额（含赠送金额）")
+    /** 充值后预付款余额（含赠送金额） */
+    @ApiModelProperty("充值后预付款余额（含赠送金额）")
     private BigDecimal currentRechargePrincipal = new BigDecimal(0);
 
-    /** 剩余会员卡余额（含赠送金额） */
-    @ApiModelProperty("剩余会员卡余额（含赠送金额）")
+    /** 剩余预付款余额（含赠送金额） */
+    @ApiModelProperty("剩余预付款余额（含赠送金额）")
     private BigDecimal currentAmount = new BigDecimal(0);
 
     /** 充值方式 */

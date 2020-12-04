@@ -69,6 +69,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
+        System.out.println("**************************************** 根据消息操作中间表账单");
         mapper.deleteByPrimaryKey(dataId);
         if (null != bill) {
           mapper.insertSelective(bill);
@@ -154,6 +155,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     bill.setInservice(true);
     BillRecord billRecord = billRecordMapper.selectOne(bill);
     if (null != billRecord) {
+      System.out.println("不是空的");
       BigDecimal debtAmount = billRecord.getDebtAmount();
       baseBill.setBillStatus(debtAmount.compareTo(BigDecimal.valueOf(0)) > 0 ? (byte) 0 : (byte) 1);
       baseBill.setPrivilegeType(billRecord.getPrivilegeType());
@@ -163,7 +165,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBill.setActualAmount(billRecord.getActualReceivableAmount());
       baseBill.setReceivedAmount(billRecord.getReceivedAmount());
       baseBill.setDebtAmount(debtAmount);
+      System.out.println("----------------------------------------------欠费+"+baseBill.getDebtAmount()+"+"+debtAmount);
     }
+    System.out.println("未查到账单");
   }
 
   /**
@@ -172,6 +176,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @param orderRecordId 订单记录ID
    */
   private void saveBaseBillPay(Integer orderRecordId) {
+    System.out.println("**************************************** 订单记录ID"+orderRecordId);
     BillPayRecord payRecord = new BillPayRecord();
     payRecord.setOrderRecordId(orderRecordId);
     List<BillPayRecord> billPayRecords = billPayRecordMapper.select(payRecord);
@@ -211,6 +216,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @param orderRecordId 订单记录ID
    */
   private void saveBaseBillDetail(Integer orderRecordId) {
+    System.out.println("******************************保存中间表账单明细" );
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
     orderDetail.setInservice(true);

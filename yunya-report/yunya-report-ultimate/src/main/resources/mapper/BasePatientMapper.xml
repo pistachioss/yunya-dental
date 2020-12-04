@@ -36,7 +36,7 @@
   <!-- 患者报表-未复诊预约且未提醒List -->
   <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
       select
-        bp.last_visit_date lastVisitDate,
+        DATE_FORMAT(bp.last_visit_date, '%Y-%m-%d %h:%i:%s') lastVisitDate,
         bp.name,
         bp.mobile,
         case when btp.treat_type = 0 then '初诊'

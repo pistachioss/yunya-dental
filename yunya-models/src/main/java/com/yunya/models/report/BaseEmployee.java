@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Table(name = "base_employee")
-@ApiModel("末次接诊医生Vo")
+@ApiModel("末次接诊医生")
 public class BaseEmployee {
     /**
      * 用户ID

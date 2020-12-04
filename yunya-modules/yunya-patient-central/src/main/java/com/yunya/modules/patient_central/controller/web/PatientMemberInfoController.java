@@ -116,8 +116,7 @@ public class PatientMemberInfoController {
   @PostMapping("/openCard")
   @RepeatSubmit
   public ResponseResult addMemberCard(@RequestBody OpenCardModel openCardModel) {
-    patientMemberInfoBiz.addMemberCard(openCardModel);
-    return ResponseUtil.success();
+    return patientMemberInfoBiz.addMemberCard(openCardModel);
   }
 
   /**

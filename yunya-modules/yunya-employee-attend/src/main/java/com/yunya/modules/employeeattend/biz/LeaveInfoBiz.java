@@ -125,7 +125,9 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 if (flag) {
                     LeaveInfo leaveInfo = new LeaveInfo();
                     BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
+                    leaveInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
                     leaveInfo.setCrtTime(new Date());
+                    leaveInfo.setApprpvalStatus(0);
                     int num = mapper.insert(leaveInfo);
                     //插入审批人信息
                     int leaveId = leaveInfo.getId();
@@ -220,6 +222,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     BeanUtils.copyProperties(leaveInfoByEmForm, leaveInfo);
                     leaveInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
                     leaveInfo.setCrtTime(new Date());
+                    leaveInfo.setApprpvalStatus(0);
                     int num = mapper.insert(leaveInfo);
                     int leaveId = leaveInfo.getId();
                     //插入班次请假信息

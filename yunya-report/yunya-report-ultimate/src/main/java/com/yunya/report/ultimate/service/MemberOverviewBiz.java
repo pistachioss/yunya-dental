@@ -11,6 +11,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.report.BasePatientMember;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
+import com.yunya.report.ultimate.utils.DateConversion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +46,9 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
      * @return List<MemberOverviewVo>
      */
     public PageInfo<BasePatientMemberOverviewVo> patientOverviewList(MemberOverviewQueryForm form) throws ParseException {
+        if (StringHelper.isNotEmpty(form.getEndDate())){
+            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        }
         List<BasePatientMemberOverviewVo> basePatientMemberOverviewVoList = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
