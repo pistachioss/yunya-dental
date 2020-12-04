@@ -230,7 +230,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (form.getWhetherPage()) {
             PageHelper.startPage(form.getPageNum(), form.getPageSize());
         }
-        if (patientIds != null && patientIds.size() > 0 ){
+        if (patientIds == null || patientIds.size() > 0 ){
             basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form,patientIds);
         }
         return new PageInfo<>(basePrepaidRechargeLogVoList);
@@ -250,7 +250,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (StringHelper.isNotEmpty(form.getCombination())){
             patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
         }
-        if (patientIds != null && patientIds.size() > 0 ){
+        if (patientIds == null || patientIds.size() > 0 ){
             basePrepaidRechargeLogVoList = mapper.selectPrepaidRechargeList(form,patientIds);
         }
         ExcelUtil<BasePrepaidRechargeLogVo> excelUtil = new ExcelUtil<>(BasePrepaidRechargeLogVo.class);
