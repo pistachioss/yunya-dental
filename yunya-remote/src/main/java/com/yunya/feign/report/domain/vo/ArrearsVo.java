@@ -76,4 +76,6 @@ public class ArrearsVo implements Serializable {
     @ApiModelProperty(value = "剩余欠费金额")
     private BigDecimal debtAmount;
 
+
+
 }

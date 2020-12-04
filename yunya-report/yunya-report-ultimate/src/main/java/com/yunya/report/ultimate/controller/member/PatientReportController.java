@@ -16,6 +16,7 @@ import com.yunya.report.ultimate.service.PatientReportBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
+import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 简介:患者报表控制层
@@ -96,6 +98,21 @@ public class PatientReportController {
             return ResponseUtil.success(arrears);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",arrears);
+    }
+
+    /**
+     * 欠费合计
+     * @param arrearsQueryForm 欠费合计查询form
+     * @return List<ArrearsVo>
+     */
+    @ApiOperation("欠费合计")
+    @PostMapping("/arrearsStatistics")
+    public ResponseResult<Map<Object, Object>> arrearsStatistics(@RequestBody ArrearsQueryForm arrearsQueryForm) throws ParseException {
+        Map<Object, Object> arrearsStatisticsMap = patientReportBiz.arrearsStatistics(arrearsQueryForm);
+        if (StringHelper.isNotNull(arrearsStatisticsMap)){
+            return ResponseUtil.success(arrearsStatisticsMap);
+        }
+        return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",arrearsStatisticsMap);
     }
 
     /**
