@@ -1198,7 +1198,6 @@ public class TollBiz {
           discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
       // 更新订单明细收费记录
       updateOrderDetailPayRecord(orderRecordId, totalCharge);
-      // 发送消息同步账单数据
     } else {
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
