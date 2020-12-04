@@ -8,18 +8,19 @@ import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
 import com.yunya.models.report.BasePatient;
-import com.yunya.models.report.BaseUserPost;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.utils.DateConversion;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,6 +81,27 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     }
 
     /**
+     * 导出未复诊预约且未提醒记录列表
+     * @param response
+     * @param form
+     */
+    public void exportNotSeenList(HttpServletResponse response, PatientReportQueryForm form) throws ParseException, IOException {
+        if (StringHelper.isNotEmpty(form.getEndDate())){
+            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        }
+        List<BasePatientNotSeenVo> basePatientNotSeenVoList = new ArrayList<>();
+        List<Integer> patientIds = null;
+        if (StringHelper.isNotEmpty(form.getCombination())){
+            patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (patientIds == null || patientIds.size() > 0 ){
+            basePatientNotSeenVoList = mapper.selectNotSeenList(form,patientIds);
+        }
+        ExcelUtil<BasePatientNotSeenVo> excelUtil = new ExcelUtil<>(BasePatientNotSeenVo.class);
+        excelUtil.exportExcel(response, basePatientNotSeenVoList, "未复诊预约且未提醒统计表");
+    }
+
+    /**
      * 欠费查询
      * @param form 欠费查询form
      * @return List<ArrearsVo>
@@ -97,6 +119,24 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         }
         List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form,patientIds);
         return new PageInfo<>(arrearsVoList);
+    }
+
+    /**
+     * 导出欠费查询记录列表
+     * @param response
+     * @param form
+     */
+    public void exportArrearsList(HttpServletResponse response, ArrearsQueryForm form) throws ParseException, IOException {
+        if (StringHelper.isNotEmpty(form.getEndDate())){
+            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        }
+        List<Integer> patientIds = null;
+        if (StringHelper.isNotEmpty(form.getCombination())){
+            patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form,patientIds);
+        ExcelUtil<ArrearsVo> excelUtil = new ExcelUtil<>(ArrearsVo.class);
+        excelUtil.exportExcel(response, arrearsVoList, "账单欠费统计表");
     }
 
     /**
@@ -147,4 +187,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         analysisVo.setAnalysisPatientAgeVoList(analysisPatientAgeVoList);
         return analysisVo;
     }
+
+
+
 }

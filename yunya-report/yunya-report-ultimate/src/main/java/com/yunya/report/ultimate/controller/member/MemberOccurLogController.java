@@ -2,7 +2,6 @@ package com.yunya.report.ultimate.controller.member;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberQueryForm;
-import com.yunya.feign.report.domain.vo.BaseMemberBalanceInfoVo;
 import com.yunya.feign.report.domain.vo.BaseMemberExpendLogVo;
 import com.yunya.feign.report.domain.vo.BaseMemberRechargeLogVo;
 import com.yunya.feign.report.domain.vo.BaseMemberReturnLogVo;
@@ -14,12 +13,16 @@ import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.service.MemberOccurLogBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -66,6 +69,21 @@ public class MemberOccurLogController {
     }
 
     /**
+     * 导出会员充值列表
+     *
+     * @param response 响应
+     * @param memberQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出会员充值列表")
+    @PostMapping(value = "/recharge/export", name = "公司端-数据记录-会员卡充值记录-导出")
+    public ResponseResult<T> exportMemberRechargeList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
+        memberOccurLogBiz.exportMemberRechargeList(response,memberQueryForm);
+        return ResponseUtil.success(null);
+    }
+
+
+    /**
      * 查询会员消费列表
      * @param memberQueryForm 会员卡消费form
      * @return List<MemberExpendLogBizVo>
@@ -78,6 +96,20 @@ public class MemberOccurLogController {
             return ResponseUtil.success(baseMemberExpendLogVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,  "暂无相关数据",baseMemberExpendLogVos);
+    }
+
+    /**
+     * 导出会员消费列表
+     *
+     * @param response 响应
+     * @param memberQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出会员消费列表")
+    @PostMapping(value = "/expend/export", name = "公司端-数据记录-会员卡消费记录-导出")
+    public ResponseResult<T> exportMemberExpendList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
+        memberOccurLogBiz.exportMemberExpendList(response,memberQueryForm);
+        return ResponseUtil.success(null);
     }
 
 
@@ -95,6 +127,20 @@ public class MemberOccurLogController {
             return ResponseUtil.success(baseMemberReturnLogVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",baseMemberReturnLogVos);
+    }
+
+    /**
+     * 导出会员退费列表
+     *
+     * @param response 响应
+     * @param memberQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出会员退费列表")
+    @PostMapping(value = "/return/export", name = "公司端-数据记录-会员退费列表-导出")
+    public ResponseResult<T> exportMemberReturnList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
+        memberOccurLogBiz.exportMemberReturnList(response,memberQueryForm);
+        return ResponseUtil.success(null);
     }
 
 

@@ -76,7 +76,7 @@ public class MemberBalanceBalanceController {
      * @return
      */
     @ApiOperation("导出会员余/预付款余额结存信息记录列表")
-    @PostMapping(value = "/export", name = "公司端-财务报表-余额结存-导出会员卡or预付款记录列表")
+    @PostMapping(value = "/export", name = "公司端-财务报表-余额结存-导出会员卡/预付款记录列表")
     public ResponseResult<T> exportMemberBalanceList(HttpServletResponse response, @RequestBody @Validated MemberQueryForm memberQueryForm) throws IOException, ParseException {
         memberOccurLogBiz.exportMemberBalanceList(response,memberQueryForm);
         return ResponseUtil.success(null);

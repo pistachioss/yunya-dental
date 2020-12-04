@@ -13,12 +13,16 @@ import com.yunya.models.report.BaseOrganization;
 import com.yunya.report.ultimate.service.MemberOccurLogBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -64,6 +68,20 @@ public class PrepaidOccurLogController {
     }
 
     /**
+     * 导出预付款充值列表
+     *
+     * @param response 响应
+     * @param prepaidQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出预付款充值列表")
+    @PostMapping(value = "/recharge/export", name = "公司端-数据记录-预付款充值列表-导出")
+    public ResponseResult<T> exportPrepaidRechargeList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException, ParseException {
+        memberOccurLogBiz.exportPrepaidRechargeList(response,prepaidQueryForm);
+        return ResponseUtil.success(null);
+    }
+
+    /**
      * 查询预付款消费列表
      * @param prepaidQueryForm 预付款卡消费form
      * @return List<MemberExpendLogBizVo>
@@ -76,6 +94,20 @@ public class PrepaidOccurLogController {
             return ResponseUtil.success(basePrepaidExpendLogVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePrepaidExpendLogVos);
+    }
+
+    /**
+     * 导出预付款消费列表
+     *
+     * @param response 响应
+     * @param prepaidQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出预付款消费列表")
+    @PostMapping(value = "/expend/export", name = "公司端-数据记录-预付款消费列表-导出")
+    public ResponseResult<T> exportPrepaidExpendList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException, ParseException {
+        memberOccurLogBiz.exportPrepaidRechargeList(response,prepaidQueryForm);
+        return ResponseUtil.success(null);
     }
 
 
@@ -93,6 +125,20 @@ public class PrepaidOccurLogController {
             return ResponseUtil.success(basePrepaidReturnLogVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePrepaidReturnLogVos);
+    }
+
+    /**
+     * 导出预付款退费列表
+     *
+     * @param response 响应
+     * @param prepaidQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出预付款退费列表")
+    @PostMapping(value = "/return/export", name = "公司端-数据记录-预付款退费列表-导出")
+    public ResponseResult<T> exportPrepaidReturnList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException, ParseException {
+        memberOccurLogBiz.exportPrepaidReturnList(response,prepaidQueryForm);
+        return ResponseUtil.success(null);
     }
 
 }

@@ -57,6 +57,14 @@ public class PrepaidExpendRecordModel implements Serializable {
     private Integer billPayRecordId;
 
     /**
+     * 订单记录id
+     */
+    @ApiModelProperty(value = "订单记录id",required = true)
+    private Integer orderRecordId;
+
+
+
+    /**
      * 备注
      */
     @ApiModelProperty(value = "备注")

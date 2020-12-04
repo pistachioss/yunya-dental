@@ -15,11 +15,13 @@ import com.yunya.models.report.BaseEmployee;
 import com.yunya.report.ultimate.service.PatientReportBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.models.auth.In;
-import org.aspectj.weaver.ast.Var;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 
@@ -67,6 +69,21 @@ public class PatientReportController {
     }
 
     /**
+     * 导出未复诊预约且未提醒记录列表
+     *
+     * @param response 响应
+     * @param patientReportQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出未复诊预约且未提醒记录列表")
+    @PostMapping(value = "/notSeen/export", name = "公司端-运营报表-患者报表-导出")
+    public ResponseResult<T> exportNotSeenList(HttpServletResponse response, @RequestBody @Validated PatientReportQueryForm patientReportQueryForm) throws IOException, ParseException {
+        patientReportBiz.exportNotSeenList(response,patientReportQueryForm);
+        return ResponseUtil.success(null);
+    }
+
+
+    /**
      * 欠费查询
      * @param arrearsQueryForm 欠费查询form
      * @return List<ArrearsVo>
@@ -80,6 +97,21 @@ public class PatientReportController {
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",arrears);
     }
+
+    /**
+     * 导出欠费查询记录列表
+     *
+     * @param response 响应
+     * @param arrearsQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出欠费查询记录列表")
+    @PostMapping(value = "/arrears/export", name = "公司端-运营报表-患者报表-导出")
+    public ResponseResult<T> exportArrearsList(HttpServletResponse response, @RequestBody @Validated ArrearsQueryForm arrearsQueryForm) throws IOException, ParseException {
+        patientReportBiz.exportArrearsList(response,arrearsQueryForm);
+        return ResponseUtil.success(null);
+    }
+
 
     /**
      * 就诊患者分析

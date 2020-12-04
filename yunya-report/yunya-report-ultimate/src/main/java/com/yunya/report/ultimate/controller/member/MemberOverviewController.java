@@ -2,7 +2,6 @@ package com.yunya.report.ultimate.controller.member;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberOverviewQueryForm;
-import com.yunya.feign.report.domain.vo.BaseMemberOverviewVo;
 import com.yunya.feign.report.domain.vo.BasePatientMemberOverviewVo;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.model.ResponseResult;
@@ -13,12 +12,16 @@ import com.yunya.report.ultimate.service.MemberOccurLogBiz;
 import com.yunya.report.ultimate.service.MemberOverviewBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +68,20 @@ public class MemberOverviewController {
             return ResponseUtil.success(basePatientMemberOverviewVos);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",basePatientMemberOverviewVos);
+    }
+
+    /**
+     * 导出患者会员卡/预付款概况记录列表
+     *
+     * @param response 响应
+     * @param memberOverviewQueryForm 查询条件
+     * @return
+     */
+    @ApiOperation("导出患者会员卡/预付款概况记录列表")
+    @PostMapping(value = "/patientOverview/export", name = "公司端-运营报表-会员卡概况-导出患者会员卡/预付款概况记录列表")
+    public ResponseResult<T> exportPatientOverviewList(HttpServletResponse response, @RequestBody @Validated MemberOverviewQueryForm memberOverviewQueryForm) throws IOException, ParseException {
+        memberOverviewBiz.exportPatientOverviewList(response,memberOverviewQueryForm);
+        return ResponseUtil.success(null);
     }
 
     /**
