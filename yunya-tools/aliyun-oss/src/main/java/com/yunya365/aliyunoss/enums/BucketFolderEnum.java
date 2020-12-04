@@ -47,7 +47,7 @@ public enum BucketFolderEnum {
         if(companyId < 1){
             return sub;
         }
-        return companyId + '/' + sub;
+        return companyId.toString() + '/' + sub;
     }
 
     BucketFolderEnum(Integer id, String name, String folder) {
