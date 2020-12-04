@@ -25,4 +25,11 @@ public interface MemberTypeMapper extends Mapper<MemberType> {
    * @return
    */
   List<MemberTypeVO> selectMemberTypeList(@Param("queryForm") MemberTypeQueryForm queryForm);
+
+  /**
+   * 根据会员卡类型ID查询会员卡信息
+   * @param ids 会员类型ID型集合
+   * @return 返回会员卡集合
+   */
+  List<MemberType> findMemberTypeByIds(@Param("ids") List<Integer> ids);
 }

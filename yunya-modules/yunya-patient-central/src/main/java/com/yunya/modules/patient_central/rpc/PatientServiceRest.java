@@ -76,6 +76,12 @@ public class PatientServiceRest {
     }
 
     @ApiOperation("根据患者id查询患者资料")
+    @RequestMapping (value = "/total/patientInfoList", method = RequestMethod.POST)
+    public List<PatientTotalInfoVo> findPatientTotalInfo(@RequestBody List<Integer> ids){
+        return patientBaseInfoBiz.findPatientTotalInfoList(ids);
+    }
+
+    @ApiOperation("根据患者id查询患者资料")
     @RequestMapping (value = "/findPatientMemberInfo",method = RequestMethod.POST)
     public List<PatientMemberInfo> findPatientMemberInfo(@RequestBody PatientMemberInfo patientMemberInfo){
         return patientMemberInfoBiz.selectList(patientMemberInfo);

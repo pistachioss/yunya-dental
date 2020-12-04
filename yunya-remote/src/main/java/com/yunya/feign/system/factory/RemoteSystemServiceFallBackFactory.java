@@ -244,4 +244,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public EquipmentInfo equipmentInfoOne() {
     return null;
   }
+
+  @Override
+  public List<MemberType> findMemberTypeByIds(List<Integer> ids) {
+    return null;
+  }
 }

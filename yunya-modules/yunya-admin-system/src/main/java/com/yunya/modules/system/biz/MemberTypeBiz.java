@@ -7,17 +7,21 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.MemberType;
 import com.yunya.modules.system.domain.form.MemberTypeForm;
 import com.yunya.modules.system.domain.model.MemberTypeModel;
 import com.yunya.modules.system.domain.query.MemberTypeQueryForm;
 import com.yunya.modules.system.mapper.MemberTypeMapper;
 import com.yunya.modules.system.vo.MemberTypeVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.NAME_IS_OCCUPIED;
@@ -33,6 +37,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_R
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
 
   /** 患者服务 */
@@ -121,5 +126,23 @@ public class MemberTypeBiz extends BaseBiz<MemberTypeMapper, MemberType> {
       throw new ClientServiceException("该类型会员卡正在使用中,不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
+  }
+
+  /**
+   * 根据会员卡类型ID查询会员卡信息
+   * @param ids 会员类型ID型集合
+   * @return 返回会员卡集合
+   */
+  public List<MemberType> findMemberTypeByIds( List<Integer> ids) {
+    log.info("=====================根据会员卡类型ID查询会员卡信息==================");
+    log.info("==> 【当前类】:com.yunya.modules.system.biz.MemberTypeBiz");
+    log.info("==> 【当前方法】: public List<MemberType> findMemberTypeByIds( List<Integer> ids)");
+    log.info("==> 【参 数】: {}",ids);
+    log.info("==> 【列表数据总数】: {}",ids.size());
+    log.info("================================================================");
+    if (StringHelper.isNotEmpty(ids)) {
+      return mapper.findMemberTypeByIds(ids);
+    }
+    return new ArrayList<>();
   }
 }

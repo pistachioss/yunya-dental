@@ -390,6 +390,17 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据ID集合查询会员卡分类
+   *
+   * @param ids 会员卡分类ID集合
+   * @return 返回会员卡集合findMemberTypeByIds
+   */
+  @RequestMapping(value = "/memberTypes", method = RequestMethod.POST)
+  public List<MemberType> findMemberTypeByIds(@RequestBody List<Integer> ids) {
+    return memberTypeBiz.findMemberTypeByIds(ids);
+  }
+
+  /**
    * 根据条件查询会员类型列表
    *
    * @param model 查询条件

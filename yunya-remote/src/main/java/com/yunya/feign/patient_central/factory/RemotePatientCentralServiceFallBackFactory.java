@@ -53,6 +53,11 @@ public class RemotePatientCentralServiceFallBackFactory implements RemotePatient
     }
 
     @Override
+    public List<PatientTotalInfoVo> findPatientTotalInfo(List<Integer> ids) {
+        return null;
+    }
+
+    @Override
     public List<PatientMemberInfo> findPatientMemberInfo(PatientMemberInfo patientMemberInfo) {
         return null;
     }
