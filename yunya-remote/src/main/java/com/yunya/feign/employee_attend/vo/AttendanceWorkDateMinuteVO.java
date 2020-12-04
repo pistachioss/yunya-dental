@@ -23,7 +23,7 @@ import java.util.Date;
 @ApiModel("考勤工作时长响应模型")
 public class AttendanceWorkDateMinuteVO implements Serializable {
     /** 日期 */
-    @Excel(name = "日期")
+    @Excel(name = "日期", dateFormat = "yyyy-MM-dd")
     @ApiModelProperty("日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date date;
@@ -34,13 +34,13 @@ public class AttendanceWorkDateMinuteVO implements Serializable {
     private String employeeScheduleName;
 
     /** 打上班卡时间 */
-    @Excel(name = "打上班卡时间")
+    @Excel(name = "打上班卡时间", dateFormat = "HH:mm")
     @ApiModelProperty("打上班卡时间")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private Date onPunchTime;
 
     /** 打下班卡时间 */
-    @Excel(name = "打下班卡时间")
+    @Excel(name = "打下班卡时间", dateFormat = "HH:mm")
     @ApiModelProperty("打下班卡时间")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private Date offPunchTime;

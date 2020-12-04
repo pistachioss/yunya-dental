@@ -10,9 +10,11 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
+import com.yunya.models.report.BaseOrganization;
 import com.yunya.models.report.BasePatient;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
 import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
+import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.utils.DateConversion;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,8 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
     /** 订单mapper */
     @Resource private BaseBillMapper baseBillMapper;
+
+    @Resource private BaseOrganizationMapper baseOrganizationMapper;
 
 
     /**
@@ -98,7 +102,16 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
             basePatientNotSeenVoList = mapper.selectNotSeenList(form,patientIds);
         }
         ExcelUtil<BasePatientNotSeenVo> excelUtil = new ExcelUtil<>(BasePatientNotSeenVo.class);
-        excelUtil.exportExcel(response, basePatientNotSeenVoList, "未复诊预约且未提醒统计表");
+        if (StringHelper.isNotNull(form.getOrgId())){
+            BaseOrganization baseOrganization = new BaseOrganization();
+            baseOrganization.setOrgId(form.getOrgId());
+            BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
+            if (baseOrganization != null){
+                excelUtil.exportExcel(response, basePatientNotSeenVoList, "未复诊预约且未提醒统计表",baseOrganizationv.getAbbreviation()+"未复诊预约且未提醒统计表");
+            }
+        }else {
+            excelUtil.exportExcel(response, basePatientNotSeenVoList, "未复诊预约且未提醒统计表","未复诊预约且未提醒统计表");
+        }
     }
 
     /**
@@ -136,7 +149,16 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
         }
         List<ArrearsVo> arrearsVoList = baseBillMapper.arrears(form,patientIds);
         ExcelUtil<ArrearsVo> excelUtil = new ExcelUtil<>(ArrearsVo.class);
-        excelUtil.exportExcel(response, arrearsVoList, "账单欠费统计表");
+        if (StringHelper.isNotNull(form.getOrgId())){
+            BaseOrganization baseOrganization = new BaseOrganization();
+            baseOrganization.setOrgId(form.getOrgId());
+            BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
+            if (baseOrganization != null){
+                excelUtil.exportExcel(response, arrearsVoList, "账单欠费统计表",baseOrganizationv.getAbbreviation()+"账单欠费统计表");
+            }
+        }else {
+            excelUtil.exportExcel(response, arrearsVoList, "账单欠费统计表","账单欠费统计表");
+        }
     }
 
     /**

@@ -152,7 +152,7 @@
         t.approval_criteria_id as approvalCriteriaId,
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
-        vs.vacation_name as vacationName
+        vs.vacation_name as vacationName,
         t.crt_time as crtTime
         from leave_info t left join vacation_set vs on t.vacation_id=vs.id
         <where>

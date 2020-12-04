@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -264,7 +265,7 @@ public class ExcelUtil<T> {
     fileName = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
     response.setContentType("application/vnd.ms-excel");
     response.setCharacterEncoding("utf-8");
-    response.setHeader("Content-Disposition", "attachment;filename=" + fileName + ".xls");
+    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
     this.init(list, sheetName, Type.EXPORT);
     exportExcel(response.getOutputStream());
   }

@@ -70,12 +70,6 @@ public class MemberExpendRecordModel implements Serializable {
     private String remarks;
 
     /**
-     * 类型（0：撤销消费 1：消费 ）
-     */
-    @ApiModelProperty(value = "类型（0：撤销消费 1：消费 ）",required = true)
-    private Integer type;
-
-    /**
      * 消费本金
      */
     @ApiModelProperty(value = "消费本金",required = false)

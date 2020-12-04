@@ -86,11 +86,12 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
         }
         if (form.getType() == 0){
             ExcelUtil<BasePatientMemberOverviewVo> excelUtil = new ExcelUtil<>(BasePatientMemberOverviewVo.class);
-            excelUtil.exportExcel(response, resultList, "会员卡账户统计");
+            excelUtil.exportExcel(response, resultList, "会员卡账户统计","会员卡账户统计");
+
         }else {
             ExcelUtil<ExcelBasePatientPrepaymentOverviewVo> excelUtil = new ExcelUtil<>(ExcelBasePatientPrepaymentOverviewVo.class);
             List<ExcelBasePatientPrepaymentOverviewVo> build = EntityUtils.build(resultList, ExcelBasePatientPrepaymentOverviewVo.class);
-            excelUtil.exportExcel(response, build, "预付款账户统计");
+            excelUtil.exportExcel(response, build, "预付款账户统计","预付款账户统计");
         }
 
     }

@@ -975,7 +975,6 @@ public class TollBiz {
       memberExpendRecordModel.setOrderRecordId(orderRecord);
       memberExpendRecordModel.setBillRecordId(billRecordId);
       memberExpendRecordModel.setBillPayRecordId(billPayRecordId);
-      memberExpendRecordModel.setType(1);
       ResponseResult expend = remotePatientCentralServiceFeign.expend(memberExpendRecordModel);
       // 服务调用成功返回0，否则返回大于0的状态码
       if (expend.getStatus() > 0) {
@@ -1013,7 +1012,6 @@ public class TollBiz {
           prepaidExpendRecordModel.setOrderRecordId(orderRecordId);
           prepaidExpendRecordModel.setBillRecordId(billRecordId);
           prepaidExpendRecordModel.setBillPayRecordId(billPayRecordId);
-          prepaidExpendRecordModel.setType(1);
           ResponseResult result = remotePatientCentralServiceFeign.expend(prepaidExpendRecordModel);
           if (!result.getStatus().equals(0)) {
             throw new ClientServiceException(result.getMsg(), result.hashCode());

@@ -383,7 +383,7 @@ public class BasePatientMemberOccurLogBiz
           memberExpendRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(memberExpendRecord.getCurrentBonus());
       basePatientMemberOccurLog.setOrgId(memberExpendRecord.getOrgId());
-      basePatientMemberOccurLog.setBillId(memberExpendRecord.getBillRecordId());
+      basePatientMemberOccurLog.setBillId(memberExpendRecord.getOrderRecordId());
       return basePatientMemberOccurLog;
     }
     return null;
@@ -673,6 +673,7 @@ public class BasePatientMemberOccurLogBiz
           prepaidExpendRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(prepaidExpendRecord.getCurrentBonus());
       basePatientMemberOccurLog.setOrgId(prepaidExpendRecord.getOrgId());
+      basePatientMemberOccurLog.setBillId(prepaidExpendRecord.getOrderRecordId());
       return basePatientMemberOccurLog;
     }
     return null;
