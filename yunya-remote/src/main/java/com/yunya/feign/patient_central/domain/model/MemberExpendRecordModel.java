@@ -63,7 +63,6 @@ public class MemberExpendRecordModel implements Serializable {
     @ApiModelProperty(value = "订单记录id",required = false)
     private Integer orderRecordId;
 
-
     /**
      * 备注
      */
