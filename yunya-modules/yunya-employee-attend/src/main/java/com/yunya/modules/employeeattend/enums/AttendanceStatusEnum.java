@@ -15,7 +15,7 @@ public enum AttendanceStatusEnum {
     LATER_PUNCH((byte)1, "迟到"),
     OFFDUTY_PUNCH((byte)2, "正常下班"),
     EARLY_PUNCH((byte)3,"早退"),
-    UNVALID_PUNCH((byte)4,"无效卡");
+    INVALID_PUNCH((byte)4,"无效卡");
 
     private final Byte code;
     private final String value;

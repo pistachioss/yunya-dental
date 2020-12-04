@@ -241,4 +241,129 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据条件查询助手配诊退费账单明细列表 -->
+    <select id="selectAssistantRefundDetailList"
+            resultType="com.yunya.feign.report.domain.vo.AssistantRefundDetailVO">
+        SELECT
+        refundId,
+        refundDate,
+        billNum,
+        patientId,
+        patientName,
+        mobile,
+        matchingDentistId,
+        matchingDentistName,
+        refundAmount
+        FROM (
+        SELECT
+        bf.refund_id as refundId,
+        DATE_FORMAT(bf.refund_date, '%Y-%m-%d') as refundDate,
+        bf.bill_num as billNum,
+        bf.patient_id as patientId,
+        bf.`name` as patientName,
+        bf.pinyin_name as pinyinName,
+        bf.mobile,
+        bf.registered_dentist_id as matchingDentistId,
+        bf.employee_name as matchingDentistName,
+        bf.refund_amount as refundAmount
+        FROM (
+        SELECT
+        br.org_id,
+        br.refund_id,
+        br.refund_date,
+        br.refund_amount,
+        bp.patient_id,
+        bp.`name`,
+        bp.pinyin_name,
+        bp.mobile,
+        bb.bill_num,
+        bb.order_date,
+        btp.treat_start_time,
+        btp.registered_dentist_id,
+        btp.employee_name,
+        btp.assistant_1,
+        btp.assistant_2,
+        btp.assistant_3
+        FROM
+        base_refund br
+        LEFT JOIN base_bill bb ON br.treatment_id = bb.treatment_id
+        LEFT JOIN (
+        SELECT
+        btp.treatment_id,
+        btp.treat_start_time,
+        btp.registered_dentist_id,
+        be.employee_name,
+        btp.assistant_1,
+        btp.assistant_2,
+        btp.assistant_3
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+        GROUP BY
+        btp.treatment_id
+        ) btp ON br.treatment_id = btp.treatment_id
+        LEFT JOIN base_patient bp ON br.patient_id = bp.patient_id
+        ) bf
+        <where>
+            <if test="query.orgId != null">
+                AND bf.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bf.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bf.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bf.treat_start_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bf.treat_start_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bf.treat_start_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bf.treat_start_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.assistantType == 0">
+                <if test="query.assistantId != null">
+                    AND bf.assistant_1 = #{query.assistantId}
+                </if>
+            </if>
+            <if test="query.assistantType == 1">
+                <if test="query.assistantId != null">
+                    AND bf.assistant_2 = #{query.assistantId}
+                </if>
+            </if>
+            <if test="query.assistantType == 2">
+                <if test="query.assistantId != null">
+                    AND bf.assistant_3 = #{query.assistantId}
+                </if>
+            </if>
+        </where>
+        GROUP BY bf.refund_id
+        ) bfr
+        <where>
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(ifnull(bfr.patientName, ''), ifnull(bfr.pinyinName, ''), ifnull(bfr.mobile, '')) like concat('%', #{query.keyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and concat(ifnull(bfr.`billNum`, '') like concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.refundStartDate != null and query.refundStartDate != ''">
+                and refundDate &gt;= #{query.refundStartDate}
+            </if>
+            <if test="query.refundEndDate != null and query.refundEndDate != ''">
+                and refundDate &lt;= #{query.refundEndDate}
+            </if>
+        </where>
+    </select>
 </mapper>

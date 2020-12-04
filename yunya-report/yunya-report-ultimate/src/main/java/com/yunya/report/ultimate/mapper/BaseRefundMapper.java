@@ -1,8 +1,10 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.AssistantRefundDetailQuery;
 import com.yunya.feign.report.domain.query.BillRefundRecordQuery;
 import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
 import com.yunya.feign.report.domain.query.EmployeeRefundWorkloadDetailQuery;
+import com.yunya.feign.report.domain.vo.AssistantRefundDetailVO;
 import com.yunya.feign.report.domain.vo.BillOfRefundRecordVO;
 import com.yunya.feign.report.domain.vo.EmployeePersonalRefundWorkloadDetailVO;
 import com.yunya.feign.report.domain.vo.EmployeeRefundDetailWorkloadVO;
@@ -39,4 +41,13 @@ public interface BaseRefundMapper extends Mapper<BaseRefund> {
    */
   List<EmployeeRefundDetailWorkloadVO> selectEmployeeRefundOrderDetailList(
       @Param("query") EmployeeRefundWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询助手配诊退费账单明细列表
+   *
+   * @param query 查询条件
+   * @return List<AssistantActualWorkloadDetailVO>
+   */
+  List<AssistantRefundDetailVO> selectAssistantRefundDetailList(
+      @Param("query") AssistantRefundDetailQuery query);
 }

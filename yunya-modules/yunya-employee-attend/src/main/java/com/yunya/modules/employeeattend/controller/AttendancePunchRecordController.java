@@ -12,7 +12,6 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.modules.employeeattend.biz.AttendancePunchRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -149,25 +148,6 @@ public class AttendancePunchRecordController {
     }
 
     /**
-     * 根据统计次数类型的分页查询考勤汇总明细
-     *
-     * @param type 统计次数类型：0-缺卡，1-迟到，3-早退，4-无效卡
-     * @param queryForm 查询参数
-     * @return ResponseResult<PageInfo<AttendancePunchCountVO>>
-     */
-    @ApiOperation("根据统计次数类型的分页查询考勤汇总明细")
-    @ApiImplicitParams({
-            @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true),
-            @ApiImplicitParam(name = "type", value = "统计次数类型：0-缺卡，1-迟到，3-早退，4-无效卡", required = true)
-    })
-    @PostMapping("/statisticsPunchRecordByCount/{type}")
-    public ResponseResult<PageInfo<AttendancePunchCountVO>> statisticsPunchRecordByCount(@PathVariable(value = "type") @NotNull byte type, @RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendancePunchCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByCount(type, queryForm);
-        PageInfo<AttendancePunchCountVO> pageInfo = new PageInfo<>(result);
-        return ResponseUtil.success(pageInfo);
-    }
-
-    /**
      * 分页查询工作时长的考勤汇总明细
      *
      * @param queryForm 查询参数
@@ -271,6 +251,66 @@ public class AttendancePunchRecordController {
     public ResponseResult<PageInfo<AttendanceFieldMinuteVO>> statisticsFieldsByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceFieldMinuteVO> result = attendancePunchRecordBiz.statisticsFieldsByMinute(queryForm);
         PageInfo<AttendanceFieldMinuteVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 分页查询迟到统计的明细
+     *
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendanceLaterCountVO>>
+     */
+    @ApiOperation("分页查询迟到统计的明细")
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
+    @PostMapping("/statisticsPunchRecordByLaterCount")
+    public ResponseResult<PageInfo<AttendanceLaterCountVO>> statisticsPunchRecordByLaterCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceLaterCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByLaterCount(queryForm);
+        PageInfo<AttendanceLaterCountVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 分页查询早退统计的明细
+     *
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendanceEarlyCountVO>>
+     */
+    @ApiOperation("分页查询早退统计的明细")
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
+    @PostMapping("/statisticsPunchRecordByEarlyCount")
+    public ResponseResult<PageInfo<AttendanceEarlyCountVO>> statisticsPunchRecordByEarlyCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceEarlyCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByEarlyCount(queryForm);
+        PageInfo<AttendanceEarlyCountVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 分页查询缺卡统计的明细
+     *
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendanceEarlyCountVO>>
+     */
+    @ApiOperation("分页查询缺卡统计的明细")
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
+    @PostMapping("/statisticsPunchRecordByUnpunchCount")
+    public ResponseResult<PageInfo<AttendanceUnpunchCountVO>> statisticsPunchRecordByUnpunchCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceUnpunchCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByUnpunchCount(queryForm);
+        PageInfo<AttendanceUnpunchCountVO> pageInfo = new PageInfo<>(result);
+        return ResponseUtil.success(pageInfo);
+    }
+
+    /**
+     * 分页查询无效卡统计的明细
+     *
+     * @param queryForm 查询参数
+     * @return ResponseResult<PageInfo<AttendanceEarlyCountVO>>
+     */
+    @ApiOperation("分页查询无效卡统计的明细")
+    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
+    @PostMapping("/statisticsPunchRecordByInvalidCount")
+    public ResponseResult<PageInfo<AttendanceInvalidCountVO>> statisticsPunchRecordByInvalidCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        List<AttendanceInvalidCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByInvalidCount(queryForm);
+        PageInfo<AttendanceInvalidCountVO> pageInfo = new PageInfo<>(result);
         return ResponseUtil.success(pageInfo);
     }
 }
