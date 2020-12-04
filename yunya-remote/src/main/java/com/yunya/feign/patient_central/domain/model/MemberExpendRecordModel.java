@@ -56,6 +56,14 @@ public class MemberExpendRecordModel implements Serializable {
      */
     @ApiModelProperty(value = "账单付款记录id",required = false)
     private Integer billPayRecordId;
+
+    /**
+     * 订单记录id
+     */
+    @ApiModelProperty(value = "订单记录id",required = false)
+    private Integer orderRecordId;
+
+
     /**
      * 备注
      */

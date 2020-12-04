@@ -1,5 +1,7 @@
 package com.yunya.models.patient_central;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
