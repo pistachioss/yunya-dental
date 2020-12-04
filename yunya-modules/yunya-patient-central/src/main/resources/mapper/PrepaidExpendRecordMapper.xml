@@ -22,6 +22,7 @@
     <result column="upd_name" property="updName" jdbcType="VARCHAR" />
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
     <result column="inservice" property="inservice" jdbcType="BIT"/>
+    <result column="order_record_id" property="orderRecordId" jdbcType="INTEGER" />
   </resultMap>
 
     <!-- 查询预付款消费记录 -->

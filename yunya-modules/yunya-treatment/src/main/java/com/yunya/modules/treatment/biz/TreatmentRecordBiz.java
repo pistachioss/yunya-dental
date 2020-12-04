@@ -22,7 +22,6 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
-import com.yunya.models.emr.MedicalRecordHistory;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
@@ -38,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.xml.crypto.Data;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -171,8 +169,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     if (i > 0) {
       if (null != appointmentId) {
         rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        rabbitMqServiceFeign.sendMessage(regId, 1, 1, BaseTreatmentProcess);
       }
-      rabbitMqServiceFeign.sendMessage(regId, 1, 1, BaseTreatmentProcess);
     }
   }
 
@@ -238,7 +237,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param queryForm 查询条件
    * @return
    */
-  public PageInfo<TreatmentPatientInfoVO> findTreatList(TreatmentRecordQueryForm queryForm) throws ParseException {
+  public PageInfo<TreatmentPatientInfoVO> findTreatList(TreatmentRecordQueryForm queryForm)
+      throws ParseException {
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
@@ -251,7 +251,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           case 1:
           case 2:
             // 设置患者信息
-            setPatientInfo(vo,currentDate);
+            setPatientInfo(vo, currentDate);
             // 设置预约信息
             setAppointmentInfo(vo);
             // 设置挂号信息
@@ -263,7 +263,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
             break;
           case 3:
             // 设置患者信息
-            setPatientInfo(vo,currentDate);
+            setPatientInfo(vo, currentDate);
             // 设置预约信息
             setAppointmentInfo(vo);
             // 设置挂号信息
@@ -308,7 +308,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       Integer appointCount = this.appointmentFeign.countNextAppoint(patientData.getId());
       vo.setNextAppointment(appointCount);
       // 设置后续随访数量
-      Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId,currentDate);
+      Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId, currentDate);
       vo.setNextInterview(visitingCount);
       Integer memberTypeId = patientData.getMemberTypeId();
       if (null != memberTypeId) {
@@ -560,8 +560,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     // 设置分组计划
     List<VisitingRecord> collect = new ArrayList<>(groupVisitRecordMap.values());
     log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓系统新建随访↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-    log.info("==> groupVisitRecordMap.values():{}",groupVisitRecordMap.values());
-    log.info("==> collect:{}",collect);
+    log.info("==> groupVisitRecordMap.values():{}", groupVisitRecordMap.values());
+    log.info("==> collect:{}", collect);
     log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
     treatmentOtherFeign.insertVisitingRecord(collect);
   }

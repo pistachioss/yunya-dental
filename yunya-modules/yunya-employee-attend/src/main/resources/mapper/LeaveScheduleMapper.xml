@@ -57,8 +57,8 @@
             <if test="queryForm.orgId != null">
                 and es.clinic_id = #{queryForm.orgId}
             </if>
-            <if test="queryForm.betweenStartDate!=null and queryForm.andStartDate">
-                and DATE_FORMAT(es.work_date,'%Y-%m-%d') between DATE_FORMAT(queryForm.betweenStartDate,'%Y-%m-%d') and DATE_FORMAT(queryForm.andStartDate,'%Y-%m-%d')
+            <if test="queryForm.betweenDate!=null and queryForm.andDate">
+                and DATE_FORMAT(es.work_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
             </if>
         </where>
     </select>

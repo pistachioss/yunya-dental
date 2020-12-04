@@ -127,6 +127,9 @@
             <if test="copyId !=null and copyId != '' ">
                 and ci.user_id = #{copyId}
             </if>
+            <if test="startTime != null ">
+                and fi.crt_time >= #{startTime} and fi.crt_time &lt;= #{endTime}
+            </if>
         </where>
     </select>
     <select id="findWorkEm" resultMap="BSMap">
@@ -181,7 +184,7 @@
             bs.first_start_time as startTime,
             ifnull(bs.second_end_time,bs.first_end_time) as endTime,
             bs.name as restScheduleName
-        from work_overtime_info t left join employee_schedule es on t.rest_schedule_id=es.id left join base_schedule bs on es.schedule_id=bs.id
+        from work_overtime_info t left join employee_schedule es on t.rest_schedule_id=es.id left join base_schedule bs on t.schedule_id=bs.id
         <where>
             <if test="queryForm.apprpvalStatus!=null">
                 and t.apprpval_status = #{queryForm.apprpvalStatus}
@@ -222,7 +225,7 @@
             mm.id as makeupId,
             mm.makeup_desc as makeupDesc
         from work_overtime_info t left join employee_schedule es on t.rest_schedule_id=es.id
-        left join base_schedule bs on es.schedule_id=bs.id
+        left join base_schedule bs on t.schedule_id=bs.id
         left join attendance_manual_makeup mm on (t.user_id=mm.user_id and t.company_id=mm.org_id and t.work_date=mm.makeup_date)
         <where>
             <if test="queryForm.apprpvalStatus!=null">

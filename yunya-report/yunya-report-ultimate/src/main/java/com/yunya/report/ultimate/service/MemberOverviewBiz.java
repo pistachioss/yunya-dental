@@ -5,16 +5,21 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.MemberOverviewQueryForm;
 import com.yunya.feign.report.domain.vo.BaseMemberOverviewVo;
 import com.yunya.feign.report.domain.vo.BasePatientMemberOverviewVo;
-import com.yunya.feign.report.domain.vo.MemberInfoSumVo;
+import com.yunya.feign.report.domain.vo.ExcelBasePatientPrepaymentOverviewVo;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BasePatientMember;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
+import com.yunya.report.ultimate.utils.DateConversion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -45,6 +50,9 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
      * @return List<MemberOverviewVo>
      */
     public PageInfo<BasePatientMemberOverviewVo> patientOverviewList(MemberOverviewQueryForm form) throws ParseException {
+        if (StringHelper.isNotEmpty(form.getEndDate())){
+            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        }
         List<BasePatientMemberOverviewVo> basePatientMemberOverviewVoList = new ArrayList<>();
         List<Integer> patientIds = null;
         if (StringHelper.isNotNull(form.getCombination())){
@@ -57,6 +65,35 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
             basePatientMemberOverviewVoList = mapper.selectMemberOverviewList(form,patientIds);
         }
         return new PageInfo<>(basePatientMemberOverviewVoList);
+    }
+
+    /**
+     * 导出患者会员卡/预付款概况记录列表
+     * @param response
+     * @param form
+     */
+    public void exportPatientOverviewList(HttpServletResponse response, MemberOverviewQueryForm form) throws ParseException, IOException {
+        if (StringHelper.isNotEmpty(form.getEndDate())){
+            form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
+        }
+        List<BasePatientMemberOverviewVo> resultList = new ArrayList<>();
+        List<Integer> patientIds = null;
+        if (StringHelper.isNotNull(form.getCombination())){
+            patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
+        }
+        if (patientIds == null || patientIds.size() > 0 ){
+            resultList = mapper.selectMemberOverviewList(form,patientIds);
+        }
+        if (form.getType() == 0){
+            ExcelUtil<BasePatientMemberOverviewVo> excelUtil = new ExcelUtil<>(BasePatientMemberOverviewVo.class);
+            excelUtil.exportExcel(response, resultList, "会员卡账户统计","会员卡账户统计");
+
+        }else {
+            ExcelUtil<ExcelBasePatientPrepaymentOverviewVo> excelUtil = new ExcelUtil<>(ExcelBasePatientPrepaymentOverviewVo.class);
+            List<ExcelBasePatientPrepaymentOverviewVo> build = EntityUtils.build(resultList, ExcelBasePatientPrepaymentOverviewVo.class);
+            excelUtil.exportExcel(response, build, "预付款账户统计","预付款账户统计");
+        }
+
     }
 
 
@@ -87,4 +124,6 @@ public class MemberOverviewBiz extends BaseBiz<BasePatientMemberMapper, BasePati
         map.put("sumBonusAmount",sumBonusAmount);
         return map;
     }
+
+
 }

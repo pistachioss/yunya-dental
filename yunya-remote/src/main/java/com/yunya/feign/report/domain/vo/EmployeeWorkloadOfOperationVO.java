@@ -10,17 +10,17 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 
 /**
- * 简介: 员工工作量VO
+ * 简介: 运营报表员工工作量VO
  *
  * @author: chow
- * @date: 2020/10/29 16:02
+ * @date: 2020/12/4 16:04
  * @description:
  * @since: 1.0.0
  */
-@ApiModel("员工工作量VO模型")
+@ApiModel("运营报表员工工作量VO")
 @Data
 @ToString
-public class EmployeeWorkloadVO implements Serializable {
+public class EmployeeWorkloadOfOperationVO implements Serializable {
   /** 员工ID */
   @ApiModelProperty("员工ID")
   private Integer employeeId;
@@ -56,28 +56,4 @@ public class EmployeeWorkloadVO implements Serializable {
   @Excel(name = "大额材料费（元）")
   @ApiModelProperty("大额材料费（元）")
   private BigDecimal largeMaterialCost;
-  /** 基本工作量（元） */
-  @Excel(name = "基本工作量（元）")
-  @ApiModelProperty("基本工作量（元）")
-  private BigDecimal baseWorkload;
-  /** 奖金系数 */
-  @Excel(name = "奖金系数")
-  @ApiModelProperty("奖金系数")
-  private BigDecimal bonusCoefficient;
-  /** 实收奖金基数（元） */
-  @Excel(name = "实收奖金基数（元）")
-  @ApiModelProperty("实收奖金基数（元）= 实收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量")
-  private BigDecimal actualBonusBase;
-  /** 已收奖金基数（元） */
-  @Excel(name = "已收奖金基数（元）")
-  @ApiModelProperty("已收奖金基数（元）= 已收工作量+补入工作量-退费工作量-加工费-大额材料费-基本工作量")
-  private BigDecimal receivedBonusBase;
-  /** 实收奖金（元） */
-  @Excel(name = "实收奖金（元）")
-  @ApiModelProperty("实收奖金（元）= 实收奖金基数*奖金系数")
-  private BigDecimal actualBonus;
-  /** 已收奖金（元） */
-  @Excel(name = "已收奖金（元）")
-  @ApiModelProperty("已收奖金（元）= 已收奖金基数*奖金系数")
-  private BigDecimal receivedBonus;
 }

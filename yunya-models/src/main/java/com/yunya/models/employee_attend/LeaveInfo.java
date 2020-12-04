@@ -55,12 +55,16 @@ public class LeaveInfo {
      */
     @Column(name = "approval_criteria_id")
     private Integer approvalCriteriaId;
-
+    /**
+     * 拒绝原因
+     */
+    @Column(name = "refuse_reason")
+    private String refuseReason;
     /**
      * 审批状态 0 审批中 1通过 2拒绝 3撤回
      */
     @Column(name = "apprpval_status")
-    private Integer apprpvalStatus = 0;
+    private Integer apprpvalStatus;
 
     /**
      * 创建人

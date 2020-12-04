@@ -4,6 +4,5 @@ import com.yunya.models.system.AccountItem;
 import org.springframework.stereotype.Repository;
 import tk.mybatis.mapper.common.Mapper;
 
-@Repository
 public interface AccountItemMapper extends Mapper<AccountItem> {
 }

@@ -20,21 +20,21 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillDetailIncomeDetailQuery query);
 
   /**
-   * 根据条件查询员工工作量列表
+   * 根据条件查询员工工作量列表（人事报表）
    *
-   * @param query 查询条件(按月查)
-   * @return list
+   * @param query 查询条件
+   * @return List<EmployeeWorkloadOfPersonnelVO>
    */
-  List<EmployeeWorkloadVO> selectEmployeeWorkloadListByMonth(
+  List<EmployeeWorkloadOfPersonnelVO> selectEmployeeWorkloadListOfPersonnel(
       @Param("query") EmployeeWorkloadQuery query);
 
   /**
-   * 根据条件查询员工工作量列表
+   * 根据条件查询员工工作量列表（运营报表）
    *
-   * @param query 查询条件(按年查)
-   * @return list
+   * @param query 查询条件
+   * @return List<EmployeeWorkloadOfOperationVO>
    */
-  List<EmployeeWorkloadVO> selectEmployeeWorkloadListByYear(
+  List<EmployeeWorkloadOfOperationVO> selectEmployeeWorkloadListOfOperation(
       @Param("query") EmployeeWorkloadQuery query);
 
   /**
@@ -47,22 +47,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") BillCategoryIncomeQuery query);
 
   /**
-   * 根据条件查询员工个人实收工作量明细列表（按月查询）
+   * 根据条件查询员工个人实收工作量明细列表
    *
    * @param query 查询条件
    * @return List<EmployeePersonalActualWorkloadDetailVO>
    */
-  List<EmployeePersonalActualWorkloadDetailVO>
-      selectEmployeePersonalActualWorkloadDetailListByMonth(
-          @Param("query") EmployeePersonalWorkloadDetailQuery query);
-
-  /**
-   * 根据条件查询员工个人实收工作量明细列表（按年查询）
-   *
-   * @param query 查询条件
-   * @return
-   */
-  List<EmployeePersonalActualWorkloadDetailVO> selectEmployeePersonalActualWorkloadDetailListByYear(
+  List<EmployeePersonalActualWorkloadDetailVO> selectEmployeePersonalActualWorkloadDetailList(
       @Param("query") EmployeePersonalWorkloadDetailQuery query);
 
   /**
@@ -75,22 +65,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") EmployeeWorkloadDetailQuery query);
 
   /**
-   * 根据条件查询员工个人已收工作量明细列表（按月查询）
+   * 根据条件查询员工个人已收工作量明细列表
    *
    * @param query 查询条件
    * @return List<EmployeePersonalReceivedWorkloadDetailVO>
    */
-  List<EmployeePersonalReceivedWorkloadDetailVO>
-      selectEmployeePersonalReceivedWorkloadDetailListByMonth(
-          @Param("query") EmployeePersonalWorkloadDetailQuery query);
-
-  /**
-   * 根据条件查询员工个人已收工作量明细列表（按年查询）
-   *
-   * @param query 查询条件
-   * @return List<EmployeePersonalReceivedWorkloadDetailVO>
-   */
-  List<EmployeePersonalReceivedWorkloadDetailVO> selectEmployeePersonalReceivedWorkloadDetailByYear(
+  List<EmployeePersonalReceivedWorkloadDetailVO> selectEmployeePersonalReceivedWorkloadDetailList(
       @Param("query") EmployeePersonalWorkloadDetailQuery query);
 
   /**
@@ -103,22 +83,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
       @Param("query") EmployeeWorkloadDetailQuery query);
 
   /**
-   * 根据条件查询员工补入工作量明细列表（按月查询）
+   * 根据条件查询员工补入工作量明细列表
    *
    * @param query 查询条件
    * @return List<EmployeePersonalSupplyWorkloadDetailVO>
    */
-  List<EmployeePersonalSupplyWorkloadDetailVO>
-      selectEmployeePersonalSupplyWorkloadDetailListByMonth(
-          @Param("query") EmployeePersonalWorkloadDetailQuery query);
-
-  /**
-   * 根据条件查询员工补入工作量明细列表（按年查询）
-   *
-   * @param query 查询条件
-   * @return List<EmployeePersonalSupplyWorkloadDetailVO>
-   */
-  List<EmployeePersonalSupplyWorkloadDetailVO> selectEmployeePersonalSupplyWorkloadDetailByYear(
+  List<EmployeePersonalSupplyWorkloadDetailVO> selectEmployeePersonalSupplyWorkloadDetailList(
       @Param("query") EmployeePersonalWorkloadDetailQuery query);
 
   /**
@@ -129,4 +99,13 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<EmployeeSupplyDetailWorkloadVO> selectEmployeeSupplyDetailList(
       @Param("query") EmployeeWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询助手实收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return List<AssistantActualWorkloadDetailVO>
+   */
+  List<AssistantActualWorkloadDetailVO> selectAssistantActualWorkloadDetailList(
+      @Param("query") AssistantActualWorkloadDetailQuery query);
 }

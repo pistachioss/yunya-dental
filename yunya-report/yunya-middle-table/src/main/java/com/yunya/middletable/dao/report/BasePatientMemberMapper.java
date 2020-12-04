@@ -4,6 +4,8 @@ import com.yunya.models.report.BasePatientMember;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import javax.annotation.Resource;
+
 /**
  * @author YK
  */

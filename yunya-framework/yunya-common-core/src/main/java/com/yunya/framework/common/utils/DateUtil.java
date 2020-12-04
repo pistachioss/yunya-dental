@@ -210,7 +210,7 @@ public class DateUtil {
     }
 
     /**
-     * 获取两个日期内所有日期
+     * 获取两个日期内所有日期，包含给定日期
      * @param start
      * @param end
      * @return
@@ -220,26 +220,28 @@ public class DateUtil {
     }
 
     /**
-     * 获取两个日期内所有日期
+     * 获取两个日期内所有日期，包含给定日期
      * @param startDate
      * @param endDate
-     * @param start 分页参数，开始位置，如果start和limit同时等于-1，则不限制查询记录条数
-     * @param limit 分页参数，结束位置
+     * @param pageNum 分页参数，开始位置，如果start和limit同时等于-1，则不限制查询记录条数
+     * @param pageSize 分页参数，结束位置
      * @return
      */
-    public static List<Date> getBetweenDate(Date startDate, Date endDate, int start, int limit) {
+    public static List<Date> getBetweenDate(Date startDate, Date endDate, int pageNum, int pageSize) {
         List<Date> result = new ArrayList<Date>();
         Calendar tempStart = Calendar.getInstance();
         tempStart.setTime(startDate);
         tempStart.add(Calendar.DAY_OF_YEAR, 1);
         Calendar tempEnd = Calendar.getInstance();
         tempEnd.setTime(endDate);
-        while (tempStart.before(tempEnd) && start==-1 && limit==-1) {
+        result.add(startDate);
+        while (tempStart.before(tempEnd)) {
             result.add(tempStart.getTime());
             tempStart.add(Calendar.DAY_OF_YEAR, 1);
         }
-        if (start!=-1 && limit!=-1) {
-            result = pagination(result, start, limit);
+        result.add(endDate);
+        if (pageNum!=-1 && pageSize!=-1) {
+            result = pagination(result, pageNum, pageSize);
         }
         return result;
     }

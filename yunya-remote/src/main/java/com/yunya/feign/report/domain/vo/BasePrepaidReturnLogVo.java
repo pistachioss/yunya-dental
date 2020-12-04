@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,54 +26,56 @@ public class BasePrepaidReturnLogVo {
     private Integer occurLogId;
 
     /** 退款日期 */
-    @ApiModelProperty("退款日期")
+    @Excel(name = "退费日期")
+    @ApiModelProperty("退费日期")
     private String occurDate;
 
-    /** 患者姓名 */
-    @ApiModelProperty("患者姓名")
+    /** 患者 */
+    @Excel(name = "患者")
+    @ApiModelProperty("患者")
     private String name;
 
     /** 手机号 */
+    @Excel(name = "手机号")
     @ApiModelProperty("手机号")
     private String mobile;
 
-    /** 会员卡号 */
-    @ApiModelProperty("会员卡号")
+    /** 预付款账号 */
+    @Excel(name = "预付款账号")
+    @ApiModelProperty("预付款账号")
     private String cardNumber;
 
-    /** 会员级别id */
-    @ApiModelProperty("会员级别id")
-    private Integer memberLevelId;
-
-    /** 会员卡级别名称 */
-    @ApiModelProperty("会员卡级别名称")
-    private String memberLevelName;
-
-    /** 退款本金金额 */
-    @ApiModelProperty("退款本金金额")
+    /** 退本金金额 */
+    @Excel(name = "退本金金额")
+    @ApiModelProperty("退本金金额")
     private BigDecimal principalAmount = new BigDecimal(0);
 
-    /** 退款赠金金额 */
-    @ApiModelProperty("退款赠金金额")
+    /** 退赠金金额 */
+    @Excel(name = "退赠金金额")
+    @ApiModelProperty("退赠金金额")
     private BigDecimal bonusAmount = new BigDecimal(0);
 
-    /** 退费后会员卡余额（含赠送金额） */
-    @ApiModelProperty("退费后会员卡余额（含赠送金额）")
+    /** 退费后预付款余额（含赠送金额） */
+    @Excel(name = "退费后预付款余额（含赠送金额）")
+    @ApiModelProperty("退费后预付款余额（含赠送金额）")
     private BigDecimal currentReturnPrincipal = new BigDecimal(0);
 
-    /** 剩余会员卡余额（含赠送金额） */
-    @ApiModelProperty("剩余会员卡余额（含赠送金额）")
+    /** 剩余预付款余额（含赠送金额） */
+    @Excel(name = "剩余预付款余额（含赠送金额）")
+    @ApiModelProperty("剩余预付款余额（含赠送金额）")
     private BigDecimal currentAmount = new BigDecimal(0);
 
-    /** 入账方式 */
-    @ApiModelProperty("入账方式")
+    /** 入账方式字典id */
+    @ApiModelProperty("入账方式字典id")
     private Integer paymentId;
 
-    /** 入账方式名称 */
-    @ApiModelProperty("入账方式名称")
+    /** 退费方式 */
+    @Excel(name = "退费方式")
+    @ApiModelProperty("退费方式")
     private String paymentManner;
 
-    /** 退款人 */
-    @ApiModelProperty("退款人")
+    /** 退费人 */
+    @Excel(name = "退费人")
+    @ApiModelProperty("退费人")
     private String operatorUserName;
 }

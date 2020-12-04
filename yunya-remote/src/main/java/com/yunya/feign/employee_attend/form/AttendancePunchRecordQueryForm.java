@@ -94,6 +94,11 @@ public class AttendancePunchRecordQueryForm implements Serializable {
     @ApiModelProperty(value = "考勤项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤")
     private Byte source;
 
+    /** 考勤项目来源列表 */
+    @ApiModelProperty(value = "考勤项目来源列表")
+    private Byte[] sources;
+
+
     /** 不属于的id列表 */
     @ApiModelProperty(value = "不属于的id列表")
     private List<Integer> notInIds;

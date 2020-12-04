@@ -1,7 +1,9 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
 import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
+import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
 import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
 import com.yunya.models.report.BaseTreatmentProcess;
@@ -25,9 +27,17 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * 根据条件查询就诊配诊记录列表
    *
    * @param query 查询条件
-   *
    * @return
    */
   List<TreatmentMatchingRecordVO> selectTreatmentMatchingRecord(
       @Param("query") TreatmentMatchingRecordQuery query);
+
+  /**
+   * 根据条件查询助手配诊明细列表
+   *
+   * @param query 查询条件
+   * @return List<EmployeeTreatMatchingDetailVO>
+   */
+  List<EmployeeTreatMatchingDetailVO> selectAssistantMatchingDetailList(
+      @Param("query") AssistantMatchingDetailQuery query);
 }

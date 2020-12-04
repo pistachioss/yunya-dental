@@ -92,6 +92,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             //查询当天是否已经生成过
             AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
             queryForm.setPunchDate(now);
+            queryForm.setWhetherPage(false);
             List<AttendancePunchRecordVO> attendancePunchRecordVOS = attendancePunchRecordBiz.findAttendancePunchRecordList(queryForm);
             List<Integer> userIds = new ArrayList<>();
             if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
@@ -422,13 +423,13 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 }
                 for (EmployeeScheduleVO employeeScheduleVO : list) {
                     EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
-                    punchItem.setType(LEAVE_BYSCHEDULE);
+                    punchItem.setType(REST);
                     punchItem.setFirstStartTime(employeeScheduleVO.getFirstStartTime());
                     punchItem.setFirstEndTime(employeeScheduleVO.getFirstEndTime());
                     punchItem.setId(id);
                     punchItem.setEmployeeId(userId);
                     punchItem.setClinicId(employeeScheduleVO.getClinicId());
-                    punchItem.setName("按班次请假");
+                    punchItem.setName(employeeScheduleVO.getName());
                     employeeScheduleVOS.add(punchItem);
                     leaveByDays.put(userId, employeeScheduleVOS);
                 }
@@ -456,7 +457,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             }
         }
 
-        byte unvalid = AttendanceStatusEnum.UNVALID_PUNCH.getCode();
+        byte unvalid = AttendanceStatusEnum.INVALID_PUNCH.getCode();
         punchItemMap.forEach((userId, employeeScheduleVOS)->{
             employeeScheduleVOS = employeeScheduleVOS.stream().sorted(Comparator.comparing(EmployeeScheduleVO::getFirstStartTime)).collect(Collectors.toList());
             int index = employeeScheduleVOS.size()-1;

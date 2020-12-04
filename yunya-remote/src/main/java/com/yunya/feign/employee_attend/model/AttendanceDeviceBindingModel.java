@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import java.util.Date;
 
@@ -28,7 +29,7 @@ public class AttendanceDeviceBindingModel {
 
     /** 用户id */
     @ApiModelProperty(value = "用户id", required = true)
-    @NotBlank(message = "用户id不能为空")
+    @NotNull(message = "用户id不能为空")
     private Integer userId;
 
     /** 绑定打卡账号 */
@@ -44,7 +45,7 @@ public class AttendanceDeviceBindingModel {
 
     /** 绑定状态：0：已解绑 1：已绑定 */
     @ApiModelProperty("绑定状态：0：已解绑 1：已绑定")
-    private int bindingStatus;
+    private Integer bindingStatus;
 
     /** 初始化设备号 */
     @ApiModelProperty("初始化设备号")

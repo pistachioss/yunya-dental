@@ -30,7 +30,7 @@ import java.io.IOException;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "数据记录（就诊记录；账单记录；配诊记录）")
+@Api(tags = "公司端报表-报表统计-数据记录")
 @RestController
 @RequestMapping("record")
 public class CompanyReportOfDataRecordController {

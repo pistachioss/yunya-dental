@@ -562,7 +562,7 @@ public class PatientPrepaymentRelationBiz
     if (prepaidExpend != null){
       prepaidExpend.setInservice(false);
       prepaidExpendRecordMapper.updateByPrimaryKeySelective(prepaidExpend);
-
+      remoteRabbitMqServiceFeign.sendMessage(prepaidExpend.getId(), 1, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
       PatientPrepaymentsInfo patientPrepaymentsInfo =
               patientPrepaymentsInfoMapper.selectOneByCardNumber(model.getPrepaidCard());
       if (patientPrepaymentsInfo != null) {
@@ -591,7 +591,7 @@ public class PatientPrepaymentRelationBiz
         prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
         prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
         // 发送消息 撤销收费
-        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 0, 1, 4);
+        sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 2, 1, 4);
         return ResponseUtil.success();
       }else {
         return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款", patientPrepaymentsInfo);

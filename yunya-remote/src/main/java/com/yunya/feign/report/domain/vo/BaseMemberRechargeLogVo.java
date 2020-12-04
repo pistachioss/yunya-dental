@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -25,18 +26,22 @@ public class BaseMemberRechargeLogVo {
     private Integer occurLogId;
 
     /** 充值日期 */
+    @Excel(name = "充值日期")
     @ApiModelProperty(value = "充值日期")
     private String occurDate;
 
     /** 患者姓名 */
+    @Excel(name = "患者姓名")
     @ApiModelProperty(value = "患者姓名")
     private String name;
 
     /** 手机号 */
+    @Excel(name = "手机号")
     @ApiModelProperty(value = "手机号")
     private String mobile;
 
     /** 会员卡号 */
+    @Excel(name = "会员卡号")
     @ApiModelProperty(value = "会员卡号")
     private String cardNumber;
 
@@ -45,22 +50,27 @@ public class BaseMemberRechargeLogVo {
     private Integer memberLevelId;
 
     /** 会员卡级别名称 */
-    @ApiModelProperty(value = "会员卡级别名称")
+    @Excel(name = "会员卡名称")
+    @ApiModelProperty(value = "会员卡名称")
     private String memberLevelName;
 
     /** 充值本金金额 */
+    @Excel(name = "充值本金金额")
     @ApiModelProperty(value = "充值本金金额")
     private BigDecimal principalAmount = new BigDecimal(0);
 
     /** 充值赠金金额 */
+    @Excel(name = "充值赠金金额")
     @ApiModelProperty(value = "充值赠金金额")
     private BigDecimal bonusAmount = new BigDecimal(0);
 
     /** 充值后会员卡余额（本金） */
+    @Excel(name = "充值后会员卡余额（含赠送金额）")
     @ApiModelProperty(value = "充值后会员卡余额（含赠送金额）")
     private BigDecimal currentRechargePrincipal = new BigDecimal(0);
 
     /** 剩余会员卡余额（含赠送金额） */
+    @Excel(name = "剩余会员卡余额（含赠送金额）")
     @ApiModelProperty(value = "剩余会员卡余额（含赠送金额）")
     private BigDecimal currentAmount = new BigDecimal(0);
 
@@ -69,14 +79,17 @@ public class BaseMemberRechargeLogVo {
     private Integer paymentId;
 
     /** 入账方式名称 */
+    @Excel(name = "入账方式")
     @ApiModelProperty(value = "入账方式名称")
     private String paymentManner;
 
     /** 充值人 */
+    @Excel(name = "充值人")
     @ApiModelProperty(value = "充值人")
     private String operatorUserName;
 
     /** 备注 */
+    @Excel(name = "备注")
     @ApiModelProperty(value = "备注")
     private String remarks;
 }

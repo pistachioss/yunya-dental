@@ -170,4 +170,98 @@
         ORDER BY
             tmr.matchingDate DESC
     </select>
+
+    <!-- 根据条件查询助手配诊明细列表 -->
+    <select id="selectAssistantMatchingDetailList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO">
+        SELECT
+        btp.treatment_id AS treatmentId,
+        btp.treatDate,
+        btp.patient_id as patientId,
+        btp.patientName,
+        btp.mobile,
+        DATE_FORMAT(btp.treatStartTime, '%Y-%m-%d %H:%i'),
+        DATE_FORMAT(btp.treatEndTime, '%Y-%m-%d %H:%i'),
+        btp.matchDuration
+        FROM (
+        SELECT
+        btp.treatment_id,
+        DATE_FORMAT(btp.treat_start_time, '%Y-%m-%d') as treatDate,
+        btp.patient_id,
+        bp.`name` AS patientName,
+        bp.mobile,
+        bp.pinyin_name AS pinyinName,
+        btp.treat_start_time AS treatStartTime,
+        btp.treat_end_time AS treatEndTime,
+        SUM( btp.matchTime ) AS matchDuration
+        FROM
+        (
+        SELECT
+        btp.treatment_id,
+        btp.patient_id,
+        btp.assistant_1,
+        btp.treat_start_time,
+        btp.treat_end_time,
+        IF
+        (
+        TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) = 0,
+        1,
+        TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time )) AS matchTime
+        FROM
+        base_treatment_process btp
+        <where>
+            and btp.treat_end_time IS NOT NULL
+            <if test="query.orgId != null">
+                AND btp.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.assistantType == 0">
+                AND btp.assistant_1 = #{query.assistantId}
+            </if>
+            <if test="query.assistantType == 1">
+                AND btp.assistant_2 = #{query.assistantId}
+            </if>
+            <if test="query.assistantType == 2">
+                AND btp.assistant_3 = #{query.assistantId}
+            </if>
+        </where>
+        ) btp
+        LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
+        GROUP BY btp.treatment_id
+        ) btp
+        <where>
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(ifnull(btp.patientName, ''), ifnull(btp.pinyinName, ''), ifnull(btp.mobile, '')) like concat('%', #{query.keyword}, '%')
+            </if>
+            <if test="query.treatStartDate != null and query.treatStartDate != ''">
+                and btp.treatStartTime &gt;= #{query.treatStartDate}
+            </if>
+            <if test="query.treatEndDate != null and query.treatEndDate != ''">
+                and btp.treatStartTime &lt;= #{query.treatEndDate}
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -3,10 +3,13 @@ package com.yunya.report.ultimate.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
 import com.yunya.report.ultimate.biz.BaseRefundBiz;
+import com.yunya.report.ultimate.biz.BaseTreatmentProcessBiz;
+import com.yunya.report.ultimate.biz.BaseUserPostBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -37,6 +40,10 @@ public class CompanyReportOfPersonnelController {
   @Autowired private BaseBillDetailBiz billDetailBiz;
   /** 退费 */
   @Autowired private BaseRefundBiz refundBiz;
+  /** 员工 */
+  @Autowired private BaseUserPostBiz baseUserPostBiz;
+  /** 就诊 */
+  @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
 
   /**
    * 根据条件查询员工工作量报表
@@ -46,9 +53,10 @@ public class CompanyReportOfPersonnelController {
    */
   @ApiOperation("公司端报表-人事报表-员工工作量")
   @PostMapping(value = "/employee/workload/list", name = "根据条件查询员工工作量列表")
-  public ResponseResult<PageInfo<EmployeeWorkloadVO>> employeeWorkload(
+  public ResponseResult<PageInfo<EmployeeWorkloadOfPersonnelVO>> employeeWorkloadOfPersonnel(
       @RequestBody @Validated EmployeeWorkloadQuery query) {
-    PageInfo<EmployeeWorkloadVO> result = billDetailBiz.findEmployeeWorkloadList(query);
+    PageInfo<EmployeeWorkloadOfPersonnelVO> result =
+        billDetailBiz.findEmployeeWorkloadListOfPersonnel(query);
     return ResponseUtil.success(result);
   }
 
@@ -57,14 +65,14 @@ public class CompanyReportOfPersonnelController {
    *
    * @param response 响应
    * @param query 查询条件
-   * @return
+   * @return void
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-导出")
   @PostMapping(value = "/employee/workload/export", name = "根据条件导出员工工作量列表")
-  public ResponseResult<T> exportEmployeeWorkloadList(
+  public ResponseResult<T> exportEmployeeWorkloadListOfPersonnel(
       HttpServletResponse response, @RequestBody @Validated EmployeeWorkloadQuery query)
       throws IOException {
-    billDetailBiz.exportEmployeeWorkloadList(response, query);
+    billDetailBiz.exportEmployeeWorkloadListOfPersonnel(response, query);
     return ResponseUtil.success(null);
   }
 
@@ -217,7 +225,7 @@ public class CompanyReportOfPersonnelController {
    * @return
    */
   @ApiOperation("公司端报表-人事报表-员工工作量-退费工作量明细")
-  @PostMapping(value = "/employee/workload/refund/list", name = "公司端报表-人事报表-员工工作量")
+  @PostMapping(value = "/employee/workload/refund/list", name = "根据条件查询员工退费工作量明细")
   public ResponseResult<PageInfo<EmployeePersonalRefundWorkloadDetailVO>> refundWorkloadDetailList(
       @RequestBody @Validated EmployeePersonalWorkloadDetailQuery query) {
     PageInfo<EmployeePersonalRefundWorkloadDetailVO> pageInfo =
@@ -253,6 +261,81 @@ public class CompanyReportOfPersonnelController {
   public ResponseResult<PageInfo<EmployeeRefundDetailWorkloadVO>> refundOrderDetailList(
       @RequestBody @Validated EmployeeRefundWorkloadDetailQuery query) {
     PageInfo<EmployeeRefundDetailWorkloadVO> pageInfo = refundBiz.findRefundOrderDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询配诊统计列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<AssistantMatchingStatisticsVO>
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计")
+  @PostMapping(value = "/matching/statistics/list", name = "公司端报表-人事报表-配诊统计")
+  public ResponseResult<PageInfo<AssistantMatchingStatisticsVO>> treatMatchingStatisticsList(
+      @RequestBody @Validated EmployeeMatchingRecordQuery query) {
+    PageInfo<AssistantMatchingStatisticsVO> pageInfo =
+        baseUserPostBiz.findTreatMatchingStatisticsList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出助手配诊统计列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   * @return void
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计-导出")
+  @PostMapping(value = "/matching/statistics/list/export", name = "根据条件导出助手配诊统计列表")
+  public ResponseResult<T> exportEmployeeTreatMatchingStatisticsList(
+      HttpServletResponse response, @RequestBody @Validated EmployeeMatchingRecordQuery query)
+      throws IOException {
+    baseUserPostBiz.exportEmployeeMatchingStatisticsList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工配诊时长明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeTreatMatchingDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计-配诊时长明细")
+  @PostMapping(value = "/employee/matching/detail/list", name = "公司端报表-人事报表-配诊统计-配诊时长明细")
+  public ResponseResult<PageInfo<EmployeeTreatMatchingDetailVO>> assistantMatchingDetailList(
+      @RequestBody @Validated AssistantMatchingDetailQuery query) {
+    PageInfo<EmployeeTreatMatchingDetailVO> pageInfo =
+        treatmentProcessBiz.findAssistantMatchingDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询助手实收工作量明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<AssistantActualWorkloadDetailVO>
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计-实收工作量明细")
+  @PostMapping(value = "/actual/workload/detail/list", name = "公司端报表-人事报表-配诊统计-实收工作量明细")
+  public ResponseResult<PageInfo<AssistantActualWorkloadDetailVO>> assistantActualWorkloadDetail(
+      @RequestBody @Validated AssistantActualWorkloadDetailQuery query) {
+    PageInfo<AssistantActualWorkloadDetailVO> pageInfo =
+        billDetailBiz.findAssistantActualWorkloadDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询助手退费金额明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<AssistantRefundDetailVO> pageInfo
+   */
+  @ApiOperation("公司端报表-人事报表-配诊统计-退费金额明细")
+  @PostMapping(value = "/refund/detail/list", name = "公司端报表-人事报表-配诊统计-退费金额明细")
+  public ResponseResult<PageInfo<AssistantRefundDetailVO>> assistantRefundDetailList(
+      @RequestBody @Validated AssistantRefundDetailQuery query) {
+    PageInfo<AssistantRefundDetailVO> pageInfo = refundBiz.findAssistantRefundDetailList(query);
     return ResponseUtil.success(pageInfo);
   }
 }

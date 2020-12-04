@@ -13,21 +13,12 @@ import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.treatment.domain.model.AccreditDiscountDetailModel;
-import com.yunya.feign.treatment.domain.model.AccreditDiscountModel;
-import com.yunya.feign.treatment.domain.model.CouponDiscountInfoModel;
-import com.yunya.feign.treatment.domain.model.GeneralDiscountModel;
-import com.yunya.feign.treatment.domain.model.InvoiceModel;
-import com.yunya.feign.treatment.domain.model.MemberAccountModel;
-import com.yunya.feign.treatment.domain.model.PaymentModel;
-import com.yunya.feign.treatment.domain.model.PrepaymentAccountModel;
-import com.yunya.feign.treatment.domain.model.TollDebtModel;
-import com.yunya.feign.treatment.domain.model.TollModel;
+import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
@@ -35,13 +26,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysEmployee;
-import com.yunya.models.treatment.BillPayDetailRecord;
-import com.yunya.models.treatment.BillPayRecord;
-import com.yunya.models.treatment.BillRecord;
-import com.yunya.models.treatment.OrderDetail;
-import com.yunya.models.treatment.OrderDetailPayRecord;
-import com.yunya.models.treatment.OrderRecord;
-import com.yunya.models.treatment.TreatmentRecord;
+import com.yunya.models.treatment.*;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,8 +40,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.RedisConstants.*;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
+import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_UNLOCK;
 
 /**
  * 简介: 就诊收费业务层
@@ -71,6 +60,8 @@ import static com.yunya.framework.common.constant.RedisConstants.*;
 @Slf4j
 public class TollBiz {
 
+  /** 消息中间件 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
   /** 系统关联服务调用 */
@@ -330,14 +321,26 @@ public class TollBiz {
     Integer billPayRecordId = billPayRecord.getId();
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
       usePrepaymentAccount(
-          prepaymentAccounts, patientId, treatmentRecordId, billRecordId, billPayRecordId);
+          prepaymentAccounts,
+          patientId,
+          treatmentRecordId,
+          orderRecordId,
+          billRecordId,
+          billPayRecordId);
     }
     if (StringHelper.isNotEmpty(memberAccounts)) {
-      ResponseResult expend = useMemberAccount(memberAccounts, patientId, treatmentRecordId, billRecordId, billPayRecordId);
+      ResponseResult expend =
+          useMemberAccount(
+              memberAccounts,
+              patientId,
+              treatmentRecordId,
+              orderRecordId,
+              billRecordId,
+              billPayRecordId);
       if (expend.getStatus() > 0) {
         log.info("===================就诊收费异常======================");
-        log.info("response: {}",expend);
-        throw new ClientServiceException(expend.getMsg(),expend.getStatus());
+        log.info("response: {}", expend);
+        throw new ClientServiceException(expend.getMsg(), expend.getStatus());
       }
     }
     // 保存收费明细
@@ -346,8 +349,19 @@ public class TollBiz {
     orderRecordBiz.updateSelectiveById(orderRecord);
     TreatmentRecord treatmentRecord = treatmentRecordMapper.selectByPrimaryKey(treatmentRecordId);
     treatmentRecord.setStatus((byte) 3);
-    treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
+    int i = treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+    // 发送消息同步就诊、账单数据
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+      Integer appointmentId = treatmentRecord.getAppointmentId();
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        rabbitMqServiceFeign.sendMessage(
+            treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
+      }
+    }
   }
 
   /**
@@ -792,7 +806,7 @@ public class TollBiz {
               throw new ClientServiceException("您当前选择的授权人不具备授权折扣权限！", PARAMETERS_IS_ILLEGAL);
             }
             List<AccreditDiscountDetailModel> discountDetailModels =
-                    accreditDiscountModel.getAccreditDiscountDetailModels();
+                accreditDiscountModel.getAccreditDiscountDetailModels();
             if (StringHelper.isEmpty(discountDetailModels)) {
               throw new ClientServiceException("授权折扣订单列表不能为空！", PARAMETERS_IS_ILLEGAL);
             }
@@ -802,11 +816,15 @@ public class TollBiz {
         } else {
           log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓校验优惠参数↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
           log.info("==> [class]:com.yunya.modules.treatment.biz.TollBiz");
-          log.info("==> [method]: private void checkPrivilegeParam(Byte discountType," +
-                  "GeneralDiscountModel generalDiscountModel, " +
-                  "AccreditDiscountModel accreditDiscountModel)");
-          log.info("==> [params]:discountType={},generalDiscountModel={},accreditDiscountModel{}",
-                  discountType,generalDiscountModel,accreditDiscountModel);
+          log.info(
+              "==> [method]: private void checkPrivilegeParam(Byte discountType,"
+                  + "GeneralDiscountModel generalDiscountModel, "
+                  + "AccreditDiscountModel accreditDiscountModel)");
+          log.info(
+              "==> [params]:discountType={},generalDiscountModel={},accreditDiscountModel{}",
+              discountType,
+              generalDiscountModel,
+              accreditDiscountModel);
           log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
           throw new ClientServiceException("授权折扣异常", PARAMETERS_IS_ILLEGAL);
         }
@@ -949,6 +967,7 @@ public class TollBiz {
    * @param memberAccountModels 会员账户列表
    * @param patientId 患者ID
    * @param treatmentRecordId 就诊记录ID
+   * @param orderRecord 订单记录ID
    * @param billRecordId 账单记录ID
    * @param billPayRecordId 账单支付记录ID
    * @return 处理结果
@@ -957,6 +976,7 @@ public class TollBiz {
       Set<MemberAccountModel> memberAccountModels,
       Integer patientId,
       Integer treatmentRecordId,
+      Integer orderRecord,
       Integer billRecordId,
       Integer billPayRecordId) {
     MemberExpendRecordModel memberExpendRecordModel = new MemberExpendRecordModel();
@@ -968,9 +988,9 @@ public class TollBiz {
       memberExpendRecordModel.setMemberId(memberAccountModel.getMemberNum());
       memberExpendRecordModel.setExpendTotal(memberAccountModel.getAmount());
       memberExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+      memberExpendRecordModel.setOrderRecordId(orderRecord);
       memberExpendRecordModel.setBillRecordId(billRecordId);
       memberExpendRecordModel.setBillPayRecordId(billPayRecordId);
-      memberExpendRecordModel.setType(1);
       ResponseResult expend = remotePatientCentralServiceFeign.expend(memberExpendRecordModel);
       // 服务调用成功返回0，否则返回大于0的状态码
       if (expend.getStatus() > 0) {
@@ -987,6 +1007,7 @@ public class TollBiz {
    * @param prepaymentAccountModels 预付款账户列表
    * @param patientId 患者ID
    * @param treatmentRecordId 就诊记录ID
+   * @param orderRecordId 订单记录ID
    * @param billRecordId 账单ID
    * @param billPayRecordId 账单支付记录ID
    */
@@ -994,6 +1015,7 @@ public class TollBiz {
       Set<PrepaymentAccountModel> prepaymentAccountModels,
       Integer patientId,
       Integer treatmentRecordId,
+      Integer orderRecordId,
       Integer billRecordId,
       Integer billPayRecordId) {
     PrepaidExpendRecordModel prepaidExpendRecordModel = new PrepaidExpendRecordModel();
@@ -1003,9 +1025,9 @@ public class TollBiz {
           prepaidExpendRecordModel.setPrepaidId(prepaymentAccountModel.getPrepaymentNum());
           prepaidExpendRecordModel.setExpendTotal(prepaymentAccountModel.getAmount());
           prepaidExpendRecordModel.setTreatmentRecordId(treatmentRecordId);
+          prepaidExpendRecordModel.setOrderRecordId(orderRecordId);
           prepaidExpendRecordModel.setBillRecordId(billRecordId);
           prepaidExpendRecordModel.setBillPayRecordId(billPayRecordId);
-          prepaidExpendRecordModel.setType(1);
           ResponseResult result = remotePatientCentralServiceFeign.expend(prepaidExpendRecordModel);
           if (!result.getStatus().equals(0)) {
             throw new ClientServiceException(result.getMsg(), result.hashCode());
@@ -1107,7 +1129,6 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
-  @Transactional(rollbackFor = Exception.class)
   public void collectDebt(TollDebtModel model) {
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -1143,9 +1164,7 @@ public class TollBiz {
       } else {
         // 账单未使用过优惠，重新使用优惠
         orderRecordId = billRecordResult.getOrderRecordId();
-        discountType =
-            saveDiscountDetail(
-                generalDiscount, accreditDiscount, discountType, patientId, orderRecordId);
+        discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
         privilegeAmount =
             calculatePrivilegeAmount(
                 discountType, orderRecordId, generalDiscount, accreditDiscount);
@@ -1174,15 +1193,11 @@ public class TollBiz {
       // 保存收费记录
       billRecordId = billRecordResult.getId();
       orderRecordId = billRecordResult.getOrderRecordId();
-
-      savePrivilegeDetail(discountType, patientId,orderRecordId,generalDiscount,accreditDiscount);
-
+      // 保存优惠明细
+      savePrivilegeDetail(
+          discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
       // 更新订单明细收费记录
       updateOrderDetailPayRecord(orderRecordId, totalCharge);
-
-
-
-
     } else {
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
@@ -1190,9 +1205,7 @@ public class TollBiz {
       BigDecimal totalAmount = orderRecordResult.getTotalAmount();
       orderRecordId = orderRecordResult.getId();
       patientId = orderRecordResult.getPatientId();
-      discountType =
-          saveDiscountDetail(
-              generalDiscount, accreditDiscount, discountType, patientId, orderRecordId);
+      discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
       // 计算优惠总额
       BigDecimal privilegeAmount =
           calculatePrivilegeAmount(discountType, orderRecordId, generalDiscount, accreditDiscount);
@@ -1232,7 +1245,8 @@ public class TollBiz {
           billRecordId,
           generalDiscount,
           accreditDiscount);
-      savePrivilegeDetail(discountType, patientId,orderRecordId,generalDiscount,accreditDiscount);
+      savePrivilegeDetail(
+          discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
     }
     BillPayRecord billPayRecord = new BillPayRecord();
     billPayRecord.setOrgId(orgId);
@@ -1247,17 +1261,20 @@ public class TollBiz {
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
     billPayRecordBiz.insertSelective(billPayRecord);
-    // 保存收费记录入账明细¬
+    // 保存收费记录入账明细
     Integer billPayRecordId = billPayRecord.getId();
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
       usePrepaymentAccount(
-          prepaymentAccounts, patientId, treatmentId, billRecordId, billPayRecordId);
+          prepaymentAccounts, patientId, treatmentId, orderRecordId, billRecordId, billPayRecordId);
     }
     if (StringHelper.isNotEmpty(memberAccounts)) {
-      useMemberAccount(memberAccounts, patientId, treatmentId, billRecordId, billPayRecordId);
+      useMemberAccount(
+          memberAccounts, patientId, treatmentId, orderRecordId, billRecordId, billPayRecordId);
     }
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
+    // 发送消息同步账单
+    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
   }
 
   /**
@@ -1266,16 +1283,12 @@ public class TollBiz {
    * @param generalDiscount 卡券优惠
    * @param accreditDiscount 授权折扣
    * @param discountType 优惠类型
-   * @param patientId 患者ID
-   * @param orderRecordId 订单ID
    * @return discountType
    */
   private byte saveDiscountDetail(
       GeneralDiscountModel generalDiscount,
       AccreditDiscountModel accreditDiscount,
-      byte discountType,
-      Integer patientId,
-      Integer orderRecordId) {
+      byte discountType) {
     if (null != generalDiscount) {
       discountType = 1;
     }
@@ -1316,19 +1329,23 @@ public class TollBiz {
         orderDetailPayRecordBiz.selectList(orderDetailPayRecord);
     // 根据订单号查询优惠列表
     List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
-    log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单号查询优惠列表[orderBenefitD]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-    orderBenefitD.forEach(orderBenefitDetailVo -> {
-      log.info("==> {}",orderBenefitDetailVo);
-    });
+    log.info(
+        "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单号查询优惠列表[orderBenefitD]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+    orderBenefitD.forEach(
+        orderBenefitDetailVo -> {
+          log.info("==> {}", orderBenefitDetailVo);
+        });
     log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
 
-    log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-    detailPayRecords.forEach(orderDetailPayRecord1 -> {
-      log.info("==> {}",orderDetailPayRecord1);
-    });
+    log.info(
+        "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+    detailPayRecords.forEach(
+        orderDetailPayRecord1 -> {
+          log.info("==> {}", orderDetailPayRecord1);
+        });
     log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
 
-    if(StringHelper.isNotEmpty(orderBenefitD)) {
+    if (StringHelper.isNotEmpty(orderBenefitD)) {
       for (OrderDetailPayRecord detail : detailPayRecords) {
         BigDecimal receivableAmount = detail.getReceivableAmount();
         BigDecimal privilegeAmount = BigDecimal.valueOf(0);
@@ -1358,14 +1375,17 @@ public class TollBiz {
         detail.setUpdId(userId);
         detail.setUpdName(name);
 
-        log.info("↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
-        detailPayRecords.forEach(orderDetailPayRecord1 -> {
-          log.info("==> {}",orderDetailPayRecord1);
-        });
-        log.info("↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
+        log.info(
+            "↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓订单明细列表[detailPayRecords]↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓");
+        detailPayRecords.forEach(
+            orderDetailPayRecord1 -> {
+              log.info("==> {}", orderDetailPayRecord1);
+            });
+        log.info(
+            "↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑");
         orderDetailPayRecordBiz.updateSelectiveById(detail);
       }
-    } else{
+    } else {
       // 没有使用优惠情况
       for (OrderDetailPayRecord detailPayRecord : detailPayRecords) {
         BigDecimal actualReceivable = detailPayRecord.getActualReceivable();
@@ -1460,11 +1480,17 @@ public class TollBiz {
   private void checkTotalChargeAndDebtAmount(
       BigDecimal totalCharge, BigDecimal debtAmount, BigDecimal outstandingAmount) {
     if (totalCharge.add(outstandingAmount).compareTo(debtAmount) != 0) {
-      log.info("========com.yunya.modules.treatment.biz.TollBiz.checkTotalChargeAndDebtAmount ================== ");
-      log.info("==> param:totalCharge={},debtAmount={},outstandingAmount={}",totalCharge,debtAmount,outstandingAmount);
-      log.info("==> err_code:{}",PARAMETERS_IS_ILLEGAL);
+      log.info(
+          "========com.yunya.modules.treatment.biz.TollBiz.checkTotalChargeAndDebtAmount ================== ");
+      log.info(
+          "==> param:totalCharge={},debtAmount={},outstandingAmount={}",
+          totalCharge,
+          debtAmount,
+          outstandingAmount);
+      log.info("==> err_code:{}", PARAMETERS_IS_ILLEGAL);
       log.info("==> msg:入账方式金额与挂账金额之和不等于剩余应付金额合计！");
-      log.info("==================================================================================================");
+      log.info(
+          "==================================================================================================");
       throw new ClientServiceException("入账方式金额与挂账金额之和不等于剩余应付金额合计！", PARAMETERS_IS_ILLEGAL);
     }
   }

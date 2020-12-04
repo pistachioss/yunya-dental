@@ -1,10 +1,12 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
+import javax.persistence.ExcludeDefaultListeners;
 import java.math.BigDecimal;
 
 /**
@@ -37,6 +39,7 @@ public class BaseMemberBalanceInfoVo {
     private Integer memberLevelId;
 
     /** 会员卡级别名称 */
+    @Excel(name = "患者姓名")
     @ApiModelProperty(value = "会员卡级别名称")
     private String memberLevelName;
 

@@ -1,18 +1,259 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BaseUserPostMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseUserPost" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="user_post_id" property="userPostId" jdbcType="INTEGER" />
-    <result column="user_id" property="userId" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="group_id" property="groupId" jdbcType="INTEGER" />
-    <result column="post_group_name" property="postGroupName" jdbcType="VARCHAR" />
-    <result column="post_id" property="postId" jdbcType="INTEGER" />
-    <result column="post_name" property="postName" jdbcType="VARCHAR" />
-    <result column="enable_appoint" property="enableAppoint" jdbcType="BIT" />
-    <result column="enable_registry" property="enableRegistry" jdbcType="BIT" />
-  </resultMap>
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseUserPostMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseUserPost">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="user_post_id" property="userPostId" jdbcType="INTEGER"/>
+        <result column="user_id" property="userId" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="group_id" property="groupId" jdbcType="INTEGER"/>
+        <result column="post_group_name" property="postGroupName" jdbcType="VARCHAR"/>
+        <result column="post_id" property="postId" jdbcType="INTEGER"/>
+        <result column="post_name" property="postName" jdbcType="VARCHAR"/>
+        <result column="enable_appoint" property="enableAppoint" jdbcType="BIT"/>
+        <result column="enable_registry" property="enableRegistry" jdbcType="BIT"/>
+    </resultMap>
+
+    <!-- 根据条件查询配诊统计列表 -->
+    <select id="selectAssistantMatchingStatisticsList"
+            resultType="com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO">
+        SELECT
+        e.org_id as orgId,
+        e.user_id as assistantId,
+        e.employee_name as assistantName,
+        SUM(
+        IFNULL( TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ), 0 )) AS treatMatchingTimeAsAssistant1,
+        sum(
+        IFNULL( btp.actualWorkload, 0 )) AS treatMatchingActualWorkloadAsAssistant1,
+        SUM(
+        IFNULL( btp.refundWorkload, 0 )) AS treatMatchingRefundWorkloadAsAssistant1,
+        SUM(
+        IFNULL( TIMESTAMPDIFF( MINUTE, btp1.treat_start_time, btp1.treat_end_time ), 0 )) AS treatMatchingTimeAsAssistant2,
+        SUM(
+        IFNULL( btp1.actualWorkload, 0 )) AS treatMatchingActualWorkloadAsAssistant2,
+        SUM(
+        IFNULL( btp1.refundWorkload, 0 )) AS treatMatchingRefundWorkloadAsAssistant2,
+        SUM(
+        IFNULL( TIMESTAMPDIFF( MINUTE, btp2.treat_start_time, btp2.treat_end_time ), 0 )) AS treatMatchingTimeAsAssistant3,
+        SUM(
+        IFNULL( btp2.actualWorkload, 0 )) AS treatMatchingActualWorkloadAsAssistant3,
+        SUM( IFNULL( btp2.refundWorkload, 0 ) ) AS treatMatchingRefundWorkloadAsAssistant3
+        FROM
+        (
+        SELECT
+        bup.user_id,
+        bup.org_id,
+        be.employee_name
+        FROM
+        base_user_post bup
+        LEFT JOIN base_employee be ON bup.user_id = be.user_id
+        WHERE
+        bup.group_id = 4 -- 全部助手
+        ) e
+        LEFT JOIN (
+        SELECT
+        btp.treatment_id,
+        btp.org_id,
+        btp.treat_start_time,
+        btp.treat_end_time,
+        btp.assistant_1,
+        IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
+        IFNULL( bf.refundWorkload, 0 ) AS refundWorkload
+        FROM
+        base_treatment_process btp
+        LEFT JOIN (
+        SELECT
+        SUM( bbd.originalAmount - bbd.discount_amount ) AS actualWorkload,
+        bbd.treatment_id
+        FROM
+        (
+        SELECT
+        bb.treatment_id,
+        bbd.price * bbd.quantity AS originalAmount,
+        bbd.discount_amount
+        FROM
+        base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        WHERE
+        bbd.executor_id IS NOT NULL
+        ) bbd
+        GROUP BY
+        bbd.treatment_id
+        ) bbd ON btp.treatment_id = bbd.treatment_id
+        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
+        <where>
+            AND btp.treat_end_time IS NOT NULL
+            AND btp.assistant_1 IS NOT NULL
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        btp.treatment_id
+        ) btp ON e.user_id = btp.assistant_1
+        AND e.org_id = btp.org_id
+        LEFT JOIN (
+        SELECT
+        btp.treatment_id,
+        btp.org_id,
+        btp.treat_start_time,
+        btp.treat_end_time,
+        btp.assistant_2,
+        IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
+        IFNULL( bf.refundWorkload, 0 ) AS refundWorkload
+        FROM
+        base_treatment_process btp
+        LEFT JOIN (
+        SELECT
+        SUM( bbd.originalAmount - bbd.discount_amount ) AS actualWorkload,
+        bbd.treatment_id
+        FROM
+        (
+        SELECT
+        bb.treatment_id,
+        bbd.price * bbd.quantity AS originalAmount,
+        bbd.discount_amount
+        FROM
+        base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        WHERE
+        bbd.executor_id IS NOT NULL
+        ) bbd
+        GROUP BY
+        bbd.treatment_id
+        ) bbd ON btp.treatment_id = bbd.treatment_id
+        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
+        <where>
+            and btp.treat_end_time IS NOT NULL
+            and btp.assistant_1 IS NOT NULL
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        btp.treatment_id
+        ) btp1 ON e.user_id = btp1.assistant_2
+        AND e.org_id = btp1.org_id
+        LEFT JOIN (
+        SELECT
+        btp.treatment_id,
+        btp.org_id,
+        btp.treat_start_time,
+        btp.treat_end_time,
+        btp.assistant_3,
+        IFNULL( bbd.actualWorkload, 0 ) AS actualWorkload,
+        IFNULL( bf.refundWorkload, 0 ) AS refundWorkload
+        FROM
+        base_treatment_process btp
+        LEFT JOIN (
+        SELECT
+        SUM( bbd.originalAmount - bbd.discount_amount ) AS actualWorkload,
+        bbd.treatment_id
+        FROM
+        (
+        SELECT
+        bb.treatment_id,
+        bbd.price * bbd.quantity AS originalAmount,
+        bbd.discount_amount
+        FROM
+        base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        WHERE
+        bbd.executor_id IS NOT NULL
+        ) bbd
+        GROUP BY
+        bbd.treatment_id
+        ) bbd ON btp.treatment_id = bbd.treatment_id
+        LEFT JOIN ( SELECT br.treatment_id, SUM( br.refund_amount ) AS refundWorkload FROM base_refund br GROUP BY br.treatment_id ) bf ON btp.treatment_id = bf.treatment_id
+        <where>
+            and btp.treat_end_time IS NOT NULL
+            and btp.assistant_1 IS NOT NULL
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( btp.treat_start_time, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        btp.treatment_id
+        ) btp2 ON e.user_id = btp2.assistant_3
+        AND e.org_id = btp2.org_id
+        <where>
+            <if test="query.orgId != null">
+                and e.org_id = #{query.orgId}
+            </if>
+            <if test="query.assistantIds != null and query.assistantIds.length > 0">
+                and e.user_id in
+                <foreach collection="query.assistantIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        e.org_id,
+        e.user_id
+    </select>
 </mapper>

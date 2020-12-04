@@ -27,15 +27,15 @@
         select
         bb.bill_id billId,
         be.employee_name employeeName,
-        bb.order_date orderDate,
+        DATE_FORMAT(bb.order_date, '%Y-%m-%d %h:%i:%s') orderDate,
         bb.order_num orderNum,
         bp.name,
         bp.mobile,
         (bb.privilege_amount - bb.actual_amount) originalPrice,
-        bb.privilege_amount privilegeAmount,
-        bb.actual_amount actualAmount,
-        bb.received_amount receivedAmount,
-        bb.debt_amount debtAmount
+        IFNULL(bb.privilege_amount,0) privilegeAmount,
+        IFNULL(bb.actual_amount,0) actualAmount,
+        IFNULL(bb.received_amount,0) receivedAmount,
+        IFNULL(bb.debt_amount,0) debtAmount
         from base_bill bb
         join base_patient bp on bp.patient_id = bb.patient_id
         join base_treatment_process btpr on btpr.patient_id = bp.patient_id
@@ -72,7 +72,7 @@
     <!-- 根据条件查询开单记录列表 -->
     <select id="selectBillRecordOfOrderList" resultType="com.yunya.feign.report.domain.vo.BillOfOrderRecordVO">
         SELECT
-        bor.orderDate,
+        DATE_FORMAT(bor.orderDate, '%Y-%m-%d %h:%i:%s') orderDate,
         bor.billId,
         bor.orderNum,
         bor.billNum,
@@ -82,10 +82,10 @@
         bor.gender,
         bor.regDentistId,
         bor.regDentistName,
-        bor.orderAmount,
-        bor.privilegeAmount,
-        bor.actualAmount,
-        bor.receivedAmount,
+        IFNULL(bor.orderAmount,0) orderAmount,
+        IFNULL(bor.privilegeAmount,0) privilegeAmount,
+        IFNULL(bor.actualAmount,0) actualAmount,
+        IFNULL(bor.receivedAmount,0) receivedAmount,
         bor.chargeStatus,
         bor.billerId,
         bor.biller
@@ -154,7 +154,7 @@
             resultType="com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO">
         SELECT
         bpr.billId,
-        bpr.orderDate,
+        DATE_FORMAT(bpr.orderDate, '%Y-%m-%d %h:%i:%s') orderDate,
         bpr.billNum,
         bpr.orgId,
         bpr.orgName,
@@ -163,9 +163,9 @@
         bpr.mobile,
         bpr.regDentistId,
         bpr.regDentistName,
-        bpr.originalAmount,
-        bpr.discountAmount,
-        bpr.actualAmount,
+        IFNULL(bpr.originalAmount,0) originalAmount,
+        IFNULL(bpr.discountAmount,0) discountAmount,
+        IFNULL(bpr.actualAmount,0) actualAmount,
         bpr.privilegeType,
         bpr.payeeId,
         bpr.payeeName
@@ -237,16 +237,16 @@
         SELECT
         billId,
         orgId,
-        orderDate,
+        DATE_FORMAT(orderDate, '%Y-%m-%d %h:%i:%s') orderDate,
         billNum,
         patientId,
         patientName,
         mobile,
         regDentistId,
         regDentistName,
-        totalOriginalAmount,
-        totalActualAmount,
-        billReceivableAmount
+        IFNULL(totalOriginalAmount,0) totalOriginalAmount,
+        IFNULL(totalActualAmount,0) totalActualAmount,
+        IFNULL(billReceivableAmount,0) billReceivableAmount
         FROM
         (
         SELECT
