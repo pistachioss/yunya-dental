@@ -43,7 +43,7 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工工作量")
   @PostMapping(value = "/employee/workload/list", name = "根据条件查询员工工作量列表")
-  public ResponseResult<PageInfo<EmployeeWorkloadOfOperationVO>> employeeWorkloadListOfOperationVO(
+  public ResponseResult<PageInfo<EmployeeWorkloadOfOperationVO>> employeeWorkloadListOfOperation(
       @RequestBody @Validated EmployeeWorkloadQuery query) {
     PageInfo<EmployeeWorkloadOfOperationVO> pageInfo =
         billDetailBiz.findEmployeeWorkloadListOfOperation(query);
@@ -58,7 +58,7 @@ public class CompanyReportOfOperationController {
    * @return
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工工作量-导出")
-  @PostMapping(value = "/billDetailBiz", name = "billDetailBiz")
+  @PostMapping(value = "/workload/list/export", name = "billDetailBiz")
   public ResponseResult<T> exportEmployeeWorkloadListOfOperationVO(
       HttpServletResponse response, @RequestBody @Validated EmployeeWorkloadQuery query)
       throws IOException {
