@@ -13,6 +13,7 @@ import com.yunya.feign.discount.domain.vo.PatientOrderBenefitVo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.model.MemberExpendRecordModel;
 import com.yunya.feign.patient_central.domain.model.PrepaidExpendRecordModel;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.domain.model.*;
 import com.yunya.feign.treatment.domain.query.OrderPrivilegeQuery;
@@ -39,6 +40,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
@@ -57,6 +60,8 @@ import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROC
 @Slf4j
 public class TollBiz {
 
+  /** 消息中间件 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
   /** 系统关联服务调用 */
@@ -344,8 +349,19 @@ public class TollBiz {
     orderRecordBiz.updateSelectiveById(orderRecord);
     TreatmentRecord treatmentRecord = treatmentRecordMapper.selectByPrimaryKey(treatmentRecordId);
     treatmentRecord.setStatus((byte) 3);
-    treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
+    int i = treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
     redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
+    // 发送消息同步就诊、账单数据
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+      Integer appointmentId = treatmentRecord.getAppointmentId();
+      if (null != appointmentId) {
+        rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
+      } else {
+        rabbitMqServiceFeign.sendMessage(
+            treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
+      }
+    }
   }
 
   /**
@@ -1113,7 +1129,6 @@ public class TollBiz {
    *
    * @param model 收费参数
    */
-  @Transactional(rollbackFor = Exception.class)
   public void collectDebt(TollDebtModel model) {
     Integer treatmentId = model.getTreatmentRecordId();
     GeneralDiscountModel generalDiscount = model.getGeneralDiscountModel();
@@ -1178,13 +1193,13 @@ public class TollBiz {
       // 保存收费记录
       billRecordId = billRecordResult.getId();
       orderRecordId = billRecordResult.getOrderRecordId();
-
+      // 保存优惠明细
       savePrivilegeDetail(
           discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
-
       // 更新订单明细收费记录
       updateOrderDetailPayRecord(orderRecordId, totalCharge);
-
+      // 发送消息同步账单数据
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
     } else {
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
@@ -1234,6 +1249,8 @@ public class TollBiz {
           accreditDiscount);
       savePrivilegeDetail(
           discountType, patientId, orderRecordId, generalDiscount, accreditDiscount);
+      // 发送消息同步账单
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
     }
     BillPayRecord billPayRecord = new BillPayRecord();
     billPayRecord.setOrgId(orgId);
@@ -1248,7 +1265,7 @@ public class TollBiz {
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
     billPayRecordBiz.insertSelective(billPayRecord);
-    // 保存收费记录入账明细¬
+    // 保存收费记录入账明细
     Integer billPayRecordId = billPayRecord.getId();
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
       usePrepaymentAccount(
