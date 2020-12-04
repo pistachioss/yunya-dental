@@ -106,7 +106,7 @@ public class PrepaidOccurLogController {
     @ApiOperation("导出预付款消费列表")
     @PostMapping(value = "/expend/export", name = "公司端-数据记录-预付款消费列表-导出")
     public ResponseResult<T> exportPrepaidExpendList(HttpServletResponse response, @RequestBody @Validated PrepaidQueryForm prepaidQueryForm) throws IOException, ParseException {
-        memberOccurLogBiz.exportPrepaidRechargeList(response,prepaidQueryForm);
+        memberOccurLogBiz.exportPrepaidExpendList(response,prepaidQueryForm);
         return ResponseUtil.success(null);
     }
 

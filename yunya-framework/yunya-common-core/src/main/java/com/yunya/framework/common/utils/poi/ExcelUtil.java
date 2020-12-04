@@ -262,7 +262,6 @@ public class ExcelUtil<T> {
   public void exportExcel(
       HttpServletResponse response, List<T> list, String sheetName, String fileName)
       throws IOException {
-    fileName = new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
     response.setContentType("application/vnd.ms-excel");
     response.setCharacterEncoding("utf-8");
     response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");

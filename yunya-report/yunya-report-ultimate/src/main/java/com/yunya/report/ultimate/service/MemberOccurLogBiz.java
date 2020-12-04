@@ -2,6 +2,7 @@ package com.yunya.report.ultimate.service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.query.PrepaidQueryForm;
 import com.yunya.feign.report.domain.vo.*;
@@ -16,6 +17,7 @@ import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMemberOccurLogMapper;
 import com.yunya.report.ultimate.utils.DateConversion;
+import org.aspectj.weaver.ast.Var;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,8 +26,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 简介:会员卡/预付款概况控制层
@@ -49,7 +51,6 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
 
     /** 注入服务 */
     @Autowired MemberOccurLogBiz memberOccurLogBiz;
-
 
 
     /**
@@ -413,6 +414,7 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
      * @return PageInfo<BaseMemberBalanceInfoVo>
      */
     public void exportMemberBalanceList(HttpServletResponse response, MemberQueryForm form) throws ParseException, IOException {
+        String endDate = form.getEndDate();
         if (StringHelper.isNotEmpty(form.getEndDate())){
             form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
         }
@@ -428,11 +430,11 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (form.getType() == 0){
             ExcelUtil<ExcelBaseMemberBalanceInfoVo> excelUtil = new ExcelUtil<>(ExcelBaseMemberBalanceInfoVo.class);
             List<ExcelBaseMemberBalanceInfoVo> build = EntityUtils.build(resultList, ExcelBaseMemberBalanceInfoVo.class);
-            excelUtil.exportExcel(response, build, "会员余额结存表");
+            excelUtil.exportExcel(response, build, "会员余额结存表",(form.getStartDate()+"-"+ endDate)+"会员余额结存表");
         }else {
             ExcelUtil<ExcelBasePrepaymentsBalanceInfoVo> excelUtil = new ExcelUtil<>(ExcelBasePrepaymentsBalanceInfoVo.class);
             List<ExcelBasePrepaymentsBalanceInfoVo> build = EntityUtils.build(resultList, ExcelBasePrepaymentsBalanceInfoVo.class);
-            excelUtil.exportExcel(response, build, "预付款余额结存表");
+            excelUtil.exportExcel(response, build, "预付款余额结存表",(form.getStartDate()+"-"+ endDate)+"预付款余额结存表");
         }
 
     }
