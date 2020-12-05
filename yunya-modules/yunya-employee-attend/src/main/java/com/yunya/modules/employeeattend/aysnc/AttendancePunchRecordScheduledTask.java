@@ -92,6 +92,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             //查询当天是否已经生成过
             AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
             queryForm.setPunchDate(now);
+            queryForm.setWhetherPage(false);
             List<AttendancePunchRecordVO> attendancePunchRecordVOS = attendancePunchRecordBiz.findAttendancePunchRecordList(queryForm);
             List<Integer> userIds = new ArrayList<>();
             if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
@@ -456,7 +457,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             }
         }
 
-        byte unvalid = AttendanceStatusEnum.UNVALID_PUNCH.getCode();
+        byte unvalid = AttendanceStatusEnum.INVALID_PUNCH.getCode();
         punchItemMap.forEach((userId, employeeScheduleVOS)->{
             employeeScheduleVOS = employeeScheduleVOS.stream().sorted(Comparator.comparing(EmployeeScheduleVO::getFirstStartTime)).collect(Collectors.toList());
             int index = employeeScheduleVOS.size()-1;

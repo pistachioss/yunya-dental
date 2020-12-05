@@ -34,4 +34,11 @@ public interface AttendancePunchRecordMapper extends Mapper<AttendancePunchRecor
      * @return
      */
     List<AttendanceWorkDateOvertimeMinuteVO> statisticsWorkDateOvertimeByMinute(@Param("minute") int minute, @Param("queryForm") AttendancePunchRecordQueryForm queryForm);
+
+    /**
+     * 根据打卡日期分组，分页查询打卡记录列表
+     * @param queryForm 查询参数
+     * @return
+     */
+    List<AttendancePunchRecordVO> findAttendancePunchRecordListGroupByDate(@Param("queryForm") AttendancePunchRecordQueryForm queryForm);
 }
