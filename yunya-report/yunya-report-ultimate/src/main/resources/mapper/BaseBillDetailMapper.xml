@@ -502,7 +502,7 @@
         orgId,
         billId,
         billNum,
-        DATE_FORMAT(orderDate, '%Y-%m-%d'),
+        DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
         patientId,
         patientName,
         mobile,
