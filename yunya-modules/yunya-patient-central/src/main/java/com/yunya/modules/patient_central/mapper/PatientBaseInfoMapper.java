@@ -105,6 +105,14 @@ public interface PatientBaseInfoMapper extends Mapper<PatientBaseInfo> {
   PatientTotalInfoVo selectPatientDataById(@Param("id") Integer id);
 
   /**
+   * 根据患者ID列表查询患者全部信息列表
+   *
+   * @param ids 患者ID集合
+   * @return List<PatientTotalInfoVo>
+   */
+  List<PatientTotalInfoVo> selectPatientDataByIds(@Param("ids") List<Integer> ids);
+
+  /**
    * 根据患者id查询患者回访所需信息
    *
    * @param id 患者id

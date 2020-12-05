@@ -70,4 +70,32 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据会员卡类型ID查询会员卡信息 -->
+    <select id="findMemberTypeByIds" resultMap="BaseResultMap">
+        select
+            mt.id,
+            mt.name,
+            mt.renewal_amount,
+            mt.age_limit,
+            mt.rate,
+            mt.type,
+            mt.icon,
+            mt.picture_code,
+            mt.description,
+            mt.inservice,
+            mt.crt_id,
+            mt.crt_name,
+            mt.crt_time,
+            mt.upd_id,
+            mt.upd_name,
+            mt.upd_time
+        from member_type mt
+        <where>
+            mt.id in
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </select>
 </mapper>

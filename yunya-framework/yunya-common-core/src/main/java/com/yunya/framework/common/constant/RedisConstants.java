@@ -1,5 +1,6 @@
 package com.yunya.framework.common.constant;
 
+import com.yunya.framework.common.utils.StringHelper;
 import lombok.Data;
 import lombok.ToString;
 
@@ -34,7 +35,8 @@ public class RedisConstants implements Serializable {
   public static final String REDIS_KEY_ORG_LIST = "orgList_";
 
   /** ------------------------- 诊疗列表（预约未到、候诊中、就诊中、接诊完成、离店）缓存通用key------------------------------- */
-  public static final String REDIS_KEY_APPOINTMENT_UN_DONE = "appointment_Un_Done_patientInfo_";
+  /** 预约未到  appointment_Un_Done_patientInfo_{当前日期}_{预约ID}_{医生ID}_{患者ID} */
+  public static final String REDIS_KEY_APPOINTMENT_UN_DONE = "appointment_Un_Done_patientInfo_{}_{}_{}_{}";
 
   public static final String REDIS_KEY_REGISTERED = "registered_patientInfo_";
 
@@ -93,4 +95,40 @@ public class RedisConstants implements Serializable {
   /** 考勤设备绑定短信验证码 */
   public static final String ATTENDANCE_DEVICE_BINDING_AUTHORIZATION = "attendance_device_binding_authorization_";
 
+  /**
+   * 设置key中的占位符
+   * @param keyPrefix key前缀
+   * @param params 占位符参数
+   * @return 返回设置之后的key
+   */
+  public static String setKey(String keyPrefix,String ...params) {
+    StringBuilder sb = new StringBuilder();
+    if (params != null && params.length > 0) {
+      String[] s = keyPrefix.split("_");
+      boolean b = false;
+      for (int i = 0, index = 0; i < s.length; i++) {
+        b = false;
+        if (index < params.length) {
+          if (s[i].equals("{}")) {
+            if (!StringHelper.isBlank(params[index]) && !params[index].equals("null")) {
+              sb.append(params[index]);
+            } else {
+              b = true;
+            }
+            index++;
+          } else {
+            sb.append(s[i]);
+          }
+          if (!b) {
+            sb.append("_");
+          }
+        }
+      }
+    }
+    if(sb.toString().endsWith("_")) {
+      sb = sb.deleteCharAt(sb.length() - 1);
+    }
+
+    return sb.toString();
+  }
 }

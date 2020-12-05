@@ -373,4 +373,13 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/equipmentInfoOne",method = RequestMethod.GET)
   EquipmentInfo equipmentInfoOne();
+
+  /**
+   * 根据ID集合查询会员卡分类
+   *
+   * @param ids 会员卡分类ID集合
+   * @return 返回会员卡集合
+   */
+  @RequestMapping(value = "/api/memberTypes", method = RequestMethod.POST)
+  List<MemberType> findMemberTypeByIds(@RequestBody List<Integer> ids);
 }

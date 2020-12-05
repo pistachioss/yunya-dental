@@ -19,6 +19,7 @@ import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.expand.model.response.EnableEmployeeRes;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -59,6 +60,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -1598,7 +1600,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
     /**
      * 根据条件查询预约未到患者信息列表
-     *
+     * 注意：如果后期优化：可以将该方法中的注释取消，同时涉及到的相关接口都需要更改为操作redis缓冲
      * @param queryForm 查询条件
      * @return list
      */
@@ -1607,21 +1609,91 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
         }
+        List<AppointmentUnDonePatientInfoVO> result = null;
+/*        Integer dentistId = queryForm.getDentistId();
+        String redisKey = RedisConstants.setKey(RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE,
+                queryForm.getCurrentDate(),
+                String.valueOf(queryForm.getId()),
+                dentistId != null ? String.valueOf(dentistId) : "*",
+                "*");
+
+        Set<String> keys = redisUtils.keys(redisKey);
+        if (StringHelper.isNotEmpty(keys)) {
+            log.info("====================================================================================================");
+            log.info("==> 【RedisKey common】: {}",redisKey);
+            log.info("==> 【当前类】：com.yunya.modules.appointment.biz.web.AppointmentBiz");
+            log.info("==> 【当前方法】：public PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(...)");
+            log.info("==> 【数据来源】：Redis Cache");
+            log.info("==> 【params】：{}",keys.toArray());
+            log.info("====================================================================================================");
+            result = new ArrayList<>();
+            for (String key:keys) {
+                AppointmentUnDonePatientInfoVO appointmentUnDonePatientInfoVO =
+                        redisUtils.get(key, AppointmentUnDonePatientInfoVO.class);
+                result.add(appointmentUnDonePatientInfoVO);
+            }
+        } else {
+            log.info("====================================================================================================");
+            log.info("==> 【当前类】：com.yunya.modules.appointment.biz.web.AppointmentBiz");
+            log.info("==> 【当前方法】：public PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(...)");
+            log.info("==> 【数据来源】：Database");
+            log.info("==> 【params】：{}",queryForm);
+            log.info("====================================================================================================");
+            // 从数据库中查询
+            result = this.findUnComingAppointmentListFromDB(queryForm);
+        }*/
+
+        log.info("====================================================================================================");
+        log.info("==> 【当前类】：com.yunya.modules.appointment.biz.web.AppointmentBiz");
+        log.info("==> 【当前方法】：public PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(...)");
+        log.info("==> 【数据来源】：Database");
+        log.info("==> 【params】：{}",queryForm);
+        log.info("====================================================================================================");
+        // 从数据库中查询
+        result = this.findUnComingAppointmentListFromDB(queryForm);
+        return new PageInfo<>(result);
+    }
+
+    /**
+     * 从数据库中查询预约未到患者相关信息
+     * @param queryForm 查询参数封装
+     */
+    private List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentListFromDB(AppointmentCurrentListQuery queryForm) {
         List<AppointmentUnDonePatientInfoVO> resultList =
                 mapper.selectAppointmentUnDonePatientInfoList(queryForm);
         if (StringHelper.isNotEmpty(resultList)) {
-            String redisKeyAppointmentUnDone = RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE;
-            resultList.forEach(
-                    vo -> {
-                        // 设置患者信息
-                        setPatientInfo(vo);
-                        // 设置预约信息
-                        setAppointmentInfo(vo);
-                        // 将预约未到患者信息设置到缓存
-                        redisUtils.set(redisKeyAppointmentUnDone + vo.getId(), vo);
-                    });
+            // 预约ID集合
+            List<Integer> appointIds = new ArrayList<>();
+            List<Integer> assistentIds = new ArrayList<>();
+            List<Integer> dentistId = new ArrayList<>();
+            List<Integer> deptRoomIds = new ArrayList<>();
+            List<Integer> patientIds = new ArrayList<>();
+            resultList.forEach(vo -> {
+                patientIds.add(vo.getPatientId());
+                deptRoomIds.add(vo.getAppointDeptRoomId());
+                dentistId.add(vo.getAppointDentistId());
+                appointIds.add(vo.getId());
+                assistentIds.add(vo.getAppointAssistantId());
+            });
+            // 设置患者信息
+            setPatientInfo(resultList, patientIds);
         }
-        return new PageInfo<>(resultList);
+        // 设置redis缓冲
+        if (StringHelper.isNotEmpty(resultList)) {
+            resultList.forEach(appointmentUnDonePatientInfoVO -> {
+                Integer patientId = appointmentUnDonePatientInfoVO.getPatientId();
+                Integer id = appointmentUnDonePatientInfoVO.getId();
+                String redisKey = RedisConstants.setKey(RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE,
+                        queryForm.getCurrentDate(),
+                        String.valueOf(id),
+                        String.valueOf(queryForm.getDentistId()),
+                        String.valueOf(patientId));
+                if (!redisUtils.hasKey(redisKey)) {
+                    redisUtils.set(redisKey,appointmentUnDonePatientInfoVO,3600);
+                }
+            });
+        }
+        return resultList;
     }
 
     /**
@@ -1647,39 +1719,61 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
 
     /**
      * 设置候诊患者患者信息
-     * @param vo 患者候诊
+     * @param vos 患者候诊
+     * @param patientIds 患者ID集合
      */
-    private void setPatientInfo(AppointmentUnDonePatientInfoVO vo) {
-        Integer patientId = vo.getPatientId();
-        PatientTotalInfoVo patientData = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
-        if (null != patientData) {
-            vo.setPatientName(patientData.getName());
-            vo.setMobile(patientData.getMobile());
-            vo.setGender(patientData.getGender());
-            vo.setAge(patientData.getAge());
-            vo.setBirthday(patientData.getBirthday());
-            vo.setPatientRemark(patientData.getRemarks());
-            String medicalNumber = patientData.getMedicalNumber();
-            vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
-            vo.setAllergenDescription(patientData.getAllergensDescriptions());
-            vo.setAllergen(patientData.getAllergens());
-            vo.setPatientKind(patientData.getPatientKindName());
-            // 欠费金额
-            List<Integer> patientIds = new ArrayList<>();
-            patientIds.add(patientId);
-            List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
-            if (StringHelper.isNotEmpty(debtAmountList)) {
-                vo.setArrears(debtAmountList.get(0).getDebtAmount());
-                log.info("==> 【{}】的欠费金额为{}",patientData.getName(),vo.getArrears());
-            }
-            Integer memberTypeId = patientData.getMemberTypeId();
-            if (null != memberTypeId) {
-                MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-                if (null != memberType) {
-                    vo.setMemberIcon(String.valueOf(memberType.getIcon()));
+    private void setPatientInfo(List<AppointmentUnDonePatientInfoVO> vos,List<Integer> patientIds) {
+        // 患者信息列表
+        List<PatientTotalInfoVo> patientInfoByIds = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+        // 欠费金额列表
+        List<DebtAmountModel> debtAmountList1 = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
+        // 会员卡类型ID
+        List<Integer> memberTypeIds = new ArrayList<>();
+        patientInfoByIds.forEach(patientTotalInfoVo -> {
+            memberTypeIds.add(patientTotalInfoVo.getMemberTypeId());
+        });
+        // 获取会员类型信息
+        List<MemberType> memberTypeByIds = remoteSystemServiceFeign.findMemberTypeByIds(memberTypeIds);
+
+        // 注入患者基本信息
+        vos.forEach(patientEntity -> {
+            Integer patientId1 = patientEntity.getPatientId();
+            // 设置患者基本信息
+            if (StringHelper.isNotEmpty(patientInfoByIds)) {
+                List<PatientTotalInfoVo> collect = patientInfoByIds.stream().filter(patientTotalInfoVo -> patientTotalInfoVo.getId().equals(patientId1)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                    PatientTotalInfoVo patientTotalInfoVo = collect.get(0);
+                    patientEntity.setPatientName(patientTotalInfoVo.getName());
+                    patientEntity.setMobile(patientTotalInfoVo.getMobile());
+                    patientEntity.setGender(patientTotalInfoVo.getGender());
+                    patientEntity.setAge(patientTotalInfoVo.getAge());
+                    patientEntity.setBirthday(patientTotalInfoVo.getBirthday());
+                    patientEntity.setPatientRemark(patientTotalInfoVo.getRemarks());
+                    String medicalNumber = patientTotalInfoVo.getMedicalNumber();
+                    patientEntity.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
+                    patientEntity.setAllergenDescription(patientTotalInfoVo.getAllergensDescriptions());
+                    patientEntity.setAllergen(patientTotalInfoVo.getAllergens());
+                    patientEntity.setPatientKind(patientTotalInfoVo.getPatientKindName());
+                    // 设置会员类型图标
+                    if (StringHelper.isNotEmpty(memberTypeByIds)) {
+                        List<MemberType> collect1 = memberTypeByIds.stream().filter(memberType -> memberType.getId().equals(patientTotalInfoVo.getMemberTypeId())).collect(Collectors.toList());
+                        if (StringHelper.isNotEmpty(collect1)) {
+                            MemberType memberType = collect1.get(0);
+                            patientEntity.setMemberIcon(memberType.getIcon());
+                        }
+                    }
                 }
             }
-        }
+            // 欠费金额
+            if (StringHelper.isNotEmpty(debtAmountList1)) {
+                List<DebtAmountModel> collect = debtAmountList1.stream().filter(debtAmountModel -> debtAmountModel.getPatientId().equals(patientId1)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                    DebtAmountModel debtAmountModel = collect.get(0);
+                    patientEntity.setArrears(debtAmountModel.getDebtAmount());
+                }
+            }
+
+        });
     }
 
     /**
