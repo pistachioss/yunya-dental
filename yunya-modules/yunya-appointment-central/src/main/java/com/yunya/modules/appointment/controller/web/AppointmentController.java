@@ -10,6 +10,7 @@ import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.web.AppointmentBiz;
@@ -58,6 +59,7 @@ public class AppointmentController {
   @ApiOperation(value = "添加预约（有冲突检测）")
   @PostMapping("/add")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult addAppointment(@RequestBody @Validated AppointmentBaseModel form)
       throws ParseException {
     return appointmentBiz.addAppointment(form);
@@ -72,6 +74,7 @@ public class AppointmentController {
   @ApiOperation(value = "新增预约（预约冲突后继续添加）")
   @PostMapping("/add/continue")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult continueAddAppointment(
       @RequestBody @Validated AppointmentBaseModel appointmentForm) {
     return appointmentBiz.continueAddAppointment(appointmentForm);
@@ -86,6 +89,7 @@ public class AppointmentController {
   @ApiOperation(value = "修改预约（冲突检测）")
   @PutMapping("/update")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult updateAppointment(@RequestBody @Validated AppointmentBaseForm form) {
     return appointmentBiz.updateAppointment(form);
   }
@@ -99,6 +103,7 @@ public class AppointmentController {
   @ApiOperation(value = "修改预约（继续保存）")
   @PutMapping("/update/continue")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult editAppointmentContinueSave(
       @RequestBody @Validated AppointmentBaseForm appointmentForm) {
     return this.appointmentBiz.continueUpdateAppointment(appointmentForm);
@@ -114,6 +119,7 @@ public class AppointmentController {
   @ApiOperation(value = "修改预约状态")
   @PutMapping("/update/appoint_status/{id}/{appointStatus}")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult updateAppointStatus(
       @PathVariable("id") Integer id, @RequestBody @Validated AppointStatusForm form) {
     return appointmentBiz.updateAppointStatus(id, form.getAppointStatus(), form.getRemarks());
@@ -127,6 +133,7 @@ public class AppointmentController {
   @ApiOperation(value = "取消预约/删除预约（逻辑删除）")
   @PostMapping("/delete/appoint")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult AppointmentCancel(
       @RequestBody @Validated AppointmentCancelCauseForm form) {
     return appointmentBiz.appointmentCancel(form.getId(), form.getCause());
@@ -141,6 +148,7 @@ public class AppointmentController {
   @ApiOperation(value = "确认预约（就诊画面用）")
   @PutMapping("/confirm/{id}")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult appointConfirm(@PathVariable("id") Integer id) {
     return appointmentBiz.confirmAppointment(id);
   }
@@ -241,6 +249,7 @@ public class AppointmentController {
   @ApiOperation(value = "导出预约列表")
   @PostMapping("/export/list")
   @CurrentUser
+  @RepeatSubmit
   public ResponseResult exportAppointListToExcel(
           HttpServletResponse response,
           @RequestBody @Validated AppointListExportQuery query) throws IOException {
