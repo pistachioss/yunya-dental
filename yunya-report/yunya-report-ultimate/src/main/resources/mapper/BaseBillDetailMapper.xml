@@ -610,7 +610,7 @@
         ) ewd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(ewd.patientName, ewd.pinyinName, ewd.mobile) Like
+                and concat(IFNULL(ewd.patientName, ''), IFNULL(ewd.pinyinName, ''), IFNULL(ewd.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
