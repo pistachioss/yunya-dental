@@ -1,0 +1,18 @@
+spring:
+    datasource:
+        host: 192.168.31.90
+        port: 3306
+        username: sa
+        password: Admin001!
+        name: yunya_appointment_central
+    cloud:
+        nacos:
+            discovery:
+                server-addr: 192.168.31.98:8848
+            config:
+                server-addr: 192.168.31.98:8848
+    redis:
+        database: 2
+        host: 192.168.31.90
+        port: 6379
+        password: foobared
