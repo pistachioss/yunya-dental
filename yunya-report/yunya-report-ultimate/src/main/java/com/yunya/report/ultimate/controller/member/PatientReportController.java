@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.query.ArrearsQueryForm;
 import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.AnalysisVo;
+import com.yunya.feign.report.domain.vo.ArrearsStatisticsVo;
 import com.yunya.feign.report.domain.vo.ArrearsVo;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -85,6 +86,7 @@ public class PatientReportController {
     }
 
 
+
     /**
      * 欠费查询
      * @param arrearsQueryForm 欠费查询form
@@ -92,19 +94,20 @@ public class PatientReportController {
      */
     @ApiOperation("欠费查询")
     @PostMapping("/arrears")
-    public ResponseResult<PageInfo<ArrearsVo>> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm) throws ParseException {
-        PageInfo<ArrearsVo> arrears = patientReportBiz.arrears(arrearsQueryForm);
+    public ResponseResult<ArrearsStatisticsVo> arrears(@RequestBody ArrearsQueryForm arrearsQueryForm) throws ParseException {
+        ArrearsStatisticsVo arrears = patientReportBiz.findArrears(arrearsQueryForm);
         if (StringHelper.isNotNull(arrears)){
             return ResponseUtil.success(arrears);
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",arrears);
     }
 
+
     /**
      * 欠费合计
      * @param arrearsQueryForm 欠费合计查询form
      * @return List<ArrearsVo>
-     */
+     *//*
     @ApiOperation("欠费合计")
     @PostMapping("/arrearsStatistics")
     public ResponseResult<Map<Object, Object>> arrearsStatistics(@RequestBody ArrearsQueryForm arrearsQueryForm) throws ParseException {
@@ -114,7 +117,7 @@ public class PatientReportController {
         }
         return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL,"暂无相关数据",arrearsStatisticsMap);
     }
-
+*/
     /**
      * 导出欠费查询记录列表
      *

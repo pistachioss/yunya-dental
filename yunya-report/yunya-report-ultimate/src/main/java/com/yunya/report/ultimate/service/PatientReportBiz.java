@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.query.PatientAnalysisQueryForm;
 import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseEmployee;
@@ -17,6 +18,7 @@ import com.yunya.report.ultimate.mapper.BaseEmployeeMapper;
 import com.yunya.report.ultimate.mapper.BaseOrganizationMapper;
 import com.yunya.report.ultimate.mapper.BasePatientMapper;
 import com.yunya.report.ultimate.utils.DateConversion;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -124,11 +126,31 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
 
   /**
    * 欠费查询
+   * @param form
+   * @return
+   * @throws ParseException
+   */
+  public ArrearsStatisticsVo findArrears(ArrearsQueryForm form) throws ParseException {
+    ArrearsStatisticsVo arrearsStatisticsVo = new ArrearsStatisticsVo();
+    ArrearsStatisticsVo arrearsStatistics = baseBillMapper.selectArrears(form.getOrgId());
+    if (arrearsStatistics != null){
+     BeanUtils.copyProperties(arrearsStatistics,arrearsStatisticsVo);
+    }
+    PageInfo<ArrearsVo> arrears = arrears(form);
+    if (arrears != null){
+      arrearsStatisticsVo.setArrearsVoList(arrears);
+    }
+    return arrearsStatisticsVo;
+  }
+
+  /**
+   * 欠费查询
    *
    * @param form 欠费查询form
    * @return List<ArrearsVo>
    */
   public PageInfo<ArrearsVo> arrears(ArrearsQueryForm form) throws ParseException {
+
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
     }
