@@ -67,6 +67,7 @@
 
         </where>
         group by bb.order_date asc
+
     </select>
 
     <!-- 根据条件查询开单记录列表 -->
@@ -303,5 +304,18 @@
                 </foreach>
             </if>
         </where>
+    </select>
+
+
+    <select id="selectArrears" resultType="com.yunya.feign.report.domain.vo.ArrearsStatisticsVo">
+        SELECT
+            (select count(DISTINCT patient_id ) from base_bill where org_id = #{orgId} AND debt_amount > 0) numberPatient1,
+            count(*) arrearsCount1,
+            sum(debt_amount) debtAmount1
+        FROM
+            base_bill
+        WHERE
+            org_id = #{orgId}
+          AND debt_amount > 0
     </select>
 </mapper>

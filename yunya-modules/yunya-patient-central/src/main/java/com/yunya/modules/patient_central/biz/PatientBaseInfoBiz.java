@@ -34,11 +34,15 @@ import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.patient_central.constant.WoPlatformHeartbeat;
 import com.yunya.modules.patient_central.mapper.*;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.httpclient.NameValuePair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -536,6 +540,29 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     return this.patientBaseInfoMapper.selectPatientById(id);
   }
 
+
+  /**
+   * 根据患者id查询患者全部信息
+   *
+   * @param ids 患者id
+   * @return PatientTotalInfoVo
+   */
+  public List<PatientTotalInfoVo> findPatientTotalInfoList(List<Integer> ids) {
+    if (StringHelper.isNotEmpty(ids)) {
+      List<PatientTotalInfoVo> patientTotalInfoVos = mapper.selectPatientDataByIds(ids);
+      if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
+        patientTotalInfoVos.forEach(patientTotalInfoVo -> {
+          DictionaryItem dictionaryItemById = remoteSystemServiceFeign.findDictionaryItemById(patientTotalInfoVo.getPatientKind());
+          patientTotalInfoVo.setPatientKindName(dictionaryItemById.getName());
+          // 设置患者扩展信息
+          this.setPatientExtInfo(patientTotalInfoVo.getId(),patientTotalInfoVo);
+        });
+      }
+      return patientTotalInfoVos;
+    }
+    return new ArrayList<>();
+  }
+
   /**
    * 根据患者id查询患者全部信息
    *
@@ -552,59 +579,70 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
           patientData.setPatientKindName(item.getName());
         }
       }
-      PatientExtInfo patientExtInfo = new PatientExtInfo();
-      patientExtInfo.setPatientId(id);
-      List<PatientExtInfo> extInfos = patientExtInfoMapper.select(patientExtInfo);
-      if (StringHelper.isNotEmpty(extInfos)) {
-        StringBuilder labels = new StringBuilder(16);
-        StringBuilder diseases = new StringBuilder(16);
-        StringBuilder allergens = new StringBuilder(16);
-        StringBuilder allergensDescriptions = new StringBuilder(16);
-        for (PatientExtInfo extInfo : extInfos) {
-          Byte type = extInfo.getType();
-          if (type == 2 && extInfo.getDescription() != null) {
-            allergensDescriptions.append(extInfo.getDescription());
-            allergensDescriptions.append(",");
-          }
-          if (extInfo.getDictItemId() != null) {
-            DictionaryItem item =
-                remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
-            switch (type) {
-              case 0:
-                if (null != item) {
-                  labels.append(item.getName());
-                }
-                break;
-              case 1:
-                if (null != item) {
-                  diseases.append(item.getName());
-                }
-                break;
-              case 2:
-                if (null != item) {
-                  allergens.append(item.getName());
-                  allergens.append(",");
-                }
-                break;
-              default:
-                break;
-            }
-          }
-        }
-        patientData.setLabels(labels.toString());
-        patientData.setDiseases(diseases.toString());
-        // 去掉最后的逗号
-        if (allergens.length() > 0) {
-          allergens.deleteCharAt(allergens.length() - 1);
-          patientData.setAllergens(allergens.toString());
-        }
-        if (allergensDescriptions.length() > 0) {
-          allergensDescriptions.deleteCharAt(allergensDescriptions.length() - 1);
-          patientData.setAllergensDescriptions(allergensDescriptions.toString());
-        }
-      }
+      // 设置患者扩展信息
+      this.setPatientExtInfo(id,patientData);
+
     }
     return patientData;
+  }
+
+  /**
+   * 设置患者扩展信息
+   * @param id 患者ID
+   * @param patientData 患者数据详情
+   */
+  private void setPatientExtInfo(Integer id,PatientTotalInfoVo patientData) {
+    PatientExtInfo patientExtInfo = new PatientExtInfo();
+    patientExtInfo.setPatientId(id);
+    List<PatientExtInfo> extInfos = patientExtInfoMapper.select(patientExtInfo);
+    if (StringHelper.isNotEmpty(extInfos)) {
+      StringBuilder labels = new StringBuilder(16);
+      StringBuilder diseases = new StringBuilder(16);
+      StringBuilder allergens = new StringBuilder(16);
+      StringBuilder allergensDescriptions = new StringBuilder(16);
+      for (PatientExtInfo extInfo : extInfos) {
+        Byte type = extInfo.getType();
+        if (type == 2 && extInfo.getDescription() != null) {
+          allergensDescriptions.append(extInfo.getDescription());
+          allergensDescriptions.append(",");
+        }
+        if (extInfo.getDictItemId() != null) {
+          DictionaryItem item =
+                  remoteSystemServiceFeign.findDictionaryItemById(extInfo.getDictItemId());
+          switch (type) {
+            case 0:
+              if (null != item) {
+                labels.append(item.getName());
+              }
+              break;
+            case 1:
+              if (null != item) {
+                diseases.append(item.getName());
+              }
+              break;
+            case 2:
+              if (null != item) {
+                allergens.append(item.getName());
+                allergens.append(",");
+              }
+              break;
+            default:
+              break;
+          }
+        }
+      }
+      patientData.setLabels(labels.toString());
+      patientData.setDiseases(diseases.toString());
+      // 去掉最后的逗号
+      if (allergens.length() > 0) {
+        allergens.deleteCharAt(allergens.length() - 1);
+        patientData.setAllergens(allergens.toString());
+      }
+      if (allergensDescriptions.length() > 0) {
+        allergensDescriptions.deleteCharAt(allergensDescriptions.length() - 1);
+        patientData.setAllergensDescriptions(allergensDescriptions.toString());
+      }
+    }
   }
 
   /**
