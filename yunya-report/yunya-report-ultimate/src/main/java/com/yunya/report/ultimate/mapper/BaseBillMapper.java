@@ -3,11 +3,8 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.report.domain.query.BillOfDiscountDetailQuery;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
-import com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO;
-import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.feign.report.domain.query.ArrearsQueryForm;
-import com.yunya.feign.report.domain.vo.ArrearsVo;
-import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
 import com.yunya.models.report.BaseBill;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -51,4 +48,7 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    */
   List<BillRestReceivableAmountVO> selectBillReceivableAmountList(
       @Param("query") BillOfReceivableQuery query);
+
+
+    ArrearsStatisticsVo selectArrears(@Param("orgId") Integer orgId);
 }
