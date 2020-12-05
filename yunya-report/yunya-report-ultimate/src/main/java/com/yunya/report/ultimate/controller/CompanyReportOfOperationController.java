@@ -1,6 +1,7 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
 import com.yunya.feign.report.domain.vo.EmployeeWorkloadOfOperationVO;
 import com.yunya.framework.common.model.ResponseResult;
@@ -63,6 +64,19 @@ public class CompanyReportOfOperationController {
       HttpServletResponse response, @RequestBody @Validated EmployeeWorkloadQuery query)
       throws IOException {
     billDetailBiz.exportEmployeeWorkloadListOfOperation(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据条件查询员工看诊情况列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工看诊情况")
+  @PostMapping(value = "/employee/diagnosis/list", name = "根据条件查询员工看诊情况列表")
+  public ResponseResult<T> billDetailBiz(@RequestBody @Validated EmployeeDiagnosisQuery query) {
+
     return ResponseUtil.success(null);
   }
 }
