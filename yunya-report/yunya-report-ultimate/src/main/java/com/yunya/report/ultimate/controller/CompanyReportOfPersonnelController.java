@@ -46,7 +46,7 @@ public class CompanyReportOfPersonnelController {
   @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
 
   /**
-   * 根据条件查询员工工作量报表
+   * 根据条件查询员工工作量报表(人事报表)
    *
    * @param query 查询条件
    * @return list
