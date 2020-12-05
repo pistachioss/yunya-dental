@@ -97,10 +97,10 @@
                 and brp.orgId = #{query.orgId}
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and brp.billNum = #{query.billNum}
+                and brp.billNum like concat('%', #{query.billNum}, '%')
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(brp.patientName, ''), ifnull(brp.pinyinName, ''), ifnull(brp.mobile, '')) like concat('%', #{query.keyWord}, '%')
+                and concat(IFNULL(brp.patientName, ''),IFNULL(brp.pinyinName, ''), IFNULL(brp.mobile, '')) like concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.tollStartDate != null and query.tollStartDate != ''">
                 and brp.toolDate &gt;= #{query.tollStartDate}

@@ -76,11 +76,11 @@
                 and br.orgId = #{query.orgId}
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(br.patientName, ''), ifnull(br.pinyinName, ''), ifnull(br.mobile, '')) like
+                and concat(IFNULL(br.patientName, ''), IFNULL(br.pinyinName, ''), IFNULL(br.mobile, '')) like
                 concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and br.billNum = #{query.billNum}
+                and br.billNum like concat('%', #{query.billNum}, '%')
             </if>
             <if test="query.refundStartDate != null and query.refundStartDate != ''">
                 and br.refundDate &gt;= #{query.refundStartDate}
@@ -194,7 +194,7 @@
         ) rfd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(ifnull(rfd.patientName, ''), ifnull(rfd.pinyinName, ''), ifnull(rfd.mobile, '')) Like
+                and concat(IFNULL(rfd.patientName, ''), IFNULL(rfd.pinyinName, ''), IFNULL(rfd.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -353,10 +353,10 @@
         ) bfr
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(ifnull(bfr.patientName, ''), ifnull(bfr.pinyinName, ''), ifnull(bfr.mobile, '')) like concat('%', #{query.keyword}, '%')
+                and concat(IFNULL(bfr.patientName, ''), IFNULL(bfr.pinyinName, ''), IFNULL(bfr.mobile, '')) like concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and concat(ifnull(bfr.`billNum`, '') like concat('%', #{query.billNum}, '%')
+                and concat(bfr.`billNum`) like concat('%', #{query.billNum}, '%')
             </if>
             <if test="query.refundStartDate != null and query.refundStartDate != ''">
                 and refundDate &gt;= #{query.refundStartDate}

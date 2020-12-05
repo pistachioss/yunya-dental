@@ -502,7 +502,7 @@
         orgId,
         billId,
         billNum,
-        DATE_FORMAT(orderDate, '%Y-%m-%d'),
+        DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
         patientId,
         patientName,
         mobile,
@@ -610,7 +610,7 @@
         ) ewd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(ewd.patientName, ewd.pinyinName, ewd.mobile) Like
+                and concat(IFNULL(ewd.patientName, ''), IFNULL(ewd.pinyinName, ''), IFNULL(ewd.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -748,7 +748,7 @@
         ) ewd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(ewd.patientName, ewd.pinyinName, ewd.mobile) Like
+                and concat(IFNULL(ewd.patientName, ''), IFNULL(ewd.pinyinName, ''), IFNULL(ewd.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -899,7 +899,7 @@
         ) ewd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(ewd.patientName, ewd.pinyinName, ewd.mobile) Like
+                and concat(IFNULL(ewd.patientName, ''), IFNULL(ewd.pinyinName, ''), IFNULL(ewd.mobile, '')) Like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -1070,7 +1070,7 @@
         ) awd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(awd.`name`, awd.pinyin_name, awd.mobile) like concat('%', #{query.keyword}, '%')
+                and concat(IFNULL(awd.`name`, ''), IFNULL(awd.pinyin_name, ''), IFNULL(awd.mobile, '')) like concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
                 and concat(awd.bill_num) like concat('%', #{query.billNum}, '%')
