@@ -27,7 +27,7 @@
         select
         bb.bill_id billId,
         be.employee_name employeeName,
-        DATE_FORMAT(bb.order_date, '%Y-%m-%d %h:%i:%s') orderDate,
+        DATE_FORMAT(bb.order_date, '%Y-%m-%d %H:%i:%s') orderDate,
         bb.order_num orderNum,
         bp.name,
         bp.mobile,
@@ -73,7 +73,7 @@
     <!-- 根据条件查询开单记录列表 -->
     <select id="selectBillRecordOfOrderList" resultType="com.yunya.feign.report.domain.vo.BillOfOrderRecordVO">
         SELECT
-        DATE_FORMAT(bor.orderDate, '%Y-%m-%d %h:%i:%s') orderDate,
+        bor.orderDate,
         bor.billId,
         bor.orderNum,
         bor.billNum,
@@ -125,13 +125,13 @@
                 and bor.orgId = #{query.orgId}
             </if>
             <if test="query.orderNum != null and query.orderNum != ''">
-                and bor.orderNum = #{query.orderNum}
+                and bor.orderNum like concat('%', #{query.orderNum} ,'%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
                 and bor.billNum like concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(bor.patientName, ''), ifnull(bor.pinyinName, ''), ifnull(bor.mobile, '')) like
+                and concat(bor.patientName, bor.pinyinName, bor.mobile) like
                 concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.orderStartDate != null and query.orderStartDate != ''">
@@ -155,7 +155,7 @@
             resultType="com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO">
         SELECT
         bpr.billId,
-        DATE_FORMAT(bpr.orderDate, '%Y-%m-%d %h:%i:%s') orderDate,
+        DATE_FORMAT(bpr.orderDate, '%Y-%m-%d') orderDate,
         bpr.billNum,
         bpr.orgId,
         bpr.orgName,
@@ -199,7 +199,7 @@
         ) bpr
         <where>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(ifnull(bpr.patientName, ''), ifnull(bpr.pinyinName, ''), ifnull(bpr.mobile, '')) like
+                and concat(bpr.patientName, bpr.pinyinName, bpr.mobile) like
                 concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -238,7 +238,7 @@
         SELECT
         billId,
         orgId,
-        DATE_FORMAT(orderDate, '%Y-%m-%d %h:%i:%s') orderDate,
+        DATE_FORMAT(orderDate, '%Y-%m-%d') orderDate,
         billNum,
         patientId,
         patientName,
@@ -294,7 +294,7 @@
                 and brr.orderDate = #{query.orderDate}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(ifnull(brr.patientName, ''), ifnull(brr.pinyinName, ''), ifnull(brr.mobile, '')) like
+                and concat(brr.patientName, brr.pinyinName, brr.mobile) like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">

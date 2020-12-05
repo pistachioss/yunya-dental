@@ -254,7 +254,7 @@
         ) btp
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(ifnull(btp.patientName, ''), ifnull(btp.pinyinName, ''), ifnull(btp.mobile, '')) like concat('%', #{query.keyword}, '%')
+                and concat(btp.patientName, btp.pinyinName, btp.mobile) like concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.treatStartDate != null and query.treatStartDate != ''">
                 and btp.treatStartTime &gt;= #{query.treatStartDate}

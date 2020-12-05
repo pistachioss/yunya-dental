@@ -54,9 +54,9 @@ public class CompanyReportTest {
     EmployeePersonalWorkloadDetailQuery query = new EmployeePersonalWorkloadDetailQuery();
     query.setOrgId(35);
     query.setDateType((byte) 0);
-    query.setQueryDate("2020-11");
-    query.setEmployeeId(570);
-    query.setBillNum("ZD00352011300001");
+    query.setQueryDate("2020-12");
+    query.setEmployeeId(526);
+    query.setKeyword("三七");
     ResponseResult<PageInfo<EmployeePersonalActualWorkloadDetailVO>> list =
         personnelController.findEmployeePersonalActualWorkloadDetailList(query);
     System.out.println(list);
@@ -69,7 +69,8 @@ public class CompanyReportTest {
     query.setOrgId(35);
     query.setDateType((byte) 1);
     query.setQueryDate("2020");
-    query.setEmployeeId(521);
+    query.setEmployeeId(526);
+    query.setKeyword("三七");
     ResponseResult<PageInfo<EmployeePersonalReceivedWorkloadDetailVO>> list =
         personnelController.findEmployeePersonalReceivedWorkloadDetailList(query);
     System.out.println(list);
