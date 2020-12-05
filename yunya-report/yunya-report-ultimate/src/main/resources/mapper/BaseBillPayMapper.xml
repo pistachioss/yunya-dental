@@ -100,7 +100,7 @@
                 and brp.billNum like concat('%', #{query.billNum}, '%')
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(brp.patientName,brp.pinyinName, brp.mobile) like concat('%', #{query.keyWord}, '%')
+                and concat(IFNULL(brp.patientName, ''),IFNULL(brp.pinyinName, ''), IFNULL(brp.mobile, '')) like concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.tollStartDate != null and query.tollStartDate != ''">
                 and brp.toolDate &gt;= #{query.tollStartDate}

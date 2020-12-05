@@ -131,7 +131,7 @@
                 and bor.billNum like concat('%', #{query.billNum} ,'%')
             </if>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(bor.patientName, bor.pinyinName, bor.mobile) like
+                and concat(IFNULL(bor.patientName, ''), IFNULL(bor.pinyinName, ''), IFNULL(bor.mobile, '')) like
                 concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.orderStartDate != null and query.orderStartDate != ''">
@@ -199,7 +199,7 @@
         ) bpr
         <where>
             <if test="query.keyWord != null and query.keyWord != ''">
-                and concat(bpr.patientName, bpr.pinyinName, bpr.mobile) like
+                and concat(IFNULL(bpr.patientName, ''), IFNULL(bpr.pinyinName, ''), IFNULL(bpr.mobile, '')) like
                 concat('%', #{query.keyWord}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
@@ -294,7 +294,7 @@
                 and brr.orderDate = #{query.orderDate}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(brr.patientName, brr.pinyinName, brr.mobile) like
+                and concat(IFNULL(brr.patientName, ''), IFNULL(brr.pinyinName, ''), IFNULL(brr.mobile, '')) like
                 concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
