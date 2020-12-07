@@ -212,7 +212,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @param orderRecordId 订单记录ID
    */
   private void saveBaseBillDetail(Integer orderRecordId) {
-    System.out.println("******************************保存中间表账单明细");
     OrderDetail orderDetail = new OrderDetail();
     orderDetail.setOrderRecordId(orderRecordId);
     orderDetail.setInservice(true);
@@ -260,6 +259,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     baseBillDetail.setExecutorId(detail.getExecutorId());
     baseBillDetail.setItemId(detail.getBillingItemId());
     baseBillDetail.setItemType(detail.getType());
+    baseBillDetail.setSourceType(detail.getSourceType());
     baseBillDetail.setQuantity(detail.getQuantity());
     baseBillDetail.setPrice(detail.getPrice());
     OrderDetailPayRecord detailPayRecord = new OrderDetailPayRecord();

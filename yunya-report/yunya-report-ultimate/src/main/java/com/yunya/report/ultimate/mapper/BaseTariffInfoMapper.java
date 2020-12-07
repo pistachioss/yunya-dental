@@ -1,8 +1,11 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.vo.ItemCategoryInfoVO;
 import com.yunya.models.report.BaseTariffInfo;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
+
+import java.util.List;
 
 public interface BaseTariffInfoMapper extends Mapper<BaseTariffInfo> {
   /**
@@ -24,4 +27,11 @@ public interface BaseTariffInfoMapper extends Mapper<BaseTariffInfo> {
    */
   void deleteByUnionPrimaryKey(
       @Param("itemId") Integer itemId, @Param("itemType") Integer itemType);
+
+  /**
+   * 获取全部开单项目分类列表
+   *
+   * @return List<ItemCategoryInfoVO>
+   */
+  List<ItemCategoryInfoVO> selectItemCategoryList();
 }

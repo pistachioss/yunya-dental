@@ -57,6 +57,12 @@ public class BaseBillDetail {
     private Byte itemType;
 
     /**
+     * 添加来源（0-医生；1-前台）
+     */
+    @Column(name = "source_type")
+    private Byte sourceType;
+
+    /**
      * 数量
      */
     private Integer quantity;
@@ -196,6 +202,24 @@ public class BaseBillDetail {
      */
     public void setItemId(Integer itemId) {
         this.itemId = itemId;
+    }
+
+    /**
+     * 获取添加来源
+     *
+     * @return sourceType - 添加来源（0-医生；1-前台）
+     */
+    public Byte getSourceType() {
+        return sourceType;
+    }
+
+    /**
+     * 设置添加来源 - 添加来源（0-医生；1-前台）
+     *
+     * @param sourceType - 添加来源（0-医生；1-前台）
+     */
+    public void setSourceType(Byte sourceType) {
+        this.sourceType = sourceType;
     }
 
     /**
