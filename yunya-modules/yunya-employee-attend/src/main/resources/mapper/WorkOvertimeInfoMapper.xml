@@ -82,7 +82,7 @@
         order by bs.first_start_time asc
     </select>
     <select id="findList" resultMap="findListMap">
-        SELECT
+        SELECT distinct
         t.id,
         t.user_id,
         t.work_date,
