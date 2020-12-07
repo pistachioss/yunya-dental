@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.controller;
 
+import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -13,6 +14,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介: 请假控制层
@@ -122,7 +125,7 @@ public class LeaveInfoController {
     @PostMapping("/findList")
     @ApiOperation("获取请假申请列表")
     @RepeatSubmit
-    public ResponseResult findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+    public ResponseResult<List<LeaveInfoListVO>> findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.findList(leaveInfoForm));
     }
 

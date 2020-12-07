@@ -19,7 +19,7 @@ import java.util.Date;
  * @return: $
  */
 @Data
-@ApiModel("加班信息")
+@ApiModel(value = "加班信息")
 public class WorkOvertimeInfoListVO {
     /** 主键id */
     @ApiModelProperty(value = "主键id")
