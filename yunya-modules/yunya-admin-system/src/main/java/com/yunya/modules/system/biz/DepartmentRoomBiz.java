@@ -19,6 +19,7 @@ import com.yunya.modules.system.vo.DepartmentRoomVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -152,5 +153,17 @@ public class DepartmentRoomBiz extends BaseBiz<DepartmentRoomMapper, DepartmentR
       throw new ClientServiceException("该科室已被关联，不允许被删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
     mapper.deleteByPrimaryKey(id);
+  }
+
+  /**
+   * 根据科室ID集合查询科室
+   * @param ids 科室模板ID集合
+   * @return
+   */
+  public List<DepartmentRoom> findDepartmentRoomByIds(List<Integer> ids) {
+    if (StringHelper.isNotEmpty(ids)) {
+      return mapper.selectByIds(ids);
+    }
+    return new ArrayList<>();
   }
 }

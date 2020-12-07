@@ -144,6 +144,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
+  public List<DepartmentRoom> findDepartmentRoomByIds(List<Integer> ids) {
+    return null;
+  }
+
+  @Override
   public List<DepartmentRoom> findDepartmentRoomList(DepartmentRoom departmentRoom) {
     return null;
   }
@@ -247,6 +252,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
 
   @Override
   public List<MemberType> findMemberTypeByIds(List<Integer> ids) {
+    return null;
+  }
+
+  @Override
+  public List<SysUserInfoDetail> findSysUserEmployeeInfoByUserIds(List<Integer> userIds) {
     return null;
   }
 }

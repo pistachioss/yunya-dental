@@ -300,6 +300,17 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   }
 
   /**
+   * 根据用户ID集合查询用户信息
+   *
+   * @param userIds 用户ID集合
+   * @return 用户信息集合
+   */
+  public List<SysUserInfoDetail> findUserInfoByUserIds(List<Integer> userIds) {
+    return mapper.selectSysUserEmployeeInfoByUserIds(userIds);
+  }
+
+
+  /**
    * 根据用户ID删除用户及关联员工信息
    *
    * @param id 用户ID

@@ -43,4 +43,12 @@
         from department_room dr
         where dr.id = #{id}
     </select>
+
+    <!-- 根据科室ID集合查询科室 -->
+    <select id="selectByIds" resultMap="BaseResultMap">
+        select dr.* from department_room dr where dr.id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
 </mapper>

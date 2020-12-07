@@ -121,4 +121,12 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "/api/appoint/count/{patientId}", method = RequestMethod.GET)
   Integer countNextAppoint(@PathVariable(value = "patientId") Integer patientId);
+
+  /**
+   * 根据预约ID查询预约
+   * @param appointIds 预约ID集合
+   * @return 预约ID集合
+   */
+  @RequestMapping(value = "/api/appoint/ids", method = RequestMethod.POST)
+  List<Appointment> findAppointmentListByIds(@RequestBody List<Integer> appointIds);
 }

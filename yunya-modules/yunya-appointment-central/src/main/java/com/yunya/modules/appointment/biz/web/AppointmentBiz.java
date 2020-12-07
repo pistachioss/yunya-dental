@@ -1679,7 +1679,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             setPatientInfo(resultList, patientIds);
         }
         // 设置redis缓冲
-        if (StringHelper.isNotEmpty(resultList)) {
+        /*if (StringHelper.isNotEmpty(resultList)) {
             resultList.forEach(appointmentUnDonePatientInfoVO -> {
                 Integer patientId = appointmentUnDonePatientInfoVO.getPatientId();
                 Integer id = appointmentUnDonePatientInfoVO.getId();
@@ -1692,7 +1692,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     redisUtils.set(redisKey,appointmentUnDonePatientInfoVO,3600);
                 }
             });
-        }
+        }*/
         return resultList;
     }
 
@@ -2434,4 +2434,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<Appointment> resultList = mapper.selectAppointmentList(query);
         return new PageInfo<>(resultList);
     }
+
+    /**
+     * 根据预约ID查询预约列表
+     * @param ids 预约ID集合
+     * @return 预约列表
+     */
+    public List<Appointment> appointmentListByIds(List<Integer> ids) {
+        if (StringHelper.isNotEmpty(ids)) {
+            return mapper.appointmentListByIds(ids);
+        }
+        return new ArrayList<>();
+    }
+
 }
