@@ -38,4 +38,13 @@ public class ApprovalAllListForm {
 
     @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回")
     private Integer apprpvalStatus;
+
+    @ApiModelProperty("页数")
+    private Integer page = 1;
+
+    @ApiModelProperty("每页个数")
+    private Integer size = 10;
+
+    @ApiModelProperty("是否分页")
+    private Boolean whetherPage = false;
 }

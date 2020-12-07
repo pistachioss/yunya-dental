@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.FieldInfoQueryForm;
 import com.yunya.feign.employee_attend.vo.ApprovalAllListVO;
 import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
@@ -89,7 +90,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         workOvertimeInfo.setWorkDate(fieldInfoForm.getStartTime());
         workOvertimeInfo.setUserId(fieldInfoForm.getUserId());
         int wi = workOvertimeInfoMapper.countByDay(workOvertimeInfo);
-        if (li==0&&wi==0) {
+        if (li == 0 && wi == 0) {
             FieldInfo field = new FieldInfo();
             field.setUserId(fieldInfoForm.getUserId());
             List<FieldInfo> fieldInfoList = mapper.findList(field);
@@ -135,7 +136,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                     } catch (ParseException e) {
                         throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                     }
-                    if(emlist.size()>0){
+                    if (emlist.size() > 0) {
                         for (EmListVO emListVO : emlist) {
                             //判断外勤开始时间是否在班次时间内
                             if (startTime.before(emListVO.getEndTime())
@@ -150,7 +151,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                                 end = true;
                             }
                         }
-                    }else{
+                    } else {
                         throw new ClientServiceException("申请的门诊当天无排班", INSERT_MODEL);
                     }
                     //若外勤开始时间和结束时间都在班次时间段内才能进行外勤申请
@@ -162,9 +163,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         fieldInfo.setApprpvalStatus(0);
                         int num = mapper.insertSelective(fieldInfo);
                         //生成抄送信息
-                        if (fieldInfoForm.getCopyList()!=null){
-                            List<CopyInfo>copyInfoList = new ArrayList<>();
-                            for(Integer copyId:fieldInfoForm.getCopyList()){
+                        if (fieldInfoForm.getCopyList() != null) {
+                            List<CopyInfo> copyInfoList = new ArrayList<>();
+                            for (Integer copyId : fieldInfoForm.getCopyList()) {
                                 CopyInfo copyInfo = new CopyInfo();
                                 copyInfo.setApplyId(fieldInfo.getId());
                                 copyInfo.setApplyType(2);
@@ -239,7 +240,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
             clinics.forEach(z -> clinicMap.put(z.getId() + "", z));
 
             for (FieldInfoListVO fieldInfoListVO : list) {
-                fieldInfoListVO.setCompanyName(clinicMap.get(fieldInfoListVO.getCompanyId()+"").getName());
+                fieldInfoListVO.setCompanyName(clinicMap.get(fieldInfoListVO.getCompanyId() + "").getName());
                 fieldInfoListVO.setApprovalPeopleName(emMap.get(fieldInfoListVO.getApprovalPeopleId() + "").getName());
                 fieldInfoListVO.setUserName(emMap.get(fieldInfoListVO.getUserId() + "").getName());
             }
@@ -296,8 +297,8 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         FieldInfo fieldInfo = new FieldInfo();
         fieldInfo.setId(fieldInfoForm.getId());
         fieldInfo = mapper.selectByPrimaryKey(fieldInfo);
-        if(fieldInfo.getApprpvalStatus()==0){
-            if(fieldInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))){
+        if (fieldInfo.getApprpvalStatus() == 0) {
+            if (fieldInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                 fieldInfo.setApprpvalStatus(3);
                 return mapper.updateByPrimaryKey(fieldInfo);
             }
@@ -306,7 +307,10 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         throw new ClientServiceException("当前申请已被处理或已过期", OBJECT_EDIT_FAIL);
     }
 
-    public List<ApprovalAllListVO> findApprovalAllList(ApprovalAllListForm approvalAllListForm){
+    public PageInfo<ApprovalAllListVO> findApprovalAllList(ApprovalAllListForm approvalAllListForm) {
+        if (approvalAllListForm.getWhetherPage()) {
+            PageHelper.startPage(approvalAllListForm.getPage(), approvalAllListForm.getSize());
+        }
         //获取用户信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(false);
@@ -315,21 +319,21 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         Byte[] userStatus = {0, 1, 3};
         model.setWorkStatus(userStatus);
         List<SysUserInfoDetail> employees = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-        if(approvalAllListForm.getUserName()!=null&&approvalAllListForm.getUserName()!=""){
+        if (approvalAllListForm.getUserName() != null && approvalAllListForm.getUserName() != "") {
             model.setKeyWord(approvalAllListForm.getUserName());
             List<SysUserInfoDetail> employeesByName = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-            if(employeesByName.size()==0){
+            if (employeesByName.size() == 0) {
                 throw new ClientServiceException("查无此人", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
             }
             approvalAllListForm.setUserId(employeesByName.get(0).getUserId());
         }
-        List<ApprovalAllListVO>reList = mapper.findApprovalAllList(approvalAllListForm);
+        List<ApprovalAllListVO> reList = mapper.findApprovalAllList(approvalAllListForm);
         if (reList.size() > 0) {
             Map<String, SysUserInfoDetail> emMapById = new HashMap(16);
             employees.forEach(z -> emMapById.put(z.getUserId() + "", z));
 
-            for(ApprovalAllListVO approvalAllListVO:reList){
-                approvalAllListVO.setUserName(emMapById.get(approvalAllListVO.getUserId()+"").getName());
+            for (ApprovalAllListVO approvalAllListVO : reList) {
+                approvalAllListVO.setUserName(emMapById.get(approvalAllListVO.getUserId() + "").getName());
                 String approvalName = "";
                 String[] split = approvalAllListVO.getApprovalPeopleId().split(",");
                 for (int i = 0; i < split.length; i++) {
@@ -338,7 +342,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                 approvalAllListVO.setApprovalPeopleName(approvalName);
             }
         }
-        return reList;
+        return new PageInfo<>(reList);
     }
 
 }
