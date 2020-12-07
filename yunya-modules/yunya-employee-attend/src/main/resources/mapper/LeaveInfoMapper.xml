@@ -264,7 +264,7 @@
         AND apprpval_status IN (0, 1)) a
     </select>
     <select id="selectLeave" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoListVO">
-        select t.id,
+        select distinct t.id,
         t.user_id as userId,
         t.vacation_id as vacationId,
         t.company_id as companyId,
