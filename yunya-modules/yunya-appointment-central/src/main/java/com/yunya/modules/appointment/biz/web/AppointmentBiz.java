@@ -27,6 +27,7 @@ import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -1665,21 +1666,21 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 预约ID集合
             List<Integer> appointIds = new ArrayList<>();
             List<Integer> assistentIds = new ArrayList<>();
-            List<Integer> dentistId = new ArrayList<>();
+            List<Integer> dentistIds = new ArrayList<>();
             List<Integer> deptRoomIds = new ArrayList<>();
             List<Integer> patientIds = new ArrayList<>();
             resultList.forEach(vo -> {
                 patientIds.add(vo.getPatientId());
                 deptRoomIds.add(vo.getAppointDeptRoomId());
-                dentistId.add(vo.getAppointDentistId());
+                dentistIds.add(vo.getAppointDentistId());
                 appointIds.add(vo.getId());
                 assistentIds.add(vo.getAppointAssistantId());
             });
             // 设置患者信息
-            setPatientInfo(resultList, patientIds);
+            setPatientInfo(resultList, patientIds,appointIds,dentistIds,assistentIds,deptRoomIds);
         }
         // 设置redis缓冲
-        if (StringHelper.isNotEmpty(resultList)) {
+        /*if (StringHelper.isNotEmpty(resultList)) {
             resultList.forEach(appointmentUnDonePatientInfoVO -> {
                 Integer patientId = appointmentUnDonePatientInfoVO.getPatientId();
                 Integer id = appointmentUnDonePatientInfoVO.getId();
@@ -1692,7 +1693,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     redisUtils.set(redisKey,appointmentUnDonePatientInfoVO,3600);
                 }
             });
-        }
+        }*/
         return resultList;
     }
 
@@ -1722,7 +1723,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param vos 患者候诊
      * @param patientIds 患者ID集合
      */
-    private void setPatientInfo(List<AppointmentUnDonePatientInfoVO> vos,List<Integer> patientIds) {
+    private void setPatientInfo(List<AppointmentUnDonePatientInfoVO> vos,
+                                List<Integer> patientIds,
+                                List<Integer> appointIds,
+                                List<Integer> dentistIds,
+                                List<Integer> assistantIds,
+                                List<Integer> deptRoomIds) {
         // 患者信息列表
         List<PatientTotalInfoVo> patientInfoByIds = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
         // 欠费金额列表
@@ -1732,6 +1738,15 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         patientInfoByIds.forEach(patientTotalInfoVo -> {
             memberTypeIds.add(patientTotalInfoVo.getMemberTypeId());
         });
+        // 获取预约患者
+        List<Appointment> appointmentList = this.appointmentListByIds(appointIds);
+
+        // 将dentistIds合并到assistentIds中
+        dentistIds.stream().sequential().collect(Collectors.toCollection(()->assistantIds));
+        // 根据预约医生ID和预约助手ID列表
+        List<SysUserInfoDetail> appointDentistAndAssistentInfoList = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantIds);
+        // 根据预约科室ID集合查询预约科室信息列表
+        List<DepartmentRoom> appointDepartmentRooms = remoteSystemServiceFeign.findDepartmentRoomByIds(deptRoomIds);
         // 获取会员类型信息
         List<MemberType> memberTypeByIds = remoteSystemServiceFeign.findMemberTypeByIds(memberTypeIds);
 
@@ -1764,6 +1779,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                     }
                 }
             }
+            // 设置候诊患者预约信息
+            setAppointmentInfo(patientEntity,
+                    appointmentList,
+                    appointDentistAndAssistentInfoList,
+                    appointDepartmentRooms,
+                    patientEntity.getId());
             // 欠费金额
             if (StringHelper.isNotEmpty(debtAmountList1)) {
                 List<DebtAmountModel> collect = debtAmountList1.stream().filter(debtAmountModel -> debtAmountModel.getPatientId().equals(patientId1)).collect(Collectors.toList());
@@ -1777,30 +1798,56 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
-     * 设置预约未到患者相关的医生、科室信息
-     * @param vo 预约未到患者信息
+     * 设置候诊患者预约信息
+     * @param vo  患者候诊信息
+     * @param appointmentList 预约信息列表
+     * @param dentistAndAssistentInfoList 预约医生和预约助手信息列表
+     * @param departmentRooms  预约科室信息列表
+     * @param appointId  预约ID
      */
-    private void setAppointmentInfo(AppointmentUnDonePatientInfoVO vo) {
-        Integer dentistId = vo.getAppointDentistId();
-        SysUserInfoDetail dentistInfo =
-                remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
-        if (null != dentistInfo) {
-            vo.setAppointDentistName(dentistInfo.getName());
-        }
-
-        Integer assistantId = vo.getAppointAssistantId();
-        if (null != assistantId) {
-            SysUserInfoDetail assistantInfo =
-                    remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(assistantId);
-            if (null != assistantInfo) {
-                vo.setAppointAssistantName(assistantInfo.getName());
-            }
-        }
-        Integer deptRoomId = vo.getAppointDeptRoomId();
-        if (null != deptRoomId) {
-            DepartmentRoom departmentRoom = remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
-            if (null != departmentRoom) {
-                vo.setAppointDeptRoomName(departmentRoom.getName());
+    private void setAppointmentInfo(AppointmentUnDonePatientInfoVO vo,
+                                    List<Appointment> appointmentList,
+                                    List<SysUserInfoDetail> dentistAndAssistentInfoList,
+                                    List<DepartmentRoom> departmentRooms,
+                                    Integer appointId) {
+        if (StringHelper.isNotEmpty(appointmentList)) {
+            // 根据appointId从预约列表中检索预约
+            List<Appointment> collect = appointmentList.stream().filter(appointment -> appointment.getId().equals(appointId)).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(collect)) {
+                Appointment appointment = collect.get(0);
+                vo.setAppointDentistId(appointment.getDentistId());
+                // 根据医生ID从医生信息列表中查询医生名字
+                Integer dentistId = appointment.getDentistId();
+                List<SysUserInfoDetail> sysUserInfoDetailList = dentistAndAssistentInfoList.stream().filter(
+                        sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(dentistId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(sysUserInfoDetailList)) {
+                    SysUserInfoDetail dentistInfo = sysUserInfoDetailList.get(0);
+                    vo.setAppointDentistName(null != dentistInfo ? dentistInfo.getName() : "--");
+                }
+                // 根据助手ID从医生信息列表中查询助手名字
+                Integer assistantId = appointment.getAssistantId();
+                List<SysUserInfoDetail> assistantInfos = dentistAndAssistentInfoList.stream().filter(
+                        sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(assistantId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(assistantInfos)) {
+                    SysUserInfoDetail assistantInfo = assistantInfos.get(0);
+                    vo.setAppointAssistantName(null != assistantInfo ? assistantInfo.getName() : "--");
+                }
+                // 根据科室ID从科室信息列表中查询科室名字
+                Integer deptRoomId = appointment.getDeptRoomId();
+                List<DepartmentRoom> departmentRoomInfos = departmentRooms.stream().filter(
+                        departmentRoom -> departmentRoom.getId().equals(deptRoomId)).collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(departmentRoomInfos)) {
+                    vo.setAppointDeptRoomId(appointment.getDeptRoomId());
+                    DepartmentRoom departmentRoom = departmentRoomInfos.get(0);
+                    vo.setAppointDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
+                }
+                vo.setAppointTime(appointment.getAppointTime());
+                vo.setAppointDuration(appointment.getAppointDuration());
+                vo.setAppointContent(appointment.getAppointContent());
+                vo.setAppointRemark(appointment.getRemarks());
+                vo.setAppointType(appointment.getAppointType());
+                vo.setAppointStatus(appointment.getAppointStatus());
+                vo.setConfirmStatus(appointment.getConfirmStatus());
             }
         }
     }
@@ -2434,4 +2481,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         List<Appointment> resultList = mapper.selectAppointmentList(query);
         return new PageInfo<>(resultList);
     }
+
+    /**
+     * 根据预约ID查询预约列表
+     * @param ids 预约ID集合
+     * @return 预约列表
+     */
+    public List<Appointment> appointmentListByIds(List<Integer> ids) {
+        if (StringHelper.isNotEmpty(ids)) {
+            return mapper.appointmentListByIds(ids);
+        }
+        return new ArrayList<>();
+    }
+
 }

@@ -155,4 +155,16 @@ public class AppointmentRest {
   public Integer countNextAppoint(@PathVariable(value = "patientId") Integer patientId){
     return appointmentBiz.countNextAppoint(patientId);
   }
+
+  /**
+   * 根据预约ID查询预约
+   * @param appointIds 预约ID集合
+   * @return 预约ID集合
+   */
+  @RequestMapping(value = "/appoint/ids", method = RequestMethod.POST)
+  public List<Appointment> findAppointmentListByIds(@RequestBody List<Integer> appointIds){
+    return appointmentBiz.appointmentListByIds(appointIds);
+  }
+
+
 }

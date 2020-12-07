@@ -233,6 +233,15 @@ public interface RemoteSystemServiceFeign {
   DepartmentRoom findDepartmentRoomById(@PathVariable(value = "id") Integer id);
 
   /**
+   * 根据科室ID集合查询科室
+   *
+   * @param ids 科室模板ID集合
+   * @return
+   */
+  @RequestMapping(value = "/api/deptRoom/ids/list", method = RequestMethod.POST)
+  List<DepartmentRoom> findDepartmentRoomByIds(@RequestBody List<Integer> ids);
+
+  /**
    * 根据条件查询科室列表
    *
    * @param departmentRoom 查询条件
@@ -382,4 +391,13 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/memberTypes", method = RequestMethod.POST)
   List<MemberType> findMemberTypeByIds(@RequestBody List<Integer> ids);
+
+  /**
+   * 根据用户ID集合查询用户信息
+   *
+   * @param userIds 用户ID集合
+   * @return 用户信息集合
+   */
+  @RequestMapping(value = "/api/userInfo/ids/list", method = RequestMethod.POST)
+  List<SysUserInfoDetail> findSysUserEmployeeInfoByUserIds(@RequestBody List<Integer> userIds);
 }

@@ -31,7 +31,7 @@
         bb.order_num orderNum,
         bp.name,
         bp.mobile,
-        (bb.privilege_amount - bb.actual_amount) originalPrice,
+        IFNULL(bb.privilege_amount + bb.actual_amount,0) originalPrice,
         IFNULL(bb.privilege_amount,0) privilegeAmount,
         IFNULL(bb.actual_amount,0) actualAmount,
         IFNULL(bb.received_amount,0) receivedAmount,

@@ -86,6 +86,14 @@ public interface SysUserMapper extends Mapper<SysUser> {
   SysUserInfoDetail selectSysUserEmployeeInfoByUserId(@Param("userId") Integer userId);
 
   /**
+   * 根据用户ID列表查询用户（员工）信息
+   *
+   * @param userIds 用户ID集合
+   * @return 返回用户信息集合
+   */
+  List<SysUserInfoDetail> selectSysUserEmployeeInfoByUserIds(@Param("userIds") List<Integer> userIds);
+
+  /**
    * 根据用户ID删除员工信息
    *
    * @param id 用户ID

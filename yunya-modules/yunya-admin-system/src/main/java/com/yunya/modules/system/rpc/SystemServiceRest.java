@@ -293,6 +293,17 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据用户ID集合查询用户信息
+   *
+   * @param userIds 用户ID集合
+   * @return 用户信息集合
+   */
+  @RequestMapping(value = "/userInfo/ids/list", method = RequestMethod.POST)
+  public List<SysUserInfoDetail> findSysUserEmployeeInfoByUserIds(@RequestBody List<Integer> userIds) {
+    return sysUserBiz.findUserInfoByUserIds(userIds);
+  }
+
+  /**
    * 根据条件查询用户信息（含员工信息）
    *
    * @param model 查询条件
@@ -352,6 +363,17 @@ public class SystemServiceRest {
   @RequestMapping(value = "/deptRoom/list", method = RequestMethod.POST)
   public List<DepartmentRoom> findDepartmentRoomList(@RequestBody DepartmentRoom departmentRoom) {
     return departmentRoomBiz.selectList(departmentRoom);
+  }
+
+  /**
+   * 根据科室ID集合查询科室
+   *
+   * @param ids 科室模板ID集合
+   * @return
+   */
+  @RequestMapping(value = "/deptRoom/ids/list", method = RequestMethod.POST)
+  List<DepartmentRoom> findDepartmentRoomByIds(@RequestBody List<Integer> ids) {
+    return departmentRoomBiz.findDepartmentRoomByIds(ids);
   }
 
   /**

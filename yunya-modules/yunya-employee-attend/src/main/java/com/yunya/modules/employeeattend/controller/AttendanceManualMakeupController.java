@@ -8,7 +8,6 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.AttendanceManualMakeupBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -38,7 +37,6 @@ public class AttendanceManualMakeupController {
      */
     @CurrentUser
     @ApiOperation("添加手动补入时长信息")
-    @ApiImplicitParam(name = "attendanceManualMakeupModel", value = "手动补入时长添加模型")
     @PostMapping("/add")
     @RepeatSubmit
     public ResponseResult add(@RequestBody @Validated AttendanceManualMakeupModel attendanceManualMakeupModel) {
@@ -53,7 +51,6 @@ public class AttendanceManualMakeupController {
      * @return
      */
     @CurrentUser
-    @ApiImplicitParam(name = "attendanceManualMakeupForm", value = "手动补入时长修改模型")
     @ApiOperation("修改手动补入时长信息")
     @PutMapping("/update")
     public ResponseResult update(@RequestBody @Validated AttendanceManualMakeupForm attendanceManualMakeupForm) {

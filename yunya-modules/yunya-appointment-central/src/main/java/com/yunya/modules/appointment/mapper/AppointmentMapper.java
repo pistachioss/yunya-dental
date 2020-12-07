@@ -225,4 +225,11 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return 后续患者预约数量
    */
   Integer selectCountNextAppoint(@Param("patientId") Integer patientId);
+
+  /**
+   * 根据预约ID查询预约列表
+   * @param ids 预约ID集合
+   * @return 预约列表
+   */
+  List<Appointment> appointmentListByIds(@Param("ids") List<Integer> ids);
 }

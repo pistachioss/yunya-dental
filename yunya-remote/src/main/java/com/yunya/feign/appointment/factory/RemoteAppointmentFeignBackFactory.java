@@ -11,6 +11,9 @@ import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
@@ -72,4 +75,11 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
     public Integer countNextAppoint(Integer patientId) {
         return null;
     }
+
+    @Override
+    public List<Appointment> findAppointmentListByIds(List<Integer> appointIds) {
+        return null;
+    }
+
+
 }

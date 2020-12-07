@@ -58,7 +58,6 @@ public class AttendanceDeviceBindingController {
      * @return ResponseResult<AttendanceDeviceBindingVO>
      */
     @ApiOperation("根据userid查询员工当前绑定的考勤设备信息")
-    @ApiImplicitParam(value = "用户Id", name = "userId", required = true)
     @GetMapping("/employeeBindingDevice/{userId}")
     public ResponseResult<AttendanceDeviceBindingVO> findEmployeeBindingDevice(@PathVariable(value = "userId") @Valid Integer userId) {
         AttendanceDeviceBindingVO result = attendanceDeviceBindingBiz.findEmployeeBindingDevice(userId);

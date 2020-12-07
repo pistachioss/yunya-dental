@@ -17,7 +17,12 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <select id="selectList" resultMap="BaseResultMap">
-    select * from vacation_set where
-    vacation_range in (#{vacationRange},0)
+    select * from vacation_set
+    <where>
+      vacation_range in (#{vacationRange},0)
+      <if test="vacationEnable!=null">
+        and vacation_enable = #{vacationEnable}
+      </if>
+    </where>
   </select>
 </mapper>
