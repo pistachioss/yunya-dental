@@ -186,7 +186,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         patientIds.add(vo.getPatientId());
         appointDeptRoomIds.add(vo.getAppointDeptRoomId());
         appointDentistId.add(vo.getAppointDentistId());
-        appointIds.add(vo.getId());
+        appointIds.add(vo.getAppointmentId());
         appointAssistentIds.add(vo.getAppointAssistantId());
         registeredAssistentIds.add(vo.getRegAssistantId());
         registeredDeptRoomIds.add(vo.getRegDeptRoomId());
