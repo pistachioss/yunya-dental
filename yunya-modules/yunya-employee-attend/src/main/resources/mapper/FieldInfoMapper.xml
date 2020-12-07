@@ -152,7 +152,7 @@
             <if test="startTime!=null">
                 AND  DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
-            <if test="userId!=null and userId!=''">
+            <if test="userId!=null">
                 AND  user_id = #{userId}
             </if>
             <if test="apprpvalStatus != null">
@@ -168,7 +168,7 @@
             <if test="startTime!=null">
                 AND  DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
-            <if test="userId!=null and userId!=''">
+            <if test="userId!=null">
                 AND  user_id = #{userId}
             </if>
             <if test="apprpvalStatus!=null">
@@ -186,7 +186,7 @@
             <if test="startTime!=null">
                 AND  DATE_FORMAT(li.start_time,'%Y-%m-%d') =  DATE_FORMAT(#{startTime},'%Y-%m-%d')
             </if>
-            <if test="userId!=null and userId!=''">
+            <if test="userId!=null">
                 AND  li.user_id = #{userId}
             </if>
             <if test="apprpvalStatus!=null">
