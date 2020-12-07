@@ -21,7 +21,7 @@ public class VacationSetQuery {
     private Integer id;
 
     @ApiModelProperty("启用状态 0否 1是")
-    private Integer vacationEnable = 1;
+    private Integer vacationEnable;
 
     @ApiModelProperty("页数")
     private Integer page = 1;
