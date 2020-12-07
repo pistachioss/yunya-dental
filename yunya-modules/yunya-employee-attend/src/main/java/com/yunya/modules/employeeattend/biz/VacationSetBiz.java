@@ -52,6 +52,7 @@ public class VacationSetBiz extends BaseBiz<VacationSetMapper, VacationSet> {
         }else if(sysUserInfoDetail.getWorkStatus()==1){
             vacationSet.setVacationRange(2);
         }
+        vacationSet.setVacationEnable(vacationSetQuery.getVacationEnable());
         List<VacationSet> reList = mapper.selectList(vacationSet);
         return new PageInfo<>(reList);
     }
