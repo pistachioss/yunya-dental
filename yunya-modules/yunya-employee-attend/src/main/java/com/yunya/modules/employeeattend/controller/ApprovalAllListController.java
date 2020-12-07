@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.employee_attend.vo.ApprovalAllListVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -40,7 +41,7 @@ public class ApprovalAllListController {
      */
     @PostMapping("/findList")
     @ApiOperation("申请记录")
-    public ResponseResult findList(@RequestBody @Validated ApprovalAllListForm approvalAllListForm) {
+    public ResponseResult<PageInfo<ApprovalAllListVO>> findList(@RequestBody @Validated ApprovalAllListForm approvalAllListForm) {
         return ResponseUtil.success(fieldInfoBiz.findApprovalAllList(approvalAllListForm));
     }
 

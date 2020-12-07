@@ -145,6 +145,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                             BeanUtils.copyProperties(workOvertimeInfoForm, workOvertimeInfo);
                             workOvertimeInfo.setCrtId(workOvertimeInfo.getUserId());
                             workOvertimeInfo.setCrtTime(new Date());
+                            workOvertimeInfo.setApprpvalStatus(0);
                             int num = mapper.insertSelective(workOvertimeInfo);
                             //生成抄送信息
                             if (workOvertimeInfoForm.getCopyList()!=null) {

@@ -5,12 +5,9 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceAddressSetModel;
-import com.yunya.feign.employee_attend.model.AttendanceSetModel;
-import com.yunya.feign.employee_attend.model.AttendanceWifiSetModel;
 import com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
-import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -22,6 +19,7 @@ import com.yunya.modules.employeeattend.mapper.AttendanceAddressSetMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,7 +73,7 @@ public class AttendanceAddressSetBiz extends BaseBiz<AttendanceAddressSetMapper,
                 Integer orgId = organizationInfoDetail.getId();
                 attendanceAddressSetVOList.forEach(attendanceAddressSetVO -> {
                     Integer attendOrgId = attendanceAddressSetVO.getOrgId();
-                    if (orgId == attendOrgId) {
+                    if (orgId.equals(attendOrgId)) {
                         attendanceAddressSetVO.setOrganizationName(organizationInfoDetail.getName());
                         return;
                     }
