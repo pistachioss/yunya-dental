@@ -6,7 +6,6 @@ import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
 import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
 import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -50,7 +49,6 @@ public class AttendancePunchRecordController {
     @PostMapping("/punchInfo")
     @CurrentUser
     public ResponseResult<AttendancePunchInfoVO> punchInfo(@RequestBody AttendancePunchRecordQueryForm queryForm) {
-        BaseContextHandler.setUserID("569");
         AttendancePunchInfoVO result = attendancePunchRecordBiz.punchInfo(queryForm);
         return ResponseUtil.success(result);
     }
@@ -65,7 +63,6 @@ public class AttendancePunchRecordController {
     @PostMapping("/punch")
     @CurrentUser
     public ResponseResult punch(@RequestBody @Validated AttendancePunchRecordForm form) {
-        BaseContextHandler.setUserID("569");
         attendancePunchRecordBiz.punch(form);
         return ResponseUtil.success();
     }
