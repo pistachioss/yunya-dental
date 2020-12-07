@@ -337,7 +337,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                 String approvalName = "";
                 String[] split = approvalAllListVO.getApprovalPeopleId().split(",");
                 for (int i = 0; i < split.length; i++) {
-                    approvalName = approvalName + split[i] + ",";
+                    approvalName = emMapById.get(split[i]).getName() + ",";
                 }
                 approvalAllListVO.setApprovalPeopleName(approvalName);
             }
