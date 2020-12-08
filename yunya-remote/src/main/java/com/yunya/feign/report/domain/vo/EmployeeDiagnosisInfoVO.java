@@ -2,6 +2,7 @@ package com.yunya.feign.report.domain.vo;
 
 import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
@@ -21,41 +22,54 @@ import java.math.BigDecimal;
 @ToString
 public class EmployeeDiagnosisInfoVO implements Serializable {
   /** 员工ID */
+  @ApiModelProperty("员工ID")
   private Integer employeeId;
   /** 医生姓名 */
   @Excel(name = "医生")
+  @ApiModelProperty("医生姓名")
   private String employeeName;
   /** 排班时长(分钟） */
   @Excel(name = "排班时长(分钟）")
+  @ApiModelProperty("排班时长")
   private Integer totalShiftTime;
   /** 治疗时长（分钟） */
   @Excel(name = "治疗时长（分钟）")
+  @ApiModelProperty("治疗时长")
   private Integer totalTreatmentTime;
   /** 初诊人数 */
   @Excel(name = "初诊人数")
+  @ApiModelProperty("初诊人数")
   private Integer firstVisitNum;
   /** 就诊人次 */
   @Excel(name = "就诊人次")
+  @ApiModelProperty("就诊人次")
   private Integer treatVisitsTimes;
   /** 次均消费 */
   @Excel(name = "次均消费")
+  @ApiModelProperty("次均消费")
   private BigDecimal averageConsumption;
   /** 就诊人数 */
   @Excel(name = "就诊人数")
+  @ApiModelProperty("就诊人数")
   private Integer treatVisitsNum;
   /** 人均消费 */
   @Excel(name = "人均消费")
+  @ApiModelProperty("人均消费")
   private BigDecimal perCapitaConsumption;
   /** 预约人次 */
   @Excel(name = "预约人次")
+  @ApiModelProperty("预约人次")
   private Integer appointmentsNum;
   /** 到诊人次 */
   @Excel(name = "到诊人次")
+  @ApiModelProperty("到诊人次")
   private Integer visitArrivedTimes;
   /** 改约人次 */
   @Excel(name = "改约人次")
+  @ApiModelProperty("改约人次")
   private Integer appointmentModifyTimes;
   /** 取消预约人次 */
   @Excel(name = "取消预约人次")
+  @ApiModelProperty("取消预约人次")
   private Integer appointmentCancelTimes;
 }

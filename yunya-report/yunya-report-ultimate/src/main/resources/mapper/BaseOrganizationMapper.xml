@@ -1,13 +1,358 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BaseOrganizationMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseOrganization" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="org_type" property="orgType" jdbcType="TINYINT" />
-    <result column="abbreviation" property="abbreviation" jdbcType="VARCHAR" />
-    <result column="clinic_number" property="clinicNumber" jdbcType="VARCHAR" />
-  </resultMap>
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseOrganizationMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseOrganization">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="org_type" property="orgType" jdbcType="TINYINT"/>
+        <result column="abbreviation" property="abbreviation" jdbcType="VARCHAR"/>
+        <result column="clinic_number" property="clinicNumber" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 根据条件查询门诊患者数据总览 -->
+    <select id="selectClinicPatientDataStatistic"
+            resultType="com.yunya.feign.report.domain.vo.PatientDataStatisticsVO">
+        SELECT
+            SUM( bo.firstVisitPerNum ) AS firstVisitPerNum,
+            SUM( bo.repeatVisitsPerNum ) AS repeatVisitsPerNum,
+            SUM( bo.treatPerNum ) AS treatPerNum,
+            SUM( bo.appointPerNum ) AS appointPerNum,
+            SUM( bo.repeatVisitsPerTimes ) AS repeatVisitsPerTimes,
+            SUM( bo.treatPerTimes ) AS treatPerTimes,
+            SUM( bo.appointPerTimes ) AS appointPerTimes,
+            SUM( bo.appointModifyPerTimes ) AS appointModifyPerTimes,
+            SUM( bo.appointCancelPerTimes ) AS appointCancelPerTimes,
+            SUM( bo.appointMissedPerTimes ) AS appointMissedPerTimes,
+            CONVERT (
+                SUM( bo.totalActualAmount ) / SUM( bo.treatPerTimes ),
+            DECIMAL ( 19, 2 )) AS averageConsumption,
+            CONVERT (
+                SUM( bo.totalActualAmount ) / SUM( bo.treatPerNum ),
+            DECIMAL ( 19, 2 )) AS perCapitaConsumption
+        FROM
+            (
+            SELECT
+                bo.org_id,
+                IFNULL( btp.firstVisitPerNum, 0 ) AS firstVisitPerNum,
+                IFNULL( btp1.repeatVisitsPerNum, 0 ) AS repeatVisitsPerNum,
+                IFNULL( btp1.repeatVisitsPerTimes, 0 ) AS repeatVisitsPerTimes,
+                IFNULL( btp2.treatPerTimes, 0 ) AS treatPerTimes,
+                IFNULL( btp2.treatPerNum, 0 ) AS treatPerNum,
+                IFNULL( btp3.appointPerNum, 0 ) AS appointPerNum,
+                IFNULL( btp3.appointPerTimes, 0 ) AS appointPerTimes,
+                IFNULL( btp4.appointModifyPerTimes, 0 ) AS appointModifyPerTimes,
+                IFNULL( btp5.appointCancelPerTimes, 0 ) AS appointCancelPerTimes,
+                IFNULL( btp6.appointMissedPerTimes, 0 ) AS appointMissedPerTimes,
+                IFNULL( bb.totalActualAmount, 0 ) AS totalActualAmount
+            FROM
+                base_organization bo
+                LEFT JOIN (
+                SELECT
+                    btp.org_id,
+                    COUNT( DISTINCT btp.patient_id ) AS firstVisitPerNum
+                FROM
+                    base_treatment_process btp
+                <where>
+                    AND btp.treat_end_time IS NOT NULL
+                    AND btp.treat_type = 0
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    btp.org_id
+                ) btp ON bo.org_id = btp.org_id
+                LEFT JOIN (
+                SELECT
+                    btp.org_id,
+                    COUNT( DISTINCT btp.patient_id ) AS repeatVisitsPerNum,
+                    COUNT( btp.treatment_id ) AS repeatVisitsPerTimes
+                FROM
+                    base_treatment_process btp
+                <where>
+                    AND btp.treat_end_time IS NOT NULL
+                    AND btp.treat_type = 1
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    btp.org_id
+                ) btp1 ON bo.org_id = btp1.org_id
+                LEFT JOIN (
+                SELECT
+                    btp.org_id,
+                    COUNT( DISTINCT btp.patient_id ) AS treatPerNum,
+                    COUNT( btp.treatment_id ) AS treatPerTimes
+                FROM
+                    base_treatment_process btp
+                <where>
+                    AND btp.treat_end_time IS NOT NULL
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.treat_start_time, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    btp.org_id
+                ) btp2 ON bo.org_id = btp2.org_id
+                LEFT JOIN (
+                SELECT
+                    btp.org_id,
+                    COUNT( DISTINCT btp.patient_id ) AS appointPerNum,
+                    COUNT( btp.appointment_id ) AS appointPerTimes
+                FROM
+                    base_treatment_process btp
+                <where>
+                    AND btp.appointment_id IS NOT NULL
+                    AND btp.appoint_status != 2
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    btp.org_id
+                ) btp3 ON bo.org_id = btp3.org_id
+                LEFT JOIN (
+                SELECT
+                    btp.org_id,
+                    SUM( btp.appoint_modify_time ) AS appointModifyPerTimes
+                FROM
+                    base_treatment_process btp
+                <where>
+                    AND btp.appointment_id IS NOT NULL
+                    AND btp.appoint_modify_time > 0
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    btp.org_id
+                ) btp4 ON bo.org_id = btp4.org_id
+                LEFT JOIN (
+                SELECT
+                    btp.org_id,
+                    COUNT( btp.appointment_id ) AS appointCancelPerTimes
+                FROM
+                    base_treatment_process btp
+                <where>
+                    AND btp.appointment_id IS NOT NULL
+                    AND btp.appoint_status = 2
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    btp.org_id
+                ) btp5 ON bo.org_id = btp5.org_id
+                LEFT JOIN (
+                SELECT
+                    btp.org_id,
+                    COUNT( appointment_id ) AS appointMissedPerTimes
+                FROM
+                    base_treatment_process btp
+                <where>
+                    AND btp.appointment_id IS NOT NULL
+                    AND btp.registered_id IS NULL
+                    AND CURRENT_DATE > btp.appoint_start_time
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( btp.appoint_start_time, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    btp.org_id
+                ) btp6 ON bo.org_id = btp6.org_id
+                LEFT JOIN (
+                SELECT
+                    bb.org_id,
+                    SUM( bb.actual_amount ) AS totalActualAmount
+                FROM
+                    base_bill bb
+                <where>
+                    AND bb.bill_num IS NOT NULL
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bb.bill_date, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bb.bill_date, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    bb.org_id ) bb ON bo.org_id = bb.org_id
+            ) bo
+        <where>
+            <if test="query.orgIds != null and query.orgIds.length > 0">
+                and bo.org_id in
+                <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>
