@@ -33,7 +33,7 @@ import java.util.List;
  */
 @Api(tags = "图片影像模块(增删改查)")
 @RestController
-@RequestMapping("/photo")
+@RequestMapping("/photos")
 public class XRayFilmController {
 
     @Autowired

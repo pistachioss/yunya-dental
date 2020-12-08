@@ -7,6 +7,7 @@ import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
+import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.web.AppointItemBiz;
@@ -164,6 +165,16 @@ public class AppointmentRest {
   @RequestMapping(value = "/appoint/ids", method = RequestMethod.POST)
   public List<Appointment> findAppointmentListByIds(@RequestBody List<Integer> appointIds){
     return appointmentBiz.appointmentListByIds(appointIds);
+  }
+
+  /**
+   * 计算后续指定患者的预约数量列表
+   * @param patientIds 患者ID
+   * @return 返回预约数量
+   */
+  @RequestMapping(value = "/appoint/count/patientIds", method = RequestMethod.POST)
+  List<NextAppointsVo> countNextAppoints(List<Integer> patientIds) {
+    return appointmentBiz.countNextAppoints(patientIds);
   }
 
 

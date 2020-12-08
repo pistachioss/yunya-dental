@@ -67,6 +67,7 @@
     <select id="findLeaveInfoList" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
         t.id,
+        ifnull(t.company_id,es.clinic_id) as orgId,
         t.user_id as userId,
         t.vacation_id as vacationId,
         if(vs.vacation_status=1,t.start_time,ifnull(es.work_date,t.start_time)) as startDate,
@@ -278,7 +279,8 @@
         t.crt_time as crtTime,
         t.refuse_reason as refuseReason,
         vs.vacation_status as vacationStatus,
-        IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)), TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))
+        IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
+        TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))
         AS leaveTime
         from leave_info t
         LEFT join vacation_set vs on t.vacation_id = vs.id
@@ -327,13 +329,15 @@
     li.crt_time AS crtTime,
     li.start_time AS startTime,
     li.end_time AS endTime,
-    TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time) AS leaveTime,
+     IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
+        TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))AS leaveTime,
     ai.approval_status AS approvalStatus,
 	ap.user_id AS uid
     FROM
 	leave_info li
     LEFT JOIN approval_info ai ON ai.leave_id = li.id
     LEFT JOIN approval_people ap on li.approval_now_people_id = ap.id
+     LEFT JOIN leave_schedule ls on ls.leave_id = li.id
     LEFT JOIN vacation_set vs on li.vacation_id = vs.id
     where ap.user_id = #{userId} and li.apprpval_status = 0
     group BY li.id
@@ -346,13 +350,15 @@
     li.crt_time AS crtTime,
     li.start_time AS startTime,
     li.end_time AS endTime,
-    TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time) AS leaveTime,
+     IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
+        TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))AS leaveTime,
     ai.approval_status AS approvalStatus
     FROM
 	leave_info li
     LEFT JOIN approval_info ai ON ai.leave_id = li.id
     LEFT JOIN approval_people ap on ai.approval_people_id = ap.id
     LEFT JOIN approval_level_set als on ap.approval_level_id = als.id
+     LEFT JOIN leave_schedule ls on ls.leave_id = li.id
     LEFT JOIN vacation_set vs on li.vacation_id = vs.id
     where ai.approval_status in (2,1)
     and ap.user_id = #{userId} group BY ai.leave_id
