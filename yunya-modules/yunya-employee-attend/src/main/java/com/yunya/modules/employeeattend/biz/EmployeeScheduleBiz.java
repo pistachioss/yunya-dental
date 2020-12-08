@@ -379,14 +379,14 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                 }
                 if(workDayDatas.isEmpty()||workDayDatas.size()<1){
                     JSONObject workDayDataNull = new JSONObject();
-                    workDayDataNull.put("id", "");
+                    workDayDataNull.put("id", 0);
                     workDayDataNull.put("companyType", "");
                     workDayDataNull.put("companyName", "");
                     workDayDataNull.put("employeeName", "");
                     workDayDataNull.put("color", "");
                     workDayDataNull.put("simtime", "");
                     workDayDataNull.put("date",  calendar.getTime());
-                    workDayDataNull.put("compClinId", "");
+                    workDayDataNull.put("compClinId", 0);
                     workDayDatas.add(workDayDataNull);
                 }
                 personDays.add(workDayDatas);
