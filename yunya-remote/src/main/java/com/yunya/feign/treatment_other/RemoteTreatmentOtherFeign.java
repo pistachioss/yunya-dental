@@ -5,6 +5,7 @@ import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.feign.treatment_other.factory.RemoteTreatmentOtherFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.treatment_other.VisitingRecord;
+import com.yunya.models.treatment_other.XRayFilm;
 import io.swagger.annotations.ApiOperation;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -57,4 +58,15 @@ public interface RemoteTreatmentOtherFeign {
     @ApiOperation(value = "统计后续随访个数")
     @RequestMapping(value = "api/treatment/other/visiting/count/{patientId}/{regDate}",method = RequestMethod.GET)
     Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId,@PathVariable(value = "regDate") String regDate);
+
+    /**
+     * 根据患者ID集合和当前时间查询患者照片集合
+     * @param patientIds  患者ID列表
+     * @param currentDate  当前日期
+     * @return 返回图片信息
+     */
+    @ApiOperation(value = "根据患者ID集合和当前时间查询患者照片集合")
+    @RequestMapping(value = "api/treatment/other/xray/film/list/{currentDate}",method = RequestMethod.POST)
+    List<XRayFilm> findXRayFilmListByPatientIds(@RequestBody List<Integer> patientIds,
+                                                @PathVariable("currentDate") String currentDate);
 }

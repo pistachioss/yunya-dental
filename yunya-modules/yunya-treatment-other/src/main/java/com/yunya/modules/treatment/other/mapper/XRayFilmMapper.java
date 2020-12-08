@@ -41,4 +41,14 @@ public interface XRayFilmMapper extends Mapper<XRayFilm> {
      * @return 返回列表
      */
     List<ToothRootCountVo> findToothRootCountByPatientId(@Param("patientId") Integer patientId);
+
+    /**
+     * 根据患者ID集合和当前时间查询患者照片集合
+     * @param patientIds  患者ID列表
+     * @param currentDate  当前日期
+     * @return 返回图片信息
+     */
+    List<XRayFilm> findXRayFilmListByPatientIds(@Param("patientIds") List<Integer> patientIds,
+                                                @Param("currentDate") String currentDate);
+
 }

@@ -4,16 +4,16 @@ import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.VisitingRecord;
+import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.other.biz.VisitingRecordBiz;
+import com.yunya.modules.treatment.other.biz.XRayFilmBiz;
 import com.yunya.modules.treatment.other.mapper.VisitingRecordMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -33,6 +33,8 @@ public class TreatmentOtherServiceRest {
     /** mapper */
     @Autowired
     private VisitingRecordMapper visitingRecordMapper;
+    @Autowired
+    private XRayFilmBiz xRayFilmBiz;
 
     /**
      * 插入随访记录
@@ -80,5 +82,19 @@ public class TreatmentOtherServiceRest {
     Integer countNextVisiting(@PathVariable(value = "patientId") Integer patientId,@PathVariable(value = "regDate") String regDate){
         return this.visitingRecordMapper.countNextVisiting(patientId,regDate);
     }
+
+    /**
+     * 根据患者ID集合和当前时间查询患者照片集合
+     * @param patientIds  患者ID列表
+     * @param currentDate  当前日期
+     * @return 返回图片信息
+     */
+    @ApiOperation(value = "根据患者ID集合和当前时间查询患者照片集合")
+    @RequestMapping(value = "/xray/film/list/{currentDate}",method = RequestMethod.POST)
+    List<XRayFilm> findXRayFilmListByPatientIds(@RequestBody List<Integer> patientIds,
+                                                @PathVariable("currentDate") String currentDate){
+        return xRayFilmBiz.findXRayFilmListByPatientIds(patientIds,currentDate);
+    }
+
 
 }

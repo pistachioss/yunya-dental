@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment_other.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.Data;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * @program: yunya-dental
@@ -32,4 +34,9 @@ public class XRayFilmInfoModel implements Serializable {
     @ApiModelProperty(value = "图片名称",required = true)
     @NotBlank(message = "图片名称不能为空")
     private String photoName;
+
+    @ApiModelProperty(value = "图片上传日期,不传默认当前日期")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private Date uploadTime;
+
 }
