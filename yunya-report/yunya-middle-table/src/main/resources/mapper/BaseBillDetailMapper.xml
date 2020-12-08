@@ -13,6 +13,7 @@
         <result column="executor_id" property="executorId" jdbcType="INTEGER"/>
         <result column="item_id" property="itemId" jdbcType="INTEGER"/>
         <result column="item_type" property="itemType" jdbcType="TINYINT"/>
+        <result column="source_type" property="sourceType" jdbcType="TINYINT"/>
         <result column="quantity" property="quantity" jdbcType="INTEGER"/>
         <result column="price" property="price" jdbcType="DECIMAL"/>
         <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>

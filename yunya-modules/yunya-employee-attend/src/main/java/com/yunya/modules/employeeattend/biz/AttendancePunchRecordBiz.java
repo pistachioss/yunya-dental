@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -105,12 +106,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         AttendancePunchInfoVO result = new AttendancePunchInfoVO();
         AttendanceDeviceBindingVO attendanceDeviceBindingVO = attendanceDeviceBindingBiz.findEmployeeBindingDevice(userId);
-        result.setHasDeviceBinding(true);
         if (attendanceDeviceBindingVO == null) {
-            result.setHasDeviceBinding(false);
             return result;
         }
-
+        result.setDeviceNumber(attendanceDeviceBindingVO.getDeviceNumber());
         // 根据考勤地址或Wifi的mac地址抽取用户当天的打卡项目（上班班次、加班、请假、外勤）
         String macAddress = queryForm.getWifiMacAddress();
         String longitude = queryForm.getLongitude();
@@ -118,24 +117,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         if (StringHelper.isEmpty(macAddress) && (StringHelper.isEmpty(longitude) || StringHelper.isEmpty(latitude))) {
             throw new ClientServiceException("考勤地址或Wifi不能都为空！", PARAMETERS_IS_ILLEGAL);
         }
-
         Integer orgId = null;
         String punchName = null;
         int punchMode = 0;
-        if (StringHelper.isNotEmpty(macAddress)) {
-            punchMode = 1;
-            AttendanceWifiSetQueryForm wifiQUeryForm = new AttendanceWifiSetQueryForm();
-            wifiQUeryForm.setWhetherPage(true);
-            wifiQUeryForm.setPageNum(1);
-            wifiQUeryForm.setPageSize(1000);
-            wifiQUeryForm.setMacAddress(macAddress);
-            List<AttendanceWifiSetVO> attendanceWifiSetVOS = attendanceWifiSetBiz.findAttendanceWifiSets(wifiQUeryForm);
-            if (attendanceWifiSetVOS!=null && !attendanceWifiSetVOS.isEmpty()) {//不在考勤范围内
-                AttendanceWifiSetVO attendanceWifiSetVO = attendanceWifiSetVOS.get(0);
-                orgId = attendanceWifiSetVO.getOrgId();
-                punchName = attendanceWifiSetVO.getWifiName();
-            }
-        }
         if (StringHelper.isNotEmpty(latitude) && StringHelper.isNotEmpty(longitude)) {
             AttendanceAddressSetQueryForm addressQueryForm = new AttendanceAddressSetQueryForm();
             addressQueryForm.setWhetherPage(true);
@@ -148,8 +132,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 double lon2 = Double.parseDouble(attendanceAddressSetVO.getLongitude());
                 double lat2 = Double.parseDouble(attendanceAddressSetVO.getLatitude());
                 double attendanceRange = attendanceAddressSetVO.getAttendanceRange();
-                double distance =distanceByLongNLat(lon1,lat1,lon2,lat2);
-                if (distance-attendanceRange > 0) {
+                double distance = distanceByLongNLat(lon1,lat1,lon2,lat2);
+                if (distance-attendanceRange <= 0) {
                     return true;
                 }
                 return false;
@@ -160,6 +144,20 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 punchName = attendanceAddressSetVO.getAttendanceAddress();
                 // 考勤地址
                 result.setAttendanceAddressId(attendanceAddressSetVO.getId());
+            }
+        }
+        if (orgId==null && StringHelper.isNotEmpty(macAddress)) {
+            punchMode = 1;
+            AttendanceWifiSetQueryForm wifiQUeryForm = new AttendanceWifiSetQueryForm();
+            wifiQUeryForm.setWhetherPage(true);
+            wifiQUeryForm.setPageNum(1);
+            wifiQUeryForm.setPageSize(1000);
+            wifiQUeryForm.setMacAddress(macAddress);
+            List<AttendanceWifiSetVO> attendanceWifiSetVOS = attendanceWifiSetBiz.findAttendanceWifiSets(wifiQUeryForm);
+            if (attendanceWifiSetVOS!=null && !attendanceWifiSetVOS.isEmpty()) {//不在考勤范围内
+                AttendanceWifiSetVO attendanceWifiSetVO = attendanceWifiSetVOS.get(0);
+                orgId = attendanceWifiSetVO.getOrgId();
+                punchName = attendanceWifiSetVO.getWifiName();
             }
         }
         result.setPunchName(punchName);
@@ -327,25 +325,31 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     /**
      * 计算地球上任意两点(经纬度)距离
      *
-     * @param long1 第一点经度
-     * @param lat1  第一点纬度
-     * @param long2 第二点经度
-     * @param lat2  第二点纬度
+     * @param longitude1 第一点经度
+     * @param latitude1  第一点纬度
+     * @param longitude2 第二点经度
+     * @param latitude2  第二点纬度
      * @return 返回距离 单位：米
      */
-    public static double distanceByLongNLat(double long1, double lat1, double long2, double lat2) {
-        double a, b, R;
-        R = 6378137;//地球半径
-        lat1 = lat1 * Math.PI / 180.0;
-        lat2 = lat2 * Math.PI / 180.0;
-        a = lat1 - lat2;
-        b = (long1 - long2) * Math.PI / 180.0;
-        double d;
-        double sa2, sb2;
-        sa2 = Math.sin(a / 2.0);
-        sb2 = Math.sin(b / 2.0);
-        d = 2 * R * Math.asin(Math.sqrt(sa2 * sa2 + Math.cos(lat1) * Math.cos(lat2) * sb2 * sb2));
-        return d;
+    public static double distanceByLongNLat(double longitude1, double latitude1, double longitude2, double latitude2) {
+        Double EARTH_RADIUS = 6370.996; // 地球半径系数
+        Double PI = 3.1415926;
+
+        Double radLat1 = latitude1 * PI / 180.0;
+        Double radLat2 = latitude2 * PI / 180.0;
+
+        Double radLng1 = longitude1 * PI / 180.0;
+        Double radLng2 = longitude2 * PI /180.0;
+
+        Double a =  radLat1 -  radLat2;
+        Double b =  radLng1 -  radLng2;
+
+        Double distance = 2 * Math.asin(Math.sqrt(Math.pow(Math.sin(a/2),2) + Math.cos(radLat1) * Math.cos(radLat2) * Math.pow(Math.sin(b/2),2)));
+        distance = distance * EARTH_RADIUS * 1000;
+        BigDecimal bg = new BigDecimal(distance);
+        double d3 = bg.setScale(2,BigDecimal.ROUND_HALF_UP).doubleValue();
+        return d3;
+
     }
 
     /**
@@ -2470,8 +2474,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             Date date = punchRecord.getPunchDate();
             StringBuilder employeeScheduleName = new StringBuilder();
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
-            for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
-                putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
+            if (employeeScheduleVOS!=null && !employeeScheduleVOS.isEmpty()) {
+                for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
+                    putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
+                }
             }
             Date onPunchTime = punchRecord.getPunchTime();
             Date startTime = punchRecord.getStartTime();
@@ -2518,8 +2524,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             Date date = punchRecord.getPunchDate();
             StringBuilder employeeScheduleName = new StringBuilder();
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
-            for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
-                putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
+            if (employeeScheduleVOS!=null && !employeeScheduleVOS.isEmpty()) {
+                for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
+                    putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
+                }
             }
             Date offPunchTime = punchRecord.getPunchTime();
             Date endTime = punchRecord.getEndTime();
@@ -2569,8 +2577,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             Date date = punchRecord.getPunchDate();
             StringBuilder employeeScheduleName = new StringBuilder();
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
-            for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
-                putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
+            if (employeeScheduleVOS!=null && !employeeScheduleVOS.isEmpty()) {
+                for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
+                    putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
+                }
             }
             int count = 1;
             Date onPunchTime = punchRecord.getPunchTime();
@@ -2580,13 +2590,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 offPunchTime = punchRecord.getPunchTime();
             }
             List<AttendancePunchRecordVO> list = slaveRecordMap.get(date);
-            for (AttendancePunchRecordVO slaveRecord : list) {
-                if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
-                    onPunchTime = punchRecord.getPunchTime();
-                } else {
-                    offPunchTime = punchRecord.getPunchTime();
+            if (list!=null && !list.isEmpty()) {
+                for (AttendancePunchRecordVO slaveRecord : list) {
+                    if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
+                        onPunchTime = punchRecord.getPunchTime();
+                    } else {
+                        offPunchTime = punchRecord.getPunchTime();
+                    }
+                    count++;
                 }
-                count++;
             }
             unpunchCountVO.setDate(date);
             unpunchCountVO.setOnPunchTime(onPunchTime);
@@ -2633,8 +2645,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             Date date = punchRecord.getPunchDate();
             StringBuilder employeeScheduleName = new StringBuilder();
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
-            for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
-                putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
+            if (employeeScheduleVOS!=null && !employeeScheduleMap.isEmpty()) {
+                for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
+                    putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
+                }
             }
             StringBuilder punchAddress = new StringBuilder(punchRecord.getPunchAddress());
             int count = 1;
@@ -2645,18 +2659,20 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 offPunchTime = punchRecord.getPunchTime();
             }
             List<AttendancePunchRecordVO> list = slaveRecordMap.get(date);
-            for (AttendancePunchRecordVO slaveRecord : list) {
-                if (slaveRecord.getIsPunch().equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {
-                    if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
-                        onPunchTime = slaveRecord.getPunchTime();
-                    } else {
-                        offPunchTime = slaveRecord.getPunchTime();
+            if (list!=null && !list.isEmpty()) {
+                for (AttendancePunchRecordVO slaveRecord : list) {
+                    if (slaveRecord.getIsPunch().equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {
+                        if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
+                            onPunchTime = slaveRecord.getPunchTime();
+                        } else {
+                            offPunchTime = slaveRecord.getPunchTime();
+                        }
+                        if (punchAddress.length() > 0) {
+                            punchAddress.append("、");
+                        }
+                        punchAddress.append(slaveRecord.getPunchAddress());
+                        count++;
                     }
-                    if (punchAddress.length() > 0) {
-                        punchAddress.append("、");
-                    }
-                    punchAddress.append(slaveRecord.getPunchAddress());
-                    count++;
                 }
             }
             invalidCountVO.setDate(date);

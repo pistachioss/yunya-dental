@@ -1,6 +1,7 @@
 package com.yunya.feign.employee_attend.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -18,6 +19,7 @@ import java.util.Date;
  * @return: $
  */
 @Data
+@ApiModel(value = "外勤信息")
 public class FieldInfoListVO {
     /** 主键id */
     @ApiModelProperty(value = "主键id")

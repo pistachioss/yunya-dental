@@ -110,8 +110,8 @@
         SELECT
         refundId,
         billNum,
-        orderDate,
-        refundDate,
+        DATE_FORMAT(orderDate, '%Y-%m-%d') as orderDate,
+        DATE_FORMAT(refundDate, '%Y-%m-%d') as refundDate,
         patientId,
         patientName,
         mobile,

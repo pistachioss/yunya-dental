@@ -1,9 +1,13 @@
 package com.yunya.modules.employeeattend.controller;
 
+import com.yunya.feign.employee_attend.vo.ApprovalInfoVO;
+import com.yunya.feign.employee_attend.vo.EmLeaveVO;
+import com.yunya.feign.employee_attend.vo.LeaveInfoListVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.employee_attend.ApprovalLevelSet;
 import com.yunya.modules.employeeattend.biz.LeaveInfoBiz;
 import com.yunya.modules.employeeattend.form.FindApprovalByMeForm;
 import com.yunya.modules.employeeattend.form.LeaveInfoByEmForm;
@@ -13,6 +17,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介: 请假控制层
@@ -57,7 +63,7 @@ public class LeaveInfoController {
     @PostMapping("/selectBaseByDay")
     @ApiOperation("查询请假时包含的班次（参数为开始时间，结束时间，用户ID，请假Id 按需求传）")
     @RepeatSubmit
-    public ResponseResult selectBaseByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+    public ResponseResult<List<EmLeaveVO>> selectBaseByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.selectBaseByDay(leaveInfoForm));
     }
 
@@ -67,7 +73,7 @@ public class LeaveInfoController {
     @PostMapping("/selectApprovalByDay")
     @ApiOperation("根据天数获得审批信息")
     @RepeatSubmit
-    public ResponseResult selectApprovalByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+    public ResponseResult<List<ApprovalLevelSet>> selectApprovalByDay(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.selectApprovalByDay(leaveInfoForm));
     }
 
@@ -122,7 +128,7 @@ public class LeaveInfoController {
     @PostMapping("/findList")
     @ApiOperation("获取请假申请列表")
     @RepeatSubmit
-    public ResponseResult findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+    public ResponseResult<List<LeaveInfoListVO>> findList(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.findList(leaveInfoForm));
     }
 
@@ -135,7 +141,7 @@ public class LeaveInfoController {
     @PostMapping("/findApproval")
     @ApiOperation("根据请假ID获取审批信息 传参数 id")
     @RepeatSubmit
-    public ResponseResult findApproval(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
+    public ResponseResult<List<ApprovalInfoVO>> findApproval(@RequestBody @Validated LeaveInfoForm leaveInfoForm) {
         return ResponseUtil.success(leaveInfoBiz.findApproval(leaveInfoForm));
     }
 
