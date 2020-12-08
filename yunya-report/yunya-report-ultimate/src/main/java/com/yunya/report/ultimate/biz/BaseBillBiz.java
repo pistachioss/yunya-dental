@@ -123,6 +123,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @return BillDataStatisticsVO
    */
   public BillDataStatisticsVO findClinicBillDataStatistic(DataStatisticsQuery query) {
-    return null;
+    BillDataStatisticsVO resultData = mapper.selectClinicBillDataStatistic(query);
+    return resultData;
   }
 }
