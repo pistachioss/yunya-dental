@@ -11,7 +11,6 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.modules.employeeattend.biz.AttendancePunchRecordBiz;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -47,7 +46,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<AttendanceInfoVO>
      */
     @ApiOperation(value = "查询打卡项目列表（班次、加班、请假、外勤等）以及即将打卡的项目")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数：经纬度或wifi的mac地址")
     @PostMapping("/punchInfo")
     @CurrentUser
     public ResponseResult<AttendancePunchInfoVO> punchInfo(@RequestBody AttendancePunchRecordQueryForm queryForm) {
@@ -62,7 +60,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult
      */
     @ApiOperation("考勤打卡")
-    @ApiImplicitParam(name = "form", value = "考勤打卡记录修改模型")
     @PostMapping("/punch")
     @CurrentUser
     public ResponseResult punch(@RequestBody @Validated AttendancePunchRecordForm form) {
@@ -77,7 +74,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<List<AttendanceInfoVO>>
      */
     @ApiOperation("根据年月查询员工考勤打卡日历")
-    @ApiImplicitParam(name = "date", value = "该月的某一天，例如2020-11-01")
     @GetMapping("/punchRecordCalendarByMonth/{date}")
     @CurrentUser
     public ResponseResult<List<AttendanceCalendarInfoVO>> punchRecordCalendarByMonth(@PathVariable(value = "date") @NotBlank String date) {
@@ -92,7 +88,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<AttendancePunchInfoVO>
      */
     @ApiOperation("查询打卡日历中指定日期下的员工考勤打卡列表")
-    @ApiImplicitParam(name = "date", value = "该月的某一天，例如2020-11-01")
     @GetMapping("/punchRecordByDate/{date}")
     @CurrentUser
     public ResponseResult<AttendancePunchCalendarInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotNull Date date) {
@@ -107,7 +102,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<AttendanceStatisticsVO>
      */
     @ApiOperation("根据年月查询员工考勤打卡月汇总")
-    @ApiImplicitParam(name = "date", value = "该月的某一天，例如2020-11-01")
     @GetMapping("/punchRecordByMonth/{date}")
     @CurrentUser
     public ResponseResult<AttendanceStatisticsVO> punchRecordByMonth(@PathVariable(value = "date") @NotBlank String date) {
@@ -122,7 +116,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceStatisticsVO>>
      */
     @ApiOperation("根据条件分页查询考勤汇总")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecord")
     public ResponseResult<PageInfo<AttendanceStatisticsVO>> statisticsPunchRecord(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceStatisticsVO> result = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
@@ -137,7 +130,6 @@ public class AttendancePunchRecordController {
      * @return
      */
     @ApiOperation("根据条件分页查询考勤汇总导出")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecordExport")
     public ResponseResult statisticsPunchRecordExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
         queryForm.setWhetherPage(false);
@@ -154,7 +146,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>>
      */
     @ApiOperation("分页查询工作时长的考勤汇总明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkDateByMinute")
     public ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>> statisticsWorkDateByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceWorkDateMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
@@ -169,7 +160,6 @@ public class AttendancePunchRecordController {
      * @return
      */
     @ApiOperation("分页查询工作时长的考勤汇总明细导出")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkDateByMinuteExport")
     public ResponseResult statisticsWorkDateByMinuteExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
         queryForm.setWhetherPage(false);
@@ -186,7 +176,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendancePunchMinuteVO>>
      */
     @ApiOperation("分页查询工作日加班时长的考勤汇总明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkDateOvertimeByMinute")
     public ResponseResult<PageInfo<AttendanceWorkDateOvertimeMinuteVO>> statisticsWorkDateOvertimeByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceWorkDateOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateOvertimeByMinute(1, queryForm);
@@ -201,7 +190,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendancePunchMinuteVO>>
      */
     @ApiOperation("分页查询工作日加班时长超30分钟的考勤汇总明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkDateOvertime30ByMinute")
     public ResponseResult<PageInfo<AttendanceWorkDateOvertimeMinuteVO>> statisticsWorkDateOvertime30ByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceWorkDateOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateOvertimeByMinute(30, queryForm);
@@ -216,7 +204,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceWorkOvertimeMinuteVO>>
      */
     @ApiOperation("分页查询休息日加班时长的考勤汇总明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsWorkOvertimesByMinute")
     public ResponseResult<PageInfo<AttendanceOvertimeMinuteVO>> statisticsWorkOvertimesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkOvertimesByMinute(queryForm);
@@ -231,7 +218,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceLeaveMinuteVO>>
      */
     @ApiOperation("分页查询请假时长的考勤汇总明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsLeavesByMinute")
     public ResponseResult<PageInfo<AttendanceLeaveMinuteVO>> statisticsLeavesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceLeaveMinuteVO> result = attendancePunchRecordBiz.statisticsLeavesByMinute(queryForm);
@@ -246,7 +232,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceFieldMinuteVO>>
      */
     @ApiOperation("分页查询外勤时长的考勤汇总明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsFieldsByMinute")
     public ResponseResult<PageInfo<AttendanceFieldMinuteVO>> statisticsFieldsByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceFieldMinuteVO> result = attendancePunchRecordBiz.statisticsFieldsByMinute(queryForm);
@@ -261,7 +246,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceLaterCountVO>>
      */
     @ApiOperation("分页查询迟到统计的明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecordByLaterCount")
     public ResponseResult<PageInfo<AttendanceLaterCountVO>> statisticsPunchRecordByLaterCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceLaterCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByLaterCount(queryForm);
@@ -276,7 +260,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceEarlyCountVO>>
      */
     @ApiOperation("分页查询早退统计的明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecordByEarlyCount")
     public ResponseResult<PageInfo<AttendanceEarlyCountVO>> statisticsPunchRecordByEarlyCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceEarlyCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByEarlyCount(queryForm);
@@ -291,7 +274,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceEarlyCountVO>>
      */
     @ApiOperation("分页查询缺卡统计的明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecordByUnpunchCount")
     public ResponseResult<PageInfo<AttendanceUnpunchCountVO>> statisticsPunchRecordByUnpunchCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceUnpunchCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByUnpunchCount(queryForm);
@@ -306,7 +288,6 @@ public class AttendancePunchRecordController {
      * @return ResponseResult<PageInfo<AttendanceEarlyCountVO>>
      */
     @ApiOperation("分页查询无效卡统计的明细")
-    @ApiImplicitParam(name = "queryForm", value = "查询参数", required = true)
     @PostMapping("/statisticsPunchRecordByInvalidCount")
     public ResponseResult<PageInfo<AttendanceInvalidCountVO>> statisticsPunchRecordByInvalidCount(@RequestBody AttendanceStatisticsQueryForm queryForm) {
         List<AttendanceInvalidCountVO> result = attendancePunchRecordBiz.statisticsPunchRecordByInvalidCount(queryForm);
