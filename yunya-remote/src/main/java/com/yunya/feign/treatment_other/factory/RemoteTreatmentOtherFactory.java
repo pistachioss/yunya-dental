@@ -5,6 +5,7 @@ import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.models.treatment_other.VisitingRecord;
+import com.yunya.models.treatment_other.XRayFilm;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -37,6 +38,11 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
 
     @Override
     public Integer countNextVisiting(Integer patientId, String regDate) {
+        return null;
+    }
+
+    @Override
+    public List<XRayFilm> findXRayFilmListByPatientIds(List<Integer> patientIds, String currentDate) {
         return null;
     }
 

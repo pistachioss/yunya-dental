@@ -7,6 +7,7 @@ import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
+import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +74,11 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
 
     @Override
     public Integer countNextAppoint(Integer patientId) {
+        return null;
+    }
+
+    @Override
+    public List<NextAppointsVo> countNextAppoints(List<Integer> patientIds) {
         return null;
     }
 

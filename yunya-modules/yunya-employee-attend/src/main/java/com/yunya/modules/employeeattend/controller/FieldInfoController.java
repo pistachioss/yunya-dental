@@ -1,5 +1,6 @@
 package com.yunya.modules.employeeattend.controller;
 
+import com.yunya.feign.employee_attend.vo.FieldInfoListVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -11,6 +12,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介:
@@ -53,7 +56,7 @@ public class FieldInfoController {
     @PostMapping("/findList")
     @ApiOperation("获取外勤申请列表")
     @RepeatSubmit
-    public ResponseResult findList(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
+    public ResponseResult<List<FieldInfoListVO>> findList(@RequestBody @Validated FieldInfoForm fieldInfoForm) {
         return ResponseUtil.success(fieldInfoBiz.findList(fieldInfoForm));
     }
 

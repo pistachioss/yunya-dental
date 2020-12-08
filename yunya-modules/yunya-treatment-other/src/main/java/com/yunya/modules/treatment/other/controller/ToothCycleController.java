@@ -50,7 +50,7 @@ public class ToothCycleController {
      */
     @ApiOperation("查询牙周期列表")
     @PostMapping("/findCycleList")
-    public ResponseResult findCycleList(ToothCycleQuery cycle){
+    public ResponseResult findCycleList(@RequestBody ToothCycleQuery cycle){
         List<ToothCycleVo> cycleList = toothCycleBiz.findCycleList(cycle);
         for (ToothCycleVo cycleData: cycleList) {
             SysUserInfoDetail dentistData = remoteSystemServiceFeign.

@@ -300,6 +300,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     leaveInfo.setApprpvalStatus(leaveInfoForm.getApprpvalStatus());
                 }
                 approvalInfo.setApprovalStatus(leaveInfoForm.getApprpvalStatus());
+                approvalInfo.setUpdTime(new Date());
                 //更新审批流程表中的审批状态
                 approvalInfoMapper.updateByPrimaryKey(approvalInfo);
                 //为了统计待我审批 为请假信息添加 当前审批人(现在审批的下一层级的审批人)字段
@@ -308,6 +309,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     leaveInfo.setApprovalNowPeopleId(next.getApprovalPeopleId());
                 }
                 leaveInfo.setRefuseReason(leaveInfoForm.getRefuseReason());
+                leaveInfo.setUpdTime(new Date());
                 return mapper.updateByPrimaryKey(leaveInfo);
             }
             throw new ClientServiceException("当前申请已被处理", OBJECT_EDIT_FAIL);

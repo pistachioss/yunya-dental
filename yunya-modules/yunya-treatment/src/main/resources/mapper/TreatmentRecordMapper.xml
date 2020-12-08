@@ -193,4 +193,39 @@
         GROUP BY a.crt_time
     </select>
 
+    <!-- PC照片影像小程序就诊中 -->
+    <select id="desktopTreatingList" resultType="com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO">
+        select
+            tr.id,
+            tr.dentist_id as dentistId,
+            tr.patient_id as patientId,
+            r.first_visit as firstVisit
+        from
+            treatment_record tr left join registered r on tr.registered_id = r.id
+        where
+                date_format(tr.treat_start_time,'%Y-%d-%m') = date_format(#{currentDate},'%Y-%m-%d')
+          and tr.inservice = 1
+          and tr.status = #{status}
+          and tr.org_id = #{orgId}
+    </select>
+
+    <!-- 根据患者姓名、手机号、病历号查询影像小程序列表中患者信息 -->
+    <select id="desktopTreatingListItem" resultType="com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO">
+        select
+            tr.id,
+            tr.dentist_id as dentistId,
+            tr.patient_id as patientId,
+            r.first_visit as firstVisit
+        from
+            treatment_record tr left join registered r on tr.registered_id = r.id
+        where
+                date_format(tr.treat_start_time,'%Y-%d-%m') = date_format(#{currentDate},'%Y-%m-%d')
+          and tr.inservice = 1
+          and tr.org_id = #{orgId}
+          and tr.patient_id in
+        <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
+            #{patientId}
+        </foreach>
+    </select>
+
 </mapper>

@@ -343,4 +343,68 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
         mapper.selectAssistantActualWorkloadDetailList(query);
     return new PageInfo<>(resultList);
   }
+
+  /**
+   * 根据条件查询开单项目数量信息列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemInfoVO>
+   */
+  public PageInfo<BillingItemInfoVO> findBillingItemInfoVOList(BillingItemStatisticsQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出开单项目数量列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportBillingItemInfoList(
+      HttpServletResponse response, BillingItemStatisticsQuery query) throws IOException {
+    ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
+    List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
+    excelUtil.exportExcel(response, resultList, "开单项目数量统计列表");
+  }
+
+  /**
+   * 根据条件查询开单项目统计明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<BillingItemDetailVO>
+   */
+  public PageInfo<BillingItemDetailVO> findBillingItemDetailList(BillingItemDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出开单项目统计明细列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportBillingItemDetailList(
+      HttpServletResponse response, BillingItemDetailQuery query) throws IOException {
+    ExcelUtil<BillingItemDetailVO> excelUtil = new ExcelUtil<>(BillingItemDetailVO.class);
+    List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
+    excelUtil.exportExcel(response, resultList, "开单项目统计明细列表");
+  }
+
+  /**
+   * 根据条件查询门诊工作量总览
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public WorkloadStatisticsVO findClinicWorkloadStatistic(DataStatisticsQuery query) {
+    return null;
+  }
 }

@@ -36,7 +36,8 @@ public class SwaggerResourceConfig implements SwaggerResourcesProvider {
                     .forEach(predicateDefinition -> {
                         String title = route.getId();
                         try {
-                            title = "[ " + route.getMetadata().get("title").toString() + " ] ";
+//                            title = "[ " + route.getOrder() + route.getMetadata().get("title").toString() + " ] ";
+                            title = String.format("[ %d %s ] ", route.getOrder(), route.getMetadata().get("title").toString());
                         } catch (Exception ignored) {
                         }
                         resources.add(swaggerResource(title + route.getId(),

@@ -44,4 +44,15 @@
         from attendance_wifi_set t
         where t.id = #{id}
   </select>
+
+  <!--根据mac查询考勤Wifi设置详情-->
+  <select id="findAttendanceWifiSetByMac" resultType="com.yunya.feign.employee_attend.vo.AttendanceWifiSetVO">
+        select
+            t.id,
+            t.org_id as orgId,
+            t.wifi_name as wifiName,
+            t.mac_address as macAddress
+        from attendance_wifi_set t
+        where t.mac_address = #{macAddress}
+  </select>
 </mapper>

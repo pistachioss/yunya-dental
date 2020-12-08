@@ -1,6 +1,7 @@
 package com.yunya.feign.employee_attend.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
@@ -19,6 +20,7 @@ import java.util.Date;
  * @return: $
  */
 @Data
+@ApiModel
 public class ApprovalInfoVO {
     /**
      * 请假信息表id
@@ -51,5 +53,11 @@ public class ApprovalInfoVO {
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date crtTime;
+
+    /**
+     * 创建时间
+     */
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date updTime;
 
 }

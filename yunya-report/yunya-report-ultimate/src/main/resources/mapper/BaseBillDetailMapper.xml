@@ -1070,7 +1070,8 @@
         ) awd
         <where>
             <if test="query.keyword != null and query.keyword != ''">
-                and concat(IFNULL(awd.`name`, ''), IFNULL(awd.pinyin_name, ''), IFNULL(awd.mobile, '')) like concat('%', #{query.keyword}, '%')
+                and concat(IFNULL(awd.`name`, ''), IFNULL(awd.pinyin_name, ''), IFNULL(awd.mobile, '')) like concat('%',
+                #{query.keyword}, '%')
             </if>
             <if test="query.billNum != null and query.billNum != ''">
                 and concat(awd.bill_num) like concat('%', #{query.billNum}, '%')
@@ -1083,5 +1084,219 @@
             </if>
         </where>
         GROUP BY awd.treatment_id
+    </select>
+
+    <!-- 根据条件查询开单项目数量信息列表 -->
+    <select id="selectBillingItemInfoList" resultType="com.yunya.feign.report.domain.vo.BillingItemInfoVO">
+        SELECT
+            *
+        FROM (
+        SELECT
+        bbd.itemId,
+        bbd.itemType,
+        bbd.itemNum,
+        bbd.itemName,
+        bbd.categoryId,
+        bbd.categoryName,
+        SUM( bbd.quantity ) as totalBillCount
+        FROM
+        (
+        SELECT
+        bbd.item_id AS itemId,
+        bbd.item_type AS itemType,
+        bbd.source_type,
+        bti.item_num AS itemNum,
+        bti.item_name AS itemName,
+        bti.category_id AS categoryId,
+        bti.category_name AS categoryName,
+        bbd.quantity,
+        bb.org_id,
+        bb.bill_date,
+        bb.bill_num
+        FROM
+        base_bill_detail bbd
+        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+        LEFT JOIN base_tariff_info bti ON bbd.item_id = bti.item_id
+        AND bbd.item_type = bti.item_type
+        ) bbd
+        <where>
+            and bbd.bill_date IS NOT NULL
+            and bbd.source_type = 0
+            <if test="query.orgId != null">
+                and bbd.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbd.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbd.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbd.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbd.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbd.bill_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbd.bill_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbd.itemId,
+        bbd.itemType
+        ORDER BY bbd.itemType, bbd.itemId ) bbd
+        <where>
+            <if test="query.categoryIds != null and query.categoryIds.size > 0">
+                and bbd.categoryId in
+                <foreach collection="query.categoryIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询开单项目统计明细列表 -->
+    <select id="selectBillingItemDetailList" resultType="com.yunya.feign.report.domain.vo.BillingItemDetailVO">
+        SELECT
+            bbd.billDetailId,
+            DATE_FORMAT(bbd.orderDate, '%Y-%m-%d'),
+            DATE_FORMAT(bbd.billDate, '%Y-%m-%d'),
+            bbd.billNum,
+            bbd.quantity,
+            bbd.patientId,
+            bbd.patientName,
+            bbd.mobile,
+            bbd.regDentistId,
+            bbd.regDentistName
+        FROM
+            (
+            SELECT
+                bbd.billDetailId,
+                bbd.billDate,
+                bbd.orderDate,
+                bbd.billNum,
+                bbd.quantity,
+                bbd.patientId,
+                bbd.patientName,
+                bbd.pinyinName,
+                bbd.mobile,
+                bbd.regDentistId,
+                bbd.regDentistName
+            FROM
+                (
+                SELECT
+                    bbd.orgId,
+                    bbd.billDetailId,
+                    bbd.billDate,
+                    bbd.orderDate,
+                    bbd.billNum,
+                    bbd.itemId,
+                    bbd.itemType,
+                    bbd.quantity,
+                    bbd.patientId,
+                    bp.`name` AS patientName,
+                    bp.pinyin_name AS pinyinName,
+                    bp.mobile,
+                    btp.user_id AS regDentistId,
+                    btp.employee_name AS regDentistName
+                FROM
+                    (
+                    SELECT
+                        bbd.bill_detail_id AS billDetailId,
+                        bbd.item_id AS itemId,
+                        bbd.item_type AS itemType,
+                        bbd.quantity,
+                        bb.org_id AS orgId,
+                        bb.order_date AS orderDate,
+                        bb.bill_date AS billDate,
+                        bb.bill_num AS billNum,
+                        bb.patient_id AS patientId,
+                        bb.treatment_id
+                    FROM
+                        base_bill_detail bbd
+                        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+                    WHERE
+                        bbd.source_type = 0
+                    ) bbd
+                    LEFT JOIN base_patient bp ON bbd.patientId = bp.patient_id
+                    LEFT JOIN (
+                    SELECT
+                        btp.treatment_id,
+                        be.user_id,
+                        be.employee_name
+                    FROM
+                        base_treatment_process btp
+                        LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                    GROUP BY
+                        btp.treatment_id
+                    ) btp ON bbd.treatment_id = btp.treatment_id
+                ) bbd
+        <where>
+            AND bbd.billDate IS NOT NULL
+            <if test="query.orgId != null">
+                and bbd.orgId = #{query.orgId}
+            </if>
+            <if test="query.itemId != null">
+                and bbd.itemId = #{query.itemId}
+            </if>
+            <if test="query.itemType != null">
+                and bbd.itemType = #{query.itemType}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbd.billDate, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbd.billDate, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbd.billDate, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbd.billDate, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT(bbd.billDate, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT(bbd.billDate, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bbd
+        <where>
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(IFNULL(bbd.patientName, ''), IFNULL(bbd.pinyinName, ''), IFNULL(bbd.mobile, '')) like concat('%',
+                #{query.keyword}, '%')
+            </if>
+            <if test="query.billNum != null and query.billNum != ''">
+                and bbd.billNum like concat('%', #{query.billNum}, '%')
+            </if>
+            <if test="query.billStartDate != null and query.billStartDate != ''">
+                and DATE_FORMAT(bbd.billDate, '%Y-%m-%d') &gt;= #{query.billStartDate}
+            </if>
+            <if test="query.billEndDate != null and query.billEndDate != ''">
+                and DATE_FORMAT(bbd.billDate, '%Y-%m-%d') &lt;= #{query.billEndDate}
+            </if>
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
+                and bbd.regDentistId in
+                <foreach collection="query.regDentistIds" item="item" index="index" separator="," open="(" close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
     </select>
 </mapper>

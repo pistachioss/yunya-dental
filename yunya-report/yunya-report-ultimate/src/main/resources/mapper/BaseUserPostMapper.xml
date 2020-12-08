@@ -256,4 +256,244 @@
         e.org_id,
         e.user_id
     </select>
+
+    <!-- 根据条件查询员工看诊情况列表 -->
+    <select id="selectEmployeeDiagnosisInfoList"
+            resultType="com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO">
+        SELECT
+        edi.employeeId,
+        edi.employeeName,
+        edi.totalShiftTime,
+        edi.totalTreatmentTime,
+        edi.firstVisitNum,
+        edi.treatVisitsTimes,
+        CONVERT (
+        edi.totalActualAmount / edi.treatVisitsTimes,
+        DECIMAL ( 19, 2 )) AS averageConsumption,
+        edi.treatVisitsNum,
+        CONVERT (
+        edi.totalActualAmount / edi.treatVisitsNum,
+        DECIMAL ( 19, 2 )) AS perCapitaConsumption,
+        edi.appointmentsNum,
+        edi.visitArrivedTimes,
+        edi.appointmentModifyTimes,
+        edi.appointmentCancelTimes
+        FROM
+        (
+        SELECT
+        bup.org_id AS orgId,
+        bup.user_id AS employeeId,
+        IFNULL( be.employee_name, '--' ) AS employeeName,
+        IFNULL( bes.totalShiftTime, 0 ) AS totalShiftTime,
+        IFNULL( btp.totalTreatmentTime, 0 ) AS totalTreatmentTime,
+        IFNULL( btp.treatVisitsTimes, 0 ) AS treatVisitsTimes,
+        IFNULL( btp.treatVisitsNum, 0 ) AS treatVisitsNum,
+        IFNULL( btp1.firstVisitNum, 0 ) AS firstVisitNum,
+        IFNULL( btp2.appointmentsNum, 0 ) AS appointmentsNum,
+        IFNULL( btp3.appointmentModifyTimes, 0 ) AS appointmentModifyTimes,
+        IFNULL( btp4.appointmentCancelTimes, 0 ) AS appointmentCancelTimes,
+        IFNULL( btp5.visitArrivedTimes, 0 ) AS visitArrivedTimes,
+        IFNULL( btp6.totalActualAmount, 0 ) AS totalActualAmount
+        FROM
+        ( SELECT bup.org_id, bup.user_id FROM base_user_post bup WHERE bup.group_id = 3 ) bup
+        LEFT JOIN base_employee be ON bup.user_id = be.user_id
+        LEFT JOIN (
+        SELECT
+        bes.user_id,
+        bes.org_id,
+        SUM( bes.schedule_duration ) AS totalShiftTime
+        FROM
+        base_employee_schedule bes
+        <where>
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( bes.schedule_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( bes.schedule_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </where>
+        GROUP BY
+        bes.org_id,
+        bes.user_id
+        ) bes ON bup.user_id = bes.user_id
+        AND bup.org_id = bes.org_id
+        LEFT JOIN (
+        SELECT
+        btp.org_id,
+        btp.registered_dentist_id,
+        SUM(
+        IF
+        (
+        TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ) = 0,
+        1,
+        TIMESTAMPDIFF( MINUTE, btp.treat_start_time, btp.treat_end_time ))) AS totalTreatmentTime,
+        COUNT( btp.treatment_id ) AS treatVisitsTimes,
+        COUNT( DISTINCT btp.patient_id ) AS treatVisitsNum
+        FROM
+        base_treatment_process btp
+        <where>
+            and btp.treat_end_time IS NOT NULL
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </where>
+        GROUP BY
+        btp.org_id,
+        btp.registered_dentist_id
+        ) btp ON bup.user_id = btp.registered_dentist_id
+        AND bup.org_id = btp.org_id
+        LEFT JOIN (
+        SELECT
+        btp.org_id,
+        btp.registered_dentist_id,
+        COUNT( DISTINCT btp.patient_id ) AS firstVisitNum
+        FROM
+        base_treatment_process btp
+        <where>
+            and btp.treat_type = 0
+            and btp.treat_end_time IS NOT NULL
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </where>
+        GROUP BY
+        btp.org_id,
+        btp.registered_dentist_id
+        ) btp1 ON bup.user_id = btp1.registered_dentist_id
+        AND bup.org_id = btp1.org_id
+        LEFT JOIN (
+        SELECT
+        btp.org_id,
+        btp.appoint_dentist_id,
+        COUNT( btp.appoint_dentist_id ) AS appointmentsNum
+        FROM
+        base_treatment_process btp
+        <where>
+            and btp.appoint_status != 2
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT(  btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </where>
+        GROUP BY
+        btp.org_id,
+        btp.registered_dentist_id
+        ) btp2 ON bup.user_id = btp2.appoint_dentist_id
+        AND bup.org_id = btp2.org_id
+        LEFT JOIN (
+        SELECT
+        btp.org_id,
+        btp.appoint_dentist_id,
+        SUM( btp.appoint_modify_time ) AS appointmentModifyTimes
+        FROM
+        base_treatment_process btp
+        <where>
+            and btp.appoint_modify_time > 0
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </where>
+        GROUP BY
+        btp.org_id,
+        btp.registered_dentist_id
+        ) btp3 ON bup.user_id = btp3.appoint_dentist_id
+        AND bup.org_id = btp3.org_id
+        LEFT JOIN (
+        SELECT
+        btp.org_id,
+        btp.appoint_dentist_id,
+        COUNT( btp.appointment_id ) AS appointmentCancelTimes
+        FROM
+        base_treatment_process btp
+        <where>
+            and btp.appoint_status = 2
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </where>
+        GROUP BY
+        btp.org_id,
+        btp.registered_dentist_id
+        ) btp4 ON bup.user_id = btp4.appoint_dentist_id
+        AND bup.org_id = btp4.org_id
+        LEFT JOIN (
+        SELECT
+        btp.org_id,
+        btp.appoint_dentist_id,
+        COUNT( appointment_id ) AS visitArrivedTimes
+        FROM
+        base_treatment_process btp
+        <where>
+            and btp.appoint_dentist_id = btp.registered_dentist_id
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </where>
+        GROUP BY
+        btp.org_id,
+        btp.appoint_dentist_id
+        ) btp5 ON bup.user_id = btp5.appoint_dentist_id
+        AND bup.org_id = btp5.org_id
+        LEFT JOIN (
+        SELECT
+        btp.org_id,
+        btp.registered_dentist_id,
+        SUM( btp.actualAmount ) AS totalActualAmount
+        FROM
+        (
+        SELECT
+        btp.registered_dentist_id,
+        btp.org_id,
+        IFNULL( bb.actual_amount, 0 ) AS actualAmount
+        FROM
+        base_treatment_process btp
+        LEFT JOIN base_bill bb ON btp.treatment_id = bb.treatment_id
+        <where>
+            and btp.treat_end_time IS NOT NULL
+            <if test="query.startDate != null and query.startDate != ''">
+                and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and DATE_FORMAT( btp.treat_start_time, '%Y-%m-%d' ) &lt;= #{query.endDate}
+            </if>
+        </where>
+        ) btp
+        GROUP BY
+        btp.org_id,
+        btp.registered_dentist_id
+        ) btp6 ON bup.user_id = btp6.registered_dentist_id
+        AND bup.org_id = btp6.org_id
+        ) edi
+        <where>
+            <if test="query.orgId != null">
+                and edi.orgId = #{query.orgId}
+            </if>
+            <if test="query.dentistIds != null and query.dentistIds.length > 0">
+                and edi.employeeId in
+                <foreach collection="query.dentistIds" index="index" item="item" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        edi.orgId,
+        edi.employeeId
+    </select>
 </mapper>

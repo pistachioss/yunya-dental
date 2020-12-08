@@ -1,6 +1,5 @@
 server:
   port: 8765
-
 #请求和响应GZIP压缩支持
 feign:
   httpclient:
@@ -47,7 +46,7 @@ spring:
         # ==================网关路由配置（新增服务按照样例配置路由即可）===================
         - id: yunya-auth
           uri: lb://yunya-auth
-          order: 8000
+          order: 8777
           predicates:
             - Path=/api/auth/**
           filters:
@@ -56,7 +55,7 @@ spring:
             title: "权限认证服务"
         - id: yunya-system
           uri: lb://yunya-system
-          order: 8001
+          order: 8102
           predicates:
             - Path=/api/system/**
           filters:
@@ -65,7 +64,7 @@ spring:
             title: "系统基础服务"
         - id: yunya-employee-expand
           uri: lb://yunya-employee-expand
-          order: 8004
+          order: 8204
           predicates:
             - Path=/api/employee/expand/**
           filters:
@@ -74,7 +73,7 @@ spring:
             title: "员工个人服务"
         - id: yunya-emr
           uri: lb://yunya-emr
-          order: 8005
+          order: 8205
           predicates:
             - Path=/api/emr/**
           filters:
@@ -83,7 +82,7 @@ spring:
             title: "电子病历服务"
         - id: yunya-employee-attend
           uri: lb://yunya-employee-attend
-          order: 8006
+          order: 8103
           predicates:
             - Path=/api/employee/attend/**
           filters:
@@ -92,16 +91,16 @@ spring:
             title: "排班考勤服务"
         - id: yunya-appointment-central
           uri: lb://yunya-appointment-central
-          order: 9001
+          order: 8110
           predicates:
             - Path=/api/appointment/**
           filters:
             - StripPrefix=2
           metadata:
-            title: "预约服务"
+            title: "患者预约服务"
         - id: yunya-patient
           uri: lb://yunya-patient
-          order: 9002
+          order: 8108
           predicates:
             - Path=/api/patient/**
           filters:
@@ -110,34 +109,34 @@ spring:
             title: "患者资料服务"
         - id: yunya-treatment
           uri: lb://yunya-treatment
-          order: 9004
+          order: 8111
           predicates:
             - Path=/api/treatment/**
           filters:
             - StripPrefix=2
           metadata:
-            title: "诊疗服务"
+            title: "患者诊疗服务"
         - id: yunya-discount
           uri: lb://yunya-discount
-          order: 9005
+          order: 8211
           predicates:
             - Path=/api/discount/**
           filters:
             - StripPrefix=2
           metadata:
-            title: "卡券服务"
+            title: "卡券优惠服务"
         - id: yunya-treatment-other
           uri: lb://yunya-treatment-other
-          order: 9000
+          order: 8206
           predicates:
-            - Path=/api/treatment/other/**
+            - Path= /api/treatment-other/**
           filters:
-            - StripPrefix=3
+            - StripPrefix=2
           metadata:
             title: "就诊扩展服务"
         - id: yunya-clinic-base
           uri: lb://yunya-clinic-base
-          order: 9006
+          order: 8203
           predicates:
             - Path=/api/clinic/base/**
           filters:
@@ -146,7 +145,7 @@ spring:
             title: "结算统计服务"
         - id: yunya-report-ultimate
           uri: lb://yunya-report-ultimate
-          order: 9007
+          order: 8400
           predicates:
             - Path=/api/report/ultimate/**
           filters:

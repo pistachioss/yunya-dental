@@ -19,6 +19,21 @@
     <select id="selectByUnionPrimaryKey" resultType="com.yunya.models.report.BaseTariffInfo">
         select * from base_tariff_info where item_id = #{dataId} and item_type = #{dateType}
     </select>
+
+    <!-- 获取全部开单项目分类列表 -->
+    <select id="selectItemCategoryList" resultType="com.yunya.feign.report.domain.vo.ItemCategoryInfoVO">
+        SELECT
+            category_id AS categoryId,
+            item_type AS itemType,
+            category_name AS categoryName
+        FROM
+            base_tariff_info
+        GROUP BY
+            category_id
+        ORDER BY
+            item_type
+    </select>
+
     <!-- 根据联合主键删除 -->
     <delete id="deleteByUnionPrimaryKey">
         delete from base_tariff_info where item_id = #{itemId} and item_type = #{itemType}

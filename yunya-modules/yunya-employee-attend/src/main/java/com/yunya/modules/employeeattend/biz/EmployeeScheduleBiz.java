@@ -22,6 +22,7 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleCopyForm;
+import com.yunya.modules.employeeattend.form.EmployeeScheduleDeleteForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.mapper.EmployeeScheduleMapper;
@@ -376,6 +377,18 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                         workDayDatas.add(workDayData);
                     }
                 }
+                if(workDayDatas.isEmpty()||workDayDatas.size()<1){
+                    JSONObject workDayDataNull = new JSONObject();
+                    workDayDataNull.put("id", 0);
+                    workDayDataNull.put("companyType", "");
+                    workDayDataNull.put("companyName", "");
+                    workDayDataNull.put("employeeName", "");
+                    workDayDataNull.put("color", "");
+                    workDayDataNull.put("simtime", "");
+                    workDayDataNull.put("date",  calendar.getTime());
+                    workDayDataNull.put("compClinId", 0);
+                    workDayDatas.add(workDayDataNull);
+                }
                 personDays.add(workDayDatas);
                 calendar.add(Calendar.DATE, +COUNT);
             }
@@ -689,5 +702,25 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             PageHelper.startPage(queryForm.getPage(),queryForm.getSize());
         }
         return mapper.findEmployeeScheduleList(queryForm);
+    }
+
+    /**
+     * 根据条件查询员工排班信息
+     *
+     * @param
+     * @return
+     */
+    public EmployeeScheduleVO selectByCondition(EmployeeScheduleDeleteForm employeeScheduleDeleteForm) {
+        return mapper.selectByCondition(employeeScheduleDeleteForm);
+    }
+
+    /**
+     * 根据排班信息查询关联的申请信息
+     *
+     * @param
+     * @return
+     */
+    public Integer selectApprovalCount(EmployeeScheduleVO employeeScheduleVO) {
+        return mapper.selectApprovalCount(employeeScheduleVO);
     }
 }

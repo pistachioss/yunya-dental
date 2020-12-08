@@ -14,6 +14,7 @@ import com.yunya.modules.employeeattend.form.EmployeeScheduleForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.biz.EmployeeScheduleBiz;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleExportVO;
+import com.yunya.modules.employeeattend.vo.EmployeeScheduleVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,10 +62,14 @@ public class EmployeeScheduleController {
         if(date.before(new Date())){
             throw new ClientServiceException("今天之前的排班不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
-        if(false){
+        employeeSchedule.setWorkDate(date);
+        //查询排班关联的申请信息
+        //排班信息
+        EmployeeScheduleVO employeeScheduleVO = employeeScheduleBiz.selectByCondition(employeeScheduleDeleteForm);
+        Integer num = employeeScheduleBiz.selectApprovalCount(employeeScheduleVO);
+        if(num>0){
             throw new ClientServiceException("当前排班处于申请流程中，不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
-        employeeSchedule.setWorkDate(date);
         employeeScheduleBiz.delete(employeeSchedule);
         return ResponseUtil.success();
     }

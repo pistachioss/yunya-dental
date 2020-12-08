@@ -108,4 +108,22 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<AssistantActualWorkloadDetailVO> selectAssistantActualWorkloadDetailList(
       @Param("query") AssistantActualWorkloadDetailQuery query);
+
+  /**
+   * 根据条件查询开单项目数量信息列表
+   *
+   * @param query 查询条件
+   * @return List<BillingItemInfoVO>
+   */
+  List<BillingItemInfoVO> selectBillingItemInfoList(
+      @Param("query") BillingItemStatisticsQuery query);
+
+  /**
+   * 根据条件查询开单项目统计明细列表
+   *
+   * @param query 查询条件
+   * @return List<BillingItemDetailVO>
+   */
+  List<BillingItemDetailVO> selectBillingItemDetailList(
+      @Param("query") BillingItemDetailQuery query);
 }

@@ -64,6 +64,9 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
             xRayFilm.setToothNo(xRayFilmModel.getToothNo());
             xRayFilm.setType(xRayFilmModel.getType());
             xRayFilm.setUrl(xRayFilmModel.getUrl());
+            if (null != xRayFilmModel.getUploadTime()) {
+                xRayFilm.setUploadTime(xRayFilmModel.getUploadTime());
+            }
             xRayFilms.add(xRayFilm);
         });
         mapper.addBatch(xRayFilms);
@@ -134,5 +137,15 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
      */
     public List<ToothRootCountVo> toothRootCount(Integer patientId) {
         return mapper.findToothRootCountByPatientId(patientId);
+    }
+
+    /**
+     * 根据患者ID集合和当前时间查询患者照片集合
+     * @param patientIds  患者ID列表
+     * @param currentDate  当前日期
+     * @return 返回图片信息
+     */
+    public List<XRayFilm> findXRayFilmListByPatientIds(List<Integer> patientIds, String currentDate) {
+        return mapper.findXRayFilmListByPatientIds(patientIds,currentDate);
     }
 }
