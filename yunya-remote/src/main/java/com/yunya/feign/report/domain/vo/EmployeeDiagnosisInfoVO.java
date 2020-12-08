@@ -1,0 +1,61 @@
+package com.yunya.feign.report.domain.vo;
+
+import com.yunya.framework.common.annation.Excel;
+import io.swagger.annotations.ApiModel;
+import lombok.Data;
+import lombok.ToString;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * 简介: 员工看诊情况信息VO
+ *
+ * @author: chow
+ * @date: 2020/12/7 16:11
+ * @description:
+ * @since: 1.0.0
+ */
+@ApiModel("员工看诊情况信息VO")
+@Data
+@ToString
+public class EmployeeDiagnosisInfoVO implements Serializable {
+  /** 员工ID */
+  private Integer employeeId;
+  /** 医生姓名 */
+  @Excel(name = "医生")
+  private String employeeName;
+  /** 排班时长(分钟） */
+  @Excel(name = "排班时长(分钟）")
+  private Integer totalShiftTime;
+  /** 治疗时长（分钟） */
+  @Excel(name = "治疗时长（分钟）")
+  private Integer totalTreatmentTime;
+  /** 初诊人数 */
+  @Excel(name = "初诊人数")
+  private Integer firstVisitNum;
+  /** 就诊人次 */
+  @Excel(name = "就诊人次")
+  private Integer treatVisitsTimes;
+  /** 次均消费 */
+  @Excel(name = "次均消费")
+  private BigDecimal averageConsumption;
+  /** 就诊人数 */
+  @Excel(name = "就诊人数")
+  private Integer treatVisitsNum;
+  /** 人均消费 */
+  @Excel(name = "人均消费")
+  private BigDecimal perCapitaConsumption;
+  /** 预约人次 */
+  @Excel(name = "预约人次")
+  private Integer appointmentsNum;
+  /** 到诊人次 */
+  @Excel(name = "到诊人次")
+  private Integer visitArrivedTimes;
+  /** 改约人次 */
+  @Excel(name = "改约人次")
+  private Integer appointmentModifyTimes;
+  /** 取消预约人次 */
+  @Excel(name = "取消预约人次")
+  private Integer appointmentCancelTimes;
+}

@@ -1,5 +1,6 @@
 package com.yunya.feign.report.domain.vo;
 
+import com.yunya.framework.common.annation.Excel;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,18 +27,22 @@ public class BillingItemInfoVO implements Serializable {
   @ApiModelProperty("项目类型：0-价目表；1-商品")
   private Byte itemType;
   /** 项目编号 */
+  @Excel(name = "项目编号")
   @ApiModelProperty("项目编号")
   private String itemNum;
   /** 项目名称 */
+  @Excel(name = "项目名称")
   @ApiModelProperty("项目名称")
   private String itemName;
   /** 项目分类ID */
   @ApiModelProperty("项目分类ID")
   private Integer categoryId;
   /** 项目分类名称 */
+  @Excel(name = "所属分类")
   @ApiModelProperty("项目分类名称")
   private String categoryName;
   /** 开单数量合计 */
+  @Excel(name = "数量")
   @ApiModelProperty("开单数量合计")
   private Integer totalBillCount;
 }

@@ -5,6 +5,7 @@ package com.yunya.modules.employeeattend.mapper;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.models.employee_attend.EmployeeSchedule;
 
+import com.yunya.modules.employeeattend.form.EmployeeScheduleDeleteForm;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.vo.EmListVO;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleCopyVO;
@@ -99,4 +100,8 @@ public interface EmployeeScheduleMapper extends Mapper<EmployeeSchedule> {
    * @return
    */
   List<EmployeeScheduleVO> findEmployeeScheduleList(@Param("queryForm")EmployeeScheduleQueryForm queryForm);
+
+  EmployeeScheduleVO selectByCondition(EmployeeScheduleDeleteForm employeeScheduleDeleteForm);
+
+  Integer selectApprovalCount(EmployeeScheduleVO employeeScheduleVO);
 }

@@ -2,7 +2,9 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
+import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
@@ -53,5 +55,33 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     ExcelUtil<AssistantMatchingStatisticsVO> excelUtil =
         new ExcelUtil<>(AssistantMatchingStatisticsVO.class);
     excelUtil.exportExcel(response, list, "员工配诊记录列表");
+  }
+
+  /**
+   * 根据条件查询员工看诊情况列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<EmployeeDiagnosisInfoVO> 员工看诊情况分页列表
+   */
+  public PageInfo<EmployeeDiagnosisInfoVO> findEmployeeDiagnosisInfoList(
+      EmployeeDiagnosisQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出员工看诊情况列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportEmployeeDiagnosisInfoList(
+      HttpServletResponse response, EmployeeDiagnosisQuery query) throws IOException {
+    List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
+    ExcelUtil<EmployeeDiagnosisInfoVO> excelUtil = new ExcelUtil<>(EmployeeDiagnosisInfoVO.class);
+    excelUtil.exportExcel(response, resultList, "员工看诊情况列表");
   }
 }

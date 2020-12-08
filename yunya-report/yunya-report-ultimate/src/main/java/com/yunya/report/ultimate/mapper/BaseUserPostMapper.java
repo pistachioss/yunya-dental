@@ -1,6 +1,8 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
+import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.models.report.BaseUserPost;
 import org.apache.ibatis.annotations.Param;
@@ -18,4 +20,13 @@ public interface BaseUserPostMapper extends Mapper<BaseUserPost> {
    */
   List<AssistantMatchingStatisticsVO> selectAssistantMatchingStatisticsList(
       @Param("query") EmployeeMatchingRecordQuery query);
+
+  /**
+   * 根据条件查询员工看诊情况列表
+   *
+   * @param query 查询条件
+   * @return List<EmployeeDiagnosisInfoVO>
+   */
+  List<EmployeeDiagnosisInfoVO> selectEmployeeDiagnosisInfoList(
+      @Param("query") EmployeeDiagnosisQuery query);
 }
