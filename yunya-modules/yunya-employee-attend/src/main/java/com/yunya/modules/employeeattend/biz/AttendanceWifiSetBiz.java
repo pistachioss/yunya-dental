@@ -184,4 +184,14 @@ public class AttendanceWifiSetBiz extends BaseBiz<AttendanceWifiSetMapper, Atten
             });
         }
     }
+
+    /**
+     * 根据wifi的mac获取考勤WIFI设置
+     *
+     * @param macAddresss
+     * @return
+     */
+    public AttendanceWifiSetVO findAttendanceWifiSetByMac(String macAddresss) {
+        return mapper.findAttendanceWifiSetByMac(macAddresss);
+    }
 }

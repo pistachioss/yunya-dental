@@ -388,6 +388,37 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         if (onDutyIspunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode()) && dbPunchRecord.getPunchType().equals(AttendanceTypeEnum.OFFDUTY.getCode())) {
             throw new ClientServiceException("未打上班卡，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
+
+        Integer addressId = attendancePunchRecordForm.getAttendanceAddressId();
+        String macAddresss = attendancePunchRecordForm.getWifiMacAddress();
+        if (!AttendanceSourceEnum.FIELD.getCode().equals(dbPunchRecord.getSource())) {
+            Integer addOrgId = null;
+            if (addressId==null && StringHelper.isEmpty(macAddresss)) {
+                throw new ClientServiceException("不在考勤范围，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            } else if (addressId != null) {
+                AttendanceAddressSetVO attendanceAddressSetVO = attendanceAddressSetBiz.findAttendanceAddressSetById(addressId);
+                if (attendanceAddressSetVO == null) {
+                    throw new ClientServiceException("不在考勤范围，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+                }
+                addOrgId = attendanceAddressSetVO.getOrgId();
+            } else if (StringHelper.isNotEmpty(macAddresss)) {
+                AttendanceWifiSetVO attendanceWifiSetVO = attendanceWifiSetBiz.findAttendanceWifiSetByMac(macAddresss);
+                if (attendanceWifiSetVO == null) {
+                    throw new ClientServiceException("不在考勤范围，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+                }
+                addOrgId = attendanceWifiSetVO.getOrgId();
+            }
+            if (addOrgId == null) {
+                throw new ClientServiceException("考勤地址或考勤WIFI没有设置，请先设置考勤地址", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            }
+            if (!dbPunchRecord.getOrgId().equals(addOrgId)) {
+                throw new ClientServiceException("不在考勤范围，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            }
+        } else {
+            if (addressId==null && StringHelper.isEmpty(macAddresss)) {
+                throw new ClientServiceException("不在考勤范围，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
+            }
+        }
         Byte punchStatus = attendancePunchRecordForm.getPunchStatus();
         Byte punchType = dbPunchRecord.getPunchType();
         if (!punchStatus.equals(AttendanceStatusEnum.INVALID_PUNCH)) {
