@@ -309,9 +309,9 @@
 
     <select id="selectArrears" resultType="com.yunya.feign.report.domain.vo.ArrearsStatisticsVo">
         SELECT
-            (select count(DISTINCT patient_id ) from base_bill where org_id = #{orgId} AND debt_amount > 0) numberPatient1,
-            count(*) arrearsCount1,
-            sum(debt_amount) debtAmount1
+            (select count(DISTINCT patient_id ) from base_bill where org_id = #{orgId} AND debt_amount > 0) numberPatient,
+            count(*) arrearsCount,
+            sum(debt_amount) debtAmount
         FROM
             base_bill
         WHERE
