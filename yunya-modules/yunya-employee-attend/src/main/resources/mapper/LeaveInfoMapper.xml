@@ -67,6 +67,7 @@
     <select id="findLeaveInfoList" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
         t.id,
+        ifnull(t.company_id,es.clinic_id) as orgId,
         t.user_id as userId,
         t.vacation_id as vacationId,
         if(vs.vacation_status=1,t.start_time,ifnull(es.work_date,t.start_time)) as startDate,

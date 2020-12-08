@@ -1067,12 +1067,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
             Integer userId = leaveInfoVO.getUserId();
             Integer orgId = leaveInfoVO.getOrgId();
-            if (orgId == null) {
+           /* if (orgId == null) {
                 EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOMap.get(leaveInfoVO.getScheduleId());
                 if (employeeScheduleVO != null) {
                     orgId = employeeScheduleVO.getClinicId();
                 }
-            }
+            }*/
 
             long diff;
             if (leaveInfoVO.getVacationStatus().equals(0)) { // 按班次请假
@@ -1506,19 +1506,21 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     private long computeWithoutLeave(Date date, Date endTime, Date startTime, Integer userId, Integer orgId, Table<Integer, Integer, List<LeaveInfoVO>> leaveInfoMap) {
         long diff = endTime.getTime() - startTime.getTime();
         List<LeaveInfoVO> list = leaveInfoMap.get(userId, orgId);
-        Date sDateTime;
-        Date eDateTime;
-        try {
-            sDateTime = DateUtil.timetoDate(date, startTime);
-            eDateTime = DateUtil.timetoDate(date, endTime);
-        } catch (Exception e) {
-            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
-        }
-        for (LeaveInfoVO leaveInfoVO : list) {
-            Date leaveStartTime = leaveInfoVO.getStartTime();
-            Date leaveEndTime = leaveInfoVO.getEndTime();
-            if (sDateTime.before(leaveStartTime) && eDateTime.after(leaveEndTime)) {
-                diff -= leaveEndTime.getTime() - leaveStartTime.getTime();
+        if (list!=null && !list.isEmpty()) {
+            Date sDateTime;
+            Date eDateTime;
+            try {
+                sDateTime = DateUtil.timetoDate(date, startTime);
+                eDateTime = DateUtil.timetoDate(date, endTime);
+            } catch (Exception e) {
+                throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+            }
+            for (LeaveInfoVO leaveInfoVO : list) {
+                Date leaveStartTime = leaveInfoVO.getStartTime();
+                Date leaveEndTime = leaveInfoVO.getEndTime();
+                if (sDateTime.before(leaveStartTime) && eDateTime.after(leaveEndTime)) {
+                    diff -= leaveEndTime.getTime() - leaveStartTime.getTime();
+                }
             }
         }
         return diff;
