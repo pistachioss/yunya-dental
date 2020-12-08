@@ -6,8 +6,10 @@ import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
 import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
 import com.yunya.feign.employee_attend.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.modules.employeeattend.biz.AttendancePunchRecordBiz;
 import io.swagger.annotations.Api;
@@ -18,10 +20,13 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 
 /**
  * 简介：考勤打卡管理
@@ -90,8 +95,15 @@ public class AttendancePunchRecordController {
     @ApiOperation("查询打卡日历中指定日期下的员工考勤打卡列表")
     @GetMapping("/punchRecordByDate/{date}")
     @CurrentUser
-    public ResponseResult<AttendancePunchCalendarInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotNull Date date) {
-        AttendancePunchCalendarInfoVO attendancePunchInfoVO = attendancePunchRecordBiz.punchRecordByDate(date);
+    public ResponseResult<AttendancePunchCalendarInfoVO> punchRecordByDate(@PathVariable(value = "date") @NotBlank String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date dateTime = null;
+        try {
+            dateTime = sdf.parse(date);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
+        AttendancePunchCalendarInfoVO attendancePunchInfoVO = attendancePunchRecordBiz.punchRecordByDate(dateTime);
         return ResponseUtil.success(attendancePunchInfoVO);
     }
 
@@ -118,8 +130,7 @@ public class AttendancePunchRecordController {
     @ApiOperation("根据条件分页查询考勤汇总")
     @PostMapping("/statisticsPunchRecord")
     public ResponseResult<PageInfo<AttendanceStatisticsVO>> statisticsPunchRecord(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceStatisticsVO> result = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
-        PageInfo<AttendanceStatisticsVO> pageInfo = new PageInfo<>(result);
+        PageInfo<AttendanceStatisticsVO> pageInfo = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
         return ResponseUtil.success(pageInfo);
     }
 
@@ -133,9 +144,17 @@ public class AttendancePunchRecordController {
     @PostMapping("/statisticsPunchRecordExport")
     public ResponseResult statisticsPunchRecordExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
         queryForm.setWhetherPage(false);
-        List<AttendanceStatisticsVO> list = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
+        String date = queryForm.getDate();
+        if (StringHelper.isEmpty(date)) {
+            return ResponseUtil.error("没有选择日期导出条件！", date);
+        }
+        PageInfo<AttendanceStatisticsVO> list = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
+        List<AttendanceStatisticsVO> result = list.getList();
+        if (result==null || result.isEmpty()) {
+            return ResponseUtil.error("没有数据记录可以导出！", result);
+        }
         ExcelUtil<AttendanceStatisticsVO> excelUtil = new ExcelUtil<>(AttendanceStatisticsVO.class);
-        excelUtil.exportExcel(response, list, "考勤汇总表");
+        excelUtil.exportExcel(response, result, "考勤汇总统计表");
         return ResponseUtil.success(null);
     }
 

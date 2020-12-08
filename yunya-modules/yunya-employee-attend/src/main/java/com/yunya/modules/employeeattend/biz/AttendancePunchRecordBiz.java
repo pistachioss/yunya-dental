@@ -1,6 +1,7 @@
 package com.yunya.modules.employeeattend.biz;
 
 import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.yunya.feign.employee_attend.form.*;
@@ -13,6 +14,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
@@ -983,9 +985,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param queryForm 查询参数
      * @return
      */
-    public List<AttendanceStatisticsVO> statisticsPunchRecord(AttendanceStatisticsQueryForm queryForm) {
+    public PageInfo<AttendanceStatisticsVO> statisticsPunchRecord(AttendanceStatisticsQueryForm queryForm) {
         String name = queryForm.getEmployeeName();
         Byte type = queryForm.getType();
+        if (type == null) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
         setQueryFormDate(queryForm);
         Set<Integer> userIds = new HashSet<>();
         Set<String> userOrgIds = new HashSet<>();
@@ -1341,8 +1346,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
         model.setKeyWord(name);
         model.setWorkStatus(new Byte[]{0, 1, 3});
-        List<SysUserInfoDetail> userList = remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model);
+        ResponseResult<PageInfo<SysUserInfoDetail>> userPages = remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model);
         List<AttendanceStatisticsVO> result = new ArrayList<>();
+        PageInfo<SysUserInfoDetail> userPage = userPages.getData();
+        List<SysUserInfoDetail> userList = userPage.getList();
         userList.forEach(user->{
             Integer userId = user.getUserId();
             String companyIds = user.getCompanyIds();
@@ -1449,7 +1456,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             statistics.setInvalidNum(invalidNum);
             result.add(statistics);
         });
-        return result;
+        PageInfo<AttendanceStatisticsVO> pageInfo = new PageInfo();
+        pageInfo.setList(result);
+        pageInfo.setPageNum(queryForm.getPageNum());
+        pageInfo.setPageSize(queryForm.getPageSize());
+        pageInfo.setTotal(userPage.getTotal());
+        return pageInfo;
     }
 
     /**
