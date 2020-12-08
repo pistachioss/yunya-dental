@@ -29,7 +29,8 @@ public class CompanyReportOfOperationControllerTest {
     EmployeeWorkloadQuery query = new EmployeeWorkloadQuery();
     query.setOrgId(35);
     query.setDateType((byte) 0);
-    query.setQueryDate("2020-11");
+    query.setQueryDate("2020-12");
+    query.setEmployeeIds(new Integer[]{526});
     ResponseResult<PageInfo<EmployeeWorkloadOfOperationVO>> result =
         companyReportOfOperationController.employeeWorkloadListOfOperation(query);
     System.out.println(result);

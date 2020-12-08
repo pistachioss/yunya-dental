@@ -552,8 +552,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
       List<PatientTotalInfoVo> patientTotalInfoVos = mapper.selectPatientDataByIds(ids);
       if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
         patientTotalInfoVos.forEach(patientTotalInfoVo -> {
-          DictionaryItem dictionaryItemById = remoteSystemServiceFeign.findDictionaryItemById(patientTotalInfoVo.getPatientKind());
-          patientTotalInfoVo.setPatientKindName(dictionaryItemById.getName());
+          Integer patientKind = patientTotalInfoVo.getPatientKind();
+          if (patientKind != null) {
+            DictionaryItem dictionaryItemById = remoteSystemServiceFeign.findDictionaryItemById(patientKind);
+            patientTotalInfoVo.setPatientKindName(dictionaryItemById.getName());
+          }
           // 设置患者扩展信息
           this.setPatientExtInfo(patientTotalInfoVo.getId(),patientTotalInfoVo);
         });

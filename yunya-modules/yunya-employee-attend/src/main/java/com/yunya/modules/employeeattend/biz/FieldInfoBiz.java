@@ -159,6 +159,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         BeanUtils.copyProperties(fieldInfoForm, fieldInfo);
                         fieldInfo.setCrtId(fieldInfoForm.getUserId());
                         fieldInfo.setCrtTime(new Date());
+                        fieldInfo.setApprpvalStatus(0);
                         int num = mapper.insertSelective(fieldInfo);
                         //生成抄送信息
                         if (fieldInfoForm.getCopyList()!=null){
