@@ -362,7 +362,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         // 打卡：1、无效卡，2-打卡
         AttendancePunchRecord attendancePunchRecord = new AttendancePunchRecord();
         BeanUtils.copyProperties(attendancePunchRecordForm, attendancePunchRecord);
-        Byte punchStatus = attendancePunchRecord.getPunchStatus();
+        attendancePunchRecord.setPunchTime(now);
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
         queryForm.setPunchDate(now);
         queryForm.setUserId(userId);
@@ -371,29 +371,53 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         if (attendancePunchRecordVOS==null || attendancePunchRecordVOS.isEmpty()) {
             throw new ClientServiceException("打卡失败，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        AttendancePunchRecordVO oldPunchRecord = null;
+        AttendancePunchRecordVO dbPunchRecord = null;
         Byte onDutyIspunch = null;
         for (AttendancePunchRecordVO attendancePunchRecordVO : attendancePunchRecordVOS) {
             if (attendancePunchRecordVO.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
                 onDutyIspunch = attendancePunchRecordVO.getIsPunch();
             }
             if (attendancePunchRecordVO.getId().equals(attendancePunchRecord.getId())) {
-                oldPunchRecord = attendancePunchRecordVO;
+                dbPunchRecord = attendancePunchRecordVO;
             }
         }
-        if (oldPunchRecord == null) {
+        if (dbPunchRecord == null) {
             throw new ClientServiceException("打卡失败，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        if (onDutyIspunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode()) && oldPunchRecord.getPunchType().equals(AttendanceTypeEnum.OFFDUTY.getCode())) {
+        if (onDutyIspunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode()) && dbPunchRecord.getPunchType().equals(AttendanceTypeEnum.OFFDUTY.getCode())) {
             throw new ClientServiceException("未打上班卡，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
-        Byte oldPunchStatus = oldPunchRecord.getPunchStatus();
+        Byte punchStatus = attendancePunchRecordForm.getPunchStatus();
+        Byte punchType = dbPunchRecord.getPunchType();
+        if (!punchStatus.equals(AttendanceStatusEnum.INVALID_PUNCH)) {
+            Date time = null;
+            try {
+                time = DateUtil.dateTo19700101(now);
+            } catch (ParseException e) {
+                throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+            }
+            if (punchType.equals(AttendanceTypeEnum.ONDUTY.getCode())) {//上班卡
+                if (time.after(dbPunchRecord.getStartTime())) {
+                    punchStatus = AttendanceStatusEnum.LATER_PUNCH.getCode();//迟到打卡
+                } else {
+                    punchStatus = AttendanceStatusEnum.ONDUTY_PUNCH.getCode();//上班打卡
+                }
+            } else {//下班卡
+                if (time.before(dbPunchRecord.getEndTime())) {
+                    punchStatus = AttendanceStatusEnum.EARLY_PUNCH.getCode();//早退打卡
+                } else {
+                    punchStatus = AttendanceStatusEnum.OFFDUTY_PUNCH.getCode();//下班打卡
+                }
+            }
+        }
+        Byte oldPunchStatus = dbPunchRecord.getPunchStatus();
         if ((AttendanceStatusEnum.ONDUTY_PUNCH.getCode().equals(punchStatus)
                 ||AttendanceStatusEnum.LATER_PUNCH.getCode().equals(punchStatus))
                 && (AttendanceStatusEnum.ONDUTY_PUNCH.getCode().equals(oldPunchStatus)
                 ||AttendanceStatusEnum.LATER_PUNCH.getCode().equals(oldPunchStatus))) {// 上班更新不允许
             throw new ClientServiceException("上班卡已打，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
+        attendancePunchRecord.setPunchStatus(punchStatus);
         attendancePunchRecord.setIsPunch(AttendanceIsPunchEnum.PUNCHED.getCode());
         attendancePunchRecord.setUptTime(now);
         attendancePunchRecord.setUptId(userId);
@@ -1573,23 +1597,23 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         punchDate.setLeave((byte) 3);
                     } else if (source.equals(AttendanceSourceEnum.LEAVE_BYDAY.getCode())) {
                         leave = 2;
-                        if (punchDate.getLeave()!=null && punchDate.getLeave()!=0 && !punchDate.getOffDutySourceId().equals(sourceId)) {
+                        if (punchDate.getLeave()!=null && punchDate.getLeave()!=0 && !sourceId.equals(punchDate.getOffDutySourceId())) {
                             leave = 4;
-                        } else if (punchDate.getLeave()!=null && punchDate.getLeave()!=0&& punchDate.getOffDutySourceId().equals(sourceId)) {
+                        } else if (punchDate.getLeave()!=null && punchDate.getLeave()!=0&& sourceId.equals(punchDate.getOffDutySourceId())) {
                             leave = 3;
                         }
                     } else if (source.equals(AttendanceSourceEnum.WORK_OVERTIME.getCode())) {
                         workDateOvertime = 2;
-                        if (punchDate.getWorkOvertime()!=null && punchDate.getWorkOvertime()!=0 && !punchDate.getOffDutySourceId().equals(sourceId)) {
+                        if (punchDate.getWorkOvertime()!=null && punchDate.getWorkOvertime()!=0 && !sourceId.equals(punchDate.getOffDutySourceId())) {
                             workDateOvertime = 4;
-                        } else if (punchDate.getWorkOvertime()!=null && punchDate.getWorkOvertime()!=0 && punchDate.getOffDutySourceId().equals(sourceId)) {
+                        } else if (punchDate.getWorkOvertime()!=null && punchDate.getWorkOvertime()!=0 && sourceId.equals(punchDate.getOffDutySourceId())) {
                             workDateOvertime = 3;
                         }
                     } else if (source.equals(AttendanceSourceEnum.FIELD.getCode())) {
                         field = 2;
-                        if (punchDate.getField()!=null && punchDate.getField()!=0 && !punchDate.getOffDutySourceId().equals(sourceId)) {
+                        if (punchDate.getField()!=null && punchDate.getField()!=0 && !sourceId.equals(punchDate.getOffDutySourceId())) {
                             field = 4;
-                        } else if (punchDate.getField()!=null && punchDate.getField()!=0 && punchDate.getOffDutySourceId().equals(sourceId)) {
+                        } else if (punchDate.getField()!=null && punchDate.getField()!=0 && sourceId.equals(punchDate.getOffDutySourceId())) {
                             field = 3;
                         }
                     }
