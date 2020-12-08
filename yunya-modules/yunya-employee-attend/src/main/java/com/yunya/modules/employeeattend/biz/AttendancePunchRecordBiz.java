@@ -33,8 +33,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简介：考勤打卡业务层
@@ -989,7 +988,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         String name = queryForm.getEmployeeName();
         Byte type = queryForm.getType();
         if (type == null) {
-            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+            throw new ClientServiceException("请选择查询年月", PARAM_NOT_ALLOW_EMPTY);
         }
         setQueryFormDate(queryForm);
         Set<Integer> userIds = new HashSet<>();
@@ -1704,13 +1703,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @param queryForm 查询参数
      * @return
      */
-    public List<AttendanceWorkDateMinuteVO> statisticsWorkDateByMinute(AttendanceStatisticsQueryForm queryForm) {
+    public PageInfo<AttendanceWorkDateMinuteVO> statisticsWorkDateByMinute(AttendanceStatisticsQueryForm queryForm) {
         Integer userId = queryForm.getUserId();
         Integer orgId = queryForm.getOrgId();
         setQueryFormDate(queryForm);
         Date betweenDate = queryForm.getBetweenDate();
         Date andDate = queryForm.getAndDate();
-        List<Date> dateList = DateUtil.getBetweenDate(betweenDate, andDate, queryForm.getPageNum(), queryForm.getPageSize());
+        List<Date> dateList = DateUtil.getBetweenDate(betweenDate, andDate);
+        int total = dateList.size();
+        dateList = DateUtil.pagination(dateList, queryForm.getPageNum(), queryForm.getPageSize());
         betweenDate = dateList.get(0);
         andDate = dateList.get(dateList.size()-1);
         // 排班
@@ -1938,7 +1939,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             workDateMinuteVO.setDate(date);
             result.add(workDateMinuteVO);
         });
-        return result;
+        PageInfo<AttendanceWorkDateMinuteVO> pageInfo = new PageInfo<>();
+        pageInfo.setTotal(total);
+        pageInfo.setList(result);
+        pageInfo.setPageNum(queryForm.getPageNum());
+        pageInfo.setPageSize(queryForm.getPageSize());
+        return pageInfo;
     }
 
     /**

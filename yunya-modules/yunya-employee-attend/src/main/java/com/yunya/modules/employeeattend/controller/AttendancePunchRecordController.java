@@ -167,9 +167,8 @@ public class AttendancePunchRecordController {
     @ApiOperation("分页查询工作时长的考勤汇总明细")
     @PostMapping("/statisticsWorkDateByMinute")
     public ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>> statisticsWorkDateByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceWorkDateMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
-        PageInfo<AttendanceWorkDateMinuteVO> pageInfo = new PageInfo<>(result);
-        return ResponseUtil.success(pageInfo);
+        PageInfo<AttendanceWorkDateMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
+        return ResponseUtil.success(result);
     }
 
     /**
@@ -182,9 +181,13 @@ public class AttendancePunchRecordController {
     @PostMapping("/statisticsWorkDateByMinuteExport")
     public ResponseResult statisticsWorkDateByMinuteExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
         queryForm.setWhetherPage(false);
-        List<AttendanceWorkDateMinuteVO> list = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
+        PageInfo<AttendanceWorkDateMinuteVO> pageInfo = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
+        List<AttendanceWorkDateMinuteVO> list = pageInfo.getList();
+        if (list==null || list.isEmpty()) {
+            return ResponseUtil.error("没有数据记录可以导出！", list);
+        }
         ExcelUtil<AttendanceWorkDateMinuteVO> excelUtil = new ExcelUtil<>(AttendanceWorkDateMinuteVO.class);
-        excelUtil.exportExcel(response, list, "考勤汇总工作时长明细表");
+        excelUtil.exportExcel(response, list, "工作日时长统计表");
         return ResponseUtil.success(null);
     }
 
