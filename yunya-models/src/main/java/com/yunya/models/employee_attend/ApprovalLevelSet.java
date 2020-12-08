@@ -1,9 +1,12 @@
 package com.yunya.models.employee_attend;
 
+import io.swagger.annotations.ApiModel;
+
 import java.util.Date;
 import javax.persistence.*;
 
 @Table(name = "approval_level_set")
+@ApiModel
 public class ApprovalLevelSet {
     @Id
     private Integer id;

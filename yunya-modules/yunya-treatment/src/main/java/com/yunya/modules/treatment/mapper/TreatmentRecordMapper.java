@@ -74,4 +74,26 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
           @Param("dentistId") Integer dentistId,
           @Param("startDate") Date startDate,
           @Param("endDate") Date endDate);
+
+  /**
+   * PC照片影像小程序就诊中
+   * @param status 状态
+   * @param currentDate  当前时间
+   * @param orgId  门诊ID
+   * @return 返回实体列表
+   */
+  List<DesktopMiniProgramVO> desktopTreatingList(@Param("status") Byte status,
+                                                 @Param("currentDate") String currentDate,
+                                                 @Param("orgId") Integer orgId);
+
+  /**
+   * 根据患者姓名、手机号、病历号查询影像小程序列表中患者信息
+   * @param patientIds 状态
+   * @param currentDate 当前时间
+   * @param orgId  门诊ID
+   * @return 返回实体列表
+   */
+  List<DesktopMiniProgramVO> desktopTreatingListItem(@Param("patientIds") List<Integer> patientIds,
+                                                 @Param("currentDate") String currentDate,
+                                                 @Param("orgId") Integer orgId);
 }

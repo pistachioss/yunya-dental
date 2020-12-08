@@ -307,7 +307,8 @@
 	ap.user_id userId,
 	als.approval_priority approvalPriority,
 	ai.approval_status approvalStatus,
-	ai.crt_time crtTime
+	ai.crt_time crtTime,
+	ai.upd_time updTime
     FROM
 	approval_info ai
     LEFT JOIN approval_people ap ON ai.approval_people_id = ap.id

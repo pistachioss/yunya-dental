@@ -27,9 +27,9 @@ public class AttendancePunchInfoVO implements Serializable {
     @ApiModelProperty(value = "打卡记录主键id")
     private Integer id;
 
-    /** 是否绑定了考勤设备 */
-    @ApiModelProperty(value = "是否绑定了考勤设备")
-    private boolean hasDeviceBinding;
+    /** 用户当前绑定的设备号 */
+    @ApiModelProperty(value = "用户当前绑定的设备号")
+    private String deviceNumber;
 
     /** 打卡类型：0:上班打卡 1：迟到打卡  2:下班打卡  3:早退打卡  4:无效卡  5:不在考勤范围  6：未排班*/
     @ApiModelProperty(value = "打卡类型: 0:上班打卡 1：迟到打卡  2:下班打卡  3:早退打卡  4:无效卡  5:不在考勤范围  6：未排班")

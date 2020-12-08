@@ -38,7 +38,7 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
     <select id="findList" resultMap="BaseResultMap">
-        select * from field_info where apprpval_status in (0,1,2)
+        select * from field_info where apprpval_status in (0,1)
         <if test="userId !=null and userId != ''">
             and user_id = #{userId}
         </if>

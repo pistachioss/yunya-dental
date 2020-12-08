@@ -19,7 +19,7 @@ import java.util.Date;
  * @return: $
  */
 @Data
-@ApiModel("外勤信息")
+@ApiModel(value = "外勤信息")
 public class FieldInfoListVO {
     /** 主键id */
     @ApiModelProperty(value = "主键id")

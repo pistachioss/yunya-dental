@@ -5,10 +5,7 @@ import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentCountQuery;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
-import com.yunya.feign.treatment.domain.vo.LastTreatmentInfoVO;
-import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -147,4 +144,29 @@ public class TreatmentRecordController {
     Map<String, Integer> resultMap = treatmentRecordBiz.countTreatList(query);
     return ResponseUtil.success(resultMap);
   }
+
+  /**
+   * PC照片影像小程序就诊中/治疗完成/已结账请求接口
+   * @param queryForm
+   * @return
+   */
+  @ApiOperation("PC照片影像小程序就诊中/治疗完成/已结账请求接口")
+  @PostMapping(value = "/desktop/treatment/list")
+  public ResponseResult<PageInfo<DesktopMiniProgramVO>> desktopTreatList(@RequestBody @Validated TreatmentRecordQueryForm queryForm) {
+    PageInfo<DesktopMiniProgramVO> desktopMiniProgramVOPageInfo = treatmentRecordBiz.desktopTreatList(queryForm);
+    return ResponseUtil.success(desktopMiniProgramVOPageInfo);
+  }
+
+  /**
+   * 根据患者姓名、手机号、病历号查询影像小程序列表中患者信息
+   * @param queryForm 查询参数
+   * @return
+   */
+  @ApiOperation("根据患者姓名、手机号、病历号查询影像小程序列表中患者信息")
+  @PostMapping(value = "/desktop/treatment/find")
+  public ResponseResult<PageInfo<DesktopMiniProgramVO>> findDesktopTreatListItem(@RequestBody @Validated TreatmentRecordQueryForm queryForm) {
+    PageInfo<DesktopMiniProgramVO> desktopTreatListItems = treatmentRecordBiz.findDesktopTreatListItem(queryForm);
+    return ResponseUtil.success(desktopTreatListItems);
+  }
+
 }
