@@ -266,7 +266,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
             offDutyPunchItem.setPunchMode(punchMode);
             offDutyPunchItem.setPunchType(offDutyPunchRecord.getPunchType());
-            onDutyPunchItem.setPunchName(onDutyPunchRecord.getPunchAddress());
+            offDutyPunchItem.setPunchName(offDutyPunchRecord.getPunchAddress());
             offDutyPunchItem.setPunchStatus(offDutyPunchRecord.getPunchStatus());
             offDutyPunchItem.setPunchTime(offDutyPunchRecord.getPunchTime());
         } else {// 未打卡
