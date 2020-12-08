@@ -1168,8 +1168,8 @@
     <select id="selectBillingItemDetailList" resultType="com.yunya.feign.report.domain.vo.BillingItemDetailVO">
         SELECT
             bbd.billDetailId,
-            bbd.orderDate,
-            bbd.billDate,
+            DATE_FORMAT(bbd.orderDate, '%Y-%m-%d'),
+            DATE_FORMAT(bbd.billDate, '%Y-%m-%d'),
             bbd.billNum,
             bbd.quantity,
             bbd.patientId,
@@ -1291,7 +1291,7 @@
             <if test="query.billEndDate != null and query.billEndDate != ''">
                 and DATE_FORMAT(bbd.billDate, '%Y-%m-%d') &lt;= #{query.billEndDate}
             </if>
-            <if test="query.regDentistIds != null and query.regDentistIds.size > 0">
+            <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
                 and bbd.regDentistId in
                 <foreach collection="query.regDentistIds" item="item" index="index" separator="," open="(" close=")">
                     #{item}

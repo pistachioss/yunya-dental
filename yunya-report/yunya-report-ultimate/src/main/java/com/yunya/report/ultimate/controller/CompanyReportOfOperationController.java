@@ -5,14 +5,12 @@ import com.yunya.feign.report.domain.query.BillingItemDetailQuery;
 import com.yunya.feign.report.domain.query.BillingItemStatisticsQuery;
 import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeWorkloadQuery;
-import com.yunya.feign.report.domain.vo.BillingItemDetailVO;
-import com.yunya.feign.report.domain.vo.BillingItemInfoVO;
-import com.yunya.feign.report.domain.vo.EmployeeWorkloadOfOperationVO;
-import com.yunya.feign.report.domain.vo.ItemCategoryInfoVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
 import com.yunya.report.ultimate.biz.BaseTariffInfoBiz;
+import com.yunya.report.ultimate.biz.BaseUserPostBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
@@ -41,7 +39,8 @@ public class CompanyReportOfOperationController {
   @Autowired private BaseBillDetailBiz billDetailBiz;
   /** 开单项目 */
   @Autowired private BaseTariffInfoBiz tariffInfoBiz;
-
+  /** 员工 */
+  @Autowired private BaseUserPostBiz userPostBiz;
   /**
    * 根据条件查询员工工作量列表
    *
@@ -81,8 +80,25 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工看诊情况")
   @PostMapping(value = "/employee/diagnosis/list", name = "根据条件查询员工看诊情况列表")
-  public ResponseResult<T> billDetailBiz(@RequestBody @Validated EmployeeDiagnosisQuery query) {
+  public ResponseResult<PageInfo<EmployeeDiagnosisInfoVO>> employeeDiagnosisInfoList(
+      @RequestBody @Validated EmployeeDiagnosisQuery query) {
+    PageInfo<EmployeeDiagnosisInfoVO> pageInfo = userPostBiz.findEmployeeDiagnosisInfoList(query);
+    return ResponseUtil.success(pageInfo);
+  }
 
+  /**
+   * 根据条件导出员工看诊情况列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工看诊情况-导出")
+  @PostMapping(value = "/employee/diagnosis/list/export", name = "根据条件导出员工看诊情况列表")
+  public ResponseResult<T> exportEmployeeDiagnosisInfoList(
+      HttpServletResponse response, @RequestBody @Validated EmployeeDiagnosisQuery query)
+      throws IOException {
+    userPostBiz.exportEmployeeDiagnosisInfoList(response, query);
     return ResponseUtil.success(null);
   }
 
@@ -110,6 +126,22 @@ public class CompanyReportOfOperationController {
       @RequestBody @Validated BillingItemStatisticsQuery query) {
     PageInfo<BillingItemInfoVO> pageInfo = billDetailBiz.findBillingItemInfoVOList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出开单项目数量列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-员工报表-开单项目数量-导出")
+  @PostMapping(value = "/billing/item/list/export", name = "根据条件导出开单项目数量列表")
+  public ResponseResult<T> billDetailBiz(
+      HttpServletResponse response, @RequestBody @Validated BillingItemStatisticsQuery query)
+      throws IOException {
+    billDetailBiz.exportBillingItemInfoList(response, query);
+    return ResponseUtil.success(null);
   }
 
   /**

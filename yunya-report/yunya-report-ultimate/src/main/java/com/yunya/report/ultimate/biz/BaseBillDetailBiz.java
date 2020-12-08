@@ -359,6 +359,19 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
   }
 
   /**
+   * 根据条件导出开单项目数量列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportBillingItemInfoList(
+      HttpServletResponse response, BillingItemStatisticsQuery query) throws IOException {
+    ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
+    List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
+    excelUtil.exportExcel(response, resultList, "开单项目数量统计列表");
+  }
+
+  /**
    * 根据条件查询开单项目统计明细列表
    *
    * @param query 查询条件

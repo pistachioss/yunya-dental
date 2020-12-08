@@ -1,6 +1,8 @@
 package com.yunya.report.ultimate.mapper;
 
+import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
+import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +35,17 @@ public class BaseUserPostMapperTest {
     query.setAssistantIds(new Integer[] {573});
     List<AssistantMatchingStatisticsVO> vos =
         baseUserPostMapper.selectAssistantMatchingStatisticsList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void findEmployeeDiagnosisInfo() {
+    EmployeeDiagnosisQuery query = new EmployeeDiagnosisQuery();
+    query.setOrgId(35);
+    query.setStartDate("2020-10-01");
+    query.setEndDate("2020-12-07");
+    query.setDentistIds(new Integer[] {521, 526});
+    List<EmployeeDiagnosisInfoVO> vos = baseUserPostMapper.selectEmployeeDiagnosisInfoList(query);
     System.out.println(vos);
   }
 }
