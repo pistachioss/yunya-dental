@@ -769,8 +769,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             AttendancePunchRecordVO leaveStatistics = new AttendancePunchRecordVO();
             Date startTime = leaveInfoVO.getStartTime();
             Date endTime = leaveInfoVO.getEndTime();
-            Integer vacationStatus = leaveInfoVO.getVacationStatus();
-            if (vacationStatus == 0) {// 按班次请假
+            if (leaveInfoVO.getVacationStatus().equals(0)) {// 按班次请假
                 leaveStatistics.setPunchDate(leaveInfoVO.getStartDate());
                 EmployeeScheduleVO employeeScheduleVO = workMap.get(leaveInfoVO.getScheduleId());
                 if (employeeScheduleVO != null) {
@@ -1066,7 +1065,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<LeaveInfoVO> leaveInfoVOS = leaveInfoBiz.findLeaveInfoList(leaveQueryForm);
         Table<Integer,Integer, List<LeaveInfoVO>> leaveInfoMap = HashBasedTable.create();
         for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
-            Integer vacationStatus = leaveInfoVO.getVacationStatus();
             Integer userId = leaveInfoVO.getUserId();
             Integer orgId = leaveInfoVO.getOrgId();
             if (orgId == null) {
@@ -1077,7 +1075,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
 
             long diff;
-            if (vacationStatus == 1) { // 按班次请假
+            if (leaveInfoVO.getVacationStatus().equals(0)) { // 按班次请假
                 diff = leaveInfoVO.getEndTime().getTime() - leaveInfoVO.getStartTime().getTime();
                 List<LeaveInfoVO> list = leaveInfoMap.get(userId, orgId);
                 if (list == null) {
@@ -1886,7 +1884,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
                                 Date sTime = leaveInfoVO.getStartTime();
                                 Date eTime = leaveInfoVO.getEndTime();
-                                if (leaveInfoVO.getVacationStatus() == 0
+                                if (leaveInfoVO.getVacationStatus().equals(0)
                                         && startTime.before(sTime) && endTime.after(eTime)) {//按班次请假，如果被上班班次覆盖了
                                     leaveDiff = sTime.getTime() - eTime.getTime();
                                     break;
@@ -1948,7 +1946,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                                 for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
                                     Date sTime = leaveInfoVO.getStartTime();
                                     Date eTime = leaveInfoVO.getEndTime();
-                                    if (leaveInfoVO.getVacationStatus() == 0
+                                    if (leaveInfoVO.getVacationStatus().equals(0)
                                             && startTime.before(sTime) && endTime.after(eTime)) {//按班次请假，如果被上班班次覆盖了
                                         leaveDiff = sTime.getTime() - eTime.getTime();
                                         break;
@@ -2211,8 +2209,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             long diff = 0;
             StringBuilder sb = new StringBuilder(leaveInfoVO.getVacationName());
             StringBuilder approvalNames = new StringBuilder();
-            Integer vacationStatus = leaveInfoVO.getVacationStatus();
-            if (vacationStatus.equals(0)) {
+            if (leaveInfoVO.getVacationStatus().equals(0)) {
                 List<LeaveScheduleVO> list = leaveScheduleMap.get(leaveInfoVO.getId());
                 for (LeaveScheduleVO leaveScheduleVO : list) {
                     Integer approvalPeopleId = leaveScheduleVO.getApprovalPeopleId();
