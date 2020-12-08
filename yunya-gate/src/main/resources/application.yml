@@ -1,6 +1,5 @@
 server:
   port: 8765
-
 #请求和响应GZIP压缩支持
 feign:
   httpclient:
@@ -130,9 +129,9 @@ spring:
           uri: lb://yunya-treatment-other
           order: 8206
           predicates:
-            - Path=/api/treatment/other/**
+            - Path= /api/treatment-other/**
           filters:
-            - StripPrefix=3
+            - StripPrefix=2
           metadata:
             title: "就诊扩展服务"
         - id: yunya-clinic-base

@@ -2494,4 +2494,16 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return new ArrayList<>();
     }
 
+    /**
+     * 计算后续指定患者的预约数量列表
+     * @param patientIds 患者id列表
+     * @return 返回患者后续列表
+     */
+    public List<NextAppointsVo> countNextAppoints(List<Integer> patientIds) {
+        if (StringHelper.isNotEmpty(patientIds)) {
+            return mapper.countNextAppoints(patientIds);
+        }
+        return new ArrayList<NextAppointsVo>();
+    }
+
 }

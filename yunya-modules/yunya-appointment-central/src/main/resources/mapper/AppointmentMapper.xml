@@ -514,5 +514,24 @@
         </foreach>
     </select>
 
+    <!-- 计算后续指定患者的预约数量列表 -->
+    <select id="countNextAppoints" resultType="com.yunya.feign.appointment.vo.NextAppointsVo">
+        select
+        patient_id as patientId,
+        count(id) as `count`,
+        group_concat(distinct id order by id desc) as id,
+        group_concat(distinct assistant_id order by id desc) as assistantId,
+        group_concat(distinct dept_room_id order by id desc) as deptRoomId,
+        group_concat(distinct dentist_id order by id desc) as dentistId
+
+        from appointment where patient_id in
+        <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
+            #{patientId}
+        </foreach>
+        and date_format(appoint_date,'%Y-%m-%d') &gt; date_format(now(),'%Y-%m-%d')
+        and appoint_status = 0
+        group by patient_id
+    </select>
+
 
 </mapper>

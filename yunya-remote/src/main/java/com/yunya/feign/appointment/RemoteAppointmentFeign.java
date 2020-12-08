@@ -7,6 +7,7 @@ import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
+import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
@@ -121,6 +122,14 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "/api/appoint/count/{patientId}", method = RequestMethod.GET)
   Integer countNextAppoint(@PathVariable(value = "patientId") Integer patientId);
+
+  /**
+   * 计算后续指定患者的预约数量
+   * @param patientIds 患者ID
+   * @return 返回预约数量
+   */
+  @RequestMapping(value = "/api/appoint/count/patientIds", method = RequestMethod.POST)
+  List<NextAppointsVo> countNextAppoints(@RequestBody List<Integer> patientIds);
 
   /**
    * 根据预约ID查询预约
