@@ -3,7 +3,9 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillPayRecordQuery;
+import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.vo.BillOfPayRecordVO;
+import com.yunya.feign.report.domain.vo.TollDataStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillPay;
@@ -50,5 +52,15 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     List<BillOfPayRecordVO> list = mapper.selectBillRecordOfPayList(query);
     ExcelUtil<BillOfPayRecordVO> excelUtil = new ExcelUtil<>(BillOfPayRecordVO.class);
     excelUtil.exportExcel(response, list, "账单收费记录表");
+  }
+
+  /**
+   * 根据条件查询门诊收费数据总览
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public TollDataStatisticsVO findClinicTollDataStatistic(DataStatisticsQuery query) {
+    return null;
   }
 }

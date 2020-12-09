@@ -4,7 +4,9 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.BillOfDiscountDetailQuery;
 import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
+import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.OrderRecordQuery;
+import com.yunya.feign.report.domain.vo.BillDataStatisticsVO;
 import com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO;
 import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
 import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
@@ -109,7 +111,19 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public void exportBillReceivableAmountList(
       HttpServletResponse response, BillOfReceivableQuery query) throws IOException {
     List<BillRestReceivableAmountVO> resultList = mapper.selectBillReceivableAmountList(query);
-    ExcelUtil<BillRestReceivableAmountVO> excelUtil = new ExcelUtil<>(BillRestReceivableAmountVO.class);
+    ExcelUtil<BillRestReceivableAmountVO> excelUtil =
+        new ExcelUtil<>(BillRestReceivableAmountVO.class);
     excelUtil.exportExcel(response, resultList, "应收账款余额表");
+  }
+
+  /**
+   * 根据条件查询门诊账单数据总览
+   *
+   * @param query 查询条件
+   * @return BillDataStatisticsVO
+   */
+  public BillDataStatisticsVO findClinicBillDataStatistic(DataStatisticsQuery query) {
+    BillDataStatisticsVO resultData = mapper.selectClinicBillDataStatistic(query);
+    return resultData;
   }
 }

@@ -397,4 +397,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
     excelUtil.exportExcel(response, resultList, "开单项目统计明细列表");
   }
+
+  /**
+   * 根据条件查询门诊工作量总览
+   *
+   * @param query 查询条件
+   * @return
+   */
+  public WorkloadStatisticsVO findClinicWorkloadStatistic(DataStatisticsQuery query) {
+    return null;
+  }
 }

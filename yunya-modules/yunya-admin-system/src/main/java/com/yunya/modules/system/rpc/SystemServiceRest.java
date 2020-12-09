@@ -1,7 +1,10 @@
 package com.yunya.modules.system.rpc;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.*;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
@@ -324,10 +327,11 @@ public class SystemServiceRest {
    * @return
    */
   @RequestMapping(value = "/userWithOrg/list", method = RequestMethod.POST)
-  public List<SysUserInfoDetail> findUserDetailWithOrgList(@RequestBody SysUserEmployeeModel model) {
+  public ResponseResult<PageInfo<SysUserInfoDetail>> findUserDetailWithOrgList(@RequestBody SysUserEmployeeModel model) {
     SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
     BeanUtils.copyProperties(model, from);
-    return sysUserBiz.findUserDetailWithOrgList(from).getList();
+    PageInfo<SysUserInfoDetail> pageInfo = sysUserBiz.findUserDetailWithOrgList(from);
+    return ResponseUtil.success(pageInfo);
   }
 
   /**

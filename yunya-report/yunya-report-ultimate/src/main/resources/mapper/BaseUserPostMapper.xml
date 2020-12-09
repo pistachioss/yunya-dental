@@ -269,11 +269,11 @@
         edi.treatVisitsTimes,
         CONVERT (
         edi.totalActualAmount / edi.treatVisitsTimes,
-        DECIMAL ( 10, 2 )) AS averageConsumption,
+        DECIMAL ( 19, 2 )) AS averageConsumption,
         edi.treatVisitsNum,
         CONVERT (
         edi.totalActualAmount / edi.treatVisitsNum,
-        DECIMAL ( 10, 2 )) AS perCapitaConsumption,
+        DECIMAL ( 19, 2 )) AS perCapitaConsumption,
         edi.appointmentsNum,
         edi.visitArrivedTimes,
         edi.appointmentModifyTimes,
@@ -375,6 +375,7 @@
         FROM
         base_treatment_process btp
         <where>
+            and btp.appoint_status != 2
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT(  btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -395,8 +396,7 @@
         FROM
         base_treatment_process btp
         <where>
-            and btp.appoint_status = 2
-            or btp.appoint_status = 3
+            and btp.appoint_modify_time > 0
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>
@@ -417,7 +417,7 @@
         FROM
         base_treatment_process btp
         <where>
-            and btp.appoint_status = 4
+            and btp.appoint_status = 2
             <if test="query.startDate != null and query.startDate != ''">
                 and DATE_FORMAT( btp.appoint_start_time, '%Y-%m-%d' ) &gt;= #{query.startDate}
             </if>

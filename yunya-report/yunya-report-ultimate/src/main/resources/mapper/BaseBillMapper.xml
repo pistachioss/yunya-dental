@@ -309,13 +309,69 @@
 
     <select id="selectArrears" resultType="com.yunya.feign.report.domain.vo.ArrearsStatisticsVo">
         SELECT
-            (select count(DISTINCT patient_id ) from base_bill where org_id = #{orgId} AND debt_amount > 0) numberPatient1,
-            count(*) arrearsCount1,
-            sum(debt_amount) debtAmount1
+            (select count(DISTINCT patient_id ) from base_bill where org_id = #{orgId} AND debt_amount > 0) numberPatient,
+            count(*) arrearsCount,
+            sum(debt_amount) debtAmount
         FROM
             base_bill
         WHERE
             org_id = #{orgId}
           AND debt_amount > 0
+    </select>
+
+    <!-- 根据条件查询门诊账单数据总览 -->
+    <select id="selectClinicBillDataStatistic"
+            resultType="com.yunya.feign.report.domain.vo.BillDataStatisticsVO">
+        SELECT
+            SUM( bb.totalOriginalAmount ) AS totalOriginalAmount,
+            SUM( bb.totalActualReceiveAmount ) AS totalActualReceiveAmount,
+            SUM( bb.totalDiscountAmount ) AS totalDiscountAmount,
+            SUM( bb.totalDebtAmount ) AS totalDebtAmount
+        FROM
+            (
+            SELECT
+                bb.org_id,
+                SUM( bb.order_amount ) AS totalOriginalAmount,
+                SUM( bb.privilege_amount ) AS totalDiscountAmount,
+                SUM( bb.actual_amount ) AS totalActualReceiveAmount,
+                SUM( bb.debt_amount ) AS totalDebtAmount
+            FROM
+                base_bill bb
+            <where>
+                AND bb.bill_num IS NOT NULL
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT( bb.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT( bb.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT( bb.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 2">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        and DATE_FORMAT( bb.bill_date, '%Y') &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        and DATE_FORMAT( bb.bill_date, '%Y') &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </where>
+            GROUP BY
+            bb.org_id
+            ) bb
+        <where>
+            and bb.org_id in
+            <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
     </select>
 </mapper>
