@@ -494,33 +494,44 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
         List<AttendancePunchItemVO> attendancePunchItemVOS = new ArrayList<>(2);
         List<AttendancePunchRecordVO> attendancePunchRecordVOList = new ArrayList<>(2);
+        EmployeeScheduleQueryForm scheduleQueryForm = new EmployeeScheduleQueryForm();
+        scheduleQueryForm.setUserId(userId);
+        scheduleQueryForm.setWorkDate(date);
+        List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(scheduleQueryForm);
+        List<Integer> orgIds = new ArrayList<>();
+        employeeScheduleVOS.forEach(employeeScheduleVO -> {
+            Integer orgId = employeeScheduleVO.getClinicId();
+            if (!orgIds.contains(orgId)) {
+                orgIds.add(orgId);
+            }
+        });
+        List<OrganizationInfoDetail> organizationInfoDetails = remoteSystemServiceFeign.findOrgInfoInIds(orgIds);
+        employeeScheduleVOS.forEach(employeeScheduleVO -> {
+            AttendancePunchRecordVO punchRecordVO = new AttendancePunchRecordVO();
+            String name = employeeScheduleVO.getName();
+            String type = employeeScheduleVO.getType();
+            name += "（" + type + "）";
+            punchRecordVO.setName(name);
+            punchRecordVO.setStartTime(employeeScheduleVO.getFirstStartTime());
+            Date endTime = employeeScheduleVO.getFirstEndTime();
+            if (employeeScheduleVO.getSecondEndTime() != null) {
+                endTime = employeeScheduleVO.getSecondEndTime();
+            }
+            punchRecordVO.setEndTime(endTime);
+            Integer clinicId = employeeScheduleVO.getClinicId();
+            String orgName = "";
+            for (OrganizationInfoDetail organizationInfoDetail : organizationInfoDetails) {
+                if (organizationInfoDetail.getId().equals(clinicId)) {
+                    orgName = organizationInfoDetail.getName();
+                    break;
+                }
+            }
+            punchRecordVO.setOrgName(orgName);
+            attendancePunchRecordVOList.add(punchRecordVO);
+        });
         if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            attendancePunchRecordVOList = employeeScheduleList(firstPunchRecord, lastPunchRecord);
-            String nowDate = new DateTime().toDateStr();
-            Date now = null;
-            try {
-                now = sdf.parse(nowDate);
-            } catch (ParseException e) {
-                throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
-            }
-            Date punchDate = firstPunchRecord.getPunchDate();
-            boolean first = true;
-            boolean last = true;
-            if (now.equals(punchDate)) {
-                if (AttendanceIsPunchEnum.UNPUNCH.getCode().equals(firstPunchRecord.getIsPunch())) {
-                    first = false;
-                }
-                if (AttendanceIsPunchEnum.UNPUNCH.getCode().equals(lastPunchRecord.getIsPunch())) {
-                    last = false;
-                }
-            }
-            if (first) {
-                attendancePunchItemVOS.add(createPunchItem(firstPunchRecord));
-            }
-            if (last) {
-                attendancePunchItemVOS.add(createPunchItem(lastPunchRecord));
-            }
+            attendancePunchItemVOS.add(createPunchItem(firstPunchRecord));
+            attendancePunchItemVOS.add(createPunchItem(lastPunchRecord));
         }
         result.setAttendancePunchRecordVOS(attendancePunchRecordVOList);
         result.setAttendancePunchItemVOS(attendancePunchItemVOS);
@@ -598,6 +609,17 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             } else {
                 status = punchStatus;
             }
+        }
+        String dateStr = new DateTime().toDateStr();
+        Date date;
+        try {
+            date = new SimpleDateFormat("yyyy-MM-dd").parse(dateStr);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
+        if (AttendanceIsPunchEnum.UNPUNCH.getCode().equals(isPunch)
+                && date.equals(attendancePunchRecordVO.getPunchDate())) {
+            status = null;
         }
         punchItem.setPunchStatus(status);
         if (StringHelper.isNotEmpty(attendancePunchRecordVO.getWifiMacAddress())) {
