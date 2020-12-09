@@ -3,6 +3,7 @@ package com.yunya.modules.appointment.controller.web;
 import com.yunya.feign.appointment.domain.form.AppointSettingForm;
 import com.yunya.feign.appointment.vo.AppointSettingVo;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.web.ClinicAppointSettingBiz;
@@ -34,6 +35,7 @@ public class ClinicAppointSettingController {
     @ApiOperation(value = "修改预约设置")
     @PutMapping("/update")
     @CurrentUser
+    @RepeatSubmit
     public ResponseResult editOrAddAppointSetting(@RequestBody @Validated AppointSettingForm form){
         ResponseResult responseResult = clinicAppointSettingBiz.editOrAddSetting(form);
         return responseResult;
