@@ -330,7 +330,7 @@
     li.start_time AS startTime,
     li.end_time AS endTime,
      IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
-        TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))AS leaveTime,
+        TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time))AS leaveTime,
     ai.approval_status AS approvalStatus,
 	ap.user_id AS uid
     FROM
@@ -351,7 +351,7 @@
     li.start_time AS startTime,
     li.end_time AS endTime,
      IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
-        TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))AS leaveTime,
+        TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time))AS leaveTime,
     ai.approval_status AS approvalStatus
     FROM
 	leave_info li
