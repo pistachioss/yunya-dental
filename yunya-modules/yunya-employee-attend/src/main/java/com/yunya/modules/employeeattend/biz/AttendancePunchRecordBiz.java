@@ -844,6 +844,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     leaveStatistics.setOrgName(orgMap.get(orgId));
                 }
                 long diff = endTime.getTime()-startTime.getTime();
+                leaveStatistics.setSourceId(leaveInfoVO.getId());
+                leaveStatistics.setSource(AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode());
                 leaveStatistics.setMinutes(DateUtil.micro2HourMin(diff));
                 leaveStatisticsList.add(leaveStatistics);
             } else {// 按天请假
@@ -859,6 +861,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     leaveStatistics.setName("按天请假");
                     leaveStatistics.setPunchDate(date);
                     leaveStatistics.setMinutes(DAY_LEAVE_MINUTE);
+                    leaveStatistics.setSource(AttendanceSourceEnum.LEAVE_BYDAY.getCode());
+                    leaveStatistics.setSourceId(leaveInfoVO.getId());
                     leaveStatisticsList.add(leaveStatistics);
                 });
             }
@@ -1031,8 +1035,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             long diff = eTime.getTime()-sTime.getTime();
             if (list!=null && !list.isEmpty()) {
                 AttendancePunchRecordVO first = list.get(0);
-                AttendancePunchRecordVO last = list.get(1);
-                if (first!=null && last!=null) {//全天班
+                if (list.size() == 2) {//全天班
+                    AttendancePunchRecordVO last = list.get(1);
                     Date startTime = first.getPunchTime();
                     if (startTime.before(first.getStartTime())) {
                         startTime = first.getStartTime();
@@ -1042,7 +1046,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         endTime = last.getEndTime();
                     }
                     diff = endTime.getTime() - startTime.getTime();
-                } else if (first != null) {//半天班
+                } else if (list.size() == 1) {//半天班
                     Date startTime = first.getPunchTime();
                     if (startTime.before(first.getStartTime())) {
                         startTime = first.getStartTime();
@@ -2297,8 +2301,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<AttendanceLeaveMinuteVO> result = new ArrayList<>(leaveInfoVOS.size());
         leaveInfoVOS.forEach(leaveInfoVO -> {
             AttendanceLeaveMinuteVO leaveMinuteVO = new AttendanceLeaveMinuteVO();
-            Date startDate = leaveInfoVO.getStartTime();
-            Date endDate = leaveInfoVO.getEndTime();
+            Date startDate = leaveInfoVO.getStartDate();
+            Date endDate = leaveInfoVO.getEndDate();
             if (endDate.after(queryForm.getAndDate())) {
                 endDate = queryForm.getAndDate();
             }
