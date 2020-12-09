@@ -126,4 +126,12 @@ public interface BaseBillDetailMapper extends Mapper<BaseBillDetail> {
    */
   List<BillingItemDetailVO> selectBillingItemDetailList(
       @Param("query") BillingItemDetailQuery query);
+
+  /**
+   * 根据条件查询门诊工作量总览
+   *
+   * @param query 查询条件
+   * @return WorkloadStatisticsVO
+   */
+  WorkloadStatisticsVO selectClinicWorkloadStatistic(@Param("query") DataStatisticsQuery query);
 }

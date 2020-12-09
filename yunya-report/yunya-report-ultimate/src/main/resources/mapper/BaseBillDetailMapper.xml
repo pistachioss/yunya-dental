@@ -1299,4 +1299,124 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据条件查询门诊工作量总览 -->
+    <select id="selectClinicWorkloadStatistic"
+            resultType="com.yunya.feign.report.domain.vo.WorkloadStatisticsVO">
+        SELECT
+            SUM( bbd.totalClinicActualReceiveWorkload ) AS totalClinicActualReceiveWorkload,
+            SUM( bbd.totalClinicReceivedWorkload ) AS totalClinicReceivedWorkload,
+            SUM( bbd.totalClinicReceivedNotWorkload ) AS totalClinicReceivedNotWorkload
+        FROM
+            (
+            SELECT
+                bo.org_id,
+                IFNULL( bbd.totalClinicActualReceiveWorkload, 0 ) AS totalClinicActualReceiveWorkload,
+                IFNULL( bbd.totalClinicReceivedWorkload, 0 ) AS totalClinicReceivedWorkload,
+                IFNULL( bbd1.totalClinicReceivedNotWorkload, 0 ) AS totalClinicReceivedNotWorkload
+            FROM
+                base_organization bo
+                LEFT JOIN (
+                SELECT
+                    bbd.org_id,
+                    SUM( bbd.totalAmount - bbd.discount_amount ) AS totalClinicActualReceiveWorkload,
+                    SUM( bbd.received_amount ) AS totalClinicReceivedWorkload
+                FROM
+                    (
+                    SELECT
+                        bb.org_id,
+                        bb.bill_date,
+                        bbd.received_amount,
+                        bbd.price * bbd.quantity AS totalAmount,
+                        bbd.discount_amount
+                    FROM
+                        base_bill_detail bbd
+                        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+                    WHERE
+                        bbd.executor_id IS NOT NULL
+                    ) bbd
+                <where>
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    bbd.org_id
+                ) bbd ON bo.org_id = bbd.org_id
+                LEFT JOIN (
+                SELECT
+                    bbd.org_id,
+                    SUM( bbd.received_amount ) AS totalClinicReceivedNotWorkload
+                FROM
+                    (
+                    SELECT
+                        bb.org_id,
+                        bb.bill_date,
+                        bbd.received_amount
+                    FROM
+                        base_bill_detail bbd
+                        LEFT JOIN base_bill bb ON bbd.bill_id = bb.bill_id
+                    WHERE
+                        bbd.executor_id IS NULL
+                    ) bbd
+                <where>
+                    <if test="query.dateType == 0">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 1">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y-%m') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y-%m') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                    <if test="query.dateType == 2">
+                        <if test="query.startDate != null and query.startDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y') &gt;= #{query.startDate}
+                        </if>
+                        <if test="query.endDate != null and query.endDate != ''">
+                            and DATE_FORMAT( bbd.bill_date, '%Y') &lt;= #{query.endDate}
+                        </if>
+                    </if>
+                </where>
+                GROUP BY
+                    bbd.org_id
+                ) bbd1 ON bo.org_id = bbd1.org_id
+            GROUP BY
+            bo.org_id
+            ) bbd
+        <where>
+            and bbd.org_id in
+            <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 </mapper>

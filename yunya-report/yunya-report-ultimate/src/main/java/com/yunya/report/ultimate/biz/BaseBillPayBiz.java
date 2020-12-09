@@ -58,9 +58,10 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
    * 根据条件查询门诊收费数据总览
    *
    * @param query 查询条件
-   * @return
+   * @return TollDataStatisticsVO
    */
   public TollDataStatisticsVO findClinicTollDataStatistic(DataStatisticsQuery query) {
-    return null;
+    TollDataStatisticsVO resultData = mapper.selectClinicTollDataStatistic(query);
+    return resultData;
   }
 }

@@ -323,10 +323,10 @@
     <select id="selectClinicBillDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.BillDataStatisticsVO">
         SELECT
-            SUM( bb.totalOriginalAmount ) AS totalOriginalAmount,
-            SUM( bb.totalActualReceiveAmount ) AS totalActualReceiveAmount,
-            SUM( bb.totalDiscountAmount ) AS totalDiscountAmount,
-            SUM( bb.totalDebtAmount ) AS totalDebtAmount
+            IFNULL(SUM( bb.totalOriginalAmount ), 0 ) AS totalOriginalAmount,
+            IFNULL(SUM( bb.totalActualReceiveAmount ), 0) AS totalActualReceiveAmount,
+            IFNULL(SUM( bb.totalDiscountAmount ), 0 ) AS totalDiscountAmount,
+            IFNULL(SUM( bb.totalDebtAmount ), 0 ) AS totalDebtAmount
         FROM
             (
             SELECT
