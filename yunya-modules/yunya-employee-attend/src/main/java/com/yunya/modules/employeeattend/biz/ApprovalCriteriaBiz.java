@@ -1,7 +1,9 @@
 package com.yunya.modules.employeeattend.biz;
 
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.ApprovalCriteria;
 import com.yunya.models.employee_attend.ApprovalLevelSet;
 import com.yunya.modules.employeeattend.form.ApprovalCriteriaByDayForm;
@@ -36,6 +38,9 @@ public class ApprovalCriteriaBiz extends BaseBiz<ApprovalCriteriaMapper, Approva
     private ApprovalLevelSetMapper approvalLevelSetMapper;
 
     public int create(ApprovalCriteriaForm approvalCriteriaForm) {
+        if(approvalCriteriaForm.getEndDay()<=approvalCriteriaForm.getStartDay()){
+            throw new ClientServiceException("时间跨度尾值必须大于等于首值", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        }
         ApprovalCriteria approvalCriteria = new ApprovalCriteria();
         BeanUtils.copyProperties(approvalCriteriaForm, approvalCriteria);
         approvalCriteria.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
