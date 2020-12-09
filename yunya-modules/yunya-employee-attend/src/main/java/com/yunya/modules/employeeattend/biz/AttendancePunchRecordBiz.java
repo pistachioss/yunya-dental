@@ -303,7 +303,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Date startTime = punchItem.getStartTime();
         Byte isPunch = punchItem.getIsPunch();
         Byte punchStatus = punchItem.getPunchStatus();
-        if (AttendanceStatusEnum.INVALID_PUNCH.getCode() != punchStatus) {
+        if (!AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)) {
             if (isPunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode())) {
                 if (now.after(startTime)) {
                     punchStatus = AttendanceStatusEnum.LATER_PUNCH.getCode();//迟到打卡
@@ -889,11 +889,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             String orgName = orgMap.get(orgId);
             Byte source = attendancePunchRecordVO.getSource();
             Integer sourceId = attendancePunchRecordVO.getSourceId();
-            if (isPunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode())
-                    && !source.equals(AttendanceSourceEnum.LEAVE_BYDAY.getCode())
+            if (isPunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode())) {
+               if (!source.equals(AttendanceSourceEnum.LEAVE_BYDAY.getCode())
                     && !curDate.equals(punchDate)) {
-                attendancePunchRecordVO.setOrgName(orgName);
-                unpunchStatisticsList.add(attendancePunchRecordVO);
+                   attendancePunchRecordVO.setOrgName(orgName);
+                   unpunchStatisticsList.add(attendancePunchRecordVO);
+               }
             } else {
                 Date punchTime = attendancePunchRecordVO.getPunchTime();
                 Byte punchStatus = attendancePunchRecordVO.getPunchStatus();
