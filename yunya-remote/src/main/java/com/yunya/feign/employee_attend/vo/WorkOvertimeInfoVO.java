@@ -54,7 +54,7 @@ public class WorkOvertimeInfoVO implements Serializable {
 
     /** 休息班次名称 */
     @ApiModelProperty(value = "休息班次名称")
-    private Integer restScheduleName;
+    private String restScheduleName;
 
     /** 加班班次id */
     @ApiModelProperty(value = "加班班次id")

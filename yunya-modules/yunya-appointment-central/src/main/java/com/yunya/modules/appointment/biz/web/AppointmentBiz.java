@@ -470,7 +470,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
         // 保存预约更新被修改的日期、医生
-        appointmentModifyRecordBiz.saveAppointModify(mapper.selectByPrimaryKey(appointmentForm.getId()),appointmentForm);
+        appointmentModifyRecordBiz.saveAppointModify(appointmentForm,appointment);
         // 修改时长分解
         List<AppointmentSplitBaseInfo> splitList = appointmentForm.getSplitList();
         if (splitList != null && !splitList.isEmpty()){
@@ -510,45 +510,110 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         }
         List<AppointmentVo> appointmentVos = mapper.findAppointmentByExample(appointmentQuery);
         PageInfo pageInfo = new PageInfo(appointmentVos);
-        // 设置预约医生/助手信息
-        appointmentVos.forEach(appointmentVo -> {
+        // 预约医生ID列表,预约助手ID列表
+        List<Integer> dentistIdsAndAssistantIds = new ArrayList<>();
+        // 预约科室ID列表
+        List<Integer> deptRoomIds = new ArrayList<>();
+        // 预约患者ID列表
+        List<Integer> patientIds = new ArrayList<>();
+        if (StringHelper.isNotEmpty(appointmentVos)) {
+            // 设置预约医生/助手信息
+            appointmentVos.forEach(appointmentVo -> {
+                Integer dentistId = appointmentVo.getDentistId();
+                if (!dentistIdsAndAssistantIds.contains(dentistId)) {
+                    dentistIdsAndAssistantIds.add(dentistId);
+                }
+                Integer assistantId = appointmentVo.getAssistantId();
+                if (!dentistIdsAndAssistantIds.contains(assistantId)) {
+                    dentistIdsAndAssistantIds.add(assistantId);
+                }
+                Integer deptRoomId = appointmentVo.getDeptRoomId();
+                if (!deptRoomIds.contains(dentistId)) {
+                    deptRoomIds.add(deptRoomId);
+                }
+                patientIds.add(appointmentVo.getPatientId());
+            });
+            // 调用服务获取医生信息和助手信息列表
+            List<SysUserInfoDetail> dentistAndAssistantInfos = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIdsAndAssistantIds);
+            // 获取患者信息列表
+            List<PatientTotalInfoVo> patientTotalInfos = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+            // 获取科室信息列表
+            List<DepartmentRoom> departmentRooms = remoteSystemServiceFeign.findDepartmentRoomByIds(deptRoomIds);
+            // 获取患者欠费信息
+            List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
+
             // 组合预约列表信息
-            AppointmentListItemVo itemVo = this.combinationAppointListItemVo(appointmentVo);
-            appointmentList.add(itemVo);
-        });
-        if (query.getAppointType() != null
-                || !StringHelper.isEmpty(query.getDentistName())
-                || !StringHelper.isEmpty(query.getMedicalNumber())
-                || !StringHelper.isEmpty(query.getSearch())){
+            appointmentVos.forEach(appointmentVo -> {
+                AppointmentListItemVo build = EntityUtils.build(appointmentVo, AppointmentListItemVo.class);
+                // 向预约列表中注入预约相关信息
+                this.setAppointmentInfo(build, appointmentVo, dentistAndAssistantInfos, departmentRooms);
+                // 向预约列表中注入患者信息
+                this.setPatientInfo(build, patientTotalInfos, debtAmountList);
+                appointmentList.add(build);
+            });
+            // 关键字检索
+            collect = this.searchMatchs(appointmentList,
+                    query.getAppointType(),
+                    query.getDentistName(),
+                    query.getMedicalNumber(),
+                    query.getSearch());
+        }
+        // 如果不为空，则有内容过滤，返回过滤之后的结果
+        if (StringHelper.isNotEmpty(collect)) {
+            pageInfo.setList(collect);
+        } else {
+            pageInfo.setList(appointmentList);
+        }
+        return pageInfo;
+    }
+
+    /**
+     * 检索关键词匹配
+     * @param appointmentList  月列表
+     * @param appointType  预约类型
+     * @param dentistName  医生名字
+     * @param medicalNumber  病历号
+     * @param search  检索关键字
+     * @return  返回检索之后的结果列表
+     */
+    private List<AppointmentListItemVo> searchMatchs(List<AppointmentListItemVo> appointmentList,
+                                                     Byte appointType,
+                                                     String dentistName,
+                                                     String medicalNumber,
+                                                     String search) {
+        List<AppointmentListItemVo> collect = null;
+        if (appointType != null
+                || !StringHelper.isEmpty(dentistName)
+                || !StringHelper.isEmpty(medicalNumber)
+                || !StringHelper.isEmpty(search)) {
             collect = appointmentList.stream()
                     .filter(
                             appointmentListItemVo -> {
                                 int icount = 0;
                                 boolean result = false;
                                 // 按病历号检索
-                                if (!StringHelper.isEmpty(query.getMedicalNumber())){
-                                    String medicalNumber = appointmentListItemVo.getMedicalNumber();
-                                    if (StringHelper.isNotEmpty(medicalNumber)) {
-                                        result = result | medicalNumber.equals(query.getMedicalNumber());
+                                if (!StringHelper.isEmpty(medicalNumber)){
+                                    String medicalNumberTmp = appointmentListItemVo.getMedicalNumber();
+                                    if (StringHelper.isNotBlank(medicalNumberTmp)) {
+                                        result = result | medicalNumberTmp.equals(medicalNumber);
                                         icount++;
                                     }
                                 }
                                 // 按预约医生检索
-                                if (!StringHelper.isEmpty(query.getDentistName())) {
+                                if (!StringHelper.isEmpty(dentistName)) {
                                     if (icount == 1 && !result) {
                                         return false;
                                     } else {
-                                        result = result | appointmentListItemVo.getDentistName().equals(query.getDentistName());
+                                        result = result | appointmentListItemVo.getDentistName().equals(dentistName);
                                     }
                                     icount++;
                                 }
                                 // 按姓名/手机号/姓名拼音
-                                if (!StringHelper.isEmpty(query.getSearch())){
+                                if (!StringHelper.isEmpty(search)){
                                     if (icount == 2 && !result) {
                                         return false;
                                     }
                                     // 检索值
-                                    String search = query.getSearch();
                                     String mobile = appointmentListItemVo.getMobile();
                                     String patientName = appointmentListItemVo.getPatientName();
                                     String pinyinName = appointmentListItemVo.getPinyinName();
@@ -569,14 +634,9 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                             }
                     ).collect(Collectors.toList());
         }
-        // 如果不为空，则有内容过滤，返回过滤之后的结果
-        if (StringHelper.isNotEmpty(collect)) {
-            pageInfo.setList(collect);
-        } else {
-            pageInfo.setList(appointmentList);
-        }
-        return pageInfo;
+        return collect;
     }
+
 
     /**
      * 根据条件查询预约可视图（患者维度）按预约患者数量降序排列
@@ -2239,22 +2299,22 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     }
 
     /**
-     * 组合预约列表信息
-     * @param appointmentVo  患者预约信息
-     * @return 预约列表Vo
+     * 向预约列表中注入预约相关信息
+     * @param build 预约信息列表
+     * @param appointmentVo  预约信息
      */
-    private AppointmentListItemVo combinationAppointListItemVo(AppointmentVo appointmentVo){
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        AppointmentListItemVo build = EntityUtils.build(appointmentVo, AppointmentListItemVo.class);
+    private void setAppointmentInfo(AppointmentListItemVo build,
+                                    AppointmentVo appointmentVo,
+                                    List<SysUserInfoDetail> sysUserInfoDetails,
+                                    List<DepartmentRoom> departmentRooms) {
         // 查询预约医生信息
         Integer dentistId = build.getDentistId();
         if (dentistId != null) {
-            SysUserInfoDetail dentistInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(dentistId);
-            if (dentistInfoDetail != null){
-                build.setDentistName(dentistInfoDetail.getName());
-            } else {
-                build.setDentistName("--");
-            }
+            List<SysUserInfoDetail> collect = sysUserInfoDetails.stream().filter(
+                    sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(dentistId)).collect(Collectors.toList());
+            SysUserInfoDetail userInfoDetail = collect.get(0);
+            String name = userInfoDetail.getName();
+            build.setDentistName(StringHelper.isBlank(name) ? "--" : name);
         } else {
             build.setDentistName("--");
         }
@@ -2262,24 +2322,52 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         // 查询预约助手信息
         Integer assistantId = build.getAssistantId();
         if (assistantId != null) {
-            SysUserInfoDetail assistantInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(assistantId);
-            if (assistantInfoDetail != null){
-                build.setAssistantName(assistantInfoDetail.getName());
-            } else {
-                build.setAssistantName("--");
-            }
+            List<SysUserInfoDetail> collect = sysUserInfoDetails.stream().filter(
+                    sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(assistantId)).collect(Collectors.toList());
+            SysUserInfoDetail userInfoDetail = collect.get(0);
+            String name = userInfoDetail.getName();
+            build.setAssistantName(StringHelper.isBlank(name) ? "--" : name);
         } else {
             build.setAssistantName("--");
         }
 
+        // 设置默认科室信息
+        Integer deptRoomId = appointmentVo.getDeptRoomId();
+        if (deptRoomId != null) {
+            List<DepartmentRoom> collect = departmentRooms.stream().filter(
+                    departmentRoom -> departmentRoom.getId().equals(deptRoomId)).collect(Collectors.toList());
+            DepartmentRoom departmentRoom = collect.get(0);
+            String name = departmentRoom.getName();
+            build.setClinicDeptRoomName(StringHelper.isBlank(name) ? "--" : name);
+        } else {
+            build.setClinicDeptRoomName("--");
+        }
+        String remarks = appointmentVo.getRemarks();
+        build.setRemarks(StringHelper.isBlank(remarks) ? "--" : remarks);
+        String appointContent = appointmentVo.getAppointContent();
+        build.setAppointContent(StringHelper.isBlank(appointContent) ? "--" : appointContent);
+    }
+
+    /**
+     * 向预约列表中注入患者信息
+     * @param build  预约信息列表
+     * @param patientTotalInfoVos 患者信息列表
+     * @param debtAmountModels  患者欠费金额列表
+     */
+    private void setPatientInfo(AppointmentListItemVo build,
+                                List<PatientTotalInfoVo> patientTotalInfoVos,
+                                List<DebtAmountModel> debtAmountModels) {
         // 设置患者详细信息
         Integer patientId = build.getPatientId();
         if (patientId != null){
-            PatientTotalInfoVo patientInfo = remotePatientCentralServiceFeign.findPatientTotalInfo(patientId);
+            List<PatientTotalInfoVo> collect = patientTotalInfoVos.stream().filter(
+                    patientTotalInfoVo -> patientTotalInfoVo.getId().equals(patientId)).collect(Collectors.toList());
+            PatientTotalInfoVo patientInfo = collect.get(0);
             if (patientInfo != null){
                 build.setAge(patientInfo.getAge());
                 try {
                     String birthday = patientInfo.getBirthday();
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
                     if (StringHelper.isNotEmpty(birthday)) {
                         Date parse = dateFormat.parse(patientInfo.getBirthday());
                         build.setBirthday(dateFormat.format(parse));
@@ -2292,7 +2380,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 build.setMobile(patientInfo.getMobile());
                 build.setPatientId(patientInfo.getId());
                 build.setPatientName(patientInfo.getName());
-                build.setPatientRemark(patientInfo.getRemarks()==null ? "--" : patientInfo.getRemarks());
+                build.setPatientRemark(StringHelper.isBlank(patientInfo.getRemarks()) ? "--" : patientInfo.getRemarks());
                 build.setAllergen(patientInfo.getAllergens());
                 build.setPinyinName(patientInfo.getPinyinName());
                 build.setPatientKind(patientInfo.getPatientKindName());
@@ -2300,42 +2388,18 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 Integer memberTypeId = patientInfo.getMemberTypeId();
                 if (memberTypeId != null) {
                     MemberType memberType = remoteSystemServiceFeign.findMemberTypeById(memberTypeId);
-                    if (memberType != null){
+                    if (memberType != null) {
                         build.setMemberIcon(String.valueOf(memberType.getIcon()));
                     }
                 }
             }
-        }
-
-        // 设置默认科室信息
-        Integer deptRoomId = appointmentVo.getDeptRoomId();
-        if (deptRoomId != null) {
-            DepartmentRoom departmentRoom = remoteSystemServiceFeign.findDepartmentRoomById(deptRoomId);
-            if (departmentRoom != null){
-                build.setClinicDeptRoomName(departmentRoom.getName());
-            } else {
-                build.setClinicDeptRoomName("--");
+            // 欠费金额
+            List<DebtAmountModel> DebtAmountModels = debtAmountModels.stream().filter(
+                    debtAmountModel -> debtAmountModel.getPatientId().equals(patientId)).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(DebtAmountModels)) {
+                build.setArrears(DebtAmountModels.get(0).getDebtAmount());
             }
-        } else {
-            build.setClinicDeptRoomName("--");
         }
-        String remarks = appointmentVo.getRemarks();
-        if (StringHelper.isEmpty(remarks)) {
-            build.setRemarks("--");
-        }
-        String appointContent = appointmentVo.getAppointContent();
-        if (StringHelper.isEmpty(appointContent)) {
-            build.setAppointContent("--");
-        }
-
-        // 欠费金额
-        List<Integer> patientIds = new ArrayList<>();
-        patientIds.add(patientId);
-        List<DebtAmountModel> debtAmountList = remoteTreatmentServiceFeign.findDebtAmountList(patientIds);
-        if (StringHelper.isNotEmpty(debtAmountList)) {
-            build.setArrears(debtAmountList.get(0).getDebtAmount());
-        }
-        return build;
     }
 
     /**

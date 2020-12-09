@@ -27,8 +27,7 @@ public class AppointSettingForm implements Serializable {
     /**
      * 预约显示设置id
      */
-    @ApiModelProperty(value = "预约显示设置id", required = true)
-    @NotNull(message = "预约显示设置id不能为空！")
+    @ApiModelProperty(value = "预约显示设置id")
     private Integer id;
 
     /**

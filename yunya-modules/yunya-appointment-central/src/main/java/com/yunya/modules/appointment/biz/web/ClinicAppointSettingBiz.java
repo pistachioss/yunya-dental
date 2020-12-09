@@ -47,6 +47,7 @@ public class ClinicAppointSettingBiz extends BaseBiz<ClinicAppointmentSettingMap
         AppointSettingVo appointSettingVo = mapper.selectAppointSettingByExample(userId);
         // 如果已经存在用户设置，则进行修改设置操作，否则进行新增操作
         if (appointSettingVo != null) {
+            build.setId(appointSettingVo.getId());
             build.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
             build.setUpdName(BaseContextHandler.getName());
             build.setUpdTime(new Date(System.currentTimeMillis()));

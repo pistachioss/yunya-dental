@@ -53,7 +53,7 @@ public class AppointmentModifyRecordBiz extends BaseBiz<AppointmentModifyRecordM
      * @param appointmentForm 修改之后的内容
      * @param appointment  修改之前的内容
      */
-    public void saveAppointModify(Appointment appointment, AppointmentBaseForm appointmentForm) {
+    public void saveAppointModify(AppointmentBaseForm appointment, Appointment appointmentForm) {
         // 如果修改的内容未医生或者是预约日期，就将被修改的预约医生、预约时间保存
         if (appointment.getDentistId().equals(appointmentForm.getDentistId())
                 && appointment.getAppointDate().equals(appointmentForm.getAppointDate())) {
