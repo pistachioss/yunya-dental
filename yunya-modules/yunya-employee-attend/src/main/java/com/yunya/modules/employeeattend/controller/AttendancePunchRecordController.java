@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 简介：考勤打卡管理
@@ -142,20 +142,19 @@ public class AttendancePunchRecordController {
      */
     @ApiOperation("根据条件分页查询考勤汇总导出")
     @PostMapping("/statisticsPunchRecordExport")
-    public ResponseResult statisticsPunchRecordExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
+    public void statisticsPunchRecordExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
         queryForm.setWhetherPage(false);
         String date = queryForm.getDate();
         if (StringHelper.isEmpty(date)) {
-            return ResponseUtil.error("没有选择日期导出条件！", date);
+            throw new ClientServiceException("没有选择日期导出条件！", PARAMETERS_IS_ILLEGAL);
         }
         PageInfo<AttendanceStatisticsVO> list = attendancePunchRecordBiz.statisticsPunchRecord(queryForm);
         List<AttendanceStatisticsVO> result = list.getList();
         if (result==null || result.isEmpty()) {
-            return ResponseUtil.error("没有数据记录可以导出！", result);
+            throw new ClientServiceException("没有数据记录可以导出！", DATA_NOT_EXIST);
         }
         ExcelUtil<AttendanceStatisticsVO> excelUtil = new ExcelUtil<>(AttendanceStatisticsVO.class);
-        excelUtil.exportExcel(response, result, "考勤汇总统计表");
-        return ResponseUtil.success(null);
+        excelUtil.exportExcel(response, result, "考勤汇总统计表","考勤汇总统计表");
     }
 
     /**
@@ -179,16 +178,15 @@ public class AttendancePunchRecordController {
      */
     @ApiOperation("分页查询工作时长的考勤汇总明细导出")
     @PostMapping("/statisticsWorkDateByMinuteExport")
-    public ResponseResult statisticsWorkDateByMinuteExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
+    public void statisticsWorkDateByMinuteExport(HttpServletResponse response, @RequestBody AttendanceStatisticsQueryForm queryForm) throws IOException {
         queryForm.setWhetherPage(false);
         PageInfo<AttendanceWorkDateMinuteVO> pageInfo = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
         List<AttendanceWorkDateMinuteVO> list = pageInfo.getList();
         if (list==null || list.isEmpty()) {
-            return ResponseUtil.error("没有数据记录可以导出！", list);
+            throw new ClientServiceException("没有数据记录可以导出！", DATA_NOT_EXIST);
         }
         ExcelUtil<AttendanceWorkDateMinuteVO> excelUtil = new ExcelUtil<>(AttendanceWorkDateMinuteVO.class);
-        excelUtil.exportExcel(response, list, "工作日时长统计表");
-        return ResponseUtil.success(null);
+        excelUtil.exportExcel(response, list, "工作日时长统计表","工作日时长统计表");
     }
 
     /**
