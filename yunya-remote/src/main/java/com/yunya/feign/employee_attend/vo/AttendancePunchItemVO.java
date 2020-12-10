@@ -47,10 +47,6 @@ public class AttendancePunchItemVO implements Serializable {
     @ApiModelProperty(value = "是否是即将打卡的项目: false-否，true-是")
     private Boolean isNext;
 
-    /** 考勤来源： 0-上班，1-休息，2-请假，4-加班，5-外勤 */
-    @ApiModelProperty(value = "考勤来源： 0-上班，1-休息，2-请假，4-加班，5-外勤")
-    private Byte source;
-
     /** 打卡的类型: 0-上班，1-下班 */
     @ApiModelProperty(value = "打卡的类型: 0-上班，1-下班")
     private Byte punchType;

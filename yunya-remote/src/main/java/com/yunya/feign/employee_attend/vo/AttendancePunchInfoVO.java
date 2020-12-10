@@ -73,13 +73,9 @@ public class AttendancePunchInfoVO implements Serializable {
     @ApiModelProperty(value = "打卡方式: 0-地址打卡，1-Wifi打卡")
     private Integer punchMode;
 
-    /** 工作时长*/
-    @ApiModelProperty(value = "工作时长")
-    private Long workLength;
-
-    /** 打卡次数 */
-    @ApiModelProperty(value = "打卡次数")
-    private Integer punchCount;
+    /** 打卡类型 0：上班 1：下班 */
+    @ApiModelProperty(value = "打卡类型 0：上班 1：下班")
+    private Byte punchType;
 
     /** 打卡项目列表 */
     @ApiModelProperty(value = "打卡项目列表")
