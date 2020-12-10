@@ -32,13 +32,14 @@ public class BasePatientMemberMapperTest {
     MemberDataStatisticVO vo = patientMemberMapper.selectClinicMemberDataStatistic(query);
     System.out.println(vo);
   }
+
   @Test
   public void find2() {
     DataStatisticsQuery query = new DataStatisticsQuery();
-    query.setOrgIds(new Integer[] {35, 42, 72});
+    query.setOrgIds(new Integer[] {30});
     query.setDateType((byte) 0);
-    query.setStartDate("2020-07-01");
-    query.setEndDate("2020-12-12");
+    query.setStartDate("2020-12-10");
+    query.setEndDate("2020-12-10");
     PrepaymentsDataStatisticVO vo = patientMemberMapper.selectClinicPrepaymentsDataStatistic(query);
     System.out.println(vo);
   }
