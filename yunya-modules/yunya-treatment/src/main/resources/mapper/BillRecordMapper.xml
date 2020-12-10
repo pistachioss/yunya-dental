@@ -76,6 +76,7 @@
     <select id="selectPatientBillStatistics"
             resultType="com.yunya.feign.treatment.domain.vo.PatientBillStatistics">
         select
+        br.patient_id as patientId,
         ifnull(sum(br.receivable_amount), 0) as billTotalOriginalPrice,
         ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
         ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
@@ -83,5 +84,32 @@
         ifnull(sum(br.debt_amount), 0) as billTotalArrears
         from bill_record br
         where br.patient_id = #{patientId} and inservice = true
+    </select>
+
+    <!-- 根据患者ID查询患者账单统计数据列表 -->
+    <select id="selectPatientBillStatisticsByPatientIds" resultType="com.yunya.feign.treatment.domain.vo.PatientBillStatistics">
+        select
+            br.patient_id as patientId,
+            ifnull(sum(br.receivable_amount), 0) as billTotalOriginalPrice,
+            ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
+            ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
+            ifnull(sum(br.received_amount), 0) as billTotalReceivedPrice,
+            ifnull(sum(br.debt_amount), 0) as billTotalArrears
+        from bill_record br
+        where inservice = true and
+            br.patient_id in
+        <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
+            #{patientId}
+        </foreach>
+        group by br.patient_id
+    </select>
+
+    <!-- 根据患者就诊记录ID查询订单支付记录 -->
+    <select id="selectBillRecordsByTreatmentIds" resultMap="BaseResultMap">
+        select br.* from bill_record br where inservice = true and
+        br.treatment_record_id in
+        <foreach collection="treatmentIds" item="treatmentId" open="(" separator="," close=")">
+            #{treatmentId}
+        </foreach>
     </select>
 </mapper>

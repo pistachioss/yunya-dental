@@ -8,15 +8,18 @@ import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
 import com.yunya.feign.appointment.vo.AppointmentItemVo;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.biz.web.AppointItemBiz;
 import com.yunya.modules.appointment.biz.web.AppointTypeBiz;
 import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import io.swagger.annotations.Api;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,6 +32,7 @@ import java.util.List;
 @Api(tags = "预约中心服务调用API")
 @RestController
 @RequestMapping("api/")
+@Slf4j
 public class AppointmentRest {
 
   @Autowired private AppointmentBiz appointmentBiz;
@@ -164,7 +168,10 @@ public class AppointmentRest {
    */
   @RequestMapping(value = "/appoint/ids", method = RequestMethod.POST)
   public List<Appointment> findAppointmentListByIds(@RequestBody List<Integer> appointIds){
-    return appointmentBiz.appointmentListByIds(appointIds);
+    if (StringHelper.isNotEmpty(appointIds)) {
+      return appointmentBiz.appointmentListByIds(appointIds);
+    }
+    return new ArrayList<>();
   }
 
   /**
@@ -173,7 +180,7 @@ public class AppointmentRest {
    * @return 返回预约数量
    */
   @RequestMapping(value = "/appoint/count/patientIds", method = RequestMethod.POST)
-  List<NextAppointsVo> countNextAppoints(List<Integer> patientIds) {
+  List<NextAppointsVo> countNextAppoints(@RequestBody List<Integer> patientIds) {
     return appointmentBiz.countNextAppoints(patientIds);
   }
 

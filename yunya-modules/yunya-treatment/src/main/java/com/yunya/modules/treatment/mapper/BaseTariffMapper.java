@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
+import java.util.Set;
 
 public interface BaseTariffMapper extends Mapper<BaseTariff> {
 
@@ -76,4 +77,11 @@ public interface BaseTariffMapper extends Mapper<BaseTariff> {
    * @return List<BaseTariff>
    */
   List<BaseTariff> selectBaseTariffView();
+
+  /**
+   * 根据开单项目ID集合查询开单项目列表
+   * @param billingItemIds  开单项目ID
+   * @return 返回实体信息列表
+   */
+  List<BaseTariff> selectBaseTariffListByBillingItemIds(@Param("billingItemIds") Set<Integer> billingItemIds);
 }

@@ -1,10 +1,18 @@
 package com.yunya.framework.common.utils;
 
+import cn.hutool.core.date.DateTime;
+import com.yunya.framework.common.exception.ClientServiceException;
 import org.apache.commons.lang3.time.DateFormatUtils;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 
 /**
  * 描述:
@@ -320,5 +328,21 @@ public class DateUtil {
         long time2 = cal.getTimeInMillis();
         long between_days=(time2-time1)/(1000*3600*24);
         return Integer.parseInt(String.valueOf(between_days)) + 1;
+    }
+
+    /**
+     * 返回当天日期（yyyy-MM-dd）
+     *
+     * @return
+     */
+    public static Date getCurrentDate() {
+        String nowStr = new DateTime().toDateStr();
+        Date curDate;
+        try {
+            curDate = new SimpleDateFormat("yyyy-MM-dd").parse(nowStr);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
+        return curDate;
     }
 }

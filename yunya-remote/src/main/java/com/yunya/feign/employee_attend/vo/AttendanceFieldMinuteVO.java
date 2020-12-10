@@ -65,7 +65,7 @@ public class AttendanceFieldMinuteVO implements Serializable {
     private Date endTime;
 
     /** 申请外勤地点 */
-    @ApiModelProperty(value = "申请外勤结束时间")
+    @ApiModelProperty(value = "申请外勤地点")
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private String fieldAddress;
 

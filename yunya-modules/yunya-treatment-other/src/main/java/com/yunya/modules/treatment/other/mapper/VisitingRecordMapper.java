@@ -2,10 +2,13 @@ package com.yunya.modules.treatment.other.mapper;
 
 import com.yunya.feign.treatment_other.domain.query.VisitingContentAfterCurrentQuery;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingForMonthVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.models.treatment_other.VisitingRecord;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.Date;
@@ -66,4 +69,13 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
      * @return 返回统计个数
      */
     Integer countNextVisiting(@Param("patientId") Integer patientId,@Param("regDate") String regDate);
+
+    /**
+     * 根据患者ID集合查询患者后续随访信息列表
+     * @param patientIds 患者ID接合
+     * @param regDate  当前时间
+     * @return 后续随访列表信息
+     */
+    List<NextVisitingRecordVo> countNextVisitingListByIds(@Param("patientIds") List<Integer> patientIds,
+                                                          @Param("regDate") String regDate);
 }

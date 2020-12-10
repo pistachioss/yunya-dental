@@ -44,4 +44,19 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
    * @return
    */
   PatientBillStatistics selectPatientBillStatistics(@Param("patientId") Integer patientId);
+
+  /**
+   * 根据患者ID查询患者账单统计数据列表
+   * @param patientIds 患者ID集合
+   * @return 实体数据列表
+   */
+  List<PatientBillStatistics> selectPatientBillStatisticsByPatientIds(@Param("patientIds") List<Integer> patientIds);
+
+  /**
+   * 根据患者就诊记录ID查询订单支付记录
+   * @param treatmentIds 患者就诊记录ID
+   * @return 实例对象集合
+   */
+  List<BillRecord> selectBillRecordsByTreatmentIds(@Param("treatmentIds") List<Integer> treatmentIds);
+
 }

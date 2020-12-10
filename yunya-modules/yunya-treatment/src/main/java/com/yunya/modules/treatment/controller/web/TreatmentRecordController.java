@@ -78,7 +78,7 @@ public class TreatmentRecordController {
   @ApiOperation("根据条件查询就诊患者列表信息（可分页）")
   @PostMapping("/list")
   public ResponseResult<PageInfo<TreatmentPatientInfoVO>> findTreatList(
-      @RequestBody @Validated TreatmentRecordQueryForm queryForm) throws ParseException {
+      @RequestBody @Validated TreatmentRecordQueryForm queryForm) {
     PageInfo<TreatmentPatientInfoVO> resultList = treatmentRecordBiz.findTreatList(queryForm);
     return ResponseUtil.success(resultList);
   }
