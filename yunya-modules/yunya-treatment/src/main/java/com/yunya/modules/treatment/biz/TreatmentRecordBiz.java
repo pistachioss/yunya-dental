@@ -282,41 +282,6 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         if (null != vo.getId()) {
           treatmentIds.add(vo.getId());
         }
-/*
-        switch (vo.getTreatmentStatus()) {
-          case 0:
-          case 1:
-          case 2:
-            // 设置患者信息
-            setPatientInfo(vo, currentDate);
-            // 设置预约信息
-            setAppointmentInfo(vo);
-            // 设置挂号信息
-            setRegisteredInfo(vo);
-            // 设置接诊信息
-            setTreatingInfo(vo);
-            // 设置账单信息
-            setOrderInfo(vo);
-            break;
-          case 3:
-            // 设置患者信息
-            setPatientInfo(vo, currentDate);
-            // 设置预约信息
-            setAppointmentInfo(vo);
-            // 设置挂号信息
-            setRegisteredInfo(vo);
-            // 设置接诊信息
-            setTreatingInfo(vo);
-            // 设置账单信息
-            setOrderInfo(vo);
-            // 设置收费信息
-            setChargeInfo(vo);
-            break;
-          default:
-            break;
-        }
-
- */
       }
 
       // 1.根据患者ID集合查询患者信息列表
