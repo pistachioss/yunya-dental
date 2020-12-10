@@ -32,7 +32,7 @@
         select
         t.id,
         t.user_id as userId,
-        t.company_id as orgId,
+        if(vs.vacation_status=1,t.company_id,es.clinic_id) as orgId,
         t.vacation_id as vacationId,
         if(vs.vacation_status=1,t.start_time,ifnull(es.work_date,t.start_time)) as startDate,
         t.end_time as endDate,
@@ -40,12 +40,12 @@
         ls.end_time as endTime,
         t.leave_reason as leaveReason,
         t.leave_picture as leavePicture,
+        t.approval_now_people_id as approvalNowPeopleId,
         t.approval_criteria_id as approvalCriteriaId,
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
-        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
-        t.id=ls.leave_id
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
             t.apprpval_status = 1 and vs.vacation_enable=1
@@ -76,6 +76,7 @@
         ls.end_time as endTime,
         t.leave_reason as leaveReason,
         t.leave_picture as leavePicture,
+        t.approval_now_people_id as approvalNowPeopleId,
         t.approval_criteria_id as approvalCriteriaId,
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
@@ -114,6 +115,7 @@
         ls.end_time as endTime,
         t.leave_reason as leaveReason,
         t.leave_picture as leavePicture,
+        t.approval_now_people_id as approvalNowPeopleId,
         t.approval_criteria_id as approvalCriteriaId,
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
@@ -142,24 +144,25 @@
 
     <select id="statisticsLeavesByMinute" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoVO">
         select
-        t.id,
-        t.user_id as userId,
-        t.company_id as orgId,
-        t.vacation_id as vacationId,
-        t.start_time as startDate,
-        t.end_time as endDate,
-        t.leave_reason as leaveReason,
-        t.leave_picture as leavePicture,
-        t.approval_criteria_id as approvalCriteriaId,
-        t.apprpval_status as apprpvalStatus,
-        vs.vacation_status as vacationStatus,
-        vs.vacation_name as vacationName,
-        t.crt_time as crtTime
+            t.id,
+            t.user_id as userId,
+            t.company_id as orgId,
+            t.vacation_id as vacationId,
+            t.start_time as startDate,
+            t.end_time as endDate,
+            t.leave_reason as leaveReason,
+            t.leave_picture as leavePicture,
+            t.approval_now_people_id as approvalNowPeopleId,
+            t.approval_criteria_id as approvalCriteriaId,
+            t.apprpval_status as apprpvalStatus,
+            vs.vacation_status as vacationStatus,
+            vs.vacation_name as vacationName,
+            t.crt_time as crtTime
         from leave_info t left join vacation_set vs on t.vacation_id=vs.id
         <where>
             t.apprpval_status = 1 and vs.vacation_enable=1
-            <if test="queryForm.orgId != null">
-                and (t.company_id = #{queryForm.orgId} or es.clinic_id = #{queryForm.orgId})
+            <if test="queryForm.orgId!=null">
+                and t.company_id = #{queryForm.orgId}
             </if>
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
@@ -172,7 +175,7 @@
                 and vs.vacation_status = #{queryForm.vacationStatus}
             </if>
             <if test="queryForm.ids!=null and queryForm.ids.size()>0">
-                and t.id in
+                or t.id in
                 <foreach collection="queryForm.ids" item="item" index="index" open="(" close=")" separator=",">
                     #{item}
                 </foreach>

@@ -2,14 +2,8 @@ package com.yunya.report.ultimate.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.BillOfDiscountDetailQuery;
-import com.yunya.feign.report.domain.query.BillOfReceivableQuery;
-import com.yunya.feign.report.domain.query.DataStatisticsQuery;
-import com.yunya.feign.report.domain.query.OrderRecordQuery;
-import com.yunya.feign.report.domain.vo.BillDataStatisticsVO;
-import com.yunya.feign.report.domain.vo.BillOfDiscountDetailVO;
-import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
-import com.yunya.feign.report.domain.vo.BillRestReceivableAmountVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBill;
@@ -125,5 +119,44 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   public BillDataStatisticsVO findClinicBillDataStatistic(DataStatisticsQuery query) {
     BillDataStatisticsVO resultData = mapper.selectClinicBillDataStatistic(query);
     return resultData;
+  }
+
+  /**
+   * 根据条件查询患者催缴欠费列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<PatientArrearsCallForVO>
+   */
+  public PageInfo<PatientArrearsCallForVO> findPatientArrearsList(
+      PatientArrearsCallForQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<PatientArrearsCallForVO> resultList = mapper.selectPatientArrearsList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出患者催缴欠费列表
+   *
+   * @param response 响应
+   * @param query 查询条件
+   */
+  public void exportPatientArrearsList(
+      HttpServletResponse response, PatientArrearsCallForQuery query) throws IOException {
+    List<PatientArrearsCallForVO> resultList = mapper.selectPatientArrearsList(query);
+    ExcelUtil<PatientArrearsCallForVO> excelUtil = new ExcelUtil<>(PatientArrearsCallForVO.class);
+    excelUtil.exportExcel(response, resultList, "患者催缴欠费列表");
+  }
+
+  /**
+   * 根据患者ID查询患者欠款明细列表
+   *
+   * @param patientId 患者ID
+   * @return List<PatientArrearsDetailVO>
+   */
+  public List<PatientArrearsDetailVO> findPatientArrearsDetailList(Integer patientId) {
+    List<PatientArrearsDetailVO> resultList = mapper.selectPatientArrearsDetailList(patientId);
+    return resultList;
   }
 }

@@ -1,12 +1,16 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.query.PatientArrearsCallForQuery;
 import com.yunya.feign.report.domain.vo.BillDataStatisticsVO;
+import com.yunya.feign.report.domain.vo.PatientArrearsCallForVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
 
 /**
  * 简介:
@@ -31,5 +35,13 @@ public class BaseBillMapperTest {
     query.setEndDate("2020-12-12");
     BillDataStatisticsVO vo = billMapper.selectClinicBillDataStatistic(query);
     System.out.println(vo);
+  }
+
+  @Test
+  public void find1() {
+    PatientArrearsCallForQuery query = new PatientArrearsCallForQuery();
+    query.setKeyword("wang");
+    List<PatientArrearsCallForVO> vos = billMapper.selectPatientArrearsList(query);
+    System.out.println(vos);
   }
 }

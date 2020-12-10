@@ -55,4 +55,22 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return BillDataStatisticsVO
    */
   BillDataStatisticsVO selectClinicBillDataStatistic(@Param("query") DataStatisticsQuery query);
+
+  /**
+   * 根据条件查询患者催缴欠费列表
+   *
+   * @param query 查询条件
+   * @return List<PatientArrearsCallForVO>
+   */
+  List<PatientArrearsCallForVO> selectPatientArrearsList(
+      @Param("query") PatientArrearsCallForQuery query);
+
+  /**
+   * 根据患者ID查询患者欠款明细列表
+   *
+   * @param patientId 患者ID
+   * @return List<PatientArrearsDetailVO>
+   */
+  List<PatientArrearsDetailVO> selectPatientArrearsDetailList(
+      @Param("patientId") Integer patientId);
 }

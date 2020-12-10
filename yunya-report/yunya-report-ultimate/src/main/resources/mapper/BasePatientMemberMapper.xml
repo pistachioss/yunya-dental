@@ -1,68 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.report.ultimate.mapper.BasePatientMemberMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.report.BasePatientMember" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <result column="card_id" property="cardId" jdbcType="INTEGER" />
-    <result column="card_number" property="cardNumber" jdbcType="VARCHAR" />
-    <result column="type" property="type" jdbcType="VARCHAR" />
-    <result column="member_level_id" property="memberLevelId" jdbcType="VARCHAR" />
-    <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL" />
-    <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL" />
-    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
-    <result column="card_opening_date" property="cardOpeningDate" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.report.ultimate.mapper.BasePatientMemberMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BasePatientMember">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <result column="card_id" property="cardId" jdbcType="INTEGER"/>
+        <result column="card_number" property="cardNumber" jdbcType="VARCHAR"/>
+        <result column="type" property="type" jdbcType="VARCHAR"/>
+        <result column="member_level_id" property="memberLevelId" jdbcType="VARCHAR"/>
+        <result column="principal_amount" property="principalAmount" jdbcType="DECIMAL"/>
+        <result column="bonus_amount" property="bonusAmount" jdbcType="DECIMAL"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="card_opening_date" property="cardOpeningDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
 
-  <!-- 查询会员卡概况 -->
-  <select id="selectMemberOverviewList" resultType="com.yunya.feign.report.domain.vo.BasePatientMemberOverviewVo">
-    select t1.* from (
-    select
-    bp.patient_id patientId,
-    bp.name,
-    bp.mobile,
-    bpm.card_number cardNumber,
-    bo.abbreviation,
-    DATE_FORMAT(bpm.card_opening_date, '%Y-%m-%d %h:%i:%s') cardOpeningDate,
-    sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
-    bpm.bonus_amount bonusAmount
-    from base_patient bp
-    join base_patient_member bpm on bp.patient_id = bpm.patient_id
-    join base_organization bo on bo.org_id = bp.org_id
-    <where>
-      bpm.type = #{form.type}
-      <if test="form.memberLevelId != null">
-        AND bpm.member_level_id = #{form.memberLevelId}
-      </if>
+    <!-- 查询会员卡概况 -->
+    <select id="selectMemberOverviewList" resultType="com.yunya.feign.report.domain.vo.BasePatientMemberOverviewVo">
+        select t1.* from (
+        select
+        bp.patient_id patientId,
+        bp.name,
+        bp.mobile,
+        bpm.card_number cardNumber,
+        bo.abbreviation,
+        DATE_FORMAT(bpm.card_opening_date, '%Y-%m-%d %h:%i:%s') cardOpeningDate,
+        sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
+        bpm.bonus_amount bonusAmount
+        from base_patient bp
+        join base_patient_member bpm on bp.patient_id = bpm.patient_id
+        join base_organization bo on bo.org_id = bp.org_id
+        <where>
+            bpm.type = #{form.type}
+            <if test="form.memberLevelId != null">
+                AND bpm.member_level_id = #{form.memberLevelId}
+            </if>
 
-      <if test="form.orgIds != null and form.orgIds.size() > 0">
-        AND bp.org_id in
-        <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
-          #{orgId}
-        </foreach>
-      </if>
+            <if test="form.orgIds != null and form.orgIds.size() > 0">
+                AND bp.org_id in
+                <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
+                    #{orgId}
+                </foreach>
+            </if>
 
-      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-        and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
-        and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
-      </if>
+            <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+                and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
+                and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
+            </if>
 
-    </where>
-    group by bpm.card_opening_date desc
-    ) t1
-    <where>
-      <if test="patientIds != null and patientIds.size() > 0 ">
-        AND t1.patientId in
-        <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-          #{ids}
-        </foreach>
-      </if>
-    </where>
-  </select>
+        </where>
+        group by bpm.card_opening_date desc
+        ) t1
+        <where>
+            <if test="patientIds != null and patientIds.size() > 0 ">
+                AND t1.patientId in
+                <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
+                    #{ids}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
-  <!-- 查询会员卡状态 -->
-  <select id="memberOverviewList" resultType="com.yunya.feign.report.domain.vo.BaseMemberOverviewVo">
+    <!-- 查询会员卡状态 -->
+    <select id="memberOverviewList" resultType="com.yunya.feign.report.domain.vo.BaseMemberOverviewVo">
     select
       bpm.member_level_id memberLevelId,
       bpm.member_level_name memberLevelName,
@@ -72,6 +72,324 @@
     from base_patient_member bpm
     where type = 0
     group by bpm.member_level_name
-  </select>
+    </select>
+
+    <!-- 根据条件查询门诊会员数据总览 -->
+    <select id="selectClinicMemberDataStatistic"
+            resultType="com.yunya.feign.report.domain.vo.MemberDataStatisticVO">
+        SELECT
+            SUM( bpmol.totalMemberRechargeAmount ) AS totalMemberRechargeAmount,
+            SUM( bpmol.totalMemberExpendAmount ) AS totalMemberExpendAmount,
+            SUM( bpmol.totalMemberRefundAmount ) AS totalMemberRefundAmount
+        FROM
+            (
+            SELECT
+                bo.org_id,
+                IFNULL( bpmol.totalMemberRechargeAmount, 0 ) AS totalMemberRechargeAmount,
+                IFNULL( bpmol1.totalMemberExpendAmount, 0 ) AS totalMemberExpendAmount,
+                IFNULL( bpmol2.totalMemberRefundAmount, 0 ) AS totalMemberRefundAmount
+            FROM
+                base_organization bo
+                LEFT JOIN (
+                SELECT
+                    bpmol.org_id,
+                    SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalMemberRechargeAmount
+                FROM
+                    (
+                    SELECT
+                        bpmol.org_id,
+                        bpmol.principal_amount,
+                        bpmol.bonus_amount
+                    FROM
+                        base_patient_member_occur_log bpmol
+                    <where>
+                        AND bpmol.type = 0
+                        AND bpmol.occur_type = 1
+                        <if test="query.dateType == 0">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                        <if test="query.dateType == 1">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                        <if test="query.dateType == 2">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                    </where>
+                     ) bpmol
+                GROUP BY
+                    bpmol.org_id
+                ) bpmol ON bo.org_id = bpmol.org_id
+                LEFT JOIN (
+                SELECT
+                    bpmol.org_id,
+                    SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalMemberExpendAmount
+                FROM
+                    (
+                    SELECT
+                        bpmol.org_id,
+                        bpmol.principal_amount,
+                        bpmol.bonus_amount
+                    FROM
+                        base_patient_member_occur_log bpmol
+                    <where>
+                        AND bpmol.type = 0
+                        AND bpmol.occur_type = 2
+                        <if test="query.dateType == 0">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                        <if test="query.dateType == 1">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                        <if test="query.dateType == 2">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                    </where>
+                    ) bpmol
+                GROUP BY
+                    bpmol.org_id
+                ) bpmol1 ON bo.org_id = bpmol1.org_id
+                LEFT JOIN (
+                SELECT
+                    bpmol.org_id,
+                    SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalMemberRefundAmount
+                FROM
+                    (
+                    SELECT
+                        bpmol.org_id,
+                        bpmol.principal_amount,
+                        bpmol.bonus_amount
+                    FROM
+                        base_patient_member_occur_log bpmol
+                    <where>
+                        AND bpmol.type = 0
+                        AND bpmol.occur_type = 3
+                        <if test="query.dateType == 0">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                        <if test="query.dateType == 1">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                        <if test="query.dateType == 2">
+                            <if test="query.startDate != null and query.startDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                            </if>
+                            <if test="query.endDate != null and query.endDate != ''">
+                                and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                            </if>
+                        </if>
+                    </where>
+                    ) bpmol
+                GROUP BY
+                    bpmol.org_id
+                ) bpmol2 ON bo.org_id = bpmol2.org_id
+            GROUP BY
+            bo.org_id
+            ) bpmol
+        <where>
+            and bpmol.org_id in
+            <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊预付款数据总览 -->
+    <select id="selectClinicPrepaymentsDataStatistic"
+            resultType="com.yunya.feign.report.domain.vo.PrepaymentsDataStatisticVO">
+        SELECT
+        SUM( bpmol.totalPrepaymentsRechargeAmount ) AS totalPrepaymentsRechargeAmount,
+        SUM( bpmol.totalPrepaymentsExpendAmount ) AS totalPrepaymentsExpendAmount,
+        SUM( bpmol.totalPrepaymentsRefundAmount ) AS totalPrepaymentsRefundAmount
+        FROM
+        (
+        SELECT
+        bo.org_id,
+        IFNULL( bpmol.totalPrepaymentsRechargeAmount, 0 ) AS totalPrepaymentsRechargeAmount,
+        IFNULL( bpmol1.totalPrepaymentsExpendAmount, 0 ) AS totalPrepaymentsExpendAmount,
+        IFNULL( bpmol2.totalPrepaymentsRefundAmount, 0 ) AS totalPrepaymentsRefundAmount
+        FROM
+        base_organization bo
+        LEFT JOIN (
+        SELECT
+        bpmol.org_id,
+        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalPrepaymentsRechargeAmount
+        FROM
+        (
+        SELECT
+        bpmol.org_id,
+        bpmol.principal_amount,
+        bpmol.bonus_amount
+        FROM
+        base_patient_member_occur_log bpmol
+        <where>
+            AND bpmol.type = 1
+            AND bpmol.occur_type = 1
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol
+        GROUP BY
+        bpmol.org_id
+        ) bpmol ON bo.org_id = bpmol.org_id
+        LEFT JOIN (
+        SELECT
+        bpmol.org_id,
+        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalPrepaymentsExpendAmount
+        FROM
+        (
+        SELECT
+        bpmol.org_id,
+        bpmol.principal_amount,
+        bpmol.bonus_amount
+        FROM
+        base_patient_member_occur_log bpmol
+        <where>
+            AND bpmol.type = 1
+            AND bpmol.occur_type = 2
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol
+        GROUP BY
+        bpmol.org_id
+        ) bpmol1 ON bo.org_id = bpmol1.org_id
+        LEFT JOIN (
+        SELECT
+        bpmol.org_id,
+        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalPrepaymentsRefundAmount
+        FROM
+        (
+        SELECT
+        bpmol.org_id,
+        bpmol.principal_amount,
+        bpmol.bonus_amount
+        FROM
+        base_patient_member_occur_log bpmol
+        <where>
+            AND bpmol.type = 1
+            AND bpmol.occur_type = 3
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y-%m') &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    and DATE_FORMAT( bpmol.occur_date, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol
+        GROUP BY
+        bpmol.org_id
+        ) bpmol2 ON bo.org_id = bpmol2.org_id
+        GROUP BY
+        bo.org_id
+        ) bpmol
+        <where>
+            and bpmol.org_id in
+            <foreach collection="query.orgIds" index="index" item="item" open="(" separator="," close=")">
+                #{item}
+            </foreach>
+        </where>
+    </select>
 
 </mapper>

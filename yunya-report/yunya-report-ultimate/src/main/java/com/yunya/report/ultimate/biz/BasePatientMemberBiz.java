@@ -23,19 +23,21 @@ public class BasePatientMemberBiz extends BaseBiz<BasePatientMemberMapper, BaseP
    * 根据条件查询门诊会员数据总览
    *
    * @param query 查询条件
-   * @return
+   * @return MemberDataStatisticVO
    */
   public MemberDataStatisticVO findClinicMemberDataStatistic(DataStatisticsQuery query) {
-    return null;
+    MemberDataStatisticVO resultData = mapper.selectClinicMemberDataStatistic(query);
+    return resultData;
   }
 
   /**
    * 根据条件查询门诊预付款数据总览
    *
    * @param query 查询条件
-   * @return
+   * @return PrepaymentsDataStatisticVO
    */
   public PrepaymentsDataStatisticVO findClinicPrepaymentsDataStatistic(DataStatisticsQuery query) {
-    return null;
+    PrepaymentsDataStatisticVO resultData = mapper.selectClinicPrepaymentsDataStatistic(query);
+    return resultData;
   }
 }

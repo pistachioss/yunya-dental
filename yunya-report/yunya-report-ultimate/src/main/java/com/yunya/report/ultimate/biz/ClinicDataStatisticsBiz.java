@@ -53,6 +53,7 @@ public class ClinicDataStatisticsBiz {
     MemberDataStatisticVO clinicMemberDataStatistic =
         memberBiz.findClinicMemberDataStatistic(query);
     resultData.setMemberDataStatistic(clinicMemberDataStatistic);
+    // 门诊预付款数据总览
     PrepaymentsDataStatisticVO clinicPrepaymentsDataStatistic =
         memberBiz.findClinicPrepaymentsDataStatistic(query);
     resultData.setPrepaymentsDataStatistic(clinicPrepaymentsDataStatistic);

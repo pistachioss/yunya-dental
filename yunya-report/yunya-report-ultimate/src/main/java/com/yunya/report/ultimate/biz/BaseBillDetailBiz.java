@@ -402,9 +402,10 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * 根据条件查询门诊工作量总览
    *
    * @param query 查询条件
-   * @return
+   * @return WorkloadStatisticsVO
    */
   public WorkloadStatisticsVO findClinicWorkloadStatistic(DataStatisticsQuery query) {
-    return null;
+    WorkloadStatisticsVO resultData = mapper.selectClinicWorkloadStatistic(query);
+    return resultData;
   }
 }

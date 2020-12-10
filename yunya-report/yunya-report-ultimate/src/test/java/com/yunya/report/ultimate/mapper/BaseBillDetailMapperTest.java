@@ -1,13 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
-import com.yunya.feign.report.domain.query.AssistantActualWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.BillingItemDetailQuery;
-import com.yunya.feign.report.domain.query.BillingItemStatisticsQuery;
-import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
-import com.yunya.feign.report.domain.vo.AssistantActualWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.BillingItemDetailVO;
-import com.yunya.feign.report.domain.vo.BillingItemInfoVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,15 +74,25 @@ public class BaseBillDetailMapperTest {
   public void findBillingItemDetailList() {
     BillingItemDetailQuery query = new BillingItemDetailQuery();
     query.setOrgId(35);
-    query.setDateType((byte)0);
+    query.setDateType((byte) 0);
     query.setStartDate("2020-10-01");
     query.setEndDate("2020-12-07");
     query.setItemId(565);
-    query.setItemType((byte)0);
+    query.setItemType((byte) 0);
     query.setKeyword("二");
     query.setBillNum("ZD00352011280015");
-
     List<BillingItemDetailVO> vos = baseBillDetailMapper.selectBillingItemDetailList(query);
     System.out.println(vos);
+  }
+
+  @Test
+  public void find() {
+    DataStatisticsQuery query = new DataStatisticsQuery();
+    query.setOrgIds(new Integer[] {35, 42, 72});
+    query.setDateType((byte) 0);
+    query.setStartDate("2020-07-01");
+    query.setEndDate("2020-12-12");
+    WorkloadStatisticsVO vo = baseBillDetailMapper.selectClinicWorkloadStatistic(query);
+    System.out.println(vo);
   }
 }
