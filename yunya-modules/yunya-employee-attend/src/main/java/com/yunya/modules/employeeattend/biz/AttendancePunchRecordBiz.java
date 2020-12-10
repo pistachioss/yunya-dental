@@ -377,10 +377,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     public void punch(AttendancePunchRecordForm attendancePunchRecordForm) {
         Date now = new Date(System.currentTimeMillis());
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        // 打卡：1、无效卡，2-打卡
-        AttendancePunchRecord attendancePunchRecord = new AttendancePunchRecord();
-        BeanUtils.copyProperties(attendancePunchRecordForm, attendancePunchRecord);
-        attendancePunchRecord.setPunchTime(now);
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
         queryForm.setPunchDate(now);
         queryForm.setUserId(userId);
@@ -395,7 +391,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             if (attendancePunchRecordVO.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
                 onDutyIspunch = attendancePunchRecordVO.getIsPunch();
             }
-            if (attendancePunchRecordVO.getId().equals(attendancePunchRecord.getId())) {
+            if (attendancePunchRecordVO.getId().equals(attendancePunchRecordForm.getId())) {
                 dbPunchRecord = attendancePunchRecordVO;
             }
         }
@@ -437,6 +433,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 ||AttendanceStatusEnum.LATER_PUNCH.getCode().equals(oldPunchStatus))) {// 上班更新不允许
             throw new ClientServiceException("上班卡已打，请刷新页面", OperationCodeConstants.PARAMETERS_IS_ILLEGAL);
         }
+        AttendancePunchRecord attendancePunchRecord = new AttendancePunchRecord();
+        attendancePunchRecord.setLongitude(attendancePunchRecordForm.getLongitude());
+        attendancePunchRecord.setLatitude(attendancePunchRecordForm.getLatitude());
+        attendancePunchRecord.setId(attendancePunchRecordForm.getId());
+        attendancePunchRecord.setPunchTime(now);
+        attendancePunchRecord.setAttendanceAddressId(attendancePunchRecord.getAttendanceAddressId());
+        attendancePunchRecord.setWifiMacAddress(attendancePunchRecord.getWifiMacAddress());
+        attendancePunchRecord.setPunchAddress(attendancePunchRecordForm.getPunchAddress());
         attendancePunchRecord.setPunchStatus(punchStatus);
         attendancePunchRecord.setIsPunch(AttendanceIsPunchEnum.PUNCHED.getCode());
         attendancePunchRecord.setUptTime(now);
@@ -493,6 +497,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     public AttendancePunchCalendarInfoVO punchRecordByDate(Date date) {
         AttendancePunchCalendarInfoVO result = new AttendancePunchCalendarInfoVO();
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        userId = 549;
         // 打卡记录
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
         queryForm.setPunchDate(date);
