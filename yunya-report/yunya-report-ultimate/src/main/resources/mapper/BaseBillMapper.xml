@@ -611,4 +611,17 @@
             </if>
         </where>
     </select>
+
+    <!-- 查询全部账单欠费统计 -->
+    <select id="selectBillArrearsStatistic"
+            resultType="com.yunya.feign.report.domain.vo.BillArrearsStatisticVO">
+        SELECT
+            COUNT( DISTINCT patient_id ) AS arrearsPatientCount,
+            COUNT( bill_id ) AS arrearsBillCount,
+            SUM( debt_amount ) AS totalArrears
+        FROM
+            base_bill
+        WHERE
+            debt_amount > 0
+    </select>
 </mapper>

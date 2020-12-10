@@ -202,4 +202,14 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     ExcelUtil<DentistArrearsDetailVO> excelUtil = new ExcelUtil<>(DentistArrearsDetailVO.class);
     excelUtil.exportExcel(response, resultList, "医生所属欠费明细列表");
   }
+
+  /**
+   * 查询全部账单欠费统计
+   *
+   * @return BillArrearsStatisticVO
+   */
+  public BillArrearsStatisticVO findArrearsStatistic() {
+    BillArrearsStatisticVO resultData = mapper.selectBillArrearsStatistic();
+    return resultData;
+  }
 }

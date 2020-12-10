@@ -4,10 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.DentistArrearsCallForQuery;
 import com.yunya.feign.report.domain.query.DentistArrearsDetailQuery;
 import com.yunya.feign.report.domain.query.PatientArrearsCallForQuery;
-import com.yunya.feign.report.domain.vo.DentistArrearsCallForVO;
-import com.yunya.feign.report.domain.vo.DentistArrearsDetailVO;
-import com.yunya.feign.report.domain.vo.PatientArrearsCallForVO;
-import com.yunya.feign.report.domain.vo.PatientArrearsDetailVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
@@ -120,9 +117,21 @@ public class CompanyReportOfCustomerCentralController {
   @ApiOperation("公司端报表-客服中心报表-医生催缴欠费-欠费明细列表-导出")
   @PostMapping(value = "/dentist/arrears/detail/export", name = "根据条件导出医生所属欠费明细列表")
   public ResponseResult<T> exportDentistArrearsDetailList(
-          HttpServletResponse response, @RequestBody @Validated DentistArrearsDetailQuery query)
-          throws IOException {
+      HttpServletResponse response, @RequestBody @Validated DentistArrearsDetailQuery query)
+      throws IOException {
     billBiz.exportDentistArrearsDetailList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 欠费汇总
+   *
+   * @return ArrearsStatisticVO
+   */
+  @ApiOperation("公司端报表-客服中心报表-欠费统计")
+  @GetMapping(value = "/arrears/statistic", name = "欠费统计")
+  public ResponseResult<BillArrearsStatisticVO> arrearsStatistic() {
+    BillArrearsStatisticVO resultData = billBiz.findArrearsStatistic();
+    return ResponseUtil.success(resultData);
   }
 }

@@ -91,4 +91,11 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    */
   List<DentistArrearsDetailVO> selectDentistArrearsDetailList(
       @Param("query") DentistArrearsDetailQuery query);
+
+  /**
+   * 查询全部账单欠费统计
+   *
+   * @return BillArrearsStatisticVO
+   */
+  BillArrearsStatisticVO selectBillArrearsStatistic();
 }
