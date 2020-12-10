@@ -827,11 +827,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 workMap.put(employeeScheduleVO.getId(), employeeScheduleVO);
             }
         });
-        List<OrganizationInfoDetail> orgList = remoteSystemServiceFeign.findOrgInfoInIds(orgIds);
-        Map<Integer, String> orgMap = new HashMap<>(orgList.size());
-        orgList.forEach(organizationInfo -> {
-            orgMap.put(organizationInfo.getId(), organizationInfo.getName());
-        });
+        Map<Integer, String> orgMap = new HashMap<>(16);
+        if (orgIds!=null && !orgIds.isEmpty()) {
+            List<OrganizationInfoDetail> orgList = remoteSystemServiceFeign.findOrgInfoInIds(orgIds);
+            orgList.forEach(organizationInfo -> {
+                orgMap.put(organizationInfo.getId(), organizationInfo.getName());
+            });
+        }
 
         // 打卡列表
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
@@ -994,8 +996,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             long diff = 0;
             if (list!=null && !list.isEmpty()) {
                 AttendancePunchRecordVO first = list.get(0);
-                AttendancePunchRecordVO last = list.get(1);
-                if (first!=null && last!=null) {//全天班
+                if (list.size() > 1) {//全天班
+                    AttendancePunchRecordVO last = list.get(1);
                     Date startTime = first.getPunchTime();
                     if (startTime.before(first.getStartTime())) {
                         startTime = first.getStartTime();
@@ -1005,7 +1007,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         endTime = last.getEndTime();
                     }
                     diff = endTime.getTime() - startTime.getTime();
-                } else if (first != null) {//半天班
+                } else if (list.size() == 1) {//半天班
                     Date startTime = first.getPunchTime();
                     if (startTime.before(first.getStartTime())) {
                         startTime = first.getStartTime();
