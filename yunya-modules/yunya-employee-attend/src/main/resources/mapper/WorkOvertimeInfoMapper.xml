@@ -128,7 +128,7 @@
                 and ci.user_id = #{copyId}
             </if>
             <if test="startTime != null ">
-                and fi.crt_time >= #{startTime} and fi.crt_time &lt;= #{endTime}
+                and t.crt_time >= #{startTime} and t.crt_time &lt;= #{endTime}
             </if>
         </where>
         order by t.crt_time desc
