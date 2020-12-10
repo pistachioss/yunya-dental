@@ -40,4 +40,10 @@ public class EmLeaveVO {
     private String emName;
     @ApiModelProperty("班次类型")
     private String emType;
+    @ApiModelProperty("请假结束时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss", timezone = "GMT+8")
+    private Date leaveStartTime;
+    @ApiModelProperty("请假结束时间")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "HH:mm:ss", timezone = "GMT+8")
+    private Date leaveEndTime;
 }
