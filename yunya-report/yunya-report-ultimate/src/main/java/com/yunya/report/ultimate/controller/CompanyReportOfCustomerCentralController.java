@@ -7,6 +7,7 @@ import com.yunya.feign.report.domain.vo.PatientArrearsDetailVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
+@Api("公司端-客服中心报表")
 @RestController
 @RequestMapping("central")
 public class CompanyReportOfCustomerCentralController {

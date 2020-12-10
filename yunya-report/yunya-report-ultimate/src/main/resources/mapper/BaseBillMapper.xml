@@ -431,7 +431,7 @@
             btp.regDentistName,
             bb.billId,
             bb.billNum,
-            bb.billDate,
+            DATE_FORMAT(bb.billDate, '%Y-%m-%d'),
             bb.originalAmount,
             bb.privilegeAmount,
             bb.actualAmount,
@@ -469,5 +469,6 @@
             ) btp ON bb.treatment_id = btp.treatment_id
         GROUP BY
             bb.billId
+        ORDER BY bb.billDate DESC
     </select>
 </mapper>
