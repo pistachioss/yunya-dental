@@ -34,7 +34,7 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      * 根据用户Id查询处于审批中或已通过的按天请假的申请
      * @return
      */
-    List<LeaveInfoVO>findLeaveListByDay(LeaveInfoFindForm leaveInfoFindForm);
+    List<LeaveInfo>findLeaveListByDay(LeaveInfo leaveInfo);
 
     /**
      * 查询按天请假时包含的班次
