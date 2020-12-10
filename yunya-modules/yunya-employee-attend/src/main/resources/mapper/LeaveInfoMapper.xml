@@ -32,7 +32,7 @@
         select
         t.id,
         t.user_id as userId,
-        t.company_id as orgId,
+        if(vs.vacation_status=1,t.company_id,es.clinic_id) as orgId,
         t.vacation_id as vacationId,
         if(vs.vacation_status=1,t.start_time,ifnull(es.work_date,t.start_time)) as startDate,
         t.end_time as endDate,
@@ -45,8 +45,7 @@
         t.apprpval_status as apprpvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
-        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
-        t.id=ls.leave_id
+        from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
             t.apprpval_status = 1 and vs.vacation_enable=1
