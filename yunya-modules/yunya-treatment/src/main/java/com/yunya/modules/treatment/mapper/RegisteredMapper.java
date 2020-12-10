@@ -19,4 +19,11 @@ public interface RegisteredMapper extends Mapper<Registered> {
    */
   List<WaitingPatientInfoVO> selectRegisteredList(
       @Param("status") Byte status, @Param("queryForm") RegisteredQueryForm queryForm);
+
+  /**
+   * 根据id集合查询挂号列表信息
+   * @param ids 挂号ID集合
+   * @return  实例列表
+   */
+  List<Registered> selectRegisteredListByIds(@Param("ids") List<Integer> ids);
 }

@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
+import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.query.PatientLikeFinleQueryForm;
@@ -18,6 +19,7 @@ import com.yunya.feign.treatment.domain.model.TreatmentModel;
 import com.yunya.feign.treatment.domain.query.*;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
+import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -243,15 +245,44 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param queryForm 查询条件
    * @return
    */
-  public PageInfo<TreatmentPatientInfoVO> findTreatList(TreatmentRecordQueryForm queryForm)
-      throws ParseException {
+  public PageInfo<TreatmentPatientInfoVO> findTreatList(TreatmentRecordQueryForm queryForm) {
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
     String currentDate = queryForm.getCurrentDate();
     List<TreatmentPatientInfoVO> treatingList = mapper.selectTreatingList(queryForm);
+
+    List<Integer> patientIds = new ArrayList<>();
+    List<Integer> appointIds = new ArrayList<>();
+    List<Integer> registerIds = new ArrayList<>();
+    List<Integer> treatmentIds = new ArrayList<>();
+    List<Integer> dentistAndAssistantIds = new ArrayList<>();
+    List<Integer> deptRoomIds = new ArrayList<>();
+
     if (StringHelper.isNotEmpty(treatingList)) {
       for (TreatmentPatientInfoVO vo : treatingList) {
+        if (null != vo.getPatientId()) {
+          patientIds.add(vo.getPatientId());
+        }
+        if (null != vo.getAppointmentId()) {
+          appointIds.add(vo.getAppointmentId());
+        }
+        if (null != vo.getRegisteredId()) {
+          registerIds.add(vo.getRegisteredId());
+        }
+        if (null != vo.getTreatDentistId()) {
+          dentistAndAssistantIds.add(vo.getTreatDentistId());
+        }
+        if (null != vo.getAppointDentistId()) {
+          dentistAndAssistantIds.add(vo.getAppointDentistId());
+        }
+        if (null != vo.getAppointAssistantId()) {
+          dentistAndAssistantIds.add(vo.getAppointAssistantId());
+        }
+        if (null != vo.getId()) {
+          treatmentIds.add(vo.getId());
+        }
+/*
         switch (vo.getTreatmentStatus()) {
           case 0:
           case 1:
@@ -284,7 +315,79 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           default:
             break;
         }
+
+ */
       }
+
+      // 1.根据患者ID集合查询患者信息列表
+      List<PatientTotalInfoVo> patientTotalInfos = patientServiceFeign.findPatientTotalInfo(patientIds);
+      // 2.根据预约ID集合查询患者预约信息列表
+      List<Appointment> appointments = appointmentFeign.findAppointmentListByIds(appointIds);
+      // 3.根据挂号ID集合查询患者挂号信息列表
+      List<Registered> registereds = registeredMapper.selectRegisteredListByIds(registerIds);
+      // 3.1从挂号信息列表中查询挂号科室ID和挂号助手ID和挂号医生ID
+      registereds.forEach(registered -> {
+        if (null != registered.getDeptRoomId()) {
+          deptRoomIds.add(registered.getDeptRoomId());
+        }
+        if (null != registered.getDentistId()) {
+          dentistAndAssistantIds.add(registered.getDentistId());
+        }
+        if (null != registered.getAssistantId()) {
+          dentistAndAssistantIds.add(registered.getAssistantId());
+        }
+      });
+      // 4.根据医生ID集合和助手ID信息列表
+      List<SysUserInfoDetail> dentistAndAssistantInfo = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistAndAssistantIds);
+      // 5.根据就诊记录ID查询订单详情列表
+      List<OrderRecord> orderRecords = orderRecordMapper.selectOrderRecordByTreatmentIds(treatmentIds);
+      // 6.根据患者ID集合查询患者后续预约列表
+      List<NextAppointsVo> nextAppointsVos = appointmentFeign.countNextAppoints(patientIds);
+      // 7.根据患者ID集合和当前日期查询后续随访信息列表(不包含当天)
+      List<NextVisitingRecordVo> nextVisitingRecordVos = remoteTreatmentOther
+              .countNextVisitingListByIds(patientIds, currentDate);
+      // 8.根据预约科室ID集合查询科室信息
+      List<DepartmentRoom> departmentRoomInfos = systemServiceFeign.findDepartmentRoomByIds(deptRoomIds);
+      // 9.根据患者ID查询患者账单统计数据列表
+      List<PatientBillStatistics> patientBillStatistics = billRecordMapper.selectPatientBillStatisticsByPatientIds(patientIds);
+      // 10.根据患者就诊记录ID查询账单支付记录
+      List<BillRecord> billRecords = billRecordMapper.selectBillRecordsByTreatmentIds(treatmentIds);
+
+      for (TreatmentPatientInfoVO vo : treatingList) {
+        switch (vo.getTreatmentStatus()) {
+          case 0:
+          case 1:
+          case 2:
+            // 设置患者信息
+            setPatientInfo(vo, patientTotalInfos, nextAppointsVos, nextVisitingRecordVos);
+            // 设置预约信息
+            setApppointmentInfo(vo,appointments,dentistAndAssistantInfo,departmentRoomInfos);
+            // 设置挂号信息
+            setRegisteredInfo(vo,registereds,dentistAndAssistantInfo,departmentRoomInfos);
+            // 设置接诊信息
+            setTreatingInfo(vo,dentistAndAssistantInfo,patientBillStatistics);
+            // 设置账单信息
+            setOrderInfo(vo,orderRecords);
+            break;
+          case 3:
+            // 设置患者信息
+            setPatientInfo(vo, patientTotalInfos, nextAppointsVos, nextVisitingRecordVos);
+            // 设置预约信息
+            setApppointmentInfo(vo,appointments,dentistAndAssistantInfo,departmentRoomInfos);
+            // 设置挂号信息
+            setRegisteredInfo(vo,registereds,dentistAndAssistantInfo,departmentRoomInfos);
+            // 设置接诊信息
+            setTreatingInfo(vo,dentistAndAssistantInfo,patientBillStatistics);
+            // 设置账单信息
+            setOrderInfo(vo,orderRecords);
+            // 设置收费信息
+            setChargeInfo(vo,billRecords);
+            break;
+          default:
+            break;
+        }
+      }
+
     } else {
       treatingList = new ArrayList<>();
     }
@@ -293,35 +396,60 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /**
    * 设置候诊患者患者信息
-   *
    * @param vo 患者候诊
+   * @param patientTotalInfos 患者信息列表
+   * @param nextAppointsVos  后续预约列表
+   * @param nextVisitingRecordVos 后续随访你列表
    */
-  private void setPatientInfo(TreatmentPatientInfoVO vo, String currentDate) throws ParseException {
+  private void setPatientInfo(TreatmentPatientInfoVO vo,
+                              List<PatientTotalInfoVo> patientTotalInfos,
+                              List<NextAppointsVo> nextAppointsVos,
+                              List<NextVisitingRecordVo> nextVisitingRecordVos) {
     Integer patientId = vo.getPatientId();
-    PatientTotalInfoVo patientData = patientServiceFeign.findPatientTotalInfo(patientId);
-    if (null != patientData) {
-      vo.setPatientName(patientData.getName());
-      vo.setMobile(patientData.getMobile());
-      vo.setGender(patientData.getGender());
-      vo.setAge(patientData.getAge());
-      vo.setBirthday(patientData.getBirthday());
-      vo.setPatientRemark(patientData.getRemarks());
-      vo.setPatientKind(patientData.getPatientKindName());
-      String medicalNumber = patientData.getMedicalNumber();
-      vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
-      vo.setAllergen(patientData.getAllergens());
-      // 设置后续预约未到数量
-      Integer appointCount = this.appointmentFeign.countNextAppoint(patientData.getId());
-      vo.setNextAppointment(appointCount);
-      // 设置后续随访数量
-      Integer visitingCount = this.remoteTreatmentOther.countNextVisiting(patientId, currentDate);
-      vo.setNextInterview(visitingCount);
-      Integer memberTypeId = patientData.getMemberTypeId();
-      if (null != memberTypeId) {
-        MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
-        if (null != memberType) {
-          vo.setMemberIcon(String.valueOf(memberType.getIcon()));
-          vo.setMemberCardName(memberType.getName());
+    if (StringHelper.isNotEmpty(patientTotalInfos)) {
+      // 根据患者ID检索患者信息
+      List<PatientTotalInfoVo> collect = patientTotalInfos.stream().filter(
+              patientTotalInfoVo -> patientTotalInfoVo.getId().equals(patientId)).collect(Collectors.toList());
+      if (StringHelper.isNotEmpty(collect)) {
+        PatientTotalInfoVo patientData = collect.get(0);
+        if (null != patientData) {
+          vo.setPatientName(patientData.getName());
+          vo.setMobile(patientData.getMobile());
+          vo.setGender(patientData.getGender());
+          vo.setAge(patientData.getAge());
+          vo.setBirthday(patientData.getBirthday());
+          vo.setPatientRemark(patientData.getRemarks());
+          vo.setPatientKind(patientData.getPatientKindName());
+          String medicalNumber = patientData.getMedicalNumber();
+          vo.setMedicalNumber(StringHelper.isNotBlank(medicalNumber) ? medicalNumber : "--");
+          vo.setAllergen(patientData.getAllergens());
+          // 设置后续预约未到数量
+          if (StringHelper.isNotEmpty(nextAppointsVos)) {
+            List<NextAppointsVo> nextAppoints = nextAppointsVos.stream().filter(
+                    nextAppointsVo -> nextAppointsVo.getPatientId().equals(patientId)).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(nextAppoints)) {
+              NextAppointsVo nextAppointsVo = nextAppoints.get(0);
+              vo.setNextAppointment(nextAppointsVo.getCount());
+            }
+          }
+          // 设置后续随访数量
+          if (StringHelper.isNotEmpty(nextVisitingRecordVos)) {
+            List<NextVisitingRecordVo> nextVisitingRecords = nextVisitingRecordVos.stream().filter(
+                    nextVisitingRecordVo -> nextVisitingRecordVo.getPatientId().equals(patientId)).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(nextVisitingRecords)) {
+              NextVisitingRecordVo nextVisitingRecordVo = nextVisitingRecords.get(0);
+              vo.setNextInterview(nextVisitingRecordVo.getCount());
+            }
+          }
+          // 设置会员类型
+          Integer memberTypeId = patientData.getMemberTypeId();
+          if (null != memberTypeId) {
+            MemberType memberType = systemServiceFeign.findMemberTypeById(memberTypeId);
+            if (null != memberType) {
+              vo.setMemberIcon(String.valueOf(memberType.getIcon()));
+              vo.setMemberCardName(memberType.getName());
+            }
+          }
         }
       }
     }
@@ -329,9 +457,203 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
 
   /**
    * 设置候诊患者预约信息
+   * @param vo  患者候诊信息
+   * @param appointments  预约信息列表
+   * @param dentistAndAssistantInfo 医生和患者信息列表
+   * @param departmentRoomInfos 科室信息列表
+   */
+  private void setApppointmentInfo(TreatmentPatientInfoVO vo,
+                                   List<Appointment> appointments,
+                                   List<SysUserInfoDetail> dentistAndAssistantInfo,
+                                   List<DepartmentRoom> departmentRoomInfos) {
+    if (StringHelper.isNotEmpty(appointments)) {
+      Integer appointmentId = vo.getAppointmentId();
+      if (null != appointmentId) {
+        List<Appointment> collect = appointments.stream().filter(
+                appointment -> appointment.getId().equals(appointmentId)).collect(Collectors.toList());
+        if (StringHelper.isNotEmpty(collect)) {
+          Appointment appointment = collect.get(0);
+          if (null != appointment) {
+            // 设置预约医生信息
+            Integer appointmentDentistId = appointment.getDentistId();
+            if (null != appointmentDentistId) {
+              List<SysUserInfoDetail> dentistInfo = dentistAndAssistantInfo.stream().filter(
+                      sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(appointmentDentistId)).collect(Collectors.toList());
+              if (StringHelper.isNotEmpty(dentistInfo)) {
+                SysUserInfoDetail userInfoDetail = dentistInfo.get(0);
+                vo.setAppointDentistName(null != userInfoDetail ? userInfoDetail.getName() : "--");
+              }
+            }
+            // 设置助手信息
+            Integer appointAssistantId = vo.getAppointAssistantId();
+            if (null != appointAssistantId) {
+              vo.setAppointAssistantId(appointAssistantId);
+              List<SysUserInfoDetail> appointAssistantInfo = dentistAndAssistantInfo.stream().filter(
+                      sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(appointAssistantId)).collect(Collectors.toList());
+              if (StringHelper.isNotEmpty(appointAssistantInfo)) {
+                SysUserInfoDetail userInfoDetail = appointAssistantInfo.get(0);
+                vo.setAppointAssistantName(null != userInfoDetail ? userInfoDetail.getName() : "--");
+              }
+            }
+            // 设置科室信息
+            Integer appointDeptRoomId = vo.getAppointDeptRoomId();
+            if (null != appointDeptRoomId) {
+              vo.setAppointDeptRoomId(appointDeptRoomId);
+              List<DepartmentRoom> departmentRoomInfo = departmentRoomInfos.stream().filter(
+                      departmentRoom -> departmentRoom.getId().equals(appointDeptRoomId)).collect(Collectors.toList());
+              if (StringHelper.isNotEmpty(departmentRoomInfo)) {
+                DepartmentRoom departmentRoom = departmentRoomInfo.get(0);
+                vo.setAppointDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
+              }
+            }
+            vo.setAppointTime(appointment.getAppointTime());
+            vo.setAppointDuration(appointment.getAppointDuration());
+            vo.setAppointContent(appointment.getAppointContent());
+            vo.setAppointRemark(appointment.getRemarks());
+            vo.setAppointType(appointment.getAppointType());
+            vo.setAppointStatus(appointment.getAppointStatus());
+            vo.setConfirmStatus(appointment.getConfirmStatus());
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * 设置候诊患者挂号信息
+   * @param vo  患者候诊信息
+   * @param registereds  挂号信息列表
+   * @param dentistAndAssistantInfo  医生助手信息列表
+   * @param departmentRoomInfos 科室信息列表
+   */
+  private void setRegisteredInfo(TreatmentPatientInfoVO vo,
+                                 List<Registered> registereds,
+                                 List<SysUserInfoDetail> dentistAndAssistantInfo,
+                                 List<DepartmentRoom> departmentRoomInfos) {
+    Integer registeredId = vo.getRegisteredId();
+    if (StringHelper.isNotEmpty(registereds)) {
+      List<Registered> collect = registereds.stream().filter(
+              registered -> registered.getId().equals(registeredId)).collect(Collectors.toList());
+      if (StringHelper.isNotEmpty(collect)) {
+        Registered registered = collect.get(0);
+        if (null != registered) {
+          Integer regDentistId = registered.getDentistId();
+          vo.setRegDentistId(regDentistId);
+          List<SysUserInfoDetail> regDentistInfo = dentistAndAssistantInfo.stream().filter(
+                  sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(regDentistId)).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(regDentistInfo)) {
+            SysUserInfoDetail userInfoDetail = regDentistInfo.get(0);
+            vo.setRegDentistName(null != userInfoDetail ? userInfoDetail.getName() : "--");
+          }
+          Integer regAssistantId = registered.getAssistantId();
+          if (null != regAssistantId) {
+            vo.setRegAssistantId(regAssistantId);
+            List<SysUserInfoDetail> regAssistantInfo = dentistAndAssistantInfo.stream().filter(
+                    sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(regAssistantId)).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(regAssistantInfo)) {
+              SysUserInfoDetail userInfoDetail = regAssistantInfo.get(0);
+              vo.setRegAssistantName(null != userInfoDetail ? userInfoDetail.getName() : "--");
+            }
+          }
+
+          Integer regDeptRoomId = registered.getDeptRoomId();
+          if (null != regDeptRoomId) {
+            vo.setRegDeptRoomId(regDeptRoomId);
+            List<DepartmentRoom> departmentRooms = departmentRoomInfos.stream().filter(
+                    departmentRoom -> departmentRoom.getId().equals(regDeptRoomId)).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(departmentRooms)) {
+              DepartmentRoom departmentRoom = departmentRooms.get(0);
+              vo.setRegDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
+            }
+          }
+          vo.setRegDate(new DateTime(registered.getCrtTime()).toString("yyyy-MM-dd"));
+          vo.setRegTime(new DateTime(registered.getRegTime()).toString("HH:mm"));
+          vo.setFirstVisit(registered.getFirstVisit());
+        }
+      }
+    }
+  }
+
+  /**
+   * 设置接诊信息
+   * @param vo 候诊患者信息
+   * @param dentistAndAssistantInfo  医生和助手信息列表
+   * @param patientBillStatistics  账单记录列表
+   */
+  private void setTreatingInfo(TreatmentPatientInfoVO vo,
+                               List<SysUserInfoDetail> dentistAndAssistantInfo,
+                               List<PatientBillStatistics> patientBillStatistics) {
+    Integer treatDentistId = vo.getTreatDentistId();
+    if (StringHelper.isNotEmpty(dentistAndAssistantInfo)) {
+      List<SysUserInfoDetail> collect = dentistAndAssistantInfo.stream().filter(
+              sysUserInfoDetail -> treatDentistId.equals(sysUserInfoDetail.getUserId())).collect(Collectors.toList());
+      if (StringHelper.isNotEmpty(collect)) {
+        SysUserInfoDetail userInfoDetail = collect.get(0);
+        vo.setTreatDentistName(null != userInfoDetail ? userInfoDetail.getName() : "--");
+      }
+      Integer patientId = vo.getPatientId();
+      if (StringHelper.isNotEmpty(patientBillStatistics)) {
+        List<PatientBillStatistics> patientBillStatisticsInfo = patientBillStatistics.stream().filter(
+                item -> patientId.equals(item.getPatientId())).collect(Collectors.toList());
+        if (StringHelper.isNotEmpty(patientBillStatisticsInfo)) {
+          PatientBillStatistics patientArrearInfo = patientBillStatisticsInfo.get(0);
+          vo.setArrears(patientArrearInfo.getBillTotalArrears());
+        }
+      }
+    }
+  }
+
+  /**
+   * 设置开单信息（账单）
+   *
+   * @param vo 就诊患者信息
+   */
+  private void setOrderInfo(TreatmentPatientInfoVO vo, List<OrderRecord> orderRecords) {
+    Integer id = vo.getId();
+    if (StringHelper.isNotEmpty(orderRecords)) {
+      List<OrderRecord> collect = orderRecords.stream().filter(
+              orderRecord -> orderRecord.getTreatmentRecordId().equals(id)).collect(Collectors.toList());
+      if (StringHelper.isNotEmpty(collect)) {
+        OrderRecord orderRecord = collect.get(0);
+        vo.setOrderRecordId(orderRecord.getId());
+        vo.setOriginalPrice(orderRecord.getTotalAmount());
+        vo.setOrderStatus(orderRecord.getStatus());
+      }
+    }
+  }
+
+  /**
+   * 设置收费信息(收费金额)
+   *
+   * @param vo 就诊患者信息
+   */
+  private void setChargeInfo(TreatmentPatientInfoVO vo, List<BillRecord> billRecords) {
+    Integer id = vo.getId();
+    if (StringHelper.isNotEmpty(billRecords)) {
+      List<BillRecord> collect = billRecords.stream().filter(
+              billRecord -> billRecord.getTreatmentRecordId().equals(id)).collect(Collectors.toList());
+      if (StringHelper.isNotEmpty(collect)) {
+        BillRecord billRecord = collect.get(0);
+        vo.setPrivilegeAmount(billRecord.getPrivilegeAmount());
+        vo.setReceivedAmount(billRecord.getReceivedAmount());
+        vo.setCheckOutTime(new DateTime(billRecord.getCrtTime()).toString("HH:mm"));
+        vo.setBillNumber(billRecord.getBillNumber());
+      } else {
+        vo.setPrivilegeAmount(BigDecimal.valueOf(0));
+        vo.setReceivedAmount(BigDecimal.valueOf(0));
+        vo.setCheckOutTime("--");
+      }
+    }
+
+  }
+
+
+  /**
+   * 设置候诊患者预约信息（优化前）
    *
    * @param vo 患者候诊信息
    */
+  @Deprecated
   private void setAppointmentInfo(TreatmentPatientInfoVO vo) {
     Integer appointmentId = vo.getAppointmentId();
     if (null != appointmentId) {
@@ -354,7 +676,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
         if (null != appointDeptRoomId) {
           vo.setAppointDeptRoomId(appointDeptRoomId);
           // todo 从缓存中查询科室信息
-          DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(appointmentId);
+          DepartmentRoom departmentRoom = systemServiceFeign.findDepartmentRoomById(appointDeptRoomId);
           vo.setAppointDeptRoomName(null != departmentRoom ? departmentRoom.getName() : "--");
         }
         vo.setAppointTime(appointment.getAppointTime());
@@ -369,10 +691,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * 设置候诊患者挂号信息
+   * 设置候诊患者挂号信息（优化前）
    *
    * @param vo 患者候诊信息
    */
+  @Deprecated
   private void setRegisteredInfo(TreatmentPatientInfoVO vo) {
     Integer registeredId = vo.getRegisteredId();
     Registered registered = registeredMapper.selectByPrimaryKey(registeredId);
@@ -406,10 +729,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * 设置接诊信息
+   * 设置接诊信息(优化前)
    *
    * @param vo 候诊患者信息
    */
+  @Deprecated
   private void setTreatingInfo(TreatmentPatientInfoVO vo) {
     Integer treatDentistId = vo.getTreatDentistId();
     // todo 从缓存中查询用户信息
@@ -423,10 +747,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * 设置开单信息（账单）
+   * 设置开单信息（账单）--(优化前)
    *
    * @param vo 就诊患者信息
    */
+  @Deprecated
   private void setOrderInfo(TreatmentPatientInfoVO vo) {
     Integer id = vo.getId();
     OrderRecord orderRecord = new OrderRecord();
@@ -441,10 +766,11 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * 设置收费信息(收费金额)
+   * 设置收费信息(收费金额)---(优化前)
    *
    * @param vo 就诊患者信息
    */
+  @Deprecated
   private void setChargeInfo(TreatmentPatientInfoVO vo) {
     Integer id = vo.getId();
     BillRecord billRecord = new BillRecord();

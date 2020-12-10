@@ -20,6 +20,9 @@ import java.math.BigDecimal;
 @ToString
 @ApiModel("患者账单消费数据统计")
 public class PatientBillStatistics implements Serializable {
+  /** 患者ID */
+  @ApiModelProperty("患者ID")
+  private Integer patientId;
   /** 账单原价合计 */
   @ApiModelProperty("账单原价合计")
   private BigDecimal billTotalOriginalPrice;

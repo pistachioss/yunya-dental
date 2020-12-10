@@ -28,4 +28,12 @@ public interface OrderRecordMapper extends Mapper<OrderRecord> {
   List<OrderProcessVO> selectOrderProcess(
       @Param("orderRecordNum") String orderRecordNum,
       @Param("orgIds") Integer[] orgIds);
+
+  /**
+   * 根据就诊记录D集合查询订单记录信息列表
+   * @param treatmentRecordIds 就诊记录ID集合
+   * @return 订单记录列表
+   */
+  List<OrderRecord> selectOrderRecordByTreatmentIds(@Param("treatmentRecordIds") List<Integer> treatmentRecordIds);
+
 }

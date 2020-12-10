@@ -11,6 +11,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.MemberExpendRecord;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.patient_central.PatientMemberInfo;
@@ -24,6 +25,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -78,7 +80,10 @@ public class PatientServiceRest {
     @ApiOperation("根据患者id查询患者资料")
     @RequestMapping (value = "/total/patientInfoList", method = RequestMethod.POST)
     public List<PatientTotalInfoVo> findPatientTotalInfo(@RequestBody List<Integer> ids){
-        return patientBaseInfoBiz.findPatientTotalInfoList(ids);
+        if (StringHelper.isNotEmpty(ids)) {
+            return patientBaseInfoBiz.findPatientTotalInfoList(ids);
+        }
+        return new ArrayList<>();
     }
 
     @ApiOperation("根据患者id查询患者资料")
