@@ -431,10 +431,11 @@
             btp.regDentistName,
             bb.billId,
             bb.billNum,
-            DATE_FORMAT(bb.billDate, '%Y-%m-%d'),
+            DATE_FORMAT(bb.billDate, '%Y-%m-%d') as billDate,
             bb.originalAmount,
             bb.privilegeAmount,
             bb.actualAmount,
+            bb.receivedAmount,
             bb.remainingArrears
         FROM
             (
@@ -446,6 +447,7 @@
                 bb.treatment_id,
                 bb.order_amount AS originalAmount,
                 bb.actual_amount AS actualAmount,
+                bb.received_amount AS receivedAmount,
                 bb.debt_amount AS remainingArrears,
                 bb.privilege_amount AS privilegeAmount
             FROM

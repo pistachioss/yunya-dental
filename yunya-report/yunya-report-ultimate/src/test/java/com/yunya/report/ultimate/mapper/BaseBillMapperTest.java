@@ -4,10 +4,7 @@ import com.yunya.feign.report.domain.query.DataStatisticsQuery;
 import com.yunya.feign.report.domain.query.DentistArrearsCallForQuery;
 import com.yunya.feign.report.domain.query.DentistArrearsDetailQuery;
 import com.yunya.feign.report.domain.query.PatientArrearsCallForQuery;
-import com.yunya.feign.report.domain.vo.BillDataStatisticsVO;
-import com.yunya.feign.report.domain.vo.DentistArrearsCallForVO;
-import com.yunya.feign.report.domain.vo.DentistArrearsDetailVO;
-import com.yunya.feign.report.domain.vo.PatientArrearsCallForVO;
+import com.yunya.feign.report.domain.vo.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +61,12 @@ public class BaseBillMapperTest {
     query.setBillEndDate("2020-11-17");
     query.setKeyword("王一博");
     List<DentistArrearsDetailVO> vos = billMapper.selectDentistArrearsDetailList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find4() {
+    List<PatientArrearsDetailVO> vos = billMapper.selectPatientArrearsDetailList(495);
     System.out.println(vos);
   }
 }
