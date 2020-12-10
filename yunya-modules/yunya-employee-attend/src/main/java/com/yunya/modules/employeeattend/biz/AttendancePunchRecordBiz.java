@@ -438,8 +438,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         attendancePunchRecord.setLatitude(attendancePunchRecordForm.getLatitude());
         attendancePunchRecord.setId(attendancePunchRecordForm.getId());
         attendancePunchRecord.setPunchTime(now);
-        attendancePunchRecord.setAttendanceAddressId(attendancePunchRecord.getAttendanceAddressId());
-        attendancePunchRecord.setWifiMacAddress(attendancePunchRecord.getWifiMacAddress());
+        attendancePunchRecord.setAttendanceAddressId(attendancePunchRecordForm.getAttendanceAddressId());
+        attendancePunchRecord.setWifiMacAddress(attendancePunchRecordForm.getWifiMacAddress());
         attendancePunchRecord.setPunchAddress(attendancePunchRecordForm.getPunchAddress());
         attendancePunchRecord.setPunchStatus(punchStatus);
         attendancePunchRecord.setIsPunch(AttendanceIsPunchEnum.PUNCHED.getCode());
@@ -497,7 +497,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     public AttendancePunchCalendarInfoVO punchRecordByDate(Date date) {
         AttendancePunchCalendarInfoVO result = new AttendancePunchCalendarInfoVO();
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        userId = 549;
         // 打卡记录
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
         queryForm.setPunchDate(date);
