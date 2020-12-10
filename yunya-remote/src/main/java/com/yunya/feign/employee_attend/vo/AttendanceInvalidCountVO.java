@@ -41,8 +41,8 @@ public class AttendanceInvalidCountVO implements Serializable {
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private Date offPunchTime;
 
-    /** 缺卡次数 */
-    @ApiModelProperty(value = "早退时长（分钟）")
+    /** 无效卡次数 */
+    @ApiModelProperty(value = "无效卡次数")
     private Integer count;
 
     /** 打卡结果 */
