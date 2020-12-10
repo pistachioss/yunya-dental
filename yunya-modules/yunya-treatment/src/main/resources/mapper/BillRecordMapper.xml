@@ -101,6 +101,7 @@
         <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
             #{patientId}
         </foreach>
+        group by br.patient_id
     </select>
 
     <!-- 根据患者就诊记录ID查询订单支付记录 -->
