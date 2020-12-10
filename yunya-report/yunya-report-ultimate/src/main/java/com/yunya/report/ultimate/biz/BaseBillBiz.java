@@ -159,4 +159,47 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     List<PatientArrearsDetailVO> resultList = mapper.selectPatientArrearsDetailList(patientId);
     return resultList;
   }
+
+  /**
+   * 根据条件查询所属医生催缴欠费列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<DentistArrearsCallForVO>
+   */
+  public PageInfo<DentistArrearsCallForVO> findDentistArrearsList(
+      DentistArrearsCallForQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<DentistArrearsCallForVO> resultList = mapper.selectDentistArrearsList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件所属查询医生催缴欠费明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<DentistArrearsDetailVO>
+   */
+  public PageInfo<DentistArrearsDetailVO> findDentistArrearsDetailList(
+      DentistArrearsDetailQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(), query.getPageSize());
+    }
+    List<DentistArrearsDetailVO> resultList = mapper.selectDentistArrearsDetailList(query);
+    return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 根据条件导出医生所属欠费明细列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   */
+  public void exportDentistArrearsDetailList(
+      HttpServletResponse response, DentistArrearsDetailQuery query) throws IOException {
+    List<DentistArrearsDetailVO> resultList = mapper.selectDentistArrearsDetailList(query);
+    ExcelUtil<DentistArrearsDetailVO> excelUtil = new ExcelUtil<>(DentistArrearsDetailVO.class);
+    excelUtil.exportExcel(response, resultList, "医生所属欠费明细列表");
+  }
 }

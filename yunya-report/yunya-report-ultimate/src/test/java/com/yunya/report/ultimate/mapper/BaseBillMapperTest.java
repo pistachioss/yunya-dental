@@ -1,8 +1,12 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.DataStatisticsQuery;
+import com.yunya.feign.report.domain.query.DentistArrearsCallForQuery;
+import com.yunya.feign.report.domain.query.DentistArrearsDetailQuery;
 import com.yunya.feign.report.domain.query.PatientArrearsCallForQuery;
 import com.yunya.feign.report.domain.vo.BillDataStatisticsVO;
+import com.yunya.feign.report.domain.vo.DentistArrearsCallForVO;
+import com.yunya.feign.report.domain.vo.DentistArrearsDetailVO;
 import com.yunya.feign.report.domain.vo.PatientArrearsCallForVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,6 +46,24 @@ public class BaseBillMapperTest {
     PatientArrearsCallForQuery query = new PatientArrearsCallForQuery();
     query.setKeyword("wang");
     List<PatientArrearsCallForVO> vos = billMapper.selectPatientArrearsList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find2() {
+    DentistArrearsCallForQuery query = new DentistArrearsCallForQuery();
+    List<DentistArrearsCallForVO> vos = billMapper.selectDentistArrearsList(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find3() {
+    DentistArrearsDetailQuery query = new DentistArrearsDetailQuery();
+    query.setDentistId(526);
+    query.setBillStartDate("2020-11-17");
+    query.setBillEndDate("2020-11-17");
+    query.setKeyword("王一博");
+    List<DentistArrearsDetailVO> vos = billMapper.selectDentistArrearsDetailList(query);
     System.out.println(vos);
   }
 }

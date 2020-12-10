@@ -471,4 +471,144 @@
             bb.billId
         ORDER BY bb.billDate DESC
     </select>
+
+    <!-- 根据条件查询医生催缴欠费列表 -->
+    <select id="selectDentistArrearsList"
+            resultType="com.yunya.feign.report.domain.vo.DentistArrearsCallForVO">
+        SELECT
+            bbp.dentistId,
+            bbp.dentistName,
+            COUNT( bbp.bill_id ) AS outstandingBillCount,
+            SUM( bbp.debt_amount ) AS totalArrearsAmount
+        FROM
+            (
+            SELECT
+                btp.dentistId,
+                btp.dentistName,
+                bb.bill_id,
+                bb.debt_amount
+            FROM
+                ( SELECT bb.bill_id, bb.treatment_id, bb.debt_amount FROM base_bill bb WHERE bb.debt_amount > 0 ) bb
+                LEFT JOIN (
+                SELECT
+                    btp.treatment_id,
+                    btp.registered_dentist_id AS dentistId,
+                    be.employee_name AS dentistName
+                FROM
+                    base_treatment_process btp
+                    LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+                WHERE
+                    btp.treat_status = 4
+                GROUP BY
+                    btp.treatment_id
+                ) btp ON bb.treatment_id = btp.treatment_id
+            ) bbp
+        <where>
+            <if test="query.dentistIds != null and query.dentistIds.length > 0">
+                and bbp.dentistId in
+                <foreach collection="query.dentistIds" index="index" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+            bbp.dentistId
+        ORDER BY totalArrearsAmount DESC
+    </select>
+
+    <!-- 根据条件所属查询医生催缴欠费明细列表 -->
+    <select id="selectDentistArrearsDetailList"
+            resultType="com.yunya.feign.report.domain.vo.DentistArrearsDetailVO">
+        SELECT
+            bbd.orgId,
+            bbd.orgName,
+            bbd.billId,
+            bbd.billDate,
+            bbd.billNum,
+            bbd.patientId,
+            bbd.patientName,
+            bbd.mobile,
+            bbd.originalAmount,
+            bbd.privilegeAmount,
+            bbd.actualAmount,
+            bbd.receivedAmount,
+            bbd.remainingArrears
+        FROM
+            (
+            SELECT
+                bbd.orgId,
+                bbd.orgName,
+                bbd.billId,
+                bbd.billDate,
+                bbd.billNum,
+                bbd.patientId,
+                bbd.patientName,
+                bbd.pinyinName,
+                bbd.mobile,
+                bbd.originalAmount,
+                bbd.privilegeAmount,
+                bbd.actualAmount,
+                bbd.receivedAmount,
+                bbd.remainingArrears
+            FROM
+                (
+                SELECT
+                    bb.org_id AS orgId,
+                    btp.registered_dentist_id,
+                    bo.abbreviation AS orgName,
+                    bb.bill_id AS billId,
+                    DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) AS billDate,
+                    bb.bill_num AS billNum,
+                    bb.patient_id AS patientId,
+                    bp.`name` AS patientName,
+                    bp.pinyin_name AS pinyinName,
+                    bp.mobile,
+                    bb.originalAmount,
+                    bb.privilegeAmount,
+                    bb.actualAmount,
+                    bb.receivedAmount,
+                    bb.remainingArrears
+                FROM
+                    (
+                    SELECT
+                        bb.org_id,
+                        bb.patient_id,
+                        bb.treatment_id,
+                        bb.bill_id,
+                        bb.bill_num,
+                        bb.bill_date,
+                        bb.order_amount AS originalAmount,
+                        bb.privilege_amount AS privilegeAmount,
+                        bb.actual_amount AS actualAmount,
+                        bb.received_amount AS receivedAmount,
+                        bb.debt_amount AS remainingArrears
+                    FROM
+                        base_bill bb
+                    WHERE
+                        bb.debt_amount > 0
+                    ) bb
+                    LEFT JOIN base_organization bo ON bb.org_id = bo.org_id
+                    LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+                    LEFT JOIN base_treatment_process btp ON bb.treatment_id = btp.treatment_id
+                ) bbd
+            <where>
+                <if test="query.dentistId != null">
+                    and bbd.registered_dentist_id = #{query.dentistId}
+                </if>
+            </where>
+            GROUP BY bbd.billId
+            ) bbd
+        <where>
+            <if test="query.billStartDate != null and query.billStartDate != ''">
+                and bbd.billDate &gt;= #{query.billStartDate}
+            </if>
+            <if test="query.billEndDate != null and query.billEndDate != ''">
+                and bbd.billDate &lt;= #{query.billEndDate}
+            </if>
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(IFNULL(bbd.patientName, ''), IFNULL(bbd.pinyinName, ''), IFNULL(bbd.mobile, '')) like
+                concat('%', #{query.keyword}, '%')
+            </if>
+        </where>
+    </select>
 </mapper>

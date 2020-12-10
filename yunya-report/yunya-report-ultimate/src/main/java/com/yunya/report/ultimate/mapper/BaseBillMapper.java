@@ -73,4 +73,22 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    */
   List<PatientArrearsDetailVO> selectPatientArrearsDetailList(
       @Param("patientId") Integer patientId);
+
+  /**
+   * 根据条件查询医生催缴欠费列表
+   *
+   * @param query 查询条件
+   * @return List<DentistArrearsCallForVO>
+   */
+  List<DentistArrearsCallForVO> selectDentistArrearsList(
+      @Param("query") DentistArrearsCallForQuery query);
+
+  /**
+   * 根据条件所属查询医生催缴欠费明细列表
+   *
+   * @param query 查询条件
+   * @return List<DentistArrearsDetailVO>
+   */
+  List<DentistArrearsDetailVO> selectDentistArrearsDetailList(
+      @Param("query") DentistArrearsDetailQuery query);
 }
