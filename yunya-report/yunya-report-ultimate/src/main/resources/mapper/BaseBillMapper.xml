@@ -374,4 +374,100 @@
             </foreach>
         </where>
     </select>
+
+    <!-- 根据条件查询患者催缴欠费列表 -->
+    <select id="selectPatientArrearsList"
+            resultType="com.yunya.feign.report.domain.vo.PatientArrearsCallForVO">
+        SELECT
+            bbp.patient_id,
+            bbp.patientName,
+            bbp.gender,
+            bbp.mobile,
+            bbp.totalActualAmount,
+            bbp.totalReceivedAmount,
+            bbp.totalRemainingArrearsAmount
+        FROM
+            (
+            SELECT
+                bb.patient_id,
+                bp.`name` AS patientName,
+                bp.pinyin_name AS pinyinName,
+                bp.gender,
+                bp.mobile,
+                bb.totalActualAmount,
+                bb.totalReceivedAmount,
+                bb.totalRemainingArrearsAmount
+            FROM
+                (
+                SELECT
+                    bb.patient_id,
+                    IFNULL( SUM( bb.actual_amount ), 0 ) AS totalActualAmount,
+                    IFNULL( SUM( bb.received_amount ), 0 ) AS totalReceivedAmount,
+                    IFNULL( SUM( bb.debt_amount ), 0 ) AS totalRemainingArrearsAmount
+                FROM
+                    base_bill bb
+                WHERE
+                    bb.debt_amount > 0
+                GROUP BY
+                    bb.patient_id
+                ) bb
+            LEFT JOIN base_patient bp ON bb.patient_id = bp.patient_id
+            ) bbp
+        <where>
+            <if test="query.keyword != null and query.keyword != ''">
+                and concat(IFNULL(bbp.patientName, ''), IFNULL(bbp.pinyinName, ''), IFNULL(bbp.mobile, '')) like
+                concat('%', #{query.keyword}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据患者ID查询患者欠款明细列表 -->
+    <select id="selectPatientArrearsDetailList"
+            resultType="com.yunya.feign.report.domain.vo.PatientArrearsDetailVO">
+        SELECT
+            bb.orgId,
+            bo.abbreviation AS orgName,
+            btp.regDentistId,
+            btp.regDentistName,
+            bb.billId,
+            bb.billNum,
+            bb.billDate,
+            bb.originalAmount,
+            bb.privilegeAmount,
+            bb.actualAmount,
+            bb.remainingArrears
+        FROM
+            (
+            SELECT
+                bb.org_id AS orgId,
+                bb.bill_id AS billId,
+                bb.bill_date AS billDate,
+                bb.bill_num AS billNum,
+                bb.treatment_id,
+                bb.order_amount AS originalAmount,
+                bb.actual_amount AS actualAmount,
+                bb.debt_amount AS remainingArrears,
+                bb.privilege_amount AS privilegeAmount
+            FROM
+                base_bill bb
+            WHERE
+                bb.debt_amount > 0 and bb.patient_id = #{patientId}
+            ) bb
+            LEFT JOIN base_organization bo ON bb.orgId = bo.org_id
+            LEFT JOIN (
+            SELECT
+                btp.treatment_id,
+                btp.registered_dentist_id AS regDentistId,
+                be.employee_name AS regDentistName
+            FROM
+                base_treatment_process btp
+                LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
+            WHERE
+                btp.treat_status = 4
+            GROUP BY
+                btp.treatment_id
+            ) btp ON bb.treatment_id = btp.treatment_id
+        GROUP BY
+            bb.billId
+    </select>
 </mapper>

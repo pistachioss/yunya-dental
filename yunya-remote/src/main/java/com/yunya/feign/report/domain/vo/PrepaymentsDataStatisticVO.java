@@ -28,5 +28,5 @@ public class PrepaymentsDataStatisticVO implements Serializable {
   private BigDecimal totalPrepaymentsExpendAmount;
   /** 预付款退费总额（本金+赠金） */
   @ApiModelProperty("预付款退费总额（本金+赠金）")
-  private BigDecimal totalPrepaymentsExpendRefundAmount;
+  private BigDecimal totalPrepaymentsRefundAmount;
 }

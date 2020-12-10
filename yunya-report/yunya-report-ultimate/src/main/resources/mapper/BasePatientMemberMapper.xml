@@ -237,22 +237,22 @@
     <select id="selectClinicPrepaymentsDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.PrepaymentsDataStatisticVO">
         SELECT
-        SUM( bpmol.totalMemberRechargeAmount ) AS totalMemberRechargeAmount,
-        SUM( bpmol.totalMemberExpendAmount ) AS totalMemberExpendAmount,
-        SUM( bpmol.totalMemberRefundAmount ) AS totalMemberRefundAmount
+        SUM( bpmol.totalPrepaymentsRechargeAmount ) AS totalPrepaymentsRechargeAmount,
+        SUM( bpmol.totalPrepaymentsExpendAmount ) AS totalPrepaymentsExpendAmount,
+        SUM( bpmol.totalPrepaymentsRefundAmount ) AS totalPrepaymentsRefundAmount
         FROM
         (
         SELECT
         bo.org_id,
-        IFNULL( bpmol.totalMemberRechargeAmount, 0 ) AS totalMemberRechargeAmount,
-        IFNULL( bpmol1.totalMemberExpendAmount, 0 ) AS totalMemberExpendAmount,
-        IFNULL( bpmol2.totalMemberRefundAmount, 0 ) AS totalMemberRefundAmount
+        IFNULL( bpmol.totalPrepaymentsRechargeAmount, 0 ) AS totalPrepaymentsRechargeAmount,
+        IFNULL( bpmol1.totalPrepaymentsExpendAmount, 0 ) AS totalPrepaymentsExpendAmount,
+        IFNULL( bpmol2.totalPrepaymentsRefundAmount, 0 ) AS totalPrepaymentsRefundAmount
         FROM
         base_organization bo
         LEFT JOIN (
         SELECT
         bpmol.org_id,
-        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalMemberRechargeAmount
+        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalPrepaymentsRechargeAmount
         FROM
         (
         SELECT
@@ -296,7 +296,7 @@
         LEFT JOIN (
         SELECT
         bpmol.org_id,
-        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalMemberExpendAmount
+        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalPrepaymentsExpendAmount
         FROM
         (
         SELECT
@@ -340,7 +340,7 @@
         LEFT JOIN (
         SELECT
         bpmol.org_id,
-        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalMemberRefundAmount
+        SUM( bpmol.principal_amount + bpmol.bonus_amount ) AS totalPrepaymentsRefundAmount
         FROM
         (
         SELECT
