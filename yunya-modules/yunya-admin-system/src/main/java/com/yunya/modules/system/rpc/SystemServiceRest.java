@@ -5,6 +5,7 @@ import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
 import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
@@ -18,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -377,7 +379,10 @@ public class SystemServiceRest {
    */
   @RequestMapping(value = "/deptRoom/ids/list", method = RequestMethod.POST)
   List<DepartmentRoom> findDepartmentRoomByIds(@RequestBody List<Integer> ids) {
-    return departmentRoomBiz.findDepartmentRoomByIds(ids);
+    if (StringHelper.isNotEmpty(ids)) {
+      return departmentRoomBiz.findDepartmentRoomByIds(ids);
+    }
+    return new ArrayList<>();
   }
 
   /**

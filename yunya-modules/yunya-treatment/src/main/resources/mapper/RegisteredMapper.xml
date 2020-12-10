@@ -24,6 +24,12 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+
+    <sql id="baseResultMapField">
+        id,org_id,patient_id,appointment_id,dentist_id,assistant_id,dept_room_id,reg_time,first_visit,`status`,remark,
+        inservice,crt_id,crt_name,crt_time,upd_id,upd_name,upd_time
+    </sql>
+
     <!-- 根据条件查询挂号(未接诊)患者列表 -->
     <select id="selectRegisteredList" resultType="com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO">
         select
@@ -53,5 +59,16 @@
             </if>
             order by re.id desc
         </where>
+    </select>
+
+    <!-- 根据id集合查询挂号列表信息 -->
+    <select id="selectRegisteredListByIds" resultMap="BaseResultMap">
+        select
+        <include refid="baseResultMapField"></include>
+        from registered
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
     </select>
 </mapper>

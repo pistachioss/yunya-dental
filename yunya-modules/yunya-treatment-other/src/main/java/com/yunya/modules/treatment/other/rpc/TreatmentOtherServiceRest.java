@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.other.rpc;
 
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.treatment_other.VisitingRecord;
@@ -14,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -96,5 +98,19 @@ public class TreatmentOtherServiceRest {
         return xRayFilmBiz.findXRayFilmListByPatientIds(patientIds,currentDate);
     }
 
+    /**
+     * 根据患者ID查询后续随访集合列表
+     * @param patientIds 患者ID
+     * @return 返回数据列表
+     */
+    @ApiOperation(value = "根据患者ID查询后续随访集合列表")
+    @RequestMapping(value = "/visiting/count/{regDate}",method = RequestMethod.POST)
+    List<NextVisitingRecordVo> countNextVisitingListByIds(@RequestBody List<Integer> patientIds,
+                                                          @PathVariable(value = "regDate") String regDate){
+        if (StringHelper.isNotEmpty(patientIds)) {
+            return this.visitingRecordMapper.countNextVisitingListByIds(patientIds,regDate);
+        }
+        return new ArrayList<>();
+    }
 
 }

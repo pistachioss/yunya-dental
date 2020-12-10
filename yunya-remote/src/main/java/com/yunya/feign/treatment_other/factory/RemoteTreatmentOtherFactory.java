@@ -3,6 +3,7 @@ package com.yunya.feign.treatment_other.factory;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.feign.treatment_other.domain.model.VisitingRecordModel;
 import com.yunya.feign.treatment_other.domain.query.VisitingRecordQuery;
+import com.yunya.feign.treatment_other.domain.vo.NextVisitingRecordVo;
 import com.yunya.feign.treatment_other.domain.vo.VisitingRecordVo;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.XRayFilm;
@@ -38,6 +39,11 @@ public class RemoteTreatmentOtherFactory implements RemoteTreatmentOtherFeign {
 
     @Override
     public Integer countNextVisiting(Integer patientId, String regDate) {
+        return null;
+    }
+
+    @Override
+    public List<NextVisitingRecordVo> countNextVisitingListByIds(List<Integer> patientIds, String regDate) {
         return null;
     }
 
