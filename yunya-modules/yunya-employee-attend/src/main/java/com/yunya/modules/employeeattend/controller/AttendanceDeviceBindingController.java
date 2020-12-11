@@ -18,8 +18,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
 
 /**
  * 简介：考勤设备绑定管理
@@ -86,10 +84,7 @@ public class AttendanceDeviceBindingController {
     @ApiImplicitParam(value = "手机号码", name = "mobile", required = true)
     @GetMapping("/verifyCode")
     public ResponseResult authorizationCode(
-            @Pattern(regexp = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$")
-            @NotBlank(message = "绑定打卡账号不能为空")
-            @ApiParam(name = "mobile", value = "手机号", required = true)
-                    String mobile) {
+            @ApiParam(name = "mobile", value = "手机号", required = true) String mobile) {
         return attendanceDeviceBindingBiz.authorizationCode(mobile);
     }
 

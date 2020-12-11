@@ -455,6 +455,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             for (Object obj : list) {
                 if (obj instanceof EmployeeScheduleVO) {
                     punchItems.add((EmployeeScheduleVO) obj);
+                    punchItemMap.put(userId, punchItems);
                 }
             }
         }
