@@ -23,7 +23,7 @@ public class MemberRechargeRecord {
     private Integer orgId;
 
     /**
-     * 会员卡ID
+     * 会员卡号
      */
     @Column(name = "member_id")
     private String memberId;
@@ -198,9 +198,9 @@ public class MemberRechargeRecord {
     }
 
     /**
-     * 设置会员卡ID
+     * 设置会员卡号
      *
-     * @param memberId 会员卡ID
+     * @param memberId 会员卡号
      */
     public void setMemberId(String memberId) {
         this.memberId = memberId;

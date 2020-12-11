@@ -7,7 +7,9 @@ import com.yunya.feign.report.domain.query.MemberQueryForm;
 import com.yunya.feign.report.domain.query.PrepaidQueryForm;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseOrganization;
@@ -98,8 +100,10 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             BaseOrganization baseOrganization = new BaseOrganization();
             baseOrganization.setOrgId(form.getOrgId());
             BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
-            if (baseOrganization != null){
+            if (baseOrganizationv != null){
                 excelUtil.exportExcel(response, memberRechargeLogBizVos, "会员卡充值记录表",baseOrganizationv.getAbbreviation()+"会员卡充值记录表");
+            }else {
+                excelUtil.exportExcel(response, memberRechargeLogBizVos, "会员卡充值记录表","会员卡充值记录表");
             }
         }else {
             excelUtil.exportExcel(response, memberRechargeLogBizVos, "会员卡充值记录表","会员卡充值记录表");
@@ -146,17 +150,19 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         if (patientIds == null || patientIds.size() > 0 ){
             baseMemberExpendLogVos = mapper.selectMemberExpendtList(form,patientIds);
         }
-        ExcelUtil<BaseMemberExpendLogVo> excelUtil = new ExcelUtil<>(BaseMemberExpendLogVo.class);
-        if (StringHelper.isNotNull(form.getOrgId())){
-            BaseOrganization baseOrganization = new BaseOrganization();
-            baseOrganization.setOrgId(form.getOrgId());
-            BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
-            if (baseOrganization != null){
-                excelUtil.exportExcel(response, baseMemberExpendLogVos, "会员卡消费记录表",baseOrganizationv.getAbbreviation()+"会员卡消费记录表");
+            ExcelUtil<BaseMemberExpendLogVo> excelUtil = new ExcelUtil<>(BaseMemberExpendLogVo.class);
+            if (StringHelper.isNotNull(form.getOrgId())){
+                BaseOrganization baseOrganization = new BaseOrganization();
+                baseOrganization.setOrgId(form.getOrgId());
+                BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
+                if (baseOrganizationv != null){
+                    excelUtil.exportExcel(response, baseMemberExpendLogVos, "会员卡消费记录表",baseOrganizationv.getAbbreviation()+"会员卡消费记录表");
+                }else {
+                    excelUtil.exportExcel(response, baseMemberExpendLogVos, "会员卡消费记录表","会员卡消费记录表");
+                }
+            }else {
+                excelUtil.exportExcel(response, baseMemberExpendLogVos, "会员卡消费记录表","会员卡消费记录表");
             }
-        }else {
-            excelUtil.exportExcel(response, baseMemberExpendLogVos, "会员卡消费记录表","会员卡消费记录表");
-        }
     }
 
     /**
@@ -204,8 +210,10 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             BaseOrganization baseOrganization = new BaseOrganization();
             baseOrganization.setOrgId(form.getOrgId());
             BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
-            if (baseOrganization != null){
+            if (baseOrganizationv != null){
                 excelUtil.exportExcel(response, baseMemberReturnLogVos, "会员卡退费记录表",baseOrganizationv.getAbbreviation()+"会员卡退费记录表");
+            }else {
+                excelUtil.exportExcel(response, baseMemberReturnLogVos, "会员卡退费记录表","会员卡退费记录表");
             }
         }else {
             excelUtil.exportExcel(response, baseMemberReturnLogVos, "会员卡退费记录表","会员卡退费记录表");
@@ -258,8 +266,10 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             BaseOrganization baseOrganization = new BaseOrganization();
             baseOrganization.setOrgId(form.getOrgId());
             BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
-            if (baseOrganization != null){
+            if (baseOrganizationv != null){
                 excelUtil.exportExcel(response, basePrepaidRechargeLogVoList, "预付款充值记录表",baseOrganizationv.getAbbreviation()+"预付款充值记录表");
+            }else {
+                excelUtil.exportExcel(response, basePrepaidRechargeLogVoList, "预付款充值记录表","预付款消费记录表");
             }
         }else {
             excelUtil.exportExcel(response, basePrepaidRechargeLogVoList, "预付款充值记录表","预付款消费记录表");
@@ -311,8 +321,10 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             BaseOrganization baseOrganization = new BaseOrganization();
             baseOrganization.setOrgId(form.getOrgId());
             BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
-            if (baseOrganization != null){
+            if (baseOrganizationv != null){
                 excelUtil.exportExcel(response, basePrepaidExpendLogVoList, "预付款消费记录表",baseOrganizationv.getAbbreviation()+"预付款消费记录表");
+            }else {
+                excelUtil.exportExcel(response, basePrepaidExpendLogVoList, "预付款消费记录表","预付款消费记录表");
             }
         }else {
             excelUtil.exportExcel(response, basePrepaidExpendLogVoList, "预付款消费记录表","预付款消费记录表");
@@ -365,8 +377,10 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
             BaseOrganization baseOrganization = new BaseOrganization();
             baseOrganization.setOrgId(form.getOrgId());
             BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
-            if (baseOrganization != null){
+            if (baseOrganizationv != null){
                 excelUtil.exportExcel(response, basePrepaidReturnLogVoList, "预付款退款记录表",baseOrganizationv.getAbbreviation()+"预付款退费记录表");
+            }else {
+                excelUtil.exportExcel(response, basePrepaidReturnLogVoList, "预付款退款记录表","预付款退费记录表");
             }
         }else {
             excelUtil.exportExcel(response, basePrepaidReturnLogVoList, "预付款退款记录表","预付款退费记录表");
@@ -405,6 +419,9 @@ public class MemberOccurLogBiz extends BaseBiz<BasePatientMemberOccurLogMapper, 
         }
         return new PageInfo<>(basePrepaidReturnLogVoList);
     }
+    /*
+
+    * */
 
 
     /**
