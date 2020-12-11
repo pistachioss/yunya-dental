@@ -436,6 +436,7 @@
                 and DATE_FORMAT(a.appoint_date,'%y-%M-%d') BETWEEN DATE_FORMAT(#{startDate},'%y-%M-%d') and DATE_FORMAT(#{endDate},'%y-%M-%d')
             </if>
         </where>
+        order by a.appoint_date desc
     </select>
 
     <!-- 根据分解助手ID、开始分解日期、结束分解日期查询列表 -->
