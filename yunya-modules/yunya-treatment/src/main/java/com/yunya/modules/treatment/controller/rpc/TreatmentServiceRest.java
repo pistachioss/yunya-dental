@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.controller.rpc;
 
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -259,8 +262,11 @@ public class TreatmentServiceRest {
    * @return
    */
   @RequestMapping(value = "/treatment/section", method = RequestMethod.POST)
-  public List<TreatmentRecord> findTreatmentRecordByIds(@RequestBody @NotEmpty Set<Integer> ids) {
-    return treatmentRecordBiz.selectByIds(ids);
+  public List<TreatmentRecordExtendVO> findTreatmentRecordByIds(@RequestBody @NotEmpty Set<Integer> ids) {
+    if (StringHelper.isNotEmpty(ids)) {
+      return treatmentRecordBiz.selectByIds(ids);
+    }
+    return new ArrayList<>();
   }
 
   /**

@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment;
 
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.tariff.*;
@@ -198,7 +199,7 @@ public interface RemoteTreatmentServiceFeign {
    * @return
    */
   @RequestMapping(value = "/rpc/treatment/section", method = RequestMethod.POST)
-  List<TreatmentRecord> findTreatmentRecordByIds(@RequestBody @NotEmpty Set<Integer> ids);
+  List<TreatmentRecordExtendVO> findTreatmentRecordByIds(@RequestBody @NotEmpty Set<Integer> ids);
 
   /**
    * 根据条件查询就诊记录列表

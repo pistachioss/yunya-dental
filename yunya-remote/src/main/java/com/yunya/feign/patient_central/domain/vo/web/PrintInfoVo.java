@@ -1,5 +1,6 @@
 package com.yunya.feign.patient_central.domain.vo.web;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -24,6 +25,7 @@ public class PrintInfoVo implements Serializable {
     @ApiModelProperty(value = "会员类型名称")
     private String memberTypeName;
     @ApiModelProperty(value = "末诊日期")
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date lastTreatmentDate;
     @ApiModelProperty(value = "病历记录详情")
     private List<PatientMedicalRecordDetailVo> medicalRecordDetails;

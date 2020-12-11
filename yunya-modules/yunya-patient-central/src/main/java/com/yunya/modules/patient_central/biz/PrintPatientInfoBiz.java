@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PrintInfoVo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.patient_central.PatientBaseInfo;
 import com.yunya.models.system.MemberType;
@@ -15,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,13 +60,14 @@ public class PrintPatientInfoBiz {
         }
         List<Integer> treatmentRecordParams = treatmentIds.getTreatmentIds();
         if (StringHelper.isNotEmpty(treatmentRecordParams)) {
-            List<TreatmentRecord> treatmentRecords = this.treatmentServiceFeign.findTreatmentRecordByIds(new HashSet<>(treatmentIds.getTreatmentIds()));
+            Set<Integer> treatmentRecordSet = new HashSet<>(treatmentIds.getTreatmentIds());
+            List<TreatmentRecordExtendVO> treatmentRecords = this.treatmentServiceFeign.findTreatmentRecordByIds(treatmentRecordSet);
             if (StringHelper.isNotEmpty(treatmentRecords)) {
                 // 就诊记录按就诊日期降序排列
-                List<TreatmentRecord> collect = treatmentRecords.stream().sorted(Comparator.comparing(TreatmentRecord::getTreatStartTime).reversed()).collect(Collectors.toList());
-                TreatmentRecord treatmentRecord = collect.get(0);
+                List<TreatmentRecordExtendVO> collect = treatmentRecords.stream().sorted(Comparator.comparing(TreatmentRecord::getTreatStartTime).reversed()).collect(Collectors.toList());
+                TreatmentRecordExtendVO treatmentRecord = collect.get(0);
                 // 设置末诊日期
-                printInfoVo.setLastTreatmentDate(treatmentRecord.getTreatStartTime());
+                printInfoVo.setLastTreatmentDate(treatmentRecord.getLastTreatmentDate());
 
                 // 设置患者末诊医生和末诊时间
                 treatmentRecords.forEach(item -> {

@@ -4,7 +4,6 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment_other.domain.form.XRayFilmForm;
 import com.yunya.feign.treatment_other.domain.model.XRayFilmInfoModel;
-import com.yunya.feign.treatment_other.domain.model.XRayFilmModel;
 import com.yunya.feign.treatment_other.domain.query.ToothRootQuery;
 import com.yunya.feign.treatment_other.domain.query.XRayFilmQuery;
 import com.yunya.feign.treatment_other.domain.vo.ToothRootCountVo;
@@ -20,6 +19,8 @@ import com.yunya.modules.treatment.other.utils.TreatmentOtherUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -65,7 +66,14 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
             xRayFilm.setType(xRayFilmModel.getType());
             xRayFilm.setUrl(xRayFilmModel.getUrl());
             if (null != xRayFilmModel.getUploadTime()) {
-                xRayFilm.setUploadTime(xRayFilmModel.getUploadTime());
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                Date parse = null;
+                try {
+                    parse = dateFormat.parse(xRayFilmModel.getUploadTime());
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                xRayFilm.setUploadTime(parse);
             }
             xRayFilms.add(xRayFilm);
         });
@@ -77,7 +85,7 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
      * @param id 图片ID
      * @param form 图片信息
      */
-    public Integer upd(Integer id, XRayFilmForm form){
+    public Integer upd(Integer id, XRayFilmForm form) throws ParseException {
         XRayFilm xRayFilm = mapper.selectByPrimaryKey(id);
         if (null == xRayFilm) {
             throw new ClientServiceException("数据不存在",OperationCodeConstants.DATA_NOT_EXIST);
@@ -92,7 +100,9 @@ public class XRayFilmBiz extends BaseBiz<XRayFilmMapper, XRayFilm> {
         entity.setUpdName(BaseContextHandler.getName());
         entity.setUpdTime(new Date(System.currentTimeMillis()));
         entity.setType(form.getType());
-        entity.setUploadTime(form.getUploadTime());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date parse = dateFormat.parse(form.getUploadTime());
+        entity.setUploadTime(parse);
         return mapper.updateByPrimaryKeySelective(entity);
     }
 

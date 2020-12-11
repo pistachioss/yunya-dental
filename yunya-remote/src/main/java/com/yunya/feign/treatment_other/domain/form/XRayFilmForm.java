@@ -26,5 +26,5 @@ public class XRayFilmForm implements Serializable {
     @ApiModelProperty(value = "上传时间",required = true)
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     @NotNull(message = "上传时间不能为空")
-    private Date uploadTime;
+    private String uploadTime;
 }

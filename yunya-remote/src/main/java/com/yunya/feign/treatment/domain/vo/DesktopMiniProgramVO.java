@@ -33,7 +33,7 @@ public class DesktopMiniProgramVO implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date birthday;
     @ApiModelProperty("就诊开始时间")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm",timezone = "GMT+8")
     private Date treatStartTime;
     @ApiModelProperty("是否为初诊,1-初诊；0-复诊")
     private Integer firstVisit;
