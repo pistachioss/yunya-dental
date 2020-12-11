@@ -1194,7 +1194,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             incrNum(leaveCounts, userId, orgId);
             isFullMap.put(userId, orgId, false);
         }
-
+        Date curDate = DateUtil.getCurrentDate();
         Set<Integer> fieldIds = new HashSet<>();
         for (AttendancePunchDateVO attendancePunchDateVO : attendancePunchDateVOS) {
             Integer userId = attendancePunchDateVO.getUserId();
@@ -1243,7 +1243,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
                 case 5: {
-                    if (workOvertime==0 && field==0) {
+                    if (!curDate.equals(date) && workOvertime==0 && field==0) {
                         incrNum(unpunchNumMap, userId, onDutyOrgId);
                         isFullMap.put(userId, onDutyOrgId, false);
                     }
@@ -1288,7 +1288,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
                 case 5:{
-                    if (workOvertime==0 && field==0) {
+                    if (!curDate.equals(date) && workOvertime==0 && field==0) {
                         incrNum(unpunchNumMap, userId, offDutyOrgId);
                         isFullMap.put(userId, offDutyOrgId, false);
                     }
@@ -2255,7 +2255,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 }
             }
             Date firstStartTime = workOvertimeMinuteVO.getOnPunchTime();
-            Date firstEndTime = workOvertimeMinuteVO.getOnPunchTime();
+            Date firstEndTime = workOvertimeMinuteVO.getOffPunchTime();
             StringBuilder scheduleName = new StringBuilder();
             String schedule = workOvertimeMinuteVO.getScheduleName();
             if (schedule != null) {
@@ -2753,42 +2753,45 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
         Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, notInIds);
         List<AttendanceUnpunchCountVO> result = new ArrayList<>(masterRecordVOS.size());
+        Date curDate = DateUtil.getCurrentDate();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         masterRecordVOS.forEach(punchRecord->{
-            AttendanceUnpunchCountVO unpunchCountVO = new AttendanceUnpunchCountVO();
             Date date = punchRecord.getPunchDate();
-            StringBuilder employeeScheduleName = new StringBuilder();
-            List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
-            if (employeeScheduleVOS!=null && !employeeScheduleVOS.isEmpty()) {
-                for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
-                    putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
-                }
-            }
-            int count = 1;
-            Date onPunchTime = punchRecord.getPunchTime();
-            Date offPunchTime = null;
-            if (punchRecord.getPunchType().equals(AttendanceTypeEnum.OFFDUTY.getCode())) {
-                onPunchTime = null;
-                offPunchTime = punchRecord.getPunchTime();
-            }
-            List<AttendancePunchRecordVO> list = slaveRecordMap.get(date);
-            if (list!=null && !list.isEmpty()) {
-                for (AttendancePunchRecordVO slaveRecord : list) {
-                    if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
-                        onPunchTime = punchRecord.getPunchTime();
-                    } else {
-                        offPunchTime = punchRecord.getPunchTime();
+            if (!date.equals(curDate)) {
+                AttendanceUnpunchCountVO unpunchCountVO = new AttendanceUnpunchCountVO();
+                StringBuilder employeeScheduleName = new StringBuilder();
+                List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
+                if (employeeScheduleVOS != null && !employeeScheduleVOS.isEmpty()) {
+                    for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
+                        putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, sdf);
                     }
-                    count++;
                 }
+                int count = 1;
+                Date onPunchTime = punchRecord.getPunchTime();
+                Date offPunchTime = null;
+                if (punchRecord.getPunchType().equals(AttendanceTypeEnum.OFFDUTY.getCode())) {
+                    onPunchTime = null;
+                    offPunchTime = punchRecord.getPunchTime();
+                }
+                List<AttendancePunchRecordVO> list = slaveRecordMap.get(date);
+                if (list != null && !list.isEmpty()) {
+                    for (AttendancePunchRecordVO slaveRecord : list) {
+                        if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
+                            onPunchTime = punchRecord.getPunchTime();
+                        } else {
+                            offPunchTime = punchRecord.getPunchTime();
+                        }
+                        count++;
+                    }
+                }
+                unpunchCountVO.setDate(date);
+                unpunchCountVO.setOnPunchTime(onPunchTime);
+                unpunchCountVO.setOffPunchTime(offPunchTime);
+                unpunchCountVO.setPunchResult(count == 1 ? "下班卡缺卡" : "上班卡缺卡、下班卡缺卡");
+                unpunchCountVO.setEmployeeScheduleName(employeeScheduleName.toString());
+                unpunchCountVO.setCount(count);
+                result.add(unpunchCountVO);
             }
-            unpunchCountVO.setDate(date);
-            unpunchCountVO.setOnPunchTime(onPunchTime);
-            unpunchCountVO.setOffPunchTime(offPunchTime);
-            unpunchCountVO.setPunchResult(count==1?"下班卡缺卡":"上班卡缺卡、下班卡缺卡");
-            unpunchCountVO.setEmployeeScheduleName(employeeScheduleName.toString());
-            unpunchCountVO.setCount(count);
-            result.add(unpunchCountVO);
         });
         return result;
     }
