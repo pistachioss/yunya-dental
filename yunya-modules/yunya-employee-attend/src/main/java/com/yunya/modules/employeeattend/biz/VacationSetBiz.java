@@ -63,6 +63,7 @@ public class VacationSetBiz extends BaseBiz<VacationSetMapper, VacationSet> {
         VacationSet vacationSet = new VacationSet();
         BeanUtils.copyProperties(vacationSetForm, vacationSet);
         vacationSet.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+        vacationSet.setCrtTime(new Date());
         int re = mapper.insertSelective(vacationSet);
         return re;
     }
