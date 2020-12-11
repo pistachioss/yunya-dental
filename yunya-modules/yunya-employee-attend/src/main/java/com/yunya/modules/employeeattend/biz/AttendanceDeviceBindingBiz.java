@@ -12,13 +12,17 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.employee_attend.AttendanceDeviceBinding;
 import com.yunya.modules.employeeattend.mapper.AttendanceDeviceBindingMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -231,6 +235,15 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
      * 发送设备绑定短信验证码
      */
     public ResponseResult authorizationCode(String mobile) {
+        if (StringHelper.isEmpty(mobile)) {
+            return ResponseUtil.fail(PARAM_NOT_ALLOW_EMPTY,"手机号码不能为空",null);
+        }
+        String patternStr = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
+        Pattern pattern = Pattern.compile(patternStr);
+        Matcher matcher = pattern.matcher(mobile);
+        if (!matcher.matches()) {
+            return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"请填写正确的手机号码",null);
+        }
         String  messageCode = this.messageCodeGenerator();
         String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
         if (redisUtils.hasKey(key)) {

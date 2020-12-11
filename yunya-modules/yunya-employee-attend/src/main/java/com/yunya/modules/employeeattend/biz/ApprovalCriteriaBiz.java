@@ -38,7 +38,7 @@ public class ApprovalCriteriaBiz extends BaseBiz<ApprovalCriteriaMapper, Approva
     private ApprovalLevelSetMapper approvalLevelSetMapper;
 
     public int create(ApprovalCriteriaForm approvalCriteriaForm) {
-        if(approvalCriteriaForm.getEndDay()<=approvalCriteriaForm.getStartDay()){
+        if(approvalCriteriaForm.getEndDay()!=null&&approvalCriteriaForm.getEndDay()<=approvalCriteriaForm.getStartDay()){
             throw new ClientServiceException("时间跨度尾值必须大于等于首值", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
         }
         ApprovalCriteria approvalCriteria = new ApprovalCriteria();

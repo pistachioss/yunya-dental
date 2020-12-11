@@ -11,10 +11,10 @@ import java.util.Objects;
  * @since: 1.0.0
  */
 public enum AttendanceStateEnum {
-    REST((byte)0, "休息"),
     NORMAL((byte)0, "正常"),
     EXCEPTION((byte)1, "异常"),
-    UNKNOWN((byte)2, "未知");
+    UNKNOWN((byte)2, "未知"),
+    REST((byte)3, "休息");
 
     private final Byte code;
     private final String value;

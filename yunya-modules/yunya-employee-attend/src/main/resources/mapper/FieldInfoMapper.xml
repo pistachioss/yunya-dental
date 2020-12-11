@@ -72,6 +72,7 @@
                 and fi.crt_time >= #{startTime} and fi.crt_time &lt;= #{endTime}
             </if>
         </where>
+        order by fi.crt_time desc
     </select>
 
     <select id="findFieldInfosByUserIdAndDate" resultType="com.yunya.feign.employee_attend.vo.FieldInfoVO">
@@ -199,5 +200,6 @@
                 AND  a.status = #{status}
             </if>
         </where>
+        order by a.crtTime desc
     </select>
 </mapper>

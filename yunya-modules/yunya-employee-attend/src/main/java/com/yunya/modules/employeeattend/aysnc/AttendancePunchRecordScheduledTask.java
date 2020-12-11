@@ -12,6 +12,7 @@ import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
+import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.modules.employeeattend.biz.*;
 import com.yunya.modules.employeeattend.enums.AttendanceIsPunchEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceStatusEnum;
@@ -79,6 +80,9 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
     /** 注入对象 */
     @Autowired
     private WorkOvertimeInfoBiz workOvertimeInfoBiz;
+    /** 注入对象 */
+    @Autowired
+    private BaseScheduleBiz baseScheduleBiz;
 
     /**
      * 生成今天待打卡记录模板数据.定时任务每天01：00：00执行 00 00 01 * * ?
@@ -129,7 +133,6 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
         employeeScheduleQueryForm.setWorkDate(now);
         employeeScheduleQueryForm.setUserIds(userIds);
         List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(employeeScheduleQueryForm);
-        Map<Integer, EmployeeScheduleVO> employeeScheduleMap = new HashMap<>();
         Map<Integer, List<EmployeeScheduleVO>> restItemMap = new LinkedHashMap<>();
         Map<Integer, List<EmployeeScheduleVO>> punchItemMap = new LinkedHashMap<>();
         employeeScheduleVOS.forEach(employeeScheduleVO -> {
@@ -154,13 +157,12 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 list.add(employeeScheduleVO);
                 restItemMap.put(userId, list);
             }
-            employeeScheduleMap.put(employeeScheduleVO.getId(), employeeScheduleVO);
         });
 
         //当天请假列表追加
         Map<Integer, List<Object>> leaveByDays = appendLeaveList(userIds, punchItemMap, restItemMap);
         //当天加班列表追加
-        appendWorkOvertimeList(userIds, punchItemMap, employeeScheduleMap);
+        appendWorkOvertimeList(userIds, punchItemMap);
         //当天外勤列表追加
         appendFieldList(userIds, punchItemMap);
         if (!punchItemMap.isEmpty() || !restItemMap.isEmpty() || !leaveByDays.isEmpty()) {
@@ -261,9 +263,8 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
      * 追加加班列表
      * @param userIds
      * @param punchItemMap
-     * @param employeeScheduleVOMap
      */
-    private void appendWorkOvertimeList(List<Integer> userIds, Map<Integer, List<EmployeeScheduleVO>> punchItemMap, Map<Integer, EmployeeScheduleVO> employeeScheduleVOMap) {
+    private void appendWorkOvertimeList(List<Integer> userIds, Map<Integer, List<EmployeeScheduleVO>> punchItemMap) {
         List<WorkOvertimeInfoVO> workOvertimeInfoVOS = workOvertimeInfoBiz.findWorkOvertimeInfosByUserIdsAndDate(userIds, new Date(System.currentTimeMillis()));
         workOvertimeInfoVOS.forEach(workOvertimeInfoVO -> {
             Integer userId = workOvertimeInfoVO.getUserId();
@@ -271,11 +272,12 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             if (list == null) {
                 list = new ArrayList<>();
             }
-            Integer restScheduleId = workOvertimeInfoVO.getRestScheduleId();
-            EmployeeScheduleVO restVO = employeeScheduleVOMap.get(restScheduleId);
-            if (restVO != null) {
-                Date startTime = restVO.getFirstStartTime();
-                Date endTime = restVO.getFirstEndTime();
+            Integer scheduleId = workOvertimeInfoVO.getScheduleId();
+            BaseSchedule baseSchedule = baseScheduleBiz.selectById(scheduleId);
+            if (baseSchedule != null) {
+                Date startTime = baseSchedule.getFirstStartTime();
+                Date endTime = baseSchedule.getFirstEndTime();
+                String name = baseSchedule.getName();
                 List<EmployeeScheduleVO> punchItemList = new ArrayList<>();
                 if (list.isEmpty()) {
                     EmployeeScheduleVO punchItem = new EmployeeScheduleVO();
@@ -284,8 +286,8 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                     punchItem.setFirstEndTime(endTime);
                     punchItem.setId(workOvertimeInfoVO.getId());
                     punchItem.setEmployeeId(userId);
-                    punchItem.setClinicId(restVO.getClinicId());
-                    punchItem.setName(restVO.getName());
+                    punchItem.setClinicId(workOvertimeInfoVO.getCompanyId());
+                    punchItem.setName(name);
                     punchItemList.add(punchItem);
                 } else {
                     for (EmployeeScheduleVO employeeScheduleVO : list) {
@@ -297,8 +299,8 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                             punchItem.setFirstEndTime(endTime);
                             punchItem.setId(workOvertimeInfoVO.getId());
                             punchItem.setEmployeeId(userId);
-                            punchItem.setClinicId(restVO.getClinicId());
-                            punchItem.setName(restVO.getName());
+                            punchItem.setClinicId(workOvertimeInfoVO.getCompanyId());
+                            punchItem.setName(name);
                             punchItemList.add(punchItem);
                             punchItemList.add(employeeScheduleVO);
                         } else {
@@ -309,8 +311,8 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                             punchItem.setFirstEndTime(endTime);
                             punchItem.setId(workOvertimeInfoVO.getId());
                             punchItem.setEmployeeId(userId);
-                            punchItem.setClinicId(restVO.getClinicId());
-                            punchItem.setName(restVO.getName());
+                            punchItem.setClinicId(workOvertimeInfoVO.getCompanyId());
+                            punchItem.setName(name);
                             punchItemList.add(punchItem);
                         }
                     }
@@ -453,6 +455,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             for (Object obj : list) {
                 if (obj instanceof EmployeeScheduleVO) {
                     punchItems.add((EmployeeScheduleVO) obj);
+                    punchItemMap.put(userId, punchItems);
                 }
             }
         }

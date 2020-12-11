@@ -1,9 +1,10 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.report.domain.query.DentistArrearsCallForQuery;
+import com.yunya.feign.report.domain.query.DentistArrearsDetailQuery;
 import com.yunya.feign.report.domain.query.PatientArrearsCallForQuery;
-import com.yunya.feign.report.domain.vo.PatientArrearsCallForVO;
-import com.yunya.feign.report.domain.vo.PatientArrearsDetailVO;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
@@ -26,7 +27,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Api("公司端-客服中心报表")
+@Api(tags = "公司端-客服中心报表")
 @RestController
 @RequestMapping("central")
 public class CompanyReportOfCustomerCentralController {
@@ -76,5 +77,61 @@ public class CompanyReportOfCustomerCentralController {
       @PathVariable(value = "patientId") Integer patientId) {
     List<PatientArrearsDetailVO> resultList = billBiz.findPatientArrearsDetailList(patientId);
     return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件查询医生催缴欠费列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<DentistArrearsCallForVO>
+   */
+  @ApiOperation("公司端报表-客服中心报表-医生催缴欠费")
+  @PostMapping(value = "/dentist/arrears/list", name = "根据条件查询医生催缴欠费列表")
+  public ResponseResult<PageInfo<DentistArrearsCallForVO>> dentistArrearsList(
+      @RequestBody DentistArrearsCallForQuery query) {
+    PageInfo<DentistArrearsCallForVO> pageInfo = billBiz.findDentistArrearsList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件查询医生所属欠费明细列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<DentistArrearsDetailVO>
+   */
+  @ApiOperation("公司端报表-客服中心报表-医生催缴欠费-欠费明细列表")
+  @PostMapping(value = "/dentist/arrears/detail/list", name = "根据条件查询医生所属欠费明细列表")
+  public ResponseResult<PageInfo<DentistArrearsDetailVO>> dentistArrearsDetailList(
+      @RequestBody @Validated DentistArrearsDetailQuery query) {
+    PageInfo<DentistArrearsDetailVO> pageInfo = billBiz.findDentistArrearsDetailList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 根据条件导出医生所属欠费明细列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-客服中心报表-医生催缴欠费-欠费明细列表-导出")
+  @PostMapping(value = "/dentist/arrears/detail/export", name = "根据条件导出医生所属欠费明细列表")
+  public ResponseResult<T> exportDentistArrearsDetailList(
+      HttpServletResponse response, @RequestBody @Validated DentistArrearsDetailQuery query)
+      throws IOException {
+    billBiz.exportDentistArrearsDetailList(response, query);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 欠费汇总
+   *
+   * @return ArrearsStatisticVO
+   */
+  @ApiOperation("公司端报表-客服中心报表-欠费统计")
+  @GetMapping(value = "/arrears/statistic", name = "欠费统计")
+  public ResponseResult<BillArrearsStatisticVO> arrearsStatistic() {
+    BillArrearsStatisticVO resultData = billBiz.findArrearsStatistic();
+    return ResponseUtil.success(resultData);
   }
 }
