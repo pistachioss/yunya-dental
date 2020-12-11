@@ -19,7 +19,7 @@ public interface BasePatientMemberMapper extends Mapper<BasePatientMember> {
 
     /**
      * 根据会员id和tyep 删除中间表消息
-     * @param memberId 会员id
+     * @param memberId 会员卡号
      * @param type 会员类型 会员 预付款
      */
     void deleteByPrimaryKeyAndType(@Param("cardId") Integer memberId,@Param("type") int type);
