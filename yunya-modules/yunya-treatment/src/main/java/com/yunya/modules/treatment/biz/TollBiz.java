@@ -40,8 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.*;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
 import static com.yunya.framework.common.constant.RedisConstants.LOCK_ORDER_PROCESSING_CHARGE;
@@ -354,6 +353,7 @@ public class TollBiz {
     // 发送消息同步就诊、账单数据
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+      rabbitMqServiceFeign.sendMessage(billPayRecord.getId(), 0, BaseBillPay);
       Integer appointmentId = treatmentRecord.getAppointmentId();
       if (null != appointmentId) {
         rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
@@ -1275,6 +1275,7 @@ public class TollBiz {
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
     // 发送消息同步账单
     rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    rabbitMqServiceFeign.sendMessage(billPayRecord.getId(), 0, BaseBillPay);
   }
 
   /**
