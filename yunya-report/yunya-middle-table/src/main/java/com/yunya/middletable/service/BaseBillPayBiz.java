@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import tk.mybatis.mapper.entity.Example;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -57,68 +56,19 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
-        if (null != baseBillPay) {
-          mapper.insertSelective(baseBillPay);
-          saveBillPayDetailRecord(dataId);
-        } else {
-          mapper.deleteByPrimaryKey(dataId);
-          baseBillPayDetailMapper.deleteByBillPayId(dataId);
-        }
-        break;
       case 1:
-        if (null != baseBillPay) {
-          BaseBillPay result = mapper.selectByPrimaryKey(dataId);
-          if (null == result) {
-            mapper.insertSelective(baseBillPay);
-            saveBillPayDetailRecord(dataId);
-          } else {
-            mapper.updateByPrimaryKeySelective(baseBillPay);
-            updateBillPayDetailRecord(dataId);
-          }
-        } else {
-          mapper.deleteByPrimaryKey(dataId);
-          baseBillPayDetailMapper.deleteByBillPayId(dataId);
-        }
-        break;
       case 2:
-        if (null == baseBillPay) {
-          mapper.deleteByPrimaryKey(dataId);
-          baseBillPayDetailMapper.deleteByBillPayId(dataId);
-        } else {
+        mapper.deleteByPrimaryKey(dataId);
+        if (null != baseBillPay) {
           mapper.insertSelective(baseBillPay);
+          // 保存收费记录明细
           saveBillPayDetailRecord(dataId);
+        } else {
+          baseBillPayDetailMapper.deleteByBillPayId(dataId);
         }
         break;
       default:
         break;
-    }
-  }
-
-  /**
-   * 根据收费记录ID更新收费明细
-   *
-   * @param billPayRecordId 收费记录ID
-   */
-  private void updateBillPayDetailRecord(Integer billPayRecordId) {
-    BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
-    billPayDetailRecord.setBillPayRecordId(billPayRecordId);
-    List<BillPayDetailRecord> billPayDetailRecords =
-        billPayDetailRecordMapper.select(billPayDetailRecord);
-    if (StringHelper.isNotEmpty(billPayDetailRecords)) {
-      billPayDetailRecords.forEach(
-          payDetailRecord -> {
-            Integer payDetailRecordId = payDetailRecord.getId();
-            billPayDetailRecordMapper.deleteByPrimaryKey(payDetailRecordId);
-            BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
-            baseBillPayDetail.setBillPayDetailRecordId(payDetailRecord.getId());
-            baseBillPayDetail.setBillId(payDetailRecord.getOrderRecordId());
-            baseBillPayDetail.setBillPayId(payDetailRecord.getBillPayRecordId());
-            baseBillPayDetail.setType(payDetailRecord.getType());
-            baseBillPayDetail.setAccountItemId(payDetailRecord.getAccountItemId());
-            baseBillPayDetail.setPrincipalAmount(payDetailRecord.getAmount());
-            baseBillPayDetail.setBonusAmount(new BigDecimal("0"));
-            baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
-          });
     }
   }
 
@@ -130,6 +80,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
   private void saveBillPayDetailRecord(Integer billPayRecordId) {
     BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
     billPayDetailRecord.setBillPayRecordId(billPayRecordId);
+    billPayDetailRecord.setInservice(true);
     List<BillPayDetailRecord> billPayDetailRecords =
         billPayDetailRecordMapper.select(billPayDetailRecord);
     if (StringHelper.isNotEmpty(billPayDetailRecords)) {
@@ -150,6 +101,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
                   memberExpendRecord.setBillPayRecordId(billPayRecordId);
                   memberExpendRecord.setMemberId(memberNum);
+                  memberExpendRecord.setInservice(true);
                   MemberExpendRecord memberExpendRecordResult =
                       memberExpendRecordMapper.selectOne(memberExpendRecord);
                   if (null != memberExpendRecordResult) {
@@ -166,6 +118,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
                   prepaidExpendRecord.setBillPayRecordId(billPayRecordId);
                   prepaidExpendRecord.setPrepaidId(prepaidNum);
+                  prepaidExpendRecord.setInservice(true);
                   PrepaidExpendRecord prepaidExpendRecordResult =
                       prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
                   if (null != prepaidExpendRecordResult) {
@@ -224,9 +177,12 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
           billPayRecord -> {
             Integer billPayRecordId = billPayRecord.getId();
             mapper.deleteByPrimaryKey(billPayRecordId);
+            baseBillPayDetailMapper.deleteByBillPayId(billPayRecordId);
             BaseBillPay baseBillPay = generateBaseBillPay(billPayRecordId);
-            mapper.insertSelective(baseBillPay);
-            saveBillPayDetailRecord(billPayRecordId);
+            if (null != baseBillPay) {
+              mapper.insertSelective(baseBillPay);
+              saveBillPayDetailRecord(billPayRecordId);
+            }
           });
     }
   }
