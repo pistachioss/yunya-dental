@@ -46,10 +46,10 @@ public class AttendanceAddressSetQueryForm implements Serializable {
     private Set<Integer> orgIds;
 
     /** 经度 */
-    @ApiModelProperty(value = "经度", required = true)
+    @ApiModelProperty(value = "经度")
     private String longitude;
 
     /** 纬度 */
-    @ApiModelProperty(value = "纬度", required = true)
+    @ApiModelProperty(value = "纬度")
     private String latitude;
 }

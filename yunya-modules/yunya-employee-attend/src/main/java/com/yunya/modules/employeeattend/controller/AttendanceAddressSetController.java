@@ -4,7 +4,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetForm;
 import com.yunya.feign.employee_attend.form.AttendanceAddressSetQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceAddressSetModel;
-import com.yunya.feign.employee_attend.model.AttendanceSetModel;
 import com.yunya.feign.employee_attend.vo.AttendanceAddressSetVO;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.framework.common.annation.CurrentUser;
@@ -55,7 +54,7 @@ public class AttendanceAddressSetController {
      */
     @ApiOperation(value = "分页查询考勤地址设置列表")
     @PostMapping("/list")
-    public ResponseResult<PageInfo<AttendanceAddressSetVO>> findAttendanceAddressSetList(@RequestBody @Validated AttendanceAddressSetQueryForm attendanceAddressSetQueryForm) {
+    public ResponseResult<PageInfo<AttendanceAddressSetVO>> findAttendanceAddressSetList(@RequestBody AttendanceAddressSetQueryForm attendanceAddressSetQueryForm) {
         PageInfo<AttendanceAddressSetVO> result = attendanceAddressSetBiz.findAttendanceAddressSetList(attendanceAddressSetQueryForm);
         return ResponseUtil.success(result);
     }
