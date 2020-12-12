@@ -290,9 +290,13 @@ public class BillPayDetailRecordBiz
     }
     for (PaymentModel model : paymentModels) {
       Integer accountItemId = model.getAccountItemId();
-      if (ACCOUNT_ITEM_OF_MEMBER.equals(accountItemId)
-          || ACCOUNT_ITEM_OF_PREPARE.equals(accountItemId)) {
-        throw new ClientServiceException("调整账单入账方式失败，调整入账方式不能使用会员卡或预付款!", PARAMETERS_IS_ILLEGAL);
+      AccountItem item = systemServiceFeign.findAccountItemById(accountItemId);
+      if (null != item) {
+        String accountItemName = item.getName();
+        if (ACCOUNT_ITEM_OF_MEMBER.equals(accountItemName)
+            || ACCOUNT_ITEM_OF_PREPARE.equals(accountItemName)) {
+          throw new ClientServiceException("调整账单入账方式失败，调整入账方式不能使用会员卡或预付款!", PARAMETERS_IS_ILLEGAL);
+        }
       }
       amount = amount.add(model.getAmount());
     }

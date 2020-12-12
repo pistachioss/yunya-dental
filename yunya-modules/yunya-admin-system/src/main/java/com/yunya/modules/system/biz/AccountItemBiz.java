@@ -2,6 +2,7 @@ package com.yunya.modules.system.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.vo.AccountItemVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -22,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseAccountItem;
+
 /**
  * 简介: 入账方式业务层
  *
@@ -41,7 +44,10 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     this.clinicAccountItemBiz = clinicAccountItemBiz;
   }
 
+  /** 支付方式分类 */
   @Autowired private AccountTypeMapper accountTypeMapper;
+  /** 消息中间件 */
+  @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
   /**
    * 根据ID查询入账方式
@@ -93,7 +99,10 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     Byte type = model.getType();
     entity.setType(type);
     entity.setAccountTypeId(model.getAccountTypeId());
-    mapper.insertSelective(entity);
+    int i = mapper.insertSelective(entity);
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(entity.getId(), 0, BaseAccountItem);
+    }
   }
 
   /**
@@ -124,7 +133,10 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
     resultData.setUpdName(BaseContextHandler.getName());
     resultData.setUpdTime(new Date(System.currentTimeMillis()));
     resultData.setId(id);
-    mapper.updateByPrimaryKeySelective(resultData);
+    int i = mapper.updateByPrimaryKeySelective(resultData);
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(id, 1, BaseAccountItem);
+    }
   }
 
   /**
@@ -140,6 +152,9 @@ public class AccountItemBiz extends BaseBiz<AccountItemMapper, AccountItem> {
       throw new ClientServiceException(
           "删除失败，ID为" + id + "'的入账方式已被门诊关联，不允许删除！", OperationCodeConstants.DELETE_NOT_ALLOW);
     }
-    mapper.deleteByPrimaryKey(id);
+    int i = mapper.deleteByPrimaryKey(id);
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(id, 2, BaseAccountItem);
+    }
   }
 }

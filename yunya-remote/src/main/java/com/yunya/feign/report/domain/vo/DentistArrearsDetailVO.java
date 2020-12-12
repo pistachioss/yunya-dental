@@ -17,7 +17,7 @@ import java.math.BigDecimal;
  * @description:
  * @since: 1.0.0
  */
-@ApiModel(" ")
+@ApiModel("医生所属欠费账单明细VO")
 @Data
 @ToString
 public class DentistArrearsDetailVO implements Serializable {

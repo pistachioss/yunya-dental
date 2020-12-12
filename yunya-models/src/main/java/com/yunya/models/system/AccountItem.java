@@ -1,11 +1,15 @@
 package com.yunya.models.system;
 
+import javax.persistence.Column;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "account_item")
 public class AccountItem {
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

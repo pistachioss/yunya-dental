@@ -2,17 +2,7 @@ package com.yunya.middletable.handle;
 
 import com.rabbitmq.client.Channel;
 import com.yunya.feign.report.domain.model.MessageModel;
-import com.yunya.middletable.service.BaseBenefitServiceImpl;
-import com.yunya.middletable.service.BaseBillBiz;
-import com.yunya.middletable.service.BaseCardServiceImpl;
-import com.yunya.middletable.service.BaseCouponItemServiceImpl;
-import com.yunya.middletable.service.BaseCouponServiceImpl;
-import com.yunya.middletable.service.BaseEmployeeBiz;
-import com.yunya.middletable.service.BaseOrganizationBiz;
-import com.yunya.middletable.service.BaseRefundBiz;
-import com.yunya.middletable.service.BaseTariffInfoBiz;
-import com.yunya.middletable.service.BaseTreatmentProcessBiz;
-import com.yunya.middletable.service.BaseUserPostBiz;
+import com.yunya.middletable.service.*;
 import com.yunya.middletable.service.patient.BasePatientBiz;
 import com.yunya.middletable.service.patient.BasePatientMemberBiz;
 import com.yunya.middletable.service.patient.BasePatientMemberOccurLogBiz;
@@ -32,6 +22,8 @@ import javax.annotation.Resource;
 public class ReceiverMessageController {
   /** 组织 */
   @Autowired private BaseOrganizationBiz organizationBiz;
+  /** 入账方式 */
+  @Autowired private BaseAccountItemBiz accountItemBiz;
   /** 员工 */
   @Autowired private BaseEmployeeBiz employeeBiz;
   /** 员工可登录组织 */
@@ -44,6 +36,8 @@ public class ReceiverMessageController {
   @Autowired private BaseTreatmentProcessBiz treatmentProcessBiz;
   /** 账单 */
   @Autowired private BaseBillBiz billBiz;
+  /** 账单收费记录 */
+  @Autowired private BaseBillPayBiz billPayBiz;
   /** 账单退费 */
   @Autowired private BaseRefundBiz refundBiz;
 
@@ -64,7 +58,8 @@ public class ReceiverMessageController {
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
       throws Exception {
-    log.info("-----------------------------------------消息开始消费--------------------------------------------------");
+    log.info(
+        "-----------------------------------------消息开始消费--------------------------------------------------");
     // 处理消息
     log.info("【消息体】：handleMessage[{}]", messageModel);
     int result = 0;
@@ -72,6 +67,9 @@ public class ReceiverMessageController {
       switch (messageModel.getMsgCategoryEnum()) {
         case BaseOrganization:
           organizationBiz.operateOrganization(messageModel);
+          break;
+        case BaseAccountItem:
+          accountItemBiz.operateAccountItem(messageModel);
           break;
         case BaseEmployee:
           employeeBiz.operateEmployee(messageModel);
@@ -100,6 +98,9 @@ public class ReceiverMessageController {
         case BaseBill:
           billBiz.operateBill(messageModel);
           break;
+        case BaseBillPay:
+          billPayBiz.operateBillPay(messageModel);
+          break;
         case BaseRefund:
           refundBiz.operateRefund(messageModel);
           break;
@@ -122,7 +123,7 @@ public class ReceiverMessageController {
           break;
       }
     } catch (Exception e) {
-      log.warn("【消费异常】:",e);
+      log.warn("【消费异常】:", e);
       result = 2;
     }
     switch (result) {

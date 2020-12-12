@@ -250,9 +250,9 @@ public class BillPayDetailRecord {
     }
 
     /**
-     * 获取入账方式类型（0-预付款；1-会员卡；3-其他支付方式）
+     * 获取入账方式类型（0-预付款；1-会员卡；2-其他支付方式）
      *
-     * @return type - 入账方式类型（0-预付款；1-会员卡；3-其他支付方式）
+     * @return type - 入账方式类型（0-预付款；1-会员卡；2-其他支付方式）
      */
     public Byte getType() {
         return type;

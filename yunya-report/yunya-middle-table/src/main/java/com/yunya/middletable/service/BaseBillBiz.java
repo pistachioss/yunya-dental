@@ -9,6 +9,7 @@ import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
 import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
+import com.yunya.middletable.dao.report.BaseBillPayDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillPayMapper;
 import com.yunya.middletable.dao.treatment.*;
 import com.yunya.models.patient_central.MemberExpendRecord;
@@ -16,6 +17,7 @@ import com.yunya.models.patient_central.PrepaidExpendRecord;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.models.report.BaseBillPay;
+import com.yunya.models.report.BaseBillPayDetail;
 import com.yunya.models.treatment.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 
 /**
  * 简介: 中间表账单业务层
@@ -55,6 +59,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private BillPayDetailRecordMapper billPayDetailRecordMapper;
   /** 中间表账单付款记录 */
   @Autowired private BaseBillPayMapper baseBillPayMapper;
+  /** 中间表账单支付明细 */
+  @Autowired private BaseBillPayDetailMapper baseBillPayDetailMapper;
   /** 中间表账单详情 */
   @Autowired private BaseBillDetailMapper baseBillDetailMapper;
 
@@ -69,16 +75,16 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
-        mapper.deleteByPrimaryKey(dataId);
         if (null != bill) {
           mapper.insertSelective(bill);
-          // 保存账单收费记录
+          // 保存账单收费记录以及付款方式明细记录
           saveBaseBillPay(dataId);
-          // 保存账单收费明细
+          // 保存账单（开单）明细以及开单明细收费
           saveBaseBillDetail(dataId);
         } else {
           mapper.deleteByPrimaryKey(dataId);
           baseBillPayMapper.deleteByBillId(dataId);
+          baseBillPayDetailMapper.deleteByBillId(dataId);
           baseBillDetailMapper.deleteByBillId(dataId);
         }
         break;
@@ -98,6 +104,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         } else {
           mapper.deleteByPrimaryKey(dataId);
           baseBillPayMapper.deleteByBillId(dataId);
+          baseBillPayDetailMapper.deleteByBillId(dataId);
           baseBillDetailMapper.deleteByBillId(dataId);
         }
         break;
@@ -105,6 +112,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
         if (null == bill) {
           mapper.deleteByPrimaryKey(dataId);
           baseBillPayMapper.deleteByBillId(dataId);
+          baseBillPayDetailMapper.deleteByBillId(dataId);
           baseBillDetailMapper.deleteByBillId(dataId);
         } else {
           mapper.insertSelective(bill);
@@ -121,7 +129,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * 初始化中间表账单信息
    *
    * @param dataId 订单ID
-   * @return
+   * @return BaseBill
    */
   private BaseBill generateBaseBill(Integer dataId) {
     OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(dataId);
@@ -136,7 +144,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBill.setBillerId(orderRecord.getCrtId());
       baseBill.setOrderDate(orderRecord.getCrtTime());
       // 设置账单的收费信息
-      setBaseBillChargeValue(dataId, baseBill);
+      if (ORDER_FINISH_STATUS.equals(orderRecord.getStatus())) {
+        setBaseBillChargeValue(dataId, baseBill);
+      }
       return baseBill;
     }
     return null;
@@ -172,9 +182,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * @param orderRecordId 订单记录ID
    */
   private void saveBaseBillPay(Integer orderRecordId) {
-    System.out.println("**************************************** 订单记录ID" + orderRecordId);
     BillPayRecord payRecord = new BillPayRecord();
     payRecord.setOrderRecordId(orderRecordId);
+    payRecord.setInservice(true);
     List<BillPayRecord> billPayRecords = billPayRecordMapper.select(payRecord);
     if (StringHelper.isNotEmpty(billPayRecords)) {
       BaseBillPay baseBillPay = new BaseBillPay();
@@ -188,7 +198,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   }
 
   /**
-   * 构建中间表账单收费记录
+   * 构建中间表账单收费记录，保存收费记录收费方式明细
    *
    * @param payRecord 原始收费记录
    * @param baseBillPay 中间表账单信息
@@ -203,7 +213,67 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     baseBillPay.setPayeeDate(payRecord.getCrtTime());
     baseBillPay.setReceivedAmount(payRecord.getReceivedAmount());
     baseBillPay.setStillOweAmount(payRecord.getStillOweAmount());
-    setBaseBillPayAccountItemValue(baseBillPay, payRecordId);
+    // 保存收费记录支付明细
+    saveBaseBillPayDetail(payRecordId);
+  }
+
+  /**
+   * 保存收费记录支付方式列表
+   *
+   * @param payRecordId 收费记录ID
+   */
+  private void saveBaseBillPayDetail(Integer payRecordId) {
+    BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
+    billPayDetailRecord.setBillPayRecordId(payRecordId);
+    List<BillPayDetailRecord> billPayDetailRecords =
+        billPayDetailRecordMapper.select(billPayDetailRecord);
+    if (StringHelper.isNotEmpty(billPayDetailRecords)) {
+      billPayDetailRecords.forEach(
+          payDetailRecord -> {
+            Byte type = payDetailRecord.getType();
+            BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
+            baseBillPayDetail.setBillPayDetailRecordId(payDetailRecord.getId());
+            baseBillPayDetail.setBillId(payDetailRecord.getOrderRecordId());
+            baseBillPayDetail.setBillPayId(payDetailRecord.getBillPayRecordId());
+            baseBillPayDetail.setType(type);
+            baseBillPayDetail.setAccountItemId(payDetailRecord.getAccountItemId());
+            switch (type) {
+                // 会员卡
+              case 0:
+                String memberNum = payDetailRecord.getRemark();
+                MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
+                memberExpendRecord.setBillPayRecordId(payRecordId);
+                memberExpendRecord.setMemberId(memberNum);
+                MemberExpendRecord memberExpendRecordResult =
+                    memberExpendRecordMapper.selectOne(memberExpendRecord);
+                if (null != memberExpendRecordResult) {
+                  baseBillPayDetail.setPrincipalAmount(
+                      memberExpendRecordResult.getExpendPrincipal());
+                  baseBillPayDetail.setBonusAmount(memberExpendRecordResult.getExpendGift());
+                }
+                break;
+                // 预付款
+              case 1:
+                String prepaidNum = payDetailRecord.getRemark();
+                PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
+                prepaidExpendRecord.setBillPayRecordId(payRecordId);
+                prepaidExpendRecord.setPrepaidId(prepaidNum);
+                PrepaidExpendRecord prepaidExpendRecordResult =
+                    prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
+                if (null != prepaidExpendRecordResult) {
+                  baseBillPayDetail.setPrincipalAmount(
+                      prepaidExpendRecordResult.getExpendPrincipal());
+                  baseBillPayDetail.setBonusAmount(prepaidExpendRecordResult.getExpendGift());
+                }
+                break;
+              default:
+                baseBillPayDetail.setPrincipalAmount(payDetailRecord.getAmount());
+                break;
+            }
+            baseBillPayDetailMapper.deleteByPrimaryKey(billPayDetailRecord.getId());
+            baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
+          });
+    }
   }
 
   /**
@@ -321,75 +391,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
           generateBaseBillPayValue(payRecord, baseBillPay);
           baseBillPayMapper.deleteByPrimaryKey(payRecordId);
           baseBillPayMapper.insertSelective(baseBillPay);
-        }
-      }
-    }
-  }
-
-  /**
-   * 设置中间表账单收费记录入账方式
-   *
-   * @param baseBillPay 账单收费记录
-   * @param payRecordId 收费记录ID
-   */
-  private void setBaseBillPayAccountItemValue(BaseBillPay baseBillPay, Integer payRecordId) {
-    MemberExpendRecord memberExpand = new MemberExpendRecord();
-    memberExpand.setBillPayRecordId(payRecordId);
-    List<MemberExpendRecord> memberExpendRecords = memberExpendRecordMapper.select(memberExpand);
-    if (StringHelper.isNotEmpty(memberExpendRecords)) {
-      memberExpendRecords.forEach(
-          mer -> {
-            BigDecimal principal = mer.getExpendPrincipal();
-            baseBillPay.setMemberPrincipleAmount(
-                baseBillPay.getMemberPrincipleAmount().add(principal));
-            BigDecimal gift = mer.getExpendGift();
-            baseBillPay.setMemberGiftAmount(baseBillPay.getMemberGiftAmount().add(gift));
-          });
-    }
-    PrepaidExpendRecord prepaidExpand = new PrepaidExpendRecord();
-    prepaidExpand.setBillPayRecordId(payRecordId);
-    List<PrepaidExpendRecord> prepaidExpendRecords =
-        prepaidExpendRecordMapper.select(prepaidExpand);
-    if (StringHelper.isNotEmpty(prepaidExpendRecords)) {
-      prepaidExpendRecords.forEach(
-          per -> {
-            BigDecimal principal = per.getExpendPrincipal();
-            baseBillPay.setPrepaidPrincipleAmount(
-                baseBillPay.getPrepaidPrincipleAmount().add(principal));
-            BigDecimal gift = per.getExpendGift();
-            baseBillPay.setPrepaidGiftAmount(baseBillPay.getPrepaidGiftAmount().add(gift));
-          });
-    }
-    BillPayDetailRecord payDetailRecord = new BillPayDetailRecord();
-    payDetailRecord.setBillPayRecordId(payRecordId);
-    List<BillPayDetailRecord> payDetailRecords = billPayDetailRecordMapper.select(payDetailRecord);
-    if (StringHelper.isNotEmpty(payDetailRecords)) {
-      for (BillPayDetailRecord detailRecord : payDetailRecords) {
-        if (detailRecord.getType() == 2) {
-          Integer accountItemId = detailRecord.getAccountItemId();
-          // todo 固定部分支付方式
-          switch (accountItemId) {
-            case 56:
-              baseBillPay.setWechatAmount(detailRecord.getAmount());
-              break;
-            case 57:
-              baseBillPay.setAlipayAmount(detailRecord.getAmount());
-              break;
-            case 58:
-              baseBillPay.setCashAmount(detailRecord.getAmount());
-              break;
-            case 59:
-              baseBillPay.setBankCardAmount(detailRecord.getAmount());
-              break;
-            case 62:
-              baseBillPay.setCityMedicalInsuranceAmount(detailRecord.getAmount());
-              break;
-            case 65:
-              baseBillPay.setProvinceMedicalInsuranceAmount(detailRecord.getAmount());
-              break;
-            default:
-              break;
-          }
         }
       }
     }
