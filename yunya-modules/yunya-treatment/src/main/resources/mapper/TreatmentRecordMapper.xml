@@ -26,6 +26,32 @@
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
+    <resultMap id="BaseResultExtendMap" type="com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="patient_id" property="patientId" jdbcType="INTEGER"/>
+        <result column="appointment_id" property="appointmentId" jdbcType="INTEGER"/>
+        <result column="registered_id" property="registeredId" jdbcType="INTEGER"/>
+        <result column="dentist_id" property="dentistId" jdbcType="INTEGER"/>
+        <result column="type" property="type" jdbcType="TINYINT"/>
+        <result column="status" property="status" jdbcType="TINYINT"/>
+        <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
+        <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
+        <result column="medical_record_completed" property="medicalRecordCompleted" jdbcType="BIT"/>
+        <result column="remarks" property="remarks" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+        <result column="last_treatment_date" property="lastTreatmentDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
     <!-- 根据条件查询就诊中患者信息列表 -->
     <select id="selectTreatingList" resultType="com.yunya.feign.treatment.domain.vo.TreatmentPatientInfoVO">
         select
@@ -135,15 +161,17 @@
         ORDER BY tr.treat_start_time DESC
     </select>
     <!-- 根据就诊记录ID列表查询就诊记录列表 -->
-    <select id="selectByIds" resultMap="BaseResultMap">
+    <select id="selectByIds" resultMap="BaseResultExtendMap">
         select
-        *
-        from treatment_record
+        tr.*,
+        date_format(a.treat_start_time,'%Y-%m-%d') as last_treatment_date
+        from treatment_record tr left join treatment_record a on a.patient_id = tr.patient_id
         where
-        id in
+        tr.id in
         <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">
             #{item}
         </foreach>
+        order by tr.treat_start_time ,a.treat_start_time desc
     </select>
 
     <!-- 根据挂号ID查询就诊数量 -->
@@ -199,11 +227,12 @@
             tr.id,
             tr.dentist_id as dentistId,
             tr.patient_id as patientId,
-            r.first_visit as firstVisit
+            r.first_visit as firstVisit,
+            tr.treat_start_time as treatStarTime
         from
             treatment_record tr left join registered r on tr.registered_id = r.id
         where
-                date_format(tr.treat_start_time,'%Y-%d-%m') = date_format(#{currentDate},'%Y-%m-%d')
+                date_format(tr.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
           and tr.inservice = 1
           and tr.status = #{status}
           and tr.org_id = #{orgId}

@@ -12,6 +12,8 @@ import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -124,8 +126,8 @@ public class MedicalCommonRecordController {
     }
     if(hs.size()>0){
       //获取就诊列表
-      List<TreatmentRecord> tLists = remoteTreatmentServiceFeign.findTreatmentRecordByIds(hs);
-      Map<String, TreatmentRecord> tListsMap = new HashMap(16);
+      List<TreatmentRecordExtendVO> tLists = remoteTreatmentServiceFeign.findTreatmentRecordByIds(hs);
+      Map<String, TreatmentRecordExtendVO> tListsMap = new HashMap(16);
       tLists.forEach(z -> tListsMap.put(z.getId() + "", z));
       //获取门诊
       OrganizationModel organizationModel = new OrganizationModel();

@@ -112,4 +112,23 @@
             #{treatmentId}
         </foreach>
     </select>
+
+    <!-- PC照片影像小程序已结账列表 -->
+    <select id="desktopBillingList" resultType="com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO">
+        select distinct
+            br.treatment_record_id as id,
+            br.patient_id          as patientId,
+            r.first_visit          as firstVisit,
+            r.dentist_id           as dentistId,
+            tr.treat_start_time    as treatStartTime
+        from bill_record br
+                 left join registered r on r.patient_id = br.patient_id
+                 left join treatment_record tr on tr.patient_id = br.patient_id and tr.id = br.treatment_record_id
+        where date_format(br.crt_time, '%Y-%m-%d') = date_format(#{currentDate}, '%Y-%m-%d')
+        <if test="orgId != null">
+            and br.org_id = #{orgId}
+        </if>
+        group by br.treatment_record_id
+        order by tr.treat_start_time desc
+    </select>
 </mapper>

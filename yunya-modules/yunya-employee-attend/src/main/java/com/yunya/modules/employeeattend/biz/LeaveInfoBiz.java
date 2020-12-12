@@ -99,7 +99,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 //判断是否与同类型其他申请时间冲突
                 LeaveInfo find = new LeaveInfo();
                 find.setUserId(leaveInfoForm.getUserId());
-                List<LeaveInfo> findlist = mapper.select(find);
+                List<LeaveInfo> findlist = mapper.findLeaveListByDay(find);
                 Boolean flag = true;
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                 Date listartTime = null;

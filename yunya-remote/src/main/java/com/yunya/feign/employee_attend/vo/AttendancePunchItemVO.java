@@ -65,7 +65,7 @@ public class AttendancePunchItemVO implements Serializable {
     private Byte punchMode;
 
     /** 打卡结果: 0:上班正常 1：迟到  2:下班正常  3:早退  4:无效卡 5:缺卡*/
-    @ApiModelProperty(value = "打卡状态: 0:上班正常 1：迟到  2:下班正常  3:早退  4:无效卡 5:缺卡")
+    @ApiModelProperty(value = "打卡状态: 0:上班正常 1：迟到  2:下班正常  3:早退 4:无效卡 5:缺卡")
     private Byte punchStatus;
 
     /** 情况: 0:上班 1：休息  2:请假  4:加班 5：外勤 */

@@ -45,6 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -204,7 +206,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @param ids 就诊记录ID列表
    * @return
    */
-  public List<TreatmentRecord> selectByIds(Set<Integer> ids) {
+  public List<TreatmentRecordExtendVO> selectByIds(Set<Integer> ids) {
     return mapper.selectByIds(ids);
   }
 
@@ -1101,17 +1103,25 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @return
    */
   public PageInfo<DesktopMiniProgramVO> desktopTreatList(TreatmentRecordQueryForm queryForm) {
+    String currentDate = queryForm.getCurrentDate();
+    Integer orgId = queryForm.getOrgId();
     // 0-就诊中;1-已开单;2-治疗完成;3-已结账
     Byte[] treatmentStatusArr = queryForm.getTreatmentStatus();
-    if (treatmentStatusArr.length > 1 || treatmentStatusArr.length < 1) {
+    if (treatmentStatusArr.length != 1) {
       ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"PC照片影像小程序只允许查询单状态查询",null);
     }
     Byte aByte = treatmentStatusArr[0];
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
     }
-    List<DesktopMiniProgramVO> desktopMiniProgramVOS = mapper.desktopTreatingList(aByte, queryForm.getCurrentDate(),queryForm.getOrgId());
-
+    List<DesktopMiniProgramVO> desktopMiniProgramVOS = null;
+    if (aByte.intValue() == 0) {
+      desktopMiniProgramVOS = mapper.desktopTreatingList(aByte, currentDate, orgId);
+    } else if (aByte.intValue() == 1 || aByte.intValue() == 2){
+      desktopMiniProgramVOS = mapper.desktopTreatingList((byte) 2, currentDate, orgId);
+    } else if (aByte.intValue() == 3) {
+      desktopMiniProgramVOS = billRecordMapper.desktopBillingList(currentDate, orgId);
+    }
     // 将信息注入PC照片印象小程序列表
     this.setDesktopMiniProgramVOInfo(desktopMiniProgramVOS,queryForm.getCurrentDate());
 
@@ -1159,42 +1169,44 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
       List<Integer> patientIds = new ArrayList<>();
       List<Integer> dentistIds = new ArrayList<>();
       List<Integer> treatmentIds = new ArrayList<>();
-      desktopMiniProgramVOS.forEach(desktopMiniProgramVO -> {
-        patientIds.add(desktopMiniProgramVO.getPatientId());
-        dentistIds.add(desktopMiniProgramVO.getDentistId());
-        treatmentIds.add(desktopMiniProgramVO.getId());
-      });
-      List<PatientBaseInfoVo> patientInfoByIds = patientServiceFeign.findPatientInfoByIds(patientIds);
-      List<SysUserInfoDetail> sysUserEmployeeInfoByUserIds = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
-      List<XRayFilm> xRayFilmListByPatientIds = remoteTreatmentOther.findXRayFilmListByPatientIds(patientIds, currentDate);
-      desktopMiniProgramVOS.forEach(desktopMiniProgramVO -> {
-        // 设置医生信息
-        Integer dentistId = desktopMiniProgramVO.getDentistId();
-        List<SysUserInfoDetail> collect = sysUserEmployeeInfoByUserIds.stream().filter(
-                sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(dentistId)).collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(collect)) {
-          SysUserInfoDetail userInfoDetail = collect.get(0);
-          desktopMiniProgramVO.setDentistName(userInfoDetail.getName());
-        }
-        // 设置患者信息
-        Integer patientId = desktopMiniProgramVO.getPatientId();
-        List<PatientBaseInfoVo> patientBaseInfoVos = patientInfoByIds.stream().filter(
-                patientBaseInfoVo -> patientBaseInfoVo.getId().equals(patientId)).collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(patientBaseInfoVos)) {
-          PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoVos.get(0);
-          desktopMiniProgramVO.setPatientName(patientBaseInfoVo.getName());
-          desktopMiniProgramVO.setMedicalNumber(patientBaseInfoVo.getMedicalNumber());
-          desktopMiniProgramVO.setBirthday(patientBaseInfoVo.getBirthday());
-        }
-        // 设置是否上传图片
-        List<XRayFilm> xRayFilms = xRayFilmListByPatientIds.stream().filter(
-                xRayFilm -> xRayFilm.getPatientId().equals(patientId)).collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(xRayFilms)) {
-          desktopMiniProgramVO.setHasImg(true);
-        } else {
-          desktopMiniProgramVO.setHasImg(false);
-        }
-      });
+      if (StringHelper.isNotEmpty(desktopMiniProgramVOS)) {
+        desktopMiniProgramVOS.forEach(desktopMiniProgramVO -> {
+          patientIds.add(desktopMiniProgramVO.getPatientId());
+          dentistIds.add(desktopMiniProgramVO.getDentistId());
+          treatmentIds.add(desktopMiniProgramVO.getId());
+        });
+        List<PatientBaseInfoVo> patientInfoByIds = patientServiceFeign.findPatientInfoByIds(patientIds);
+        List<SysUserInfoDetail> sysUserEmployeeInfoByUserIds = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+        List<XRayFilm> xRayFilmListByPatientIds = remoteTreatmentOther.findXRayFilmListByPatientIds(patientIds, currentDate);
+        desktopMiniProgramVOS.forEach(desktopMiniProgramVO -> {
+          // 设置医生信息
+          Integer dentistId = desktopMiniProgramVO.getDentistId();
+          List<SysUserInfoDetail> collect = sysUserEmployeeInfoByUserIds.stream().filter(
+                  sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(dentistId)).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(collect)) {
+            SysUserInfoDetail userInfoDetail = collect.get(0);
+            desktopMiniProgramVO.setDentistName(userInfoDetail.getName());
+          }
+          // 设置患者信息
+          Integer patientId = desktopMiniProgramVO.getPatientId();
+          List<PatientBaseInfoVo> patientBaseInfoVos = patientInfoByIds.stream().filter(
+                  patientBaseInfoVo -> patientBaseInfoVo.getId().equals(patientId)).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(patientBaseInfoVos)) {
+            PatientBaseInfoVo patientBaseInfoVo = patientBaseInfoVos.get(0);
+            desktopMiniProgramVO.setPatientName(patientBaseInfoVo.getName());
+            desktopMiniProgramVO.setMedicalNumber(patientBaseInfoVo.getMedicalNumber());
+            desktopMiniProgramVO.setBirthday(patientBaseInfoVo.getBirthday());
+          }
+          // 设置是否上传图片
+          List<XRayFilm> xRayFilms = xRayFilmListByPatientIds.stream().filter(
+                  xRayFilm -> xRayFilm.getPatientId().equals(patientId)).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(xRayFilms)) {
+            desktopMiniProgramVO.setHasImg(true);
+          } else {
+            desktopMiniProgramVO.setHasImg(false);
+          }
+        });
+      }
     }
   }
 }

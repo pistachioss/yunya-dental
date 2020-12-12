@@ -2,6 +2,7 @@ package com.yunya.feign.treatment.factory;
 
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
@@ -112,7 +113,7 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public List<TreatmentRecord> findTreatmentRecordByIds(@NotEmpty Set<Integer> ids) {
+  public List<TreatmentRecordExtendVO> findTreatmentRecordByIds(@NotEmpty Set<Integer> ids) {
     return null;
   }
 

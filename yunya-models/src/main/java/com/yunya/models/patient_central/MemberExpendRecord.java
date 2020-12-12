@@ -23,7 +23,7 @@ public class MemberExpendRecord {
     private Integer orgId;
 
     /**
-     * 会员卡id
+     * 会员卡号
      */
     @Column(name = "member_id")
     private String memberId;
@@ -203,16 +203,16 @@ public class MemberExpendRecord {
     /**
      * 获取会员卡id
      *
-     * @return member_id - 会员卡id
+     * @return member_id - 会员卡号
      */
     public String getMemberId() {
         return memberId;
     }
 
     /**
-     * 设置会员卡id
+     * 设置会员卡号
      *
-     * @param memberId 会员卡id
+     * @param memberId 会员卡号
      */
     public void setMemberId(String memberId) {
         this.memberId = memberId;

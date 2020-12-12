@@ -21,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
+import java.text.ParseException;
 import java.util.List;
 
 /**
@@ -49,10 +50,9 @@ public class XRayFilmController {
     @ApiOperation("添加图片影像批量上传")
     @PostMapping("/add/batch/{patientId}")
     @CurrentUser
-    public ResponseResult addBatch(@PathVariable("patientId") Integer patientId,
-                                   @RequestBody
-                                   @Validated XRayFilmModel models){
-        this.XRayFilmBiz.addBatch(patientId,models.getXRayFilmInfoList());
+    public ResponseResult addBatch(@PathVariable(value = "patientId") Integer patientId,
+                                   @RequestBody XRayFilmModel models){
+        this.XRayFilmBiz.addBatch(patientId,models.getList());
         return ResponseUtil.success();
     }
     /**
@@ -64,7 +64,7 @@ public class XRayFilmController {
     @ApiOperation("修改图片影像")
     @PutMapping("/upd/{id}")
     @CurrentUser
-    public ResponseResult upd(@PathVariable("id") Integer id,@RequestBody @Validated XRayFilmForm form){
+    public ResponseResult upd(@PathVariable("id") Integer id,@RequestBody @Validated XRayFilmForm form) throws ParseException {
         this.XRayFilmBiz.upd(id, form);
         return ResponseUtil.success();
     }
