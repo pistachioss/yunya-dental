@@ -527,37 +527,39 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         scheduleQueryForm.setUserId(userId);
         scheduleQueryForm.setWorkDate(date);
         List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(scheduleQueryForm);
-        List<Integer> orgIds = new ArrayList<>();
-        employeeScheduleVOS.forEach(employeeScheduleVO -> {
-            Integer orgId = employeeScheduleVO.getClinicId();
-            if (!orgIds.contains(orgId)) {
-                orgIds.add(orgId);
-            }
-        });
-        List<OrganizationInfoDetail> organizationInfoDetails = remoteSystemServiceFeign.findOrgInfoInIds(orgIds);
-        employeeScheduleVOS.forEach(employeeScheduleVO -> {
-            AttendancePunchRecordVO punchRecordVO = new AttendancePunchRecordVO();
-            String name = employeeScheduleVO.getName();
-            String type = employeeScheduleVO.getType();
-            name += "（" + type + "）";
-            punchRecordVO.setName(name);
-            punchRecordVO.setStartTime(employeeScheduleVO.getFirstStartTime());
-            Date endTime = employeeScheduleVO.getFirstEndTime();
-            if (employeeScheduleVO.getSecondEndTime() != null) {
-                endTime = employeeScheduleVO.getSecondEndTime();
-            }
-            punchRecordVO.setEndTime(endTime);
-            Integer clinicId = employeeScheduleVO.getClinicId();
-            String orgName = "";
-            for (OrganizationInfoDetail organizationInfoDetail : organizationInfoDetails) {
-                if (organizationInfoDetail.getId().equals(clinicId)) {
-                    orgName = organizationInfoDetail.getName();
-                    break;
+        if (employeeScheduleVOS!=null && !employeeScheduleVOS.isEmpty()) {
+            List<Integer> orgIds = new ArrayList<>();
+            employeeScheduleVOS.forEach(employeeScheduleVO -> {
+                Integer orgId = employeeScheduleVO.getClinicId();
+                if (!orgIds.contains(orgId)) {
+                    orgIds.add(orgId);
                 }
-            }
-            punchRecordVO.setOrgName(orgName);
-            attendancePunchRecordVOList.add(punchRecordVO);
-        });
+            });
+            List<OrganizationInfoDetail> organizationInfoDetails = remoteSystemServiceFeign.findOrgInfoInIds(orgIds);
+            employeeScheduleVOS.forEach(employeeScheduleVO -> {
+                AttendancePunchRecordVO punchRecordVO = new AttendancePunchRecordVO();
+                String name = employeeScheduleVO.getName();
+                String type = employeeScheduleVO.getType();
+                name += "（" + type + "）";
+                punchRecordVO.setName(name);
+                punchRecordVO.setStartTime(employeeScheduleVO.getFirstStartTime());
+                Date endTime = employeeScheduleVO.getFirstEndTime();
+                if (employeeScheduleVO.getSecondEndTime() != null) {
+                    endTime = employeeScheduleVO.getSecondEndTime();
+                }
+                punchRecordVO.setEndTime(endTime);
+                Integer clinicId = employeeScheduleVO.getClinicId();
+                String orgName = "";
+                for (OrganizationInfoDetail organizationInfoDetail : organizationInfoDetails) {
+                    if (organizationInfoDetail.getId().equals(clinicId)) {
+                        orgName = organizationInfoDetail.getName();
+                        break;
+                    }
+                }
+                punchRecordVO.setOrgName(orgName);
+                attendancePunchRecordVOList.add(punchRecordVO);
+            });
+        }
         if (attendancePunchRecordVOS!=null && !attendancePunchRecordVOS.isEmpty()) {
             attendancePunchItemVOS.add(createPunchItem(firstPunchRecord));
             attendancePunchItemVOS.add(createPunchItem(lastPunchRecord));
