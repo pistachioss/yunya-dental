@@ -329,6 +329,7 @@ public class BasePatientMemberOccurLogBiz
           memberRechargeRecord.getCurrentRechargePrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(
           memberRechargeRecord.getCurrentRechargeBonus());
+      basePatientMemberOccurLog.setRechargeMethod((byte)0);
       MemberRechargeTollRecord memberRechargeTollRecord = new MemberRechargeTollRecord();
       memberRechargeTollRecord.setRechargeRecordId(memberRechargeRecord.getId());
       MemberRechargeTollRecord memberRechargeToll =
