@@ -42,7 +42,7 @@
       FROM
           prepaid_return_record
       WHERE
-          prepaid_id = #{form.prepaidId} and patient_id = #{form.patientId}
+          prepaid_id = #{form.prepaidId}
       ORDER BY crt_time DESC
   </select>
 
