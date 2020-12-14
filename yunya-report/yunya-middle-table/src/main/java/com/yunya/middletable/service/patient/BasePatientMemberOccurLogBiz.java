@@ -341,6 +341,9 @@ public class BasePatientMemberOccurLogBiz
           basePatientMemberOccurLog.setPaymentManner(accountItem.getName());
         }
       }
+      if (memberRechargeToll.getCreditAmount() != null){
+        basePatientMemberOccurLog.setCreditAmount(memberRechargeToll.getCreditAmount());
+      }
       basePatientMemberOccurLog.setOperatorUserId(memberRechargeRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(memberRechargeRecord.getRemarks());
       basePatientMemberOccurLog.setOccurDate(memberRechargeRecord.getCrtTime());
@@ -628,6 +631,9 @@ public class BasePatientMemberOccurLogBiz
         if (StringHelper.isNotNull(accountItem)) {
           basePatientMemberOccurLog.setPaymentManner(accountItem.getName());
         }
+      }
+      if (prepaidRechargeTollRecord.getCreditAmount() != null){
+        basePatientMemberOccurLog.setCreditAmount(prepaidRechargeTollRecord.getCreditAmount());
       }
       basePatientMemberOccurLog.setOperatorUserId(prepaidRechargeRecord.getCrtId());
       basePatientMemberOccurLog.setRemarks(prepaidRechargeRecord.getRemarks());
