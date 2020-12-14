@@ -272,7 +272,6 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         }
         //必须提前一天申请或审批
         if (now.before(date)) {
-
             if (fieldInfo.getApprpvalStatus() == 0) {
                 if (fieldInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
                     fieldInfo.setApprpvalStatus(fieldInfoForm.getApprpvalStatus());
