@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_MEMBER;
 import static com.yunya.framework.common.constant.BusinessConstants.ACCOUNT_ITEM_OF_PREPARE;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -229,7 +229,8 @@ public class BillPayDetailRecordBiz
           payDetail.setCrtName(name);
           mapper.insertSelective(payDetail);
         });
-    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+    // 发送消息更新中间表收费记录以及收费明细
+    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBillPay);
     redisUtils.delete(redisKey);
   }
 
@@ -316,7 +317,7 @@ public class BillPayDetailRecordBiz
     payDetailRecord.setBillPayRecordId(billPayRecordId);
     payDetailRecord.setType(type);
     List<BillPayDetailRecord> billPayDetailRecords = mapper.select(payDetailRecord);
-    List<PaymentRecordVO> paymentRecordVOS = new ArrayList<>();
+    List<PaymentRecordVO> paymentRecords = new ArrayList<>();
     if (StringHelper.isNotEmpty(billPayDetailRecords)) {
       billPayDetailRecords.forEach(
           billPayDetailRecord -> {
@@ -346,9 +347,9 @@ public class BillPayDetailRecordBiz
               default:
                 break;
             }
-            paymentRecordVOS.add(paymentRecordVO);
+            paymentRecords.add(paymentRecordVO);
           });
     }
-    return paymentRecordVOS;
+    return paymentRecords;
   }
 }

@@ -27,6 +27,8 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.*;
+import com.yunya.modules.treatment.mapper.BillPayDetailRecordMapper;
+import com.yunya.modules.treatment.mapper.BillPayRecordMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,9 +80,9 @@ public class TollBiz {
   /** 账单记录 */
   @Autowired private BillRecordBiz billRecordBiz;
   /** 账单支付记录 */
-  @Autowired private BillPayRecordBiz billPayRecordBiz;
+  @Autowired private BillPayRecordMapper billPayRecordMapper;
   /** 账单支付明细记录 */
-  @Autowired private BillPayDetailRecordBiz billPayDetailRecordBiz;
+  @Autowired private BillPayDetailRecordMapper billPayDetailRecordMapper;
   /** 就诊记录 */
   @Autowired private TreatmentRecordMapper treatmentRecordMapper;
 
@@ -310,7 +312,7 @@ public class TollBiz {
     }
     billPayRecord.setCrtId(userId);
     billPayRecord.setCrtName(name);
-    billPayRecordBiz.insertSelective(billPayRecord);
+    billPayRecordMapper.insertSelective(billPayRecord);
     // 保存订单明细收费记录
     saveOrderDetailPayRecord(
         totalCharge, discountType, orderRecordId, billRecordId, generalDiscount, accreditDiscount);
@@ -902,7 +904,7 @@ public class TollBiz {
                     prepaymentAccountModel.getAmount(),
                     (byte) 0);
             billPayDetailRecord.setRemark(prepaymentAccountModel.getPrepaymentNum());
-            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
+            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
           });
     }
     if (StringHelper.isNotEmpty(memberAccountModels)) {
@@ -915,7 +917,7 @@ public class TollBiz {
                     memberAccountModel.getAmount(),
                     (byte) 1);
             billPayDetailRecord.setRemark(memberAccountModel.getMemberNum());
-            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
+            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
           });
     }
     if (StringHelper.isNotEmpty(paymentModels)) {
@@ -927,7 +929,7 @@ public class TollBiz {
                     paymentModel.getAccountItemId(),
                     paymentModel.getAmount(),
                     (byte) 2);
-            billPayDetailRecordBiz.insertSelective(billPayDetailRecord);
+            billPayDetailRecordMapper.insertSelective(billPayDetailRecord);
           });
     }
   }
@@ -941,7 +943,7 @@ public class TollBiz {
    */
   private BillPayDetailRecord setBillPayRecordDetailValue(
       Integer billPayRecordId, Integer accountItemId, BigDecimal amount, Byte type) {
-    BillPayRecord billPayRecord = billPayRecordBiz.selectById(billPayRecordId);
+    BillPayRecord billPayRecord = billPayRecordMapper.selectByPrimaryKey(billPayRecordId);
     BillPayDetailRecord billPayDetailRecord = new BillPayDetailRecord();
     Integer patientId = billPayRecord.getPatientId();
     Integer treatmentRecordId = billPayRecord.getTreatmentRecordId();
@@ -1260,7 +1262,7 @@ public class TollBiz {
     billPayRecord.setCrtName(name);
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
-    billPayRecordBiz.insertSelective(billPayRecord);
+    int i = billPayRecordMapper.insertSelective(billPayRecord);
     // 保存收费记录入账明细
     Integer billPayRecordId = billPayRecord.getId();
     if (StringHelper.isNotEmpty(prepaymentAccounts)) {
@@ -1273,9 +1275,11 @@ public class TollBiz {
     }
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
-    // 发送消息同步账单
-    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-    rabbitMqServiceFeign.sendMessage(billPayRecord.getId(), 0, BaseBillPay);
+    // 发送消息同步账单，账单收费
+    if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+      rabbitMqServiceFeign.sendMessage(billPayRecord.getId(), 0, BaseBillPay);
+    }
   }
 
   /**
