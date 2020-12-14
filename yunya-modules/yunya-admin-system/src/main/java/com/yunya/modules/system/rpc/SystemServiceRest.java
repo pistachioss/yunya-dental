@@ -323,6 +323,20 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据条件分页查询用户信息（含员工信息）
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/userInfo/page", method = RequestMethod.POST)
+  public PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(
+          @RequestBody SysUserEmployeeModel model) {
+    SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
+    BeanUtils.copyProperties(model, from);
+    return sysUserBiz.findUserDetailInfoList(from);
+  }
+
+  /**
    * 根据条件查询用户组织信息
    *
    * @param model 查询条件
