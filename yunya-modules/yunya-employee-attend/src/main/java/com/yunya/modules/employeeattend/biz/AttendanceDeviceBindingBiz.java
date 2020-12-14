@@ -106,7 +106,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         model.setWhetherPage(queryForm.getWhetherPage());
         model.setPageNum(queryForm.getPageNum());
         model.setPageSize(queryForm.getPageSize());
-        model.setKeyWord(queryForm.getUserName());
+        model.setUserName(queryForm.getUserName());
         Byte[] userStatus = {0, 1, 3};
         //离职状态
         model.setWorkStatus(userStatus);
