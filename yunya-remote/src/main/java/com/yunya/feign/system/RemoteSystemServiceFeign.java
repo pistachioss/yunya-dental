@@ -404,4 +404,13 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/userInfo/ids/list", method = RequestMethod.POST)
   List<SysUserInfoDetail> findSysUserEmployeeInfoByUserIds(@RequestBody List<Integer> userIds);
+
+  /**
+   * 根据条件分页查询用户信息（含员工信息）
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/api/userInfo/page", method = RequestMethod.POST)
+  PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(@RequestBody SysUserEmployeeModel model);
 }

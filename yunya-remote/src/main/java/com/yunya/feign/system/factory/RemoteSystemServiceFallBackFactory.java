@@ -261,4 +261,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public List<SysUserInfoDetail> findSysUserEmployeeInfoByUserIds(List<Integer> userIds) {
     return null;
   }
+
+  @Override
+  public PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(SysUserEmployeeModel model) {
+    return null;
+  }
 }

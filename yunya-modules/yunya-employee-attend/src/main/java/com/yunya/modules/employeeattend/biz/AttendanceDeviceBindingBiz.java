@@ -110,25 +110,34 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         Byte[] userStatus = {0, 1, 3};
         //离职状态
         model.setWorkStatus(userStatus);
+        long total = 0;
+        PageInfo pageInfo = new PageInfo<>();
         if (attendanceDeviceBindingVOMap!=null && !attendanceDeviceBindingVOMap.isEmpty()) {
             Set<Integer> userIds = attendanceDeviceBindingVOMap.keySet();
             model.setUserIds(userIds);
-            List<SysUserInfoDetail> sysUserInfoDetailList = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-
-            //组装主数据
-            sysUserInfoDetailList.forEach(sysUserInfoDetail->{
-                Integer userId = sysUserInfoDetail.getUserId();
-                for (AttendanceDeviceBindingVO deviceBindingVO : attendanceDeviceBindingVOS) {
-                    Integer bindUserId = deviceBindingVO.getUserId();
-                    if (userId.equals(bindUserId)) {
-                        deviceBindingVO.setUserName(sysUserInfoDetail.getName());
-                        result.add(deviceBindingVO);
-                        break;
+            PageInfo<SysUserInfoDetail> userPage = remoteSystemServiceFeign.findSysUserEmployeeInfoPage(model);
+            List<SysUserInfoDetail> sysUserInfoDetailList = userPage.getList();
+            if (sysUserInfoDetailList!=null && !sysUserInfoDetailList.isEmpty()) {
+                total = userPage.getTotal();
+                //组装主数据
+                sysUserInfoDetailList.forEach(sysUserInfoDetail -> {
+                    Integer userId = sysUserInfoDetail.getUserId();
+                    for (AttendanceDeviceBindingVO deviceBindingVO : attendanceDeviceBindingVOS) {
+                        Integer bindUserId = deviceBindingVO.getUserId();
+                        if (userId.equals(bindUserId)) {
+                            deviceBindingVO.setUserName(sysUserInfoDetail.getName());
+                            result.add(deviceBindingVO);
+                            break;
+                        }
                     }
-                }
-            });
+                });
+            }
         }
-        return new PageInfo<>(result);
+        pageInfo.setList(result);
+        pageInfo.setTotal(total);
+        pageInfo.setPageNum(queryForm.getPageNum());
+        pageInfo.setPageSize(queryForm.getPageSize());
+        return pageInfo;
     }
 
     /**
