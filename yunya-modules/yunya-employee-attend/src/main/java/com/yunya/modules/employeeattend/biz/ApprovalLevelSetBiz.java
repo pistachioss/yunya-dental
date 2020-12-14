@@ -56,10 +56,10 @@ public class ApprovalLevelSetBiz extends BaseBiz<ApprovalLevelSetMapper, Approva
         approvalLevelSet = mapper.selectOne(approvalLevelSet);
         //判断此次修改是否改动优先级，若改动则判断是否与其他优先级重复
         if(!approvalLevelSet.getApprovalPriority().equals(approvalLevelSetQuery.getApprovalPriority())){
-            approvalLevelSet = new ApprovalLevelSet();
-            approvalLevelSet.setApprovalCriteriaId(approvalLevelSetQuery.getApprovalCriteriaId());
-            approvalLevelSet.setApprovalPriority(approvalLevelSetQuery.getApprovalPriority());
-            int num = mapper.selectCount(approvalLevelSet);
+            ApprovalLevelSet copy = new ApprovalLevelSet();
+            copy.setApprovalCriteriaId(approvalLevelSet.getApprovalCriteriaId());
+            copy.setApprovalPriority(approvalLevelSetQuery.getApprovalPriority());
+            int num = mapper.selectCount(copy);
             if(num>0){
                 throw new ClientServiceException("优先级重复", SAME_DATA_EXIST);
             }
