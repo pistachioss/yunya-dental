@@ -2780,14 +2780,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 List<AttendancePunchRecordVO> list = slaveRecordMap.get(date);
                 if (list != null && !list.isEmpty()) {
                     for (AttendancePunchRecordVO slaveRecord : list) {
-                        if (AttendanceSourceEnum.WORK_SCHEDULE.getCode().equals(slaveRecord.getSource())
-                            && AttendanceIsPunchEnum.UNPUNCH.getCode().equals(slaveRecord.getIsPunch())) {
+                        if (AttendanceSourceEnum.WORK_SCHEDULE.getCode().equals(slaveRecord.getSource())) {
                             if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
-                                onPunchTime = punchRecord.getPunchTime();
+                                onPunchTime = slaveRecord.getPunchTime();
                             } else {
-                                offPunchTime = punchRecord.getPunchTime();
+                                offPunchTime = slaveRecord.getPunchTime();
                             }
-                            count++;
+                            if (AttendanceIsPunchEnum.UNPUNCH.getCode().equals(slaveRecord.getIsPunch())) {
+                                count++;
+                            }
                         }
                     }
                 }
