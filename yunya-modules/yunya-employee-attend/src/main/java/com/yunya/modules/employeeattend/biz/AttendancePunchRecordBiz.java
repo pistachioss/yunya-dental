@@ -107,10 +107,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         AttendancePunchInfoVO result = new AttendancePunchInfoVO();
         AttendanceDeviceBindingVO attendanceDeviceBindingVO = attendanceDeviceBindingBiz.findEmployeeBindingDevice(userId);
-        if (attendanceDeviceBindingVO == null) {
-            return result;
+        String deviceNumber = null;
+        if (attendanceDeviceBindingVO != null) {
+            deviceNumber = attendanceDeviceBindingVO.getDeviceNumber();
         }
-        result.setDeviceNumber(attendanceDeviceBindingVO.getDeviceNumber());
+        result.setDeviceNumber(deviceNumber);
         // 根据考勤地址或Wifi的mac地址抽取用户当天的打卡项目（上班班次、加班、请假、外勤）
         String macAddress = queryForm.getWifiMacAddress();
         String longitude = queryForm.getLongitude();
