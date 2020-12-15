@@ -994,7 +994,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         workOvertimeQueryForm.setStartTime(firstDate);
         workOvertimeQueryForm.setEndTime(endDate);
         workOvertimeQueryForm.setUserId(userId);
-        workOvertimeQueryForm.setApprpvalStatus(1);
+        workOvertimeQueryForm.setApprovalStatus(1);
         workOvertimeQueryForm.setWhetherPage(false);
         List<WorkOvertimeInfoVO> workOvertimeInfoVOS = workOvertimeInfoBiz.findWorkOvertimeInfoList(workOvertimeQueryForm);
         workOvertimeInfoVOS.forEach(workOvertimeInfoVO -> {
@@ -1041,7 +1041,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         fieldQueryForm.setUserId(userId);
         fieldQueryForm.setBetweenDate(firstDate);
         fieldQueryForm.setAndDate(endDate);
-        fieldQueryForm.setApprpvalStatus(1);
+        fieldQueryForm.setApprovalStatus(1);
         fieldQueryForm.setWhetherPage(false);
         List<FieldInfoVO> fieldInfoVOS = fieldInfoBiz.findFieldInfoList(fieldQueryForm);
         List<Integer> workOvertime = new ArrayList<>();
@@ -1169,7 +1169,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         LeaveInfoQueryForm leaveQueryForm = new LeaveInfoQueryForm();
         leaveQueryForm.setBetweenStartDate(queryForm.getBetweenDate());
         leaveQueryForm.setAndStartDate(queryForm.getAndDate());
-        leaveQueryForm.setApprpvalStatus(1);
+        leaveQueryForm.setApprovalStatus(1);
         leaveQueryForm.setWhetherPage(false);
         List<LeaveInfoVO> leaveInfoVOS = leaveInfoBiz.findLeaveInfoList(leaveQueryForm);
         Table<Integer,Integer, List<LeaveInfoVO>> leaveInfoMap = HashBasedTable.create();
@@ -1446,7 +1446,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         FieldInfoQueryForm fieldInfoQueryForm = new FieldInfoQueryForm();
         fieldInfoQueryForm.setBetweenDate(queryForm.getBetweenDate());
         fieldInfoQueryForm.setAndDate(queryForm.getAndDate());
-        fieldInfoQueryForm.setApprpvalStatus(1);
+        fieldInfoQueryForm.setApprovalStatus(1);
         fieldInfoQueryForm.setWhetherPage(false);
         List<FieldInfoVO> fieldInfoVOS = fieldInfoBiz.findFieldInfoList(fieldInfoQueryForm);
         fieldInfoVOS.forEach(fieldInfoVO -> {
@@ -1875,7 +1875,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         fieldQueryForm.setBetweenDate(betweenDate);
         fieldQueryForm.setAndDate(andDate);
         fieldQueryForm.setCompanyId(orgId);
-        fieldQueryForm.setApprpvalStatus(1);
+        fieldQueryForm.setApprovalStatus(1);
         fieldQueryForm.setUserId(userId);
         fieldQueryForm.setWhetherPage(false);
         List<FieldInfoVO> fieldInfoVOS = fieldInfoBiz.findFieldInfoList(fieldQueryForm);
@@ -2212,7 +2212,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         workQueryForm.setCompanyId(orgId);
         workQueryForm.setStartTime(betweenDate);
         workQueryForm.setEndTime(andDate);
-        workQueryForm.setApprpvalStatus(1);
+        workQueryForm.setApprovalStatus(1);
         List<AttendanceOvertimeMinuteVO> workOvertimeVOS = workOvertimeInfoBiz.statisticsWorkOvertimesByMinute(workQueryForm);
         //审批人
         List<Integer> userIds = new ArrayList<>();
@@ -2296,7 +2296,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         setQueryFormDate(queryForm);
         leaveQueryForm.setBetweenStartDate(queryForm.getBetweenDate());
         leaveQueryForm.setAndStartDate(queryForm.getAndDate());
-        leaveQueryForm.setApprpvalStatus(1);
+        leaveQueryForm.setApprovalStatus(1);
         // 排班
         List<LeaveScheduleVO> leaveScheduleVOS = leaveScheduleBiz.findLeaveScheduleByStatisticsQuery(queryForm);
         Map<Integer, List<LeaveScheduleVO>> leaveScheduleMap = new HashMap<>(16);
@@ -2383,7 +2383,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         fieldQueryForm.setCompanyId(orgId);
         fieldQueryForm.setBetweenDate(betweenDate);
         fieldQueryForm.setAndDate(andDate);
-        fieldQueryForm.setApprpvalStatus(1);
+        fieldQueryForm.setApprovalStatus(1);
         List<FieldInfoVO> fieldInfoVOS = fieldInfoBiz.findFieldInfoList(fieldQueryForm);
         // 审批人
         List<Integer> userIds = new ArrayList<>();

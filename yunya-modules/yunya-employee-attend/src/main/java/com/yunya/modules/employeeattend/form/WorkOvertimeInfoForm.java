@@ -75,7 +75,7 @@ public class WorkOvertimeInfoForm {
      * 审批状态 0 审批中 1通过 2拒绝  3撤回
      */
     @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回")
-    private Integer apprpvalStatus;
+    private Integer approvalStatus;
 
     @ApiModelProperty("拒绝条件")
     private String refuseReason;

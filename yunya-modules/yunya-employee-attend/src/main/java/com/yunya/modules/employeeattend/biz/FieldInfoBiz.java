@@ -160,7 +160,7 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
                         BeanUtils.copyProperties(fieldInfoForm, fieldInfo);
                         fieldInfo.setCrtId(fieldInfoForm.getUserId());
                         fieldInfo.setCrtTime(new Date());
-                        fieldInfo.setApprpvalStatus(0);
+                        fieldInfo.setApprovalStatus(0);
                         int num = mapper.insertSelective(fieldInfo);
                         //生成抄送信息
                         if (fieldInfoForm.getCopyList() != null) {
@@ -272,9 +272,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         }
         //必须提前一天申请或审批
         if (now.before(date)) {
-            if (fieldInfo.getApprpvalStatus() == 0) {
+            if (fieldInfo.getApprovalStatus() == 0) {
                 if (fieldInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
-                    fieldInfo.setApprpvalStatus(fieldInfoForm.getApprpvalStatus());
+                    fieldInfo.setApprovalStatus(fieldInfoForm.getApprovalStatus());
                     fieldInfo.setUpdTime(new Date());
                     fieldInfo.setRefuseReason(fieldInfoForm.getRefuseReason());
                     return mapper.updateByPrimaryKey(fieldInfo);
@@ -296,9 +296,9 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         FieldInfo fieldInfo = new FieldInfo();
         fieldInfo.setId(fieldInfoForm.getId());
         fieldInfo = mapper.selectByPrimaryKey(fieldInfo);
-        if (fieldInfo.getApprpvalStatus() == 0) {
+        if (fieldInfo.getApprovalStatus() == 0) {
             if (fieldInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
-                fieldInfo.setApprpvalStatus(3);
+                fieldInfo.setApprovalStatus(3);
                 return mapper.updateByPrimaryKey(fieldInfo);
             }
             throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);

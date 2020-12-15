@@ -63,8 +63,8 @@ public class LeaveInfo {
     /**
      * 审批状态 0 审批中 1通过 2拒绝 3撤回
      */
-    @Column(name = "apprpval_status")
-    private Integer apprpvalStatus;
+    @Column(name = "approval_status")
+    private Integer approvalStatus;
 
     /**
      * 创建人

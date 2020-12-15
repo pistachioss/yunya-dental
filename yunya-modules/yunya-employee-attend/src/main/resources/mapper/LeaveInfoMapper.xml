@@ -12,7 +12,7 @@
         <result column="refuse_reason" property="refuseReason" jdbcType="VARCHAR"/>
         <result column="leave_picture" property="leavePicture" jdbcType="VARCHAR"/>
         <result column="approval_criteria_id" property="approvalCriteriaId" jdbcType="INTEGER"/>
-        <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER"/>
+        <result column="approval_status" property="approvalStatus" jdbcType="INTEGER"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
@@ -42,13 +42,13 @@
         t.leave_picture as leavePicture,
         t.approval_now_people_id as approvalNowPeopleId,
         t.approval_criteria_id as approvalCriteriaId,
-        t.apprpval_status as apprpvalStatus,
+        t.approval_status as approvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
         from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
-            t.apprpval_status = 1 and vs.vacation_enable=1
+            t.approval_status = 1 and vs.vacation_enable=1
             <if test="userIds!=null and userIds.size()>0">
                 and t.user_id in
                 <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
@@ -78,15 +78,15 @@
         t.leave_picture as leavePicture,
         t.approval_now_people_id as approvalNowPeopleId,
         t.approval_criteria_id as approvalCriteriaId,
-        t.apprpval_status as apprpvalStatus,
+        t.approval_status as approvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
         from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on t.id=ls.leave_id
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
             vs.vacation_enable=1
-            <if test="queryForm.apprpvalStatus != null">
-                and t.apprpval_status = #{queryForm.apprpvalStatus}
+            <if test="queryForm.approvalStatus != null">
+                and t.approval_status = #{queryForm.approvalStatus}
             </if>
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
@@ -117,7 +117,7 @@
         t.leave_picture as leavePicture,
         t.approval_now_people_id as approvalNowPeopleId,
         t.approval_criteria_id as approvalCriteriaId,
-        t.apprpval_status as apprpvalStatus,
+        t.approval_status as approvalStatus,
         vs.vacation_status as vacationStatus,
         ls.schedule_id as scheduleId
         from leave_info t left join vacation_set vs on t.vacation_id=vs.id left join leave_schedule ls on
@@ -125,8 +125,8 @@
         left join employee_schedule es on es.id=ls.schedule_id
         <where>
             vs.vacation_status=0 and vs.vacation_enable=1
-            <if test="queryForm.apprpvalStatus != null">
-                and t.apprpval_status = #{queryForm.apprpvalStatus}
+            <if test="queryForm.approvalStatus != null">
+                and t.approval_status = #{queryForm.approvalStatus}
             </if>
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
@@ -154,13 +154,13 @@
             t.leave_picture as leavePicture,
             t.approval_now_people_id as approvalNowPeopleId,
             t.approval_criteria_id as approvalCriteriaId,
-            t.apprpval_status as apprpvalStatus,
+            t.approval_status as approvalStatus,
             vs.vacation_status as vacationStatus,
             vs.vacation_name as vacationName,
             t.crt_time as crtTime
         from leave_info t left join vacation_set vs on t.vacation_id=vs.id
         <where>
-            t.apprpval_status = 1 and vs.vacation_enable=1
+            t.approval_status = 1 and vs.vacation_enable=1
             <if test="queryForm.orgId!=null">
                 and t.company_id = #{queryForm.orgId}
             </if>
@@ -194,10 +194,10 @@
         leave_reason ,
         leave_picture ,
         approval_criteria_id ,
-        apprpval_status
+        approval_status
         from leave_info
         <where>
-            apprpval_status in(0,1)
+            approval_status in(0,1)
             <if test="userId!=null">
                 and user_id = #{userId}
             </if>
@@ -240,7 +240,7 @@
         user_id = #{userId}
         AND DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
         AND DATE_FORMAT(end_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
-        AND apprpval_status IN (0, 1)
+        AND approval_status IN (0, 1)
     </select>
     <select id="countFiWi" resultType="Integer">
         select sum(num) from
@@ -252,7 +252,7 @@
         user_id = #{userId}
         AND DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         AND DATE_FORMAT(start_time,'%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
-        AND apprpval_status IN (0, 1)
+        AND approval_status IN (0, 1)
         union
         SELECT
         count(*) num
@@ -262,7 +262,7 @@
         user_id = #{userId}
         AND DATE_FORMAT(work_date,'%Y-%m-%d')  &lt;= DATE_FORMAT(#{endTime}, '%Y-%m-%d')
         AND DATE_FORMAT(work_date,'%Y-%m-%d') >= DATE_FORMAT(#{startTime}, '%Y-%m-%d')
-        AND apprpval_status IN (0, 1)) a
+        AND approval_status IN (0, 1)) a
     </select>
     <select id="selectLeave" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoListVO">
         select distinct t.id,
@@ -275,7 +275,7 @@
         t.leave_reason as leaveReason,
         t.leave_picture as leavePicture,
         t.approval_criteria_id as approvalCriteriaId,
-        t.apprpval_status as apprpvalStatus,
+        t.approval_status as approvalStatus,
         t.crt_time as crtTime,
         t.refuse_reason as refuseReason,
         vs.vacation_status as vacationStatus,
@@ -335,11 +335,11 @@
 	ap.user_id AS uid
     FROM
 	leave_info li
-    LEFT JOIN approval_info ai ON ai.leave_id = li.id
     LEFT JOIN approval_people ap on li.approval_now_people_id = ap.id
+      LEFT JOIN approval_info ai ON ai.leave_id = li.id and ai.approval_people_id = ap.id
      LEFT JOIN leave_schedule ls on ls.leave_id = li.id
     LEFT JOIN vacation_set vs on li.vacation_id = vs.id
-    where ap.user_id = #{userId} and li.apprpval_status = 0
+    where ap.user_id = #{userId} and li.approval_status = 0
     group BY li.id
     </select>
     <select id="findOverApprovalByMe" resultType="com.yunya.feign.employee_attend.vo.LeaveAppVO">
