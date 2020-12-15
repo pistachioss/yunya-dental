@@ -1175,13 +1175,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
             Integer userId = leaveInfoVO.getUserId();
             Integer orgId = leaveInfoVO.getOrgId();
-           /* if (orgId == null) {
-                EmployeeScheduleVO employeeScheduleVO = employeeScheduleVOMap.get(leaveInfoVO.getScheduleId());
-                if (employeeScheduleVO != null) {
-                    orgId = employeeScheduleVO.getClinicId();
-                }
-            }*/
-
             long diff;
             if (leaveInfoVO.getVacationStatus().equals(0)) { // 按班次请假
                 diff = leaveInfoVO.getEndTime().getTime() - leaveInfoVO.getStartTime().getTime();
@@ -2787,12 +2780,15 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 List<AttendancePunchRecordVO> list = slaveRecordMap.get(date);
                 if (list != null && !list.isEmpty()) {
                     for (AttendancePunchRecordVO slaveRecord : list) {
-                        if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
-                            onPunchTime = punchRecord.getPunchTime();
-                        } else {
-                            offPunchTime = punchRecord.getPunchTime();
+                        if (AttendanceSourceEnum.WORK_SCHEDULE.getCode().equals(slaveRecord.getSource())
+                            && AttendanceIsPunchEnum.UNPUNCH.getCode().equals(slaveRecord.getIsPunch())) {
+                            if (slaveRecord.getPunchType().equals(AttendanceTypeEnum.ONDUTY.getCode())) {
+                                onPunchTime = punchRecord.getPunchTime();
+                            } else {
+                                offPunchTime = punchRecord.getPunchTime();
+                            }
+                            count++;
                         }
-                        count++;
                     }
                 }
                 unpunchCountVO.setDate(date);
