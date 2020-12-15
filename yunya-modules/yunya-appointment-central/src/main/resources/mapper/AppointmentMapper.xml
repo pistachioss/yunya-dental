@@ -497,6 +497,9 @@
             <if test="query.appointStatus != null">
                 and a.appoint_status = #{query.appointStatus}
             </if>
+            <if test="query.inservice != null">
+                and a.inservice = #{query.inservice}
+            </if>
         </where>
     </select>
 
@@ -534,5 +537,29 @@
         group by patient_id
     </select>
 
+    <!-- 查询指定时间段内每个医生每天预约人数 -->
+    <select id="appointmentForMonth" resultType="com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO">
+        SELECT
+        DATE_FORMAT(a.appoint_date,'%Y-%m-%d') as currentDate,
+        COUNT(a.id) as `count`
+        FROM(
+        SELECT
+        appoint.id,
+        DATE_FORMAT(appoint.appoint_date,'%Y-%m-%d') as appoint_date
+        FROM
+        `appointment` appoint
+        <where>
+            and appoint.appoint_status in (0,1)
+            and appoint.inservice = true
+            <if test="dentistId != null">
+                and appoint.dentist_id = #{dentistId}
+            </if>
+            <if test="startDate != null and endDate != null">
+                and date_format(appoint.appoint_date,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND date_format(#{endDate},'%Y-%m-%d')
+            </if>
+        </where>
+        ) a
+        GROUP BY a.appoint_date
+    </select>
 
 </mapper>

@@ -77,4 +77,10 @@ public class PatientTreatmentRecordVO implements Serializable {
   /** 本单欠费金额 */
   @ApiModelProperty("本单欠费金额")
   private BigDecimal debtAmount;
+  /** 预约ID */
+  @ApiModelProperty("预约ID")
+  private Integer appointmentId;
+  /** 挂号ID */
+  @ApiModelProperty("挂号ID")
+  private Integer registeredId;
 }

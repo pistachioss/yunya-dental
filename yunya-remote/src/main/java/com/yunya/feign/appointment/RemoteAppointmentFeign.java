@@ -1,13 +1,13 @@
 package com.yunya.feign.appointment;
 
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.factory.RemoteAppointmentFeignBackFactory;
-import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.feign.appointment.vo.AppointmentItemVo;
-import com.yunya.feign.appointment.vo.NextAppointsVo;
+import com.yunya.feign.appointment.vo.*;
+import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
@@ -104,7 +104,7 @@ public interface RemoteAppointmentFeign {
    * @return List<Appointment>
    */
   @RequestMapping(value = "/api/appoint/app/list", method = RequestMethod.POST)
-  List<Appointment> findAppointmentList(@RequestBody AppAppointmentInfoQuery query);
+  PageInfo<Appointment> findAppointmentList(@RequestBody AppAppointmentInfoQuery query);
 
   /**
    * 计算预约未到列表数量
@@ -138,4 +138,21 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "/api/appoint/ids", method = RequestMethod.POST)
   List<Appointment> findAppointmentListByIds(@RequestBody List<Integer> appointIds);
+
+  /**
+   * 根据条件查询预约未到患者信息列表
+   * @param queryForm 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/api/appoint/unregister/list", method = RequestMethod.POST)
+  List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(@RequestBody AppointmentCurrentListQuery queryForm);
+
+  /**
+   * 查询指定时间段内每个医生每天预约人数
+   *
+   * @param form 查询条件表单
+   * @return 返回实体列表
+   */
+  @RequestMapping(value = "/api/appoint/app/count", method = RequestMethod.POST)
+  List<TreatmentInfoForMonthVO> appointmentForMonth(@RequestBody AppointmentForMonthForm form);
 }

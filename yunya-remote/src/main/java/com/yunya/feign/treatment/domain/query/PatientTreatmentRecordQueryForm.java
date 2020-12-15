@@ -47,4 +47,7 @@ public class PatientTreatmentRecordQueryForm implements Serializable {
   /** 就诊状态 */
   @ApiModelProperty("就诊状态(0-就诊中；1-已开单；2-就诊完成；3-离店)；默认全部状态")
   private Byte[] treatStatus;
+  /** 挂号ID */
+  @ApiModelProperty("挂号ID")
+  private Integer[] registeredId;
 }

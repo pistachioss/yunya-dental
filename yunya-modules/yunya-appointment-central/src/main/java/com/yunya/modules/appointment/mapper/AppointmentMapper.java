@@ -5,6 +5,7 @@ import com.yunya.feign.appointment.domain.query.AppointPatientRecordQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentQuery;
 import com.yunya.feign.appointment.vo.*;
+import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.models.appointment.Appointment;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -239,4 +240,16 @@ public interface AppointmentMapper extends Mapper<Appointment> {
    * @return 返回患者后续列表
    */
   List<NextAppointsVo> countNextAppoints(@Param("patientIds") List<Integer> patientIds);
+
+  /**
+   * 查询指定时间段内每个医生每天预约人数
+   * @param dentistId 医生ID
+   * @param startDate 开始日期
+   * @param endDate 结束日期
+   * @return 实体列表
+   */
+  List<TreatmentInfoForMonthVO> appointmentForMonth(
+          @Param("dentistId") Integer dentistId,
+          @Param("startDate") Date startDate,
+          @Param("endDate") Date endDate);
 }

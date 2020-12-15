@@ -126,6 +126,8 @@
         tr.dentist_id AS dentistId,
         tr.type AS firstVisit,
         tr.`status` AS treatmentStatus,
+        tr.appointment_id as appointmentId,
+        tr.registered_id as registeredId,
         ord.id as orderRecordId,
         ord.total_amount as originalPrice,
         br.id as billRecordId,

@@ -71,4 +71,9 @@
             #{id}
         </foreach>
     </select>
+
+    <!-- 根据预约ID查询挂号信息 -->
+    <select id="selectRegisteredListByAppointIds" resultMap="BaseResultMap">
+
+    </select>
 </mapper>

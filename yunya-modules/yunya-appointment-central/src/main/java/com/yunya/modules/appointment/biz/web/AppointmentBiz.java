@@ -916,14 +916,14 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      * @param id  预约id
      * @return 返回结果
      */
-    public ResponseResult confirmAppointment(Integer id){
+    public ResponseResult confirmAppointment(Integer id, Boolean flag){
         Appointment appointment = mapper.selectByPrimaryKey(id);
         AppointOperationModel appointOperationModel = new AppointOperationModel();
         if (appointment == null){
             return ResponseUtil.fail(AppointmentError.APPOINT_DATA_NOT_EXIST.getCode(),AppointmentError.APPOINT_DATA_NOT_EXIST.getMessage(),null);
         }
         appointOperationModel.setBeforeOperation(appointment.getConfirmStatus()?"确认":"未确认");
-        appointment.setConfirmStatus(true);
+        appointment.setConfirmStatus(flag == null ? true : flag);
         appointment.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
         appointment.setUpdName(BaseContextHandler.getName());
         appointment.setUpdTime(new Date(System.currentTimeMillis()));

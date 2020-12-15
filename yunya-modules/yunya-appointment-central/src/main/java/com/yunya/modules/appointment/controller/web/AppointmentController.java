@@ -16,9 +16,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,8 +147,12 @@ public class AppointmentController {
   @PutMapping("/confirm/{id}")
   @CurrentUser
   @RepeatSubmit
-  public ResponseResult appointConfirm(@PathVariable("id") Integer id) {
-    return appointmentBiz.confirmAppointment(id);
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "id", value = "预约ID", dataTypeClass = Integer.class),
+          @ApiImplicitParam(name = "flag", value = "确认状态,true-已确认；false-未确认", dataTypeClass = java.lang.Boolean.class)
+  })
+  public ResponseResult appointConfirm(@PathVariable("id") Integer id, Boolean flag) {
+    return appointmentBiz.confirmAppointment(id,flag);
   }
 
   /**

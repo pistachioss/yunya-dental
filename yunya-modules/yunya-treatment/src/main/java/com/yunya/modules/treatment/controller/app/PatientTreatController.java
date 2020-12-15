@@ -37,7 +37,7 @@ public class PatientTreatController {
   /** 注入对象 */
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
 
-  @ApiOperation("根据条件查询APP端患者就诊列表(开发中...)")
+  @ApiOperation("根据条件查询APP端患者就诊列表(开完成,可联调...)")
   @PostMapping(value = "/list", name = "根据条件查询APP端患者就诊列表")
   public ResponseResult<PageInfo<AppPatientTreatmentInfoVO>> treatList(
       @RequestBody @Validated AppTreatListQuery query) {

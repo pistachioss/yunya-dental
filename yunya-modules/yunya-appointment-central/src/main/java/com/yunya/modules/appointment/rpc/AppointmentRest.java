@@ -2,15 +2,16 @@ package com.yunya.modules.appointment.rpc;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
-import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.feign.appointment.vo.AppointmentItemVo;
-import com.yunya.feign.appointment.vo.NextAppointsVo;
+import com.yunya.feign.appointment.vo.*;
+import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
+import com.yunya.modules.appointment.biz.app.AppBiz;
 import com.yunya.modules.appointment.biz.web.AppointItemBiz;
 import com.yunya.modules.appointment.biz.web.AppointTypeBiz;
 import com.yunya.modules.appointment.biz.web.AppointmentBiz;
@@ -40,6 +41,8 @@ public class AppointmentRest {
   @Autowired private AppointItemBiz baseBiz;
 
   @Autowired private AppointTypeBiz appointTypeBiz;
+  @Autowired
+  private AppBiz appBiz;
 
   /**
    * 根据条件查询门诊可预约项目
@@ -182,6 +185,32 @@ public class AppointmentRest {
   @RequestMapping(value = "/appoint/count/patientIds", method = RequestMethod.POST)
   List<NextAppointsVo> countNextAppoints(@RequestBody List<Integer> patientIds) {
     return appointmentBiz.countNextAppoints(patientIds);
+  }
+
+  /**
+   * 根据条件查询预约未到患者信息列表
+   * @param queryForm 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/appoint/unregister/list", method = RequestMethod.POST)
+  public List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(@RequestBody AppointmentCurrentListQuery queryForm) {
+    PageInfo<AppointmentUnDonePatientInfoVO> unComingAppointmentList = appointmentBiz.findUnComingAppointmentList(queryForm);
+    List<AppointmentUnDonePatientInfoVO> list = unComingAppointmentList.getList();
+    if (StringHelper.isNotEmpty(list)) {
+      return list;
+    }
+    return new ArrayList<>();
+  }
+
+  /**
+   * 查询指定时间段内每个医生每天预约人数
+   *
+   * @param form 查询条件表单
+   * @return 返回实体列表
+   */
+  @RequestMapping(value = "/appoint/app/count", method = RequestMethod.POST)
+  public List<TreatmentInfoForMonthVO> appointmentForMonth(@RequestBody AppointmentForMonthForm form) {
+    return this.appBiz.appointmentForMonth(form);
   }
 
 

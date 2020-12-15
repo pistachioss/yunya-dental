@@ -3,8 +3,11 @@ package com.yunya.modules.treatment.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
+import com.yunya.feign.appointment.vo.AppointmentForMonthVo;
+import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -52,6 +55,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
 import static com.yunya.framework.common.constant.BusinessConstants.TREATMENT_PROCESSING_STATUS;
@@ -100,6 +104,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   @Autowired private RemoteTreatmentOtherFeign remoteTreatmentOther;
   /** 电子病历 */
   @Autowired private RemoteEmrServiceFeign remoteEmrServiceFeign;
+  /** 挂号服务 */
+  @Autowired
+  private RegisteredBiz registeredBiz;
 
   /**
    * 开始接诊
@@ -997,7 +1004,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
   }
 
   /**
-   * 根据条件查询APP端就诊列表(方法未完成)
+   * 根据条件查询APP端就诊列表
    *
    * @param query 查询条件
    * @return list
@@ -1010,14 +1017,112 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     String queryDate = query.getQueryDate();
     Integer dentistId = query.getDentistId();
 
-    AppAppointmentInfoQuery form = new AppAppointmentInfoQuery();
-    form.setOrgId(orgId);
-    form.setQueryDate(queryDate);
-    form.setWhetherPage(false);
-    List<Appointment> appointments = appointmentFeign.findAppointmentList(form);
-    if (StringHelper.isNotEmpty(appointments)) {}
-
-    return null;
+    List<AppPatientTreatmentInfoVO> appPatientTreatmentInfoVOList = new ArrayList<>();
+    AppointmentCurrentListQuery unRegisterForm = new AppointmentCurrentListQuery();
+    unRegisterForm.setCurrentDate(queryDate);
+    unRegisterForm.setWhetherPage(false);
+    unRegisterForm.setOrgId(orgId);
+    unRegisterForm.setDentistId(dentistId);
+    // 预约未到
+    List<AppointmentUnDonePatientInfoVO> unComingAppointmentList = appointmentFeign.findUnComingAppointmentList(unRegisterForm);
+    if (StringHelper.isNotEmpty(unComingAppointmentList)) {
+      unComingAppointmentList.forEach(appointmentUnDonePatientInfoVO -> {
+        AppPatientTreatmentInfoVO entity = new AppPatientTreatmentInfoVO();
+        entity.setAppointId(appointmentUnDonePatientInfoVO.getId());
+        entity.setTreatStatus(appointmentUnDonePatientInfoVO.getAppointStatus());
+        entity.setNodeTime(appointmentUnDonePatientInfoVO.getAppointTime());
+        entity.setPatientId(appointmentUnDonePatientInfoVO.getPatientId());
+        entity.setPatientName(appointmentUnDonePatientInfoVO.getPatientName());
+        entity.setDentistId(appointmentUnDonePatientInfoVO.getAppointDentistId());
+        entity.setDentistName(appointmentUnDonePatientInfoVO.getAppointDentistName());
+        entity.setAssistantId(appointmentUnDonePatientInfoVO.getAppointAssistantId());
+        entity.setAssistantName(
+                StringHelper.isBlank(appointmentUnDonePatientInfoVO.getAppointAssistantName()) ?
+                        "--" : appointmentUnDonePatientInfoVO.getAppointAssistantName());
+        entity.setAge(appointmentUnDonePatientInfoVO.getAge());
+        entity.setGender(appointmentUnDonePatientInfoVO.getGender());
+        entity.setOrgId(appointmentUnDonePatientInfoVO.getOrgId());
+        appPatientTreatmentInfoVOList.add(entity);
+      });
+    }
+    // 候诊中
+    RegisteredQueryForm registerQuery = new RegisteredQueryForm();
+    registerQuery.setInservice(true);
+    registerQuery.setCurrentDate(queryDate);
+    registerQuery.setDentistId(dentistId);
+    registerQuery.setOrgId(orgId);
+    PageInfo<WaitingPatientInfoVO> registeredList = this.registeredBiz.findRegisteredList(registerQuery);
+    List<WaitingPatientInfoVO> waitingPatientInfoVOS = registeredList.getList();
+    if (StringHelper.isNotEmpty(waitingPatientInfoVOS)) {
+      waitingPatientInfoVOS.forEach(waitingPatientInfoVO -> {
+          // 无预约直接挂号
+          AppPatientTreatmentInfoVO entity = new AppPatientTreatmentInfoVO();
+          entity.setAppointId(waitingPatientInfoVO.getAppointmentId());
+          entity.setTreatStatus((byte) 2);
+          entity.setNodeTime(waitingPatientInfoVO.getRegTime());
+          entity.setPatientId(waitingPatientInfoVO.getPatientId());
+          entity.setPatientName(waitingPatientInfoVO.getPatientName());
+          entity.setDentistId(waitingPatientInfoVO.getRegDentistId());
+          entity.setDentistName(waitingPatientInfoVO.getRegDentistName());
+          entity.setAssistantId(waitingPatientInfoVO.getRegAssistantId());
+          entity.setAssistantName(StringHelper.isBlank(waitingPatientInfoVO.getRegAssistantName()) ?
+                  "--" : waitingPatientInfoVO.getRegAssistantName());
+          entity.setAge(waitingPatientInfoVO.getAge());
+          entity.setGender(waitingPatientInfoVO.getGender());
+          entity.setOrgId(waitingPatientInfoVO.getOrgId());
+          entity.setRegistedId(waitingPatientInfoVO.getId());
+          appPatientTreatmentInfoVOList.add(entity);
+      });
+    }
+    // 就诊中/就诊完成/已结账
+    TreatmentRecordQueryForm queryForm = new TreatmentRecordQueryForm();
+    queryForm.setWhetherPage(false);
+    queryForm.setCurrentDate(queryDate);
+    queryForm.setOrgId(orgId);
+    queryForm.setDentistId(dentistId);
+    queryForm.setTreatmentStatus(new Byte[]{0,1,2,3});
+    PageInfo<TreatmentPatientInfoVO> treatList = this.findTreatList(queryForm);
+    List<TreatmentPatientInfoVO> patientTreatmentRecordVOS = treatList.getList();
+    if (StringHelper.isNotEmpty(patientTreatmentRecordVOS)) {
+      patientTreatmentRecordVOS.forEach(patientTreatmentRecordVO -> {
+        AppPatientTreatmentInfoVO entity = new AppPatientTreatmentInfoVO();
+        // 设置就诊状态
+        Byte treatmentStatus = patientTreatmentRecordVO.getTreatmentStatus();
+        switch (treatmentStatus) {
+          case 0:
+            // 就诊中
+            entity.setTreatStatus((byte) 3);
+            break;
+          case 1:
+          case 2:
+            // 就诊完成
+            entity.setTreatStatus((byte) 4);
+            break;
+          case 3:
+            // 已结账
+            entity.setTreatStatus((byte) 5);
+            break;
+          default:
+            break;
+        }
+        entity.setAppointId(patientTreatmentRecordVO.getAppointmentId());
+        entity.setNodeTime(patientTreatmentRecordVO.getTreatDate());
+        entity.setPatientId(patientTreatmentRecordVO.getPatientId());
+        entity.setPatientName(patientTreatmentRecordVO.getPatientName());
+        entity.setDentistId(patientTreatmentRecordVO.getRegDentistId());
+        entity.setDentistName(patientTreatmentRecordVO.getRegDentistName());
+        entity.setAssistantId(patientTreatmentRecordVO.getRegAssistantId());
+        entity.setAssistantName(StringHelper.isBlank(patientTreatmentRecordVO.getRegAssistantName()) ?
+                "--" : patientTreatmentRecordVO.getRegAssistantName());
+        entity.setAge(patientTreatmentRecordVO.getAge());
+        entity.setGender(patientTreatmentRecordVO.getGender());
+        entity.setOrgId(patientTreatmentRecordVO.getOrgId());
+        entity.setRegistedId(patientTreatmentRecordVO.getRegisteredId());
+        entity.setOrderRecordId(patientTreatmentRecordVO.getOrderRecordId());
+        appPatientTreatmentInfoVOList.add(entity);
+      });
+    }
+    return new PageInfo<>(appPatientTreatmentInfoVOList);
   }
 
   /**
@@ -1041,7 +1146,14 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer dentistId = form.getDentistId();
     Date startDate = form.getStartDate();
     Date endDate = form.getEndDate();
-    return mapper.treatInfoForMonth(dentistId, startDate, endDate);
+    List<TreatmentInfoForMonthVO> treatmentInfoForMonthVOS = mapper.treatInfoForMonth(dentistId, startDate, endDate);
+    AppointmentForMonthForm queryForm = new AppointmentForMonthForm();
+    queryForm.setDentistId(dentistId);
+    queryForm.setEndDate(endDate);
+    queryForm.setStartDate(startDate);
+    List<TreatmentInfoForMonthVO> appointmentForMonthVos = this.appointmentFeign.appointmentForMonth(queryForm);
+    appointmentForMonthVos.stream().sequential().collect(Collectors.toCollection(() ->treatmentInfoForMonthVOS));
+    return treatmentInfoForMonthVOS;
   }
 
   /**

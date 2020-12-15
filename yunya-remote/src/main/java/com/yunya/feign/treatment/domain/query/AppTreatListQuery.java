@@ -37,7 +37,7 @@ public class AppTreatListQuery implements Serializable {
   @NotNull(message = "组织ID不能为空！")
   private Integer orgId;
   /** 查询日期 */
-  @ApiModelProperty(value = "查询日期", example = "yyyy-MM-dd")
+  @ApiModelProperty(value = "查询日期", example = "yyyy-MM-dd", required = true)
   @NotBlank(message = "查询日期不能为空！")
   private String queryDate;
   /** 医生ID */
