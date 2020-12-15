@@ -4,7 +4,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.*;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.system.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -136,7 +135,7 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
-  public ResponseResult<PageInfo<SysUserInfoDetail>> findSysUserEmployeeWithOrgList(SysUserEmployeeModel model) {
+  public PageInfo<SysUserInfoDetail> findSysUserEmployeeWithOrgList(SysUserEmployeeModel model) {
     return null;
   }
 

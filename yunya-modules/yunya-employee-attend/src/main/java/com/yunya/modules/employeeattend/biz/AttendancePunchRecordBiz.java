@@ -15,7 +15,6 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
@@ -1483,9 +1482,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
         model.setKeyWord(name);
         model.setWorkStatus(new Byte[]{0, 1, 3});
-        ResponseResult<PageInfo<SysUserInfoDetail>> userPages = remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model);
+        PageInfo<SysUserInfoDetail> userPage = remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model);
         List<AttendanceStatisticsVO> result = new ArrayList<>();
-        PageInfo<SysUserInfoDetail> userPage = userPages.getData();
         List<SysUserInfoDetail> userList = userPage.getList();
         userList.forEach(user->{
             Integer userId = user.getUserId();
