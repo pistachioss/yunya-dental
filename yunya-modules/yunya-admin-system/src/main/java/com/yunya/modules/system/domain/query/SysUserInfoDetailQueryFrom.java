@@ -56,4 +56,7 @@ public class SysUserInfoDetailQueryFrom implements Serializable {
   /** 用户ID + "," + 组织ID 列表 */
   @ApiModelProperty("用户ID + \",\" + 组织ID 列表")
   private Collection<String> userOrgIds;
+  /** 员工姓名 */
+  @ApiModelProperty("员工姓名")
+  private String userName;
 }

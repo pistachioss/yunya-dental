@@ -401,7 +401,7 @@
             w.type = #{form.type}
             and w.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != ''">
-                and date_format(w.occur_date, '%Y-%m-%d' ) &lt;= date_format(#{form.startDate}, '%Y-%m-%d' )
+                and date_format(w.occur_date, '%Y-%m-%d' ) &lt; date_format(#{form.startDate}, '%Y-%m-%d' )
             </if>
         </where>
         GROUP BY w.card_id
@@ -418,7 +418,7 @@
             b.type = #{form.type}
             and b.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != ''">
-                and date_format( b.occur_date, '%Y-%m-%d' ) &lt;= date_format(#{form.startDate}, '%Y-%m-%d' )
+                and date_format( b.occur_date, '%Y-%m-%d' ) &lt; date_format(#{form.startDate}, '%Y-%m-%d' )
             </if>
         </where>
         GROUP BY b.card_id
@@ -433,7 +433,7 @@
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
                 and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
-                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt; DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         ) thisRechargePrincipalAmount,
@@ -445,7 +445,7 @@
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
                 and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
-                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt; DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         ) thisRechargeBonusAmount,
@@ -457,7 +457,7 @@
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
                 and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
-                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt; DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         ) thisExpendPrincipalAmount,
@@ -469,7 +469,7 @@
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
                 and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
-                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt; DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         ) thisExpendBonusAmount,
@@ -481,7 +481,7 @@
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
                 and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
-                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt; DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         ) thisReturnPrincipalAmount,
@@ -493,7 +493,7 @@
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
                 and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &gt;= DATE_FORMAT( #{form.startDate}, "%Y-%m-%d" )
-                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt; DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         ) thisReturnBonusAmount,
@@ -507,7 +507,7 @@
             a.type = #{form.type}
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt; DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         )
@@ -524,7 +524,7 @@
             a.type = #{form.type}
             and a.card_id = bpm.card_id
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != ''">
-                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt;= DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
+                and DATE_FORMAT( a.occur_date, "%Y-%m-%d" ) &lt; DATE_FORMAT( #{form.endDate}, "%Y-%m-%d" )
             </if>
         </where>
         )

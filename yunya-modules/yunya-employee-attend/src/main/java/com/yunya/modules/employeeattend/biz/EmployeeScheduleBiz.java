@@ -85,7 +85,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         //查询当前日期的排班个数 超过两个则不能继续添加排班
         EmployeeSchedule find = new  EmployeeSchedule();
         find.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
-        find.setClinicId(employeeScheduleForm.getClinicId());
+//        find.setClinicId(employeeScheduleForm.getClinicId());
         find.setWorkDate(date);
         int a = mapper.selectCount(find);
         if(a>=2){

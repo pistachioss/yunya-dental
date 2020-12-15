@@ -70,7 +70,7 @@ public class ApprovalLevelSetController {
     }
 
     /**
-     * 修改审批人级别设置
+     * 删除审批人级别设置
      *
      * @param
      * @return

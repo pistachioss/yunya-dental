@@ -33,7 +33,7 @@
         <where>
             bpm.type = #{form.type}
             <if test="form.memberLevelId != null">
-                AND bpm.member_level_id = #{form.memberLevelId}
+                    AND bpm.member_level_id = #{form.memberLevelId}
             </if>
 
             <if test="form.orgIds != null and form.orgIds.size() > 0">
@@ -45,11 +45,11 @@
 
             <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
                 and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
-                and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
+                and DATE_FORMAT(bpm.card_opening_date, "%Y-%m-%d") &lt; DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
             </if>
 
         </where>
-        group by bpm.card_opening_date desc
+        group by bpm.card_number desc
         ) t1
         <where>
             <if test="patientIds != null and patientIds.size() > 0 ">
@@ -63,15 +63,15 @@
 
     <!-- 查询会员卡状态 -->
     <select id="memberOverviewList" resultType="com.yunya.feign.report.domain.vo.BaseMemberOverviewVo">
-    select
-      bpm.member_level_id memberLevelId,
-      bpm.member_level_name memberLevelName,
-      count(bpm.member_level_name) amount,
-      sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
-      sum(bpm.bonus_amount) bonusAmount
-    from base_patient_member bpm
-    where type = 0
-    group by bpm.member_level_name
+        select
+          bpm.member_level_id memberLevelId,
+          bpm.member_level_name memberLevelName,
+          count(bpm.member_level_id) amount,
+          sum(bpm.principal_amount + bpm.bonus_amount) principalAmount,
+          sum(bpm.bonus_amount) bonusAmount
+        from base_patient_member bpm
+        where type = 0
+        group by bpm.member_level_name
     </select>
 
     <!-- 根据条件查询门诊会员数据总览 -->

@@ -145,7 +145,7 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
                             BeanUtils.copyProperties(workOvertimeInfoForm, workOvertimeInfo);
                             workOvertimeInfo.setCrtId(workOvertimeInfo.getUserId());
                             workOvertimeInfo.setCrtTime(new Date());
-                            workOvertimeInfo.setApprpvalStatus(0);
+                            workOvertimeInfo.setApprovalStatus(0);
                             int num = mapper.insertSelective(workOvertimeInfo);
                             //生成抄送信息
                             if (workOvertimeInfoForm.getCopyList()!=null) {
@@ -228,9 +228,9 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         //必须提前一天申请或审批
         if (now.before(date)) {
 
-            if (workOvertimeInfo.getApprpvalStatus() == 0) {
+            if (workOvertimeInfo.getApprovalStatus() == 0) {
                 if (workOvertimeInfo.getApprovalPeopleId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
-                    workOvertimeInfo.setApprpvalStatus(workOvertimeInfoForm.getApprpvalStatus());
+                    workOvertimeInfo.setApprovalStatus(workOvertimeInfoForm.getApprovalStatus());
                     workOvertimeInfo.setUpdTime(new Date());
                     workOvertimeInfo.setRefuseReason(workOvertimeInfoForm.getRefuseReason());
                     return mapper.updateByPrimaryKey(workOvertimeInfo);
@@ -252,9 +252,9 @@ public class WorkOvertimeInfoBiz extends BaseBiz<WorkOvertimeInfoMapper, WorkOve
         WorkOvertimeInfo workOvertimeInfo = new WorkOvertimeInfo();
         workOvertimeInfo.setId(workOvertimeInfoForm.getId());
         workOvertimeInfo = mapper.selectByPrimaryKey(workOvertimeInfo);
-        if (workOvertimeInfo.getApprpvalStatus() == 0) {
+        if (workOvertimeInfo.getApprovalStatus() == 0) {
             if (workOvertimeInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
-                workOvertimeInfo.setApprpvalStatus(3);
+                workOvertimeInfo.setApprovalStatus(3);
                 return mapper.updateByPrimaryKey(workOvertimeInfo);
             }
             throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);

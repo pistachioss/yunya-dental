@@ -3,8 +3,6 @@ package com.yunya.modules.system.rpc;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.*;
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.*;
 import com.yunya.modules.system.biz.*;
@@ -323,17 +321,30 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据条件分页查询用户信息（含员工信息）
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/userInfo/page", method = RequestMethod.POST)
+  public PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(
+          @RequestBody SysUserEmployeeModel model) {
+    SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
+    BeanUtils.copyProperties(model, from);
+    return sysUserBiz.findUserDetailInfoList(from);
+  }
+
+  /**
    * 根据条件查询用户组织信息
    *
    * @param model 查询条件
    * @return
    */
   @RequestMapping(value = "/userWithOrg/list", method = RequestMethod.POST)
-  public ResponseResult<PageInfo<SysUserInfoDetail>> findUserDetailWithOrgList(@RequestBody SysUserEmployeeModel model) {
+  public PageInfo<SysUserInfoDetail> findUserDetailWithOrgList(@RequestBody SysUserEmployeeModel model) {
     SysUserInfoDetailQueryFrom from = new SysUserInfoDetailQueryFrom();
     BeanUtils.copyProperties(model, from);
-    PageInfo<SysUserInfoDetail> pageInfo = sysUserBiz.findUserDetailWithOrgList(from);
-    return ResponseUtil.success(pageInfo);
+    return sysUserBiz.findUserDetailWithOrgList(from);
   }
 
   /**

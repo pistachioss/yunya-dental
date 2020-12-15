@@ -35,7 +35,7 @@ public class AttendanceDeviceBindingModel {
     /** 绑定打卡账号 */
     @ApiModelProperty(value = "绑定打卡账号", required = true)
     @NotBlank(message = "绑定打卡账号不能为空")
-    @Pattern(regexp = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$")
+    @Pattern(regexp = "^1(3([0-35-9]\\d|4[1-8])|4[14-9]\\d|5([0-35689]\\d|7[1-79])|66\\d|7[2-35-8]\\d|8\\d{2}|9[13589]\\d)\\d{7}$")
     private String mobile;
 
     /** 验证码 */

@@ -419,6 +419,9 @@
                 and CONCAT(IFNULL(user_info.name, ''), IFNULL(user_info.mobilePhone, ''), IFNULL(user_info.pinyin, ''))
                 like concat('%', #{queryForm.keyWord} ,'%')
             </if>
+            <if test="queryForm.userName!=null and queryForm.userName!=''">
+                and IFNULL(user_info.name, '') like concat('%', #{queryForm.userName} ,'%')
+            </if>
             <if test="queryForm.workStatus != null and queryForm.workStatus.length > 0">
                 and user_info.workStatus in
                 <foreach collection="queryForm.workStatus" item="item" index="index" open="(" close=")" separator=",">
@@ -446,9 +449,8 @@
         LEFT JOIN (select company_id,user_id from sys_user_post group by company_id,user_id) t3 ON t1.id = t3.user_id
         LEFT JOIN company t4 ON t3.company_id = t4.id
         <where>
-            <if test="queryForm.keyWord != null and queryForm.keyWord != ''">
-                and CONCAT(IFNULL(t2.name, ''), IFNULL(user_info.mobilePhone, ''), IFNULL(user_info.pinyin, ''))
-                like concat('%', #{queryForm.keyWord} ,'%')
+            <if test="queryForm.userName != null and queryForm.userName != ''">
+                and IFNULL(t2.name, '') like concat('%', #{queryForm.userName} ,'%')
             </if>
             <if test="queryForm.orgIds!=null and queryForm.orgIds.size()>0">
                 and t4.id in

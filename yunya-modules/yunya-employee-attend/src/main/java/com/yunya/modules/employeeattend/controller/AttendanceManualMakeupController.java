@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
  * @Date: 2020/11/28 12:53
  * @since: 1.0.0
  */
-@Api(tags = "考勤Wifi设置管理")
+@Api(tags = "考勤手动补入时长管理")
 @RestController
 @RequestMapping("attendanceManualMakeup")
 public class AttendanceManualMakeupController {

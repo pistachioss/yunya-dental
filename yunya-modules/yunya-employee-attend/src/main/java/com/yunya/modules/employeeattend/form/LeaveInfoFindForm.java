@@ -36,7 +36,7 @@ public class LeaveInfoFindForm {
 
     /** 审批状态 0 审批中 1通过 2拒绝 3撤回*/
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝 3撤回")
-    private Integer apprpvalStatus;
+    private Integer approvalStatus;
 
     /** 请假方式：0-按班次请假，1-按天请假*/
     @ApiModelProperty(value = "请假方式：0-按班次请假，1-按天请假")

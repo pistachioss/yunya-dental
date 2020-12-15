@@ -5,6 +5,7 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.employeeattend.biz.ApprovalPeopleBiz;
+import com.yunya.modules.employeeattend.form.ApprovalPeopleDeleteForm;
 import com.yunya.modules.employeeattend.form.ApprovalPeopleForm;
 import com.yunya.modules.employeeattend.form.ApprovalPeopleQuery;
 import com.yunya.modules.employeeattend.vo.ApprovalPeopleVO;
@@ -63,7 +64,7 @@ public class ApprovalPeopleController {
      */
     @DeleteMapping("")
     @ApiOperation("删除审批人员设置")
-    public ResponseResult delete(@RequestBody @Validated ApprovalPeopleForm approvalPeopleForm) {
-        return ResponseUtil.success(approvalPeopleBiz.delete(approvalPeopleForm));
+    public ResponseResult delete(@RequestBody @Validated ApprovalPeopleDeleteForm approvalPeopleDeleteForm) {
+        return ResponseUtil.success(approvalPeopleBiz.delete(approvalPeopleDeleteForm));
     }
 }

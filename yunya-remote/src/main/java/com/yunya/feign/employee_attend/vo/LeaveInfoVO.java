@@ -87,7 +87,7 @@ public class LeaveInfoVO implements Serializable {
      * 审批状态 0 审批中 1通过 2拒绝 3撤回
      */
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝 3撤回")
-    private Integer apprpvalStatus;
+    private Integer approvalStatus;
 
     /**
      * 申请类型 0：班次 1：天

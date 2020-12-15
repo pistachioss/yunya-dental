@@ -5,18 +5,18 @@ import com.yunya.feign.report.domain.form.PullForm;
 import com.yunya.feign.report.domain.model.MessageModel;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
-import com.yunya.middletable.dao.patient.MemberExpendRecordMapper;
-import com.yunya.middletable.dao.patient.PrepaidExpendRecordMapper;
 import com.yunya.middletable.dao.report.BaseBillDetailMapper;
 import com.yunya.middletable.dao.report.BaseBillMapper;
-import com.yunya.middletable.dao.report.BaseBillPayMapper;
-import com.yunya.middletable.dao.treatment.*;
-import com.yunya.models.patient_central.MemberExpendRecord;
-import com.yunya.models.patient_central.PrepaidExpendRecord;
+import com.yunya.middletable.dao.treatment.BillRecordMapper;
+import com.yunya.middletable.dao.treatment.OrderDetailMapper;
+import com.yunya.middletable.dao.treatment.OrderDetailPayRecordMapper;
+import com.yunya.middletable.dao.treatment.OrderRecordMapper;
 import com.yunya.models.report.BaseBill;
 import com.yunya.models.report.BaseBillDetail;
-import com.yunya.models.report.BaseBillPay;
-import com.yunya.models.treatment.*;
+import com.yunya.models.treatment.BillRecord;
+import com.yunya.models.treatment.OrderDetail;
+import com.yunya.models.treatment.OrderDetailPayRecord;
+import com.yunya.models.treatment.OrderRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +24,8 @@ import tk.mybatis.mapper.entity.Example;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.BusinessConstants.ORDER_FINISH_STATUS;
 
 /**
  * 简介: 中间表账单业务层
@@ -43,18 +45,8 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   @Autowired private OrderDetailMapper orderDetailMapper;
   /** 订单明细付款记录 */
   @Autowired private OrderDetailPayRecordMapper orderDetailPayRecordMapper;
-  /** 会员卡消费记录 */
-  @Autowired private MemberExpendRecordMapper memberExpendRecordMapper;
-  /** 预付款消费记录 */
-  @Autowired private PrepaidExpendRecordMapper prepaidExpendRecordMapper;
   /** 账单记录 */
   @Autowired private BillRecordMapper billRecordMapper;
-  /** 账单付款记录 */
-  @Autowired private BillPayRecordMapper billPayRecordMapper;
-  /** 账单付款详情 */
-  @Autowired private BillPayDetailRecordMapper billPayDetailRecordMapper;
-  /** 中间表账单付款记录 */
-  @Autowired private BaseBillPayMapper baseBillPayMapper;
   /** 中间表账单详情 */
   @Autowired private BaseBillDetailMapper baseBillDetailMapper;
 
@@ -69,47 +61,16 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     Integer operateType = msg.getOperateType();
     switch (operateType) {
       case 0:
+      case 2:
+      case 1:
         mapper.deleteByPrimaryKey(dataId);
         if (null != bill) {
           mapper.insertSelective(bill);
-          // 保存账单收费记录
-          saveBaseBillPay(dataId);
-          // 保存账单收费明细
+          baseBillDetailMapper.deleteByBillId(dataId);
+          // 保存账单明细
           saveBaseBillDetail(dataId);
         } else {
-          mapper.deleteByPrimaryKey(dataId);
-          baseBillPayMapper.deleteByBillId(dataId);
           baseBillDetailMapper.deleteByBillId(dataId);
-        }
-        break;
-      case 1:
-        if (null != bill) {
-          BaseBill result = mapper.selectByPrimaryKey(dataId);
-          if (null == result) {
-            mapper.deleteByPrimaryKey(dataId);
-            mapper.insertSelective(bill);
-            saveBaseBillPay(dataId);
-            saveBaseBillDetail(dataId);
-          } else {
-            mapper.updateByPrimaryKeySelective(bill);
-            updateBaseBillPay(dataId);
-            updateBaseBillDetail(dataId);
-          }
-        } else {
-          mapper.deleteByPrimaryKey(dataId);
-          baseBillPayMapper.deleteByBillId(dataId);
-          baseBillDetailMapper.deleteByBillId(dataId);
-        }
-        break;
-      case 2:
-        if (null == bill) {
-          mapper.deleteByPrimaryKey(dataId);
-          baseBillPayMapper.deleteByBillId(dataId);
-          baseBillDetailMapper.deleteByBillId(dataId);
-        } else {
-          mapper.insertSelective(bill);
-          saveBaseBillPay(dataId);
-          saveBaseBillDetail(dataId);
         }
         break;
       default:
@@ -120,11 +81,11 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   /**
    * 初始化中间表账单信息
    *
-   * @param dataId 订单ID
-   * @return
+   * @param orderRecordId 账单ID（开单记录ID）
+   * @return BaseBill
    */
-  private BaseBill generateBaseBill(Integer dataId) {
-    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(dataId);
+  private BaseBill generateBaseBill(Integer orderRecordId) {
+    OrderRecord orderRecord = orderRecordMapper.selectByPrimaryKey(orderRecordId);
     if (null != orderRecord && orderRecord.getInservice()) {
       BaseBill baseBill = new BaseBill();
       baseBill.setBillId(orderRecord.getId());
@@ -136,7 +97,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       baseBill.setBillerId(orderRecord.getCrtId());
       baseBill.setOrderDate(orderRecord.getCrtTime());
       // 设置账单的收费信息
-      setBaseBillChargeValue(dataId, baseBill);
+      if (ORDER_FINISH_STATUS.equals(orderRecord.getStatus())) {
+        setBaseBillChargeValue(orderRecordId, baseBill);
+      }
       return baseBill;
     }
     return null;
@@ -167,46 +130,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   }
 
   /**
-   * 保存中间表账单支付记录
-   *
-   * @param orderRecordId 订单记录ID
-   */
-  private void saveBaseBillPay(Integer orderRecordId) {
-    System.out.println("**************************************** 订单记录ID" + orderRecordId);
-    BillPayRecord payRecord = new BillPayRecord();
-    payRecord.setOrderRecordId(orderRecordId);
-    List<BillPayRecord> billPayRecords = billPayRecordMapper.select(payRecord);
-    if (StringHelper.isNotEmpty(billPayRecords)) {
-      BaseBillPay baseBillPay = new BaseBillPay();
-      billPayRecords.forEach(
-          billPayRecord -> {
-            generateBaseBillPayValue(billPayRecord, baseBillPay);
-            baseBillPayMapper.deleteByPrimaryKey(billPayRecord.getId());
-            baseBillPayMapper.insertSelective(baseBillPay);
-          });
-    }
-  }
-
-  /**
-   * 构建中间表账单收费记录
-   *
-   * @param payRecord 原始收费记录
-   * @param baseBillPay 中间表账单信息
-   */
-  private void generateBaseBillPayValue(BillPayRecord payRecord, BaseBillPay baseBillPay) {
-    Integer payRecordId = payRecord.getId();
-    baseBillPay.setBillPayId(payRecordId);
-    baseBillPay.setBillId(payRecord.getOrderRecordId());
-    baseBillPay.setOrgId(payRecord.getOrgId());
-    baseBillPay.setTreatmentId(payRecord.getTreatmentRecordId());
-    baseBillPay.setPayeeUserId(payRecord.getCrtId());
-    baseBillPay.setPayeeDate(payRecord.getCrtTime());
-    baseBillPay.setReceivedAmount(payRecord.getReceivedAmount());
-    baseBillPay.setStillOweAmount(payRecord.getStillOweAmount());
-    setBaseBillPayAccountItemValue(baseBillPay, payRecordId);
-  }
-
-  /**
    * 保存中间表账单明细
    *
    * @param orderRecordId 订单记录ID
@@ -217,6 +140,7 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     orderDetail.setInservice(true);
     List<OrderDetail> details = orderDetailMapper.select(orderDetail);
     if (StringHelper.isNotEmpty(details)) {
+      // 构建中间表账单明细列表
       List<BaseBillDetail> billDetails = generateBaseBillDetail(details);
       if (StringHelper.isNotEmpty(billDetails)) {
         billDetails.forEach(
@@ -232,13 +156,14 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    * 根据订单明细构建中间表账单明细
    *
    * @param details 订单明细列表
-   * @return
+   * @return List<BaseBillDetail>
    */
   private List<BaseBillDetail> generateBaseBillDetail(List<OrderDetail> details) {
     List<BaseBillDetail> billDetails = Lists.newArrayList();
     details.forEach(
         detail -> {
           BaseBillDetail billDetail = new BaseBillDetail();
+          // 设置中间表订单明细属性
           setBaseBillDetailValue(detail, billDetail);
           billDetails.add(billDetail);
         });
@@ -275,127 +200,6 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
   }
 
   /**
-   * 更新中间表账单明细信息
-   *
-   * @param orderRecordId 订单记录ID
-   */
-  private void updateBaseBillDetail(Integer orderRecordId) {
-    OrderDetail orderDetail = new OrderDetail();
-    orderDetail.setOrderRecordId(orderRecordId);
-    List<OrderDetail> details = orderDetailMapper.select(orderDetail);
-    if (StringHelper.isNotEmpty(details)) {
-      for (OrderDetail detail : details) {
-        Integer detailId = detail.getId();
-        BaseBillDetail baseBillDetail = baseBillDetailMapper.selectByPrimaryKey(detailId);
-        if (null != baseBillDetail) {
-          setBaseBillDetailValue(detail, baseBillDetail);
-          baseBillDetailMapper.updateByPrimaryKeySelective(baseBillDetail);
-        } else {
-          baseBillDetail = new BaseBillDetail();
-          setBaseBillDetailValue(detail, baseBillDetail);
-          baseBillDetailMapper.deleteByPrimaryKey(detailId);
-          baseBillDetailMapper.insertSelective(baseBillDetail);
-        }
-      }
-    }
-  }
-
-  /**
-   * 更新中间表账单支付记录
-   *
-   * @param orderRecordId 订单记录ID
-   */
-  private void updateBaseBillPay(Integer orderRecordId) {
-    BillPayRecord billPayRecord = new BillPayRecord();
-    billPayRecord.setOrderRecordId(orderRecordId);
-    List<BillPayRecord> billPayRecords = billPayRecordMapper.select(billPayRecord);
-    if (StringHelper.isNotEmpty(billPayRecords)) {
-      for (BillPayRecord payRecord : billPayRecords) {
-        Integer payRecordId = payRecord.getId();
-        BaseBillPay baseBillPay = baseBillPayMapper.selectByPrimaryKey(payRecordId);
-        if (null != baseBillPay) {
-          generateBaseBillPayValue(payRecord, baseBillPay);
-          baseBillPayMapper.updateByPrimaryKeySelective(baseBillPay);
-        } else {
-          baseBillPay = new BaseBillPay();
-          generateBaseBillPayValue(payRecord, baseBillPay);
-          baseBillPayMapper.deleteByPrimaryKey(payRecordId);
-          baseBillPayMapper.insertSelective(baseBillPay);
-        }
-      }
-    }
-  }
-
-  /**
-   * 设置中间表账单收费记录入账方式
-   *
-   * @param baseBillPay 账单收费记录
-   * @param payRecordId 收费记录ID
-   */
-  private void setBaseBillPayAccountItemValue(BaseBillPay baseBillPay, Integer payRecordId) {
-    MemberExpendRecord memberExpand = new MemberExpendRecord();
-    memberExpand.setBillPayRecordId(payRecordId);
-    List<MemberExpendRecord> memberExpendRecords = memberExpendRecordMapper.select(memberExpand);
-    if (StringHelper.isNotEmpty(memberExpendRecords)) {
-      memberExpendRecords.forEach(
-          mer -> {
-            BigDecimal principal = mer.getExpendPrincipal();
-            baseBillPay.setMemberPrincipleAmount(
-                baseBillPay.getMemberPrincipleAmount().add(principal));
-            BigDecimal gift = mer.getExpendGift();
-            baseBillPay.setMemberGiftAmount(baseBillPay.getMemberGiftAmount().add(gift));
-          });
-    }
-    PrepaidExpendRecord prepaidExpand = new PrepaidExpendRecord();
-    prepaidExpand.setBillPayRecordId(payRecordId);
-    List<PrepaidExpendRecord> prepaidExpendRecords =
-        prepaidExpendRecordMapper.select(prepaidExpand);
-    if (StringHelper.isNotEmpty(prepaidExpendRecords)) {
-      prepaidExpendRecords.forEach(
-          per -> {
-            BigDecimal principal = per.getExpendPrincipal();
-            baseBillPay.setPrepaidPrincipleAmount(
-                baseBillPay.getPrepaidPrincipleAmount().add(principal));
-            BigDecimal gift = per.getExpendGift();
-            baseBillPay.setPrepaidGiftAmount(baseBillPay.getPrepaidGiftAmount().add(gift));
-          });
-    }
-    BillPayDetailRecord payDetailRecord = new BillPayDetailRecord();
-    payDetailRecord.setBillPayRecordId(payRecordId);
-    List<BillPayDetailRecord> payDetailRecords = billPayDetailRecordMapper.select(payDetailRecord);
-    if (StringHelper.isNotEmpty(payDetailRecords)) {
-      for (BillPayDetailRecord detailRecord : payDetailRecords) {
-        if (detailRecord.getType() == 2) {
-          Integer accountItemId = detailRecord.getAccountItemId();
-          // todo 固定部分支付方式
-          switch (accountItemId) {
-            case 56:
-              baseBillPay.setWechatAmount(detailRecord.getAmount());
-              break;
-            case 57:
-              baseBillPay.setAlipayAmount(detailRecord.getAmount());
-              break;
-            case 58:
-              baseBillPay.setCashAmount(detailRecord.getAmount());
-              break;
-            case 59:
-              baseBillPay.setBankCardAmount(detailRecord.getAmount());
-              break;
-            case 62:
-              baseBillPay.setCityMedicalInsuranceAmount(detailRecord.getAmount());
-              break;
-            case 65:
-              baseBillPay.setProvinceMedicalInsuranceAmount(detailRecord.getAmount());
-              break;
-            default:
-              break;
-          }
-        }
-      }
-    }
-  }
-
-  /**
    * 根据条件拉取账单数据并更新中间表
    *
    * @param form 时间段
@@ -413,15 +217,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
               orderRecordId -> {
                 BaseBill baseBill = generateBaseBill(orderRecordId);
                 mapper.deleteByPrimaryKey(orderRecordId);
+                baseBillDetailMapper.deleteByBillId(orderRecordId);
+                baseBillDetailMapper.deleteByBillId(orderRecordId);
                 if (null != baseBill) {
                   mapper.insertSelective(baseBill);
-                  // 保存账单收费记录
-                  saveBaseBillPay(orderRecordId);
-                  // 保存账单收费明细
+                  // 保存账单明细
                   saveBaseBillDetail(orderRecordId);
-                } else {
-                  baseBillPayMapper.deleteByBillId(orderRecordId);
-                  baseBillDetailMapper.deleteByBillId(orderRecordId);
                 }
               });
     }

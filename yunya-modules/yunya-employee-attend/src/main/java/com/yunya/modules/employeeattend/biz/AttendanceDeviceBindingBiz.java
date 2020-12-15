@@ -106,29 +106,38 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         model.setWhetherPage(queryForm.getWhetherPage());
         model.setPageNum(queryForm.getPageNum());
         model.setPageSize(queryForm.getPageSize());
-        model.setKeyWord(queryForm.getUserName());
+        model.setUserName(queryForm.getUserName());
         Byte[] userStatus = {0, 1, 3};
         //离职状态
         model.setWorkStatus(userStatus);
+        long total = 0;
+        PageInfo pageInfo = new PageInfo<>();
         if (attendanceDeviceBindingVOMap!=null && !attendanceDeviceBindingVOMap.isEmpty()) {
             Set<Integer> userIds = attendanceDeviceBindingVOMap.keySet();
             model.setUserIds(userIds);
-            List<SysUserInfoDetail> sysUserInfoDetailList = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
-
-            //组装主数据
-            sysUserInfoDetailList.forEach(sysUserInfoDetail->{
-                Integer userId = sysUserInfoDetail.getUserId();
-                for (AttendanceDeviceBindingVO deviceBindingVO : attendanceDeviceBindingVOS) {
-                    Integer bindUserId = deviceBindingVO.getUserId();
-                    if (userId.equals(bindUserId)) {
-                        deviceBindingVO.setUserName(sysUserInfoDetail.getName());
-                        result.add(deviceBindingVO);
-                        break;
+            PageInfo<SysUserInfoDetail> userPage = remoteSystemServiceFeign.findSysUserEmployeeInfoPage(model);
+            List<SysUserInfoDetail> sysUserInfoDetailList = userPage.getList();
+            if (sysUserInfoDetailList!=null && !sysUserInfoDetailList.isEmpty()) {
+                total = userPage.getTotal();
+                //组装主数据
+                sysUserInfoDetailList.forEach(sysUserInfoDetail -> {
+                    Integer userId = sysUserInfoDetail.getUserId();
+                    for (AttendanceDeviceBindingVO deviceBindingVO : attendanceDeviceBindingVOS) {
+                        Integer bindUserId = deviceBindingVO.getUserId();
+                        if (userId.equals(bindUserId)) {
+                            deviceBindingVO.setUserName(sysUserInfoDetail.getName());
+                            result.add(deviceBindingVO);
+                            break;
+                        }
                     }
-                }
-            });
+                });
+            }
         }
-        return new PageInfo<>(result);
+        pageInfo.setList(result);
+        pageInfo.setTotal(total);
+        pageInfo.setPageNum(queryForm.getPageNum());
+        pageInfo.setPageSize(queryForm.getPageSize());
+        return pageInfo;
     }
 
     /**
@@ -238,8 +247,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         if (StringHelper.isEmpty(mobile)) {
             return ResponseUtil.fail(PARAM_NOT_ALLOW_EMPTY,"手机号码不能为空",null);
         }
-        String patternStr = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$";
-        Pattern pattern = Pattern.compile(patternStr);
+        Pattern pattern = Pattern.compile("^1(3([0-35-9]\\d|4[1-8])|4[14-9]\\d|5([0-35689]\\d|7[1-79])|66\\d|7[2-35-8]\\d|8\\d{2}|9[13589]\\d)\\d{7}$");
         Matcher matcher = pattern.matcher(mobile);
         if (!matcher.matches()) {
             return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"请填写正确的手机号码",null);

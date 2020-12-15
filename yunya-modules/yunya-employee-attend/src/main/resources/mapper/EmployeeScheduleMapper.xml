@@ -232,17 +232,17 @@
         (
         select count(*) num from leave_schedule ls
         left join  leave_info li on li.id = ls.leave_id
-        where li.apprpval_status in (0,1) and ls.schedule_id = #{id} and li.user_id = #{employeeId}
+        where li.approval_status in (0,1) and ls.schedule_id = #{id} and li.user_id = #{employeeId}
         UNION
         select count(*) num from leave_info
-        where apprpval_status in (0,1) and DATE_FORMAT(end_time,'%Y-%m-%d') >= DATE_FORMAT(#{workDate},'%Y-%m-%d') and DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{workDate},'%Y-%m-%d') and user_id = #{employeeId}
+        where approval_status in (0,1) and DATE_FORMAT(end_time,'%Y-%m-%d') >= DATE_FORMAT(#{workDate},'%Y-%m-%d') and DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{workDate},'%Y-%m-%d') and user_id = #{employeeId}
         UNION
         select count(*) num from work_overtime_info
-        where apprpval_status in (0,1) and DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate},'%Y-%m-%d') AND
+        where approval_status in (0,1) and DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate},'%Y-%m-%d') AND
         (rest_schedule_id = #{scheduleId} or schedule_id = #{scheduleId}) and user_id = #{employeeId}
         UNION
         select count(*) num from field_info
-        where apprpval_status in (0,1)
+        where approval_status in (0,1)
         and DATE_FORMAT(end_time,'%Y-%m-%d') >= DATE_FORMAT(#{workDate},'%Y-%m-%d')
         and DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{workDate},'%Y-%m-%d')
         and user_id = #{employeeId}

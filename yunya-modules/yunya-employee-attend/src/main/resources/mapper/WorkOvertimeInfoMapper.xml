@@ -10,7 +10,7 @@
         <result column="overtime_reason" property="overtimeReason" jdbcType="VARCHAR"/>
         <result column="refuse_reason" property="refuseReason" jdbcType="VARCHAR"/>
         <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER"/>
-        <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER"/>
+        <result column="approval_status" property="approvalStatus" jdbcType="INTEGER"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
@@ -30,7 +30,7 @@
         <result column="startTime" property="startTime" jdbcType="TIMESTAMP"/>
         <result column="endTime" property="endTime" jdbcType="TIMESTAMP"/>
         <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER"/>
-        <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER"/>
+        <result column="approval_status" property="approvalStatus" jdbcType="INTEGER"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
@@ -64,11 +64,11 @@
         t.schedule_id as scheduleId,
         t.overtime_reason as overtimeReason,
         t.approval_people_id as approvalPeopleId,
-        t.apprpval_status as apprpvalStatus
+        t.approval_status as approvalStatus
         from work_overtime_info t left join employee_schedule es on t.schedule_id=es.id left join base_schedule bs on
         es.schedule_id=bs.id
         <where>
-            t.apprpval_status = 1
+            t.approval_status = 1
             <if test="userIds!=null and userIds.size()>0">
                 and t.user_id in
                 <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
@@ -91,7 +91,7 @@
         t.overtime_reason,
         t.refuse_reason,
         t.approval_people_id,
-        t.apprpval_status,
+        t.approval_status,
         b.first_start_time startTime,
         IFNULL(
         b.second_end_time,
@@ -118,11 +118,11 @@
             <if test="approvalPeopleId !=null and approvalPeopleId != ''">
                 and t.approval_people_id = #{approvalPeopleId}
             </if>
-            <if test="apprpvalStatus == 0 ">
-                and t.apprpval_status = #{apprpvalStatus}
+            <if test="approvalStatus == 0 ">
+                and t.approval_status = #{approvalStatus}
             </if>
-            <if test="apprpvalStatus == 1 or apprpvalStatus == 2 ">
-                and t.apprpval_status in (1,2)
+            <if test="approvalStatus == 1 or approvalStatus == 2 ">
+                and t.approval_status in (1,2)
             </if>
             <if test="copyId !=null and copyId != '' ">
                 and ci.user_id = #{copyId}
@@ -162,10 +162,10 @@
     </select>
 
     <select id="selectCountById" resultType="Integer">
-        select count(*) from work_overtime_info where apprpval_status in (0,1) and rest_schedule_id = #{restScheduleId}
+        select count(*) from work_overtime_info where approval_status in (0,1) and rest_schedule_id = #{restScheduleId}
     </select>
     <select id="countByDay" resultType="Integer">
-        select count(*) from work_overtime_info where apprpval_status in (0,1)
+        select count(*) from work_overtime_info where approval_status in (0,1)
          AND DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate}, '%Y-%m-%d') and user_id = #{userId}
     </select>
 
@@ -179,7 +179,7 @@
             t.schedule_id as scheduleId,
             t.overtime_reason as overtimeReason,
             t.approval_people_id as approvalPeopleId,
-            t.apprpval_status as apprpvalStatus,
+            t.approval_status as approvalStatus,
             t.refuse_reason as refuseReason,
             t.crt_time as crtTime,
             bs.first_start_time as startTime,
@@ -187,8 +187,8 @@
             bs.name as restScheduleName
         from work_overtime_info t left join employee_schedule es on t.rest_schedule_id=es.id left join base_schedule bs on t.schedule_id=bs.id
         <where>
-            <if test="queryForm.apprpvalStatus!=null">
-                and t.apprpval_status = #{queryForm.apprpvalStatus}
+            <if test="queryForm.approvalStatus!=null">
+                and t.approval_status = #{queryForm.approvalStatus}
             </if>
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
@@ -217,7 +217,7 @@
             t.rest_schedule_id as restScheduleId,
             t.schedule_id as scheduleId,
             t.approval_people_id as approvalPeopleId,
-            t.apprpval_status as apprpvalStatus,
+            t.approval_status as approvalStatus,
             t.crt_time as applyDate,
             bs.first_start_time as onPunchTime,
             ifnull(bs.second_end_time,bs.first_end_time) as offPunchTime,
@@ -229,8 +229,8 @@
         left join base_schedule bs on t.schedule_id=bs.id
         left join attendance_manual_makeup mm on (t.user_id=mm.user_id and t.company_id=mm.org_id and t.work_date=mm.makeup_date)
         <where>
-            <if test="queryForm.apprpvalStatus!=null">
-                and t.apprpval_status = #{queryForm.apprpvalStatus}
+            <if test="queryForm.approvalStatus!=null">
+                and t.approval_status = #{queryForm.approvalStatus}
             </if>
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}

@@ -127,7 +127,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     BeanUtils.copyProperties(leaveInfoForm, leaveInfo);
                     leaveInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
                     leaveInfo.setCrtTime(new Date());
-                    leaveInfo.setApprpvalStatus(0);
+                    leaveInfo.setApprovalStatus(0);
                     int num = mapper.insert(leaveInfo);
                     //插入审批人信息
                     int leaveId = leaveInfo.getId();
@@ -222,7 +222,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     BeanUtils.copyProperties(leaveInfoByEmForm, leaveInfo);
                     leaveInfo.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
                     leaveInfo.setCrtTime(new Date());
-                    leaveInfo.setApprpvalStatus(0);
+                    leaveInfo.setApprovalStatus(0);
                     int num = mapper.insert(leaveInfo);
                     int leaveId = leaveInfo.getId();
                     //插入班次请假信息
@@ -287,7 +287,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         }
         //必须提前一天申请或审批
         if (now.before(date)) {
-            if (leaveInfo.getApprpvalStatus() == 0) {
+            if (leaveInfo.getApprovalStatus() == 0) {
                 //根据当前登录人Id和请假信息ID 获取审批流中当前登录人的待审批流程
                 ApprovalInfo approvalInfo = new ApprovalInfo();
                 approvalInfo.setLeaveId(leaveInfoForm.getId());
@@ -296,10 +296,10 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                 //当前审批最后一层级的审批人信息
                 ApprovalInfo Minuser = approvalInfoMapper.findMin(leaveInfoForm);
                 //是否为最后一层审批或者是否为拒绝
-                if(approvalInfo.getId().equals(Minuser.getId())||leaveInfoForm.getApprpvalStatus()==2){
-                    leaveInfo.setApprpvalStatus(leaveInfoForm.getApprpvalStatus());
+                if(approvalInfo.getId().equals(Minuser.getId())||leaveInfoForm.getApprovalStatus()==2){
+                    leaveInfo.setApprovalStatus(leaveInfoForm.getApprovalStatus());
                 }
-                approvalInfo.setApprovalStatus(leaveInfoForm.getApprpvalStatus());
+                approvalInfo.setApprovalStatus(leaveInfoForm.getApprovalStatus());
                 approvalInfo.setUpdTime(new Date());
                 //更新审批流程表中的审批状态
                 approvalInfoMapper.updateByPrimaryKey(approvalInfo);
@@ -327,9 +327,9 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
         LeaveInfo leaveInfo = new LeaveInfo();
         leaveInfo.setId(leaveInfoForm.getId());
         leaveInfo = mapper.selectByPrimaryKey(leaveInfo);
-        if (leaveInfo.getApprpvalStatus() == 0) {
+        if (leaveInfo.getApprovalStatus() == 0) {
             if (leaveInfo.getUserId().equals(Integer.valueOf(BaseContextHandler.getUserID()))) {
-                leaveInfo.setApprpvalStatus(3);
+                leaveInfo.setApprovalStatus(3);
                 return mapper.updateByPrimaryKey(leaveInfo);
             }
             throw new ClientServiceException("当前用户无撤销该申请的权限", OBJECT_EDIT_FAIL);

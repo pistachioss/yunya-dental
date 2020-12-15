@@ -5,7 +5,6 @@ import com.yunya.feign.system.factory.RemoteSystemServiceFallBackFactory;
 import com.yunya.feign.system.form.*;
 import com.yunya.feign.system.vo.*;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
-import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.models.system.*;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -225,7 +224,7 @@ public interface RemoteSystemServiceFeign {
    * @return list
    */
   @RequestMapping(value = "/api/userWithOrg/list", method = RequestMethod.POST)
-  ResponseResult<PageInfo<SysUserInfoDetail>> findSysUserEmployeeWithOrgList(@RequestBody SysUserEmployeeModel model);
+  PageInfo<SysUserInfoDetail> findSysUserEmployeeWithOrgList(@RequestBody SysUserEmployeeModel model);
 
   /**
    * 根据科室ID查询科室
@@ -404,4 +403,13 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/userInfo/ids/list", method = RequestMethod.POST)
   List<SysUserInfoDetail> findSysUserEmployeeInfoByUserIds(@RequestBody List<Integer> userIds);
+
+  /**
+   * 根据条件分页查询用户信息（含员工信息）
+   *
+   * @param model 查询条件
+   * @return list
+   */
+  @RequestMapping(value = "/api/userInfo/page", method = RequestMethod.POST)
+  PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(@RequestBody SysUserEmployeeModel model);
 }
