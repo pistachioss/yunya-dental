@@ -450,7 +450,7 @@
         LEFT JOIN company t4 ON t3.company_id = t4.id
         <where>
             <if test="queryForm.userName != null and queryForm.userName != ''">
-                and CONCAT(IFNULL(t2.name, '') like concat('%', #{queryForm.keyWord} ,'%')
+                and IFNULL(t2.name, '') like concat('%', #{queryForm.userName} ,'%')
             </if>
             <if test="queryForm.orgIds!=null and queryForm.orgIds.size()>0">
                 and t4.id in

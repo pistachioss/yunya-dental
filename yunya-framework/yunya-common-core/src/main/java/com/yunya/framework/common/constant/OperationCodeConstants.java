@@ -52,4 +52,8 @@ public class OperationCodeConstants {
   public static final Integer MESSAGE_CODE_ERROR = 30021;
   /** 非法请求路径 */
   public static final Integer ILLEGAL_REQUEST_ERROR = 30022;
+  /** 操作不允许 */
+  public static final Integer OPERATION_NOT_ALLOW = 30023;
+  /** 操作失败 */
+  public static final Integer OPERATION_FAIL = 30024;
 }

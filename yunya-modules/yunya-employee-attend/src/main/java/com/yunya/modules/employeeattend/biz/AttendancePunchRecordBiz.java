@@ -1480,117 +1480,119 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 model.setUserOrgIds(userOrgIds);
             }
         }
-        model.setKeyWord(name);
+        model.setUserName(name);
         model.setWorkStatus(new Byte[]{0, 1, 3});
         PageInfo<SysUserInfoDetail> userPage = remoteSystemServiceFeign.findSysUserEmployeeWithOrgList(model);
         List<AttendanceStatisticsVO> result = new ArrayList<>();
         List<SysUserInfoDetail> userList = userPage.getList();
-        userList.forEach(user->{
-            Integer userId = user.getUserId();
-            String companyIds = user.getCompanyIds();
-            Integer orgId = null;
-            if (StringHelper.isNotEmpty(companyIds)) {
-                orgId = Integer.parseInt(companyIds);
-            }
-            AttendanceStatisticsVO statistics = new AttendanceStatisticsVO();
-            statistics.setUserId(userId);
-            statistics.setEmployeeName(user.getName());
-            statistics.setOrgId(orgId);
-            statistics.setOrgName(user.getCompanys());
-            Long restMinute = restDateOvertimeMap.get(userId, orgId);
-            if (restMinute == null) {
-                restMinute = 0L;
-            }
-            statistics.setRestDateOvertimeMinute(DateUtil.micro2Min(restMinute));
-            Integer restCount = restDateOverCounts.get(userId, orgId);
-            if (restCount == null) {
-                restCount = 0;
-            }
-            statistics.setWorkOvertimeNum(restCount);
-            Long leaveMinute = leaveMinuteMap.get(userId, orgId);
-            if (leaveMinute == null) {
-                leaveMinute = 0L;
-            }
-            statistics.setLeaveMinute(DateUtil.micro2Min(leaveMinute));
-            Integer leaveCount = leaveCounts.get(userId, orgId);
-            if (leaveCount == null) {
-                leaveCount = 0;
-            }
-            statistics.setLeaveNum(leaveCount);
-            Long fieldMinute = fieldMinuteMap.get(userId, orgId);
-            if (fieldMinute == null) {
-                fieldMinute = 0L;
-            }
-            statistics.setFieldMinute(DateUtil.micro2Min(fieldMinute));
-            Integer fieldCount = fieldCounts.get(userId, orgId);
-            if (fieldCount == null) {
-                fieldCount = 0;
-            }
-            statistics.setFieldNum(fieldCount);
-            Long workDateOvertimeMinute = workDateOvertimeMinuteMap.get(userId, orgId);
-            if (workDateOvertimeMinute == null) {
-                workDateOvertimeMinute = 0L;
-            }
-            statistics.setWorkDateOvertimeMinute(DateUtil.micro2Min(workDateOvertimeMinute));
-            Long workDate30Minute = workDateOvertime30MinuteMap.get(userId, orgId);
-            if (workDate30Minute == null) {
-                workDate30Minute = 0L;
-            }
-            statistics.setWorkDateOvertime30Minute(DateUtil.micro2Min(workDate30Minute));
-            incrMinute(workDateMinuteMap, userId, orgId, fieldMinute);// 外勤覆盖上班班次的（覆盖上班卡、覆盖下班卡）
-            incrMinute(workDateMinuteMap, userId, orgId, restMinute);// 加班覆盖上班班次的（覆盖上班卡、覆盖下班卡）
-            Long workDateMinute = workDateMinuteMap.get(userId, orgId);
-            if (workDateMinute == null) {
-                workDateMinute = 0L;
-            }
-            statistics.setWorkDateMinute(DateUtil.micro2Min(workDateMinute));
-            Boolean isFull = isFullMap.get(userId, orgId);
-            String isFullStr = "--";
-            if (type == 0) {
-                if (isFull==null || isFull) {
-                    isFullStr = "是";
-                } else {
-                    isFullStr = "否";
+        if (userList!=null && !userList.isEmpty()) {
+            userList.forEach(user -> {
+                Integer userId = user.getUserId();
+                String companyIds = user.getCompanyIds();
+                Integer orgId = null;
+                if (StringHelper.isNotEmpty(companyIds)) {
+                    orgId = Integer.parseInt(companyIds);
                 }
-            }
-            statistics.setIsFull(isFullStr);
-            Integer attendanceNum = attendancNumMap.get(userId, orgId);
-            if (attendanceNum == null) {
-                attendanceNum = 0;
-            }
-            statistics.setAttendanceNum(attendanceNum);
-            Integer lateNum = laterNumMap.get(userId, orgId);
-            if (lateNum == null) {
-                lateNum = 0;
-            }
-            statistics.setLateNum(lateNum);
-            Long lateMinute = laterMinuteMap.get(userId, orgId);
-            if (lateMinute == null) {
-                lateMinute = 0L;
-            }
-            statistics.setLateMinute(DateUtil.micro2Min(lateMinute));
-            Integer earlyNum = earlyNumMap.get(userId, orgId);
-            if (earlyNum == null) {
-                earlyNum = 0;
-            }
-            statistics.setEarlyNum(earlyNum);
-            Long earlyMinute = earlyMinuteMap.get(userId, orgId);
-            if (earlyMinute == null) {
-                earlyMinute = 0L;
-            }
-            statistics.setEarlyMinute(DateUtil.micro2Min(earlyMinute));
-            Integer unpunchNum = unpunchNumMap.get(userId, orgId);
-            if (unpunchNum == null) {
-                unpunchNum = 0;
-            }
-            statistics.setUnpunchNum(unpunchNum);
-            Integer invalidNum = invalidNumMap.get(userId, orgId);
-            if (invalidNum == null) {
-                invalidNum = 0;
-            }
-            statistics.setInvalidNum(invalidNum);
-            result.add(statistics);
-        });
+                AttendanceStatisticsVO statistics = new AttendanceStatisticsVO();
+                statistics.setUserId(userId);
+                statistics.setEmployeeName(user.getName());
+                statistics.setOrgId(orgId);
+                statistics.setOrgName(user.getCompanys());
+                Long restMinute = restDateOvertimeMap.get(userId, orgId);
+                if (restMinute == null) {
+                    restMinute = 0L;
+                }
+                statistics.setRestDateOvertimeMinute(DateUtil.micro2Min(restMinute));
+                Integer restCount = restDateOverCounts.get(userId, orgId);
+                if (restCount == null) {
+                    restCount = 0;
+                }
+                statistics.setWorkOvertimeNum(restCount);
+                Long leaveMinute = leaveMinuteMap.get(userId, orgId);
+                if (leaveMinute == null) {
+                    leaveMinute = 0L;
+                }
+                statistics.setLeaveMinute(DateUtil.micro2Min(leaveMinute));
+                Integer leaveCount = leaveCounts.get(userId, orgId);
+                if (leaveCount == null) {
+                    leaveCount = 0;
+                }
+                statistics.setLeaveNum(leaveCount);
+                Long fieldMinute = fieldMinuteMap.get(userId, orgId);
+                if (fieldMinute == null) {
+                    fieldMinute = 0L;
+                }
+                statistics.setFieldMinute(DateUtil.micro2Min(fieldMinute));
+                Integer fieldCount = fieldCounts.get(userId, orgId);
+                if (fieldCount == null) {
+                    fieldCount = 0;
+                }
+                statistics.setFieldNum(fieldCount);
+                Long workDateOvertimeMinute = workDateOvertimeMinuteMap.get(userId, orgId);
+                if (workDateOvertimeMinute == null) {
+                    workDateOvertimeMinute = 0L;
+                }
+                statistics.setWorkDateOvertimeMinute(DateUtil.micro2Min(workDateOvertimeMinute));
+                Long workDate30Minute = workDateOvertime30MinuteMap.get(userId, orgId);
+                if (workDate30Minute == null) {
+                    workDate30Minute = 0L;
+                }
+                statistics.setWorkDateOvertime30Minute(DateUtil.micro2Min(workDate30Minute));
+                incrMinute(workDateMinuteMap, userId, orgId, fieldMinute);// 外勤覆盖上班班次的（覆盖上班卡、覆盖下班卡）
+                incrMinute(workDateMinuteMap, userId, orgId, restMinute);// 加班覆盖上班班次的（覆盖上班卡、覆盖下班卡）
+                Long workDateMinute = workDateMinuteMap.get(userId, orgId);
+                if (workDateMinute == null) {
+                    workDateMinute = 0L;
+                }
+                statistics.setWorkDateMinute(DateUtil.micro2Min(workDateMinute));
+                Boolean isFull = isFullMap.get(userId, orgId);
+                String isFullStr = "--";
+                if (type == 0) {
+                    if (isFull == null || isFull) {
+                        isFullStr = "是";
+                    } else {
+                        isFullStr = "否";
+                    }
+                }
+                statistics.setIsFull(isFullStr);
+                Integer attendanceNum = attendancNumMap.get(userId, orgId);
+                if (attendanceNum == null) {
+                    attendanceNum = 0;
+                }
+                statistics.setAttendanceNum(attendanceNum);
+                Integer lateNum = laterNumMap.get(userId, orgId);
+                if (lateNum == null) {
+                    lateNum = 0;
+                }
+                statistics.setLateNum(lateNum);
+                Long lateMinute = laterMinuteMap.get(userId, orgId);
+                if (lateMinute == null) {
+                    lateMinute = 0L;
+                }
+                statistics.setLateMinute(DateUtil.micro2Min(lateMinute));
+                Integer earlyNum = earlyNumMap.get(userId, orgId);
+                if (earlyNum == null) {
+                    earlyNum = 0;
+                }
+                statistics.setEarlyNum(earlyNum);
+                Long earlyMinute = earlyMinuteMap.get(userId, orgId);
+                if (earlyMinute == null) {
+                    earlyMinute = 0L;
+                }
+                statistics.setEarlyMinute(DateUtil.micro2Min(earlyMinute));
+                Integer unpunchNum = unpunchNumMap.get(userId, orgId);
+                if (unpunchNum == null) {
+                    unpunchNum = 0;
+                }
+                statistics.setUnpunchNum(unpunchNum);
+                Integer invalidNum = invalidNumMap.get(userId, orgId);
+                if (invalidNum == null) {
+                    invalidNum = 0;
+                }
+                statistics.setInvalidNum(invalidNum);
+                result.add(statistics);
+            });
+        }
         PageInfo<AttendanceStatisticsVO> pageInfo = new PageInfo();
         pageInfo.setList(result);
         pageInfo.setPageNum(queryForm.getPageNum());
