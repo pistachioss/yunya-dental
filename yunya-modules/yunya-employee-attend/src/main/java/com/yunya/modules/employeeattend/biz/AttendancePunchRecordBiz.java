@@ -217,7 +217,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             List<OrganizationInfoDetail> organizationInfoDetails = remoteSystemServiceFeign.findOrgInfoInIds(orgIds);
             organizationInfoDetails.forEach(organizationInfoDetail->{
                 attendancePunchRecordVOS.forEach(attendancePunchRecordVO -> {
-                    String orgName = organizationInfoDetail.getName();
+                    String orgName = organizationInfoDetail.getAbbreviation();
                     if (organizationInfoDetail.getId().equals(attendancePunchRecordVO.getOrgId())) {
                         attendancePunchRecordVO.setOrgName(orgName);
                         return;
@@ -379,6 +379,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     public void punch(AttendancePunchRecordForm attendancePunchRecordForm) {
         Date now = new Date(System.currentTimeMillis());
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        if (attendanceDeviceBindingBiz.findEmployeeBindingDevice(userId) == null) {
+            throw new ClientServiceException("设备未绑定，请先绑定", OPERATION_NOT_ALLOW);
+        }
         AttendancePunchRecordQueryForm queryForm = new AttendancePunchRecordQueryForm();
         queryForm.setPunchDate(now);
         queryForm.setUserId(userId);
@@ -552,7 +555,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 String orgName = "";
                 for (OrganizationInfoDetail organizationInfoDetail : organizationInfoDetails) {
                     if (organizationInfoDetail.getId().equals(clinicId)) {
-                        orgName = organizationInfoDetail.getName();
+                        orgName = organizationInfoDetail.getAbbreviation();
                         break;
                     }
                 }
@@ -2605,9 +2608,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         model.setWorkStatus(new Byte[]{0, 1, 3});
         List<SysUserInfoDetail> users = remoteSystemServiceFeign.findSysUserEmployeeInfoList(model);
         Map<Integer, String> result = new HashMap<>(users.size());
-        users.forEach(sysUserInfoDetail -> {
-            result.put(sysUserInfoDetail.getUserId(), sysUserInfoDetail.getUsername());
-        });
+        users.forEach(sysUserInfoDetail -> result.put(sysUserInfoDetail.getUserId(), sysUserInfoDetail.getName()));
         return result;
     }
 
@@ -2757,7 +2758,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setBetweenDate(betweenDate);
         recordQueryForm.setAndDate(andDate);
         recordQueryForm.setIsPunch(AttendanceIsPunchEnum.UNPUNCH.getCode());
-        recordQueryForm.setSources(new Byte[]{0,4,5});
+        recordQueryForm.setSource((byte) 0);
         List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
         List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
