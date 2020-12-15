@@ -330,7 +330,6 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         if (reList.size() > 0) {
             Map<String, SysUserInfoDetail> emMapById = new HashMap(16);
             employees.forEach(z -> emMapById.put(z.getUserId() + "", z));
-
             for (ApprovalAllListVO approvalAllListVO : reList) {
                 approvalAllListVO.setUserName(emMapById.get(approvalAllListVO.getUserId() + "").getName());
                 String approvalName = "";
