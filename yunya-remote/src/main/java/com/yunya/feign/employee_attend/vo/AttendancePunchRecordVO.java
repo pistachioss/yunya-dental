@@ -112,10 +112,6 @@ public class AttendancePunchRecordVO implements Serializable {
     @ApiModelProperty(value = "wifi的mac地址")
     private String wifiMacAddress;
 
-    /** 排班班次id */
-    @ApiModelProperty(value = "排班班次id")
-    private Integer scheduleId;
-
     /** 时长（小于60分钟的只显示分钟，否则显示xx小时xx分钟） */
     @ApiModelProperty(value = "时长（分钟）")
     private String minutes;
