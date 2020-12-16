@@ -1,6 +1,5 @@
 package com.yunya.modules.employeeattend;
 
-import com.yunya.feign.employee_attend.form.AttendanceManualMakeupForm;
 import com.yunya.feign.employee_attend.model.AttendanceManualMakeupModel;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
@@ -37,19 +36,7 @@ public class AttendanceManualMakeupControllerTest {
         model.setMinute(470);
         model.setType((byte)0);
         model.setMakeupDate(new Date());
-        ResponseResult result = attendanceManualMakeupController.add(model);
-        System.out.println(result);
-    }
-
-
-    @Test
-    public void testUpdate() {
-        BaseContextHandler.setUserID("569");
-        AttendanceManualMakeupForm form = new AttendanceManualMakeupForm();
-        form.setId(1);
-        form.setMakeupDesc("杭州wifi");
-        form.setMinute(150);
-        ResponseResult result = attendanceManualMakeupController.update(form);
+        ResponseResult result = attendanceManualMakeupController.update(model);
         System.out.println(result);
     }
 }
