@@ -60,10 +60,14 @@ public class AttendanceWorkDateMinuteVO implements Serializable {
     @ApiModelProperty(value = "工作时长（分钟）")
     private Long minutes;
 
+    /** 补入工作时长主键id*/
+    @ApiModelProperty(value = "补入工作时长主键id")
+    private Integer id;
+
     /** 补入工作时长（手动输入）*/
     @Excel(name = "补入工作时长（手动输入）")
     @ApiModelProperty(value = "补入工作时长（手动输入）")
-    private Long makeupMinutes;
+    private Integer makeupMinutes;
 
     /** 补入时长说明（手动输入） */
     @Excel(name = "补入时长说明（手动输入）")

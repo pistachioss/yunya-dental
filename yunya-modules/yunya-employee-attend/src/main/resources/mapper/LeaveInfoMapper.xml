@@ -211,8 +211,9 @@
         LEFT JOIN base_schedule bs on es.schedule_id = bs.id
         LEFT JOIN leave_schedule ls on ls.schedule_id = es.id
         <where>
+         bs.type = '上班'
             <if test="startTime!= null">
-                es.work_date BETWEEN #{startTime} and #{endTime}
+                and es.work_date BETWEEN #{startTime} and #{endTime}
             </if>
             <if test="userId!= null">
                 and es.employee_id = #{userId}

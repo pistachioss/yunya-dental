@@ -927,6 +927,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             } else {
                 Date punchTime = attendancePunchRecordVO.getPunchTime();
                 Byte punchStatus = attendancePunchRecordVO.getPunchStatus();
+                if (AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)) {
+                    attendancePunchRecordVO.setOrgName(orgName);
+                    invalidStatisticsList.add(attendancePunchRecordVO);
+                }
                 if (source.equals(AttendanceSourceEnum.WORK_SCHEDULE.getCode())) {
                     switch (punchStatus) {
                         case 0: {
@@ -951,11 +955,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             attendancePunchRecordVO.setMinutes(DateUtil.micro2HourMin(diff));
                             attendancePunchRecordVO.setOrgName(orgName);
                             earlyStatisticsList.add(attendancePunchRecordVO);
-                            break;
-                        }
-                        case 4: {
-                            attendancePunchRecordVO.setOrgName(orgName);
-                            invalidStatisticsList.add(attendancePunchRecordVO);
                             break;
                         }
                         default:
@@ -1916,9 +1915,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             StringBuilder employeeScheduleName = new StringBuilder();
             AttendanceManualMakeupVO manualMakeupVO = manualMakeupMap.get(date);
             if (manualMakeupVO != null) {
-                long interpolationDiff = manualMakeupVO.getMinute();
-                workDateMinuteVO.setMakeupMinutes(DateUtil.micro2Min(interpolationDiff));
+                workDateMinuteVO.setId(manualMakeupVO.getId());
+                workDateMinuteVO.setMakeupMinutes(manualMakeupVO.getMinute());
                 workDateMinuteVO.setMakeupDesc(manualMakeupVO.getMakeupDesc());
+            } else {
+                workDateMinuteVO.setId(0);
             }
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
             if (employeeScheduleVOS==null || employeeScheduleVOS.isEmpty()) {
@@ -2227,6 +2228,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
         });
         Map<Integer, String> userNameMap = getApproveUserMap(userIds);
+        Map<Date, AttendanceManualMakeupVO> manualMakeupVOMap = getManualMakeupMapGroupByDate(userId, orgId, MakeupTypeEnum.OVERTIME.getCode(),betweenDate, andDate);
         // 排班
         Map<Date, List<EmployeeScheduleVO>> employeeScheduleMap = getEmployeeScheduleMapGroupByDate(userId, orgId, betweenDate, andDate);
         // 打卡
@@ -2264,6 +2266,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         diff += eTime.getTime() - sTime.getTime();
                     }
                 }
+            }
+            AttendanceManualMakeupVO manualMakeupVO = manualMakeupVOMap.get(date);
+            if (manualMakeupVO != null) {
+                workOvertimeMinuteVO.setId(manualMakeupVO.getId());
+                workOvertimeMinuteVO.setMakeupMinute(manualMakeupVO.getMinute());
+                workOvertimeMinuteVO.setMakeupDesc(manualMakeupVO.getMakeupDesc());
+            } else {
+                workOvertimeMinuteVO.setId(0);
             }
             Date firstStartTime = workOvertimeMinuteVO.getOnPunchTime();
             Date firstEndTime = workOvertimeMinuteVO.getOffPunchTime();

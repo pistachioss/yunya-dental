@@ -64,7 +64,7 @@ public class AttendanceManualMakeupBiz extends BaseBiz<AttendanceManualMakeupMap
         attendanceManualMakeup.setUptId(userId);
         attendanceManualMakeup.setUptTime(now);
         Integer id = attendanceManualMakeupModel.getId();
-        if (id == null) {
+        if (id==null || id==0) {
             attendanceManualMakeup.setCrtId(userId);
             attendanceManualMakeup.setCrtTime(now);
             int count = mapper.insert(attendanceManualMakeup);
