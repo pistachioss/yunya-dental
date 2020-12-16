@@ -346,6 +346,7 @@ public class TollBiz {
     }
     // 保存收费明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, payments);
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     orderRecord.setStatus((byte) 2);
     orderRecordBiz.updateSelectiveById(orderRecord);
     TreatmentRecord treatmentRecord = treatmentRecordMapper.selectByPrimaryKey(treatmentRecordId);
@@ -355,7 +356,6 @@ public class TollBiz {
     // 发送消息同步就诊、账单数据
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
       Integer appointmentId = treatmentRecord.getAppointmentId();
       if (null != appointmentId) {
         rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
@@ -1275,10 +1275,10 @@ public class TollBiz {
     }
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     // 发送消息同步账单，账单收费
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
   }
 
