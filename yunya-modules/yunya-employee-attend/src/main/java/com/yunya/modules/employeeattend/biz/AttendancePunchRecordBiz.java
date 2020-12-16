@@ -2271,6 +2271,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 workOvertimeMinuteVO.setId(manualMakeupVO.getId());
                 workOvertimeMinuteVO.setMakeupMinute(manualMakeupVO.getMinute());
                 workOvertimeMinuteVO.setMakeupDesc(manualMakeupVO.getMakeupDesc());
+            } else {
+                workOvertimeMinuteVO.setId(null);
             }
             Date firstStartTime = workOvertimeMinuteVO.getOnPunchTime();
             Date firstEndTime = workOvertimeMinuteVO.getOffPunchTime();
