@@ -77,4 +77,22 @@ public class MiddleTableMsgRest {
         return sendMessageTemp(messageModel);
     }
 
+    @PostMapping("/direct/single4")
+    public String sendDirectMessage(
+            @RequestParam("dataId") Integer dataId,
+            @RequestParam("dateType") Integer dateType,
+            @RequestParam("operationType") Integer operationType,
+            @RequestParam("operateType") Integer operateType,
+            @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum) {
+        MessageModel messageModel = new MessageModel();
+        Map<String, Object> paramMap = new HashMap<>(16);
+        paramMap.put("id", dataId);
+        paramMap.put("type", dateType);
+        paramMap.put("operationType", operationType);
+        messageModel.setParamMap(paramMap);
+        messageModel.setOperateType(operateType);
+        messageModel.setMsgCategoryEnum(msgCategoryEnum);
+        return sendMessageTemp(messageModel);
+    }
+
 }

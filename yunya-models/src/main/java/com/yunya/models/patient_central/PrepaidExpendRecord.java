@@ -20,7 +20,7 @@ public class PrepaidExpendRecord {
     private Integer orgId;
 
     /**
-     * 预付款id
+     * 预付款账号
      */
     @Column(name = "prepaid_id")
     private String prepaidId;

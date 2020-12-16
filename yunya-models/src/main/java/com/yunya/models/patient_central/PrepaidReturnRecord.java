@@ -1,5 +1,7 @@
 package com.yunya.models.patient_central;
 
+import lombok.Data;
+
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -7,6 +9,7 @@ import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@Data
 @Table(name = "prepaid_return_record")
 public class PrepaidReturnRecord {
     @Id
@@ -20,7 +23,7 @@ public class PrepaidReturnRecord {
     private Integer orgId;
 
     /**
-     * 预付款卡号
+     * 预付款账号
      */
     @Column(name = "prepaid_id")
     private String prepaidId;
@@ -110,300 +113,10 @@ public class PrepaidReturnRecord {
     private BigDecimal currentBonus;
 
     /**
-     * 获取当前本金
-     * @return BigDecimal
+     * 实际退还本金
      */
-    public BigDecimal getCurrentPrincipal() {
-        return currentPrincipal;
-    }
+    @Column(name = "actual_return_amount")
+    private BigDecimal actualReturnAmount;
 
-    /**
-     * 设置当前本金
-     * @param currentPrincipal
-     */
-    public void setCurrentPrincipal(BigDecimal currentPrincipal) {
-        this.currentPrincipal = currentPrincipal;
-    }
 
-    /**
-     * 获取当前证金
-     * @return BigDecimal
-     */
-    public BigDecimal getCurrentBonus() {
-        return currentBonus;
-    }
-
-    /**
-     * 设置当前赠金
-     * @param currentBonus
-     */
-    public void setCurrentBonus(BigDecimal currentBonus) {
-        this.currentBonus = currentBonus;
-    }
-
-    /**
-     * @return id
-     */
-    public Integer getId() {
-        return id;
-    }
-
-    /**
-     * @param id
-     */
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    /**
-     * 获取门诊id
-     *
-     * @return org_id - 门诊id
-     */
-    public Integer getOrgId() {
-        return orgId;
-    }
-
-    /**
-     * 设置门诊id
-     *
-     * @param orgId 门诊id
-     */
-    public void setOrgId(Integer orgId) {
-        this.orgId = orgId;
-    }
-
-    /**
-     * 获取预付款卡号
-     *
-     * @return prepaid_id - 预付款卡号
-     */
-    public String getPrepaidId() {
-        return prepaidId;
-    }
-
-    /**
-     * 设置预付款卡号
-     *
-     * @param prepaidId 预付款卡号
-     */
-    public void setPrepaidId(String prepaidId) {
-        this.prepaidId = prepaidId;
-    }
-
-    /**
-     * 获取患者id
-     *
-     * @return patient_id - 患者id
-     */
-    public Integer getPatientId() {
-        return patientId;
-    }
-
-    /**
-     * 设置患者id
-     *
-     * @param patientId 患者id
-     */
-    public void setPatientId(Integer patientId) {
-        this.patientId = patientId;
-    }
-
-    /**
-     * 获取退费方式ID
-     *
-     * @return return_way_id - 退费方式ID
-     */
-    public Integer getReturnWayId() {
-        return returnWayId;
-    }
-
-    /**
-     * 设置退费方式ID
-     *
-     * @param returnWayId 退费方式ID
-     */
-    public void setReturnWayId(Integer returnWayId) {
-        this.returnWayId = returnWayId;
-    }
-
-    /**
-     * 获取退还本金
-     *
-     * @return return_principal_amount - 退还本金
-     */
-    public BigDecimal getReturnPrincipalAmount() {
-        return returnPrincipalAmount;
-    }
-
-    /**
-     * 设置退还本金
-     *
-     * @param returnPrincipalAmount 退还本金
-     */
-    public void setReturnPrincipalAmount(BigDecimal returnPrincipalAmount) {
-        this.returnPrincipalAmount = returnPrincipalAmount;
-    }
-
-    /**
-     * 获取退还赠金
-     *
-     * @return return_gift_amount - 退还赠金
-     */
-    public BigDecimal getReturnGiftAmount() {
-        return returnGiftAmount;
-    }
-
-    /**
-     * 设置退还赠金
-     *
-     * @param returnGiftAmount 退还赠金
-     */
-    public void setReturnGiftAmount(BigDecimal returnGiftAmount) {
-        this.returnGiftAmount = returnGiftAmount;
-    }
-
-    /**
-     * 获取退费原因
-     *
-     * @return return_reason - 退费原因
-     */
-    public String getRemarks() {
-        return remarks;
-    }
-
-    /**
-     * 设置退费原因
-     *
-     * @param remarks 退费原因
-     */
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
-    }
-
-    /**
-     * 获取退费方式
-     *
-     * @return return_way_type - 退费方式
-     */
-    public String getReturnWayType() {
-        return returnWayType;
-    }
-
-    /**
-     * 设置退费方式
-     *
-     * @param returnWayType 退费方式
-     */
-    public void setReturnWayType(String returnWayType) {
-        this.returnWayType = returnWayType;
-    }
-
-    /**
-     * 获取创建人id
-     *
-     * @return crt_id - 创建人id
-     */
-    public Integer getCrtId() {
-        return crtId;
-    }
-
-    /**
-     * 设置创建人id
-     *
-     * @param crtId 创建人id
-     */
-    public void setCrtId(Integer crtId) {
-        this.crtId = crtId;
-    }
-
-    /**
-     * 获取创建人姓名
-     *
-     * @return crt_name - 创建人姓名
-     */
-    public String getCrtName() {
-        return crtName;
-    }
-
-    /**
-     * 设置创建人姓名
-     *
-     * @param crtName 创建人姓名
-     */
-    public void setCrtName(String crtName) {
-        this.crtName = crtName;
-    }
-
-    /**
-     * 获取创建时间
-     *
-     * @return crt_time - 创建时间
-     */
-    public Date getCrtTime() {
-        return crtTime;
-    }
-
-    /**
-     * 设置创建时间
-     *
-     * @param crtTime 创建时间
-     */
-    public void setCrtTime(Date crtTime) {
-        this.crtTime = crtTime;
-    }
-
-    /**
-     * 获取更新人id
-     *
-     * @return upd_id - 更新人id
-     */
-    public Integer getUpdId() {
-        return updId;
-    }
-
-    /**
-     * 设置更新人id
-     *
-     * @param updId 更新人id
-     */
-    public void setUpdId(Integer updId) {
-        this.updId = updId;
-    }
-
-    /**
-     * 获取更新人姓名
-     *
-     * @return Upd_name - 更新人姓名
-     */
-    public String getUpdName() {
-        return updName;
-    }
-
-    /**
-     * 设置更新人姓名
-     *
-     * @param updName 更新人姓名
-     */
-    public void setUpdName(String updName) {
-        this.updName = updName;
-    }
-
-    /**
-     * 获取更新时间
-     *
-     * @return upd_time - 更新时间
-     */
-    public Date getUpdTime() {
-        return updTime;
-    }
-
-    /**
-     * 设置更新时间
-     *
-     * @param updTime 更新时间
-     */
-    public void setUpdTime(Date updTime) {
-        this.updTime = updTime;
-    }
 }

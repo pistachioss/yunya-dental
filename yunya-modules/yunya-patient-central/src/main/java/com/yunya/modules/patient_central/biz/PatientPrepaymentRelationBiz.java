@@ -590,6 +590,11 @@ public class PatientPrepaymentRelationBiz
         prepaidRechargeRecord.setUptId(Integer.parseInt(BaseContextHandler.getUserID()));
         prepaidRechargeRecord.setUpdName(BaseContextHandler.getName());
         prepaidRechargeRecordMapper.insertSelective(prepaidRechargeRecord);
+        // 发送消息 删除消费消息
+        Integer expendId = updPatientPrepaidInfo(model);
+        if (expendId != null){
+          remoteRabbitMqServiceFeign.sendMessage(expendId, 1,2, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
+        }
         // 发送消息 撤销收费
         sendPrepaidLogMessages(prepaidRechargeRecord.getId(), 2, 1, 4);
         return ResponseUtil.success();
@@ -598,6 +603,24 @@ public class PatientPrepaymentRelationBiz
       }
     }
     return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到预付款消费记录", prepaidExpend);
+  }
+
+  /**
+   * 撤销收费后 消费记录作废
+   * @param model 条件
+   * @return Integer 消费记录id
+   */
+  public Integer updPatientPrepaidInfo(PrepaidRevocationFeeModel model){
+    PrepaidExpendRecord prepaidExpendRecord = new PrepaidExpendRecord();
+    prepaidExpendRecord.setPrepaidId(model.getPrepaidCard());
+    prepaidExpendRecord.setBillPayRecordId(model.getBillPayRecordId());
+    PrepaidExpendRecord prepaidExpendRecordvo = prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
+    if (prepaidExpendRecordvo != null){
+      prepaidExpendRecordvo.setInservice(false);
+      prepaidExpendRecordMapper.updateByPrimaryKeySelective(prepaidExpendRecordvo);
+      return prepaidExpendRecordvo.getId();
+    }
+    return null;
   }
 
 }

@@ -875,6 +875,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
   public void updatePatientInfo(PatientExtendInfoModel patientExtendInfoModel) {
     PatientBaseInfoModel patientBaseInfoModel = patientExtendInfoModel.getPatientBaseInfoModel();
     if (patientBaseInfoModel != null) {
+      if (patientBaseInfoModel.getOriginType() == 1 || patientBaseInfoModel.getOriginType() == 2){
+         patientBaseInfoModel.setOriginId(patientExtendInfoModel.getPatientBaseInfoModel().getSourceId());
+      }
       PatientBaseInfo patientBaseInfo = new PatientBaseInfo();
       BeanUtils.copyProperties(patientBaseInfoModel, patientBaseInfo);
       patientBaseInfoMapper.updateByPrimaryKeySelective(patientBaseInfo);

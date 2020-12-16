@@ -36,8 +36,8 @@ public interface PatientPrepaymentsInfoMapper extends Mapper<PatientPrepaymentsI
 
 
     /**
-     * 根据预付款卡号查询预付款信息
-     * @param prepaidId 预付款卡号
+     * 根据预付款账号查询预付款信息
+     * @param prepaidId 预付款账号
      * @return PatientPrepaymentsInfo
      */
     PatientPrepaymentsInfo selectOneByCardNumber(@Param("prepaidId") String prepaidId);

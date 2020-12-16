@@ -20,9 +20,9 @@ import java.math.BigDecimal;
 public class PrepaidMeturnRecordModel implements Serializable {
 
     /**
-     * 预付款卡号
+     * 预付款账号
      */
-    @ApiModelProperty(value = "预付款卡号",required = true)
+    @ApiModelProperty(value = "预付款账号",required = true)
     private String prepaidId;
 
     /**
@@ -42,6 +42,12 @@ public class PrepaidMeturnRecordModel implements Serializable {
      */
     @ApiModelProperty(value = "退还赠金",required = false)
     private BigDecimal returnGiftAmount;
+
+    /**
+     * 实际退还本金
+     */
+    @ApiModelProperty(name = "actual_return_amount",required = true)
+    private BigDecimal actualReturnAmount;
 
     /**
      * 退费方式ID

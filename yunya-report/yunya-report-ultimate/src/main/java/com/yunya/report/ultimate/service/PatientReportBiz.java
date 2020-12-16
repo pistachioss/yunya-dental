@@ -273,7 +273,7 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     analysisPatientAgeVoList.add(youngVo);
 
     AnalysisPatientAgeVo wrinklyList = new AnalysisPatientAgeVo();
-    Integer countWrinkly = mapper.selectAnalysisAge(form, 0, 14, 60);
+    Integer countWrinkly = mapper.selectAnalysisAge(form, 0, 15, 60);
     String percentageWrinkly = mapper.calculateAgePercentage(countWrinkly, count);
     wrinklyList.setAgeBracket("14-60");
     wrinklyList.setPercentage(percentageWrinkly);
