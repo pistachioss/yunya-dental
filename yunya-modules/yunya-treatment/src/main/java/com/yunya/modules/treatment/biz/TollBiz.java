@@ -355,7 +355,7 @@ public class TollBiz {
     // 发送消息同步就诊、账单数据
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-      rabbitMqServiceFeign.sendMessage(billPayRecord.getId(), 0, BaseBillPay);
+      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
       Integer appointmentId = treatmentRecord.getAppointmentId();
       if (null != appointmentId) {
         rabbitMqServiceFeign.sendMessage(appointmentId, 0, 1, BaseTreatmentProcess);
@@ -1278,7 +1278,7 @@ public class TollBiz {
     // 发送消息同步账单，账单收费
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-      rabbitMqServiceFeign.sendMessage(billPayRecord.getId(), 0, BaseBillPay);
+      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
   }
 

@@ -87,7 +87,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
       billPayDetailRecords.forEach(
           payDetailRecord -> {
             BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
-            baseBillPayDetail.setBillPayDetailRecordId(payDetailRecord.getId());
+            Integer payDetailRecordId = payDetailRecord.getId();
+            baseBillPayDetail.setBillPayDetailRecordId(payDetailRecordId);
             baseBillPayDetail.setBillId(payDetailRecord.getOrderRecordId());
             baseBillPayDetail.setBillPayId(payDetailRecord.getBillPayRecordId());
             Byte type = payDetailRecord.getType();
@@ -132,7 +133,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 baseBillPayDetail.setPrincipalAmount(payDetailRecord.getAmount());
                 break;
             }
-            baseBillPayDetailMapper.deleteByPrimaryKey(billPayDetailRecord.getId());
+            baseBillPayDetailMapper.deleteByPrimaryKey(payDetailRecordId);
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
           });
     }
