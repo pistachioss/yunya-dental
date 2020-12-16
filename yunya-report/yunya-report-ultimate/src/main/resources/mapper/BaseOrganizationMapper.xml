@@ -15,22 +15,22 @@
     <select id="selectClinicPatientDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.PatientDataStatisticsVO">
         SELECT
-            SUM( bo.firstVisitPerNum ) AS firstVisitPerNum,
-            SUM( bo.repeatVisitsPerNum ) AS repeatVisitsPerNum,
-            SUM( bo.treatPerNum ) AS treatPerNum,
-            SUM( bo.appointPerNum ) AS appointPerNum,
-            SUM( bo.repeatVisitsPerTimes ) AS repeatVisitsPerTimes,
-            SUM( bo.treatPerTimes ) AS treatPerTimes,
-            SUM( bo.appointPerTimes ) AS appointPerTimes,
-            SUM( bo.appointModifyPerTimes ) AS appointModifyPerTimes,
-            SUM( bo.appointCancelPerTimes ) AS appointCancelPerTimes,
-            SUM( bo.appointMissedPerTimes ) AS appointMissedPerTimes,
-            CONVERT (
-                SUM( bo.totalActualAmount ) / SUM( bo.treatPerTimes ),
-            DECIMAL ( 19, 2 )) AS averageConsumption,
-            CONVERT (
-                SUM( bo.totalActualAmount ) / SUM( bo.treatPerNum ),
-            DECIMAL ( 19, 2 )) AS perCapitaConsumption
+            IFNULL(SUM( bo.firstVisitPerNum ), 0) AS firstVisitPerNum,
+            IFNULL(SUM( bo.repeatVisitsPerNum ), 0) AS repeatVisitsPerNum,
+            IFNULL(SUM( bo.treatPerNum ), 0) AS treatPerNum,
+            IFNULL(SUM( bo.appointPerNum ), 0) AS appointPerNum,
+            IFNULL(SUM( bo.repeatVisitsPerTimes ), 0) AS repeatVisitsPerTimes,
+            IFNULL(SUM( bo.treatPerTimes ), 0) AS treatPerTimes,
+            IFNULL(SUM( bo.appointPerTimes ), 0) AS appointPerTimes,
+            IFNULL(SUM( bo.appointModifyPerTimes ), 0) AS appointModifyPerTimes,
+            IFNULL(SUM( bo.appointCancelPerTimes ), 0) AS appointCancelPerTimes,
+            IFNULL(SUM( bo.appointMissedPerTimes ), 0) AS appointMissedPerTimes,
+            IFNULL(CONVERT (
+            SUM( bo.totalActualAmount ) / SUM( bo.treatPerTimes ),
+            DECIMAL ( 19, 4 )), 0) AS averageConsumption,
+            IFNULL(CONVERT (
+            SUM( bo.totalActualAmount ) / SUM( bo.treatPerNum ),
+            DECIMAL ( 19, 4 )), 0) AS perCapitaConsumption
         FROM
             (
             SELECT

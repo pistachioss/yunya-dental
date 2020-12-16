@@ -1,0 +1,1305 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.report.ultimate.mapper.BaseAccountItemMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.report.BaseAccountItem">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="account_item_id" property="accountItemId" jdbcType="INTEGER"/>
+        <result column="account_item_name" property="accountItemName" jdbcType="VARCHAR"/>
+        <result column="account_type_id" property="accountTypeId" jdbcType="INTEGER"/>
+        <result column="account_type_name" property="accountTypeName" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!-- 获取全部支付方式表头 -->
+    <select id="selectAllPaymentList" resultType="com.yunya.feign.report.domain.vo.BaseAccountItemVO">
+        select
+            bai.account_item_id as accountItemId,
+            bai.account_item_name as accountItemName
+        from base_account_item bai
+        group by
+            bai.account_type_id,
+            bai.account_item_id
+        order by
+            bai.account_type_id,
+            bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊账单收费的入账方式分组信息 -->
+    <select id="selectBillChargePaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bbpd.account_item_id,
+        bbpd.principal_amount
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            and bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bb.bill_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        WHERE
+        bbp.org_id = bb.org_id
+        AND bbp.bill_id = bb.bill_id
+        AND bbp.payee_date = bb.bill_date
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        WHERE
+        bbpd.bill_pay_id = bbp.bill_pay_id
+        GROUP BY
+        bbpd.bill_pay_detail_record_id
+        ) bbpd ON bai.account_item_id = bbpd.account_item_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊收欠费的入账方式分组信息 -->
+    <select id="selectCollectArrearsPaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bbpd.account_item_id,
+        bbpd.principal_amount
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            and bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.org_id = bb.org_id
+            AND bbp.bill_id = bb.bill_id
+            AND bbp.payee_date != bb.bill_date
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        WHERE
+        bbpd.bill_pay_id = bbp.bill_pay_id
+        GROUP BY
+        bbpd.bill_pay_detail_record_id
+        ) bbpd ON bai.account_item_id = bbpd.account_item_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊会员卡充值的入账方式分组信息 -->
+    <select id="selectMemberChargePaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bpmol.credit_amount,
+        bpmol.payment_id
+        FROM
+        base_patient_member_occur_log bpmol
+        <where>
+            AND bpmol.type = 0 -- 会员卡
+            AND bpmol.recharge_card_number IS NULL -- 非充值卡充值
+            AND bpmol.occur_type = 1 -- 充值
+            <if test="query.orgId != null">
+                AND bpmol.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol ON bai.account_item_id = bpmol.payment_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊会员卡充值的入账方式分组信息 -->
+    <select id="selectPaidChargePaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bpmol.credit_amount,
+        bpmol.payment_id
+        FROM
+        base_patient_member_occur_log bpmol
+        <where>
+            AND bpmol.type = 1 -- 预付款
+            AND bpmol.recharge_card_number IS NULL -- 非充值卡充值
+            AND bpmol.occur_type = 1 -- 充值
+            <if test="query.orgId != null">
+                AND bpmol.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol ON bai.account_item_id = bpmol.payment_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊产品售出的入账方式分组信息 -->
+    <select id="selectProductSoldPaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bc.sold_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bc.pay_id,
+        bc1.sold_amount
+        FROM
+        base_card bc
+        LEFT JOIN base_coupon bc1 ON bc.coupon_id = bc1.coupon_id
+        <where>
+            AND bc.sold_type = 0
+            AND bc.charge_status = 1
+            AND bc.sold_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bc.active_org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bc.sold_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bc.sold_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bc.sold_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bc.sold_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bc.sold_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bc.sold_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bc.card_id
+        ) bc ON bai.account_item_id = bc.pay_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊代收的入账方式分组信息 -->
+    <select id="selectClinicCollectionPaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bbpd.account_item_id,
+        bbpd.principal_amount
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id != #{query.orgId} -- 不是本门诊账单
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.bill_id = bb.bill_id
+            <if test="query.orgId != null">
+                AND bbp.org_id != #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        WHERE
+        bbpd.bill_pay_id = bbp.bill_pay_id
+        GROUP BY
+        bbpd.bill_pay_detail_record_id
+        ) bbpd ON bai.account_item_id = bbpd.account_item_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊退费的入账方式分组信息 -->
+    <select id="selectBillRefundPaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( brpd.principal_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        brpd.account_item_id,
+        brpd.principal_amount
+        FROM
+        base_refund_pay_detail brpd,(
+        SELECT
+        br.refund_id
+        FROM
+        base_refund br
+        <where>
+            <if test="query.orgId != null">
+                AND br.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) br
+        WHERE
+        brpd.refund_id = br.refund_id
+        ) brpd ON bai.account_item_id = brpd.account_item_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊会员卡退费的入账方式分组信息 -->
+    <select id="selectMemberRefundPaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bpmol.credit_amount,
+        bpmol.payment_id
+        FROM
+        base_patient_member_occur_log bpmol
+        <where>
+            AND bpmol.type = 0 -- 会员卡
+            AND bpmol.occur_type = 3 -- 退费
+            <if test="query.orgId != null">
+                AND bpmol.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol ON bai.account_item_id = bpmol.payment_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊预付款退费的入账方式分组信息 -->
+    <select id="selectPrepaidRefundPaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bpmol.credit_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bpmol.credit_amount,
+        bpmol.payment_id
+        FROM
+        base_patient_member_occur_log bpmol
+        <where>
+            AND bpmol.type = 1 -- 预付款
+            AND bpmol.occur_type = 3 -- 退费
+            <if test="query.orgId != null">
+                AND bpmol.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bpmol.occur_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) bpmol ON bai.account_item_id = bpmol.payment_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊被代收的入账方式分组信息 -->
+    <select id="selectClinicIsAcceptedPaymentInfo"
+            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+        SELECT
+        bai.account_item_id,
+        bai.account_item_name,
+        IFNULL( SUM( bbpd.principal_amount ), 0 ) AS totalAmount
+        FROM
+        base_account_item bai
+        LEFT JOIN (
+        SELECT
+        bbpd.account_item_id,
+        bbpd.principal_amount
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            AND bb.bill_num IS NOT NULL
+            <if test="query.orgId">
+                AND bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.bill_id = bb.bill_id
+            AND bbp.org_id != bb.org_id
+            AND bbp.payee_date != bb.bill_date
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        WHERE
+        bbpd.bill_pay_id = bbp.bill_pay_id
+        GROUP BY
+        bbpd.bill_pay_detail_record_id
+        ) bbpd ON bai.account_item_id = bbpd.account_item_id
+        GROUP BY
+        bai.account_type_id,
+        bai.account_item_id
+        ORDER BY
+        bai.account_type_id,
+        bai.account_item_id
+    </select>
+
+    <!-- 根据条件查询门诊账单收费本金入账金额 -->
+    <select id="selectBillChargePrincipal" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bbpd.principal_amount), 0)
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            and bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.org_id = bb.org_id
+            AND bbp.bill_id = bb.bill_id
+            AND bbp.payee_date != bb.bill_date
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        <where>
+            AND bbpd.bill_pay_id = bbp.bill_pay_id
+            <if test="accountItemId != null">
+                AND bbpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊账单收费赠金入账金额 -->
+    <select id="selectBillChargeBonus" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bbpd.bonus_amount), 0)
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.org_id = bb.org_id
+            AND bbp.bill_id = bb.bill_id
+            AND bbp.payee_date != bb.bill_date
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        <where>
+            AND bbpd.bill_pay_id = bbp.bill_pay_id
+            <if test="accountItemId != null">
+                AND bbpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊收欠费会员卡/预付款本金入账金额 -->
+    <select id="selectCollectArrearsPrincipal" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bbpd.principal_amount), 0)
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            and bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.org_id = bb.org_id
+            AND bbp.bill_id = bb.bill_id
+            AND bbp.payee_date != bb.bill_date
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        <where>
+            AND bbpd.bill_pay_id = bbp.bill_pay_id
+            <if test="accountItemId != null">
+                AND bbpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊收欠费会员卡/预付款赠金入账金额 -->
+    <select id="selectCollectArrearsBonus" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bbpd.bonus_amount), 0)
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            and bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                and bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.org_id = bb.org_id
+            AND bbp.bill_id = bb.bill_id
+            AND bbp.payee_date != bb.bill_date
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        <where>
+            AND bbpd.bill_pay_id = bbp.bill_pay_id
+            <if test="accountItemId != null">
+                AND bbpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊代收会员卡/预付款本金入账金额 -->
+    <select id="selectClinicCollectionPrincipal" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bbpd.principal_amount), 0)
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id != #{query.orgId} -- 不是本门诊账单
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.bill_id = bb.bill_id
+            <if test="query.orgId != null">
+                AND bbp.org_id != #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        <where>
+            AND bbpd.bill_pay_id = bbp.bill_pay_id
+            <if test="accountItemId != null">
+                AND bbpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊代收会员卡/预付款赠金入账金额 -->
+    <select id="selectClinicCollectionBonus" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bbpd.bonus_amount), 0)
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id != #{query.orgId} -- 不是本门诊账单
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.bill_id = bb.bill_id
+            <if test="query.orgId != null">
+                AND bbp.org_id != #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        <where>
+            AND bbpd.bill_pay_id = bbp.bill_pay_id
+            <if test="accountItemId != null">
+                AND bbpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊账单退费会员卡/预付款本金入账金额 -->
+    <select id="selectBillRefundPrincipal" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(brpd.principal_amount), 0)
+        FROM
+        base_refund_pay_detail brpd,(
+        SELECT
+        br.refund_id
+        FROM
+        base_refund br
+        <where>
+            <if test="query.orgId != null">
+                AND br.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) br
+        <where>
+            AND brpd.refund_id = br.refund_id
+            <if test="accountItemId != null">
+                AND brpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊账单退费会员卡/预付款赠金入账金额 -->
+    <select id="selectBillRefundBonus" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(brpd.bonus_amount), 0)
+        FROM
+        base_refund_pay_detail brpd,(
+        SELECT
+        br.refund_id
+        FROM
+        base_refund br
+        <where>
+            <if test="query.orgId != null">
+                AND br.org_id = #{query.orgId}
+            </if>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( refund_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) br
+        <where>
+            AND brpd.refund_id = br.refund_id
+            <if test="accountItemId != null">
+                AND brpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊被代收会员卡/预付款本金入账金额 -->
+    <select id="selectClinicIsAcceptedPrincipal" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bbpd.principal_amount), 0)
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            AND bb.bill_num IS NOT NULL
+            <if test="query.orgId">
+                AND bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.bill_id = bb.bill_id
+            AND bbp.org_id != bb.org_id
+            AND bbp.payee_date != bb.bill_date
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        <where>
+            AND bbpd.bill_pay_id = bbp.bill_pay_id
+            <if test="accountItemId != null">
+                AND bbpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询门诊被代收会员卡/预付款赠金入账金额 -->
+    <select id="selectClinicIsAcceptedBonus" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM(bbpd.bonus_amount), 0)
+        FROM
+        base_bill_pay_detail bbpd,(
+        SELECT
+        bbp.bill_pay_id
+        FROM
+        base_bill_pay bbp,(
+        SELECT
+        bb.org_id,
+        bb.bill_id,
+        bb.bill_date
+        FROM
+        base_bill bb
+        <where>
+            AND bb.bill_date IS NOT NULL
+            AND bb.bill_num IS NOT NULL
+            <if test="query.orgId">
+                AND bb.org_id = #{query.orgId}
+            </if>
+        </where>
+        GROUP BY
+        bb.bill_id
+        ) bb
+        <where>
+            AND bbp.bill_id = bb.bill_id
+            AND bbp.org_id != bb.org_id
+            AND bbp.payee_date != bb.bill_date
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m-%d' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y-%m' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+            <if test="query.dateType == 2">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &gt;= #{query.startDate}
+                </if>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT( bbp.payee_date, '%Y' ) &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        GROUP BY
+        bbp.bill_pay_id
+        ) bbp
+        <where>
+            AND bbpd.bill_pay_id = bbp.bill_pay_id
+            <if test="accountItemId != null">
+                AND bbpd.account_item_id = #{accountItemId}
+            </if>
+        </where>
+    </select>
+</mapper>

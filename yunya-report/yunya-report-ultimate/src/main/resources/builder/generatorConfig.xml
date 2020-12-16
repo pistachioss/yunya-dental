@@ -26,7 +26,7 @@
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
 
-       <table tableName="base_benefit" domainObjectName="BaseBenefit"/>
+       <table tableName="base_bill_refund_pay_detail" domainObjectName="BaseBillRefundPayDetail"/>
 <!--        <table tableName="base_bill" domainObjectName="BaseBill"/>-->
 <!--        <table tableName="base_bill_detail" domainObjectName="BaseBillDetail"/>-->
 <!--        <table tableName="base_bill_pay" domainObjectName="BaseBillPay"/>-->

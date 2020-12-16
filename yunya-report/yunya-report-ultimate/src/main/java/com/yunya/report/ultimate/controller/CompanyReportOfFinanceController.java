@@ -6,6 +6,7 @@ import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.report.ultimate.biz.BaseAccountItemBiz;
 import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
 import com.yunya.report.ultimate.service.DiscountBiz;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 简介: 公司端报表-财务报表控制层
@@ -39,6 +41,8 @@ public class CompanyReportOfFinanceController {
   @Autowired private BaseBillDetailBiz billDetailBiz;
   /** 卡券 */
   @Autowired private DiscountBiz discountBiz;
+  /** 支付方式 */
+  @Autowired private BaseAccountItemBiz accountItemBiz;
 
   @ApiOperation(value = "公司端报表-财务报表-产品售出统计-产品维度")
   @PostMapping("/coupon/sold/statistics")
@@ -124,9 +128,9 @@ public class CompanyReportOfFinanceController {
    *
    * @param response 响应
    * @param query 查询条件
-   * @return
+   * @return void
    */
-  @ApiOperation("公司端报表-财务报表-导出项目收入明细列表")
+  @ApiOperation("公司端报表-财务报表-项目收入明细列表-导出")
   @PostMapping(value = "/tariff/income/export", name = "导出项目收入明细列表")
   public ResponseResult<T> exportBillDetailIncome(
       HttpServletResponse response, @RequestBody @Validated BillDetailIncomeDetailQuery query)
@@ -139,7 +143,7 @@ public class CompanyReportOfFinanceController {
    * 根据条件查询项目分类收入汇总列表
    *
    * @param query 查询条件
-   * @return
+   * @return PageInfo<CategoryInfoIncomeVO>
    */
   @ApiOperation("公司端报表-财务报表-分类收入汇总")
   @PostMapping(value = "/category/income/list", name = "billDetailBiz")
@@ -154,7 +158,7 @@ public class CompanyReportOfFinanceController {
    *
    * @param response 响应
    * @param query 查询条件
-   * @return
+   * @return void
    */
   @ApiOperation("公司端报表-财务报表-分类收入汇总-导出")
   @PostMapping(value = "/category/income/export", name = "根据条件导出项目分类收入汇总列表")
@@ -169,7 +173,7 @@ public class CompanyReportOfFinanceController {
    * 根据条件查询账单优惠明细列表
    *
    * @param query 查询条件
-   * @return
+   * @return PageInfo<BillOfDiscountDetailVO>
    */
   @ApiOperation("公司端报表-财务报表-账单优惠明细")
   @PostMapping(value = "/bill/privilege/list", name = "根据条件查询账单优惠明细")
@@ -223,5 +227,32 @@ public class CompanyReportOfFinanceController {
       throws IOException {
     baseBillBiz.exportBillReceivableAmountList(response, query);
     return ResponseUtil.success(null);
+  }
+
+  /**
+   * 获取全部支付方式表头
+   *
+   * @return List<BaseAccountItemVO>
+   */
+  @ApiOperation("公司端报表-财务报表-支付方式表头")
+  @GetMapping(value = "/statement/payment/list", name = "获取全部支付方式表头")
+  public ResponseResult<List<BaseAccountItemVO>> findAllPaymentList() {
+    List<BaseAccountItemVO> resultList = accountItemBiz.findAllPaymentList();
+    return ResponseUtil.success(resultList);
+  }
+
+  /**
+   * 根据条件查询门诊出入账对账单
+   *
+   * @param query 查询条件
+   * @return Map<String, Object>
+   */
+  @ApiOperation("公司端报表-财务报表-对账单")
+  @PostMapping(value = "/statement", name = "根据条件查询门诊出入账对账单")
+  public ResponseResult<List<ClinicInboundAndOutboundVO>> inboundAndOutboundStatement(
+      @RequestBody @Validated InboundAndOutboundStatementQuery query) {
+    List<ClinicInboundAndOutboundVO> resultList =
+        accountItemBiz.findInboundAndOutboundStatement(query);
+    return ResponseUtil.success(resultList);
   }
 }

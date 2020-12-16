@@ -1304,9 +1304,9 @@
     <select id="selectClinicWorkloadStatistic"
             resultType="com.yunya.feign.report.domain.vo.WorkloadStatisticsVO">
         SELECT
-            SUM( bbd.totalClinicActualReceiveWorkload ) AS totalClinicActualReceiveWorkload,
-            SUM( bbd.totalClinicReceivedWorkload ) AS totalClinicReceivedWorkload,
-            SUM( bbd.totalClinicReceivedNotWorkload ) AS totalClinicReceivedNotWorkload
+            IFNULL(SUM( bbd.totalClinicActualReceiveWorkload ), 0) AS totalClinicActualReceiveWorkload,
+            IFNULL(SUM( bbd.totalClinicReceivedWorkload ), 0) AS totalClinicReceivedWorkload,
+            IFNULL(SUM( bbd.totalClinicReceivedNotWorkload ), 0) AS totalClinicReceivedNotWorkload
         FROM
             (
             SELECT
