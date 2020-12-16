@@ -118,5 +118,14 @@ public class BasePatientMemberOccurLog {
     @Column(name = "recharge_method")
     private Byte rechargeMethod;
 
+    /**
+     * 是否启用
+     */
     private Boolean inservice;
+
+    /**
+     * 入账金额
+     */
+    @Column(name = "credit_amount")
+    private BigDecimal creditAmount;
 }

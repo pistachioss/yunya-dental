@@ -37,7 +37,7 @@ public class ApprovalAllListForm {
     private String status;
 
     @ApiModelProperty("审批状态 0 审批中 1通过 2拒绝  3撤回")
-    private Integer apprpvalStatus;
+    private Integer approvalStatus;
 
     @ApiModelProperty("页数")
     private Integer page = 1;

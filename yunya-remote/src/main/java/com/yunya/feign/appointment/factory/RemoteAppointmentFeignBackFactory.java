@@ -2,12 +2,12 @@ package com.yunya.feign.appointment.factory;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
+import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppAppointmentInfoQuery;
 import com.yunya.feign.appointment.domain.query.AppointItemQuery;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
-import com.yunya.feign.appointment.vo.AppointmentItemEnableModelVo;
-import com.yunya.feign.appointment.vo.AppointmentItemVo;
-import com.yunya.feign.appointment.vo.NextAppointsVo;
+import com.yunya.feign.appointment.vo.*;
+import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.models.appointment.AppointType;
 import com.yunya.models.appointment.Appointment;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +63,7 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
     }
 
     @Override
-    public List<Appointment> findAppointmentList(AppAppointmentInfoQuery query) {
+    public PageInfo<Appointment> findAppointmentList(AppAppointmentInfoQuery query) {
         return null;
     }
 
@@ -84,6 +84,16 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
 
     @Override
     public List<Appointment> findAppointmentListByIds(List<Integer> appointIds) {
+        return null;
+    }
+
+    @Override
+    public List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(AppointmentCurrentListQuery queryForm) {
+        return null;
+    }
+
+    @Override
+    public List<TreatmentInfoForMonthVO> appointmentForMonth(AppointmentForMonthForm form) {
         return null;
     }
 

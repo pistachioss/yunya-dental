@@ -34,7 +34,9 @@ public interface BasePatientMemberOccurLogMapper extends Mapper<BasePatientMembe
      * @param patientIds 患者id集合
      * @return List<MemberExpendLogBizVo>
      */
-    List<BaseMemberExpendLogVo> selectMemberExpendtList(@Param("form") MemberQueryForm memberQueryForm, @Param("patientIds") List<Integer> patientIds);
+    List<BaseMemberExpendLogVo>
+
+    selectMemberExpendtList(@Param("form") MemberQueryForm memberQueryForm, @Param("patientIds") List<Integer> patientIds);
 
     /**
      * 查询会员卡退费记录列表

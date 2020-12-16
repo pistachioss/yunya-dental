@@ -14,7 +14,7 @@
         <result column="field_reason" property="fieldReason" jdbcType="VARCHAR"/>
         <result column="refuse_reason" property="refuseReason" jdbcType="VARCHAR"/>
         <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER"/>
-        <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER"/>
+        <result column="approval_status" property="approvalStatus" jdbcType="INTEGER"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
@@ -31,14 +31,14 @@
         <result column="field_reason" property="fieldReason" jdbcType="VARCHAR"/>
         <result column="refuse_reason" property="refuseReason" jdbcType="VARCHAR"/>
         <result column="approval_people_id" property="approvalPeopleId" jdbcType="INTEGER"/>
-        <result column="apprpval_status" property="apprpvalStatus" jdbcType="INTEGER"/>
+        <result column="approval_status" property="approvalStatus" jdbcType="INTEGER"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
         <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
         <result column="upd_id" property="updId" jdbcType="INTEGER"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
     <select id="findList" resultMap="BaseResultMap">
-        select * from field_info where apprpval_status in (0,1)
+        select * from field_info where approval_status in (0,1)
         <if test="userId !=null and userId != ''">
             and user_id = #{userId}
         </if>
@@ -46,7 +46,7 @@
 
     <select id="findVOList" resultMap="FindVOMap">
         select distinct fi.id,fi.field_address,fi.user_id,fi.start_time,fi.company_id,
-        fi.end_time,fi.refuse_reason,fi.field_reason,fi.approval_people_id,fi.apprpval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) as fieldTime,fi.crt_time ,fi.upd_time
+        fi.end_time,fi.refuse_reason,fi.field_reason,fi.approval_people_id,fi.approval_status,TIMESTAMPDIFF(MINUTE,start_time,end_time) as fieldTime,fi.crt_time ,fi.upd_time
         from
         field_info fi  LEFT JOIN copy_info ci ON ci.apply_id = fi.id and ci.apply_type = 2
         <where>
@@ -62,11 +62,11 @@
             <if test="approvalPeopleId !=null and approvalPeopleId != ''">
                 and fi.approval_people_id = #{approvalPeopleId}
             </if>
-            <if test="apprpvalStatus == 0 ">
-                and fi.apprpval_status = #{apprpvalStatus}
+            <if test="approvalStatus == 0 ">
+                and fi.approval_status = #{approvalStatus}
             </if>
-            <if test="apprpvalStatus == 1 or apprpvalStatus == 2 ">
-                and fi.apprpval_status in (1,2)
+            <if test="approvalStatus == 1 or approvalStatus == 2 ">
+                and fi.approval_status in (1,2)
             </if>
             <if test="startTime != null ">
                 and fi.crt_time >= #{startTime} and fi.crt_time &lt;= #{endTime}
@@ -85,10 +85,10 @@
         t.start_time as startTime,
         t.end_time as endTime,
         t.approval_people_id as approvalPeopleId,
-        t.apprpval_status as apprpvalStatus
+        t.approval_status as approvalStatus
         from field_info t
         <where>
-            t.apprpval_status = 1
+            t.approval_status = 1
             <if test="userIds!=null and userIds.size()>0">
                 and t.user_id in
                 <foreach collection="userIds" item="item" index="index" open="(" close=")" separator=",">
@@ -112,11 +112,11 @@
         t.start_time as startTime,
         t.end_time as endTime,
         t.approval_people_id as approvalPeopleId,
-        t.apprpval_status as apprpvalStatus
+        t.approval_status as approvalStatus
         from field_info t
         <where>
-            <if test="queryForm.apprpvalStatus!=null">
-                and t.apprpval_status = #{queryForm.apprpvalStatus}
+            <if test="queryForm.approvalStatus!=null">
+                and t.approval_status = #{queryForm.approvalStatus}
             </if>
             <if test="queryForm.userId!=null">
                 and t.user_id = #{queryForm.userId}
@@ -133,7 +133,7 @@
     </select>
 
     <select id="countByDay" resultType="Integer">
-        select count(*) from field_info where user_id = #{userId} and  DATE_FORMAT(start_time,'%Y-%m-%d') = #{startTime}  and apprpval_status in (0,1)
+        select count(*) from field_info where user_id = #{userId} and  DATE_FORMAT(start_time,'%Y-%m-%d') = #{startTime}  and approval_status in (0,1)
     </select>
 
     <select id="findApprovalAllList" resultType="com.yunya.feign.employee_attend.vo.ApprovalAllListVO">
@@ -144,8 +144,8 @@
         endTime,
         approvalPeopleId,
         STATUS,
-        apprpvalStatus from
-        (select id,user_id as userId,crt_time as crtTime,work_date as startTime,work_date as endTime,approval_people_id as approvalPeopleId,'加班' as status,apprpval_status as apprpvalStatus from work_overtime_info
+        approvalStatus from
+        (select id,user_id as userId,crt_time as crtTime,work_date as startTime,work_date as endTime,approval_people_id as approvalPeopleId,'加班' as status,approval_status as approvalStatus from work_overtime_info
         <where>
             <if test="crtTime!=null">
               AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
@@ -156,12 +156,12 @@
             <if test="userId!=null">
                 AND  user_id = #{userId}
             </if>
-            <if test="apprpvalStatus != null">
-                AND  apprpval_status = #{apprpvalStatus}
+            <if test="approvalStatus != null">
+                AND  approval_status = #{approvalStatus}
             </if>
         </where>
         union all
-        select id,user_id as userId,crt_time as crtTime,start_time as startTime,end_time as endTime,approval_people_id as approvalPeopleId,'外勤' as status,apprpval_status as apprpvalStatus from field_info
+        select id,user_id as userId,crt_time as crtTime,start_time as startTime,end_time as endTime,approval_people_id as approvalPeopleId,'外勤' as status,approval_status as approvalStatus from field_info
         <where>
             <if test="crtTime!=null">
                 AND  DATE_FORMAT(crt_time,'%Y-%m-%d') = DATE_FORMAT(#{crtTime},'%Y-%m-%d')
@@ -172,12 +172,12 @@
             <if test="userId!=null">
                 AND  user_id = #{userId}
             </if>
-            <if test="apprpvalStatus!=null">
-                AND  apprpval_status = #{apprpvalStatus}
+            <if test="approvalStatus!=null">
+                AND  approval_status = #{approvalStatus}
             </if>
         </where>
         union all
-        select li.id as id,li.user_id as userId,li.crt_time as crtTime,li.start_time as startTime,li.end_time as endTime,GROUP_CONCAT(ap.user_id) as approvalPeopleId,'请假' as status,li.apprpval_status as apprpvalStatus from leave_info li
+        select li.id as id,li.user_id as userId,li.crt_time as crtTime,li.start_time as startTime,li.end_time as endTime,GROUP_CONCAT(ap.user_id) as approvalPeopleId,'请假' as status,li.approval_status as approvalStatus from leave_info li
         LEFT JOIN approval_info ai on ai.leave_id = li.id
         LEFT JOIN approval_people ap on ap.id = ai.approval_people_id
         <where>
@@ -190,8 +190,8 @@
             <if test="userId!=null">
                 AND  li.user_id = #{userId}
             </if>
-            <if test="apprpvalStatus!=null">
-                AND  li.apprpval_status = #{apprpvalStatus}
+            <if test="approvalStatus!=null">
+                AND  li.approval_status = #{approvalStatus}
             </if>
         </where>
         GROUP BY li.id) a

@@ -34,6 +34,10 @@ public class VisitingContentVo implements Serializable {
     @ApiModelProperty(value = "医生名字")
     private String dentistName;
 
+    /** 医生ID */
+    @ApiModelProperty(value = "医生ID")
+    private Integer dentistId;
+
     /**
      * 就诊日期
      */
@@ -46,6 +50,12 @@ public class VisitingContentVo implements Serializable {
      */
     @ApiModelProperty(value = "科室名字 默认末诊科室")
     private String deptRoomName;
+
+    /**
+     * 科室ID 默认末诊科室
+     */
+    @ApiModelProperty(value = "科室ID 默认末诊科室")
+    private Integer deptRoomId;
 
     /**
      * 随访日期

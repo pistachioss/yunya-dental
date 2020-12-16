@@ -44,6 +44,6 @@ public class ApprovalAllListVO {
     @ApiModelProperty("申请类型 加班 外勤 请假")
     private String status;
     @ApiModelProperty("审批状态")
-    private Integer apprpvalStatus;
+    private Integer approvalStatus;
 
 }

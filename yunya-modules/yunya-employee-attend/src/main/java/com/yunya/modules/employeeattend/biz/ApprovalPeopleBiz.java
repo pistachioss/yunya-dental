@@ -9,6 +9,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.models.employee_attend.ApprovalPeople;
+import com.yunya.modules.employeeattend.form.ApprovalPeopleDeleteForm;
 import com.yunya.modules.employeeattend.form.ApprovalPeopleForm;
 import com.yunya.modules.employeeattend.form.ApprovalPeopleQuery;
 import com.yunya.modules.employeeattend.mapper.ApprovalPeopleMapper;
@@ -88,9 +89,9 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
         return re;
     }
 
-    public int delete(ApprovalPeopleForm approvalPeopleForm) {
+    public int delete(ApprovalPeopleDeleteForm approvalPeopleDeleteForm) {
         ApprovalPeople approvalPeople = new ApprovalPeople();
-        BeanUtils.copyProperties(approvalPeopleForm, approvalPeople);
+        BeanUtils.copyProperties(approvalPeopleDeleteForm, approvalPeople);
         int re = mapper.delete(approvalPeople);
         return re;
     }

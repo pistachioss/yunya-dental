@@ -65,7 +65,7 @@ public class WorkOvertimeInfoQueryForm implements Serializable {
 
     /** 审批状态 0 审批中 1通过 2拒绝 3撤回 4异常 */
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝 3撤回 4异常")
-    private Integer apprpvalStatus;
+    private Integer approvalStatus;
 
     /** 不包含的id列表 */
     @ApiModelProperty(value = "不包含的id列表")

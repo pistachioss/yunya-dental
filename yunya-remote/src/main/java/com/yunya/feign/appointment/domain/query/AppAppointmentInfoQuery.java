@@ -41,4 +41,6 @@ public class AppAppointmentInfoQuery implements Serializable {
   /** 预约状态 */
   @ApiModelProperty("预约状态 0-预约未到，1-履约，2，取消预约，3-失约")
   private Byte appointStatus;
+  @ApiModelProperty("是否启用 1-启用；0-不启用")
+  private Boolean inservice;
 }

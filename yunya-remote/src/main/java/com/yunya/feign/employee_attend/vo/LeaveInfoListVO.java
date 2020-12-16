@@ -95,7 +95,7 @@ public class LeaveInfoListVO {
      * 审批状态 0 审批中 1通过 2拒绝 3撤回
      */
     @ApiModelProperty(value = "审批状态 0 审批中 1通过 2拒绝 3撤回")
-    private Integer apprpvalStatus;
+    private Integer approvalStatus;
     @ApiModelProperty(value = "创建时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date crtTime;

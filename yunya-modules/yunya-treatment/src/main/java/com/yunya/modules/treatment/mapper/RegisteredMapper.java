@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
 import java.util.List;
+import java.util.Set;
 
 public interface RegisteredMapper extends Mapper<Registered> {
 
@@ -26,4 +27,11 @@ public interface RegisteredMapper extends Mapper<Registered> {
    * @return  实例列表
    */
   List<Registered> selectRegisteredListByIds(@Param("ids") List<Integer> ids);
+
+  /**
+   * 根据预约ID查询挂号信息
+   * @param appointIds 预约ID
+   * @return 返回实体列表
+   */
+  List<Registered> selectRegisteredListByAppointIds(@Param("appointIds") Set<Integer> appointIds);
 }

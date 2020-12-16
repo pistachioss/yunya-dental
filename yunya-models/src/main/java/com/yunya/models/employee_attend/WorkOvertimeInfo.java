@@ -53,8 +53,8 @@ public class WorkOvertimeInfo {
     /**
      * 审批状态 0 审批中 1通过 2拒绝  3撤回 4过期
      */
-    @Column(name = "apprpval_status")
-    private Integer apprpvalStatus;
+    @Column(name = "approval_status")
+    private Integer approvalStatus;
     /**
      * 拒绝原因
      */

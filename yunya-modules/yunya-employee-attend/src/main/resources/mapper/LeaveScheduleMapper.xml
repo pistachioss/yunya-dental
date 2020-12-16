@@ -33,7 +33,7 @@
     </insert>
     <select id="selectNum" resultType="integer" parameterType="java.util.List">
       select count(*) from leave_schedule ls left join leave_info li on ls.leave_id = li.id
-      where li.apprpval_status in (0,1) and ls.schedule_id in (
+      where li.approval_status in (0,1) and ls.schedule_id in (
         <foreach collection="list" index="index" item="item" separator=",">
         #{item.scheduleId}
         </foreach>
