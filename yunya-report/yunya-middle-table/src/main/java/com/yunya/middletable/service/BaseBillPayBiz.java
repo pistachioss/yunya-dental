@@ -110,6 +110,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   memberExpendRecord.setInservice(true);
                   MemberExpendRecord memberExpendRecordResult =
                       memberExpendRecordMapper.selectOne(memberExpendRecord);
+                  log.info(
+                      "memberExpendRecordMapper.selectOne_查询会员卡消费记录:{}", memberExpendRecordResult);
                   if (null != memberExpendRecordResult) {
                     baseBillPayDetail.setPrincipalAmount(
                         memberExpendRecordResult.getExpendPrincipal());
@@ -127,6 +129,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   prepaidExpendRecord.setInservice(true);
                   PrepaidExpendRecord prepaidExpendRecordResult =
                       prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
+                  log.info(
+                      "prepaidExpendRecordMapper.selectOne_查询预付款消费记录:{}",
+                      prepaidExpendRecordResult);
                   if (null != prepaidExpendRecordResult) {
                     baseBillPayDetail.setPrincipalAmount(
                         prepaidExpendRecordResult.getExpendPrincipal());

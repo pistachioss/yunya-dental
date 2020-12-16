@@ -1281,9 +1281,9 @@ public class TollBiz {
     }
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
-    rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     // 发送消息同步账单，账单收费
     if (i > 0) {
+      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
     }
   }
