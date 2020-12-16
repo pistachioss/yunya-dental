@@ -1916,8 +1916,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             StringBuilder employeeScheduleName = new StringBuilder();
             AttendanceManualMakeupVO manualMakeupVO = manualMakeupMap.get(date);
             if (manualMakeupVO != null) {
-                long interpolationDiff = manualMakeupVO.getMinute();
-                workDateMinuteVO.setMakeupMinutes(DateUtil.micro2Min(interpolationDiff));
+                workDateMinuteVO.setId(manualMakeupVO.getId());
+                workDateMinuteVO.setMakeupMinutes(manualMakeupVO.getMinute());
                 workDateMinuteVO.setMakeupDesc(manualMakeupVO.getMakeupDesc());
             }
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
@@ -2227,6 +2227,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
         });
         Map<Integer, String> userNameMap = getApproveUserMap(userIds);
+        Map<Date, AttendanceManualMakeupVO> manualMakeupVOMap = getManualMakeupMapGroupByDate(userId, orgId, MakeupTypeEnum.OVERTIME.getCode(),betweenDate, andDate);
         // 排班
         Map<Date, List<EmployeeScheduleVO>> employeeScheduleMap = getEmployeeScheduleMapGroupByDate(userId, orgId, betweenDate, andDate);
         // 打卡
@@ -2264,6 +2265,12 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         diff += eTime.getTime() - sTime.getTime();
                     }
                 }
+            }
+            AttendanceManualMakeupVO manualMakeupVO = manualMakeupVOMap.get(date);
+            if (manualMakeupVO != null) {
+                workOvertimeMinuteVO.setId(manualMakeupVO.getId());
+                workOvertimeMinuteVO.setMakeupMinute(manualMakeupVO.getMinute());
+                workOvertimeMinuteVO.setMakeupDesc(manualMakeupVO.getMakeupDesc());
             }
             Date firstStartTime = workOvertimeMinuteVO.getOnPunchTime();
             Date firstEndTime = workOvertimeMinuteVO.getOffPunchTime();

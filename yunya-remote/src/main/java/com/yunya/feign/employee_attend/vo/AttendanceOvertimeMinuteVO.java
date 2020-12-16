@@ -21,9 +21,6 @@ import java.util.Date;
 @ToString
 @ApiModel("考勤休息日加班时长统计响应模型")
 public class AttendanceOvertimeMinuteVO implements Serializable {
-    /** 主键id*/
-    @ApiModelProperty(value = "主键id")
-    private Integer id;
 
     /** 审批用户id*/
     @ApiModelProperty(value = "审批用户id")
@@ -77,4 +74,8 @@ public class AttendanceOvertimeMinuteVO implements Serializable {
     /** 手动补入说明 */
     @ApiModelProperty(value = "手动补入说明")
     private String makeupDesc;
+
+    /** 补入工作时长主键id*/
+    @ApiModelProperty(value = "补入工作时长主键id")
+    private Integer id;
 }
