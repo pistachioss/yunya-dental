@@ -354,7 +354,6 @@ public class TollBiz {
     TreatmentRecord treatmentRecord = treatmentRecordMapper.selectByPrimaryKey(treatmentRecordId);
     treatmentRecord.setStatus((byte) 3);
     int i = treatmentRecordMapper.updateByPrimaryKeySelective(treatmentRecord);
-    redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
     // 发送消息同步就诊、账单数据
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
@@ -367,6 +366,7 @@ public class TollBiz {
             treatmentRecord.getRegisteredId(), 1, 1, BaseTreatmentProcess);
       }
     }
+    redisUtils.delete(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId);
   }
 
   /**
@@ -1283,8 +1283,8 @@ public class TollBiz {
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
     // 发送消息同步账单，账单收费
     if (i > 0) {
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
+      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
   }
 
