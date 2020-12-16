@@ -165,13 +165,7 @@
         t.punch_address as punchAddress,
         t.source_id as sourceId,
         t.is_punch as isPunch,
-        t.wifi_mac_address as wifiMacAddress,
-        case when t.source=0 then t.source_id
-        when t.source=1 then t.source_id
-        when t.source=2 then (select schedule_id from leave_schedule where leave_id=t.source_id)
-        when t.source=3 then (select schedule_id from leave_schedule where leave_id=t.source_id)
-        when t.source=4 then (select schedule_id from work_overtime_info where id=t.source_id)
-        when t.source=5 then null end scheduleId
+        t.wifi_mac_address as wifiMacAddress
       from attendance_punch_record t
       <where>
         <if test="queryForm.userId != null" >
