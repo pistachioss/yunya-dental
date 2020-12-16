@@ -30,9 +30,9 @@ public class AttendancePunchDateVO implements Serializable {
     @ApiModelProperty(value = "员工id")
     private Integer userId;
 
-    /** 上班打卡状态：0-正常打卡、1-迟到、4-无效卡、5-未打卡 */
-    @ApiModelProperty(value = "上班打卡状态：0-正常打卡、1-迟到、4-无效卡、5-未打卡")
-    private Byte onDutyStatus;
+    /** 上班打卡状态：0-正常打卡、1-迟到、4-无效卡、5-缺卡，6-无需打卡*/
+    @ApiModelProperty(value = "上班打卡状态：0-正常打卡、1-迟到、4-无效卡、5-缺卡，6-无需打卡")
+    private Byte onDutyStatus = 6;
 
     /** 上班打卡组织id */
     @ApiModelProperty(value = "上班打卡组织id")
@@ -57,9 +57,9 @@ public class AttendancePunchDateVO implements Serializable {
     @JsonFormat(pattern = "HH:mm", timezone = "GMT+8")
     private Date onDutyPunchTime;
 
-    /** 下班打卡状态：2-正常打卡、3-迟到、4-无效卡、5-未打卡 */
-    @ApiModelProperty(value = "下班打卡状态：2-正常打卡、3-迟到、4-无效卡、5-未打卡")
-    private Byte offDutyStatus;
+    /** 下班打卡状态：2-正常打卡、3-迟到、4-无效卡、5-缺卡，6-无需打卡 */
+    @ApiModelProperty(value = "下班打卡状态：2-正常打卡、3-迟到、4-无效卡、5-未打卡，6-无需打卡")
+    private Byte offDutyStatus = 6;
 
     /** 下班打卡组织id */
     @ApiModelProperty(value = "下班打卡组织id")

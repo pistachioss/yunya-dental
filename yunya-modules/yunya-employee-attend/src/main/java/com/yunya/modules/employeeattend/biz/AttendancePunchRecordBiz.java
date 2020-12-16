@@ -1307,7 +1307,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
             switch (workOvertime) {
                 case 1: {// 上班加班
-                    if (onDutyStatus != 5) {
+                    if (onDutyStatus < 5) {
                         Date startTime = onPunchTime;
                         if (startTime.before(onStartTime)) {
                             startTime = onStartTime;
@@ -1319,7 +1319,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
                 case 2: {// 下班加班
-                    if (offDutyStatus != 5) {
+                    if (offDutyStatus < 5) {
                         Date endTime = offPunchTime;
                         if (endTime.after(offEndTime)) {
                             endTime = offEndTime;
@@ -1331,7 +1331,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
                 case 3: {// 上班下班同一加班
-                    if (onDutyStatus!=5 && offDutyStatus!=5) {
+                    if (onDutyStatus<5 && offDutyStatus<5) {
                         Date startTime = onPunchTime;
                         if (startTime.before(onStartTime)) {
                             startTime = onStartTime;
@@ -1347,7 +1347,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
                 case 4: {// 上班下班两个不同加班
-                    if (onDutyStatus != 5) {
+                    if (onDutyStatus < 5) {
                         Date startTime = onPunchTime;
                         if (startTime.before(onStartTime)) {
                             startTime = onStartTime;
@@ -1356,7 +1356,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         incrMinute(restDateOvertimeMap, userId, onDutyOrgId, diff);
                         incrNum(restDateOverCounts, userId, onDutyOrgId);
                     }
-                    if (offDutyStatus != 5) {
+                    if (offDutyStatus < 5) {
                         Date endTime = offPunchTime;
                         if (endTime.after(offEndTime)) {
                             endTime = offEndTime;
@@ -1372,7 +1372,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             Integer offSourceId = attendancePunchDateVO.getOffDutySourceId();
             switch (field) {
                 case 1: {// 仅上班外勤
-                    if (onDutyStatus != 5) {
+                    if (onDutyStatus < 5) {
                         Date startTime = onPunchTime;
                         if (startTime.before(onStartTime)) {
                             startTime = onStartTime;
@@ -1386,7 +1386,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
                 case 2: {// 仅下班外勤
-                    if (offDutyStatus != 5) {
+                    if (offDutyStatus < 5) {
                         Date endTime = offPunchTime;
                         if (endTime.after(offEndTime)) {
                             endTime = offEndTime;
@@ -1400,7 +1400,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
                 case 3: {// 上班下班同一个外勤
-                    if (onDutyStatus!=5 && offDutyStatus!=5) {
+                    if (onDutyStatus<5 && offDutyStatus<5) {
                         Date startTime = onPunchTime;
                         if (startTime.before(onStartTime)) {
                             startTime = onStartTime;
@@ -1418,7 +1418,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     break;
                 }
                 case 4: {// 上班下班两个不同的外勤
-                    if (onDutyStatus != 5) {
+                    if (onDutyStatus < 5) {
                         Date startTime = onPunchTime;
                         if (startTime.before(onStartTime)) {
                             startTime = onStartTime;
@@ -1427,7 +1427,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         incrMinute(fieldMinuteMap, userId, onDutyOrgId, diff);
                         incrNum(fieldCounts, userId, onDutyOrgId);
                     }
-                    if (offDutyStatus != 5) {
+                    if (offDutyStatus < 5) {
                         Date endTime = offPunchTime;
                         if (endTime.after(offEndTime)) {
                             endTime = offEndTime;
@@ -1744,6 +1744,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     Byte status = 5;
                     if (isPunch.equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {
                         status = punchStatus;
+                    } else if (!AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)) {//未打卡且休息
+                        status = 6;
                     }
                     punchDate.setOnDutyStatus(status);
                 } else {
@@ -1780,6 +1782,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     Byte status = 5;
                     if (isPunch.equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {
                         status = punchStatus;
+                    } else if (!AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)) {//未打卡且休息
+                        status = 6;
                     }
                     punchDate.setOffDutyStatus(status);
                 }
