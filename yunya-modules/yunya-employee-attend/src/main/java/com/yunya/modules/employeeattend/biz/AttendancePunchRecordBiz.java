@@ -1919,6 +1919,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 workDateMinuteVO.setId(manualMakeupVO.getId());
                 workDateMinuteVO.setMakeupMinutes(manualMakeupVO.getMinute());
                 workDateMinuteVO.setMakeupDesc(manualMakeupVO.getMakeupDesc());
+            } else {
+                workDateMinuteVO.setId(0);
             }
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
             if (employeeScheduleVOS==null || employeeScheduleVOS.isEmpty()) {
@@ -2272,7 +2274,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 workOvertimeMinuteVO.setMakeupMinute(manualMakeupVO.getMinute());
                 workOvertimeMinuteVO.setMakeupDesc(manualMakeupVO.getMakeupDesc());
             } else {
-                workOvertimeMinuteVO.setId(null);
+                workOvertimeMinuteVO.setId(0);
             }
             Date firstStartTime = workOvertimeMinuteVO.getOnPunchTime();
             Date firstEndTime = workOvertimeMinuteVO.getOffPunchTime();
