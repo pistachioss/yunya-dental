@@ -817,6 +817,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Date now = new Date(System.currentTimeMillis());
         AttendanceStatisticsVO result = new AttendanceStatisticsVO();
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        userId = 561;
         List<Date> dateList = DateUtil.getMonthFullDay(dateStr);
         Date firstDate = dateList.get(0);
         Date endDate = dateList.get(dateList.size()-1);
@@ -927,6 +928,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             } else {
                 Date punchTime = attendancePunchRecordVO.getPunchTime();
                 Byte punchStatus = attendancePunchRecordVO.getPunchStatus();
+                if (AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)) {
+                    attendancePunchRecordVO.setOrgName(orgName);
+                    invalidStatisticsList.add(attendancePunchRecordVO);
+                }
                 if (source.equals(AttendanceSourceEnum.WORK_SCHEDULE.getCode())) {
                     switch (punchStatus) {
                         case 0: {
@@ -951,11 +956,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             attendancePunchRecordVO.setMinutes(DateUtil.micro2HourMin(diff));
                             attendancePunchRecordVO.setOrgName(orgName);
                             earlyStatisticsList.add(attendancePunchRecordVO);
-                            break;
-                        }
-                        case 4: {
-                            attendancePunchRecordVO.setOrgName(orgName);
-                            invalidStatisticsList.add(attendancePunchRecordVO);
                             break;
                         }
                         default:
