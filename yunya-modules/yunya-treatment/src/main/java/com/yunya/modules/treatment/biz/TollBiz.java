@@ -37,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -270,13 +271,13 @@ public class TollBiz {
     BigDecimal outstandingAmount = model.getOutstandingAmount();
     checkTotalChargeAndDebtAmount(totalCharge, actualReceivableAmount, outstandingAmount);
     // 开始收费
-    // redisUtils.set(LOCK_ORDER_PROCESSING_CHARGE + orderRecordId, orderRecordId, 300);
     Integer patientId = orderRecord.getPatientId();
     Integer treatmentRecordId = orderRecord.getTreatmentRecordId();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     // 保存账单信息
+    long millis = System.currentTimeMillis();
     BillRecord billRecord = new BillRecord();
     billRecord.setOrgId(orgId);
     billRecord.setPatientId(patientId);
@@ -293,6 +294,7 @@ public class TollBiz {
     billRecord.setInvoice(model.getInvoiceModel().getInvoice());
     billRecord.setInvoiceNumber(model.getInvoiceModel().getInvoiceNumber());
     billRecord.setCrtId(userId);
+    billRecord.setCrtTime(new Date(millis));
     billRecord.setCrtName(name);
     billRecordBiz.insertSelective(billRecord);
     // 保存账单记录
@@ -311,6 +313,7 @@ public class TollBiz {
       billPayRecord.setStillOweAmount(actualReceivableAmount.subtract(totalCharge));
     }
     billPayRecord.setCrtId(userId);
+    billPayRecord.setCrtTime(new Date(millis));
     billPayRecord.setCrtName(name);
     billPayRecordMapper.insertSelective(billPayRecord);
     // 保存订单明细收费记录
@@ -1151,6 +1154,7 @@ public class TollBiz {
     Integer patientId;
     Integer orderRecordId;
     BigDecimal debtAmount;
+    long millis = System.currentTimeMillis();
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     String name = BaseContextHandler.getName();
     Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
@@ -1231,6 +1235,7 @@ public class TollBiz {
         billRecord.setInvoiceNumber(invoiceModel.getInvoiceNumber());
       }
       billRecord.setCrtId(userId);
+      billRecord.setCrtTime(new Date(millis));
       billRecord.setCrtName(name);
       billRecord.setUpdId(userId);
       billRecord.setUpdName(name);
@@ -1260,6 +1265,7 @@ public class TollBiz {
     billPayRecord.setStillOweAmount(debtAmount);
     billPayRecord.setCrtId(userId);
     billPayRecord.setCrtName(name);
+    billPayRecord.setCrtTime(new Date(millis));
     billPayRecord.setUpdId(userId);
     billPayRecord.setUpdName(name);
     int i = billPayRecordMapper.insertSelective(billPayRecord);
@@ -1275,10 +1281,10 @@ public class TollBiz {
     }
     // 保存收费记录支付方式明细
     saveBillPayDetailRecord(billPayRecordId, prepaymentAccounts, memberAccounts, paymentModels);
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     // 发送消息同步账单，账单收费
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBill);
-      rabbitMqServiceFeign.sendMessage(billPayRecordId, 0, BaseBillPay);
     }
   }
 

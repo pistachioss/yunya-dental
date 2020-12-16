@@ -52,6 +52,7 @@
         base_bill bb
         <where>
             and bb.bill_date IS NOT NULL
+            and bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>
@@ -130,6 +131,7 @@
         base_bill bb
         <where>
             and bb.bill_date IS NOT NULL
+            and bb.bill_num IS NOT NULL
             <if test="query.orgId != null">
                 and bb.org_id = #{query.orgId}
             </if>

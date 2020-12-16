@@ -98,9 +98,9 @@ public class CompanyReportTest {
   @Test
   public void find2() {
     InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
-    query.setOrgId(35);
+    query.setOrgId(141);
     query.setDateType((byte) 0);
-    query.setStartDate("2020-10-01");
+    query.setStartDate("2020-12-16");
     query.setEndDate("2020-12-18");
     ResponseResult<List<ClinicInboundAndOutboundVO>> result =
         financeController.inboundAndOutboundStatement(query);
