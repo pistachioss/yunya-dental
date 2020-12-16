@@ -23,6 +23,10 @@ import java.util.Date;
 public class AttendanceManualMakeupModel implements Serializable {
 
     private static final long serialVersionUID = 3409176109167469169L;
+    /** 主键id */
+    @ApiModelProperty(value = "主键id")
+    private Integer id;
+
     /** 员工id */
     @NotNull(message = "员工id不能为空")
     @ApiModelProperty(value = "员工id",required = true)

@@ -388,7 +388,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                     workDayDataNull.put("employeeName", "");
                     workDayDataNull.put("color", "");
                     workDayDataNull.put("simtime", "");
-                    workDayDataNull.put("date", calendar.getTime());
+                    workDayDataNull.put("date", simpleDateFormat.format(calendar.getTime()));
                     workDayDataNull.put("compClinId", 0);
                     workDayDatas.add(workDayDataNull);
                 }
