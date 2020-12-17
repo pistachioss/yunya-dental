@@ -122,6 +122,10 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     throw new ClientServiceException(format + " 的随访已经存在", OperationCodeConstants.DATA_EXIST);
                 }
                 VisitingRecord build = EntityUtils.build(model, VisitingRecord.class);
+                String orgId = BaseContextHandler.getOrgId();
+                if (StringHelper.isNotBlank(orgId)) {
+                    build.setOrgId(Integer.parseInt(orgId));
+                }
                 build.setVisitingDate(visitingContentModel.getVisitingDate());
                 build.setVisitingTime(visitingContentModel.getVisitingTime());
                 build.setReason(visitingContentModel.getReason());
