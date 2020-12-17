@@ -138,7 +138,7 @@
         and vr.dentist_id = #{dentistId}
       </if>
       <if test="startDate != null and endDate != null">
-        and date_format(vr.crt_time,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND date_format(#{endDate},'%Y-%m-%d')
+        and date_format(vr.visiting_date,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND date_format(#{endDate},'%Y-%m-%d')
       </if>
     </where>
     ) a
