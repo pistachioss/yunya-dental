@@ -218,7 +218,7 @@ public class AppointmentRest {
    * @param id 预约ID
    * @return 返回预约信息实体
    */
-  @RequestMapping(value = "/appoint/detail/{id}", method = RequestMethod.POST)
+  @RequestMapping(value = "/appoint/detail/{id}", method = RequestMethod.GET)
   AppointmentVo findAppointmentDetailById(@PathVariable(value = "id") Integer id) {
     return this.appointmentBiz.findAppointmentById(id);
   }

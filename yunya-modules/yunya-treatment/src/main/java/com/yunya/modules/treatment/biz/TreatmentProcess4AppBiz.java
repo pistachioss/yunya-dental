@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
+import com.yunya.feign.treatment.domain.query.AppTreatmentQuery;
 import com.yunya.feign.treatment.domain.vo.OrderBill4AppVO;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfo4AppVO;
@@ -29,27 +30,34 @@ public class TreatmentProcess4AppBiz {
 
     /**
      * 查询患者就诊信息
-     * @param appointId  预约ID
-     * @param registeredId 挂号ID
-     * @param treatmentId  就诊ID
+     * @param query 查询参数
      */
-    public TreatmentInfo4AppVO treatmentInfoDetail(Integer appointId, Integer registeredId, Integer treatmentId) {
-        appointId = appointId == null ? 0 : appointId;
-        registeredId = registeredId == null ? 0 : registeredId;
-        treatmentId = treatmentId == null ? 0 : treatmentId;
+    public TreatmentInfo4AppVO treatmentInfoDetail(AppTreatmentQuery query) {
         TreatmentInfo4AppVO treatmentInfo4AppVO = new TreatmentInfo4AppVO();
-        // 查询预约详细信息
-        AppointmentVo appointmentDetailById = this.appointmentFeign.findAppointmentDetailById(appointId);
-        // 查询患者挂号信息
-        RegisteredVO registeredVO = registeredBiz.registeredInfoDetail(registeredId);
-        // 查询账单信息
-        OrderBill4AppVO orderBill4AppVO = this.billRecordBiz.findOrderAndBill4App(treatmentId);
         // 设置预约信息
-        this.injectAppointField(appointmentDetailById,treatmentInfo4AppVO);
+        Integer appointId = query.getAppointId();
+        if (null != appointId) {
+            // 查询预约详细信息
+            AppointmentVo appointmentDetailById = this.appointmentFeign.findAppointmentDetailById(appointId);
+            // 设置预约信息
+            this.injectAppointField(appointmentDetailById,treatmentInfo4AppVO);
+        }
         // 设置患者挂号信息
-        this.injectPatientRegField(registeredVO,treatmentInfo4AppVO);
+        Integer registeredId = query.getRegisteredId();
+        if (null != registeredId) {
+            // 查询患者挂号信息
+            RegisteredVO registeredVO = registeredBiz.registeredInfoDetail(registeredId);
+            // 设置患者挂号信息
+            this.injectPatientRegField(registeredVO,treatmentInfo4AppVO);
+        }
         // 设置账单信息
-        this.injectOrderBillField(orderBill4AppVO,treatmentInfo4AppVO);
+        Integer treatmentId = query.getTreatmentId();
+        if (null != treatmentId) {
+            // 查询账单信息
+            OrderBill4AppVO orderBill4AppVO = this.billRecordBiz.findOrderAndBill4App(treatmentId);
+            // 设置账单信息
+            this.injectOrderBillField(orderBill4AppVO,treatmentInfo4AppVO);
+        }
         return treatmentInfo4AppVO;
     }
 

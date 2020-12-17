@@ -161,6 +161,6 @@ public interface RemoteAppointmentFeign {
    * @param id 预约ID
    * @return 返回预约信息实体
    */
-  @RequestMapping(value = "/api/appoint/detail/{id}", method = RequestMethod.POST)
+  @RequestMapping(value = "/api/appoint/detail/{id}", method = RequestMethod.GET)
   AppointmentVo findAppointmentDetailById(@PathVariable(value = "id") Integer id);
 }
