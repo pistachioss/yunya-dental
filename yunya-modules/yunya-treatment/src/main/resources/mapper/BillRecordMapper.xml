@@ -151,16 +151,18 @@
 
     <!-- 根据就诊ID查询账单和订单信息 -->
     <select id="findOrderAndBill4App" resultMap="OrderBill4AppMap">
-        select br.id,
-               br.bill_number as billNumber,
-               br.receivable_amount as receivableAmount,
-               br.privilege_amount as privilegeAmount,
-               br.actual_receivable_amount as actualReceivableAmount,
-               br.received_amount as receivedAmount,
-               br.debt_amount as debtAmount,
-               od.billing_item_id as billingItemId,
-               od.type,
-               (select count(id) from order_detail where treatment_record_id = br.treatment_record_id group by od.billing_item_id) as quantity
+        select
+            br.treatment_record_id,
+            br.id,
+            br.bill_number,
+            br.receivable_amount,
+            br.privilege_amount,
+            br.actual_receivable_amount,
+            br.received_amount,
+            br.debt_amount,
+            od.billing_item_id,
+            od.type,
+            (select quantity from order_detail where  treatment_record_id = od.treatment_record_id and billing_item_id = od.billing_item_id) as quantity
         from bill_record br
                  left join order_detail od on od.treatment_record_id = br.treatment_record_id
         where br.treatment_record_id = #{treatmentId}

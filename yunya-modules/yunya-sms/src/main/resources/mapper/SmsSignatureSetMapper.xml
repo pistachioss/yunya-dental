@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.sms.mapper.SmsSignatureSetMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.sms.SmsSignatureSet" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="sign_name" property="signName" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="sign_source" property="signSource" jdbcType="TINYINT" />
+    <result column="sign_status" property="signStatus" jdbcType="TINYINT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_user" property="crtUser" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <!-- 插入数据:返回记录主键id值 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into sms_signature_set
+        (id,org_id,sign_name,remark,sign_source,sign_status,crt_id,crt_user,crt_time,upt_id,upt_time)
+    values
+        (null,#{orgId},#{signName},#{remark},#{signSource},#{signStatus},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
+  </insert>
+
+  <select id="findSmsSignatureSetList" resultType="com.yunya.feign.sms.vo.SmsSignatureSetVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.sign_name as signName,
+        t.remark,
+        t.sign_status as signStatus,
+        t.crt_user as crtUser,
+        t.sign_source as signSource
+    from sms_signature_set t
+    <where>
+      <if test="queryForm.signSource != null">
+        and t.sign_source = #{queryForm.signSource}
+      </if>
+      <if test="queryForm.signStatus != null">
+        and t.sign_status = #{queryForm.signStatus}
+      </if>
+      <if test="queryForm.orgId != null">
+        and t.org_id = #{queryForm.orgId}
+      </if>
+      <if test="queryForm.signName!=null and queryForm.signName!=''">
+        and t.sign_name = #{queryForm.signName}
+      </if>
+    </where>
+  </select>
+</mapper>

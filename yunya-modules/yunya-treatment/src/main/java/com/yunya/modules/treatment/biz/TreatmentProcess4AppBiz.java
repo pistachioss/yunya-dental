@@ -37,19 +37,17 @@ public class TreatmentProcess4AppBiz {
         appointId = appointId == null ? 0 : appointId;
         registeredId = registeredId == null ? 0 : registeredId;
         treatmentId = treatmentId == null ? 0 : treatmentId;
+        TreatmentInfo4AppVO treatmentInfo4AppVO = new TreatmentInfo4AppVO();
         // 查询预约详细信息
         AppointmentVo appointmentDetailById = this.appointmentFeign.findAppointmentDetailById(appointId);
         // 查询患者挂号信息
-        List<RegisteredVO> registeredVOs = registeredBiz.registeredInfoDetail(registeredId, appointId,null);
+        RegisteredVO registeredVO = registeredBiz.registeredInfoDetail(registeredId);
         // 查询账单信息
         OrderBill4AppVO orderBill4AppVO = this.billRecordBiz.findOrderAndBill4App(treatmentId);
-        TreatmentInfo4AppVO treatmentInfo4AppVO = new TreatmentInfo4AppVO();
         // 设置预约信息
         this.injectAppointField(appointmentDetailById,treatmentInfo4AppVO);
         // 设置患者挂号信息
-        if (StringHelper.isNotEmpty(registeredVOs)) {
-            this.injectPatientRegField(registeredVOs.get(0),treatmentInfo4AppVO);
-        }
+        this.injectPatientRegField(registeredVO,treatmentInfo4AppVO);
         // 设置账单信息
         this.injectOrderBillField(orderBill4AppVO,treatmentInfo4AppVO);
         return treatmentInfo4AppVO;

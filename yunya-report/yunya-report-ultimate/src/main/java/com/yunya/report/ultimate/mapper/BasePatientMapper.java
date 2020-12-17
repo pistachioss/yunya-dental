@@ -5,6 +5,7 @@ import com.yunya.feign.report.domain.query.PatientReportQueryForm;
 import com.yunya.feign.report.domain.vo.AnalysisPatientGenderVo;
 import com.yunya.feign.report.domain.vo.BasePatientNotSeenVo;
 import com.yunya.feign.report.domain.vo.AnalysisPatientOriginVo;
+import com.yunya.feign.report.domain.vo.PatientDataVo;
 import com.yunya.models.report.BasePatient;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -85,4 +86,11 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
      * @return String
      */
     String calculateAgePercentage(@Param("countAge") Integer countAge, @Param("count") Integer count);
+
+    /**
+     * 查询患者预约信息
+     * @param patientId 患者id
+     * @return PatientDataVo
+     */
+    PatientDataVo findPatientDataVo(@Param("patientId") Integer patientId);
 }

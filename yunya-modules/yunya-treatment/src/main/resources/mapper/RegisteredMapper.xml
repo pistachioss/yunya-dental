@@ -75,17 +75,24 @@
     <!-- 根据预约ID查询挂号信息 -->
     <select id="registeredInfoDetail" resultType="com.yunya.feign.treatment.domain.vo.RegisteredVO">
         select
-        <include refid="baseResultMapField"></include>
+            id,
+            org_id as orgId,
+            patient_id as patientId,
+            dentist_id as dentistId,
+            assistant_id as assistantId,
+            dept_room_id as deptRoomId,
+            reg_time as regTime,
+            first_visit as firstVisit,
+            status,
+            remark,
+            inservice,
+            crt_id as crtId,
+            crt_name as crtName,
+            crt_time as crtTime
         from registered
         <where>
             <if test="id != null">
                 and id = #{id}
-            </if>
-            <if test="patientId != null">
-                and patient_id = #{patientId}
-            </if>
-            <if test="appointId != null">
-                and appointment_id = #{appointId}
             </if>
         </where>
     </select>

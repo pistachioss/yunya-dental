@@ -65,7 +65,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
      *
      * @param employeeScheduleForm
      */
-    public void create(EmployeeScheduleForm employeeScheduleForm) {
+    public int create(EmployeeScheduleForm employeeScheduleForm) {
         // 判断排班是否冲突
         if (!isExist(employeeScheduleForm)) {
             throw new ClientServiceException("排班冲突", OperationCodeConstants.SAME_DATA_EXIST);
@@ -91,7 +91,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         if (a >= 2) {
             throw new ClientServiceException("每天最多排两个班次", OperationCodeConstants.INSERT_MODEL);
         }
-        mapper.insertSelective(employeeSchedule);
+       return mapper.insertSelective(employeeSchedule);
     }
 
     /**

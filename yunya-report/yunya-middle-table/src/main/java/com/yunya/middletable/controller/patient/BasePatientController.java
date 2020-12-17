@@ -64,16 +64,4 @@ public class BasePatientController {
     return ResponseUtil.success();
   }
 
-  /**
-   * 查询患者资料信息
-   * @param id 患者id
-   * @return BasePatient
-   */
-  @ApiOperation("查询患者资料信息")
-  @GetMapping("/patientInfo/{id}")
-  public ResponseResult<BasePatient> patientInfo(@PathVariable("id") Integer id) {
-    BasePatient basePatient = basePatientBiz.selectPatientInfo(id);
-    return ResponseUtil.success(basePatient);
-  }
-
 }

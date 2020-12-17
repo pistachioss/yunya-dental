@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.sms.mapper.SmsTemplateSetMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.sms.SmsTemplateSet" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="signature_id" property="signatureId" jdbcType="INTEGER" />
+    <result column="template_name" property="templateName" jdbcType="VARCHAR" />
+    <result column="template_content" property="templateContent" jdbcType="VARCHAR" />
+    <result column="template_item" property="templateItem" jdbcType="VARCHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />
+    <result column="template_status" property="templateStatus" jdbcType="TINYINT" />
+    <result column="template_code" property="templateCode" jdbcType="VARCHAR" />
+    <result column="template_type" property="templateType" jdbcType="TINYINT" />
+    <result column="template_length" property="template_length" jdbcType="INTEGER" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_user" property="crtUser" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+    <result column="sense" property="sense" jdbcType="TINYINT" />
+  </resultMap>
+
+   <!-- 插入数据:返回记录主键id值 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into sms_template_set
+        (id,org_id,signature_id,template_name,template_content,remark,
+        template_item,template_status,template_code,template_type,template_length,
+        sense,crt_id,crt_user,crt_time,upt_id,upt_time)
+    values
+        (null,#{orgId},#{signatureId},#{templateName},#{templateContent},#{remark},
+        #{templateItem},#{templateStatus},#{templateCode},#{templateType},#{templateLength},
+        #{sense},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
+  </insert>
+
+  <select id="findSmsTemplateSetById" resultType="com.yunya.feign.sms.vo.SmsTemplateSetVO">
+      select
+        t.id,
+        t.org_id as orgId,
+        t.signature_id as signatureId,
+        ss.sign_name as signName,
+        t.template_name as templateName,
+        t.template_content as templateContent,
+        t.template_item as templateItem,
+        t.template_code as templateCode,
+        t.template_status as templateStatus,
+        t.template_type as templateType,
+        t.template_length as templateLength,
+        t.remark,
+        t.sense,
+        t.crt_user as crtUser
+    from sms_template_set t left join sms_signature_set ss on t.signature_id=ss.id
+    where t.id = #{id}
+  </select>
+
+  <select id="findSmsTemplateSetList" resultType="com.yunya.feign.sms.vo.SmsTemplateSetVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.signature_id as signatureId,
+        ss.sign_name as signName,
+        t.template_name as templateName,
+        t.template_content as templateContent,
+        t.template_item as templateItem,
+        t.template_code as templateCode,
+        t.template_status as templateStatus,
+        t.template_type as templateType,
+        t.template_length as templateLength,
+        t.remark,
+        t.sense,
+        t.crt_user as crtUser
+    from sms_template_set t left join sms_signature_set ss on t.signature_id=ss.id
+    <where>
+      <if test="queryForm.templateCode!=null and queryForm.templateCode!=''">
+        and t.template_code = #{queryForm.templateCode}
+      </if>
+      <if test="queryForm.templateType!=null">
+        and t.template_type = #{queryForm.templateType}
+      </if>
+      <if test="queryForm.orgId != null">
+        and t.org_id = #{queryForm.orgId}
+      </if>
+      <if test="queryForm.templateName!=null and queryForm.templateName!=''">
+        and t.template_name = #{queryForm.templateName}
+      </if>
+      <if test="queryForm.templateStatus != null">
+        and t.template_status = #{queryForm.templateStatus}
+      </if>
+      <if test="queryForm.sense != null">
+        and t.sense = #{queryForm.sense}
+      </if>
+    </where>
+  </select>
+</mapper>

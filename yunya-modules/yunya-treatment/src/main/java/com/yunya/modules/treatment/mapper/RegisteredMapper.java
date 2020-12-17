@@ -34,11 +34,7 @@ public interface RegisteredMapper extends Mapper<Registered> {
   /**
    * 根据挂号ID查询挂号信息
    * @param id 挂号信息
-   * @param appointId 预约ID
-   * @param patientId 患者ID
    * @return
    */
-  List<RegisteredVO> registeredInfoDetail(@Param("id") Integer id,
-                                          @Param("appointId") Integer appointId,
-                                          @Param("patientId") Integer patientId);
+  RegisteredVO registeredInfoDetail(@Param("id") Integer id);
 }
