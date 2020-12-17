@@ -64,21 +64,18 @@ public class RequestBodyRoutePredicateFactory
 
   public static final String REQUEST_BODY_ATTR = "requestBodyAttr";
 
-  private static final String REQUEST_METHOD_POST = "POST";
-
-  private static final String REQUEST_METHOD_PUT = "PUT";
+  private static final String REQUEST_METHOD_GET = "GET";
 
   /**
    * 异步调用
    *
-   * @param config
+   * @param config 配置类
    * @return
    */
   @Override
   public AsyncPredicate<ServerWebExchange> applyAsync(Config config) {
     return exchange -> {
-      if (!REQUEST_METHOD_POST.equals(exchange.getRequest().getMethodValue())
-          && !REQUEST_METHOD_PUT.equals(exchange.getRequest().getMethodValue())) {
+      if (REQUEST_METHOD_GET.equals(exchange.getRequest().getMethodValue())) {
         return Mono.just(true);
       }
       Object cachedBody = exchange.getAttribute(REQUEST_BODY_ATTR);
