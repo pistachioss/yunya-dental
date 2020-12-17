@@ -289,7 +289,7 @@ public class SystemServiceRest {
    * @param userId 用户ID
    * @return
    */
-  @RequestMapping(value = "/userInfo/by/{userId}", method = RequestMethod.GET)
+  @RequestMapping(value = "/userInfo/{userId}", method = RequestMethod.GET)
   public SysUserInfoDetail findSysUserEmployeeInfoByUserId(
       @PathVariable(value = "userId") Integer userId) {
     return sysUserBiz.findUserInfoByUserId(userId);

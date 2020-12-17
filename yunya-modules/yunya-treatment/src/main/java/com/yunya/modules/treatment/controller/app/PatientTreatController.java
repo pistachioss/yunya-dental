@@ -55,10 +55,10 @@ public class PatientTreatController {
   }
 
   @ApiOperation("查询患者就诊信息")
-  @GetMapping("/info/detail/all/{appointId}/{registeredId}/{treatmentId}")
-  public ResponseResult treatmentInfoDetail(@PathVariable(value = "appointId") Integer appointId,
-                                            @PathVariable(value = "registeredId") Integer registeredId,
-                                            @PathVariable(value = "treatmentId") Integer treatmentId) {
+  @GetMapping("/info/detail/all")
+  public ResponseResult treatmentInfoDetail(@RequestParam Integer appointId,
+                                            @RequestParam Integer registeredId,
+                                            @RequestParam Integer treatmentId) {
     TreatmentInfo4AppVO result = this.treatmentBiz4App.treatmentInfoDetail(appointId,registeredId,treatmentId);
     return ResponseUtil.success(result);
   }
