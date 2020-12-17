@@ -253,4 +253,23 @@
     select concat( format( ${countAge} / ${count} * 100, 2 ),'%') percentage
   </select>
 
+  <!-- 根据患者id查询患者预约信息 -->
+  <select id="findPatientDataVo" resultType="com.yunya.feign.report.domain.vo.PatientDataVo">
+    SELECT
+        patient_id patientId,
+        first_visit_date firstVisitDate,
+        first_visit_doctors firstVisitDoctors,
+        first_visit_outpatient firstVisitOutpatient,
+        cumulative_consumption cumulativeConsumption,
+        last_visit_date lastVisitDate,
+        last_visit_doctors lastVisitDoctors,
+        last_visit_outpatient lastVisitOutpatient,
+        total_arrears totalArrears,
+				number_of_visits numberOfVisits
+    FROM
+        base_patient
+    WHERE
+        patient_id = #{patientId}
+  </select>
+
 </mapper>

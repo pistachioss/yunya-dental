@@ -264,4 +264,26 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据患者id查询履约次数 -->
+    <select id="selectPatientPerformance" resultType="java.lang.Integer">
+        select count(*) from base_treatment_process  where patient_id = #{patientId} and  appointment_id is not null and registered_id is not null
+    </select>
+
+    <!-- 根据患者id查询预约次数 -->
+    <select id="selectPatientReservation" resultType="java.lang.Integer">
+        select count(*) from base_treatment_process  where patient_id = #{patientId} and  appointment_id is not null
+    </select>
+
+    <!-- 根据患者id查询预约次数 -->
+    <select id="selectMissedAppointment" resultType="java.lang.Integer">
+        select count(*) from base_treatment_process
+        where patient_id = #{patientId}
+        and appointment_id is not null
+        and registered_id is null
+        and CONCAT(date_format(appoint_start_time,'%Y-%m-%d'),' 23:59:59') &lt; NOW()
+        and appoint_status != 2
+    </select>
+
+
 </mapper>
