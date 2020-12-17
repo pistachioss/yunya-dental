@@ -502,24 +502,26 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    */
   public OrderBill4AppVO findOrderAndBill4App(Integer treatmentId){
     OrderBill4AppVO orderBill4AppVO = mapper.findOrderAndBill4App(treatmentId);
-
-    orderBill4AppVO.getBillItems().forEach(treatmentOrderInfo4AppVO -> {
-      Integer type = treatmentOrderInfo4AppVO.getType();
-      Integer billingItemId = treatmentOrderInfo4AppVO.getBillingItemId();
-      if (type == 0) {
-        // 查询价目表
-        BaseTariffInfoVO baseTariffInfoById = baseTariffBiz.findBaseTariffInfoById(billingItemId);
-        if (null != baseTariffInfoById) {
-          treatmentOrderInfo4AppVO.setBillingItemName(baseTariffInfoById.getName());
+    if (null != orderBill4AppVO) {
+      orderBill4AppVO.getBillItems().forEach(treatmentOrderInfo4AppVO -> {
+        Integer type = treatmentOrderInfo4AppVO.getType();
+        Integer billingItemId = treatmentOrderInfo4AppVO.getBillingItemId();
+        if (type == 0) {
+          // 查询价目表
+          BaseTariffInfoVO baseTariffInfoById = baseTariffBiz.findBaseTariffInfoById(billingItemId);
+          if (null != baseTariffInfoById) {
+            treatmentOrderInfo4AppVO.setBillingItemName(baseTariffInfoById.getName());
+          }
+        } else if (type == 1) {
+          // 查询商品表
+          BaseOralTariffInfoVO baseOralTariffInfoById = baseOralTariffBiz.findBaseOralTariffInfoById(billingItemId);
+          if (null != baseOralTariffInfoById) {
+            treatmentOrderInfo4AppVO.setBillingItemName(baseOralTariffInfoById.getName());
+          }
         }
-      } else if (type == 1) {
-        // 查询商品表
-        BaseOralTariffInfoVO baseOralTariffInfoById = baseOralTariffBiz.findBaseOralTariffInfoById(billingItemId);
-        if (null != baseOralTariffInfoById) {
-          treatmentOrderInfo4AppVO.setBillingItemName(baseOralTariffInfoById.getName());
-        }
-      }
-    });
-    return orderBill4AppVO;
+      });
+      return orderBill4AppVO;
+    }
+    return new OrderBill4AppVO();
   }
 }

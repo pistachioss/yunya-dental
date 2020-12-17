@@ -85,7 +85,7 @@
                 and patient_id = #{patientId}
             </if>
             <if test="appointId != null">
-                and appoint_id = #{appointId}
+                and appointment_id = #{appointId}
             </if>
         </where>
     </select>
