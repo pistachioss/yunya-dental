@@ -1,17 +1,14 @@
 package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
-import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
 import com.yunya.feign.treatment.domain.query.AppTreatmentQuery;
 import com.yunya.feign.treatment.domain.vo.OrderBill4AppVO;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfo4AppVO;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -27,6 +24,8 @@ public class TreatmentProcess4AppBiz {
     private RegisteredBiz registeredBiz;
     @Autowired
     private BillRecordBiz billRecordBiz;
+    @Autowired
+    private TreatmentRecordBiz treatmentRecordBiz;
 
     /**
      * 查询患者就诊信息
@@ -49,6 +48,13 @@ public class TreatmentProcess4AppBiz {
             RegisteredVO registeredVO = registeredBiz.registeredInfoDetail(registeredId);
             // 设置患者挂号信息
             this.injectPatientRegField(registeredVO,treatmentInfo4AppVO);
+            // 查询就诊信息
+            TreatmentRecord treatQuery = new TreatmentRecord();
+            treatQuery.setRegisteredId(registeredId);
+            TreatmentRecord treatmentRecord = treatmentRecordBiz.selectOne(treatQuery);
+            if (null != treatmentRecord) {
+                treatmentInfo4AppVO.setTreatmentId(treatmentRecord.getId());
+            }
         }
         // 设置账单信息
         Integer treatmentId = query.getTreatmentId();
