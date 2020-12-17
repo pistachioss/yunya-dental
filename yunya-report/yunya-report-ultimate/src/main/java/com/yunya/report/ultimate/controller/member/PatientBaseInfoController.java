@@ -37,7 +37,7 @@ public class PatientBaseInfoController {
      * @param id 患者id
      * @return BasePatient
      */
-    @ApiOperation("查询患者资料信息")
+    @ApiOperation("查询患者资料预约信息")
     @GetMapping("/patientInfo/{id}")
     public ResponseResult<PatientDataVo> patientInfo(@PathVariable("id") Integer id) {
         PatientDataVo patientDataVo = patientBaseInfoBiz.PatientDataVo(id);
