@@ -27,9 +27,9 @@ public class PrepaidExpendRecordModel implements Serializable {
     private Integer patientId;
 
     /**
-     * 预付款卡号
+     * 预付款账号
      */
-    @ApiModelProperty(value = "预付款卡号",required = true)
+    @ApiModelProperty(value = "预付款账号",required = true)
     private String prepaidId;
 
     /**

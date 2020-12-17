@@ -1,6 +1,5 @@
 package com.yunya.modules.employeeattend.controller;
 
-import com.yunya.feign.employee_attend.form.AttendanceManualMakeupForm;
 import com.yunya.feign.employee_attend.model.AttendanceManualMakeupModel;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
@@ -30,31 +29,17 @@ public class AttendanceManualMakeupController {
     private AttendanceManualMakeupBiz attendanceManualMakeupBiz;
 
     /**
-     * 添加手动补入时长信息
+     * 修改手动补入时长信息
      *
      * @param attendanceManualMakeupModel 手动补入时长添加模型
      * @return
      */
     @CurrentUser
-    @ApiOperation("添加手动补入时长信息")
-    @PostMapping("/add")
-    @RepeatSubmit
-    public ResponseResult add(@RequestBody @Validated AttendanceManualMakeupModel attendanceManualMakeupModel) {
-        Integer id = attendanceManualMakeupBiz.add(attendanceManualMakeupModel);
-        return ResponseUtil.success(id);
-    }
-
-    /**
-     * 修改手动补入时长信息
-     *
-     * @param attendanceManualMakeupForm 手动补入时长修改模型
-     * @return
-     */
-    @CurrentUser
     @ApiOperation("修改手动补入时长信息")
     @PutMapping("/update")
-    public ResponseResult update(@RequestBody @Validated AttendanceManualMakeupForm attendanceManualMakeupForm) {
-        attendanceManualMakeupBiz.update(attendanceManualMakeupForm);
-        return ResponseUtil.success(null);
+    @RepeatSubmit
+    public ResponseResult<Integer> update(@RequestBody @Validated AttendanceManualMakeupModel attendanceManualMakeupModel) {
+        Integer id = attendanceManualMakeupBiz.update(attendanceManualMakeupModel);
+        return ResponseUtil.success(id);
     }
 }

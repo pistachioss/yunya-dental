@@ -83,12 +83,12 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         employeeSchedule.setWorkDate(date);
         employeeSchedule.setScheduleId(Integer.valueOf(employeeScheduleForm.getScheduleId()));
         //查询当前日期的排班个数 超过两个则不能继续添加排班
-        EmployeeSchedule find = new  EmployeeSchedule();
+        EmployeeSchedule find = new EmployeeSchedule();
         find.setEmployeeId(Integer.valueOf(employeeScheduleForm.getUserId()));
 //        find.setClinicId(employeeScheduleForm.getClinicId());
         find.setWorkDate(date);
         int a = mapper.selectCount(find);
-        if(a>=2){
+        if (a >= 2) {
             throw new ClientServiceException("每天最多排两个班次", OperationCodeConstants.INSERT_MODEL);
         }
         mapper.insertSelective(employeeSchedule);
@@ -96,6 +96,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
 
     /**
      * 复制排班表
+     *
      * @param employeeScheduleCopyForm
      * @return
      */
@@ -107,9 +108,9 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
             Date checkEndDate = simpleDateFormat.parse(employeeScheduleCopyForm.getEndDate());
             Date targetStartDate = simpleDateFormat.parse(employeeScheduleCopyForm.getTargetStartDate());
             Date targetEndDate = simpleDateFormat.parse(employeeScheduleCopyForm.getTargetEndDate());
-            long betweenDate = (checkStartDate.getTime() - checkEndDate.getTime())/(60*60*24*1000);
-            long betweentargetDate = (targetStartDate.getTime() - targetEndDate.getTime())/(60*60*24*1000);
-            if(betweenDate!=betweentargetDate){
+            long betweenDate = (checkStartDate.getTime() - checkEndDate.getTime()) / (60 * 60 * 24 * 1000);
+            long betweentargetDate = (targetStartDate.getTime() - targetEndDate.getTime()) / (60 * 60 * 24 * 1000);
+            if (betweenDate != betweentargetDate) {
                 throw new ClientServiceException("时间段天数不一致", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
             }
         } catch (ParseException e) {
@@ -253,6 +254,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
 
     /**
      * 根据工作日期和员工id查询员工排班列表
+     *
      * @param userIds
      * @param workDates
      * @return
@@ -308,7 +310,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
         //获取员工信息
         SysUserEmployeeModel model = new SysUserEmployeeModel();
-        if(employeeScheduleQueryForm.getUserId()!=null){
+        if (employeeScheduleQueryForm.getUserId() != null) {
             model.setUserId(employeeScheduleQueryForm.getUserId());
         }
         //查询总数不分页
@@ -372,12 +374,13 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                         workDayData.put("employeeName", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getName());
                         workDayData.put("color", ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getColor());
                         workDayData.put("simtime", simtime);
-                        workDayData.put("date", employeeScheduleVO.getWorkDate());
+
+                        workDayData.put("date", simpleDateFormat.format(employeeScheduleVO.getWorkDate()));
                         workDayData.put("compClinId", employeeScheduleVO.getClinicId());
                         workDayDatas.add(workDayData);
                     }
                 }
-                if(workDayDatas.isEmpty()||workDayDatas.size()<1){
+                if (workDayDatas.isEmpty() || workDayDatas.size() < 1) {
                     JSONObject workDayDataNull = new JSONObject();
                     workDayDataNull.put("id", 0);
                     workDayDataNull.put("companyType", "");
@@ -385,7 +388,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                     workDayDataNull.put("employeeName", "");
                     workDayDataNull.put("color", "");
                     workDayDataNull.put("simtime", "");
-                    workDayDataNull.put("date",  calendar.getTime());
+                    workDayDataNull.put("date", simpleDateFormat.format(calendar.getTime()));
                     workDayDataNull.put("compClinId", 0);
                     workDayDatas.add(workDayDataNull);
                 }
@@ -456,7 +459,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                             endTime.equals(oldShift.getFirstStartTime()) ||
                             startTime.equals(oldShift.getSecondEndTime()) ||
                             startTime.after(oldShift.getSecondEndTime())
-                            ) {
+                    ) {
                         flag = true;
                     } else {
                         flag = false;
@@ -699,7 +702,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
      */
     public List<EmployeeScheduleVO> findEmployeeScheduleList(EmployeeScheduleQueryForm queryForm) {
         if (queryForm.getWhetherPage()) {
-            PageHelper.startPage(queryForm.getPage(),queryForm.getSize());
+            PageHelper.startPage(queryForm.getPage(), queryForm.getSize());
         }
         return mapper.findEmployeeScheduleList(queryForm);
     }

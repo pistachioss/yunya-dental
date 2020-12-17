@@ -205,14 +205,15 @@
         order by start_time asc
     </select>
     <select id="selectBaseByDay" resultType="com.yunya.feign.employee_attend.vo.EmLeaveVO">
-        select es.id id, es.work_date date,es.clinic_id companyId,bs.first_start_time
+        select DISTINCT es.id id, es.work_date date,es.clinic_id companyId,bs.first_start_time
         startTime,IFNULL(bs.second_end_time,bs.first_end_time) endTime ,bs.type emType,bs.`name` emName,ls.start_time as leaveStartTime,ls.end_time as leaveEndTime
         from employee_schedule es
         LEFT JOIN base_schedule bs on es.schedule_id = bs.id
         LEFT JOIN leave_schedule ls on ls.schedule_id = es.id
         <where>
+         bs.type = '上班'
             <if test="startTime!= null">
-                es.work_date BETWEEN #{startTime} and #{endTime}
+                and es.work_date BETWEEN #{startTime} and #{endTime}
             </if>
             <if test="userId!= null">
                 and es.employee_id = #{userId}

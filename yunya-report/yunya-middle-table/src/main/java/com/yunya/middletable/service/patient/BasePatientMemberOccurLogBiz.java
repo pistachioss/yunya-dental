@@ -89,7 +89,11 @@ public class BasePatientMemberOccurLogBiz
         BasePatientMemberOccurLog memberOccurLog = getMemberOccurLog(msg);
         if (null != memberOccurLog) {
           memberOccurLog.setInservice(false);
-          mapper.updateByPrimaryKeySelective(memberOccurLog);
+          mapper.deleteByPrimaryKey(memberOccurLog);
+          BasePatientMember patientMemberInfo = basePatientMemberBiz.getPatientMemberInfo(memberOccurLog.getCardId(), memberOccurLog.getType().intValue());
+          if (StringHelper.isNotNull(patientMemberInfo)) {
+            basePatientMemberMapper.updateByPrimaryKeySelective(patientMemberInfo);
+          }
         }
         break;
       default:
@@ -130,8 +134,8 @@ public class BasePatientMemberOccurLogBiz
   }
 
   /**
-   * 会员修改-查询
    *
+   * 获取会员操作记录
    * @param msg 消息
    * @return BasePatientMemberOccurLog
    */
@@ -428,6 +432,7 @@ public class BasePatientMemberOccurLogBiz
           memberReturnRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(memberReturnRecord.getCurrentBonus());
       basePatientMemberOccurLog.setOrgId(memberReturnRecord.getOrgId());
+      basePatientMemberOccurLog.setCreditAmount(memberReturnRecord.getActualReturnAmount());
       return basePatientMemberOccurLog;
     }
 
@@ -726,6 +731,7 @@ public class BasePatientMemberOccurLogBiz
           prepaidReturnRecord.getCurrentPrincipal());
       basePatientMemberOccurLog.setCurrentRechargeBonus(prepaidReturnRecord.getCurrentBonus());
       basePatientMemberOccurLog.setOrgId(prepaidReturnRecord.getOrgId());
+      basePatientMemberOccurLog.setCreditAmount(prepaidReturnRecord.getActualReturnAmount());
       return basePatientMemberOccurLog;
     }
     return null;

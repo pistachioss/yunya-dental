@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBill;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseBillPay;
 import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 import static com.yunya.framework.common.constant.OperationCodeConstants.QUERY_RESULT_INVALID;
@@ -116,7 +117,10 @@ public class BillPayRecordBiz extends BaseBiz<BillPayRecordMapper, BillPayRecord
     billExceptionHandleDetailRecordMapper.insertSelective(handleDetailRecord);
     // 发送消息同步中间表账单相关数据
     if (result > 0) {
-      rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 2, BaseBillPay);
+      // 删除账单收费记录
+      rabbitMqServiceFeign.sendMessage(billPayRecordId, 2, BaseBillPay);
+      // 更新账单记录
+      rabbitMqServiceFeign.sendMessage(billRecord.getOrderRecordId(), 1, BaseBill);
     }
     redisUtils.delete(redisKey);
   }

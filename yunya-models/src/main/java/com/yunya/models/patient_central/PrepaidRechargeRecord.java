@@ -20,7 +20,7 @@ public class PrepaidRechargeRecord {
     private Integer orgId;
 
     /**
-     * 预付款卡ID
+     * 预付款账号
      */
     @Column(name = "prepaid_id")
     private String prepaidId;
@@ -201,16 +201,16 @@ public class PrepaidRechargeRecord {
     /**
      * 获取预付款卡ID
      *
-     * @return prepaid_id - 预付款卡ID
+     * @return prepaid_id - 预付款账号
      */
     public String getPrepaidId() {
         return prepaidId;
     }
 
     /**
-     * 设置预付款卡ID
+     * 设置预付款账号
      *
-     * @param prepaidId 预付款卡ID
+     * @param prepaidId 预付款账号
      */
     public void setPrepaidId(String prepaidId) {
         this.prepaidId = prepaidId;

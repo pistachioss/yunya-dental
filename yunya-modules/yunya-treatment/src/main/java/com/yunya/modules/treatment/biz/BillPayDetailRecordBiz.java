@@ -230,7 +230,7 @@ public class BillPayDetailRecordBiz
           mapper.insertSelective(payDetail);
         });
     // 发送消息更新中间表收费记录以及收费明细
-    rabbitMqServiceFeign.sendMessage(orderRecordId, 1, BaseBillPay);
+    rabbitMqServiceFeign.sendMessage(billPayRecordId, 1, BaseBillPay);
     redisUtils.delete(redisKey);
   }
 

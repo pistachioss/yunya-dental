@@ -68,5 +68,24 @@ public interface RemoteRabbitMqServiceFeign {
       @RequestParam("operateType") Integer operateType,
       @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum);
 
+
+  /**
+   * 通过消息更新中间表
+   *
+   * @param dataId 准备更新的数据ID；键：id
+   * @param dateType 数据来源表定义，自行定义; 键：type
+   * @param operateType 操作类型：0-新增；1-更新；2-删除
+   * @param operationType 发生类型：(1.充值 2.消费 3.退款 4.撤销收费 5.账单退费)
+   * @param msgCategoryEnum 对应更新表的枚举，决定调用哪个中间表更新业务
+   * @return
+   */
+  @RequestMapping(value = "/api/direct/single4", method = RequestMethod.POST)
+  String sendMessage(
+          @RequestParam("dataId") Integer dataId,
+          @RequestParam("dateType") Integer dateType,
+          @RequestParam("operationType") Integer operationType,
+          @RequestParam("operateType") Integer operateType,
+          @RequestParam("msgCategoryEnum") MsgCategoryEnum msgCategoryEnum);
+
 }
 

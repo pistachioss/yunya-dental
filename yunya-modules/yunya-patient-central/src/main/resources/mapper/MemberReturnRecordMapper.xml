@@ -27,7 +27,7 @@
         mrrd.id,mrrd.org_id orgId,mrrd.member_id memberId,mrrd.patient_id patientId,mrrd.return_principal_amount returnPrincipalAmount,	mrrd.return_gift_amount returnGiftAmount,mrrd.remarks,mrrd.return_way_id returnWayId,mrrd.return_way_type returnWayType,	mrrd.crt_id crtId,mrrd.crt_name crtName,mrrd.crt_time crtTime,mrrd.upt_id uptId,mrrd.upd_name updName,mrrd.upd_time updTime
     </sql>
 
-    <!-- 根据患者id和会员卡号 查询退费记录 -->
+    <!-- 根据会员卡号 查询退费记录 -->
     <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.web.MemberReturnRecordVo">
       SELECT
         id,
@@ -43,7 +43,7 @@
       FROM
           member_return_record
       WHERE
-          member_id = #{form.memberId} and patient_id =#{form.patientId}
+          member_id = #{form.memberId}
       ORDER BY crt_time DESC
   </select>
 

@@ -17,8 +17,10 @@ import com.yunya.models.report.BaseBillPayDetail;
 import com.yunya.models.system.AccountItem;
 import com.yunya.models.treatment.BillPayDetailRecord;
 import com.yunya.models.treatment.BillPayRecord;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.List;
@@ -31,7 +33,9 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
+@Slf4j
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
 
   /** 账单收费记录 */
@@ -84,10 +88,12 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
     List<BillPayDetailRecord> billPayDetailRecords =
         billPayDetailRecordMapper.select(billPayDetailRecord);
     if (StringHelper.isNotEmpty(billPayDetailRecords)) {
+      log.info("BaseBillPayBiz_saveBillPayDetailRecord_收费记录明细列表---:{}", billPayDetailRecords);
       billPayDetailRecords.forEach(
           payDetailRecord -> {
             BaseBillPayDetail baseBillPayDetail = new BaseBillPayDetail();
-            baseBillPayDetail.setBillPayDetailRecordId(payDetailRecord.getId());
+            Integer payDetailRecordId = payDetailRecord.getId();
+            baseBillPayDetail.setBillPayDetailRecordId(payDetailRecordId);
             baseBillPayDetail.setBillId(payDetailRecord.getOrderRecordId());
             baseBillPayDetail.setBillPayId(payDetailRecord.getBillPayRecordId());
             Byte type = payDetailRecord.getType();
@@ -104,6 +110,8 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   memberExpendRecord.setInservice(true);
                   MemberExpendRecord memberExpendRecordResult =
                       memberExpendRecordMapper.selectOne(memberExpendRecord);
+                  log.info(
+                      "memberExpendRecordMapper.selectOne_查询会员卡消费记录:{}", memberExpendRecordResult);
                   if (null != memberExpendRecordResult) {
                     baseBillPayDetail.setPrincipalAmount(
                         memberExpendRecordResult.getExpendPrincipal());
@@ -121,6 +129,9 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                   prepaidExpendRecord.setInservice(true);
                   PrepaidExpendRecord prepaidExpendRecordResult =
                       prepaidExpendRecordMapper.selectOne(prepaidExpendRecord);
+                  log.info(
+                      "prepaidExpendRecordMapper.selectOne_查询预付款消费记录:{}",
+                      prepaidExpendRecordResult);
                   if (null != prepaidExpendRecordResult) {
                     baseBillPayDetail.setPrincipalAmount(
                         prepaidExpendRecordResult.getExpendPrincipal());
@@ -132,7 +143,7 @@ public class BaseBillPayBiz extends BaseBiz<BaseBillPayMapper, BaseBillPay> {
                 baseBillPayDetail.setPrincipalAmount(payDetailRecord.getAmount());
                 break;
             }
-            baseBillPayDetailMapper.deleteByPrimaryKey(billPayDetailRecord.getId());
+            baseBillPayDetailMapper.deleteByPrimaryKey(payDetailRecordId);
             baseBillPayDetailMapper.insertSelective(baseBillPayDetail);
           });
     }

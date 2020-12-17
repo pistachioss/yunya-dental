@@ -1,19 +1,16 @@
 package com.yunya.report.ultimate.controller;
 
 import com.github.pagehelper.PageInfo;
-import com.yunya.feign.report.domain.query.EmployeePersonalWorkloadDetailQuery;
-import com.yunya.feign.report.domain.query.OrderRecordQuery;
-import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
-import com.yunya.feign.report.domain.vo.BillOfOrderRecordVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalActualWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.EmployeePersonalReceivedWorkloadDetailVO;
-import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
+import com.yunya.feign.report.domain.query.*;
+import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
 
 /**
  * 简介: 公司端报表测试
@@ -29,6 +26,10 @@ public class CompanyReportTest {
   @Autowired private CompanyReportOfDataRecordController companyReportOfDataRecordController;
 
   @Autowired private CompanyReportOfPersonnelController personnelController;
+
+  @Autowired private CompanyReportOfCustomerCentralController customerCentralController;
+
+  @Autowired private CompanyReportOfFinanceController financeController;
 
   @Test
   public void findTreatList() {
@@ -74,5 +75,35 @@ public class CompanyReportTest {
     ResponseResult<PageInfo<EmployeePersonalReceivedWorkloadDetailVO>> list =
         personnelController.findEmployeePersonalReceivedWorkloadDetailList(query);
     System.out.println(list);
+  }
+
+  @Test
+  public void find() {
+    DentistArrearsDetailQuery query = new DentistArrearsDetailQuery();
+    query.setDentistId(526);
+    query.setBillStartDate("2020-11-17");
+    query.setBillEndDate("2020-11-17");
+    query.setKeyword("王一博");
+    ResponseResult<PageInfo<DentistArrearsDetailVO>> result =
+        customerCentralController.dentistArrearsDetailList(query);
+    System.out.println(result);
+  }
+
+  @Test
+  public void find1() {
+    ResponseResult<List<BaseAccountItemVO>> list = financeController.findAllPaymentList();
+    System.out.println(list);
+  }
+
+  @Test
+  public void find2() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setOrgId(141);
+    query.setDateType((byte) 0);
+    query.setStartDate("2020-12-16");
+    query.setEndDate("2020-12-18");
+    ResponseResult<List<ClinicInboundAndOutboundVO>> result =
+        financeController.inboundAndOutboundStatement(query);
+    System.out.println(result);
   }
 }

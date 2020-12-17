@@ -26,7 +26,7 @@
         mrrd.id,mrrd.org_id orgId,mrrd.member_id memberId,mrrd.patient_id patientId,mrrd.return_principal_amount returnPrincipalAmount,	mrrd.return_gift_amount returnGiftAmount,mrrd.remarks,mrrd.return_way_id returnWayId,mrrd.return_way_type returnWayType,	mrrd.crt_id crtId,mrrd.crt_name crtName,mrrd.crt_time crtTime,mrrd.upd_id updId,mrrd.upd_name updName,mrrd.upd_time updTime
     </sql>
 
-    <!-- 根据患者id和预付款卡号 查询退款信息 -->
+    <!-- 根据预付款卡号 查询退款信息 -->
     <select id="refundList" resultType="com.yunya.feign.patient_central.domain.vo.web.PrepaidMeturnRecordVo">
       SELECT
         id,

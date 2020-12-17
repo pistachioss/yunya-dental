@@ -184,8 +184,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
    * @param type 会员类型
    * @param operationType Log类型
    */
-  public void sendMemberLogMessages(
-      Integer id, Integer operateType, Integer type, Integer operationType) {
+  public void sendMemberLogMessages(Integer id, Integer operateType, Integer type, Integer operationType) {
     Map<String, Object> paramMap = new HashMap<String, Object>();
     paramMap.put("id", id);
     paramMap.put("type", type);
@@ -654,9 +653,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
                 secondaryMemberInfoVo.getSecondaryMemberTypeId());
         secondaryMemberInfoVo.setRate(memberType.getRate());
         secondaryMemberInfoVo.setPictureCode(memberType.getPictureCode());
-        if (memberType != null) {
-          secondaryMemberInfoVo.setMemberCardName(memberType.getName());
-        }
+        secondaryMemberInfoVo.setMemberCardName(memberType.getName());
       }
     }
     memberInfoVo.setSecondaryMemberInfoVos(secondaryMemberInfoVos);
@@ -717,6 +714,7 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
   /**
    * 会员卡撤销收费
    * @param model 撤销收费model
+   * @return
    */
   public ResponseResult revocationFee(MemberRevocationFeeModel model) {
     MemberExpendRecord memberExpendRecord = new MemberExpendRecord();
@@ -739,8 +737,6 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
                   patientMemberInfo.getBonusAmount().add(memberExpend.getExpendGift()));
         }
         patientMemberInfoMapper.updateByPrimaryKeySelective(patientMemberInfo);
-
-
         MemberRechargeRecord memberRechargeRecord = new MemberRechargeRecord();
         BeanUtils.copyProperties(model,memberRechargeRecord);
         // 撤销本金
@@ -754,6 +750,11 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
         memberRechargeRecord.setCurrentRechargePrincipal(patientMemberInfo.getPrincipalAmount());
         memberRechargeRecord.setCurrentRechargeBonus(patientMemberInfo.getBonusAmount());
         memberRechargeRecordMapper.insertSelective(memberRechargeRecord);
+        // 发送消息 删除消费消息
+        Integer expendId = updPatientMemberInfo(model);
+        if (expendId != null){
+          remoteRabbitMqServiceFeign.sendMessage(expendId, 0,2, 2, MsgCategoryEnum.BasePatientMemberOccurLog);
+        }
         // 发送会员卡撤销收费消息
         sendMemberLogMessages(memberRechargeRecord.getId(), 0, 0, 4);
         return ResponseUtil.success();
@@ -762,6 +763,25 @@ public class PatientMemberInfoBiz extends BaseBiz<PatientMemberInfoMapper, Patie
       }
     }
     return ResponseUtil.fail(OperationCodeConstants.RETURN_MOBILE_ISNULL, "未查询到消费记录", memberExpend);
+    }
+
+
+  /**
+   * 撤销收费后 消费记录作废
+   * @param model 条件
+   * @return Integer 消费记录id
+   */
+    public Integer updPatientMemberInfo(MemberRevocationFeeModel model){
+      MemberExpendRecord memberExpendRecordv = new MemberExpendRecord();
+      memberExpendRecordv.setMemberId(model.getMemberId());
+      memberExpendRecordv.setBillPayRecordId(model.getBillPayRecordId());
+      MemberExpendRecord memberExpendRecordvo = memberExpendRecordMapper.selectOne(memberExpendRecordv);
+      if (memberExpendRecordvo != null){
+        memberExpendRecordvo.setInservice(false);
+        memberExpendRecordMapper.updateByPrimaryKeySelective(memberExpendRecordvo);
+        return memberExpendRecordvo.getId();
+      }
+      return null;
     }
 
   /**

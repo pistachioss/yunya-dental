@@ -37,4 +37,9 @@ public class RabbitMqFallBackFactory implements RemoteRabbitMqServiceFeign {
     return "fail";
   }
 
+  @Override
+  public String sendMessage(Integer dataId, Integer dateType, Integer operateType, Integer operationType, MsgCategoryEnum msgCategoryEnum) {
+    return null;
+  }
+
 }

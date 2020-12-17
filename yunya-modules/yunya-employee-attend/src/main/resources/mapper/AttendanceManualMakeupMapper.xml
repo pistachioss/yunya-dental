@@ -46,7 +46,7 @@
       <if test="queryForm.orgId != null">
         and t.org_id = #{queryForm.orgId}
       </if>
-      <if test="queryForm">
+      <if test="queryForm.makeupDate != null">
         and DATE_FORMAT(t.makeup_date,'%Y-%m-%d') = DATE_FORMAT(#{queryForm.makeupDate},'%Y-%m-%d')
       </if>
       <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">

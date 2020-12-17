@@ -23,9 +23,9 @@ public class PrepaidBillRechargeModel implements Serializable {
 
 
     /**
-     * 会员卡号
+     * 预付款账号
      */
-    @ApiModelProperty(value = "会员卡号",required = true)
+    @ApiModelProperty(value = "预付款账号",required = true)
     private String prepaidId;
 
     /**

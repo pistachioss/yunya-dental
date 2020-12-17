@@ -41,6 +41,7 @@
         join base_treatment_process btpr on btpr.patient_id = bp.patient_id
         join base_employee be on btpr.registered_dentist_id = be.user_id
         <where>
+            bb.debt_amount > 0
             <if test="form.orgId != null and form.orgId != ''">
                 AND bb.org_id = #{form.orgId}
             </if>

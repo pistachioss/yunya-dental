@@ -78,9 +78,9 @@
     <select id="selectClinicMemberDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.MemberDataStatisticVO">
         SELECT
-            SUM( bpmol.totalMemberRechargeAmount ) AS totalMemberRechargeAmount,
-            SUM( bpmol.totalMemberExpendAmount ) AS totalMemberExpendAmount,
-            SUM( bpmol.totalMemberRefundAmount ) AS totalMemberRefundAmount
+            IFNULL(SUM( bpmol.totalMemberRechargeAmount ), 0) AS totalMemberRechargeAmount,
+            IFNULL(SUM( bpmol.totalMemberExpendAmount ), 0) AS totalMemberExpendAmount,
+            IFNULL(SUM( bpmol.totalMemberRefundAmount ), 0) AS totalMemberRefundAmount
         FROM
             (
             SELECT
@@ -237,9 +237,9 @@
     <select id="selectClinicPrepaymentsDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.PrepaymentsDataStatisticVO">
         SELECT
-        SUM( bpmol.totalPrepaymentsRechargeAmount ) AS totalPrepaymentsRechargeAmount,
-        SUM( bpmol.totalPrepaymentsExpendAmount ) AS totalPrepaymentsExpendAmount,
-        SUM( bpmol.totalPrepaymentsRefundAmount ) AS totalPrepaymentsRefundAmount
+        IFNULL(SUM( bpmol.totalPrepaymentsRechargeAmount ), 0) AS totalPrepaymentsRechargeAmount,
+        IFNULL(SUM( bpmol.totalPrepaymentsExpendAmount ), 0) AS totalPrepaymentsExpendAmount,
+        IFNULL(SUM( bpmol.totalPrepaymentsRefundAmount ), 0) AS totalPrepaymentsRefundAmount
         FROM
         (
         SELECT

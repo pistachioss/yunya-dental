@@ -129,11 +129,11 @@
     <select id="selectClinicTollDataStatistic"
             resultType="com.yunya.feign.report.domain.vo.TollDataStatisticsVO">
         SELECT
-        SUM( bbp.totalReceivedDebtAmount ) AS totalReceivedDebtAmount,
-        SUM( bbp.totalReceivedAmount ) AS totalReceivedAmount,
-        SUM( bbp.totalBillRefundAmount ) AS totalBillRefundAmount,
-        SUM( bbp.totalClinicCollectionAmount ) AS totalClinicCollectionAmount,
-        SUM( bbp.totalClinicCollectedAmount ) AS totalClinicCollectedAmount
+        IFNULL(SUM( bbp.totalReceivedDebtAmount ), 0) AS totalReceivedDebtAmount,
+        IFNULL(SUM( bbp.totalReceivedAmount ), 0) AS totalReceivedAmount,
+        IFNULL(SUM( bbp.totalBillRefundAmount ), 0) AS totalBillRefundAmount,
+        IFNULL(SUM( bbp.totalClinicCollectionAmount ), 0) AS totalClinicCollectionAmount,
+        IFNULL(SUM( bbp.totalClinicCollectedAmount ), 0) AS totalClinicCollectedAmount
         FROM
         (
         SELECT

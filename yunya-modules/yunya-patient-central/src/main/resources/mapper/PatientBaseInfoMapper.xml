@@ -216,12 +216,24 @@
         where concat(IFNULL(name,''),
         IFNULL(pbio.medical_number,''),IFNULL(pbio.pinyin_name,''),IFNULL(pbio.mobile,'')) like
         concat(concat('%',#{form.condition}),'%')
+        limit 0,10;
     </select>
 
     <!-- app端患者档案查询 -->
     <select id="appPatientArchives" resultType="com.yunya.feign.patient_central.domain.vo.app.AppPatientArchivesVo">
-        select pbio.id,pbio.name,pbio.age,pbio.mobile,pbio.gender,pmio.member_type_id memberTypeId,pmio.principal_amount principalAmount,pmio.bonus_amount bonusAmount
-        from patient_base_info pbio left join patient_member_info pmio on pbio.id = pmio.patient_id
+        select
+            pbio.id,
+            pbio.NAME,
+            pbio.age,
+            pbio.mobile,
+            pbio.gender,
+            pmio.member_type_id memberTypeId,
+            pmio.principal_amount principalAmount,
+            pmio.bonus_amount bonusAmount,
+            pbio.medical_number medicalNumber
+        from
+            patient_base_info pbio
+            left join patient_member_info pmio on pbio.id = pmio.patient_id
         where pbio.id =#{patientId}
     </select>
 

@@ -1,8 +1,5 @@
 package com.yunya365.rabbitmq.controller;
 
-import com.rabbitmq.client.Channel;
-import com.yunya.feign.report.domain.model.MessageModel;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

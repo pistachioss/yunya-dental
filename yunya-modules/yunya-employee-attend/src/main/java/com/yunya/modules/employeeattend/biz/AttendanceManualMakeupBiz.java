@@ -10,6 +10,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.employee_attend.AttendanceManualMakeup;
 import com.yunya.modules.employeeattend.mapper.AttendanceManualMakeupMapper;
 import org.springframework.beans.BeanUtils;
@@ -18,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
 /**
  * 简介：考勤手动补入时长业务层
@@ -32,25 +37,45 @@ import java.util.List;
 public class AttendanceManualMakeupBiz extends BaseBiz<AttendanceManualMakeupMapper, AttendanceManualMakeup> {
 
     /**
-     * 添加手动补入时长信息
+     * 手动补入时长信息
      *
      * @param attendanceManualMakeupModel 手动补入时长模型
      * @return
      */
-    public Integer add(AttendanceManualMakeupModel attendanceManualMakeupModel) {
+    public Integer update(AttendanceManualMakeupModel attendanceManualMakeupModel) {
+        Integer minute = attendanceManualMakeupModel.getMinute();
+        if (minute != null) {
+            Pattern p = Pattern.compile("^\\d{1,11}$");
+            Matcher mathcer = p.matcher(minute+"");
+            if(!mathcer.matches() || minute<=0) {
+                throw new ClientServiceException("补入工作时长只能输入10位以内的正整数", PARAMETERS_IS_ILLEGAL);
+            }
+        }
+        String desc = attendanceManualMakeupModel.getMakeupDesc();
+        if (StringHelper.isNotEmpty(desc)) {
+            if (desc.length() > 50) {
+                throw new ClientServiceException("补入时长说明不能超过50个字符", PARAMETERS_IS_ILLEGAL);
+            }
+        }
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         Date now = new Date(System.currentTimeMillis());
         AttendanceManualMakeup attendanceManualMakeup = new AttendanceManualMakeup();
         BeanUtils.copyProperties(attendanceManualMakeupModel, attendanceManualMakeup);
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        attendanceManualMakeup.setCrtId(userId);
-        attendanceManualMakeup.setCrtTime(now);
         attendanceManualMakeup.setUptId(userId);
         attendanceManualMakeup.setUptTime(now);
-        int count = mapper.insert(attendanceManualMakeup);
-        if (count != 1) {
-            throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);
+        Integer id = attendanceManualMakeupModel.getId();
+        if (id==null || id==0) {
+            attendanceManualMakeup.setCrtId(userId);
+            attendanceManualMakeup.setCrtTime(now);
+            int count = mapper.insert(attendanceManualMakeup);
+            if (count != 1) {
+                throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);
+            }
+            id = attendanceManualMakeup.getId();
+        } else {
+            updateSelectiveById(attendanceManualMakeup);
         }
-        return attendanceManualMakeup.getId();
+        return id;
     }
 
     public void update(AttendanceManualMakeupForm attendanceManualMakeupForm) {
