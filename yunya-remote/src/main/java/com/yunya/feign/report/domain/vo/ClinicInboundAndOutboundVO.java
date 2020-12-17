@@ -28,5 +28,5 @@ public class ClinicInboundAndOutboundVO implements Serializable {
   @ApiModelProperty("收支明细分类名称")
   private String name;
   /** 收支明细支付方式列表 */
-  private List<BoundPaymentVO> paymentInfoList;
+  private List<StatementPaymentVO> paymentInfoList;
 }

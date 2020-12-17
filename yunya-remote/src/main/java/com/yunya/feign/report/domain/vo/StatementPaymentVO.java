@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @ApiModel("门诊对账单出入账信息VO")
 @Data
 @ToString
-public class BoundPaymentVO implements Serializable {
+public class StatementPaymentVO implements Serializable {
   /** 支付方式ID */
   @ApiModelProperty("支付方式ID")
   private Integer accountItemId;

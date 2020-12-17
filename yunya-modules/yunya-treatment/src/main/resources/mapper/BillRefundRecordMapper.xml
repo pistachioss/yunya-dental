@@ -56,7 +56,7 @@
                 and br.patientId = #{query.patientId}
             </if>
             <if test="query.billNum != null and query.billNum != ''">
-                and br.billNum = #{query.billNum}
+                and br.billNum like concat('%', #{query.billNum} , '%')
             </if>
             <if test="query.orgId != null">
                 and br.orgId = #{query.orgId}
