@@ -27,6 +27,23 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
         <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
+
+    <resultMap id="OrderBill4AppMap" type="com.yunya.feign.treatment.domain.vo.OrderBill4AppVO">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="bill_number" property="billNumber" jdbcType="VARCHAR"/>
+        <result column="receivable_amount" property="receivableAmount" jdbcType="DECIMAL"/>
+        <result column="privilege_amount" property="privilegeAmount" jdbcType="DECIMAL"/>
+        <result column="actual_receivable_amount" property="actualReceivableAmount" jdbcType="DECIMAL"/>
+        <result column="received_amount" property="receivedAmount" jdbcType="DECIMAL"/>
+        <result column="debt_amount" property="debtAmount" jdbcType="DECIMAL"/>
+        <collection property="billItems" ofType="com.yunya.feign.treatment.domain.vo.TreatmentOrderInfo4AppVO">
+            <result column="billing_item_id" property="billingItemId" jdbcType="INTEGER"/>
+            <result column="type" property="type" jdbcType="INTEGER"/>
+            <result column="quantity" property="quantity" jdbcType="INTEGER"/>
+        </collection>
+    </resultMap>
+
+
     <!-- 查询门诊某天最大的账单编号 -->
     <select id="selectBillNumberByOrgId" resultType="java.lang.String">
       SELECT
@@ -130,5 +147,22 @@
         </if>
         group by br.treatment_record_id
         order by tr.treat_start_time desc
+    </select>
+
+    <!-- 根据就诊ID查询账单和订单信息 -->
+    <select id="findOrderAndBill4App" resultMap="OrderBill4AppMap">
+        select br.id,
+               br.bill_number as billNumber,
+               br.receivable_amount as receivableAmount,
+               br.privilege_amount as privilegeAmount,
+               br.actual_receivable_amount as actualReceivableAmount,
+               br.received_amount as receivedAmount,
+               br.debt_amount as debtAmount,
+               od.billing_item_id as billingItemId,
+               od.type,
+               (select count(id) from order_detail where treatment_record_id = br.treatment_record_id group by od.billing_item_id) as quantity
+        from bill_record br
+                 left join order_detail od on od.treatment_record_id = br.treatment_record_id
+        where br.treatment_record_id = #{treatmentId}
     </select>
 </mapper>

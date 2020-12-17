@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.mapper;
 
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
+import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.models.treatment.Registered;
 import org.apache.ibatis.annotations.Param;
@@ -21,6 +22,7 @@ public interface RegisteredMapper extends Mapper<Registered> {
   List<WaitingPatientInfoVO> selectRegisteredList(
       @Param("status") Byte status, @Param("queryForm") RegisteredQueryForm queryForm);
 
+
   /**
    * 根据id集合查询挂号列表信息
    * @param ids 挂号ID集合
@@ -28,10 +30,15 @@ public interface RegisteredMapper extends Mapper<Registered> {
    */
   List<Registered> selectRegisteredListByIds(@Param("ids") List<Integer> ids);
 
+
   /**
-   * 根据预约ID查询挂号信息
-   * @param appointIds 预约ID
-   * @return 返回实体列表
+   * 根据挂号ID查询挂号信息
+   * @param id 挂号信息
+   * @param appointId 预约ID
+   * @param patientId 患者ID
+   * @return
    */
-  List<Registered> selectRegisteredListByAppointIds(@Param("appointIds") Set<Integer> appointIds);
+  List<RegisteredVO> registeredInfoDetail(@Param("id") Integer id,
+                                          @Param("appointId") Integer appointId,
+                                          @Param("patientId") Integer patientId);
 }

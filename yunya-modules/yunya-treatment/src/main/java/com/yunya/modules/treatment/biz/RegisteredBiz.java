@@ -11,6 +11,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
 import com.yunya.feign.treatment.domain.query.RegisteredQueryForm;
+import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -398,4 +399,16 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       }
     }
   }
+
+  /**
+   * 根据挂号ID查询挂号信息
+   * @param id 挂号信息
+   * @param appointId 预约ID
+   * @param patientId 患者ID
+   * @return
+   */
+  public List<RegisteredVO> registeredInfoDetail(Integer id,Integer appointId, Integer patientId) {
+    return mapper.registeredInfoDetail(id,appointId,patientId);
+  }
+
 }

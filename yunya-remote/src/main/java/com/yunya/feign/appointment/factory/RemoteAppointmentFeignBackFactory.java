@@ -97,5 +97,10 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
         return null;
     }
 
+    @Override
+    public AppointmentVo findAppointmentDetailById(Integer id) {
+        return null;
+    }
+
 
 }

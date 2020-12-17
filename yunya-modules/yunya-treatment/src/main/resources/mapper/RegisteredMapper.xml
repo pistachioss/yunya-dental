@@ -73,7 +73,20 @@
     </select>
 
     <!-- 根据预约ID查询挂号信息 -->
-    <select id="selectRegisteredListByAppointIds" resultMap="BaseResultMap">
-
+    <select id="registeredInfoDetail" resultType="com.yunya.feign.treatment.domain.vo.RegisteredVO">
+        select
+        <include refid="baseResultMapField"></include>
+        from registered
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="patientId != null">
+                and patient_id = #{patientId}
+            </if>
+            <if test="appointId != null">
+                and appoint_id = #{appointId}
+            </if>
+        </where>
     </select>
 </mapper>

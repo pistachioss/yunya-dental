@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.mapper;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.vo.BillPayRecordVO;
 import com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO;
+import com.yunya.feign.treatment.domain.vo.OrderBill4AppVO;
 import com.yunya.feign.treatment.domain.vo.PatientBillStatistics;
 import com.yunya.models.treatment.BillRecord;
 import org.apache.ibatis.annotations.Param;
@@ -72,4 +73,10 @@ public interface BillRecordMapper extends Mapper<BillRecord> {
     List<DesktopMiniProgramVO> desktopBillingList(@Param("currentDate") String currentDate,
                                                   @Param("orgId") Integer orgId);
 
+    /**
+     * 根据就诊ID查询账单和订单信息
+     * @param treatmentId 就诊ID
+     * @return 返回实体
+     */
+    OrderBill4AppVO findOrderAndBill4App(@Param("treatmentId") Integer treatmentId);
 }

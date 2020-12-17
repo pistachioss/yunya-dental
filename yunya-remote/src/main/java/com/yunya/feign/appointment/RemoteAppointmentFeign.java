@@ -155,4 +155,12 @@ public interface RemoteAppointmentFeign {
    */
   @RequestMapping(value = "/api/appoint/app/count", method = RequestMethod.POST)
   List<TreatmentInfoForMonthVO> appointmentForMonth(@RequestBody AppointmentForMonthForm form);
+
+  /**
+   * 根据预约ID查询预约详细信息
+   * @param id 预约ID
+   * @return 返回预约信息实体
+   */
+  @RequestMapping(value = "/api/appoint/detail/{id}", method = RequestMethod.POST)
+  AppointmentVo findAppointmentDetailById(@PathVariable(value = "id") Integer id);
 }

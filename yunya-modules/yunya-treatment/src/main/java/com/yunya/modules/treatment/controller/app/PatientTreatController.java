@@ -3,10 +3,12 @@ package com.yunya.modules.treatment.controller.app;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.query.AppTreatListQuery;
 import com.yunya.feign.treatment.domain.query.TreatmentInfoForMonthForm;
-import com.yunya.feign.treatment.domain.vo.AppPatientTreatmentInfoVO;
+import com.yunya.feign.treatment.domain.vo.PatientTreatmentInfo4ListVO;
+import com.yunya.feign.treatment.domain.vo.TreatmentInfo4AppVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.treatment.biz.TreatmentProcess4AppBiz;
 import com.yunya.modules.treatment.biz.TreatmentRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
@@ -14,10 +16,7 @@ import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,12 +35,14 @@ public class PatientTreatController {
 
   /** 注入对象 */
   @Autowired private TreatmentRecordBiz treatmentRecordBiz;
+  @Autowired
+  private TreatmentProcess4AppBiz treatmentBiz4App;
 
   @ApiOperation("根据条件查询APP端患者就诊列表(开完成,可联调...)")
   @PostMapping(value = "/list", name = "根据条件查询APP端患者就诊列表")
-  public ResponseResult<PageInfo<AppPatientTreatmentInfoVO>> treatList(
+  public ResponseResult<PageInfo<PatientTreatmentInfo4ListVO>> treatList(
       @RequestBody @Validated AppTreatListQuery query) {
-    PageInfo<AppPatientTreatmentInfoVO> resultList = treatmentRecordBiz.findAppTreatList(query);
+    PageInfo<PatientTreatmentInfo4ListVO> resultList = treatmentRecordBiz.findAppTreatList(query);
     return ResponseUtil.success(resultList);
   }
 
@@ -51,6 +52,18 @@ public class PatientTreatController {
   public ResponseResult<List<TreatmentInfoForMonthVO>> treatInfoForMonth(@RequestBody @Validated TreatmentInfoForMonthForm form) {
     List<TreatmentInfoForMonthVO> treatmentInfoForMonthVOS = treatmentRecordBiz.treatInfoForMonth(form);
     return ResponseUtil.success(treatmentInfoForMonthVOS);
+  }
+
+  @ApiOperation("查询患者就诊信息")
+  @GetMapping("/info/detail/all")
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "appointId", value = "预约ID", dataTypeClass = Integer.class, defaultValue = "0"),
+          @ApiImplicitParam(name = "registeredId", value = "挂号ID", dataTypeClass = Integer.class, defaultValue = "0"),
+          @ApiImplicitParam(name = "treatmentId", value = "就诊记录ID", dataTypeClass = Integer.class, defaultValue = "0")
+  })
+  public ResponseResult treatmentInfoDetail(Integer appointId, Integer registeredId, Integer treatmentId) {
+    TreatmentInfo4AppVO result = this.treatmentBiz4App.treatmentInfoDetail(appointId,registeredId,treatmentId);
+    return ResponseUtil.success(result);
   }
 
 }

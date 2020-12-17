@@ -70,6 +70,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private BillRefundOrderDetailMapper billRefundOrderDetailMapper;
   /** 账单退费付款明细记录 */
   @Autowired private BillRefundPayDetailRecordMapper billRefundPayDetailRecordMapper;
+  /** 商品明细表 */
+  @Autowired private BaseOralTariffBiz baseOralTariffBiz;
+  /** 价目明细表 */
+  @Autowired private BaseTariffBiz baseTariffBiz;
 
   /**
    * 生成账单编号
@@ -489,5 +493,33 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   public PatientBillStatistics statisticsBill(Integer patientId) {
     PatientBillStatistics patientBillStatistics = mapper.selectPatientBillStatistics(patientId);
     return patientBillStatistics;
+  }
+
+  /**
+   * 根据就诊ID查询账单和订单信息
+   * @param treatmentId 就诊ID
+   * @return 返回实体
+   */
+  public OrderBill4AppVO findOrderAndBill4App(Integer treatmentId){
+    OrderBill4AppVO orderBill4AppVO = mapper.findOrderAndBill4App(treatmentId);
+
+    orderBill4AppVO.getBillItems().forEach(treatmentOrderInfo4AppVO -> {
+      Integer type = treatmentOrderInfo4AppVO.getType();
+      Integer billingItemId = treatmentOrderInfo4AppVO.getBillingItemId();
+      if (type == 0) {
+        // 查询价目表
+        BaseTariffInfoVO baseTariffInfoById = baseTariffBiz.findBaseTariffInfoById(billingItemId);
+        if (null != baseTariffInfoById) {
+          treatmentOrderInfo4AppVO.setBillingItemName(baseTariffInfoById.getName());
+        }
+      } else if (type == 1) {
+        // 查询商品表
+        BaseOralTariffInfoVO baseOralTariffInfoById = baseOralTariffBiz.findBaseOralTariffInfoById(billingItemId);
+        if (null != baseOralTariffInfoById) {
+          treatmentOrderInfo4AppVO.setBillingItemName(baseOralTariffInfoById.getName());
+        }
+      }
+    });
+    return orderBill4AppVO;
   }
 }

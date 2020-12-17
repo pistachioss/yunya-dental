@@ -213,5 +213,14 @@ public class AppointmentRest {
     return this.appBiz.appointmentForMonth(form);
   }
 
+  /**
+   * 根据预约ID查询预约详细信息
+   * @param id 预约ID
+   * @return 返回预约信息实体
+   */
+  @RequestMapping(value = "/appoint/detail/{id}", method = RequestMethod.POST)
+  AppointmentVo findAppointmentDetailById(@PathVariable(value = "id") Integer id) {
+    return this.appointmentBiz.findAppointmentById(id);
+  }
 
 }

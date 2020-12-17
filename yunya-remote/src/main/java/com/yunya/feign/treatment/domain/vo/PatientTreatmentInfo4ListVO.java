@@ -19,7 +19,7 @@ import java.io.Serializable;
 @ApiModel("APP端患者就诊信息VO")
 @Data
 @ToString
-public class AppPatientTreatmentInfoVO implements Serializable {
+public class PatientTreatmentInfo4ListVO implements Serializable {
   /** 组织ID */
   @ApiModelProperty("组织ID")
   private Integer orgId;
@@ -62,7 +62,11 @@ public class AppPatientTreatmentInfoVO implements Serializable {
   /** 挂号ID */
   @ApiModelProperty("挂号ID")
   private Integer registedId;
-  /** 账单记录ID */
-  private Integer orderRecordId;
+  /** 账单编号 */
+  @ApiModelProperty("账单编号")
+  private String billNumber;
+  /** 就诊记录ID */
+  @ApiModelProperty("就诊记录ID")
+  private Integer treatmentId;
 
 }
