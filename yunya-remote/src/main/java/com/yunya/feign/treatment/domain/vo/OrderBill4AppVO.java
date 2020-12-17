@@ -32,7 +32,7 @@ public class OrderBill4AppVO implements Serializable {
     @ApiModelProperty("欠费金额（本单欠费）")
     private BigDecimal debtAmount;
     @ApiModelProperty("开单项目列表")
-    private List<TreatmentOrderInfo4AppVO> billItems;
+    private List<TreatmentOrderItem4AppVO> billItems;
 
 
 
