@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.sms.mapper.SmsOrgStatisticsMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.sms.SmsOrgStatistics" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="charge_num" property="chargeNum" jdbcType="INTEGER" />
+    <result column="charge_money" property="chargeMoney" jdbcType="DECIMAL" />
+    <result column="surplus_num" property="surplusNum" jdbcType="INTEGER" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <select id="findSmsOrgStatisticsByOrgId" resultType="com.yunya.feign.sms.vo.SmsOrgStatisticsVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.charge_num as chargeNum,
+        t.charge_money as chargeMoney,
+        t.surplus_num as surplusNum
+    from sms_org_statistics t where t.org_id = #{orgId}
+  </select>
+</mapper>

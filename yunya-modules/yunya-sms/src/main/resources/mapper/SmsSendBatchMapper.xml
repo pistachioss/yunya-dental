@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.sms.mapper.SmsSendBatchMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.sms.SmsSendBatch" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="send_num" property="sendNum" jdbcType="INTEGER" />
+    <result column="biz_id" property="bizId" jdbcType="VARCHAR" />
+    <result column="biz_msg" property="bizMsg" jdbcType="VARCHAR" />
+    <result column="template_id" property="templateId" jdbcType="INTEGER" />
+    <result column="type" property="type" jdbcType="TINYINT" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_user" property="crtUser" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+    <!-- 插入数据:返回记录主键id值 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into sms_send_batch
+        (id,org_id,send_num,template_id,type,crt_id,crt_user,crt_time)
+    values
+        (null,#{orgId},#{sendNum},#{templateId},#{type},#{crtId},#{crtUser},#{crtTime})
+  </insert>
+
+  <select id="findSmsSendBatchList" resultType="com.yunya.feign.sms.vo.SmsSendBatchVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.send_num as sendNum,
+        t.biz_id as bizId,
+        t.biz_msg as bizMsg,
+        t.template_id as templateId,
+        t.type,
+        t.crt_id as crtId,
+        t.crt_user as crtUser,
+        t.crt_time as crtTime
+    from sms_send_batch t
+    <where>
+      <if test="queryForm.orgId != null">
+        and t.org_id = #{queryForm.orgId}
+      </if>
+      <if test="queryForm.sendNum">
+        and t.send_num = #{queryForm.sendNum}
+      </if>
+      <if test="queryForm.status != null">
+        and t.status = #{queryForm.status}
+      </if>
+      <if test="queryForm.bizId!=null and queryForm.bizId!=''">
+        and t.biz_id = #{queryForm.bizId}
+      </if>
+      <if test="queryForm.templateId != null">
+        and t.template_id = #{queryForm.templateId}
+      </if>
+    </where>
+  </select>
+</mapper>

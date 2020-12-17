@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.sms.mapper.SmsChargeOrderMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.sms.SmsChargeOrder" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="sms_num" property="smsNum" jdbcType="INTEGER" />
+    <result column="price" property="price" jdbcType="DECIMAL" />
+    <result column="order_no" property="orderNo" jdbcType="VARCHAR" />
+    <result column="out_order_no" property="outOrderNo" jdbcType="VARCHAR" />
+    <result column="cb_order_no" property="cbOrderNo" jdbcType="VARCHAR" />
+    <result column="out_result" property="outResult" jdbcType="VARCHAR" />
+    <result column="payment_channel" property="paymentChannel" jdbcType="VARCHAR" />
+    <result column="sms_goods" property="smsGoods" jdbcType="VARCHAR" />
+    <result column="order_status" property="orderStatus" jdbcType="TINYINT" />
+    <result column="pay_time" property="payTime" jdbcType="TIMESTAMP" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_user" property="crtUser" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+    <!-- 插入数据:返回记录主键id值 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into sms_charge_order
+        (id,order_no,org_id,sms_num,price,cb_order_no,out_result,payment_channel,sms_goods,order_status,crt_id,crt_user,crt_time,upt_id,upt_time)
+    values
+        (null,#{orderNo},#{orgId},#{smsNum},#{price},#{cbOrderNo},#{outResult},#{paymentChannel},#{smsGoods},#{orderStatus},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
+  </insert>
+
+  <select id="findSmsChargeOrderList" resultType="com.yunya.feign.sms.vo.SmsChargeOrderVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.sms_num as smsNum,
+        t.price,
+        t.order_no as orderNo,
+        t.cb_order_no as cbOrderNo,
+        t.out_order_no as outOrderNo,
+        t.out_result as outResult,
+        t.payment_channel as paymentChannel,
+        t.sms_goods as smsGoods,
+        t.order_status as orderStatus,
+        t.pay_time as payTime,
+        t.crt_id as crtId,
+        t.crt_user as crtUser,
+        t.crt_time as crtTime
+    from sms_charge_order t
+    <where>
+      <if test="queryForm.orgId != null">
+        and t.org_id = #{queryForm.orgId}
+      </if>
+      <if test="queryForm.cbOrderNo!=null and queryForm.cbOrderNo!=''">
+        and t.cb_order_no = #{queryForm.cbOrderNo}
+      </if>
+      <if test="queryForm.id != null">
+        and t.id = #{queryForm.id}
+      </if>
+      <if test="queryForm.orderStatus">
+        and t.order_status = #{queryForm.orderStatus}
+      </if>
+    </where>
+  </select>
+
+  <select id="findSmsChargeOrderByOrderNo" resultType="com.yunya.feign.sms.vo.SmsChargeOrderVO">
+      select
+        t.id,
+        t.org_id as orgId,
+        t.sms_num as smsNum,
+        t.order_no as orderNo,
+        t.price,
+        t.cb_order_no as cbOrderNo,
+        t.out_order_no as outOrderNo,
+        t.out_result as outResult,
+        t.payment_channel as paymentChannel,
+        t.sms_goods as smsGoods,
+        t.order_status as orderStatus,
+        t.pay_time as payTime,
+        t.crt_id as crtId,
+        t.crt_user as crtUser,
+        t.crt_time as crtTime
+      from sms_charge_order t where order_no = #{orderNo}
+  </select>
+</mapper>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.sms.mapper.SmsSendRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.sms.SmsSendRecord" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="org_id" property="orgId" jdbcType="INTEGER" />
+    <result column="batch_id" property="batchId" jdbcType="INTEGER" />
+    <result column="receiver_id" property="receiverId" jdbcType="INTEGER" />
+    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+    <result column="content_num" property="contentNum" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="TINYINT" />
+    <result column="biz_id" property="bizId" jdbcType="VARCHAR" />
+    <result column="biz_msg" property="bizMsg" jdbcType="VARCHAR" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_user" property="crtUser" jdbcType="VARCHAR" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upt_id" property="uptId" jdbcType="INTEGER" />
+    <result column="upt_time" property="uptTime" jdbcType="TIMESTAMP" />
+    <result column="content" property="content" jdbcType="VARCHAR" />
+    <result column="send_object" property="sendObject" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <select id="findSmsSendRecordList" resultType="com.yunya.feign.sms.vo.SmsSendRecordVO">
+    select
+        t.id,
+        t.org_id as orgId,
+        t.batch_id as batchId,
+        t.receiver_id as receiverId,
+        t.send_object as sendObject
+        t.mobile,
+        t.content_num as contentNum,
+        t.content,
+        t.status,
+        t.biz_id as bizId,
+        t.biz_msg as bizMsg,
+        t.crt_id as crtId,
+        t.crt_user as crtUser,
+        t.crt_time as crtTime
+    from sms_send_record t
+    <where>
+      <if test="queryForm.orgId != null">
+        and t.org_id = #{queryForm.orgId}
+      </if>
+      <if test="queryForm.status != null">
+        and t.status = #{queryForm.status}
+      </if>
+      <if test="queryForm.userId != null">
+        and t.user_id = #{queryForm.userId}
+      </if>
+      <if test="queryForm.batchId != null">
+        and t.batch_id = #{queryForm.batchId}
+      </if>
+      <if test="queryForm.id != null">
+        and t.id = #{queryForm.id}
+      </if>
+      <if test="queryForm.batchIds!=null and queryForm.batchIds.size()>0">
+        and t.batch_id in
+        <foreach collection="queryForm.batchIds" item="item" index="index" open="(" close=")" separator=",">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
+</mapper>
