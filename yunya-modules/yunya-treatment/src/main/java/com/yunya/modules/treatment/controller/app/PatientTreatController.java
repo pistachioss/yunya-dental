@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.controller.app;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.treatment.domain.query.AppTreatListQuery;
+import com.yunya.feign.treatment.domain.query.AppTreatmentQuery;
 import com.yunya.feign.treatment.domain.query.TreatmentInfoForMonthForm;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentInfo4ListVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfo4AppVO;
@@ -55,11 +56,9 @@ public class PatientTreatController {
   }
 
   @ApiOperation("查询患者就诊信息")
-  @GetMapping("/info/detail/all/{appointId}/{registeredId}/{treatmentId}")
-  public ResponseResult treatmentInfoDetail(@PathVariable(value = "appointId") Integer appointId,
-                                            @PathVariable(value = "registeredId") Integer registeredId,
-                                            @PathVariable(value = "treatmentId") Integer treatmentId) {
-    TreatmentInfo4AppVO result = this.treatmentBiz4App.treatmentInfoDetail(appointId,registeredId,treatmentId);
+  @PostMapping("/info/detail/all")
+  public ResponseResult treatmentInfoDetail(@RequestBody AppTreatmentQuery query) {
+    TreatmentInfo4AppVO result = this.treatmentBiz4App.treatmentInfoDetail(query);
     return ResponseUtil.success(result);
   }
 
