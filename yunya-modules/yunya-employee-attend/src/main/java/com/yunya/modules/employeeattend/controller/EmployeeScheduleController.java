@@ -107,8 +107,7 @@ public class EmployeeScheduleController {
     @ApiOperation("添加")
     @RepeatSubmit
     public ResponseResult create(@RequestBody EmployeeScheduleForm employeeScheduleForm) throws ParseException {
-        employeeScheduleBiz.create(employeeScheduleForm);
-        return ResponseUtil.success();
+        return ResponseUtil.success(employeeScheduleBiz.create(employeeScheduleForm));
     }
 
 
