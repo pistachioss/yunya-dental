@@ -32,6 +32,6 @@
         <!--<table tableName="visiting_record" domainObjectName="VisitingRecord"/>-->
         <!--<table tableName="visiting_remind" domainObjectName="VisitingRemind"/>-->
         <!--<table tableName="x_ray_film" domainObjectName="XRayFilm"/>-->
-        <table tableName="periodontalrecords" domainObjectName="Periodontalrecords"/>
+        <table tableName="periodontal_records" domainObjectName="PeriodontalRecords"/>
     </context>
 </generatorConfiguration>

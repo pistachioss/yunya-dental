@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.treatment.other.mapper.PeriodontalRecordsMapper" >
+  <resultMap id="BaseResultMap" type="com.yunya.models.treatment_other.PeriodontalRecords" >
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="company_id" property="companyId" jdbcType="INTEGER" />
+    <result column="patient_id" property="patientId" jdbcType="INTEGER" />
+    <result column="doctor_id" property="doctorId" jdbcType="INTEGER" />
+    <result column="check_date" property="checkDate" jdbcType="DATE" />
+    <result column="Data_PdB1" property="dataPdb1" jdbcType="VARCHAR" />
+    <result column="Data_PdL1" property="dataPdl1" jdbcType="VARCHAR" />
+    <result column="Data_FI1" property="dataFi1" jdbcType="VARCHAR" />
+    <result column="Data_M1" property="dataM1" jdbcType="VARCHAR" />
+    <result column="Data_BIB1" property="dataBib1" jdbcType="VARCHAR" />
+    <result column="Data_BIL1" property="dataBil1" jdbcType="VARCHAR" />
+    <result column="Data_BIL2" property="dataBil2" jdbcType="VARCHAR" />
+    <result column="Data_BIB2" property="dataBib2" jdbcType="VARCHAR" />
+    <result column="Data_FI2" property="dataFi2" jdbcType="VARCHAR" />
+    <result column="Data_M2" property="dataM2" jdbcType="VARCHAR" />
+    <result column="Data_PdL2" property="dataPdl2" jdbcType="VARCHAR" />
+    <result column="Data_PdB2" property="dataPdb2" jdbcType="VARCHAR" />
+    <result column="is_delete" property="isDelete" jdbcType="INTEGER" />
+    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
+    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
+    <result column="upd_id" property="updId" jdbcType="INTEGER" />
+    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+</mapper>

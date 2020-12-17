@@ -152,7 +152,15 @@ spring:
             - StripPrefix=3
           metadata:
             title: "系统报表服务"
-  
+        - id: yunya-sms
+          uri: lb://yunya-sms
+          order: 8104
+          predicates:
+            - Path=/api/sms/**
+          filters:
+            - StripPrefix=2
+          metadata:
+            title: "短信服务"
   
         # 通用工具服务，编号后排
         - id: aliyun-oss

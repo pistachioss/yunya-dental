@@ -40,4 +40,25 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    */
   List<EmployeeTreatMatchingDetailVO> selectAssistantMatchingDetailList(
       @Param("query") AssistantMatchingDetailQuery query);
+
+  /**
+   * 根据患者id查询履约次数
+   * @param id 患者id
+   * @return int
+   */
+  Integer selectPatientPerformance(@Param("patientId") Integer id);
+
+  /**
+   * 根据患者id查询预约次数
+   * @param id 患者id
+   * @return Integer
+   */
+  Integer selectPatientReservation(Integer id);
+
+  /**
+   * 根据患者id查询失约次数
+   * @param id 患者id
+   * @return Integer
+   */
+  Integer selectMissedAppointment(Integer id);
 }

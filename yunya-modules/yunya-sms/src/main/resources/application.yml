@@ -1,0 +1,73 @@
+server:
+  port: 8104
+
+spring:
+  application:
+    name: yunya-sms
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  datasource:
+    host: 192.168.31.90
+    port: 3306
+    username: sa
+    password: Admin001!
+    name: yunya_sms
+    url: jdbc:mysql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.name}?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&useSSL=false
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+  redis:
+    host: 192.168.31.90
+    port: 6379
+    password: foobared
+    database: 2
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 192.168.31.215:8848
+
+mybatis:
+  mapperLocations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.yunya.models.sms
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启驼峰命名
+    map-underscore-to-camel-case: true
+# 配置swagger
+swagger:
+  enabled: true
+  base-package: com.yunya.modules.sms
+  title: yunya-sms
+  version: 1.0.0.SNAPSHOT
+  description: 短信服务 (网关地址：/api/sms/**)
+  contact:
+    name: yunya-sms
+
+#设置hystrix超时
+hystrix:
+  command:
+    default:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 30000
+
+
+aliyun:
+  sms:
+#    accessKeyId: LTAI4G4rXydQDeSBZVx1kKgu
+#    accessSecret: 3tTNUGxktkRnCXzw7N0WGLf0XDRYbM
+    aliyunDomain: dysmsapi.aliyuncs.com
+    aliyunVersion: 2017-05-25
+    accessKeyId: LTAI4G5V7ezDNNSSwyRTZJGm
+    accessSecret: WPpocSKOVgAFSXj3J8jMPQ5w3vH3qD
+
+wiki:
+    app: A00305710000067
+    operatorId: ccaaad2ba1f2a6baccb986d0a748dbb9
+    key: 111
+    notifyUrl: http://yunya.test.utools.club/smsChargeOrder/notifyUrl
+    redirectUrl: http://yunya.test.utools.club/smsChargeOrder/redirectUrl
+
+
+
