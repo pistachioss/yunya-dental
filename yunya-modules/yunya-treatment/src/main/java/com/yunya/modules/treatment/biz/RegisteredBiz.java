@@ -21,6 +21,7 @@ import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
+import com.yunya.models.system.SysEmployee;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.RegisteredMapper;
@@ -403,12 +404,29 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
   /**
    * 根据挂号ID查询挂号信息
    * @param id 挂号信息
-   * @param appointId 预约ID
-   * @param patientId 患者ID
    * @return
    */
-  public List<RegisteredVO> registeredInfoDetail(Integer id,Integer appointId, Integer patientId) {
-    return mapper.registeredInfoDetail(id,appointId,patientId);
+  public RegisteredVO registeredInfoDetail(Integer id) {
+    RegisteredVO registeredVO = mapper.registeredInfoDetail(id);
+    if (registeredVO != null) {
+      Integer dentistId = registeredVO.getDentistId();
+      Integer assistantId = registeredVO.getAssistantId();
+      Integer deptRoomId = registeredVO.getDeptRoomId();
+      if (dentistId != null) {
+          SysEmployee sysEmployeeById = this.systemServiceFeign.findSysEmployeeById(dentistId);
+          registeredVO.setDentistName(sysEmployeeById.getName());
+      }
+      if (assistantId != null) {
+          SysEmployee sysEmployeeById = this.systemServiceFeign.findSysEmployeeById(assistantId);
+          registeredVO.setAssistantName(sysEmployeeById.getName());
+      }
+      if (deptRoomId != null) {
+          DepartmentRoom departmentRoomById = this.systemServiceFeign.findDepartmentRoomById(deptRoomId);
+          registeredVO.setDeptRoomName(departmentRoomById.getName());
+      }
+      return registeredVO;
+    }
+    return new RegisteredVO();
   }
 
 }
