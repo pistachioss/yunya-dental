@@ -1,7 +1,7 @@
 package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.InboundAndOutboundStatementQuery;
-import com.yunya.feign.report.domain.vo.BoundPaymentVO;
+import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class BaseAccountItemMapperTest {
     query.setDateType((byte) 2);
     query.setStartDate("2020");
     query.setEndDate("2020");
-    List<BoundPaymentVO> vos = accountItemMapper.selectBillChargePaymentInfo(query);
+    List<StatementPaymentVO> vos = accountItemMapper.selectBillChargePaymentInfo(query);
     System.out.println(vos);
   }
 
@@ -43,7 +43,7 @@ public class BaseAccountItemMapperTest {
     query.setDateType((byte) 2);
     query.setStartDate("2020");
     query.setEndDate("2020");
-    List<BoundPaymentVO> vos = accountItemMapper.selectClinicCollectionPaymentInfo(query);
+    List<StatementPaymentVO> vos = accountItemMapper.selectClinicCollectionPaymentInfo(query);
     System.out.println(vos);
   }
 
@@ -54,7 +54,7 @@ public class BaseAccountItemMapperTest {
     query.setDateType((byte) 2);
     query.setStartDate("2020");
     query.setEndDate("2020");
-    List<BoundPaymentVO> vos = accountItemMapper.selectCollectArrearsPaymentInfo(query);
+    List<StatementPaymentVO> vos = accountItemMapper.selectCollectArrearsPaymentInfo(query);
     System.out.println(vos);
   }
 

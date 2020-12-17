@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 简介:
+ * 简介: 中间表账单同步
  *
  * @author: chow
  * @date: 2020/12/11 20:30

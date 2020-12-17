@@ -23,8 +23,8 @@ public class BillRefundOrderDetail {
     /**
      * 退费记录ID
      */
-    @Column(name = "refund_record_id")
-    private Integer refundRecordId;
+    @Column(name = "bill_refund_record_id")
+    private Integer billRefundRecordId;
 
     /**
      * 开单明细ID
@@ -35,8 +35,8 @@ public class BillRefundOrderDetail {
     /**
      * 退费金额
      */
-    @Column(name = "refund_amout")
-    private BigDecimal refundAmout;
+    @Column(name = "refund_amount")
+    private BigDecimal refundAmount;
 
     /**
      * 是否有效
@@ -120,18 +120,19 @@ public class BillRefundOrderDetail {
      *
      * @return refund_record_id - 退费记录ID
      */
-    public Integer getRefundRecordId() {
-        return refundRecordId;
+    public Integer getBillRefundRecordId() {
+        return billRefundRecordId;
     }
 
     /**
      * 设置退费记录ID
      *
-     * @param refundRecordId 退费记录ID
+     * @param billRefundRecordId 退费记录ID
      */
-    public void setBillRefundRecordId(Integer refundRecordId) {
-        this.refundRecordId = refundRecordId;
+    public void setBillRefundRecordId(Integer billRefundRecordId) {
+        this.billRefundRecordId = billRefundRecordId;
     }
+
 
     /**
      * 获取开单明细ID
@@ -154,19 +155,19 @@ public class BillRefundOrderDetail {
     /**
      * 获取退费金额
      *
-     * @return refund_amout - 退费金额
+     * @return refund_amount - 退费金额
      */
-    public BigDecimal getRefundAmout() {
-        return refundAmout;
+    public BigDecimal getRefundAmount() {
+        return refundAmount;
     }
 
     /**
      * 设置退费金额
      *
-     * @param refundAmout 退费金额
+     * @param refundAmount 退费金额
      */
-    public void setRefundAmout(BigDecimal refundAmout) {
-        this.refundAmout = refundAmout;
+    public void setRefundAmount(BigDecimal refundAmount) {
+        this.refundAmount = refundAmount;
     }
 
     /**

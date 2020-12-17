@@ -141,7 +141,7 @@
             <trim prefix="upd_time=case" suffix="end,">
                 <foreach collection="list" item="obj">
                     <if test="obj.updTime != null">
-                        when id=#{obj.id} then date_format(#{obj.updTime},'%Y-%m-%d %H:%m:%s')
+                        when id=#{obj.id} then date_format(#{obj.updTime},'%Y-%m-%d %H:%i:%s')
                     </if>
                 </foreach>
             </trim>

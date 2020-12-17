@@ -211,7 +211,7 @@ public class BillRefundRecordBiz extends BaseBiz<BillRefundRecordMapper, BillRef
                 null != detailPayRecord
                     ? detailPayRecord.getReceivedAmount()
                     : BigDecimal.valueOf(0));
-            vo.setRefundAmount(detail.getRefundAmout());
+            vo.setRefundAmount(detail.getRefundAmount());
             billRefundOrderDetails.add(vo);
           });
     }

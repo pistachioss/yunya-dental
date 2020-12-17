@@ -3,7 +3,7 @@ package com.yunya.report.ultimate.biz;
 import com.google.common.collect.Lists;
 import com.yunya.feign.report.domain.query.InboundAndOutboundStatementQuery;
 import com.yunya.feign.report.domain.vo.BaseAccountItemVO;
-import com.yunya.feign.report.domain.vo.BoundPaymentVO;
+import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.feign.report.domain.vo.ClinicInboundAndOutboundVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
@@ -92,7 +92,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       InboundAndOutboundStatementQuery query) {
     List<ClinicInboundAndOutboundVO> resultList = Lists.newArrayList();
     // 门诊账单收费
-    List<BoundPaymentVO> billCharge = findBillChargePaymentInfo(query);
+    List<StatementPaymentVO> billCharge = findBillChargePaymentInfo(query);
     reBuildStatementsPaymentList((byte) 0, billCharge, query);
     ClinicInboundAndOutboundVO billChargeVO = new ClinicInboundAndOutboundVO();
     billChargeVO.setType((byte) 0);
@@ -100,7 +100,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     billChargeVO.setPaymentInfoList(billCharge);
     resultList.add(0, billChargeVO);
     // 门诊收欠费
-    List<BoundPaymentVO> collectArrears = findCollectArrearsPaymentInfo(query);
+    List<StatementPaymentVO> collectArrears = findCollectArrearsPaymentInfo(query);
     reBuildStatementsPaymentList((byte) 1, collectArrears, query);
     ClinicInboundAndOutboundVO collectArrearsVO = new ClinicInboundAndOutboundVO();
     collectArrearsVO.setType((byte) 1);
@@ -108,7 +108,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     collectArrearsVO.setPaymentInfoList(collectArrears);
     resultList.add(1, collectArrearsVO);
     // 门诊会员充值
-    List<BoundPaymentVO> memberCharge = findMemberChargePaymentInfo(query);
+    List<StatementPaymentVO> memberCharge = findMemberChargePaymentInfo(query);
     reBuildStatementsPaymentList((byte) 2, memberCharge, query);
     ClinicInboundAndOutboundVO memberChargeVO = new ClinicInboundAndOutboundVO();
     memberChargeVO.setType((byte) 2);
@@ -116,7 +116,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     memberChargeVO.setPaymentInfoList(memberCharge);
     resultList.add(2, memberChargeVO);
     // 门诊预付款充值
-    List<BoundPaymentVO> prePaidCharge = findPrePaidChargePaymentInfo(query);
+    List<StatementPaymentVO> prePaidCharge = findPrePaidChargePaymentInfo(query);
     reBuildStatementsPaymentList((byte) 3, prePaidCharge, query);
     ClinicInboundAndOutboundVO prePaidChargeVO = new ClinicInboundAndOutboundVO();
     prePaidChargeVO.setType((byte) 3);
@@ -124,7 +124,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     prePaidChargeVO.setPaymentInfoList(prePaidCharge);
     resultList.add(3, prePaidChargeVO);
     // 产品售出
-    List<BoundPaymentVO> productSold = findProductSoldPaymentInfo(query);
+    List<StatementPaymentVO> productSold = findProductSoldPaymentInfo(query);
     reBuildStatementsPaymentList((byte) 4, productSold, query);
     ClinicInboundAndOutboundVO productSoldVO = new ClinicInboundAndOutboundVO();
     productSoldVO.setType((byte) 4);
@@ -132,7 +132,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     productSoldVO.setPaymentInfoList(productSold);
     resultList.add(4, productSoldVO);
     // 诊所代收
-    List<BoundPaymentVO> clinicCollection = findClinicCollectionPaymentInfo(query);
+    List<StatementPaymentVO> clinicCollection = findClinicCollectionPaymentInfo(query);
     reBuildStatementsPaymentList((byte) 5, clinicCollection, query);
     ClinicInboundAndOutboundVO clinicCollectionVO = new ClinicInboundAndOutboundVO();
     clinicCollectionVO.setType((byte) 5);
@@ -140,7 +140,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     clinicCollectionVO.setPaymentInfoList(clinicCollection);
     resultList.add(5, clinicCollectionVO);
     // 账单退费
-    List<BoundPaymentVO> billRefund = findBillRefundPaymentInfo(query);
+    List<StatementPaymentVO> billRefund = findBillRefundPaymentInfo(query);
     reBuildStatementsPaymentList((byte) 6, billRefund, query);
     ClinicInboundAndOutboundVO billRefundVO = new ClinicInboundAndOutboundVO();
     billRefundVO.setType((byte) 6);
@@ -148,7 +148,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     billRefundVO.setPaymentInfoList(billRefund);
     resultList.add(6, billRefundVO);
     // 会员卡退费
-    List<BoundPaymentVO> memberRefund = findMemberRefundPaymentInfo(query);
+    List<StatementPaymentVO> memberRefund = findMemberRefundPaymentInfo(query);
     reBuildStatementsPaymentList((byte) 7, memberRefund, query);
     ClinicInboundAndOutboundVO memberRefundVO = new ClinicInboundAndOutboundVO();
     memberRefundVO.setType((byte) 7);
@@ -156,7 +156,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     memberRefundVO.setPaymentInfoList(memberRefund);
     resultList.add(7, memberRefundVO);
     // 预付款退费
-    List<BoundPaymentVO> prepaidRefund = findPrepaidRefundPaymentInfo(query);
+    List<StatementPaymentVO> prepaidRefund = findPrepaidRefundPaymentInfo(query);
     reBuildStatementsPaymentList((byte) 8, prepaidRefund, query);
     ClinicInboundAndOutboundVO prepaidRefundVO = new ClinicInboundAndOutboundVO();
     prepaidRefundVO.setType((byte) 8);
@@ -164,7 +164,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
     prepaidRefundVO.setPaymentInfoList(prepaidRefund);
     resultList.add(8, prepaidRefundVO);
     // 诊所被代收
-    List<BoundPaymentVO> clinicIsAccepted = findClinicIsAcceptedPaymentInfo(query);
+    List<StatementPaymentVO> clinicIsAccepted = findClinicIsAcceptedPaymentInfo(query);
     reBuildStatementsPaymentList((byte) 9, clinicIsAccepted, query);
     ClinicInboundAndOutboundVO clinicIsAcceptedVO = new ClinicInboundAndOutboundVO();
     clinicIsAcceptedVO.setType((byte) 9);
@@ -182,7 +182,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 会员卡/预付款本金赠金查询参数
    */
   private void reBuildStatementsPaymentList(
-      Byte type, List<BoundPaymentVO> list, InboundAndOutboundStatementQuery query) {
+          Byte type, List<StatementPaymentVO> list, InboundAndOutboundStatementQuery query) {
     setPaymentListValue(list, type, query);
   }
 
@@ -194,7 +194,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 会员卡/预付款本金赠金查询参数
    */
   private void setPaymentListValue(
-      List<BoundPaymentVO> list, Byte type, InboundAndOutboundStatementQuery query) {
+          List<StatementPaymentVO> list, Byte type, InboundAndOutboundStatementQuery query) {
     if (StringHelper.isNotEmpty(list)) {
       Integer[] memberAccountItem = new Integer[1];
       Integer[] prePaymentAccountItem = new Integer[1];
@@ -208,9 +208,9 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
               prePaymentAccountItem[0] = vo.getAccountItemId();
             }
           });
-      Iterator<BoundPaymentVO> iterator = list.iterator();
+      Iterator<StatementPaymentVO> iterator = list.iterator();
       while (iterator.hasNext()) {
-        BoundPaymentVO vo = iterator.next();
+        StatementPaymentVO vo = iterator.next();
         String accountItemName = vo.getAccountItemName();
         if (ACCOUNT_ITEM_OF_MEMBER.equals(accountItemName)
             || ACCOUNT_ITEM_OF_PREPARE.equals(accountItemName)) {
@@ -218,24 +218,24 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
         }
       }
       if (memberAccountItem[0] != null) {
-        BoundPaymentVO memberPrincipal = new BoundPaymentVO();
+        StatementPaymentVO memberPrincipal = new StatementPaymentVO();
         memberPrincipal.setAccountItemId(memberAccountItem[0]);
         memberPrincipal.setAccountItemName("会员卡本金");
         setPrincipalAmount(type, query, memberAccountItem, memberPrincipal);
         list.add(0, memberPrincipal);
-        BoundPaymentVO memberBonus = new BoundPaymentVO();
+        StatementPaymentVO memberBonus = new StatementPaymentVO();
         memberBonus.setAccountItemId(memberAccountItem[0]);
         memberBonus.setAccountItemName("会员卡赠金");
         setBonusAmount(type, query, memberAccountItem, memberBonus);
         list.add(1, memberBonus);
       }
       if (prePaymentAccountItem[0] != null) {
-        BoundPaymentVO prepaidPrincipal = new BoundPaymentVO();
+        StatementPaymentVO prepaidPrincipal = new StatementPaymentVO();
         prepaidPrincipal.setAccountItemId(prePaymentAccountItem[0]);
         prepaidPrincipal.setAccountItemName("预付款本金");
         setPrincipalAmount(type, query, prePaymentAccountItem, prepaidPrincipal);
         list.add(2, prepaidPrincipal);
-        BoundPaymentVO prepaidBonus = new BoundPaymentVO();
+        StatementPaymentVO prepaidBonus = new StatementPaymentVO();
         prepaidBonus.setAccountItemId(prePaymentAccountItem[0]);
         prepaidBonus.setAccountItemName("预付款赠金");
         setBonusAmount(type, query, prePaymentAccountItem, prepaidBonus);
@@ -256,7 +256,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       Byte type,
       InboundAndOutboundStatementQuery query,
       Integer[] accountItem,
-      BoundPaymentVO boundPayment) {
+      StatementPaymentVO boundPayment) {
     switch (type) {
       case 0:
         BigDecimal billChargeMemberPrincipalAmount =
@@ -300,7 +300,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
       Byte type,
       InboundAndOutboundStatementQuery query,
       Integer[] accountItem,
-      BoundPaymentVO boundPayment) {
+      StatementPaymentVO boundPayment) {
     switch (type) {
       case 0:
         BigDecimal billChargeMemberBonusAmount =
@@ -338,8 +338,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findBillChargePaymentInfo(InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectBillChargePaymentInfo(query);
+  private List<StatementPaymentVO> findBillChargePaymentInfo(InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectBillChargePaymentInfo(query);
     return resultList;
   }
 
@@ -349,9 +349,9 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findCollectArrearsPaymentInfo(
+  private List<StatementPaymentVO> findCollectArrearsPaymentInfo(
       InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectCollectArrearsPaymentInfo(query);
+    List<StatementPaymentVO> resultList = mapper.selectCollectArrearsPaymentInfo(query);
     return resultList;
   }
 
@@ -361,8 +361,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findMemberChargePaymentInfo(InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectMemberChargePaymentInfo(query);
+  private List<StatementPaymentVO> findMemberChargePaymentInfo(InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectMemberChargePaymentInfo(query);
     return resultList;
   }
 
@@ -372,9 +372,9 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findPrePaidChargePaymentInfo(
+  private List<StatementPaymentVO> findPrePaidChargePaymentInfo(
       InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectPaidChargePaymentInfo(query);
+    List<StatementPaymentVO> resultList = mapper.selectPaidChargePaymentInfo(query);
     return resultList;
   }
 
@@ -384,8 +384,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findProductSoldPaymentInfo(InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectProductSoldPaymentInfo(query);
+  private List<StatementPaymentVO> findProductSoldPaymentInfo(InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectProductSoldPaymentInfo(query);
     return resultList;
   }
 
@@ -395,9 +395,9 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findClinicCollectionPaymentInfo(
+  private List<StatementPaymentVO> findClinicCollectionPaymentInfo(
       InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectClinicCollectionPaymentInfo(query);
+    List<StatementPaymentVO> resultList = mapper.selectClinicCollectionPaymentInfo(query);
     return resultList;
   }
 
@@ -407,8 +407,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findBillRefundPaymentInfo(InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectBillRefundPaymentInfo(query);
+  private List<StatementPaymentVO> findBillRefundPaymentInfo(InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectBillRefundPaymentInfo(query);
     return resultList;
   }
 
@@ -418,8 +418,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findMemberRefundPaymentInfo(InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectMemberRefundPaymentInfo(query);
+  private List<StatementPaymentVO> findMemberRefundPaymentInfo(InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectMemberRefundPaymentInfo(query);
     return resultList;
   }
 
@@ -429,9 +429,9 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findPrepaidRefundPaymentInfo(
+  private List<StatementPaymentVO> findPrepaidRefundPaymentInfo(
       InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectPrepaidRefundPaymentInfo(query);
+    List<StatementPaymentVO> resultList = mapper.selectPrepaidRefundPaymentInfo(query);
     return resultList;
   }
 
@@ -441,9 +441,9 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<BoundPaymentVO> findClinicIsAcceptedPaymentInfo(
+  private List<StatementPaymentVO> findClinicIsAcceptedPaymentInfo(
       InboundAndOutboundStatementQuery query) {
-    List<BoundPaymentVO> resultList = mapper.selectClinicIsAcceptedPaymentInfo(query);
+    List<StatementPaymentVO> resultList = mapper.selectClinicIsAcceptedPaymentInfo(query);
     return resultList;
   }
 }

@@ -272,7 +272,7 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     refundOrderDetailModels.forEach(
         detailModel -> {
           refundOrderDetail.setOrderDetailId(detailModel.getOrderDetailId());
-          refundOrderDetail.setRefundAmout(detailModel.getRefundAmount());
+          refundOrderDetail.setRefundAmount(detailModel.getRefundAmount());
           refundOrderDetail.setBillRefundRecordId(billRefundRecordId);
           billRefundOrderDetailMapper.insertSelective(refundOrderDetail);
         });
