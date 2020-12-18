@@ -1146,6 +1146,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           case 3:
             // 已结账
             entity.setTreatStatus((byte) 5);
+            entity.setTreatmentId(patientTreatmentRecordVO.getId());
             break;
           default:
             break;
