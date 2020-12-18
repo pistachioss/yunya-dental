@@ -23,6 +23,16 @@ public class MapUtil {
    * @return map
    */
   public static Map<String, Object> objectToMap(Object obj) {
+    return conversionObjToMap(obj);
+  }
+
+  /**
+   * 对象转map
+   *
+   * @param obj 对象
+   * @return
+   */
+  public static Map<String, Object> conversionObjToMap(Object obj) {
     Map<String, Object> map = new HashMap<>(16);
     Class<?> clazz = obj.getClass();
     try {
