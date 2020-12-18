@@ -45,7 +45,7 @@ public class WikiUtl {
     private static String NOTIFY_URL;
     /** 同步通知地址 */
     private static String REDIRECT_URL;
-    private static String APP = "";
+    private static String APP;
     private static String OPERATOR_ID;
     private static String KEY;
 
@@ -54,7 +54,7 @@ public class WikiUtl {
 
     @PostConstruct
     public void init() {
-//        APP = app;
+        APP = app;
         OPERATOR_ID = operatorId;
         KEY = key;
         NOTIFY_URL = notifyUrl;
@@ -71,7 +71,7 @@ public class WikiUtl {
      */
     public static String createOrder(String orderNo, Long amount, JSONArray goodList) {
         String qrcodeUrl = null;
-        Map<String, Object> params = new HashMap<>();
+        Map<String, String> params = new HashMap<>();
         params.put("command", "open.api.h5");
         params.put("app", APP);
         params.put("operator_id", OPERATOR_ID);
@@ -80,14 +80,14 @@ public class WikiUtl {
         params.put("request_id", UUID.randomUUID().toString());
         params.put("request_time", new DateTime().toString("yyyyMMddHHmmss"));
         params.put("local_order_no", orderNo);
-        params.put("amount", amount);
-        params.put("goods_list", goodList);
+        params.put("amount", amount+"");
+        params.put("goods_list", goodList.toJSONString());
         params.put("notify_url", NOTIFY_URL);
         params.put("redirect_url", REDIRECT_URL);
         JSONObject result = null;
         try {
-//            params.put("sign", EncryptionUtil.getSign(params, KEY));
-            params.put("sign", Md5SignUtl.md5(params, KEY, "UTF-8"));
+            params.put("sign", EncryptionUtil.getSign(params, KEY));
+//            params.put("sign", Md5SignUtl.md5(params, KEY, "UTF-8"));
             logger.info("createOrder param: {}", JSONObject.toJSON(params).toString());
             String responseResult = SSLClient.formHttp(WIKI_URL, params);
             logger.info("createOrder result: {}", responseResult);

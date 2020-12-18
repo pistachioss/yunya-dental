@@ -59,13 +59,13 @@ public class SSLClient extends DefaultHttpClient {
      * @param params
      * @return
      */
-    public static String formHttp(String url, Map<String, Object> params) throws Exception {
+    public static String formHttp(String url, Map<String, String> params) throws Exception {
         URL u = null;
         HttpURLConnection con = null;
         // 构建请求参数
         StringBuffer sb = new StringBuffer();
         if (params != null) {
-            for (Map.Entry<String, Object> e : params.entrySet()) {
+            for (Map.Entry<String, String> e : params.entrySet()) {
                 sb.append(e.getKey());
                 sb.append("=");
                 sb.append(e.getValue());
