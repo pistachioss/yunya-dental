@@ -64,8 +64,7 @@ aliyun:
 
 wiki:
     app: A55905710000004
-#    operatorId: ccaaad2ba1f2a6baccb986d0a748dbb9
-    operatorId: dc38b14f74888b3a88b51ace677cc3b8
+    operatorId: 8fe21621f6e999a05c8f34226ff24791
     key: dc38b14f74888b3a88b51ace677cc3b8
     notifyUrl: http://yunya.test.utools.club/smsChargeOrder/notifyUrl
     redirectUrl: http://yunya.test.utools.club/smsChargeOrder/redirectUrl

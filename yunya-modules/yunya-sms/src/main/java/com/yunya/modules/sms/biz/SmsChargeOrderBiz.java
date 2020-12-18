@@ -71,7 +71,10 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
         BeanUtil.copyProperties(smsChargeOrderModel, smsChargeOrder);
         smsChargeOrder.setOrderStatus(SmsOrderStatusEnum.WAIT_PAY.getCode());
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        Integer orgId = smsChargeOrderModel.getOrgId();
+        if (orgId == null) {
+            orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        }
         smsChargeOrder.setOrgId(orgId);
         Long amount = smsChargeOrder.getPrice().multiply(new BigDecimal(100)).longValue();
         String orderNo = UUID.randomUUID().toString();

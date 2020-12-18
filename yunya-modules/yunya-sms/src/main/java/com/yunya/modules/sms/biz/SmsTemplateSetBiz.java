@@ -152,14 +152,15 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
     private JSONObject getTemplate(String templateContent, String templateItem, String signName) {
         JSONObject result = new JSONObject();
         StringBuilder template = new StringBuilder();
+        int size = searchCount("@",templateContent);
         int length = signName.length() + 2;//【短信签名】
-        if (StringHelper.isNotEmpty(templateItem)) {
+        if (size>0 && StringHelper.isNotEmpty(templateItem)) {
             if (templateContent.indexOf("@") == -1) {
                 throw new ClientServiceException("模板格式不正确！", PARAMETERS_IS_ILLEGAL);
             }
             String[] contents = templateContent.split("@");
             String[] items = templateItem.split(",");
-            if (contents.length != items.length + 1) {
+            if (size != items.length) {
                 throw new ClientServiceException("模板格式不正确！", PARAMETERS_IS_ILLEGAL);
             }
             String firstTmp = contents[0];
@@ -180,10 +181,34 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
                 template.append(tmp);
                 length += tmp.length();
             }
+        } else {
+            if (size>0 && StringHelper.isEmpty(templateItem)) {
+                throw new ClientServiceException("模板参数缺失！", PARAMETERS_IS_ILLEGAL);
+            }
+            if (size<=0 && StringHelper.isNotEmpty(templateItem)) {
+                throw new ClientServiceException("模板参数不一致！", PARAMETERS_IS_ILLEGAL);
+            }
         }
         result.put("template", template.toString());
         result.put("length", length);
         return result;
+    }
+
+    // 定义searchCount方法，来返回字符串出现的个数
+    public int searchCount(String shortStr, String longStr) {
+        // 定义一个count来存放字符串出现的次数
+        int count = 0;
+        // 调用String类的indexOf(String str)方法，返回第一个相同字符串出现的下标
+        while (longStr.indexOf(shortStr) != -1) {
+            // 如果存在相同字符串则次数加1
+            count++;
+            // 调用String类的substring(int beginIndex)方法，获得第一个相同字符出现后的字符串
+            longStr = longStr.substring(longStr.indexOf(shortStr)
+                    + shortStr.length());
+
+        }
+        // 返回次数
+        return count;
     }
 
     /**
