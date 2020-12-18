@@ -71,7 +71,7 @@ public class WikiUtl {
      */
     public static String createOrder(String orderNo, Long amount, JSONArray goodList) {
         String qrcodeUrl = null;
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         params.put("command", "open.api.h5");
         params.put("app", APP);
         params.put("operator_id", OPERATOR_ID);
@@ -80,14 +80,14 @@ public class WikiUtl {
         params.put("request_id", UUID.randomUUID().toString());
         params.put("request_time", new DateTime().toString("yyyyMMddHHmmss"));
         params.put("local_order_no", orderNo);
-        params.put("amount", amount+"");
-        params.put("goods_list", goodList.toJSONString());
+        params.put("amount", amount);
+        params.put("goods_list", goodList);
         params.put("notify_url", NOTIFY_URL);
         params.put("redirect_url", REDIRECT_URL);
         JSONObject result = null;
         try {
 //            params.put("sign", EncryptionUtil.getSign(params, KEY));
-//            params.put("sign", Md5SignUtl.md5(params, KEY, "UTF-8"));
+            params.put("sign", Md5SignUtl.md5(params, KEY, "UTF-8"));
             logger.info("createOrder param: {}", JSONObject.toJSON(params).toString());
             String responseResult = SSLClient.formHttp(WIKI_URL, params);
             logger.info("createOrder result: {}", responseResult);

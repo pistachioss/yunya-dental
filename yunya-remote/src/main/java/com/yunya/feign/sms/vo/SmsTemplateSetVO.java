@@ -69,6 +69,12 @@ public class SmsTemplateSetVO implements Serializable {
     private String templateContentPreview;
 
     /**
+     * 模板位置json
+     */
+    @ApiModelProperty("模板位置json")
+    private String tagInputValue;
+
+    /**
      * 模板有效字数（包含头部的签名，不包含模板变量及其占位符）
      */
     @ApiModelProperty("模板有效字数（包含头部的签名，不包含模板变量及其占位符）")

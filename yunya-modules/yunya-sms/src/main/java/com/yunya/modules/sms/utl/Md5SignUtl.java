@@ -50,7 +50,7 @@ public class Md5SignUtl {
         return paramBuffer.substring(0, paramBuffer.length() - 1);
     }
 
-    private static String md5(Map<String, Object> params, String key, String charsetName) throws Exception {
+    static String md5(Map<String, Object> params, String key, String charsetName) throws Exception {
         String paramStr = getMapSignText(params);
         paramStr += "&key=" + key;
         return DigestUtils.md5Hex(paramStr.getBytes(charsetName));
