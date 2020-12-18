@@ -44,6 +44,17 @@ public enum SmsTemplateItemEnum {
         this.action = action;
     }
 
+    public static List<String> toList(String head, String tail) {
+        List<String> list = new ArrayList<>();
+        for(SmsTemplateItemEnum item : values()) {
+            String value = item.getValue();
+            if (!list.contains(value)) {
+                list.add(head + value + tail);
+            }
+        }
+        return list;
+    }
+
     public String getValue() {
         return value;
     }

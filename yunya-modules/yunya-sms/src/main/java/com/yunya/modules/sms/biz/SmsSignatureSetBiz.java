@@ -1,6 +1,7 @@
 package com.yunya.modules.sms.biz;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.google.common.io.Files;
 import com.yunya.feign.sms.form.SmsSignatureSetForm;
@@ -25,6 +26,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
@@ -39,9 +42,12 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Service
 @Transactional
 public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignatureSet> {
-
+    /** 延迟2.5个小时 */
+    private static final int LATER_TIME = 150;
     @Autowired
     private SmsSignatureFileBiz smsSignatureFileBiz;
+    @Autowired
+    private ScheduledExecutorService scheduledExecutorService;
 
     /**
      * 分页查询短信签名列表
@@ -96,11 +102,23 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         });
         smsSignatureFileBiz.saveFile(signId, smsSignatureFiles);
         AliyunSmsUtl.addSmsSign(smsSignatureSetModel, files);
+        asyncStatus(smsSignatureSet);
     }
 
-    private static String getFileExtension(MultipartFile file) {
-        String originalFileName = file.getOriginalFilename();
-        return originalFileName.substring(originalFileName.lastIndexOf("."));
+    /**
+     * 两小时后同步一次阿里云短信的模板状态
+     * @param smsSignatureSet
+     */
+    private void asyncStatus(SmsSignatureSet smsSignatureSet) {
+        scheduledExecutorService.schedule(()->{
+            JSONObject query = AliyunSmsUtl.querySmsTemplate(smsSignatureSet.getSignName());
+            String code = query.getString("Code");
+            Byte signStatus = query.getByte("SignStatus");
+            if ("OK".equals(code) && !SmsApprovalStatusEnum.APPROVALING.getCode().equals(signStatus)) {
+                smsSignatureSet.setSignStatus(signStatus);
+                updateSelectiveById(smsSignatureSet);
+            }
+        }, LATER_TIME, TimeUnit.MINUTES);
     }
 
         /**
@@ -155,6 +173,7 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         updateSelectiveById(smsSignatureSet);
         smsSignatureFileBiz.saveFile(id, smsSignatureSetForm.getSmsSignatureFiles(), true);
         AliyunSmsUtl.modifySmsSign(smsSignatureSetForm);
+        asyncStatus(smsSignatureSet);
     }
 
     /**

@@ -25,8 +25,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
@@ -48,6 +52,8 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
     private SmsAutosendEventBiz smsAutosendEventBiz;
     @Autowired
     private ScheduledExecutorService scheduledExecutorService;
+    /** 延迟2.5小时 */
+    private final int LATER_TIME = 150;
 
     /**
      * 分页查询短信模板列表
@@ -104,7 +110,23 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         smsTemplateSet.setTemplateContent(null);
         smsTemplateSet.setTemplateCode(result.getString("TemplateCode"));
         updateSelectiveById(smsTemplateSet);
-//        scheduledExecutorService.s
+        asyncStatus(smsTemplateSet);
+    }
+
+    /**
+     * 两小时后同步一次阿里云短信的模板状态
+     * @param smsTemplateSet
+     */
+    private void asyncStatus(SmsTemplateSet smsTemplateSet) {
+        scheduledExecutorService.schedule(()->{
+            JSONObject query = AliyunSmsUtl.querySmsTemplate(smsTemplateSet.getTemplateCode());
+            String code = query.getString("Code");
+            Byte templateStatus = query.getByte("TemplateStatus");
+            if ("OK".equals(code) && !SmsApprovalStatusEnum.APPROVALING.getCode().equals(templateStatus)) {
+                smsTemplateSet.setTemplateStatus(templateStatus);
+                updateSelectiveById(smsTemplateSet);
+            }
+        }, LATER_TIME, TimeUnit.MINUTES);
     }
 
     private void checkSense(Byte sense, String templateItem) {
@@ -132,7 +154,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         StringBuilder template = new StringBuilder();
         int length = signName.length() + 2;//【短信签名】
         if (StringHelper.isNotEmpty(templateItem)) {
-            if (templateContent.indexOf("@")==-1) {
+            if (templateContent.indexOf("@") == -1) {
                 throw new ClientServiceException("模板格式不正确！", PARAMETERS_IS_ILLEGAL);
             }
             String[] contents = templateContent.split("@");
@@ -154,13 +176,13 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
                     template.append("${re").append(reNum).append("code").append(code).append("}");
                 }
                 repeat.put(code, ++reNum);
-                String tmp = contents[i+1];
+                String tmp = contents[i + 1];
                 template.append(tmp);
                 length += tmp.length();
             }
         }
-        result.put("template",template.toString());
-        result.put("length",length);
+        result.put("template", template.toString());
+        result.put("length", length);
         return result;
     }
 
@@ -227,6 +249,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (needApproval) {
             smsTemplateSet.setTemplateContent(template.getString("template"));
             AliyunSmsUtl.modifySmsTemplate(smsTemplateSet);
+            asyncStatus(smsTemplateSet);
         }
     }
 
@@ -296,11 +319,11 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      */
     public SmsTemplateSetVO findSmsTemplateSetById(Integer id, boolean needPreview) {
         SmsTemplateSetVO smsTemplateSetVO = mapper.findSmsTemplateSetById(id);
-        if (smsTemplateSetVO!=null && needPreview) {
+        /*if (smsTemplateSetVO!=null && needPreview) {
             String preview = getTemplatePreview(smsTemplateSetVO.getTemplateContent(),
                     smsTemplateSetVO.getTemplateItem(), smsTemplateSetVO.getSignName());
             smsTemplateSetVO.setTemplateContentPreview(preview);
-        }
+        }*/
         return smsTemplateSetVO;
     }
 

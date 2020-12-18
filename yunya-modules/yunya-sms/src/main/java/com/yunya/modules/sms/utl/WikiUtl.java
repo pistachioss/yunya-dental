@@ -86,7 +86,8 @@ public class WikiUtl {
         params.put("redirect_url", REDIRECT_URL);
         JSONObject result = null;
         try {
-            params.put("sign", EncryptionUtil.getSign(params, KEY));
+//            params.put("sign", EncryptionUtil.getSign(params, KEY));
+//            params.put("sign", Md5SignUtl.md5(params, KEY, "UTF-8"));
             logger.info("createOrder param: {}", JSONObject.toJSON(params).toString());
             String responseResult = SSLClient.formHttp(WIKI_URL, params);
             logger.info("createOrder result: {}", responseResult);
@@ -101,6 +102,8 @@ public class WikiUtl {
         }
         return qrcodeUrl;
     }
+
+
 
     public static void main(String[] args) {
         JSONObject good = new JSONObject();
