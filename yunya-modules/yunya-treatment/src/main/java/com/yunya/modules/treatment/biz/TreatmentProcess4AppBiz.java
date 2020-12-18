@@ -134,6 +134,8 @@ public class TreatmentProcess4AppBiz {
             appointInfo4AppVO.setDeptRoomId(appointmentDetailById.getDeptRoomId());
             appointInfo4AppVO.setDeptRoomName(appointmentDetailById.getDeptRoomName());
             appointInfo4AppVO.setRemarks(appointmentDetailById.getRemarks());
+            appointInfo4AppVO.setDentistId(appointmentDetailById.getDentistId());
+            appointInfo4AppVO.setDentistName(appointmentDetailById.getDentistName());
             treatmentInfo4AppVO.setAppintInfo(appointInfo4AppVO);
         }
     }

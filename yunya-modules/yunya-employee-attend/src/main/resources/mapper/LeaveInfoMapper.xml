@@ -281,7 +281,7 @@
         t.refuse_reason as refuseReason,
         vs.vacation_status as vacationStatus,
         IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
-        TIMESTAMPDIFF(MINUTE ,t.start_time,t.end_time))
+        TIMESTAMPDIFF(MINUTE ,t.start_time, DATE_ADD(t.end_time,INTERVAL '1' day)))
         AS leaveTime
         from leave_info t
         LEFT join vacation_set vs on t.vacation_id = vs.id
