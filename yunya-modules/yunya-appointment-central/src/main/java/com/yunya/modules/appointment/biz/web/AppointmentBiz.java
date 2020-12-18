@@ -932,7 +932,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 发送消息更新中间表就诊流程
             rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
-            appointOperationModel.setOperateType((byte) 3);
+            Boolean confirmStatus = appointment.getConfirmStatus();
+            appointOperationModel.setOperateType(confirmStatus? (byte) 3 : 4);
             appointOperationModel.setAppointmentId(appointment.getId());
             appointOperationModel.setOrgId(Integer.valueOf(BaseContextHandler.getUserID()));
             appointOperationModel.setAfterOperation(appointment.getConfirmStatus()?"确认":"未确认");
