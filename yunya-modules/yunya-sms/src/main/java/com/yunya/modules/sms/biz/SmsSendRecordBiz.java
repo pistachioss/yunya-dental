@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.yunya.feign.sms.model.SmsBatchSendRecordModel;
 import com.yunya.feign.sms.model.SmsSendRecordModel;
 import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.vo.SmsOrgStatisticsVO;
@@ -14,12 +15,14 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsSendRecord;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsSendStatusEnum;
+import com.yunya.modules.sms.enums.SmsTypeEnum;
 import com.yunya.modules.sms.mapper.SmsSendRecordMapper;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
 import org.apache.poi.ss.formula.functions.T;
@@ -100,8 +103,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      *
      * @param model 短信发送添加模型
      */
-    public ResponseResult<T> batchSend(SmsSendRecordModel model) {
-        Integer orgId = model.getOrgId();
+    public ResponseResult<T> batchSend(SmsBatchSendRecordModel model) {
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         Integer templateId = model.getTemplateId();
         SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateSetById(templateId);
         if (smsTemplateSetVO == null) {
@@ -128,12 +131,12 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             return ResponseUtil.fail(OperationCodeConstants.QUERY_RESULT_INVALID,res.get(-1).get(0).toString(),null);
         }
         List<StringBuilder> builders = res.get("0");
-        Integer sendUserId = model.getSendUserId();
+        Integer sendUserId = Integer.parseInt(BaseContextHandler.getUserID());
         String crtUser = getSendUserNameById(sendUserId);
-        Date sendTime = model.getSendTime();
+        Date sendTime = new Date(System.currentTimeMillis());
         List<String> sendObjects = model.getSendObjects();
         Integer batchId = smsSendBatchBiz.insertEntity(orgId, templateId,
-                sendUserId, sendTime, crtUser, model.getType(), sendObjects.size());
+                sendUserId, sendTime, crtUser, SmsTypeEnum.SMS_NOTIFY.getCode(), sendObjects.size());
         String signName = smsTemplateSetVO.getSignName();
         JSONArray phoneNumberJson = new JSONArray();
         JSONArray signNameJson = new JSONArray();
@@ -159,8 +162,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
      * @param model
      * @return
      */
-    public ResponseResult<T> sendVerfyCode(SmsSendRecordModel model) {
-        Integer orgId = model.getOrgId();
+    public ResponseResult<T> sendVerifyCode(SmsSendRecordModel model) {
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         Integer templateId = model.getTemplateId();
         SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateSetById(templateId);
         if (smsTemplateSetVO == null) {
@@ -181,18 +184,19 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             return ResponseUtil.fail(OperationCodeConstants.OPERATION_NOT_ALLOW,"短信余额不足！",null);
         }
         String[]  mobiles = model.getMobiles().split(",");
-        JSONArray templateParamJson = model.getTemplateParamJson();
+        JSONArray templateParamJson = new JSONArray();
+        templateParamJson.add(model.getTemplateParamJson());
         Map<Integer, List<StringBuilder>> res = parseSmsContent(mobiles, smsTemplateSetVO, templateParamJson, surplusNum);
         if (res.containsKey(-1)) {
             return ResponseUtil.fail(OperationCodeConstants.QUERY_RESULT_INVALID,res.get(-1).get(0).toString(),null);
         }
         List<StringBuilder> builders = res.get("0");
-        Integer sendUserId = model.getSendUserId();
+        Integer sendUserId = Integer.parseInt(BaseContextHandler.getUserID());
         String crtUser = getSendUserNameById(sendUserId);
-        Date sendTime = model.getSendTime();
+        Date sendTime = new Date(System.currentTimeMillis());
         List<String> sendObjects = model.getSendObjects();
         Integer batchId = smsSendBatchBiz.insertEntity(orgId, templateId,
-                sendUserId, sendTime, crtUser, model.getType(), sendObjects.size());
+                sendUserId, sendTime, crtUser, SmsTypeEnum.VERIFY_CODE.getCode(), sendObjects.size());
         String signName = smsTemplateSetVO.getSignName();
         List<Integer> userIds = model.getReceiverIds();
         for (int i = 0; i < mobiles.length; i++) {
@@ -204,7 +208,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             insertSelective(orgId, batchId, builders.get(0), mobile, crtUser,
                     sendUserId, sendTime, userId, sendObjects.get(i));
         }
-        JSONObject smsResponse = AliyunSmsUtl.sendSms(model.getMobiles(), signName, templateCode, templateParamJson.getJSONObject(0));
+        JSONObject smsResponse = AliyunSmsUtl.sendSms(model.getMobiles(), signName, templateCode, model.getTemplateParamJson());
         return ResponseUtil.success();
     }
 

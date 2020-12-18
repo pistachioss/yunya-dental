@@ -17,6 +17,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration("systemWebConfig")
 @Primary
 public class WebConfiguration implements WebMvcConfigurer {
+  /** 核心线程数 */
+  private static final int CORE_POOL_SIZE = 1;
 
   @Autowired private RepeatSubmitInterceptor repeatSubmitInterceptor;
 
@@ -29,11 +31,6 @@ public class WebConfiguration implements WebMvcConfigurer {
   public void addInterceptors(InterceptorRegistry registry) {
     registry.addInterceptor(getUserAuthRestInterceptor()).addPathPatterns("/**");
     registry.addInterceptor(repeatSubmitInterceptor).addPathPatterns("/**");
-  }
-
-  @Bean
-  public SSLClient getSSLClient() throws Exception {
-    return new SSLClient();
   }
 
   /**

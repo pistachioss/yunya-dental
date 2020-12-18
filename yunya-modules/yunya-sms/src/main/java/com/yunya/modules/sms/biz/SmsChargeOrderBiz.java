@@ -11,6 +11,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsChargeOrder;
 import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
@@ -75,6 +76,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         Long amount = smsChargeOrder.getPrice().multiply(new BigDecimal(100)).longValue();
         String orderNo = UUID.randomUUID().toString();
         smsChargeOrder.setOrderNo(orderNo);
+        EntityUtils.setCreatAndUpdatInfo(smsChargeOrder);
         int count = mapper.insert(smsChargeOrder);
         if (count != 1) {
             throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);

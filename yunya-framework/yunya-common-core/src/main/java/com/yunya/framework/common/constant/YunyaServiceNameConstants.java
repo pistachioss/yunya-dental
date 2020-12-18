@@ -38,4 +38,6 @@ public interface YunyaServiceNameConstants {
   String YUNYA_MIDDLE_TABLE = "yunya-middle-table";
   /** 报表服务 */
   String YUNYA_RABBIT_MQ = "rabbit-mq";
+  /** 短信服务 */
+  String YUNYA_SMS_SERVICE = "yunya-sms";
 }

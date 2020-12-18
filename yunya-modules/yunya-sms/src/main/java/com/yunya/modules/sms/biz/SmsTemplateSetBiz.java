@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.sms.form.SmsTemplateSetForm;
 import com.yunya.feign.sms.model.SmsTemplateSetModel;
+import com.yunya.feign.sms.query.SmsAutosendEventQueryForm;
 import com.yunya.feign.sms.query.SmsTemplateSetQueryForm;
+import com.yunya.feign.sms.vo.SmsAutosendEventVO;
 import com.yunya.feign.sms.vo.SmsSignatureSetVO;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -14,6 +16,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsTemplateSet;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
+import com.yunya.modules.sms.enums.SmsSenseEnum;
 import com.yunya.modules.sms.enums.SmsTemplateItemEnum;
 import com.yunya.modules.sms.enums.SmsTypeEnum;
 import com.yunya.modules.sms.mapper.SmsTemplateSetMapper;
@@ -23,7 +26,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
@@ -41,6 +48,12 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
 
     @Autowired
     private SmsSignatureSetBiz smsSignatureSetBiz;
+    @Autowired
+    private SmsAutosendEventBiz smsAutosendEventBiz;
+    @Autowired
+    private ScheduledExecutorService scheduledExecutorService;
+    /** 延迟2.5小时 */
+    private final int LATER_TIME = 150;
 
     /**
      * 分页查询短信模板列表
@@ -75,14 +88,12 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
             || !SmsApprovalStatusEnum.APPROVAL_PASS.getCode().equals(smsSignatureSetVO.getSignStatus())) {
             throw new ClientServiceException("短信签名暂不可用！", PARAMETERS_IS_ILLEGAL);
         }
+        checkSense(smsTemplateSetModel.getSense(), smsTemplateSetModel.getTemplateItem());
         String templateName = smsTemplateSetModel.getTemplateName();
         uniqueTemplateName(templateName, null);
         JSONObject template = getTemplate(smsTemplateSetModel.getTemplateContent(),
                 smsTemplateSetModel.getTemplateItem(), smsSignatureSetVO.getSignName());
-        Integer orgId = smsTemplateSetModel.getOrgId();
-        if (orgId == null) {
-            orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        }
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         SmsTemplateSet smsTemplateSet = new SmsTemplateSet();
         BeanUtil.copyProperties(smsTemplateSetModel, smsTemplateSet);
         smsTemplateSet.setTemplateType(SmsTypeEnum.SMS_NOTIFY.getCode());
@@ -99,6 +110,36 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         smsTemplateSet.setTemplateContent(null);
         smsTemplateSet.setTemplateCode(result.getString("TemplateCode"));
         updateSelectiveById(smsTemplateSet);
+        asyncStatus(smsTemplateSet);
+    }
+
+    /**
+     * 两小时后同步一次阿里云短信的模板状态
+     * @param smsTemplateSet
+     */
+    private void asyncStatus(SmsTemplateSet smsTemplateSet) {
+        scheduledExecutorService.schedule(()->{
+            JSONObject query = AliyunSmsUtl.querySmsTemplate(smsTemplateSet.getTemplateCode());
+            String code = query.getString("Code");
+            Byte templateStatus = query.getByte("TemplateStatus");
+            if ("OK".equals(code) && !SmsApprovalStatusEnum.APPROVALING.getCode().equals(templateStatus)) {
+                smsTemplateSet.setTemplateStatus(templateStatus);
+                updateSelectiveById(smsTemplateSet);
+            }
+        }, LATER_TIME, TimeUnit.MINUTES);
+    }
+
+    private void checkSense(Byte sense, String templateItem) {
+        if (StringHelper.isNotEmpty(templateItem)
+                && (SmsSenseEnum.RETRIEVE_PWD_VERIFYCODE.getCode().equals(sense)
+                ||SmsSenseEnum.DEVICE_BINDING_VERIFYCODE.getCode().equals(sense))) {
+            String[] items = templateItem.split(",");
+            for (int i = 0; i < items.length; i++) {
+                if (!items[i].equals(SmsTemplateItemEnum.VERIFY_CODE.getCode()+"")) {
+                    throw new ClientServiceException(SmsSenseEnum.getValue(sense) + "的模板参数只能是验证码！", PARAMETERS_IS_ILLEGAL);
+                }
+            }
+        }
     }
 
     /**
@@ -113,7 +154,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         StringBuilder template = new StringBuilder();
         int length = signName.length() + 2;//【短信签名】
         if (StringHelper.isNotEmpty(templateItem)) {
-            if (templateContent.indexOf("@")==-1) {
+            if (templateContent.indexOf("@") == -1) {
                 throw new ClientServiceException("模板格式不正确！", PARAMETERS_IS_ILLEGAL);
             }
             String[] contents = templateContent.split("@");
@@ -124,15 +165,24 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
             String firstTmp = contents[0];
             template.append(firstTmp);
             length += firstTmp.length();
+            Map<String, Integer> repeat = new HashMap<>(items.length);
             for (int i = 0; i < items.length; i++) {
-                template.append("${code").append(items[i]).append("}");
-                String tmp = contents[i+1];
+                String code = items[i];
+                Integer reNum = repeat.get(code);
+                if (reNum == null) {
+                    reNum = 0;
+                    template.append("${code").append(code).append("}");
+                } else {
+                    template.append("${re").append(reNum).append("code").append(code).append("}");
+                }
+                repeat.put(code, ++reNum);
+                String tmp = contents[i + 1];
                 template.append(tmp);
                 length += tmp.length();
             }
         }
-        result.put("template",template.toString());
-        result.put("length",length);
+        result.put("template", template.toString());
+        result.put("length", length);
         return result;
     }
 
@@ -169,6 +219,13 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      */
     public void update(SmsTemplateSetForm smsTemplateSetForm) {
         Integer id = smsTemplateSetForm.getId();
+        SmsAutosendEventQueryForm queryForm = new SmsAutosendEventQueryForm();
+        queryForm.setWhetherPage(false);
+        queryForm.setTemplateId(id);
+        List<SmsAutosendEventVO> smsAutosendEventVOS = smsAutosendEventBiz.findSmsAutosendEventList(queryForm);
+        if (smsAutosendEventVOS!=null && !smsAutosendEventVOS.isEmpty()) {
+            throw new ClientServiceException("该模板已关联了自动发送事件，请先取消事件", DELETE_NOT_ALLOW);
+        }
         SmsTemplateSetVO smsTemplateSetVO = findSmsTemplateSetById(id);
         if (smsTemplateSetVO == null || StringHelper.isEmpty(smsTemplateSetVO.getTemplateCode())) {
             throw new ClientServiceException("短信签名不存在", DATA_NOT_EXIST);
@@ -176,6 +233,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (SmsApprovalStatusEnum.APPROVALING.getCode().equals(smsTemplateSetVO.getTemplateStatus())) {
             throw new ClientServiceException("短信模板正在审核", OPERATION_NOT_ALLOW);
         }
+        checkSense(smsTemplateSetForm.getSense(), smsTemplateSetForm.getTemplateItem());
         boolean needApproval = needApproval(smsTemplateSetForm, smsTemplateSetVO);
         JSONObject template = getTemplate(smsTemplateSetForm.getTemplateContent(),
                 smsTemplateSetForm.getTemplateItem(), smsTemplateSetVO.getSignName());
@@ -191,6 +249,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (needApproval) {
             smsTemplateSet.setTemplateContent(template.getString("template"));
             AliyunSmsUtl.modifySmsTemplate(smsTemplateSet);
+            asyncStatus(smsTemplateSet);
         }
     }
 
@@ -222,6 +281,13 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      * @param id 主键id
      */
     public void delete(Integer id) {
+        SmsAutosendEventQueryForm queryForm = new SmsAutosendEventQueryForm();
+        queryForm.setWhetherPage(false);
+        queryForm.setTemplateId(id);
+        List<SmsAutosendEventVO> smsAutosendEventVOS = smsAutosendEventBiz.findSmsAutosendEventList(queryForm);
+        if (smsAutosendEventVOS!=null && !smsAutosendEventVOS.isEmpty()) {
+            throw new ClientServiceException("该模板已关联了自动发送事件，请先取消事件", DELETE_NOT_ALLOW);
+        }
         SmsTemplateSetVO smsTemplateSetVO = findSmsTemplateSetById(id);
         if (smsTemplateSetVO == null) {
             throw new ClientServiceException("短信签名不存在", DATA_NOT_EXIST);
@@ -253,11 +319,11 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      */
     public SmsTemplateSetVO findSmsTemplateSetById(Integer id, boolean needPreview) {
         SmsTemplateSetVO smsTemplateSetVO = mapper.findSmsTemplateSetById(id);
-        if (needPreview) {
+        /*if (smsTemplateSetVO!=null && needPreview) {
             String preview = getTemplatePreview(smsTemplateSetVO.getTemplateContent(),
                     smsTemplateSetVO.getTemplateItem(), smsTemplateSetVO.getSignName());
             smsTemplateSetVO.setTemplateContentPreview(preview);
-        }
+        }*/
         return smsTemplateSetVO;
     }
 
@@ -291,5 +357,15 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         smsTemplateSet.setUptTime(now);
         smsTemplateSet.setUptId(-999);
         mapper.updateByPrimaryKeySelective(smsTemplateSet);
+    }
+
+    /**
+     * 根据事件code查询模板信息
+     *
+     * @param eventCode 事件模板
+     * @return
+     */
+    public SmsTemplateSetVO findSmsTemplateByEventCode(String eventCode) {
+        return mapper.findSmsTemplateByEventCode(eventCode);
     }
 }
