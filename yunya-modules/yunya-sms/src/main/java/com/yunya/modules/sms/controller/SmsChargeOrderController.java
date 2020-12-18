@@ -13,7 +13,6 @@ import com.yunya.modules.sms.biz.SmsChargeOrderBiz;
 import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -101,10 +100,5 @@ public class SmsChargeOrderController {
         } catch (IOException e) {
             throw new ClientServiceException("notify response io error", DATA_ERROR);
         }
-    }
-
-    @GetMapping("redirectUrl")
-    public ResponseResult<T> redirectUrl() {
-        return ResponseUtil.success(null);
     }
 }

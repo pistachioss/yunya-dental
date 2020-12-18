@@ -50,10 +50,10 @@ public class SmsChargeOrderModel implements Serializable {
     private String cbOrderNo;
 
     /**
-     * 采商支付结果
+     * 消费者id
      */
-    @ApiModelProperty("采商支付结果")
-    private String outResult;
+    @ApiModelProperty("消费者id")
+    private String buyerId;
 
     /**
      * 付款方式：ALIPAY-支付宝；WECHAT-微信

@@ -177,9 +177,11 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
                     template.append("${re").append(reNum).append("code").append(code).append("}");
                 }
                 repeat.put(code, ++reNum);
-                String tmp = contents[i + 1];
-                template.append(tmp);
-                length += tmp.length();
+                if (i+1 < contents.length) {
+                    String tmp = contents[i + 1];
+                    template.append(tmp);
+                    length += tmp.length();
+                }
             }
         } else {
             if (size>0 && StringHelper.isEmpty(templateItem)) {

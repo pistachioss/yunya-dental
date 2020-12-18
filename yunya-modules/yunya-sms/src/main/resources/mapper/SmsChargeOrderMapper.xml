@@ -12,7 +12,7 @@
     <result column="order_no" property="orderNo" jdbcType="VARCHAR" />
     <result column="out_order_no" property="outOrderNo" jdbcType="VARCHAR" />
     <result column="cb_order_no" property="cbOrderNo" jdbcType="VARCHAR" />
-    <result column="out_result" property="outResult" jdbcType="VARCHAR" />
+    <result column="buyer_id" property="buyerId" jdbcType="VARCHAR" />
     <result column="payment_channel" property="paymentChannel" jdbcType="VARCHAR" />
     <result column="sms_goods" property="smsGoods" jdbcType="VARCHAR" />
     <result column="order_status" property="orderStatus" jdbcType="TINYINT" />
@@ -27,9 +27,9 @@
     <!-- 插入数据:返回记录主键id值 -->
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
     insert into sms_charge_order
-        (id,order_no,org_id,sms_num,price,cb_order_no,out_result,payment_channel,sms_goods,order_status,crt_id,crt_user,crt_time,upt_id,upt_time)
+        (id,order_no,org_id,sms_num,price,cb_order_no,buyer_id,payment_channel,sms_goods,order_status,crt_id,crt_user,crt_time,upt_id,upt_time)
     values
-        (null,#{orderNo},#{orgId},#{smsNum},#{price},#{cbOrderNo},#{outResult},#{paymentChannel},#{smsGoods},#{orderStatus},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
+        (null,#{orderNo},#{orgId},#{smsNum},#{price},#{cbOrderNo},#{buyerId},#{paymentChannel},#{smsGoods},#{orderStatus},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
   </insert>
 
   <select id="findSmsChargeOrderList" resultType="com.yunya.feign.sms.vo.SmsChargeOrderVO">
@@ -41,7 +41,7 @@
         t.order_no as orderNo,
         t.cb_order_no as cbOrderNo,
         t.out_order_no as outOrderNo,
-        t.out_result as outResult,
+        t.buyer_id as buyerId,
         t.payment_channel as paymentChannel,
         t.sms_goods as smsGoods,
         t.order_status as orderStatus,
@@ -75,7 +75,7 @@
         t.price,
         t.cb_order_no as cbOrderNo,
         t.out_order_no as outOrderNo,
-        t.out_result as outResult,
+        t.buyer_id as buyerId,
         t.payment_channel as paymentChannel,
         t.sms_goods as smsGoods,
         t.order_status as orderStatus,
