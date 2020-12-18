@@ -42,10 +42,13 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
     public PageInfo<ApprovalPeopleVO> findlist(ApprovalPeopleQuery approvalPeopleQuery) {
+        ApprovalPeople approvalPeople = new ApprovalPeople();
+        BeanUtils.copyProperties(approvalPeopleQuery, approvalPeople);
+        int total = mapper.selectCount(approvalPeople);
         if (approvalPeopleQuery.getWhetherPage()) {
             PageHelper.startPage(approvalPeopleQuery.getPage(), approvalPeopleQuery.getSize());
         }
-        ApprovalPeople approvalPeople = new ApprovalPeople();
+         approvalPeople = new ApprovalPeople();
         BeanUtils.copyProperties(approvalPeopleQuery, approvalPeople);
         List<ApprovalPeople> reList = mapper.select(approvalPeople);
         //获取员工信息
@@ -68,7 +71,9 @@ public class ApprovalPeopleBiz extends BaseBiz<ApprovalPeopleMapper, ApprovalPeo
             approvalPeopleVO.setPosts(employeeMap.get(ap.getUserId().toString()).getPosts());
             list.add(approvalPeopleVO);
         }
-        return new PageInfo<>(list);
+        PageInfo pageInfo =  new PageInfo<>(list);
+        pageInfo.setTotal(total);
+        return pageInfo;
     }
 
     public int create(ApprovalPeopleForm approvalPeopleForm) {
