@@ -384,6 +384,9 @@ public class AliyunSmsUtl {
             log.error("AliyunSmsUtl sendSms error", e);
             throw new ClientServiceException("AliyunSmsUtl sendSms error", OPERATION_FAIL);
         }
+        if (result==null || !"OK".equals(result.getString("Code"))) {
+            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+        }
         return result;
     }
 
@@ -413,6 +416,9 @@ public class AliyunSmsUtl {
         } catch (Exception e) {
             log.error("AliyunSmsUtl SendBatchSms error", e);
             throw new ClientServiceException("AliyunSmsUtl SendBatchSms error", OPERATION_FAIL);
+        }
+        if (result==null || !"OK".equals(result.getString("Code"))) {
+            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
         }
         return result;
     }

@@ -94,4 +94,22 @@
       </if>
     </where>
   </select>
+
+  <select id="findSmsTemplateByEventCode" resultType="com.yunya.feign.sms.vo.SmsTemplateSetVO">
+      select
+        t.id,
+        t.org_id as orgId,
+        t.signature_id as signatureId,
+        ss.sign_name as signName,
+        t.template_name as templateName,
+        t.template_content as templateContent,
+        t.template_item as templateItem,
+        t.template_code as templateCode,
+        t.template_status as templateStatus,
+        t.remark,
+        t.sense,
+        t.crt_user as crtUser
+      from sms_template_set t left join sms_autosend_event sa on t.id=sa.templateId
+      where sa.enable=1 and sa.event_code = #{eventCode}
+  </select>
 </mapper>

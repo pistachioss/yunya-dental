@@ -55,17 +55,18 @@ hystrix:
 
 aliyun:
   sms:
-#    accessKeyId: LTAI4G4rXydQDeSBZVx1kKgu
-#    accessSecret: 3tTNUGxktkRnCXzw7N0WGLf0XDRYbM
+    accessKeyId: LTAI4G4rXydQDeSBZVx1kKgu
+    accessSecret: 3tTNUGxktkRnCXzw7N0WGLf0XDRYbM
     aliyunDomain: dysmsapi.aliyuncs.com
     aliyunVersion: 2017-05-25
-    accessKeyId: LTAI4G5V7ezDNNSSwyRTZJGm
-    accessSecret: WPpocSKOVgAFSXj3J8jMPQ5w3vH3qD
+#    accessKeyId: LTAI4G5V7ezDNNSSwyRTZJGm
+#    accessSecret: WPpocSKOVgAFSXj3J8jMPQ5w3vH3qD
 
 wiki:
-    app: A00305710000067
-    operatorId: ccaaad2ba1f2a6baccb986d0a748dbb9
-    key: 111
+    app: A55905710000004
+#    operatorId: ccaaad2ba1f2a6baccb986d0a748dbb9
+    operatorId: dc38b14f74888b3a88b51ace677cc3b8
+    key: dc38b14f74888b3a88b51ace677cc3b8
     notifyUrl: http://yunya.test.utools.club/smsChargeOrder/notifyUrl
     redirectUrl: http://yunya.test.utools.club/smsChargeOrder/redirectUrl
 

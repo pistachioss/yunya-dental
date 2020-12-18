@@ -11,6 +11,7 @@ import java.util.*;
  * @since: 1.0.0
  */
 public enum SmsTemplateItemEnum {
+    VERIFY_CODE(0, "验证码", ""),
     PATIENT_NAME(1, "患者姓名", ""),
     CLINIC_NAME(2, "诊所名称", ""),
     CLINIC_PHONE(3, "诊所电话", ""),

@@ -64,12 +64,9 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
      */
     public void add(List<MultipartFile> files, SmsSignatureSetModel smsSignatureSetModel) {
         uniqueSignName(smsSignatureSetModel.getSignName(), null);
-        Integer orgId = smsSignatureSetModel.getOrgId();
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         String user = BaseContextHandler.getName();
-        if (orgId == null) {
-            orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        }
         Date now = new Date(System.currentTimeMillis());
         SmsSignatureSet smsSignatureSet = new SmsSignatureSet();
         BeanUtil.copyProperties(smsSignatureSetModel, smsSignatureSet);
