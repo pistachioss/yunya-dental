@@ -72,6 +72,18 @@ public class SmsChargeOrderController {
     }
 
     /**
+     * 根据id查询短信充值订单。
+     *
+     * @param id 主键
+     */
+    @ApiOperation("根据id查询短信充值订单")
+    @GetMapping("/info/{id}")
+    public ResponseResult<SmsChargeOrderVO> findSmsChargeOrderById(@PathVariable(value = "id") @NotNull Integer id) {
+        SmsChargeOrderVO SmsChargeOrderVO = smsChargeOrderBiz.findSmsChargeOrderById(id);
+        return ResponseUtil.success(SmsChargeOrderVO);
+    }
+
+    /**
      * 刷新充值二维码
      *
      * @param id 主键id

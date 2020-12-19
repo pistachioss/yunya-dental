@@ -52,6 +52,7 @@ public class AliyunSmsQueryScheduledAsync {
      * 定时任务每天的6点、22点都执行一次：0 0 6,22 * * ?
      */
     @Async("customizeExecutor")
+//    @Scheduled(cron = "0 */1 * * * ?")
     @Scheduled(cron = "0 0 6,22 * * ?")
     @Transactional
     public void smsQueryAsync(){
@@ -68,7 +69,7 @@ public class AliyunSmsQueryScheduledAsync {
                     Byte signStatus = result.getByte("SignStatus");
                     if ("OK".equals(code) && !SmsApprovalStatusEnum.APPROVALING.getCode().equals(signStatus)) {
                         smsSignatureSetVO.setSignStatus(signStatus);
-                        smsSignatureSetBiz.updateSelectiveById(smsSignatureSetVO);
+                        smsSignatureSetBiz.uptSelectiveById(smsSignatureSetVO);
                     }
                 } catch (Exception e) {
 
@@ -89,7 +90,7 @@ public class AliyunSmsQueryScheduledAsync {
                     Byte templateStatus = result.getByte("TemplateStatus");
                     if ("OK".equals(code) && !SmsApprovalStatusEnum.APPROVALING.getCode().equals(templateStatus)) {
                         smsTemplateSetVO.setTemplateStatus(templateStatus);
-                        smsTemplateSetBiz.updateSelectiveById(smsTemplateSetVO);
+                        smsTemplateSetBiz.uptSelectiveById(smsTemplateSetVO);
                     }
                 } catch (Exception e) {
 
@@ -123,7 +124,7 @@ public class AliyunSmsQueryScheduledAsync {
                 smsChargeOrder.setOutOrderNo(data.getString("out_order_no"));
                 smsChargeOrder.setOrderStatus(status);
                 smsChargeOrder.setPaymentChannel(data.getString("payment_channel"));
-                smsChargeOrder.setUptTime(new Date(System.currentTimeMillis()));
+                smsChargeOrderBiz.uptSelectiveById(smsChargeOrder);
             });
         }
     }

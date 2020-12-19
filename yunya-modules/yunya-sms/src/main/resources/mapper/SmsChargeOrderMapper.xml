@@ -54,13 +54,16 @@
       <if test="queryForm.orgId != null">
         and t.org_id = #{queryForm.orgId}
       </if>
+      <if test="queryForm.orderNo!=null and queryForm.orderNo!=''">
+        and t.order_no = #{queryForm.orderNo}
+      </if>
       <if test="queryForm.cbOrderNo!=null and queryForm.cbOrderNo!=''">
         and t.cb_order_no = #{queryForm.cbOrderNo}
       </if>
       <if test="queryForm.id != null">
         and t.id = #{queryForm.id}
       </if>
-      <if test="queryForm.orderStatus">
+      <if test="queryForm.orderStatus != null">
         and t.order_status = #{queryForm.orderStatus}
       </if>
     </where>

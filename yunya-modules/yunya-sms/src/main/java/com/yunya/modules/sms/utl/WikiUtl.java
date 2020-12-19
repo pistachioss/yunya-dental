@@ -71,23 +71,22 @@ public class WikiUtl {
         params.put("sign_type", "MD5");
         params.put("request_id", UUID.randomUUID().toString());
         params.put("request_time", new DateTime().toString("yyyyMMddHHmmss"));
-        params.put("cb_order_no", cbOrderNo);
-        params.put("local_order_no", orderNo);
-        JSONObject result = null;
+        if (StringHelper.isNotEmpty(cbOrderNo)) {
+            params.put("cb_order_no", cbOrderNo);
+        }
+        if (StringHelper.isNotEmpty(orderNo)) {
+            params.put("local_order_no", orderNo);
+        }
         try {
             params.put("sign", EncryptionUtil.getSign(params, KEY));
             logger.info("queryOrder param: {}", JSONObject.toJSON(params).toString());
             String responseResult = SSLClient.formHttp(WIKI_URL, params);
             logger.info("queryOrder result: {}", responseResult);
             JSONObject object = JSONObject.parseObject(responseResult);
-            result = object.getJSONObject("result");
             data = object.getJSONObject("data");
         } catch (Exception e) {
             logger.error("queryOrder order error", e);
             throw new ClientServiceException("查询充值订单失败！", OPERATION_FAIL);
-        }
-        if (!result.getBoolean("success")) {
-            throw new ClientServiceException(result.getString("error_msg"), OPERATION_FAIL);
         }
         return data;
     }

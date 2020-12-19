@@ -221,7 +221,7 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         AliyunSmsUtl.deleteSmsSign(smsSignatureSetVO.getSignName());
     }
 
-    public void updateSelectiveById(SmsSignatureSetVO smsSignatureSetVO) {
+    public void uptSelectiveById(SmsSignatureSetVO smsSignatureSetVO) {
         Date now = new Date(System.currentTimeMillis());
         SmsSignatureSet smsSignatureSet = new SmsSignatureSet();
         BeanUtil.copyProperties(smsSignatureSetVO, smsSignatureSet);

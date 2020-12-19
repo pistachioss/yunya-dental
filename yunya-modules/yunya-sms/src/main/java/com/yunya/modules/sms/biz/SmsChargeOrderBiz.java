@@ -218,4 +218,25 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         log.info("sms charge order notifyUrl request params: {}", JSONObject.toJSONString(params));
         return params;
     }
+
+    public void uptSelectiveById(SmsChargeOrder smsChargeOrder) {
+        smsChargeOrder.setUptId(-999);
+        smsChargeOrder.setUptTime(new Date(System.currentTimeMillis()));
+        mapper.updateByPrimaryKeySelective(smsChargeOrder);
+    }
+
+    /**
+     * 根据id查询短信充值订单。
+     *
+     * @param id 主键
+     */
+    public SmsChargeOrderVO findSmsChargeOrderById(Integer id) {
+        SmsChargeOrder smsChargeOrder = selectById(id);
+        if (smsChargeOrder == null) {
+            throw new ClientServiceException("充值订单不存在", DATA_NOT_EXIST);
+        }
+        SmsChargeOrderVO smsChargeOrderVO = new SmsChargeOrderVO();
+        BeanUtil.copyProperties(smsChargeOrder,smsChargeOrderVO);
+        return smsChargeOrderVO;
+    }
 }

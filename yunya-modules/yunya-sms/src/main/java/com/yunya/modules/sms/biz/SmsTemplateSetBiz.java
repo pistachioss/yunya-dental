@@ -129,6 +129,12 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         }, LATER_TIME, TimeUnit.MINUTES);
     }
 
+    /**
+     * 检查场景
+     *
+     * @param sense
+     * @param templateItem
+     */
     private void checkSense(Byte sense, String templateItem) {
         if (StringHelper.isNotEmpty(templateItem)
                 && (SmsSenseEnum.RETRIEVE_PWD_VERIFYCODE.getCode().equals(sense)
@@ -152,7 +158,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
     private JSONObject getTemplate(String templateContent, String templateItem, String signName) {
         JSONObject result = new JSONObject();
         StringBuilder template = new StringBuilder();
-        int size = searchCount("@",templateContent);
+        int size = StringHelper.countChild("@",templateContent);
         int length = signName.length() + 2;//【短信签名】
         if (size>0 && StringHelper.isNotEmpty(templateItem)) {
             if (templateContent.indexOf("@") == -1) {
@@ -194,23 +200,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         result.put("template", template.toString());
         result.put("length", length);
         return result;
-    }
-
-    // 定义searchCount方法，来返回字符串出现的个数
-    public int searchCount(String shortStr, String longStr) {
-        // 定义一个count来存放字符串出现的次数
-        int count = 0;
-        // 调用String类的indexOf(String str)方法，返回第一个相同字符串出现的下标
-        while (longStr.indexOf(shortStr) != -1) {
-            // 如果存在相同字符串则次数加1
-            count++;
-            // 调用String类的substring(int beginIndex)方法，获得第一个相同字符出现后的字符串
-            longStr = longStr.substring(longStr.indexOf(shortStr)
-                    + shortStr.length());
-
-        }
-        // 返回次数
-        return count;
     }
 
     /**
@@ -377,7 +366,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         return preview.toString();
     }
 
-    public void updateSelectiveById(SmsTemplateSetVO smsTemplateSetVO) {
+    public void uptSelectiveById(SmsTemplateSetVO smsTemplateSetVO) {
         Date now = new Date(System.currentTimeMillis());
         SmsTemplateSet smsTemplateSet = new SmsTemplateSet();
         BeanUtil.copyProperties(smsTemplateSetVO, smsTemplateSet);
