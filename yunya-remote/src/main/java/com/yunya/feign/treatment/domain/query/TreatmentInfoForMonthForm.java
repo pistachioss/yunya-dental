@@ -28,4 +28,6 @@ public class TreatmentInfoForMonthForm implements Serializable {
     @ApiModelProperty(value = "结束日期")
     @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
     private Date endDate;
+    @ApiModelProperty("组织ID")
+    private Integer orgId;
 }

@@ -7,6 +7,7 @@ import com.yunya.feign.treatment.domain.query.TreatmentInfoForMonthForm;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentInfo4ListVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfo4AppVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.treatment.biz.TreatmentProcess4AppBiz;
@@ -50,6 +51,7 @@ public class PatientTreatController {
 
   @ApiOperation("查询指定时间段内每个医生每天患者就诊人数")
   @PostMapping(value = "/everyday/count")
+  @CurrentUser
   public ResponseResult<List<TreatmentInfoForMonthVO>> treatInfoForMonth(@RequestBody @Validated TreatmentInfoForMonthForm form) {
     List<TreatmentInfoForMonthVO> treatmentInfoForMonthVOS = treatmentRecordBiz.treatInfoForMonth(form);
     return ResponseUtil.success(treatmentInfoForMonthVOS);

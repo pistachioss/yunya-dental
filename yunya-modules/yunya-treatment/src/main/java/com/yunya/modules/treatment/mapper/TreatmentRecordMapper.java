@@ -73,7 +73,8 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
   List<TreatmentInfoForMonthVO> treatInfoForMonth(
           @Param("dentistId") Integer dentistId,
           @Param("startDate") Date startDate,
-          @Param("endDate") Date endDate);
+          @Param("endDate") Date endDate,
+          @Param("orgId") Integer orgId);
 
   /**
    * PC照片影像小程序就诊中

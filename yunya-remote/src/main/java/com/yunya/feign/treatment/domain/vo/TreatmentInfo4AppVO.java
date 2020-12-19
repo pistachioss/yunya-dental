@@ -18,6 +18,18 @@ import java.util.List;
 @ApiModel(value = "TreatmentInfo4App", description = "App端个人就诊详细信息视图模型")
 public class TreatmentInfo4AppVO implements Serializable {
 
+    /** 患者ID */
+    @ApiModelProperty("患者ID")
+    private Integer patientId;
+    /** 患者名字 */
+    @ApiModelProperty("患者名字")
+    private String patientName;
+    /** 年龄 */
+    @ApiModelProperty("年龄")
+    private Integer age;
+    /** 性别 0-男；1-女；2-未知 */
+    @ApiModelProperty("性别 0-男；1-女；2-未知")
+    private Byte gender;
     /** 预约信息 */
     @ApiModelProperty("预约信息")
     private TreatmentAppointInfo4AppVO appintInfo;

@@ -138,6 +138,7 @@ public class VisitingRecordController {
      */
     @ApiOperation(value = "查询指定时间段内指定医生的每一天的随访数(app用)")
     @PostMapping("/visit/range")
+    @CurrentUser
     public ResponseResult<List<VisitingForMonthVo>> findVisitingForMonth(@RequestBody @Validated VisitingForMonthInfo forMonthInfo) {
         List<VisitingForMonthVo> visitingForMonth = visitingRecordBiz.findVisitingForMonth(forMonthInfo);
         return ResponseUtil.success(visitingForMonth);
