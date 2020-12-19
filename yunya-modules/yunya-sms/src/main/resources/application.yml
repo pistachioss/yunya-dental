@@ -59,6 +59,8 @@ aliyun:
     accessSecret: 3tTNUGxktkRnCXzw7N0WGLf0XDRYbM
     aliyunDomain: dysmsapi.aliyuncs.com
     aliyunVersion: 2017-05-25
+
+#    测试账号
 #    accessKeyId: LTAI4G5V7ezDNNSSwyRTZJGm
 #    accessSecret: WPpocSKOVgAFSXj3J8jMPQ5w3vH3qD
 

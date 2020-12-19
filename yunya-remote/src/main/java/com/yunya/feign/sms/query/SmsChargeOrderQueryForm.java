@@ -51,6 +51,12 @@ public class SmsChargeOrderQueryForm implements Serializable {
     private String cbOrderNo;
 
     /**
+     * 订单编号
+     */
+    @ApiModelProperty("订单编号")
+    private String orderNo;
+
+    /**
      * 订单状态：0-等待付款，1-付款成功，2-付款失败，3-已关闭
      */
     @ApiModelProperty("订单状态：0-等待付款，1-付款成功，2-付款失败，3-已关闭")

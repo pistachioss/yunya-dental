@@ -40,6 +40,10 @@ public class WikiUtl {
     private String notifyUrl;
     @Value("${wiki.redirectUrl}")
     private String redirectUrl;
+    /**
+     * 订单支付有效时长
+     */
+    private static final String EXPIRE_IN = "3600";
 
     /** 回调通知地址 */
     private static String NOTIFY_URL;
@@ -51,6 +55,41 @@ public class WikiUtl {
 
     @Autowired
     private static SSLClient sslClient;
+
+    /**
+     * 根据订单号查询订单信息
+     * @param orderNo
+     * @return
+     */
+    public static JSONObject queryOrder(String orderNo, String cbOrderNo) {
+        JSONObject data = null;
+        Map<String, String> params = new HashMap<>();
+        params.put("command", "open.api.query");
+        params.put("app", APP);
+        params.put("operator_id", OPERATOR_ID);
+        params.put("version", "2.0");
+        params.put("sign_type", "MD5");
+        params.put("request_id", UUID.randomUUID().toString());
+        params.put("request_time", new DateTime().toString("yyyyMMddHHmmss"));
+        if (StringHelper.isNotEmpty(cbOrderNo)) {
+            params.put("cb_order_no", cbOrderNo);
+        }
+        if (StringHelper.isNotEmpty(orderNo)) {
+            params.put("local_order_no", orderNo);
+        }
+        try {
+            params.put("sign", EncryptionUtil.getSign(params, KEY));
+            logger.info("queryOrder param: {}", JSONObject.toJSON(params).toString());
+            String responseResult = SSLClient.formHttp(WIKI_URL, params);
+            logger.info("queryOrder result: {}", responseResult);
+            JSONObject object = JSONObject.parseObject(responseResult);
+            data = object.getJSONObject("data");
+        } catch (Exception e) {
+            logger.error("queryOrder order error", e);
+            throw new ClientServiceException("查询充值订单失败！", OPERATION_FAIL);
+        }
+        return data;
+    }
 
     @PostConstruct
     public void init() {
@@ -66,17 +105,20 @@ public class WikiUtl {
      *
      * @param orderNo 订单号
      * @param amount 订单总金额
-     * @param goodList 商品列表
+     * @param goods 商品
      * @return
      */
-    public static String createOrder(String orderNo, Long amount, JSONArray goodList) {
-        String qrcodeUrl = null;
+    public static String createOrder(String orderNo, Long amount, JSONObject goods) {
+        JSONArray goodList = new JSONArray();
+        goodList.add(goods);
         Map<String, String> params = new HashMap<>();
         params.put("command", "open.api.h5");
         params.put("app", APP);
         params.put("operator_id", OPERATOR_ID);
         params.put("version", "2.0");
         params.put("sign_type", "MD5");
+        params.put("expire_in", EXPIRE_IN);
+        params.put("subject", goods.getString("goods_name"));
         params.put("request_id", UUID.randomUUID().toString());
         params.put("request_time", new DateTime().toString("yyyyMMddHHmmss"));
         params.put("local_order_no", orderNo);
@@ -85,14 +127,15 @@ public class WikiUtl {
         params.put("notify_url", NOTIFY_URL);
         params.put("redirect_url", REDIRECT_URL);
         JSONObject result = null;
+        JSONObject data = null;
         try {
             params.put("sign", EncryptionUtil.getSign(params, KEY));
-//            params.put("sign", Md5SignUtl.md5(params, KEY, "UTF-8"));
             logger.info("createOrder param: {}", JSONObject.toJSON(params).toString());
             String responseResult = SSLClient.formHttp(WIKI_URL, params);
             logger.info("createOrder result: {}", responseResult);
             JSONObject object = JSONObject.parseObject(responseResult);
             result = object.getJSONObject("result");
+            data = object.getJSONObject("data");
         } catch (Exception e) {
             logger.error("create qrcode order error", e);
             throw new ClientServiceException("创建充值订单失败！", OPERATION_FAIL);
@@ -100,22 +143,7 @@ public class WikiUtl {
         if (!result.getBoolean("success")) {
             throw new ClientServiceException(result.getString("error_msg"), OPERATION_FAIL);
         }
-        return qrcodeUrl;
-    }
-
-
-
-    public static void main(String[] args) {
-        JSONObject good = new JSONObject();
-        good.put("goods_name", "500条/￥0.01（￥0.1/条）");
-        good.put("sell_amount", "1");
-        good.put("goods_price", "0.01");
-        good.put("goods_id","");
-        good.put("goods_num","");
-        good.put("goods_sku_id","");
-        JSONArray arr = new JSONArray();
-        arr.add(good);
-        createOrder("122aq232qc312", 1L, arr);
+        return data.getString("url");
     }
 
     /**
