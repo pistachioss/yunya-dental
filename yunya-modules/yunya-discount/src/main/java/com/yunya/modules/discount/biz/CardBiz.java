@@ -30,14 +30,7 @@ import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
 import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
-import com.yunya.feign.discount.domain.query.CardActiveQuery;
-import com.yunya.feign.discount.domain.query.CardSaleQuery;
-import com.yunya.feign.discount.domain.query.CouponAllocateQuery;
-import com.yunya.feign.discount.domain.query.CouponSaleQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateCardQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateDetailQuery;
-import com.yunya.feign.discount.domain.query.PatientBenefitQuery;
-import com.yunya.feign.discount.domain.query.PatientCardQuery;
+import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
 import com.yunya.feign.discount.domain.vo.CardQrCodeVo;
 import com.yunya.feign.discount.domain.vo.CardSalePageVo;
@@ -2981,5 +2974,15 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			v.add(benefitBo.getMixable());
 			return v;
 		});
+	}
+
+	/**
+	 * 根据条件查询卡券售出现金收款总和
+	 *
+	 * @param query 查询条件
+	 * @return BigDecimal
+	 */
+	public BigDecimal findCardSaleCashReceipt(CardSaleCashReceiptQuery query) {
+		return mapper.selectCardSaleCashReceipt(query);
 	}
 }

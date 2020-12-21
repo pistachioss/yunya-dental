@@ -190,6 +190,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
+  public AccountItem findAccountItem(AccountItem entity) {
+    return null;
+  }
+
+  @Override
   public List<AccountItem> findAccountItemList(AccountItem model) {
     return null;
   }

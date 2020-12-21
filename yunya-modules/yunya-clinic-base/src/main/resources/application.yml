@@ -7,6 +7,7 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
+    default-property-inclusion: always
   datasource:
     host: 192.168.31.90
     port: 3306
@@ -28,7 +29,7 @@ spring:
 
 mybatis:
   mapperLocations: classpath:mapper/*Mapper.xml
-  type-aliases-package: com.yunya.models.system
+  type-aliases-package: com.yunya.models.clinic_base
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 开启驼峰命名
@@ -36,10 +37,10 @@ mybatis:
 # 配置swagger
 swagger:
   enabled: true
-  base-package: com.yunya.modules.clinic.base
+  base-package: com.yunya.modules.clinic_base
   title: yunya-clinic-base
   version: 1.0.0.SNAPSHOT
-  description: 结算统计 (网关地址：/api/clinic/base/**)
+  description: 诊所相关业务 (网关地址：/api/clinic/base/**)
   contact:
     name: yunya-clinic-base
 

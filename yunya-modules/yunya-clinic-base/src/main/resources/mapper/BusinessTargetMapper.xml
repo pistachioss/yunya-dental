@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yunya.modules.clinic.base.mapper.BusinessTargetMapper">
+<mapper namespace="com.yunya.modules.clinic_base.mapper.BusinessTargetMapper">
     <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.BusinessTarget">
         <!--
           WARNING - @mbg.generated
@@ -20,8 +20,8 @@
         <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
     </resultMap>
     <!--查询公司业务目标列表 -->
-    <select id="findBusinessTargetByPage" parameterType="com.yunya.feign.cash_balance.query.BusinessTargetQuery"
-            resultType="com.yunya.feign.cash_balance.vo.BusinessTargetVo">
+    <select id="findBusinessTargetByPage" parameterType="com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.BusinessTargetVo">
         select
         id,
         target_cash,
@@ -43,8 +43,8 @@
         </if>
     </select>
     <!--  查询是否存在 看是增加还是修改  -->
-    <select id="businessAddOrUpd" parameterType="com.yunya.feign.cash_balance.query.BusinessAddOrUpdQuery"
-            resultType="com.yunya.feign.cash_balance.vo.BusinessTargetOrVo">
+    <select id="businessAddOrUpd" parameterType="com.yunya.feign.clinic_base.domain.query.BusinessAddOrUpdQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.BusinessTargetOrVo">
         select
             id
         from
@@ -112,8 +112,8 @@
         id= #{id}
     </update>
     <!-- 多门诊查询列表 -->
-    <select id="findAllData" parameterType="com.yunya.feign.cash_balance.query.BusinessTargetTotalQuery"
-            resultType="com.yunya.feign.cash_balance.vo.BusinessTargetTotalVo">
+    <select id="findAllData" parameterType="com.yunya.feign.clinic_base.domain.query.BusinessTargetTotalQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.BusinessTargetTotalVo">
         select
         sum(target_cash) as targetCash,
         sum(target_num) as targetNum,
@@ -135,8 +135,8 @@
         GROUP BY DATE_FORMAT(date,'%Y-%m')
     </select>
 <!--回显公司信息-->
-    <select id="findDataById" parameterType="com.yunya.feign.cash_balance.query.BusinessTargetByDataQuery"
-            resultType="com.yunya.feign.cash_balance.vo.BusinessTargetByIdVo">
+    <select id="findDataById" parameterType="com.yunya.feign.clinic_base.domain.query.BusinessTargetByDataQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.BusinessTargetByIdVo">
 
         select
             id,
@@ -156,8 +156,8 @@
 
     </select>
 <!--根据条件导出-->
-    <select id="exportListByDate" parameterType="com.yunya.feign.cash_balance.query.BusinessTargetExportQuery"
-            resultType="com.yunya.feign.cash_balance.vo.BusinessTargetExportVo">
+    <select id="exportListByDate" parameterType="com.yunya.feign.clinic_base.domain.query.BusinessTargetExportQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.BusinessTargetExportVo">
         select
         target_cash,
         target_num,

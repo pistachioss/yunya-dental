@@ -487,6 +487,17 @@ public class SystemServiceRest {
   }
 
   /**
+   * 根据实体查询入账方式
+   *
+   * @param entity 入账方式
+   * @return AccountItem
+   */
+  @RequestMapping(value = "/accountItem/one", method = RequestMethod.POST)
+  public AccountItem findAccountType(@RequestBody AccountItem entity) {
+    return accountItemBiz.selectOne(entity);
+  }
+
+  /**
    * 根据条件查询入账方式列表
    *
    * @param model 查询条件

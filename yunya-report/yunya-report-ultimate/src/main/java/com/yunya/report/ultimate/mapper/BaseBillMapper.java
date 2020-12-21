@@ -98,4 +98,13 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    * @return BillArrearsStatisticVO
    */
   BillArrearsStatisticVO selectBillArrearsStatistic();
+
+  /**
+   * 根据条件查询本月对账单账单收支统计信息
+   *
+   * @param query 查询条件
+   * @return StatementBillIncomeStatisticVO
+   */
+  StatementBillIncomeStatisticVO selectStatementStatistic(
+      @Param("query") StatementStatisticQuery query);
 }

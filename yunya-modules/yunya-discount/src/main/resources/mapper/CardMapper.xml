@@ -598,4 +598,9 @@
                 </if>
             </if>
     </select>
+
+    <!-- 根据条件查询卡券售出现金收款总和 -->
+    <select id="selectCardSaleCashReceipt" resultType="java.math.BigDecimal">
+
+    </select>
 </mapper>

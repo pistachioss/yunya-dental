@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yunya.modules.clinic.base.mapper.SpecialistTargetMapper">
+<mapper namespace="com.yunya.modules.clinic_base.mapper.SpecialistTargetMapper">
     <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.SpecialistTarget">
         <!--
           WARNING - @mbg.generated
@@ -20,8 +20,8 @@
 
     <!--查询专科数量目标列表-->
     <select id="findSpecialistTargetByPage"
-            parameterType="com.yunya.feign.cash_balance.query.SpecializedSubjectProjectQuery"
-            resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetVo">
+            parameterType="com.yunya.feign.clinic_base.domain.query.SpecializedSubjectProjectQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.SpecialistTargetVo">
         select
         id,
         ssp_id,
@@ -42,8 +42,8 @@
     </select>
 
     <!--判断添加或者修改-->
-    <select id="specialistAddOrUpd" parameterType="com.yunya.feign.cash_balance.query.SpecialistAddOrUpdQuery"
-            resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetOrVo">
+    <select id="specialistAddOrUpd" parameterType="com.yunya.feign.clinic_base.domain.query.SpecialistAddOrUpdQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.SpecialistTargetOrVo">
         select
             id
         from
@@ -78,8 +78,8 @@
   </update>
 
     <!--多选门诊查询结果-->
-    <select id="findAllData" parameterType="com.yunya.feign.cash_balance.query.SpecialistTargetTotalQuery"
-            resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetTotalVo">
+    <select id="findAllData" parameterType="com.yunya.feign.clinic_base.domain.query.SpecialistTargetTotalQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.SpecialistTargetTotalVo">
         select
         id,
         ssp_id,
@@ -99,8 +99,8 @@
     </select>
 
     <!--回显-->
-    <select id="findDataById" parameterType="com.yunya.feign.cash_balance.query.SpecialistTargetByDataQuery"
-            resultType="com.yunya.feign.cash_balance.vo.SpecialistTargetByIdVo">
+    <select id="findDataById" parameterType="com.yunya.feign.clinic_base.domain.query.SpecialistTargetByDataQuery"
+            resultType="com.yunya.feign.clinic_base.domain.vo.SpecialistTargetByIdVo">
         select
             ssp_id,
             target,
