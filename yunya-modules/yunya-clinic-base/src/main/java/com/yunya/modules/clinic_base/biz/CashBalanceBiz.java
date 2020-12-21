@@ -60,7 +60,7 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
    */
   public BigDecimal findBeginningCash(Integer orgId) {
     CashBalance balance = mapper.selectRecentCashBalance(orgId);
-    return null != balance ? balance.getEndingBalanceCash() : BigDecimal.ZERO;
+    return null != balance ? balance.getEndingBalanceCash() : BigDecimal.valueOf(0);
   }
 
   /**
