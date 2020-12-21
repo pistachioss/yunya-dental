@@ -26,6 +26,10 @@ public class TreatmentAppointInfo4AppVO implements Serializable {
     private Integer dentistId;
     @ApiModelProperty("预约医生名字")
     private String dentistName;
+    @ApiModelProperty("预约助手ID")
+    private Integer assistantId;
+    @ApiModelProperty("预约助手名字")
+    private String assistantName;
     @ApiModelProperty("预约门诊科室ID")
     private Integer deptRoomId;
     @ApiModelProperty("预约门诊科室名称")

@@ -140,6 +140,8 @@ public class TreatmentProcess4AppBiz {
             appointInfo4AppVO.setRemarks(appointmentDetailById.getRemarks());
             appointInfo4AppVO.setDentistId(appointmentDetailById.getDentistId());
             appointInfo4AppVO.setDentistName(appointmentDetailById.getDentistName());
+            appointInfo4AppVO.setAssistantId(appointmentDetailById.getAssistantId());
+            appointInfo4AppVO.setAssistantName(appointmentDetailById.getAssistantName());
             treatmentInfo4AppVO.setPatientId(appointmentDetailById.getPatientId());
             treatmentInfo4AppVO.setPatientName(appointmentDetailById.getPatientName());
             treatmentInfo4AppVO.setAge(patientTotalInfo.getAge());
