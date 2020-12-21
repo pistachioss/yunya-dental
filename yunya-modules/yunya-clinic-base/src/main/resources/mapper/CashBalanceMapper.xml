@@ -31,7 +31,8 @@
             settlement_date,
             beginning_balance_cash,
             period_collection,
-            deposited_cash
+            deposited_cash,
+            ending_balance_cash
         FROM
             cash_balance
         WHERE
