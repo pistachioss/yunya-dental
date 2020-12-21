@@ -112,7 +112,8 @@
         t.start_time as startTime,
         t.end_time as endTime,
         t.approval_people_id as approvalPeopleId,
-        t.approval_status as approvalStatus
+        t.approval_status as approvalStatus,
+        t.crt_time as crtTime
         from field_info t
         <where>
             <if test="queryForm.approvalStatus!=null">

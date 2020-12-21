@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -60,12 +61,27 @@ public class SmsServiceRest {
     /**
      * 发送短信验证码
      *
-     * @param smsSendRecordModel 短信发送添加模型
+     * @param mobile 手机号
+     * @param verifyCode 验证码
+     * @param eventCode 事件编码
      * @return
      */
     @RequestMapping(value = "/sms/sendVerifyCode", method = RequestMethod.POST)
-    public ResponseResult<T> sendVerifyCode(@RequestBody @Validated SmsSendRecordModel smsSendRecordModel) {
-        return smsSendRecordBiz.sendVerifyCode(smsSendRecordModel);
+    public ResponseResult<T> sendVerifyCode(@RequestParam(value = "mobile") @NotBlank String mobile,
+                                            @RequestParam(value = "verifyCode") @NotBlank String verifyCode,
+                                            @RequestParam(value = "eventCode") @NotBlank String eventCode) {
+        return smsSendRecordBiz.sendVerifyCode(mobile, verifyCode, eventCode);
+    }
+
+    /**
+     * 批量发送同内容的短信
+     *
+     * @param smsSendRecordModel 短信发送添加模型
+     * @return
+     */
+    @RequestMapping(value = "/sms/sendRecord", method = RequestMethod.POST)
+    public ResponseResult<T> sendRecord(@RequestBody @Validated SmsSendRecordModel smsSendRecordModel) {
+        return smsSendRecordBiz.sendRecord(smsSendRecordModel);
     }
 
     /**

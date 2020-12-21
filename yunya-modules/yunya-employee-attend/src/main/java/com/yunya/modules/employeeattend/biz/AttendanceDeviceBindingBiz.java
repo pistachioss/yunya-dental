@@ -1,21 +1,16 @@
 package com.yunya.modules.employeeattend.biz;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceDeviceBindingQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceDeviceBindingModel;
 import com.yunya.feign.employee_attend.vo.AttendanceDeviceBindingVO;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
-import com.yunya.feign.sms.model.SmsSendRecordModel;
-import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
-import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -263,41 +258,19 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         }
         String  messageCode = this.messageCodeGenerator();
         // 发送短信验证码
-        ResponseResult responseResult = sendVerifyCode(mobile, messageCode);
+        String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
+        if (redisUtils.hasKey(key)) {
+            return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
+        }
+        redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
+        ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, DEVICE_BINDING_EVENT);
         if (responseResult==null) {
             return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
         }
         if (responseResult.getStatus() != 0) {
             return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
         }
-        return ResponseUtil.success("短信验证码已发送",messageCode);
-    }
-
-    /**
-     * 发送短信验证码
-     *
-     * @param mobile 手机号
-     * @param verifyCode 验证码
-     * @return
-     */
-    private ResponseResult sendVerifyCode(String mobile, String verifyCode) {
-        SmsTemplateSetVO templateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(DEVICE_BINDING_EVENT);
-        if (templateSetVO == null) {
-            throw new ClientServiceException("考勤设备绑定事件未关联模板", DATA_NOT_EXIST);
-        }
-        JSONObject params = new JSONObject();
-        params.put("code" + templateSetVO.getTemplateItem().split(",")[0], verifyCode);
-        SmsSendRecordModel smsSendRecordModel = new SmsSendRecordModel();
-        smsSendRecordModel.setMobiles(mobile);
-        smsSendRecordModel.setTemplateParamJson(params);
-        smsSendRecordModel.setTemplateId(templateSetVO.getId());
-        smsSendRecordModel.setReceiverIds(Arrays.asList(Integer.parseInt(BaseContextHandler.getUserID())));
-        String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
-        if (redisUtils.hasKey(key)) {
-            return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
-        }
-        redisUtils.set(key, verifyCode, DEVICE_BINDING_AUTH_EXPIRE);
-        return remoteSmsServiceFeign.sendVerifyCode(smsSendRecordModel);
+        return ResponseUtil.success("短信验证码已发送");
     }
 
     /**

@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 简介：短信统计业务层
@@ -35,21 +36,8 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
      * @param orgId 门诊id
      * @return
      */
-    public SmsOrgStatisticsVO findSmsOrgStatisticsByOrgId(Integer orgId, boolean cache) {
-        if (cache) {
-            SmsOrgStatisticsVO smsOrgStatisticsVO = redisUtils.get(RedisConstants.SMS_STATISTICS_ORG + orgId, SmsOrgStatisticsVO.class);
-            if (smsOrgStatisticsVO == null) {
-                smsOrgStatisticsVO = mapper.findSmsOrgStatisticsByOrgId(orgId);
-                redisUtils.set(RedisConstants.SMS_STATISTICS_ORG + orgId, smsOrgStatisticsVO);
-            }
-            return smsOrgStatisticsVO;
-        } else {
-            return mapper.findSmsOrgStatisticsByOrgId(orgId);
-        }
-    }
-
     public SmsOrgStatisticsVO findSmsOrgStatisticsByOrgId(Integer orgId) {
-        return findSmsOrgStatisticsByOrgId(orgId, false);
+        return mapper.findSmsOrgStatisticsByOrgId(orgId);
     }
 
     /**
@@ -59,12 +47,18 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
      * @return
      */
     public int findSmsOrgStatisticsSurplusByOrgId(Integer orgId) {
-        int result = 0;
-        SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId,true);
-        if (smsOrgStatisticsVO == null) {
-            return result;
+        String result = "0";
+        if (redisUtils.hasKey(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId)) {
+            result = redisUtils.get(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
+        } else {
+            SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
+            if (smsOrgStatisticsVO != null) {
+                int surplusNum = smsOrgStatisticsVO.getSurplusNum();
+                redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId,surplusNum);
+                return surplusNum;
+            }
         }
-        return smsOrgStatisticsVO.getSurplusNum();
+        return Integer.parseInt(result);
     }
 
     /**
@@ -76,37 +70,44 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
      */
     public void incrByOrgId(Integer smsNum, BigDecimal price, Integer orgId) {
         Date now = new Date(System.currentTimeMillis());
-        SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
-        SmsOrgStatistics smsOrgStatistics = new SmsOrgStatistics();
-        if (smsOrgStatisticsVO != null) {
-            BeanUtil.copyProperties(smsOrgStatisticsVO,smsOrgStatistics);
-            smsOrgStatistics.setCrtId(-999);
-            smsOrgStatistics.setCrtTime(now);
-        }
-        BigDecimal chargeMoney = smsOrgStatistics.getChargeMoney();
-        Integer chargeNum = smsOrgStatistics.getChargeNum();
-        Integer surplusNum = smsOrgStatistics.getSurplusNum();
-        if (chargeMoney == null) {
-            chargeMoney = new BigDecimal(0);
-        }
-        if (chargeNum == null) {
-            chargeNum = 0;
-        }
-        if (surplusNum == null) {
-            surplusNum = 0;
-        }
-        smsOrgStatistics.setOrgId(orgId);
-        smsOrgStatistics.setChargeNum(chargeNum + smsNum);
-        smsOrgStatistics.setSurplusNum(surplusNum + smsNum);
-        smsOrgStatistics.setChargeMoney(chargeMoney.add(price));
-        smsOrgStatistics.setUptId(-999);
-        smsOrgStatistics.setUptTime(now);
-        if (smsOrgStatisticsVO == null) {
-            smsOrgStatistics.setCrtId(-999);
-            smsOrgStatistics.setCrtTime(now);
-            mapper.insertSelective(smsOrgStatistics);
-        } else {
-            mapper.updateByPrimaryKeySelective(smsOrgStatistics);
+        try {
+            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
+                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+            SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
+            SmsOrgStatistics smsOrgStatistics = new SmsOrgStatistics();
+            if (smsOrgStatisticsVO != null) {
+                BeanUtil.copyProperties(smsOrgStatisticsVO, smsOrgStatistics);
+                smsOrgStatistics.setCrtId(-999);
+                smsOrgStatistics.setCrtTime(now);
+            }
+            BigDecimal chargeMoney = smsOrgStatistics.getChargeMoney();
+            Integer chargeNum = smsOrgStatistics.getChargeNum();
+            Integer surplusNum = smsOrgStatistics.getSurplusNum();
+            if (chargeMoney == null) {
+                chargeMoney = new BigDecimal(0);
+            }
+            if (chargeNum == null) {
+                chargeNum = 0;
+            }
+            if (surplusNum == null) {
+                surplusNum = 0;
+            }
+            smsOrgStatistics.setOrgId(orgId);
+            smsOrgStatistics.setChargeNum(chargeNum + smsNum);
+            smsOrgStatistics.setSurplusNum(surplusNum + smsNum);
+            smsOrgStatistics.setChargeMoney(chargeMoney.add(price));
+            smsOrgStatistics.setUptId(-999);
+            smsOrgStatistics.setUptTime(now);
+            if (smsOrgStatisticsVO == null) {
+                smsOrgStatistics.setCrtId(-999);
+                smsOrgStatistics.setCrtTime(now);
+                mapper.insertSelective(smsOrgStatistics);
+            } else {
+                mapper.updateByPrimaryKeySelective(smsOrgStatistics);
+            }
+            redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
+        } finally {
+            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
     }
 }
