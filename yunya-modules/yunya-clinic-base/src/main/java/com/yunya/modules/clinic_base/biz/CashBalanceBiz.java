@@ -16,6 +16,7 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.clinic_base.CashBalance;
 import com.yunya.modules.clinic_base.mapper.CashBalanceMapper;
@@ -119,8 +120,11 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     entity.setEndingBalanceCash(endingBalanceCash);
     entity.setBalanceAdjustment(adjustment);
     entity.setAdjustRemark(model.getAdjustRemark());
-    Joiner joiner = Joiner.on(",");
-    entity.setUri(joiner.join(model.getCertificates()));
+    String[] certificates = model.getCertificates();
+    if (StringHelper.isNotEmpty(certificates)) {
+      Joiner joiner = Joiner.on(",");
+      entity.setUri(joiner.join(model.getCertificates()));
+    }
     Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
     entity.setCrtId(userId);
     String name = BaseContextHandler.getName();
@@ -254,12 +258,15 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
           balance
               .getBeginningBalanceCash()
               .add(periodCollectionCash)
-              .add(depositedCash)
+              .add(balanceAdjustment)
               .subtract(depositedCash);
       balance.setEndingBalanceCash(endingBalanceCash);
       balance.setAdjustRemark(form.getAdjustRemark());
-      Joiner joiner = Joiner.on(",");
-      balance.setUri(joiner.join(form.getCertificates()));
+      String[] certificates = form.getCertificates();
+      if (StringHelper.isNotEmpty(certificates)) {
+        Joiner joiner = Joiner.on(",");
+        balance.setUri(joiner.join(form.getCertificates()));
+      }
       balance.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
       balance.setUpdName(BaseContextHandler.getName());
       mapper.updateByPrimaryKeySelective(balance);
@@ -279,8 +286,11 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     if (null == balance) {
       throw new ClientServiceException("更新失败，请选择正确的结存记录进行更新！", PARAMETERS_IS_ILLEGAL);
     }
-    Joiner joiner = Joiner.on(",");
-    balance.setUri(joiner.join(form.getCertificates()));
+    String[] certificates = form.getCertificates();
+    if (StringHelper.isNotEmpty(certificates)) {
+      Joiner joiner = Joiner.on(",");
+      balance.setUri(joiner.join(certificates));
+    }
     mapper.updateByPrimaryKeySelective(balance);
   }
 
