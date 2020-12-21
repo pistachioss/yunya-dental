@@ -59,7 +59,7 @@ public class PatientTreatController {
 
   @ApiOperation("查询患者就诊信息")
   @PostMapping("/info/detail/all")
-  public ResponseResult treatmentInfoDetail(@RequestBody AppTreatmentQuery query) {
+  public ResponseResult<TreatmentInfo4AppVO> treatmentInfoDetail(@RequestBody AppTreatmentQuery query) {
     TreatmentInfo4AppVO result = this.treatmentBiz4App.treatmentInfoDetail(query);
     return ResponseUtil.success(result);
   }
