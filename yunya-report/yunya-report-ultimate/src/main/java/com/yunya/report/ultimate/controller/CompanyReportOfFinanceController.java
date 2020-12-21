@@ -255,4 +255,18 @@ public class CompanyReportOfFinanceController {
         accountItemBiz.findInboundAndOutboundStatement(query);
     return ResponseUtil.success(resultList);
   }
+
+  /**
+   * 根据条件查询本月对账单账单收支统计信息
+   *
+   * @param query 查询条件
+   * @return StatementBillIncomeStatisticVO
+   */
+  @ApiOperation("公司端报表-财务报表-对账单-本月账单收支统计")
+  @PostMapping(value = "/statement/statistic", name = "公司端报表-财务报表-对账单-月收支统计")
+  public ResponseResult<StatementBillIncomeStatisticVO> statementStatistic(
+      @RequestBody @Validated StatementStatisticQuery query) {
+    StatementBillIncomeStatisticVO resultData = baseBillBiz.findStatementStatistic(query);
+    return ResponseUtil.success(resultData);
+  }
 }

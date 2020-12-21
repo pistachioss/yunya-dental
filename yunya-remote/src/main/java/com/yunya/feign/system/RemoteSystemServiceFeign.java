@@ -318,10 +318,19 @@ public interface RemoteSystemServiceFeign {
   AccountItem findAccountItemById(@PathVariable(value = "id") Integer id);
 
   /**
+   * 根据实体查询入账方式
+   *
+   * @param entity 入账方式
+   * @return AccountItem
+   */
+  @RequestMapping(value = "/api/accountItem/one", method = RequestMethod.POST)
+  AccountItem findAccountItem(@RequestBody AccountItem entity);
+
+  /**
    * 根据条件查询入账方式列表
    *
    * @param model 查询条件
-   * @return
+   * @return List<AccountItem>
    */
   @RequestMapping(value = "/api/accountItem/list", method = RequestMethod.POST)
   List<AccountItem> findAccountItemList(@RequestBody AccountItem model);
@@ -412,4 +421,13 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/userInfo/page", method = RequestMethod.POST)
   PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(@RequestBody SysUserEmployeeModel model);
+
+  /**
+   * 根据组织ID获取医疗机构详细信息
+   *
+   * @param companyId 组织ID
+   * @return MedicalOrganizationInfoVO
+   */
+  @RequestMapping(value = "/api//clinicExtInfo/{companyId}", method = RequestMethod.GET)
+  MedicalOrganizationInfoVO clinicExtInfoByCompanyId(@PathVariable(value = "companyId")  Integer companyId);
 }

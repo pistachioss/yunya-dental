@@ -29,7 +29,7 @@
         <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
     </resultMap>
     <!-- 根据组织ID获取医疗机构详情 -->
-    <select id="selectClinicExtInfoByCompanyId" resultType="com.yunya.modules.system.vo.MedicalOrganizationInfoVO">
+    <select id="selectClinicExtInfoByCompanyId" resultType="com.yunya.feign.system.vo.MedicalOrganizationInfoVO">
       SELECT
         c.id AS companyId,
         c.`name`,

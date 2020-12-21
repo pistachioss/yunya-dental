@@ -397,7 +397,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
      * @param restItemMap
      * @param leaveByDays
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void insertDefaultPunchRecord(Map<Integer, List<EmployeeScheduleVO>> punchItemMap, Map<Integer, List<EmployeeScheduleVO>> restItemMap, Map<Integer, List<Object>> leaveByDays) {
         Date now = new Date(System.currentTimeMillis());
         for (Map.Entry<Integer, List<EmployeeScheduleVO>> entry : punchItemMap.entrySet()) {

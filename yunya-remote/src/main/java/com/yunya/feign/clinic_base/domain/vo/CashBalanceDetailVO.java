@@ -1,0 +1,49 @@
+package com.yunya.feign.clinic_base.domain.vo;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
+import lombok.ToString;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * 简介: 现金结存详情VO
+ *
+ * @author: chow
+ * @date: 2020/12/19 15:57
+ * @description:
+ * @since: 1.0.0
+ */
+@ApiModel("现金结存详情VO")
+@Data
+@ToString
+public class CashBalanceDetailVO implements Serializable {
+  /** 现金结存ID */
+  @ApiModelProperty("现金结存ID")
+  private Integer id;
+  /** 结存日期 */
+  @ApiModelProperty("结存日期")
+  private String settlementDate;
+  /** 期初现金结余 */
+  @ApiModelProperty("期初现金结余")
+  private BigDecimal beginningBalanceCash;
+  /** 期间现金收款 */
+  @ApiModelProperty("期间现金收款")
+  private BigDecimal periodCollectionCash;
+  /** 本日现金存款 */
+  @ApiModelProperty("本日现金存款")
+  private BigDecimal depositedCash;
+  /** 差额调整 */
+  @ApiModelProperty("差额调整")
+  private BigDecimal balanceAdjustmentCash;
+  /** 差额调整备注 */
+  @ApiModelProperty("差额调整备注")
+  private String balanceAdjustmentRemark;
+  /** 期末现金结余 */
+  @ApiModelProperty("期末现金结余")
+  private BigDecimal endingBalanceCash;
+  /** 结存凭证地址列表 */
+  private String[] certificates;
+}

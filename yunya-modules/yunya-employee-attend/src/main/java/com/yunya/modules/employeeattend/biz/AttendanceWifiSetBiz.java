@@ -33,7 +33,7 @@ import java.util.List;
  * @since: 1.0.0
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class AttendanceWifiSetBiz extends BaseBiz<AttendanceWifiSetMapper, AttendanceWifiSet> {
     /** 注入对象 */
     @Autowired

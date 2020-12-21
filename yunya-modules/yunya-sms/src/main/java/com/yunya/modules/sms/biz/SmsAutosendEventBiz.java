@@ -29,7 +29,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
  * @since: 1.0.0
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAutosendEvent> {
 
     @Autowired

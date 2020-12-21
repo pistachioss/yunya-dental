@@ -4,14 +4,13 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.model.PageQueryParams;
 import com.yunya.framework.common.utils.EntityUtils;
+import com.yunya.framework.common.utils.MapUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.common.Mapper;
 import tk.mybatis.mapper.entity.Example;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,49 +28,108 @@ public abstract class BaseBiz<M extends Mapper<T>, T> {
     this.mapper = mapper;
   }
 
+  /**
+   * 根据实体对象查询
+   *
+   * @param entity 实体对象
+   * @return
+   */
   public T selectOne(T entity) {
     return mapper.selectOne(entity);
   }
 
+  /**
+   * 根据实体对象ID查询
+   *
+   * @param id 实体对象ID
+   * @return
+   */
   public T selectById(Object id) {
     return mapper.selectByPrimaryKey(id);
   }
 
+  /**
+   * 根据实体对象查询列表
+   *
+   * @param entity 实体对象
+   * @return
+   */
   public List<T> selectList(T entity) {
     return mapper.select(entity);
   }
 
+  /**
+   * 查询全部实体对象列表
+   *
+   * @return
+   */
   public List<T> selectListAll() {
     return mapper.selectAll();
   }
 
+  /**
+   * 根据实体对象查询数量
+   *
+   * @param entity 实体对象
+   * @return
+   */
   public Long selectCount(T entity) {
     return (long) mapper.selectCount(entity);
   }
 
+  /**
+   * 插入实体对象(全部字段)
+   *
+   * @param entity 实体对象
+   */
   public void insert(T entity) {
     EntityUtils.setCreatAndUpdatInfo(entity);
     mapper.insert(entity);
   }
 
+  /**
+   * 插入实体对象(不为空字段)
+   *
+   * @param entity 实体对象
+   */
   public void insertSelective(T entity) {
     EntityUtils.setCreatAndUpdatInfo(entity);
     mapper.insertSelective(entity);
   }
 
+  /**
+   * 根据实体对象删除
+   *
+   * @param entity 实体对象
+   */
   public void delete(T entity) {
     mapper.delete(entity);
   }
 
+  /**
+   * 根据实体对象ID删除
+   *
+   * @param id 实体对象ID
+   */
   public void deleteById(Object id) {
     mapper.deleteByPrimaryKey(id);
   }
 
+  /**
+   * 根据实体对象ID更新（全部字段）
+   *
+   * @param entity 实体对象
+   */
   public void updateById(T entity) {
     EntityUtils.setUpdatedInfo(entity);
     mapper.updateByPrimaryKey(entity);
   }
 
+  /**
+   * 根据实体对象ID更新（不为空字段）
+   *
+   * @param entity 实体对象
+   */
   public void updateSelectiveById(T entity) {
     EntityUtils.setUpdatedInfo(entity);
     mapper.updateByPrimaryKeySelective(entity);
@@ -139,24 +197,7 @@ public abstract class BaseBiz<M extends Mapper<T>, T> {
    * @return map
    */
   private Map<String, Object> objectToMap(Object obj) {
-    Map<String, Object> map = new HashMap<>(16);
-    Class<?> clazz = obj.getClass();
-    try {
-      for (Field field : clazz.getDeclaredFields()) {
-        // 设置可以访问私有变量
-        field.setAccessible(true);
-        String fieldName = field.getName();
-        Object value = null;
-        if (field.get(obj) != null) {
-          value = field.get(obj);
-        }
-        map.put(fieldName, value);
-      }
-    } catch (Exception e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-    return map;
+    return MapUtil.conversionObjToMap(obj);
   }
 
   /** 模糊查询的字段名 */
@@ -188,5 +229,4 @@ public abstract class BaseBiz<M extends Mapper<T>, T> {
     }
     return example;
   }
-
 }

@@ -5,7 +5,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.system.biz.ClinicExtInfoBiz;
 import com.yunya.modules.system.domain.form.MedicalOrganizationInfoForm;
-import com.yunya.modules.system.vo.MedicalOrganizationInfoVO;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;

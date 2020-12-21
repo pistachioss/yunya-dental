@@ -826,18 +826,26 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         employeeScheduleQueryForm.setUserId(userId);
         // 班次列表
         List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleBiz.findEmployeeScheduleList(employeeScheduleQueryForm);
-        Map<Integer, EmployeeScheduleVO> restMap = new LinkedHashMap<>(employeeScheduleVOS.size());
+        Map<Date, Set<Integer>> restMap = new LinkedHashMap<>(employeeScheduleVOS.size());
         Map<Integer, EmployeeScheduleVO> workMap = new LinkedHashMap<>(employeeScheduleVOS.size());
         List<Integer> orgIds = new ArrayList<>();
+        List<Date> workDates = new ArrayList<>();
         employeeScheduleVOS.forEach(employeeScheduleVO->{
             Integer orgId = employeeScheduleVO.getClinicId();
             if (!orgIds.contains(orgId)) {
                 orgIds.add(orgId);
             }
+            Date workDate = employeeScheduleVO.getWorkDate();
             if (REST.equals(employeeScheduleVO.getType())) {
-                restMap.put(employeeScheduleVO.getId(), employeeScheduleVO);
+                Set<Integer> set = restMap.get(workDate);
+                if (set == null) {
+                    set = new HashSet<>();
+                }
+                set.add(orgId);
+                restMap.put(workDate, set);
             } else {
                 workMap.put(employeeScheduleVO.getId(), employeeScheduleVO);
+                workDates.add(workDate);
             }
         });
         Map<Integer, String> orgMap = new HashMap<>(16);
@@ -1086,14 +1094,22 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             fieldStatisticsList.add(item);
         });
 
+        //休息天数
         List<AttendancePunchRecordVO> restStatisticeList = new ArrayList<>(restMap.size());
-        restMap.forEach((id, employeeScheduleVO) ->{
-            AttendancePunchRecordVO restStatistics = new AttendancePunchRecordVO();
-            Integer orgId = employeeScheduleVO.getClinicId();
-            String orgName = orgMap.get(orgId);
-            restStatistics.setOrgName(orgName);
-            restStatistics.setPunchDate(employeeScheduleVO.getWorkDate());
-            restStatisticeList.add(restStatistics);
+        restMap.forEach((workDate, list) ->{
+            if (!workDates.contains(workDate)) {
+                AttendancePunchRecordVO restStatistics = new AttendancePunchRecordVO();
+                StringBuilder orgName = new StringBuilder();
+                for (Integer orgId : list) {
+                    if (orgName.length() > 0) {
+                        orgName.append("、");
+                    }
+                    orgName.append(orgMap.get(orgId));
+                }
+                restStatistics.setOrgName(orgName.toString());
+                restStatistics.setPunchDate(workDate);
+                restStatisticeList.add(restStatistics);
+            }
         });
         Collections.sort(leaveStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate));
         result.setWorkOvertimeNum(workOvertime.size());

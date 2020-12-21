@@ -190,6 +190,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   }
 
   @Override
+  public AccountItem findAccountItem(AccountItem entity) {
+    return null;
+  }
+
+  @Override
   public List<AccountItem> findAccountItemList(AccountItem model) {
     return null;
   }
@@ -263,6 +268,11 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
 
   @Override
   public PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(SysUserEmployeeModel model) {
+    return null;
+  }
+
+  @Override
+  public MedicalOrganizationInfoVO clinicExtInfoByCompanyId(Integer companyId) {
     return null;
   }
 }

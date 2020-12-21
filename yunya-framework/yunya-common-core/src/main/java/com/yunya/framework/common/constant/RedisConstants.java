@@ -95,6 +95,9 @@ public class RedisConstants implements Serializable {
   /** 考勤设备绑定短信验证码 */
   public static final String ATTENDANCE_DEVICE_BINDING_AUTHORIZATION = "attendance_device_binding_authorization_";
 
+  /** 短信统计 */
+  public static final String SMS_STATISTICS_ORG = "sms:statistics:org:";
+
   /**
    * 设置key中的占位符
    * @param keyPrefix key前缀

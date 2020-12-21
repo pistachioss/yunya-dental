@@ -1,10 +1,12 @@
 package com.yunya.modules.discount.mapper;
 
 import com.yunya.feign.discount.domain.bo.*;
+import com.yunya.feign.discount.domain.query.CardSaleCashReceiptQuery;
 import com.yunya.feign.discount.domain.vo.*;
 import com.yunya.models.discount.*;
 import org.apache.ibatis.annotations.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 
@@ -60,4 +62,12 @@ public interface CardMapper extends tk.mybatis.mapper.common.Mapper<Card> {
      */
     List<CouponItemUseBo> getCouponItemUseInfo(@Param("couponId") Integer couponId, @Param("cardId") Integer cardId,
                                            @Param("type") Integer type, @Param("couponType") Integer couponType);
+
+    /**
+     * 根据条件查询卡券售出现金收款总和
+     *
+     * @param query 查询条件
+     * @return BigDecimal
+     */
+    BigDecimal selectCardSaleCashReceipt(@Param("query") CardSaleCashReceiptQuery query);
 }

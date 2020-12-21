@@ -111,7 +111,8 @@
         t.remark,
         t.sense,
         t.crt_user as crtUser
-      from sms_template_set t left join sms_autosend_event sa on t.id=sa.templateId
-      where sa.enable=1 and sa.event_code = #{eventCode}
+      from sms_template_set t left join sms_autosend_event sa on t.id=sa.template_id
+      left join sms_signature_set ss on t.signature_id=ss.id
+      where sa.status=1 and sa.event_code = #{eventCode}
   </select>
 </mapper>

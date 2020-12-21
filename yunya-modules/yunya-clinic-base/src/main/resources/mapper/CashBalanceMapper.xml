@@ -1,112 +1,73 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.yunya.modules.clinic.base.mapper.CashBalanceMapper">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.clinic_base.mapper.CashBalanceMapper">
     <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.CashBalance">
         <!--
           WARNING - @mbg.generated
         -->
-        <id column="id" jdbcType="INTEGER" property="id"/>
-        <result column="cash_first" jdbcType="INTEGER" property="cashFirst"/>
-        <result column="cash_mid" jdbcType="INTEGER" property="cashMid"/>
-        <result column="cash_end" jdbcType="INTEGER" property="cashEnd"/>
-        <result column="amount_deposited" jdbcType="INTEGER" property="amountDeposited"/>
-        <result column="balance_adjustment" jdbcType="VARCHAR" property="balanceAdjustment"/>
-        <result column="balance_adjustment_remark" jdbcType="VARCHAR" property="balanceAdjustmentRemark"/>
-        <result column="uri" jdbcType="VARCHAR" property="uri"/>
-        <result column="org_id" jdbcType="INTEGER" property="orgId"/>
-        <result column="inservice" jdbcType="INTEGER" property="inservice"/>
-        <result column="crt_id" jdbcType="INTEGER" property="crtId"/>
-        <result column="crt_time" jdbcType="TIMESTAMP" property="crtTime"/>
-        <result column="upd_id" jdbcType="INTEGER" property="updId"/>
-        <result column="upd_time" jdbcType="TIMESTAMP" property="updTime"/>
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="org_id" property="orgId" jdbcType="INTEGER"/>
+        <result column="settlement_date" property="settlementDate" jdbcType="DATE"/>
+        <result column="beginning_balance_cash" property="beginningBalanceCash" jdbcType="DECIMAL"/>
+        <result column="period_collection" property="periodCollection" jdbcType="DECIMAL"/>
+        <result column="deposited_cash" property="depositedCash" jdbcType="DECIMAL"/>
+        <result column="ending_balance_cash" property="endingBalanceCash" jdbcType="DECIMAL"/>
+        <result column="balance_adjustment" property="balanceAdjustment" jdbcType="DECIMAL"/>
+        <result column="adjust_remark" property="adjustRemark" jdbcType="VARCHAR"/>
+        <result column="uri" property="uri" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
     </resultMap>
 
-    <!--  查询现金模块列表模板  -->
-    <select id="findCashListByPage" parameterType="com.yunya.feign.cash_balance.query.CashBalanceQuery"
-            resultType="com.yunya.feign.cash_balance.vo.CashBalanceVo">
-        select
-        id,
-        crt_time,
-        cash_first,
-        cash_end,
-        amount_deposited,
-        balance_adjustment,
-        crt_id
-        from
-        cash_balance
-        where
-        inservice = 0
-        AND
-        org_id = #{orgId}
-        <if test="startTime != null">
-            AND #{startTime} &lt;= crt_time
-        </if>
-        <if test="endTime != null">
-            AND #{endTime} > crt_time
-        </if>
+    <!-- 查询最近的一条现金结存记录 -->
+    <select id="selectRecentCashBalance" resultType="com.yunya.models.clinic_base.CashBalance">
+        SELECT
+            id,
+            settlement_date,
+            beginning_balance_cash,
+            period_collection,
+            deposited_cash
+        FROM
+            cash_balance
+        WHERE
+            inservice = 1
+            AND org_id = #{orgId}
+        ORDER BY
+            id DESC
+            LIMIT 1
     </select>
 
-    <!--    查询上一天期末金额-->
-    <select id="findLastData" parameterType="java.lang.Integer" resultType="java.math.BigDecimal">
-    select
-        cash_end
-    from
-        cash_balance
-    where
-        org_id = #{orgId}
-    and
-        inservice = 0
-    order by id desc
-    limit 1
-  </select>
-
-    <!--  添加现金模块列表模板  -->
-    <insert id="add" parameterType="com.yunya.models.clinic_base.CashBalance">
-        INSERT INTO
-        cash_balance
-        (cash_first,cash_end,amount_deposited,balance_adjustment,balance_adjustment_remark,uri,org_id,crt_id,inservice)
-        VALUES
-        (#{cashFirst},#{cashEnd},#{amountDeposited},#{balanceAdjustment},#{balanceAdjustmentRemark},#{uri},#{orgId},#{crtId},0)
-  </insert>
-
-    <!--  修改现金模块列表模板  -->
-    <update id="upd" parameterType="com.yunya.models.clinic_base.CashBalance">
-    UPDATE
-        cash_balance
-    SET
-        cash_end=#{cashEnd},
-        amount_deposited=#{amountDeposited},
-        balance_adjustment=#{balanceAdjustment},
-        balance_adjustment_remark=#{balanceAdjustmentRemark},
-        uri=#{uri},
-        upd_id=#{crtId}
-    WHERE
-        id=#{id}
-  </update>
-    <!--  逻辑删  -->
-    <update id="del" parameterType="java.lang.Integer">
-    UPDATE
-        cash_balance
-    SET
-      inservice=1
-    WHERE
-        id=#{id}
-  </update>
-    <!--根据id查询详情-->
-    <select id="findDataById" parameterType="java.lang.Integer"
-            resultType="com.yunya.feign.cash_balance.vo.CashBalanceByIdVo">
-
-        select
+    <!-- 根据条件查询现金结存列表 -->
+    <select id="selectCashBalanceList" resultType="com.yunya.feign.clinic_base.domain.vo.CashBalanceVO">
+        SELECT
             id,
-            crt_time,
-            cash_first,
-            cash_end,
-            amount_deposited,
-            balance_adjustment,
-            balance_adjustment_remark
-        from
+            settlement_date AS settlementDate,
+            beginning_balance_cash AS beginningBalanceCash,
+            period_collection AS periodCollectionCash,
+            deposited_cash AS depositedCash,
+            balance_adjustment AS balanceAdjustmentCash,
+            ending_balance_cash AS endingBalanceCash,
+            crt_id AS balancerId,
+            crt_name AS balancerName
+        FROM
             cash_balance
-        where
-            id = #{id}
+        <where>
+            <if test="query.orgId != null">
+                and org_id = #{query.orgId}
+            </if>
+            <if test="query.startDate != null and query.startDate != ''">
+                and settlement_date &gt;= #{query.startDate}
+            </if>
+            <if test="query.endDate != null and query.endDate != ''">
+                and settlement_date &lt;= #{query.endDate}
+            </if>
+        </where>
+        ORDER BY
+            settlement_date DESC
     </select>
 </mapper>

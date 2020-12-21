@@ -6,12 +6,14 @@
         <groupId>com.yunya</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.yunya</groupId>
+
     <artifactId>yunya-clinic-base</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+
     <name>yunya-clinic-base</name>
-    <description>clinic base project for Spring Boot</description>
+
+    <description>门诊业务管理服务</description>
 
     <properties>
         <targetJavaProject>${basedir}/src/main/java</targetJavaProject>
@@ -54,11 +56,11 @@
             <artifactId>spring-cloud-starter-netflix-hystrix</artifactId>
         </dependency>
 
-        <!-- 链路追踪 -->
+        <!-- 链路追踪
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-sleuth-zipkin</artifactId>
-        </dependency>
+        </dependency> -->
 
         <!-- spring-boot-admin-client -->
         <dependency>

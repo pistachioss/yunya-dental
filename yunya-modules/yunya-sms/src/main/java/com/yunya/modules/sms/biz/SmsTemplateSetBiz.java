@@ -17,7 +17,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsTemplateSet;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsSenseEnum;
-import com.yunya.modules.sms.enums.SmsTemplateItemEnum;
+import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.modules.sms.enums.SmsTypeEnum;
 import com.yunya.modules.sms.mapper.SmsTemplateSetMapper;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
@@ -43,7 +43,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
  * @since: 1.0.0
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplateSet> {
 
     @Autowired
@@ -65,6 +65,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
         }
+        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsTemplateSetVO> smsTemplateSetVOS = mapper.findSmsTemplateSetList(queryForm);
         if (queryForm.getNeedPreview()) {
             smsTemplateSetVOS.forEach(templateSetVO -> {
@@ -155,7 +156,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      * @param templateItem
      * @return 其中template-替换占位符@为${code}之后的模板内容；length-模板有效字数（包含头部的签名，不包含模板变量及其占位符）
      */
-    private JSONObject getTemplate(String templateContent, String templateItem, String signName) {
+    private static JSONObject getTemplate(String templateContent, String templateItem, String signName) {
         JSONObject result = new JSONObject();
         StringBuilder template = new StringBuilder();
         int size = StringHelper.countChild("@",templateContent);
@@ -335,11 +336,11 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      */
     public SmsTemplateSetVO findSmsTemplateSetById(Integer id, boolean needPreview) {
         SmsTemplateSetVO smsTemplateSetVO = mapper.findSmsTemplateSetById(id);
-        /*if (smsTemplateSetVO!=null && needPreview) {
+        if (smsTemplateSetVO!=null && needPreview) {
             String preview = getTemplatePreview(smsTemplateSetVO.getTemplateContent(),
                     smsTemplateSetVO.getTemplateItem(), smsTemplateSetVO.getSignName());
             smsTemplateSetVO.setTemplateContentPreview(preview);
-        }*/
+        }
         return smsTemplateSetVO;
     }
 
