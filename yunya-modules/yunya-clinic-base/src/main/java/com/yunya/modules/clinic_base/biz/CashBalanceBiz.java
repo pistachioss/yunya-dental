@@ -217,8 +217,10 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
       resultData.setBalanceAdjustmentRemark(balance.getAdjustRemark());
       resultData.setEndingBalanceCash(balance.getEndingBalanceCash());
       String uri = balance.getUri();
-      String[] certificates = uri.split(",");
-      resultData.setCertificates(certificates);
+      if (StringHelper.isNotBlank(uri)) {
+        String[] certificates = uri.split(",");
+        resultData.setCertificates(certificates);
+      }
     }
     return resultData;
   }
