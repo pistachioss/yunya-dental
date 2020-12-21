@@ -74,7 +74,11 @@
         </where>
         order by fi.crt_time desc
     </select>
-
+    <select id="findcountByday" resultType="Integer">
+        select count(*) from field_info
+        where user_id = #{userId}
+        and DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d' )
+    </select>
     <select id="findFieldInfosByUserIdAndDate" resultType="com.yunya.feign.employee_attend.vo.FieldInfoVO">
         select
         t.id,
