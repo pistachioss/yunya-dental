@@ -72,12 +72,10 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
   public BigDecimal findPeriodCash(PeriodCashQuery query) {
     Integer orgId = query.getOrgId();
     Date settlementDate = new DateTime(query.getSettlementDate()).toDate();
-    checkSettlementDate(settlementDate);
     CashBalance balance = mapper.selectRecentCashBalance(orgId);
     Date startDate = null;
     if (null != balance) {
       startDate = balance.getSettlementDate();
-      compareSettlementDate(settlementDate, startDate);
     }
     return getPeriodCollectionCash(orgId, startDate, settlementDate);
   }
