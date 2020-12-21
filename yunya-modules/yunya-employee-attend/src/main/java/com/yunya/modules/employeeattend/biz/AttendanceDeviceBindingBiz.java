@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
+import static com.yunya.framework.common.constant.SmsAutosendEventConstants.DEVICE_BINDING_EVENT;
 
 /**
  * 简介：考勤设备绑定业务层
@@ -44,8 +45,6 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingMapper, AttendanceDeviceBinding> {
-    /** 设备绑定事件 */
-    private static final String DEVICE_BINDING_EVENT = "attendance_device_binding";
     /** 注入对象 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
@@ -263,11 +262,6 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"请填写正确的手机号码",null);
         }
         String  messageCode = this.messageCodeGenerator();
-        String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
-        if (redisUtils.hasKey(key)) {
-            return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送,稍后再试",null);
-        }
-        redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
         // 发送短信验证码
         ResponseResult responseResult = sendVerifyCode(mobile, messageCode);
         if (responseResult==null) {
@@ -298,6 +292,11 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         smsSendRecordModel.setTemplateParamJson(params);
         smsSendRecordModel.setTemplateId(templateSetVO.getId());
         smsSendRecordModel.setReceiverIds(Arrays.asList(Integer.parseInt(BaseContextHandler.getUserID())));
+        String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
+        if (redisUtils.hasKey(key)) {
+            return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
+        }
+        redisUtils.set(key, verifyCode, DEVICE_BINDING_AUTH_EXPIRE);
         return remoteSmsServiceFeign.sendVerifyCode(smsSendRecordModel);
     }
 

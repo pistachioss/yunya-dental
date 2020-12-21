@@ -41,20 +41,23 @@
         t.crt_time as crtTime
     from sms_send_batch t
     <where>
+      <if test="queryForm.id != null">
+        and t.id = #{queryForm.id}
+      </if>
       <if test="queryForm.orgId != null">
         and t.org_id = #{queryForm.orgId}
       </if>
       <if test="queryForm.sendNum">
         and t.send_num = #{queryForm.sendNum}
       </if>
-      <if test="queryForm.status != null">
-        and t.status = #{queryForm.status}
-      </if>
       <if test="queryForm.bizId!=null and queryForm.bizId!=''">
         and t.biz_id = #{queryForm.bizId}
       </if>
       <if test="queryForm.templateId != null">
         and t.template_id = #{queryForm.templateId}
+      </if>
+      <if test="queryForm.type != null">
+        and t.type = #{queryForm.type}
       </if>
     </where>
   </select>

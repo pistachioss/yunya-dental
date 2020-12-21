@@ -29,7 +29,7 @@
         t.org_id as orgId,
         t.batch_id as batchId,
         t.receiver_id as receiverId,
-        t.send_object as sendObject
+        t.send_object as sendObject,
         t.mobile,
         t.content_num as contentNum,
         t.content,
@@ -47,8 +47,8 @@
       <if test="queryForm.status != null">
         and t.status = #{queryForm.status}
       </if>
-      <if test="queryForm.userId != null">
-        and t.user_id = #{queryForm.userId}
+      <if test="queryForm.receiverId != null">
+        and t.receiver_id = #{queryForm.receiverId}
       </if>
       <if test="queryForm.batchId != null">
         and t.batch_id = #{queryForm.batchId}

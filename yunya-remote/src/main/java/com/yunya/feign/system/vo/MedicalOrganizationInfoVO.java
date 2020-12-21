@@ -1,4 +1,4 @@
-package com.yunya.modules.system.vo;
+package com.yunya.feign.system.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

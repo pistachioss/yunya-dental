@@ -13,7 +13,6 @@ import com.google.common.io.Files;
 import com.yunya.feign.sms.form.SmsSignatureSetForm;
 import com.yunya.feign.sms.model.SmsSignatureSetModel;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.sms.SmsSignatureFile;
 import com.yunya.models.sms.SmsTemplateSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,24 +136,22 @@ public class AliyunSmsUtl {
      * @param model
      * @return
      */
-    public static JSONObject modifySmsSign(SmsSignatureSetForm model) {
+    public static JSONObject modifySmsSign(SmsSignatureSetForm model, List<MultipartFile> files) {
         CommonRequest request = commonRequest();
         request.setSysAction("ModifySmsSign");
         request.putQueryParameter("SignName", model.getSignName());
         request.putQueryParameter("SignSource", model.getSignSource()+"");
         request.putQueryParameter("Remark", model.getRemark());
-        List<SmsSignatureFile> smsSignatureFiles = model.getSmsSignatureFiles();
-        if (smsSignatureFiles!=null && !smsSignatureFiles.isEmpty()) {
-            int i = 1;
-            for (SmsSignatureFile signatureFile : smsSignatureFiles) {
-                String encode = encodeIfAbsent(signatureFile.getFileUrl());
-//                String encode = new BASE64Encoder().encode(content.getBytes());
-                request.putQueryParameter("SignFileList." + i + ".FileSuffix", signatureFile.getFileType());
-                request.putQueryParameter("SignFileList." + i + ".FileContents", encode);
-            }
-        }
         JSONObject result = null;
         try {
+            if (files!=null && !files.isEmpty()) {
+                int i = 1;
+                for (MultipartFile file : files) {
+                    String encode = BinaryUtil.toBase64String(file.getBytes());
+                    request.putQueryParameter("SignFileList." + i + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
+                    request.putQueryParameter("SignFileList." + i + ".FileContents", encode);
+                }
+            }
             log.info("modifySmsSign requestParam: {}", request.getSysQueryParameters());
             CommonResponse response = client.getCommonResponse(request);
             String data = response.getData();
@@ -398,7 +395,7 @@ public class AliyunSmsUtl {
      * @param templateParamJson 短信模板变量值JSON数组 [{"code1":"32","code2":"张三"},{"code1":"22","code2":"李四"}]，可空，如果有值，则变量值的个数必须与手机号码、签名的个数相同、内容一一对应
      * @return
      */
-    public static JSONObject SendBatchSms(JSONArray mobiles, JSONArray signNameJson, String templateCode, JSONArray templateParamJson) {
+    public static JSONObject sendBatchSms(JSONArray mobiles, JSONArray signNameJson, String templateCode, JSONArray templateParamJson) {
         CommonRequest request = commonRequest();
         request.setSysAction("SendBatchSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");

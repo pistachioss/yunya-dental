@@ -99,7 +99,7 @@ public class SmsSignatureSetController {
     @ApiOperation(value = "根据id获取短信签名")
     @GetMapping("/info/{id}")
     public ResponseResult<SmsSignatureSetVO> findSmsSignatureSetById(@PathVariable(value = "id") @NotNull Integer id) {
-        SmsSignatureSetVO smsSignatureSetVO = smsSignatureSetBiz.findSmsSignatureSetById(id, true);
+        SmsSignatureSetVO smsSignatureSetVO = smsSignatureSetBiz.findSmsSignatureSetById(id);
         return ResponseUtil.success(smsSignatureSetVO);
     }
 }

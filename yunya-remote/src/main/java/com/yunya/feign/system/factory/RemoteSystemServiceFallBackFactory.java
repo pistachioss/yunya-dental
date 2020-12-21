@@ -270,4 +270,9 @@ public class RemoteSystemServiceFallBackFactory implements RemoteSystemServiceFe
   public PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(SysUserEmployeeModel model) {
     return null;
   }
+
+  @Override
+  public MedicalOrganizationInfoVO clinicExtInfoByCompanyId(Integer companyId) {
+    return null;
+  }
 }

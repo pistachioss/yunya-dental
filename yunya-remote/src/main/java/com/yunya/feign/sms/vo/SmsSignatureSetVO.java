@@ -1,13 +1,11 @@
 package com.yunya.feign.sms.vo;
 
-import com.yunya.models.sms.SmsSignatureFile;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.util.List;
 
 /**
  * 简介：短信签名设置响应模式
@@ -63,10 +61,4 @@ public class SmsSignatureSetVO implements Serializable {
      */
     @ApiModelProperty("提交人")
     private String crtUser;
-
-    /**
-     * 签名资质证明文件列表
-     */
-    @ApiModelProperty(value = "签名资质证明文件列表")
-    List<SmsSignatureFile> smsSignatureFiles;
 }

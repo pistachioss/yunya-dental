@@ -43,6 +43,7 @@ public class SmsTemplateSetController {
      */
     @ApiOperation(value = "分页查询短信模板列表")
     @PostMapping("/list")
+    @CurrentUser
     public ResponseResult<PageInfo<SmsTemplateSetVO>> findSmsTemplateSetList(@RequestBody SmsTemplateSetQueryForm smsTemplateSetQueryForm) {
         List<SmsTemplateSetVO> smsTemplateSetList = smsTemplateSetBiz.findSmsTemplateSetList(smsTemplateSetQueryForm);
         PageInfo<SmsTemplateSetVO> result = new PageInfo<>(smsTemplateSetList);

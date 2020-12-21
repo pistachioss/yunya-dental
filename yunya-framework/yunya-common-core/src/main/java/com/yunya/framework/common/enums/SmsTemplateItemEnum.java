@@ -1,4 +1,4 @@
-package com.yunya.modules.sms.enums;
+package com.yunya.framework.common.enums;
 
 import java.util.*;
 
@@ -117,7 +117,7 @@ public enum SmsTemplateItemEnum {
         return null;
     }
 
-    public boolean equals(Byte code)
+    public boolean equals(Integer code)
     {
         return this.code.equals(code);
     }
