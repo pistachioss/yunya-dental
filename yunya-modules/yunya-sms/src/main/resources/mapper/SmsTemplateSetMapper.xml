@@ -16,6 +16,7 @@
     <result column="template_code" property="templateCode" jdbcType="VARCHAR" />
     <result column="template_type" property="templateType" jdbcType="TINYINT" />
     <result column="template_length" property="template_length" jdbcType="INTEGER" />
+    <result column="tag_input_value" property="tagInputValue" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_user" property="crtUser" jdbcType="VARCHAR" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
@@ -29,11 +30,11 @@
     insert into sms_template_set
         (id,org_id,signature_id,template_name,template_content,remark,
         template_item,template_status,template_code,template_type,template_length,
-        sense,crt_id,crt_user,crt_time,upt_id,upt_time)
+        tag_input_value,sense,crt_id,crt_user,crt_time,upt_id,upt_time)
     values
         (null,#{orgId},#{signatureId},#{templateName},#{templateContent},#{remark},
         #{templateItem},#{templateStatus},#{templateCode},#{templateType},#{templateLength},
-        #{sense},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
+        #{tagInputValue},#{sense},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
   </insert>
 
   <select id="findSmsTemplateSetById" resultType="com.yunya.feign.sms.vo.SmsTemplateSetVO">
@@ -49,6 +50,7 @@
         t.template_status as templateStatus,
         t.template_type as templateType,
         t.template_length as templateLength,
+        t.tag_input_value as tagInputValue,
         t.remark,
         t.sense,
         t.crt_user as crtUser
@@ -93,5 +95,23 @@
         and t.sense = #{queryForm.sense}
       </if>
     </where>
+  </select>
+
+  <select id="findSmsTemplateByEventCode" resultType="com.yunya.feign.sms.vo.SmsTemplateSetVO">
+      select
+        t.id,
+        t.org_id as orgId,
+        t.signature_id as signatureId,
+        ss.sign_name as signName,
+        t.template_name as templateName,
+        t.template_content as templateContent,
+        t.template_item as templateItem,
+        t.template_code as templateCode,
+        t.template_status as templateStatus,
+        t.remark,
+        t.sense,
+        t.crt_user as crtUser
+      from sms_template_set t left join sms_autosend_event sa on t.id=sa.templateId
+      where sa.enable=1 and sa.event_code = #{eventCode}
   </select>
 </mapper>

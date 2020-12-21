@@ -13,7 +13,6 @@ import com.yunya.modules.sms.biz.SmsChargeOrderBiz;
 import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -73,6 +72,18 @@ public class SmsChargeOrderController {
     }
 
     /**
+     * 根据id查询短信充值订单。
+     *
+     * @param id 主键
+     */
+    @ApiOperation("根据id查询短信充值订单")
+    @GetMapping("/info/{id}")
+    public ResponseResult<SmsChargeOrderVO> findSmsChargeOrderById(@PathVariable(value = "id") @NotNull Integer id) {
+        SmsChargeOrderVO SmsChargeOrderVO = smsChargeOrderBiz.findSmsChargeOrderById(id);
+        return ResponseUtil.success(SmsChargeOrderVO);
+    }
+
+    /**
      * 刷新充值二维码
      *
      * @param id 主键id
@@ -101,10 +112,5 @@ public class SmsChargeOrderController {
         } catch (IOException e) {
             throw new ClientServiceException("notify response io error", DATA_ERROR);
         }
-    }
-
-    @GetMapping("redirectUrl")
-    public ResponseResult<T> redirectUrl() {
-        return ResponseUtil.success(null);
     }
 }

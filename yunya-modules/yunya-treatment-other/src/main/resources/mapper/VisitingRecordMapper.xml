@@ -140,6 +140,9 @@
       <if test="startDate != null and endDate != null">
         and date_format(vr.visiting_date,'%Y-%m-%d') BETWEEN date_format(#{startDate},'%Y-%m-%d') AND date_format(#{endDate},'%Y-%m-%d')
       </if>
+      <if test="orgId != null">
+        and org_id = #{orgId}
+      </if>
     </where>
     ) a
     GROUP BY a.crt_time

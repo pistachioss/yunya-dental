@@ -11,6 +11,7 @@ import java.util.*;
  * @since: 1.0.0
  */
 public enum SmsTemplateItemEnum {
+    VERIFY_CODE(0, "验证码", ""),
     PATIENT_NAME(1, "患者姓名", ""),
     CLINIC_NAME(2, "诊所名称", ""),
     CLINIC_PHONE(3, "诊所电话", ""),
@@ -41,6 +42,17 @@ public enum SmsTemplateItemEnum {
         this.code = code;
         this.value = value;
         this.action = action;
+    }
+
+    public static List<String> toList(String head, String tail) {
+        List<String> list = new ArrayList<>();
+        for(SmsTemplateItemEnum item : values()) {
+            String value = item.getValue();
+            if (!list.contains(value)) {
+                list.add(head + value + tail);
+            }
+        }
+        return list;
     }
 
     public String getValue() {

@@ -54,14 +54,14 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
      * @param id 主键id
      */
     public void openOrClose(Integer id) {
-        SmsAutosendEventVO smsAutosendEventVO = mapper.findSmsAutosendEventById(id);
-        if (smsAutosendEventVO == null) {
-            throw new ClientServiceException("该自动发送事件不存在", DATA_NOT_EXIST);
+        SmsAutosendEvent autosendEvent = selectById(id);
+        if (autosendEvent == null) {
+            throw new ClientServiceException("事件不存在", DATA_NOT_EXIST);
         }
-        if (smsAutosendEventVO.getTemplateId() == null) {
+        if (autosendEvent.getTemplateId() == null) {
             throw new ClientServiceException("请先关联短信模板", OPERATION_NOT_ALLOW);
         }
-        Byte status = smsAutosendEventVO.getStatus();
+        Byte status = autosendEvent.getStatus();
         if (SmsEnableEnum.DISABLE.getCode().equals(status)) {
             status = SmsEnableEnum.ENABLE.getCode();
         } else {
@@ -81,22 +81,21 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
     public void submit(SmsAutosendEventModel smsAutosendEventModel) {
         Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         Integer id = smsAutosendEventModel.getId();
-        SmsAutosendEventVO smsAutosendEventVO = mapper.findSmsAutosendEventById(id);
-        if (smsAutosendEventVO == null) {
-            throw new ClientServiceException("该自动发送事件不存在", DATA_NOT_EXIST);
+        SmsAutosendEvent autosendEvent = selectById(id);
+        if (autosendEvent == null) {
+            throw new ClientServiceException("事件不存在", DATA_NOT_EXIST);
         }
         Integer templateId = smsAutosendEventModel.getTemplateId();
-        SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateSetById(templateId,false);
-        if (smsTemplateSetVO==null) {
-            throw new ClientServiceException("该短信模板不存在", DATA_NOT_EXIST);
+        if (templateId != null) {
+            SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetBiz.findSmsTemplateSetById(templateId, false);
+            if (smsTemplateSetVO == null) {
+                throw new ClientServiceException("该短信模板不存在", DATA_NOT_EXIST);
+            }
+            if (!SmsApprovalStatusEnum.APPROVAL_PASS.getCode().equals(smsTemplateSetVO.getTemplateStatus())) {
+                throw new ClientServiceException("该短信模板暂不可用", QUERY_RESULT_INVALID);
+            }
         }
-        if (!SmsApprovalStatusEnum.APPROVAL_PASS.getCode().equals(smsTemplateSetVO.getTemplateStatus())) {
-            throw new ClientServiceException("该短信模板暂不可用", QUERY_RESULT_INVALID);
-        }
-        SmsAutosendEvent smsAutosendEvent = new SmsAutosendEvent();
-        smsAutosendEvent.setId(id);
-        smsAutosendEvent.setOrgId(orgId);
-        smsAutosendEvent.setTemplateId(templateId);
-        updateSelectiveById(smsAutosendEvent);
+        autosendEvent.setTemplateId(templateId);
+        updateById(autosendEvent);
     }
 }

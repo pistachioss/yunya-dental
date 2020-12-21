@@ -151,7 +151,7 @@ public class AppointmentController {
           @ApiImplicitParam(name = "id", value = "预约ID", dataTypeClass = Integer.class),
           @ApiImplicitParam(name = "flag", value = "确认状态,true-已确认；false-未确认", dataTypeClass = java.lang.Boolean.class)
   })
-  public ResponseResult appointConfirm(@PathVariable("id") Integer id, Boolean flag) {
+  public ResponseResult appointConfirm(@PathVariable("id") Integer id, @RequestParam("flag") Boolean flag) {
     return appointmentBiz.confirmAppointment(id,flag);
   }
 

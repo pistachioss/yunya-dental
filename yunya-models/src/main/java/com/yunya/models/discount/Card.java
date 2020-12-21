@@ -147,6 +147,12 @@ public class Card implements Serializable {
     private Integer pay;
 
     /**
+     * 收费时间
+     */
+    @Column(name = "pay_date")
+    private LocalDateTime payDate;
+
+    /**
      * 售出日期
      */
     @Column(name = "sold_date")

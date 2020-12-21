@@ -30,7 +30,6 @@
         st.template_name as templateName
     from sms_autosend_event t left join sms_template_set st on t.template_id=st.id
     <where>
-        st.template_status = 1
       <if test="queryForm.id != null">
         and t.id = #{queryForm.id}
       </if>

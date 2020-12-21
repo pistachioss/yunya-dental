@@ -324,7 +324,11 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
             if (employeesByName.size() == 0) {
                 throw new ClientServiceException("查无此人", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
             }
-            approvalAllListForm.setUserId(employeesByName.get(0).getUserId());
+            for(SysUserInfoDetail sysUserInfoDetail:employeesByName){
+                if(sysUserInfoDetail.getName().equals(approvalAllListForm.getUserName())){
+                    approvalAllListForm.setUserId(sysUserInfoDetail.getUserId());
+                }
+            }
         }
         List<ApprovalAllListVO> reList = mapper.findApprovalAllList(approvalAllListForm);
         if (reList.size() > 0) {

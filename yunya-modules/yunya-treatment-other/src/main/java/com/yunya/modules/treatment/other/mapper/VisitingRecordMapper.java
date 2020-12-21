@@ -60,7 +60,8 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
     List<VisitingForMonthVo> findVisitingForMonth(
             @Param("dentistId") Integer dentistId,
             @Param("startDate") Date startDate,
-            @Param("endDate") Date endDate);
+            @Param("endDate") Date endDate,
+            @Param("orgId") Integer orgId);
 
     /**
      * 统计后续随访个数

@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.models.employee_attend.ApprovalPeople;
 import com.yunya.modules.employeeattend.biz.ApprovalPeopleBiz;
 import com.yunya.modules.employeeattend.form.ApprovalPeopleDeleteForm;
 import com.yunya.modules.employeeattend.form.ApprovalPeopleForm;
