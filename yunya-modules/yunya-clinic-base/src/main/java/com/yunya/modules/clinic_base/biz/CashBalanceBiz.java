@@ -10,6 +10,7 @@ import com.yunya.feign.clinic_base.domain.query.PeriodCashQuery;
 import com.yunya.feign.clinic_base.domain.vo.CashBalanceDetailVO;
 import com.yunya.feign.clinic_base.domain.vo.CashBalanceVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
+import com.yunya.feign.discount.domain.form.CertificatesForm;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -164,12 +165,6 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     if (settlementDate.after(new Date())) {
       throw new ClientServiceException("新增失败，结存日期不能晚于当前天！", PARAMETERS_IS_ILLEGAL);
     }
-    CashBalance entity = new CashBalance();
-    entity.setSettlementDate(settlementDate);
-    int count = mapper.selectCount(entity);
-    if (count > 0) {
-      throw new ClientServiceException("新增失败，存在与当前结存日期相同的结存记录！", PARAMETERS_IS_ILLEGAL);
-    }
   }
 
   /**
@@ -237,16 +232,73 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     CashBalance balance = mapper.selectRecentCashBalance(orgId);
     if (null != balance) {
       Integer balanceId = balance.getId();
-      if (id.equals(balanceId)) {
+      if (!id.equals(balanceId)) {
         throw new ClientServiceException("修改失败，只允许修改最近的一条现金结存记录！", PARAMETERS_IS_ILLEGAL);
       }
       Date settlementDate = new DateTime(form.getSettlementDate()).toDate();
-      checkSettlementDate(settlementDate);
-      Date balanceSettlementDate = balance.getSettlementDate();
-      compareSettlementDate(settlementDate, balanceSettlementDate);
+      Date lastSettlementDate = balance.getSettlementDate();
+      BigDecimal periodCollectionCash = balance.getPeriodCollection();
+      if (!settlementDate.equals(lastSettlementDate)) {
+        checkSettlementDate(settlementDate);
+        compareSettlementDate(settlementDate, lastSettlementDate);
+        // 重新计算期间现金收款
+        periodCollectionCash = getPeriodCollectionCash(orgId, lastSettlementDate, settlementDate);
+        balance.setPeriodCollection(periodCollectionCash);
+      }
       balance.setSettlementDate(settlementDate);
+      BigDecimal depositedCash = form.getDepositedCash();
+      balance.setDepositedCash(depositedCash);
+      BigDecimal balanceAdjustment = form.getBalanceAdjustment();
+      balance.setBalanceAdjustment(balanceAdjustment);
+      BigDecimal endingBalanceCash =
+          balance
+              .getBeginningBalanceCash()
+              .add(periodCollectionCash)
+              .add(depositedCash)
+              .subtract(depositedCash);
+      balance.setEndingBalanceCash(endingBalanceCash);
+      balance.setAdjustRemark(form.getAdjustRemark());
+      Joiner joiner = Joiner.on(",");
+      balance.setUri(joiner.join(form.getCertificates()));
+      balance.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
+      balance.setUpdName(BaseContextHandler.getName());
+      mapper.updateByPrimaryKeySelective(balance);
     } else {
       throw new ClientServiceException("修改失败，请选择正确的结存记录进行修改！", PARAMETERS_IS_ILLEGAL);
+    }
+  }
+
+  /**
+   * 更新现金存款结存凭证
+   *
+   * @param form 更新参数
+   */
+  public void updateCashBalanceCertificates(CertificatesForm form) {
+    Integer id = form.getId();
+    CashBalance balance = mapper.selectByPrimaryKey(id);
+    if (null == balance) {
+      throw new ClientServiceException("更新失败，请选择正确的结存记录进行更新！", PARAMETERS_IS_ILLEGAL);
+    }
+    Joiner joiner = Joiner.on(",");
+    balance.setUri(joiner.join(form.getCertificates()));
+    mapper.updateByPrimaryKeySelective(balance);
+  }
+
+  /**
+   * 根据ID删除现金结存记录
+   *
+   * @param id 结存记录ID
+   */
+  public void deleteCashBalance(Integer id) {
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    CashBalance balance = mapper.selectRecentCashBalance(orgId);
+    if (null != balance) {
+      Integer balanceId = balance.getId();
+      if (balanceId.equals(id)) {
+        mapper.deleteByPrimaryKey(id);
+      } else {
+        throw new ClientServiceException("删除失败，只允许删除最近的一条结存记录！", PARAMETERS_IS_ILLEGAL);
+      }
     }
   }
 }

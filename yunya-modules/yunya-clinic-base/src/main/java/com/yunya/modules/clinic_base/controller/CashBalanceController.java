@@ -7,6 +7,7 @@ import com.yunya.feign.clinic_base.domain.query.CashBalanceQuery;
 import com.yunya.feign.clinic_base.domain.query.PeriodCashQuery;
 import com.yunya.feign.clinic_base.domain.vo.CashBalanceDetailVO;
 import com.yunya.feign.clinic_base.domain.vo.CashBalanceVO;
+import com.yunya.feign.discount.domain.form.CertificatesForm;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -151,9 +152,43 @@ public class CashBalanceController {
       dataType = "int",
       paramType = "path")
   @PutMapping(value = "/modify/{id}", name = "修改现金结存记录")
-  public ResponseResult<T> modifyCashBalanceBiz(
+  public ResponseResult<T> modifyCashBalance(
       @PathVariable(value = "id") Integer id, @RequestBody CashBalanceForm form) {
     cashBalanceBiz.modify(id, form);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 更新现金存款结存凭证
+   *
+   * @param form 更新参数
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("更新现金存款结存凭证")
+  @PostMapping(value = "/update/certificates", name = "更新现金存款结存凭证")
+  public ResponseResult<T> updateCashBalanceCertificates(@RequestBody CertificatesForm form) {
+    cashBalanceBiz.updateCashBalanceCertificates(form);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据ID删除现金结存记录
+   *
+   * @param id 现金结存记录ID
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("根据ID删除现金结存记录")
+  @ApiImplicitParam(
+      name = "id",
+      value = "现金结存记录ID",
+      required = true,
+      dataType = "int",
+      paramType = "path")
+  @DeleteMapping(value = "/delete/{id}", name = "根据ID删除现金结存记录")
+  public ResponseResult<T> deleteCashBalance(@PathVariable(value = "id") Integer id) {
+    cashBalanceBiz.deleteCashBalance(id);
     return ResponseUtil.success(null);
   }
 }
