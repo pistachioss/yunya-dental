@@ -46,6 +46,6 @@ public class AliyunSmsUtlTest {
         signNameJson.add("ABC商城");
         JSONArray templateParamJson = new JSONArray();
         templateParamJson.add(null);
-        AliyunSmsUtl.SendBatchSms(phoneNumberJson,signNameJson,"SMS_206564748",templateParamJson);
+        AliyunSmsUtl.sendBatchSms(phoneNumberJson,signNameJson,"SMS_206564748",templateParamJson);
     }
 }

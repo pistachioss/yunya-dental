@@ -3,7 +3,6 @@ package com.yunya.modules.sms.biz;
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
-import com.google.common.io.Files;
 import com.yunya.feign.sms.form.SmsSignatureSetForm;
 import com.yunya.feign.sms.model.SmsSignatureSetModel;
 import com.yunya.feign.sms.query.SmsSignatureSetQueryForm;
@@ -12,7 +11,6 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.sms.SmsSignatureFile;
 import com.yunya.models.sms.SmsSignatureSet;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsSignatureSourceEnum;
@@ -23,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -40,12 +37,10 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
  * @since: 1.0.0
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignatureSet> {
     /** 延迟2.5个小时 */
     private static final int LATER_TIME = 150;
-    @Autowired
-    private SmsSignatureFileBiz smsSignatureFileBiz;
     @Autowired
     private ScheduledExecutorService scheduledExecutorService;
 
@@ -88,19 +83,6 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         if (count != 1) {
             throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);
         }
-        Integer signId = smsSignatureSet.getId();
-        List<SmsSignatureFile> smsSignatureFiles = new ArrayList<>();
-        files.forEach(file->{
-            SmsSignatureFile smsSignatureFile = new SmsSignatureFile();
-            smsSignatureFile.setFileType(Files.getFileExtension(file.getOriginalFilename()));
-            smsSignatureFile.setCrtId(userId);
-            smsSignatureFile.setCrtTime(now);
-            smsSignatureFile.setUptId(userId);
-            smsSignatureFile.setUptTime(now);
-            smsSignatureFile.setSignatureId(signId);
-            smsSignatureFile.setFileUrl(file.getOriginalFilename());
-        });
-        smsSignatureFileBiz.saveFile(signId, smsSignatureFiles);
         AliyunSmsUtl.addSmsSign(smsSignatureSetModel, files);
         asyncStatus(smsSignatureSet);
     }
@@ -121,32 +103,18 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         }, LATER_TIME, TimeUnit.MINUTES);
     }
 
-        /**
-         * 根据id获取短信签名
-         *
-         * @param id 主键id
-         */
-    public SmsSignatureSetVO findSmsSignatureSetById(Integer id) {
-        return findSmsSignatureSetById(id, false);
-    }
-
     /**
      * 根据id获取短信签名
      *
      * @param id 主键id
-     * @param needFile 是否要查出资质文件
      */
-    public SmsSignatureSetVO findSmsSignatureSetById(Integer id, boolean needFile) {
+    public SmsSignatureSetVO findSmsSignatureSetById(Integer id) {
         SmsSignatureSet smsSignatureSet = selectById(id);
         if (smsSignatureSet == null) {
             return null;
         }
         SmsSignatureSetVO smsSignatureSetVO = new SmsSignatureSetVO();
         BeanUtil.copyProperties(smsSignatureSet, smsSignatureSetVO);
-        if (needFile) {
-            List<SmsSignatureFile> smsSignatureFiles = smsSignatureFileBiz.findSmsSignatureFilesBySignId(id);
-            smsSignatureSetVO.setSmsSignatureFiles(smsSignatureFiles);
-        }
         return smsSignatureSetVO;
     }
 
@@ -171,8 +139,7 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         BeanUtil.copyProperties(smsSignatureSetForm, smsSignatureSet);
         smsSignatureSet.setSignSource(SmsSignatureSourceEnum.ENTERPRISE.getCode());
         updateSelectiveById(smsSignatureSet);
-        smsSignatureFileBiz.saveFile(id, smsSignatureSetForm.getSmsSignatureFiles(), true);
-        AliyunSmsUtl.modifySmsSign(smsSignatureSetForm);
+        AliyunSmsUtl.modifySmsSign(smsSignatureSetForm, null);
         asyncStatus(smsSignatureSet);
     }
 
@@ -217,7 +184,6 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
             throw new ClientServiceException("审核中的短信签名不能删除", DELETE_NOT_ALLOW);
         }
         deleteById(id);
-        smsSignatureFileBiz.saveFile(id, null, true);
         AliyunSmsUtl.deleteSmsSign(smsSignatureSetVO.getSignName());
     }
 

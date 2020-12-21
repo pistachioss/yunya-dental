@@ -33,7 +33,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMET
  * @since: 1.0.0
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class AttendanceManualMakeupBiz extends BaseBiz<AttendanceManualMakeupMapper, AttendanceManualMakeup> {
 
     /**

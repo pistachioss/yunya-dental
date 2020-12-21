@@ -9,6 +9,7 @@ import com.yunya.feign.appointment.domain.model.AppointmentBaseModel;
 import com.yunya.feign.appointment.domain.query.*;
 import com.yunya.feign.appointment.vo.*;
 import com.yunya.feign.employee_attend.EmployeeAttendServiceFeign;
+import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
@@ -17,6 +18,7 @@ import com.yunya.modules.appointment.biz.web.AppointmentBiz;
 import com.yunya.modules.appointment.util.pageUtil.PageUtil;
 import com.yunya.modules.appointment.util.pageUtil.model.Page;
 import io.swagger.annotations.*;
+import org.apache.poi.ss.formula.functions.T;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -260,6 +263,21 @@ public class AppointmentController {
     }
     appointmentBiz.exportAppointListToExcel(response,query);
     return ResponseUtil.success();
+  }
+
+  /**
+   * 发送预约短信
+   *
+   * @param templateId 短信模板id
+   * @param models 短信预约提醒列表
+   * @return
+   */
+  @ApiOperation(value = "发送预约短信")
+  @PostMapping("/sendAppointmentBatchSms/{templateId}")
+  @CurrentUser
+  @RepeatSubmit
+  public ResponseResult<T> sendAppointmentBatchSms(@PathVariable(value = "templateId") @NotNull Integer templateId, @RequestBody @Validated List<AppointmentSmsSendRecordModel> models) {
+    return appointmentBiz.sendAppointmentBatchSms(templateId, models);
   }
 
 }

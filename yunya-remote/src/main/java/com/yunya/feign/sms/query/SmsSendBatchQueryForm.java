@@ -54,6 +54,12 @@ public class SmsSendBatchQueryForm implements Serializable {
     private String bizId;
 
     /**
+     * 短信模板id
+     */
+    @ApiModelProperty("短信模板id")
+    private Integer templateId;
+
+    /**
      * 短信类型 0：验证码。1：短信通知。2：推广短信。3：国际/港澳台消息。
      */
     @ApiModelProperty(value = "短信类型 0：验证码。1：短信通知。2：推广短信。3：国际/港澳台消息。", required = true)

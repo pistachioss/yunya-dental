@@ -10,6 +10,7 @@ import com.yunya.modules.system.domain.query.ClinicAccountItemQueryForm;
 import com.yunya.modules.system.domain.query.ClinicDepartmentRoomQueryForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
 import com.yunya.modules.system.rpc.service.PermissionService;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.modules.system.vo.OrganizationInfoVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
@@ -70,6 +71,8 @@ public class SystemServiceRest {
   @Autowired private ClinicAccountItemBiz clinicAccountItemBiz;
   /** 人脸识别设备信息 */
   @Autowired private EquipmentBiz equipmentBiz;
+  /** 医疗机构扩展信息 */
+  @Autowired private ClinicExtInfoBiz clinicExtInfoBiz;
 
   /**
    * 根据用户名、密码查询用户信息
@@ -540,5 +543,16 @@ public class SystemServiceRest {
   @RequestMapping(value = "/equipmentInfoOne", method = RequestMethod.GET)
   public EquipmentInfo equipmentInfoOne() {
     return equipmentBiz.findEquipmentInfoVO();
+  }
+
+  /**
+   * 根据组织ID获取医疗机构详细信息
+   *
+   * @param companyId 组织ID
+   * @return MedicalOrganizationInfoVO
+   */
+  @RequestMapping(value = "/clinicExtInfo/{companyId}", method = RequestMethod.GET)
+  public MedicalOrganizationInfoVO clinicExtInfoByCompanyId(@PathVariable(value = "companyId") Integer companyId) {
+    return clinicExtInfoBiz.findMedicalOrganizationInfo(companyId);
   }
 }

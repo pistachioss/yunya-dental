@@ -421,4 +421,13 @@ public interface RemoteSystemServiceFeign {
    */
   @RequestMapping(value = "/api/userInfo/page", method = RequestMethod.POST)
   PageInfo<SysUserInfoDetail> findSysUserEmployeeInfoPage(@RequestBody SysUserEmployeeModel model);
+
+  /**
+   * 根据组织ID获取医疗机构详细信息
+   *
+   * @param companyId 组织ID
+   * @return MedicalOrganizationInfoVO
+   */
+  @RequestMapping(value = "/api//clinicExtInfo/{companyId}", method = RequestMethod.GET)
+  MedicalOrganizationInfoVO clinicExtInfoByCompanyId(@PathVariable(value = "companyId")  Integer companyId);
 }

@@ -1,7 +1,7 @@
 package com.yunya.modules.system.mapper;
 
 import com.yunya.models.system.ClinicExtInfo;
-import com.yunya.modules.system.vo.MedicalOrganizationInfoVO;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
