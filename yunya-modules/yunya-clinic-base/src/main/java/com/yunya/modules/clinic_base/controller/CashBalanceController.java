@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 
 /**
@@ -96,6 +98,22 @@ public class CashBalanceController {
       @RequestBody @Validated CashBalanceQuery query) {
     PageInfo<CashBalanceVO> pageInfo = cashBalanceBiz.findCashBalanceList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 导出门诊现金结存列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("导出门诊现金结存列表")
+  @PostMapping(value = "/export", name = "导出门诊现金结存列表")
+  public ResponseResult<T> exportBalanceList(
+      HttpServletResponse response, @RequestBody @Validated CashBalanceQuery query)
+      throws IOException {
+    cashBalanceBiz.exportBalanceList(response, query);
+    return ResponseUtil.success(null);
   }
 
   /**

@@ -15,6 +15,7 @@ import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.clinic_base.CashBalance;
 import com.yunya.modules.clinic_base.mapper.CashBalanceMapper;
 import org.joda.time.DateTime;
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -181,6 +184,20 @@ public class CashBalanceBiz extends BaseBiz<CashBalanceMapper, CashBalance> {
     }
     List<CashBalanceVO> resultList = mapper.selectCashBalanceList(query);
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 导出门诊现金结存列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @throws IOException
+   */
+  public void exportBalanceList(HttpServletResponse response, CashBalanceQuery query)
+      throws IOException {
+    ExcelUtil<CashBalanceVO> excelUtil = new ExcelUtil<>(CashBalanceVO.class);
+    List<CashBalanceVO> resultList = mapper.selectCashBalanceList(query);
+    excelUtil.exportExcel(response, resultList, "现金结存列表");
   }
 
   /**
