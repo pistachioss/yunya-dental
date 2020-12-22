@@ -1,0 +1,107 @@
+package com.yunya.modules.clinic_base.controller;
+
+import com.github.pagehelper.PageInfo;
+import com.yunya.feign.clinic_base.domain.form.SpecialistProjectForm;
+import com.yunya.feign.clinic_base.domain.model.SpecialistProjectModel;
+import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.modules.clinic_base.biz.SpecialistProjectBiz;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
+import org.apache.poi.ss.formula.functions.T;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * 简介: 专科项目管理控制层
+ *
+ * @author: chow
+ * @date: 2020/12/22 13:27
+ * @description:
+ * @since: 1.0.0
+ */
+@RestController
+@RequestMapping("specialist")
+public class SpecialistProjectController {
+
+  /** 专科项目 */
+  @Autowired private SpecialistProjectBiz specialistProjectBiz;
+
+  /**
+   * 根据条件查询专科项目列表
+   *
+   * @param query 查询条件
+   * @return PageInfo<SpecialistProjectVO>
+   */
+  @ApiOperation("根据条件查询专科项目列表")
+  @PostMapping(value = "/list", name = "根据条件查询专科项目列表")
+  public ResponseResult<PageInfo<SpecialistProjectVO>> specialistProjectList(
+      @RequestBody @Validated SpecialistProjectQuery query) {
+    PageInfo<SpecialistProjectVO> pageInfo = specialistProjectBiz.findSpecialistProjectList(query);
+    return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 新增专科项目
+   *
+   * @param model 新增参数
+   * @return void
+   */
+  @CurrentUser
+  @ApiOperation("新增专科项目")
+  @PostMapping(value = "/add", name = "新增专科项目")
+  public ResponseResult<T> addSpecialistProject(
+      @RequestBody @Validated SpecialistProjectModel model) {
+    specialistProjectBiz.save(model);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据ID修改专科项目
+   *
+   * @param id 专科项目id
+   * @param form 更新参数
+   * @return
+   */
+  @CurrentUser
+  @ApiOperation("根据ID修改专科项目")
+  @ApiImplicitParams({
+    @ApiImplicitParam(
+        name = "id",
+        value = "专科项目ID",
+        required = true,
+        dataType = "int",
+        paramType = "path"),
+    @ApiImplicitParam(name = "form", value = "专科项目修改参数", required = true, paramType = "form")
+  })
+  @PutMapping(value = "/modify/{id}", name = "根据ID删除专科项目")
+  public ResponseResult<T> modifySpecialistProject(
+      @PathVariable(value = "id") Integer id, @RequestBody @Validated SpecialistProjectForm form) {
+    specialistProjectBiz.updateSpecialistProject(id, form);
+    return ResponseUtil.success(null);
+  }
+
+  /**
+   * 根据专科项目ID删除
+   *
+   * @param id 专科项目ID
+   * @return void
+   */
+  @ApiOperation("根据专科项目ID删除")
+  @ApiImplicitParam(
+      name = "id",
+      value = "专科项目ID",
+      required = true,
+      dataType = "int",
+      paramType = "path")
+  @DeleteMapping(value = "/delete/{id}", name = "根据专科项目ID删除")
+  public ResponseResult<T> deleteSpecialistProject(@PathVariable(value = "id") Integer id) {
+    specialistProjectBiz.deleteById(id);
+    return ResponseUtil.success(null);
+  }
+}

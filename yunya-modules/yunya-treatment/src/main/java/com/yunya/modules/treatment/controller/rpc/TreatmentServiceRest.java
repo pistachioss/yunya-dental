@@ -128,6 +128,17 @@ public class TreatmentServiceRest {
   }
 
   /**
+   * 根据多个价目表ID查询价目表名称
+   *
+   * @param ids 字符串ID
+   * @return String
+   */
+  @RequestMapping(value = "/tariff/name", method = RequestMethod.POST)
+  public String findBaseTariffNamesByIds(@RequestBody @NotEmpty String[] ids) {
+    return baseTariffBiz.findBaseTariffNamesByIds(ids);
+  }
+
+  /**
    * 根据价目表项目ID查询基础价目表信息
    *
    * @param id 基础价目表ID
@@ -262,7 +273,8 @@ public class TreatmentServiceRest {
    * @return
    */
   @RequestMapping(value = "/treatment/section", method = RequestMethod.POST)
-  public List<TreatmentRecordExtendVO> findTreatmentRecordByIds(@RequestBody @NotEmpty Set<Integer> ids) {
+  public List<TreatmentRecordExtendVO> findTreatmentRecordByIds(
+      @RequestBody @NotEmpty Set<Integer> ids) {
     if (StringHelper.isNotEmpty(ids)) {
       return treatmentRecordBiz.selectByIds(ids);
     }

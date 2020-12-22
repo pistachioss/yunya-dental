@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * 简介: 就诊、价目表服务调用降级处理
- * 111
+ * 简介: 就诊、价目表服务调用降级处理 111
+ *
  * @author: chow
  * @date: 2020/8/6 17:53
  * @description:
@@ -58,6 +58,11 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
+  public String findBaseTariffNamesByIds(String[] ids) {
+    return null;
+  }
+
+  @Override
   public BaseTariff findBaseTariffById(Integer id) {
     return null;
   }
@@ -78,12 +83,14 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public ClinicTariffMemberPrice findClinicTariffMemberPrice(Integer orgId, Integer memberType, Integer itemId) {
+  public ClinicTariffMemberPrice findClinicTariffMemberPrice(
+      Integer orgId, Integer memberType, Integer itemId) {
     return null;
   }
 
   @Override
-  public ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(Integer orgId, Integer memberType, Integer itemId) {
+  public ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(
+      Integer orgId, Integer memberType, Integer itemId) {
     return null;
   }
 

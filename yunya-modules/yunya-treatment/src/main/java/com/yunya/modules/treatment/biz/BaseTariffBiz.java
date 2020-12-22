@@ -2,6 +2,7 @@ package com.yunya.modules.treatment.biz;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
@@ -76,6 +77,20 @@ public class BaseTariffBiz extends BaseBiz<BaseTariffMapper, BaseTariff> {
   /** 线程池 */
   @Resource(name = "treatmentThreadPool")
   private ExecutorService importExcelThreadPool;
+
+  /**
+   * 根据多个价目表ID查询价目表名称
+   *
+   * @param ids 字符串ID
+   * @return String
+   */
+  public String findBaseTariffNamesByIds(String[] ids) {
+    if (StringHelper.isNotEmpty(ids)) {
+      Joiner joiner = Joiner.on(",");
+      return mapper.selectBaseTariffNamesByIds(joiner.join(ids));
+    }
+    return null;
+  }
 
   /**
    * 根据ID查询价目表信息（包含门诊价目表价格信息）

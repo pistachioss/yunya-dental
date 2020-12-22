@@ -84,6 +84,15 @@ public interface RemoteTreatmentServiceFeign {
   List<BaseTariffCategory> findBaseTariffCategoryList(@RequestBody BaseTariffCategory entity);
 
   /**
+   * 根据多个价目表ID查询价目表名称
+   *
+   * @param ids 字符串ID
+   * @return String
+   */
+  @RequestMapping(value = "/rpc/tariff/name", method = RequestMethod.POST)
+  String findBaseTariffNamesByIds(@RequestBody @NotEmpty String[] ids);
+
+  /**
    * 根据价目表项目ID查询基础价目表信息
    *
    * @param id 基础价目表ID
@@ -239,6 +248,7 @@ public interface RemoteTreatmentServiceFeign {
 
   /**
    * 通过患者ID批量查询患者欠费总额
+   *
    * @param patientIds 患者ID
    * @return 返回患者欠费集合
    */
