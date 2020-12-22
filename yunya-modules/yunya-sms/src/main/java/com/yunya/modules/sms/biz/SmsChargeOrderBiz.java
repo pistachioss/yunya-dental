@@ -68,10 +68,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
         BeanUtil.copyProperties(smsChargeOrderModel, smsChargeOrder);
         smsChargeOrder.setOrderStatus(SmsOrderStatusEnum.WAIT_PAY.getCode());
-        Integer orgId = smsChargeOrderModel.getOrgId();
-        if (orgId == null) {
-            orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        }
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         smsChargeOrder.setOrgId(orgId);
         Long amount = smsChargeOrder.getPrice().multiply(new BigDecimal(100)).longValue();
         String orderNo = UUID.randomUUID().toString();
@@ -134,12 +131,12 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
      * @param request 请求
      */
     public void notifyUrl(HttpServletRequest request) {
-        Map<String, String> params = getRequestParameters(request);
+        Map<String, String> params = getReqParams(request);
         String sign = params.remove("sign");
-        /*if (WikiUtl.rsaCheck(params,sign)) {
+        if (!WikiUtl.rsaCheck(params,sign)) {
             throw new SignException("notifyUrl sign invalid");
-        }*/
-        String orderNo = params.get("orderNo");
+        }
+        String orderNo = params.get("appOrderNo");
         SmsChargeOrderVO smsChargeOrderVO = mapper.findSmsChargeOrderByOrderNo(orderNo);
         if (smsChargeOrderVO == null) {
             throw new SignException("notifyUrl invalid orderNo: " + orderNo, PARAMETERS_IS_ILLEGAL);
@@ -186,12 +183,13 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
 
     /**
      * 获取请求参数
+     *
      * @param request
      * @return
      */
-    private Map<String, String> getRequestParameters(HttpServletRequest request) {
+    private Map<String, String> getReqParams(HttpServletRequest request) {
         String cbOrderNo = request.getParameter("cbOrderNo");//采商订单号
-        String orderNo = request.getParameter("appOrderNo");//充值订单号
+        String appOrderNo = request.getParameter("appOrderNo");//充值订单号
         String outOrderNo = request.getParameter("outOrderNo");//支付宝或微信交易订单号
         String orderStatus = request.getParameter("orderStatus");//订单状态
         String totalAmount = request.getParameter("totalAmount");//订单总额，以分为单位
@@ -204,7 +202,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         String sign = request.getParameter("sign");//签名
         Map<String, String> params = new HashMap<>();
         params.put("cbOrderNo", cbOrderNo);
-        params.put("orderNo", orderNo);
+        params.put("appOrderNo", appOrderNo);
         params.put("outOrderNo", outOrderNo);
         params.put("orderStatus", orderStatus);
         params.put("totalAmount", totalAmount);

@@ -6,6 +6,7 @@ import com.yunya.feign.sms.query.SmsAutosendEventQueryForm;
 import com.yunya.feign.sms.vo.SmsAutosendEventVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.sms.biz.SmsAutosendEventBiz;
@@ -43,7 +44,9 @@ public class SmsAutosendEventController {
      */
     @ApiOperation(value = "分页查询短信自动发送列表")
     @PostMapping("/list")
+    @CurrentUser
     public ResponseResult<PageInfo<SmsAutosendEventVO>> findSmsAutosendEventList(@RequestBody SmsAutosendEventQueryForm queryForm) {
+        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsAutosendEventVO> smsAutosendEventList = smsAutosendEventBiz.findSmsAutosendEventList(queryForm);
         PageInfo<SmsAutosendEventVO> result = new PageInfo<>(smsAutosendEventList);
         return ResponseUtil.success(result);

@@ -3,6 +3,7 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.constant.BusinessConstants;
@@ -57,6 +58,8 @@ public class OrganizationBiz {
   @Autowired private ClinicAccountItemMapper clinicAccountItemMapper;
   /** 门诊科室配置 */
   @Autowired private ClinicDepartmentRoomMapper clinicDepartmentRoomMapper;
+  /** 短信服务调用 */
+  @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
   /** 医疗机构类型 */
   private final Byte MEDICAL_TYPE = BusinessConstants.MEDICAL_TYPE;
 
@@ -139,6 +142,7 @@ public class OrganizationBiz {
     // 添加组织类型为医疗机构，添加医疗机构扩展信息
     Integer companyId = company.getId();
     addClinicExtInfo(resource, companyId, type);
+    remoteSmsServiceFeign.initAutoSendEvent(companyId);
     // 发送消息，同步中间表数据
     if (i > 0) {
       rabbitMqServiceFeign.sendMessage(companyId, 0, BaseOrganization);

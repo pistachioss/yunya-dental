@@ -1051,7 +1051,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         fieldQueryForm.setApprovalStatus(1);
         fieldQueryForm.setWhetherPage(false);
         List<FieldInfoVO> fieldInfoVOS = fieldInfoBiz.findFieldInfoList(fieldQueryForm);
-        List<Integer> workOvertime = new ArrayList<>();
         List<AttendancePunchRecordVO> fieldStatisticsList = new ArrayList<>(fieldInfoVOS.size());
         fieldInfoVOS.forEach(fieldInfoVO -> {
             AttendancePunchRecordVO item = new AttendancePunchRecordVO();
@@ -1112,7 +1111,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
         });
         Collections.sort(leaveStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate));
-        result.setWorkOvertimeNum(workOvertime.size());
+        result.setWorkOvertimeNum(workOvertimeStatisticsList.size());
         result.setUnpunchNum(unpunchStatisticsList.size());
         result.setRestNum(restStatisticeList.size());
         result.setFieldNum(fieldStatisticsList.size());
@@ -1158,7 +1157,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Table<Integer,Integer, Long> workDateOvertimeMinuteMap = HashBasedTable.create();
         Table<Integer,Integer, Long> workDateOvertime30MinuteMap = HashBasedTable.create();
         Table<Integer,Integer, Long> restDateOvertimeMap = HashBasedTable.create();
-        Table<Integer,Integer, Integer> restDateOverCounts = HashBasedTable.create();
         Table<Integer,Integer, Long> fieldMinuteMap = HashBasedTable.create();
         Table<Integer,Integer, Integer> fieldCounts = HashBasedTable.create();
         Table<Integer,Integer, Long> leaveMinuteMap = HashBasedTable.create();
@@ -1329,7 +1327,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         }
                         long diff = onEndTime.getTime() - startTime.getTime();
                         incrMinute(restDateOvertimeMap, userId, onDutyOrgId, diff);
-                        incrNum(restDateOverCounts, userId, onDutyOrgId);
                     }
                     break;
                 }
@@ -1341,7 +1338,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         }
                         long diff = endTime.getTime() - offStartTime.getTime();
                         incrMinute(restDateOvertimeMap, userId, onDutyOrgId, diff);
-                        incrNum(restDateOverCounts, userId, onDutyOrgId);
                     }
                     break;
                 }
@@ -1357,7 +1353,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         }
                         long diff = endTime.getTime() - startTime.getTime();
                         incrMinute(restDateOvertimeMap, userId, onDutyOrgId, diff);
-                        incrNum(restDateOverCounts, userId, onDutyOrgId);
                     }
                     break;
                 }
@@ -1369,7 +1364,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         }
                         long diff = onEndTime.getTime() - startTime.getTime();
                         incrMinute(restDateOvertimeMap, userId, onDutyOrgId, diff);
-                        incrNum(restDateOverCounts, userId, onDutyOrgId);
                     }
                     if (offDutyStatus < 5) {
                         Date endTime = offPunchTime;
@@ -1378,7 +1372,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         }
                         long diff = endTime.getTime() - offStartTime.getTime();
                         incrMinute(restDateOvertimeMap, userId, onDutyOrgId, diff);
-                        incrNum(restDateOverCounts, userId, onDutyOrgId);
                     }
                     break;
                 }
@@ -1475,6 +1468,18 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
         });
 
+        Table<Integer,Integer, Integer> restDateOverCounts = HashBasedTable.create();
+        WorkOvertimeInfoQueryForm workOvertimeQuery = new WorkOvertimeInfoQueryForm();
+        workOvertimeQuery.setStartTime(queryForm.getBetweenDate());
+        workOvertimeQuery.setEndTime(queryForm.getAndDate());
+        workOvertimeQuery.setApprovalStatus(1);
+        workOvertimeQuery.setWhetherPage(false);
+        List<WorkOvertimeInfoVO> workOvertimeInfoVOS = workOvertimeInfoBiz.findWorkOvertimeInfoList(workOvertimeQuery);
+        workOvertimeInfoVOS.forEach(workOvertimeInfoVO -> {
+            Integer userId = workOvertimeInfoVO.getUserId();
+            Integer orgId = workOvertimeInfoVO.getCompanyId();
+            incrNum(restDateOverCounts,userId, orgId);
+        });
         SysUserEmployeeModel model = new SysUserEmployeeModel();
         model.setWhetherPage(queryForm.getWhetherPage());
         model.setPageNum(queryForm.getPageNum());

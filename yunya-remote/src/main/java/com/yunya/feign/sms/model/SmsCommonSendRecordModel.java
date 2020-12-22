@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -27,7 +26,6 @@ public class SmsCommonSendRecordModel implements Serializable {
      * 接收者id
      */
     @ApiModelProperty(value = "接收者id",required = true)
-    @NotNull
     private Integer receiverId;
 
     /**

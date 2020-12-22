@@ -1,12 +1,9 @@
 package com.yunya.modules.system.biz;
 
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
-import com.yunya.feign.sms.model.SmsSendRecordModel;
-import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -40,7 +37,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -430,41 +426,19 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   public ResponseResult authorizationCode(String mobile) {
     String  messageCode = this.messageCodeGenerator();
     // 发送短信验证码
-    ResponseResult responseResult = sendVerifyCode(mobile, messageCode);
+    String key = RedisConstants.FORGET_PWD_AUTHORIZATION + mobile;
+    if (redisUtils.hasKey(key)) {
+      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送, 请稍后再试",null);
+    }
+    redisUtils.set(key, messageCode,60);
+    ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, FORGET_PASSWORD_EVENT);
     if (responseResult==null) {
       return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
     }
     if (responseResult.getStatus() != 0) {
       return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
     }
-    return ResponseUtil.success(messageCode);
-  }
-
-  /**
-   * 发送短信验证码
-   *
-   * @param mobile 手机号
-   * @param verifyCode 验证码
-   * @return
-   */
-  private ResponseResult sendVerifyCode(String mobile, String verifyCode) {
-    SmsTemplateSetVO templateSetVO = remoteSmsServiceFeign.findSmsTemplateByEventCode(FORGET_PASSWORD_EVENT);
-    if (templateSetVO == null) {
-      throw new ClientServiceException("忘记密码事件未关联模板", DATA_NOT_EXIST);
-    }
-    JSONObject params = new JSONObject();
-    params.put("code" + templateSetVO.getTemplateItem().split(",")[0], verifyCode);
-    SmsSendRecordModel smsSendRecordModel = new SmsSendRecordModel();
-    smsSendRecordModel.setMobiles(mobile);
-    smsSendRecordModel.setTemplateParamJson(params);
-    smsSendRecordModel.setTemplateId(templateSetVO.getId());
-    smsSendRecordModel.setReceiverIds(Arrays.asList(Integer.parseInt(BaseContextHandler.getUserID())));
-    String key = RedisConstants.FORGET_PWD_AUTHORIZATION + mobile;
-    if (redisUtils.hasKey(key)) {
-      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送, 请稍后再试",null);
-    }
-    redisUtils.set(key, verifyCode,60);
-    return remoteSmsServiceFeign.sendVerifyCode(smsSendRecordModel);
+    return ResponseUtil.success("短信验证码已发送");
   }
 
   /**

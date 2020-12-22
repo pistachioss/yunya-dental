@@ -6,6 +6,7 @@ import com.yunya.feign.sms.query.SmsChargeOrderQueryForm;
 import com.yunya.feign.sms.vo.SmsChargeOrderVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -50,8 +51,10 @@ public class SmsChargeOrderController {
      */
     @ApiOperation(value = "分页查询短信充值列表")
     @PostMapping("/list")
+    @CurrentUser
     public ResponseResult<PageInfo<SmsChargeOrderVO>> findSmsChargeOrderList(@RequestBody SmsChargeOrderQueryForm smsChargeOrderQueryForm) {
         smsChargeOrderQueryForm.setOrderStatus(SmsOrderStatusEnum.PAY_SUC.getCode());
+        smsChargeOrderQueryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsChargeOrderVO> smsChargeOrderList = smsChargeOrderBiz.findSmsChargeOrderList(smsChargeOrderQueryForm);
         PageInfo<SmsChargeOrderVO> result = new PageInfo<>(smsChargeOrderList);
         return ResponseUtil.success(result);
@@ -103,7 +106,7 @@ public class SmsChargeOrderController {
      * @param request
      * @param response
      */
-    @PostMapping("notifyUrl")
+    @PostMapping("/notifyUrl")
     public void notifyUrl(HttpServletRequest request, HttpServletResponse response) {
         smsChargeOrderBiz.notifyUrl(request);
         try (PrintWriter out = response.getWriter()) {

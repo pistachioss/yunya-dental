@@ -5,6 +5,7 @@ import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.sms.model.SmsSendRecordModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.modules.sms.biz.SmsAutosendEventBiz;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
 import com.yunya.modules.sms.biz.SmsTemplateSetBiz;
 import io.swagger.annotations.Api;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -32,6 +34,8 @@ public class SmsServiceRest {
     private SmsSendRecordBiz smsSendRecordBiz;
     @Autowired
     private SmsTemplateSetBiz smsTemplateSetBiz;
+    @Autowired
+    private SmsAutosendEventBiz smsAutosendEventBiz;
 
     /**
      * 批量发送短信
@@ -60,12 +64,27 @@ public class SmsServiceRest {
     /**
      * 发送短信验证码
      *
-     * @param smsSendRecordModel 短信发送添加模型
+     * @param mobile 手机号
+     * @param verifyCode 验证码
+     * @param eventCode 事件编码
      * @return
      */
     @RequestMapping(value = "/sms/sendVerifyCode", method = RequestMethod.POST)
-    public ResponseResult<T> sendVerifyCode(@RequestBody @Validated SmsSendRecordModel smsSendRecordModel) {
-        return smsSendRecordBiz.sendVerifyCode(smsSendRecordModel);
+    public ResponseResult<T> sendVerifyCode(@RequestParam(value = "mobile") @NotBlank String mobile,
+                                            @RequestParam(value = "verifyCode") @NotBlank String verifyCode,
+                                            @RequestParam(value = "eventCode") @NotBlank String eventCode) {
+        return smsSendRecordBiz.sendVerifyCode(mobile, verifyCode, eventCode);
+    }
+
+    /**
+     * 批量发送同内容的短信
+     *
+     * @param smsSendRecordModel 短信发送添加模型
+     * @return
+     */
+    @RequestMapping(value = "/sms/sendRecord", method = RequestMethod.POST)
+    public ResponseResult<T> sendRecord(@RequestBody @Validated SmsSendRecordModel smsSendRecordModel) {
+        return smsSendRecordBiz.sendRecord(smsSendRecordModel);
     }
 
     /**
@@ -89,5 +108,10 @@ public class SmsServiceRest {
     @RequestMapping(value = "/sms/findSmsTemplateById/{id}", method = RequestMethod.GET)
     public SmsTemplateSetVO findSmsTemplateById(@PathVariable(value = "id") Integer id) {
         return smsTemplateSetBiz.findSmsTemplateSetById(id);
+    }
+
+    @RequestMapping(value = "/sms/createAutoSendEvent/{orgId}", method = RequestMethod.GET)
+    public ResponseResult<T> createAutoSendEvent(@PathVariable(value = "orgId") Integer orgId) {
+        return smsAutosendEventBiz.createAutoSendEvent(orgId);
     }
 }

@@ -301,8 +301,6 @@
         leave_info t
         LEFT JOIN vacation_set vs ON t.vacation_id = vs.id
         LEFT JOIN leave_schedule ls ON ls.leave_id = t.id
-        GROUP BY
-        t.id
         <where>
             <if test="id!= null">
                 and t.id = #{id}
@@ -313,7 +311,9 @@
             <if test="startTime != null ">
                 and t.crt_time >= #{startTime} and t.crt_time &lt;= #{endTime}
             </if>
-        </where>) a
+        </where>
+        GROUP BY
+        t.id) a
         LEFT JOIN copy_info ci ON ci.apply_id = a.id and ci.apply_type = 0
         <where>
             <if test="copyId !=null and copyId != '' ">
