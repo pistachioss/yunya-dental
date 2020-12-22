@@ -67,7 +67,7 @@ public class SmsTemplateSetQueryForm implements Serializable {
      * 模板code
      */
     @ApiModelProperty("模板code")
-    private Integer templateCode;
+    private String templateCode;
 
     /**
      * 是否需要模板预览

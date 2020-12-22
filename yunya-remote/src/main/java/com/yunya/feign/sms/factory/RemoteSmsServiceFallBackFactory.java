@@ -46,4 +46,9 @@ public class RemoteSmsServiceFallBackFactory implements RemoteSmsServiceFeign {
     public ResponseResult<T> batchSendModels(Integer templateId, List<? extends SmsCommonSendRecordModel> models) {
         return null;
     }
+
+    @Override
+    public void initAutoSendEvent(Integer orgId) {
+
+    }
 }

@@ -1,6 +1,7 @@
 package com.yunya.modules.sms.biz;
 
 import com.github.pagehelper.PageHelper;
+import com.yunya.feign.sms.form.SmsAutosendEventForm;
 import com.yunya.feign.sms.model.SmsAutosendEventModel;
 import com.yunya.feign.sms.query.SmsAutosendEventQueryForm;
 import com.yunya.feign.sms.vo.SmsAutosendEventVO;
@@ -8,10 +9,13 @@ import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.sms.SmsAutosendEvent;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsEnableEnum;
 import com.yunya.modules.sms.mapper.SmsAutosendEventMapper;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -97,5 +101,11 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
         }
         autosendEvent.setTemplateId(templateId);
         updateById(autosendEvent);
+    }
+
+    public ResponseResult<T> createAutoSendEvent(Integer orgId) {
+        SmsAutosendEventForm form = new SmsAutosendEventForm();
+        form.setOrgId(orgId);
+        return ResponseUtil.success();
     }
 }

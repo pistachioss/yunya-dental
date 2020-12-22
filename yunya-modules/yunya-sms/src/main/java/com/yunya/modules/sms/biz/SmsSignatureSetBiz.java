@@ -16,6 +16,7 @@ import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsSignatureSourceEnum;
 import com.yunya.modules.sms.mapper.SmsSignatureSetMapper;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
+import com.yunya.modules.sms.vo.SmsSignatureReportVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -153,6 +154,7 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         SmsSignatureSetQueryForm queryForm = new SmsSignatureSetQueryForm();
         queryForm.setWhetherPage(false);
         queryForm.setSignName(signName);
+        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsSignatureSetVO> smsSignatureSetVOS = findSmsSignatureSetList(queryForm);
         if (id == null) {
             if (smsSignatureSetVOS!=null && !smsSignatureSetVOS.isEmpty()) {
@@ -194,5 +196,38 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         smsSignatureSet.setUptTime(now);
         smsSignatureSet.setUptId(-999);
         mapper.updateByPrimaryKeySelective(smsSignatureSet);
+    }
+
+    /**
+     * 阿里云短信签名审批推送通知
+     *
+     * @param
+     */
+    public void signSmsReport(List<SmsSignatureReportVO> smsSignatureReportVOS) {
+        SmsSignatureReportVO smsSignatureReportVO = smsSignatureReportVOS.get(0);
+        String signName = smsSignatureReportVO.getSign_name();
+        String signStatus = smsSignatureReportVO.getSign_status();
+        SmsSignatureSetQueryForm queryForm = new SmsSignatureSetQueryForm();
+        queryForm.setSignName(signName);
+        queryForm.setSignStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
+        queryForm.setWhetherPage(false);
+        List<SmsSignatureSetVO> smsSignatureSetVOS = findSmsSignatureSetList(queryForm);
+        if (smsSignatureSetVOS == null) {
+            return;
+        }
+        /**
+         * approving：审核中。
+         * approved：审核通过。
+         * rejected：审核未通过。
+         */
+        SmsSignatureSetVO smsSignatureSetVO = smsSignatureSetVOS.get(0);
+        if (!"approving".equals(signStatus)) {
+            Byte status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
+            if ("rejected".equals(signStatus)) {
+                status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
+            }
+            smsSignatureSetVO.setSignStatus(status);
+            uptSelectiveById(smsSignatureSetVO);
+        }
     }
 }

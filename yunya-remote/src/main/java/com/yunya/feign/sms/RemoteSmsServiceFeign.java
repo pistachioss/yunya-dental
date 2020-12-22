@@ -69,4 +69,12 @@ public interface RemoteSmsServiceFeign {
     @RequestMapping(value = "/api/sms/batchSendModels/{templateId}", method = RequestMethod.POST)
     ResponseResult<T> batchSendModels(@PathVariable(value = "templateId") Integer templateId,
                                       @RequestBody @Validated List<? extends SmsCommonSendRecordModel> models);
+
+    /**
+     * 初始化生成该门诊的自动发送事件
+     *
+     * @param orgId
+     */
+    @RequestMapping(value = "/api/sms/createAutoSendEvent/{orgId}", method = RequestMethod.POST)
+    void initAutoSendEvent(@PathVariable(value = "orgId") Integer orgId);
 }

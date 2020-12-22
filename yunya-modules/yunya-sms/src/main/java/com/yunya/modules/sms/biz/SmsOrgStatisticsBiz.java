@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import com.yunya.feign.sms.vo.SmsOrgStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.sms.SmsOrgStatistics;
 import com.yunya.modules.sms.mapper.SmsOrgStatisticsMapper;
@@ -14,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
 
 /**
  * 简介：短信统计业务层
@@ -105,6 +108,43 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
             } else {
                 mapper.updateByPrimaryKeySelective(smsOrgStatistics);
             }
+            redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
+        } finally {
+            redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
+        }
+    }
+
+    /**
+     * 短信余额扣费
+     *
+     * @param usedNum：扣费条数
+     * @param orgId 门诊
+     */
+    public void decrByOrgId(int usedNum, Integer orgId) {
+        Date now = new Date(System.currentTimeMillis());
+        try {
+            redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
+                    RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
+            SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
+            SmsOrgStatistics smsOrgStatistics = new SmsOrgStatistics();
+            if (smsOrgStatisticsVO == null) {
+                redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
+                throw new ClientServiceException("短信余额不足", OPERATION_NOT_ALLOW);
+            }
+            Integer chargeNum = smsOrgStatistics.getChargeNum();
+            Integer surplusNum = smsOrgStatistics.getSurplusNum();
+            if (chargeNum == null) {
+                chargeNum = 0;
+            }
+            if (surplusNum == null) {
+                surplusNum = 0;
+            }
+            smsOrgStatistics.setOrgId(orgId);
+            smsOrgStatistics.setChargeNum(chargeNum - usedNum);
+            smsOrgStatistics.setSurplusNum(surplusNum - usedNum);
+            smsOrgStatistics.setUptId(-999);
+            smsOrgStatistics.setUptTime(now);
+            mapper.updateByPrimaryKeySelective(smsOrgStatistics);
             redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));

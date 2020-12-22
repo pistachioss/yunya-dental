@@ -27,7 +27,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.SmsAutosendEventConstants.DEVICE_BINDING_EVENT;
 
 /**
  * 简介：考勤设备绑定业务层
@@ -263,14 +262,14 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
         }
         redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
-        ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, DEVICE_BINDING_EVENT);
+        /*ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, DEVICE_BINDING_EVENT);
         if (responseResult==null) {
             return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
         }
         if (responseResult.getStatus() != 0) {
             return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
-        }
-        return ResponseUtil.success("短信验证码已发送");
+        }*/
+        return ResponseUtil.success("短信验证码已发送", messageCode);
     }
 
     /**

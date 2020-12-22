@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -176,7 +177,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     Integer.parseInt(BaseContextHandler.getUserID()),
                     BaseContextHandler.getName());
             AliyunSmsUtl.sendSms(mobile, signName, smsTemplateSetVO.getTemplateCode(), param);
-            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
+            smsOrgStatisticsBiz.decrByOrgId(surplusNum, orgId);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
@@ -224,7 +225,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 throw new ClientServiceException("短信余额不足！", OPERATION_NOT_ALLOW);
             }
             AliyunSmsUtl.sendBatchSms(mobiles, signNames, smsTemplateSetVO.getTemplateCode(), templateParamJson);
-            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
+            smsOrgStatisticsBiz.decrByOrgId(surplusNum, orgId);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
@@ -310,7 +311,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 throw new ClientServiceException("短信余额不足！", OPERATION_NOT_ALLOW);
             }
             AliyunSmsUtl.sendBatchSms(phoneNumberJson, signNameJson, smsTemplateSetVO.getTemplateCode(), templateParamJson);
-            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
+            smsOrgStatisticsBiz.decrByOrgId(surplusNum, orgId);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
@@ -358,7 +359,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 throw new ClientServiceException("短信余额不足！", OPERATION_NOT_ALLOW);
             }
             AliyunSmsUtl.sendSms(model.getMobiles(), signName, smsTemplateSetVO.getTemplateCode(), model.getTemplateParamJson());
-            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
+            smsOrgStatisticsBiz.decrByOrgId(surplusNum, orgId);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
@@ -480,5 +481,14 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             employeeName = sysUserInfoDetail.getName();
         }
         return employeeName;
+    }
+
+    /**
+     * 阿里云短信发送状态推送通知
+     *
+     * @param
+     */
+    public void smsReport(HttpServletRequest request) {
+
     }
 }

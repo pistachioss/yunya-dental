@@ -12,15 +12,16 @@ import com.yunya.feign.sms.vo.SmsSignatureSetVO;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsTemplateSet;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsSenseEnum;
-import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.modules.sms.enums.SmsTypeEnum;
 import com.yunya.modules.sms.mapper.SmsTemplateSetMapper;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
+import com.yunya.modules.sms.vo.SmsTemplateReportVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,7 +66,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (queryForm.getWhetherPage()) {
             PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
         }
-        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsTemplateSetVO> smsTemplateSetVOS = mapper.findSmsTemplateSetList(queryForm);
         if (queryForm.getNeedPreview()) {
             smsTemplateSetVOS.forEach(templateSetVO -> {
@@ -213,6 +213,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         SmsTemplateSetQueryForm queryForm = new SmsTemplateSetQueryForm();
         queryForm.setWhetherPage(false);
         queryForm.setTemplateName(templateName);
+        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsTemplateSetVO> smsTemplateSetVOS = findSmsTemplateSetList(queryForm);
         if (id == null) {//新增
             if (smsTemplateSetVOS!=null && !smsTemplateSetVOS.isEmpty()) {
@@ -384,5 +385,35 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      */
     public SmsTemplateSetVO findSmsTemplateByEventCode(String eventCode) {
         return mapper.findSmsTemplateByEventCode(eventCode);
+    }
+
+    /**
+     * 阿里云短信模板审核推送通知
+     *
+     * @param
+     */
+    public void templateSmsReport(List<SmsTemplateReportVO> smsTemplateReportVOS) {
+        SmsTemplateReportVO smsTemplateReportVO = smsTemplateReportVOS.get(0);
+        String templateCode = smsTemplateReportVO.getTemplate_code();
+        String templateStatus = smsTemplateReportVO.getTemplate_status();
+        SmsTemplateSetQueryForm queryForm = new SmsTemplateSetQueryForm();
+        queryForm.setTemplateCode(templateCode);
+        queryForm.setTemplateStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
+        queryForm.setWhetherPage(false);
+        List<SmsTemplateSetVO> smsTemplateSetList = findSmsTemplateSetList(queryForm);
+        /**
+         * approving：审核中。
+         * approved：审核通过。
+         * rejected：审核未通过。
+         */
+        SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetList.get(0);
+        if (!"approving".equals(templateStatus)) {
+            Byte status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
+            if ("rejected".equals(templateStatus)) {
+                status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
+            }
+            smsTemplateSetVO.setTemplateStatus(status);
+            uptSelectiveById(smsTemplateSetVO);
+        }
     }
 }

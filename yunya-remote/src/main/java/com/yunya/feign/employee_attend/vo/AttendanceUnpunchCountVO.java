@@ -42,7 +42,7 @@ public class AttendanceUnpunchCountVO implements Serializable {
     private Date offPunchTime;
 
     /** 缺卡次数 */
-    @ApiModelProperty(value = "早退时长（分钟）")
+    @ApiModelProperty(value = "缺卡次数")
     private Integer count;
 
     /** 打卡结果 */

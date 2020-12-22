@@ -5,6 +5,7 @@ import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.sms.model.SmsSendRecordModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.modules.sms.biz.SmsAutosendEventBiz;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
 import com.yunya.modules.sms.biz.SmsTemplateSetBiz;
 import io.swagger.annotations.Api;
@@ -33,6 +34,8 @@ public class SmsServiceRest {
     private SmsSendRecordBiz smsSendRecordBiz;
     @Autowired
     private SmsTemplateSetBiz smsTemplateSetBiz;
+    @Autowired
+    private SmsAutosendEventBiz smsAutosendEventBiz;
 
     /**
      * 批量发送短信
@@ -105,5 +108,10 @@ public class SmsServiceRest {
     @RequestMapping(value = "/sms/findSmsTemplateById/{id}", method = RequestMethod.GET)
     public SmsTemplateSetVO findSmsTemplateById(@PathVariable(value = "id") Integer id) {
         return smsTemplateSetBiz.findSmsTemplateSetById(id);
+    }
+
+    @RequestMapping(value = "/sms/createAutoSendEvent/{orgId}", method = RequestMethod.GET)
+    public ResponseResult<T> createAutoSendEvent(@PathVariable(value = "orgId") Integer orgId) {
+        return smsAutosendEventBiz.createAutoSendEvent(orgId);
     }
 }
