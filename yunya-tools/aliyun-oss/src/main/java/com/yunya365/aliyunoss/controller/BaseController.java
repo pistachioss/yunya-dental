@@ -19,7 +19,7 @@ import java.util.UUID;
 
 
 @RestController
-@Api(tags = "oss_category说明,1:诊所,2:员工,3:患者,4:优惠活动,5:考勤,0:临时文件夹.")
+@Api(tags = "ossCategory说明,1:诊所,2:员工,3:患者,4:优惠活动,5:考勤,6:现金结存,0:临时文件夹.")
 public class BaseController {
 
     private String getSuffixName(final String fileName) {

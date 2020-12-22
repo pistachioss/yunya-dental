@@ -4,10 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.modules.sms.exception.SignException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +40,8 @@ public class WikiUtl {
     private String notifyUrl;
     @Value("${wiki.redirectUrl}")
     private String redirectUrl;
+    @Value("${wiki.publicKey}")
+    private String publicKey;
     /**
      * 订单支付有效时长
      */
@@ -52,9 +54,18 @@ public class WikiUtl {
     private static String APP;
     private static String OPERATOR_ID;
     private static String KEY;
+    /** 采宝公钥 */
+    private static String PUBLIC_KEY;
 
-    @Autowired
-    private static SSLClient sslClient;
+    @PostConstruct
+    public void init() {
+        APP = app;
+        OPERATOR_ID = operatorId;
+        KEY = key;
+        NOTIFY_URL = notifyUrl;
+        REDIRECT_URL = redirectUrl;
+        PUBLIC_KEY = publicKey;
+    }
 
     /**
      * 根据订单号查询订单信息
@@ -84,20 +95,16 @@ public class WikiUtl {
             logger.info("queryOrder result: {}", responseResult);
             JSONObject object = JSONObject.parseObject(responseResult);
             data = object.getJSONObject("data");
+            String sign = object.getString("sign");
+            if (!rsaCheck(data,sign)) {
+                logger.error("延签失败, 返回数据: {}", object);
+                throw new SignException("延签失败", OPERATION_FAIL);
+            }
         } catch (Exception e) {
             logger.error("queryOrder order error", e);
             throw new ClientServiceException("查询充值订单失败！", OPERATION_FAIL);
         }
         return data;
-    }
-
-    @PostConstruct
-    public void init() {
-        APP = app;
-        OPERATOR_ID = operatorId;
-        KEY = key;
-        NOTIFY_URL = notifyUrl;
-        REDIRECT_URL = redirectUrl;
     }
 
     /**
@@ -136,6 +143,11 @@ public class WikiUtl {
             JSONObject object = JSONObject.parseObject(responseResult);
             result = object.getJSONObject("result");
             data = object.getJSONObject("data");
+            String sign = object.getString("sign");
+            if (!rsaCheck(data, sign)) {
+                logger.error("延签失败, 返回数据: {}", object);
+                throw new SignException("延签失败", OPERATION_FAIL);
+            }
         } catch (Exception e) {
             logger.error("create qrcode order error", e);
             throw new ClientServiceException("创建充值订单失败！", OPERATION_FAIL);
@@ -164,14 +176,24 @@ public class WikiUtl {
                 ++index;
             }
         }
-
         return content.toString();
     }
 
+    /**
+     * RSA2延签
+     *
+     * @param data
+     * @param sign
+     * @return
+     */
+    public static boolean rsaCheck(JSONObject data, String sign) {
+        Map<String, String> params = new HashMap<>();
+        data.entrySet().forEach(entry-> params.put(entry.getKey(),entry.getValue()+""));
+        return rsaCheck(params, sign);
+    }
 
     public static boolean rsaCheck(Map<String, String> params, String sign) {
         String signContent = getSignContent(params);
-        EncryptionUtil.rsaCheck(signContent, sign, APP, "UTF-8", "RSA");
-        return false;
+        return EncryptionUtil.rsaCheck(signContent, sign, PUBLIC_KEY, "UTF-8", "RSA2");
     }
 }

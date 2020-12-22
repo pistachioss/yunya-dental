@@ -23,12 +23,12 @@ public class VisitingForMonthInfo implements Serializable {
     private Integer dentistId;
     /** 开始日期 */
     @ApiModelProperty(value = "开始日期")
-    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private Date startDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private String startDate;
     /** 结束日期 */
     @ApiModelProperty(value = "结束日期")
-    @JsonFormat(pattern = "yyyy-MM-dd",timezone = "GMT+8")
-    private Date endDate;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd",timezone = "GMT+8")
+    private String endDate;
     @ApiModelProperty("门诊ID")
     private Integer orgId;
 }

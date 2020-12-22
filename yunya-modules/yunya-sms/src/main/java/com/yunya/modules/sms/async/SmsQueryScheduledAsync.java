@@ -35,7 +35,7 @@ import java.util.List;
  */
 @Component
 @EnableScheduling
-public class AliyunSmsQueryScheduledAsync {
+public class SmsQueryScheduledAsync {
 
     @Autowired
     private SmsSignatureSetBiz smsSignatureSetBiz;
