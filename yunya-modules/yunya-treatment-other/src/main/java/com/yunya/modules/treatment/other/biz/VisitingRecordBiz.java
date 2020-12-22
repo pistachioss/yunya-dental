@@ -598,10 +598,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      */
     public List<VisitingForMonthVo> findVisitingForMonth(VisitingForMonthInfo forMonthInfo) {
         Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
-        return mapper.findVisitingForMonth(forMonthInfo.getDentistId(),
+        List<VisitingForMonthVo> visitingForMonth = mapper.findVisitingForMonth(forMonthInfo.getDentistId(),
                 forMonthInfo.getStartDate(),
                 forMonthInfo.getEndDate(),
                 orgId);
+        return visitingForMonth;
     }
 
 
