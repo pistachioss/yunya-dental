@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectForm;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectModel;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectNameVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -16,6 +17,8 @@ import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 简介: 专科项目管理控制层
@@ -44,6 +47,18 @@ public class SpecialistProjectController {
       @RequestBody @Validated SpecialistProjectQuery query) {
     PageInfo<SpecialistProjectVO> pageInfo = specialistProjectBiz.findSpecialistProjectList(query);
     return ResponseUtil.success(pageInfo);
+  }
+
+  /**
+   * 专科项目名称列表
+   *
+   * @return void
+   */
+  @ApiOperation("专科项目名称列表(专科项目数量分解用)")
+  @GetMapping(value = "/name/list", name = "专科项目名称列表")
+  public ResponseResult<List<SpecialistProjectNameVO>> specialistProjectName() {
+    List<SpecialistProjectNameVO> resultList = specialistProjectBiz.findSpecialistProjectName();
+    return ResponseUtil.success(resultList);
   }
 
   /**

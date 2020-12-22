@@ -32,4 +32,14 @@
             </if>
         </where>
     </select>
+
+    <!-- 专科项目名称列表 -->
+    <select id="selectSpecialistProjectNameList"
+            resultType="com.yunya.feign.clinic_base.domain.vo.SpecialistProjectNameVO">
+        SELECT
+        sp.id,
+        sp.`name` AS specialistProjectName
+        FROM
+        specialist_project sp
+    </select>
 </mapper>

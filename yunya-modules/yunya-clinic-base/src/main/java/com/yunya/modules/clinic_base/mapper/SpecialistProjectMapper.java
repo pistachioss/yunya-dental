@@ -1,6 +1,7 @@
 package com.yunya.modules.clinic_base.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectNameVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.models.clinic_base.SpecialistProject;
 import org.apache.ibatis.annotations.Param;
@@ -18,4 +19,11 @@ public interface SpecialistProjectMapper extends Mapper<SpecialistProject> {
    */
   List<SpecialistProjectVO> selectSpecialistProjectList(
       @Param("query") SpecialistProjectQuery query);
+
+  /**
+   * 专科项目名称列表
+   *
+   * @return List<SpecialistProjectNameVO>
+   */
+  List<SpecialistProjectNameVO> selectSpecialistProjectNameList();
 }

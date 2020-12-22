@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectForm;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectModel;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectNameVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -57,6 +58,15 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
       }
     }
     return new PageInfo<>(resultList);
+  }
+
+  /**
+   * 专科项目名称列表
+   *
+   * @return List<SpecialistProjectNameVO>
+   */
+  public List<SpecialistProjectNameVO> findSpecialistProjectName() {
+    return mapper.selectSpecialistProjectNameList();
   }
 
   /**
