@@ -161,17 +161,17 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         StringBuilder template = new StringBuilder();
         int size = StringHelper.countChild("@",templateContent);
         int length = signName.length() + 2;//【短信签名】
+        String[] contents = templateContent.split("@");
+        String firstTmp = contents[0];
+        template.append(firstTmp);
         if (size>0 && StringHelper.isNotEmpty(templateItem)) {
             if (templateContent.indexOf("@") == -1) {
                 throw new ClientServiceException("模板格式不正确！", PARAMETERS_IS_ILLEGAL);
             }
-            String[] contents = templateContent.split("@");
             String[] items = templateItem.split(",");
             if (size != items.length) {
                 throw new ClientServiceException("模板格式不正确！", PARAMETERS_IS_ILLEGAL);
             }
-            String firstTmp = contents[0];
-            template.append(firstTmp);
             length += firstTmp.length();
             Map<String, Integer> repeat = new HashMap<>(items.length);
             for (int i = 0; i < items.length; i++) {

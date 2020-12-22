@@ -175,8 +175,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             insertSelective(orgId, batchId, builder, mobile,
                     Integer.parseInt(BaseContextHandler.getUserID()),
                     BaseContextHandler.getName());
-            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
             AliyunSmsUtl.sendSms(mobile, signName, smsTemplateSetVO.getTemplateCode(), param);
+            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
@@ -223,8 +223,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", OPERATION_NOT_ALLOW);
             }
-            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
             AliyunSmsUtl.sendBatchSms(mobiles, signNames, smsTemplateSetVO.getTemplateCode(), templateParamJson);
+            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
@@ -309,8 +309,8 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             if (surplusNum <=0) {
                 throw new ClientServiceException("短信余额不足！", OPERATION_NOT_ALLOW);
             }
-            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
             AliyunSmsUtl.sendBatchSms(phoneNumberJson, signNameJson, smsTemplateSetVO.getTemplateCode(), templateParamJson);
+            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
@@ -358,6 +358,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 throw new ClientServiceException("短信余额不足！", OPERATION_NOT_ALLOW);
             }
             AliyunSmsUtl.sendSms(model.getMobiles(), signName, smsTemplateSetVO.getTemplateCode(), model.getTemplateParamJson());
+            redisUtils.set(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId, surplusNum);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));
         }
