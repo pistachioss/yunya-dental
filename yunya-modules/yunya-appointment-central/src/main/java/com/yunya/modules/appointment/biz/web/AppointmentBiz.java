@@ -908,6 +908,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 设置患者手机号
             String mobile = patientBaseInfo.getMobile();
             appointmentVo.setPatientMobile(mobile);
+            // 设置患者年龄
+            Integer age = patientBaseInfo.getAge();
+            appointmentVo.setAge(age);
+            // 设置患者性别
+            Byte gender = patientBaseInfo.getGender();
+            appointmentVo.setGender(gender);
         }
         // 查询预约分解信息
         AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();

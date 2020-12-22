@@ -131,7 +131,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     int num = mapper.insert(leaveInfo);
                     //插入审批人信息
                     int leaveId = leaveInfo.getId();
-                    List<ApprovalInfo> list = leaveInfoForm.getApprpvalPeopleList();
+                    List<ApprovalInfo> list = leaveInfoForm.getApprovalPeopleList();
                     for (ApprovalInfo approvalInfo : list) {
                         approvalInfo.setCrtId(leaveInfoForm.getCrtId());
                         approvalInfo.setCrtTime(new Date());
@@ -233,7 +233,7 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
                     }
                     leaveScheduleMapper.batchInsert(scList);
                     //插入审批人信息
-                    List<ApprovalInfo> list = leaveInfoByEmForm.getApprpvalPeopleList();
+                    List<ApprovalInfo> list = leaveInfoByEmForm.getApprovalPeopleList();
                     for (ApprovalInfo approvalInfo : list) {
                         approvalInfo.setCrtId(leaveInfoByEmForm.getCrtId());
                         approvalInfo.setCrtTime(new Date());

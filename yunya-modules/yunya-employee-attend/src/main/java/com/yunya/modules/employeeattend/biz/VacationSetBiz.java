@@ -48,9 +48,9 @@ public class VacationSetBiz extends BaseBiz<VacationSetMapper, VacationSet> {
         SysUserInfoDetail sysUserInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(Integer.valueOf(BaseContextHandler.getUserID()));
         VacationSet vacationSet = new VacationSet();
         if(sysUserInfoDetail.getWorkStatus()==0){
-            vacationSet.setVacationRange(1);
-        }else if(sysUserInfoDetail.getWorkStatus()==1){
             vacationSet.setVacationRange(2);
+        }else if(sysUserInfoDetail.getWorkStatus()==1){
+            vacationSet.setVacationRange(1);
         }
         if(vacationSetQuery.getVacationEnable()!=null){
             vacationSet.setVacationEnable(vacationSetQuery.getVacationEnable());

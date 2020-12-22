@@ -96,7 +96,7 @@ public class SysUserInfoDetail extends BaseEntity implements Serializable {
   /** 身份证号 */
   private String identity;
 
-  /** 试用: 0, 正式: 1，实习: 2, 离职 3 */
+  /** 试用: 0, 正式: 1，离职: 2  */
   private Byte workStatus;
 
   /** 奖金系数 */

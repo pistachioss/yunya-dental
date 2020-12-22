@@ -81,7 +81,7 @@ public class LeaveInfoForm {
      * 审批人信息列表
      */
     @ApiModelProperty("审批人信息列表")
-    private List<ApprovalInfo> apprpvalPeopleList;
+    private List<ApprovalInfo> approvalPeopleList;
 
     @ApiModelProperty("抄送人Id集合")
     private List<Integer> copyList;
