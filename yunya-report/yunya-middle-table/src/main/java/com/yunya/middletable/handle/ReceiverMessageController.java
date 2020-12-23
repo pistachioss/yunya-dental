@@ -7,6 +7,7 @@ import com.yunya.middletable.service.patient.BasePatientBiz;
 import com.yunya.middletable.service.patient.BasePatientMemberBiz;
 import com.yunya.middletable.service.patient.BasePatientMemberOccurLogBiz;
 import com.yunya.middletable.service.patient.BasePatientMemberRelationBiz;
+import com.yunya.middletable.service.treatment_other.BaseVisitRemindBiz;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
@@ -54,6 +55,8 @@ public class ReceiverMessageController {
   @Autowired private BasePatientMemberRelationBiz basePatientMemberRelationBiz;
 
   @Autowired private BasePatientMemberOccurLogBiz basePatientMemberOccurLogBiz;
+
+  @Autowired private BaseVisitRemindBiz baseVisitRemindBiz;
 
   @RabbitHandler
   public void handleMiddleSingle(MessageModel messageModel, Channel channel, Message message)
@@ -117,6 +120,9 @@ public class ReceiverMessageController {
           break;
         case BaseCouponItem:
           baseCouponItemService.operateBaseCouponItem(messageModel);
+          break;
+        case BaseVisitRemind:
+          baseVisitRemindBiz.operate(messageModel);
           break;
         default:
           log.info("消息中没有对应的枚举类型[{}]！", messageModel.getMsgCategoryEnum());

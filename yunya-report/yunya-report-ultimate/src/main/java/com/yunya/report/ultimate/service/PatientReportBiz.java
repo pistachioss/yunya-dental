@@ -74,17 +74,10 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
     }
-    List<BasePatientNotSeenVo> basePatientNotSeenVoList = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
     if (form.getWhetherPage()) {
       PageHelper.startPage(form.getPageNum(), form.getPageSize());
     }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePatientNotSeenVoList = mapper.selectNotSeenList(form, patientIds);
-    }
+    List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
     return new PageInfo<>(basePatientNotSeenVoList);
   }
 
@@ -99,20 +92,13 @@ public class PatientReportBiz extends BaseBiz<BasePatientMapper, BasePatient> {
     if (StringHelper.isNotEmpty(form.getEndDate())) {
       form.setEndDate(DateConversion.getEndDate(form.getEndDate()));
     }
-    List<BasePatientNotSeenVo> basePatientNotSeenVoList = new ArrayList<>();
-    List<Integer> patientIds = null;
-    if (StringHelper.isNotEmpty(form.getCombination())) {
-      patientIds = basePatientMapper.selectKilePatientId(form.getCombination());
-    }
-    if (patientIds == null || patientIds.size() > 0) {
-      basePatientNotSeenVoList = mapper.selectNotSeenList(form, patientIds);
-    }
+    List<BasePatientNotSeenVo> basePatientNotSeenVoList = mapper.selectNotSeenList(form);
     ExcelUtil<BasePatientNotSeenVo> excelUtil = new ExcelUtil<>(BasePatientNotSeenVo.class);
     if (StringHelper.isNotNull(form.getOrgId())) {
       BaseOrganization baseOrganization = new BaseOrganization();
       baseOrganization.setOrgId(form.getOrgId());
       BaseOrganization baseOrganizationv = baseOrganizationMapper.selectOne(baseOrganization);
-      if (baseOrganization != null) {
+      if (baseOrganizationv != null) {
         excelUtil.exportExcel(
             response,
             basePatientNotSeenVoList,

@@ -79,4 +79,5 @@ public interface VisitingRecordMapper extends Mapper<VisitingRecord> {
      */
     List<NextVisitingRecordVo> countNextVisitingListByIds(@Param("patientIds") List<Integer> patientIds,
                                                           @Param("regDate") String regDate);
+
 }
