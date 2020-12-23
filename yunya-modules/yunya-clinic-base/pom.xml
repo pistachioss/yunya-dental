@@ -17,8 +17,8 @@
 
     <properties>
         <targetJavaProject>${basedir}/src/main/java</targetJavaProject>
-        <targetMapperPackage>com.yunya.modules.clinic.base.mapper</targetMapperPackage>
-        <targetModelPackage>com.yunya.modules.clinic.base.model</targetModelPackage>
+        <targetMapperPackage>com.yunya.modules.clinic_base.mapper</targetMapperPackage>
+        <targetModelPackage>com.yunya.modules.clinic_base.model</targetModelPackage>
         <!-- XML生成路径 -->
         <targetResourcesProject>${basedir}/src/main/resources</targetResourcesProject>
         <targetXMLPackage>mapper</targetXMLPackage>

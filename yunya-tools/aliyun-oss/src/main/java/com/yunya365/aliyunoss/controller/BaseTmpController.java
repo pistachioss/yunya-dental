@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.UUID;
 
 
-@Deprecated
+
 @RestController
 @RequestMapping("/tmp")
 @Api(tags = "资源相关接口，测试用")
@@ -74,7 +74,7 @@ public class BaseTmpController {
     })
     public ResponseResult getClinicUrl(@PathVariable("ossCategory") Integer oss_category,
                                             @PathVariable("id") Integer id,
-                                            @RequestParam(value = "oss_filename") String filename,
+                                            @RequestParam(value = "oss  _filename") String filename,
                                             @RequestParam(value = "is_Thumb") Boolean isThumb) throws Exception {
 
         String objectName = makeObjectFullName(oss_category, id, filename);

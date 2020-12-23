@@ -39,6 +39,16 @@
         <result column="inservice" property="inservice" jdbcType="BIT"/>
     </resultMap>
 
+    <!-- 根据基础价目表ID列表查询价目表名字 -->
+    <select id="selectBaseTariffNamesByIds" resultType="java.lang.String">
+        SELECT
+        GROUP_CONCAT( bt.`name` ) AS tariffItemName
+        FROM
+        base_tariff bt
+        WHERE
+        FIND_IN_SET( bt.id, #{ids} )
+    </select>
+
     <!-- 根据基础价目表ID查询价目表信息 -->
     <select id="selectBaseTariffInfoById" resultMap="BaseTariffInfoResultMap">
         select

@@ -32,7 +32,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "公司端-财务报表-余额结存")
+@Api(tags = "门诊端-患者资料-预约信息")
 @RestController
 @RequestMapping("balance")
 public class MemberBalanceBalanceController {

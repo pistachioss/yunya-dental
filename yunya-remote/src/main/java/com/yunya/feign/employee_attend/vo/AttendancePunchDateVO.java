@@ -113,4 +113,10 @@ public class AttendancePunchDateVO implements Serializable {
      * 下班项目来源: 0：上班班次； 1：休息班次；2：按天请假； 3：按班次请假；4：加班；5：外勤
      */
     private Byte offDutySource;
+
+    /*上班打卡地址/Wifi*/
+    private String onPunchAddress;
+
+    /*下班打卡地址/Wifi*/
+    private String offPunchAddress;
 }

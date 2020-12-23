@@ -2,19 +2,25 @@ package com.yunya.modules.sms.async;
 
 import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.sms.query.SmsChargeOrderQueryForm;
+import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.query.SmsSignatureSetQueryForm;
 import com.yunya.feign.sms.query.SmsTemplateSetQueryForm;
 import com.yunya.feign.sms.vo.SmsChargeOrderVO;
+import com.yunya.feign.sms.vo.SmsSendRecordVO;
 import com.yunya.feign.sms.vo.SmsSignatureSetVO;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.models.sms.SmsChargeOrder;
 import com.yunya.modules.sms.biz.SmsChargeOrderBiz;
+import com.yunya.modules.sms.biz.SmsSendRecordBiz;
 import com.yunya.modules.sms.biz.SmsSignatureSetBiz;
 import com.yunya.modules.sms.biz.SmsTemplateSetBiz;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
+import com.yunya.modules.sms.enums.SmsSendStatusEnum;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
 import com.yunya.modules.sms.utl.WikiUtl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -35,7 +41,8 @@ import java.util.List;
  */
 @Component
 @EnableScheduling
-public class SmsQueryScheduledAsync {
+public class SmsQueryScheduledAsync{
+    private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Autowired
     private SmsSignatureSetBiz smsSignatureSetBiz;
@@ -43,6 +50,8 @@ public class SmsQueryScheduledAsync {
     private SmsTemplateSetBiz smsTemplateSetBiz;
     @Autowired
     private SmsChargeOrderBiz smsChargeOrderBiz;
+    @Autowired
+    private SmsSendRecordBiz smsSendRecordBiz;
     /**
      * 两个小时
      */
@@ -72,7 +81,7 @@ public class SmsQueryScheduledAsync {
                         smsSignatureSetBiz.uptSelectiveById(smsSignatureSetVO);
                     }
                 } catch (Exception e) {
-
+                    log.error("smsQueryAsync update sign error",e);
                 }
             });
         }
@@ -93,7 +102,7 @@ public class SmsQueryScheduledAsync {
                         smsTemplateSetBiz.uptSelectiveById(smsTemplateSetVO);
                     }
                 } catch (Exception e) {
-
+                    log.error("smsQueryAsync update template error",e);
                 }
             });
         }
@@ -107,25 +116,35 @@ public class SmsQueryScheduledAsync {
             smsChargeOrderVOS.forEach(smsChargeOrderVO -> {
                 Date crtTime = smsChargeOrderVO.getCrtTime();
                 SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
-                JSONObject data = WikiUtl.queryOrder(smsChargeOrderVO.getOrderNo(), smsChargeOrderVO.getCbOrderNo());
-                String orderStatus = data.getString("order_status");
-                byte status = SmsOrderStatusEnum.CLOSED.getCode();//关闭
-                if (now.getTime() - crtTime.getTime() <= expireIn) {//未超时
-                    if ("PAY_SUC".equals(orderStatus)) {
-                        status = SmsOrderStatusEnum.PAY_SUC.getCode();
-                    } else if ("PAY_FAIL".equals(orderStatus)) {
-                        status = SmsOrderStatusEnum.PAY_FAIL.getCode();
-                    } else if ("PAY_WAIT".equals(orderStatus)) {
-                        status = SmsOrderStatusEnum.WAIT_PAY.getCode();
+                try {
+                    JSONObject data = WikiUtl.queryOrder(smsChargeOrderVO.getOrderNo(), smsChargeOrderVO.getCbOrderNo());
+                    String orderStatus = data.getString("order_status");
+                    byte status = SmsOrderStatusEnum.CLOSED.getCode();//关闭
+                    if (now.getTime() - crtTime.getTime() <= expireIn) {//未超时
+                        if ("PAY_SUC".equals(orderStatus)) {
+                            status = SmsOrderStatusEnum.PAY_SUC.getCode();
+                        } else if ("PAY_FAIL".equals(orderStatus)) {
+                            status = SmsOrderStatusEnum.PAY_FAIL.getCode();
+                        } else if ("PAY_WAIT".equals(orderStatus)) {
+                            status = SmsOrderStatusEnum.WAIT_PAY.getCode();
+                        }
                     }
+                    smsChargeOrder.setId(smsChargeOrderVO.getId());
+                    smsChargeOrder.setCbOrderNo(data.getString("cb_order_no"));
+                    smsChargeOrder.setOutOrderNo(data.getString("out_order_no"));
+                    smsChargeOrder.setOrderStatus(status);
+                    smsChargeOrder.setPaymentChannel(data.getString("payment_channel"));
+                    smsChargeOrderBiz.uptSelectiveById(smsChargeOrder);
+                } catch (Exception e) {
+                    log.error("smsQueryAsync update order error",e);
                 }
-                smsChargeOrder.setId(smsChargeOrderVO.getId());
-                smsChargeOrder.setCbOrderNo(data.getString("cb_order_no"));
-                smsChargeOrder.setOutOrderNo(data.getString("out_order_no"));
-                smsChargeOrder.setOrderStatus(status);
-                smsChargeOrder.setPaymentChannel(data.getString("payment_channel"));
-                smsChargeOrderBiz.uptSelectiveById(smsChargeOrder);
             });
         }
+
+
+        SmsSendRecordQueryForm recordQueryForm = new SmsSendRecordQueryForm();
+        recordQueryForm.setWhetherPage(false);
+        recordQueryForm.setStatus(SmsSendStatusEnum.SENDING.getCode());
+        List<SmsSendRecordVO> smsSendRecordVOS = smsSendRecordBiz.findSmsSendRecordList(recordQueryForm);
     }
 }

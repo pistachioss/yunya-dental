@@ -98,7 +98,9 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
             smsOrgStatistics.setOrgId(orgId);
             smsOrgStatistics.setChargeNum(chargeNum + smsNum);
             smsOrgStatistics.setSurplusNum(surplusNum + smsNum);
-            smsOrgStatistics.setChargeMoney(chargeMoney.add(price));
+            if (price != null) {
+                smsOrgStatistics.setChargeMoney(chargeMoney.add(price));
+            }
             smsOrgStatistics.setUptId(-999);
             smsOrgStatistics.setUptTime(now);
             if (smsOrgStatisticsVO == null) {

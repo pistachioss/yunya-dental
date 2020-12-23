@@ -22,9 +22,9 @@
     <!-- 插入数据:返回记录主键id值 -->
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
     insert into sms_send_batch
-        (id,org_id,send_num,template_id,type,crt_id,crt_user,crt_time)
+        (id,org_id,send_num,template_id,type,crt_id,crt_user,crt_time,upt_id,upt_time)
     values
-        (null,#{orgId},#{sendNum},#{templateId},#{type},#{crtId},#{crtUser},#{crtTime})
+        (null,#{orgId},#{sendNum},#{templateId},#{type},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
   </insert>
 
   <select id="findSmsSendBatchList" resultType="com.yunya.feign.sms.vo.SmsSendBatchVO">

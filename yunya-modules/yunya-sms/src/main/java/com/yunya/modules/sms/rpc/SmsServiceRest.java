@@ -110,8 +110,14 @@ public class SmsServiceRest {
         return smsTemplateSetBiz.findSmsTemplateSetById(id);
     }
 
-    @RequestMapping(value = "/sms/createAutoSendEvent/{orgId}", method = RequestMethod.GET)
-    public ResponseResult<T> createAutoSendEvent(@PathVariable(value = "orgId") Integer orgId) {
-        return smsAutosendEventBiz.createAutoSendEvent(orgId);
+    /**
+     * 门诊的初始化短信自动发送事件
+     *
+     * @param orgId
+     * @return
+     */
+    @RequestMapping(value = "/sms/initAutoSendEvent/{orgId}", method = RequestMethod.GET)
+    public ResponseResult<T> initAutoSendEvent(@PathVariable(value = "orgId") Integer orgId) {
+        return smsAutosendEventBiz.initAutoSendEvent(orgId, true);
     }
 }

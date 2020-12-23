@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yunya.modules.clinic_base.mapper.SpecialistProjectMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.SpecialistProject">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="name" property="name" jdbcType="VARCHAR"/>
+        <result column="tariff_ids" property="tariffIds" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 根据条件查询专科项目列表 -->
+    <select id="selectSpecialistProjectList"
+            resultType="com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO">
+        SELECT
+        sp.id,
+        sp.`name` AS specialistProjectName,
+        sp.tariff_ids AS tariffItemIds
+        FROM
+        specialist_project sp
+        <where>
+            <if test="query.specialistProjectName != null and query.specialistProjectName != ''">
+                and sp.name like concat('%', #{query.specialistProjectName} ,'%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 专科项目名称列表 -->
+    <select id="selectSpecialistProjectNameList"
+            resultType="com.yunya.feign.clinic_base.domain.vo.SpecialistProjectNameVO">
+        SELECT
+        sp.id,
+        sp.`name` AS specialistProjectName
+        FROM
+        specialist_project sp
+    </select>
+</mapper>

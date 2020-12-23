@@ -1,16 +1,17 @@
 package com.yunya.modules.sms.biz;
 
 import com.github.pagehelper.PageHelper;
-import com.yunya.feign.sms.form.SmsAutosendEventForm;
 import com.yunya.feign.sms.model.SmsAutosendEventModel;
 import com.yunya.feign.sms.query.SmsAutosendEventQueryForm;
 import com.yunya.feign.sms.vo.SmsAutosendEventVO;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsAutosendEvent;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsEnableEnum;
@@ -20,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -103,9 +105,40 @@ public class SmsAutosendEventBiz extends BaseBiz<SmsAutosendEventMapper, SmsAuto
         updateById(autosendEvent);
     }
 
-    public ResponseResult<T> createAutoSendEvent(Integer orgId) {
-        SmsAutosendEventForm form = new SmsAutosendEventForm();
-        form.setOrgId(orgId);
+    /**
+     * 初始化短信自动发送事件
+     *
+     * @param orgId
+     * @param isClinic true-门诊端，false-公司端
+     * @return
+     */
+    public ResponseResult<T> initAutoSendEvent(Integer orgId, boolean isClinic) {
+        List<SmsAutosendEventEnum> events = SmsAutosendEventEnum.values(isClinic);
+        String userId = BaseContextHandler.getUserID();
+        if (StringHelper.isNotEmpty(userId)) {
+            events.forEach(event -> {
+                SmsAutosendEvent entity = new SmsAutosendEvent();
+                entity.setOrgId(orgId);
+                entity.setStatus(SmsEnableEnum.ENABLE.getCode());
+                entity.setEventCode(event.getCode());
+                entity.setEventName(event.getValue());
+                insert(entity);
+            });
+        } else {
+            Date now = new Date(System.currentTimeMillis());
+            events.forEach(event -> {
+                SmsAutosendEvent entity = new SmsAutosendEvent();
+                entity.setEventCode(event.getCode());
+                entity.setEventName(event.getValue());
+                entity.setOrgId(orgId);
+                entity.setStatus(SmsEnableEnum.ENABLE.getCode());
+                entity.setCrtId(-999);
+                entity.setCrtTime(now);
+                entity.setUptId(-999);
+                entity.setUptTime(now);
+                mapper.insertSelective(entity);
+            });
+        }
         return ResponseUtil.success();
     }
 }

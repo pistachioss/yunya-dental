@@ -9,6 +9,7 @@ import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -47,7 +48,6 @@ import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNA
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_USER_ID;
 import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_USER_TOKEN;
-import static com.yunya.framework.common.constant.SmsAutosendEventConstants.FORGET_PASSWORD_EVENT;
 import static com.yunya.framework.common.constant.UserConstant.DEFAULT_USER_PASSWORD;
 import static com.yunya.framework.common.constant.UserConstant.PW_ENCODER_SALT;
 
@@ -431,7 +431,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送, 请稍后再试",null);
     }
     redisUtils.set(key, messageCode,60);
-    ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, FORGET_PASSWORD_EVENT);
+    ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
     if (responseResult==null) {
       return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
     }

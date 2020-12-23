@@ -262,7 +262,8 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
         }
         redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
-        /*ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, DEVICE_BINDING_EVENT);
+        /*ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode,
+                SmsAutosendEventEnum.ATTENDANCE_DEVICE_BINDING.getCode());
         if (responseResult==null) {
             return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
         }

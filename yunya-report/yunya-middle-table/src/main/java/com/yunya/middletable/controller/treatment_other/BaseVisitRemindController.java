@@ -30,8 +30,8 @@ public class BaseVisitRemindController {
     @Autowired BaseVisitRemindBiz baseVisitRemindBiz;
 
     /**
-     * 患者信息操作
-     * @param model 患者消息
+     * 提醒随访操作
+     * @param model 提醒随访model
      * @return
      */
     @PostMapping("/operate")
@@ -41,12 +41,12 @@ public class BaseVisitRemindController {
     }
 
     /**
-     * 根据条件拉取员工数据并更新中间表
+     * 根据条件拉取提醒随访数据并更新中间表
      *
      * @param form 拉取时间
      * @return ResponseResult
      */
-    @ApiOperation("根据时间段批量操作中间表员工信息")
+    @ApiOperation("根据时间段批量拉取提醒随访信息")
     @PostMapping(value = "/batch", name = "PatientBaseInfoBiz")
     public ResponseResult<T> pullPatientData(@RequestBody PullForm form) {
         baseVisitRemindBiz.pullPatientData(form);
