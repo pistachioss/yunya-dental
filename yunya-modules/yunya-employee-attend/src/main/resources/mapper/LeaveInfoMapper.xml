@@ -382,5 +382,6 @@
     LEFT JOIN vacation_set vs on li.vacation_id = vs.id
     where ai.approval_status in (2,1)
     and ap.user_id = #{userId} group BY ai.leave_id
+     order by li.crt_time desc
     </select>
 </mapper>
