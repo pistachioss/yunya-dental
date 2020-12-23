@@ -63,4 +63,12 @@ public class BusinessTargetController implements Serializable {
     businessTargetBiz.saveOrUpdate(model);
     return ResponseUtil.success(null);
   }
+  
+  @ApiOperation("运营报表-工作目标")
+  @PostMapping(value = "/report", name = "运营报表-工作目标")
+  public ResponseResult<T> report() {
+      
+      return ResponseUtil.success(null);
+  }
+  
 }

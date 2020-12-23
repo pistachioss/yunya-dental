@@ -44,6 +44,6 @@
             </if>
         </where>
         GROUP BY sbt.id
-        ORDER BY sbt.business_month
+        ORDER BY sbt.business_month + 0
     </select>
 </mapper>

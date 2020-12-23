@@ -124,6 +124,7 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
     if (!specialistProjectName.equals(projectName)) {
       checkSpecialistProjectName(specialistProjectName);
     }
+    specialistProject.setName(specialistProjectName);
     Integer[] tariffItemIds = form.getTariffItemIds();
     if (StringHelper.isNotEmpty(tariffItemIds)) {
       Joiner joiner = Joiner.on(',');

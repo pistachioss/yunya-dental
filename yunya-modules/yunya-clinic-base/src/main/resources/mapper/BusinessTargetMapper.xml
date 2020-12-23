@@ -45,6 +45,6 @@
             </if>
         </where>
         GROUP BY bt.id
-        ORDER BY bt.business_month
+        ORDER BY bt.business_month + 0
     </select>
 </mapper>

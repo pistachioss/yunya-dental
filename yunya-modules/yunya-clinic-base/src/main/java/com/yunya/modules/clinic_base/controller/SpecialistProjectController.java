@@ -93,8 +93,7 @@ public class SpecialistProjectController {
         value = "专科项目ID",
         required = true,
         dataType = "int",
-        paramType = "path"),
-    @ApiImplicitParam(name = "form", value = "专科项目修改参数", required = true, paramType = "form")
+        paramType = "path")
   })
   @PutMapping(value = "/modify/{id}", name = "根据ID删除专科项目")
   public ResponseResult<T> modifySpecialistProject(
