@@ -360,6 +360,7 @@
     LEFT JOIN vacation_set vs on li.vacation_id = vs.id
     where ap.user_id = #{userId} and li.approval_status = 0
     group BY li.id
+    order by li.crt_time desc
     </select>
     <select id="findOverApprovalByMe" resultType="com.yunya.feign.employee_attend.vo.LeaveAppVO">
     SELECT
