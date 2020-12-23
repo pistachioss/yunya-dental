@@ -1,7 +1,20 @@
 package com.yunya.modules.clinic_base.mapper;
 
+import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
+import com.yunya.feign.clinic_base.domain.vo.BusinessTargetOfMonthVO;
 import com.yunya.models.clinic_base.BusinessTarget;
+import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.List;
+
 public interface BusinessTargetMapper extends Mapper<BusinessTarget> {
+
+  /**
+   * 根据条件查询月业务目标列表
+   *
+   * @param query 查询条件
+   * @return List<BusinessTargetOfMonthVO>
+   */
+  List<BusinessTargetOfMonthVO> selectBusinessTargetList(@Param("query") BusinessTargetQuery query);
 }

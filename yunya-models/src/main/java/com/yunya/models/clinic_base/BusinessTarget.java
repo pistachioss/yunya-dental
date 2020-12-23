@@ -1,8 +1,10 @@
 package com.yunya.models.clinic_base;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "business_target")
 public class BusinessTarget {
@@ -37,10 +39,21 @@ public class BusinessTarget {
     private BigDecimal businessGoal;
 
     /**
-     * 业务目标时间
+     * 业务目标所属年份
      */
-    @Column(name = "business_date")
-    private String businessDate;
+    @Column(name = "business_year")
+    private String businessYear;
+
+    /**
+     * 业务目标所属月份
+     */
+    @Column(name = "business_month")
+    private String businessMonth;
+
+    /**
+     * 单位
+     */
+    private String unit;
 
     /**
      * 是否有效/是否启用
@@ -176,19 +189,56 @@ public class BusinessTarget {
     /**
      * 获取业务目标时间
      *
-     * @return business_date - 业务目标时间
+     * @return business_year - 业务目标时间年
      */
-    public String getBusinessDate() {
-        return businessDate;
+    public String getBusinessYear() {
+        return businessYear;
     }
 
     /**
      * 设置业务目标时间
      *
-     * @param businessDate 业务目标时间
+     * @param businessYear 业务目标时间年
      */
-    public void setBusinessDate(String businessDate) {
-        this.businessDate = businessDate;
+    public void setBusinessYear(String businessYear) {
+    this.businessYear = businessYear;
+    }
+
+    /**
+     * 获取业务目标时间月
+     *
+     * @return business_date - 业务目标时间月
+     */
+
+    public String getBusinessMonth() {
+        return businessMonth;
+    }
+
+    /**
+     * 设置业务目标时间月
+     *
+     * @return business_month - 业务目标时间
+     */
+    public void setBusinessMonth(String businessMonth) {
+        this.businessMonth = businessMonth;
+    }
+
+    /**
+     * 获取单位
+     *
+     * @return unit - 单位
+     */
+    public String getUnit() {
+        return unit;
+    }
+
+    /**
+     * 设置单位
+     *
+     * @param unit 单位
+     */
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     /**
