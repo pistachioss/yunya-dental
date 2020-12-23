@@ -77,6 +77,11 @@ feign:
     enabled: false
   okhttp:
     enabled: true
+  client:
+    config:
+      default:
+        loggerLevel: basic
+        requestInterceptors: com.yunya.framework.common.interceptor.FeignBasicAuthRequestInterceptor
 
 # 负载均衡
 ribbon:

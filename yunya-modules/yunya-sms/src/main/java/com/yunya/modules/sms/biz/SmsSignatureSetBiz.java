@@ -1,7 +1,6 @@
 package com.yunya.modules.sms.biz;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.sms.form.SmsSignatureSetForm;
 import com.yunya.feign.sms.model.SmsSignatureSetModel;
@@ -17,15 +16,12 @@ import com.yunya.modules.sms.enums.SmsSignatureSourceEnum;
 import com.yunya.modules.sms.mapper.SmsSignatureSetMapper;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
 import com.yunya.modules.sms.vo.SmsSignatureReportVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
@@ -42,8 +38,6 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignatureSet> {
     /** 延迟2.5个小时 */
     private static final int LATER_TIME = 150;
-    @Autowired
-    private ScheduledExecutorService scheduledExecutorService;
 
     /**
      * 分页查询短信签名列表
@@ -85,23 +79,6 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
             throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);
         }
         AliyunSmsUtl.addSmsSign(smsSignatureSetModel, files);
-        asyncStatus(smsSignatureSet);
-    }
-
-    /**
-     * 两小时后同步一次阿里云短信的模板状态
-     * @param smsSignatureSet
-     */
-    private void asyncStatus(SmsSignatureSet smsSignatureSet) {
-        scheduledExecutorService.schedule(()->{
-            JSONObject query = AliyunSmsUtl.querySmsTemplate(smsSignatureSet.getSignName());
-            String code = query.getString("Code");
-            Byte signStatus = query.getByte("SignStatus");
-            if ("OK".equals(code) && !SmsApprovalStatusEnum.APPROVALING.getCode().equals(signStatus)) {
-                smsSignatureSet.setSignStatus(signStatus);
-                updateSelectiveById(smsSignatureSet);
-            }
-        }, LATER_TIME, TimeUnit.MINUTES);
     }
 
     /**
@@ -141,7 +118,6 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         smsSignatureSet.setSignSource(SmsSignatureSourceEnum.ENTERPRISE.getCode());
         updateSelectiveById(smsSignatureSet);
         AliyunSmsUtl.modifySmsSign(smsSignatureSetForm, null);
-        asyncStatus(smsSignatureSet);
     }
 
     /**
@@ -212,7 +188,7 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         queryForm.setSignStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
         queryForm.setWhetherPage(false);
         List<SmsSignatureSetVO> smsSignatureSetVOS = findSmsSignatureSetList(queryForm);
-        if (smsSignatureSetVOS == null) {
+        if (smsSignatureSetVOS==null || smsSignatureSetVOS.isEmpty()) {
             return;
         }
         /**

@@ -4,6 +4,7 @@ import com.yunya.feign.sms.model.SmsBatchSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.sms.model.SmsSendRecordModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.sms.biz.SmsAutosendEventBiz;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
@@ -44,6 +45,7 @@ public class SmsServiceRest {
      * @param models 短信发送添加模型
      * @return
      */
+    @CurrentUser
     @RequestMapping(value = "/sms/batchSendModels/{templateId}", method = RequestMethod.POST)
     public ResponseResult<T> batchSendModels(@PathVariable(value = "templateId") Integer templateId,
                              @RequestBody @Validated List<? extends SmsCommonSendRecordModel> models) {
@@ -56,6 +58,7 @@ public class SmsServiceRest {
      * @param batchSendRecordModel 短信发送添加模型
      * @return
      */
+    @CurrentUser
     @RequestMapping(value = "/sms/batchSend", method = RequestMethod.POST)
     public ResponseResult<T> batchSend(@RequestBody @Validated SmsBatchSendRecordModel batchSendRecordModel) {
         return smsSendRecordBiz.batchSend(batchSendRecordModel);
@@ -69,6 +72,7 @@ public class SmsServiceRest {
      * @param eventCode 事件编码
      * @return
      */
+    @CurrentUser
     @RequestMapping(value = "/sms/sendVerifyCode", method = RequestMethod.POST)
     public ResponseResult<T> sendVerifyCode(@RequestParam(value = "mobile") @NotBlank String mobile,
                                             @RequestParam(value = "verifyCode") @NotBlank String verifyCode,
@@ -82,6 +86,7 @@ public class SmsServiceRest {
      * @param smsSendRecordModel 短信发送添加模型
      * @return
      */
+    @CurrentUser
     @RequestMapping(value = "/sms/sendRecord", method = RequestMethod.POST)
     public ResponseResult<T> sendRecord(@RequestBody @Validated SmsSendRecordModel smsSendRecordModel) {
         return smsSendRecordBiz.sendRecord(smsSendRecordModel);

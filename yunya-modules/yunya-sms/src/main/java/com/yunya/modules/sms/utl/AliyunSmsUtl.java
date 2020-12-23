@@ -13,6 +13,7 @@ import com.google.common.io.Files;
 import com.yunya.feign.sms.form.SmsSignatureSetForm;
 import com.yunya.feign.sms.model.SmsSignatureSetModel;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsTemplateSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -383,17 +384,24 @@ public class AliyunSmsUtl {
     /**
      * 查询阿里云短信发送详情
      *
-     * @param templateCode 短信模板code
+     * @param mobile 手机号 国内短信：11位手机号码，例如15900000000。国际/港澳台消息：国际区号+号码，例如85200000000。
+     * @param sendDate 发送日期：yyyyMMdd，最近30天
+     * @param currentPage 当前页
+     * @param pageSize 记录数1-50
+     * @param bizId 发送回执ID,可空
      * @return
      */
-    public static JSONObject querySendDetails(String templateCode) {
+    public static JSONObject querySendDetails(String mobile, String sendDate, String currentPage, String pageSize, String bizId) {
         CommonRequest request = commonRequest();
         request.setSysAction("QuerySendDetails");
-        request.putQueryParameter("PhoneNumber", "123");//国内短信：11位手机号码，例如15900000000。国际/港澳台消息：国际区号+号码，例如85200000000。
-        request.putQueryParameter("SendDate", "20181225");//yyyyMMdd，最近30天
-        request.putQueryParameter("PageSize", "12");//记录数1-50
-        request.putQueryParameter("CurrentPage", "1");//当前页
-        request.putQueryParameter("BizId", "xedrer");//发送回执ID,可空
+        request.putQueryParameter("PhoneNumber", mobile);
+        request.putQueryParameter("SendDate", sendDate);
+        request.putQueryParameter("CurrentPage", currentPage);
+        request.putQueryParameter("PageSize", pageSize);
+        if (StringHelper.isEmpty(bizId)) {
+            bizId = "";
+        }
+        request.putQueryParameter("BizId", bizId);
         JSONObject result = null;
         try {
             log.info("querySendDetails requestParam: {}", request.getSysQueryParameters());
