@@ -9,6 +9,7 @@ public class VisitingRecord {
      * 随访记录ID
      */
     @Id
+    @GeneratedValue(generator = "JDBC")
     private Integer id;
 
     /**

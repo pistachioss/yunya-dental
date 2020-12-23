@@ -5,6 +5,8 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
@@ -43,7 +45,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.validation.constraints.Min;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -78,6 +79,9 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
     /** 注入预约服务feign */
     @Autowired
     private RemoteAppointmentFeign remoteAppointmentFeign;
+
+    /** 消息服务 */
+    @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
 
     /**
@@ -133,6 +137,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                     return ResponseUtil.fail(TreatmentOtherError.INSERT_VISITING_RECORD_ERR.getCode(),
                             TreatmentOtherError.INSERT_VISITING_RECORD_ERR.getMessage(),null);
                 }
+                // 发送消息-新建提醒
+                remoteRabbitMqServiceFeign.sendMessage(build.getId(),0,0, MsgCategoryEnum.BaseVisitRemind);
             }
             return ResponseUtil.success();
         }
@@ -169,6 +175,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             redisUtils.setLock(RedisConstants.LOCK_VISITING_RECORD,String.valueOf(id),BusinessConstants.MEDICAL_APPLY_LOCK_SEC,TimeUnit.SECONDS);
             try {
                 mapper.deleteByPrimaryKey(id);
+                // 发送消息-新建提醒
+                remoteRabbitMqServiceFeign.sendMessage(id,0,2, MsgCategoryEnum.BaseVisitRemind);
             } finally {
                 redisUtils.unlock(RedisConstants.LOCK_VISITING_RECORD,String.valueOf(id));
             }
@@ -183,7 +191,19 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
      */
     public void deleteVisitingRecordByTreatmentId(Integer id){
         if (null != id) {
+            VisitingRecord visitingRecord = new VisitingRecord();
+            visitingRecord.setTreatmentId(id);
+            List<VisitingRecord> visitingRecordList = mapper.select(visitingRecord);
             mapper.deleteVisitingRecordByTreatmentId(id);
+            if (visitingRecordList.size() > 0){
+                visitingRecordList.forEach(
+                        visitingRecordVo -> {
+                            // 发送消息-删除提醒
+                            remoteRabbitMqServiceFeign.sendMessage(visitingRecordVo.getId(),0,2, MsgCategoryEnum.BaseVisitRemind);
+                        }
+                );
+            }
+
         }
     }
 
@@ -210,6 +230,8 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 build.setUpdName(BaseContextHandler.getName());
                 build.setUpdTime(new Date(System.currentTimeMillis()));
                 mapper.updateByPrimaryKeySelective(build);
+                // 发送消息-删除提醒
+                remoteRabbitMqServiceFeign.sendMessage(build.getId(),0,1, MsgCategoryEnum.BaseVisitRemind);
             } finally {
                 // 释放锁
                 redisUtils.unlock(RedisConstants.LOCK_VISITING_RECORD,updateId);

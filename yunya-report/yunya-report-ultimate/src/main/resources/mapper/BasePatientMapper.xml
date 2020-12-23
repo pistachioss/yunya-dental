@@ -35,50 +35,86 @@
 
   <!-- 患者报表-未复诊预约且未提醒List -->
   <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
-      select
-        DATE_FORMAT(bp.last_visit_date, '%Y-%m-%d %h:%i:%s') lastVisitDate,
-        bp.name,
-        bp.mobile,
-        case when btp.treat_type = 0 then '初诊'
-             when btp.treat_type = 1 then '复诊'
-        end as treatType,
-        be.employee_name employeeName
-      from base_patient bp
-        join base_treatment_process btp on btp.patient_id = bp.patient_id
-        join base_employee be on be.user_id = bp.last_visit_doctors
-    <where>
-      <if test="form.orgId != null and form.orgId != ''">
-        AND bp.org_id = #{form.orgId}
-      </if>
 
-      <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-        and DATE_FORMAT(bp.last_visit_date, "%Y-%m-%d") &gt; DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
-        and DATE_FORMAT(bp.last_visit_date, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
-      </if>
+    select
+      treatStartTime lastVisitDate,
+      name name,
+      mobile mobile,
+      treatType treatType,
+      employee_name employeeName
+    from (
+          select  treatStartTime,
+                  patient_id,
+                  name,
+                  mobile,
+                  CASE
+                  WHEN treat_type = 0 THEN
+                  '初诊'
+                  WHEN treat_type = 1 THEN
+                  '复诊'
+                  END AS treatType,
+                  employee_name,
+                  pinyin_name,
+                  registered_dentist_id
+          from (
+                select t1.*,bp.name, bp.mobile ,bp.pinyin_name,be.employee_name
+                from (
+                select patient_id,org_id,MAX(treat_start_time) treatStartTime,treat_type,registered_dentist_id
+                from base_treatment_process
+                where
+                treat_start_time is not null
+                group by org_id,patient_id
+               ) t1
+                left join base_patient bp on t1.patient_id = bp.patient_id
+                left join base_employee be on t1.registered_dentist_id = be.user_id
+                <where>
+                    t1.org_id = #{form.orgId}
+                  <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
+                    and DATE_FORMAT(t1.treatStartTime, "%Y-%m-%d") &gt; DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
+                    and DATE_FORMAT(t1.treatStartTime, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
+                  </if>
+                </where>
+          ) t2
+          <where>
+            <if test="form.combination != null and form.combination != ''">
+              concat(IFNULL(name,''),IFNULL(pinyin_name,''),IFNULL(mobile,'')) like concat(concat('%',#{form.combination}),'%')
+            </if>
+            <if test="form.treatTypes != null and form.treatTypes.size() > 0 ">
+              AND treat_type in
+              <foreach collection="form.treatTypes" item="treatType" index="index" open="(" close=")" separator=",">
+                #{treatType}
+              </foreach>
+            </if>
 
-      <if test="form.attendingDoctors != null and form.attendingDoctors.size() > 0 ">
-        AND bp.last_visit_doctors in
-        <foreach collection="form.attendingDoctors" item="attendingDoctor" index="index" open="(" close=")" separator=",">
-          #{attendingDoctor}
-        </foreach>
-      </if>
+            <if test="form.attendingDoctors.size() > 0 ">
+              AND registered_dentist_id in
+              <foreach collection="form.attendingDoctors" item="registeredDentistId" index="index" open="(" close=")" separator=",">
+                #{registeredDentistId}
+              </foreach>
+            </if>
 
-      <if test="patientIds != null and patientIds.size() > 0 ">
-        AND bp.patient_id in
-        <foreach collection="patientIds" item="ids" index="index" open="(" close=")" separator=",">
-          #{ids}
-        </foreach>
-      </if>
+          </where>
 
-      <if test="form.treatTypes != null and form.treatTypes.size() > 0 ">
-        AND btp.treat_type in
-        <foreach collection="form.treatTypes" item="treatType" index="index" open="(" close=")" separator=",">
-          #{treatType}
-        </foreach>
-      </if>
+    ) t3
 
-    </where>
-    group by bp.last_visit_date desc
+      where
+        0 = (
+        select count(*)
+        from base_treatment_process a
+        where a.patient_id = t3.patient_id
+        and DATE_FORMAT(a.appoint_start_time, "%Y-%m-%d") > DATE_FORMAT(NOW(), "%Y-%m-%d")
+        )
+
+        and
+
+        0 = (
+        select count(*)
+        from base_visit_remind a
+        where a.patient_id = t3.patient_id
+        and  type = 1
+        and DATE_FORMAT(time, "%Y-%m-%d") > DATE_FORMAT(NOW(), "%Y-%m-%d")
+      )
+
   </select>
   <!-- 查询来源类型总数量 -->
   <select id="selectCountOriginType" resultType="java.lang.Integer">

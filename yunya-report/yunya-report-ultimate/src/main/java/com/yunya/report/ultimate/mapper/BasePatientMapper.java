@@ -27,10 +27,9 @@ public interface BasePatientMapper extends Mapper<BasePatient> {
     /**
      * 患者报表-未复诊预约且未提醒List
      * @param form 查询条件
-     * @param patientIds 患者ids
      * @return List<BasePatientNotSeenVo>
      */
-    List<BasePatientNotSeenVo> selectNotSeenList(@Param("form") PatientReportQueryForm form, @Param("patientIds") List<Integer> patientIds);
+    List<BasePatientNotSeenVo> selectNotSeenList(@Param("form") PatientReportQueryForm form);
 
     /**
      * 查询来源类型总数量

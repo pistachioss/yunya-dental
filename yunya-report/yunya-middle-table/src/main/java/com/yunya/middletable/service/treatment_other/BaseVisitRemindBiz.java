@@ -58,15 +58,10 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         }
         break;
       case 2:
-        if (type == 0){
-          BaseVisitRemind delBaseVisitRemind = getBaseVisitRemindInfo(id, type);
-          VisitingRecord visitingInfo = (VisitingRecord)getVisitingInfo(id, type);
-          if (StringHelper.isNotNull(visitingInfo)){
-            mapper.delete(delBaseVisitRemind);
-            mapper.insertSelective(delBaseVisitRemind);
-          }
-          mapper.delete(delBaseVisitRemind);
-        }
+          BaseVisitRemind baseVisitRemind = new BaseVisitRemind();
+          baseVisitRemind.setRecordId(id);
+          baseVisitRemind.setType(type.byteValue());
+          mapper.delete(baseVisitRemind);
         break;
       default:
         break;
@@ -139,7 +134,7 @@ public class BaseVisitRemindBiz extends BaseBiz<BaseVisitRemindMapper, BaseVisit
         baseVisitRemind.setType((byte) type.intValue());
         baseVisitRemind.setUserId(visitingRecord.getCrtId());
         baseVisitRemind.setTime(visitingRecord.getVisitingDate());
-        baseVisitRemind.setContent(visitingRecord.getVisitingContent());
+        baseVisitRemind.setContent(visitingRecord.getReason());
         baseVisitRemind.setCrtTime(visitingRecord.getCrtTime());
         return baseVisitRemind;
       }

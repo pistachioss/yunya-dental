@@ -4,6 +4,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.report.enums.MsgCategoryEnum;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
@@ -60,9 +62,13 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
     /** 注入系统基础服务 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
     /** 就诊服务 */
     @Autowired
     private RemoteTreatmentServiceFeign remoteTreatmentServiceFeign;
+
+    /** 消息服务 */
+    @Autowired private RemoteRabbitMqServiceFeign remoteRabbitMqServiceFeign;
 
     /**
      * 新增随访提醒
@@ -88,6 +94,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
         if (result <= 0) {
             return ResponseUtil.success("数据插入失败！");
         }
+        // 发送消息-新建提醒
+        remoteRabbitMqServiceFeign.sendMessage(build.getId(),1,0, MsgCategoryEnum.BaseVisitRemind);
         return ResponseUtil.success();
     }
 
@@ -110,6 +118,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 if (result <= 0){
                     return ResponseUtil.success("删除记录失败！");
                 } else {
+                    // 发送消息-删除提醒
+                    remoteRabbitMqServiceFeign.sendMessage(id,1,2, MsgCategoryEnum.BaseVisitRemind);
                     return ResponseUtil.success();
                 }
             } finally {
@@ -147,6 +157,8 @@ public class VisitingRemindBiz extends BaseBiz<VisitingRemindMapper, VisitingRem
                 if (result <= 0){
                     return ResponseUtil.success("数据修改失败！");
                 } else {
+                    // 发送消息-修改提醒
+                    remoteRabbitMqServiceFeign.sendMessage(id,1,1, MsgCategoryEnum.BaseVisitRemind);
                     return ResponseUtil.success();
                 }
             } finally {
