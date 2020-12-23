@@ -5,6 +5,7 @@ import com.yunya.feign.appointment.vo.AppointmentForMonthVo;
 import com.yunya.feign.treatment.domain.query.TreatmentInfoForMonthForm;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.modules.appointment.mapper.AppointmentMapper;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class AppBiz extends BaseBiz<AppointmentMapper, Appointment> {
         Integer dentistId = form.getDentistId();
         Date startDate = form.getStartDate();
         Date endDate = form.getEndDate();
-        return mapper.appointmentForMonth(dentistId, startDate, endDate);
+        Integer orgId = form.getOrgId();
+        return mapper.appointmentForMonth(dentistId, startDate, endDate,orgId);
     }
 }

@@ -66,10 +66,10 @@ public class SmsChargeOrderVO implements Serializable {
     private String outOrderNo;
 
     /**
-     * 采商支付结果
+     * 消费者id
      */
-    @ApiModelProperty("采商支付结果")
-    private String outResult;
+    @ApiModelProperty("消费者id")
+    private String buyerId;
 
     /**
      * 付款方式：ALIPAY-支付宝；WECHAT-微信
@@ -100,6 +100,9 @@ public class SmsChargeOrderVO implements Serializable {
      */
     @ApiModelProperty("充值人")
     private String crtUser;
+
+    @ApiModelProperty
+    private Date crtTime;
 
     /**
      * 充值时间

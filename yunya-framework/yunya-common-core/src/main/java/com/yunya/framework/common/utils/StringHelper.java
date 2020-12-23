@@ -420,4 +420,26 @@ public class StringHelper extends StringUtils {
     s = trim_before_exclu(s, endStr);
     return trim_end_exclu(s, beginStr);
   }
+
+  /**
+   * 统计中指定子串在字符串出现的个数
+   *
+   * @param childStr 子串
+   * @param sourceStr 源字符串
+   * @return
+   */
+  public static int countChild(String childStr, String sourceStr) {
+    // 定义一个count来存放字符串出现的次数
+    int count = 0;
+    // 调用String类的indexOf(String str)方法，返回第一个相同字符串出现的下标
+    while (sourceStr.indexOf(childStr) != -1) {
+      // 如果存在相同字符串则次数加1
+      count++;
+      // 调用String类的substring(int beginIndex)方法，获得第一个相同字符出现后的字符串
+      sourceStr = sourceStr.substring(sourceStr.indexOf(childStr)
+              + childStr.length());
+    }
+    // 返回次数
+    return count;
+  }
 }

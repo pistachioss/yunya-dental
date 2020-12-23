@@ -26,8 +26,8 @@
         <javaClientGenerator targetPackage="${targetMapperPackage}" targetProject="${targetJavaProject}"
                              type="XMLMAPPER"/>
 
-        <table tableName="specialist_target" domainObjectName="SpecialistTarget"/>
-        <table tableName="cash_balance" domainObjectName="CashBalance"/>
         <table tableName="business_target" domainObjectName="BusinessTarget"/>
+        <table tableName="specialist_business_target" domainObjectName="SpecialistBusinessTarget"/>
+        <table tableName="specialist_project" domainObjectName="specialistProject"/>
     </context>
 </generatorConfiguration>

@@ -41,6 +41,18 @@ public class AppointmentVo implements Serializable {
     private String patientName;
 
     /**
+     * 性别 0-男；1-女；2-未知
+     */
+    @ApiModelProperty(value = "性别 0-男；1-女；2-未知")
+    private Byte gender;
+
+    /**
+     * 年龄
+     */
+    @ApiModelProperty(value = "年龄")
+    private Integer age;
+
+    /**
      * 患者手机号
      */
     @ApiModelProperty(value = "患者手机号")

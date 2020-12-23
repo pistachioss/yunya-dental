@@ -13,19 +13,14 @@ import com.google.common.io.Files;
 import com.yunya.feign.sms.form.SmsSignatureSetForm;
 import com.yunya.feign.sms.model.SmsSignatureSetModel;
 import com.yunya.framework.common.exception.ClientServiceException;
-import com.yunya.models.sms.SmsSignatureFile;
 import com.yunya.models.sms.SmsTemplateSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
-import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_FAIL;
@@ -74,26 +69,6 @@ public class AliyunSmsUtl {
     }
 
     /**
-     * base64编码图片
-     * @param url
-     * @return
-     */
-    public static String encodeIfAbsent(String url) {
-        byte[] data = null;
-        //读取图片字节数组
-        try (InputStream in = new FileInputStream(url)) {
-            data = new byte[in.available()];
-            in.read(data);
-        } catch (IOException e){
-            log.error("base64 encode error",e);
-            throw new ClientServiceException("base64 encode read url error", OPERATION_FAIL);
-        }
-        BASE64Encoder encoder = new BASE64Encoder();
-        //返回Base64编码过的字节数组字符串
-        return encoder.encode(data);
-    }
-
-    /**
      * 添加阿里云短信签名（企业用户每天最多可以申请100个签名）
      *
      * @param model
@@ -123,7 +98,7 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl addSmsSign error", e);
-            throw new ClientServiceException("AliyunSmsUtl addSmsSign error", OPERATION_FAIL);
+            throw new ClientServiceException("添加短信签名失败！", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
@@ -137,24 +112,22 @@ public class AliyunSmsUtl {
      * @param model
      * @return
      */
-    public static JSONObject modifySmsSign(SmsSignatureSetForm model) {
+    public static JSONObject modifySmsSign(SmsSignatureSetForm model, List<MultipartFile> files) {
         CommonRequest request = commonRequest();
         request.setSysAction("ModifySmsSign");
         request.putQueryParameter("SignName", model.getSignName());
         request.putQueryParameter("SignSource", model.getSignSource()+"");
         request.putQueryParameter("Remark", model.getRemark());
-        List<SmsSignatureFile> smsSignatureFiles = model.getSmsSignatureFiles();
-        if (smsSignatureFiles!=null && !smsSignatureFiles.isEmpty()) {
-            int i = 1;
-            for (SmsSignatureFile signatureFile : smsSignatureFiles) {
-                String encode = encodeIfAbsent(signatureFile.getFileUrl());
-//                String encode = new BASE64Encoder().encode(content.getBytes());
-                request.putQueryParameter("SignFileList." + i + ".FileSuffix", signatureFile.getFileType());
-                request.putQueryParameter("SignFileList." + i + ".FileContents", encode);
-            }
-        }
         JSONObject result = null;
         try {
+            if (files!=null && !files.isEmpty()) {
+                int i = 1;
+                for (MultipartFile file : files) {
+                    String encode = BinaryUtil.toBase64String(file.getBytes());
+                    request.putQueryParameter("SignFileList." + i + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
+                    request.putQueryParameter("SignFileList." + i + ".FileContents", encode);
+                }
+            }
             log.info("modifySmsSign requestParam: {}", request.getSysQueryParameters());
             CommonResponse response = client.getCommonResponse(request);
             String data = response.getData();
@@ -162,7 +135,7 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl modifySmsSign error", e);
-            throw new ClientServiceException("AliyunSmsUtl modifySmsSign error", OPERATION_FAIL);
+            throw new ClientServiceException("修改短信签名失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
@@ -188,7 +161,7 @@ public class AliyunSmsUtl {
             log.info("deleteSmsSign response: {}", data);
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
-            log.error("AliyunSmsUtl deleteSmsSign error", e);
+            log.error("删除短信签名失败", e);
             throw new ClientServiceException("AliyunSmsUtl deleteSmsSign error", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
@@ -217,7 +190,7 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl querySmsSign error", e);
-            throw new ClientServiceException("AliyunSmsUtl querySmsSign error", OPERATION_FAIL);
+            throw new ClientServiceException("查询短信签名失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
@@ -247,7 +220,7 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl addSmsTemplate error", e);
-            throw new ClientServiceException("AliyunSmsUtl addSmsTemplate error", OPERATION_FAIL);
+            throw new ClientServiceException("添加短信模板失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
@@ -278,7 +251,7 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl modifySmsSign error", e);
-            throw new ClientServiceException("AliyunSmsUtl modifySmsTemplate error", OPERATION_FAIL);
+            throw new ClientServiceException("修改短信模板失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
@@ -305,7 +278,7 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl deleteSmsTemplate error", e);
-            throw new ClientServiceException("AliyunSmsUtl deleteSmsTemplate error", OPERATION_FAIL);
+            throw new ClientServiceException("删除短信模板失败！", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
@@ -332,28 +305,12 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl querySmsTemplate error", e);
-            throw new ClientServiceException("AliyunSmsUtl querySmsTemplate error", OPERATION_FAIL);
+            throw new ClientServiceException("查询短信模板失败", OPERATION_FAIL);
         }
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
         }
         return result;
-    }
-
-    public static void main(String[] args) {
-//        deleteSmsSign("ABC商城");
-//        querySmsSign("ABC商城");
-//        SmsSignatureSetForm model = new SmsSignatureSetForm();
-//        model.setSignName("CDF商城");
-//        model.setRemark("测试修改");
-//        model.setSignSource((byte) 0);
-//        SmsSignatureFile smsSignatureFile = new SmsSignatureFile();
-//        smsSignatureFile.setFileType("png");
-//        smsSignatureFile.setFileUrl("xxx");
-//        model.setSmsSignatureFiles(Arrays.asList(smsSignatureFile));
-//        modifySmsSign(model);
-
-        encodeIfAbsent("http:\\192.168.31.95\\img\\discount\\111111\\b8f36316-4a1d-4798-9ea8-169226437796.png?Expires=1608175040&OSSAccessKeyId=LTAI4GL3SpbVMBDnzGRYz6GZ&Signature=w53a6wzOKbkMhlmbSSHXvasrZk0%3D");
     }
 
     /**
@@ -363,9 +320,9 @@ public class AliyunSmsUtl {
      * @param signName 签名名称
      * @param templateCode 短信模板code
      * @param templateParam 短信模板变量JSON对象，例如 {"code1":"32"}
-     * @return
+     * @return BizId 回执id
      */
-    public static JSONObject sendSms(String mobiles, String signName, String templateCode, JSONObject templateParam) {
+    public static String sendSms(String mobiles, String signName, String templateCode, JSONObject templateParam) {
         CommonRequest request = commonRequest();
         request.setSysAction("sendSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");
@@ -382,9 +339,12 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl sendSms error", e);
-            throw new ClientServiceException("AliyunSmsUtl sendSms error", OPERATION_FAIL);
+            throw new ClientServiceException("短信发送失败！", OPERATION_FAIL);
         }
-        return result;
+        if (result==null || !"OK".equals(result.getString("Code"))) {
+            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+        }
+        return result.getString("BizId");
     }
 
     /**
@@ -393,9 +353,9 @@ public class AliyunSmsUtl {
      * @param signNameJson 签名JSON数组 ["阿里云","阿里巴巴"]
      * @param templateCode 短信模板code
      * @param templateParamJson 短信模板变量值JSON数组 [{"code1":"32","code2":"张三"},{"code1":"22","code2":"李四"}]，可空，如果有值，则变量值的个数必须与手机号码、签名的个数相同、内容一一对应
-     * @return
+     * @return BizId 回执id
      */
-    public static JSONObject SendBatchSms(JSONArray mobiles, JSONArray signNameJson, String templateCode, JSONArray templateParamJson) {
+    public static String sendBatchSms(JSONArray mobiles, JSONArray signNameJson, String templateCode, JSONArray templateParamJson) {
         CommonRequest request = commonRequest();
         request.setSysAction("SendBatchSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");
@@ -412,9 +372,12 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl SendBatchSms error", e);
-            throw new ClientServiceException("AliyunSmsUtl SendBatchSms error", OPERATION_FAIL);
+            throw new ClientServiceException("短信发送失败！", OPERATION_FAIL);
         }
-        return result;
+        if (result==null || !"OK".equals(result.getString("Code"))) {
+            throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
+        }
+        return result.getString("BizId");
     }
 
     /**
@@ -440,7 +403,7 @@ public class AliyunSmsUtl {
             result = JSONObject.parseObject(data);
         } catch (Exception e) {
             log.error("AliyunSmsUtl querySendDetails error", e);
-            throw new ClientServiceException("AliyunSmsUtl querySendDetails error", OPERATION_FAIL);
+            throw new ClientServiceException("查询短信发送详情失败", OPERATION_FAIL);
         }
         return result;
     }

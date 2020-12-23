@@ -1146,6 +1146,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
           case 3:
             // 已结账
             entity.setTreatStatus((byte) 5);
+            entity.setTreatmentId(patientTreatmentRecordVO.getId());
             break;
           default:
             break;
@@ -1191,7 +1192,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Integer dentistId = form.getDentistId();
     Date startDate = form.getStartDate();
     Date endDate = form.getEndDate();
-    List<TreatmentInfoForMonthVO> treatmentInfoForMonthVOS = mapper.treatInfoForMonth(dentistId, startDate, endDate);
+    Integer orgId = Integer.valueOf(BaseContextHandler.getOrgId());
+    List<TreatmentInfoForMonthVO> treatmentInfoForMonthVOS = mapper.treatInfoForMonth(dentistId, startDate, endDate,orgId);
     AppointmentForMonthForm queryForm = new AppointmentForMonthForm();
     queryForm.setDentistId(dentistId);
     queryForm.setEndDate(endDate);

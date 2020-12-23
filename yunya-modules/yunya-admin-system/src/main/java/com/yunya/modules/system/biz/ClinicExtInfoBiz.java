@@ -8,7 +8,7 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.system.ClinicExtInfo;
 import com.yunya.modules.system.domain.form.MedicalOrganizationInfoForm;
 import com.yunya.modules.system.mapper.ClinicExtInfoMapper;
-import com.yunya.modules.system.vo.MedicalOrganizationInfoVO;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

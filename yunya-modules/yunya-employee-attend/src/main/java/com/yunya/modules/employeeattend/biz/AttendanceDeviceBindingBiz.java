@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.employee_attend.form.AttendanceDeviceBindingQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceDeviceBindingModel;
 import com.yunya.feign.employee_attend.vo.AttendanceDeviceBindingVO;
+import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
@@ -41,6 +42,8 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
     /** 注入对象 */
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    @Autowired
+    private RemoteSmsServiceFeign remoteSmsServiceFeign;
     /** 注入对象 */
     @Autowired
     private RedisUtils redisUtils;
@@ -253,14 +256,21 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"请填写正确的手机号码",null);
         }
         String  messageCode = this.messageCodeGenerator();
+        // 发送短信验证码
         String key = RedisConstants.ATTENDANCE_DEVICE_BINDING_AUTHORIZATION + mobile;
         if (redisUtils.hasKey(key)) {
-            return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送,稍后再试",null);
+            return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
         }
         redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
-        // @TODO 发送短信
-
-        return ResponseUtil.success("短信验证码已发送",messageCode);
+        /*ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode,
+                SmsAutosendEventEnum.ATTENDANCE_DEVICE_BINDING.getCode());
+        if (responseResult==null) {
+            return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
+        }
+        if (responseResult.getStatus() != 0) {
+            return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
+        }*/
+        return ResponseUtil.success("短信验证码已发送", messageCode);
     }
 
     /**

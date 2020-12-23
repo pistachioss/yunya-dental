@@ -47,10 +47,10 @@ public class SmsChargeOrder {
     private String outOrderNo;
 
     /**
-     * 支付结果
+     * 消费者id
      */
-    @Column(name = "out_result")
-    private String outResult;
+    @Column(name = "buyer_id")
+    private String buyerId;
 
     /**
      * 付款方式
@@ -227,22 +227,12 @@ public class SmsChargeOrder {
         this.outOrderNo = outOrderNo;
     }
 
-    /**
-     * 获取支付结果
-     *
-     * @return out_result - 支付结果
-     */
-    public String getOutResult() {
-        return outResult;
+    public void setBuyerId(String buyerId) {
+        this.buyerId = buyerId;
     }
 
-    /**
-     * 设置支付结果
-     *
-     * @param outResult 支付结果
-     */
-    public void setOutResult(String outResult) {
-        this.outResult = outResult;
+    public String getBuyerId() {
+        return buyerId;
     }
 
     /**

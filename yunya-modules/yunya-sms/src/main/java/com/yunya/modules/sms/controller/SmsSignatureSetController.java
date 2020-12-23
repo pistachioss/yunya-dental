@@ -1,5 +1,6 @@
 package com.yunya.modules.sms.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.sms.form.SmsSignatureSetForm;
 import com.yunya.feign.sms.model.SmsSignatureSetModel;
@@ -7,9 +8,12 @@ import com.yunya.feign.sms.query.SmsSignatureSetQueryForm;
 import com.yunya.feign.sms.vo.SmsSignatureSetVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.sms.biz.SmsSignatureSetBiz;
+import com.yunya.modules.sms.vo.SmsSignatureReportVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +21,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
+
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_ERROR;
 
 /**
  * 简介：短信签名设置管理
@@ -44,7 +53,9 @@ public class SmsSignatureSetController {
      */
     @ApiOperation(value = "分页查询短信签名列表")
     @PostMapping("/list")
+    @CurrentUser
     public ResponseResult<PageInfo<SmsSignatureSetVO>> findSmsSignatureSetList(@RequestBody SmsSignatureSetQueryForm smsSignatureSetQueryForm) {
+        smsSignatureSetQueryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsSignatureSetVO> smsSignatureSetVOS = smsSignatureSetBiz.findSmsSignatureSetList(smsSignatureSetQueryForm);
         PageInfo<SmsSignatureSetVO> result = new PageInfo<>(smsSignatureSetVOS);
         return ResponseUtil.success(result);
@@ -99,7 +110,27 @@ public class SmsSignatureSetController {
     @ApiOperation(value = "根据id获取短信签名")
     @GetMapping("/info/{id}")
     public ResponseResult<SmsSignatureSetVO> findSmsSignatureSetById(@PathVariable(value = "id") @NotNull Integer id) {
-        SmsSignatureSetVO smsSignatureSetVO = smsSignatureSetBiz.findSmsSignatureSetById(id, true);
+        SmsSignatureSetVO smsSignatureSetVO = smsSignatureSetBiz.findSmsSignatureSetById(id);
         return ResponseUtil.success(smsSignatureSetVO);
+    }
+
+
+    /**
+     * 阿里云短信签名审核推送通知
+     *
+     * @param
+     */
+    @PostMapping("/signSmsReport")
+    public void signSmsReport(@RequestBody List<SmsSignatureReportVO> smsSignatureReportVOS, HttpServletResponse response) {
+        smsSignatureSetBiz.signSmsReport(smsSignatureReportVOS);
+        try (PrintWriter out = response.getWriter()) {
+            JSONObject object = new JSONObject();
+            object.put("code", 0);
+            object.put("msg", "成功");
+            out.println(object);
+            out.flush();
+        } catch (IOException e) {
+            throw new ClientServiceException("signSmsReport response io error", DATA_ERROR);
+        }
     }
 }

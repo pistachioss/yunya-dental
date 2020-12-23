@@ -1,16 +1,14 @@
 package com.yunya.feign.sms.model;
 
-import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -27,13 +25,6 @@ import java.util.List;
 public class SmsSendRecordModel implements Serializable {
 
     /**
-     * 组织id（门诊、公司）
-     */
-    @ApiModelProperty(value = "门诊、公司",required = true)
-    @NotNull
-    private Integer orgId;
-
-    /**
      * 接受者id列表，可空，不空时必须与发送对象、手机号一一对应
      */
     @ApiModelProperty("接受者id列表，可空，不空时必须与发送对象、手机号一一对应")
@@ -42,9 +33,7 @@ public class SmsSendRecordModel implements Serializable {
     /**
      * 发送对象（可能是员工姓名，或其他）
      */
-    @ApiModelProperty(value = "发送对象（可能是员工姓名，或其他）",required = true)
-    @NotNull
-    @NotEmpty
+    @ApiModelProperty(value = "发送对象（可能是员工姓名，或其他）")
     private List<String> sendObjects;
 
     /**
@@ -62,30 +51,10 @@ public class SmsSendRecordModel implements Serializable {
     private Integer templateId;
 
     /**
-     * 发送人id
+     * 模板变量值json: 需要保证变量值的对象与手机号码一一对应，例如：{"code1":"25","code4":"张三"}；
+     * 注意，如果模板中重复了同一个变量，则该json对象的key由三部分组成："re"前缀 + 重复次数 + "code" + 变量项id，
+     * 例如 {"code1":"25","code4":"张三","re1code1":"25"}
      */
-    @ApiModelProperty(value = "发送人id",required = true)
-    @NotNull
-    private Integer sendUserId;
-
-    /**
-     * 发送时间
-     */
-    @ApiModelProperty(value = "发送时间",required = true)
-    @NotNull
-    private Date sendTime;
-
-
-    /**
-     * 短信类型 0：验证码。1：短信通知。2：推广短信。3：国际/港澳台消息
-     */
-    @ApiModelProperty(value = "短信类型 0：验证码。1：短信通知。2：推广短信。3：国际/港澳台消息",required = true)
-    @NotNull
-    private Byte type;
-
-    /**
-     * 模板变量值json: [{"code1":"25","code4":"张三"},{"code1":"30","code4":"李四"}]
-     */
-    @ApiModelProperty("模板变量值json，需要保证变量值的对象与手机号码一一对应，例如：[{\"code1\":\"25\",\"code4\":\"张三\"},{\"code1\":\"30\",\"code4\":\"李四\"}]")
-    private JSONArray templateParamJson;
+    @ApiModelProperty("模板变量值json: 需要保证变量值的对象与手机号码一一对应，例如：{\"code1\":\"25\",\"code4\":\"张三\"}；注意，如果模板中重复了同一个变量，则该json对象的key由三部分组成：\"re\"前缀 + 重复次数 + \"code\" + 变量项id，例如 {\"code1\":\"25\",\"code4\":\"张三\",\"re1code1\":\"25\"}")
+    private JSONObject templateParamJson;
 }

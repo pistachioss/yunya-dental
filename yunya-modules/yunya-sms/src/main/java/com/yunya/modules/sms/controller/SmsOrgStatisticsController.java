@@ -1,6 +1,8 @@
 package com.yunya.modules.sms.controller;
 
 import com.yunya.feign.sms.vo.SmsOrgStatisticsVO;
+import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.sms.biz.SmsOrgStatisticsBiz;
@@ -8,11 +10,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * 简介：短信统计管理
@@ -33,12 +32,13 @@ public class SmsOrgStatisticsController {
     /**
      * 根据orgId查询短信统计详情
      *
-     * @param orgId 门诊id
      * @return
      */
     @ApiOperation(value = "根据orgId查询短信统计详情")
-    @GetMapping("/info/{orgId}")
-    public ResponseResult<SmsOrgStatisticsVO> findSmsOrgStatisticsByOrgId(@PathVariable(value = "orgId") @NotNull Integer orgId) {
+    @CurrentUser
+    @GetMapping("/info")
+    public ResponseResult<SmsOrgStatisticsVO> findSmsOrgStatisticsByOrgId() {
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
         SmsOrgStatisticsVO smsOrgStatisticsVO = smsOrgStatisticsBiz.findSmsOrgStatisticsByOrgId(orgId);
         return ResponseUtil.success(smsOrgStatisticsVO);
     }

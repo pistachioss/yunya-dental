@@ -7,6 +7,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Min;
 import java.io.Serializable;
+import java.util.Collection;
 
 /**
  * 简介：短信自动发送查询模型
@@ -67,4 +68,10 @@ public class SmsAutosendEventQueryForm implements Serializable {
      */
     @ApiModelProperty("状态：0-关闭，1-开启")
     private Byte status;
+
+    /**
+     * 组织id列表
+     */
+    @ApiModelProperty("组织id列表")
+    private Collection<Integer> orgIds;
 }

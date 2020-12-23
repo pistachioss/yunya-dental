@@ -27,7 +27,7 @@
 
     <!-- 根据条件查询门诊账单收费的入账方式分组信息 -->
     <select id="selectBillChargePaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -106,7 +106,7 @@
 
     <!-- 根据条件查询门诊收欠费的入账方式分组信息 -->
     <select id="selectCollectArrearsPaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -186,7 +186,7 @@
 
     <!-- 根据条件查询门诊会员卡充值的入账方式分组信息 -->
     <select id="selectMemberChargePaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -242,7 +242,7 @@
 
     <!-- 根据条件查询门诊会员卡充值的入账方式分组信息 -->
     <select id="selectPaidChargePaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -298,7 +298,7 @@
 
     <!-- 根据条件查询门诊产品售出的入账方式分组信息 -->
     <select id="selectProductSoldPaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -357,7 +357,7 @@
 
     <!-- 根据条件查询门诊代收的入账方式分组信息 -->
     <select id="selectClinicCollectionPaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -437,7 +437,7 @@
 
     <!-- 根据条件查询门诊退费的入账方式分组信息 -->
     <select id="selectBillRefundPaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -497,7 +497,7 @@
 
     <!-- 根据条件查询门诊会员卡退费的入账方式分组信息 -->
     <select id="selectMemberRefundPaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -552,7 +552,7 @@
 
     <!-- 根据条件查询门诊预付款退费的入账方式分组信息 -->
     <select id="selectPrepaidRefundPaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,
@@ -607,7 +607,7 @@
 
     <!-- 根据条件查询门诊被代收的入账方式分组信息 -->
     <select id="selectClinicIsAcceptedPaymentInfo"
-            resultType="com.yunya.feign.report.domain.vo.BoundPaymentVO">
+            resultType="com.yunya.feign.report.domain.vo.StatementPaymentVO">
         SELECT
         bai.account_item_id,
         bai.account_item_name,

@@ -6,6 +6,7 @@ import com.yunya.feign.sms.query.SmsChargeOrderQueryForm;
 import com.yunya.feign.sms.vo.SmsChargeOrderVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -13,7 +14,6 @@ import com.yunya.modules.sms.biz.SmsChargeOrderBiz;
 import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -51,8 +51,10 @@ public class SmsChargeOrderController {
      */
     @ApiOperation(value = "分页查询短信充值列表")
     @PostMapping("/list")
+    @CurrentUser
     public ResponseResult<PageInfo<SmsChargeOrderVO>> findSmsChargeOrderList(@RequestBody SmsChargeOrderQueryForm smsChargeOrderQueryForm) {
         smsChargeOrderQueryForm.setOrderStatus(SmsOrderStatusEnum.PAY_SUC.getCode());
+        smsChargeOrderQueryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsChargeOrderVO> smsChargeOrderList = smsChargeOrderBiz.findSmsChargeOrderList(smsChargeOrderQueryForm);
         PageInfo<SmsChargeOrderVO> result = new PageInfo<>(smsChargeOrderList);
         return ResponseUtil.success(result);
@@ -69,6 +71,18 @@ public class SmsChargeOrderController {
     @RepeatSubmit
     public ResponseResult<SmsChargeOrderVO> create(@RequestBody @Validated SmsChargeOrderModel smsChargeOrderModel) {
         SmsChargeOrderVO SmsChargeOrderVO = smsChargeOrderBiz.create(smsChargeOrderModel);
+        return ResponseUtil.success(SmsChargeOrderVO);
+    }
+
+    /**
+     * 根据id查询短信充值订单。
+     *
+     * @param id 主键
+     */
+    @ApiOperation("根据id查询短信充值订单")
+    @GetMapping("/info/{id}")
+    public ResponseResult<SmsChargeOrderVO> findSmsChargeOrderById(@PathVariable(value = "id") @NotNull Integer id) {
+        SmsChargeOrderVO SmsChargeOrderVO = smsChargeOrderBiz.findSmsChargeOrderById(id);
         return ResponseUtil.success(SmsChargeOrderVO);
     }
 
@@ -92,7 +106,7 @@ public class SmsChargeOrderController {
      * @param request
      * @param response
      */
-    @PostMapping("notifyUrl")
+    @PostMapping("/notifyUrl")
     public void notifyUrl(HttpServletRequest request, HttpServletResponse response) {
         smsChargeOrderBiz.notifyUrl(request);
         try (PrintWriter out = response.getWriter()) {
@@ -101,10 +115,5 @@ public class SmsChargeOrderController {
         } catch (IOException e) {
             throw new ClientServiceException("notify response io error", DATA_ERROR);
         }
-    }
-
-    @GetMapping("redirectUrl")
-    public ResponseResult<T> redirectUrl() {
-        return ResponseUtil.success(null);
     }
 }

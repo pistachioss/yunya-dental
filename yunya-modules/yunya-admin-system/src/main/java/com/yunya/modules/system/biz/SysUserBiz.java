@@ -3,11 +3,13 @@ package com.yunya.modules.system.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -69,6 +71,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   @Autowired private SysUserPostMapper sysUserPostMapper;
   /** 缓存 */
   @Autowired private RedisUtils redisUtils;
+  /** 短信服务调用 */
+  @Autowired private RemoteSmsServiceFeign remoteSmsServiceFeign;
 
   /**
    * 根据条件查询用户信息详情列表
@@ -421,12 +425,20 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    */
   public ResponseResult authorizationCode(String mobile) {
     String  messageCode = this.messageCodeGenerator();
+    // 发送短信验证码
     String key = RedisConstants.FORGET_PWD_AUTHORIZATION + mobile;
     if (redisUtils.hasKey(key)) {
-      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送,稍后再试",null);
+      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送, 请稍后再试",null);
     }
-    redisUtils.set(key,messageCode,60);
-    return ResponseUtil.success(messageCode);
+    redisUtils.set(key, messageCode,60);
+    ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
+    if (responseResult==null) {
+      return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
+    }
+    if (responseResult.getStatus() != 0) {
+      return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
+    }
+    return ResponseUtil.success("短信验证码已发送");
   }
 
   /**

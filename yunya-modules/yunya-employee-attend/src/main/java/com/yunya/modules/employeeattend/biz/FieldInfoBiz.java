@@ -91,6 +91,10 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
         workOvertimeInfo.setUserId(fieldInfoForm.getUserId());
         int wi = workOvertimeInfoMapper.countByDay(workOvertimeInfo);
         if (li == 0 && wi == 0) {
+            int fi = mapper.findcountByday(fieldInfoForm);
+            if(fi>0){
+                throw new ClientServiceException("每天只能申请一个外勤", DATA_TRANSFORMATION_EXIST);
+            }
             FieldInfo field = new FieldInfo();
             field.setUserId(fieldInfoForm.getUserId());
             List<FieldInfo> fieldInfoList = mapper.findList(field);
@@ -324,7 +328,11 @@ public class FieldInfoBiz extends BaseBiz<FieldInfoMapper, FieldInfo> {
             if (employeesByName.size() == 0) {
                 throw new ClientServiceException("查无此人", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
             }
-            approvalAllListForm.setUserId(employeesByName.get(0).getUserId());
+            for(SysUserInfoDetail sysUserInfoDetail:employeesByName){
+                if(sysUserInfoDetail.getName().equals(approvalAllListForm.getUserName())){
+                    approvalAllListForm.setUserId(sysUserInfoDetail.getUserId());
+                }
+            }
         }
         List<ApprovalAllListVO> reList = mapper.findApprovalAllList(approvalAllListForm);
         if (reList.size() > 0) {

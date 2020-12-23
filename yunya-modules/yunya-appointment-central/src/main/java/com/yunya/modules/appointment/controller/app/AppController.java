@@ -4,6 +4,7 @@ import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.vo.AppointmentForMonthVo;
 import com.yunya.feign.treatment.domain.query.TreatmentInfoForMonthForm;
 import com.yunya.feign.treatment.domain.vo.TreatmentInfoForMonthVO;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.appointment.biz.app.AppBiz;
@@ -33,6 +34,7 @@ public class AppController {
 
     @ApiOperation("查询指定时间段内每个医生每天的预约人数")
     @PostMapping(value = "/everyday/count")
+    @CurrentUser
     public ResponseResult<List<TreatmentInfoForMonthVO>> appointmentForMonth(@RequestBody @Validated AppointmentForMonthForm form) {
         List<TreatmentInfoForMonthVO> appointmentForMonthVOS = appBiz.appointmentForMonth(form);
         return ResponseUtil.success(appointmentForMonthVOS);

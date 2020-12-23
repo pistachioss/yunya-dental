@@ -137,7 +137,7 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
             refundDetail.setRefundDetailId(refundDetailId);
             refundDetail.setRefundId(refundId);
             refundDetail.setBillDetailId(detail.getOrderDetailId());
-            refundDetail.setRefundAmount(detail.getRefundAmout());
+            refundDetail.setRefundAmount(detail.getRefundAmount());
             refundDetailMapper.deleteByPrimaryKey(refundDetailId);
             refundDetailMapper.insertSelective(refundDetail);
           });
@@ -163,14 +163,14 @@ public class BaseRefundBiz extends BaseBiz<BaseRefundMapper, BaseRefund> {
           baseRefundDetail.setRefundDetailId(refundOrderDetailId);
           baseRefundDetail.setBillDetailId(refundDetail.getOrderDetailId());
           baseRefundDetail.setRefundId(refundId);
-          baseRefundDetail.setRefundAmount(refundDetail.getRefundAmout());
+          baseRefundDetail.setRefundAmount(refundDetail.getRefundAmount());
           refundDetailMapper.updateByPrimaryKeySelective(baseRefundDetail);
         } else {
           baseRefundDetail = new BaseRefundDetail();
           baseRefundDetail.setRefundDetailId(refundOrderDetailId);
           baseRefundDetail.setBillDetailId(refundDetail.getOrderDetailId());
           baseRefundDetail.setRefundId(refundId);
-          baseRefundDetail.setRefundAmount(refundDetail.getRefundAmout());
+          baseRefundDetail.setRefundAmount(refundDetail.getRefundAmount());
           refundDetailMapper.deleteByPrimaryKey(refundOrderDetailId);
           refundDetailMapper.insertSelective(baseRefundDetail);
         }

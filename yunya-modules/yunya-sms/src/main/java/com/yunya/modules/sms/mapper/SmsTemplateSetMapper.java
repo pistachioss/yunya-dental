@@ -28,4 +28,12 @@ public interface SmsTemplateSetMapper extends Mapper<SmsTemplateSet> {
      * @return
      */
     SmsTemplateSetVO findSmsTemplateSetById(@Param("id") Integer id);
+
+    /**
+     * 根据事件code查询模板信息
+     *
+     * @param eventCode 事件模板
+     * @return list
+     */
+    SmsTemplateSetVO findSmsTemplateByEventCode(@Param("eventCode") String eventCode);
 }

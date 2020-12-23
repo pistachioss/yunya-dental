@@ -22,6 +22,12 @@ public interface FieldInfoMapper extends Mapper<FieldInfo> {
     List<FieldInfoListVO> findVOList(FieldInfoForm fieldInfoForm);
 
     /**
+     * 判断某天外勤申请个数（每天只能申请一个外勤）
+     * @return
+     */
+    int findcountByday(FieldInfoForm fieldInfoForm);
+
+    /**
      * 根据日期和用户id列表查询外勤列表
      *
      * @param userIds 用户id

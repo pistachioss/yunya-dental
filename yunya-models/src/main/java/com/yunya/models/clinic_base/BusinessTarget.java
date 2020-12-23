@@ -8,277 +8,360 @@ import java.util.Date;
 
 @Table(name = "business_target")
 public class BusinessTarget {
+    /**
+     * 业务目标ID
+     */
     @Id
     private Integer id;
 
     /**
-     * 实收金额
+     * 所属类型（0-组织，1-个人）
      */
-    @Column(name = "target_cash")
-    private BigDecimal targetCash;
+    @Column(name = "belong_type")
+    private Byte belongType;
 
     /**
-     * 目标工作量
+     * 数据所属ID
      */
-    @Column(name = "target_num")
-    private BigDecimal targetNum;
+    @Column(name = "belong_id")
+    private Integer belongId;
 
     /**
-     * 目标初诊人数
+     * 业务目标类型（0-实收金额；1-工作量；2-初诊人数；3-就诊人次）
      */
-    @Column(name = "target_first_visit")
-    private Integer targetFirstVisit;
+    @Column(name = "business_type")
+    private Byte businessType;
 
     /**
-     * 目标就诊人数
+     * 业务目标数
      */
-    @Column(name = "target_patient_num")
-    private Integer targetPatientNum;
+    @Column(name = "business_goal")
+    private BigDecimal businessGoal;
 
     /**
-     * 日期类型: 年1 月2
+     * 业务目标所属年份
      */
-    @Column(name = "date_type")
-    private Integer dateType;
+    @Column(name = "business_year")
+    private String businessYear;
 
     /**
-     * 日期
+     * 业务目标所属月份
      */
-    private Date date;
+    @Column(name = "business_month")
+    private String businessMonth;
 
     /**
-     * 组织类型:1 门诊，2个人
+     * 单位
      */
-    @Column(name = "team_type")
-    private String teamType;
+    private String unit;
 
     /**
-     * 门诊id或者用户id不等
+     * 是否有效/是否启用
      */
-    @Column(name = "num_id")
-    private Integer numId;
+    private Boolean inservice;
 
+    /**
+     * 创建人ID
+     */
     @Column(name = "crt_id")
     private Integer crtId;
 
+    /**
+     * 创建人姓名
+     */
+    @Column(name = "crt_name")
+    private String crtName;
+
+    /**
+     * 创建时间
+     */
     @Column(name = "crt_time")
     private Date crtTime;
 
+    /**
+     * 更新时间
+     */
     @Column(name = "upd_id")
     private Integer updId;
 
+    /**
+     * 更新人姓名
+     */
+    @Column(name = "upd_name")
+    private String updName;
+
+    /**
+     * 更新时间
+     */
     @Column(name = "upd_time")
     private Date updTime;
 
     /**
-     * @return id
+     * 获取业务目标ID
+     *
+     * @return id - 业务目标ID
      */
     public Integer getId() {
         return id;
     }
 
     /**
-     * @param id
+     * 设置业务目标ID
+     *
+     * @param id 业务目标ID
      */
     public void setId(Integer id) {
         this.id = id;
     }
 
     /**
-     * 获取实收金额
+     * 获取所属类型（0-组织，1-个人）
      *
-     * @return target_cash - 实收金额
+     * @return belong_type - 所属类型（0-组织，1-个人）
      */
-    public BigDecimal getTargetCash() {
-        return targetCash;
+    public Byte getBelongType() {
+        return belongType;
     }
 
     /**
-     * 设置实收金额
+     * 设置所属类型（0-组织，1-个人）
      *
-     * @param targetCash 实收金额
+     * @param belongType 所属类型（0-组织，1-个人）
      */
-    public void setTargetCash(BigDecimal targetCash) {
-        this.targetCash = targetCash;
+    public void setBelongType(Byte belongType) {
+        this.belongType = belongType;
     }
 
     /**
-     * 获取目标工作量
+     * 获取数据所属ID
      *
-     * @return target_num - 目标工作量
+     * @return belong_id - 数据所属ID
      */
-    public BigDecimal getTargetNum() {
-        return targetNum;
+    public Integer getBelongId() {
+        return belongId;
     }
 
     /**
-     * 设置目标工作量
+     * 设置数据所属ID
      *
-     * @param targetNum 目标工作量
+     * @param belongId 数据所属ID
      */
-    public void setTargetNum(BigDecimal targetNum) {
-        this.targetNum = targetNum;
+    public void setBelongId(Integer belongId) {
+        this.belongId = belongId;
     }
 
     /**
-     * 获取目标初诊人数
+     * 获取业务目标类型（0-实收金额；1-工作量；2-初诊人数；3-就诊人次）
      *
-     * @return target_first_visit - 目标初诊人数
+     * @return business_type - 业务目标类型（0-实收金额；1-工作量；2-初诊人数；3-就诊人次）
      */
-    public Integer getTargetFirstVisit() {
-        return targetFirstVisit;
+    public Byte getBusinessType() {
+        return businessType;
     }
 
     /**
-     * 设置目标初诊人数
+     * 设置业务目标类型（0-实收金额；1-工作量；2-初诊人数；3-就诊人次）
      *
-     * @param targetFirstVisit 目标初诊人数
+     * @param businessType 业务目标类型（0-实收金额；1-工作量；2-初诊人数；3-就诊人次）
      */
-    public void setTargetFirstVisit(Integer targetFirstVisit) {
-        this.targetFirstVisit = targetFirstVisit;
+    public void setBusinessType(Byte businessType) {
+        this.businessType = businessType;
     }
 
     /**
-     * 获取目标就诊人数
+     * 获取业务目标数
      *
-     * @return target_patient_num - 目标就诊人数
+     * @return business_goal - 业务目标数
      */
-    public Integer getTargetPatientNum() {
-        return targetPatientNum;
+    public BigDecimal getBusinessGoal() {
+        return businessGoal;
     }
 
     /**
-     * 设置目标就诊人数
+     * 设置业务目标数
      *
-     * @param targetPatientNum 目标就诊人数
+     * @param businessGoal 业务目标数
      */
-    public void setTargetPatientNum(Integer targetPatientNum) {
-        this.targetPatientNum = targetPatientNum;
+    public void setBusinessGoal(BigDecimal businessGoal) {
+        this.businessGoal = businessGoal;
     }
 
     /**
-     * 获取日期类型: 年1 月2
+     * 获取业务目标时间
      *
-     * @return date_type - 日期类型: 年1 月2
+     * @return business_year - 业务目标时间年
      */
-    public Integer getDateType() {
-        return dateType;
+    public String getBusinessYear() {
+        return businessYear;
     }
 
     /**
-     * 设置日期类型: 年1 月2
+     * 设置业务目标时间
      *
-     * @param dateType 日期类型: 年1 月2
+     * @param businessYear 业务目标时间年
      */
-    public void setDateType(Integer dateType) {
-        this.dateType = dateType;
+    public void setBusinessYear(String businessYear) {
+    this.businessYear = businessYear;
     }
 
     /**
-     * 获取日期
+     * 获取业务目标时间月
      *
-     * @return date - 日期
+     * @return business_date - 业务目标时间月
      */
-    public Date getDate() {
-        return date;
+
+    public String getBusinessMonth() {
+        return businessMonth;
     }
 
     /**
-     * 设置日期
+     * 设置业务目标时间月
      *
-     * @param date 日期
+     * @return business_month - 业务目标时间
      */
-    public void setDate(Date date) {
-        this.date = date;
+    public void setBusinessMonth(String businessMonth) {
+        this.businessMonth = businessMonth;
     }
 
     /**
-     * 获取组织类型:1 门诊，2个人
+     * 获取单位
      *
-     * @return team_type - 组织类型:1 门诊，2个人
+     * @return unit - 单位
      */
-    public String getTeamType() {
-        return teamType;
+    public String getUnit() {
+        return unit;
     }
 
     /**
-     * 设置组织类型:1 门诊，2个人
+     * 设置单位
      *
-     * @param teamType 组织类型:1 门诊，2个人
+     * @param unit 单位
      */
-    public void setTeamType(String teamType) {
-        this.teamType = teamType;
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     /**
-     * 获取门诊id或者用户id不等
+     * 获取是否有效/是否启用
      *
-     * @return num_id - 门诊id或者用户id不等
+     * @return inservice - 是否有效/是否启用
      */
-    public Integer getNumId() {
-        return numId;
+    public Boolean getInservice() {
+        return inservice;
     }
 
     /**
-     * 设置门诊id或者用户id不等
+     * 设置是否有效/是否启用
      *
-     * @param numId 门诊id或者用户id不等
+     * @param inservice 是否有效/是否启用
      */
-    public void setNumId(Integer numId) {
-        this.numId = numId;
+    public void setInservice(Boolean inservice) {
+        this.inservice = inservice;
     }
 
     /**
-     * @return crt_id
+     * 获取创建人ID
+     *
+     * @return crt_id - 创建人ID
      */
     public Integer getCrtId() {
         return crtId;
     }
 
     /**
-     * @param crtId
+     * 设置创建人ID
+     *
+     * @param crtId 创建人ID
      */
     public void setCrtId(Integer crtId) {
         this.crtId = crtId;
     }
 
     /**
-     * @return crt_time
+     * 获取创建人姓名
+     *
+     * @return crt_name - 创建人姓名
+     */
+    public String getCrtName() {
+        return crtName;
+    }
+
+    /**
+     * 设置创建人姓名
+     *
+     * @param crtName 创建人姓名
+     */
+    public void setCrtName(String crtName) {
+        this.crtName = crtName;
+    }
+
+    /**
+     * 获取创建时间
+     *
+     * @return crt_time - 创建时间
      */
     public Date getCrtTime() {
         return crtTime;
     }
 
     /**
-     * @param crtTime
+     * 设置创建时间
+     *
+     * @param crtTime 创建时间
      */
     public void setCrtTime(Date crtTime) {
         this.crtTime = crtTime;
     }
 
     /**
-     * @return upd_id
+     * 获取更新时间
+     *
+     * @return upd_id - 更新时间
      */
     public Integer getUpdId() {
         return updId;
     }
 
     /**
-     * @param updId
+     * 设置更新时间
+     *
+     * @param updId 更新时间
      */
     public void setUpdId(Integer updId) {
         this.updId = updId;
     }
 
     /**
-     * @return upd_time
+     * 获取更新人姓名
+     *
+     * @return upd_name - 更新人姓名
+     */
+    public String getUpdName() {
+        return updName;
+    }
+
+    /**
+     * 设置更新人姓名
+     *
+     * @param updName 更新人姓名
+     */
+    public void setUpdName(String updName) {
+        this.updName = updName;
+    }
+
+    /**
+     * 获取更新时间
+     *
+     * @return upd_time - 更新时间
      */
     public Date getUpdTime() {
         return updTime;
     }
 
     /**
-     * @param updTime
+     * 设置更新时间
+     *
+     * @param updTime 更新时间
      */
     public void setUpdTime(Date updTime) {
         this.updTime = updTime;

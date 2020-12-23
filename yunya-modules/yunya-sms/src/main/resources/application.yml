@@ -55,19 +55,21 @@ hystrix:
 
 aliyun:
   sms:
-#    accessKeyId: LTAI4G4rXydQDeSBZVx1kKgu
-#    accessSecret: 3tTNUGxktkRnCXzw7N0WGLf0XDRYbM
+    accessKeyId: LTAI4G4rXydQDeSBZVx1kKgu
+    accessSecret: 3tTNUGxktkRnCXzw7N0WGLf0XDRYbM
     aliyunDomain: dysmsapi.aliyuncs.com
     aliyunVersion: 2017-05-25
-    accessKeyId: LTAI4G5V7ezDNNSSwyRTZJGm
-    accessSecret: WPpocSKOVgAFSXj3J8jMPQ5w3vH3qD
+
+#    测试账号
+#    accessKeyId: LTAI4G5V7ezDNNSSwyRTZJGm
+#    accessSecret: WPpocSKOVgAFSXj3J8jMPQ5w3vH3qD
 
 wiki:
-    app: A00305710000067
-    operatorId: ccaaad2ba1f2a6baccb986d0a748dbb9
-    key: 111
+    publicKey: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq+iElxN5xzGpN81gjLSzTROPWvYw+06YPyjG5bufC2NHjoaiISbdw6AnYcdIAT8g5dOgYB4SyDPSxvfje2k9CTUFbmNTTm5humwwbCz94UVJf6XwAWT1432WtW1VtrC3tK3BTM5v1rY4Bt7yjQPD/ao4ZGe/RsVOYIT7KGD8g/eLLuWPMcCJmCA0P8Vl65ouS3ioReLMWdEFwTGUNeWfA14/ki9Z+p1ldSz1uq+YE1eoYF18kyF3nlQbIjHdBhk9bRhodLBLrHP0SndawDUy6cdO7YbCsP2utYGVkWTxrCezszPhtGDfP9Jvvtw1J1yKCPNtfbDOz1uczhBO/u6P6QIDAQAB
+    app: A55905710000004
+    operatorId: 8fe21621f6e999a05c8f34226ff24791
+    key: dc38b14f74888b3a88b51ace677cc3b8
     notifyUrl: http://yunya.test.utools.club/smsChargeOrder/notifyUrl
     redirectUrl: http://yunya.test.utools.club/smsChargeOrder/redirectUrl
-
 
 

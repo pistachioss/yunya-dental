@@ -40,9 +40,9 @@ public class SmsTemplateSetQueryForm implements Serializable {
 
 
     /**
-     * 适用场景：0-预约提醒，1-会员充值提醒，2-会员消费提醒，3-预付款充值提醒，4-预付款消费提醒，5-卡券售出提醒
+     * 适用场景：0-预约提醒，1-会员充值提醒，2-会员消费提醒，3-预付款充值提醒，4-预付款消费提醒，5-卡券售出提醒，6-考勤设备绑定验证码，7-找回密码验证码
      */
-    @ApiModelProperty("适用场景：0-预约提醒，1-会员充值提醒，2-会员消费提醒，3-预付款充值提醒，4-预付款消费提醒，5-卡券售出提醒")
+    @ApiModelProperty("适用场景：0-预约提醒，1-会员充值提醒，2-会员消费提醒，3-预付款充值提醒，4-预付款消费提醒，5-卡券售出提醒，6-考勤设备绑定验证码，7-找回密码验证码")
     private Byte sense;
 
     /**
@@ -67,7 +67,7 @@ public class SmsTemplateSetQueryForm implements Serializable {
      * 模板code
      */
     @ApiModelProperty("模板code")
-    private Integer templateCode;
+    private String templateCode;
 
     /**
      * 是否需要模板预览

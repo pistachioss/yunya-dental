@@ -251,5 +251,6 @@ public interface AppointmentMapper extends Mapper<Appointment> {
   List<TreatmentInfoForMonthVO> appointmentForMonth(
           @Param("dentistId") Integer dentistId,
           @Param("startDate") Date startDate,
-          @Param("endDate") Date endDate);
+          @Param("endDate") Date endDate,
+          @Param("orgId") Integer orgId);
 }

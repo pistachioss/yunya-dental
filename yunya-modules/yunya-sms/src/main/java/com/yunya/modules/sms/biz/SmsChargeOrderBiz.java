@@ -1,7 +1,6 @@
 package com.yunya.modules.sms.biz;
 
 import cn.hutool.core.bean.BeanUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.yunya.feign.sms.model.SmsChargeOrderModel;
@@ -9,8 +8,8 @@ import com.yunya.feign.sms.query.SmsChargeOrderQueryForm;
 import com.yunya.feign.sms.vo.SmsChargeOrderVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.EntityUtils;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsChargeOrder;
 import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
@@ -25,12 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_NOT_EXIST;
-import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMETERS_IS_ILLEGAL;
 
 /**
  * 简介：短信充值订单业务层
@@ -41,7 +38,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
  * @since: 1.0.0
  */
 @Service
-@Transactional
+@Transactional(rollbackFor = Exception.class)
 public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOrder> {
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -70,19 +67,21 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
         BeanUtil.copyProperties(smsChargeOrderModel, smsChargeOrder);
         smsChargeOrder.setOrderStatus(SmsOrderStatusEnum.WAIT_PAY.getCode());
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        smsChargeOrder.setOrgId(orgId);
+//        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+//        smsChargeOrder.setOrgId(orgId);
+        smsChargeOrder.setOrgId(35);
         Long amount = smsChargeOrder.getPrice().multiply(new BigDecimal(100)).longValue();
         String orderNo = UUID.randomUUID().toString();
         smsChargeOrder.setOrderNo(orderNo);
+        EntityUtils.setCreatAndUpdatInfo(smsChargeOrder);
         int count = mapper.insert(smsChargeOrder);
         if (count != 1) {
             throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);
         }
-        JSONArray goodList = getGoodList(smsChargeOrder.getSmsGoods(), smsChargeOrder.getPrice());
+        JSONObject goods = getGoods(smsChargeOrder.getSmsGoods(), amount);
         SmsChargeOrderVO smsChargeOrderVO = new SmsChargeOrderVO();
         smsChargeOrderVO.setId(smsChargeOrder.getId());
-        smsChargeOrderVO.setQrcode(WikiUtl.createOrder(orderNo, amount, goodList));
+        smsChargeOrderVO.setQrcode(WikiUtl.createOrder(orderNo, amount, goods));
         return smsChargeOrderVO;
     }
 
@@ -93,7 +92,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
      * @param goodPrice
      * @return
      */
-    private JSONArray getGoodList(String goodName, BigDecimal goodPrice) {
+    private JSONObject getGoods(String goodName, Long goodPrice) {
         JSONObject good = new JSONObject();
         good.put("goods_name", goodName);
         good.put("sell_amount", "1");
@@ -101,9 +100,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         good.put("goods_id","");
         good.put("goods_num","");
         good.put("goods_sku_id","");
-        JSONArray goodList = new JSONArray();
-        goodList.add(good);
-        return goodList;
+        return good;
     }
 
     /**
@@ -124,8 +121,8 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         smsChargeOrder.setOrderNo(orderNo);
         updateSelectiveById(smsChargeOrder);
         Long amount = smsChargeOrder.getPrice().multiply(new BigDecimal(100)).longValue();
-        JSONArray goodList = getGoodList(smsChargeOrder.getSmsGoods(), smsChargeOrder.getPrice());
-        return WikiUtl.createOrder(orderNo, amount, goodList);
+        JSONObject goods = getGoods(smsChargeOrder.getSmsGoods(), amount);
+        return WikiUtl.createOrder(orderNo, amount, goods);
     }
 
     /**
@@ -134,15 +131,15 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
      * @param request 请求
      */
     public void notifyUrl(HttpServletRequest request) {
-        Map<String, String> params = getRequestParameters(request);
+        Map<String, String> params = getReqParams(request);
         String sign = params.remove("sign");
-        if (WikiUtl.rsaCheck(params,sign)) {
-            throw new SignException("caibao sign invalid");
+        if (!WikiUtl.rsaCheck(params,sign)) {
+            throw new SignException("notifyUrl sign invalid");
         }
-        String orderNo = params.get("orderNo");
+        String orderNo = params.get("appOrderNo");
         SmsChargeOrderVO smsChargeOrderVO = mapper.findSmsChargeOrderByOrderNo(orderNo);
-        if (orderNo == null) {
-            throw new SignException("sign invalid,  request params: " + JSONObject.toJSONString(request.getParameterMap()));
+        if (smsChargeOrderVO == null) {
+            throw new SignException("notifyUrl invalid orderNo: " + orderNo, PARAMETERS_IS_ILLEGAL);
         }
         String payTimeStr = params.get("payTime");
         String orderStatus = params.get("orderStatus");
@@ -151,49 +148,48 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
             SmsChargeOrder smsChargeOrder = new SmsChargeOrder();
             smsChargeOrder.setId(smsChargeOrderVO.getId());
             Date payTime = null;
-            if (StringHelper.isNotEmpty(payTimeStr )) {
-                try {
-                    payTime = new SimpleDateFormat("yyyyMMddHHMmmss").parse(payTimeStr);
-                } catch (ParseException e) {
-                    throw new ClientServiceException("时间转换错误",DATA_TRANSFORMATION_EXIST);
-                }
+            if (StringHelper.isNotEmpty(payTimeStr)) {
+                payTime = new Date(Long.parseLong(payTimeStr));
             }
-            switch (orderStatus) {
-                case "PAY_SUC": {//付款成功
+
+            if (orderStatus.equals("PAY_SUC") || orderStatus.equals("PAY_FAIL")) {
+                String cbOrderNo = params.get("cbOrderNo");
+                String outOrderNo = params.get("outOrderNo");
+                String paymentChannel = params.get("paymentChannel");
+                status = SmsOrderStatusEnum.PAY_FAIL.getCode(); //付款失败
+                if (orderStatus.equals("PAY_SUC")) { //付款成功
                     status = SmsOrderStatusEnum.PAY_SUC.getCode();
                     smsOrgStatisticsBiz.incrByOrgId(smsChargeOrderVO.getSmsNum(),
                             smsChargeOrderVO.getPrice(), smsChargeOrderVO.getOrgId());
-                    break;
                 }
-                case "PAY_FAIL": {//付款失败
-                    status = SmsOrderStatusEnum.PAY_FAIL.getCode();
-                    break;
+                smsChargeOrder.setOrderStatus(status);
+                if (payTime != null) {
+                    smsChargeOrder.setPayTime(payTime);
                 }
-                case "WAIT_PAY"://等待付款
-                case "PART_REFUND"://部分退款成功
-                case "ALL_REFUND"://退款成功
-                case "REVERSED"://订单撤销成功
-                case "CLOSED"://订单撤销成功
-                case "CANCEL"://已取消 (历史状态，已废弃，新接入用户不用考虑)
-                default:break;
+                smsChargeOrder.setCbOrderNo(cbOrderNo);
+                smsChargeOrder.setOutOrderNo(outOrderNo);
+                smsChargeOrder.setPaymentChannel(paymentChannel);
+                smsChargeOrder.setUptTime(new Date(System.currentTimeMillis()));
+                mapper.updateByPrimaryKeySelective(smsChargeOrder);
             }
-            smsChargeOrder.setOrderStatus(status);
-            if (payTime != null) {
-                smsChargeOrder.setPayTime(payTime);
-            }
-            smsChargeOrder.setUptTime(new Date(System.currentTimeMillis()));
-            mapper.updateByPrimaryKeySelective(smsChargeOrder);
+//            case "WAIT_PAY"://等待付款
+//            case "PART_REFUND"://部分退款成功
+//            case "ALL_REFUND"://退款成功
+//            case "REVERSED"://订单撤销成功
+//            case "CLOSED"://订单撤销成功
+//            case "CANCEL"://已取消 (历史状态，已废弃，新接入用户不用考虑)
         }
     }
 
     /**
      * 获取请求参数
+     *
      * @param request
      * @return
      */
-    private Map<String, String> getRequestParameters(HttpServletRequest request) {
+    private Map<String, String> getReqParams(HttpServletRequest request) {
         String cbOrderNo = request.getParameter("cbOrderNo");//采商订单号
-        String orderNo = request.getParameter("appOrderNo");//充值订单号
+        String appOrderNo = request.getParameter("appOrderNo");//充值订单号
         String outOrderNo = request.getParameter("outOrderNo");//支付宝或微信交易订单号
         String orderStatus = request.getParameter("orderStatus");//订单状态
         String totalAmount = request.getParameter("totalAmount");//订单总额，以分为单位
@@ -206,7 +202,7 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         String sign = request.getParameter("sign");//签名
         Map<String, String> params = new HashMap<>();
         params.put("cbOrderNo", cbOrderNo);
-        params.put("orderNo", orderNo);
+        params.put("appOrderNo", appOrderNo);
         params.put("outOrderNo", outOrderNo);
         params.put("orderStatus", orderStatus);
         params.put("totalAmount", totalAmount);
@@ -219,5 +215,26 @@ public class SmsChargeOrderBiz extends BaseBiz<SmsChargeOrderMapper, SmsChargeOr
         params.put("sign", sign);
         log.info("sms charge order notifyUrl request params: {}", JSONObject.toJSONString(params));
         return params;
+    }
+
+    public void uptSelectiveById(SmsChargeOrder smsChargeOrder) {
+        smsChargeOrder.setUptId(-999);
+        smsChargeOrder.setUptTime(new Date(System.currentTimeMillis()));
+        mapper.updateByPrimaryKeySelective(smsChargeOrder);
+    }
+
+    /**
+     * 根据id查询短信充值订单。
+     *
+     * @param id 主键
+     */
+    public SmsChargeOrderVO findSmsChargeOrderById(Integer id) {
+        SmsChargeOrder smsChargeOrder = selectById(id);
+        if (smsChargeOrder == null) {
+            throw new ClientServiceException("充值订单不存在", DATA_NOT_EXIST);
+        }
+        SmsChargeOrderVO smsChargeOrderVO = new SmsChargeOrderVO();
+        BeanUtil.copyProperties(smsChargeOrder,smsChargeOrderVO);
+        return smsChargeOrderVO;
     }
 }

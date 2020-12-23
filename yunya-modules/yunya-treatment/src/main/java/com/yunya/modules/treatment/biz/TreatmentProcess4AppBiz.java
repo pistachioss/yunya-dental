@@ -1,17 +1,14 @@
 package com.yunya.modules.treatment.biz;
 
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
-import com.yunya.feign.appointment.vo.AppointmentSplitVo;
 import com.yunya.feign.appointment.vo.AppointmentVo;
+import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
+import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.treatment.domain.query.AppTreatmentQuery;
-import com.yunya.feign.treatment.domain.vo.OrderBill4AppVO;
-import com.yunya.feign.treatment.domain.vo.RegisteredVO;
-import com.yunya.feign.treatment.domain.vo.TreatmentInfo4AppVO;
-import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /**
  * @program: yunya-dental
@@ -27,6 +24,10 @@ public class TreatmentProcess4AppBiz {
     private RegisteredBiz registeredBiz;
     @Autowired
     private BillRecordBiz billRecordBiz;
+    @Autowired
+    private TreatmentRecordBiz treatmentRecordBiz;
+    @Autowired
+    private RemotePatientCentralServiceFeign patientCentralServiceFeign;
 
     /**
      * 查询患者就诊信息
@@ -68,13 +69,15 @@ public class TreatmentProcess4AppBiz {
      */
     private void injectOrderBillField(OrderBill4AppVO orderBill4AppVO, TreatmentInfo4AppVO treatmentInfo4AppVO) {
         if (null != orderBill4AppVO) {
-            treatmentInfo4AppVO.setActualReceivableAmount(orderBill4AppVO.getActualReceivableAmount());
-            treatmentInfo4AppVO.setDebtAmount(orderBill4AppVO.getDebtAmount());
-            treatmentInfo4AppVO.setPrivilegeAmount(orderBill4AppVO.getPrivilegeAmount());
-            treatmentInfo4AppVO.setReceivableAmount(orderBill4AppVO.getReceivableAmount());
-            treatmentInfo4AppVO.setReceivedAmount(orderBill4AppVO.getReceivedAmount());
-            treatmentInfo4AppVO.setBillNumber(orderBill4AppVO.getBillNumber());
-            treatmentInfo4AppVO.setOrderItems(orderBill4AppVO.getBillItems());
+            TreatmentOrderInfo4AppVO orderInfo4AppVO = new TreatmentOrderInfo4AppVO();
+            orderInfo4AppVO.setActualReceivableAmount(orderBill4AppVO.getActualReceivableAmount());
+            orderInfo4AppVO.setDebtAmount(orderBill4AppVO.getDebtAmount());
+            orderInfo4AppVO.setPrivilegeAmount(orderBill4AppVO.getPrivilegeAmount());
+            orderInfo4AppVO.setReceivableAmount(orderBill4AppVO.getReceivableAmount());
+            orderInfo4AppVO.setReceivedAmount(orderBill4AppVO.getReceivedAmount());
+            orderInfo4AppVO.setBillNumber(orderBill4AppVO.getBillNumber());
+            orderInfo4AppVO.setOrderItems(orderBill4AppVO.getBillItems());
+            treatmentInfo4AppVO.setOrderInfo(orderInfo4AppVO);
         }
 
     }
@@ -86,12 +89,29 @@ public class TreatmentProcess4AppBiz {
      */
     private void injectPatientRegField(RegisteredVO registeredVO, TreatmentInfo4AppVO treatmentInfo4AppVO) {
         if (null != registeredVO) {
-            treatmentInfo4AppVO.setRegAssistantId(registeredVO.getAssistantId());
-            treatmentInfo4AppVO.setRegAssistantName(registeredVO.getAssistantName());
-            treatmentInfo4AppVO.setRegDentistId(registeredVO.getDentistId());
-            treatmentInfo4AppVO.setRegDentistName(registeredVO.getDentistName());
-            treatmentInfo4AppVO.setRegistedId(registeredVO.getId());
-            treatmentInfo4AppVO.setCrtTime(registeredVO.getCrtTime());
+            TreatmentRegInfo4AppVO regInfo4AppVO = new TreatmentRegInfo4AppVO();
+            // 查询就诊信息
+            TreatmentRecord treatQuery = new TreatmentRecord();
+            treatQuery.setRegisteredId(registeredVO.getId());
+            TreatmentRecord treatmentRecord = treatmentRecordBiz.selectOne(treatQuery);
+            if (null != treatmentRecord) {
+                regInfo4AppVO.setTreatmentId(treatmentRecord.getId());
+            }
+            regInfo4AppVO.setRegAssistantId(registeredVO.getAssistantId());
+            regInfo4AppVO.setRegAssistantName(registeredVO.getAssistantName());
+            regInfo4AppVO.setRegDentistId(registeredVO.getDentistId());
+            regInfo4AppVO.setRegDentistName(registeredVO.getDentistName());
+            regInfo4AppVO.setRegistedId(registeredVO.getId());
+            regInfo4AppVO.setCrtTime(registeredVO.getCrtTime());
+            // 直接挂号情况下，设置患者信息
+            if (null == treatmentRecord.getAppointmentId()) {
+                PatientTotalInfoVo patientTotalInfo = this.patientCentralServiceFeign.findPatientTotalInfo(treatmentRecord.getPatientId());
+                treatmentInfo4AppVO.setPatientId(treatmentRecord.getPatientId());
+                treatmentInfo4AppVO.setPatientName(patientTotalInfo.getName());
+                treatmentInfo4AppVO.setAge(patientTotalInfo.getAge());
+                treatmentInfo4AppVO.setGender(patientTotalInfo.getGender());
+            }
+            treatmentInfo4AppVO.setRegInfo(regInfo4AppVO);
         }
     }
 
@@ -102,21 +122,31 @@ public class TreatmentProcess4AppBiz {
      */
     private void injectAppointField(AppointmentVo appointmentDetailById, TreatmentInfo4AppVO treatmentInfo4AppVO) {
         if (null != appointmentDetailById) {
-            treatmentInfo4AppVO.setAppointId(appointmentDetailById.getId());
-            treatmentInfo4AppVO.setAppointContent(appointmentDetailById.getAppointContent());
-            treatmentInfo4AppVO.setAppointDate(appointmentDetailById.getAppointDate());
-            treatmentInfo4AppVO.setAppointDuration(appointmentDetailById.getAppointDuration());
-            treatmentInfo4AppVO.setAppointTime(appointmentDetailById.getAppointTime());
-            treatmentInfo4AppVO.setAppointType(appointmentDetailById.getAppointType());
-            treatmentInfo4AppVO.setSplits(appointmentDetailById.getSplitList());
-            treatmentInfo4AppVO.setClinicDeviceItemId(appointmentDetailById.getClinicDeviceItemId());
-            treatmentInfo4AppVO.setClinicDeviceItemName(appointmentDetailById.getClinicDeviceItemName());
-            treatmentInfo4AppVO.setConfirmStatus(appointmentDetailById.getConfirmStatus());
+            // 设置患者预约信息
+            TreatmentAppointInfo4AppVO appointInfo4AppVO = new TreatmentAppointInfo4AppVO();
+            PatientTotalInfoVo patientTotalInfo = this.patientCentralServiceFeign.findPatientTotalInfo(appointmentDetailById.getPatientId());
+            appointInfo4AppVO.setAppointId(appointmentDetailById.getId());
+            appointInfo4AppVO.setAppointContent(appointmentDetailById.getAppointContent());
+            appointInfo4AppVO.setAppointDate(appointmentDetailById.getAppointDate());
+            appointInfo4AppVO.setAppointDuration(appointmentDetailById.getAppointDuration());
+            appointInfo4AppVO.setAppointTime(appointmentDetailById.getAppointTime());
+            appointInfo4AppVO.setAppointType(appointmentDetailById.getAppointType());
+            appointInfo4AppVO.setSplits(appointmentDetailById.getSplitList());
+            appointInfo4AppVO.setClinicDeviceItemId(appointmentDetailById.getClinicDeviceItemId());
+            appointInfo4AppVO.setClinicDeviceItemName(appointmentDetailById.getClinicDeviceItemName());
+            appointInfo4AppVO.setConfirmStatus(appointmentDetailById.getConfirmStatus());
+            appointInfo4AppVO.setDeptRoomId(appointmentDetailById.getDeptRoomId());
+            appointInfo4AppVO.setDeptRoomName(appointmentDetailById.getDeptRoomName());
+            appointInfo4AppVO.setRemarks(appointmentDetailById.getRemarks());
+            appointInfo4AppVO.setDentistId(appointmentDetailById.getDentistId());
+            appointInfo4AppVO.setDentistName(appointmentDetailById.getDentistName());
+            appointInfo4AppVO.setAssistantId(appointmentDetailById.getAssistantId());
+            appointInfo4AppVO.setAssistantName(appointmentDetailById.getAssistantName());
             treatmentInfo4AppVO.setPatientId(appointmentDetailById.getPatientId());
             treatmentInfo4AppVO.setPatientName(appointmentDetailById.getPatientName());
-            treatmentInfo4AppVO.setDeptRoomId(appointmentDetailById.getDeptRoomId());
-            treatmentInfo4AppVO.setDeptRoomName(appointmentDetailById.getDeptRoomName());
-            treatmentInfo4AppVO.setRemarks(appointmentDetailById.getRemarks());
+            treatmentInfo4AppVO.setAge(patientTotalInfo.getAge());
+            treatmentInfo4AppVO.setGender(patientTotalInfo.getGender());
+            treatmentInfo4AppVO.setAppintInfo(appointInfo4AppVO);
         }
     }
 }

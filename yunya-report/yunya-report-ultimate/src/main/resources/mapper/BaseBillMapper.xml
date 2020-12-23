@@ -627,4 +627,24 @@
         WHERE
             debt_amount > 0
     </select>
+
+    <!-- 根据条件查询本月对账单账单收支统计信息 -->
+    <select id="selectStatementStatistic"
+            resultType="com.yunya.feign.report.domain.vo.StatementBillIncomeStatisticVO">
+        SELECT
+            IFNULL(SUM( bb.actual_amount ), 0) AS totalActualAmountThisMonth,
+            IFNULL(SUM( bb.privilege_amount ), 0) AS totalPrivilegeAmountThisMonth
+        FROM
+            base_bill bb
+        <where>
+            AND bb.bill_num IS NOT NULL
+            AND bb.bill_date IS NOT NULL
+            <if test="query.orgId != null">
+                AND bb.org_id = #{query.orgId}
+            </if>
+            <if test="query.queryDate != null and query.queryDate != ''">
+                AND DATE_FORMAT( bb.order_date, '%Y-%m' ) = #{query.queryDate}
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -2,7 +2,7 @@ package com.yunya.report.ultimate.mapper;
 
 import com.yunya.feign.report.domain.query.InboundAndOutboundStatementQuery;
 import com.yunya.feign.report.domain.vo.BaseAccountItemVO;
-import com.yunya.feign.report.domain.vo.BoundPaymentVO;
+import com.yunya.feign.report.domain.vo.StatementPaymentVO;
 import com.yunya.models.report.BaseAccountItem;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
@@ -25,7 +25,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectBillChargePaymentInfo(
+  List<StatementPaymentVO> selectBillChargePaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -34,7 +34,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectCollectArrearsPaymentInfo(
+  List<StatementPaymentVO> selectCollectArrearsPaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -43,7 +43,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectMemberChargePaymentInfo(
+  List<StatementPaymentVO> selectMemberChargePaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -52,7 +52,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectPaidChargePaymentInfo(
+  List<StatementPaymentVO> selectPaidChargePaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -61,7 +61,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectProductSoldPaymentInfo(
+  List<StatementPaymentVO> selectProductSoldPaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -70,7 +70,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectClinicCollectionPaymentInfo(
+  List<StatementPaymentVO> selectClinicCollectionPaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -79,7 +79,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectBillRefundPaymentInfo(
+  List<StatementPaymentVO> selectBillRefundPaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -88,7 +88,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectMemberRefundPaymentInfo(
+  List<StatementPaymentVO> selectMemberRefundPaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -97,7 +97,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectPrepaidRefundPaymentInfo(
+  List<StatementPaymentVO> selectPrepaidRefundPaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**
@@ -106,7 +106,7 @@ public interface BaseAccountItemMapper extends Mapper<BaseAccountItem> {
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  List<BoundPaymentVO> selectClinicIsAcceptedPaymentInfo(
+  List<StatementPaymentVO> selectClinicIsAcceptedPaymentInfo(
       @Param("query") InboundAndOutboundStatementQuery query);
 
   /**

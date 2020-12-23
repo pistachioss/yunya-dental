@@ -212,4 +212,16 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     BillArrearsStatisticVO resultData = mapper.selectBillArrearsStatistic();
     return resultData;
   }
+
+  /**
+   * 根据条件查询本月对账单账单收支统计信息
+   *
+   * @param query 查询条件
+   * @return StatementBillIncomeStatisticVO
+   */
+  public StatementBillIncomeStatisticVO findStatementStatistic(StatementStatisticQuery query) {
+    StatementBillIncomeStatisticVO resultData = mapper.selectStatementStatistic(query);
+
+    return resultData;
+  }
 }

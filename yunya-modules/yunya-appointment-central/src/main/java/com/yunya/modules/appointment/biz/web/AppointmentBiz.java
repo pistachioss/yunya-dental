@@ -1,5 +1,6 @@
 package com.yunya.modules.appointment.biz.web;
 
+import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.domain.base.AppointmentSplitBaseInfo;
@@ -19,20 +20,23 @@ import com.yunya.feign.expand.RemoteClinicEmployeeConfigFeign;
 import com.yunya.feign.expand.model.response.EnableChooseEmployeeRes;
 import com.yunya.feign.expand.model.response.EnableEmployeeRes;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
-import com.yunya.feign.patient_central.domain.vo.web.PatientBaseInfoVo;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
+import com.yunya.feign.sms.RemoteSmsServiceFeign;
+import com.yunya.feign.sms.model.AppointmentSmsSendRecordModel;
+import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.MedicalOrganizationInfoVO;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.vo.WaitingPatientInfoVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.EntityUtils;
@@ -61,7 +65,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.constraints.NotBlank;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -69,6 +72,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseTreatmentProcess;
+import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
 /**
  * 患者预约服务
@@ -121,6 +125,10 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
     /** 门诊员工设置服务 */
     @Autowired
     private RemoteClinicEmployeeConfigFeign clinicEmployeeConfigFeign;
+
+    /** 短信服务调用 */
+    @Autowired
+    private RemoteSmsServiceFeign remoteSmsServiceFeign;
 
     /** 注入redis缓冲服务 */
     @Autowired
@@ -900,6 +908,12 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 设置患者手机号
             String mobile = patientBaseInfo.getMobile();
             appointmentVo.setPatientMobile(mobile);
+            // 设置患者年龄
+            Integer age = patientBaseInfo.getAge();
+            appointmentVo.setAge(age);
+            // 设置患者性别
+            Byte gender = patientBaseInfo.getGender();
+            appointmentVo.setGender(gender);
         }
         // 查询预约分解信息
         AppointmentSplitQuery splitQuery = new AppointmentSplitQuery();
@@ -932,7 +946,8 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             // 发送消息更新中间表就诊流程
             rabbitMqServiceFeign.sendMessage(id,0,1, BaseTreatmentProcess);
 
-            appointOperationModel.setOperateType((byte) 3);
+            Boolean confirmStatus = appointment.getConfirmStatus();
+            appointOperationModel.setOperateType(confirmStatus? (byte) 3 : 4);
             appointOperationModel.setAppointmentId(appointment.getId());
             appointOperationModel.setOrgId(Integer.valueOf(BaseContextHandler.getUserID()));
             appointOperationModel.setAfterOperation(appointment.getConfirmStatus()?"确认":"未确认");
@@ -2570,4 +2585,117 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         return new ArrayList<NextAppointsVo>();
     }
 
+    /**
+     * 发送预约短信
+     *
+     * @param templateId 短信模板id
+     * @param models 短信预约提醒列表
+     * @return
+     */
+    public ResponseResult<T> sendAppointmentBatchSms(Integer templateId, List<AppointmentSmsSendRecordModel> models) {
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        SmsTemplateSetVO smsTemplateSetVO = remoteSmsServiceFeign.findSmsTemplateById(templateId);
+        if (smsTemplateSetVO == null) {
+            throw new ClientServiceException("该短信模板不存在", DATA_NOT_EXIST);
+        }
+        String templateItem = smsTemplateSetVO.getTemplateItem();
+        if (StringHelper.isNotEmpty(templateItem)) {
+            String code2 = null;
+            String code3 = null;
+            String code4 = null;
+            if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode())!=-1
+                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode())!=-1
+                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode())!=-1) {
+                MedicalOrganizationInfoVO medicalOrganizationInfoVO = remoteSystemServiceFeign.clinicExtInfoByCompanyId(orgId);
+                code2 = medicalOrganizationInfoVO.getAbbreviation();
+                code3 = medicalOrganizationInfoVO.getTel();
+                code4 = medicalOrganizationInfoVO.getAddress();
+            }
+            String[] items = templateItem.split(",");
+            Map<String, Integer> repeat = new HashMap<>();
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            for (AppointmentSmsSendRecordModel model : models) {
+                JSONObject object = new JSONObject();
+                for (String item : items) {
+                    Integer reNum = repeat.get(item);
+                    String key = "";
+                    if (reNum == null) {
+                        reNum = 0;
+                        key = "code" + item;
+                    } else {
+                        key = "re" + reNum + "code" + item;
+                    }
+                    repeat.put(item, ++reNum);
+                    switch (item) {
+                        case "1" : {// 患者姓名
+                            object.put(key, model.getSendObject());
+                            break;
+                        }
+                        case "2": { // 诊所名称
+                            object.put(key,code2);
+                            break;
+                        }
+                        case "3": { // 诊所电话
+                            object.put(key,code3);
+                            break;
+                        }
+                        case "4": { // 诊所地址
+                            object.put(key,code4);
+                            break;
+                        }
+                        case "5": { // 预约医生姓名
+                            object.put(key, model.getDentistName());
+                            break;
+                        }
+                        case "6": { // 预约时间
+                            String code7 = model.getAppointDate() + model.getAppointTime();
+                            object.put(key, code7);
+                            break;
+                        }
+                        case "7": { // 先生/女士/小朋友
+                            Integer age = model.getAge();
+                            String code7 = "先生";
+                            Integer gener = model.getGender();
+                            if (age != null) {
+                                code7 = "小朋友";
+                                if (age>15 && gener!=null && gener==1) {
+                                    code7 = "女生";
+                                }
+                            } else {
+                                if (gener!=null && gener==1) {
+                                    code7 = "女生";
+                                }
+                            }
+                            object.put(key, code7);
+                            break;
+                        }
+                        case "9": { // 上午/下午
+                            String code7 = model.getAppointDate() + " " + model.getAppointTime() + ":59";
+                            String middleStr = model.getAppointDate() + " 12:00:00";
+                            String lastStr = model.getAppointDate() + " 00:00:00";
+                            try {
+                                Date appointDateTime = sdf.parse(code7);
+                                Date middle = sdf.parse(middleStr);
+                                Date last = sdf.parse(lastStr);
+                                String code9 = "上午";
+                                if (appointDateTime.after(middle) && appointDateTime.before(last)) {
+                                    code9 = "下午";
+                                }
+                                object.put(key, code9);
+                            } catch (ParseException e) {
+                                throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+                            }
+                            break;
+                        }
+                        default: { // 其他
+                            throw new ClientServiceException("模板有误，模板参数与模板适用场景不对应", OPERATION_NOT_ALLOW);
+                        }
+                    }
+                }
+                model.setTemplateParam(object);
+            }
+        }
+        remoteSmsServiceFeign.batchSendModels(templateId, models);
+        return ResponseUtil.success(null);
+    }
 }

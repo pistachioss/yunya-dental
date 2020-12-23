@@ -73,6 +73,12 @@ public class SmsSendRecordQueryForm implements Serializable {
     private String bizId;
 
     /**
+     * 回执id列表
+     */
+    @ApiModelProperty("回执id列表")
+    private Collection<String> bizIds;
+
+    /**
      * 发送状态：0-发送中，1-发送成功，2-发送失败
      */
     @ApiModelProperty("发送状态：0-发送中，1-发送成功，2-发送失败")

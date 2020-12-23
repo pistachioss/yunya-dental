@@ -30,14 +30,7 @@ import com.yunya.feign.discount.domain.form.OwnCardActiveForm;
 import com.yunya.feign.discount.domain.form.PatientChooseBenefitForm;
 import com.yunya.feign.discount.domain.model.ClinicAllocateModel;
 import com.yunya.feign.discount.domain.model.GenerateAllocateModel;
-import com.yunya.feign.discount.domain.query.CardActiveQuery;
-import com.yunya.feign.discount.domain.query.CardSaleQuery;
-import com.yunya.feign.discount.domain.query.CouponAllocateQuery;
-import com.yunya.feign.discount.domain.query.CouponSaleQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateCardQuery;
-import com.yunya.feign.discount.domain.query.GenerateAllocateDetailQuery;
-import com.yunya.feign.discount.domain.query.PatientBenefitQuery;
-import com.yunya.feign.discount.domain.query.PatientCardQuery;
+import com.yunya.feign.discount.domain.query.*;
 import com.yunya.feign.discount.domain.vo.CardActiveDetailVo;
 import com.yunya.feign.discount.domain.vo.CardQrCodeVo;
 import com.yunya.feign.discount.domain.vo.CardSalePageVo;
@@ -84,6 +77,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.discount.Card;
 import com.yunya.models.discount.CardBenefit;
+import com.yunya.models.discount.CardCancelLog;
 import com.yunya.models.discount.CouponAllocate;
 import com.yunya.models.discount.CouponCommonInfo;
 import com.yunya.models.discount.DiscountCoupon;
@@ -111,6 +105,7 @@ import com.yunya.modules.discount.enums.SoldWayEnum;
 import com.yunya.modules.discount.enums.TrueFalseEnum;
 import com.yunya.modules.discount.enums.UseWayEnum;
 import com.yunya.modules.discount.mapper.CardBenefitMapper;
+import com.yunya.modules.discount.mapper.CardCancelLogMapper;
 import com.yunya.modules.discount.mapper.CardMapper;
 import com.yunya.modules.discount.mapper.CouponAllocateMapper;
 import com.yunya.modules.discount.mapper.CouponCommonInfoMapper;
@@ -210,6 +205,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 	private ProductTypeMapper productTypeMapper;
 	@Resource
 	private RechargeCardMapper rechargeCardMapper;
+	@Resource
+	private CardCancelLogMapper cardCancelLogMapper;
 	@Resource
 	private RedisUtils redisUtils;
 	@Resource(name = "customizeThreadPool")
@@ -480,6 +477,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		try {
 			//获取组织名
 			String orgName = getOrgName(orgId);
+			LocalDateTime now = LocalDateTime.now();
 			for (Integer cardId : cardIds) {
 				//2. 检查卡券
 				Card card = mapper.selectByPrimaryKey(cardId);
@@ -507,7 +505,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 					return ResponseUtil.error(DiscountError.CARD_SOLD_OUT, orgName, couponInfo.getName());
 				}
 				//5. 卡券售卖
-				updateCardForSold(card, form, loginUserId);
+				this.updateCardForSold(card, form, loginUserId, now);
 				// TODO: 2020/8/26 发短信
 				mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
 				log.info("【售卖卡券发送消息成功】：卡券id[{}]", cardId);
@@ -586,6 +584,8 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		}
 		//更新取消卡券售出
 		updateCardForCancel(card);
+		//取消售出增加日志记录
+		this.saveCancelCardLog(cardId);
 		mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
 		log.info("【取消售出卡券发送消息成功】：卡券id[{}]", couponId);
 		return ResponseUtil.success();
@@ -683,7 +683,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				return ResponseUtil.error(errorBo.getError());
 			}
 			//4. 卡券激活
-			updateOwnActiveCard(patientId, form, loginUserId);
+			this.updateOwnActiveCard(patientId, form, loginUserId);
 			mqServiceFeign.sendMessage(cardId, UPDATE, BaseCardSingle);
 			log.info("【自有平台激活卡券发送消息成功】：卡券id[{}]", cardId);
 			return ResponseUtil.success();
@@ -1771,7 +1771,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		return vo;
 	}
 
-	private void updateCardForSold(Card card, CardSoldForm form, Integer loginUserId) {
+	private void updateCardForSold(Card card, CardSoldForm form, Integer loginUserId, LocalDateTime now) {
 		Card updateCard = BeanCopierUtils.generalCopyBean(form, Card.class);
 		updateCard.setStatus(ACTIVE_PENDING.getCode());
 		if (SOLD.equals(form.getSoldType())) {
@@ -1781,6 +1781,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			if (ONE.equals(form.getSoldAndPay())) {
 				updateCard.setSoldAndPay(ONE);
 				updateCard.setPayId(form.getPayId());
+				updateCard.setPayDate(now);
 			}
 			if (ZERO.equals(form.getSoldAndPay())) {
 				updateCard.setSoldAndPay(ZERO);
@@ -1790,7 +1791,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			updateCard.setSoldAndPay(null);
 			updateCard.setPayId(null);
 		}
-		updateCard.setSoldDate(LocalDateTime.now());
+		updateCard.setSoldDate(now);
 		updateCard.setSellerUserId(loginUserId);
 		updateCard.setUpdId(loginUserId);
 		updateCard.setId(card.getId());
@@ -1819,6 +1820,16 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 		mapper.updateByPrimaryKey(cancelCard);
 	}
 
+	private void saveCancelCardLog(Integer cardId) {
+		Integer loginUserId = Integer.valueOf(BaseContextHandler.getUserID());
+		CardCancelLog cancelCard = new CardCancelLog();
+		cancelCard.setCardId(cardId);
+		cancelCard.setCancelDate(new Date());
+		cancelCard.setCrtId(loginUserId);
+		cancelCard.setUpdId(loginUserId);
+		cardCancelLogMapper.insertSelective(cancelCard);
+	}
+
 	/**
 	 * 自有平台卡券激活
 	 *
@@ -1839,6 +1850,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			ownActiveCard.setSoldAndPay(TRUE.getCode());
 			ownActiveCard.setPayId(form.getPayId());
 			ownActiveCard.setPay(TRUE.getCode());
+			ownActiveCard.setPayDate(now);
 		}
 		ownActiveCard.setUpdId(loginUserId);
 		ownActiveCard.setActiveDate(now);
@@ -2962,5 +2974,15 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 			v.add(benefitBo.getMixable());
 			return v;
 		});
+	}
+
+	/**
+	 * 根据条件查询卡券售出现金收款总和
+	 *
+	 * @param query 查询条件
+	 * @return BigDecimal
+	 */
+	public BigDecimal findCardSaleCashReceipt(CardSaleCashReceiptQuery query) {
+		return mapper.selectCardSaleCashReceipt(query);
 	}
 }

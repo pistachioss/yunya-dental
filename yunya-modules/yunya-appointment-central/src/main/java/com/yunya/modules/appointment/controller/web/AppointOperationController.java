@@ -37,7 +37,7 @@ public class AppointOperationController {
      * @param model
      * @return
      */
-    @ApiOperation(value = "新增预约操作记录")
+    @ApiOperation(value = "新增预约操作记录",hidden = true)
     @PostMapping("/add")
     @CurrentUser
     public ResponseResult addAppointOperationRecord(@RequestBody @Validated AppointOperationModel model){
@@ -50,7 +50,7 @@ public class AppointOperationController {
      * @param id
      * @return
      */
-    @ApiOperation(value = "根据id删除预约操作记录")
+    @ApiOperation(value = "根据id删除预约操作记录",hidden = true)
     @DeleteMapping("/delete/{id}")
     public ResponseResult deleteAppointOperationRecordById(@PathVariable("id") Integer id){
         operateRecordBiz.deleteAppointOperatioinById(id);
@@ -62,7 +62,7 @@ public class AppointOperationController {
      * @param form
      * @return
      */
-    @ApiOperation(value = "修改预约操作记录")
+    @ApiOperation(value = "修改预约操作记录",hidden = true)
     @PutMapping("/update")
     @CurrentUser
     public ResponseResult updateAppointOperationRecord(@RequestBody @Validated AppointOperationForm form){
