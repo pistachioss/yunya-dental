@@ -29,7 +29,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Api("专科项目管理-增删改查")
+@Api(tags = "专科项目管理-增删改查")
 @RestController
 @RequestMapping("specialist")
 public class SpecialistProjectController {
