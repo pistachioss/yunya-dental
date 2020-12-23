@@ -39,10 +39,22 @@ public class RegisteredVO extends Registered implements Serializable {
     private Integer patientId;
 
     /**
+     * 患者年龄
+     */
+    @ApiModelProperty("患者年龄")
+    private Integer age;
+
+    /**
      * 患者名字
      */
     @ApiModelProperty("患者名字")
     private String patientName;
+
+    /**
+     * 患者性别
+     */
+    @ApiModelProperty("患者性别")
+    private Byte gender;
 
     /**
      * 预约id

@@ -3,8 +3,10 @@ package com.yunya.report.ultimate.biz;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
+import com.yunya.feign.report.domain.query.TreatmentList4AppQuery;
 import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
+import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
 import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
@@ -103,4 +105,20 @@ public class BaseTreatmentProcessBiz
         mapper.selectAssistantMatchingDetailList(query);
     return new PageInfo<>(resultList);
   }
+
+  /**
+   * 查询APP端就诊列表
+   * @param query
+   * @return
+   */
+  public PageInfo<BaseTreatmentProcessVO> treatmentList4App(TreatmentList4AppQuery query) {
+    if (query.getWhetherPage()) {
+      PageHelper.startPage(query.getPageNum(),query.getPageSize());
+    }
+    String dentistId = query.getDentistId();
+    List<BaseTreatmentProcessVO> baseTreatmentProcessVOS = mapper.treatmentList4App(query.getOrgId(),Integer.valueOf(dentistId),query.getCurrentDate());
+    return new PageInfo<>(baseTreatmentProcessVOS);
+  }
+
+
 }

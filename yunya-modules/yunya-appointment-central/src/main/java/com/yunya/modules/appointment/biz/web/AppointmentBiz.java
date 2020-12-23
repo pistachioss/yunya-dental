@@ -1682,10 +1682,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     public PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(
             AppointmentCurrentListQuery queryForm) {
-        if (queryForm.getWhetherPage()) {
-            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
-        }
-        List<AppointmentUnDonePatientInfoVO> result = null;
+        PageInfo<AppointmentUnDonePatientInfoVO> result = null;
 /*        Integer dentistId = queryForm.getDentistId();
         String redisKey = RedisConstants.setKey(RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE,
                 queryForm.getCurrentDate(),
@@ -1727,14 +1724,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         log.info("====================================================================================================");
         // 从数据库中查询
         result = this.findUnComingAppointmentListFromDB(queryForm);
-        return new PageInfo<>(result);
+        return result;
     }
 
     /**
      * 从数据库中查询预约未到患者相关信息
      * @param queryForm 查询参数封装
      */
-    private List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentListFromDB(AppointmentCurrentListQuery queryForm) {
+    private PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentListFromDB(AppointmentCurrentListQuery queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
+        }
         List<AppointmentUnDonePatientInfoVO> resultList =
                 mapper.selectAppointmentUnDonePatientInfoList(queryForm);
         if (StringHelper.isNotEmpty(resultList)) {
@@ -1769,7 +1769,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 }
             });
         }*/
-        return resultList;
+        return new PageInfo<>(resultList);
     }
 
     /**

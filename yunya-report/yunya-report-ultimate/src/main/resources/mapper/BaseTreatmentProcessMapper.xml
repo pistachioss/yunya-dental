@@ -22,7 +22,17 @@
         <result column="registered_time" property="registeredTime" jdbcType="TIME"/>
         <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
         <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
+        <result column="assistant_1" property="assistant1" jdbcType="INTEGER"/>
+        <result column="assistant_2" property="assistant2" jdbcType="INTEGER"/>
+        <result column="assistant_3" property="assistant3" jdbcType="INTEGER"/>
     </resultMap>
+
+    <sql id="BaseResultFields">
+        appointment_id,registered_id,treatment_id,org_id,patient_id,treat_status,treat_type,appoint_status,
+        appoint_dentist_id,appoint_start_time,appoint_duration,appoint_modify_time,appoint_content,registered_dentist_id,
+        registered_time,treat_start_time,treat_end_time,assistant_1,assistant_2,assistant_3
+    </sql>
+
     <!-- 根据条件查询就诊列表 -->
     <select id="selectTreatmentRecordReportVOList"
             resultType="com.yunya.feign.report.domain.vo.TreatmentRecordReportVO">
@@ -283,6 +293,36 @@
         and registered_id is null
         and CONCAT(date_format(appoint_start_time,'%Y-%m-%d'),' 23:59:59') &lt; NOW()
         and appoint_status != 2
+    </select>
+
+    <select id="treatmentList4App" resultType="com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO">
+        select
+        btp.appointment_id as appointmentId,btp.registered_id as registeredId,btp.treatment_id as treatmentId,btp.org_id as orgId,btp.patient_id as patientId,
+        btp.treat_status as treatStatus,btp.treat_type as treatType,btp.appoint_status as appointStatus, btp.appoint_dentist_id as appointDentistId,btp.appoint_start_time as appointStartTime,
+        btp.appoint_duration as appointSuration,btp.appoint_modify_time as appointModifyTime,btp.appoint_content as appointContent,btp.registered_dentist_id as registeredDentistId,
+        btp.registered_time as registeredTime,btp.treat_start_time as treatStartTime,btp.treat_end_time as treatEndTime,btp.assistant_1 as assistant1,btp.assistant_2 as assistant2,
+        btp.assistant_3 as assistant3,
+        bp.name as patientName,
+        bp.age,
+        bp.gender,
+        appointDentistNameBe.employee_name as appointDentistName,
+        regDentistNameBe.employee_name as regDentistName
+        from base_treatment_process btp
+            left join base_patient bp on bp.patient_id = btp.patient_id
+            left join base_employee appointDentistNameBe on appointDentistNameBe.user_id = bp.appoint_dentist_id
+            left join base_employee regDentistNameBe on regDentistNameBe.user_id = bp.registered_dentist_id
+        <where>
+            <if test="dentistId != null">
+                and #{dentistId} in (appoint_dentist_id,registered_dentist_id)
+            </if>
+            <if test="orgId != null">
+                and org_id = #{orgId}
+            </if>
+            <if test="currentDate != null and currentDate != ''">
+                and (date_format(appoint_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
+                     or date_format(treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d'))
+            </if>
+        </where>
     </select>
 
 

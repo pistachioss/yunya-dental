@@ -37,4 +37,11 @@ public interface RegisteredMapper extends Mapper<Registered> {
    * @return
    */
   RegisteredVO registeredInfoDetail(@Param("id") Integer id);
+
+  /**
+   * 根据挂号ID查询挂号信息
+   * @param ids 挂号信息
+   * @return
+   */
+  List<RegisteredVO> registeredInfoDetails(@Param("ids") List<Integer> ids);
 }

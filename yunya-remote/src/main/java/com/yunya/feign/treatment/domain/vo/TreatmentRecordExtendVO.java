@@ -19,4 +19,6 @@ import java.util.Date;
 public class TreatmentRecordExtendVO extends TreatmentRecord implements Serializable {
     @ApiModelProperty("末次就诊日期")
     private Date lastTreatmentDate;
+    @ApiModelProperty("挂号助手ID")
+    private Integer regAssistantId;
 }

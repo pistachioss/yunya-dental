@@ -3,6 +3,7 @@ package com.yunya.report.ultimate.mapper;
 import com.yunya.feign.report.domain.query.AssistantMatchingDetailQuery;
 import com.yunya.feign.report.domain.query.TreatmentMatchingRecordQuery;
 import com.yunya.feign.report.domain.query.TreatmentRecordQuery;
+import com.yunya.feign.report.domain.vo.BaseTreatmentProcessVO;
 import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
 import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
@@ -10,6 +11,7 @@ import com.yunya.models.report.BaseTreatmentProcess;
 import org.apache.ibatis.annotations.Param;
 import tk.mybatis.mapper.common.Mapper;
 
+import java.util.Date;
 import java.util.List;
 
 public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess> {
@@ -61,4 +63,15 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @return Integer
    */
   Integer selectMissedAppointment(Integer id);
+
+  /**
+   * 根据门诊ID,医生ID,当前时间查询就诊信息
+   * @param orgId        门诊ID
+   * @param dentistId    医生ID
+   * @param currentDate  当前日期
+   * @return 返回信息列表
+   */
+  List<BaseTreatmentProcessVO> treatmentList4App(@Param("orgId") Integer orgId,
+                                                 @Param("dentistId") Integer dentistId,
+                                                 @Param("currentDate") String currentDate);
 }

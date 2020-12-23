@@ -88,7 +88,7 @@ public class RemoteAppointmentFeignBackFactory implements RemoteAppointmentFeign
     }
 
     @Override
-    public List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(AppointmentCurrentListQuery queryForm) {
+    public PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(AppointmentCurrentListQuery queryForm) {
         return null;
     }
 

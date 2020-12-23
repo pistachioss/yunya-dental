@@ -193,13 +193,9 @@ public class AppointmentRest {
    * @return list
    */
   @RequestMapping(value = "/appoint/unregister/list", method = RequestMethod.POST)
-  public List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(@RequestBody AppointmentCurrentListQuery queryForm) {
+  public PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(@RequestBody AppointmentCurrentListQuery queryForm) {
     PageInfo<AppointmentUnDonePatientInfoVO> unComingAppointmentList = appointmentBiz.findUnComingAppointmentList(queryForm);
-    List<AppointmentUnDonePatientInfoVO> list = unComingAppointmentList.getList();
-    if (StringHelper.isNotEmpty(list)) {
-      return list;
-    }
-    return new ArrayList<>();
+    return unComingAppointmentList;
   }
 
   /**

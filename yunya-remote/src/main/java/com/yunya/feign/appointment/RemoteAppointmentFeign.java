@@ -145,7 +145,7 @@ public interface RemoteAppointmentFeign {
    * @return list
    */
   @RequestMapping(value = "/api/appoint/unregister/list", method = RequestMethod.POST)
-  List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(@RequestBody AppointmentCurrentListQuery queryForm);
+  PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(@RequestBody AppointmentCurrentListQuery queryForm);
 
   /**
    * 查询指定时间段内每个医生每天预约人数
