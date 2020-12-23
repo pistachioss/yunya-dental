@@ -23,7 +23,7 @@
         SELECT
         sp.id,
         sp.`name` AS specialistProjectName,
-        sp.tariff_ids AS tariffItemName
+        sp.tariff_ids AS tariffItemIds
         FROM
         specialist_project sp
         <where>

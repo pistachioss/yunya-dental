@@ -50,12 +50,13 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
     }
     List<SpecialistProjectVO> resultList = mapper.selectSpecialistProjectList(query);
     if (StringHelper.isNotEmpty(resultList)) {
-      for (SpecialistProjectVO vo : resultList) {
-        String tariffItemName = vo.getTariffItemName();
-        String[] ids = tariffItemName.split(",");
-        tariffItemName = treatmentServiceFeign.findBaseTariffNamesByIds(ids);
-        vo.setTariffItemName(tariffItemName);
-      }
+      resultList.forEach(
+          vo -> {
+            String tariffItemIds = vo.getTariffItemIds();
+            String[] ids = tariffItemIds.split(",");
+            String tariffItemName = treatmentServiceFeign.findBaseTariffNamesByIds(ids);
+            vo.setTariffItemName(tariffItemName);
+          });
     }
     return new PageInfo<>(resultList);
   }

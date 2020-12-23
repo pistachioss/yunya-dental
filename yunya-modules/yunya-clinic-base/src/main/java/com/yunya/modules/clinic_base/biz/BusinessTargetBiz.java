@@ -13,7 +13,6 @@ import com.yunya.modules.clinic_base.mapper.BusinessTargetMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Set;
 
@@ -68,13 +67,12 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
     monthModelList.forEach(
         monthModel -> {
           Byte monthNum = monthModel.getMonthNum();
-          BigDecimal businessGoal = monthModel.getBusinessGoal();
-          if (null != monthNum && null != businessGoal) {
+          if (null != monthNum) {
             BusinessTarget target = new BusinessTarget();
             target.setBelongType(belongType);
             target.setBelongId(belongType == 0 ? orgId : userId);
             target.setBusinessType(businessType);
-            target.setBusinessGoal(businessGoal);
+            target.setBusinessGoal(monthModel.getBusinessGoal());
             target.setBusinessYear(businessYear);
             target.setBusinessMonth(monthNum.toString());
             target.setUnit(unit);

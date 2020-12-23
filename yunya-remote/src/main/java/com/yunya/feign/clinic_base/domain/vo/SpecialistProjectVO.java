@@ -25,6 +25,9 @@ public class SpecialistProjectVO implements Serializable {
   /** 专科项目名称 */
   @ApiModelProperty("专科项目名称")
   private String specialistProjectName;
+  /** 对应价目表项目Id */
+  @ApiModelProperty("对应价目表项目Id")
+  private String tariffItemIds;
   /** 对应价目表项目 */
   @ApiModelProperty("对应价目表项目名称")
   private String tariffItemName;
