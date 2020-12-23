@@ -75,6 +75,8 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
             target.setBusinessGoal(monthModel.getBusinessGoal());
             target.setBusinessYear(businessYear);
             target.setBusinessMonth(monthNum.toString());
+            String suffix = String.format("%02d", monthNum);
+            target.setBusinessDate(businessYear + "-" + suffix);
             target.setUnit(unit);
             target.setCrtId(userId);
             target.setCrtName(name);

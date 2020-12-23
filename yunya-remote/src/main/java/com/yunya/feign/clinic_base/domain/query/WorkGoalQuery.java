@@ -1,4 +1,4 @@
-package com.yunya.feign.report.domain.query;
+package com.yunya.feign.clinic_base.domain.query;
 
 import com.yunya.framework.common.model.PageQuery;
 import io.swagger.annotations.ApiModel;
@@ -23,7 +23,7 @@ import java.io.Serializable;
 @Data
 @ToString
 @EqualsAndHashCode(callSuper = true)
-public class ClinicWorkGoalQuery extends PageQuery implements Serializable {
+public class WorkGoalQuery extends PageQuery implements Serializable {
   /** 时间类型 */
   @ApiModelProperty(value = "时间类型：0-按月；1-按年", required = true)
   @NotNull(message = "时间类型不能为空！")

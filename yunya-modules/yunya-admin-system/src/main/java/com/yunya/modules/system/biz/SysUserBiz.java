@@ -146,7 +146,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
         insertUserLoginOrganization(userId, organizationForms);
       }
       // 发送消息同步员工信息
-//      rabbitMqServiceFeign.sendMessage(userId, 0, BaseEmployee);
+      rabbitMqServiceFeign.sendMessage(userId, 0, BaseEmployee);
     }
   }
 
@@ -243,7 +243,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
       sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
       // 发送消息同步员工信息
-//      rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
+      rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
     }
     // 用户名被修改或就职状态改为离职,将当前用户从缓存中移除
     if (!currentUsername.equals(form.getMobilePhone())

@@ -12,6 +12,7 @@
         <result column="business_goal" property="businessGoal" jdbcType="DECIMAL"/>
         <result column="business_year" property="businessYear" jdbcType="VARCHAR"/>
         <result column="business_month" property="businessMonth" jdbcType="VARCHAR"/>
+        <result column="business_date" property="businessDate" jdbcType="VARCHAR"/>
         <result column="unit" property="unit" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
