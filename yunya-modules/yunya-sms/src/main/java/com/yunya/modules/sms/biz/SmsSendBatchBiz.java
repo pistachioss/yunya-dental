@@ -50,12 +50,16 @@ public class SmsSendBatchBiz extends BaseBiz<SmsSendBatchMapper, SmsSendBatch> {
      * @return
      */
     public int insertEntity(Integer orgId, Integer templateId, Byte type, Integer sendNum) {
+        Date now = new Date(System.currentTimeMillis());
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         SmsSendBatch smsSendBatch = new SmsSendBatch();
         smsSendBatch.setOrgId(orgId);
         smsSendBatch.setTemplateId(templateId);
-        smsSendBatch.setCrtId(Integer.parseInt(BaseContextHandler.getUserID()));
-        smsSendBatch.setCrtTime(new Date(System.currentTimeMillis()));
+        smsSendBatch.setCrtId(userId);
+        smsSendBatch.setCrtTime(now);
         smsSendBatch.setCrtUser(BaseContextHandler.getName());
+        smsSendBatch.setUptId(userId);
+        smsSendBatch.setUptTime(now);
         smsSendBatch.setType(type);
         smsSendBatch.setSendNum(sendNum);
         int count = mapper.insert(smsSendBatch);

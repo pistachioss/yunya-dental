@@ -14,6 +14,7 @@ import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.sms.biz.SmsSendBatchBiz;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
 import com.yunya.modules.sms.enums.SmsTypeEnum;
+import com.yunya.modules.sms.vo.SmsSendReportVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -97,8 +97,8 @@ public class SmsSendMessageController {
      * @param
      */
     @PostMapping("/smsReport")
-    public void smsReport(HttpServletRequest request, HttpServletResponse response) {
-        smsSendRecordBiz.smsReport(request);
+    public void smsReport(@RequestBody List<SmsSendReportVO> smsSendReportVOS, HttpServletResponse response) {
+        smsSendRecordBiz.smsReport(smsSendReportVOS);
         try (PrintWriter out = response.getWriter()) {
             JSONObject object = new JSONObject();
             object.put("code", 0);

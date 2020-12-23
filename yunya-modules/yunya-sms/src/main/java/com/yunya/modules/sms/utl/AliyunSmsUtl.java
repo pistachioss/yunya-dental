@@ -320,9 +320,9 @@ public class AliyunSmsUtl {
      * @param signName 签名名称
      * @param templateCode 短信模板code
      * @param templateParam 短信模板变量JSON对象，例如 {"code1":"32"}
-     * @return
+     * @return BizId 回执id
      */
-    public static JSONObject sendSms(String mobiles, String signName, String templateCode, JSONObject templateParam) {
+    public static String sendSms(String mobiles, String signName, String templateCode, JSONObject templateParam) {
         CommonRequest request = commonRequest();
         request.setSysAction("sendSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");
@@ -344,7 +344,7 @@ public class AliyunSmsUtl {
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
         }
-        return result;
+        return result.getString("BizId");
     }
 
     /**
@@ -353,9 +353,9 @@ public class AliyunSmsUtl {
      * @param signNameJson 签名JSON数组 ["阿里云","阿里巴巴"]
      * @param templateCode 短信模板code
      * @param templateParamJson 短信模板变量值JSON数组 [{"code1":"32","code2":"张三"},{"code1":"22","code2":"李四"}]，可空，如果有值，则变量值的个数必须与手机号码、签名的个数相同、内容一一对应
-     * @return
+     * @return BizId 回执id
      */
-    public static JSONObject sendBatchSms(JSONArray mobiles, JSONArray signNameJson, String templateCode, JSONArray templateParamJson) {
+    public static String sendBatchSms(JSONArray mobiles, JSONArray signNameJson, String templateCode, JSONArray templateParamJson) {
         CommonRequest request = commonRequest();
         request.setSysAction("SendBatchSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");
@@ -377,7 +377,7 @@ public class AliyunSmsUtl {
         if (result==null || !"OK".equals(result.getString("Code"))) {
             throw new ClientServiceException(result.getString("Message"), OPERATION_FAIL);
         }
-        return result;
+        return result.getString("BizId");
     }
 
     /**

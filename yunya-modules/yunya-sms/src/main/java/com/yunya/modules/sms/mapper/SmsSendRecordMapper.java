@@ -17,4 +17,7 @@ public interface SmsSendRecordMapper extends Mapper<SmsSendRecord> {
      * @return
      */
     List<SmsSendRecordVO> findSmsSendRecordList(@Param("queryForm") SmsSendRecordQueryForm queryForm);
+
+    @Override
+    int insert(SmsSendRecord smsSendRecord);
 }
