@@ -24,7 +24,7 @@
 
     <!-- 根据条件查询月业务目标列表 -->
     <select id="selectBusinessTargetList"
-            resultType="com.yunya.feign.clinic_base.domain.vo.BusinessTargetOfMonthVO">
+            resultType="com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO">
         SELECT
             bt.business_month AS monthNum,
             bt.business_goal AS businessGoal

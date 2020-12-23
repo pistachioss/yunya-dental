@@ -1,21 +1,49 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
-<mapper namespace="com.yunya.modules.clinic_base.mapper.SpecialistBusinessTargetMapper" >
-  <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.SpecialistBusinessTarget" >
-    <!--
-      WARNING - @mbg.generated
-    -->
-    <id column="id" property="id" jdbcType="INTEGER" />
-    <result column="specialist_project_id" property="specialistProjectId" jdbcType="INTEGER" />
-    <result column="org_id" property="orgId" jdbcType="INTEGER" />
-    <result column="business_goal" property="businessGoal" jdbcType="INTEGER" />
-    <result column="business_date" property="businessDate" jdbcType="VARCHAR" />
-    <result column="inservice" property="inservice" jdbcType="BIT" />
-    <result column="crt_id" property="crtId" jdbcType="INTEGER" />
-    <result column="crt_name" property="crtName" jdbcType="VARCHAR" />
-    <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
-    <result column="upd_id" property="updId" jdbcType="INTEGER" />
-    <result column="upd_name" property="updName" jdbcType="VARCHAR" />
-    <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
-  </resultMap>
+<mapper namespace="com.yunya.modules.clinic_base.mapper.SpecialistBusinessTargetMapper">
+    <resultMap id="BaseResultMap" type="com.yunya.models.clinic_base.SpecialistBusinessTarget">
+        <!--
+          WARNING - @mbg.generated
+        -->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="specialist_project_id" property="specialistProjectId" jdbcType="INTEGER"/>
+        <result column="belong_type" property="belongType" jdbcType="TINYINT"/>
+        <result column="belong_id" property="belongId" jdbcType="INTEGER"/>
+        <result column="business_goal" property="businessGoal" jdbcType="DECIMAL"/>
+        <result column="business_year" property="businessYear" jdbcType="VARCHAR"/>
+        <result column="business_month" property="businessMonth" jdbcType="VARCHAR"/>
+        <result column="unit" property="unit" jdbcType="VARCHAR"/>
+        <result column="inservice" property="inservice" jdbcType="BIT"/>
+        <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
+        <result column="crt_name" property="crtName" jdbcType="VARCHAR"/>
+        <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP"/>
+        <result column="upd_id" property="updId" jdbcType="INTEGER"/>
+        <result column="upd_name" property="updName" jdbcType="VARCHAR"/>
+        <result column="upd_time" property="updTime" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <!-- 根据条件查询专科项目月目标列表 -->
+    <select id="selectSpecialistProjectTargetList" resultType="com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO">
+        SELECT
+        sbt.business_month AS monthNum,
+        sbt.business_goal AS businessGoal
+        FROM
+        specialist_business_target sbt
+        <where>
+            <if test="query.businessYear != null and query.businessYear != ''">
+                and sbt.business_year = #{query.businessYear}
+            </if>
+            <if test="query.specialistProjectId != null">
+                and sbt.specialist_project_id = #{query.specialistProjectId}
+            </if>
+            <if test="query.belongType != null">
+                and sbt.belong_type = #{query.belongType}
+            </if>
+            <if test="query.belongId != null">
+                and sbt.belong_id = #{query.belongId}
+            </if>
+        </where>
+        GROUP BY sbt.id
+        ORDER BY sbt.business_month
+    </select>
 </mapper>

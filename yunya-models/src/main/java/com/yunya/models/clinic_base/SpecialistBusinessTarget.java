@@ -1,7 +1,10 @@
 package com.yunya.models.clinic_base;
 
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import java.math.BigDecimal;
 import java.util.Date;
-import javax.persistence.*;
 
 @Table(name = "specialist_business_target")
 public class SpecialistBusinessTarget {
@@ -18,22 +21,39 @@ public class SpecialistBusinessTarget {
     private Integer specialistProjectId;
 
     /**
-     * 组织ID
+     * 所属类型（0-组织，1-个人）
      */
-    @Column(name = "org_id")
-    private Integer orgId;
+    @Column(name = "belong_type")
+    private Byte belongType;
+
+    /**
+     * 数据所属ID
+     */
+    @Column(name = "belong_id")
+    private Integer belongId;
 
     /**
      * 目标数量
      */
     @Column(name = "business_goal")
-    private Integer businessGoal;
+    private BigDecimal businessGoal;
 
     /**
-     * 完成目标时间
+     * 目标所属年份
      */
-    @Column(name = "business_date")
-    private String businessDate;
+    @Column(name = "business_year")
+    private String businessYear;
+
+    /**
+     * 目标所属月份
+     */
+    @Column(name = "business_month")
+    private String businessMonth;
+
+    /**
+     * 单位
+     */
+    private String unit;
 
     /**
      * 是否有效/是否启用
@@ -113,21 +133,39 @@ public class SpecialistBusinessTarget {
     }
 
     /**
-     * 获取组织ID
+     * 获取所属类型（0-组织，1-个人）
      *
-     * @return org_id - 组织ID
+     * @return belong_type - 所属类型（0-组织，1-个人）
      */
-    public Integer getOrgId() {
-        return orgId;
+    public Byte getBelongType() {
+        return belongType;
     }
 
     /**
-     * 设置组织ID
+     * 设置所属类型（0-组织，1-个人）
      *
-     * @param orgId 组织ID
+     * @param belongType 所属类型（0-组织，1-个人）
      */
-    public void setOrgId(Integer orgId) {
-        this.orgId = orgId;
+    public void setBelongType(Byte belongType) {
+        this.belongType = belongType;
+    }
+
+    /**
+     * 获取数据所属ID
+     *
+     * @return belong_id - 数据所属ID
+     */
+    public Integer getBelongId() {
+        return belongId;
+    }
+
+    /**
+     * 设置数据所属ID
+     *
+     * @param belongId 数据所属ID
+     */
+    public void setBelongId(Integer belongId) {
+        this.belongId = belongId;
     }
 
     /**
@@ -135,7 +173,7 @@ public class SpecialistBusinessTarget {
      *
      * @return business_goal - 目标数量
      */
-    public Integer getBusinessGoal() {
+    public BigDecimal getBusinessGoal() {
         return businessGoal;
     }
 
@@ -144,26 +182,63 @@ public class SpecialistBusinessTarget {
      *
      * @param businessGoal 目标数量
      */
-    public void setBusinessGoal(Integer businessGoal) {
+    public void setBusinessGoal(BigDecimal businessGoal) {
         this.businessGoal = businessGoal;
     }
 
     /**
-     * 获取完成目标时间
+     * 获取业务目标时间
      *
-     * @return business_date - 完成目标时间
+     * @return business_year - 业务目标时间年
      */
-    public String getBusinessDate() {
-        return businessDate;
+    public String getBusinessYear() {
+        return businessYear;
     }
 
     /**
-     * 设置完成目标时间
+     * 设置业务目标时间
      *
-     * @param businessDate 完成目标时间
+     * @param businessYear 业务目标时间年
      */
-    public void setBusinessDate(String businessDate) {
-        this.businessDate = businessDate;
+    public void setBusinessYear(String businessYear) {
+        this.businessYear = businessYear;
+    }
+
+    /**
+     * 获取业务目标时间月
+     *
+     * @return business_date - 业务目标时间月
+     */
+
+    public String getBusinessMonth() {
+        return businessMonth;
+    }
+
+    /**
+     * 设置业务目标时间月
+     *
+     * @return business_month - 业务目标时间
+     */
+    public void setBusinessMonth(String businessMonth) {
+        this.businessMonth = businessMonth;
+    }
+
+    /**
+     * 获取单位
+     *
+     * @return unit - 单位
+     */
+    public String getUnit() {
+        return unit;
+    }
+
+    /**
+     * 设置单位
+     *
+     * @param unit 单位
+     */
+    public void setUnit(String unit) {
+        this.unit = unit;
     }
 
     /**

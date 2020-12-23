@@ -10,6 +10,7 @@ import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.modules.clinic_base.biz.SpecialistProjectBiz;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
@@ -28,6 +29,7 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
+@Api("专科项目管理-增删改查")
 @RestController
 @RequestMapping("specialist")
 public class SpecialistProjectController {

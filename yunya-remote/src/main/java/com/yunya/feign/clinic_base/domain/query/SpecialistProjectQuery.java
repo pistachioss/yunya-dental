@@ -23,6 +23,6 @@ import java.io.Serializable;
 @EqualsAndHashCode(callSuper = true)
 public class SpecialistProjectQuery extends PageQuery implements Serializable {
   /** 专科项目名称 */
-  @ApiModelProperty(value = "专科项目名称", required = true)
+  @ApiModelProperty(value = "专科项目名称")
   private String specialistProjectName;
 }

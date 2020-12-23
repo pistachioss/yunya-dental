@@ -1,11 +1,10 @@
 package com.yunya.modules.clinic_base.controller;
 
-import com.yunya.feign.clinic_base.domain.model.BusinessTargetModel;
+import com.yunya.feign.clinic_base.domain.model.SpecialistProjectTargetModel;
 import com.yunya.feign.clinic_base.domain.model.TargetOfMonthModel;
-import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
+import com.yunya.feign.clinic_base.domain.query.SpecialistProjectTargetQuery;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.framework.common.model.ResponseResult;
-import org.apache.poi.ss.formula.functions.T;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,23 +20,23 @@ import java.util.Set;
  * 简介:
  *
  * @author: chow
- * @date: 2020/12/23 10:34
+ * @date: 2020/12/23 12:42
  * @description:
  * @since: 1.0.0
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
-public class BusinessTargetControllerTest {
+public class SpecialistProjectTargetControllerTest {
 
-  @Autowired private BusinessTargetController businessTargetController;
+  @Autowired private SpecialistProjectTargetController specialistProjectTargetController;
 
   @Test
   public void save() {
-    BusinessTargetModel model = new BusinessTargetModel();
-    model.setBusinessType((byte) 0);
+    SpecialistProjectTargetModel model = new SpecialistProjectTargetModel();
+    model.setSpecialistProjectId(1);
     model.setBusinessYear("2020");
     model.setBelongType((byte) 0);
-    model.setUnit("元");
+    model.setUnit("个");
     Set<TargetOfMonthModel> list = new HashSet<>();
     TargetOfMonthModel o1 = new TargetOfMonthModel();
     o1.setMonthNum((byte) 1);
@@ -51,21 +50,21 @@ public class BusinessTargetControllerTest {
     o3.setMonthNum((byte) 3);
     o3.setBusinessGoal(BigDecimal.valueOf(100));
     list.add(o3);
-    model.setBusinessTargetOfMonthModels(list);
-
-    ResponseResult<T> result = businessTargetController.saveBusinessTarget(model);
-    System.out.println(result);
+    model.setSpecialistProjectTargetOfMonthModels(list);
+    specialistProjectTargetController.saveSpecialistProjectTarget(model);
   }
 
   @Test
   public void find() {
-    BusinessTargetQuery query = new BusinessTargetQuery();
-    query.setBusinessType((byte) 0);
+    SpecialistProjectTargetQuery query = new SpecialistProjectTargetQuery();
+    query.setSpecialistProjectId(1);
     query.setBusinessYear("2020");
-    query.setBelongType((byte) 0);
+    query.setBelongType((byte)0);
     query.setBelongId(35);
-    ResponseResult<List<TargetOfMonthVO>> result =
-        businessTargetController.businessTargetList(query);
-    System.out.println(result);
+
+
+    ResponseResult<List<TargetOfMonthVO>> list =
+        specialistProjectTargetController.findSpecialistProjectTargetList(query);
+    System.out.println(list);
   }
 }

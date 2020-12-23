@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @ApiModel("月业务目标VO")
 @Data
 @ToString
-public class BusinessTargetOfMonthVO implements Serializable {
+public class TargetOfMonthVO implements Serializable {
   /** 月份 */
   @ApiModelProperty("月份")
   private String monthNum;

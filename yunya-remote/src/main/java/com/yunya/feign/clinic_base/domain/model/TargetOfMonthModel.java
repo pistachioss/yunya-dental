@@ -22,7 +22,7 @@ import java.math.BigDecimal;
 @ApiModel("月业务目标参数模型")
 @Data
 @ToString
-public class BusinessTargetOfMonthModel implements Serializable {
+public class TargetOfMonthModel implements Serializable {
   /** 月份 */
   @ApiModelProperty(value = "月份", required = true)
   @Min(value = 1, message = "月份最小值为1")
