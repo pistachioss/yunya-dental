@@ -45,6 +45,12 @@
       <if test="queryForm.bizPid != null">
         and t.bizPid = #{queryForm.bizPid}
       </if>
+      <if test="queryForm.orgIds!=null and queryForm.orgIds.size()>0">
+        and t.org_id in
+        <foreach collection="queryForm.orgIds" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+        </foreach>
+      </if>
     </where>
   </select>
 

@@ -23,6 +23,16 @@
     <result column="send_object" property="sendObject" jdbcType="VARCHAR" />
   </resultMap>
 
+    <!-- 插入数据:返回记录主键id值 -->
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    insert into sms_send_batch
+        (id,org_id,batch_id,receiver_id,send_object,mobile,content,content_num,
+        status,biz_id,biz_msg,crt_id,crt_user,crt_time,upt_id,upt_time)
+    values
+        (null,#{orgId},#{batchId},#{receiverId},#{sendObject},#{mobile},#{content},#{contentNum},
+        #{status},#{bizId},#{bizMsg},#{crtId},#{crtUser},#{crtTime},#{uptId},{uptTime})
+  </insert>
+
   <select id="findSmsSendRecordList" resultType="com.yunya.feign.sms.vo.SmsSendRecordVO">
     select
         t.id,

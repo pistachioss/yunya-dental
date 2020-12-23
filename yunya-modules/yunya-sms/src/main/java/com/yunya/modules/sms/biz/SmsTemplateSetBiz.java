@@ -362,7 +362,10 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
             for (int i = 0; i < items.length; i++) {
                 int code = Integer.parseInt(items[i]);
                 preview.append("[").append(SmsTemplateItemEnum.getValue(code))
-                        .append("]").append(contents[i+1]);
+                        .append("]");
+                if (i+1 < contents.length) {
+                    preview.append(contents[i+1]);
+                }
             }
         }
         return preview.toString();

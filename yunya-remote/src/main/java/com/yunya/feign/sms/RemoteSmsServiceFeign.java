@@ -75,6 +75,6 @@ public interface RemoteSmsServiceFeign {
      *
      * @param orgId
      */
-    @RequestMapping(value = "/api/sms/createAutoSendEvent/{orgId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/sms/initAutoSendEvent/{orgId}", method = RequestMethod.POST)
     void initAutoSendEvent(@PathVariable(value = "orgId") Integer orgId);
 }
