@@ -3,13 +3,17 @@ package com.yunya.feign.sms;
 import com.yunya.feign.sms.factory.RemoteSmsServiceFallBackFactory;
 import com.yunya.feign.sms.model.SmsBatchSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
+import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
@@ -36,14 +40,10 @@ public interface RemoteSmsServiceFeign {
     /**
      * 发送验证码
      *
-     * @param mobile 手机号
-     * @param verifyCode 验证码
-     * @param eventCode 短信自动发送事件编码
+     * @param smsVerifyCodeModel
      */
     @RequestMapping(value = "/api/sms/sendVerifyCode", method = RequestMethod.POST)
-    ResponseResult<T> sendVerifyCode(@RequestParam(value = "mobile") String mobile,
-                                     @RequestParam(value = "verifyCode") String verifyCode,
-                                     @RequestParam(value = "eventCode") String eventCode);
+    ResponseResult<T> sendVerifyCode(@RequestBody SmsVerifyCodeModel smsVerifyCodeModel);
 
     /**
      * 根据主键id查询关联的模板信息

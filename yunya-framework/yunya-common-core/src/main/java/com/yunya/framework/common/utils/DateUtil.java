@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateTime;
 import com.yunya.framework.common.exception.ClientServiceException;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -344,5 +345,24 @@ public class DateUtil {
             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
         return curDate;
+    }
+
+    /**
+     * 获取昨天
+     *
+     * @return
+     */
+    public static Date yesterday() {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY,-24);
+        String yesterdayDate = dateFormat.format(calendar.getTime());
+        Date yesterday;
+        try {
+            yesterday = dateFormat.parse(yesterdayDate);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
+        return yesterday;
     }
 }

@@ -1,5 +1,7 @@
 package com.yunya.modules.sms.utl;
 
+import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.sms.rpc.SmsServiceRest;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,9 +23,17 @@ public class SmsServiceRestTest {
 
     @Autowired
     private SmsServiceRest smsServiceRest;
+    @Autowired
+    private RedisUtils redisUtils;
 
     @Test
     public void init() {
         smsServiceRest.initAutoSendEvent(110);
+    }
+
+
+    @Test
+    public void clear() {
+        redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG +35);
     }
 }

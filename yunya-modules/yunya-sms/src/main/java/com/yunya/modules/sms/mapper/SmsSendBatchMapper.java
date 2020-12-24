@@ -19,4 +19,6 @@ public interface SmsSendBatchMapper extends Mapper<SmsSendBatch> {
 
     @Override
     int insert(SmsSendBatch smsSendBatch);
+
+    void updateById(SmsSendBatch smsSendBatch);
 }

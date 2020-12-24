@@ -2603,19 +2603,19 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             String code2 = null;
             String code3 = null;
             String code4 = null;
-            if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode())!=-1
-                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode())!=-1
-                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode())!=-1) {
+            if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode()+"")!=-1
+                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode()+"")!=-1
+                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode()+"")!=-1) {
                 MedicalOrganizationInfoVO medicalOrganizationInfoVO = remoteSystemServiceFeign.clinicExtInfoByCompanyId(orgId);
                 code2 = medicalOrganizationInfoVO.getAbbreviation();
                 code3 = medicalOrganizationInfoVO.getTel();
                 code4 = medicalOrganizationInfoVO.getAddress();
             }
             String[] items = templateItem.split(",");
-            Map<String, Integer> repeat = new HashMap<>();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             for (AppointmentSmsSendRecordModel model : models) {
                 JSONObject object = new JSONObject();
+                Map<String, Integer> repeat = new HashMap<>();
                 for (String item : items) {
                     Integer reNum = repeat.get(item);
                     String key = "";

@@ -25,12 +25,12 @@
 
     <!-- 插入数据:返回记录主键id值 -->
   <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-    insert into sms_send_batch
+    insert into sms_send_record
         (id,org_id,batch_id,receiver_id,send_object,mobile,content,content_num,
         status,biz_id,biz_msg,crt_id,crt_user,crt_time,upt_id,upt_time)
     values
         (null,#{orgId},#{batchId},#{receiverId},#{sendObject},#{mobile},#{content},#{contentNum},
-        #{status},#{bizId},#{bizMsg},#{crtId},#{crtUser},#{crtTime},#{uptId},{uptTime})
+        #{status},#{bizId},#{bizMsg},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
   </insert>
 
   <select id="findSmsSendRecordList" resultType="com.yunya.feign.sms.vo.SmsSendRecordVO">
@@ -66,11 +66,20 @@
       <if test="queryForm.id != null">
         and t.id = #{queryForm.id}
       </if>
+      <if test="queryForm.sendDate != null">
+        and DATE_FORMAT(t.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{queryForm.sendDate},'%Y-%m-%d')
+      </if>
       <if test="queryForm.batchIds!=null and queryForm.batchIds.size()>0">
         and t.batch_id in
-        <foreach collection="queryForm.batchIds" item="item" index="index" open="(" close=")" separator=",">
-          #{item}
-        </foreach>
+          <foreach item="item" index="index" collection="queryForm.batchIds" open="(" separator="," close=")">
+              #{item}
+          </foreach>
+      </if>
+      <if test="queryForm.bizIds!=null and queryForm.bizIds.size()>0">
+        and t.biz_id in
+        <foreach item="item" index="index" collection="queryForm.bizIds" open="(" separator="," close=")">
+            #{item}
+      </foreach>
       </if>
     </where>
   </select>

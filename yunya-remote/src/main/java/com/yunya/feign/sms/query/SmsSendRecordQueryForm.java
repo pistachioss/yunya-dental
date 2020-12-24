@@ -8,6 +8,7 @@ import lombok.ToString;
 import javax.validation.constraints.Min;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 
 /**
  * 简介：短信发送记录查询模型
@@ -89,4 +90,10 @@ public class SmsSendRecordQueryForm implements Serializable {
      */
     @ApiModelProperty("批次id列表")
     private Collection<Integer> batchIds;
+
+    /**
+     * 发送日期
+     */
+    @ApiModelProperty("发送日期")
+    private Date sendDate;
 }

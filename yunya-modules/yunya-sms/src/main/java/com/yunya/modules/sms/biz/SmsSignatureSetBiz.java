@@ -60,10 +60,8 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
      */
     public void add(List<MultipartFile> files, SmsSignatureSetModel smsSignatureSetModel) {
         uniqueSignName(smsSignatureSetModel.getSignName(), null);
-//        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-//        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        Integer orgId = 35;
-        Integer userId = 569;
+        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         String user = BaseContextHandler.getName();
         Date now = new Date(System.currentTimeMillis());
         SmsSignatureSet smsSignatureSet = new SmsSignatureSet();
@@ -132,8 +130,7 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         SmsSignatureSetQueryForm queryForm = new SmsSignatureSetQueryForm();
         queryForm.setWhetherPage(false);
         queryForm.setSignName(signName);
-//        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
-        queryForm.setOrgId(35);
+        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsSignatureSetVO> smsSignatureSetVOS = findSmsSignatureSetList(queryForm);
         if (id == null) {
             if (smsSignatureSetVOS!=null && !smsSignatureSetVOS.isEmpty()) {

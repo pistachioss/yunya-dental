@@ -3,6 +3,7 @@ package com.yunya.feign.sms.factory;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
 import com.yunya.feign.sms.model.SmsBatchSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
+import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.model.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,7 @@ public class RemoteSmsServiceFallBackFactory implements RemoteSmsServiceFeign {
     }
 
     @Override
-    public ResponseResult<T> sendVerifyCode(String mobile, String verifyCode, String eventCode) {
+    public ResponseResult<T> sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
         return null;
     }
 

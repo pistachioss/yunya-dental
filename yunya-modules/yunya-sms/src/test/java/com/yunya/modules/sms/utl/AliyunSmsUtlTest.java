@@ -52,6 +52,6 @@ public class AliyunSmsUtlTest {
     @Test
     public void testSmsQueryDetails() {
         //{"TotalCount":0,"Message":"OK","RequestId":"4EFDDF8C-6C07-49E3-8065-37772B4A5E9E","Code":"OK","SmsSendDetailDTOs":{"SmsSendDetailDTO":[]}}
-        System.out.println(AliyunSmsUtl.querySendDetails("13867185423", "20201223", "1", "50", null));
+        System.out.println(AliyunSmsUtl.querySendDetails("16657115000", "20201224", "1", "50", null));
     }
 }
