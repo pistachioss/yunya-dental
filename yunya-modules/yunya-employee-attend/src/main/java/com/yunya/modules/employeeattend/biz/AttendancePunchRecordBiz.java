@@ -890,6 +890,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 leaveStatistics.setSourceId(leaveInfoVO.getId());
                 leaveStatistics.setSource(AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode());
                 leaveStatistics.setMinutes(DateUtil.micro2HourMin(diff));
+                leaveStatistics.setStartTime(leaveInfoVO.getStartTime());
+                leaveStatistics.setEndTime(leaveInfoVO.getEndTime());
                 leaveStatisticsList.add(leaveStatistics);
             } else {// 按天请假
                 startTime = leaveInfoVO.getStartDate();
@@ -971,11 +973,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         }
                         default:
                     }
-                } else if (source.equals(AttendanceSourceEnum.REST_SCHEDULE.getCode())
+                } /*else if (source.equals(AttendanceSourceEnum.REST_SCHEDULE.getCode())
                     && !curDate.equals(punchDate)) {
                     attendancePunchRecordVO.setOrgName(orgName);
                     invalidStatisticsList.add(attendancePunchRecordVO);
-                } else if (source.equals(AttendanceSourceEnum.WORK_OVERTIME.getCode())) {
+                } */else if (source.equals(AttendanceSourceEnum.WORK_OVERTIME.getCode())) {
                     List<AttendancePunchRecordVO> list = workOvertimeMap.get(sourceId);
                     if (list == null) {
                         list = new ArrayList<>();
@@ -1245,7 +1247,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             switch (onDutyStatus) {
                 case 0: {
                     hasAttendance = true;
-                    long diff = computeWithoutLeave(date, onEndTime, onStartTime, userId, onDutyOrgId, leaveInfoMap);
+                    long diff = 0;
+                    if (inScope(onStartTime,onEndTime,onPunchTime,offPunchTime)) {
+                        diff = computeWithoutLeave(date, onEndTime, onStartTime, userId, onDutyOrgId, leaveInfoMap);
+                    }
+                    if (userId == 1597) {
+                        System.out.println("");
+                    }
                     incrMinute(workDateMinuteMap, userId, onDutyOrgId, diff);
                     break;
                 }
@@ -1256,7 +1264,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         incrMinute(laterMinuteMap, userId, onDutyOrgId, onPunchTime.getTime()-onStartTime.getTime());
                         isFullMap.put(userId, onDutyOrgId, false);
                     }
-                    long diff = computeWithoutLeave(date, onEndTime, onPunchTime, userId, onDutyOrgId, leaveInfoMap);
+                    long diff = 0;
+                    if (inScope(onStartTime,onEndTime,onPunchTime,offPunchTime)) {
+                        diff = computeWithoutLeave(date, onEndTime, onPunchTime, userId, onDutyOrgId, leaveInfoMap);
+                    }
+                    if (userId == 1597) {
+                        System.out.println("");
+                    }
                     incrMinute(workDateMinuteMap, userId, onDutyOrgId, diff);
                     break;
                 }
@@ -1283,13 +1297,19 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             switch (offDutyStatus) {
                 case 2:{
                     hasAttendance = true;
-                    long diff = computeWithoutLeave(date, offEndTime, offStartTime, userId, offDutyOrgId, leaveInfoMap);
-                    incrMinute(workDateMinuteMap, userId, offDutyOrgId, diff);
-                    diff = offPunchTime.getTime() - offEndTime.getTime();
-                    if (workOvertime==0 && field==0 && DateUtil.micro2Min(diff)>=1) {
-                        incrMinute(workDateOvertimeMinuteMap, userId, offDutyOrgId, diff);
-                        if (DateUtil.micro2Min(diff) >= 30) {
-                            incrMinute(workDateOvertime30MinuteMap, userId, offDutyOrgId, diff);
+                    long diff = 0;
+                    if (userId == 1597) {
+                        System.out.println("");
+                    }
+                    if (inScope(onStartTime,onEndTime,onPunchTime,offPunchTime)) {
+                        diff = computeWithoutLeave(date, offEndTime, offStartTime, userId, offDutyOrgId, leaveInfoMap);
+                        incrMinute(workDateMinuteMap, userId, offDutyOrgId, diff);
+                        diff = offPunchTime.getTime() - offEndTime.getTime();
+                        if (workOvertime == 0 && field == 0 && DateUtil.micro2Min(diff) >= 1) {
+                            incrMinute(workDateOvertimeMinuteMap, userId, offDutyOrgId, diff);
+                            if (DateUtil.micro2Min(diff) >= 30) {
+                                incrMinute(workDateOvertime30MinuteMap, userId, offDutyOrgId, diff);
+                            }
                         }
                     }
                     break;
@@ -1301,7 +1321,13 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                         incrNum(earlyNumMap, userId, offDutyOrgId);
                         incrMinute(earlyMinuteMap, userId, offDutyOrgId, offEndTime.getTime()-offPunchTime.getTime());
                     }
-                    long diff = computeWithoutLeave(date, offPunchTime, offStartTime, userId, offDutyOrgId, leaveInfoMap);
+                    long diff = 0;
+                    if (inScope(onStartTime,onEndTime,onPunchTime,offPunchTime)) {
+                        diff = computeWithoutLeave(date, offPunchTime, offStartTime, userId, offDutyOrgId, leaveInfoMap);
+                    }
+                    if (userId == 1597) {
+                        System.out.println("");
+                    }
                     incrMinute(workDateMinuteMap, userId, offDutyOrgId, diff);
                     break;
                 }
@@ -1584,6 +1610,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 Long workDate30Minute = workDateOvertime30MinuteMap.get(userId, orgId);
                 if (workDate30Minute == null) {
                     workDate30Minute = 0L;
+                }
+                if (userId == 1597) {
+                    System.out.println("");
                 }
                 statistics.setWorkDateOvertime30Minute(DateUtil.micro2Min(workDate30Minute));
                 incrMinute(workDateMinuteMap, userId, orgId, fieldMinute);// 外勤覆盖上班班次的（覆盖上班卡、覆盖下班卡）
@@ -1900,30 +1929,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
     }
 
     /**
-     * 获取排班名称
-     *
-     * @param attendancePunchRecordVO
-     * @param employeeScheduleMap
-     * @param sdf
-     * @return
-     */
-    private StringBuilder getBaseScheduleName(AttendancePunchRecordVO attendancePunchRecordVO, Map<Integer, EmployeeScheduleVO> employeeScheduleMap, SimpleDateFormat sdf) {
-        Integer sourceId = attendancePunchRecordVO.getSourceId();
-        EmployeeScheduleVO employeeScheduleVO = employeeScheduleMap.get(sourceId);
-        StringBuilder result = new StringBuilder();
-        if (employeeScheduleVO != null) {
-            Byte source = attendancePunchRecordVO.getSource();
-            String tail = getSourceName(source);
-            Date firstStartTime = employeeScheduleVO.getFirstStartTime();
-            Date firstEndTime = employeeScheduleVO.getFirstEndTime();
-            result.append(employeeScheduleVO.getName()).append("(")
-                    .append(sdf.format(firstStartTime)).append("-")
-                    .append(sdf.format(firstEndTime)).append(")").append(tail);
-        }
-        return result;
-    }
-
-    /**
      * 根据工作时长的分页查询考勤汇总明细
      *
      * @param queryForm 查询参数
@@ -2092,7 +2097,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                                 }
                             }
                         }
-                        diff += endTime.getTime() - startTime.getTime() + leaveDiff;
+                        if (inScope(onPunchItem.getStartTime(),offPunchItem.getEndTime(),onPunchTime,offPunchTime)) {
+                            diff += endTime.getTime() - startTime.getTime() + leaveDiff;
+                        }
                     }
                 }
 
@@ -2154,7 +2161,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                                     }
                                 }
                             }
-                            diff += endTime.getTime() - startTime.getTime() + leaveDiff;
+                            if (inScope(onPunchItem.getStartTime(),offPunchItem.getEndTime(),onPunchTime,offPunchTime)) {
+                                diff += endTime.getTime() - startTime.getTime() + leaveDiff;
+                            }
                         }
                     }
                 }

@@ -30,8 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
@@ -51,8 +49,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
     private SmsSignatureSetBiz smsSignatureSetBiz;
     @Autowired
     private SmsAutosendEventBiz smsAutosendEventBiz;
-    @Autowired
-    private ScheduledExecutorService scheduledExecutorService;
     /** 延迟2.5小时 */
     private final int LATER_TIME = 150;
 
@@ -111,23 +107,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         smsTemplateSet.setTemplateContent(null);
         smsTemplateSet.setTemplateCode(result.getString("TemplateCode"));
         updateSelectiveById(smsTemplateSet);
-        asyncStatus(smsTemplateSet);
-    }
-
-    /**
-     * 两小时后同步一次阿里云短信的模板状态
-     * @param smsTemplateSet
-     */
-    private void asyncStatus(SmsTemplateSet smsTemplateSet) {
-        scheduledExecutorService.schedule(()->{
-            JSONObject query = AliyunSmsUtl.querySmsTemplate(smsTemplateSet.getTemplateCode());
-            String code = query.getString("Code");
-            Byte templateStatus = query.getByte("TemplateStatus");
-            if ("OK".equals(code) && !SmsApprovalStatusEnum.APPROVALING.getCode().equals(templateStatus)) {
-                smsTemplateSet.setTemplateStatus(templateStatus);
-                updateSelectiveById(smsTemplateSet);
-            }
-        }, LATER_TIME, TimeUnit.MINUTES);
     }
 
     /**
@@ -267,7 +246,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (needApproval) {
             smsTemplateSet.setTemplateContent(template.getString("template"));
             AliyunSmsUtl.modifySmsTemplate(smsTemplateSet);
-            asyncStatus(smsTemplateSet);
         }
     }
 
@@ -401,22 +379,24 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         String templateStatus = smsTemplateReportVO.getTemplate_status();
         SmsTemplateSetQueryForm queryForm = new SmsTemplateSetQueryForm();
         queryForm.setTemplateCode(templateCode);
-        queryForm.setTemplateStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
         queryForm.setWhetherPage(false);
         List<SmsTemplateSetVO> smsTemplateSetList = findSmsTemplateSetList(queryForm);
+        if (smsTemplateSetList==null || smsTemplateSetList.isEmpty()) {
+            return;
+        }
         /**
          * approving：审核中。
          * approved：审核通过。
          * rejected：审核未通过。
          */
         SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetList.get(0);
-        if (!"approving".equals(templateStatus)) {
-            Byte status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
-            if ("rejected".equals(templateStatus)) {
-                status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
-            }
-            smsTemplateSetVO.setTemplateStatus(status);
-            uptSelectiveById(smsTemplateSetVO);
+        Byte status = SmsApprovalStatusEnum.APPROVALING.getCode();
+        if ("approved".equals(templateStatus)) {
+            status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
+        } else if ("rejected".equals(templateStatus)) {
+            status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
         }
+        smsTemplateSetVO.setTemplateStatus(status);
+        uptSelectiveById(smsTemplateSetVO);
     }
 }

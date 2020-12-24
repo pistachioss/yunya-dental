@@ -26,7 +26,6 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -62,8 +61,7 @@ public class SmsQueryScheduledAsync{
      */
     @Async("customizeExecutor")
 //    @Scheduled(cron = "0 */1 * * * ?")
-    @Scheduled(cron = "0 0 6,22 * * ?")
-    @Transactional
+    @Scheduled(cron = "0 0 23 * * ?")
     public void smsQueryAsync(){
         //查询阿里云短信签名审核
         SmsSignatureSetQueryForm queryForm = new SmsSignatureSetQueryForm();
@@ -85,7 +83,11 @@ public class SmsQueryScheduledAsync{
                 }
             });
         }
+    }
 
+    @Async("customizeExecutor")
+    @Scheduled(cron = "0 0 23 * * ?")
+    public void smsQueryTemplateAsync() {
         //查询阿里云短信模板审核
         SmsTemplateSetQueryForm templateSetQueryForm = new SmsTemplateSetQueryForm();
         templateSetQueryForm.setWhetherPage(false);
@@ -106,7 +108,22 @@ public class SmsQueryScheduledAsync{
                 }
             });
         }
+    }
 
+    @Async("customizeExecutor")
+    @Scheduled(cron = "0 0 6,22 * * ?")
+    public void smsQuerySendDetailsAsync() {
+        SmsSendRecordQueryForm recordQueryForm = new SmsSendRecordQueryForm();
+        recordQueryForm.setWhetherPage(false);
+        recordQueryForm.setStatus(SmsSendStatusEnum.SENDING.getCode());
+        List<SmsSendRecordVO> smsSendRecordVOS = smsSendRecordBiz.findSmsSendRecordList(recordQueryForm);
+
+    }
+
+    @Async("customizeExecutor")
+//    @Scheduled(cron = "0 */1 * * * ?")
+    @Scheduled(cron = "0 0 23 * * ?")
+    public void wikiQueryOrderAsync() {
         SmsChargeOrderQueryForm orderQueryForm = new SmsChargeOrderQueryForm();
         orderQueryForm.setWhetherPage(false);
         orderQueryForm.setOrderStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
@@ -140,11 +157,5 @@ public class SmsQueryScheduledAsync{
                 }
             });
         }
-
-
-        SmsSendRecordQueryForm recordQueryForm = new SmsSendRecordQueryForm();
-        recordQueryForm.setWhetherPage(false);
-        recordQueryForm.setStatus(SmsSendStatusEnum.SENDING.getCode());
-        List<SmsSendRecordVO> smsSendRecordVOS = smsSendRecordBiz.findSmsSendRecordList(recordQueryForm);
     }
 }

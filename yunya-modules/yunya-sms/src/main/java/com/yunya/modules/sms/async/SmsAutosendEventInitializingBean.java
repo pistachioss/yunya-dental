@@ -6,6 +6,8 @@ import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.modules.sms.biz.SmsAutosendEventBiz;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,7 @@ import java.util.Map;
  */
 @Component
 public class SmsAutosendEventInitializingBean implements InitializingBean {
+    private Logger log = LoggerFactory.getLogger(SmsAutosendEventInitializingBean.class);
 
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
@@ -35,24 +38,28 @@ public class SmsAutosendEventInitializingBean implements InitializingBean {
         OrganizationModel model = new OrganizationModel();
         model.setWhetherPage(false);
         model.setTypes(new Byte[]{0,2});
-        List<OrganizationInfoDetail> orgList = remoteSystemServiceFeign.findOrgInfoList(model);
-        if (orgList!=null && !orgList.isEmpty()) {
-            Map<Integer, Boolean> orgIds = new HashMap<>(orgList.size());
-            orgList.forEach(org->orgIds.put(org.getId(),"2".equals(org.getType())));
-            SmsAutosendEventQueryForm queryForm = new SmsAutosendEventQueryForm();
-            queryForm.setWhetherPage(false);
-            if (orgIds!=null && !orgIds.isEmpty()) {
-                queryForm.setOrgIds(orgIds.keySet());
-                List<SmsAutosendEventVO> smsAutosendEventVOS = smsAutosendEventBiz.findSmsAutosendEventList(queryForm);
-                if (smsAutosendEventVOS != null && !smsAutosendEventVOS.isEmpty()) {
-                    smsAutosendEventVOS.forEach(vo -> orgIds.remove(vo.getOrgId()));
-                }
+        try {
+            List<OrganizationInfoDetail> orgList = remoteSystemServiceFeign.findOrgInfoList(model);
+            if (orgList != null && !orgList.isEmpty()) {
+                Map<Integer, Boolean> orgIds = new HashMap<>(orgList.size());
+                orgList.forEach(org -> orgIds.put(org.getId(), "2".equals(org.getType())));
+                SmsAutosendEventQueryForm queryForm = new SmsAutosendEventQueryForm();
+                queryForm.setWhetherPage(false);
                 if (orgIds != null && !orgIds.isEmpty()) {
-                    orgIds.forEach((orgId, isClinic) -> {
-                        smsAutosendEventBiz.initAutoSendEvent(orgId, isClinic);
-                    });
+                    queryForm.setOrgIds(orgIds.keySet());
+                    List<SmsAutosendEventVO> smsAutosendEventVOS = smsAutosendEventBiz.findSmsAutosendEventList(queryForm);
+                    if (smsAutosendEventVOS != null && !smsAutosendEventVOS.isEmpty()) {
+                        smsAutosendEventVOS.forEach(vo -> orgIds.remove(vo.getOrgId()));
+                    }
+                    if (orgIds != null && !orgIds.isEmpty()) {
+                        orgIds.forEach((orgId, isClinic) -> {
+                            smsAutosendEventBiz.initAutoSendEvent(orgId, isClinic);
+                        });
+                    }
                 }
             }
+        } catch (Exception e) {
+            log.error("smsAutoSendEvent init error",e.getMessage());
         }
     }
 }

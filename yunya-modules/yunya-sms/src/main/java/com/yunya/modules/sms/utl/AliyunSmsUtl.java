@@ -13,6 +13,7 @@ import com.google.common.io.Files;
 import com.yunya.feign.sms.form.SmsSignatureSetForm;
 import com.yunya.feign.sms.model.SmsSignatureSetModel;
 import com.yunya.framework.common.exception.ClientServiceException;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsTemplateSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,15 +81,17 @@ public class AliyunSmsUtl {
         request.setSysAction("AddSmsSign");
         request.putQueryParameter("SignName", model.getSignName());
         request.putQueryParameter("SignSource", model.getSignSource()+"");
-        request.putQueryParameter("Remark", model.getRemark());
+        request.putBodyParameter("Remark", model.getRemark());
         JSONObject result = null;
         try {
             if (files!=null && !files.isEmpty()) {
                 int i = 1;
                 for (MultipartFile file : files) {
                     String encode = BinaryUtil.toBase64String(file.getBytes());
-                    request.putQueryParameter("SignFileList." + i + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
-                    request.putQueryParameter("SignFileList." + i + ".FileContents", encode);
+                    String type = Files.getFileExtension(file.getOriginalFilename());
+                    request.putQueryParameter("SignFileList." + i + ".FileSuffix", type);
+                    request.putBodyParameter("SignFileList." + i + ".FileContents", encode);
+                    i++;
                 }
             }
             log.info("addSmsSign requestParam: {}", request.getSysQueryParameters());
@@ -117,7 +120,7 @@ public class AliyunSmsUtl {
         request.setSysAction("ModifySmsSign");
         request.putQueryParameter("SignName", model.getSignName());
         request.putQueryParameter("SignSource", model.getSignSource()+"");
-        request.putQueryParameter("Remark", model.getRemark());
+        request.putBodyParameter("Remark", model.getRemark());
         JSONObject result = null;
         try {
             if (files!=null && !files.isEmpty()) {
@@ -125,7 +128,7 @@ public class AliyunSmsUtl {
                 for (MultipartFile file : files) {
                     String encode = BinaryUtil.toBase64String(file.getBytes());
                     request.putQueryParameter("SignFileList." + i + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
-                    request.putQueryParameter("SignFileList." + i + ".FileContents", encode);
+                    request.putBodyParameter("SignFileList." + i + ".FileContents", encode);
                 }
             }
             log.info("modifySmsSign requestParam: {}", request.getSysQueryParameters());
@@ -209,8 +212,8 @@ public class AliyunSmsUtl {
         request.setSysAction("AddSmsTemplate");
         request.putQueryParameter("TemplateType", model.getTemplateType() + "");
         request.putQueryParameter("TemplateName", model.getTemplateName());
-        request.putQueryParameter("TemplateContent", model.getTemplateContent());
-        request.putQueryParameter("Remark", model.getRemark());
+        request.putBodyParameter("TemplateContent", model.getTemplateContent());
+        request.putBodyParameter("Remark", model.getRemark());
         JSONObject result = null;
         try {
             log.info("addSmsTemplate requestParam: {}", request.getSysQueryParameters());
@@ -239,8 +242,8 @@ public class AliyunSmsUtl {
         request.setSysAction("ModifySmsTemplate");
         request.putQueryParameter("TemplateType", model.getTemplateType() + "");
         request.putQueryParameter("TemplateName", model.getTemplateName());
-        request.putQueryParameter("TemplateContent", model.getTemplateContent());
-        request.putQueryParameter("Remark", model.getRemark());
+        request.putBodyParameter("TemplateContent", model.getTemplateContent());
+        request.putBodyParameter("Remark", model.getRemark());
         request.putQueryParameter("TemplateCode", model.getTemplateCode());
         JSONObject result = null;
         try {
@@ -326,10 +329,10 @@ public class AliyunSmsUtl {
         CommonRequest request = commonRequest();
         request.setSysAction("sendSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");
-        request.putQueryParameter("PhoneNumbers", mobiles);
+        request.putBodyParameter("PhoneNumbers", mobiles);
         request.putQueryParameter("SignName", signName);
         request.putQueryParameter("TemplateCode", templateCode);
-        request.putQueryParameter("TemplateParam", templateParam.toJSONString());
+        request.putBodyParameter("TemplateParam", templateParam.toJSONString());
         JSONObject result = null;
         try {
             log.info("sendSms requestParam: {}", request.getSysQueryParameters());
@@ -359,10 +362,10 @@ public class AliyunSmsUtl {
         CommonRequest request = commonRequest();
         request.setSysAction("SendBatchSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");
-        request.putQueryParameter("PhoneNumberJson", mobiles.toJSONString());
-        request.putQueryParameter("SignNameJson", signNameJson.toJSONString());
+        request.putBodyParameter("PhoneNumberJson", mobiles.toJSONString());
+        request.putBodyParameter("SignNameJson", signNameJson.toJSONString());
         request.putQueryParameter("TemplateCode", templateCode);
-        request.putQueryParameter("TemplateParamJson", templateParamJson.toJSONString());
+        request.putBodyParameter("TemplateParamJson", templateParamJson.toJSONString());
         JSONObject result = null;
         try {
             log.info("SendBatchSms requestParam: {}", request.getSysQueryParameters());
@@ -383,17 +386,24 @@ public class AliyunSmsUtl {
     /**
      * 查询阿里云短信发送详情
      *
-     * @param templateCode 短信模板code
+     * @param mobile 手机号 国内短信：11位手机号码，例如15900000000。国际/港澳台消息：国际区号+号码，例如85200000000。
+     * @param sendDate 发送日期：yyyyMMdd，最近30天
+     * @param currentPage 当前页
+     * @param pageSize 记录数1-50
+     * @param bizId 发送回执ID,可空
      * @return
      */
-    public static JSONObject querySendDetails(String templateCode) {
+    public static JSONObject querySendDetails(String mobile, String sendDate, String currentPage, String pageSize, String bizId) {
         CommonRequest request = commonRequest();
         request.setSysAction("QuerySendDetails");
-        request.putQueryParameter("PhoneNumber", "123");//国内短信：11位手机号码，例如15900000000。国际/港澳台消息：国际区号+号码，例如85200000000。
-        request.putQueryParameter("SendDate", "20181225");//yyyyMMdd，最近30天
-        request.putQueryParameter("PageSize", "12");//记录数1-50
-        request.putQueryParameter("CurrentPage", "1");//当前页
-        request.putQueryParameter("BizId", "xedrer");//发送回执ID,可空
+        request.putQueryParameter("PhoneNumber", mobile);
+        request.putQueryParameter("SendDate", sendDate);
+        request.putQueryParameter("CurrentPage", currentPage);
+        request.putQueryParameter("PageSize", pageSize);
+        if (StringHelper.isEmpty(bizId)) {
+            bizId = "";
+        }
+        request.putQueryParameter("BizId", bizId);
         JSONObject result = null;
         try {
             log.info("querySendDetails requestParam: {}", request.getSysQueryParameters());
