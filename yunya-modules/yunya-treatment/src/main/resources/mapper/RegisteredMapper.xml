@@ -104,6 +104,7 @@
             org_id as orgId,
             patient_id as patientId,
             dentist_id as dentistId,
+            appointment_id as appointmentId,
             assistant_id as assistantId,
             dept_room_id as deptRoomId,
             reg_time as regTime,
