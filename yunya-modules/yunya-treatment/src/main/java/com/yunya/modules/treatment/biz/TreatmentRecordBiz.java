@@ -1070,7 +1070,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     List<PatientTreatmentInfo4ListVO> patientTreatmentInfo4ListVOList = new ArrayList<>();
 
     TreatmentList4AppQuery treatmentList4AppQuery = new TreatmentList4AppQuery();
-    treatmentList4AppQuery.setCurrentDate(queryDate);
+    treatmentList4AppQuery.setQueryDate(queryDate);
     treatmentList4AppQuery.setWhetherPage(true);
     treatmentList4AppQuery.setPageSize(query.getPageSize());
     treatmentList4AppQuery.setPageNum(query.getPageNum());
