@@ -36,19 +36,6 @@ public class BaseTreatmentProcessVO extends BaseTreatmentProcess implements Seri
      * 挂号医生名字
      */
     private String regDentistName;
-    /**
-     * 助手1名字
-     */
-    private String assistantName1;
 
-    /**
-     * 助手2名字
-     */
-    private String assistantName2;
-
-    /**
-     * 助手3名字
-     */
-    private String assistantName3;
 
 }

@@ -31,11 +31,11 @@ public class TreatmentList4AppQuery implements Serializable {
     /** 门诊id */
     private Integer orgId;
 
-    @ApiModelProperty(value = "当前日期", required = false)
+    @ApiModelProperty(value = "当前日期", required = true)
     /** 当前日期 */
     private String currentDate;
 
     @ApiModelProperty(value = "医生ID", required = false)
     /** 医生ID */
-    private String dentistId;
+    private Integer dentistId;
 }

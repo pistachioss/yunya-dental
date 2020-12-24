@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
@@ -31,6 +32,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -446,13 +448,21 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     List<Integer> patientIds = new ArrayList<>();
     registeredVOS.forEach(registeredVO -> {
       Integer dentistId = registeredVO.getDentistId();
-      dentistIds.add(dentistId);
+      if (dentistId != null) {
+        dentistIds.add(dentistId);
+      }
       Integer assistantId = registeredVO.getAssistantId();
-      assistantIds.add(assistantId);
+      if (assistantId != null) {
+        assistantIds.add(assistantId);
+      }
       Integer deptRoomId = registeredVO.getDeptRoomId();
-      deptRoomIds.add(deptRoomId);
+      if (deptRoomId != null) {
+        deptRoomIds.add(deptRoomId);
+      }
       Integer patientId = registeredVO.getPatientId();
-      patientIds.add(patientId);
+      if (patientId != null) {
+        patientIds.add(patientId);
+      }
     });
     // 查询医生信息
     List<SysUserInfoDetail> dentistInfoList = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
@@ -464,6 +474,8 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     List<PatientTotalInfoVo> patientTotalInfoList = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
     // 注入医生，助手，科室信息
     registeredVOS.forEach(registeredVO -> {
+      // 设置组织信息
+      registeredVO.setOrgId(registeredVO.getOrgId());
       // 注入医生信息
       if (StringHelper.isNotEmpty(dentistInfoList)) {
         Integer dentistId = registeredVO.getDentistId();
@@ -476,19 +488,23 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       // 注入助手信息
       if (StringHelper.isNotEmpty(assistantInfoList)) {
         Integer assistantId = registeredVO.getAssistantId();
-        List<SysUserInfoDetail> assistantInfos = assistantInfoList.stream().filter(sysUserInfoDetail -> assistantId.equals(sysUserInfoDetail.getUserId())).collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(assistantInfos)) {
-          SysUserInfoDetail userInfoDetail = assistantInfos.get(0);
-          registeredVO.setAssistantName(userInfoDetail.getName());
+        if (assistantId != null) {
+          List<SysUserInfoDetail> assistantInfos = assistantInfoList.stream().filter(sysUserInfoDetail -> assistantId.equals(sysUserInfoDetail.getUserId())).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(assistantInfos)) {
+            SysUserInfoDetail userInfoDetail = assistantInfos.get(0);
+            registeredVO.setAssistantName(userInfoDetail.getName());
+          }
         }
       }
       // 注入科室信息
       if (StringHelper.isNotEmpty(deptRoomInfoList)) {
         Integer deptRoomId = registeredVO.getDeptRoomId();
-        List<DepartmentRoom> departmentRooms = deptRoomInfoList.stream().filter(departmentRoom -> deptRoomId.equals(departmentRoom.getId())).collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(departmentRooms)) {
-          DepartmentRoom departmentRoom = departmentRooms.get(0);
-          registeredVO.setAssistantName(departmentRoom.getName());
+        if (deptRoomId != null) {
+          List<DepartmentRoom> departmentRooms = deptRoomInfoList.stream().filter(departmentRoom -> deptRoomId.equals(departmentRoom.getId())).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(departmentRooms)) {
+            DepartmentRoom departmentRoom = departmentRooms.get(0);
+            registeredVO.setAssistantName(departmentRoom.getName());
+          }
         }
       }
       // 设置患者信息，年龄性别
@@ -497,6 +513,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
         List<PatientTotalInfoVo> patientTotalInfoVos = patientTotalInfoList.stream().filter(patientTotalInfoVo -> patientTotalInfoVo.getId().equals(patientId)).collect(Collectors.toList());
         if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
           PatientTotalInfoVo patientTotalInfoVo = patientTotalInfoVos.get(0);
+          registeredVO.setPatientName(patientTotalInfoVo.getName());
           registeredVO.setAge(patientTotalInfoVo.getAge());
           registeredVO.setGender(patientTotalInfoVo.getGender());
         }
