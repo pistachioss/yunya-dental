@@ -60,8 +60,10 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
      */
     public void add(List<MultipartFile> files, SmsSignatureSetModel smsSignatureSetModel) {
         uniqueSignName(smsSignatureSetModel.getSignName(), null);
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+//        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+//        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        Integer orgId = 35;
+        Integer userId = 569;
         String user = BaseContextHandler.getName();
         Date now = new Date(System.currentTimeMillis());
         SmsSignatureSet smsSignatureSet = new SmsSignatureSet();
@@ -130,7 +132,8 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         SmsSignatureSetQueryForm queryForm = new SmsSignatureSetQueryForm();
         queryForm.setWhetherPage(false);
         queryForm.setSignName(signName);
-        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+//        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        queryForm.setOrgId(35);
         List<SmsSignatureSetVO> smsSignatureSetVOS = findSmsSignatureSetList(queryForm);
         if (id == null) {
             if (smsSignatureSetVOS!=null && !smsSignatureSetVOS.isEmpty()) {
@@ -185,7 +188,6 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         String signStatus = smsSignatureReportVO.getSign_status();
         SmsSignatureSetQueryForm queryForm = new SmsSignatureSetQueryForm();
         queryForm.setSignName(signName);
-        queryForm.setSignStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
         queryForm.setWhetherPage(false);
         List<SmsSignatureSetVO> smsSignatureSetVOS = findSmsSignatureSetList(queryForm);
         if (smsSignatureSetVOS==null || smsSignatureSetVOS.isEmpty()) {
@@ -197,13 +199,13 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
          * rejected：审核未通过。
          */
         SmsSignatureSetVO smsSignatureSetVO = smsSignatureSetVOS.get(0);
-        if (!"approving".equals(signStatus)) {
-            Byte status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
-            if ("rejected".equals(signStatus)) {
-                status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
-            }
-            smsSignatureSetVO.setSignStatus(status);
-            uptSelectiveById(smsSignatureSetVO);
+        Byte status = SmsApprovalStatusEnum.APPROVALING.getCode();
+        if ("approved".equals(signStatus)) {
+            status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
+        } else if ("rejected".equals(signStatus)) {
+            status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
         }
+        smsSignatureSetVO.setSignStatus(status);
+        uptSelectiveById(smsSignatureSetVO);
     }
 }

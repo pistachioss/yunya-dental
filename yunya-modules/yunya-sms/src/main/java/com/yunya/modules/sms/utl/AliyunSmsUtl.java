@@ -81,15 +81,17 @@ public class AliyunSmsUtl {
         request.setSysAction("AddSmsSign");
         request.putQueryParameter("SignName", model.getSignName());
         request.putQueryParameter("SignSource", model.getSignSource()+"");
-        request.putQueryParameter("Remark", model.getRemark());
+        request.putBodyParameter("Remark", model.getRemark());
         JSONObject result = null;
         try {
             if (files!=null && !files.isEmpty()) {
                 int i = 1;
                 for (MultipartFile file : files) {
                     String encode = BinaryUtil.toBase64String(file.getBytes());
-                    request.putQueryParameter("SignFileList." + i + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
-                    request.putQueryParameter("SignFileList." + i + ".FileContents", encode);
+                    String type = Files.getFileExtension(file.getOriginalFilename());
+                    request.putQueryParameter("SignFileList." + i + ".FileSuffix", type);
+                    request.putBodyParameter("SignFileList." + i + ".FileContents", encode);
+                    i++;
                 }
             }
             log.info("addSmsSign requestParam: {}", request.getSysQueryParameters());
@@ -118,7 +120,7 @@ public class AliyunSmsUtl {
         request.setSysAction("ModifySmsSign");
         request.putQueryParameter("SignName", model.getSignName());
         request.putQueryParameter("SignSource", model.getSignSource()+"");
-        request.putQueryParameter("Remark", model.getRemark());
+        request.putBodyParameter("Remark", model.getRemark());
         JSONObject result = null;
         try {
             if (files!=null && !files.isEmpty()) {
@@ -126,7 +128,7 @@ public class AliyunSmsUtl {
                 for (MultipartFile file : files) {
                     String encode = BinaryUtil.toBase64String(file.getBytes());
                     request.putQueryParameter("SignFileList." + i + ".FileSuffix", Files.getFileExtension(file.getOriginalFilename()));
-                    request.putQueryParameter("SignFileList." + i + ".FileContents", encode);
+                    request.putBodyParameter("SignFileList." + i + ".FileContents", encode);
                 }
             }
             log.info("modifySmsSign requestParam: {}", request.getSysQueryParameters());
@@ -210,8 +212,8 @@ public class AliyunSmsUtl {
         request.setSysAction("AddSmsTemplate");
         request.putQueryParameter("TemplateType", model.getTemplateType() + "");
         request.putQueryParameter("TemplateName", model.getTemplateName());
-        request.putQueryParameter("TemplateContent", model.getTemplateContent());
-        request.putQueryParameter("Remark", model.getRemark());
+        request.putBodyParameter("TemplateContent", model.getTemplateContent());
+        request.putBodyParameter("Remark", model.getRemark());
         JSONObject result = null;
         try {
             log.info("addSmsTemplate requestParam: {}", request.getSysQueryParameters());
@@ -240,8 +242,8 @@ public class AliyunSmsUtl {
         request.setSysAction("ModifySmsTemplate");
         request.putQueryParameter("TemplateType", model.getTemplateType() + "");
         request.putQueryParameter("TemplateName", model.getTemplateName());
-        request.putQueryParameter("TemplateContent", model.getTemplateContent());
-        request.putQueryParameter("Remark", model.getRemark());
+        request.putBodyParameter("TemplateContent", model.getTemplateContent());
+        request.putBodyParameter("Remark", model.getRemark());
         request.putQueryParameter("TemplateCode", model.getTemplateCode());
         JSONObject result = null;
         try {
@@ -327,10 +329,10 @@ public class AliyunSmsUtl {
         CommonRequest request = commonRequest();
         request.setSysAction("sendSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");
-        request.putQueryParameter("PhoneNumbers", mobiles);
+        request.putBodyParameter("PhoneNumbers", mobiles);
         request.putQueryParameter("SignName", signName);
         request.putQueryParameter("TemplateCode", templateCode);
-        request.putQueryParameter("TemplateParam", templateParam.toJSONString());
+        request.putBodyParameter("TemplateParam", templateParam.toJSONString());
         JSONObject result = null;
         try {
             log.info("sendSms requestParam: {}", request.getSysQueryParameters());
@@ -360,10 +362,10 @@ public class AliyunSmsUtl {
         CommonRequest request = commonRequest();
         request.setSysAction("SendBatchSms");
         request.putQueryParameter("RegionId", "cn-hangzhou");
-        request.putQueryParameter("PhoneNumberJson", mobiles.toJSONString());
-        request.putQueryParameter("SignNameJson", signNameJson.toJSONString());
+        request.putBodyParameter("PhoneNumberJson", mobiles.toJSONString());
+        request.putBodyParameter("SignNameJson", signNameJson.toJSONString());
         request.putQueryParameter("TemplateCode", templateCode);
-        request.putQueryParameter("TemplateParamJson", templateParamJson.toJSONString());
+        request.putBodyParameter("TemplateParamJson", templateParamJson.toJSONString());
         JSONObject result = null;
         try {
             log.info("SendBatchSms requestParam: {}", request.getSysQueryParameters());

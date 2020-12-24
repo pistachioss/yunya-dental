@@ -64,6 +64,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         Map<Integer, Integer> attendanceDeviceBindingVOMap = new LinkedHashMap<>();
 
         // 日期范围过滤
+        queryForm.setWhetherPage(false);
         List<AttendanceDeviceBindingVO> attendanceDeviceBindingVOList = mapper.findBindingDeviceList(queryForm);
         attendanceDeviceBindingVOList.forEach(attendanceDeviceBindingVO -> {
             Integer userId = attendanceDeviceBindingVO.getUserId();

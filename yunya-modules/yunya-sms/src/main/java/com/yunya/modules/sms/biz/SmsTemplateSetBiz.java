@@ -379,7 +379,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         String templateStatus = smsTemplateReportVO.getTemplate_status();
         SmsTemplateSetQueryForm queryForm = new SmsTemplateSetQueryForm();
         queryForm.setTemplateCode(templateCode);
-        queryForm.setTemplateStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
         queryForm.setWhetherPage(false);
         List<SmsTemplateSetVO> smsTemplateSetList = findSmsTemplateSetList(queryForm);
         if (smsTemplateSetList==null || smsTemplateSetList.isEmpty()) {
@@ -391,13 +390,13 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
          * rejected：审核未通过。
          */
         SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetList.get(0);
-        if (!"approving".equals(templateStatus)) {
-            Byte status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
-            if ("rejected".equals(templateStatus)) {
-                status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
-            }
-            smsTemplateSetVO.setTemplateStatus(status);
-            uptSelectiveById(smsTemplateSetVO);
+        Byte status = SmsApprovalStatusEnum.APPROVALING.getCode();
+        if ("approved".equals(templateStatus)) {
+            status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
+        } else if ("rejected".equals(templateStatus)) {
+            status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
         }
+        smsTemplateSetVO.setTemplateStatus(status);
+        uptSelectiveById(smsTemplateSetVO);
     }
 }

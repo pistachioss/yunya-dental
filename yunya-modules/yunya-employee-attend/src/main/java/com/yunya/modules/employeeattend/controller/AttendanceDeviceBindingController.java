@@ -83,6 +83,7 @@ public class AttendanceDeviceBindingController {
     @ApiOperation("发送设备绑定短信验证码")
     @ApiImplicitParam(value = "手机号码", name = "mobile", required = true)
     @GetMapping("/verifyCode")
+    @CurrentUser
     public ResponseResult authorizationCode(
             @ApiParam(name = "mobile", value = "手机号", required = true) String mobile) {
         return attendanceDeviceBindingBiz.authorizationCode(mobile);
