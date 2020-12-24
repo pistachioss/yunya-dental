@@ -122,4 +122,8 @@
             </foreach>
         </where>
     </select>
+
+    <select id="findRegisteredByIds" resultType="com.yunya.feign.treatment.domain.vo.RegisteredVO">
+
+    </select>
 </mapper>

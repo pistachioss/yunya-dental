@@ -5,7 +5,6 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.appointment.RemoteAppointmentFeign;
 import com.yunya.feign.appointment.domain.form.AppointmentForMonthForm;
 import com.yunya.feign.appointment.domain.query.AppointmentCurrentListQuery;
-import com.yunya.feign.appointment.vo.AppointmentUnDonePatientInfoVO;
 import com.yunya.feign.appointment.vo.NextAppointsVo;
 import com.yunya.feign.emr.RemoteEmrServiceFeign;
 import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
@@ -32,7 +31,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.patient_central.PatientBaseInfo;
-import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.models.system.DepartmentRoom;
 import com.yunya.models.system.MemberType;
 import com.yunya.models.system.SysEmployee;
@@ -41,7 +39,6 @@ import com.yunya.models.treatment.*;
 import com.yunya.models.treatment_other.VisitingRecord;
 import com.yunya.models.treatment_other.XRayFilm;
 import com.yunya.modules.treatment.mapper.*;
-import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.joda.time.DateTime;
@@ -1064,6 +1061,8 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
    * @return list
    */
   public PageInfo<PatientTreatmentInfo4ListVO> findAppTreatList(AppTreatListQuery query) {
+
+
     Integer orgId = query.getOrgId();
     String queryDate = query.getQueryDate();
     Integer dentistId = query.getDentistId();
@@ -1071,12 +1070,12 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     List<PatientTreatmentInfo4ListVO> patientTreatmentInfo4ListVOList = new ArrayList<>();
 
     TreatmentList4AppQuery treatmentList4AppQuery = new TreatmentList4AppQuery();
-    treatmentList4AppQuery.setCurrentDate(queryDate);
+    treatmentList4AppQuery.setQueryDate(queryDate);
     treatmentList4AppQuery.setWhetherPage(true);
     treatmentList4AppQuery.setPageSize(query.getPageSize());
     treatmentList4AppQuery.setPageNum(query.getPageNum());
     treatmentList4AppQuery.setOrgId(orgId);
-    treatmentList4AppQuery.setDentistId(String.valueOf(dentistId));
+    treatmentList4AppQuery.setDentistId(dentistId);
     PageInfo<BaseTreatmentProcessVO> pageInfoList = remoteMiddleTableServiceFeign.treatmentList4App(treatmentList4AppQuery);
     // 预约未到
     List<BaseTreatmentProcessVO> treatmentList = pageInfoList.getList();

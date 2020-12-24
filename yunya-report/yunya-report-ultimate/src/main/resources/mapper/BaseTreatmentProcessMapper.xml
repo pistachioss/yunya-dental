@@ -303,24 +303,23 @@
         btp.registered_time as registeredTime,btp.treat_start_time as treatStartTime,btp.treat_end_time as treatEndTime,btp.assistant_1 as assistant1,btp.assistant_2 as assistant2,
         btp.assistant_3 as assistant3,
         bp.name as patientName,
-        bp.age,
         bp.gender,
         appointDentistNameBe.employee_name as appointDentistName,
         regDentistNameBe.employee_name as regDentistName
         from base_treatment_process btp
             left join base_patient bp on bp.patient_id = btp.patient_id
-            left join base_employee appointDentistNameBe on appointDentistNameBe.user_id = bp.appoint_dentist_id
-            left join base_employee regDentistNameBe on regDentistNameBe.user_id = bp.registered_dentist_id
+            left join base_employee appointDentistNameBe on appointDentistNameBe.user_id = btp.appoint_dentist_id
+            left join base_employee regDentistNameBe on regDentistNameBe.user_id = btp.registered_dentist_id
         <where>
             <if test="dentistId != null">
-                and #{dentistId} in (appoint_dentist_id,registered_dentist_id)
+                and #{dentistId} in (btp.appoint_dentist_id,btp.registered_dentist_id)
             </if>
             <if test="orgId != null">
-                and org_id = #{orgId}
+                and btp.org_id = #{orgId}
             </if>
             <if test="currentDate != null and currentDate != ''">
-                and (date_format(appoint_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
-                     or date_format(treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d'))
+                and (date_format(btp.appoint_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d')
+                     or date_format(btp.treat_start_time,'%Y-%m-%d') = date_format(#{currentDate},'%Y-%m-%d'))
             </if>
         </where>
     </select>
