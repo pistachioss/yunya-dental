@@ -31,21 +31,21 @@ public class SmsTemplateSetModel implements Serializable {
      * 签名id
      */
     @ApiModelProperty(value = "签名id",required = true)
-    @NotNull
+    @NotNull(message = "签名id不能为空")
     private Integer signatureId;
 
     /**
      * 模板名称
      */
     @ApiModelProperty(value = "模板名称",required = true)
-    @NotBlank
+    @NotBlank(message = "模板名称不能为空")
     private String templateName;
 
     /**
      * 模板内容
      */
     @ApiModelProperty(value = "模板内容",required = true)
-    @NotBlank
+    @NotBlank(message = "模板内容不能为空")
     private String templateContent;
 
     /**
@@ -58,14 +58,14 @@ public class SmsTemplateSetModel implements Serializable {
      * 申请说明
      */
     @ApiModelProperty("申请说明")
-    @NotBlank
+    @NotBlank(message = "申请说明不能为空")
     private String remark;
 
     /**
      * 适用场景：0-预约提醒，1-会员充值提醒，2-会员消费提醒，3-预付款充值提醒，4-预付款消费提醒，5-卡券售出提醒，6-考勤设备绑定验证码，7-找回密码验证码
      */
     @ApiModelProperty(value = "适用场景：0-预约提醒，1-会员充值提醒，2-会员消费提醒，3-预付款充值提醒，4-预付款消费提醒，5-卡券售出提醒，6-考勤设备绑定验证码，7-找回密码验证码",required = true)
-    @NotNull
+    @NotNull(message = "适用场景不能为空")
     private Byte sense;
 
     /**

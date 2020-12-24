@@ -3,6 +3,7 @@ package com.yunya.modules.sms.rpc;
 import com.yunya.feign.sms.model.SmsBatchSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.sms.model.SmsSendRecordModel;
+import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -15,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -67,17 +67,12 @@ public class SmsServiceRest {
     /**
      * 发送短信验证码
      *
-     * @param mobile 手机号
-     * @param verifyCode 验证码
-     * @param eventCode 事件编码
+     * @param smsVerifyCodeModel
      * @return
      */
-    @CurrentUser
     @RequestMapping(value = "/sms/sendVerifyCode", method = RequestMethod.POST)
-    public ResponseResult<T> sendVerifyCode(@RequestParam(value = "mobile") @NotBlank String mobile,
-                                            @RequestParam(value = "verifyCode") @NotBlank String verifyCode,
-                                            @RequestParam(value = "eventCode") @NotBlank String eventCode) {
-        return smsSendRecordBiz.sendVerifyCode(mobile, verifyCode, eventCode);
+    public ResponseResult<T> sendVerifyCode(@RequestBody @Validated SmsVerifyCodeModel smsVerifyCodeModel) {
+        return smsSendRecordBiz.sendVerifyCode(smsVerifyCodeModel);
     }
 
     /**

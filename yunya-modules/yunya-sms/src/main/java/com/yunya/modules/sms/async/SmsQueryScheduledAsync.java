@@ -9,11 +9,11 @@ import com.yunya.feign.sms.vo.SmsChargeOrderVO;
 import com.yunya.feign.sms.vo.SmsSendRecordVO;
 import com.yunya.feign.sms.vo.SmsSignatureSetVO;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
+import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.sms.SmsChargeOrder;
-import com.yunya.modules.sms.biz.SmsChargeOrderBiz;
-import com.yunya.modules.sms.biz.SmsSendRecordBiz;
-import com.yunya.modules.sms.biz.SmsSignatureSetBiz;
-import com.yunya.modules.sms.biz.SmsTemplateSetBiz;
+import com.yunya.models.sms.SmsSendRecord;
+import com.yunya.modules.sms.biz.*;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsOrderStatusEnum;
 import com.yunya.modules.sms.enums.SmsSendStatusEnum;
@@ -27,6 +27,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -51,6 +52,8 @@ public class SmsQueryScheduledAsync{
     private SmsChargeOrderBiz smsChargeOrderBiz;
     @Autowired
     private SmsSendRecordBiz smsSendRecordBiz;
+    @Autowired
+    private SmsOrgStatisticsBiz smsOrgStatisticsBiz;
     /**
      * 两个小时
      */
@@ -61,8 +64,9 @@ public class SmsQueryScheduledAsync{
      */
     @Async("customizeExecutor")
 //    @Scheduled(cron = "0 */1 * * * ?")
-    @Scheduled(cron = "0 0 23 * * ?")
-    public void smsQueryAsync(){
+    @Scheduled(cron = "0 0 22 * * ?")
+    public void smsQuerySignatureAsync(){
+        log.info("开始同步审核中的短信签名情况");
         //查询阿里云短信签名审核
         SmsSignatureSetQueryForm queryForm = new SmsSignatureSetQueryForm();
         queryForm.setWhetherPage(false);
@@ -79,15 +83,20 @@ public class SmsQueryScheduledAsync{
                         smsSignatureSetBiz.uptSelectiveById(smsSignatureSetVO);
                     }
                 } catch (Exception e) {
-                    log.error("smsQueryAsync update sign error",e);
+                    log.error("smsQuerySignatureAsync sync error",e);
                 }
             });
         }
+        log.info("同步审核中的短信签名情况结束");
     }
 
+    /**
+     * 同步审核中的短信模板
+     */
     @Async("customizeExecutor")
-    @Scheduled(cron = "0 0 23 * * ?")
+    @Scheduled(cron = "0 0 22 * * ?")
     public void smsQueryTemplateAsync() {
+        log.info("开始同步审核中的短信模板情况");
         //查询阿里云短信模板审核
         SmsTemplateSetQueryForm templateSetQueryForm = new SmsTemplateSetQueryForm();
         templateSetQueryForm.setWhetherPage(false);
@@ -104,26 +113,76 @@ public class SmsQueryScheduledAsync{
                         smsTemplateSetBiz.uptSelectiveById(smsTemplateSetVO);
                     }
                 } catch (Exception e) {
-                    log.error("smsQueryAsync update template error",e);
+                    log.error("smsQueryTemplateAsync sync error",e);
                 }
             });
         }
+        log.info("同步审核中的短信模板情况结束");
     }
 
+    /**
+     * 同步昨天发送中的短信
+     */
     @Async("customizeExecutor")
-    @Scheduled(cron = "0 0 6,22 * * ?")
+    @Scheduled(cron = "0 0 23 * * ?")
+//        @Scheduled(cron = "0 */1 * * * ?")
     public void smsQuerySendDetailsAsync() {
+        log.info("开始同步发送中的短信情况");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         SmsSendRecordQueryForm recordQueryForm = new SmsSendRecordQueryForm();
         recordQueryForm.setWhetherPage(false);
+        recordQueryForm.setSendDate(DateUtil.yesterday());
         recordQueryForm.setStatus(SmsSendStatusEnum.SENDING.getCode());
         List<SmsSendRecordVO> smsSendRecordVOS = smsSendRecordBiz.findSmsSendRecordList(recordQueryForm);
-
+        for (SmsSendRecordVO smsSendRecordVO : smsSendRecordVOS) {
+            String mobile = smsSendRecordVO.getMobile();
+            String bizId = smsSendRecordVO.getBizId();
+            Date crtTime = smsSendRecordVO.getCrtTime();
+            String sendDate = sdf.format(crtTime);
+            if (StringHelper.isEmpty(bizId)) {
+                continue;
+            }
+            try {
+                JSONObject result = AliyunSmsUtl.querySendDetails(mobile, sendDate, "1", "50", bizId);
+                if (!"OK".equals(result.getString("Code"))) {
+                    log.error("smsQuerySendDetailsAsync query error: {}", result.getString("Message"));
+                    continue;
+                }
+                JSONObject object = result.getJSONObject("SmsSendDetailDTOs").getJSONArray("SmsSendDetailDTO").getJSONObject(0);
+                /*短信发送状态，包括：1：等待回执。2：发送失败。3：发送成功。*/
+                String sendStatus = object.getString("SendStatus");
+                if ("1".equals(sendStatus)) {
+                    continue;
+                }
+                SmsSendRecord smsSendRecord = new SmsSendRecord();
+                smsSendRecord.setId(smsSendRecordVO.getId());
+                byte status = SmsSendStatusEnum.SEND_SUCC.getCode();
+                String errCode = object.getString("ErrCode");//错误码
+                if ("2".equals(sendStatus)) {
+                    status = SmsSendStatusEnum.SEND_FAIL.getCode();
+                    smsOrgStatisticsBiz.incrByOrgId(null, smsSendRecordVO.getContentNum(), null, smsSendRecordVO.getOrgId());
+                }
+                String bizMsg = null;
+                smsSendRecord.setBizMsg(bizMsg);
+                smsSendRecord.setStatus(status);
+                smsSendRecordBiz.uptSelectiveById(smsSendRecord);
+            } catch (Exception e) {
+                log.error("smsQuerySendDetailsAsync sync error",e);
+            }
+        }
+        log.info("同步发送中的短信情况结束");
     }
 
+    /**
+     * 同步采宝的支付订单的状态，更新短信充值订单状态：
+     *  1、超时未支付 -> 关闭
+     *  2、等待支付 -> 支付成功/支付失败
+     */
     @Async("customizeExecutor")
 //    @Scheduled(cron = "0 */1 * * * ?")
     @Scheduled(cron = "0 0 23 * * ?")
     public void wikiQueryOrderAsync() {
+        log.info("开始更新短信充值支付记录");
         SmsChargeOrderQueryForm orderQueryForm = new SmsChargeOrderQueryForm();
         orderQueryForm.setWhetherPage(false);
         orderQueryForm.setOrderStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
@@ -157,5 +216,6 @@ public class SmsQueryScheduledAsync{
                 }
             });
         }
+        log.info("更新短信充值支付记录结束");
     }
 }

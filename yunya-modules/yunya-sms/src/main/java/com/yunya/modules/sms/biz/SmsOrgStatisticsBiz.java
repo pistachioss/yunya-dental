@@ -16,7 +16,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
-import static com.yunya.framework.common.constant.OperationCodeConstants.OPERATION_NOT_ALLOW;
+import static com.yunya.framework.common.constant.OperationCodeConstants.BALANCE_INSUFFICIENT;
 
 /**
  * 简介：短信统计业务层
@@ -72,20 +72,32 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
      * @param orgId 门诊id
      */
     public void incrByOrgId(Integer smsNum, BigDecimal price, Integer orgId) {
+        incrByOrgId(smsNum, smsNum, price, orgId);
+    }
+
+    /**
+     * 累加（充值或返补）
+     *
+     * @param smsNum 短信总数
+     * @param surplus 短信余额
+     * @param price 短信价格
+     * @param orgId 门诊id
+     */
+    public void incrByOrgId(Integer smsNum, Integer surplus, BigDecimal price, Integer orgId) {
         Date now = new Date(System.currentTimeMillis());
         try {
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
                     RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
-            SmsOrgStatistics smsOrgStatistics = new SmsOrgStatistics();
+            SmsOrgStatistics entity = new SmsOrgStatistics();
             if (smsOrgStatisticsVO != null) {
-                BeanUtil.copyProperties(smsOrgStatisticsVO, smsOrgStatistics);
-                smsOrgStatistics.setCrtId(-999);
-                smsOrgStatistics.setCrtTime(now);
+                BeanUtil.copyProperties(smsOrgStatisticsVO, entity);
+                entity.setCrtId(-999);
+                entity.setCrtTime(now);
             }
-            BigDecimal chargeMoney = smsOrgStatistics.getChargeMoney();
-            Integer chargeNum = smsOrgStatistics.getChargeNum();
-            Integer surplusNum = smsOrgStatistics.getSurplusNum();
+            BigDecimal chargeMoney = entity.getChargeMoney();
+            Integer chargeNum = entity.getChargeNum();
+            Integer surplusNum = entity.getSurplusNum();
             if (chargeMoney == null) {
                 chargeMoney = new BigDecimal(0);
             }
@@ -95,20 +107,24 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
             if (surplusNum == null) {
                 surplusNum = 0;
             }
-            smsOrgStatistics.setOrgId(orgId);
-            smsOrgStatistics.setChargeNum(chargeNum + smsNum);
-            smsOrgStatistics.setSurplusNum(surplusNum + smsNum);
-            if (price != null) {
-                smsOrgStatistics.setChargeMoney(chargeMoney.add(price));
+            entity.setOrgId(orgId);
+            if (smsNum != null) {
+                entity.setChargeNum(chargeNum + smsNum);
             }
-            smsOrgStatistics.setUptId(-999);
-            smsOrgStatistics.setUptTime(now);
+            if (surplus != null) {
+                entity.setSurplusNum(surplusNum + surplus);
+            }
+            if (price != null) {
+                entity.setChargeMoney(chargeMoney.add(price));
+            }
+            entity.setUptId(-999);
+            entity.setUptTime(now);
             if (smsOrgStatisticsVO == null) {
-                smsOrgStatistics.setCrtId(-999);
-                smsOrgStatistics.setCrtTime(now);
-                mapper.insertSelective(smsOrgStatistics);
+                entity.setCrtId(-999);
+                entity.setCrtTime(now);
+                mapper.insertSelective(entity);
             } else {
-                mapper.updateByPrimaryKeySelective(smsOrgStatistics);
+                mapper.updateByPrimaryKeySelective(entity);
             }
             redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
         } finally {
@@ -128,25 +144,23 @@ public class SmsOrgStatisticsBiz extends BaseBiz<SmsOrgStatisticsMapper, SmsOrgS
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId),
                     RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             SmsOrgStatisticsVO smsOrgStatisticsVO = findSmsOrgStatisticsByOrgId(orgId);
-            SmsOrgStatistics smsOrgStatistics = new SmsOrgStatistics();
+            SmsOrgStatistics entity = new SmsOrgStatistics();
             if (smsOrgStatisticsVO == null) {
                 redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
-                throw new ClientServiceException("短信余额不足", OPERATION_NOT_ALLOW);
+                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
-            Integer chargeNum = smsOrgStatistics.getChargeNum();
-            Integer surplusNum = smsOrgStatistics.getSurplusNum();
-            if (chargeNum == null) {
-                chargeNum = 0;
-            }
+            Integer surplusNum = smsOrgStatisticsVO.getSurplusNum();
             if (surplusNum == null) {
                 surplusNum = 0;
             }
-            smsOrgStatistics.setOrgId(orgId);
-            smsOrgStatistics.setChargeNum(chargeNum - usedNum);
-            smsOrgStatistics.setSurplusNum(surplusNum - usedNum);
-            smsOrgStatistics.setUptId(-999);
-            smsOrgStatistics.setUptTime(now);
-            mapper.updateByPrimaryKeySelective(smsOrgStatistics);
+            if (usedNum > surplusNum) {
+                throw new ClientServiceException("短信余额不足！",BALANCE_INSUFFICIENT);
+            }
+            entity.setId(smsOrgStatisticsVO.getId());
+            entity.setSurplusNum(usedNum);
+            entity.setUptId(-999);
+            entity.setUptTime(now);
+            mapper.updateByPrimaryKeySelective(entity);
             redisUtils.delete(RedisConstants.SMS_STATISTICS_SURPLUS_ORG + orgId);
         } finally {
             redisUtils.unlock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId));

@@ -4,6 +4,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
+import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
@@ -427,11 +428,18 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     String  messageCode = this.messageCodeGenerator();
     // 发送短信验证码
     String key = RedisConstants.FORGET_PWD_AUTHORIZATION + mobile;
-    if (redisUtils.hasKey(key)) {
-      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送, 请稍后再试",null);
-    }
+//    if (redisUtils.hasKey(key)) {
+//      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送, 请稍后再试",null);
+//    }
     redisUtils.set(key, messageCode,60);
-    ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(mobile, messageCode, SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
+    SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
+    smsVerifyCodeModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
+    smsVerifyCodeModel.setName(BaseContextHandler.getName());
+    smsVerifyCodeModel.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+    smsVerifyCodeModel.setMobile(mobile);
+    smsVerifyCodeModel.setVerifyCode(messageCode);
+    smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
+    ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(smsVerifyCodeModel);
     if (responseResult==null) {
       return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
     }
