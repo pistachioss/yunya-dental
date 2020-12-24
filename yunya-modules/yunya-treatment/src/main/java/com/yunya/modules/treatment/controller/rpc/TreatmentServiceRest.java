@@ -358,7 +358,6 @@ public class TreatmentServiceRest {
    * @return 返回挂号信息集合
    */
   @RequestMapping(value = "/patient/registered/list", method = RequestMethod.POST)
-  @Deprecated
   List<RegisteredVO> registeredInfoDetails(@RequestBody List<Integer> registeredIds) {
     return registeredBiz.registeredInfoDetails(registeredIds);
   }

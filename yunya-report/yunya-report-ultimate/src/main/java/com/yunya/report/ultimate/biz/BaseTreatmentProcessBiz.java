@@ -144,7 +144,7 @@ public class BaseTreatmentProcessBiz
     }
     List<PatientTreatmentInfo4ListVO> patientTreatmentInfo4ListVOS = new ArrayList<>();
     SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    List<BaseTreatmentProcessVO> baseTreatmentProcessVOS = mapper.treatmentList4App(query.getOrgId(),query.getDentistId(),query.getCurrentDate());
+    List<BaseTreatmentProcessVO> baseTreatmentProcessVOS = mapper.treatmentList4App(query.getOrgId(),query.getDentistId(),query.getQueryDate());
     PageInfo pageInfo = new PageInfo(baseTreatmentProcessVOS);
     if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
       return pageInfo;
@@ -282,7 +282,6 @@ public class BaseTreatmentProcessBiz
       List<RegisteredVO> registeredVOS = this.remoteTreatmentServiceFeign.registeredInfoDetails(registeredIds);
 
       if (StringHelper.isNotEmpty(treatmentRecordExtendVOS)) {
-        List<SysUserInfoDetail> regAssistantInfos = null;
         for (TreatmentRecordExtendVO patientTreatmentRecordVO : treatmentRecordExtendVOS) {
           PatientTreatmentInfo4ListVO entity = new PatientTreatmentInfo4ListVO();
           // 设置就诊状态

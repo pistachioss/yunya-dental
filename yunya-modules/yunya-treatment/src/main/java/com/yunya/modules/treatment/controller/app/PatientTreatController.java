@@ -42,6 +42,7 @@ public class PatientTreatController {
 
   @ApiOperation("根据条件查询APP端患者就诊列表(开完成,可联调...)")
   @PostMapping(value = "/list", name = "根据条件查询APP端患者就诊列表")
+  @Deprecated
   public ResponseResult<PageInfo<PatientTreatmentInfo4ListVO>> treatList(
       @RequestBody @Validated AppTreatListQuery query) {
     PageInfo<PatientTreatmentInfo4ListVO> resultList = treatmentRecordBiz.findAppTreatList(query);

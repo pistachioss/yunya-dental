@@ -33,7 +33,7 @@ public class TreatmentList4AppQuery implements Serializable {
 
     @ApiModelProperty(value = "当前日期", required = true)
     /** 当前日期 */
-    private String currentDate;
+    private String queryDate;
 
     @ApiModelProperty(value = "医生ID", required = false)
     /** 医生ID */
