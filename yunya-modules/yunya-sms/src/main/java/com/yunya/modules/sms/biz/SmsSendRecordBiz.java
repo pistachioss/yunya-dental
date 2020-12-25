@@ -18,6 +18,7 @@ import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsTemplateItemEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -38,9 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.*;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
@@ -68,8 +67,6 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private RedisUtils redisUtils;
-    @Resource(name = "smsThreadPool")
-    private ThreadPoolExecutor threadPoolExecutor;
 
     /**
      * 分页查询短信发送记录列表
@@ -170,7 +167,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             String[] items = null;
             if (StringHelper.isNotEmpty(templateItem)) {
                 items = templateItem.split(",");
-                param.put("code0", smsVerifyCodeModel.getVerifyCode());
+                param.put(SmsTemplateItemEnum.getAction(items[0]), smsVerifyCodeModel.getVerifyCode());
             }
             if (param.size() != count) {
                 throw new ClientServiceException("模板参数值缺失", PARAMETERS_IS_ILLEGAL);
@@ -269,13 +266,12 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         if (items != null) {
             for (int i = 0; i < items.length; i++) {
                 String item = items[i];
-                String key = "";
+                String key = SmsTemplateItemEnum.getAction(item);
                 Integer reNum = repeat.get(item);
                 if (reNum == null) {
                     reNum = 0;
-                    key = "code" + item;
                 } else {
-                    key = "re" + reNum + "code" + item;
+                    key = "re" + reNum + key;
                 }
                 repeat.put(item, ++reNum);
                 String value = param.getString(key);
@@ -450,12 +446,11 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                 for (int j = 0; j < codes.length; j++) {
                     String code = codes[j];
                     Integer reNum = repeat.get(code);
-                    String key = "";
+                    String key = SmsTemplateItemEnum.getAction(code);
                     if (reNum == null) {
                         reNum = 0;
-                        key = "code" + code;
                     } else {
-                        key = "re" + reNum + "code" + code;
+                        key = "re" + reNum + key;
                     }
                     repeat.put(code, ++reNum);
                     String value = object.getString(key);

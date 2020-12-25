@@ -157,12 +157,11 @@ public class SmsQueryScheduledAsync{
                 SmsSendRecord smsSendRecord = new SmsSendRecord();
                 smsSendRecord.setId(smsSendRecordVO.getId());
                 byte status = SmsSendStatusEnum.SEND_SUCC.getCode();
-                String errCode = object.getString("ErrCode");//错误码
+                String bizMsg = object.getString("ErrCode");//错误码
                 if ("2".equals(sendStatus)) {
                     status = SmsSendStatusEnum.SEND_FAIL.getCode();
                     smsOrgStatisticsBiz.incrByOrgId(null, smsSendRecordVO.getContentNum(), null, smsSendRecordVO.getOrgId());
                 }
-                String bizMsg = null;
                 smsSendRecord.setBizMsg(bizMsg);
                 smsSendRecord.setStatus(status);
                 smsSendRecordBiz.uptSelectiveById(smsSendRecord);

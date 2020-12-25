@@ -2618,12 +2618,11 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 Map<String, Integer> repeat = new HashMap<>();
                 for (String item : items) {
                     Integer reNum = repeat.get(item);
-                    String key = "";
+                    String key = SmsTemplateItemEnum.getAction(item);
                     if (reNum == null) {
                         reNum = 0;
-                        key = "code" + item;
                     } else {
-                        key = "re" + reNum + "code" + item;
+                        key = "re" + reNum + key;
                     }
                     repeat.put(item, ++reNum);
                     switch (item) {

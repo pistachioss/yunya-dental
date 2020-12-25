@@ -161,12 +161,13 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
             Map<String, Integer> repeat = new HashMap<>(items.length);
             for (int i = 0; i < items.length; i++) {
                 String code = items[i];
+                String action = SmsTemplateItemEnum.getAction(code);
                 Integer reNum = repeat.get(code);
                 if (reNum == null) {
                     reNum = 0;
-                    template.append("${code").append(code).append("}");
+                    template.append("${").append(action).append("}");
                 } else {
-                    template.append("${re").append(reNum).append("code").append(code).append("}");
+                    template.append("${re").append(reNum).append(action).append("}");
                 }
                 repeat.put(code, ++reNum);
                 if (i+1 < contents.length) {
