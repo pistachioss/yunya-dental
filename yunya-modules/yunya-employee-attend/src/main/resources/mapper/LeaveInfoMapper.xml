@@ -348,8 +348,20 @@
     li.crt_time AS crtTime,
     li.start_time AS startTime,
     li.end_time AS endTime,
-     IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
-        TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time))AS leaveTime,
+        IFNULL(
+        sum(
+        TIMESTAMPDIFF(
+        MINUTE,
+        ls.start_time,
+        ls.end_time
+        )
+        ),
+        TIMESTAMPDIFF(
+        MINUTE,
+        li.start_time,
+        DATE_ADD(li.end_time, INTERVAL '1' DAY)
+        ) / 3
+        ) AS leaveTime,
     ai.approval_status AS approvalStatus,
 	ap.user_id AS uid
     FROM
@@ -370,8 +382,20 @@
     li.crt_time AS crtTime,
     li.start_time AS startTime,
     li.end_time AS endTime,
-     IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
-        TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time))AS leaveTime,
+     IFNULL(
+        sum(
+        TIMESTAMPDIFF(
+        MINUTE,
+        ls.start_time,
+        ls.end_time
+        )
+        ),
+        TIMESTAMPDIFF(
+        MINUTE,
+        li.start_time,
+        DATE_ADD(li.end_time, INTERVAL '1' DAY)
+        ) / 3
+        ) AS leaveTime,
     ai.approval_status AS approvalStatus
     FROM
 	leave_info li
