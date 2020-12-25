@@ -37,6 +37,8 @@ public class BusinessConstants {
   public static final Byte MEDICAL_TYPE = 2;
   /** 其他类型 */
   public static final Byte OTHER_TYPE = 3;
+  /** 公司端的组织id*/
+  public static final Integer COMPANY_ORGID = 21;
   /*************************** 默认支付方式 ****************************/
   /** 现金支付方式名称 */
   public static final String ACCOUNT_ITEM_OF_CASH = "现金";
