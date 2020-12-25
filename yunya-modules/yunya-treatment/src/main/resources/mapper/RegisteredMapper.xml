@@ -96,4 +96,35 @@
             </if>
         </where>
     </select>
+
+    <!-- 根据预约ID列表查询挂号信息列表 -->
+    <select id="registeredInfoDetails" resultType="com.yunya.feign.treatment.domain.vo.RegisteredVO">
+        select
+            id,
+            org_id as orgId,
+            patient_id as patientId,
+            dentist_id as dentistId,
+            appointment_id as appointmentId,
+            assistant_id as assistantId,
+            dept_room_id as deptRoomId,
+            reg_time as regTime,
+            first_visit as firstVisit,
+            status,
+            remark,
+            inservice,
+            crt_id as crtId,
+            crt_name as crtName,
+            crt_time as crtTime
+        from registered
+        <where>
+            id in
+            <foreach collection="ids" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </where>
+    </select>
+
+    <select id="findRegisteredByIds" resultType="com.yunya.feign.treatment.domain.vo.RegisteredVO">
+
+    </select>
 </mapper>

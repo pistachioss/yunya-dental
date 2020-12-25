@@ -44,6 +44,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
+import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
+
 /**
  * 描述:
  *
@@ -66,11 +69,27 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
      * @param employeeScheduleForm
      */
     public int create(EmployeeScheduleForm employeeScheduleForm) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+//        String dateString = simpleDateFormat.format(employeeScheduleForm.getWorkDate());
+        String nowString = simpleDateFormat.format(new Date());
+        Date datework = null;
+        Date now = new Date();
+        try {
+            datework = simpleDateFormat.parse(employeeScheduleForm.getWorkDate());
+            now = simpleDateFormat.parse(nowString);
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
+        if (now.before(datework)) {
+
+        }else{
+            throw new ClientServiceException("不能排当天及以前的班", INSERT_MODEL);
+        }
         // 判断排班是否冲突
         if (!isExist(employeeScheduleForm)) {
             throw new ClientServiceException("排班冲突", OperationCodeConstants.SAME_DATA_EXIST);
         }
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
         Date date = new Date();
         try {
             date = simpleDateFormat.parse(employeeScheduleForm.getWorkDate());

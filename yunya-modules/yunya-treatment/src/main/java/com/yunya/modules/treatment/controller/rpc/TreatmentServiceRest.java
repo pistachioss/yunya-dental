@@ -1,6 +1,7 @@
 package com.yunya.modules.treatment.controller.rpc;
 
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
@@ -348,5 +349,16 @@ public class TreatmentServiceRest {
   public List<DebtAmountModel> selectDebtAmountList(@RequestBody List<Integer> patientIds) {
     List<DebtAmountModel> debtAmountModels = billRecordBiz.selectDebtAmountList(patientIds);
     return debtAmountModels;
+  }
+
+  /**
+   * 通过挂号ID批量查询挂号信息
+   *
+   * @param registeredIds 挂号ID
+   * @return 返回挂号信息集合
+   */
+  @RequestMapping(value = "/patient/registered/list", method = RequestMethod.POST)
+  List<RegisteredVO> registeredInfoDetails(@RequestBody List<Integer> registeredIds) {
+    return registeredBiz.registeredInfoDetails(registeredIds);
   }
 }

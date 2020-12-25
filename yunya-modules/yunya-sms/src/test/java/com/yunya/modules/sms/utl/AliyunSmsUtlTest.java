@@ -48,4 +48,10 @@ public class AliyunSmsUtlTest {
         templateParamJson.add(null);
         AliyunSmsUtl.sendBatchSms(phoneNumberJson,signNameJson,"SMS_206564748",templateParamJson);
     }
+
+    @Test
+    public void testSmsQueryDetails() {
+        //{"TotalCount":0,"Message":"OK","RequestId":"4EFDDF8C-6C07-49E3-8065-37772B4A5E9E","Code":"OK","SmsSendDetailDTOs":{"SmsSendDetailDTO":[]}}
+        System.out.println(AliyunSmsUtl.querySendDetails("16657115000", "20201224", "1", "50", null));
+    }
 }

@@ -165,9 +165,9 @@
     <!-- 根据就诊记录ID列表查询就诊记录列表 -->
     <select id="selectByIds" resultMap="BaseResultExtendMap">
         select
-        tr.*,
+        tr.*,r.assistant_id as regAssistantId,
         date_format(a.treat_start_time,'%Y-%m-%d') as last_treatment_date
-        from treatment_record tr left join treatment_record a on a.patient_id = tr.patient_id
+        from treatment_record tr left join treatment_record a on a.patient_id = tr.patient_id left join registered r on r.id = tr.registered_id
         where
         tr.id in
         <foreach collection="ids" item="item" index="index" open="(" close=")" separator=",">

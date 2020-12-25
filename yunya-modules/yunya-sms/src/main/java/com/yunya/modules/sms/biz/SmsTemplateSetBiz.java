@@ -30,8 +30,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
 
@@ -51,8 +49,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
     private SmsSignatureSetBiz smsSignatureSetBiz;
     @Autowired
     private SmsAutosendEventBiz smsAutosendEventBiz;
-    @Autowired
-    private ScheduledExecutorService scheduledExecutorService;
     /** 延迟2.5小时 */
     private final int LATER_TIME = 150;
 
@@ -89,17 +85,19 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
             || !SmsApprovalStatusEnum.APPROVAL_PASS.getCode().equals(smsSignatureSetVO.getSignStatus())) {
             throw new ClientServiceException("短信签名暂不可用！", PARAMETERS_IS_ILLEGAL);
         }
-        checkSense(smsTemplateSetModel.getSense(), smsTemplateSetModel.getTemplateItem());
+        byte type = checkSense(smsTemplateSetModel.getSense(), smsTemplateSetModel.getTemplateItem());
         String templateName = smsTemplateSetModel.getTemplateName();
         uniqueTemplateName(templateName, null);
         JSONObject template = getTemplate(smsTemplateSetModel.getTemplateContent(),
                 smsTemplateSetModel.getTemplateItem(), smsSignatureSetVO.getSignName());
-        Integer orgId = Integer.parseInt(BaseContextHandler.getOrgId());
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         SmsTemplateSet smsTemplateSet = new SmsTemplateSet();
         BeanUtil.copyProperties(smsTemplateSetModel, smsTemplateSet);
-        smsTemplateSet.setTemplateType(SmsTypeEnum.SMS_NOTIFY.getCode());
+        smsTemplateSet.setTemplateType(type);
         smsTemplateSet.setTemplateStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
-        smsTemplateSet.setOrgId(orgId);
+        smsTemplateSet.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+        smsTemplateSet.setCrtId(userId);
+        smsTemplateSet.setUptId(userId);
         smsTemplateSet.setCrtUser(BaseContextHandler.getName());
         smsTemplateSet.setTemplateLength(template.getInteger("length"));
         int count = mapper.insert(smsTemplateSet);
@@ -111,23 +109,6 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         smsTemplateSet.setTemplateContent(null);
         smsTemplateSet.setTemplateCode(result.getString("TemplateCode"));
         updateSelectiveById(smsTemplateSet);
-        asyncStatus(smsTemplateSet);
-    }
-
-    /**
-     * 两小时后同步一次阿里云短信的模板状态
-     * @param smsTemplateSet
-     */
-    private void asyncStatus(SmsTemplateSet smsTemplateSet) {
-        scheduledExecutorService.schedule(()->{
-            JSONObject query = AliyunSmsUtl.querySmsTemplate(smsTemplateSet.getTemplateCode());
-            String code = query.getString("Code");
-            Byte templateStatus = query.getByte("TemplateStatus");
-            if ("OK".equals(code) && !SmsApprovalStatusEnum.APPROVALING.getCode().equals(templateStatus)) {
-                smsTemplateSet.setTemplateStatus(templateStatus);
-                updateSelectiveById(smsTemplateSet);
-            }
-        }, LATER_TIME, TimeUnit.MINUTES);
     }
 
     /**
@@ -136,17 +117,21 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      * @param sense
      * @param templateItem
      */
-    private void checkSense(Byte sense, String templateItem) {
-        if (StringHelper.isNotEmpty(templateItem)
-                && (SmsSenseEnum.RETRIEVE_PWD_VERIFYCODE.getCode().equals(sense)
-                ||SmsSenseEnum.DEVICE_BINDING_VERIFYCODE.getCode().equals(sense))) {
-            String[] items = templateItem.split(",");
-            for (int i = 0; i < items.length; i++) {
-                if (!items[i].equals(SmsTemplateItemEnum.VERIFY_CODE.getCode()+"")) {
-                    throw new ClientServiceException(SmsSenseEnum.getValue(sense) + "的模板参数只能是验证码！", PARAMETERS_IS_ILLEGAL);
+    private byte checkSense(Byte sense, String templateItem) {
+        byte type = SmsTypeEnum.SMS_NOTIFY.getCode();
+        if (SmsSenseEnum.RETRIEVE_PWD_VERIFYCODE.getCode().equals(sense)
+                ||SmsSenseEnum.DEVICE_BINDING_VERIFYCODE.getCode().equals(sense)) {
+            type = SmsTypeEnum.VERIFY_CODE.getCode();
+            if (StringHelper.isNotEmpty(templateItem)) {
+                String[] items = templateItem.split(",");
+                for (int i = 0; i < items.length; i++) {
+                    if (!items[i].equals(SmsTemplateItemEnum.VERIFY_CODE.getCode()+"")) {
+                        throw new ClientServiceException(SmsSenseEnum.getValue(sense) + "的模板参数只能是验证码！", PARAMETERS_IS_ILLEGAL);
+                    }
                 }
             }
         }
+        return type;
     }
 
     /**
@@ -176,12 +161,13 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
             Map<String, Integer> repeat = new HashMap<>(items.length);
             for (int i = 0; i < items.length; i++) {
                 String code = items[i];
+                String action = SmsTemplateItemEnum.getAction(code);
                 Integer reNum = repeat.get(code);
                 if (reNum == null) {
                     reNum = 0;
-                    template.append("${code").append(code).append("}");
+                    template.append("${").append(action).append("}");
                 } else {
-                    template.append("${re").append(reNum).append("code").append(code).append("}");
+                    template.append("${re").append(reNum).append(action).append("}");
                 }
                 repeat.put(code, ++reNum);
                 if (i+1 < contents.length) {
@@ -251,8 +237,8 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (SmsApprovalStatusEnum.APPROVALING.getCode().equals(smsTemplateSetVO.getTemplateStatus())) {
             throw new ClientServiceException("短信模板正在审核", OPERATION_NOT_ALLOW);
         }
-        checkSense(smsTemplateSetForm.getSense(), smsTemplateSetForm.getTemplateItem());
-        boolean needApproval = needApproval(smsTemplateSetForm, smsTemplateSetVO);
+        byte type = checkSense(smsTemplateSetForm.getSense(), smsTemplateSetForm.getTemplateItem());
+        boolean needApproval = needApproval(smsTemplateSetForm, smsTemplateSetVO, type);
         JSONObject template = getTemplate(smsTemplateSetForm.getTemplateContent(),
                 smsTemplateSetForm.getTemplateItem(), smsTemplateSetVO.getSignName());
         uniqueTemplateName(smsTemplateSetForm.getTemplateName(), id);
@@ -262,12 +248,12 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (needApproval) {
             smsTemplateSet.setTemplateStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
         }
+        smsTemplateSet.setTemplateType(type);
         smsTemplateSet.setTemplateLength(template.getInteger("length"));
         updateSelectiveById(smsTemplateSet);
         if (needApproval) {
             smsTemplateSet.setTemplateContent(template.getString("template"));
             AliyunSmsUtl.modifySmsTemplate(smsTemplateSet);
-            asyncStatus(smsTemplateSet);
         }
     }
 
@@ -278,7 +264,7 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
      * @param smsTemplateSetVO
      * @return
      */
-    private boolean needApproval(SmsTemplateSetForm smsTemplateSetForm, SmsTemplateSetVO smsTemplateSetVO) {
+    private boolean needApproval(SmsTemplateSetForm smsTemplateSetForm, SmsTemplateSetVO smsTemplateSetVO, byte type) {
         boolean needApproval = false;
         String templateContent = smsTemplateSetVO.getTemplateContent();
         String remark = smsTemplateSetVO.getRemark();
@@ -287,7 +273,8 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (!templateContent.equals(smsTemplateSetForm.getTemplateContent())
             || !templateName.equals(smsTemplateSetForm.getTemplateName())
             || !remark.equals(smsTemplateSetForm.getRemark())
-            || !templateItem.equals(smsTemplateSetForm.getTemplateItem())) {
+            || !templateItem.equals(smsTemplateSetForm.getTemplateItem())
+            || !smsTemplateSetVO.getTemplateType().equals(type)) {
             needApproval = true;
         }
         return needApproval;
@@ -401,22 +388,24 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         String templateStatus = smsTemplateReportVO.getTemplate_status();
         SmsTemplateSetQueryForm queryForm = new SmsTemplateSetQueryForm();
         queryForm.setTemplateCode(templateCode);
-        queryForm.setTemplateStatus(SmsApprovalStatusEnum.APPROVALING.getCode());
         queryForm.setWhetherPage(false);
         List<SmsTemplateSetVO> smsTemplateSetList = findSmsTemplateSetList(queryForm);
+        if (smsTemplateSetList==null || smsTemplateSetList.isEmpty()) {
+            return;
+        }
         /**
          * approving：审核中。
          * approved：审核通过。
          * rejected：审核未通过。
          */
         SmsTemplateSetVO smsTemplateSetVO = smsTemplateSetList.get(0);
-        if (!"approving".equals(templateStatus)) {
-            Byte status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
-            if ("rejected".equals(templateStatus)) {
-                status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
-            }
-            smsTemplateSetVO.setTemplateStatus(status);
-            uptSelectiveById(smsTemplateSetVO);
+        Byte status = SmsApprovalStatusEnum.APPROVALING.getCode();
+        if ("approved".equals(templateStatus)) {
+            status = SmsApprovalStatusEnum.APPROVAL_PASS.getCode();
+        } else if ("rejected".equals(templateStatus)) {
+            status = SmsApprovalStatusEnum.APPROVAL_FAIL.getCode();
         }
+        smsTemplateSetVO.setTemplateStatus(status);
+        uptSelectiveById(smsTemplateSetVO);
     }
 }

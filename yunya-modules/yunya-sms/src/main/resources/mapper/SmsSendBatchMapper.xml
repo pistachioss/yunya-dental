@@ -27,6 +27,11 @@
         (null,#{orgId},#{sendNum},#{templateId},#{type},#{crtId},#{crtUser},#{crtTime},#{uptId},#{uptTime})
   </insert>
 
+
+  <update id="updateById">
+    update sms_send_batch set `biz_id`=#{bizId},`upt_id`= #{uptId}, `upt_time`= #{uptTime} where id = #{id}
+  </update>
+
   <select id="findSmsSendBatchList" resultType="com.yunya.feign.sms.vo.SmsSendBatchVO">
     select
         t.id,

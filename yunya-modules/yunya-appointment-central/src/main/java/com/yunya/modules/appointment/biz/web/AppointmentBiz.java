@@ -1682,10 +1682,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
      */
     public PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentList(
             AppointmentCurrentListQuery queryForm) {
-        if (queryForm.getWhetherPage()) {
-            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
-        }
-        List<AppointmentUnDonePatientInfoVO> result = null;
+        PageInfo<AppointmentUnDonePatientInfoVO> result = null;
 /*        Integer dentistId = queryForm.getDentistId();
         String redisKey = RedisConstants.setKey(RedisConstants.REDIS_KEY_APPOINTMENT_UN_DONE,
                 queryForm.getCurrentDate(),
@@ -1727,14 +1724,17 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         log.info("====================================================================================================");
         // 从数据库中查询
         result = this.findUnComingAppointmentListFromDB(queryForm);
-        return new PageInfo<>(result);
+        return result;
     }
 
     /**
      * 从数据库中查询预约未到患者相关信息
      * @param queryForm 查询参数封装
      */
-    private List<AppointmentUnDonePatientInfoVO> findUnComingAppointmentListFromDB(AppointmentCurrentListQuery queryForm) {
+    private PageInfo<AppointmentUnDonePatientInfoVO> findUnComingAppointmentListFromDB(AppointmentCurrentListQuery queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(),queryForm.getPageSize());
+        }
         List<AppointmentUnDonePatientInfoVO> resultList =
                 mapper.selectAppointmentUnDonePatientInfoList(queryForm);
         if (StringHelper.isNotEmpty(resultList)) {
@@ -1769,7 +1769,7 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
                 }
             });
         }*/
-        return resultList;
+        return new PageInfo<>(resultList);
     }
 
     /**
@@ -2603,93 +2603,75 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
             String code2 = null;
             String code3 = null;
             String code4 = null;
-            if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode())!=-1
-                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode())!=-1
-                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode())!=-1) {
+            if (templateItem.indexOf(SmsTemplateItemEnum.CLINIC_NAME.getCode()+"")!=-1
+                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_PHONE.getCode()+"")!=-1
+                ||templateItem.indexOf(SmsTemplateItemEnum.CLINIC_ADDRESS.getCode()+"")!=-1) {
                 MedicalOrganizationInfoVO medicalOrganizationInfoVO = remoteSystemServiceFeign.clinicExtInfoByCompanyId(orgId);
                 code2 = medicalOrganizationInfoVO.getAbbreviation();
                 code3 = medicalOrganizationInfoVO.getTel();
                 code4 = medicalOrganizationInfoVO.getAddress();
             }
             String[] items = templateItem.split(",");
-            Map<String, Integer> repeat = new HashMap<>();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             for (AppointmentSmsSendRecordModel model : models) {
                 JSONObject object = new JSONObject();
+                Map<String, Integer> repeat = new HashMap<>();
                 for (String item : items) {
                     Integer reNum = repeat.get(item);
-                    String key = "";
+                    String key = SmsTemplateItemEnum.getAction(item);
                     if (reNum == null) {
                         reNum = 0;
-                        key = "code" + item;
                     } else {
-                        key = "re" + reNum + "code" + item;
+                        key = "re" + reNum + key;
                     }
                     repeat.put(item, ++reNum);
-                    switch (item) {
-                        case "1" : {// 患者姓名
-                            object.put(key, model.getSendObject());
-                            break;
-                        }
-                        case "2": { // 诊所名称
-                            object.put(key,code2);
-                            break;
-                        }
-                        case "3": { // 诊所电话
-                            object.put(key,code3);
-                            break;
-                        }
-                        case "4": { // 诊所地址
-                            object.put(key,code4);
-                            break;
-                        }
-                        case "5": { // 预约医生姓名
-                            object.put(key, model.getDentistName());
-                            break;
-                        }
-                        case "6": { // 预约时间
-                            String code7 = model.getAppointDate() + model.getAppointTime();
-                            object.put(key, code7);
-                            break;
-                        }
-                        case "7": { // 先生/女士/小朋友
-                            Integer age = model.getAge();
-                            String code7 = "先生";
-                            Integer gener = model.getGender();
-                            if (age != null) {
-                                code7 = "小朋友";
-                                if (age>15 && gener!=null && gener==1) {
-                                    code7 = "女生";
-                                }
-                            } else {
-                                if (gener!=null && gener==1) {
-                                    code7 = "女生";
-                                }
+                    Integer code = Integer.parseInt(item);
+                    if (SmsTemplateItemEnum.PATIENT_NAME.getCode().equals(code)) {// 患者姓名
+                        object.put(key, model.getSendObject());
+                    } else if (SmsTemplateItemEnum.CLINIC_NAME.getCode().equals(code)) { // 诊所名称
+                        object.put(key,code2);
+                    } else if (SmsTemplateItemEnum.CLINIC_PHONE.getCode().equals(code)) {// 诊所电话
+                        object.put(key,code3);
+                    } else if (SmsTemplateItemEnum.CLINIC_ADDRESS.getCode().equals(code)) {// 诊所地址
+                        object.put(key,code4);
+                    } else if (SmsTemplateItemEnum.APPOINTMENT_DOCTOR.getCode().equals(code)) {// 预约医生姓名
+                        object.put(key, model.getDentistName());
+                    } else if (SmsTemplateItemEnum.APPOINTMENT.getCode().equals(code)) { // 预约时间
+                        String code7 = model.getAppointDate() + model.getAppointTime();
+                        object.put(key, code7);
+                    } else if (SmsTemplateItemEnum.APPELLATION.getCode().equals(code)) { // 先生/女士/小朋友
+                        Integer age = model.getAge();
+                        String code7 = "先生";
+                        Integer gener = model.getGender();
+                        if (age != null) {
+                            code7 = "小朋友";
+                            if (age>15 && gener!=null && gener==1) {
+                                code7 = "女生";
                             }
-                            object.put(key, code7);
-                            break;
-                        }
-                        case "9": { // 上午/下午
-                            String code7 = model.getAppointDate() + " " + model.getAppointTime() + ":59";
-                            String middleStr = model.getAppointDate() + " 12:00:00";
-                            String lastStr = model.getAppointDate() + " 00:00:00";
-                            try {
-                                Date appointDateTime = sdf.parse(code7);
-                                Date middle = sdf.parse(middleStr);
-                                Date last = sdf.parse(lastStr);
-                                String code9 = "上午";
-                                if (appointDateTime.after(middle) && appointDateTime.before(last)) {
-                                    code9 = "下午";
-                                }
-                                object.put(key, code9);
-                            } catch (ParseException e) {
-                                throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+                        } else {
+                            if (gener!=null && gener==1) {
+                                code7 = "女生";
                             }
-                            break;
                         }
-                        default: { // 其他
-                            throw new ClientServiceException("模板有误，模板参数与模板适用场景不对应", OPERATION_NOT_ALLOW);
+                        object.put(key, code7);
+                    } else if (SmsTemplateItemEnum.MORNING_AFTERNOON.getCode().equals(code)) {// 上午/下午
+                        String code7 = model.getAppointDate() + " " + model.getAppointTime() + ":59";
+                        String middleStr = model.getAppointDate() + " 12:00:00";
+                        String lastStr = model.getAppointDate() + " 00:00:00";
+                        try {
+                            Date appointDateTime = sdf.parse(code7);
+                            Date middle = sdf.parse(middleStr);
+                            Date last = sdf.parse(lastStr);
+                            String code9 = "上午";
+                            if (appointDateTime.after(middle) && appointDateTime.before(last)) {
+                                code9 = "下午";
+                            }
+                            object.put(key, code9);
+                        } catch (ParseException e) {
+                            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
                         }
+                    } else { // 其他
+                        throw new ClientServiceException("模板有误，模板参数与模板适用场景不匹配", OPERATION_NOT_ALLOW);
                     }
                 }
                 model.setTemplateParam(object);

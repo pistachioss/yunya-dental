@@ -11,32 +11,42 @@ import java.util.*;
  * @since: 1.0.0
  */
 public enum SmsTemplateItemEnum {
-    VERIFY_CODE(0, "验证码", ""),
-    PATIENT_NAME(1, "患者姓名", ""),
-    CLINIC_NAME(2, "诊所名称", ""),
-    CLINIC_PHONE(3, "诊所电话", ""),
-    CLINIC_ADDRESS(4, "诊所地址", ""),
-    APPOINTMENT_DOCTOR(5, "预约医生姓名", ""),
-    APPOINTMENT(6, "预约时间", ""),
-    MR_MS_CHILDREN(7, "先生/女士/小朋友", ""),
-    TODAY_TOMORROW(8, "今天/明天", ""),
-    ONDUTY_OFFDUTY(9, "上午/下午", ""),
-    MEMBER_RECHARGE_AMOUNT(10, "会员充值金额", ""),
-    MEMBER_SPENDING_AMOUNT(11, "会员消费金额", ""),
-    MEMBER_SURPLUS_AMOUNT(12, "会员剩余金额", ""),
-    MEMBER_CARD_NUMBER(13, "会员卡号", ""),
-    PRE_CHARGE_AMOUNT(14, "预付款充值金额", ""),
-    PRE_CONSUM_AMOUNT(15, "预付款消费金额", ""),
-    PRE_SURPLUS_AMOUNT(16, "预付款剩余金额", ""),
-    PRE_ACCOUNT(17, "预付款账号", ""),
-    PRODUCT_MODEL(18, "产品型号", ""),
-    PRODUCT_NAME(19, "产品名称", ""),
-    COUPON_CARD_NUMBER(20, "卡券卡号", ""),
-    COUPON_CARD_SECRET(21, "卡券卡密", "");
+    VERIFY_CODE(0, "验证码", "code"),
+    PATIENT_NAME(1, "患者姓名", "patient_name"),
+    CLINIC_NAME(2, "诊所名称", "clinic_name"),
+    CLINIC_PHONE(3, "诊所电话", "clinic_phone"),
+    CLINIC_ADDRESS(4, "诊所地址", "clinic_address"),
+    APPOINTMENT_DOCTOR(5, "预约医生姓名", "appointment_doctor"),
+    APPOINTMENT(6, "预约时间", "appointment"),
+    APPELLATION(7, "先生/女士/小朋友", "appellation"),
+    TODAY_TOMORROW(8, "今天/明天", "today_tomorrow"),
+    MORNING_AFTERNOON(9, "上午/下午", "morning_afternoon"),
+    MEMBER_RECHARGE_AMOUNT(10, "会员充值金额", "member_recharge_amount"),
+    MEMBER_SPENDING_AMOUNT(11, "会员消费金额", "member_spending_amount"),
+    MEMBER_REMAINING_AMOUNT(12, "会员剩余金额", "member_remaining_amount"),
+    MEMBER_CARD_NUMBER(13, "会员卡号", "member_card_number"),
+    PREPAID_RECHARGE_AMOUNT(14, "预付款充值金额", "prepaid_recharge_amount"),
+    PREPAID_CONSUMPTION_AMOUNT(15, "预付款消费金额", "prepaid_consumption_amount"),
+    PREPAID_REMAINING_AMOUNT(16, "预付款剩余金额", "prepaid_remaining_amount"),
+    PREPAID_ACCOUNT(17, "预付款账号", "prepaid_account"),
+    PRODUCT_MODEL(18, "产品型号", "product_model"),
+    PRODUCT_NAME(19, "产品名称", "product_name"),
+    COUPON_CARD_NUMBER(20, "卡券卡号", "coupon_card_number"),
+    COUPON_CARD_SECRET(21, "卡券卡密", "coupon_card_secret");
 
     private final Integer code;
     private final String value;
     private final String action;
+
+    private static final Map<String, String> actions = new HashMap<>();
+
+    static {
+        synchronized (SmsTemplateItemEnum.class) {
+            for (SmsTemplateItemEnum value : values()) {
+                actions.put(value.getCode() + "", value.getAction());
+            }
+        }
+    }
 
     SmsTemplateItemEnum(Integer code, String value, String action) {
         this.code = code;
@@ -63,8 +73,13 @@ public enum SmsTemplateItemEnum {
         return code;
     }
 
+
     public String getAction() {
         return action;
+    }
+
+    public static String getAction(String code) {
+        return actions.get(code);
     }
 
     public static String getValue(Integer code) {

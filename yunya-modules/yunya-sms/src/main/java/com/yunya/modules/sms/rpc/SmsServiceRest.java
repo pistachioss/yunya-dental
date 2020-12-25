@@ -3,7 +3,9 @@ package com.yunya.modules.sms.rpc;
 import com.yunya.feign.sms.model.SmsBatchSendRecordModel;
 import com.yunya.feign.sms.model.SmsCommonSendRecordModel;
 import com.yunya.feign.sms.model.SmsSendRecordModel;
+import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.modules.sms.biz.SmsAutosendEventBiz;
 import com.yunya.modules.sms.biz.SmsSendRecordBiz;
@@ -14,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotBlank;
 import java.util.List;
 
 /**
@@ -44,6 +45,7 @@ public class SmsServiceRest {
      * @param models 短信发送添加模型
      * @return
      */
+    @CurrentUser
     @RequestMapping(value = "/sms/batchSendModels/{templateId}", method = RequestMethod.POST)
     public ResponseResult<T> batchSendModels(@PathVariable(value = "templateId") Integer templateId,
                              @RequestBody @Validated List<? extends SmsCommonSendRecordModel> models) {
@@ -56,6 +58,7 @@ public class SmsServiceRest {
      * @param batchSendRecordModel 短信发送添加模型
      * @return
      */
+    @CurrentUser
     @RequestMapping(value = "/sms/batchSend", method = RequestMethod.POST)
     public ResponseResult<T> batchSend(@RequestBody @Validated SmsBatchSendRecordModel batchSendRecordModel) {
         return smsSendRecordBiz.batchSend(batchSendRecordModel);
@@ -64,16 +67,12 @@ public class SmsServiceRest {
     /**
      * 发送短信验证码
      *
-     * @param mobile 手机号
-     * @param verifyCode 验证码
-     * @param eventCode 事件编码
+     * @param smsVerifyCodeModel
      * @return
      */
     @RequestMapping(value = "/sms/sendVerifyCode", method = RequestMethod.POST)
-    public ResponseResult<T> sendVerifyCode(@RequestParam(value = "mobile") @NotBlank String mobile,
-                                            @RequestParam(value = "verifyCode") @NotBlank String verifyCode,
-                                            @RequestParam(value = "eventCode") @NotBlank String eventCode) {
-        return smsSendRecordBiz.sendVerifyCode(mobile, verifyCode, eventCode);
+    public ResponseResult<T> sendVerifyCode(@RequestBody @Validated SmsVerifyCodeModel smsVerifyCodeModel) {
+        return smsSendRecordBiz.sendVerifyCode(smsVerifyCodeModel);
     }
 
     /**
@@ -82,6 +81,7 @@ public class SmsServiceRest {
      * @param smsSendRecordModel 短信发送添加模型
      * @return
      */
+    @CurrentUser
     @RequestMapping(value = "/sms/sendRecord", method = RequestMethod.POST)
     public ResponseResult<T> sendRecord(@RequestBody @Validated SmsSendRecordModel smsSendRecordModel) {
         return smsSendRecordBiz.sendRecord(smsSendRecordModel);

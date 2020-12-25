@@ -40,6 +40,12 @@ public class SmsSendBatchBiz extends BaseBiz<SmsSendBatchMapper, SmsSendBatch> {
         return mapper.findSmsSendBatchList(queryForm);
     }
 
+    public int insertEntity(Integer orgId, Integer templateId, Byte type, Integer sendNum) {
+        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        String name = BaseContextHandler.getName();
+        return insertEntity(orgId, templateId, type, sendNum, userId, name);
+    }
+
     /**
      * 添加并返回将主键id装配到实体上
      *
@@ -49,15 +55,14 @@ public class SmsSendBatchBiz extends BaseBiz<SmsSendBatchMapper, SmsSendBatch> {
      * @param sendNum 发送人数
      * @return
      */
-    public int insertEntity(Integer orgId, Integer templateId, Byte type, Integer sendNum) {
+    public int insertEntity(Integer orgId, Integer templateId, Byte type, Integer sendNum, Integer userId, String name) {
         Date now = new Date(System.currentTimeMillis());
-        Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
         SmsSendBatch smsSendBatch = new SmsSendBatch();
         smsSendBatch.setOrgId(orgId);
         smsSendBatch.setTemplateId(templateId);
         smsSendBatch.setCrtId(userId);
         smsSendBatch.setCrtTime(now);
-        smsSendBatch.setCrtUser(BaseContextHandler.getName());
+        smsSendBatch.setCrtUser(name);
         smsSendBatch.setUptId(userId);
         smsSendBatch.setUptTime(now);
         smsSendBatch.setType(type);
@@ -67,5 +72,12 @@ public class SmsSendBatchBiz extends BaseBiz<SmsSendBatchMapper, SmsSendBatch> {
             throw new ClientServiceException("插入数据失败", OperationCodeConstants.INSERT_MODEL);
         }
         return smsSendBatch.getId();
+    }
+
+    public void uptSelectiveById(SmsSendBatch smsSendBatch) {
+        Date now = new Date(System.currentTimeMillis());
+        smsSendBatch.setUptTime(now);
+        smsSendBatch.setUptId(-999);
+        mapper.updateById(smsSendBatch);
     }
 }

@@ -33,6 +33,9 @@
       <if test="queryForm.id != null">
         and t.id = #{queryForm.id}
       </if>
+      <if test="queryForm.templateId != null">
+        and t.template_id = #{queryForm.templateId}
+      </if>
       <if test="queryForm.status != null">
         and t.status = #{queryForm.status}
       </if>

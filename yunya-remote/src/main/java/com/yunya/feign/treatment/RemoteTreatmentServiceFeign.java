@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment;
 
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -254,4 +255,13 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/patient/debt/amount", method = RequestMethod.POST)
   List<DebtAmountModel> findDebtAmountList(@RequestBody List<Integer> patientIds);
+
+  /**
+   * 通过挂号ID批量查询挂号信息
+   *
+   * @param registeredIds 挂号ID
+   * @return 返回挂号信息集合
+   */
+  @RequestMapping(value = "/rpc/patient/registered/list", method = RequestMethod.POST)
+  List<RegisteredVO> registeredInfoDetails(@RequestBody List<Integer> registeredIds);
 }

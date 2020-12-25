@@ -7,6 +7,7 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.model.RegisteredModel;
@@ -26,10 +27,12 @@ import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.mapper.RegisteredMapper;
 import com.yunya.modules.treatment.mapper.TreatmentRecordMapper;
+import io.swagger.models.auth.In;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -429,4 +432,93 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
     return new RegisteredVO();
   }
 
+  /**
+   * 根据挂号ID查询挂号信息
+   * @param ids 挂号信息
+   * @return
+   */
+  public List<RegisteredVO> registeredInfoDetails(List<Integer> ids) {
+    if (StringHelper.isEmpty(ids)) {
+      return new ArrayList<>();
+    }
+    List<RegisteredVO> registeredVOS = mapper.registeredInfoDetails(ids);
+    List<Integer> dentistIds = new ArrayList<>();
+    List<Integer> assistantIds = new ArrayList<>();
+    List<Integer> deptRoomIds = new ArrayList<>();
+    List<Integer> patientIds = new ArrayList<>();
+    registeredVOS.forEach(registeredVO -> {
+      Integer dentistId = registeredVO.getDentistId();
+      if (dentistId != null) {
+        dentistIds.add(dentistId);
+      }
+      Integer assistantId = registeredVO.getAssistantId();
+      if (assistantId != null) {
+        assistantIds.add(assistantId);
+      }
+      Integer deptRoomId = registeredVO.getDeptRoomId();
+      if (deptRoomId != null) {
+        deptRoomIds.add(deptRoomId);
+      }
+      Integer patientId = registeredVO.getPatientId();
+      if (patientId != null) {
+        patientIds.add(patientId);
+      }
+    });
+    // 查询医生信息
+    List<SysUserInfoDetail> dentistInfoList = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+    // 查询助手信息
+    List<SysUserInfoDetail> assistantInfoList = systemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantIds);
+    // 查询科室信息
+    List<DepartmentRoom> deptRoomInfoList = systemServiceFeign.findDepartmentRoomByIds(deptRoomIds);
+    // 查询患者信息
+    List<PatientTotalInfoVo> patientTotalInfoList = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+    // 注入医生，助手，科室信息
+    registeredVOS.forEach(registeredVO -> {
+      // 设置组织信息
+      registeredVO.setOrgId(registeredVO.getOrgId());
+      // 注入医生信息
+      if (StringHelper.isNotEmpty(dentistInfoList)) {
+        Integer dentistId = registeredVO.getDentistId();
+        List<SysUserInfoDetail> dentistInfos = dentistInfoList.stream().filter(sysUserInfoDetail -> dentistId.equals(sysUserInfoDetail.getUserId())).collect(Collectors.toList());
+        if (StringHelper.isNotEmpty(dentistInfos)) {
+          SysUserInfoDetail userInfoDetail = dentistInfos.get(0);
+          registeredVO.setDentistName(userInfoDetail.getName());
+        }
+      }
+      // 注入助手信息
+      if (StringHelper.isNotEmpty(assistantInfoList)) {
+        Integer assistantId = registeredVO.getAssistantId();
+        if (assistantId != null) {
+          List<SysUserInfoDetail> assistantInfos = assistantInfoList.stream().filter(sysUserInfoDetail -> assistantId.equals(sysUserInfoDetail.getUserId())).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(assistantInfos)) {
+            SysUserInfoDetail userInfoDetail = assistantInfos.get(0);
+            registeredVO.setAssistantName(userInfoDetail.getName());
+          }
+        }
+      }
+      // 注入科室信息
+      if (StringHelper.isNotEmpty(deptRoomInfoList)) {
+        Integer deptRoomId = registeredVO.getDeptRoomId();
+        if (deptRoomId != null) {
+          List<DepartmentRoom> departmentRooms = deptRoomInfoList.stream().filter(departmentRoom -> deptRoomId.equals(departmentRoom.getId())).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(departmentRooms)) {
+            DepartmentRoom departmentRoom = departmentRooms.get(0);
+            registeredVO.setAssistantName(departmentRoom.getName());
+          }
+        }
+      }
+      // 设置患者信息，年龄性别
+      if (StringHelper.isNotEmpty(patientTotalInfoList)) {
+        Integer patientId = registeredVO.getPatientId();
+        List<PatientTotalInfoVo> patientTotalInfoVos = patientTotalInfoList.stream().filter(patientTotalInfoVo -> patientTotalInfoVo.getId().equals(patientId)).collect(Collectors.toList());
+        if (StringHelper.isNotEmpty(patientTotalInfoVos)) {
+          PatientTotalInfoVo patientTotalInfoVo = patientTotalInfoVos.get(0);
+          registeredVO.setPatientName(patientTotalInfoVo.getName());
+          registeredVO.setAge(patientTotalInfoVo.getAge());
+          registeredVO.setGender(patientTotalInfoVo.getGender());
+        }
+      }
+    });
+    return registeredVOS;
+  }
 }
