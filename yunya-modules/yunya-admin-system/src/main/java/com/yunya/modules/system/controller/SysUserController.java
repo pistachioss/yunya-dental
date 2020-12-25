@@ -3,6 +3,7 @@ package com.yunya.modules.system.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -164,9 +165,9 @@ public class SysUserController {
    * @param form 忘记密码表单
    * @return 返回状态
    */
+  @IgnoreUserToken
   @ApiOperation("忘记密码")
   @PostMapping("/forget/password")
-  @CurrentUser
   public ResponseResult forgetPassword(@RequestBody @Validated ForgetPasswordForm form) {
     return sysUserBiz.forgetPassword(form);
   }
