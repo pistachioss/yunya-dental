@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -36,7 +37,12 @@ public class WorkGoalQuery extends PageQuery implements Serializable {
   @ApiModelProperty(value = "结束时间", required = true)
   @NotBlank(message = "结束时间不能为空！")
   private String endDate;
+  /** 数据所属类型 */
+  @ApiModelProperty(value = "数据所属类型;0-组织，1-个人", required = true)
+  @NotNull(message = "数据所属类型不能为空！")
+  private Byte belongType;
   /** 门诊ID列表 */
-  @ApiModelProperty("门诊ID列表")
-  private Integer[] orgIds;
+  @ApiModelProperty(value = "数据所属ID列表（门诊ID或用户ID）", required = true)
+  @NotEmpty(message = "诊所ID不能为空！")
+  private Integer[] belongIds;
 }

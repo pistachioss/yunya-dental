@@ -2,6 +2,8 @@ package com.yunya.feign.treatment;
 
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
+import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.vo.CompletedBusinessWorkGoalVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -11,6 +13,7 @@ import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotEmpty;
@@ -33,7 +36,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据商品分类ID查询商品分类信息
    *
    * @param id 商品分类ID
-   * @return
+   * @return BaseOralTariffCategory
    */
   @RequestMapping(value = "/rpc/oral/category/{id}", method = RequestMethod.GET)
   BaseOralTariffCategory findBaseOralTariffCategoryById(@PathVariable(value = "id") Integer id);
@@ -42,7 +45,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询门诊商品分类列表
    *
    * @param queryForm 查询条件
-   * @return
+   * @return List<BaseOralTariffCategory>
    */
   @RequestMapping(value = "/rpc/oral/category/list", method = RequestMethod.POST)
   List<BaseOralTariffCategory> findBaseOralTariffCategoryList(
@@ -52,7 +55,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据商品项目ID查询商品项目信息
    *
    * @param id 商品项目ID
-   * @return
+   * @return BaseOralTariff
    */
   @RequestMapping(value = "/rpc/oral/one/{id}", method = RequestMethod.GET)
   BaseOralTariff findBaseOralTariffById(@PathVariable(value = "id") Integer id);
@@ -61,7 +64,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询商品项目列表
    *
    * @param entity 查询条件
-   * @return
+   * @return List<BaseOralTariff
    */
   @RequestMapping(value = "/rpc/oral/list", method = RequestMethod.POST)
   List<BaseOralTariff> findBaseOralTariffList(@RequestBody BaseOralTariff entity);
@@ -70,7 +73,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据价目表分类ID查询价目表分类信息
    *
    * @param id 价目表分类ID
-   * @return
+   * @return BaseTariffCategory
    */
   @RequestMapping(value = "/rpc/base/one/{id}", method = RequestMethod.GET)
   BaseTariffCategory findBaseTariffCategoryById(@PathVariable(value = "id") Integer id);
@@ -79,7 +82,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询价目表分类列表
    *
    * @param entity 查询条件
-   * @return
+   * @return List<BaseTariffCategory>
    */
   @RequestMapping(value = "/rpc/base/list", method = RequestMethod.POST)
   List<BaseTariffCategory> findBaseTariffCategoryList(@RequestBody BaseTariffCategory entity);
@@ -97,7 +100,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据价目表项目ID查询基础价目表信息
    *
    * @param id 基础价目表ID
-   * @return
+   * @return BaseTariff
    */
   @RequestMapping(value = "/rpc/tariff/{id}", method = RequestMethod.GET)
   BaseTariff findBaseTariffById(@PathVariable(value = "id") Integer id);
@@ -106,7 +109,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询价目表列表
    *
    * @param entity 查询条件
-   * @return
+   * @return List<BaseTariff>
    */
   @RequestMapping(value = "/rpc/tariff/list", method = RequestMethod.POST)
   List<BaseTariff> findBaseTariffList(@RequestBody BaseTariff entity);
@@ -115,7 +118,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询门诊价目表信息
    *
    * @param entity 门诊价目表
-   * @return
+   * @return ClinicTariff
    */
   @RequestMapping(value = "/rpc/clinic/tariff/one", method = RequestMethod.POST)
   ClinicTariff findClinicTariff(@RequestBody ClinicTariff entity);
@@ -124,7 +127,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询门诊商品信息
    *
    * @param entity 商品价目表
-   * @return
+   * @return ClinicOralTariff
    */
   @RequestMapping(value = "/rpc/clinic/oral/one", method = RequestMethod.POST)
   ClinicOralTariff findClinicOralTariff(@RequestBody ClinicOralTariff entity);
@@ -135,7 +138,7 @@ public interface RemoteTreatmentServiceFeign {
    * @param orgId 组织ID
    * @param memberType 会员类型
    * @param itemId 项目ID
-   * @return
+   * @return ClinicTariffMemberPrice
    */
   @RequestMapping(value = "/rpc/clinic/tariff/param", method = RequestMethod.POST)
   ClinicTariffMemberPrice findClinicTariffMemberPrice(
@@ -149,7 +152,7 @@ public interface RemoteTreatmentServiceFeign {
    * @param orgId 组织ID
    * @param memberType 会员类型
    * @param itemId 项目ID
-   * @return
+   * @return ClinicOralTariffMemberPrice
    */
   @RequestMapping(value = "/rpc/clinic/oral/param", method = RequestMethod.POST)
   ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(
@@ -161,7 +164,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据挂号记录ID查询挂号记录
    *
    * @param id 挂号记录ID
-   * @return
+   * @return Registered
    */
   @RequestMapping(value = "/rpc/registered/one/{id}", method = RequestMethod.GET)
   Registered findRegisteredById(@PathVariable(value = "id") Integer id);
@@ -179,7 +182,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询挂号记录列表
    *
    * @param entity 挂号记录
-   * @return
+   * @return * @param entity 挂号记录
    */
   @RequestMapping(value = "/rpc/registered/list", method = RequestMethod.POST)
   List<Registered> findRegisteredList(@RequestBody Registered entity);
@@ -188,7 +191,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据就诊记录ID查询就诊记录
    *
    * @param id 就诊记录ID
-   * @return
+   * @return TreatmentRecord
    */
   @RequestMapping(value = "/rpc/treatment/one/{id}", method = RequestMethod.GET)
   TreatmentRecord findTreatmentRecordById(@PathVariable(value = "id") Integer id);
@@ -197,7 +200,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询就诊记录信息
    *
    * @param entity 就诊记录
-   * @return
+   * @return TreatmentRecord
    */
   @RequestMapping(value = "/rpc/treatment/example", method = RequestMethod.POST)
   TreatmentRecord findTreatmentRecordByExample(@RequestBody TreatmentRecord entity);
@@ -206,7 +209,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据就诊记录ID列表查询就诊记录列表
    *
    * @param ids 就诊记录ID列表
-   * @return
+   * @return List<TreatmentRecordExtendVO>
    */
   @RequestMapping(value = "/rpc/treatment/section", method = RequestMethod.POST)
   List<TreatmentRecordExtendVO> findTreatmentRecordByIds(@RequestBody @NotEmpty Set<Integer> ids);
@@ -215,7 +218,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据条件查询就诊记录列表
    *
    * @param entity 就诊记录
-   * @return
+   * @return List<TreatmentRecord>
    */
   @RequestMapping(value = "/rpc/treatment/list", method = RequestMethod.POST)
   List<TreatmentRecord> findTreatmentRecordList(@RequestBody TreatmentRecord entity);
@@ -232,7 +235,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据开单记录ID查询开单记录
    *
    * @param id 开单记录ID
-   * @return
+   * @return OrderRecord
    */
   @RequestMapping(value = "/rpc/order/one/{id}", method = RequestMethod.GET)
   OrderRecord findOrderRecordById(@PathVariable(value = "id") Integer id);
@@ -241,7 +244,7 @@ public interface RemoteTreatmentServiceFeign {
    * 根据开单记录ID查询开单明细列表
    *
    * @param orderRecordId 开单记录ID
-   * @return
+   * @return List<OrderDetail>
    */
   @RequestMapping(value = "/rpc/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
   List<OrderDetail> findOrderDetailByOrderRecordId(
@@ -264,4 +267,14 @@ public interface RemoteTreatmentServiceFeign {
    */
   @RequestMapping(value = "/rpc/patient/registered/list", method = RequestMethod.POST)
   List<RegisteredVO> registeredInfoDetails(@RequestBody List<Integer> registeredIds);
+
+  /**
+   * 查询完成的业务目标
+   *
+   * @param query 查询条件
+   * @return CompletedBusinessWorkGoalVO
+   */
+  @RequestMapping(value = "/rpc/business/goal", method = RequestMethod.POST)
+  CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
+      @RequestBody @Validated CompletedWorkGoalQuery query);
 }

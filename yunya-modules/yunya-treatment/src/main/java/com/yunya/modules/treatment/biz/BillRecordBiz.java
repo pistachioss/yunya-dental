@@ -12,6 +12,7 @@ import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.model.*;
+import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -167,11 +168,11 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
               BigDecimal itemBenefitAmount = benefitDetailVo.getItemBenefitAmount();
               actualAmount = actualAmount.subtract(itemBenefitAmount);
               orderDetail.setActualAmount(actualAmount);
-              if(receivableAmount.compareTo(new BigDecimal(0))!= 0) {
+              if (receivableAmount.compareTo(new BigDecimal(0)) != 0) {
                 orderDetail.setDiscountRate(
-                        actualAmount
-                                .divide(receivableAmount, 4, RoundingMode.HALF_UP)
-                                .multiply(BigDecimal.valueOf(100)));
+                    actualAmount
+                        .divide(receivableAmount, 4, RoundingMode.HALF_UP)
+                        .multiply(BigDecimal.valueOf(100)));
               }
               List<ItemUseBenefitVo> benefitList = benefitDetailVo.getItemBenefitList();
               setPrivilegeCouponInfo(orderDetail, benefitList);
@@ -327,10 +328,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       refundPayDetailRecord.setRemark(memberNum);
       BigDecimal principalAmount = memberRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = memberRefundModel.getGiftAmount();
-      if (principalAmount == null){
+      if (principalAmount == null) {
         principalAmount = new BigDecimal(0);
       }
-      if (giftAmount == null){
+      if (giftAmount == null) {
         giftAmount = new BigDecimal(0);
       }
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
@@ -350,10 +351,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
       refundPayDetailRecord.setRemark(prepaymentNum);
       BigDecimal principalAmount = prepaymentRefundModel.getPrincipalAmount();
       BigDecimal giftAmount = prepaymentRefundModel.getGiftAmount();
-      if (principalAmount == null){
+      if (principalAmount == null) {
         principalAmount = new BigDecimal(0);
       }
-      if (giftAmount == null){
+      if (giftAmount == null) {
         giftAmount = new BigDecimal(0);
       }
       refundPayDetailRecord.setRefundPayAmount(principalAmount.add(giftAmount));
@@ -458,10 +459,10 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     if (null != prepaymentAccountModel) {
       BigDecimal principalAmount = prepaymentAccountModel.getPrincipalAmount();
       BigDecimal giftAmount = prepaymentAccountModel.getGiftAmount();
-      if (principalAmount == null){
+      if (principalAmount == null) {
         principalAmount = new BigDecimal(0);
       }
-      if (giftAmount == null){
+      if (giftAmount == null) {
         giftAmount = new BigDecimal(0);
       }
       totalAmount = totalAmount.add(principalAmount).add(giftAmount);
@@ -497,31 +498,52 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
 
   /**
    * 根据就诊ID查询账单和订单信息
+   *
    * @param treatmentId 就诊ID
    * @return 返回实体
    */
-  public OrderBill4AppVO findOrderAndBill4App(Integer treatmentId){
+  public OrderBill4AppVO findOrderAndBill4App(Integer treatmentId) {
     OrderBill4AppVO orderBill4AppVO = mapper.findOrderAndBill4App(treatmentId);
     if (null != orderBill4AppVO) {
-      orderBill4AppVO.getBillItems().forEach(treatmentOrderInfo4AppVO -> {
-        Integer type = treatmentOrderInfo4AppVO.getType();
-        Integer billingItemId = treatmentOrderInfo4AppVO.getBillingItemId();
-        if (type == 0) {
-          // 查询价目表
-          BaseTariffInfoVO baseTariffInfoById = baseTariffBiz.findBaseTariffInfoById(billingItemId);
-          if (null != baseTariffInfoById) {
-            treatmentOrderInfo4AppVO.setBillingItemName(baseTariffInfoById.getName());
-          }
-        } else if (type == 1) {
-          // 查询商品表
-          BaseOralTariffInfoVO baseOralTariffInfoById = baseOralTariffBiz.findBaseOralTariffInfoById(billingItemId);
-          if (null != baseOralTariffInfoById) {
-            treatmentOrderInfo4AppVO.setBillingItemName(baseOralTariffInfoById.getName());
-          }
-        }
-      });
+      orderBill4AppVO
+          .getBillItems()
+          .forEach(
+              treatmentOrderInfo4AppVO -> {
+                Integer type = treatmentOrderInfo4AppVO.getType();
+                Integer billingItemId = treatmentOrderInfo4AppVO.getBillingItemId();
+                if (type == 0) {
+                  // 查询价目表
+                  BaseTariffInfoVO baseTariffInfoById =
+                      baseTariffBiz.findBaseTariffInfoById(billingItemId);
+                  if (null != baseTariffInfoById) {
+                    treatmentOrderInfo4AppVO.setBillingItemName(baseTariffInfoById.getName());
+                  }
+                } else if (type == 1) {
+                  // 查询商品表
+                  BaseOralTariffInfoVO baseOralTariffInfoById =
+                      baseOralTariffBiz.findBaseOralTariffInfoById(billingItemId);
+                  if (null != baseOralTariffInfoById) {
+                    treatmentOrderInfo4AppVO.setBillingItemName(baseOralTariffInfoById.getName());
+                  }
+                }
+              });
       return orderBill4AppVO;
     }
     return new OrderBill4AppVO();
+  }
+
+  /**
+   * 查询完成的业务目标
+   *
+   * @param query 查询条件
+   * @return CompletedBusinessWorkGoalVO
+   */
+  public CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
+      CompletedWorkGoalQuery query) {
+    CompletedBusinessWorkGoalVO resultData = new CompletedBusinessWorkGoalVO();
+    BigDecimal completedActualReceivedAmount = mapper.selectCompletedActualReceivedAmount(query);
+    resultData.setActualReceivedAmountCompleted(completedActualReceivedAmount);
+    BigDecimal completedWorkloadAmount = mapper.selectCompletedWorkloadAmount(query);
+    return resultData;
   }
 }
