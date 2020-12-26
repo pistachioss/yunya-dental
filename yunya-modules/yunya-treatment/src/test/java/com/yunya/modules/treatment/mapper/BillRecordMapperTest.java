@@ -31,4 +31,14 @@ public class BillRecordMapperTest {
     BigDecimal decimal = billRecordMapper.selectCompletedActualReceivedAmount(query);
     System.out.println(decimal);
   }
+
+  @Test
+  public void find2() {
+    CompletedWorkGoalQuery query = new CompletedWorkGoalQuery();
+    query.setDateType((byte) 0);
+    query.setBusinessDate("2020-12");
+    query.setBelongIds(new Integer[] {35, 72});
+    BigDecimal decimal = billRecordMapper.selectCompletedWorkloadAmount(query);
+    System.out.println(decimal);
+  }
 }

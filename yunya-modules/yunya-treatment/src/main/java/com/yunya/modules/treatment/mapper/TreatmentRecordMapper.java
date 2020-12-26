@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.query.TreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.*;
@@ -65,36 +66,57 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
 
   /**
    * 查询指定时间段内每个医生每天患者就诊人数
+   *
    * @param dentistId 医生ID
    * @param startDate 开始日期
    * @param endDate 结束日期
    * @return 实体列表
    */
   List<TreatmentInfoForMonthVO> treatInfoForMonth(
-          @Param("dentistId") Integer dentistId,
-          @Param("startDate") Date startDate,
-          @Param("endDate") Date endDate,
-          @Param("orgId") Integer orgId);
+      @Param("dentistId") Integer dentistId,
+      @Param("startDate") Date startDate,
+      @Param("endDate") Date endDate,
+      @Param("orgId") Integer orgId);
 
   /**
    * PC照片影像小程序就诊中
+   *
    * @param status 状态
-   * @param currentDate  当前时间
-   * @param orgId  门诊ID
+   * @param currentDate 当前时间
+   * @param orgId 门诊ID
    * @return 返回实体列表
    */
-  List<DesktopMiniProgramVO> desktopTreatingList(@Param("status") Byte status,
-                                                 @Param("currentDate") String currentDate,
-                                                 @Param("orgId") Integer orgId);
+  List<DesktopMiniProgramVO> desktopTreatingList(
+      @Param("status") Byte status,
+      @Param("currentDate") String currentDate,
+      @Param("orgId") Integer orgId);
 
   /**
    * 根据患者姓名、手机号、病历号查询影像小程序列表中患者信息
+   *
    * @param patientIds 状态
    * @param currentDate 当前时间
-   * @param orgId  门诊ID
+   * @param orgId 门诊ID
    * @return 返回实体列表
    */
-  List<DesktopMiniProgramVO> desktopTreatingListItem(@Param("patientIds") List<Integer> patientIds,
-                                                 @Param("currentDate") String currentDate,
-                                                 @Param("orgId") Integer orgId);
+  List<DesktopMiniProgramVO> desktopTreatingListItem(
+      @Param("patientIds") List<Integer> patientIds,
+      @Param("currentDate") String currentDate,
+      @Param("orgId") Integer orgId);
+
+  /**
+   * 查询完成初诊人数
+   *
+   * @param query 查询条件
+   * @return Integer
+   */
+  Integer selectCompletedFirstTreatPerNum(@Param("query") CompletedWorkGoalQuery query);
+
+  /**
+   * 查询完成就诊人次
+   *
+   * @param query 查询条件
+   * @return Integer
+   */
+  Integer selectCompletedTreatPerTimes(@Param("query") CompletedWorkGoalQuery query);
 }

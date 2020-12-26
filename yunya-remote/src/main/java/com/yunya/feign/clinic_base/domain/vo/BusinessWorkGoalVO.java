@@ -36,7 +36,7 @@ public class BusinessWorkGoalVO implements Serializable {
   /** 实收金额完成百分比 */
   @Excel(name = "实收金额完成百分比")
   @ApiModelProperty("实收金额完成百分比")
-  private BigDecimal percentageOfCompletedAmount;
+  private BigDecimal percentageOfActualReceivedCompletedAmount;
   /** 目标工作量（元） */
   @Excel(name = "目标工作量（元）")
   @ApiModelProperty("目标工作量（元）")

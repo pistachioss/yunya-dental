@@ -104,17 +104,18 @@
     </select>
 
     <!-- 根据患者ID查询患者账单统计数据列表 -->
-    <select id="selectPatientBillStatisticsByPatientIds" resultType="com.yunya.feign.treatment.domain.vo.PatientBillStatistics">
+    <select id="selectPatientBillStatisticsByPatientIds"
+            resultType="com.yunya.feign.treatment.domain.vo.PatientBillStatistics">
         select
-            br.patient_id as patientId,
-            ifnull(sum(br.receivable_amount), 0) as billTotalOriginalPrice,
-            ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
-            ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
-            ifnull(sum(br.received_amount), 0) as billTotalReceivedPrice,
-            ifnull(sum(br.debt_amount), 0) as billTotalArrears
+        br.patient_id as patientId,
+        ifnull(sum(br.receivable_amount), 0) as billTotalOriginalPrice,
+        ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
+        ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
+        ifnull(sum(br.received_amount), 0) as billTotalReceivedPrice,
+        ifnull(sum(br.debt_amount), 0) as billTotalArrears
         from bill_record br
         where inservice = true and
-            br.patient_id in
+        br.patient_id in
         <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
             #{patientId}
         </foreach>
@@ -133,14 +134,14 @@
     <!-- PC照片影像小程序已结账列表 -->
     <select id="desktopBillingList" resultType="com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO">
         select distinct
-            br.treatment_record_id as id,
-            br.patient_id          as patientId,
-            r.first_visit          as firstVisit,
-            r.dentist_id           as dentistId,
-            tr.treat_start_time    as treatStartTime
+        br.treatment_record_id as id,
+        br.patient_id as patientId,
+        r.first_visit as firstVisit,
+        r.dentist_id as dentistId,
+        tr.treat_start_time as treatStartTime
         from bill_record br
-                 left join registered r on r.patient_id = br.patient_id
-                 left join treatment_record tr on tr.patient_id = br.patient_id and tr.id = br.treatment_record_id
+        left join registered r on r.patient_id = br.patient_id
+        left join treatment_record tr on tr.patient_id = br.patient_id and tr.id = br.treatment_record_id
         where date_format(br.crt_time, '%Y-%m-%d') = date_format(#{currentDate}, '%Y-%m-%d')
         <if test="orgId != null">
             and br.org_id = #{orgId}
@@ -172,151 +173,155 @@
     <select id="selectClinicCompletedBusinessWorkGoal"
             resultType="com.yunya.feign.treatment.domain.vo.CompletedBusinessWorkGoalVO">
         SELECT
-            br.billDate,
-            IFNULL( SUM( br1.actualReceivedAmountCompleted ), 0 ) AS actualReceivedAmountCompleted,
-            IFNULL( SUM( workloadAmountCompleted ), 0 ) AS workloadAmountCompleted,
-            IFNULL( SUM( tr.firstTreatPerNumCompleted ) , 0 ) AS firstTreatPerNumCompleted,
-            IFNULL( SUM( tr1.treatPerTimesCompleted ) , 0 ) AS treatPerTimesCompleted
+        br.billDate,
+        IFNULL( SUM( br1.actualReceivedAmountCompleted ), 0 ) AS actualReceivedAmountCompleted,
+        IFNULL( SUM( workloadAmountCompleted ), 0 ) AS workloadAmountCompleted,
+        IFNULL( SUM( tr.firstTreatPerNumCompleted ) , 0 ) AS firstTreatPerNumCompleted,
+        IFNULL( SUM( tr1.treatPerTimesCompleted ) , 0 ) AS treatPerTimesCompleted
         FROM
-            (
-                SELECT DISTINCT
-                IF (
-                    #{query.dateType} = 0, DATE_FORMAT( br.crt_time, '%Y-%m' ), DATE_FORMAT( br.crt_time, '%Y' ) ) AS billDate
-                FROM bill_record br
-                <where>
-                    <if test="query.dateType == 0">
-                        <if test="query.startDate != null and query.startDate != ''">
-                            AND DATE_FORMAT(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
-                        </if>
-                        <if test="query.endDate != null and query.endDate != ''">
-                            AND DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
-                        </if>
-                    </if>
-                    <if test="query.dateType == 1">
-                        <if test="query.startDate != null and query.startDate != ''">
-                            AND DATE_FORMAT(br.crt_time, '%Y') &gt;= #{query.startDate}
-                        </if>
-                        <if test="query.endDate != null and query.endDate != ''">
-                            AND DATE_FORMAT(br.crt_time, '%Y') &lt;= #{query.endDate}
-                        </if>
-                    </if>
-                </where>
-                ) br
-            LEFT JOIN (
-            SELECT
-            IF
-                ( #{query.dateType} = 0, DATE_FORMAT( br.crt_time, '%Y-%m' ), DATE_FORMAT( br.crt_time, '%Y' ) ) AS business_date,
-                SUM( br.actual_receivable_amount ) AS actualReceivedAmountCompleted
-            FROM
-                bill_record br
-            <where>
-                AND br.inservice = 1
-                <if test="query.belongIds != null and query.belongIds.length > 0">
-                    AND br.org_id IN
-                    <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
+        (
+        SELECT DISTINCT
+        IF (
+        #{query.dateType} = 0, DATE_FORMAT( br.crt_time, '%Y-%m' ), DATE_FORMAT( br.crt_time, '%Y' ) ) AS billDate
+        FROM bill_record br
+        <where>
+            <if test="query.dateType == 0">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(br.crt_time, '%Y-%m') &gt;= #{query.startDate}
                 </if>
-            </where>
-            GROUP BY
-            IF
-                (
-                    #{query.dateType} = 0,
-                    DATE_FORMAT( br.crt_time, '%Y-%m' ),
-                DATE_FORMAT( br.crt_time, '%Y' ))
-            ) br1 ON br.billDate = br1.business_date
-            LEFT JOIN (
-            SELECT
-                odpr.business_date,
-                SUM( odpr.actual_receivable ) + SUM( odpr.coupon_workload ) AS workloadAmountCompleted
-            FROM
-                (
-                SELECT
-                IF
-                    ( #{query.dateType} = 0, DATE_FORMAT( odpr.crt_time, '%Y-%m' ), DATE_FORMAT( odpr.crt_time, '%Y' ) ) AS business_date,
-                    odpr.actual_receivable,
-                    odpr.coupon_workload
-                FROM
-                    order_detail_pay_record odpr
-                WHERE
-                    odpr.inservice = 1
-                    AND odpr.order_detail_id IN (
-                        SELECT
-                            od.id
-                        FROM
-                            order_detail od
-                        <where>
-                            AND od.inservice = 1
-                            AND od.executor_id IS NOT NULL
-                            <if test="query.belongIds != null and query.belongIds.length > 0">
-                                AND od.org_id IN
-                                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
-                                    #{item}
-                                </foreach>
-                            </if>
-                        </where>
-                        )
-                ) odpr
-            GROUP BY
-                odpr.business_date
-            ) odpr ON br.billDate = odpr.business_date
-            LEFT JOIN (
-            SELECT
-            IF
-                ( #{query.dateType} = 0, DATE_FORMAT( tr.crt_time, '%Y-%m' ), DATE_FORMAT( tr.crt_time, '%Y' ) ) AS business_date,
-                COUNT( DISTINCT tr.patient_id ) AS firstTreatPerNumCompleted
-            FROM
-                treatment_record tr
-            <where>
-                AND tr.type = 0
-                <if test="query.belongIds != null and query.belongIds.length > 0">
-                    AND tr.org_id IN
-                    <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(br.crt_time, '%Y-%m') &lt;= #{query.endDate}
                 </if>
-            </where>
-            GROUP BY
-            IF
-                (
-                    #{query.dateType} = 0,
-                    DATE_FORMAT( tr.crt_time, '%Y-%m' ),
-                DATE_FORMAT( tr.crt_time, '%Y' ))
-            ) tr ON br.billDate = tr.business_date
-            LEFT JOIN (
-            SELECT
-            IF
-                ( #{query.dateType} = 0, DATE_FORMAT( tr.crt_time, '%Y-%m' ), DATE_FORMAT( tr.crt_time, '%Y' ) ) AS business_date,
-                COUNT( tr.id ) AS treatPerTimesCompleted
-            FROM
-                treatment_record tr
-            <where>
-                <if test="query.belongIds != null and query.belongIds.length > 0">
-                    AND tr.org_id IN
-                    <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
-                        #{item}
-                    </foreach>
+            </if>
+            <if test="query.dateType == 1">
+                <if test="query.startDate != null and query.startDate != ''">
+                    AND DATE_FORMAT(br.crt_time, '%Y') &gt;= #{query.startDate}
                 </if>
-            </where>
-            GROUP BY
-            IF
-                (
-                    #{query.dateType} = 0,
-                    DATE_FORMAT( tr.crt_time, '%Y-%m' ),
-                DATE_FORMAT( tr.crt_time, '%Y' ))
-            ) tr1 ON br.billDate = tr1.business_date
+                <if test="query.endDate != null and query.endDate != ''">
+                    AND DATE_FORMAT(br.crt_time, '%Y') &lt;= #{query.endDate}
+                </if>
+            </if>
+        </where>
+        ) br
+        LEFT JOIN (
+        SELECT
+        IF
+        ( #{query.dateType} = 0, DATE_FORMAT( br.crt_time, '%Y-%m' ), DATE_FORMAT( br.crt_time, '%Y' ) ) AS
+        business_date,
+        SUM( br.actual_receivable_amount ) AS actualReceivedAmountCompleted
+        FROM
+        bill_record br
+        <where>
+            AND br.inservice = 1
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND br.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
         GROUP BY
-            br.billDate
+        IF
+        (
+        #{query.dateType} = 0,
+        DATE_FORMAT( br.crt_time, '%Y-%m' ),
+        DATE_FORMAT( br.crt_time, '%Y' ))
+        ) br1 ON br.billDate = br1.business_date
+        LEFT JOIN (
+        SELECT
+        odpr.business_date,
+        SUM( odpr.actual_receivable ) + SUM( odpr.coupon_workload ) AS workloadAmountCompleted
+        FROM
+        (
+        SELECT
+        IF
+        ( #{query.dateType} = 0, DATE_FORMAT( odpr.crt_time, '%Y-%m' ), DATE_FORMAT( odpr.crt_time, '%Y' ) ) AS
+        business_date,
+        odpr.actual_receivable,
+        odpr.coupon_workload
+        FROM
+        order_detail_pay_record odpr
+        WHERE
+        odpr.inservice = 1
+        AND odpr.order_detail_id IN (
+        SELECT
+        od.id
+        FROM
+        order_detail od
+        <where>
+            AND od.inservice = 1
+            AND od.executor_id IS NOT NULL
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND od.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        )
+        ) odpr
+        GROUP BY
+        odpr.business_date
+        ) odpr ON br.billDate = odpr.business_date
+        LEFT JOIN (
+        SELECT
+        IF
+        ( #{query.dateType} = 0, DATE_FORMAT( tr.crt_time, '%Y-%m' ), DATE_FORMAT( tr.crt_time, '%Y' ) ) AS
+        business_date,
+        COUNT( DISTINCT tr.patient_id ) AS firstTreatPerNumCompleted
+        FROM
+        treatment_record tr
+        <where>
+            AND tr.type = 0
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND tr.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        IF
+        (
+        #{query.dateType} = 0,
+        DATE_FORMAT( tr.crt_time, '%Y-%m' ),
+        DATE_FORMAT( tr.crt_time, '%Y' ))
+        ) tr ON br.billDate = tr.business_date
+        LEFT JOIN (
+        SELECT
+        IF
+        ( #{query.dateType} = 0, DATE_FORMAT( tr.crt_time, '%Y-%m' ), DATE_FORMAT( tr.crt_time, '%Y' ) ) AS
+        business_date,
+        COUNT( tr.id ) AS treatPerTimesCompleted
+        FROM
+        treatment_record tr
+        <where>
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND tr.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY
+        IF
+        (
+        #{query.dateType} = 0,
+        DATE_FORMAT( tr.crt_time, '%Y-%m' ),
+        DATE_FORMAT( tr.crt_time, '%Y' ))
+        ) tr1 ON br.billDate = tr1.business_date
+        GROUP BY
+        br.billDate
         ORDER BY
-            br.billDate
+        br.billDate
     </select>
 
     <!-- 查询完成实收金额 -->
     <select id="selectCompletedActualReceivedAmount" resultType="java.math.BigDecimal">
         SELECT
-            SUM( IFNULL( br.actual_receivable_amount, 0 ) ) AS actualReceivedAmountCompleted
+        SUM( IFNULL( br.actual_receivable_amount, 0 ) ) AS actualReceivedAmountCompleted
         FROM
-            bill_record br
+        bill_record br
         <where>
             AND br.inservice = 1
             <if test="query.dateType == 0">
@@ -336,6 +341,34 @@
 
     <!-- 查询完成工作量 -->
     <select id="selectCompletedWorkloadAmount" resultType="java.math.BigDecimal">
-
+        SELECT
+        IFNULL(SUM( odpr.actual_receivable ) + SUM( odpr.coupon_workload ), 0) AS workloadAmountCompleted
+        FROM
+        order_detail_pay_record odpr
+        <where>
+            AND odpr.inservice = 1
+            <if test="query.dateType == 0">
+                AND DATE_FORMAT(odpr.crt_time, '%Y-%m') = #{query.businessDate}
+            </if>
+            <if test="query.dateType == 1">
+                AND DATE_FORMAT(odpr.crt_time, '%Y') = #{query.businessDate}
+            </if>
+            AND odpr.order_detail_id IN (
+            SELECT
+            od.id
+            FROM
+            order_detail od
+            <where>
+                AND od.inservice = 1
+                AND od.executor_id IS NOT NULL
+                <if test="query.belongIds != null and query.belongIds.length > 0">
+                    AND od.org_id IN
+                    <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            )
+        </where>
     </select>
 </mapper>

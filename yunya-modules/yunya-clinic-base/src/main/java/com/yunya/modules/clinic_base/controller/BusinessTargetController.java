@@ -1,9 +1,11 @@
 package com.yunya.modules.clinic_base.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.BusinessTargetModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
-import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.feign.clinic_base.domain.query.WorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
+import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
@@ -74,9 +77,10 @@ public class BusinessTargetController implements Serializable {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-工作目标-业务目标")
   @PostMapping(value = "/goal/list", name = "根据条件查询门诊业务目标列表")
-  public ResponseResult<T> businessWorkGoalList(@RequestBody @Validated WorkGoalQuery query) {
-    
-    return ResponseUtil.success(null);
+  public ResponseResult<PageInfo<BusinessWorkGoalVO>> businessWorkGoalList(
+      @RequestBody @Validated WorkGoalQuery query) {
+    PageInfo<BusinessWorkGoalVO> pageInfo = businessTargetBiz.findBusinessWorkGoalList(query);
+    return ResponseUtil.success(pageInfo);
   }
 
   /**
@@ -89,8 +93,9 @@ public class BusinessTargetController implements Serializable {
   @ApiOperation("公司端报表-报表统计-运营报表-工作目标-业务目标-导出")
   @PostMapping(value = "/goal/list/export", name = "根据条件导出门诊业务目标列表")
   public ResponseResult<T> exportBusinessWorkGoalList(
-      HttpServletResponse response, @RequestBody @Validated WorkGoalQuery query) {
-
+      HttpServletResponse response, @RequestBody @Validated WorkGoalQuery query)
+      throws IOException {
+    businessTargetBiz.exportBusinessWorkGoalList(response, query);
     return ResponseUtil.success(null);
   }
 }

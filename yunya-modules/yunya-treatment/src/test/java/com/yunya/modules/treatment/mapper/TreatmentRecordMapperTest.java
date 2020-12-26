@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
 import com.yunya.feign.treatment.domain.query.PatientTreatmentRecordQueryForm;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentRecordVO;
 import org.junit.Test;
@@ -34,5 +35,25 @@ public class TreatmentRecordMapperTest {
     List<PatientTreatmentRecordVO> list =
         treatmentRecordMapper.selectPatientTreatmentRecordList(queryForm);
     System.out.println(list);
+  }
+
+  @Test
+  public void find() {
+    CompletedWorkGoalQuery query = new CompletedWorkGoalQuery();
+    query.setDateType((byte) 0);
+    query.setBusinessDate("2020-12");
+    query.setBelongIds(new Integer[] {35, 72});
+    Integer integer = treatmentRecordMapper.selectCompletedTreatPerTimes(query);
+    System.out.println(integer);
+  }
+
+  @Test
+  public void find1() {
+    CompletedWorkGoalQuery query = new CompletedWorkGoalQuery();
+    query.setDateType((byte) 0);
+    query.setBusinessDate("2020-12");
+    query.setBelongIds(new Integer[] {35, 72});
+    Integer integer = treatmentRecordMapper.selectCompletedFirstTreatPerNum(query);
+    System.out.println(integer);
   }
 }

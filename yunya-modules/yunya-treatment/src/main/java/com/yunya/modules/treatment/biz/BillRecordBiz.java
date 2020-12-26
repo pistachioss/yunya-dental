@@ -75,6 +75,8 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
   @Autowired private BaseOralTariffBiz baseOralTariffBiz;
   /** 价目明细表 */
   @Autowired private BaseTariffBiz baseTariffBiz;
+  /** 就诊 */
+  @Autowired private TreatmentRecordMapper treatmentRecordMapper;
 
   /**
    * 生成账单编号
@@ -544,6 +546,11 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
     BigDecimal completedActualReceivedAmount = mapper.selectCompletedActualReceivedAmount(query);
     resultData.setActualReceivedAmountCompleted(completedActualReceivedAmount);
     BigDecimal completedWorkloadAmount = mapper.selectCompletedWorkloadAmount(query);
+    resultData.setWorkloadAmountCompleted(completedWorkloadAmount);
+    Integer completedFirstTreatPerNum = treatmentRecordMapper.selectCompletedFirstTreatPerNum(query);
+    resultData.setFirstTreatPerNumCompleted(completedFirstTreatPerNum);
+    Integer completedTreatPerTimes = treatmentRecordMapper.selectCompletedTreatPerTimes(query);
+    resultData.setTreatPerTimesCompleted(completedTreatPerTimes);
     return resultData;
   }
 }
