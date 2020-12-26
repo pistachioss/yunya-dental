@@ -78,6 +78,7 @@
         select count(*) from field_info
         where user_id = #{userId}
         and DATE_FORMAT(start_time,'%Y-%m-%d') = DATE_FORMAT(#{startTime},'%Y-%m-%d' )
+        and approval_status in (0,1)
     </select>
     <select id="findFieldInfosByUserIdAndDate" resultType="com.yunya.feign.employee_attend.vo.FieldInfoVO">
         select
