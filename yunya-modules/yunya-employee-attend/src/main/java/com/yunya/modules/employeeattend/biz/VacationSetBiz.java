@@ -40,26 +40,28 @@ public class VacationSetBiz extends BaseBiz<VacationSetMapper, VacationSet> {
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
-    public PageInfo<VacationSet> findlist(VacationSetQuery vacationSetQuery){
+    public PageInfo<VacationSet> findlist(VacationSetQuery vacationSetQuery) {
         if (vacationSetQuery.getWhetherPage()) {
             PageHelper.startPage(vacationSetQuery.getPage(), vacationSetQuery.getSize());
         }
         //当前登陆用户信息
         SysUserInfoDetail sysUserInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(Integer.valueOf(BaseContextHandler.getUserID()));
         VacationSet vacationSet = new VacationSet();
-        if(sysUserInfoDetail.getWorkStatus()==0){
-            vacationSet.setVacationRange(2);
-        }else if(sysUserInfoDetail.getWorkStatus()==1){
-            vacationSet.setVacationRange(1);
+        if (vacationSetQuery.getAppRequest() == 1) {
+            if (sysUserInfoDetail.getWorkStatus() == 0) {
+                vacationSet.setVacationRange(2);
+            } else if (sysUserInfoDetail.getWorkStatus() == 1) {
+                vacationSet.setVacationRange(1);
+            }
         }
-        if(vacationSetQuery.getVacationEnable()!=null){
+        if (vacationSetQuery.getVacationEnable() != null) {
             vacationSet.setVacationEnable(vacationSetQuery.getVacationEnable());
         }
         List<VacationSet> reList = mapper.selectList(vacationSet);
         return new PageInfo<>(reList);
     }
 
-    public int create(VacationSetForm vacationSetForm){
+    public int create(VacationSetForm vacationSetForm) {
         VacationSet vacationSet = new VacationSet();
         BeanUtils.copyProperties(vacationSetForm, vacationSet);
         vacationSet.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -68,7 +70,7 @@ public class VacationSetBiz extends BaseBiz<VacationSetMapper, VacationSet> {
         return re;
     }
 
-    public int update(VacationSetForm vacationSetForm){
+    public int update(VacationSetForm vacationSetForm) {
         VacationSet vacationSet = new VacationSet();
         BeanUtils.copyProperties(vacationSetForm, vacationSet);
         vacationSet.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -77,9 +79,9 @@ public class VacationSetBiz extends BaseBiz<VacationSetMapper, VacationSet> {
         return re;
     }
 
-    public int delete(VacationDeleteForm vacationDeleteForm){
+    public int delete(VacationDeleteForm vacationDeleteForm) {
         //判断该假期是否已经有请假信息
-        if(true){
+        if (true) {
             VacationSet vacationSet = new VacationSet();
             BeanUtils.copyProperties(vacationDeleteForm, vacationSet);
             int re = mapper.delete(vacationSet);

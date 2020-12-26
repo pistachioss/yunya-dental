@@ -212,7 +212,6 @@ public class AppointmentBiz extends BaseBiz<AppointmentMapper, Appointment> {
         int result = mapper.insertAppointment(build);
         if (result > 0) {
             rabbitMqServiceFeign.sendMessage(build.getId(),0,0, BaseTreatmentProcess);
-
             // 添加预约时长分解
             List<AppointmentSplitBaseInfo> splitList = form.getSplitList();
             if (splitList != null && !splitList.isEmpty()){

@@ -31,4 +31,7 @@ public class VacationSetQuery {
 
     @ApiModelProperty("是否分页")
     private Boolean whetherPage = false;
+
+    @ApiModelProperty("是否为App端请求 若是app端则不传该字段 是Pc端则传0")
+    private Integer appRequest = 1;
 }
