@@ -289,7 +289,7 @@
     <!-- 查询完成就诊人次 -->
     <select id="selectCompletedTreatPerTimes" resultType="java.lang.Integer">
         SELECT
-        COUNT( DISTINCT tr.patient_id ) AS firstTreatPerNumCompleted
+        COUNT( tr.id ) AS firstTreatPerNumCompleted
         FROM
         treatment_record tr
         <where>
