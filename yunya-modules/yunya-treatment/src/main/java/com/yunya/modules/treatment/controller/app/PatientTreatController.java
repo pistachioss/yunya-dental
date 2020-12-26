@@ -40,7 +40,12 @@ public class PatientTreatController {
   @Autowired
   private TreatmentProcess4AppBiz treatmentBiz4App;
 
-  @ApiOperation("根据条件查询APP端患者就诊列表(开完成,可联调...)")
+  /**
+   * 根据条件查询APP端患者就诊列表(接口已废弃，后期删除...)
+   * @param query
+   * @return
+   */
+  @ApiOperation("根据条件查询APP端患者就诊列表(接口已废弃，后期删除...)")
   @PostMapping(value = "/list", name = "根据条件查询APP端患者就诊列表")
   @Deprecated
   public ResponseResult<PageInfo<PatientTreatmentInfo4ListVO>> treatList(
