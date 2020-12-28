@@ -267,7 +267,7 @@
     </select>
     <select id="selectLeave" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoListVO">
         select
-        a.* from
+        DISTINCT a.* from
         (SELECT DISTINCT
         t.id,
         t.user_id AS userId,
@@ -363,7 +363,7 @@
         DATE_ADD(li.end_time, INTERVAL '1' DAY)
         ) / 3
         ) AS leaveTime,
-    ai.approval_status AS approvalStatus,
+    li.approval_status AS approvalStatus,
 	ap.user_id AS uid
     FROM
 	leave_info li
@@ -398,7 +398,7 @@
         DATE_ADD(li.end_time, INTERVAL '1' DAY)
         ) / 3
         ) AS leaveTime,
-    ai.approval_status AS approvalStatus
+    li.approval_status AS approvalStatus
     FROM
 	leave_info li
     LEFT JOIN approval_info ai ON ai.leave_id = li.id
