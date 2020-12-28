@@ -22,7 +22,9 @@
     <result column="punch_address" property="punchAddress" jdbcType="VARCHAR" />
     <result column="org_id" property="orgId" jdbcType="INTEGER" />
     <result column="source_id" property="sourceId" jdbcType="INTEGER" />
+    <result column="es_id" property="esId" jdbcType="INTEGER" />
     <result column="is_punch" property="isPunch" jdbcType="TINYINT" />
+    <result column="is_in_scope" property="isInScope" jdbcType="TINYINT" />
     <result column="wifi_mac_address" property="wifiMacAddress" jdbcType="VARCHAR" />
     <result column="crt_id" property="crtId" jdbcType="INTEGER" />
     <result column="crt_time" property="crtTime" jdbcType="TIMESTAMP" />
@@ -49,7 +51,9 @@
         t.latitude,
         t.punch_address as punchAddress,
         t.source_id as sourceId,
+        t.es_id as esId,
         t.is_punch as isPunch,
+        t.is_in_scope as isInScope,
         t.wifi_mac_address as wifiMacAddress
     from attendance_punch_record t
     <where>
@@ -102,6 +106,7 @@
         t.punch_time as punchTime,
         t.punch_time as originalPunchTime,
         t.end_time as endTime,
+        t.is_in_scope as isInScope,
         t.punch_address as punchAddress
     from attendance_punch_record t
     <where>
@@ -159,12 +164,14 @@
         t.punch_type as punchType,
         t.punch_status as punchStatus,
         t.source,
+        t.es_id as esId,
         t.attendance_address_id as attendanceAddressId,
         t.longitude,
         t.latitude,
         t.punch_address as punchAddress,
         t.source_id as sourceId,
         t.is_punch as isPunch,
+        t.is_in_scope as isInScope,
         t.wifi_mac_address as wifiMacAddress
       from attendance_punch_record t
       <where>
@@ -211,7 +218,9 @@
         t.latitude,
         t.punch_address as punchAddress,
         t.source_id as sourceId,
+        t.es_id as esId,
         t.is_punch as isPunch,
+        t.is_in_scope as isInScope,
         t.wifi_mac_address as wifiMacAddress
         from attendance_punch_record t
         <where>

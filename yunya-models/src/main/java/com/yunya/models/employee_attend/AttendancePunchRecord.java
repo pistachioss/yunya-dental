@@ -83,6 +83,12 @@ public class AttendancePunchRecord {
     private Integer sourceId;
 
     /**
+     * 员工排班id，按天请假、外勤时为空、加班时为班次模板id
+     */
+    @Column(name = "es_id")
+    private Integer esId;
+
+    /**
      * 开始时间
      */
     @Column(name = "start_time")
@@ -99,6 +105,12 @@ public class AttendancePunchRecord {
      */
     @Column(name = "is_punch")
     private Byte isPunch;
+
+    /**
+     * 是否在有效时间范围内打卡：0-否，1-是
+     */
+    @Column(name = "is_in_scope")
+    private Byte isInScope;
 
     /**
      * wifi打卡的mac地址
@@ -129,6 +141,42 @@ public class AttendancePunchRecord {
      */
     @Column(name = "upt_time")
     private Date uptTime;
+
+    /**
+     * 设置是否在有效时间范围内打卡：0-否，1-是
+     *
+     * @param isInScope 是否在有效时间范围内打卡：0-否，1-是
+     */
+    public void setIsInScope(Byte isInScope) {
+        this.isInScope = isInScope;
+    }
+
+    /**
+     * 获取是否在有效时间范围内打卡：0-否，1-是
+     *
+     * @return
+     */
+    public Byte getIsInScope() {
+        return isInScope;
+    }
+
+    /**
+     * 设置员工排班id，按天请假、外勤时为空、加班时为班次模板id
+     *
+     * @param esId 员工排班id，按天请假、外勤时为空、加班时为班次模板id
+     */
+    public void setEsId(Integer esId) {
+        this.esId = esId;
+    }
+
+    /**
+     * 获取员工排班id，按天请假、外勤时为空、加班时为班次模板id
+     *
+     * @return
+     */
+    public Integer getEsId() {
+        return esId;
+    }
 
     public String getName() {
         return name;

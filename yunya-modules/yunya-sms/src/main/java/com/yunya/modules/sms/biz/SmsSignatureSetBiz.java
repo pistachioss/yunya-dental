@@ -130,7 +130,7 @@ public class SmsSignatureSetBiz extends BaseBiz<SmsSignatureSetMapper, SmsSignat
         SmsSignatureSetQueryForm queryForm = new SmsSignatureSetQueryForm();
         queryForm.setWhetherPage(false);
         queryForm.setSignName(signName);
-        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+//        queryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsSignatureSetVO> smsSignatureSetVOS = findSmsSignatureSetList(queryForm);
         if (id == null) {
             if (smsSignatureSetVOS!=null && !smsSignatureSetVOS.isEmpty()) {
