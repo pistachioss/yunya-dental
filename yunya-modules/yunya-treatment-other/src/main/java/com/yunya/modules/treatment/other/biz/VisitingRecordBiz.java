@@ -278,7 +278,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         String search = query.getSearch();
         String medicalNumber = query.getMedicalNumber();
         String distentName = query.getDistentName();
-         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
             // 组合随访记录信息

@@ -128,7 +128,7 @@
     <foreach collection="visitingRecords" item="item" separator=",">
       (#{item.orgId},#{item.treatmentId},#{item.patientId},#{item.dentistId},#{item.deptRoomId},#{item.treatmentDate},#{item.visitingDate},#{item.visitingTime},
       #{item.reason},#{item.visitingContent},#{item.inservice},#{item.remarks},#{item.status},#{item.crtId},#{item.crtName},#{item.crtTime},
-      #{item.uptId},#{item.updName},#{item.updTime},#{executorId},#{executorName})
+      #{item.uptId},#{item.updName},#{item.updTime},#{item.executorId},#{item.executorName})
     </foreach>
   </insert>
 
