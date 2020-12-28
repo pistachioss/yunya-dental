@@ -104,6 +104,7 @@ public class PatientBaseInfoController {
     return this.patientBaseInfoBiz.findUserExists(patientBaseInfoQueryForm);
   }
 
+
   /**
    * 根据患者id查询患者资料
    *
@@ -203,6 +204,10 @@ public class PatientBaseInfoController {
     PageInfo<PatientLabelRecordVo> patientLabelRecordList = patientBaseInfoBiz.labelList(form);
     return ResponseUtil.success(patientLabelRecordList);
   }
+
+
+  /*
+  * */
 
   /**
    * 拍照回调
