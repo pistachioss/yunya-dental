@@ -126,7 +126,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
                 completedBusinessWorkGoalVO.getActualReceivedAmountCompleted();
             vo.setActualReceivedAmountCompleted(actualReceivedAmountCompleted);
             BigDecimal actualReceivedAmountGoal = vo.getActualReceivedAmountGoal();
-            if (!BigDecimal.ZERO.equals(actualReceivedAmountGoal)
+            if (!BigDecimal.valueOf(0, 2).equals(actualReceivedAmountGoal)
                 && null != actualReceivedAmountCompleted) {
               BigDecimal percentageOfActualReceivedCompletedAmount =
                   actualReceivedAmountCompleted.divide(
@@ -138,7 +138,8 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
                 completedBusinessWorkGoalVO.getWorkloadAmountCompleted();
             vo.setWorkloadAmountCompleted(workloadAmountCompleted);
             BigDecimal workloadAmountGoal = vo.getWorkloadAmountGoal();
-            if (!BigDecimal.ZERO.equals(workloadAmountGoal) && null != workloadAmountCompleted) {
+            if (!BigDecimal.valueOf(0, 2).equals(workloadAmountGoal)
+                && null != workloadAmountCompleted) {
               BigDecimal percentageOfWorkloadAmountCompleted =
                   workloadAmountCompleted.divide(workloadAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
               vo.setPercentageOfWorkloadAmountCompleted(
