@@ -8,7 +8,6 @@ import com.yunya.feign.sms.query.SmsSignatureSetQueryForm;
 import com.yunya.feign.sms.vo.SmsSignatureSetVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.RepeatSubmit;
-import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -55,7 +54,7 @@ public class SmsSignatureSetController {
     @PostMapping("/list")
     @CurrentUser
     public ResponseResult<PageInfo<SmsSignatureSetVO>> findSmsSignatureSetList(@RequestBody SmsSignatureSetQueryForm smsSignatureSetQueryForm) {
-        smsSignatureSetQueryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
+//        smsSignatureSetQueryForm.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
         List<SmsSignatureSetVO> smsSignatureSetVOS = smsSignatureSetBiz.findSmsSignatureSetList(smsSignatureSetQueryForm);
         PageInfo<SmsSignatureSetVO> result = new PageInfo<>(smsSignatureSetVOS);
         return ResponseUtil.success(result);

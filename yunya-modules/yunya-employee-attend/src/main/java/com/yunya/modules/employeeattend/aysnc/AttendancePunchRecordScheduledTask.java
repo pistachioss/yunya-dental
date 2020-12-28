@@ -14,6 +14,7 @@ import com.yunya.framework.common.utils.DateUtil;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.modules.employeeattend.biz.*;
+import com.yunya.modules.employeeattend.enums.AttendanceIsInScopeEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceIsPunchEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceStatusEnum;
 import com.yunya.modules.employeeattend.enums.AttendanceTypeEnum;
@@ -140,6 +141,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
             if (employeeScheduleVO.getSecondEndTime() != null) {
                 employeeScheduleVO.setFirstEndTime(employeeScheduleVO.getSecondEndTime());
             }
+            employeeScheduleVO.setScheduleId(employeeScheduleVO.getId());
             if (WORK.equals(employeeScheduleVO.getType())) {
                 employeeScheduleVO.setType(ONDUTY);
                 List<EmployeeScheduleVO> list = punchItemMap.get(userId);
@@ -216,14 +218,8 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                 for (EmployeeScheduleVO employeeScheduleVO : list) {
                     Integer id = employeeScheduleVO.getId();
                     if (id.equals(scheduleId)) {
-                        Date startTime;
-                        Date endTime;
-                        try {
-                            startTime = leaveInfoVO.getStartTime();
-                            endTime = leaveInfoVO.getEndTime();
-                        } catch (Exception e) {
-                            throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-                        }
+                        Date startTime = leaveInfoVO.getStartTime();
+                        Date endTime = leaveInfoVO.getEndTime();
                         Date firstTime = employeeScheduleVO.getFirstStartTime();
                         Date lastTime = employeeScheduleVO.getFirstEndTime();
                         if (startTime.compareTo(firstTime)==0 && endTime.compareTo(lastTime)==0) {//请假覆盖，则剔除当前班次
@@ -237,14 +233,17 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                             punchItem.setFirstEndTime(endTime);
                             punchItem.setId(leaveInfoVO.getId());
                             punchItem.setEmployeeId(userId);
+                            punchItem.setScheduleId(leaveInfoVO.getScheduleId());
                             punchItem.setClinicId(leaveInfoVO.getOrgId());
                             punchItem.setName("按班次请假");
                             list.add(punchItem);
                             restItemMap.put(userId, list);
                         } else {
                             if (startTime.compareTo(firstTime)==0 && endTime.before(lastTime)) {
+                                employeeScheduleVO.setScheduleId(leaveInfoVO.getScheduleId());
                                 employeeScheduleVO.setFirstStartTime(endTime);
                             } else if (startTime.after(firstTime) && endTime.compareTo(lastTime)==0) {
+                                employeeScheduleVO.setScheduleId(leaveInfoVO.getScheduleId());
                                 employeeScheduleVO.setFirstEndTime(startTime);
                             }
                             punchItemList.add(employeeScheduleVO);
@@ -286,6 +285,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                     punchItem.setFirstEndTime(endTime);
                     punchItem.setId(workOvertimeInfoVO.getId());
                     punchItem.setEmployeeId(userId);
+                    punchItem.setScheduleId(workOvertimeInfoVO.getScheduleId());
                     punchItem.setClinicId(workOvertimeInfoVO.getCompanyId());
                     punchItem.setName(name);
                     punchItemList.add(punchItem);
@@ -299,6 +299,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                             punchItem.setFirstEndTime(endTime);
                             punchItem.setId(workOvertimeInfoVO.getId());
                             punchItem.setEmployeeId(userId);
+                            punchItem.setScheduleId(workOvertimeInfoVO.getScheduleId());
                             punchItem.setClinicId(workOvertimeInfoVO.getCompanyId());
                             punchItem.setName(name);
                             punchItemList.add(punchItem);
@@ -311,6 +312,7 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
                             punchItem.setFirstEndTime(endTime);
                             punchItem.setId(workOvertimeInfoVO.getId());
                             punchItem.setEmployeeId(userId);
+                            punchItem.setScheduleId(workOvertimeInfoVO.getScheduleId());
                             punchItem.setClinicId(workOvertimeInfoVO.getCompanyId());
                             punchItem.setName(name);
                             punchItemList.add(punchItem);
@@ -510,6 +512,8 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
         punchRecord.setEndTime(employeeScheduleVO.getFirstEndTime());
         punchRecord.setOrgId(employeeScheduleVO.getClinicId());
         punchRecord.setName(employeeScheduleVO.getName());
+        punchRecord.setEsId(employeeScheduleVO.getScheduleId());
+        punchRecord.setIsInScope(AttendanceIsInScopeEnum.UNBELONG.getCode());
         return punchRecord;
     }
 
