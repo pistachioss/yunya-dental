@@ -211,7 +211,9 @@
         LEFT JOIN base_schedule bs on es.schedule_id = bs.id
         LEFT JOIN leave_schedule ls on ls.schedule_id = es.id
         <where>
-         bs.type = '上班'
+            <if test="vacationStatus!= null and vacationStatus = 0">
+                and  bs.type = '上班'
+            </if>
             <if test="startTime!= null">
                 and es.work_date BETWEEN #{startTime} and #{endTime}
             </if>
@@ -267,7 +269,7 @@
     </select>
     <select id="selectLeave" resultType="com.yunya.feign.employee_attend.vo.LeaveInfoListVO">
         select
-        a.* from
+        DISTINCT a.* from
         (SELECT DISTINCT
         t.id,
         t.user_id AS userId,
@@ -345,12 +347,25 @@
     li.id AS id,
     li.user_id AS userId,
     vs.vacation_name AS vacationName,
+    vs.vacation_status AS vacationStatus,
     li.crt_time AS crtTime,
     li.start_time AS startTime,
     li.end_time AS endTime,
-     IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
-        TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time))AS leaveTime,
-    ai.approval_status AS approvalStatus,
+        IFNULL(
+        sum(
+        TIMESTAMPDIFF(
+        MINUTE,
+        ls.start_time,
+        ls.end_time
+        )
+        ),
+        TIMESTAMPDIFF(
+        MINUTE,
+        li.start_time,
+        DATE_ADD(li.end_time, INTERVAL '1' DAY)
+        ) / 3
+        ) AS leaveTime,
+    li.approval_status AS approvalStatus,
 	ap.user_id AS uid
     FROM
 	leave_info li
@@ -367,12 +382,25 @@
     li.id AS id,
     li.user_id AS userId,
     vs.vacation_name AS vacationName,
+    vs.vacation_status AS vacationStatus,
     li.crt_time AS crtTime,
     li.start_time AS startTime,
     li.end_time AS endTime,
-     IFNULL(sum(TIMESTAMPDIFF(MINUTE ,ls.start_time,ls.end_time)),
-        TIMESTAMPDIFF(MINUTE ,li.start_time,li.end_time))AS leaveTime,
-    ai.approval_status AS approvalStatus
+     IFNULL(
+        sum(
+        TIMESTAMPDIFF(
+        MINUTE,
+        ls.start_time,
+        ls.end_time
+        )
+        ),
+        TIMESTAMPDIFF(
+        MINUTE,
+        li.start_time,
+        DATE_ADD(li.end_time, INTERVAL '1' DAY)
+        ) / 3
+        ) AS leaveTime,
+    li.approval_status AS approvalStatus
     FROM
 	leave_info li
     LEFT JOIN approval_info ai ON ai.leave_id = li.id
@@ -383,5 +411,10 @@
     where ai.approval_status in (2,1)
     and ap.user_id = #{userId} group BY ai.leave_id
      order by li.crt_time desc
+    </select>
+    <select id="findVacationStaus" resultType="Integer">
+      select vs.vacation_status from vacation_set vs
+      LEFT JOIN leave_info li on li.vacation_id = vs.id
+      where li.id = #{id}
     </select>
 </mapper>

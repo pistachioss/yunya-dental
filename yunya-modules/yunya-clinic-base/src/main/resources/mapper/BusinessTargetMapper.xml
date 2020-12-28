@@ -12,6 +12,7 @@
         <result column="business_goal" property="businessGoal" jdbcType="DECIMAL"/>
         <result column="business_year" property="businessYear" jdbcType="VARCHAR"/>
         <result column="business_month" property="businessMonth" jdbcType="VARCHAR"/>
+        <result column="business_date" property="businessDate" jdbcType="VARCHAR"/>
         <result column="unit" property="unit" jdbcType="VARCHAR"/>
         <result column="inservice" property="inservice" jdbcType="BIT"/>
         <result column="crt_id" property="crtId" jdbcType="INTEGER"/>
@@ -26,10 +27,10 @@
     <select id="selectBusinessTargetList"
             resultType="com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO">
         SELECT
-            bt.business_month AS monthNum,
-            bt.business_goal AS businessGoal
+        bt.business_month AS monthNum,
+        bt.business_goal AS businessGoal
         FROM
-            business_target bt
+        business_target bt
         <where>
             <if test="query.businessYear != null and query.businessYear != ''">
                 and bt.business_year = #{query.businessYear}
@@ -46,5 +47,126 @@
         </where>
         GROUP BY bt.id
         ORDER BY bt.business_month + 0
+    </select>
+
+    <!-- 根据条件查询门诊业务目标列表 -->
+    <select id="selectBusinessWorkGoalList"
+            resultType="com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO">
+        SELECT
+            t.businessDate,
+            IFNULL(SUM(bt1.business_goal), 0) AS actualReceivedAmountGoal,
+            IFNULL(SUM(bt2.business_goal), 0) AS workloadAmountGoal,
+            IFNULL(SUM(bt3.business_goal), 0) AS firstTreatPerNumGoal,
+            IFNULL(SUM(bt4.business_goal), 0) AS treatPerTimesGoal
+        FROM
+            (
+            SELECT DISTINCT
+                IF ( #{query.dateType} = 0, bt.business_date, bt.business_year ) AS businessDate
+            FROM
+                business_target bt
+            <where>
+                <if test="query.dateType == 0">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND bt.business_date &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND bt.business_date &lt;= #{query.endDate}
+                    </if>
+                </if>
+                <if test="query.dateType == 1">
+                    <if test="query.startDate != null and query.startDate != ''">
+                        AND business_year &gt;= #{query.startDate}
+                    </if>
+                    <if test="query.endDate != null and query.endDate != ''">
+                        AND business_year &lt;= #{query.endDate}
+                    </if>
+                </if>
+            </where>
+            ) t
+            LEFT JOIN (
+                SELECT
+                    IF ( #{query.dateType} = 0, bt.business_date, bt.business_year ) AS business_date,
+                    SUM(bt.business_goal) AS business_goal
+                FROM
+                    business_target bt
+                <where>
+                    AND bt.business_type = 0
+                    <if test="query.belongType != null">
+                        AND bt.belong_type = #{query.belongType}
+                    </if>
+                    <if test="query.belongIds != null and query.belongIds.length > 0">
+                        AND bt.belong_id IN
+                        <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
+                GROUP BY
+                    IF ( #{query.dateType} = 0, bt.id, bt.business_year )
+            ) bt1 ON t.businessDate = bt1.business_date
+            LEFT JOIN (
+                SELECT
+                    IF( #{query.dateType} = 0, bt.business_date, bt.business_year ) AS business_date,
+                    SUM(bt.business_goal) AS business_goal
+                FROM business_target bt
+                <where>
+                    AND bt.business_type = 1
+                    <if test="query.belongType != null">
+                        AND bt.belong_type = #{query.belongType}
+                    </if>
+                    <if test="query.belongIds != null and query.belongIds.length > 0">
+                        AND bt.belong_id IN
+                        <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
+            GROUP BY
+                IF ( #{query.dateType} = 0, bt.id, bt.business_year )
+            ) bt2 ON t.businessDate = bt2.business_date
+            LEFT JOIN (
+                SELECT
+                    IF ( #{query.dateType} = 0, bt.business_date, bt.business_year ) AS business_date,
+                    SUM(bt.business_goal) AS business_goal
+                FROM business_target bt
+                <where>
+                    AND bt.business_type = 2
+                    <if test="query.belongType != null">
+                        AND bt.belong_type = #{query.belongType}
+                    </if>
+                    <if test="query.belongIds != null and query.belongIds.length > 0">
+                        AND bt.belong_id IN
+                        <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
+                GROUP BY
+                    IF ( #{query.dateType} = 0, bt.id, bt.business_year )
+            ) bt3 ON t.businessDate = bt3.business_date
+            LEFT JOIN (
+                SELECT
+                    IF ( #{query.dateType} = 0, bt.business_date, bt.business_year ) AS business_date,
+                    SUM(bt.business_goal) AS business_goal
+                FROM business_target bt
+                <where>
+                    AND bt.business_type = 3
+                    <if test="query.belongType != null">
+                        AND bt.belong_type = #{query.belongType}
+                    </if>
+                    <if test="query.belongIds != null and query.belongIds.length > 0">
+                        AND bt.belong_id IN
+                        <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                            #{item}
+                        </foreach>
+                    </if>
+                </where>
+                GROUP BY
+                    IF ( #{query.dateType} = 0, bt.id, bt.business_year )
+            ) bt4 ON t.businessDate = bt4.business_date
+        GROUP BY
+            t.businessDate
+        ORDER BY
+            t.businessDate
     </select>
 </mapper>

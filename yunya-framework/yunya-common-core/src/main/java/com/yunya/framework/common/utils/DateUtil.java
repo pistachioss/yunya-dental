@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateTime;
 import com.yunya.framework.common.exception.ClientServiceException;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -22,6 +21,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
  * @create 2019-08-11 10:26
  */
 public class DateUtil {
+    private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
     private DateUtil(){};
 
@@ -138,7 +138,6 @@ public class DateUtil {
         cal.set(Calendar.MONTH, month - 1);// 1月从0开始
         cal.set(Calendar.DAY_OF_MONTH, day);
         int count = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         for (int j = 0; j <= (count - 1); ) {
             if (sdf.format(cal.getTime()).equals(getLastDay(year, month)))
                 break;
@@ -248,7 +247,9 @@ public class DateUtil {
             result.add(tempStart.getTime());
             tempStart.add(Calendar.DAY_OF_YEAR, 1);
         }
-        result.add(endDate);
+        if (!result.contains(endDate)) {
+            result.add(endDate);
+        }
         if (pageNum!=-1 && pageSize!=-1) {
             result = pagination(result, pageNum, pageSize);
         }
@@ -319,7 +320,6 @@ public class DateUtil {
      * @throws ParseException
      */
     public static int daysBetween(Date smdate,Date bdate) throws ParseException {
-        SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
         smdate = sdf.parse(sdf.format(smdate));
         bdate = sdf.parse(sdf.format(bdate));
         Calendar cal = Calendar.getInstance();
@@ -340,7 +340,7 @@ public class DateUtil {
         String nowStr = new DateTime().toDateStr();
         Date curDate;
         try {
-            curDate = new SimpleDateFormat("yyyy-MM-dd").parse(nowStr);
+            curDate = sdf.parse(nowStr);
         } catch (ParseException e) {
             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
@@ -353,16 +353,33 @@ public class DateUtil {
      * @return
      */
     public static Date yesterday() {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY,-24);
-        String yesterdayDate = dateFormat.format(calendar.getTime());
+        String yesterdayDate = sdf.format(calendar.getTime());
         Date yesterday;
         try {
-            yesterday = dateFormat.parse(yesterdayDate);
+            yesterday = sdf.parse(yesterdayDate);
         } catch (ParseException e) {
             throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
         }
         return yesterday;
+    }
+
+    /**
+     * 格式成日期yyyy-MM-dd
+     *
+     * @param date
+     * @return
+     */
+    public static Date toDate(Date date) {
+        if (date == null) {
+            return date;
+        }
+        try {
+            date = sdf.parse(sdf.format(date));
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+        }
+        return date;
     }
 }

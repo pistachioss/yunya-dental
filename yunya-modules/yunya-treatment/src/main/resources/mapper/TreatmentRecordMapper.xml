@@ -262,4 +262,50 @@
         </foreach>
     </select>
 
+    <!-- 查询完成初诊人数 -->
+    <select id="selectCompletedFirstTreatPerNum" resultType="java.lang.Integer">
+        SELECT
+        COUNT( DISTINCT tr.patient_id ) AS firstTreatPerNumCompleted
+        FROM
+        treatment_record tr
+        <where>
+            AND tr.type = 0
+            AND tr.treat_end_time IS NOT NULL
+            <if test="query.dateType == 0">
+                AND DATE_FORMAT(tr.crt_time, '%Y-%m') = #{query.businessDate}
+            </if>
+            <if test="query.dateType == 1">
+                AND DATE_FORMAT(tr.crt_time, '%Y') = #{query.businessDate}
+            </if>
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND tr.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询完成就诊人次 -->
+    <select id="selectCompletedTreatPerTimes" resultType="java.lang.Integer">
+        SELECT
+        COUNT( tr.id ) AS firstTreatPerNumCompleted
+        FROM
+        treatment_record tr
+        <where>
+            AND tr.treat_end_time IS NOT NULL
+            <if test="query.dateType == 0">
+                AND DATE_FORMAT(tr.crt_time, '%Y-%m') = #{query.businessDate}
+            </if>
+            <if test="query.dateType == 1">
+                AND DATE_FORMAT(tr.crt_time, '%Y') = #{query.businessDate}
+            </if>
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND tr.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
 </mapper>

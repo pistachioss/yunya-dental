@@ -116,6 +116,14 @@ public class AttendancePunchRecordVO implements Serializable {
     @ApiModelProperty(value = "时长（分钟）")
     private String minutes;
 
+    /** 员工排班id，按天请假、外勤时为空、加班时为班次模板id */
+    @ApiModelProperty(value = "员工排班id，按天请假、外勤时为空、加班时为班次模板id")
+    private Integer esId;
+
+    /*是否在有效时间范围内打卡：0-否，1-是*/
+    @ApiModelProperty(value = "是否在有效时间范围内打卡：0-否，1-是")
+    private Byte isInScope;
+
     public Date getPunchTime() {
         if (punchTime == null) {
             return punchTime;

@@ -161,7 +161,7 @@ public class BaseTreatmentProcessBiz
     List<Integer> appointIds = new ArrayList<>();
     baseTreatmentProcessVOS.stream().filter(
             baseTreatmentProcessVO -> {
-              return null != baseTreatmentProcessVO.getAppointmentId() && baseTreatmentProcessVO.getAppointStatus() !=2 && baseTreatmentProcessVO.getRegisteredId() == null;
+              return null != baseTreatmentProcessVO.getAppointmentId() && baseTreatmentProcessVO.getAppointStatus() < 4 && baseTreatmentProcessVO.getRegisteredId() == null;
             }).forEach(baseTreatmentProcessVO -> {
       appointIds.add(baseTreatmentProcessVO.getAppointmentId());
     });
@@ -182,45 +182,48 @@ public class BaseTreatmentProcessBiz
         }
       }
       for (BaseTreatmentProcessVO appointmentUnDonePatientInfoVO : baseTreatmentProcessVOS) {
-        PatientTreatmentInfo4ListVO entity = new PatientTreatmentInfo4ListVO();
-        entity.setOrgId(appointmentUnDonePatientInfoVO.getOrgId());
-        entity.setAppointId(appointmentUnDonePatientInfoVO.getAppointmentId());
-        entity.setTreatStatus(appointmentUnDonePatientInfoVO.getAppointStatus());
-        Date appointStartTime = appointmentUnDonePatientInfoVO.getAppointStartTime();
-        if (null != appointStartTime) {
-          entity.setNodeTime(dateFormat.format(appointStartTime));
-        }
-        entity.setPatientId(appointmentUnDonePatientInfoVO.getPatientId());
-        entity.setDentistId(appointmentUnDonePatientInfoVO.getAppointDentistId());
-        entity.setDentistName(appointmentUnDonePatientInfoVO.getAppointDentistName());
-        if (StringHelper.isNotEmpty(assistantInfos)) {
-          List<Appointment> collect = appointmentListByIds.stream().filter(appointment -> appointment.getId().equals(appointmentUnDonePatientInfoVO.getAppointmentId())).collect(Collectors.toList());
-          if (StringHelper.isNotEmpty(collect)) {
-            Appointment appointment = collect.get(0);
-            // 获取预约助手信息
-            List<SysUserInfoDetail> assistantInfoList = assistantInfos.stream().filter(sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(appointment.getAssistantId())).collect(Collectors.toList());
-            if (StringHelper.isNotEmpty(assistantInfoList)) {
-              SysUserInfoDetail userInfoDetail = assistantInfoList.get(0);
-              entity.setAssistantId(appointment.getAssistantId());
-              entity.setAssistantName(
-                      StringHelper.isBlank(userInfoDetail.getName()) ?
-                              "--" : userInfoDetail.getName());
+        Integer appointmentId = appointmentUnDonePatientInfoVO.getAppointmentId();
+        if (appointIds.contains(appointmentId)) {
+          PatientTreatmentInfo4ListVO entity = new PatientTreatmentInfo4ListVO();
+          entity.setOrgId(appointmentUnDonePatientInfoVO.getOrgId());
+          entity.setAppointId(appointmentUnDonePatientInfoVO.getAppointmentId());
+          entity.setTreatStatus(appointmentUnDonePatientInfoVO.getAppointStatus());
+          Date appointStartTime = appointmentUnDonePatientInfoVO.getAppointStartTime();
+          if (null != appointStartTime) {
+            entity.setNodeTime(dateFormat.format(appointStartTime));
+          }
+          entity.setPatientId(appointmentUnDonePatientInfoVO.getPatientId());
+          entity.setDentistId(appointmentUnDonePatientInfoVO.getAppointDentistId());
+          entity.setDentistName(appointmentUnDonePatientInfoVO.getAppointDentistName());
+          if (StringHelper.isNotEmpty(assistantInfos)) {
+            List<Appointment> collect = appointmentListByIds.stream().filter(appointment -> appointment.getId().equals(appointmentUnDonePatientInfoVO.getAppointmentId())).collect(Collectors.toList());
+            if (StringHelper.isNotEmpty(collect)) {
+              Appointment appointment = collect.get(0);
+              // 获取预约助手信息
+              List<SysUserInfoDetail> assistantInfoList = assistantInfos.stream().filter(sysUserInfoDetail -> sysUserInfoDetail.getUserId().equals(appointment.getAssistantId())).collect(Collectors.toList());
+              if (StringHelper.isNotEmpty(assistantInfoList)) {
+                SysUserInfoDetail userInfoDetail = assistantInfoList.get(0);
+                entity.setAssistantId(appointment.getAssistantId());
+                entity.setAssistantName(
+                        StringHelper.isBlank(userInfoDetail.getName()) ?
+                                "--" : userInfoDetail.getName());
+              }
             }
           }
-        }
-        // 设置患者年龄
-        List<PatientTotalInfoVo> collect = patientTotalInfo.stream().filter(patientTotalInfoVo -> patientTotalInfoVo.getId().equals(appointmentUnDonePatientInfoVO.getPatientId())).collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(collect)) {
-          PatientTotalInfoVo patientTotalInfoVo = collect.get(0);
-          if (null != patientTotalInfoVo) {
-            // 患者姓名暂时从患者服务查询，目前报表同步患者信息不成功
-            entity.setPatientName(patientTotalInfoVo.getName());
-            entity.setAge(patientTotalInfoVo.getAge());
-            entity.setGender(patientTotalInfoVo.getGender());
+          // 设置患者年龄
+          List<PatientTotalInfoVo> collect = patientTotalInfo.stream().filter(patientTotalInfoVo -> patientTotalInfoVo.getId().equals(appointmentUnDonePatientInfoVO.getPatientId())).collect(Collectors.toList());
+          if (StringHelper.isNotEmpty(collect)) {
+            PatientTotalInfoVo patientTotalInfoVo = collect.get(0);
+            if (null != patientTotalInfoVo) {
+              // 患者姓名暂时从患者服务查询，目前报表同步患者信息不成功
+              entity.setPatientName(patientTotalInfoVo.getName());
+              entity.setAge(patientTotalInfoVo.getAge());
+              entity.setGender(patientTotalInfoVo.getGender());
+            }
           }
+          entity.setOrgId(appointmentUnDonePatientInfoVO.getOrgId());
+          patientTreatmentInfo4ListVOS.add(entity);
         }
-        entity.setOrgId(appointmentUnDonePatientInfoVO.getOrgId());
-        patientTreatmentInfo4ListVOS.add(entity);
       }
     }
 

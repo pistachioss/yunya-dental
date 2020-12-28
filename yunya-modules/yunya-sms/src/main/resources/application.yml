@@ -25,6 +25,10 @@ spring:
     nacos:
       discovery:
         server-addr: 192.168.31.215:8848
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 100MB
 
 mybatis:
   mapperLocations: classpath:mapper/*Mapper.xml
@@ -51,7 +55,6 @@ hystrix:
         isolation:
           thread:
             timeoutInMilliseconds: 30000
-
 
 aliyun:
   sms:

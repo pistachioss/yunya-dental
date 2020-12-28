@@ -140,6 +140,13 @@ public class VisitingRecordVo implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
     private Date updTime;
 
+    /** 实际随访执行人ID */
+    @ApiModelProperty(value = "实际随访执行人ID")
+    private Integer executorId;
+    /** 实际随访执行人名字 */
+    @ApiModelProperty(value = "实际随访执行人名字")
+    private String executorName;
+
     /******************************* 患者信息 ********************************/
     /** 患者姓名 */
     @ApiModelProperty(value = "患者姓名")

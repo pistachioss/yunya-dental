@@ -306,7 +306,10 @@ public class SystemServiceRest {
    */
   @RequestMapping(value = "/userInfo/ids/list", method = RequestMethod.POST)
   public List<SysUserInfoDetail> findSysUserEmployeeInfoByUserIds(@RequestBody List<Integer> userIds) {
-    return sysUserBiz.findUserInfoByUserIds(userIds);
+    if (StringHelper.isNotEmpty(userIds)) {
+      return sysUserBiz.findUserInfoByUserIds(userIds);
+    }
+    return new ArrayList<>();
   }
 
   /**

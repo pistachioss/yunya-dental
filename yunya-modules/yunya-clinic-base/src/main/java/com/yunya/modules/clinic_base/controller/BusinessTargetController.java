@@ -1,7 +1,10 @@
 package com.yunya.modules.clinic_base.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.BusinessTargetModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
+import com.yunya.feign.clinic_base.domain.query.WorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
@@ -63,12 +68,34 @@ public class BusinessTargetController implements Serializable {
     businessTargetBiz.saveOrUpdate(model);
     return ResponseUtil.success(null);
   }
-  
-  @ApiOperation("运营报表-工作目标")
-  @PostMapping(value = "/report", name = "运营报表-工作目标")
-  public ResponseResult<T> report() {
-      
-      return ResponseUtil.success(null);
+
+  /**
+   * 根据条件查询门诊业务目标列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-工作目标-业务目标")
+  @PostMapping(value = "/goal/list", name = "根据条件查询门诊业务目标列表")
+  public ResponseResult<PageInfo<BusinessWorkGoalVO>> businessWorkGoalList(
+      @RequestBody @Validated WorkGoalQuery query) {
+    PageInfo<BusinessWorkGoalVO> pageInfo = businessTargetBiz.findBusinessWorkGoalList(query);
+    return ResponseUtil.success(pageInfo);
   }
-  
+
+  /**
+   * 根据条件导出门诊业务目标列表
+   *
+   * @param response http响应
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-工作目标-业务目标-导出")
+  @PostMapping(value = "/goal/list/export", name = "根据条件导出门诊业务目标列表")
+  public ResponseResult<T> exportBusinessWorkGoalList(
+      HttpServletResponse response, @RequestBody @Validated WorkGoalQuery query)
+      throws IOException {
+    businessTargetBiz.exportBusinessWorkGoalList(response, query);
+    return ResponseUtil.success(null);
+  }
 }

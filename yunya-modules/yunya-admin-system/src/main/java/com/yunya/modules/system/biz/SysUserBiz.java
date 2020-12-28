@@ -8,7 +8,7 @@ import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -47,8 +47,7 @@ import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployee;
 import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseUserPost;
 import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNATION_STATUS;
 import static com.yunya.framework.common.constant.OperationCodeConstants.*;
-import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_USER_ID;
-import static com.yunya.framework.common.constant.RedisConstants.REDIS_KEY_USER_TOKEN;
+import static com.yunya.framework.common.constant.RedisConstants.*;
 import static com.yunya.framework.common.constant.UserConstant.DEFAULT_USER_PASSWORD;
 import static com.yunya.framework.common.constant.UserConstant.PW_ENCODER_SALT;
 
@@ -95,7 +94,8 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
    * @param queryForm 查询条件
    * @return
    */
-  public PageInfo<SysUserInfoDetail> findUserDetailWithOrgList(SysUserInfoDetailQueryFrom queryForm) {
+  public PageInfo<SysUserInfoDetail> findUserDetailWithOrgList(
+      SysUserInfoDetailQueryFrom queryForm) {
     if (queryForm.getWhetherPage()) {
       PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
     }
@@ -134,7 +134,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
         } else {
           sysEmployee.setLeaveTime(leaveTime);
         }
-
       }
       sysEmployee.setPinyin(HanyuPinyinHelper.getFirstLettersLo(resource.getName()));
       sysEmployee.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
@@ -147,7 +146,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
         insertUserLoginOrganization(userId, organizationForms);
       }
       // 发送消息同步员工信息
-//      rabbitMqServiceFeign.sendMessage(userId, 0, BaseEmployee);
+      rabbitMqServiceFeign.sendMessage(userId, 0, BaseEmployee);
     }
   }
 
@@ -244,7 +243,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       sysEmployeeEntity.setUpdTime(new Date(System.currentTimeMillis()));
       sysEmployeeMapper.updateByPrimaryKeySelective(sysEmployeeEntity);
       // 发送消息同步员工信息
-//      rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
+      rabbitMqServiceFeign.sendMessage(userId, 1, BaseEmployee);
     }
     // 用户名被修改或就职状态改为离职,将当前用户从缓存中移除
     if (!currentUsername.equals(form.getMobilePhone())
@@ -314,7 +313,6 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     return mapper.selectSysUserEmployeeInfoByUserIds(userIds);
   }
 
-
   /**
    * 根据用户ID删除用户及关联员工信息
    *
@@ -358,6 +356,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
   /**
    * 修改用户密码
+   *
    * @param form 密码表单
    * @return
    */
@@ -372,12 +371,12 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
     // 校验旧密码是否正确
     BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
-    if (!encoder.matches(oldPwd,originPwd)) {
-      return ResponseUtil.fail(PASSWORD_ERROR,"旧密码输入错误",null);
+    if (!encoder.matches(oldPwd, originPwd)) {
+      return ResponseUtil.fail(PASSWORD_ERROR, "旧密码输入错误", null);
     }
     // 校验新密码和确认密码是否正确
     if (!newPwd.equals(confirmPwd)) {
-      return ResponseUtil.fail(PASSWORD_ERROR,"新密码和确认密码不一致",null);
+      return ResponseUtil.fail(PASSWORD_ERROR, "新密码和确认密码不一致", null);
     }
     // 密码加密，加盐，设置默认密码
     sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode(newPwd));
@@ -387,6 +386,7 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
 
   /**
    * 忘记密码
+   *
    * @param form 忘记密码表单
    * @return 返回状态
    */
@@ -394,63 +394,87 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
     String newPwd = form.getNewPwd();
     String confirmPwd = form.getConfirmPwd();
     String authCode = form.getAuthCode();
-    String userid = BaseContextHandler.getUserID();
     String mobile = form.getMobile();
-
     // 验证新密码和确认密码是否相同
     if (!newPwd.equals(confirmPwd)) {
-      return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"新密码和确认密码不一致",null);
+      return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL, "新密码和确认密码不一致", null);
     }
     // 短信验证码是否正确
-    String key = RedisConstants.FORGET_PWD_AUTHORIZATION + mobile;
+    String key = FORGET_PWD_AUTHORIZATION + mobile;
     if (!redisUtils.hasKey(key)) {
-      return ResponseUtil.fail(DATA_NOT_EXIST,"验证码过期,请重新发送",null);
+      return ResponseUtil.fail(DATA_NOT_EXIST, "验证码过期,请重新发送", null);
     }
     String authCordCache = redisUtils.get(key);
     if (!authCordCache.equals(authCode)) {
-      return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL,"验证码无效,请重新发送",null);
+      return ResponseUtil.fail(PARAMETERS_IS_ILLEGAL, "验证码无效,请重新发送", null);
     }
-    SysUser sysUser = mapper.selectByPrimaryKey(Integer.valueOf(userid));
+    SysUser entity = new SysUser();
+    entity.setMobilePhone(mobile);
+    SysUser sysUser = mapper.selectOne(entity);
     if (null != sysUser) {
       // 密码加密，加盐，设置默认密码
       sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode(newPwd));
+      sysUser.setUpdId(sysUser.getId());
+      sysUser.setUpdName(sysUser.getName());
       mapper.updateByPrimaryKey(sysUser);
     }
+    redisUtils.delete(key);
     return ResponseUtil.success();
   }
 
-
   /**
-   * @param mobile 手机号
-   * 获取修改密码短信验证码
+   * 设置短信验证码
+   *
+   * @param mobile 手机号 获取修改密码短信验证码
    */
   public ResponseResult authorizationCode(String mobile) {
-    String  messageCode = this.messageCodeGenerator();
     // 发送短信验证码
-    String key = RedisConstants.FORGET_PWD_AUTHORIZATION + mobile;
-//    if (redisUtils.hasKey(key)) {
-//      return ResponseUtil.fail(OBJECT_EDIT_FAIL,"消息已发送, 请稍后再试",null);
-//    }
-    redisUtils.set(key, messageCode,60);
+    String key = FORGET_PWD_AUTHORIZATION + mobile;
+    if (redisUtils.hasKey(key)) {
+      return ResponseUtil.fail(OBJECT_EDIT_FAIL, "消息已发送, 请稍后再试", null);
+    }
+    String messageCode = this.messageCodeGenerator();
+    // 设置验证码到缓存
+    redisUtils.set(key, messageCode, 60);
     SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
-    smsVerifyCodeModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
-    smsVerifyCodeModel.setName(BaseContextHandler.getName());
-    smsVerifyCodeModel.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     smsVerifyCodeModel.setMobile(mobile);
     smsVerifyCodeModel.setVerifyCode(messageCode);
     smsVerifyCodeModel.setEventCode(SmsAutosendEventEnum.FORGET_PASSWORD.getCode());
     ResponseResult responseResult = remoteSmsServiceFeign.sendVerifyCode(smsVerifyCodeModel);
-    if (responseResult==null) {
-      return ResponseUtil.fail(OPERATION_FAIL,"短信验证码发送失败",null);
+    if (responseResult == null) {
+      return ResponseUtil.fail(OPERATION_FAIL, "短信验证码发送失败", null);
     }
     if (responseResult.getStatus() != 0) {
-      return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
+      return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(), null);
     }
     return ResponseUtil.success("短信验证码已发送");
   }
 
   /**
+   * 重置密码
+   * @param userId 用户ID
+   * @return 返回结果信息
+   */
+  public ResponseResult resetPassword(Integer userId) {
+    SysUser entity = new SysUser();
+    entity.setId(userId);
+    SysUser sysUser = mapper.selectOne(entity);
+    if (null != sysUser) {
+      // 密码加密，加盐，设置默认密码
+      sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode("123456"));
+      sysUser.setUpdId(sysUser.getId());
+      sysUser.setUpdName(sysUser.getName());
+      int i = mapper.updateByPrimaryKey(sysUser);
+      if (i > 0) {
+        return ResponseUtil.success();
+      }
+    }
+    return ResponseUtil.fail(OBJECT_EDIT_FAIL,"密码重置失败,请确认用户是否存在",null);
+  }
+
+  /**
    * 随机生成六位数，并且每位数都不重复
+   *
    * @return 返回短信验证码
    */
   private String messageCodeGenerator() {
@@ -472,5 +496,4 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
       return String.valueOf(messageCodeGenerator());
     }
   }
-
 }

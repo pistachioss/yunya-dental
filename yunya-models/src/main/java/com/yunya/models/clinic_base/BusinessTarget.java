@@ -51,6 +51,12 @@ public class BusinessTarget {
     private String businessMonth;
 
     /**
+     * 业务目标所属年月
+     */
+    @Column(name = "business_date")
+    private String businessDate;
+
+    /**
      * 单位
      */
     private String unit;
@@ -209,18 +215,35 @@ public class BusinessTarget {
      *
      * @return business_date - 业务目标时间月
      */
-
     public String getBusinessMonth() {
         return businessMonth;
     }
 
     /**
-     * 设置业务目标时间月
+     * 设置业务目标时间年月
      *
-     * @return business_month - 业务目标时间
+     * @return business_date - 业务目标时间
      */
     public void setBusinessMonth(String businessMonth) {
         this.businessMonth = businessMonth;
+    }
+
+    /**
+     * 获取业务目标时间月
+     *
+     * @return business_date - 业务目标时间月
+     */
+    public String getBusinessDate() {
+        return businessDate;
+    }
+
+    /**
+     * 设置业务目标时间年月
+     *
+     * @return business_date - 业务目标时间
+     */
+    public void setBusinessDate(String businessDate) {
+        this.businessDate = businessDate;
     }
 
     /**

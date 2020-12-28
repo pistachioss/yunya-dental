@@ -318,8 +318,8 @@
                 and btp.org_id = #{orgId}
             </if>
             <if test="currentDate != null and currentDate != ''">
-                and date_format(btp.appoint_start_time,'%Y-%m-%d') in (date_format(#{currentDate},'%Y-%m-%d'))
-                and date_format(btp.treat_start_time,'%Y-%m-%d') in (date_format(#{currentDate},'%Y-%m-%d'))
+                and (date_format(btp.appoint_start_time,'%Y-%m-%d') in (date_format(#{currentDate},'%Y-%m-%d'))
+                or date_format(btp.treat_start_time,'%Y-%m-%d') in (date_format(#{currentDate},'%Y-%m-%d')))
             </if>
         </where>
     </select>

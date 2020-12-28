@@ -2,6 +2,8 @@ package com.yunya.modules.treatment.controller.rpc;
 
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
+import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.vo.CompletedBusinessWorkGoalVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
@@ -12,6 +14,7 @@ import com.yunya.models.treatment.TreatmentRecord;
 import com.yunya.modules.treatment.biz.*;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotEmpty;
@@ -63,7 +66,7 @@ public class TreatmentServiceRest {
    * 根据商品分类ID查询商品分类信息
    *
    * @param id 商品分类ID
-   * @return
+   * @return BaseOralTariffCategory
    */
   @RequestMapping(value = "/oral/category/{id}", method = RequestMethod.GET)
   public BaseOralTariffCategory findBaseOralTariffCategoryById(
@@ -87,7 +90,7 @@ public class TreatmentServiceRest {
    * 根据商品项目ID查询商品项目信息
    *
    * @param id 商品项目ID
-   * @return
+   * @return BaseOralTariff
    */
   @RequestMapping(value = "/oral/one/{id}", method = RequestMethod.GET)
   public BaseOralTariff findBaseOralTariffById(@PathVariable(value = "id") Integer id) {
@@ -98,7 +101,7 @@ public class TreatmentServiceRest {
    * 根据条件查询商品项目列表
    *
    * @param entity 查询条件
-   * @return
+   * @return List<BaseOralTariff>
    */
   @RequestMapping(value = "/oral/list", method = RequestMethod.POST)
   public List<BaseOralTariff> findBaseOralTariffList(@RequestBody BaseOralTariff entity) {
@@ -109,7 +112,7 @@ public class TreatmentServiceRest {
    * 根据价目表分类ID查询价目表分类信息
    *
    * @param id 价目表分类ID
-   * @return
+   * @return BaseTariffCategory
    */
   @RequestMapping(value = "/base/one/{id}", method = RequestMethod.GET)
   public BaseTariffCategory findBaseTariffCategoryById(@PathVariable(value = "id") Integer id) {
@@ -120,7 +123,7 @@ public class TreatmentServiceRest {
    * 根据条件查询价目表分类列表
    *
    * @param entity 查询条件
-   * @return
+   * @return List<BaseTariffCategory>
    */
   @RequestMapping(value = "/base/list", method = RequestMethod.POST)
   public List<BaseTariffCategory> findBaseTariffCategoryList(
@@ -154,7 +157,7 @@ public class TreatmentServiceRest {
    * 根据条件查询价目表列表
    *
    * @param entity 查询条件
-   * @return
+   * @return List<BaseTariff>
    */
   @RequestMapping(value = "/tariff/list", method = RequestMethod.POST)
   public List<BaseTariff> findBaseTariffList(@RequestBody BaseTariff entity) {
@@ -165,7 +168,7 @@ public class TreatmentServiceRest {
    * 根据条件查询门诊价目表信息
    *
    * @param entity 门诊价目表
-   * @return
+   * @return ClinicTariff
    */
   @RequestMapping(value = "/clinic/tariff/one", method = RequestMethod.POST)
   public ClinicTariff findClinicTariff(@RequestBody ClinicTariff entity) {
@@ -178,7 +181,7 @@ public class TreatmentServiceRest {
    * @param orgId 组织ID
    * @param memberType 会员类型
    * @param itemId 项目ID
-   * @return
+   * @return ClinicTariffMemberPrice
    */
   @RequestMapping(value = "/clinic/tariff/param", method = RequestMethod.POST)
   public ClinicTariffMemberPrice findClinicTariffMemberPrice(
@@ -196,7 +199,7 @@ public class TreatmentServiceRest {
    * 根据条件查询门诊商品信息
    *
    * @param entity 商品价目表
-   * @return
+   * @return ClinicOralTariff
    */
   @RequestMapping(value = "/clinic/oral/one", method = RequestMethod.POST)
   public ClinicOralTariff findClinicOralTariff(@RequestBody ClinicOralTariff entity) {
@@ -209,7 +212,7 @@ public class TreatmentServiceRest {
    * @param orgId 组织ID
    * @param memberType 会员类型
    * @param itemId 项目ID
-   * @return
+   * @return ClinicOralTariffMemberPrice
    */
   @RequestMapping(value = "/clinic/oral/param", method = RequestMethod.POST)
   public ClinicOralTariffMemberPrice findClinicOralTariffMemberPrice(
@@ -227,7 +230,7 @@ public class TreatmentServiceRest {
    * 根据挂号记录ID查询挂号记录
    *
    * @param id 挂号记录ID
-   * @return
+   * @return Registered
    */
   @RequestMapping(value = "/registered/one/{id}", method = RequestMethod.GET)
   public Registered findRegisteredById(@PathVariable(value = "id") Integer id) {
@@ -249,7 +252,7 @@ public class TreatmentServiceRest {
    * 根据条件查询挂号记录列表
    *
    * @param entity 挂号记录
-   * @return
+   * @return List<Registered>
    */
   @RequestMapping(value = "/registered/list", method = RequestMethod.POST)
   public List<Registered> findRegisteredList(@RequestBody Registered entity) {
@@ -260,7 +263,7 @@ public class TreatmentServiceRest {
    * 根据就诊记录ID查询就诊记录
    *
    * @param id 就诊记录ID
-   * @return
+   * @return TreatmentRecord
    */
   @RequestMapping(value = "/treatment/one/{id}", method = RequestMethod.GET)
   public TreatmentRecord findTreatmentRecordById(@PathVariable(value = "id") Integer id) {
@@ -271,7 +274,7 @@ public class TreatmentServiceRest {
    * 根据就诊记录ID列表查询就诊记录列表
    *
    * @param ids 就诊记录ID列表
-   * @return
+   * @return List<TreatmentRecordExtendVO>
    */
   @RequestMapping(value = "/treatment/section", method = RequestMethod.POST)
   public List<TreatmentRecordExtendVO> findTreatmentRecordByIds(
@@ -286,7 +289,7 @@ public class TreatmentServiceRest {
    * 根据条件查询就诊记录信息
    *
    * @param entity 就诊记录
-   * @return
+   * @return TreatmentRecord
    */
   @RequestMapping(value = "/treatment/example", method = RequestMethod.POST)
   public TreatmentRecord findTreatmentRecordByExample(@RequestBody TreatmentRecord entity) {
@@ -297,7 +300,7 @@ public class TreatmentServiceRest {
    * 根据条件查询就诊记录列表
    *
    * @param entity 就诊记录
-   * @return
+   * @return List<TreatmentRecord>
    */
   @RequestMapping(value = "/treatment/list", method = RequestMethod.POST)
   public List<TreatmentRecord> findTreatmentRecordList(@RequestBody TreatmentRecord entity) {
@@ -318,7 +321,7 @@ public class TreatmentServiceRest {
    * 根据开单记录ID查询开单记录
    *
    * @param id 开单记录ID
-   * @return
+   * @return OrderRecord
    */
   @RequestMapping(value = "/order/one/{id}", method = RequestMethod.GET)
   public OrderRecord findOrderRecordById(@PathVariable(value = "id") Integer id) {
@@ -329,7 +332,7 @@ public class TreatmentServiceRest {
    * 根据开单记录ID查询开单明细列表
    *
    * @param orderRecordId 开单记录ID
-   * @return
+   * @return List<OrderDetail>
    */
   @RequestMapping(value = "/order/detail/list/{orderRecordId}", method = RequestMethod.GET)
   public List<OrderDetail> findOrderDetailByOrderRecordId(
@@ -347,8 +350,7 @@ public class TreatmentServiceRest {
    */
   @RequestMapping(value = "/patient/debt/amount", method = RequestMethod.POST)
   public List<DebtAmountModel> selectDebtAmountList(@RequestBody List<Integer> patientIds) {
-    List<DebtAmountModel> debtAmountModels = billRecordBiz.selectDebtAmountList(patientIds);
-    return debtAmountModels;
+    return billRecordBiz.selectDebtAmountList(patientIds);
   }
 
   /**
@@ -360,5 +362,17 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/patient/registered/list", method = RequestMethod.POST)
   List<RegisteredVO> registeredInfoDetails(@RequestBody List<Integer> registeredIds) {
     return registeredBiz.registeredInfoDetails(registeredIds);
+  }
+
+  /**
+   * 查询完成的业务目标
+   *
+   * @param query 查询条件
+   * @return CompletedBusinessWorkGoalVO
+   */
+  @RequestMapping(value = "/business/goal", method = RequestMethod.POST)
+  public CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
+      @RequestBody @Validated CompletedWorkGoalQuery query) {
+    return billRecordBiz.findClinicCompletedBusinessWorkGoal(query);
   }
 }

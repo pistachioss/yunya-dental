@@ -6,6 +6,7 @@ import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.middletable.service.BaseTreatmentProcessBiz;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @description:
  * @since: 1.0.0
  */
+@Slf4j
 @RestController
 @RequestMapping("treatment_process")
 public class BaseTreatmentProcessController {
@@ -37,6 +39,7 @@ public class BaseTreatmentProcessController {
   @ApiOperation("根据消息操作中间表就诊流程")
   @PostMapping(value = "/operate", name = "根据消息操作中间表就诊流程")
   public ResponseResult<T> operateTreatmentProcess(@RequestBody @Validated MessageModel msg) {
+    log.info("根据消息操作中间表就诊流程========> {}",msg);
     treatmentProcessBiz.operateTreatmentProcess(msg);
     return ResponseUtil.success(null);
   }

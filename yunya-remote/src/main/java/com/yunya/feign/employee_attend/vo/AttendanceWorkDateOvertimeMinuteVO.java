@@ -53,6 +53,11 @@ public class AttendanceWorkDateOvertimeMinuteVO implements Serializable {
     @ApiModelProperty(value = "打卡地点/WIFI")
     private String punchAddress;
 
+
+    /** 是否在有效时间范围内打卡：0-否，1-是 */
+    @ApiModelProperty(value = "是否在有效时间范围内打卡：0-否，1-是")
+    private String isInScope;
+
     public Date getPunchTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         String timeStr = sdf.format(punchTime);

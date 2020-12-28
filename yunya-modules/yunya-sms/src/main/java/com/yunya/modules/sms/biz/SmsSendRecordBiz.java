@@ -15,6 +15,7 @@ import com.yunya.feign.sms.vo.SmsTemplateSetVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -28,6 +29,7 @@ import com.yunya.models.sms.SmsSendBatch;
 import com.yunya.models.sms.SmsSendRecord;
 import com.yunya.modules.sms.enums.SmsApprovalStatusEnum;
 import com.yunya.modules.sms.enums.SmsSendStatusEnum;
+import com.yunya.modules.sms.enums.SmsSenseEnum;
 import com.yunya.modules.sms.enums.SmsTypeEnum;
 import com.yunya.modules.sms.mapper.SmsSendRecordMapper;
 import com.yunya.modules.sms.utl.AliyunSmsUtl;
@@ -67,6 +69,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private RedisUtils redisUtils;
+
 
     /**
      * 分页查询短信发送记录列表
@@ -151,14 +154,20 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     public ResponseResult<T> sendVerifyCode(SmsVerifyCodeModel smsVerifyCodeModel) {
         Integer orgId = smsVerifyCodeModel.getOrgId();
         SmsTemplateSetVO smsTemplateSetVO = checkTemplateSetInfo(smsVerifyCodeModel.getEventCode(), null);
+        if (SmsSenseEnum.DEVICE_BINDING_VERIFYCODE.getCode().equals(smsTemplateSetVO.getSense())
+            || SmsSenseEnum.RETRIEVE_PWD_VERIFYCODE.getCode().equals(smsTemplateSetVO.getSense())) {
+            orgId = BusinessConstants.COMPANY_ORGID;
+        }
         try {
+            Integer userId = smsVerifyCodeModel.getUserId();
+            String name = smsVerifyCodeModel.getName();
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS,String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
                 return ResponseUtil.fail(BALANCE_INSUFFICIENT,"短信余额不足！",null);
             }
             Integer batchId = smsSendBatchBiz.insertEntity(orgId, smsTemplateSetVO.getId(),
-                    SmsTypeEnum.VERIFY_CODE.getCode(), 1, smsVerifyCodeModel.getUserId(), smsVerifyCodeModel.getName());
+                    SmsTypeEnum.VERIFY_CODE.getCode(), 1, userId, name);
             String content = smsTemplateSetVO.getTemplateContent();
             int count = StringHelper.countChild("@", content);
             String signName = smsTemplateSetVO.getSignName();
@@ -178,9 +187,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
-            Integer userId = smsVerifyCodeModel.getUserId();
             String mobile = smsVerifyCodeModel.getMobile();
-            String name = smsVerifyCodeModel.getName();
             Integer recordId = insertSelective(orgId, batchId, builder, mobile,
                     userId, name, userId, name);
             String bizId = AliyunSmsUtl.sendSms(mobile, signName, smsTemplateSetVO.getTemplateCode(), param);

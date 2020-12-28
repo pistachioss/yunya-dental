@@ -3,6 +3,8 @@ package com.yunya.feign.treatment.factory;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
+import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
+import com.yunya.feign.treatment.domain.vo.CompletedBusinessWorkGoalVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.models.tariff.*;
 import com.yunya.models.treatment.OrderDetail;
@@ -150,6 +152,12 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
 
   @Override
   public List<RegisteredVO> registeredInfoDetails(List<Integer> registeredIds) {
+    return null;
+  }
+
+  @Override
+  public CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
+      CompletedWorkGoalQuery query) {
     return null;
   }
 }

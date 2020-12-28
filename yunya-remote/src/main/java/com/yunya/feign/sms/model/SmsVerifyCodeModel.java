@@ -48,20 +48,17 @@ public class SmsVerifyCodeModel implements Serializable {
      * 用户id
      */
     @ApiModelProperty(value = "用户id",required = true)
-    @NotNull(message = "用户id不能为空")
     private Integer userId;
 
     /**
      * 用户姓名
      */
     @ApiModelProperty(value = "用户姓名",required = true)
-    @NotBlank(message = "用户姓名不能为空")
     private String name;
 
     /**
      * 组织id
      */
     @ApiModelProperty("组织id")
-    @NotNull(message = "组织id不能为空")
     private Integer orgId;
 }

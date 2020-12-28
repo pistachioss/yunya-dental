@@ -177,34 +177,6 @@ public class CompanyReportOfOperationController {
   }
 
   /**
-   * 根据条件查询门诊业务目标列表
-   *
-   * @param query 查询条件
-   * @return
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-工作目标-业务目标")
-  @PostMapping(value = "/goal/business/list", name = "根据条件查询门诊业务目标列表")
-  public ResponseResult<T> clinicWorkGoalList(@RequestBody @Validated ClinicWorkGoalQuery query) {
-
-    return ResponseUtil.success(null);
-  }
-
-  /**
-   * 根据条件导出门诊业务目标列表
-   *
-   * @param response http响应
-   * @param query 查询条件
-   * @return
-   */
-  @ApiOperation("公司端报表-报表统计-运营报表-工作目标-业务目标-导出")
-  @PostMapping(value = "/goal/business/list/export", name = "根据条件导出门诊业务目标列表")
-  public ResponseResult<T> exportClinicWorkGoalList(
-      HttpServletResponse response, @RequestBody @Validated ClinicWorkGoalQuery query) {
-
-    return ResponseUtil.success(null);
-  }
-
-  /**
    * 根据条件查询门诊运营分析数据总览
    *
    * @param query 查询条件

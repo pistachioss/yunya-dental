@@ -286,6 +286,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     if (patientBaseInfo == null) {
       return ResponseUtil.fail(OperationCodeConstants.RETURN_VALUE_ISNULL, "未查询到患者信息", "");
     }
+    // 计算年龄
+    Integer age = StringHelper.differFromDate(patientBaseInfo.getBirthday(), new Date(System.currentTimeMillis()));
+    patientBaseInfo.setAge(age);
     PatientBaseInfoVo patientBaseInfoVo = new PatientBaseInfoVo();
     BeanUtils.copyProperties(patientBaseInfo, patientBaseInfoVo);
     int originType = 2;

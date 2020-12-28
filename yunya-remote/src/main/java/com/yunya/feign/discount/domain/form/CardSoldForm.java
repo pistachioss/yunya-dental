@@ -26,6 +26,9 @@ public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "卡券id集合", required = true)
     @NotEmpty
     private List<Integer> cardIds;
+    @ApiModelProperty(value = "卡密集合", required = true)
+    @NotEmpty
+    private List<Integer> cardSecrets;
     @ApiModelProperty(value = "售出对象", required = true)
     @NotBlank
     private String soldTarget;
@@ -36,7 +39,7 @@ public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "售出类型（0:售出 1:置换 2:赠送）", required = true)
     @NotNull
     private Integer soldType;
-    @ApiModelProperty(value = "发短信", required = true)
+    @ApiModelProperty(value = "发短信：0-不发送，1-发送", required = true)
     @NotNull
     private Integer sendText;
     @ApiModelProperty(value = "售出并付款")
@@ -56,6 +59,9 @@ public class CardSoldForm implements Serializable {
     @ApiModelProperty(value = "优惠券类型（0-代金券；1-折扣券；2-兑换券；3-套餐券；4-充值券）", required = true)
     @NotNull
     private Integer couponType;
+    @ApiModelProperty(value = "产品名称")
+    @NotBlank(message = "产品名称不能为空")
+    private String couponName;
 
     public interface SoldAndPayViewGroup {
     }

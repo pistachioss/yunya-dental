@@ -130,10 +130,11 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
                 if (StringHelper.isNotBlank(orgId)) {
                     build.setOrgId(Integer.parseInt(orgId));
                 }
+                Integer currentUserId = Integer.valueOf(BaseContextHandler.getUserID());
                 build.setVisitingDate(visitingContentModel.getVisitingDate());
                 build.setVisitingTime(visitingContentModel.getVisitingTime());
                 build.setReason(visitingContentModel.getReason());
-                build.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
+                build.setCrtId(currentUserId);
                 build.setCrtName(BaseContextHandler.getName());
                 build.setCrtTime(new Date(System.currentTimeMillis()));
                 int result = mapper.insertSelective(build);
@@ -277,7 +278,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         String search = query.getSearch();
         String medicalNumber = query.getMedicalNumber();
         String distentName = query.getDistentName();
-         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
+        List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         PageInfo<VisitingRecordVo> visitingRecordVoPageInfo = new PageInfo<>(visitingRecordVos);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()){
             // 组合随访记录信息
@@ -392,7 +393,6 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         if (patientTotalInfo != null) {
             visitingRecordVo.setAllergen(patientTotalInfo.getAllergensDescriptions());
         }
-
         return visitingRecordVo;
     }
 
@@ -507,11 +507,14 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
             return ResponseUtil.success("该随访不存在");
         }
 
+        Integer currentUserId = Integer.valueOf(BaseContextHandler.getUserID());
         visitingRecord.setVisitingContent(form.getVisitingContent());
         visitingRecord.setStatus(true);
-        visitingRecord.setUptId(Integer.valueOf(BaseContextHandler.getUserID()));
+        visitingRecord.setUptId(currentUserId);
         visitingRecord.setUpdName(BaseContextHandler.getName());
         visitingRecord.setUpdTime(new Date(System.currentTimeMillis()));
+        visitingRecord.setExecutorId(currentUserId);
+        visitingRecord.setExecutorName(BaseContextHandler.getName());
         int result = mapper.updateByPrimaryKeySelective(visitingRecord);
         if (result > 0){
             VisitingRecordQuery query = new VisitingRecordQuery();
@@ -549,9 +552,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         List<VisitingRecordVo> visitingRecordVos = mapper.findVisitingRecordByCondition(query);
         if (visitingRecordVos != null && !visitingRecordVos.isEmpty()) {
             // 组合随访记录信息
-            visitingRecordVos.forEach(visitingRecordVo -> {
-                this.comboVisitingRecord(visitingRecordVo);
-            });
+            visitingRecordVos.forEach(this::comboVisitingRecord);
         }
         return visitingRecordVos;
     }

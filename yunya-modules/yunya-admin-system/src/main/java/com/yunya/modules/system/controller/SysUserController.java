@@ -3,6 +3,7 @@ package com.yunya.modules.system.controller;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.annation.CurrentUser;
+import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
@@ -12,9 +13,7 @@ import com.yunya.modules.system.domain.form.ForgetPasswordForm;
 import com.yunya.modules.system.domain.form.ModificationPasswordForm;
 import com.yunya.modules.system.domain.form.SysUserForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -164,9 +163,9 @@ public class SysUserController {
    * @param form 忘记密码表单
    * @return 返回状态
    */
+  @IgnoreUserToken
   @ApiOperation("忘记密码")
   @PostMapping("/forget/password")
-  @CurrentUser
   public ResponseResult forgetPassword(@RequestBody @Validated ForgetPasswordForm form) {
     return sysUserBiz.forgetPassword(form);
   }
@@ -178,12 +177,27 @@ public class SysUserController {
    */
   @ApiOperation("获取修改密码短信验证码")
   @GetMapping("/authorization/code")
-  @CurrentUser
   public ResponseResult authorizationCode(
-      @Pattern(regexp = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$")
+      @Pattern(regexp = "^1(3([0-35-9]\\d|4[1-8])|4[14-9]\\d|5([0-35689]\\d|7[1-79])|66\\d|7[2-35-8]\\d|8\\d{2}|9[13589]\\d)\\d{7}$")
           @NotBlank(message = "手机号不能为空")
           @ApiParam(name = "mobile", value = "手机号")
           String mobile) {
     return sysUserBiz.authorizationCode(mobile);
+  }
+
+  /**
+   * 重置用户密码
+   *
+   * @param userId 用户ID
+   * @return 返回状态
+   */
+  @ApiOperation("重置用户密码")
+  @PostMapping("/reset/password/{userId}")
+  @CurrentUser
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "userId", value = "用户ID", required = true, dataTypeClass = Integer.class)
+  })
+  public ResponseResult<T> resetPassword(@PathVariable("userId") Integer userId) {
+    return sysUserBiz.resetPassword(userId);
   }
 }

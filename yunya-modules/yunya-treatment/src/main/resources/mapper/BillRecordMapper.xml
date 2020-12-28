@@ -104,17 +104,18 @@
     </select>
 
     <!-- 根据患者ID查询患者账单统计数据列表 -->
-    <select id="selectPatientBillStatisticsByPatientIds" resultType="com.yunya.feign.treatment.domain.vo.PatientBillStatistics">
+    <select id="selectPatientBillStatisticsByPatientIds"
+            resultType="com.yunya.feign.treatment.domain.vo.PatientBillStatistics">
         select
-            br.patient_id as patientId,
-            ifnull(sum(br.receivable_amount), 0) as billTotalOriginalPrice,
-            ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
-            ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
-            ifnull(sum(br.received_amount), 0) as billTotalReceivedPrice,
-            ifnull(sum(br.debt_amount), 0) as billTotalArrears
+        br.patient_id as patientId,
+        ifnull(sum(br.receivable_amount), 0) as billTotalOriginalPrice,
+        ifnull(sum(br.privilege_amount), 0) as billTotalPrivilegePrice,
+        ifnull(sum(br.actual_receivable_amount), 0) as billTotalActualPrice,
+        ifnull(sum(br.received_amount), 0) as billTotalReceivedPrice,
+        ifnull(sum(br.debt_amount), 0) as billTotalArrears
         from bill_record br
         where inservice = true and
-            br.patient_id in
+        br.patient_id in
         <foreach collection="patientIds" item="patientId" open="(" separator="," close=")">
             #{patientId}
         </foreach>
@@ -133,14 +134,14 @@
     <!-- PC照片影像小程序已结账列表 -->
     <select id="desktopBillingList" resultType="com.yunya.feign.treatment.domain.vo.DesktopMiniProgramVO">
         select distinct
-            br.treatment_record_id as id,
-            br.patient_id          as patientId,
-            r.first_visit          as firstVisit,
-            r.dentist_id           as dentistId,
-            tr.treat_start_time    as treatStartTime
+        br.treatment_record_id as id,
+        br.patient_id as patientId,
+        r.first_visit as firstVisit,
+        r.dentist_id as dentistId,
+        tr.treat_start_time as treatStartTime
         from bill_record br
-                 left join registered r on r.patient_id = br.patient_id
-                 left join treatment_record tr on tr.patient_id = br.patient_id and tr.id = br.treatment_record_id
+        left join registered r on r.patient_id = br.patient_id
+        left join treatment_record tr on tr.patient_id = br.patient_id and tr.id = br.treatment_record_id
         where date_format(br.crt_time, '%Y-%m-%d') = date_format(#{currentDate}, '%Y-%m-%d')
         <if test="orgId != null">
             and br.org_id = #{orgId}
@@ -166,5 +167,61 @@
         from bill_record br
                  left join order_detail od on od.treatment_record_id = br.treatment_record_id
         where br.treatment_record_id = #{treatmentId}
+    </select>
+
+    <!-- 查询完成实收金额 -->
+    <select id="selectCompletedActualReceivedAmount" resultType="java.math.BigDecimal">
+        SELECT
+        SUM( IFNULL( br.actual_receivable_amount, 0 ) ) AS actualReceivedAmountCompleted
+        FROM
+        bill_record br
+        <where>
+            AND br.inservice = 1
+            <if test="query.dateType == 0">
+                AND DATE_FORMAT(br.crt_time, '%Y-%m') = #{query.businessDate}
+            </if>
+            <if test="query.dateType == 1">
+                AND DATE_FORMAT(br.crt_time, '%Y') = #{query.businessDate}
+            </if>
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND br.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 查询完成工作量 -->
+    <select id="selectCompletedWorkloadAmount" resultType="java.math.BigDecimal">
+        SELECT
+        IFNULL(SUM( odpr.actual_receivable ) + SUM( odpr.coupon_workload ), 0) AS workloadAmountCompleted
+        FROM
+        order_detail_pay_record odpr
+        <where>
+            AND odpr.inservice = 1
+            <if test="query.dateType == 0">
+                AND DATE_FORMAT(odpr.crt_time, '%Y-%m') = #{query.businessDate}
+            </if>
+            <if test="query.dateType == 1">
+                AND DATE_FORMAT(odpr.crt_time, '%Y') = #{query.businessDate}
+            </if>
+            AND odpr.order_detail_id IN (
+            SELECT
+            od.id
+            FROM
+            order_detail od
+            <where>
+                AND od.inservice = 1
+                AND od.executor_id IS NOT NULL
+                <if test="query.belongIds != null and query.belongIds.length > 0">
+                    AND od.org_id IN
+                    <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            )
+        </where>
     </select>
 </mapper>

@@ -6,11 +6,15 @@ import com.yunya.feign.employee_attend.form.AttendanceDeviceBindingQueryForm;
 import com.yunya.feign.employee_attend.model.AttendanceDeviceBindingModel;
 import com.yunya.feign.employee_attend.vo.AttendanceDeviceBindingVO;
 import com.yunya.feign.sms.RemoteSmsServiceFeign;
+import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.RedisConstants;
+import com.yunya.framework.common.context.BaseContextHandler;
+import com.yunya.framework.common.enums.SmsAutosendEventEnum;
+import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.framework.common.utils.StringHelper;
@@ -21,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -63,9 +69,10 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
     public PageInfo<AttendanceDeviceBindingVO> findBindingDeviceEmployeeList(AttendanceDeviceBindingQueryForm queryForm) {
         Map<Integer, Integer> attendanceDeviceBindingVOMap = new LinkedHashMap<>();
 
-        // 日期范围过滤
+        // 最后绑定日期过滤用户最后绑定的记录处于该条件下
         queryForm.setWhetherPage(false);
         List<AttendanceDeviceBindingVO> attendanceDeviceBindingVOList = mapper.findBindingDeviceList(queryForm);
+
         attendanceDeviceBindingVOList.forEach(attendanceDeviceBindingVO -> {
             Integer userId = attendanceDeviceBindingVO.getUserId();
             Integer count = attendanceDeviceBindingVOMap.get(userId);
@@ -88,8 +95,22 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             }
         }
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         List<AttendanceDeviceBindingVO> attendanceDeviceBindingVOS = attendanceDeviceBindingVOList.stream().filter(attendanceDeviceBindingVO -> {
+            Date bindingTime = queryForm.getBindingTime();
             if (DEVICE_BINDED.equals(attendanceDeviceBindingVO.getBindingStatus())) {
+                if (bindingTime != null) {
+                    Date bindTime = attendanceDeviceBindingVO.getBindingTime();
+                    try {
+                        bindTime = sdf.parse(sdf.format(bindTime));
+                        bindingTime = sdf.parse(sdf.format(bindingTime));
+                    } catch (ParseException e) {
+                        throw new ClientServiceException("日期转换错误", DATA_TRANSFORMATION_EXIST);
+                    }
+                    if (!bindingTime.equals(bindTime)) {
+                        return false;
+                    }
+                }
                 return true;
             }
             return false;
@@ -263,7 +284,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
             return ResponseUtil.fail(OBJECT_EDIT_FAIL,"短信验证码已发送，请稍后再试",null);
         }
         redisUtils.set(key, messageCode, DEVICE_BINDING_AUTH_EXPIRE);
-        /*SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
+        SmsVerifyCodeModel smsVerifyCodeModel = new SmsVerifyCodeModel();
         smsVerifyCodeModel.setUserId(Integer.parseInt(BaseContextHandler.getUserID()));
         smsVerifyCodeModel.setName(BaseContextHandler.getName());
         smsVerifyCodeModel.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
@@ -276,7 +297,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         }
         if (responseResult.getStatus() != 0) {
             return ResponseUtil.fail(OPERATION_FAIL, responseResult.getMsg(),null);
-        }*/
+        }
         return ResponseUtil.success("短信验证码已发送", messageCode);
     }
 

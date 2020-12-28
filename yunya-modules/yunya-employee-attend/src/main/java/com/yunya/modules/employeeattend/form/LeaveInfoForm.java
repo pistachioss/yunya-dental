@@ -42,7 +42,11 @@ public class LeaveInfoForm {
      */
     @ApiModelProperty("假期类型id")
     private Integer vacationId;
-
+    /**
+     * 假期类型id
+     */
+    @ApiModelProperty("假期类型 0：班次 1：天")
+    private Integer vacationStatus;
     /**
      * 开始时间
      */
