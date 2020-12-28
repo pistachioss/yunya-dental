@@ -43,6 +43,18 @@ public class VisitingRecord {
     private Integer deptRoomId;
 
     /**
+     * 随访执行人ID
+     */
+    @Column(name = "executor_id")
+    private Integer executorId;
+
+    /**
+     * 随访执行人名字
+     */
+    @Column(name = "executor_name")
+    private String executorName;
+
+    /**
      * 就诊日期
      */
     @Column(name = "treatment_date")
@@ -480,6 +492,38 @@ public class VisitingRecord {
         this.status = status;
     }
 
+    /**
+     * 获取随访执行人ID
+     * @return 随访执行人ID
+     */
+    public Integer getExecutorId() {
+        return executorId;
+    }
+
+    /**
+     * 设置随访执行人ID
+     * @return 随访执行人ID
+     */
+    public void setExecutorId(Integer executorId) {
+        this.executorId = executorId;
+    }
+
+    /**
+     * 获取随访执行人名字
+     * @return 随访执行人名字
+     */
+    public String getExecutorName() {
+        return executorName;
+    }
+
+    /**
+     * 设置随访执行人名字
+     * @return 随访执行人名字
+     */
+    public void setExecutorName(String executorName) {
+        this.executorName = executorName;
+    }
+
     @Override
     public String toString() {
         return "VisitingRecord{" +
@@ -489,6 +533,8 @@ public class VisitingRecord {
                 ", patientId=" + patientId +
                 ", dentistId=" + dentistId +
                 ", deptRoomId=" + deptRoomId +
+                ", executorId=" + executorId +
+                ", executorName=" + executorName +
                 ", treatmentDate=" + treatmentDate +
                 ", visitingDate=" + visitingDate +
                 ", visitingTime='" + visitingTime + '\'' +

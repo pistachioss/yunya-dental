@@ -292,7 +292,7 @@
                 and brr.orgId = #{query.orgId}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
-                and brr.orderDate = #{query.orderDate}
+                and DATE_FORMAT(brr.orderDate,'%Y-%m-%d') = DATE_FORMAT(#{query.orderDate},'%Y-%m-%d')
             </if>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(IFNULL(brr.patientName, ''), IFNULL(brr.pinyinName, ''), IFNULL(brr.mobile, '')) like

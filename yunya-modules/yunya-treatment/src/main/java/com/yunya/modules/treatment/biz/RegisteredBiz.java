@@ -465,15 +465,27 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
       }
     });
     // 查询医生信息
-    List<SysUserInfoDetail> dentistInfoList = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+    List<SysUserInfoDetail> dentistInfoList = null;
+    if (StringHelper.isNotEmpty(dentistIds)) {
+      dentistInfoList = systemServiceFeign.findSysUserEmployeeInfoByUserIds(dentistIds);
+    }
     // 查询助手信息
-    List<SysUserInfoDetail> assistantInfoList = systemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantIds);
+    List<SysUserInfoDetail> assistantInfoList = null;
+    if (StringHelper.isNotEmpty(assistantIds)) {
+      assistantInfoList = systemServiceFeign.findSysUserEmployeeInfoByUserIds(assistantIds);
+    }
     // 查询科室信息
-    List<DepartmentRoom> deptRoomInfoList = systemServiceFeign.findDepartmentRoomByIds(deptRoomIds);
+    List<DepartmentRoom> deptRoomInfoList = null;
+    if (StringHelper.isNotEmpty(deptRoomIds)) {
+      deptRoomInfoList = systemServiceFeign.findDepartmentRoomByIds(deptRoomIds);
+    }
     // 查询患者信息
-    List<PatientTotalInfoVo> patientTotalInfoList = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+    List<PatientTotalInfoVo> patientTotalInfoList = null;
+    if (StringHelper.isNotEmpty(patientIds)) {
+      patientTotalInfoList = remotePatientCentralServiceFeign.findPatientTotalInfo(patientIds);
+    }
     // 注入医生，助手，科室信息
-    registeredVOS.forEach(registeredVO -> {
+    for (RegisteredVO registeredVO : registeredVOS) {
       // 设置组织信息
       registeredVO.setOrgId(registeredVO.getOrgId());
       // 注入医生信息
@@ -503,7 +515,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
           List<DepartmentRoom> departmentRooms = deptRoomInfoList.stream().filter(departmentRoom -> deptRoomId.equals(departmentRoom.getId())).collect(Collectors.toList());
           if (StringHelper.isNotEmpty(departmentRooms)) {
             DepartmentRoom departmentRoom = departmentRooms.get(0);
-            registeredVO.setAssistantName(departmentRoom.getName());
+            registeredVO.setDeptRoomName(departmentRoom.getName());
           }
         }
       }
@@ -518,7 +530,7 @@ public class RegisteredBiz extends BaseBiz<RegisteredMapper, Registered> {
           registeredVO.setGender(patientTotalInfoVo.getGender());
         }
       }
-    });
+    }
     return registeredVOS;
   }
 }
