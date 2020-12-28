@@ -126,34 +126,47 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
                 completedBusinessWorkGoalVO.getActualReceivedAmountCompleted();
             vo.setActualReceivedAmountCompleted(actualReceivedAmountCompleted);
             BigDecimal actualReceivedAmountGoal = vo.getActualReceivedAmountGoal();
-            if (null != actualReceivedAmountGoal && null != actualReceivedAmountCompleted) {
-              vo.setPercentageOfActualReceivedCompletedAmount(
+            if (!BigDecimal.ZERO.equals(actualReceivedAmountGoal)
+                && null != actualReceivedAmountCompleted) {
+              BigDecimal percentageOfActualReceivedCompletedAmount =
                   actualReceivedAmountCompleted.divide(
-                      actualReceivedAmountGoal, 2, BigDecimal.ROUND_HALF_UP));
+                      actualReceivedAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
+              vo.setPercentageOfActualReceivedCompletedAmount(
+                  Float.valueOf(percentageOfActualReceivedCompletedAmount.toString()));
             }
             BigDecimal workloadAmountCompleted =
                 completedBusinessWorkGoalVO.getWorkloadAmountCompleted();
             vo.setWorkloadAmountCompleted(workloadAmountCompleted);
             BigDecimal workloadAmountGoal = vo.getWorkloadAmountGoal();
-            if (null != workloadAmountGoal && null != workloadAmountCompleted) {
+            if (!BigDecimal.ZERO.equals(workloadAmountGoal) && null != workloadAmountCompleted) {
+              BigDecimal percentageOfWorkloadAmountCompleted =
+                  workloadAmountCompleted.divide(workloadAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
               vo.setPercentageOfWorkloadAmountCompleted(
-                  workloadAmountCompleted.divide(workloadAmountGoal, 2, BigDecimal.ROUND_HALF_UP));
+                  Float.valueOf(percentageOfWorkloadAmountCompleted.toString()));
             }
             Integer firstTreatPerNumCompleted =
                 completedBusinessWorkGoalVO.getFirstTreatPerNumCompleted();
             vo.setFirstTreatPerNumCompleted(firstTreatPerNumCompleted);
             Integer firstTreatPerNumGoal = vo.getFirstTreatPerNumGoal();
             if (0 != firstTreatPerNumGoal && null != firstTreatPerNumCompleted) {
+              float percentageOfFirstTreatPerNumCompleted =
+                  (float) firstTreatPerNumCompleted / firstTreatPerNumGoal;
               vo.setPercentageOfFirstTreatPerNumCompleted(
-                  BigDecimal.valueOf(firstTreatPerNumCompleted / firstTreatPerNumGoal));
+                  BigDecimal.valueOf(percentageOfFirstTreatPerNumCompleted)
+                      .setScale(2, BigDecimal.ROUND_HALF_UP)
+                      .floatValue());
             }
             Integer treatPerTimesCompleted =
                 completedBusinessWorkGoalVO.getTreatPerTimesCompleted();
             vo.setTreatPerTimesCompleted(treatPerTimesCompleted);
             Integer treatPerTimesGoal = vo.getTreatPerTimesGoal();
             if (0 != treatPerTimesGoal && null != treatPerTimesCompleted) {
+              float percentageOfTreatPerTimesCompleted =
+                  (float) treatPerTimesCompleted / treatPerTimesGoal;
               vo.setPercentageOfTreatPerTimesCompleted(
-                  BigDecimal.valueOf(treatPerTimesCompleted / treatPerTimesGoal, 2));
+                  BigDecimal.valueOf(percentageOfTreatPerTimesCompleted)
+                      .setScale(2, BigDecimal.ROUND_HALF_UP)
+                      .floatValue());
             }
           });
     }
