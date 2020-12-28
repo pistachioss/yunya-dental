@@ -1283,7 +1283,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     Date offTime = last.getPunchTime();
                     if (AttendanceStatusEnum.LATER_PUNCH.getCode().equals(first.getPunchStatus())) {//迟到
                         long lateDiff = onTime.getTime() - sTime.getTime();
-                        System.out.println(DateUtil.micro2Min(lateDiff));
+//                        System.out.println(DateUtil.micro2Min(lateDiff));
                         incrMinute(laterMinuteMap,userId,orgId,lateDiff);
                         incrNum(laterNumMap,userId,orgId);
                         diff -= lateDiff;
@@ -1291,14 +1291,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     }
                     if (AttendanceStatusEnum.EARLY_PUNCH.getCode().equals(last.getPunchStatus())) {//早退
                         long earlyDiff = eTime.getTime() - offTime.getTime();
-                        System.out.println(DateUtil.micro2Min(earlyDiff));
+//                        System.out.println(DateUtil.micro2Min(earlyDiff));
                         incrMinute(earlyMinuteMap,userId,orgId,earlyDiff);
                         incrNum(earlyNumMap,userId,orgId);
                         diff -= earlyDiff;
                         isFullMap.put(userId, orgId, false);
                     } else if (AttendanceStatusEnum.OFFDUTY_PUNCH.getCode().equals(last.getPunchStatus())) {
                         long workOvertimeDiff = offTime.getTime()-eTime.getTime();
-                        System.out.println(DateUtil.micro2Min(workOvertimeDiff));
+//                        System.out.println(DateUtil.micro2Min(workOvertimeDiff));
                         if (DateUtil.micro2Min(workOvertimeDiff) >= 1) {
                             incrMinute(workDateOvertimeMinuteMap, userId, orgId, workOvertimeDiff);
                             if (DateUtil.micro2Min(workOvertimeDiff) >= 30) {
@@ -1317,23 +1317,20 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     if (AttendanceIsPunchEnum.UNPUNCH.getCode().equals(first.getIsPunch())) {
                         incrNum(unpunchNumMap,userId,orgId);
                     }
-                    if (AttendanceIsPunchEnum.UNPUNCH.getCode().equals(last.getIsPunch())) {
-                        incrNum(unpunchNumMap,userId,orgId);
-                    }
                 } else {
                     Date sTime = first.getStartTime();
                     Date eTime = first.getEndTime();
                     Date punchTime = first.getPunchTime();
                     if (AttendanceStatusEnum.LATER_PUNCH.getCode().equals(first.getPunchStatus())) {//迟到
                         long lateDiff = punchTime.getTime() - sTime.getTime();
-                        System.out.println(DateUtil.micro2Min(lateDiff));
+//                        System.out.println(DateUtil.micro2Min(lateDiff));
                         incrMinute(laterMinuteMap,userId,orgId,lateDiff);
                         incrNum(laterNumMap,userId,orgId);
                         diff -= lateDiff;
                         isFullMap.put(userId, orgId, false);
                     } else if (AttendanceStatusEnum.EARLY_PUNCH.getCode().equals(first.getPunchStatus())) {//早退
                         long earlyDiff = eTime.getTime() - punchTime.getTime();
-                        System.out.println(DateUtil.micro2Min(earlyDiff));
+//                        System.out.println(DateUtil.micro2Min(earlyDiff));
                         incrMinute(earlyMinuteMap,userId,orgId,earlyDiff);
                         incrNum(earlyNumMap,userId,orgId);
                         diff -= earlyDiff;
@@ -1341,7 +1338,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     }
                     if (AttendanceStatusEnum.OFFDUTY_PUNCH.getCode().equals(first.getPunchStatus())) {
                         long workOvertimeDiff = punchTime.getTime()-eTime.getTime();
-                        System.out.println(DateUtil.micro2Min(workOvertimeDiff));
+//                        System.out.println(DateUtil.micro2Min(workOvertimeDiff));
                         if (DateUtil.micro2Min(workOvertimeDiff) >= 1) {
                             incrMinute(workDateOvertimeMinuteMap, userId, orgId, workOvertimeDiff);
                             if (DateUtil.micro2Min(workOvertimeDiff) >= 30) {
@@ -1351,6 +1348,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     }
                     if (AttendanceIsPunchEnum.UNPUNCH.getCode().equals(first.getIsPunch())) {
                         incrNum(unpunchNumMap,userId,orgId);
+                    }
+                    for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
+                        Date lSTime = leaveInfoVO.getStartTime();
+                        Date lETime = leaveInfoVO.getEndTime();
+                        if (leaveInfoVO.getVacationStatus().equals(0) && leaveInfoVO.getScheduleId().equals(esId)
+                                && sTime.before(lSTime) && eTime.after(lETime)) {
+                            diff -= lETime.getTime() - lSTime.getTime();
+                        }
                     }
                 }
             } else {//有效时间范围外打卡
@@ -2441,7 +2446,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         // 排班
         Map<Date, List<EmployeeScheduleVO>> employeeScheduleMap = getEmployeeScheduleMapGroupByDate(userId, orgId, betweenDate, andDate);
         // 打卡
-        Map<Date, List<AttendancePunchRecordVO>> punchRecordMap = getPunchRecordMapGroupByDate(userId, null, betweenDate, andDate);
+        Map<Integer, List<AttendancePunchRecordVO>> punchRecords = new HashMap<>();
+        Map<Date, List<AttendancePunchRecordVO>> punchRecordMap = getPunchRecordMapGroupByDate(userId, null, betweenDate, andDate, null, punchRecords);
         // 手动补入时长
         Map<Date, AttendanceManualMakeupVO> manualMakeupMap = getManualMakeupMapGroupByDate(userId, orgId, MakeupTypeEnum.WORKDATE.getCode(), betweenDate, andDate);
         // 请假
@@ -2494,23 +2500,89 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             } else {
                 workDateMinuteVO.setId(0);
             }
+            List<LeaveInfoVO> leaveInfoVOS = leaveInfoMap.get(date);
+            if (leaveInfoVOS!=null && !leaveInfoVOS.isEmpty()) {
+                hasApply = 1;
+            }
             List<EmployeeScheduleVO> employeeScheduleVOS = employeeScheduleMap.get(date);
             if (employeeScheduleVOS==null || employeeScheduleVOS.isEmpty()) {
                 employeeScheduleName.append("未排班");
             } else {
                 for (EmployeeScheduleVO employeeScheduleVO : employeeScheduleVOS) {
                     putEmployeeScheduleName(employeeScheduleVO, employeeScheduleName, hSdf);
+                    Integer esId = employeeScheduleVO.getId();
+                    List<AttendancePunchRecordVO> list = punchRecords.get(esId);
+                    if (list!=null && !list.isEmpty()) {
+                        Date startTime = employeeScheduleVO.getFirstStartTime();
+                        Date endTime = employeeScheduleVO.getSecondEndTime();
+                        if (endTime == null) {
+                            endTime = employeeScheduleVO.getFirstEndTime();
+                        }
+                        diff = endTime.getTime() - startTime.getTime();
+                        AttendancePunchRecordVO first = list.get(0);
+                        if (list.size() == 2) {
+                            AttendancePunchRecordVO last = list.get(1);
+                            if (AttendanceTypeEnum.OFFDUTY.getCode().equals(first.getPunchType())) {
+                                last = first;
+                                first = list.get(1);
+                            }
+                            Date sTime = first.getStartTime();
+                            Date eTime = first.getEndTime();
+                            Date onTime = first.getPunchTime();
+                            Date offTime = last.getPunchTime();
+                            if (AttendanceStatusEnum.LATER_PUNCH.getCode().equals(first.getPunchStatus())) {//迟到
+                                long lateDiff = onTime.getTime() - sTime.getTime();
+                                System.out.println(DateUtil.micro2Min(lateDiff));
+                                diff -= lateDiff;
+                            }
+                            if (AttendanceStatusEnum.EARLY_PUNCH.getCode().equals(last.getPunchStatus())) {//早退
+                                long earlyDiff = eTime.getTime() - offTime.getTime();
+                                System.out.println(DateUtil.micro2Min(earlyDiff));
+                                diff -= earlyDiff;
+                            } else if (AttendanceStatusEnum.OFFDUTY_PUNCH.getCode().equals(last.getPunchStatus())) {
+                                long workOvertimeDiff = offTime.getTime()-eTime.getTime();
+                                System.out.println(DateUtil.micro2Min(workOvertimeDiff));
+                            }
+                            if (leaveInfoVOS!=null && !leaveInfoVOS.isEmpty()) {
+                                for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
+                                    Date lSTime = leaveInfoVO.getStartTime();
+                                    Date lETime = leaveInfoVO.getEndTime();
+                                    if (leaveInfoVO.getVacationStatus().equals(0) && leaveInfoVO.getScheduleId().equals(esId)
+                                            && sTime.before(lSTime) && eTime.after(lETime)) {
+                                        diff -= lETime.getTime() - lSTime.getTime();
+                                    }
+                                }
+                            }
+                        } else {
+                            Date sTime = first.getStartTime();
+                            Date eTime = first.getEndTime();
+                            Date punchTime = first.getPunchTime();
+                            if (AttendanceStatusEnum.LATER_PUNCH.getCode().equals(first.getPunchStatus())) {//迟到
+                                long lateDiff = punchTime.getTime() - sTime.getTime();
+                                System.out.println(DateUtil.micro2Min(lateDiff));
+                                diff -= lateDiff;
+                            } else if (AttendanceStatusEnum.EARLY_PUNCH.getCode().equals(first.getPunchStatus())) {//早退
+                                long earlyDiff = eTime.getTime() - punchTime.getTime();
+                                System.out.println(DateUtil.micro2Min(earlyDiff));
+                                diff -= earlyDiff;
+                            }
+                            if (leaveInfoVOS!=null && !leaveInfoVOS.isEmpty()) {
+                                for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
+                                    Date lSTime = leaveInfoVO.getStartTime();
+                                    Date lETime = leaveInfoVO.getEndTime();
+                                    if (leaveInfoVO.getVacationStatus().equals(0) && leaveInfoVO.getScheduleId().equals(esId)
+                                            && sTime.before(lSTime) && eTime.after(lETime)) {
+                                        diff -= lETime.getTime() - lSTime.getTime();
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
             boolean hasException = false;
             List<AttendancePunchRecordVO> punchRecordVOS = punchRecordMap.get(date);
-            List<LeaveInfoVO> leaveInfoVOS = leaveInfoMap.get(date);
-            if (leaveInfoVOS!=null && !leaveInfoVOS.isEmpty()) {
-                hasApply = 1;
-            }
             if (punchRecordVOS!=null && !punchRecordVOS.isEmpty()) {
-                Date startTime = null;
-                Date endTime = null;
                 AttendancePunchRecordVO onPunchItem = punchRecordVOS.get(0);
                 AttendancePunchRecordVO offPunchItem = punchRecordVOS.get(1);
                 if (onPunchItem.getPunchType().equals(AttendanceTypeEnum.OFFDUTY.getCode())) {
@@ -2518,13 +2590,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                     onPunchItem = punchRecordVOS.get(1);
                 }
                 Byte onSource = onPunchItem.getSource();
-                Integer onSourceId = onPunchItem.getSourceId();
                 Byte isPunch = onPunchItem.getIsPunch();
                 Byte punchType = onPunchItem.getPunchType();
                 onPunchTime = onPunchItem.getPunchTime();
                 String tag = "work";
                 Byte offSource = offPunchItem.getSource();
-                Integer offSourceId = offPunchItem.getSourceId();
                 offPunchTime = offPunchItem.getPunchTime();
                 if (onSource.equals(AttendanceSourceEnum.LEAVE_BYDAY.getCode())
                         ||onSource.equals(AttendanceSourceEnum.REST_SCHEDULE.getCode())
@@ -2538,8 +2608,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 } else if (onSource.equals(AttendanceSourceEnum.FIELD.getCode())) {
                     // 外勤
                     tag = "exception";
+                    hasApply = 3;
                 }
-                long leaveDiff = 0;
                 if (tag == "rest") {
                     if (isPunch.equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {//未打卡
                         punchResult.append(AttendanceTypeEnum.getValue(punchType)).append("无效");
@@ -2559,29 +2629,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             } else {
                                 punchResult.append(AttendanceStatusEnum.getValue(punchStatus));
                                 hasException = true;
-                            }
-                            if (notCurDate && orgId.equals(onPunchItem.getOrgId())
-                                    && onPunchItem.getIsInScope().equals(AttendanceIsInScopeEnum.BELONG.getCode())) {
-                                startTime = onPunchItem.getStartTime();
-                                if (onPunchTime.after(startTime)) {
-                                    startTime = onPunchTime;
-                                }
-                                endTime = onPunchItem.getEndTime();
-                                if (offPunchTime.before(endTime)) {
-                                    endTime = offPunchTime;
-                                }
-                                if (leaveInfoVOS!=null && !leaveInfoVOS.isEmpty()) {
-                                    for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
-                                        Date sTime = leaveInfoVO.getStartTime();
-                                        Date eTime = leaveInfoVO.getEndTime();
-                                        if (leaveInfoVO.getVacationStatus().equals(0)
-                                                && startTime.before(sTime) && endTime.after(eTime)) {//按班次请假，如果被上班班次覆盖了
-                                            leaveDiff = sTime.getTime() - eTime.getTime();
-                                            break;
-                                        }
-                                    }
-                                }
-                                diff += endTime.getTime() - startTime.getTime() + leaveDiff;
                             }
                         }
                     }
@@ -2603,6 +2650,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 } else if (offSource.equals(AttendanceSourceEnum.FIELD.getCode())) {
                     // 外勤
                     tag = "exception";
+                    hasApply = 3;
                 }
                 if (tag == "rest") {
                     if (isPunch.equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {//未打卡
@@ -2629,29 +2677,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             } else {
                                 punchResult.append(AttendanceStatusEnum.getValue(punchStatus));
                                 hasException = true;
-                            }
-                            if (notCurDate && orgId.equals(offPunchItem.getOrgId())
-                                    && offPunchItem.getIsInScope().equals(AttendanceIsInScopeEnum.BELONG.getCode())) {
-                                if (!onSource.equals(offSource) || !onSourceId.equals(offSourceId)) {
-                                    startTime = offPunchItem.getStartTime();
-                                    endTime = offPunchItem.getEndTime();
-                                    if (endTime.after(offPunchTime)) {
-                                        endTime = offPunchTime;
-                                    }
-                                    leaveDiff = 0;
-                                    if (leaveInfoVOS != null && !leaveInfoVOS.isEmpty()) {
-                                        for (LeaveInfoVO leaveInfoVO : leaveInfoVOS) {
-                                            Date sTime = leaveInfoVO.getStartTime();
-                                            Date eTime = leaveInfoVO.getEndTime();
-                                            if (leaveInfoVO.getVacationStatus().equals(0)
-                                                    && startTime.before(sTime) && endTime.after(eTime)) {//按班次请假，如果被上班班次覆盖了
-                                                leaveDiff = sTime.getTime() - eTime.getTime();
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    diff += endTime.getTime() - startTime.getTime() + leaveDiff;
-                                }
                             }
                         }
                     }
@@ -3130,10 +3155,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
      * @return
      */
     private Map<Date, List<AttendancePunchRecordVO>> getPunchRecordMapGroupByDate(Integer userId, Integer orgId, Date betweenDate, Date andDate) {
-        return getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, null);
+        return getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, null, null);
     }
 
-    private Map<Date, List<AttendancePunchRecordVO>> getPunchRecordMapGroupByDate(Integer userId, Integer orgId, Date betweenDate, Date andDate, List<Integer> notInIds) {
+    private Map<Date, List<AttendancePunchRecordVO>> getPunchRecordMapGroupByDate(Integer userId, Integer orgId, Date betweenDate, Date andDate,
+                              List<Integer> notInIds, Map<Integer, List<AttendancePunchRecordVO>> punchRecords) {
         AttendancePunchRecordQueryForm recordQueryForm = new AttendancePunchRecordQueryForm();
         recordQueryForm.setBetweenDate(betweenDate);
         recordQueryForm.setAndDate(andDate);
@@ -3151,6 +3177,18 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             }
             list.add(attendancePunchRecordVO);
             attendancePunchRecordMap.put(date, list);
+            Integer esId = attendancePunchRecordVO.getEsId();
+            if (punchRecords!=null && AttendanceSourceEnum.WORK_SCHEDULE.getCode().equals(attendancePunchRecordVO.getSource())
+                && AttendanceIsInScopeEnum.BELONG.getCode().equals(attendancePunchRecordVO.getIsInScope())) {
+                List<AttendancePunchRecordVO> recordVOS = punchRecords.get(esId);
+                if (recordVOS == null) {
+                    recordVOS = new ArrayList<>();
+                }
+                recordVOS.add(attendancePunchRecordVO);
+                punchRecords.put(esId, recordVOS);
+            }
+
+
         });
         return attendancePunchRecordMap;
     }
@@ -3404,7 +3442,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
         List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
-        Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, notInIds);
+        Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, notInIds, null);
         List<AttendanceUnpunchCountVO> result = new ArrayList<>(masterRecordVOS.size());
         Date curDate = DateUtil.getCurrentDate();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
@@ -3479,7 +3517,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         List<AttendancePunchRecordVO> masterRecordVOS = findAttendancePunchRecordListGroupByDate(recordQueryForm);
         List<Integer> notInIds = new ArrayList<>(masterRecordVOS.size());
         masterRecordVOS.forEach(masterRecordVO->notInIds.add(masterRecordVO.getId()));
-        Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, notInIds);
+        Map<Date, List<AttendancePunchRecordVO>> slaveRecordMap = getPunchRecordMapGroupByDate(userId, orgId, betweenDate, andDate, notInIds, null);
         List<AttendanceInvalidCountVO> result = new ArrayList<>(masterRecordVOS.size());
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
         masterRecordVOS.forEach(punchRecord->{

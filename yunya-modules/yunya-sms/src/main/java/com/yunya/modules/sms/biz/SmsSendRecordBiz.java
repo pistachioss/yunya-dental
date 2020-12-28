@@ -12,8 +12,6 @@ import com.yunya.feign.sms.query.SmsSendRecordQueryForm;
 import com.yunya.feign.sms.vo.SmsSendRecordVO;
 import com.yunya.feign.sms.vo.SmsSendVO;
 import com.yunya.feign.sms.vo.SmsTemplateSetVO;
-import com.yunya.feign.system.RemoteSystemServiceFeign;
-import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -65,8 +63,6 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
     private SmsTemplateSetBiz smsTemplateSetBiz;
     @Autowired
     private SmsOrgStatisticsBiz smsOrgStatisticsBiz;
-    @Autowired
-    private RemoteSystemServiceFeign remoteSystemServiceFeign;
     @Autowired
     private RedisUtils redisUtils;
 
@@ -164,7 +160,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS,String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
-                return ResponseUtil.fail(BALANCE_INSUFFICIENT,"短信余额不足！",null);
+                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             Integer batchId = smsSendBatchBiz.insertEntity(orgId, smsTemplateSetVO.getId(),
                     SmsTypeEnum.VERIFY_CODE.getCode(), 1, userId, name);
@@ -216,7 +212,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS,String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
-                return ResponseUtil.fail(OPERATION_NOT_ALLOW,"短信余额不足！",null);
+                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             Integer batchId = smsSendBatchBiz.insertEntity(orgId, templateId, SmsTypeEnum.SMS_NOTIFY.getCode(), models.size());
             String content = smsTemplateSetVO.getTemplateContent();
@@ -305,13 +301,13 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
-                return ResponseUtil.fail(BALANCE_INSUFFICIENT, "短信余额不足！", null);
+                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             String[] mobiles = model.getMobiles().split(",");
             JSONArray templateParamJson = model.getTemplateParamJson();
             Map<Integer, List<StringBuilder>> res = parseSmsContent(mobiles, smsTemplateSetVO, templateParamJson);
             if (res.containsKey(-1)) {
-                return ResponseUtil.fail(OperationCodeConstants.QUERY_RESULT_INVALID, res.get(-1).get(0).toString(), null);
+                throw new ClientServiceException(res.get(-1).get(0).toString(), QUERY_RESULT_INVALID);
             }
             List<StringBuilder> builders = res.get("0");
             List<String> sendObjects = model.getSendObjects();
@@ -363,14 +359,14 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             redisUtils.setLock(RedisConstants.LOCK_SMS_ORG_STATISTICS, String.valueOf(orgId), RedisConstants.SMS_STATISTICS_LOCK_SEC, TimeUnit.SECONDS);
             int surplusNum = smsOrgStatisticsBiz.findSmsOrgStatisticsSurplusByOrgId(orgId);
             if (surplusNum <= 0) {
-                return ResponseUtil.fail(BALANCE_INSUFFICIENT, "短信余额不足！", null);
+                throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             String[] mobiles = model.getMobiles().split(",");
             JSONArray templateParamJson = new JSONArray();
             templateParamJson.add(model.getTemplateParamJson());
             Map<Integer, List<StringBuilder>> res = parseSmsContent(mobiles, smsTemplateSetVO, templateParamJson);
             if (res.containsKey(-1)) {
-                return ResponseUtil.fail(OperationCodeConstants.QUERY_RESULT_INVALID, res.get(-1).get(0).toString(), null);
+                throw new ClientServiceException(res.get(-1).get(0).toString(),QUERY_RESULT_INVALID);
             }
             List<StringBuilder> builders = res.get("0");
             List<String> sendObjects = model.getSendObjects();
@@ -539,24 +535,12 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         int contentNum = 1;
         int length = content.length();
         if (length > 70) {
-            contentNum = length % 67;
+            contentNum = length / 67;
+            if (length % 67 > 0) {
+                ++contentNum;
+            }
         }
         return contentNum;
-    }
-
-    /**
-     * 获取操作人姓名
-     *
-     * @param userId
-     * @return
-     */
-    private String getSendUserNameById(Integer userId) {
-        SysUserInfoDetail sysUserInfoDetail = remoteSystemServiceFeign.findSysUserEmployeeInfoByUserId(userId);
-        String employeeName = "";
-        if (sysUserInfoDetail == null) {
-            employeeName = sysUserInfoDetail.getName();
-        }
-        return employeeName;
     }
 
     /**

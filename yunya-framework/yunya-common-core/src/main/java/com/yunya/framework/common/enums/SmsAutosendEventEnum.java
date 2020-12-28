@@ -17,8 +17,8 @@ public enum SmsAutosendEventEnum {
     MEMBER_CONSUME(2, "会员消费", "member_consume"),
     PREPAY_CHARGE(2, "预付款充值", "prepay_charge"),
     PREPAY_CONSUME(2, "预付款消费", "prepay_consume"),
-    BIRTHDAY_WISH(2, "生日祝福", "birthday_wish"),
-    PRODUCT_EXPIRATION_REMIND(2, "产品到期提醒", "product_expiration_remind"),
+//    BIRTHDAY_WISH(2, "生日祝福", "birthday_wish"),
+//    PRODUCT_EXPIRATION_REMIND(2, "产品到期提醒", "product_expiration_remind"),
     COUPON_SOLD(0, "卡券售出", "coupon_sold"),
     FORGET_PASSWORD(1, "找回密码", "forget_password"),
     ATTENDANCE_DEVICE_BINDING(1, "考勤设备绑定", "attendance_device_binding");

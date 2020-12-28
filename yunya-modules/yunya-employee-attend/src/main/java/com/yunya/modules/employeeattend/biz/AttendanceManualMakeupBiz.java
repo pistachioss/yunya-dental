@@ -45,7 +45,7 @@ public class AttendanceManualMakeupBiz extends BaseBiz<AttendanceManualMakeupMap
     public Integer update(AttendanceManualMakeupModel attendanceManualMakeupModel) {
         Integer minute = attendanceManualMakeupModel.getMinute();
         if (minute != null) {
-            Pattern p = Pattern.compile("^\\d{1,11}$");
+            Pattern p = Pattern.compile("^\\d{0,11}$");
             Matcher mathcer = p.matcher(minute+"");
             if(!mathcer.matches() || minute<=0) {
                 throw new ClientServiceException("补入工作时长只能输入10位以内的正整数", PARAMETERS_IS_ILLEGAL);

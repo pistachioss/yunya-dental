@@ -102,5 +102,9 @@ public interface LeaveInfoMapper extends Mapper<LeaveInfo> {
      */
     List<LeaveInfoVO> findLeaveInfosBySchedule(@Param("queryForm") LeaveInfoQueryForm queryForm);
 
-
+    /**
+     * 根据请假ID获取 假期类型
+     * @return
+     */
+    int findVacationStaus(LeaveInfoForm leaveInfoForm);
 }

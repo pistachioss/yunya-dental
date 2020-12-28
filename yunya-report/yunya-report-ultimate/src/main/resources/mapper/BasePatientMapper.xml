@@ -70,7 +70,7 @@
                 <where>
                     t1.org_id = #{form.orgId}
                   <if test="form.startDate != null and form.startDate != '' and form.endDate != null and form.endDate != '' ">
-                    and DATE_FORMAT(t1.treatStartTime, "%Y-%m-%d") &gt; DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
+                    and DATE_FORMAT(t1.treatStartTime, "%Y-%m-%d") &gt;= DATE_FORMAT(#{form.startDate}, "%Y-%m-%d")
                     and DATE_FORMAT(t1.treatStartTime, "%Y-%m-%d") &lt;= DATE_FORMAT(#{form.endDate}, "%Y-%m-%d")
                   </if>
                 </where>
@@ -102,7 +102,7 @@
         select count(*)
         from base_treatment_process a
         where a.patient_id = t3.patient_id
-        and DATE_FORMAT(a.appoint_start_time, "%Y-%m-%d") > DATE_FORMAT(NOW(), "%Y-%m-%d")
+        and DATE_FORMAT(a.appoint_start_time, "%Y-%m-%d") >= DATE_FORMAT(NOW(), "%Y-%m-%d")
         )
 
         and
@@ -112,7 +112,7 @@
         from base_visit_remind a
         where a.patient_id = t3.patient_id
         and  type = 1
-        and DATE_FORMAT(time, "%Y-%m-%d") > DATE_FORMAT(NOW(), "%Y-%m-%d")
+        and DATE_FORMAT(time, "%Y-%m-%d") >= DATE_FORMAT(NOW(), "%Y-%m-%d")
       )
 
   </select>
