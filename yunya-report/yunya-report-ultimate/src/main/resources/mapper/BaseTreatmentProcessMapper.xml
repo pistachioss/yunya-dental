@@ -311,6 +311,7 @@
             left join base_employee appointDentistNameBe on appointDentistNameBe.user_id = btp.appoint_dentist_id
             left join base_employee regDentistNameBe on regDentistNameBe.user_id = btp.registered_dentist_id
         <where>
+            btp.appoint_status &lt; 2
             <if test="dentistId != null">
                 and #{dentistId} in (btp.appoint_dentist_id,btp.registered_dentist_id)
             </if>

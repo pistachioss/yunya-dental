@@ -1475,7 +1475,7 @@ public class TollBiz {
       Set<PaymentModel> paymentModels) {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
-    if (BigDecimal.valueOf(0).compareTo(totalCharge) >= 0) {
+    if (BigDecimal.valueOf(0).compareTo(totalCharge) > 0) {
       throw new ClientServiceException("收欠费失败，收欠费总额不能小于等于0！", PARAMETERS_IS_ILLEGAL);
     }
     return totalCharge;

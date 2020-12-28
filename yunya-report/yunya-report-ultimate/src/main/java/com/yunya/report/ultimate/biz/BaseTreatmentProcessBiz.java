@@ -187,7 +187,7 @@ public class BaseTreatmentProcessBiz
           PatientTreatmentInfo4ListVO entity = new PatientTreatmentInfo4ListVO();
           entity.setOrgId(appointmentUnDonePatientInfoVO.getOrgId());
           entity.setAppointId(appointmentUnDonePatientInfoVO.getAppointmentId());
-          entity.setTreatStatus(appointmentUnDonePatientInfoVO.getAppointStatus());
+          entity.setTreatStatus((byte) 1);
           Date appointStartTime = appointmentUnDonePatientInfoVO.getAppointStartTime();
           if (null != appointStartTime) {
             entity.setNodeTime(dateFormat.format(appointStartTime));

@@ -213,10 +213,10 @@
                 </foreach>
             </if>
             <if test="query.orderStartDate != null and query.orderStartDate != ''">
-                and bpr.orderDate &gt;= #{query.orderStartDate}
+                and DATE_FORMAT(bpr.orderDate,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.orderStartDate},'%Y-%m-%d')
             </if>
             <if test="query.orderEndDate != null and query.orderEndDate != ''">
-                and bpr.orderDate &lt;= #{query.orderEndDate}
+                and DATE_FORMAT(bpr.orderDate,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.orderEndDate},'%Y-%m-%d')
             </if>
             <if test="query.regDentistIds != null and query.regDentistIds.length > 0">
                 and bpr.regDentistId in
@@ -292,7 +292,7 @@
                 and brr.orgId = #{query.orgId}
             </if>
             <if test="query.orderDate != null and query.orderDate != ''">
-                and DATE_FORMAT(brr.orderDate,'%Y-%m-%d') = DATE_FORMAT(#{query.orderDate},'%Y-%m-%d')
+                and brr.orderDate = #{query.orderDate}
             </if>
             <if test="query.keyword != null and query.keyword != ''">
                 and concat(IFNULL(brr.patientName, ''), IFNULL(brr.pinyinName, ''), IFNULL(brr.mobile, '')) like
