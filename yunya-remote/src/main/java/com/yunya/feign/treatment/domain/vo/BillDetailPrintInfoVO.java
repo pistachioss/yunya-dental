@@ -19,6 +19,8 @@ import java.util.List;
 public class BillDetailPrintInfoVO implements Serializable {
     @ApiModelProperty("订单明细ID")
     private Integer orderDetailId;
+    @ApiModelProperty("开单项目ID")
+    private Integer billingItemId;
     @ApiModelProperty("牙位")
     private String toothBit;
     @ApiModelProperty("数量")
