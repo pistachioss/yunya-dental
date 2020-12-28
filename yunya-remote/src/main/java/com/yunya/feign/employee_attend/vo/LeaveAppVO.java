@@ -33,7 +33,7 @@ public class LeaveAppVO {
     private Date crtTime;
     @ApiModelProperty("请假类型名称")
     private String vacationName;
-    @ApiModelProperty("请假类型")
+    @ApiModelProperty("请假类型 0：班次 1：天")
     private Integer vacationStatus;
     @ApiModelProperty("开始时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
