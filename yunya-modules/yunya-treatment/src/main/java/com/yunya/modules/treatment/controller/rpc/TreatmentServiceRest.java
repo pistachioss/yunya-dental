@@ -350,8 +350,7 @@ public class TreatmentServiceRest {
    */
   @RequestMapping(value = "/patient/debt/amount", method = RequestMethod.POST)
   public List<DebtAmountModel> selectDebtAmountList(@RequestBody List<Integer> patientIds) {
-    List<DebtAmountModel> debtAmountModels = billRecordBiz.selectDebtAmountList(patientIds);
-    return debtAmountModels;
+    return billRecordBiz.selectDebtAmountList(patientIds);
   }
 
   /**
@@ -374,8 +373,6 @@ public class TreatmentServiceRest {
   @RequestMapping(value = "/business/goal", method = RequestMethod.POST)
   public CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
       @RequestBody @Validated CompletedWorkGoalQuery query) {
-    CompletedBusinessWorkGoalVO resultData =
-        billRecordBiz.findClinicCompletedBusinessWorkGoal(query);
-    return resultData;
+    return billRecordBiz.findClinicCompletedBusinessWorkGoal(query);
   }
 }

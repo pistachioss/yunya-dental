@@ -174,7 +174,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
   public void exportBusinessWorkGoalList(HttpServletResponse response, WorkGoalQuery query)
       throws IOException {
     ExcelUtil<BusinessWorkGoalVO> excelUtil = new ExcelUtil<>(BusinessWorkGoalVO.class);
-    List<BusinessWorkGoalVO> resultList = mapper.selectBusinessWorkGoalList(query);
-    excelUtil.exportExcel(response, resultList, "门诊业务目标列表");
+    PageInfo<BusinessWorkGoalVO> pageInfo = findBusinessWorkGoalList(query);
+    excelUtil.exportExcel(response, pageInfo.getList(), "门诊业务目标列表");
   }
 }
