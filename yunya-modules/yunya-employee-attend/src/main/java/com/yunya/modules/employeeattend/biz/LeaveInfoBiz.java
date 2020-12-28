@@ -167,6 +167,10 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
      * @return
      */
     public List<EmLeaveVO> selectBaseByDay(LeaveInfoForm leaveInfoForm) {
+        if(leaveInfoForm.getId()!=null){
+            int a  = mapper.findVacationStaus(leaveInfoForm);
+            leaveInfoForm.setVacationStatus(a);
+        }
         List<EmLeaveVO> list = mapper.selectBaseByDay(leaveInfoForm);
         //获取门诊信息
         OrganizationModel organizationModel = new OrganizationModel();
