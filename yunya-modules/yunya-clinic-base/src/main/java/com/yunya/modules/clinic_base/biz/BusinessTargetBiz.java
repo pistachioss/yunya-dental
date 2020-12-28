@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 
@@ -146,9 +145,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
             Integer firstTreatPerNumGoal = vo.getFirstTreatPerNumGoal();
             if (0 != firstTreatPerNumGoal && null != firstTreatPerNumCompleted) {
               vo.setPercentageOfFirstTreatPerNumCompleted(
-                  new BigDecimal(
-                      BigInteger.valueOf(firstTreatPerNumCompleted / firstTreatPerNumGoal),
-                      BigDecimal.ROUND_HALF_UP));
+                  BigDecimal.valueOf(firstTreatPerNumCompleted / firstTreatPerNumGoal));
             }
             Integer treatPerTimesCompleted =
                 completedBusinessWorkGoalVO.getTreatPerTimesCompleted();
@@ -156,9 +153,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
             Integer treatPerTimesGoal = vo.getTreatPerTimesGoal();
             if (0 != treatPerTimesGoal && null != treatPerTimesCompleted) {
               vo.setPercentageOfTreatPerTimesCompleted(
-                  new BigDecimal(
-                      BigInteger.valueOf(treatPerTimesCompleted / treatPerTimesGoal),
-                      BigDecimal.ROUND_HALF_UP));
+                  BigDecimal.valueOf(treatPerTimesCompleted / treatPerTimesGoal, 2));
             }
           });
     }
