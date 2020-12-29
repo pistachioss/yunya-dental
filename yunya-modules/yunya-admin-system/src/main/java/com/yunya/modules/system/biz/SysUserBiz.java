@@ -8,7 +8,6 @@ import com.yunya.feign.sms.model.SmsVerifyCodeModel;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.system.vo.UserInfo;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.enums.SmsAutosendEventEnum;
 import com.yunya.framework.common.exception.ClientServiceException;

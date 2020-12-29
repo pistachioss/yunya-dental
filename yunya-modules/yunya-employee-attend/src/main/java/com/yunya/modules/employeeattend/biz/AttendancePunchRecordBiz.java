@@ -2211,8 +2211,8 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             Date sDateTime;
             Date eDateTime;
             try {
-                sDateTime = DateUtil.timetoDate(date, startTime);
-                eDateTime = DateUtil.timetoDate(date, endTime);
+                sDateTime = DateUtil.timeToDate(date, startTime);
+                eDateTime = DateUtil.timeToDate(date, endTime);
             } catch (Exception e) {
                 throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
             }
