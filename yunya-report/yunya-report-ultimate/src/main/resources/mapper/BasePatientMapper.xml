@@ -37,7 +37,7 @@
   <select id="selectNotSeenList" resultType="com.yunya.feign.report.domain.vo.BasePatientNotSeenVo">
 
     select
-      treatStartTime lastVisitDate,
+      date_format(treatStartTime,'%y-%m-%d') lastVisitDate,
       name name,
       mobile mobile,
       treatType treatType,

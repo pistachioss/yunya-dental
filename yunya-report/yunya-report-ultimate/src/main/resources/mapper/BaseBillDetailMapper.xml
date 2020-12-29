@@ -474,6 +474,7 @@
         from (
         select
         bb.org_id as orgId,
+        bti.item_type as itemType,
         bti.category_id as categoryId,
         bti.category_name as categoryName,
         bbd.discount_amount as discountAmount,
@@ -492,7 +493,7 @@
                 and bdp.orderDate = #{query.queryDate}
             </if>
         </where>
-        group by bdp.categoryId
+        group by  bdp.itemType, bdp.categoryId
     </select>
 
     <!-- 根据条件查询员工个人实收工作量明细列表 -->

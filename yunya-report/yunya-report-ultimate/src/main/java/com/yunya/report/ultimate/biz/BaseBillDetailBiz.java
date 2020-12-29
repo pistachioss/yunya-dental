@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -51,9 +52,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportBillDetailIncome(
       HttpServletResponse response, BillDetailIncomeDetailQuery query) throws IOException {
+    String fileName = "门诊项目收入明细";
     List<BillTariffIncomeDetailVO> list = mapper.selectBillDetailIncomeList(query);
     ExcelUtil<BillTariffIncomeDetailVO> excelUtil = new ExcelUtil<>(BillTariffIncomeDetailVO.class);
-    excelUtil.exportExcel(response, list, "项目收入明细表");
+    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
+    excelUtil.exportExcel(response, list, fileName);
   }
 
   /**

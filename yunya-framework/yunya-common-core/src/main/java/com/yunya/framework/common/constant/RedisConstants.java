@@ -103,6 +103,12 @@ public class RedisConstants implements Serializable {
   /** 短信统计锁时长 */
   public static final Long SMS_STATISTICS_LOCK_SEC = 600L;
 
+  /** ---------------------------考勤管理----------------------------------------------- */
+  /** 考勤锁 */
+  public static final String LOCK_ATTENDANCE_PUNCH = "lock:attendance:punch";
+  /** 考勤锁时长 */
+  public static final Long ATTENDANCE_PUNCH_LOCK_SEC = 600L;
+
   /**
    * 设置key中的占位符
    * @param keyPrefix key前缀
