@@ -395,15 +395,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     StringBuilder res = new StringBuilder();
     String sDate = query.getStartDate();
     String[] str = sDate.split("-");
-    res.append(str[0]).append(".").append(str[1]).append(".").append(str[2]);
+    for (int i = 0; i < str.length; i++) {
+      if (i>0 && res.length() > 0) {
+        res.append(".");
+      }
+      res.append(str[i]);
+    }
     String eDate = query.getEndDate();
     str = eDate.split("-");
-    res.append("-")
-            .append(str[0])
-            .append(".")
-            .append(str[1]).append(".")
-            .append(str[2])
-            .append(organizationInfo.getAbbreviation())
+    res.append("-");
+    for (int i = 0; i < str.length; i++) {
+      if (i>0 && res.length() > 0) {
+        res.append(".");
+      }
+      res.append(str[i]);
+    }
+    res.append(organizationInfo.getAbbreviation())
             .append("开单项目统计明细表");
     return res.toString();
   }
@@ -414,16 +421,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     StringBuilder res = new StringBuilder(organizationInfo.getAbbreviation());
     String sDate = query.getStartDate();
     String[] str = sDate.split("-");
-    res.append(str[0]).append(".").append(str[1]).append(".").append(str[2]);
+    for (int i = 0; i < str.length; i++) {
+      if (i>0 && res.length() > 0) {
+        res.append(".");
+      }
+      res.append(str[i]);
+    }
     String eDate = query.getEndDate();
     str = eDate.split("-");
-    res.append("-")
-            .append(str[0])
-            .append(".")
-            .append(str[1])
-            .append(".")
-            .append(str[2])
-            .append("开单项目数量统计表");
+    res.append("-");
+    for (int i = 0; i < str.length; i++) {
+      if (i>0 && res.length() > 0) {
+        res.append(".");
+      }
+      res.append(str[i]);
+    }
+    res.append("开单项目数量统计表");
     return res.toString();
   }
 
