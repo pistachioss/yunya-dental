@@ -450,6 +450,28 @@ public class SysUserBiz extends BaseBiz<SysUserMapper, SysUser> {
   }
 
   /**
+   * 重置密码
+   * @param userId 用户ID
+   * @return 返回结果信息
+   */
+  public ResponseResult resetPassword(Integer userId) {
+    SysUser entity = new SysUser();
+    entity.setId(userId);
+    SysUser sysUser = mapper.selectOne(entity);
+    if (null != sysUser) {
+      // 密码加密，加盐，设置默认密码
+      sysUser.setPassword(new BCryptPasswordEncoder(PW_ENCODER_SALT).encode("123456"));
+      sysUser.setUpdId(sysUser.getId());
+      sysUser.setUpdName(sysUser.getName());
+      int i = mapper.updateByPrimaryKey(sysUser);
+      if (i > 0) {
+        return ResponseUtil.success();
+      }
+    }
+    return ResponseUtil.fail(OBJECT_EDIT_FAIL,"密码重置失败,请确认用户是否存在",null);
+  }
+
+  /**
    * 随机生成六位数，并且每位数都不重复
    *
    * @return 返回短信验证码

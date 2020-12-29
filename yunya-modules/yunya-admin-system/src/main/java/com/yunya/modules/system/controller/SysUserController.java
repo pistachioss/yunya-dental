@@ -13,9 +13,7 @@ import com.yunya.modules.system.domain.form.ForgetPasswordForm;
 import com.yunya.modules.system.domain.form.ModificationPasswordForm;
 import com.yunya.modules.system.domain.form.SysUserForm;
 import com.yunya.modules.system.domain.query.SysUserInfoDetailQueryFrom;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -185,5 +183,21 @@ public class SysUserController {
           @ApiParam(name = "mobile", value = "手机号")
           String mobile) {
     return sysUserBiz.authorizationCode(mobile);
+  }
+
+  /**
+   * 重置用户密码
+   *
+   * @param userId 用户ID
+   * @return 返回状态
+   */
+  @ApiOperation("重置用户密码")
+  @PostMapping("/reset/password/{userId}")
+  @CurrentUser
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "userId", value = "用户ID", required = true, dataTypeClass = Integer.class)
+  })
+  public ResponseResult<T> resetPassword(@PathVariable("userId") Integer userId) {
+    return sysUserBiz.resetPassword(userId);
   }
 }

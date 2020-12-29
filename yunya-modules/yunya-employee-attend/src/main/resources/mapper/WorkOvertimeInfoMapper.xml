@@ -65,8 +65,7 @@
         t.overtime_reason as overtimeReason,
         t.approval_people_id as approvalPeopleId,
         t.approval_status as approvalStatus
-        from work_overtime_info t left join employee_schedule es on t.schedule_id=es.id left join base_schedule bs on
-        es.schedule_id=bs.id
+        from work_overtime_info t left join base_schedule bs on t.schedule_id=bs.id
         <where>
             t.approval_status = 1
             <if test="userIds!=null and userIds.size()>0">
@@ -183,9 +182,8 @@
             t.refuse_reason as refuseReason,
             t.crt_time as crtTime,
             bs.first_start_time as startTime,
-            ifnull(bs.second_end_time,bs.first_end_time) as endTime,
-            bs.name as restScheduleName
-        from work_overtime_info t left join employee_schedule es on t.rest_schedule_id=es.id left join base_schedule bs on t.schedule_id=bs.id
+            ifnull(bs.second_end_time,bs.first_end_time) as endTime
+        from work_overtime_info t left join base_schedule bs on t.schedule_id=bs.id
         <where>
             <if test="queryForm.approvalStatus!=null">
                 and t.approval_status = #{queryForm.approvalStatus}
@@ -225,8 +223,7 @@
             mm.minute as markupMinute,
             mm.id as makeupId,
             mm.makeup_desc as makeupDesc
-        from work_overtime_info t left join employee_schedule es on t.rest_schedule_id=es.id
-        left join base_schedule bs on t.schedule_id=bs.id
+        from work_overtime_info t left join base_schedule bs on t.schedule_id=bs.id
         left join attendance_manual_makeup mm on (t.user_id=mm.user_id and t.company_id=mm.org_id and t.work_date=mm.makeup_date)
         <where>
             <if test="queryForm.approvalStatus!=null">

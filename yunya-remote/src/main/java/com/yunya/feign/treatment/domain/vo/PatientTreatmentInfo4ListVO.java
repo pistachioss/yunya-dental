@@ -51,10 +51,10 @@ public class PatientTreatmentInfo4ListVO implements Serializable {
   @ApiModelProperty("助手姓名")
   private String assistantName;
   /** 诊疗状态 */
-  @ApiModelProperty("诊疗状态 0or1-预约未到 2-候诊中 3-就诊中 4-治疗完成 5-已结账")
+  @ApiModelProperty("诊疗状态 1-预约未到 2-候诊中 3-就诊中 4-治疗完成 5-已结账")
   private Byte treatStatus;
   /** 节点时间（预约时间/挂号时间/就诊时间/就诊完成时间） */
-  @ApiModelProperty("节点时间，与就诊状态有关（0or1-预约时间/2-挂号时间/3-就诊时间/4-就诊完成时间/5-结账时间）")
+  @ApiModelProperty("节点时间，与就诊状态有关（1-预约时间/2-挂号时间/3-就诊时间/4-就诊完成时间/5-结账时间）")
   private String nodeTime;
   /** 预约ID */
   @ApiModelProperty("预约ID")

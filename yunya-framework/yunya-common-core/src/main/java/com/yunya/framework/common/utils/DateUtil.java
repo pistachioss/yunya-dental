@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateTime;
 import com.yunya.framework.common.exception.ClientServiceException;
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -16,14 +15,17 @@ import java.util.List;
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 
 /**
- * 描述:
+ * 描述: 日期处理工具类
  *
  * @author Gaoluding
  * @create 2019-08-11 10:26
  */
 public class DateUtil {
 
+  private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+
   private DateUtil() {}
+  ;
 
   public static Date geLastWeekMonday(Date date) {
     Calendar cal = Calendar.getInstance();
@@ -38,7 +40,7 @@ public class DateUtil {
     cal.set(Calendar.HOUR_OF_DAY, 0);
     cal.set(Calendar.MINUTE, 0);
     cal.set(Calendar.SECOND, 0);
-    cal.set(Calendar.MILLISECOND, 0);
+    cal.set(Calendar.MILLISECOND, 000);
     // 获得当前日期是一个星期的第几天
     int dayWeek = cal.get(Calendar.DAY_OF_WEEK);
     if (1 == dayWeek) {
@@ -84,7 +86,11 @@ public class DateUtil {
     Calendar end = Calendar.getInstance();
     end.setTime(endTime);
 
-    return date.after(begin) && date.before(end);
+    if (date.after(begin) && date.before(end)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   public static LocalDateTime dateToLocalDateTime(Date date) {
@@ -134,9 +140,10 @@ public class DateUtil {
     cal.set(Calendar.MONTH, month - 1); // 1月从0开始
     cal.set(Calendar.DAY_OF_MONTH, day);
     int count = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     for (int j = 0; j <= (count - 1); ) {
-      if (sdf.format(cal.getTime()).equals(getLastDay(year, month))) break;
+      if (SDF.format(cal.getTime()).equals(getLastDay(year, month))) {
+        break;
+      }
       cal.add(Calendar.DAY_OF_MONTH, j == 0 ? +0 : +1);
       j++;
       fullDayList.add(cal.getTime());
@@ -248,7 +255,9 @@ public class DateUtil {
       result.add(tempStart.getTime());
       tempStart.add(Calendar.DAY_OF_YEAR, 1);
     }
-    result.add(endDate);
+    if (!result.contains(endDate)) {
+      result.add(endDate);
+    }
     if (pageNum != -1 && pageSize != -1) {
       result = pagination(result, pageNum, pageSize);
     }
@@ -323,9 +332,8 @@ public class DateUtil {
    * @throws ParseException
    */
   public static int daysBetween(Date smdate, Date bdate) throws ParseException {
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-    smdate = sdf.parse(sdf.format(smdate));
-    bdate = sdf.parse(sdf.format(bdate));
+    smdate = SDF.parse(SDF.format(smdate));
+    bdate = SDF.parse(SDF.format(bdate));
     Calendar cal = Calendar.getInstance();
     cal.setTime(smdate);
     long time1 = cal.getTimeInMillis();
@@ -344,7 +352,7 @@ public class DateUtil {
     String nowStr = new DateTime().toDateStr();
     Date curDate;
     try {
-      curDate = new SimpleDateFormat("yyyy-MM-dd").parse(nowStr);
+      curDate = SDF.parse(nowStr);
     } catch (ParseException e) {
       throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
     }
@@ -357,17 +365,34 @@ public class DateUtil {
    * @return
    */
   public static Date yesterday() {
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
     Calendar calendar = Calendar.getInstance();
     calendar.set(Calendar.HOUR_OF_DAY, -24);
-    String yesterdayDate = dateFormat.format(calendar.getTime());
+    String yesterdayDate = SDF.format(calendar.getTime());
     Date yesterday;
     try {
-      yesterday = dateFormat.parse(yesterdayDate);
+      yesterday = SDF.parse(yesterdayDate);
     } catch (ParseException e) {
       throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
     }
     return yesterday;
+  }
+
+  /**
+   * 格式成日期yyyy-MM-dd
+   *
+   * @param date
+   * @return
+   */
+  public static Date toDate(Date date) {
+    if (date == null) {
+      return null;
+    }
+    try {
+      date = SDF.parse(SDF.format(date));
+    } catch (ParseException e) {
+      throw new ClientServiceException("时间转换错误", DATA_TRANSFORMATION_EXIST);
+    }
+    return date;
   }
 
   /** 年日期正则表达式 */
@@ -385,8 +410,7 @@ public class DateUtil {
    * @return 日期字符串
    */
   public static String format(Date date, String pattern) {
-    SimpleDateFormat sd = new SimpleDateFormat(pattern);
-    return sd.format(date);
+    return SDF.format(date);
   }
 
   /**
@@ -398,8 +422,7 @@ public class DateUtil {
    * @throws ParseException 解析异常
    */
   public static Date parse(String date, String pattern) throws ParseException {
-    SimpleDateFormat sd = new SimpleDateFormat(pattern);
-    return sd.parse(date);
+    return SDF.parse(date);
   }
 
   /**

@@ -224,4 +224,27 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
 
     return resultData;
   }
+
+  /**
+   * 根据账单ID查询账单优惠明细
+   * @param billId 账单ID
+   * @return 返回结果信息
+   */
+  /**
+   * 根据账单ID查询账单优惠明细
+   * @param billId 账单ID
+   * @param pageNum 页码 默认1
+   * @param pageSize 分页大小 默认10
+   * @param whetherPage 是否开启分页 默认开启
+   * @return 返回结果信息
+   */
+  public PageInfo<BillDiscountDetailInifoVO> billDiscountDetailInfo(Integer billId, Integer pageNum, Integer pageSize, Boolean whetherPage) {
+    if (null == whetherPage || whetherPage) {
+      pageNum = pageNum == null || pageNum < 1 ? 1 : pageNum;
+      pageSize = pageSize == null || pageSize <= 0 ? 10 : pageSize;
+      PageHelper.startPage(pageNum,pageSize);
+    }
+    List<BillDiscountDetailInifoVO> resultList =  mapper.selectBillDiscountDetailInfo(billId);
+    return new PageInfo<>(resultList);
+  }
 }

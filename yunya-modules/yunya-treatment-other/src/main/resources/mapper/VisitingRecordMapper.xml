@@ -11,6 +11,8 @@
     <result column="patient_id" jdbcType="INTEGER" property="patientId" />
     <result column="dentist_id" jdbcType="INTEGER" property="dentistId" />
     <result column="dept_room_id" jdbcType="INTEGER" property="deptRoomId" />
+    <result column="executor_id" jdbcType="INTEGER" property="executorId" />
+    <result column="executor_name" jdbcType="VARCHAR" property="executorName" />
     <result column="treatment_date" jdbcType="DATE" property="treatmentDate" />
     <result column="visiting_date" jdbcType="DATE" property="visitingDate" />
     <result column="visiting_time" jdbcType="VARCHAR" property="visitingTime" />
@@ -28,12 +30,12 @@
   </resultMap>
 
   <sql id="baseColumns">
-    vr.id,vr.org_id,vr.treatment_id,vr.patient_id,vr.dentist_id,vr.dept_room_id,vr.treatment_date,vr.visiting_date,vr.visiting_time,vr.reason,
+    vr.id,vr.org_id,vr.treatment_id,vr.patient_id,vr.dentist_id,executor_id,executor_name,vr.dept_room_id,vr.treatment_date,vr.visiting_date,vr.visiting_time,vr.reason,
     vr.visiting_content,vr.inservice,vr.remarks,vr.status ,vr.crt_id,vr.crt_name,vr.crt_time,vr.upt_id,vr.upd_name,vr.upd_time
   </sql>
 
   <sql id="FieldAlias">
-    id, org_id as orgId, treatment_id as treatmentId, patient_id as patientId, dentist_id as dentistId, dept_room_id as deptRoomId,
+    id, org_id as orgId, treatment_id as treatmentId, patient_id as patientId, dentist_id as dentistId, dept_room_id as deptRoomId,executor_id as executorId,executor_name as executorName,
     treatment_date as treatmentDate, visiting_date as visitingDate,visiting_time as visitingTime,reason, visiting_content as visitingContent,
     inservice, remarks, `status`, crt_id as crtId, crt_name as crtName, crt_time as crtTime, upt_id as uptId, upd_name as updName, upd_time as updTime
   </sql>
@@ -74,6 +76,9 @@
       </if>
       <if test="query.dentistId != null">
         and vr.dentist_id = #{query.dentistId}
+      </if>
+      <if test="query.executorId != null">
+        and vr.executor_id = #{query.executorId}
       </if>
       <if test="query.crtId != null">
         and vr.crt_id = #{query.crtId}
@@ -118,12 +123,12 @@
   <!-- 批量保存随访记录（就诊服务调用） -->
   <insert id="insertEntitys" parameterType="java.util.List" useGeneratedKeys="true">
     insert into visiting_record (org_id,treatment_id,patient_id,dentist_id,dept_room_id,treatment_date,visiting_date,visiting_time,reason,
-    visiting_content,inservice,remarks,status ,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time)
+    visiting_content,inservice,remarks,status ,crt_id,crt_name,crt_time,upt_id,upd_name,upd_time,executor_id,executor_name)
     values
     <foreach collection="visitingRecords" item="item" separator=",">
       (#{item.orgId},#{item.treatmentId},#{item.patientId},#{item.dentistId},#{item.deptRoomId},#{item.treatmentDate},#{item.visitingDate},#{item.visitingTime},
       #{item.reason},#{item.visitingContent},#{item.inservice},#{item.remarks},#{item.status},#{item.crtId},#{item.crtName},#{item.crtTime},
-      #{item.uptId},#{item.updName},#{item.updTime})
+      #{item.uptId},#{item.updName},#{item.updTime},#{item.executorId},#{item.executorName})
     </foreach>
   </insert>
 

@@ -211,7 +211,9 @@
         LEFT JOIN base_schedule bs on es.schedule_id = bs.id
         LEFT JOIN leave_schedule ls on ls.schedule_id = es.id
         <where>
-         bs.type = '上班'
+            <if test="vacationStatus!= null and vacationStatus = 0">
+                and  bs.type = '上班'
+            </if>
             <if test="startTime!= null">
                 and es.work_date BETWEEN #{startTime} and #{endTime}
             </if>
@@ -409,5 +411,10 @@
     where ai.approval_status in (2,1)
     and ap.user_id = #{userId} group BY ai.leave_id
      order by li.crt_time desc
+    </select>
+    <select id="findVacationStaus" resultType="Integer">
+      select vs.vacation_status from vacation_set vs
+      LEFT JOIN leave_info li on li.vacation_id = vs.id
+      where li.id = #{id}
     </select>
 </mapper>

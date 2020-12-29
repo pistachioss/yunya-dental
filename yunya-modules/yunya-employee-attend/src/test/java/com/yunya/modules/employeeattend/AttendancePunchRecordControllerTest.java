@@ -4,8 +4,11 @@ import com.alibaba.fastjson.JSONObject;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordForm;
 import com.yunya.feign.employee_attend.form.AttendancePunchRecordQueryForm;
 import com.yunya.feign.employee_attend.form.AttendanceStatisticsQueryForm;
+import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.model.ResponseResult;
+import com.yunya.framework.common.utils.DateUtil;
+import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.modules.employeeattend.controller.AttendancePunchRecordController;
 import com.yunya.modules.employeeattend.controller.BaseScheduleController;
 import com.yunya.modules.employeeattend.form.ScheduleForm;
@@ -18,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 简介：
@@ -34,6 +38,14 @@ public class AttendancePunchRecordControllerTest {
     private AttendancePunchRecordController attendancePunchRecordController;
     @Autowired
     private BaseScheduleController baseScheduleController;
+    @Autowired
+    private RedisUtils redisUtils;
+
+    @Test
+    public void clear() {
+        redisUtils.setLock(RedisConstants.LOCK_ATTENDANCE_PUNCH,DateUtil.getCurrentDate().toString(),RedisConstants.ATTENDANCE_PUNCH_LOCK_SEC, TimeUnit.SECONDS);
+        redisUtils.unlock(RedisConstants.LOCK_ATTENDANCE_PUNCH, DateUtil.getCurrentDate().toString());
+    }
 
     @Test
     public void testPunch() {

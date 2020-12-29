@@ -143,7 +143,7 @@ public class BaseTreatmentProcessBiz
       PageHelper.startPage(query.getPageNum(),query.getPageSize());
     }
     List<PatientTreatmentInfo4ListVO> patientTreatmentInfo4ListVOS = new ArrayList<>();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
     List<BaseTreatmentProcessVO> baseTreatmentProcessVOS = mapper.treatmentList4App(query.getOrgId(),query.getDentistId(),query.getQueryDate());
     PageInfo pageInfo = new PageInfo(baseTreatmentProcessVOS);
     if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
@@ -187,7 +187,7 @@ public class BaseTreatmentProcessBiz
           PatientTreatmentInfo4ListVO entity = new PatientTreatmentInfo4ListVO();
           entity.setOrgId(appointmentUnDonePatientInfoVO.getOrgId());
           entity.setAppointId(appointmentUnDonePatientInfoVO.getAppointmentId());
-          entity.setTreatStatus(appointmentUnDonePatientInfoVO.getAppointStatus());
+          entity.setTreatStatus((byte) 1);
           Date appointStartTime = appointmentUnDonePatientInfoVO.getAppointStartTime();
           if (null != appointStartTime) {
             entity.setNodeTime(dateFormat.format(appointStartTime));
