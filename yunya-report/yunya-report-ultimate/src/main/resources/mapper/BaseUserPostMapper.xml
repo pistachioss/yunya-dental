@@ -406,7 +406,8 @@
         </where>
         GROUP BY
         btp.org_id,
-        btp.registered_dentist_id
+        btp.registered_dentist_id,
+        btp.appoint_dentist_id
         ) btp3 ON bup.user_id = btp3.appoint_dentist_id
         AND bup.org_id = btp3.org_id
         LEFT JOIN (
@@ -427,7 +428,8 @@
         </where>
         GROUP BY
         btp.org_id,
-        btp.registered_dentist_id
+        btp.registered_dentist_id,
+        btp.appoint_dentist_id
         ) btp4 ON bup.user_id = btp4.appoint_dentist_id
         AND bup.org_id = btp4.org_id
         LEFT JOIN (
