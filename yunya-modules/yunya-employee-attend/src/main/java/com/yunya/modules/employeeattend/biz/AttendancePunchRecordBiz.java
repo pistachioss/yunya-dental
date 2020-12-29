@@ -919,6 +919,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             if (isPunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode())) {
                if (!source.equals(AttendanceSourceEnum.REST_SCHEDULE.getCode())
                    && !source.equals(AttendanceSourceEnum.LEAVE_BYDAY.getCode())
+                   && !source.equals(AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode())
                    && !curDate.equals(punchDate)) {
                    attendancePunchRecordVO.setOrgName(orgName);
                    unpunchStatisticsList.add(attendancePunchRecordVO);
@@ -1171,6 +1172,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Map<Integer, List<AttendancePunchRecordVO>> punchRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
         Map<Integer, List<AttendancePunchRecordVO>> workOvertimeRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
         Map<Integer, List<AttendancePunchRecordVO>> fieldRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
+        List<Date> remDups = new ArrayList<>(attendancePunchRecordVOS.size());
         attendancePunchRecordVOS.forEach(record->{
             Integer esId = record.getEsId();
             Byte source = record.getSource();
@@ -1216,7 +1218,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 if (record.getPunchStatus().equals(AttendanceStatusEnum.INVALID_PUNCH.getCode())) {//无效卡
                     incrNum(invalidNumMap,userId,orgId);
                 } else {//已打卡且不是无效卡的
-                    incrNum(attendancNumMap, userId, orgId);
+                    if (!remDups.contains(record.getPunchDate())) {
+                        incrNum(attendancNumMap, userId, orgId);
+                        remDups.add(record.getPunchDate());
+                    }
                 }
             } else {
                 isFullMap.put(userId, orgId, false);

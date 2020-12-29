@@ -4,11 +4,14 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +30,9 @@ import java.util.List;
  */
 @Service
 public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDetail> {
+
+  @Autowired
+  private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 根据条件查询账单收入详情列表
@@ -371,7 +377,54 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       HttpServletResponse response, BillingItemStatisticsQuery query) throws IOException {
     ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
     List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
+    String fileName = getFileName(query);
+    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
     excelUtil.exportExcel(response, resultList, "开单项目数量统计列表");
+  }
+
+  /**
+   * 获取文件名
+   *
+   * @param query
+   * @return
+   */
+
+  private String getFileName(BillingItemDetailQuery query) {
+    Integer orgId = query.getOrgId();
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    StringBuilder res = new StringBuilder();
+    String sDate = query.getStartDate();
+    String[] str = sDate.split("-");
+    res.append(str[0]).append(".").append(str[1]).append(".").append(str[2]);
+    String eDate = query.getEndDate();
+    str = eDate.split("-");
+    res.append("-")
+            .append(str[0])
+            .append(".")
+            .append(str[1]).append(".")
+            .append(str[2])
+            .append(organizationInfo.getAbbreviation())
+            .append("开单项目统计明细表");
+    return res.toString();
+  }
+
+  private String getFileName(BillingItemStatisticsQuery query) {
+    Integer orgId = query.getOrgId();
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    StringBuilder res = new StringBuilder(organizationInfo.getAbbreviation());
+    String sDate = query.getStartDate();
+    String[] str = sDate.split("-");
+    res.append(str[0]).append(".").append(str[1]).append(".").append(str[2]);
+    String eDate = query.getEndDate();
+    str = eDate.split("-");
+    res.append("-")
+            .append(str[0])
+            .append(".")
+            .append(str[1])
+            .append(".")
+            .append(str[2])
+            .append("开单项目数量统计表");
+    return res.toString();
   }
 
   /**
@@ -398,6 +451,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
       HttpServletResponse response, BillingItemDetailQuery query) throws IOException {
     ExcelUtil<BillingItemDetailVO> excelUtil = new ExcelUtil<>(BillingItemDetailVO.class);
     List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
+    String fileName = getFileName(query);
+    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
     excelUtil.exportExcel(response, resultList, "开单项目统计明细列表");
   }
 

@@ -5,15 +5,19 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.EmployeeDiagnosisQuery;
 import com.yunya.feign.report.domain.query.EmployeeMatchingRecordQuery;
 import com.yunya.feign.report.domain.vo.EmployeeDiagnosisInfoVO;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.treatment.domain.vo.AssistantMatchingStatisticsVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseUserPost;
 import com.yunya.report.ultimate.mapper.BaseUserPostMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -26,6 +30,9 @@ import java.util.List;
  */
 @Service
 public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
+  @Autowired
+  private RemoteSystemServiceFeign remoteSystemServiceFeign;
+
   /**
    * 根据条件查询配诊统计列表
    *
@@ -82,6 +89,33 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       HttpServletResponse response, EmployeeDiagnosisQuery query) throws IOException {
     List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
     ExcelUtil<EmployeeDiagnosisInfoVO> excelUtil = new ExcelUtil<>(EmployeeDiagnosisInfoVO.class);
+    String fileName = getFileName(query);
+    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
     excelUtil.exportExcel(response, resultList, "员工看诊情况列表");
+  }
+
+  /**
+   * 获取文件名
+   *
+   * @param query
+   * @return
+   */
+  private String getFileName(EmployeeDiagnosisQuery query) {
+    Integer orgId = query.getOrgId();
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    StringBuilder res = new StringBuilder(organizationInfo.getAbbreviation());
+    String sDate = query.getStartDate();
+    String[] str = sDate.split("-");
+    res.append(str[0]).append(".").append(str[1]).append(".").append(str[2]);
+    String eDate = query.getEndDate();
+    str = eDate.split("-");
+    res.append("-")
+            .append(str[0])
+            .append(".")
+            .append(str[1])
+            .append(".")
+            .append(str[2])
+            .append("看诊情况统计");
+    return res.toString();
   }
 }
