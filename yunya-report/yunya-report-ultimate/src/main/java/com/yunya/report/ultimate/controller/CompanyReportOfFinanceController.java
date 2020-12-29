@@ -11,6 +11,8 @@ import com.yunya.report.ultimate.biz.BaseBillBiz;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
 import com.yunya.report.ultimate.service.DiscountBiz;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.io.IOException;
 import java.util.List;
 
@@ -182,6 +185,29 @@ public class CompanyReportOfFinanceController {
     PageInfo<BillOfDiscountDetailVO> resultList = baseBillBiz.findBillDiscountDetailList(query);
     return ResponseUtil.success(resultList);
   }
+
+  /**
+   * 公司端报表-财务报表-账单优惠明细-查看明细
+   * @param billId 根据账单ID查询优惠明细
+   * @return PageInfo<BillDiscountDetailInifoVO>
+   */
+  @ApiOperation("公司端报表-财务报表-账单优惠明细-查看明细")
+  @GetMapping("/bill/privilege/info/{billId}")
+  @ApiImplicitParams({
+          @ApiImplicitParam(name = "billId", value = "账单ID",dataTypeClass = Integer.class),
+          @ApiImplicitParam(name = "pageSize", value = "页大小",dataTypeClass = Integer.class,defaultValue = "10"),
+          @ApiImplicitParam(name = "pageNum", value = "页码",dataTypeClass = Integer.class,defaultValue = "1"),
+          @ApiImplicitParam(name = "whetherPage", value = "是否分页",dataTypeClass = Boolean.class,defaultValue = "true"),
+  })
+  public ResponseResult<PageInfo<BillDiscountDetailInifoVO>> billDiscountDetailInfo(
+          @PathVariable("billId") @NotNull(message = "账单ID不能为空") Integer billId,
+          @RequestParam("pageNum") Integer pageNum,
+          @RequestParam("pageSize") Integer pageSize,
+          @RequestParam("whetherPage") Boolean whetherPage) {
+    PageInfo<BillDiscountDetailInifoVO> resultPageInfo = baseBillBiz.billDiscountDetailInfo(billId,pageNum,pageSize,whetherPage);
+    return ResponseUtil.success(resultPageInfo);
+  }
+
 
   /**
    * 根据条件导出账单优惠明细列表

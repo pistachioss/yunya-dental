@@ -107,4 +107,11 @@ public interface BaseBillMapper extends Mapper<BaseBill> {
    */
   StatementBillIncomeStatisticVO selectStatementStatistic(
       @Param("query") StatementStatisticQuery query);
+
+  /**
+   * 根据账单ID查询账单优惠明细
+   * @param billId 账单ID
+   * @return 返回实体列表
+   */
+  List<BillDiscountDetailInifoVO> selectBillDiscountDetailInfo(@Param("billId") Integer billId);
 }
