@@ -455,7 +455,7 @@ public class StringHelper extends StringUtils {
       now.setTime(endDate);
       born.setTime(startDate);
       if (born.after(now)) {
-        throw new IllegalArgumentException("开始日期不能超过结束日期");
+        throw new IllegalArgumentException("==>【StringHelper.differFromDate】：开始日期不能超过结束日期");
       }
       age = now.get(Calendar.YEAR) - born.get(Calendar.YEAR);
       int nowDayOfYear = now.get(Calendar.DAY_OF_YEAR);

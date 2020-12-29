@@ -6,6 +6,7 @@ import com.yunya.feign.patient_central.RemotePatientCentralServiceFeign;
 import com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo;
 import com.yunya.feign.treatment.domain.query.AppTreatmentQuery;
 import com.yunya.feign.treatment.domain.vo.*;
+import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -91,11 +92,11 @@ public class TreatmentProcess4AppBiz {
         if (null != registeredVO) {
             TreatmentRegInfo4AppVO regInfo4AppVO = new TreatmentRegInfo4AppVO();
             // 查询就诊信息
-            TreatmentRecord treatQuery = new TreatmentRecord();
-            treatQuery.setRegisteredId(registeredVO.getId());
-            TreatmentRecord treatmentRecord = treatmentRecordBiz.selectOne(treatQuery);
-            if (null != treatmentRecord) {
-                regInfo4AppVO.setTreatmentId(treatmentRecord.getId());
+            Registered treatQuery = new Registered();
+            treatQuery.setId(registeredVO.getId());
+            Registered registered = registeredBiz.selectOne(treatQuery);
+            if (null != registered) {
+                regInfo4AppVO.setTreatmentId(registered.getId());
             }
             regInfo4AppVO.setRegAssistantId(registeredVO.getAssistantId());
             regInfo4AppVO.setRegAssistantName(registeredVO.getAssistantName());
@@ -104,9 +105,9 @@ public class TreatmentProcess4AppBiz {
             regInfo4AppVO.setRegistedId(registeredVO.getId());
             regInfo4AppVO.setCrtTime(registeredVO.getCrtTime());
             // 直接挂号情况下，设置患者信息
-            if (null == treatmentRecord.getAppointmentId()) {
-                PatientTotalInfoVo patientTotalInfo = this.patientCentralServiceFeign.findPatientTotalInfo(treatmentRecord.getPatientId());
-                treatmentInfo4AppVO.setPatientId(treatmentRecord.getPatientId());
+            if (null == registered.getAppointmentId()) {
+                PatientTotalInfoVo patientTotalInfo = this.patientCentralServiceFeign.findPatientTotalInfo(registered.getPatientId());
+                treatmentInfo4AppVO.setPatientId(registered.getPatientId());
                 treatmentInfo4AppVO.setPatientName(patientTotalInfo.getName());
                 treatmentInfo4AppVO.setAge(patientTotalInfo.getAge());
                 treatmentInfo4AppVO.setGender(patientTotalInfo.getGender());

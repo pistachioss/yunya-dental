@@ -91,6 +91,7 @@ public class PatientBaseInfoModel implements Serializable {
      * 出生日期
      */
     @ApiModelProperty(value = "出生日期",required = false)
+    @PastOrPresent(message = "出生日期只能是过去或者当前时间")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date birthday;
 
