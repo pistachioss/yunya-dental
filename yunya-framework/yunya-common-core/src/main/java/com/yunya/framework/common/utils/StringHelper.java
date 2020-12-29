@@ -430,42 +430,13 @@ public class StringHelper extends StringUtils {
     // 定义一个count来存放字符串出现的次数
     int count = 0;
     // 调用String类的indexOf(String str)方法，返回第一个相同字符串出现的下标
-    while (sourceStr.indexOf(childStr) != -1) {
+    while (sourceStr.contains(childStr)) {
       // 如果存在相同字符串则次数加1
       count++;
       // 调用String类的substring(int beginIndex)方法，获得第一个相同字符出现后的字符串
-      sourceStr = sourceStr.substring(sourceStr.indexOf(childStr)
-              + childStr.length());
+      sourceStr = sourceStr.substring(sourceStr.indexOf(childStr) + childStr.length());
     }
     // 返回次数
     return count;
   }
-
-  /**
-   * 计算指定两个日期之间的差值（可用于计算年龄）
-   * @param startDate 开始日期
-   * @param endDate 结束日期
-   * @return 返回差值（年）
-   */
-  public static Integer differFromDate(Date startDate, Date endDate) {
-    Integer age = new Integer(0);
-    Calendar born = Calendar.getInstance();
-    Calendar now = Calendar.getInstance();
-    if (startDate != null) {
-      now.setTime(endDate);
-      born.setTime(startDate);
-      if (born.after(now)) {
-        throw new IllegalArgumentException("开始日期不能超过结束日期");
-      }
-      age = now.get(Calendar.YEAR) - born.get(Calendar.YEAR);
-      int nowDayOfYear = now.get(Calendar.DAY_OF_YEAR);
-      int bornDayOfYear = born.get(Calendar.DAY_OF_YEAR);
-      if (nowDayOfYear < bornDayOfYear) {
-        age -= 1;
-      }
-    }
-    return age;
-  }
-
-
 }
