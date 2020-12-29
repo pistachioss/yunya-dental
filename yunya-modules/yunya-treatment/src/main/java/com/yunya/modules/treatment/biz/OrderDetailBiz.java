@@ -9,10 +9,8 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.domain.form.ModificationExecutorForm;
 import com.yunya.feign.treatment.domain.model.GoodsDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
-import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
-import com.yunya.feign.treatment.domain.vo.PrivilegeCouponInfoVO;
+import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
@@ -77,7 +75,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * 根据账单（开单）记录ID查询商品开单详情列表
    *
    * @param orderRecordId 就诊记录ID
-   * @return
+   * @return List<OrderDetailVO>
    */
   public List<OrderDetailVO> findGoodsDetailVOList(Integer orderRecordId) {
     List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, (byte) 1);
@@ -112,7 +110,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * 根据开单记录ID查询开单详情列表
    *
    * @param orderRecordId 开单记录ID
-   * @return
+   * @return List<OrderDetailVO>
    */
   public List<OrderDetailVO> findOrderDetailVOList(Integer orderRecordId, Byte sourceType) {
     List<OrderDetailVO> resultList = mapper.selectOrderDetailVOList(orderRecordId, sourceType);
@@ -158,7 +156,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * 根据订单ID查询收费订单明细列表（含优惠信息）
    *
    * @param orderRecordId 开单记录ID
-   * @return
+   * @return List<OrderDetailChargeVO>
    */
   public List<OrderDetailChargeVO> findChargeOrderDetailList(Integer orderRecordId) {
     String redisKey = LOCK_ORDER_PROCESSING_CHARGE + orderRecordId;
@@ -279,7 +277,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * 计算开单明细总额
    *
    * @param orderDetails 开单明细列表
-   * @return
+   * @return BigDecimal
    */
   public BigDecimal calculateTotalAmount(List<OrderDetail> orderDetails) {
     BigDecimal totalAmount = BigDecimal.valueOf(0);
@@ -300,7 +298,7 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
    * @param orgId 组织ID
    * @param treatmentRecordId 就诊记录ID
    * @param models 参数列表
-   * @return
+   * @return List<OrderDetail>
    */
   public List<OrderDetail> transferModelToEntity(
       Integer orgId, Integer treatmentRecordId, List<OrderDetailModel> models) {
@@ -431,28 +429,60 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
   /**
    * 打印账单信息
+   *
    * @param patientId 患者ID
    * @param billNumber 账单编号
    * @return 返回账单信息
    */
-  public BillPrintInfoVO billPrintInfo(Integer patientId,String billNumber) {
-    BillPrintInfoVO billPrintInfoVO = mapper.billPrintInfo(patientId,billNumber);
+  public BillPrintInfoVO billPrintInfo(Integer patientId, String billNumber) {
+    BillPrintInfoVO billPrintInfoVO = mapper.billPrintInfo(patientId, billNumber);
     if (billPrintInfoVO != null) {
       Integer orderRecordId = billPrintInfoVO.getOrderRecordId();
       List<OrderBenefitDetailVo> orderBenefitD = discountFeign.getOrderBenefitD(orderRecordId);
-      billPrintInfoVO.getBillDetail().forEach(billDetailPrintInfoVO -> {
-        List<OrderBenefitDetailVo> collect = orderBenefitD.stream().filter(orderBenefitDetailVo -> orderBenefitDetailVo.getOrderDetailId().equals(billDetailPrintInfoVO.getOrderDetailId())).collect(Collectors.toList());
-        if (StringHelper.isNotEmpty(collect)) {
-          OrderBenefitDetailVo orderBenefitDetailVo = collect.get(0);
-          List<ItemUseBenefitVo> itemBenefitList = orderBenefitDetailVo.getItemBenefitList();
-          List<Integer> couponTypes = new ArrayList<>();
-          itemBenefitList.forEach(itemUseBenefitVo -> {
-            couponTypes.add(itemUseBenefitVo.getCouponType());
-          });
-          billDetailPrintInfoVO.setCouponTypes(couponTypes);
-        }
-      });
+      billPrintInfoVO
+          .getBillDetail()
+          .forEach(
+              billDetailPrintInfoVO -> {
+                List<OrderBenefitDetailVo> collect =
+                    orderBenefitD.stream()
+                        .filter(
+                            orderBenefitDetailVo ->
+                                orderBenefitDetailVo
+                                    .getOrderDetailId()
+                                    .equals(billDetailPrintInfoVO.getOrderDetailId()))
+                        .collect(Collectors.toList());
+                if (StringHelper.isNotEmpty(collect)) {
+                  OrderBenefitDetailVo orderBenefitDetailVo = collect.get(0);
+                  List<ItemUseBenefitVo> itemBenefitList =
+                      orderBenefitDetailVo.getItemBenefitList();
+                  List<Integer> couponTypes = new ArrayList<>();
+                  itemBenefitList.forEach(
+                      itemUseBenefitVo -> {
+                        couponTypes.add(itemUseBenefitVo.getCouponType());
+                      });
+                  billDetailPrintInfoVO.setCouponTypes(couponTypes);
+                }
+              });
     }
     return billPrintInfoVO;
+  }
+
+  /**
+   * 根据条件查询门诊开单专科项目完成信息
+   *
+   * @param query 查询条件
+   * @return SpecialistProjectTariffCompletedInfoVO
+   */
+  public SpecialistProjectTariffCompletedInfoVO findClinicTariffOrderCompletedInfo(
+      SpecialistProjectTariffCompletedInfoQuery query) {
+    SpecialistProjectTariffCompletedInfoVO resultData =
+        new SpecialistProjectTariffCompletedInfoVO();
+    Integer specialistProjectTariffCompletedAmount =
+        mapper.selectSpecialistProjectTariffCompletedAmount(query);
+    resultData.setSpecialistProjectCompleted(specialistProjectTariffCompletedAmount);
+    List<SpecialistTariffCompletedDetailVO> specialistProjectTariffDetails =
+        mapper.selectSpecialistProjectTariffDetail(query);
+    resultData.setSpecialistProjectCompletedDetails(specialistProjectTariffDetails);
+    return resultData;
   }
 }

@@ -137,4 +137,90 @@
                  LEFT JOIN base_tariff bt on bt.id = a.billing_item_id
                  LEFT JOIN base_oral_tariff bot on bot.id = a.billing_item_id
     </select>
+
+    <!-- 根据条件查询专科项目开单项目完成数量 -->
+    <select id="selectSpecialistProjectTariffCompletedAmount" resultType="java.lang.Integer">
+        SELECT
+            SUM( od.quantity )
+        FROM
+            order_detail od
+        <where>
+            AND od.type = 0
+            AND od.order_record_id IN (
+            SELECT
+            id
+            FROM
+            order_record
+            WHERE
+            `status` = 2
+            )
+            <if test="query.dateType == 0">
+                AND DATE_FORMAT( od.crt_time, '%Y-%m' ) = #{query.queryDate}
+            </if>
+            <if test="query.dateType == 1">
+                AND DATE_FORMAT( od.crt_time, '%Y' ) = #{query.queryDate}
+            </if>
+            <if test="query.tariffIds != null and query.tariffIds.length > 0">
+                AND od.billing_item_id IN
+                <foreach collection="query.tariffIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.belongIds != null and query.belongIds.length > 0">
+                AND od.org_id IN
+                <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据条件查询专科项目开单明细列表 -->
+    <select id="selectSpecialistProjectTariffDetail"
+            resultType="com.yunya.feign.treatment.domain.vo.SpecialistTariffCompletedDetailVO">
+        SELECT
+            od.billing_item_id AS tariffItemId,
+            bt.`name` AS tariffItemName,
+            SUM( od.quantity ) AS completedAmount
+        FROM
+            (
+            SELECT
+                od.billing_item_id,
+                od.quantity
+            FROM
+                order_detail od,(
+                SELECT
+                    id
+                FROM
+                    order_record
+                WHERE
+                    `status` = 2
+                ) ord
+            <where>
+                AND od.order_record_id = ord.id
+                AND od.type = 0
+                <if test="query.dateType == 0">
+                    AND DATE_FORMAT( od.crt_time, '%Y-%m' ) = #{query.queryDate}
+                </if>
+                <if test="query.dateType == 1">
+                    AND DATE_FORMAT( od.crt_time, '%Y' ) = #{query.queryDate}
+                </if>
+                <if test="query.tariffIds != null and query.tariffIds.length > 0">
+                    AND od.billing_item_id IN
+                    <foreach collection="query.tariffIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+                <if test="query.belongIds != null and query.belongIds.length > 0">
+                    AND od.org_id IN
+                    <foreach collection="query.belongIds" item="item" index="index" open="(" close=")" separator=",">
+                        #{item}
+                    </foreach>
+                </if>
+            </where>
+            ) od
+            LEFT JOIN base_tariff bt ON od.billing_item_id = bt.id
+        GROUP BY
+            od.billing_item_id
+    </select>
 </mapper>

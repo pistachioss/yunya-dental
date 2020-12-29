@@ -1,9 +1,11 @@
 package com.yunya.modules.treatment.controller.rpc;
 
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
-import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.vo.CompletedBusinessWorkGoalVO;
+import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
+import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
+import com.yunya.feign.treatment.domain.vo.RegisteredVO;
+import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.tariff.*;
@@ -371,8 +373,20 @@ public class TreatmentServiceRest {
    * @return CompletedBusinessWorkGoalVO
    */
   @RequestMapping(value = "/business/goal", method = RequestMethod.POST)
-  public CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
+  public BusinessCompletedWorkGoalVO findClinicCompletedBusinessWorkGoal(
       @RequestBody @Validated CompletedWorkGoalQuery query) {
     return billRecordBiz.findClinicCompletedBusinessWorkGoal(query);
+  }
+
+  /**
+   * 根据条件查询门诊开单专科项目完成信息
+   *
+   * @param query 查询条件
+   * @return SpecialistProjectTariffCompletedInfoVO
+   */
+  @RequestMapping(value = "/tariff/completed/goal", method = RequestMethod.POST)
+  SpecialistProjectTariffCompletedInfoVO findClinicTariffOrderCompletedInfo(
+      @RequestBody @Validated SpecialistProjectTariffCompletedInfoQuery query) {
+    return orderDetailBiz.findClinicTariffOrderCompletedInfo(query);
   }
 }

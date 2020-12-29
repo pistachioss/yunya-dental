@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @ApiModel("完成业务目标VO")
 @Data
 @ToString
-public class CompletedBusinessWorkGoalVO implements Serializable {
+public class BusinessCompletedWorkGoalVO implements Serializable {
   /** 完成实收金额（元） */
   @ApiModelProperty("完成实收金额（元）")
   private BigDecimal actualReceivedAmountCompleted;

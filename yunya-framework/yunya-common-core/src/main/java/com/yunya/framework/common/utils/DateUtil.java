@@ -22,7 +22,7 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
  */
 public class DateUtil {
 
-  private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+  private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
 
   private DateUtil() {}
 
@@ -432,6 +432,7 @@ public class DateUtil {
    * @return 日期字符串
    */
   public static String format(Date date, String pattern) {
+    SDF = new SimpleDateFormat(pattern);
     return SDF.format(date);
   }
 
@@ -444,6 +445,7 @@ public class DateUtil {
    * @throws ParseException 解析异常
    */
   public static Date parse(String date, String pattern) throws ParseException {
+    SDF = new SimpleDateFormat(pattern);
     return SDF.parse(date);
   }
 

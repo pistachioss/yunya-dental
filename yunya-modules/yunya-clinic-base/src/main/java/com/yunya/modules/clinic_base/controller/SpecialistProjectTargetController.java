@@ -1,8 +1,11 @@
 package com.yunya.modules.clinic_base.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectTargetModel;
+import com.yunya.feign.clinic_base.domain.query.BusinessWorkGoalQuery;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectTargetQuery;
-import com.yunya.feign.clinic_base.domain.query.WorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.query.SpecialistProjectWorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -11,7 +14,6 @@ import com.yunya.modules.clinic_base.biz.SpecialistProjectTargetBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,13 +31,17 @@ import java.util.List;
  * @description:
  * @since: 1.0.0
  */
-@Api(tags = "专科项目数量分解")
+@Api(tags = "专科项目数量管理（分解、修改、删除、查询）")
 @RestController
 @RequestMapping("special")
 public class SpecialistProjectTargetController {
 
   /** 业务目标 */
-  @Autowired private SpecialistProjectTargetBiz specialistProjectTargetBiz;
+  private final SpecialistProjectTargetBiz specialistProjectTargetBiz;
+
+  public SpecialistProjectTargetController(SpecialistProjectTargetBiz specialistProjectTargetBiz) {
+    this.specialistProjectTargetBiz = specialistProjectTargetBiz;
+  }
 
   /**
    * 根据条件查询专科数量目标
@@ -73,11 +79,29 @@ public class SpecialistProjectTargetController {
    * @param query 查询条件
    * @return
    */
+  @Deprecated
   @ApiOperation("公司端报表-报表统计-运营报表-工作目标-专科数量目标")
   @PostMapping(value = "/goal/list", name = "根据条件查询门诊专科数量目标列表")
-  public ResponseResult<T> specialistProjectWorkGoalList(@RequestBody @Validated WorkGoalQuery query) {
+  public ResponseResult<PageInfo<SpecialistProjectWorkGoalVO>> specialistProjectWorkGoalList(
+      @RequestBody @Validated BusinessWorkGoalQuery query) {
+    PageInfo<SpecialistProjectWorkGoalVO> pageInfo =
+        specialistProjectTargetBiz.findSpecialistProjectWorkGoalList(query);
+    return ResponseUtil.success(pageInfo);
+  }
 
-    return ResponseUtil.success(null);
+  /**
+   * 根据条件查询门诊业务目标列表
+   *
+   * @param query 查询条件
+   * @return
+   */
+  @ApiOperation("公司端报表-报表统计-运营报表-工作目标-专科数量目标")
+  @PostMapping(value = "/work/goal/list", name = "根据条件查询门诊专科数量目标列表")
+  public ResponseResult<PageInfo<SpecialistProjectWorkGoalVO>> specialistProjectWorkGoalList(
+      @RequestBody @Validated SpecialistProjectWorkGoalQuery query) {
+    PageInfo<SpecialistProjectWorkGoalVO> pageInfo =
+        specialistProjectTargetBiz.findSpecialistProjectWorkGoalList(query);
+    return ResponseUtil.success(pageInfo);
   }
 
   /**
@@ -90,8 +114,8 @@ public class SpecialistProjectTargetController {
   @ApiOperation("公司端报表-报表统计-运营报表-工作目标-专科数量目标-导出")
   @PostMapping(value = "/goal/list/export", name = "根据条件导出门诊专科数量目标列表")
   public ResponseResult<T> exportSpecialistProjectWorkGoalList(
-          HttpServletResponse response, @RequestBody @Validated WorkGoalQuery query) {
-
+      HttpServletResponse response, @RequestBody @Validated SpecialistProjectWorkGoalQuery query) {
+    specialistProjectTargetBiz.exportSpecialistProjectWorkGoalList(response, query);
     return ResponseUtil.success(null);
   }
 }

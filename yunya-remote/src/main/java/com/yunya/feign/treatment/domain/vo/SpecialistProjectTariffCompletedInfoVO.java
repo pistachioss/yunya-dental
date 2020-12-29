@@ -1,4 +1,4 @@
-package com.yunya.feign.clinic_base.domain.vo;
+package com.yunya.feign.treatment.domain.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -19,11 +19,11 @@ import java.util.List;
 @ApiModel("专科完成信息VO")
 @Data
 @ToString
-public class SpecialistProjectCompletedInfoVO implements Serializable {
+public class SpecialistProjectTariffCompletedInfoVO implements Serializable {
   /** 专科项目完成数量 */
   @ApiModelProperty("专科项目完成数量")
   private Integer specialistProjectCompleted;
   /** 完成专科项目明细 */
   @ApiModelProperty("完成专科项目明细")
-  private List<SpecialistProjectCompletedDetailVO> specialistProjectCompletedDetails;
+  private List<SpecialistTariffCompletedDetailVO> specialistProjectCompletedDetails;
 }

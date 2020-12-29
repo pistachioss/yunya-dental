@@ -540,9 +540,9 @@ public class BillRecordBiz extends BaseBiz<BillRecordMapper, BillRecord> {
    * @param query 查询条件
    * @return CompletedBusinessWorkGoalVO
    */
-  public CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
+  public BusinessCompletedWorkGoalVO findClinicCompletedBusinessWorkGoal(
       CompletedWorkGoalQuery query) {
-    CompletedBusinessWorkGoalVO resultData = new CompletedBusinessWorkGoalVO();
+    BusinessCompletedWorkGoalVO resultData = new BusinessCompletedWorkGoalVO();
     BigDecimal completedActualReceivedAmount = mapper.selectCompletedActualReceivedAmount(query);
     resultData.setActualReceivedAmountCompleted(completedActualReceivedAmount);
     BigDecimal completedWorkloadAmount = mapper.selectCompletedWorkloadAmount(query);
