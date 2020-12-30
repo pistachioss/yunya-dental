@@ -34,7 +34,7 @@ public class BaseUserPostMapperTest {
     query.setOrgId(35);
     query.setAssistantIds(new Integer[] {573});
     List<AssistantMatchingStatisticsVO> vos =
-        baseUserPostMapper.selectAssistantMatchingStatisticsList(query);
+        baseUserPostMapper.selectAssistantMatchingStatisticsByAssistant(query);
     System.out.println(vos);
   }
 
@@ -47,5 +47,13 @@ public class BaseUserPostMapperTest {
     query.setDentistIds(new Integer[] {521, 526});
     List<EmployeeDiagnosisInfoVO> vos = baseUserPostMapper.selectEmployeeDiagnosisInfoList(query);
     System.out.println(vos);
+  }
+
+  @Test
+  public void find() {
+    EmployeeMatchingRecordQuery query = new EmployeeMatchingRecordQuery();
+    List<AssistantMatchingStatisticsVO> resultList =
+            baseUserPostMapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query);
+    System.out.println(resultList);
   }
 }

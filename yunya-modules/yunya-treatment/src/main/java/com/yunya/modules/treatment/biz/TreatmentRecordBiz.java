@@ -1309,7 +1309,7 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     queryForm.setCurrentDate(queryDate);
     queryForm.setInservice(true);
     // 就诊中
-    queryForm.setTreatmentStatus(new Byte[] {0});
+    queryForm.setTreatmentStatus(new Byte[] {0,1});
     List<TreatmentPatientInfoVO> treatReceiving = mapper.selectTreatingList(queryForm);
     // 接诊完成
     queryForm.setTreatmentStatus(new Byte[] {2});

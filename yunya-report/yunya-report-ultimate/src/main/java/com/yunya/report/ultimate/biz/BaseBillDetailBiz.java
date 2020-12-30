@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -61,8 +60,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     String fileName = "门诊项目收入明细";
     List<BillTariffIncomeDetailVO> list = mapper.selectBillDetailIncomeList(query);
     ExcelUtil<BillTariffIncomeDetailVO> excelUtil = new ExcelUtil<>(BillTariffIncomeDetailVO.class);
-    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
-    excelUtil.exportExcel(response, list, fileName);
+    excelUtil.exportExcel(response, list, fileName, fileName);
   }
 
   /**
@@ -149,7 +147,8 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     List<EmployeeWorkloadOfPersonnelVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfPersonnelVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfPersonnelVO.class);
-    excelUtil.exportExcel(response, resultList, "员工工作量（人事报表）");
+    String fileName = getFileName(query.getOrgId(), query.getQueryDate(), query.getQueryDate(),"员工工作量统计");
+    excelUtil.exportExcel(response, resultList, "员工工作量（人事报表）", fileName);
   }
 
   /**
@@ -378,8 +377,46 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
     List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
     String fileName = getFileName(query);
-    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
-    excelUtil.exportExcel(response, resultList, "开单项目数量统计列表");
+    excelUtil.exportExcel(response, resultList, "开单项目数量统计列表", fileName);
+  }
+
+  /**
+   * 获取文件名
+   *
+   * @param orgId
+   * @param sDate
+   * @param eDate
+   * @return
+   */
+  private String getFileName(Integer orgId, String sDate, String eDate, String tail) {
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    StringBuilder res = new StringBuilder();
+    String[] str = sDate.split("-");
+    if (str.length == 1) {//年
+      res.append(sDate).append("年")
+              .append(organizationInfo.getAbbreviation());
+    } else if (str.length == 2) {//月
+      res.append(str[0]).append("年").append(str[1]).append("月")
+              .append(organizationInfo.getAbbreviation());
+    } else if (str.length == 3) {//日
+      res.append(organizationInfo.getAbbreviation());
+      for (int i = 0; i < str.length; i++) {
+        if (i>0 && res.length() > 0) {
+          res.append(".");
+        }
+        res.append(str[i]);
+      }
+      str = eDate.split("-");
+      res.append("-");
+      for (int i = 0; i < str.length; i++) {
+        if (i>0 && res.length() > 0) {
+          res.append(".");
+        }
+        res.append(str[i]);
+      }
+    }
+    res.append(tail);
+    return res.toString();
   }
 
   /**
@@ -388,22 +425,28 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    * @param query
    * @return
    */
-
   private String getFileName(BillingItemDetailQuery query) {
     Integer orgId = query.getOrgId();
     OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
     StringBuilder res = new StringBuilder();
     String sDate = query.getStartDate();
     String[] str = sDate.split("-");
-    res.append(str[0]).append(".").append(str[1]).append(".").append(str[2]);
+    for (int i = 0; i < str.length; i++) {
+      if (i>0 && res.length() > 0) {
+        res.append(".");
+      }
+      res.append(str[i]);
+    }
     String eDate = query.getEndDate();
     str = eDate.split("-");
-    res.append("-")
-            .append(str[0])
-            .append(".")
-            .append(str[1]).append(".")
-            .append(str[2])
-            .append(organizationInfo.getAbbreviation())
+    res.append("-");
+    for (int i = 0; i < str.length; i++) {
+      if (i>0 && res.length() > 0) {
+        res.append(".");
+      }
+      res.append(str[i]);
+    }
+    res.append(organizationInfo.getAbbreviation())
             .append("开单项目统计明细表");
     return res.toString();
   }
@@ -414,16 +457,22 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     StringBuilder res = new StringBuilder(organizationInfo.getAbbreviation());
     String sDate = query.getStartDate();
     String[] str = sDate.split("-");
-    res.append(str[0]).append(".").append(str[1]).append(".").append(str[2]);
+    for (int i = 0; i < str.length; i++) {
+      if (i>0 && res.length() > 0) {
+        res.append(".");
+      }
+      res.append(str[i]);
+    }
     String eDate = query.getEndDate();
     str = eDate.split("-");
-    res.append("-")
-            .append(str[0])
-            .append(".")
-            .append(str[1])
-            .append(".")
-            .append(str[2])
-            .append("开单项目数量统计表");
+    res.append("-");
+    for (int i = 0; i < str.length; i++) {
+      if (i>0 && res.length() > 0) {
+        res.append(".");
+      }
+      res.append(str[i]);
+    }
+    res.append("开单项目数量统计表");
     return res.toString();
   }
 
@@ -452,8 +501,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     ExcelUtil<BillingItemDetailVO> excelUtil = new ExcelUtil<>(BillingItemDetailVO.class);
     List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
     String fileName = getFileName(query);
-    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
-    excelUtil.exportExcel(response, resultList, "开单项目统计明细列表");
+    excelUtil.exportExcel(response, resultList, "开单项目统计明细列表", fileName);
   }
 
   /**
