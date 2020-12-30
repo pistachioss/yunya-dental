@@ -1,4 +1,4 @@
-package com.yunya.feign.clinic_base.domain.vo;
+package com.yunya.feign.treatment.domain.vo;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -18,7 +18,7 @@ import java.io.Serializable;
 @ApiModel("专科项目完成详情VO")
 @Data
 @ToString
-public class SpecialistProjectCompletedDetailVO implements Serializable {
+public class SpecialistTariffCompletedDetailVO implements Serializable {
   /** 项目明细ID */
   @ApiModelProperty("项目明细ID")
   private Integer tariffItemId;

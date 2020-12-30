@@ -7,7 +7,6 @@ import com.yunya.modules.treatment.biz.BillPayRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class BillPayRecordController {
 
   /** 注入对象 */
-  @Autowired private BillPayRecordBiz billPayRecordBiz;
+  private final BillPayRecordBiz billPayRecordBiz;
+
+  public BillPayRecordController(BillPayRecordBiz billPayRecordBiz) {
+    this.billPayRecordBiz = billPayRecordBiz;
+  }
 
   /**
    * 根据账单收费记录ID撤销账单收费记录

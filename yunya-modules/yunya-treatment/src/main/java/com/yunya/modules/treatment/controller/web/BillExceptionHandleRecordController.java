@@ -13,7 +13,6 @@ import com.yunya.modules.treatment.biz.BillExceptionHandleRecordBiz;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,7 +35,11 @@ import java.util.Map;
 public class BillExceptionHandleRecordController {
 
   /** 账单异常处理 */
-  @Autowired private BillExceptionHandleRecordBiz billExceptionHandleRecordBiz;
+  private final BillExceptionHandleRecordBiz billExceptionHandleRecordBiz;
+
+  public BillExceptionHandleRecordController(BillExceptionHandleRecordBiz billExceptionHandleRecordBiz) {
+    this.billExceptionHandleRecordBiz = billExceptionHandleRecordBiz;
+  }
 
   /**
    * 根据账单异常处理记录ID查询账单处理详情

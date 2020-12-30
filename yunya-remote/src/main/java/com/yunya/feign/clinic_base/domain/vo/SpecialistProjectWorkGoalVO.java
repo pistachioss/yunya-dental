@@ -1,5 +1,6 @@
 package com.yunya.feign.clinic_base.domain.vo;
 
+import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -32,7 +33,7 @@ public class SpecialistProjectWorkGoalVO implements Serializable {
   @ApiModelProperty("专科目标数量")
   private Integer specialistProjectGoal;
   /** 专科完成信息VO */
-  private SpecialistProjectCompletedInfoVO specialistProjectCompletedInfo;
+  private SpecialistProjectTariffCompletedInfoVO specialistProjectCompletedInfo;
   /** 专科完成百分比 */
   @ApiModelProperty("专科完成百分比")
   private Float percentageOfSpecialistProjectCompleted;

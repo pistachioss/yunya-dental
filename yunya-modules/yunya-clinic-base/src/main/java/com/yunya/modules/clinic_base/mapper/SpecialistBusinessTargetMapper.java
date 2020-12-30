@@ -18,4 +18,19 @@ public interface SpecialistBusinessTargetMapper extends Mapper<SpecialistBusines
    */
   List<TargetOfMonthVO> selectSpecialistProjectTargetList(
       @Param("query") SpecialistProjectTargetQuery query);
+
+  /**
+   * 根据条件查询门诊专科项目目标数量
+   *
+   * @param dateType 日期类型 0-月，1-年
+   * @param date 日期
+   * @param specialistProjectId 专科项目ID
+   * @param belongIds 所属门诊ID列表
+   * @return Integer
+   */
+  Integer selectClinicSpecialistProjectWorkGoal(
+      @Param("dateType") Byte dateType,
+      @Param("date") String date,
+      @Param("specialistProjectId") Integer specialistProjectId,
+      @Param("belongIds") Integer[] belongIds);
 }

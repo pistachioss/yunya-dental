@@ -22,10 +22,9 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TR
  */
 public class DateUtil {
 
-  private static final SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
+  private static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
 
   private DateUtil() {}
-  ;
 
   public static Date geLastWeekMonday(Date date) {
     Calendar cal = Calendar.getInstance();
@@ -86,11 +85,7 @@ public class DateUtil {
     Calendar end = Calendar.getInstance();
     end.setTime(endTime);
 
-    if (date.after(begin) && date.before(end)) {
-      return true;
-    } else {
-      return false;
-    }
+    return date.after(begin) && date.before(end);
   }
 
   public static LocalDateTime dateToLocalDateTime(Date date) {
@@ -278,14 +273,14 @@ public class DateUtil {
     }
 
     Integer count = list.size(); // 记录总数
-    Integer pageCount = 0; // 页数
+    int pageCount; // 页数
     if (count % pageSize == 0) {
       pageCount = count / pageSize;
     } else {
       pageCount = count / pageSize + 1;
     }
-    int fromIndex = 0; // 开始索引
-    int toIndex = 0; // 结束索引
+    int fromIndex; // 开始索引
+    int toIndex; // 结束索引
     if (!pageNum.equals(pageCount)) {
       fromIndex = (pageNum - 1) * pageSize;
       toIndex = fromIndex + pageSize;
@@ -437,6 +432,7 @@ public class DateUtil {
    * @return 日期字符串
    */
   public static String format(Date date, String pattern) {
+    SDF = new SimpleDateFormat(pattern);
     return SDF.format(date);
   }
 
@@ -449,6 +445,7 @@ public class DateUtil {
    * @throws ParseException 解析异常
    */
   public static Date parse(String date, String pattern) throws ParseException {
+    SDF = new SimpleDateFormat(pattern);
     return SDF.parse(date);
   }
 
