@@ -45,7 +45,35 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
     List<AssistantMatchingStatisticsVO> resultList =
-        mapper.selectAssistantMatchingStatisticsList(query);
+        mapper.selectAssistantMatchingStatisticsByAssistant("assistant_1", query);
+    List<AssistantMatchingStatisticsVO> resultList2 =
+            mapper.selectAssistantMatchingStatisticsByAssistant("assistant_2", query);
+    List<AssistantMatchingStatisticsVO> resultList3 =
+            mapper.selectAssistantMatchingStatisticsByAssistant("assistant_3", query);
+    if (resultList!=null && !resultList.isEmpty()) {
+      resultList.forEach(assistant1 -> {
+        Integer orgId = assistant1.getOrgId();
+        Integer assistantId = assistant1.getAssistantId();
+        if (resultList2!=null && !resultList2.isEmpty()) {
+          resultList2.forEach(assistant2->{
+            if (assistant2.getAssistantId().equals(assistantId) && orgId.equals(assistant2.getOrgId())) {
+              assistant1.setTreatMatchingActualWorkloadAsAssistant2(assistant2.getTreatMatchingActualWorkloadAsAssistant1());
+              assistant1.setTreatMatchingRefundWorkloadAsAssistant2(assistant2.getTreatMatchingRefundWorkloadAsAssistant1());
+              assistant1.setTreatMatchingTimeAsAssistant2(assistant2.getTreatMatchingTimeAsAssistant1());
+            }
+          });
+        }
+        if (resultList3!=null && !resultList3.isEmpty()) {
+          resultList3.forEach(assistant3->{
+            if (assistant3.getAssistantId().equals(assistantId) && orgId.equals(assistant3.getOrgId())) {
+              assistant1.setTreatMatchingActualWorkloadAsAssistant3(assistant3.getTreatMatchingActualWorkloadAsAssistant1());
+              assistant1.setTreatMatchingRefundWorkloadAsAssistant3(assistant3.getTreatMatchingRefundWorkloadAsAssistant1());
+              assistant1.setTreatMatchingTimeAsAssistant3(assistant3.getTreatMatchingTimeAsAssistant1());
+            }
+          });
+        }
+      });
+    }
     return new PageInfo<>(resultList);
   }
 
@@ -61,6 +89,8 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     List<AssistantMatchingStatisticsVO> list = pageInfo.getList();
     ExcelUtil<AssistantMatchingStatisticsVO> excelUtil =
         new ExcelUtil<>(AssistantMatchingStatisticsVO.class);
+    String fileName = getFileName(query.getOrgId(), query.getStartDate(), query.getEndDate(), "助手配诊统计");
+    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
     excelUtil.exportExcel(response, list, "员工配诊记录列表");
   }
 
@@ -89,7 +119,7 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       HttpServletResponse response, EmployeeDiagnosisQuery query) throws IOException {
     List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
     ExcelUtil<EmployeeDiagnosisInfoVO> excelUtil = new ExcelUtil<>(EmployeeDiagnosisInfoVO.class);
-    String fileName = getFileName(query);
+    String fileName = getFileName(query.getOrgId(), query.getStartDate(), query.getEndDate(), "看诊情况统计");
     response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
     excelUtil.exportExcel(response, resultList, "员工看诊情况列表");
   }
@@ -97,31 +127,39 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
   /**
    * 获取文件名
    *
-   * @param query
+   * @param orgId
+   * @param sDate
+   * @param eDate
    * @return
    */
-  private String getFileName(EmployeeDiagnosisQuery query) {
-    Integer orgId = query.getOrgId();
+  private String getFileName(Integer orgId, String sDate, String eDate, String tail) {
     OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    StringBuilder res = new StringBuilder(organizationInfo.getAbbreviation());
-    String sDate = query.getStartDate();
+    StringBuilder res = new StringBuilder();
     String[] str = sDate.split("-");
-    for (int i = 0; i < str.length; i++) {
-      if (i>0 && res.length() > 0) {
-        res.append(".");
+    if (str.length == 1) {//年
+      res.append(sDate).append("年")
+        .append(organizationInfo.getAbbreviation());
+    } else if (str.length == 2) {//月
+      res.append(str[0]).append("年").append(str[1]).append("月")
+              .append(organizationInfo.getAbbreviation());
+    } else if (str.length == 3) {//日
+      res.append(organizationInfo.getAbbreviation());
+      for (int i = 0; i < str.length; i++) {
+        if (i>0 && res.length() > 0) {
+          res.append(".");
+        }
+        res.append(str[i]);
       }
-      res.append(str[i]);
-    }
-    String eDate = query.getEndDate();
-    str = eDate.split("-");
-    res.append("-");
-    for (int i = 0; i < str.length; i++) {
-      if (i>0 && res.length() > 0) {
-        res.append(".");
+      str = eDate.split("-");
+      res.append("-");
+      for (int i = 0; i < str.length; i++) {
+        if (i>0 && res.length() > 0) {
+          res.append(".");
+        }
+        res.append(str[i]);
       }
-      res.append(str[i]);
     }
-    res.append("看诊情况统计");
+    res.append(tail);
     return res.toString();
   }
 }

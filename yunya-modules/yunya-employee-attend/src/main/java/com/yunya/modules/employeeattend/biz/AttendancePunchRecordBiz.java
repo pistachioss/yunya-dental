@@ -810,6 +810,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Date now = new Date(System.currentTimeMillis());
         AttendanceStatisticsVO result = new AttendanceStatisticsVO();
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        userId = 1604;
         List<Date> dateList = DateUtil.getMonthFullDay(dateStr);
         Date firstDate = dateList.get(0);
         Date endDate = dateList.get(dateList.size()-1);
@@ -899,7 +900,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
 
         Date curDate = DateUtil.getCurrentDate();
-        int attendanceNum = 0;
+        Set<Integer> esIds = new HashSet<>();
         List<AttendancePunchRecordVO> lateStatisticsList = new ArrayList<>(30);
         List<AttendancePunchRecordVO> earlyStatisticsList = new ArrayList<>(30);
         List<AttendancePunchRecordVO> workOvertimeStatisticsList = new ArrayList<>(30);
@@ -934,11 +935,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 if (source.equals(AttendanceSourceEnum.WORK_SCHEDULE.getCode())) {
                     switch (punchStatus) {
                         case 0: {
-                            attendanceNum++;
+                            esIds.add(attendancePunchRecordVO.getEsId());
                             break;
                         }
                         case 1: {
-                            attendanceNum++;
+                            esIds.add(attendancePunchRecordVO.getEsId());
                             long diff = punchTime.getTime() - startTime.getTime();
                             attendancePunchRecordVO.setMinutes(DateUtil.micro2HourMin(diff));
                             attendancePunchRecordVO.setOrgName(orgName);
@@ -946,11 +947,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             break;
                         }
                         case 2: {
-                            attendanceNum++;
+                            esIds.add(attendancePunchRecordVO.getEsId());
                             break;
                         }
                         case 3: {
-                            attendanceNum++;
+                            esIds.add(attendancePunchRecordVO.getEsId());
                             long diff = endTime.getTime()-punchTime.getTime();
                             attendancePunchRecordVO.setMinutes(DateUtil.micro2HourMin(diff));
                             attendancePunchRecordVO.setOrgName(orgName);
@@ -1111,7 +1112,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         result.setFieldNum(fieldStatisticsList.size());
         result.setLeaveNum(leaveStatisticsList.size());
         result.setLateNum(lateStatisticsList.size());
-        result.setAttendanceNum(attendanceNum);
+        result.setAttendanceNum(esIds.size());
         result.setEarlyNum(earlyStatisticsList.size());
         result.setInvalidNum(invalidStatisticsList.size());
         result.setRestStatisticsList(restStatisticeList);
