@@ -79,6 +79,7 @@ public class PeriodontalRecordsBiz extends BaseBiz<PeriodontalRecordsMapper, Per
         PeriodontalRecords periodontalRecords = new PeriodontalRecords();
         BeanUtils.copyProperties(periodontalRecordsAddForm, periodontalRecords);
         periodontalRecords.setIsDelete(0);
+        periodontalRecords.setCheckDate(new Date());
         periodontalRecords.setCrtId(Integer.valueOf(BaseContextHandler.getUserID()));
         periodontalRecords.setCrtTime(new Date());
         return mapper.insert(periodontalRecords);
