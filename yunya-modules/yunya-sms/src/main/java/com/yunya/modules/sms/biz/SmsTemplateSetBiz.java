@@ -234,8 +234,8 @@ public class SmsTemplateSetBiz extends BaseBiz<SmsTemplateSetMapper, SmsTemplate
         if (smsTemplateSetVO == null || StringHelper.isEmpty(smsTemplateSetVO.getTemplateCode())) {
             throw new ClientServiceException("短信签名不存在", DATA_NOT_EXIST);
         }
-        if (SmsApprovalStatusEnum.APPROVALING.getCode().equals(smsTemplateSetVO.getTemplateStatus())) {
-            throw new ClientServiceException("短信模板正在审核", OPERATION_NOT_ALLOW);
+        if (!SmsApprovalStatusEnum.APPROVAL_FAIL.getCode().equals(smsTemplateSetVO.getTemplateStatus())) {
+            throw new ClientServiceException("审核中或者已通过审核的短信模板不支持修改", OPERATION_NOT_ALLOW);
         }
         byte type = checkSense(smsTemplateSetForm.getSense(), smsTemplateSetForm.getTemplateItem());
         boolean needApproval = needApproval(smsTemplateSetForm, smsTemplateSetVO, type);

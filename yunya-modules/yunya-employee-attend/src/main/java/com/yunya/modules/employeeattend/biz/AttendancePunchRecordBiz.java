@@ -810,6 +810,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Date now = new Date(System.currentTimeMillis());
         AttendanceStatisticsVO result = new AttendanceStatisticsVO();
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
+        userId = 1604;
         List<Date> dateList = DateUtil.getMonthFullDay(dateStr);
         Date firstDate = dateList.get(0);
         Date endDate = dateList.get(dateList.size()-1);
@@ -899,7 +900,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         }
 
         Date curDate = DateUtil.getCurrentDate();
-        int attendanceNum = 0;
+        Set<Integer> esIds = new HashSet<>();
         List<AttendancePunchRecordVO> lateStatisticsList = new ArrayList<>(30);
         List<AttendancePunchRecordVO> earlyStatisticsList = new ArrayList<>(30);
         List<AttendancePunchRecordVO> workOvertimeStatisticsList = new ArrayList<>(30);
@@ -919,6 +920,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             if (isPunch.equals(AttendanceIsPunchEnum.UNPUNCH.getCode())) {
                if (!source.equals(AttendanceSourceEnum.REST_SCHEDULE.getCode())
                    && !source.equals(AttendanceSourceEnum.LEAVE_BYDAY.getCode())
+                   && !source.equals(AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode())
                    && !curDate.equals(punchDate)) {
                    attendancePunchRecordVO.setOrgName(orgName);
                    unpunchStatisticsList.add(attendancePunchRecordVO);
@@ -933,11 +935,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 if (source.equals(AttendanceSourceEnum.WORK_SCHEDULE.getCode())) {
                     switch (punchStatus) {
                         case 0: {
-                            attendanceNum++;
+                            esIds.add(attendancePunchRecordVO.getEsId());
                             break;
                         }
                         case 1: {
-                            attendanceNum++;
+                            esIds.add(attendancePunchRecordVO.getEsId());
                             long diff = punchTime.getTime() - startTime.getTime();
                             attendancePunchRecordVO.setMinutes(DateUtil.micro2HourMin(diff));
                             attendancePunchRecordVO.setOrgName(orgName);
@@ -945,11 +947,11 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                             break;
                         }
                         case 2: {
-                            attendanceNum++;
+                            esIds.add(attendancePunchRecordVO.getEsId());
                             break;
                         }
                         case 3: {
-                            attendanceNum++;
+                            esIds.add(attendancePunchRecordVO.getEsId());
                             long diff = endTime.getTime()-punchTime.getTime();
                             attendancePunchRecordVO.setMinutes(DateUtil.micro2HourMin(diff));
                             attendancePunchRecordVO.setOrgName(orgName);
@@ -1110,7 +1112,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         result.setFieldNum(fieldStatisticsList.size());
         result.setLeaveNum(leaveStatisticsList.size());
         result.setLateNum(lateStatisticsList.size());
-        result.setAttendanceNum(attendanceNum);
+        result.setAttendanceNum(esIds.size());
         result.setEarlyNum(earlyStatisticsList.size());
         result.setInvalidNum(invalidStatisticsList.size());
         result.setRestStatisticsList(restStatisticeList);
@@ -1171,6 +1173,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Map<Integer, List<AttendancePunchRecordVO>> punchRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
         Map<Integer, List<AttendancePunchRecordVO>> workOvertimeRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
         Map<Integer, List<AttendancePunchRecordVO>> fieldRecordMap = new HashMap<>(attendancePunchRecordVOS.size());
+        List<Date> remDups = new ArrayList<>(attendancePunchRecordVOS.size());
         attendancePunchRecordVOS.forEach(record->{
             Integer esId = record.getEsId();
             Byte source = record.getSource();
@@ -1216,7 +1219,10 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 if (record.getPunchStatus().equals(AttendanceStatusEnum.INVALID_PUNCH.getCode())) {//无效卡
                     incrNum(invalidNumMap,userId,orgId);
                 } else {//已打卡且不是无效卡的
-                    incrNum(attendancNumMap, userId, orgId);
+                    if (!remDups.contains(record.getPunchDate())) {
+                        incrNum(attendancNumMap, userId, orgId);
+                        remDups.add(record.getPunchDate());
+                    }
                 }
             } else {
                 isFullMap.put(userId, orgId, false);

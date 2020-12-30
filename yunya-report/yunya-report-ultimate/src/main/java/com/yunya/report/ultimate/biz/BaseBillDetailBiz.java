@@ -4,17 +4,19 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBillDetail;
 import com.yunya.report.ultimate.mapper.BaseBillDetailMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -27,6 +29,9 @@ import java.util.List;
  */
 @Service
 public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDetail> {
+
+  @Autowired
+  private RemoteSystemServiceFeign remoteSystemServiceFeign;
 
   /**
    * 根据条件查询账单收入详情列表
@@ -55,8 +60,7 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
     String fileName = "门诊项目收入明细";
     List<BillTariffIncomeDetailVO> list = mapper.selectBillDetailIncomeList(query);
     ExcelUtil<BillTariffIncomeDetailVO> excelUtil = new ExcelUtil<>(BillTariffIncomeDetailVO.class);
-    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
-    excelUtil.exportExcel(response, list, fileName);
+    excelUtil.exportExcel(response, list, fileName, fileName);
   }
 
   /**
@@ -138,12 +142,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeeWorkloadListOfPersonnel(
       HttpServletResponse response, EmployeeWorkloadQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeeWorkloadOfPersonnelVO> workloadList =
         findEmployeeWorkloadListOfPersonnel(query);
     List<EmployeeWorkloadOfPersonnelVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfPersonnelVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfPersonnelVO.class);
-    excelUtil.exportExcel(response, resultList, "员工工作量（人事报表）");
+    String fileName = excelUtil.getFileName(query.getQueryDate(), query.getQueryDate(),
+            getAbbreviationById(query.getOrgId()),"员工工作量统计");
+    excelUtil.exportExcel(response, resultList, "员工工作量（人事报表）", fileName);
   }
 
   /**
@@ -154,12 +161,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeeWorkloadListOfOperation(
       HttpServletResponse response, EmployeeWorkloadQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeeWorkloadOfOperationVO> workloadList =
         findEmployeeWorkloadListOfOperation(query);
     List<EmployeeWorkloadOfOperationVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfOperationVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfOperationVO.class);
-    excelUtil.exportExcel(response, resultList, "员工工作量（运营报表）");
+    String fileName = excelUtil.getFileName(query.getQueryDate(),null,
+            getAbbreviationById(query.getOrgId()),"员工工作量统计");
+    excelUtil.exportExcel(response, resultList, "员工工作量（运营报表）", fileName);
   }
 
   /**
@@ -213,12 +223,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeePersonalActualWorkloadDetailList(
       HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeePersonalActualWorkloadDetailVO> pageInfo =
         findEmployeePersonalActualWorkloadDetailList(query);
     List<EmployeePersonalActualWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表");
+    String fileName = excelUtil.getFileName(query.getQueryDate(),query.getQueryDate(),
+            getAbbreviationById(query.getOrgId()),"实收工作量统计明细表");
+    excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表", fileName);
   }
 
   /**
@@ -261,12 +274,19 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeePersonalReceivedWorkloadDetailList(
       HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeePersonalReceivedWorkloadDetailVO> pageInfo =
         findEmployeePersonalReceivedWorkloadDetailList(query);
+    String abbreviation = getAbbreviationById(query.getOrgId());
     List<EmployeePersonalReceivedWorkloadDetailVO> resultList = pageInfo.getList();
+    resultList.forEach(detail->{
+        detail.setOrgName(abbreviation);
+    });
     ExcelUtil<EmployeePersonalReceivedWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalReceivedWorkloadDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "员工个人已收工作量明细列表");
+    String fileName = excelUtil.getFileName(query.getOrderDate(),null,
+            abbreviation,"已收工作量统计明细表");
+    excelUtil.exportExcel(response, resultList, "员工个人已收工作量明细列表", fileName);
   }
 
   /**
@@ -369,9 +389,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportBillingItemInfoList(
       HttpServletResponse response, BillingItemStatisticsQuery query) throws IOException {
+    query.setWhetherPage(false);
     ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
     List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
-    excelUtil.exportExcel(response, resultList, "开单项目数量统计列表");
+    String fileName = excelUtil.getFileName(getAbbreviationById(query.getOrgId()),
+            query.getStartDate(),query.getEndDate(),null,"开单项目数量统计表");
+    excelUtil.exportExcel(response, resultList, "开单项目数量统计列表", fileName);
+  }
+
+  private String getAbbreviationById(Integer orgId) {
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    return organizationInfo.getAbbreviation();
   }
 
   /**
@@ -396,9 +424,12 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportBillingItemDetailList(
       HttpServletResponse response, BillingItemDetailQuery query) throws IOException {
+    query.setWhetherPage(false);
     ExcelUtil<BillingItemDetailVO> excelUtil = new ExcelUtil<>(BillingItemDetailVO.class);
     List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
-    excelUtil.exportExcel(response, resultList, "开单项目统计明细列表");
+    String fileName = excelUtil.getFileName(query.getStartDate(),query.getEndDate(),
+            getAbbreviationById(query.getOrgId()),"开单项目统计明细表");
+    excelUtil.exportExcel(response, resultList, "开单项目统计明细列表", fileName);
   }
 
   /**

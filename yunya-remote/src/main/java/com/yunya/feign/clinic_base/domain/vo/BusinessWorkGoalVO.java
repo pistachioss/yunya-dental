@@ -34,7 +34,7 @@ public class BusinessWorkGoalVO implements Serializable {
   @ApiModelProperty("完成实收金额（元）")
   private BigDecimal actualReceivedAmountCompleted;
   /** 实收金额完成百分比 */
-  @Excel(name = "实收金额完成百分比")
+  @Excel(name = "实收金额完成百分比", suffix = "%")
   @ApiModelProperty("实收金额完成百分比")
   private Float percentageOfActualReceivedCompletedAmount;
   /** 目标工作量（元） */
@@ -46,7 +46,7 @@ public class BusinessWorkGoalVO implements Serializable {
   @ApiModelProperty("完成工作量（元）")
   private BigDecimal workloadAmountCompleted;
   /** 工作量完成百分比 */
-  @Excel(name = "工作量完成百分比")
+  @Excel(name = "工作量完成百分比", suffix = "%")
   @ApiModelProperty("工作量完成百分比")
   private Float percentageOfWorkloadAmountCompleted;
   /** 目标初诊人数 */
@@ -58,7 +58,7 @@ public class BusinessWorkGoalVO implements Serializable {
   @ApiModelProperty("完成初诊人数")
   private Integer firstTreatPerNumCompleted;
   /** 初诊人数完成百分比 */
-  @Excel(name = "初诊人数完成百分比")
+  @Excel(name = "初诊人数完成百分比", suffix = "%")
   @ApiModelProperty("初诊人数完成百分比")
   private Float percentageOfFirstTreatPerNumCompleted;
   /** 目标就诊人次 */
@@ -70,7 +70,7 @@ public class BusinessWorkGoalVO implements Serializable {
   @ApiModelProperty("完成就诊人次")
   private Integer treatPerTimesCompleted;
   /** 就诊人次完成百分比 */
-  @Excel(name = "就诊人次完成百分比")
+  @Excel(name = "就诊人次完成百分比", suffix = "%")
   @ApiModelProperty("就诊人次完成百分比")
   private Float percentageOfTreatPerTimesCompleted;
 }

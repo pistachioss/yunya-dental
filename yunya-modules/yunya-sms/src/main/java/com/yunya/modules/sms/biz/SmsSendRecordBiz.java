@@ -179,7 +179,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
             StringBuilder builder = parseSmsContent(items,
                     content.split("@"), signName, param);
-            surplusNum -= getContentLength(builder);
+            int len = getContentLength(builder);
             if (surplusNum <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
@@ -188,7 +188,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     userId, name, userId, name);
             String bizId = AliyunSmsUtl.sendSms(mobile, signName, smsTemplateSetVO.getTemplateCode(), param);
             try {
-                updateBizIdAndSurplusNum(bizId, surplusNum, orgId, batchId, Arrays.asList(recordId));
+                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, Arrays.asList(recordId));
             } catch (Exception e) {
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
@@ -224,6 +224,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             JSONArray templateParamJson = new JSONArray();
             String signName = smsTemplateSetVO.getSignName();
             List<Integer> recordIds = new ArrayList<>(models.size());
+            int len = 0;
             for (SmsCommonSendRecordModel model : models) {
                 String mobile = model.getMobile();
                 JSONObject param = model.getTemplateParam();
@@ -231,19 +232,19 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     throw new ClientServiceException("模板参数值缺失", PARAMETERS_IS_ILLEGAL);
                 }
                 StringBuilder builder = parseSmsContent(items, contents, signName, param);
-                surplusNum -= getContentLength(builder);
+                len += getContentLength(builder);
                 Integer recordId = insertSelective(orgId, batchId, builder, mobile, model.getReceiverId(), model.getSendObject());
                 mobiles.add(mobile);
                 signNames.add(signName);
                 templateParamJson.add(param);
                 recordIds.add(recordId);
             }
-            if (surplusNum <= 0) {
+            if (surplusNum-len <= 0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             String bizId = AliyunSmsUtl.sendBatchSms(mobiles, signNames, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
-                updateBizIdAndSurplusNum(bizId, surplusNum, orgId, batchId, recordIds);
+                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, recordIds);
             } catch (Exception e) {
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId, surplusNum,orgId);
@@ -317,6 +318,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             JSONArray signNameJson = new JSONArray();
             List<Integer> userIds = model.getReceiverIds();
             List<Integer> recordIds = new ArrayList<>(mobiles.length);
+            int len = 0;
             for (int i = 0; i < mobiles.length; i++) {
                 String mobile = mobiles[i];
                 Integer userId = null;
@@ -324,18 +326,18 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     userId = userIds.get(i);
                 }
                 StringBuilder content = builders.get(i);
-                surplusNum -= getContentLength(content);
+                len += getContentLength(content);
                 Integer recordId = insertSelective(orgId, batchId, content, mobile, userId, sendObjects.get(i));
                 signNameJson.add(signName);
                 phoneNumberJson.add(mobile);
                 recordIds.add(recordId);
             }
-            if (surplusNum <=0) {
+            if (surplusNum-len <=0) {
                 throw new ClientServiceException("短信余额不足！", BALANCE_INSUFFICIENT);
             }
             String bizId = AliyunSmsUtl.sendBatchSms(phoneNumberJson, signNameJson, smsTemplateSetVO.getTemplateCode(), templateParamJson);
             try {
-                updateBizIdAndSurplusNum(bizId, surplusNum, orgId, batchId, recordIds);
+                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, recordIds);
             } catch (Exception e) {
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
@@ -374,6 +376,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             String signName = smsTemplateSetVO.getSignName();
             List<Integer> userIds = model.getReceiverIds();
             List<Integer> recordIds = new ArrayList<>(mobiles.length);
+            int len = 0;
             for (int i = 0; i < mobiles.length; i++) {
                 String mobile = mobiles[i];
                 Integer userId = null;
@@ -381,7 +384,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
                     userId = userIds.get(i);
                 }
                 StringBuilder content = builders.get(0);
-                surplusNum -= getContentLength(content);
+                len += getContentLength(content);
                 Integer recordId = insertSelective(orgId, batchId, content, mobile, userId, sendObjects.get(i));
                 recordIds.add(recordId);
             }
@@ -390,7 +393,7 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
             }
             String bizId = AliyunSmsUtl.sendSms(model.getMobiles(), signName, smsTemplateSetVO.getTemplateCode(), model.getTemplateParamJson());
             try {
-                updateBizIdAndSurplusNum(bizId, surplusNum, orgId, batchId, recordIds);
+                updateBizIdAndSurplusNum(bizId, surplusNum, len, orgId, batchId, recordIds);
             } catch (Exception e) {
                 log.error("update bizId error",e);
                 log.error("update bizId={}, surplusNum={}, orgId={}",bizId,surplusNum,orgId);
@@ -401,11 +404,22 @@ public class SmsSendRecordBiz extends BaseBiz<SmsSendRecordMapper, SmsSendRecord
         return ResponseUtil.success();
     }
 
-    private void updateBizIdAndSurplusNum(String bizId, int surplusNum, Integer orgId, Integer batchId, List<Integer> recordIds) {
-        smsOrgStatisticsBiz.decrByOrgId(surplusNum, orgId);
+    /**
+     * 更新发送记录和统计
+     *
+     * @param bizId 业务id
+     * @param surplusNum 可用数量
+     * @param count 本次短信发送总条数
+     * @param orgId 组织id
+     * @param batchId 发送批次id
+     * @param recordIds 发送记录id
+     */
+    private void updateBizIdAndSurplusNum(String bizId, int surplusNum, int count, Integer orgId, Integer batchId, List<Integer> recordIds) {
+        smsOrgStatisticsBiz.decrByOrgId(surplusNum-count, orgId);
         SmsSendBatch smsSendBatch = new SmsSendBatch();
         smsSendBatch.setId(batchId);
         smsSendBatch.setBizId(bizId);
+        smsSendBatch.setSendNum(count);
         smsSendBatchBiz.uptSelectiveById(smsSendBatch);
         for (Integer recordId : recordIds) {
             SmsSendRecord smsSendRecord = new SmsSendRecord();

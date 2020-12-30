@@ -268,7 +268,7 @@ public class BaseTreatmentProcessBiz
       }
       treatmentProcess.setTreatStartTime(treatmentRecordResult.getTreatStartTime());
       treatmentProcess.setTreatEndTime(treatmentRecordResult.getTreatEndTime());
-      setBaseTreatmentProcessAssistantValue(treatmentRecord.getId(), treatmentProcess);
+      setBaseTreatmentProcessAssistantValue(treatmentRecordResult.getId(), treatmentProcess);
     }
   }
 

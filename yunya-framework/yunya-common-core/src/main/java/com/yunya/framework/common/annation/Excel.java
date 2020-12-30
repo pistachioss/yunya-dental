@@ -74,6 +74,7 @@ public @interface Excel {
   /** 字段类型（0：导出导入；1：仅导出；2：仅导入） */
   Type type() default Type.ALL;
 
+  /** 字段类型枚举 */
   enum Type {
     ALL(0),
     EXPORT(1),
@@ -89,12 +90,34 @@ public @interface Excel {
     }
   }
 
+  /** 导出数据类型枚举 */
   enum ColumnType {
     NUMERIC(0),
-    STRING(1);
+    STRING(1),
+    IMAGE(2);
     private final int value;
 
     ColumnType(int value) {
+      this.value = value;
+    }
+
+    public int value() {
+      return this.value;
+    }
+  }
+
+  /** 导出字段对齐方式（0：默认；1：靠左；2：居中；3：靠右） */
+  Align align() default Align.AUTO;
+
+  /** 数据对齐方式枚举 */
+  enum Align {
+    AUTO(0),
+    LEFT(1),
+    CENTER(2),
+    RIGHT(3);
+    private final int value;
+
+    Align(int value) {
       this.value = value;
     }
 
