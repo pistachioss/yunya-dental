@@ -142,12 +142,14 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeeWorkloadListOfPersonnel(
       HttpServletResponse response, EmployeeWorkloadQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeeWorkloadOfPersonnelVO> workloadList =
         findEmployeeWorkloadListOfPersonnel(query);
     List<EmployeeWorkloadOfPersonnelVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfPersonnelVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfPersonnelVO.class);
-    String fileName = getFileName(query.getOrgId(), query.getQueryDate(), query.getQueryDate(),"员工工作量统计");
+    String fileName = excelUtil.getFileName(query.getQueryDate(), query.getQueryDate(),
+            getAbbreviationById(query.getOrgId()),"员工工作量统计");
     excelUtil.exportExcel(response, resultList, "员工工作量（人事报表）", fileName);
   }
 
@@ -159,12 +161,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeeWorkloadListOfOperation(
       HttpServletResponse response, EmployeeWorkloadQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeeWorkloadOfOperationVO> workloadList =
         findEmployeeWorkloadListOfOperation(query);
     List<EmployeeWorkloadOfOperationVO> resultList = workloadList.getList();
     ExcelUtil<EmployeeWorkloadOfOperationVO> excelUtil =
         new ExcelUtil<>(EmployeeWorkloadOfOperationVO.class);
-    excelUtil.exportExcel(response, resultList, "员工工作量（运营报表）");
+    String fileName = excelUtil.getFileName(query.getQueryDate(),null,
+            getAbbreviationById(query.getOrgId()),"员工工作量统计");
+    excelUtil.exportExcel(response, resultList, "员工工作量（运营报表）", fileName);
   }
 
   /**
@@ -218,12 +223,15 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeePersonalActualWorkloadDetailList(
       HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeePersonalActualWorkloadDetailVO> pageInfo =
         findEmployeePersonalActualWorkloadDetailList(query);
     List<EmployeePersonalActualWorkloadDetailVO> resultList = pageInfo.getList();
     ExcelUtil<EmployeePersonalActualWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalActualWorkloadDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表");
+    String fileName = excelUtil.getFileName(query.getQueryDate(),query.getQueryDate(),
+            getAbbreviationById(query.getOrgId()),"实收工作量统计明细表");
+    excelUtil.exportExcel(response, resultList, "员工个人实收工作量明细列表", fileName);
   }
 
   /**
@@ -266,12 +274,19 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportEmployeePersonalReceivedWorkloadDetailList(
       HttpServletResponse response, EmployeePersonalWorkloadDetailQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<EmployeePersonalReceivedWorkloadDetailVO> pageInfo =
         findEmployeePersonalReceivedWorkloadDetailList(query);
+    String abbreviation = getAbbreviationById(query.getOrgId());
     List<EmployeePersonalReceivedWorkloadDetailVO> resultList = pageInfo.getList();
+    resultList.forEach(detail->{
+        detail.setOrgName(abbreviation);
+    });
     ExcelUtil<EmployeePersonalReceivedWorkloadDetailVO> excelUtil =
         new ExcelUtil<>(EmployeePersonalReceivedWorkloadDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "员工个人已收工作量明细列表");
+    String fileName = excelUtil.getFileName(query.getOrderDate(),null,
+            abbreviation,"已收工作量统计明细表");
+    excelUtil.exportExcel(response, resultList, "员工个人已收工作量明细列表", fileName);
   }
 
   /**
@@ -374,106 +389,17 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportBillingItemInfoList(
       HttpServletResponse response, BillingItemStatisticsQuery query) throws IOException {
+    query.setWhetherPage(false);
     ExcelUtil<BillingItemInfoVO> excelUtil = new ExcelUtil<>(BillingItemInfoVO.class);
     List<BillingItemInfoVO> resultList = mapper.selectBillingItemInfoList(query);
-    String fileName = getFileName(query);
+    String fileName = excelUtil.getFileName(getAbbreviationById(query.getOrgId()),
+            query.getStartDate(),query.getEndDate(),null,"开单项目数量统计表");
     excelUtil.exportExcel(response, resultList, "开单项目数量统计列表", fileName);
   }
 
-  /**
-   * 获取文件名
-   *
-   * @param orgId
-   * @param sDate
-   * @param eDate
-   * @return
-   */
-  private String getFileName(Integer orgId, String sDate, String eDate, String tail) {
+  private String getAbbreviationById(Integer orgId) {
     OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    StringBuilder res = new StringBuilder();
-    String[] str = sDate.split("-");
-    if (str.length == 1) {//年
-      res.append(sDate).append("年")
-              .append(organizationInfo.getAbbreviation());
-    } else if (str.length == 2) {//月
-      res.append(str[0]).append("年").append(str[1]).append("月")
-              .append(organizationInfo.getAbbreviation());
-    } else if (str.length == 3) {//日
-      res.append(organizationInfo.getAbbreviation());
-      for (int i = 0; i < str.length; i++) {
-        if (i>0 && res.length() > 0) {
-          res.append(".");
-        }
-        res.append(str[i]);
-      }
-      str = eDate.split("-");
-      res.append("-");
-      for (int i = 0; i < str.length; i++) {
-        if (i>0 && res.length() > 0) {
-          res.append(".");
-        }
-        res.append(str[i]);
-      }
-    }
-    res.append(tail);
-    return res.toString();
-  }
-
-  /**
-   * 获取文件名
-   *
-   * @param query
-   * @return
-   */
-  private String getFileName(BillingItemDetailQuery query) {
-    Integer orgId = query.getOrgId();
-    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    StringBuilder res = new StringBuilder();
-    String sDate = query.getStartDate();
-    String[] str = sDate.split("-");
-    for (int i = 0; i < str.length; i++) {
-      if (i>0 && res.length() > 0) {
-        res.append(".");
-      }
-      res.append(str[i]);
-    }
-    String eDate = query.getEndDate();
-    str = eDate.split("-");
-    res.append("-");
-    for (int i = 0; i < str.length; i++) {
-      if (i>0 && res.length() > 0) {
-        res.append(".");
-      }
-      res.append(str[i]);
-    }
-    res.append(organizationInfo.getAbbreviation())
-            .append("开单项目统计明细表");
-    return res.toString();
-  }
-
-  private String getFileName(BillingItemStatisticsQuery query) {
-    Integer orgId = query.getOrgId();
-    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    StringBuilder res = new StringBuilder(organizationInfo.getAbbreviation());
-    String sDate = query.getStartDate();
-    String[] str = sDate.split("-");
-    for (int i = 0; i < str.length; i++) {
-      if (i>0 && res.length() > 0) {
-        res.append(".");
-      }
-      res.append(str[i]);
-    }
-    String eDate = query.getEndDate();
-    str = eDate.split("-");
-    res.append("-");
-    for (int i = 0; i < str.length; i++) {
-      if (i>0 && res.length() > 0) {
-        res.append(".");
-      }
-      res.append(str[i]);
-    }
-    res.append("开单项目数量统计表");
-    return res.toString();
+    return organizationInfo.getAbbreviation();
   }
 
   /**
@@ -498,9 +424,11 @@ public class BaseBillDetailBiz extends BaseBiz<BaseBillDetailMapper, BaseBillDet
    */
   public void exportBillingItemDetailList(
       HttpServletResponse response, BillingItemDetailQuery query) throws IOException {
+    query.setWhetherPage(false);
     ExcelUtil<BillingItemDetailVO> excelUtil = new ExcelUtil<>(BillingItemDetailVO.class);
     List<BillingItemDetailVO> resultList = mapper.selectBillingItemDetailList(query);
-    String fileName = getFileName(query);
+    String fileName = excelUtil.getFileName(query.getStartDate(),query.getEndDate(),
+            getAbbreviationById(query.getOrgId()),"开单项目统计明细表");
     excelUtil.exportExcel(response, resultList, "开单项目统计明细列表", fileName);
   }
 

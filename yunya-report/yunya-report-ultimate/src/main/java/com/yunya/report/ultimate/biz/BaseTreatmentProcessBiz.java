@@ -113,7 +113,8 @@ public class BaseTreatmentProcessBiz
     List<TreatmentMatchingRecordVO> list = mapper.selectTreatmentMatchingRecord(query);
     ExcelUtil<TreatmentMatchingRecordVO> excelUtil =
         new ExcelUtil<>(TreatmentMatchingRecordVO.class);
-    String fileName = getFileName(query.getOrgId(), "配诊记录表");
+    String fileName = excelUtil.getFileName(null, null,
+            getAbbreviationById(query.getOrgId()), "配诊记录表");
     excelUtil.exportExcel(response, list, "配诊记录表", fileName);
   }
 
@@ -123,12 +124,9 @@ public class BaseTreatmentProcessBiz
    * @param orgId
    * @return
    */
-  private String getFileName(Integer orgId, String tail) {
+  private String getAbbreviationById(Integer orgId) {
     OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    StringBuilder res = new StringBuilder();
-    res.append(organizationInfo.getAbbreviation());
-    res.append(tail);
-    return res.toString();
+    return organizationInfo.getAbbreviation();
   }
 
   /**

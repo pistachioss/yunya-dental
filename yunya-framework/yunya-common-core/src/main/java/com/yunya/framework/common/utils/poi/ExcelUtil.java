@@ -278,6 +278,54 @@ public class ExcelUtil<T> {
     exportExcel(response.getOutputStream());
   }
 
+  public String getFileName(String sDate, String eDate, String mid, String tail) {
+    return getFileName(null,sDate,eDate,mid,tail);
+  }
+  /**
+   * 获取文件名
+   *
+   * @param head
+   * @param sDate
+   * @param eDate
+   * @return
+   */
+  public String getFileName(String head, String sDate, String eDate, String mid, String tail) {
+    StringBuilder res = new StringBuilder();
+    if (StringHelper.isNotEmpty(head)) {
+      res.append(head);
+    }
+    if (StringHelper.isNotEmpty(sDate)) {
+      String[] str = sDate.split("-");
+      if (str.length == 1) {//年
+        res.append(sDate).append("年");
+      } else if (str.length == 2) {//月
+        res.append(str[0]).append("年").append(str[1]).append("月");
+      } else if (str.length == 3) {//日
+        for (int i = 0; i < str.length; i++) {
+          if (i > 0 && res.length() > 0) {
+            res.append(".");
+          }
+          res.append(str[i]);
+        }
+        if (StringHelper.isNotEmpty(eDate)) {
+          str = eDate.split("-");
+          res.append("-");
+          for (int i = 0; i < str.length; i++) {
+            if (i > 0 && res.length() > 0) {
+              res.append(".");
+            }
+            res.append(str[i]);
+          }
+        }
+      }
+    }
+    if (StringHelper.isNotEmpty(mid)) {
+      res.append(mid);
+    }
+    res.append(tail);
+    return res.toString();
+  }
+
   /**
    * 对list数据源将其里面的数据导入到excel表单
    *

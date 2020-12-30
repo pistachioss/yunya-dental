@@ -84,11 +84,13 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
    */
   public void exportEmployeeMatchingStatisticsList(
       HttpServletResponse response, EmployeeMatchingRecordQuery query) throws IOException {
+    query.setWhetherPage(false);
     PageInfo<AssistantMatchingStatisticsVO> pageInfo = findTreatMatchingStatisticsList(query);
     List<AssistantMatchingStatisticsVO> list = pageInfo.getList();
     ExcelUtil<AssistantMatchingStatisticsVO> excelUtil =
         new ExcelUtil<>(AssistantMatchingStatisticsVO.class);
-    String fileName = getFileName(query.getOrgId(), query.getStartDate(), query.getEndDate(), "助手配诊统计");
+    String fileName = excelUtil.getFileName(query.getStartDate(), query.getEndDate(),
+            getAbbreviationById(query.getOrgId()), "助手配诊统计");
     excelUtil.exportExcel(response, list, "员工配诊记录列表",fileName);
   }
 
@@ -117,46 +119,13 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
       HttpServletResponse response, EmployeeDiagnosisQuery query) throws IOException {
     List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
     ExcelUtil<EmployeeDiagnosisInfoVO> excelUtil = new ExcelUtil<>(EmployeeDiagnosisInfoVO.class);
-    String fileName = getFileName(query.getOrgId(), query.getStartDate(), query.getEndDate(), "看诊情况统计");
+    String fileName = excelUtil.getFileName(getAbbreviationById(query.getOrgId()),
+            query.getStartDate(), query.getEndDate(),null,"看诊情况统计");
     excelUtil.exportExcel(response, resultList, "员工看诊情况列表", fileName);
   }
 
-  /**
-   * 获取文件名
-   *
-   * @param orgId
-   * @param sDate
-   * @param eDate
-   * @return
-   */
-  private String getFileName(Integer orgId, String sDate, String eDate, String tail) {
+  public String getAbbreviationById(Integer orgId) {
     OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
-    StringBuilder res = new StringBuilder();
-    String[] str = sDate.split("-");
-    if (str.length == 1) {//年
-      res.append(sDate).append("年")
-        .append(organizationInfo.getAbbreviation());
-    } else if (str.length == 2) {//月
-      res.append(str[0]).append("年").append(str[1]).append("月")
-              .append(organizationInfo.getAbbreviation());
-    } else if (str.length == 3) {//日
-      res.append(organizationInfo.getAbbreviation());
-      for (int i = 0; i < str.length; i++) {
-        if (i>0 && res.length() > 0) {
-          res.append(".");
-        }
-        res.append(str[i]);
-      }
-      str = eDate.split("-");
-      res.append("-");
-      for (int i = 0; i < str.length; i++) {
-        if (i>0 && res.length() > 0) {
-          res.append(".");
-        }
-        res.append(str[i]);
-      }
-    }
-    res.append(tail);
-    return res.toString();
+    return organizationInfo.getAbbreviation();
   }
 }
