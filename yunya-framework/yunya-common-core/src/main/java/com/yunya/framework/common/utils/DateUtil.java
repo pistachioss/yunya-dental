@@ -26,13 +26,36 @@ public class DateUtil {
 
   private DateUtil() {}
 
-  public static Date geLastWeekMonday(Date date) {
+  /**
+   * 格式化指定格式字符串日期
+   *
+   * @param format
+   * @param date
+   * @return
+   */
+  public static String parseDateToStr(final String format, final Date date) {
+    return new SimpleDateFormat(format).format(date);
+  }
+
+  /**
+   * 获取上周星期一
+   *
+   * @param date
+   * @return
+   */
+  public static Date getLastWeekMonday(Date date) {
     Calendar cal = Calendar.getInstance();
     cal.setTime(getThisWeekMonday(date));
     cal.add(Calendar.DATE, -7);
     return cal.getTime();
   }
 
+  /**
+   * 获取本周星期一
+   *
+   * @param date
+   * @return
+   */
   public static Date getThisWeekMonday(Date date) {
     Calendar cal = Calendar.getInstance();
     cal.setTime(date);
@@ -55,6 +78,12 @@ public class DateUtil {
     return cal.getTime();
   }
 
+  /**
+   * 获取下周星期一
+   *
+   * @param date
+   * @return
+   */
   public static Date getNextWeekMonday(Date date) {
     Calendar cal = Calendar.getInstance();
     cal.setTime(getThisWeekMonday(date));
@@ -88,6 +117,12 @@ public class DateUtil {
     return date.after(begin) && date.before(end);
   }
 
+  /**
+   * date转LocalDateTime
+   *
+   * @param date
+   * @return
+   */
   public static LocalDateTime dateToLocalDateTime(Date date) {
     Instant instant = date.toInstant();
     return instant.atZone(ZoneOffset.ofHours(8)).toLocalDateTime();
