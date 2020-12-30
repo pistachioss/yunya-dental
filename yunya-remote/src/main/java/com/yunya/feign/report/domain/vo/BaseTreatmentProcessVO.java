@@ -43,9 +43,9 @@ public class BaseTreatmentProcessVO extends BaseTreatmentProcess implements Seri
     @ApiModelProperty("挂号医生名字")
     private String regDentistName;
     /**
-     * 诊疗状态0-挂号；1-接诊；2-开单；3-治疗完成；4-已结账）
+     * 诊疗状态0-挂号；1-接诊；2-开单；3-治疗完成；4-收费）
      */
-    @ApiModelProperty("诊疗状态1-预约未到；2-候诊中；3-就诊中；4-治疗完成；5-已结账）")
+    @ApiModelProperty("诊疗状态0-挂号；1-接诊；2-开单；3-治疗完成；4-收费）")
     private Byte treatStatus;
 
 

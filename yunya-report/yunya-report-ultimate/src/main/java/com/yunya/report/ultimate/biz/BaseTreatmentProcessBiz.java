@@ -161,7 +161,7 @@ public class BaseTreatmentProcessBiz
     List<Integer> appointIds = new ArrayList<>();
     baseTreatmentProcessVOS.stream().filter(
             baseTreatmentProcessVO -> {
-              return null != baseTreatmentProcessVO.getAppointmentId() && baseTreatmentProcessVO.getAppointStatus() < 4 && baseTreatmentProcessVO.getRegisteredId() == null;
+              return null != baseTreatmentProcessVO.getAppointmentId() && baseTreatmentProcessVO.getAppointStatus() < 2 && baseTreatmentProcessVO.getRegisteredId() == null;
             }).forEach(baseTreatmentProcessVO -> {
       appointIds.add(baseTreatmentProcessVO.getAppointmentId());
     });
@@ -291,10 +291,10 @@ public class BaseTreatmentProcessBiz
           Byte treatmentStatus = patientTreatmentRecordVO.getStatus();
           switch (treatmentStatus) {
             case 0:
+            case 1:
               // 就诊中
               entity.setTreatStatus((byte) 3);
               break;
-            case 1:
             case 2:
               // 就诊完成
               entity.setTreatStatus((byte) 4);

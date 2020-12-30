@@ -140,6 +140,7 @@ public class BaseTreatmentProcessBiz
       treatmentProcess.setTreatType(registered.getFirstVisit());
       treatmentProcess.setRegisteredDentistId(registered.getDentistId());
       treatmentProcess.setRegisteredTime(registered.getRegTime());
+      treatmentProcess.setRegisteredDate(registered.getCrtTime());
       return treatmentProcess;
     }
     return null;

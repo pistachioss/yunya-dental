@@ -1,5 +1,6 @@
 package com.yunya.modules.system.domain.form;
 
+import com.yunya.framework.common.constant.BusinessConstants;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -32,6 +33,6 @@ public class ForgetPasswordForm implements Serializable {
     /** 手机号 */
     @ApiModelProperty(value = "手机号",required = true)
     @NotBlank(message = "手机号不能为空")
-    @Pattern(regexp = "^(13[0-9]|14[5|7]|15[0|1|2|3|4|5|6|7|8|9]|18[0|1|2|3|5|6|7|8|9])\\d{8}$")
+    @Pattern(regexp = BusinessConstants.MOBILE_REGEXP)
     private String mobile;
 }

@@ -29,7 +29,7 @@
         bdi.categoryId,
         bdi.categoryName,
         bdi.billNum,
-        DATE_FORMAT( bdi.orderDate, '%Y-%m-%d' ),
+        DATE_FORMAT( bdi.orderDate, '%Y-%m-%d' ) as orderDate,
         bdi.patientId,
         bdi.patientName,
         bdi.mobile,

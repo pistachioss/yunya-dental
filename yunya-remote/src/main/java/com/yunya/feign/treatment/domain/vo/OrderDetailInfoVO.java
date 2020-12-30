@@ -27,6 +27,9 @@ public class OrderDetailInfoVO implements Serializable {
   /** 开单总额 */
   @ApiModelProperty("开单总额")
   private BigDecimal totalAmount;
+  /** 本单优惠金额 */
+  @ApiModelProperty("本单优惠金额")
+  private BigDecimal privilegeAmount;
   /** 开单状态 */
   @ApiModelProperty("订单状态（0-账单未锁定 ；1-账单锁定；2-结算完成状态；3-收费中）")
   private Byte status;

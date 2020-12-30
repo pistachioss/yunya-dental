@@ -221,8 +221,11 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     patientBaseInfo.setUpdName(BaseContextHandler.getName());
     patientBaseInfo.setOrgId(Integer.parseInt(BaseContextHandler.getOrgId()));
     patientBaseInfo.setUpdTime(new Date());
-    if (patientBaseInfo.getOriginType() == 1 || patientBaseInfo.getOriginType() == 2){
-      patientBaseInfo.setOriginId(patientExtendInfoModel.getPatientBaseInfoModel().getSourceId());
+    Integer originType = patientBaseInfo.getOriginType();
+    if (null != originType) {
+      if (patientBaseInfo.getOriginType() == 1 || patientBaseInfo.getOriginType() == 2) {
+        patientBaseInfo.setOriginId(patientExtendInfoModel.getPatientBaseInfoModel().getSourceId());
+      }
     }
     // 完善患者基本信息  对补全信息进行更新
     this.mapper.updateByPrimaryKeySelective(patientBaseInfo);

@@ -97,6 +97,12 @@ public class BaseTreatmentProcess {
     private Date registeredTime;
 
     /**
+     * 挂号日期
+     */
+    @Column(name = "registered_date")
+    private Date registeredDate;
+
+    /**
      * 接诊开始时间
      */
     @Column(name = "treat_start_time")
@@ -484,5 +490,21 @@ public class BaseTreatmentProcess {
      */
     public void setAssistant3(Integer assistant3) {
         this.assistant3 = assistant3;
+    }
+
+    /**
+     * 获取挂号日期
+     * @return 返回挂号日期
+     */
+    public Date getRegisteredDate() {
+        return registeredDate;
+    }
+
+    /**
+     * 设置挂号日期
+     * @param registeredDate 挂号日期
+     */
+    public void setRegisteredDate(Date registeredDate) {
+        this.registeredDate = registeredDate;
     }
 }

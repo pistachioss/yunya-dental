@@ -11,10 +11,7 @@ import com.yunya.feign.treatment.domain.model.BillAdjustDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderDetailModel;
 import com.yunya.feign.treatment.domain.model.OrderRecordModel;
 import com.yunya.feign.treatment.domain.query.OrderProcessQuery;
-import com.yunya.feign.treatment.domain.vo.AssistantInfoVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailInfoVO;
-import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
-import com.yunya.feign.treatment.domain.vo.OrderProcessVO;
+import com.yunya.feign.treatment.domain.vo.*;
 import com.yunya.feign.treatment_other.RemoteTreatmentOtherFeign;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
@@ -96,12 +93,17 @@ public class OrderRecordBiz extends BaseBiz<OrderRecordMapper, OrderRecord> {
     entity.setInservice(true);
     // 订单详情信息
     OrderRecord orderRecord = mapper.selectOne(entity);
+
     List<OrderDetailVO> orderDetails = new ArrayList<>();
     if (null != orderRecord) {
       Integer orderRecordId = orderRecord.getId();
       resultData.setOrderRecordId(orderRecordId);
       resultData.setTotalAmount(orderRecord.getTotalAmount());
       resultData.setStatus(orderRecord.getStatus());
+      OrderBill4AppVO orderAndBill4App = billRecordMapper.findOrderAndBill4App(orderRecord.getTreatmentRecordId());
+      if (null != orderAndBill4App) {
+        resultData.setPrivilegeAmount(orderAndBill4App.getPrivilegeAmount());
+      }
       orderDetails = orderDetailBiz.findOrderDetailVOList(orderRecordId, (byte) 0);
     }
     // 配诊助手列表
