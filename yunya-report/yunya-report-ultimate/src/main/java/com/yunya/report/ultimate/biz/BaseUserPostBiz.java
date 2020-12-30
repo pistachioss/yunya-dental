@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.List;
 
 /**
@@ -90,8 +89,7 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     ExcelUtil<AssistantMatchingStatisticsVO> excelUtil =
         new ExcelUtil<>(AssistantMatchingStatisticsVO.class);
     String fileName = getFileName(query.getOrgId(), query.getStartDate(), query.getEndDate(), "助手配诊统计");
-    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
-    excelUtil.exportExcel(response, list, "员工配诊记录列表");
+    excelUtil.exportExcel(response, list, "员工配诊记录列表",fileName);
   }
 
   /**
@@ -120,8 +118,7 @@ public class BaseUserPostBiz extends BaseBiz<BaseUserPostMapper, BaseUserPost> {
     List<EmployeeDiagnosisInfoVO> resultList = mapper.selectEmployeeDiagnosisInfoList(query);
     ExcelUtil<EmployeeDiagnosisInfoVO> excelUtil = new ExcelUtil<>(EmployeeDiagnosisInfoVO.class);
     String fileName = getFileName(query.getOrgId(), query.getStartDate(), query.getEndDate(), "看诊情况统计");
-    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
-    excelUtil.exportExcel(response, resultList, "员工看诊情况列表");
+    excelUtil.exportExcel(response, resultList, "员工看诊情况列表", fileName);
   }
 
   /**
