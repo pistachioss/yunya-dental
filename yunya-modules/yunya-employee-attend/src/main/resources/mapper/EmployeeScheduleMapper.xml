@@ -239,7 +239,7 @@
         UNION
         select count(*) num from work_overtime_info wi LEFT JOIN employee_schedule es on es.id = wi.rest_schedule_id
         where wi.approval_status in (0,1) and DATE_FORMAT(wi.work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate},'%Y-%m-%d') AND
-        (es.schedule_id = #{scheduleId} or wi.schedule_id = #{scheduleId}) and user_id = #{employeeId}
+        (es.schedule_id = #{scheduleId} or wi.schedule_id = #{scheduleId}) and wi.user_id = #{employeeId}
         UNION
         select count(*) num from field_info
         where approval_status in (0,1)
