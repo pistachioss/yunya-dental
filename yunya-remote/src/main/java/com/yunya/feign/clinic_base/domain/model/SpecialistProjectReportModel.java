@@ -1,5 +1,6 @@
 package com.yunya.feign.clinic_base.domain.model;
 
+import com.yunya.models.clinic_base.SpecialistProject;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -33,4 +34,8 @@ public class SpecialistProjectReportModel implements Serializable {
 
     /** 项目ids */
     private String[] billingItemIds;
+
+    /** 专科项目 */
+    List<SpecialistProject> specialistProjects;
+
 }
