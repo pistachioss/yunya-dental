@@ -220,10 +220,12 @@ public class TollBiz {
                     vo.setActualAmount(actualAmount);
                     BigDecimal receivableAmount = vo.getReceivableAmount();
                     // 设置折扣率
-                    vo.setDiscountRate(
-                        actualAmount
-                            .divide(receivableAmount, 4, RoundingMode.HALF_UP)
-                            .multiply(BigDecimal.valueOf(100)));
+                    if (actualAmount != null && receivableAmount.compareTo(BigDecimal.valueOf(0)) != 0) {
+                      vo.setDiscountRate(
+                              actualAmount
+                                      .divide(receivableAmount, 4, RoundingMode.HALF_UP)
+                                      .multiply(BigDecimal.valueOf(100)));
+                    }
                     // 设置优惠匹配信息
                     if (receivableAmount.compareTo(actualAmount) != 0) {
                       PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();

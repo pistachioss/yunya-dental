@@ -54,6 +54,10 @@ public class VisitingRecord {
     @Column(name = "executor_name")
     private String executorName;
 
+    /** 实际执行随访时间 */
+    @Column(name = "execute_date")
+    private Date executeDate;
+
     /**
      * 就诊日期
      */
@@ -524,6 +528,14 @@ public class VisitingRecord {
         this.executorName = executorName;
     }
 
+    public Date getExecuteDate() {
+        return executeDate;
+    }
+
+    public void setExecuteDate(Date executeDate) {
+        this.executeDate = executeDate;
+    }
+
     @Override
     public String toString() {
         return "VisitingRecord{" +
@@ -534,7 +546,8 @@ public class VisitingRecord {
                 ", dentistId=" + dentistId +
                 ", deptRoomId=" + deptRoomId +
                 ", executorId=" + executorId +
-                ", executorName=" + executorName +
+                ", executorName='" + executorName + '\'' +
+                ", executeDate=" + executeDate +
                 ", treatmentDate=" + treatmentDate +
                 ", visitingDate=" + visitingDate +
                 ", visitingTime='" + visitingTime + '\'' +

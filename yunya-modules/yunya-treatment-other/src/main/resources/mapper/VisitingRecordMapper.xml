@@ -13,6 +13,7 @@
     <result column="dept_room_id" jdbcType="INTEGER" property="deptRoomId" />
     <result column="executor_id" jdbcType="INTEGER" property="executorId" />
     <result column="executor_name" jdbcType="VARCHAR" property="executorName" />
+    <result column="execute_date" jdbcType="TIMESTAMP" property="executeDate" />
     <result column="treatment_date" jdbcType="DATE" property="treatmentDate" />
     <result column="visiting_date" jdbcType="DATE" property="visitingDate" />
     <result column="visiting_time" jdbcType="VARCHAR" property="visitingTime" />
@@ -30,13 +31,13 @@
   </resultMap>
 
   <sql id="baseColumns">
-    vr.id,vr.org_id,vr.treatment_id,vr.patient_id,vr.dentist_id,executor_id,executor_name,vr.dept_room_id,vr.treatment_date,vr.visiting_date,vr.visiting_time,vr.reason,
+    vr.id,vr.org_id,vr.treatment_id,vr.patient_id,vr.dentist_id,vr.executor_id,vr.executor_name,vr.execute_date,vr.dept_room_id,vr.treatment_date,vr.visiting_date,vr.visiting_time,vr.reason,
     vr.visiting_content,vr.inservice,vr.remarks,vr.status ,vr.crt_id,vr.crt_name,vr.crt_time,vr.upt_id,vr.upd_name,vr.upd_time
   </sql>
 
   <sql id="FieldAlias">
     id, org_id as orgId, treatment_id as treatmentId, patient_id as patientId, dentist_id as dentistId, dept_room_id as deptRoomId,executor_id as executorId,executor_name as executorName,
-    treatment_date as treatmentDate, visiting_date as visitingDate,visiting_time as visitingTime,reason, visiting_content as visitingContent,
+    execute_date as executeDate,treatment_date as treatmentDate, visiting_date as visitingDate,visiting_time as visitingTime,reason, visiting_content as visitingContent,
     inservice, remarks, `status`, crt_id as crtId, crt_name as crtName, crt_time as crtTime, upt_id as uptId, upd_name as updName, upd_time as updTime
   </sql>
 
@@ -67,6 +68,9 @@
       </if>
       <if test="query.visitingDate != null and query.searchId == 2">
         and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
+      </if>
+      <if test="executeDate != null">
+        and DATE_FORMAT(execute_date,'%Y-%m-%d') = DATE_FORMAT(#{executeDate},'%Y-%m-%d')
       </if>
       <if test="query.searchBeginTime != null and query.searchEndTime != null">
         and date_format(vr.visiting_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
