@@ -1,6 +1,5 @@
 package com.yunya.feign.report.domain.vo;
 
-import com.yunya.models.report.BaseBill;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -38,7 +37,7 @@ public class EmployeeOrderDetailWorkloadVO implements Serializable {
   private String itemName;
   /** 原价 */
   @ApiModelProperty("原价")
-  private BaseBill originalPrice;
+  private BigDecimal originalPrice;
   /** 优惠金额 */
   @ApiModelProperty("优惠金额")
   private BigDecimal discountAmount;
