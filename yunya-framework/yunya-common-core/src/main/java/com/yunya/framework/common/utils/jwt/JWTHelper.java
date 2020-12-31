@@ -37,6 +37,7 @@ public class JWTHelper {
             .setIssuedAt(new Date(System.currentTimeMillis()))
             .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
             .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
+            .claim(UserConstant.JWT_KEY_DEVICE_TYPE,jwtInfo.getDeviceType())
             .setExpiration(DateTime.now().plusSeconds(expire).toDate())
             .signWith(SignatureAlgorithm.RS256, RSA_KEY_HELPER.getPrivateKey(priKeyPath))
             .compact();
@@ -61,6 +62,7 @@ public class JWTHelper {
             // 私有声明
             .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
             .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
+            .claim(UserConstant.JWT_KEY_DEVICE_TYPE,jwtInfo.getDeviceType())
             // 加密
             .signWith(SignatureAlgorithm.RS256, RSA_KEY_HELPER.getPrivateKey(priKey))
             .compact();
@@ -86,6 +88,7 @@ public class JWTHelper {
             // 私有声明
             .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
             .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
+            .claim(UserConstant.JWT_KEY_DEVICE_TYPE, jwtInfo.getDeviceType())
             // 过期时间
             .setExpiration(DateTime.now().plusSeconds(expire).toDate())
             // 加密
@@ -134,7 +137,8 @@ public class JWTHelper {
     return new JWTInfo(
         body.getSubject(),
         StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_USER_ID)),
-        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_NAME)));
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_NAME)),
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_DEVICE_TYPE)));
   }
 
   /**
@@ -152,6 +156,7 @@ public class JWTHelper {
     return new JWTInfo(
         body.getSubject(),
         StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_USER_ID)),
-        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_NAME)));
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_NAME)),
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_DEVICE_TYPE)));
   }
 }

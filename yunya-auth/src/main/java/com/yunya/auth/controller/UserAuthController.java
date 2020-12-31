@@ -42,9 +42,9 @@ public class UserAuthController {
   @ApiOperation("登陆")
   @PostMapping("/token")
   public ResponseResult<UserAuthResponse> createAuthenticationToken(
-      @RequestBody @Validated JwtRequestFrom paramForm) throws Exception {
+      @RequestBody @Validated JwtRequestFrom paramForm, HttpServletRequest request) throws Exception {
     log.info(paramForm.getUsername() + " require logging...");
-    UserAuthResponse loginUser = userAuthService.login(paramForm);
+    UserAuthResponse loginUser = userAuthService.login(paramForm,request);
     return ResponseUtil.success(loginUser);
   }
 
