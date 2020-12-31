@@ -228,7 +228,7 @@
     <select id="selectCountTariffSpecialist" resultType="java.lang.Integer">
         select count(1) from order_detail od join order_record ord on od.order_record_id = ord.id
         <where>
-            <if test="form.orgIds.size() > 0 and form.orgIds != '' ">
+            <if test="form.orgIds.size() > 0">
                 and od.org_id in
                 <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
                     #{orgId}
@@ -268,17 +268,17 @@
     <select id="selectTariffSpecialistPercentage" resultType="java.lang.Integer">
         select count(1) from order_detail od join order_record ord on od.order_record_id = ord.id
         <where>
-            <if test="form.orgIds.size() > 0 and form.orgIds != '' ">
+            <if test="form.orgIds.size() > 0 ">
                 and od.org_id in
                 <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
                     #{orgId}
                 </foreach>
             </if>
 
-            <if test="billingItemIds != null and billingItemIds != ''">
-                and od.billing_item_id in
-                <foreach collection="billingItemIds" item="billingItemId" index="index" open="(" separator="," close=")">
-                    #{billingItemIds}
+            <if test="form.billingItemIds != null and form.billingItemIds != ''">
+                and od.billing_item_id =
+                <foreach collection="form.billingItemIds" item="billingItemId" index="index" open="(" separator="," close=")">
+                    #{billingItemId}
                 </foreach>
             </if>
 
@@ -313,6 +313,6 @@
 
     <!-- 计算占比 -->
     <select id="percentage" resultType="java.lang.String">
-        select concat( format( ${number} / ${count} * 100, 2 ),'%') percentage
+        select concat( format( ${number} / ${count} * 100, 0 ),'%') percentage
     </select>
 </mapper>

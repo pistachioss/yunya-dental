@@ -129,7 +129,7 @@ public class SpecialistProjectController {
    * @return void
    */
   @ApiOperation("患者报表-就诊患者分析-专科项目")
-  @PostMapping(value = "/name/list", name = "就诊患者分析-专科项目")
+  @PostMapping(value = "/specialistProject/report", name = "就诊患者分析-专科项目")
   public ResponseResult<List<SpecialistProjectReportVO>> specialistProjectReport(@RequestBody @Validated SpecialistProjectReportForm form) {
     List<SpecialistProjectReportVO> resultList = specialistProjectBiz.specialistProjectReport(form);
     return ResponseUtil.success(resultList);

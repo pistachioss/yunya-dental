@@ -1,6 +1,7 @@
 package com.yunya.feign.treatment.factory;
 
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
+import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
@@ -171,7 +172,8 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public String findTariffSpecialistPercentage(String[] billingItemIds, SpecialistProjectReportForm specialistProjectReportForm) {
+  public String findTariffSpecialistPercentage(SpecialistProjectReportModel specialistProjectReportModel) {
     return null;
   }
+
 }

@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectForm;
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectModel;
+import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectNameVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
@@ -17,6 +18,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.clinic_base.SpecialistProject;
 import com.yunya.modules.clinic_base.mapper.SpecialistProjectMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,6 +149,8 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
    * @return List<SpecialistProjectReportVO>
    */
   public List<SpecialistProjectReportVO> specialistProjectReport(SpecialistProjectReportForm form) {
+    SpecialistProjectReportModel specialistProjectReportModel = new SpecialistProjectReportModel();
+    BeanUtils.copyProperties(form,specialistProjectReportModel);
     List<SpecialistProjectReportVO> specialistProjectReportVOList = new ArrayList<>();
     List<SpecialistProject> specialistProjects = mapper.selectListAll();
     if (specialistProjects.size() > 0) {
@@ -157,8 +161,9 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
             String tariffIds = specialistProject.getTariffIds();
             if (tariffIds != null) {
               String[] billingItemIds = tariffIds.split(",");
+              specialistProjectReportModel.setBillingItemIds(billingItemIds);
               String percentage =
-                  treatmentServiceFeign.findTariffSpecialistPercentage(billingItemIds, form);
+                  treatmentServiceFeign.findTariffSpecialistPercentage(specialistProjectReportModel);
               specialistProjectReportVO.setPercentage(percentage);
             }
             specialistProjectReportVOList.add(specialistProjectReportVO);

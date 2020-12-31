@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment;
 
+import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
@@ -294,10 +295,9 @@ public interface RemoteTreatmentServiceFeign {
 
   /**
    * 查询专科占比
-   * @param billingItemIds 项目ids
-   * @param specialistProjectReportForm 查询条件
+   * @param specialistProjectReportModel 查询条件
    * @return Integer
    */
   @RequestMapping(value = "/rpc/tariff/specialist/percentage", method = RequestMethod.POST)
-   String findTariffSpecialistPercentage(String[] billingItemIds, SpecialistProjectReportForm specialistProjectReportForm);
+   String findTariffSpecialistPercentage(@RequestBody @Validated SpecialistProjectReportModel specialistProjectReportModel);
 }
