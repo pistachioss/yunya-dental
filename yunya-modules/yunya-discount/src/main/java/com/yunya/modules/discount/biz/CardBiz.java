@@ -452,7 +452,7 @@ public class CardBiz extends BaseBiz<CardMapper, Card> {
 				if (cardSecrets.length() > 0) {
 					cardSecrets.append(",");
 				}
-				cardSecrets.append(card.getCardPassword());
+				cardSecrets.append(new String(Base64.getDecoder().decode(card.getCardPassword())));
 			}
 			// TODO: 2020/8/26 发短信
 			sendMessage(form, cardNos, cardSecrets);

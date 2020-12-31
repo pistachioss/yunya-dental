@@ -508,11 +508,14 @@ public class TollBiz {
           detailPayRecord.setReceivableAmount(receivableAmount);
           BigDecimal privilegeAmount = BigDecimal.valueOf(0);
           BigDecimal actualAmount = receivableAmount;
+          BigDecimal couponWorkload = BigDecimal.valueOf(0);
           for (PatientItemBenefitVo vo : benefitVos) {
             Integer orderDetailId = vo.getOrderDetailId();
             if (detailId.equals(orderDetailId)) {
               privilegeAmount = vo.getItemBenefitAmount();
               actualAmount = receivableAmount.subtract(privilegeAmount);
+              // TODO: 2020/12/31 从vo中获取补入时长
+//              couponWorkload = vo.
             }
           }
           detailPayRecord.setPrivilegeAmount(privilegeAmount);
@@ -525,7 +528,7 @@ public class TollBiz {
             detailPayRecord.setReceivedAmount(totalCharge);
             totalCharge = BigDecimal.valueOf(0);
           }
-          detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
+          detailPayRecord.setCouponWorkload(couponWorkload);
           Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
           detailPayRecord.setCrtId(userId);
           String name = BaseContextHandler.getName();

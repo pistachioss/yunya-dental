@@ -191,8 +191,8 @@
         btp.patient_id as patientId,
         btp.patientName,
         btp.mobile,
-        DATE_FORMAT(btp.treatStartTime, '%Y-%m-%d %H:%i'),
-        DATE_FORMAT(btp.treatEndTime, '%Y-%m-%d %H:%i'),
+        DATE_FORMAT(btp.treatStartTime, '%Y-%m-%d %H:%i') as treatStartTime,
+        DATE_FORMAT(btp.treatEndTime, '%Y-%m-%d %H:%i') as treatEndTime,
         btp.matchDuration
         FROM (
         SELECT
