@@ -137,4 +137,96 @@
                  LEFT JOIN base_tariff bt on bt.id = a.billing_item_id
                  LEFT JOIN base_oral_tariff bot on bot.id = a.billing_item_id
     </select>
+
+    <!-- 查询总数量 -->
+    <select id="selectCountTariffSpecialist" resultType="java.lang.Integer">
+        select count(1) from order_detail od join order_record ord on od.order_record_id = ord.id
+        <where>
+            <if test="form.orgIds.size() > 0 and form.orgIds != '' ">
+                and od.org_id in
+                <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
+                    #{orgId}
+                </foreach>
+            </if>
+
+            <if test="form.dateType == 0">
+                <if test="form.startDate != null and form.startDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y-%m-%d') &gt;= #{form.startDate}
+                </if>
+                <if test="form.endDate != null and form.endDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y-%m-%d') &lt;= #{form.endDate}
+                </if>
+            </if>
+            <if test="form.dateType == 1">
+                <if test="form.startDate != null and form.startDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y-%m') &gt;= #{form.startDate}
+                </if>
+                <if test="form.endDate != null and form.endDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y-%m') &lt;= #{form.endDate}
+                </if>
+            </if>
+            <if test="form.dateType == 2">
+                <if test="form.startDate != null and form.startDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y') &gt;= #{form.startDate}
+                </if>
+                <if test="form.endDate != null and form.endDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y') &lt;= #{form.endDate}
+                </if>
+            </if>
+            and od.type = 0
+            and ord.status = 2
+        </where>
+    </select>
+
+    <!-- 查询专科数量 -->
+    <select id="selectTariffSpecialistPercentage" resultType="java.lang.Integer">
+        select count(1) from order_detail od join order_record ord on od.order_record_id = ord.id
+        <where>
+            <if test="form.orgIds.size() > 0 and form.orgIds != '' ">
+                and od.org_id in
+                <foreach collection="form.orgIds" item="orgId" index="index" open="(" close=")" separator=",">
+                    #{orgId}
+                </foreach>
+            </if>
+
+            <if test="billingItemIds != null and billingItemIds != ''">
+                and od.billing_item_id in
+                <foreach collection="billingItemIds" item="billingItemId" index="index" open="(" separator="," close=")">
+                    #{billingItemIds}
+                </foreach>
+            </if>
+
+            <if test="form.dateType == 0">
+                <if test="form.startDate != null and form.startDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y-%m-%d') &gt;= #{form.startDate}
+                </if>
+                <if test="form.endDate != null and form.endDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y-%m-%d') &lt;= #{form.endDate}
+                </if>
+            </if>
+            <if test="form.dateType == 1">
+                <if test="form.startDate != null and form.startDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y-%m') &gt;= #{form.startDate}
+                </if>
+                <if test="form.endDate != null and form.endDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y-%m') &lt;= #{form.endDate}
+                </if>
+            </if>
+            <if test="form.dateType == 2">
+                <if test="form.startDate != null and form.startDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y') &gt;= #{form.startDate}
+                </if>
+                <if test="form.endDate != null and form.endDate != ''">
+                    and DATE_FORMAT( od.crt_time, '%Y') &lt;= #{form.endDate}
+                </if>
+            </if>
+            and od.type = 0
+            and ord.status = 2
+        </where>
+    </select>
+
+    <!-- 计算占比 -->
+    <select id="percentage" resultType="java.lang.String">
+        select concat( format( ${number} / ${count} * 100, 2 ),'%') percentage
+    </select>
 </mapper>

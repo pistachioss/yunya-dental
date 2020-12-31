@@ -1,5 +1,6 @@
 package com.yunya.feign.treatment;
 
+import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
@@ -277,4 +278,14 @@ public interface RemoteTreatmentServiceFeign {
   @RequestMapping(value = "/rpc/business/goal", method = RequestMethod.POST)
   CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
       @RequestBody @Validated CompletedWorkGoalQuery query);
+
+
+  /**
+   * 查询专科占比
+   * @param billingItemIds 项目ids
+   * @param specialistProjectReportForm 查询条件
+   * @return Integer
+   */
+  @RequestMapping(value = "/rpc/tariff/specialist/percentage", method = RequestMethod.POST)
+   String findTariffSpecialistPercentage(String[] billingItemIds, SpecialistProjectReportForm specialistProjectReportForm);
 }

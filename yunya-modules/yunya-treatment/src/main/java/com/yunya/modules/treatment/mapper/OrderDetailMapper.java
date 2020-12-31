@@ -1,5 +1,6 @@
 package com.yunya.modules.treatment.mapper;
 
+import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.treatment.domain.vo.BillPrintInfoVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailChargeVO;
 import com.yunya.feign.treatment.domain.vo.OrderDetailVO;
@@ -37,4 +38,28 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @return 返回账单信息
    */
   BillPrintInfoVO billPrintInfo(@Param("patientId") Integer patientId, @Param("billNumber") String billNumber);
+
+  /**
+   * 查询总数
+   * @param billingItemIds 门诊ids
+   * @param specialistProjectReportForm 查询条件
+   * @return Integer
+   */
+  Integer selectCountTariffSpecialist(@Param("billingItemIds") String[] billingItemIds, @Param("form") SpecialistProjectReportForm specialistProjectReportForm);
+
+  /**
+   * 查询占比数量
+   * @param billingItemIds 门诊ids
+   * @param specialistProjectReportForm 查询条件
+   * @return Integer
+   */
+  Integer selectTariffSpecialistPercentage(@Param("billingItemIds") String[] billingItemIds, @Param("form")SpecialistProjectReportForm specialistProjectReportForm);
+
+  /**
+   * 计算占比
+   * @param number 专科数量
+   * @param count 总数量
+   * @return String
+   */
+  String percentage(@Param("number") Integer number, @Param("count") Integer count);
 }
