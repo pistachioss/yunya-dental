@@ -2,6 +2,7 @@ package com.yunya.feign.treatment.factory;
 
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
@@ -15,6 +16,7 @@ import com.yunya.models.treatment.OrderDetail;
 import com.yunya.models.treatment.OrderRecord;
 import com.yunya.models.treatment.Registered;
 import com.yunya.models.treatment.TreatmentRecord;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -172,8 +174,9 @@ public class RemoteTreatmentServiceFeignFallBackFactory implements RemoteTreatme
   }
 
   @Override
-  public String findTariffSpecialistPercentage(SpecialistProjectReportModel specialistProjectReportModel) {
+  public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(SpecialistProjectReportModel specialistProjectReportModel) {
     return null;
   }
+
 
 }

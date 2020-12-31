@@ -155,7 +155,9 @@ public class PatientBaseInfoBiz extends BaseBiz<PatientBaseInfoMapper, PatientBa
     Integer originType = patientBaseInfo.getOriginType();
     if (null != originType) {
       if (patientBaseInfo.getOriginType() == 1 || patientBaseInfo.getOriginType() == 2) {
-        patientBaseInfo.setOriginId(patientBaseInfoModel.getSourceId());
+        if (patientBaseInfoModel.getSourceId() != null){
+          patientBaseInfo.setOriginId(patientBaseInfoModel.getSourceId());
+        }
       }
     }
     patientBaseInfo.setPinyinName(HanyuPinyinHelper.toHanyuPinyin(patientBaseInfo.getName()));

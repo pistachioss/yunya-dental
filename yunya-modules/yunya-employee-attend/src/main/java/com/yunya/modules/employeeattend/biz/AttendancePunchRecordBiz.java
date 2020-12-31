@@ -810,7 +810,6 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Date now = new Date(System.currentTimeMillis());
         AttendanceStatisticsVO result = new AttendanceStatisticsVO();
         Integer userId = Integer.parseInt(BaseContextHandler.getUserID());
-        userId = 1604;
         List<Date> dateList = DateUtil.getMonthFullDay(dateStr);
         Date firstDate = dateList.get(0);
         Date endDate = dateList.get(dateList.size()-1);
@@ -1147,10 +1146,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Table<Integer,Integer, Long> workOvertimeMakeupMinutes = HashBasedTable.create();
         if (StringHelper.isNotEmpty(makeupVOS)) {
             makeupVOS.forEach(makeupVO-> {
+                Integer minute = makeupVO.getMinute();
+                if (minute == null) {
+                    minute = 0;
+                }
                 if (MakeupTypeEnum.WORKDATE.getCode().equals(makeupVO.getType())) {
-                    incrMinute(workDateMakeupMinutes,makeupVO.getUserId(),makeupVO.getOrgId(),makeupVO.getMinute());
+                    incrMinute(workDateMakeupMinutes,makeupVO.getUserId(),makeupVO.getOrgId(),minute);
                 } else {
-                    incrMinute(workOvertimeMakeupMinutes,makeupVO.getUserId(),makeupVO.getOrgId(),makeupVO.getMinute());
+                    incrMinute(workOvertimeMakeupMinutes,makeupVO.getUserId(),makeupVO.getOrgId(),minute);
                 }
             });
         }

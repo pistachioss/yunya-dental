@@ -1290,8 +1290,9 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     Map<String, Integer> resultMap = new HashMap<>(16);
 
     Integer orgId = query.getOrgId();
-    Integer userId = query.getUserId();
+    Integer userId = query.getDentistId();
     String queryDate = query.getQueryDate();
+
     // 查询就诊中列表
     RegisteredQueryForm regQuery = new RegisteredQueryForm();
     regQuery.setWhetherPage(false);

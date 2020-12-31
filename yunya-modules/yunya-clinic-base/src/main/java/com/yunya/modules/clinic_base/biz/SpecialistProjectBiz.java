@@ -18,6 +18,7 @@ import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.models.clinic_base.SpecialistProject;
 import com.yunya.modules.clinic_base.mapper.SpecialistProjectMapper;
+import org.apache.poi.ss.formula.functions.Count;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -149,26 +150,15 @@ public class SpecialistProjectBiz extends BaseBiz<SpecialistProjectMapper, Speci
    * @return List<SpecialistProjectReportVO>
    */
   public List<SpecialistProjectReportVO> specialistProjectReport(SpecialistProjectReportForm form) {
+
     SpecialistProjectReportModel specialistProjectReportModel = new SpecialistProjectReportModel();
     BeanUtils.copyProperties(form,specialistProjectReportModel);
-    List<SpecialistProjectReportVO> specialistProjectReportVOList = new ArrayList<>();
+    List<SpecialistProjectReportVO> tariffSpecialistPercentage = null;
     List<SpecialistProject> specialistProjects = mapper.selectListAll();
     if (specialistProjects.size() > 0) {
-      specialistProjects.forEach(
-          specialistProject -> {
-            SpecialistProjectReportVO specialistProjectReportVO = new SpecialistProjectReportVO();
-            specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
-            String tariffIds = specialistProject.getTariffIds();
-            if (tariffIds != null) {
-              String[] billingItemIds = tariffIds.split(",");
-              specialistProjectReportModel.setBillingItemIds(billingItemIds);
-              String percentage =
-                  treatmentServiceFeign.findTariffSpecialistPercentage(specialistProjectReportModel);
-              specialistProjectReportVO.setPercentage(percentage);
-            }
-            specialistProjectReportVOList.add(specialistProjectReportVO);
-          });
+      specialistProjectReportModel.setSpecialistProjects(specialistProjects);
+       tariffSpecialistPercentage = treatmentServiceFeign.findTariffSpecialistPercentage(specialistProjectReportModel);
     }
-    return specialistProjectReportVOList;
+    return tariffSpecialistPercentage;
   }
 }

@@ -59,6 +59,7 @@
     select
     t.user_id as userId,
     t.org_id as orgId,
+    t.type,
     sum(t.minute) minute
     from attendance_manual_makeup t
     <where>
@@ -78,6 +79,6 @@
         and DATE_FORMAT(t.makeup_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
       </if>
     </where>
-    group by t.user_id,t.org_id
+    group by t.user_id,t.org_id,t.type
   </select>
 </mapper>

@@ -3,6 +3,7 @@ package com.yunya.modules.treatment.biz;
 import com.google.common.collect.Lists;
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
@@ -20,6 +21,7 @@ import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.redis.util.RedisUtils;
+import com.yunya.models.clinic_base.SpecialistProject;
 import com.yunya.models.tariff.BaseOralTariff;
 import com.yunya.models.tariff.BaseTariff;
 import com.yunya.models.tariff.ClinicOralTariff;
@@ -490,14 +492,30 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
 
 
   /**
-   * 查询专科占比
+   * 查询专科项目数量
    * @param specialistProjectReportModel 查询条件
    * @return percentage
    */
-  public String findTariffSpecialistPercentage(SpecialistProjectReportModel specialistProjectReportModel) {
-    Integer count  = mapper.selectCountTariffSpecialist(specialistProjectReportModel);
-    Integer number =  mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
-    String percentage = mapper.percentage(number, count);
-    return percentage;
+  public List<SpecialistProjectReportVO> findTariffSpecialistPercentage(SpecialistProjectReportModel specialistProjectReportModel) {
+    Integer count = 0;
+    List<SpecialistProjectReportVO> specialistProjectReportVOList = new ArrayList<>();
+    for (SpecialistProject specialistProject : specialistProjectReportModel.getSpecialistProjects()) {
+      SpecialistProjectReportVO specialistProjectReportVO = new SpecialistProjectReportVO();
+      specialistProjectReportVO.setSpecialistProjectName(specialistProject.getName());
+      String tariffIds = specialistProject.getTariffIds();
+      if (tariffIds != null) {
+        String[] billingItemIds = tariffIds.split(",");
+        specialistProjectReportModel.setBillingItemIds(billingItemIds);
+        Integer numberOfItems = mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
+        count = count + numberOfItems;
+        specialistProjectReportVO.setPercentage(numberOfItems.toString());
+      }
+      specialistProjectReportVOList.add(specialistProjectReportVO);
+    }
+    for ( SpecialistProjectReportVO specialistProjectReportVO : specialistProjectReportVOList) {
+      String percentage = mapper.percentage(Integer.parseInt(specialistProjectReportVO.getPercentage()), count);
+      specialistProjectReportVO.setPercentage(percentage);
+    }
+    return specialistProjectReportVOList;
   }
 }
