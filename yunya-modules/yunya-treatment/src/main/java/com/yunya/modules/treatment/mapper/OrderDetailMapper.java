@@ -65,8 +65,6 @@ public interface OrderDetailMapper extends Mapper<OrderDetail> {
    * @return String
    */
   String percentage(@Param("number") Integer number, @Param("count") Integer count);
-  BillPrintInfoVO billPrintInfo(
-      @Param("patientId") Integer patientId, @Param("billNumber") String billNumber);
 
   /**
    * 根据条件查询专科项目开单项目完成数量
