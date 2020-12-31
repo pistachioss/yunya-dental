@@ -1,7 +1,7 @@
 package com.yunya.modules.clinic_base.mapper;
 
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
-import com.yunya.feign.clinic_base.domain.query.WorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.query.BusinessWorkGoalQuery;
 import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.models.clinic_base.BusinessTarget;
@@ -26,5 +26,5 @@ public interface BusinessTargetMapper extends Mapper<BusinessTarget> {
    * @param query 查询条件
    * @return List<BusinessWorkGoalVO>
    */
-  List<BusinessWorkGoalVO> selectBusinessWorkGoalList(@Param("query") WorkGoalQuery query);
+  List<BusinessWorkGoalVO> selectBusinessWorkGoalList(@Param("query") BusinessWorkGoalQuery query);
 }

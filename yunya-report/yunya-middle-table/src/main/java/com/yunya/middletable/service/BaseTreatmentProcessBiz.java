@@ -140,6 +140,7 @@ public class BaseTreatmentProcessBiz
       treatmentProcess.setTreatType(registered.getFirstVisit());
       treatmentProcess.setRegisteredDentistId(registered.getDentistId());
       treatmentProcess.setRegisteredTime(registered.getRegTime());
+      treatmentProcess.setRegisteredDate(registered.getCrtTime());
       return treatmentProcess;
     }
     return null;
@@ -267,7 +268,7 @@ public class BaseTreatmentProcessBiz
       }
       treatmentProcess.setTreatStartTime(treatmentRecordResult.getTreatStartTime());
       treatmentProcess.setTreatEndTime(treatmentRecordResult.getTreatEndTime());
-      setBaseTreatmentProcessAssistantValue(treatmentRecord.getId(), treatmentProcess);
+      setBaseTreatmentProcessAssistantValue(treatmentRecordResult.getId(), treatmentProcess);
     }
   }
 

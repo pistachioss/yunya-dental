@@ -49,7 +49,8 @@
         ord.`status`,
         ord.total_amount as totalAmount,
         ord.crt_name as crtName
-        from order_record ord LEFT JOIN treatment_record tr ON ord.treatment_record_id = tr.id AND tr.`status` = 2
+        from order_record ord
+        LEFT JOIN treatment_record tr ON ord.treatment_record_id = tr.id AND tr.`status` = 2
         <where>
             ord.status = 1
             <if test="orderRecordNum != null and orderRecordNum != ''">

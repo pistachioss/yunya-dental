@@ -47,4 +47,31 @@
         GROUP BY sbt.id
         ORDER BY sbt.business_month + 0
     </select>
+
+    <!-- 根据条件查询专科项目目标数量 -->
+    <select id="selectClinicSpecialistProjectWorkGoal" resultType="java.lang.Integer">
+        SELECT
+            IFNULL(SUM( sbt.business_goal ), 0)
+        FROM
+            specialist_business_target sbt
+        <where>
+            AND sbt.belong_type = 0
+            <if test="dateType == 0">
+                AND sbt.business_month = #{date}
+            </if>
+            <if test="dateType == 1">
+                AND sbt.business_year = #{date}
+            </if>
+            <if test="specialistProjectId != null">
+                AND sbt.specialist_project_id = #{specialistProjectId}
+            </if>
+            <if test="belongIds != null and belongIds.length > 0">
+                AND sbt.belong_id IN
+                <foreach collection="belongIds" item="item" index="index" open="(" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+
+    </select>
 </mapper>

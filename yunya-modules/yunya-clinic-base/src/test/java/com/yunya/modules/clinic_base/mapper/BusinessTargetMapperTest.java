@@ -1,6 +1,6 @@
 package com.yunya.modules.clinic_base.mapper;
 
-import com.yunya.feign.clinic_base.domain.query.WorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.query.BusinessWorkGoalQuery;
 import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +26,7 @@ public class BusinessTargetMapperTest {
 
   @Test
   public void find() {
-    WorkGoalQuery query = new WorkGoalQuery();
+    BusinessWorkGoalQuery query = new BusinessWorkGoalQuery();
     query.setDateType((byte) 0);
     query.setStartDate("2020-01");
     query.setEndDate("2020-12");

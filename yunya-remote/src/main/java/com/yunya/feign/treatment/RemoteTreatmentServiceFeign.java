@@ -1,10 +1,12 @@
 package com.yunya.feign.treatment;
 
+import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
+import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.vo.CompletedBusinessWorkGoalVO;
+import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
 import com.yunya.feign.treatment.domain.vo.TreatmentRecordExtendVO;
 import com.yunya.feign.treatment.factory.RemoteTreatmentServiceFeignFallBackFactory;
 import com.yunya.framework.common.constant.YunyaServiceNameConstants;
@@ -276,8 +278,18 @@ public interface RemoteTreatmentServiceFeign {
    * @return CompletedBusinessWorkGoalVO
    */
   @RequestMapping(value = "/rpc/business/goal", method = RequestMethod.POST)
-  CompletedBusinessWorkGoalVO findClinicCompletedBusinessWorkGoal(
+  BusinessCompletedWorkGoalVO findClinicCompletedBusinessWorkGoal(
       @RequestBody @Validated CompletedWorkGoalQuery query);
+
+  /**
+   * 根据条件查询门诊开单专科项目完成信息
+   *
+   * @param query 查询条件
+   * @return SpecialistProjectTariffCompletedInfoVO
+   */
+  @RequestMapping(value = "/rpc/tariff/completed/goal", method = RequestMethod.POST)
+  SpecialistProjectTariffCompletedInfoVO findClinicTariffOrderCompletedInfo(
+      @RequestBody @Validated SpecialistProjectTariffCompletedInfoQuery query);
 
 
   /**

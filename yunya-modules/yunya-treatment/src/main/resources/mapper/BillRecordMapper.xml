@@ -166,7 +166,7 @@
             (select quantity from order_detail where  treatment_record_id = od.treatment_record_id and billing_item_id = od.billing_item_id) as quantity
         from bill_record br
                  left join order_detail od on od.treatment_record_id = br.treatment_record_id
-        where br.treatment_record_id = #{treatmentId}
+        where br.treatment_record_id = #{treatmentId} and br.inservice = true
     </select>
 
     <!-- 查询完成实收金额 -->

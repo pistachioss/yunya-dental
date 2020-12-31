@@ -5,6 +5,7 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.annation.IgnoreUserToken;
 import com.yunya.framework.common.annation.RepeatSubmit;
+import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.models.system.SysUser;
@@ -178,7 +179,7 @@ public class SysUserController {
   @ApiOperation("获取修改密码短信验证码")
   @GetMapping("/authorization/code")
   public ResponseResult authorizationCode(
-      @Pattern(regexp = "^1(3([0-35-9]\\d|4[1-8])|4[14-9]\\d|5([0-35689]\\d|7[1-79])|66\\d|7[2-35-8]\\d|8\\d{2}|9[13589]\\d)\\d{7}$")
+      @Pattern(regexp = BusinessConstants.MOBILE_REGEXP)
           @NotBlank(message = "手机号不能为空")
           @ApiParam(name = "mobile", value = "手机号")
           String mobile) {

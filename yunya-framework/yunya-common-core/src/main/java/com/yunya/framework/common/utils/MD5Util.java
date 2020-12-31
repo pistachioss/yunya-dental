@@ -47,16 +47,10 @@ public class MD5Util {
         MD5.update(buffer, 0, length);
       }
 
-      return new String(encodeHex(MD5.digest()));
-    } catch (IOException e) {
-      throw e;
+      return encodeHex(MD5.digest());
     } finally {
-      try {
-        if (fileInputStream != null) {
-          fileInputStream.close();
-        }
-      } catch (IOException e) {
-        throw e;
+      if (fileInputStream != null) {
+        fileInputStream.close();
       }
     }
   }
@@ -70,7 +64,7 @@ public class MD5Util {
    */
   public static String getFileMD5String(byte[] data) throws IOException {
     MD5.update(data);
-    return new String(encodeHex(MD5.digest()));
+    return encodeHex(MD5.digest());
   }
 
   /**

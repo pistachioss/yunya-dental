@@ -4,6 +4,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.bo.ClinicDataStatisticsInfoVO;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
+import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
 import com.yunya.framework.common.utils.ResponseUtil;
 import com.yunya.report.ultimate.biz.BaseBillDetailBiz;
@@ -97,6 +98,7 @@ public class CompanyReportOfOperationController {
    */
   @ApiOperation("公司端报表-报表统计-运营报表-员工报表-员工看诊情况-导出")
   @PostMapping(value = "/employee/diagnosis/list/export", name = "根据条件导出员工看诊情况列表")
+  @CurrentUser
   public ResponseResult<T> exportEmployeeDiagnosisInfoList(
       HttpServletResponse response, @RequestBody @Validated EmployeeDiagnosisQuery query)
       throws IOException {

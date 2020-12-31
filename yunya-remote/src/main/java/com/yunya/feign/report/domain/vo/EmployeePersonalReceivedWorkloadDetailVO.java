@@ -27,6 +27,14 @@ public class EmployeePersonalReceivedWorkloadDetailVO implements Serializable {
   /** 账单ID */
   @ApiModelProperty("账单ID")
   private Integer billId;
+  /** 收费时间 */
+  @Excel(name = "收费日期")
+  @ApiModelProperty("收费时间")
+  private String chargeDate;
+  /** 收费时间 */
+  @Excel(name = "收费门诊")
+  @ApiModelProperty("收费门诊")
+  private String orgName;
   /** 账单编号 */
   @Excel(name = "账单编号")
   @ApiModelProperty("账单编号")
@@ -39,7 +47,7 @@ public class EmployeePersonalReceivedWorkloadDetailVO implements Serializable {
   @ApiModelProperty("患者ID")
   private Integer patientId;
   /** 患者姓名 */
-  @Excel(name = "患者姓名")
+  @Excel(name = "患者名称")
   @ApiModelProperty("患者姓名")
   private String patientName;
   /** 手机号 */
@@ -50,8 +58,4 @@ public class EmployeePersonalReceivedWorkloadDetailVO implements Serializable {
   @Excel(name = "本次已收工作量")
   @ApiModelProperty("本次已收工作量")
   private BigDecimal receivedWorkload;
-  /** 收费时间 */
-  @Excel(name = "收费时间")
-  @ApiModelProperty("收费时间")
-  private String chargeDate;
 }

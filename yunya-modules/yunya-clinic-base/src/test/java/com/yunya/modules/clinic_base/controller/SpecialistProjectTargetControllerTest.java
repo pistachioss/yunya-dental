@@ -1,8 +1,11 @@
 package com.yunya.modules.clinic_base.controller;
 
+import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectTargetModel;
 import com.yunya.feign.clinic_base.domain.model.TargetOfMonthModel;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectTargetQuery;
+import com.yunya.feign.clinic_base.domain.query.SpecialistProjectWorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.framework.common.model.ResponseResult;
 import org.junit.Test;
@@ -59,12 +62,27 @@ public class SpecialistProjectTargetControllerTest {
     SpecialistProjectTargetQuery query = new SpecialistProjectTargetQuery();
     query.setSpecialistProjectId(1);
     query.setBusinessYear("2020");
-    query.setBelongType((byte)0);
+    query.setBelongType((byte) 0);
     query.setBelongId(35);
-
-
     ResponseResult<List<TargetOfMonthVO>> list =
         specialistProjectTargetController.findSpecialistProjectTargetList(query);
+    System.out.println(list);
+  }
+
+  @Test
+  public void find1() {
+    SpecialistProjectWorkGoalQuery query = new SpecialistProjectWorkGoalQuery();
+    query.setDateType((byte) 0);
+    query.setStartDate("2020-10");
+    query.setEndDate("2020-12");
+    query.setBelongType((byte) 0);
+    query.setBelongIds(new Integer[] {35, 42});
+    query.setSpecialistProjectIds(new Integer[] {2, 4});
+    query.setWhetherPage(true);
+    query.setPageNum(1);
+    query.setPageSize(10);
+    ResponseResult<PageInfo<SpecialistProjectWorkGoalVO>> list =
+        specialistProjectTargetController.specialistProjectWorkGoalList(query);
     System.out.println(list);
   }
 }

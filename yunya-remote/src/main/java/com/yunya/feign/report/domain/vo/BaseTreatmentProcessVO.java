@@ -2,6 +2,7 @@ package com.yunya.feign.report.domain.vo;
 
 import com.yunya.models.report.BaseTreatmentProcess;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.persistence.Column;
@@ -19,23 +20,33 @@ public class BaseTreatmentProcessVO extends BaseTreatmentProcess implements Seri
     /**
      * 患者名字
      */
+    @ApiModelProperty("患者名字")
     private String patientName;
     /**
      * 患者年龄
      */
+    @ApiModelProperty("患者年龄")
     private Integer age;
     /**
-     * 管着性别
+     * 患着性别
      */
+    @ApiModelProperty("患着性别")
     private Byte gender;
     /**
      * 预约医生名字
      */
+    @ApiModelProperty("预约医生名字")
     private String appointDentistName;
     /**
      * 挂号医生名字
      */
+    @ApiModelProperty("挂号医生名字")
     private String regDentistName;
+    /**
+     * 诊疗状态0-挂号；1-接诊；2-开单；3-治疗完成；4-收费）
+     */
+    @ApiModelProperty("诊疗状态0-挂号；1-接诊；2-开单；3-治疗完成；4-收费）")
+    private Byte treatStatus;
 
 
 }

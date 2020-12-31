@@ -2,7 +2,7 @@ package com.yunya.framework.common.utils.poi;
 
 import cn.hutool.core.date.DateUtil;
 import com.yunya.framework.common.annation.Excel;
-import com.yunya.framework.common.annation.Excel.*;
+import com.yunya.framework.common.annation.Excel.Type;
 import com.yunya.framework.common.annation.Excels;
 import com.yunya.framework.common.utils.ReflectionUtils;
 import com.yunya.framework.common.utils.StringHelper;
@@ -25,11 +25,9 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * Excel相关处理
@@ -65,6 +63,9 @@ public class ExcelUtil<T> {
 
   /** 注解列表 */
   private List<Object[]> fields;
+
+  /** 最大高度 */
+  private short maxHeight;
 
   /** 实体对象 */
   public Class<T> clazz;
@@ -126,17 +127,16 @@ public class ExcelUtil<T> {
       Map<String, Integer> cellMap = new HashMap<>(16);
       // 获取表头
       Row heard = sheet.getRow(0);
-      IntStream.range(0, heard.getPhysicalNumberOfCells())
-          .forEach(
-              i -> {
-                Cell cell = heard.getCell(i);
-                if (StringHelper.isNotNull(cell)) {
-                  String value = this.getCellValue(heard, i).toString();
-                  cellMap.put(value, i);
-                } else {
-                  cellMap.put(null, i);
-                }
-              });
+      int bound = heard.getPhysicalNumberOfCells();
+      for (int i = 0; i < bound; i++) {
+        Cell cell = heard.getCell(i);
+        if (StringHelper.isNotNull(cell)) {
+          String value = this.getCellValue(heard, i).toString();
+          cellMap.put(value, i);
+        } else {
+          cellMap.put(null, i);
+        }
+      }
       // 有数据时才处理 得到类的所有field.
       Field[] allFields = clazz.getDeclaredFields();
       // 定义一个map用于存放列的序号和field.
@@ -172,17 +172,24 @@ public class ExcelUtil<T> {
         Class<?> fieldType = field.getType();
         if (String.class == fieldType) {
           String s = Convert.toStr(val);
-          val =
-              StringHelper.endsWith(s, ".0")
-                  ? StringHelper.substringBefore(s, ".0")
-                  : Convert.toStr(val);
-        } else if ((Integer.TYPE == fieldType) || (Integer.class == fieldType)) {
+          if (StringUtils.endsWith(s, ".0")) {
+            val = StringUtils.substringBefore(s, ".0");
+          } else {
+            String dateFormat = field.getAnnotation(Excel.class).dateFormat();
+            if (StringUtils.isNotEmpty(dateFormat)) {
+              val = DateUtil.format((Date) val, dateFormat);
+            } else {
+              val = Convert.toStr(val);
+            }
+          }
+        } else if ((Integer.TYPE == fieldType || Integer.class == fieldType)
+            && StringUtils.isNumeric(Convert.toStr(val))) {
           val = Convert.toInt(val);
-        } else if ((Long.TYPE == fieldType) || (Long.class == fieldType)) {
+        } else if (Long.TYPE == fieldType || Long.class == fieldType) {
           val = Convert.toLong(val);
-        } else if ((Double.TYPE == fieldType) || (Double.class == fieldType)) {
+        } else if (Double.TYPE == fieldType || Double.class == fieldType) {
           val = Convert.toDouble(val);
-        } else if ((Float.TYPE == fieldType) || (Float.class == fieldType)) {
+        } else if (Float.TYPE == fieldType || Float.class == fieldType) {
           val = Convert.toFloat(val);
         } else if (BigDecimal.class == fieldType) {
           val = Convert.toBigDecimal(val);
@@ -192,6 +199,8 @@ public class ExcelUtil<T> {
           } else if (val instanceof Double) {
             val = new DateTime(val).toDate();
           }
+        } else if (Boolean.TYPE == fieldType || Boolean.class == fieldType) {
+          val = Convert.toBool(val, false);
         }
         Excel attr = field.getAnnotation(Excel.class);
         String propertyName = field.getName();
@@ -215,21 +224,19 @@ public class ExcelUtil<T> {
    */
   private void setFieldColumn(
       Map<String, Integer> cellMap, Field[] allFields, Map<Integer, Field> fieldsMap) {
-    Arrays.stream(allFields)
-        .forEach(
-            field -> {
-              Excel attr = field.getAnnotation(Excel.class);
-              if (null != attr) {
-                if (attr.type() == Type.ALL || attr.type() == type) {
-                  // 设置类的私有字段属性可访问.
-                  field.setAccessible(true);
-                  Integer column = cellMap.get(attr.name());
-                  if (null != column) {
-                    fieldsMap.put(column, field);
-                  }
-                }
-              }
-            });
+    for (Field field : allFields) {
+      Excel attr = field.getAnnotation(Excel.class);
+      if (null != attr) {
+        if (attr.type() == Type.ALL || attr.type() == type) {
+          // 设置类的私有字段属性可访问.
+          field.setAccessible(true);
+          Integer column = cellMap.get(attr.name());
+          if (null != column) {
+            fieldsMap.put(column, field);
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -264,9 +271,59 @@ public class ExcelUtil<T> {
       throws IOException {
     response.setContentType("application/vnd.ms-excel");
     response.setCharacterEncoding("utf-8");
-    response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
+    response.setHeader(
+        "Content-Disposition",
+        "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8") + ".xls");
     this.init(list, sheetName, Type.EXPORT);
     exportExcel(response.getOutputStream());
+  }
+
+  public String getFileName(String sDate, String eDate, String mid, String tail) {
+    return getFileName(null,sDate,eDate,mid,tail);
+  }
+  /**
+   * 获取文件名
+   *
+   * @param head
+   * @param sDate
+   * @param eDate
+   * @return
+   */
+  public String getFileName(String head, String sDate, String eDate, String mid, String tail) {
+    StringBuilder res = new StringBuilder();
+    if (StringHelper.isNotEmpty(head)) {
+      res.append(head);
+    }
+    if (StringHelper.isNotEmpty(sDate)) {
+      String[] str = sDate.split("-");
+      if (str.length == 1) {//年
+        res.append(sDate).append("年");
+      } else if (str.length == 2) {//月
+        res.append(str[0]).append("年").append(str[1]).append("月");
+      } else if (str.length == 3) {//日
+        for (int i = 0; i < str.length; i++) {
+          if (i > 0 && res.length() > 0) {
+            res.append(".");
+          }
+          res.append(str[i]);
+        }
+        if (StringHelper.isNotEmpty(eDate)) {
+          str = eDate.split("-");
+          res.append("-");
+          for (int i = 0; i < str.length; i++) {
+            if (i > 0 && res.length() > 0) {
+              res.append(".");
+            }
+            res.append(str[i]);
+          }
+        }
+      }
+    }
+    if (StringHelper.isNotEmpty(mid)) {
+      res.append(mid);
+    }
+    res.append(tail);
+    return res.toString();
   }
 
   /**
@@ -366,7 +423,7 @@ public class ExcelUtil<T> {
    */
   private Map<String, CellStyle> createStyles(Workbook wb) {
     // 写入各条记录,每条记录对应excel表中的一行
-    Map<String, CellStyle> styles = new HashMap<>(16);
+    Map<String, CellStyle> styles = new HashMap<String, CellStyle>();
     CellStyle style = wb.createCellStyle();
     style.setAlignment(HorizontalAlignment.CENTER);
     style.setVerticalAlignment(VerticalAlignment.CENTER);
@@ -408,6 +465,22 @@ public class ExcelUtil<T> {
     totalFont.setFontHeightInPoints((short) 12);
     style.setFont(totalFont);
     styles.put("total", style);
+
+    style = wb.createCellStyle();
+    style.cloneStyleFrom(styles.get("data"));
+    style.setAlignment(HorizontalAlignment.LEFT);
+    styles.put("data1", style);
+
+    style = wb.createCellStyle();
+    style.cloneStyleFrom(styles.get("data"));
+    style.setAlignment(HorizontalAlignment.CENTER);
+    styles.put("data2", style);
+
+    style = wb.createCellStyle();
+    style.cloneStyleFrom(styles.get("data"));
+    style.setAlignment(HorizontalAlignment.RIGHT);
+    styles.put("data3", style);
+
     return styles;
   }
 
@@ -439,12 +512,13 @@ public class ExcelUtil<T> {
   public void setCellVo(Object value, Excel attr, Cell cell) {
     switch (attr.cellType()) {
       case STRING:
-        cell.setCellType(CellType.NUMERIC);
         cell.setCellValue(StringHelper.isNull(value) ? attr.defaultValue() : value + attr.suffix());
         break;
       case NUMERIC:
-        cell.setCellType(CellType.NUMERIC);
-        cell.setCellValue(Integer.parseInt(value.toString()));
+        cell.setCellValue(
+            StringUtils.contains(Convert.toStr(value), ".")
+                ? Convert.toDouble(value)
+                : Convert.toInt(value));
         break;
       default:
         break;
@@ -464,7 +538,6 @@ public class ExcelUtil<T> {
     } else {
       // 设置列宽
       sheet.setColumnWidth(column, (int) ((attr.width() + 0.72) * 256));
-      row.setHeight((short) (attr.height() * 20));
     }
     // 如果设置了提示信息则鼠标放上去提示.
     if (StringHelper.isNotEmpty(attr.prompt())) {
@@ -492,12 +565,13 @@ public class ExcelUtil<T> {
     Cell cell = null;
     try {
       // 设置行高
-      row.setHeight((short) (attr.height() * 20));
+      row.setHeight(maxHeight);
       // 根据Excel中设置情况决定是否导出,有些情况需要保持为空,希望用户填写这一列.
       if (attr.isExport()) {
         // 创建cell
         cell = row.createCell(column);
-        cell.setCellStyle(styles.get("data"));
+        int align = attr.align().value();
+        cell.setCellStyle(styles.get("data" + (align >= 1 && align <= 3 ? align : "")));
         // 用于读取对象中的属性
         Object value = getTargetValue(vo, field, attr);
         String dateFormat = attr.dateFormat();
@@ -597,6 +671,7 @@ public class ExcelUtil<T> {
         if (Arrays.stream(propertyValue.split(separator))
             .anyMatch(value -> itemArray[0].equals(value))) {
           propertyString.append(itemArray[1]).append(separator);
+          break;
         }
       } else {
         if (itemArray[0].equals(propertyValue)) {
@@ -624,6 +699,7 @@ public class ExcelUtil<T> {
         if (Arrays.stream(propertyValue.split(separator))
             .anyMatch(value -> itemArray[1].equals(value))) {
           propertyString.append(itemArray[0]).append(separator);
+          break;
         }
       } else {
         if (itemArray[1].equals(propertyValue)) {
@@ -735,6 +811,17 @@ public class ExcelUtil<T> {
         this.fields.stream()
             .sorted(Comparator.comparing(objects -> ((Excel) objects[1]).sort()))
             .collect(Collectors.toList());
+    this.maxHeight = getRowHeight();
+  }
+
+  /** 根据注解获取最大行高 */
+  public short getRowHeight() {
+    double maxHeight = 0;
+    for (Object[] os : this.fields) {
+      Excel excel = (Excel) os[1];
+      maxHeight = Math.max(maxHeight, excel.height());
+    }
+    return (short) (maxHeight * 20);
   }
 
   /**
@@ -788,10 +875,15 @@ public class ExcelUtil<T> {
           case FORMULA:
             val = cell.getNumericCellValue();
             // POI Excel 日期格式转换/浮点格式处理
-            val =
-                HSSFDateUtil.isCellDateFormatted(cell)
-                    ? DateUtil.calendar((Long) val)
-                    : new BigDecimal(val.toString());
+            if (HSSFDateUtil.isCellDateFormatted(cell)) {
+              val = new DateTime(val).toDate();
+            } else {
+              if ((Double) val % 1 > 0) {
+                val = new BigDecimal(val.toString());
+              } else {
+                val = new DecimalFormat("0").format(val);
+              }
+            }
             break;
           case STRING:
             val = cell.getStringCellValue();

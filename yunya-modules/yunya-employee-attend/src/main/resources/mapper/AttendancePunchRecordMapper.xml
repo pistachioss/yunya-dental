@@ -110,7 +110,8 @@
         t.punch_address as punchAddress
     from attendance_punch_record t
     <where>
-      TIMESTAMPDIFF(MINUTE, t.end_time, t.punch_time)>=#{minute}
+      t.is_in_scope = 1
+      and TIMESTAMPDIFF(MINUTE, t.end_time, t.punch_time)>=#{minute}
       <if test="queryForm.userId != null" >
         and t.user_id = #{queryForm.userId}
       </if>

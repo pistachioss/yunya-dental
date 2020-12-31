@@ -20,6 +20,7 @@
         <result column="appoint_content" property="appointContent" jdbcType="VARCHAR"/>
         <result column="registered_dentist_id" property="registeredDentistId" jdbcType="INTEGER"/>
         <result column="registered_time" property="registeredTime" jdbcType="TIME"/>
+        <result column="registered_date" property="registeredDate" jdbcType="TIMESTAMP"/>
         <result column="treat_start_time" property="treatStartTime" jdbcType="TIMESTAMP"/>
         <result column="treat_end_time" property="treatEndTime" jdbcType="TIMESTAMP"/>
         <result column="assistant_1" property="assistant1" jdbcType="INTEGER"/>
@@ -30,7 +31,7 @@
     <sql id="BaseResultFields">
         appointment_id,registered_id,treatment_id,org_id,patient_id,treat_status,treat_type,appoint_status,
         appoint_dentist_id,appoint_start_time,appoint_duration,appoint_modify_time,appoint_content,registered_dentist_id,
-        registered_time,treat_start_time,treat_end_time,assistant_1,assistant_2,assistant_3
+        registered_time,treat_start_time,treat_end_time,assistant_1,assistant_2,assistant_3,registered_date
     </sql>
 
     <!-- 根据条件查询就诊列表 -->
@@ -149,8 +150,8 @@
             FROM
                 base_treatment_process btp
                 LEFT JOIN base_employee be1 ON btp.assistant_1 = be1.user_id
-                LEFT JOIN base_employee be2 ON btp.assistant_2 = be1.user_id
-                LEFT JOIN base_employee be3 ON btp.assistant_3 = be1.user_id
+                LEFT JOIN base_employee be2 ON btp.assistant_2 = be2.user_id
+                LEFT JOIN base_employee be3 ON btp.assistant_3 = be3.user_id
                 LEFT JOIN base_employee be ON btp.registered_dentist_id = be.user_id
                 LEFT JOIN base_patient bp ON btp.patient_id = bp.patient_id
             WHERE
@@ -267,10 +268,10 @@
                 and concat(IFNULL(btp.patientName, ''), IFNULL(btp.pinyinName, ''), IFNULL(btp.mobile, '')) like concat('%', #{query.keyword}, '%')
             </if>
             <if test="query.treatStartDate != null and query.treatStartDate != ''">
-                and btp.treatStartTime &gt;= #{query.treatStartDate}
+                and DATE_FORMAT(btp.treatStartTime,'%Y-%m-%d') &gt;= DATE_FORMAT(#{query.treatStartDate},'%Y-%m-%d')
             </if>
             <if test="query.treatEndDate != null and query.treatEndDate != ''">
-                and btp.treatStartTime &lt;= #{query.treatEndDate}
+                and DATE_FORMAT(btp.treatStartTime,'%Y-%m-%d') &lt;= DATE_FORMAT(#{query.treatEndDate},'%Y-%m-%d')
             </if>
         </where>
     </select>
@@ -311,7 +312,6 @@
             left join base_employee appointDentistNameBe on appointDentistNameBe.user_id = btp.appoint_dentist_id
             left join base_employee regDentistNameBe on regDentistNameBe.user_id = btp.registered_dentist_id
         <where>
-            btp.appoint_status &lt; 2
             <if test="dentistId != null">
                 and #{dentistId} in (btp.appoint_dentist_id,btp.registered_dentist_id)
             </if>
@@ -319,10 +319,13 @@
                 and btp.org_id = #{orgId}
             </if>
             <if test="currentDate != null and currentDate != ''">
-                and (date_format(btp.appoint_start_time,'%Y-%m-%d') in (date_format(#{currentDate},'%Y-%m-%d'))
-                or date_format(btp.treat_start_time,'%Y-%m-%d') in (date_format(#{currentDate},'%Y-%m-%d')))
+                and if(btp.appoint_start_time is Null, true, date_format(btp.appoint_start_time,'%Y-%m-%d') = (date_format(#{currentDate},'%Y-%m-%d')))
+            </if>
+            <if test="currentDate != null and currentDate != ''">
+                and if(btp.registered_date is Null, true, date_format(btp.registered_date,'%Y-%m-%d') in (date_format(#{currentDate},'%Y-%m-%d')))
             </if>
         </where>
+        order by btp.appoint_start_time , btp.registered_date desc
     </select>
 
 

@@ -14,6 +14,7 @@ import com.yunya.feign.report.domain.vo.EmployeeTreatMatchingDetailVO;
 import com.yunya.feign.report.domain.vo.TreatmentMatchingRecordVO;
 import com.yunya.feign.report.domain.vo.TreatmentRecordReportVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
+import com.yunya.feign.system.vo.OrganizationInfo;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.vo.PatientTreatmentInfo4ListVO;
@@ -27,13 +28,11 @@ import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.appointment.Appointment;
 import com.yunya.models.report.BaseTreatmentProcess;
 import com.yunya.report.ultimate.mapper.BaseTreatmentProcessMapper;
-import io.swagger.models.auth.In;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -114,7 +113,20 @@ public class BaseTreatmentProcessBiz
     List<TreatmentMatchingRecordVO> list = mapper.selectTreatmentMatchingRecord(query);
     ExcelUtil<TreatmentMatchingRecordVO> excelUtil =
         new ExcelUtil<>(TreatmentMatchingRecordVO.class);
-    excelUtil.exportExcel(response, list, "配诊记录表");
+    String fileName = excelUtil.getFileName(null, null,
+            getAbbreviationById(query.getOrgId()), "配诊记录表");
+    excelUtil.exportExcel(response, list, "配诊记录表", fileName);
+  }
+
+  /**
+   * 获取文件名
+   *
+   * @param orgId
+   * @return
+   */
+  private String getAbbreviationById(Integer orgId) {
+    OrganizationInfo organizationInfo = remoteSystemServiceFeign.findOrgInfoByOrgId(orgId);
+    return organizationInfo.getAbbreviation();
   }
 
   /**
@@ -143,7 +155,7 @@ public class BaseTreatmentProcessBiz
       PageHelper.startPage(query.getPageNum(),query.getPageSize());
     }
     List<PatientTreatmentInfo4ListVO> patientTreatmentInfo4ListVOS = new ArrayList<>();
-    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
     List<BaseTreatmentProcessVO> baseTreatmentProcessVOS = mapper.treatmentList4App(query.getOrgId(),query.getDentistId(),query.getQueryDate());
     PageInfo pageInfo = new PageInfo(baseTreatmentProcessVOS);
     if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
@@ -161,7 +173,7 @@ public class BaseTreatmentProcessBiz
     List<Integer> appointIds = new ArrayList<>();
     baseTreatmentProcessVOS.stream().filter(
             baseTreatmentProcessVO -> {
-              return null != baseTreatmentProcessVO.getAppointmentId() && baseTreatmentProcessVO.getAppointStatus() < 4 && baseTreatmentProcessVO.getRegisteredId() == null;
+              return null != baseTreatmentProcessVO.getAppointmentId() && baseTreatmentProcessVO.getAppointStatus() < 2 && baseTreatmentProcessVO.getRegisteredId() == null;
             }).forEach(baseTreatmentProcessVO -> {
       appointIds.add(baseTreatmentProcessVO.getAppointmentId());
     });
@@ -291,10 +303,10 @@ public class BaseTreatmentProcessBiz
           Byte treatmentStatus = patientTreatmentRecordVO.getStatus();
           switch (treatmentStatus) {
             case 0:
+            case 1:
               // 就诊中
               entity.setTreatStatus((byte) 3);
               break;
-            case 1:
             case 2:
               // 就诊完成
               entity.setTreatStatus((byte) 4);

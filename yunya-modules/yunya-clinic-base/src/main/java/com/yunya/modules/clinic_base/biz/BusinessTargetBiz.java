@@ -5,12 +5,12 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.model.BusinessTargetModel;
 import com.yunya.feign.clinic_base.domain.model.TargetOfMonthModel;
 import com.yunya.feign.clinic_base.domain.query.BusinessTargetQuery;
-import com.yunya.feign.clinic_base.domain.query.WorkGoalQuery;
+import com.yunya.feign.clinic_base.domain.query.BusinessWorkGoalQuery;
 import com.yunya.feign.clinic_base.domain.vo.BusinessWorkGoalVO;
 import com.yunya.feign.clinic_base.domain.vo.TargetOfMonthVO;
 import com.yunya.feign.treatment.RemoteTreatmentServiceFeign;
 import com.yunya.feign.treatment.domain.query.CompletedWorkGoalQuery;
-import com.yunya.feign.treatment.domain.vo.CompletedBusinessWorkGoalVO;
+import com.yunya.feign.treatment.domain.vo.BusinessCompletedWorkGoalVO;
 import com.yunya.framework.common.biz.BaseBiz;
 import com.yunya.framework.common.context.BaseContextHandler;
 import com.yunya.framework.common.exception.ClientServiceException;
@@ -108,7 +108,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
    * @param query 查询条件
    * @return PageInfo<BusinessWorkGoalVO>
    */
-  public PageInfo<BusinessWorkGoalVO> findBusinessWorkGoalList(WorkGoalQuery query) {
+  public PageInfo<BusinessWorkGoalVO> findBusinessWorkGoalList(BusinessWorkGoalQuery query) {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
@@ -120,13 +120,13 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
       resultList.forEach(
           vo -> {
             goalQuery.setBusinessDate(vo.getBusinessDate());
-            CompletedBusinessWorkGoalVO completedBusinessWorkGoalVO =
+            BusinessCompletedWorkGoalVO businessCompletedWorkGoalVO =
                 treatmentServiceFeign.findClinicCompletedBusinessWorkGoal(goalQuery);
             BigDecimal actualReceivedAmountCompleted =
-                completedBusinessWorkGoalVO.getActualReceivedAmountCompleted();
+                businessCompletedWorkGoalVO.getActualReceivedAmountCompleted();
             vo.setActualReceivedAmountCompleted(actualReceivedAmountCompleted);
             BigDecimal actualReceivedAmountGoal = vo.getActualReceivedAmountGoal();
-            if (!BigDecimal.ZERO.equals(actualReceivedAmountGoal)
+            if (!BigDecimal.valueOf(0, 2).equals(actualReceivedAmountGoal)
                 && null != actualReceivedAmountCompleted) {
               BigDecimal percentageOfActualReceivedCompletedAmount =
                   actualReceivedAmountCompleted.divide(
@@ -135,17 +135,18 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
                   Float.valueOf(percentageOfActualReceivedCompletedAmount.toString()));
             }
             BigDecimal workloadAmountCompleted =
-                completedBusinessWorkGoalVO.getWorkloadAmountCompleted();
+                businessCompletedWorkGoalVO.getWorkloadAmountCompleted();
             vo.setWorkloadAmountCompleted(workloadAmountCompleted);
             BigDecimal workloadAmountGoal = vo.getWorkloadAmountGoal();
-            if (!BigDecimal.ZERO.equals(workloadAmountGoal) && null != workloadAmountCompleted) {
+            if (!BigDecimal.valueOf(0, 2).equals(workloadAmountGoal)
+                && null != workloadAmountCompleted) {
               BigDecimal percentageOfWorkloadAmountCompleted =
                   workloadAmountCompleted.divide(workloadAmountGoal, 2, BigDecimal.ROUND_HALF_UP);
               vo.setPercentageOfWorkloadAmountCompleted(
                   Float.valueOf(percentageOfWorkloadAmountCompleted.toString()));
             }
             Integer firstTreatPerNumCompleted =
-                completedBusinessWorkGoalVO.getFirstTreatPerNumCompleted();
+                businessCompletedWorkGoalVO.getFirstTreatPerNumCompleted();
             vo.setFirstTreatPerNumCompleted(firstTreatPerNumCompleted);
             Integer firstTreatPerNumGoal = vo.getFirstTreatPerNumGoal();
             if (0 != firstTreatPerNumGoal && null != firstTreatPerNumCompleted) {
@@ -157,7 +158,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
                       .floatValue());
             }
             Integer treatPerTimesCompleted =
-                completedBusinessWorkGoalVO.getTreatPerTimesCompleted();
+                businessCompletedWorkGoalVO.getTreatPerTimesCompleted();
             vo.setTreatPerTimesCompleted(treatPerTimesCompleted);
             Integer treatPerTimesGoal = vo.getTreatPerTimesGoal();
             if (0 != treatPerTimesGoal && null != treatPerTimesCompleted) {
@@ -179,7 +180,7 @@ public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTar
    * @param response http响应
    * @param query 查询条件
    */
-  public void exportBusinessWorkGoalList(HttpServletResponse response, WorkGoalQuery query)
+  public void exportBusinessWorkGoalList(HttpServletResponse response, BusinessWorkGoalQuery query)
       throws IOException {
     ExcelUtil<BusinessWorkGoalVO> excelUtil = new ExcelUtil<>(BusinessWorkGoalVO.class);
     PageInfo<BusinessWorkGoalVO> pageInfo = findBusinessWorkGoalList(query);
