@@ -1,12 +1,12 @@
 package com.yunya.modules.employeeattend.rpc.service;
 
+import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
 import com.yunya.feign.system.vo.OrganizationInfoDetail;
 import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.biz.BaseBiz;
-import com.yunya.framework.common.constant.BusinessConstants;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
@@ -70,7 +70,6 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
         throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
       }
     }
-
     //请求参数
     List<Integer> postNames = employeeScheduleQueryForm.getPostNames();
     Integer page = employeeScheduleQueryForm.getPage();
@@ -167,5 +166,14 @@ public class EmployeeScheduleSerivce extends BaseBiz<EmployeeScheduleMapper, Emp
     employeeScheduleResultVO.setShiftWorkDatas(shiftWorkDatas);
     employeeScheduleResultVO.setCount(count);
     return employeeScheduleResultVO;
+  }
+
+  /**
+   * 根据Id获取中间表需要的信息
+   * @param Id
+   * @return
+   */
+  public BaseEmployeeScheduleVO findEmInfoById(Integer Id) {
+    return mapper.findEmInfoById(Id);
   }
 }

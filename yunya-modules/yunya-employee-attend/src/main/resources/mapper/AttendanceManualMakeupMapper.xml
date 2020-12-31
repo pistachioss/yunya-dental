@@ -54,4 +54,31 @@
       </if>
     </where>
   </select>
+
+  <select id="sumAttendanceMakeupMinute" resultType="com.yunya.feign.employee_attend.vo.AttendanceManualMakeupVO">
+    select
+    t.user_id as userId,
+    t.org_id as orgId,
+    t.type,
+    sum(t.minute) minute
+    from attendance_manual_makeup t
+    <where>
+      <if test="queryForm.type != null">
+        and t.type = #{queryForm.type}
+      </if>
+      <if test="queryForm.userId != null">
+        and t.user_id = #{queryForm.userId}
+      </if>
+      <if test="queryForm.orgId != null">
+        and t.org_id = #{queryForm.orgId}
+      </if>
+      <if test="queryForm.makeupDate != null">
+        and DATE_FORMAT(t.makeup_date,'%Y-%m-%d') = DATE_FORMAT(#{queryForm.makeupDate},'%Y-%m-%d')
+      </if>
+      <if test="queryForm.betweenDate!=null and queryForm.andDate!=null">
+        and DATE_FORMAT(t.makeup_date,'%Y-%m-%d') between DATE_FORMAT(#{queryForm.betweenDate},'%Y-%m-%d') and DATE_FORMAT(#{queryForm.andDate},'%Y-%m-%d')
+      </if>
+    </where>
+    group by t.user_id,t.org_id,t.type
+  </select>
 </mapper>

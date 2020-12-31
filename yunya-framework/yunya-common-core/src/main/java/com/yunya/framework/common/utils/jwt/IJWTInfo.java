@@ -27,4 +27,10 @@ public interface IJWTInfo {
    * @return
    */
   String getName();
+
+  /**
+   * 获取设备类型
+   * @return
+   */
+  String getDeviceType();
 }

@@ -7,6 +7,7 @@ import com.alibaba.excel.support.ExcelTypeEnum;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.github.pagehelper.PageHelper;
+import com.yunya.feign.rabbitmq.RemoteRabbitMqServiceFeign;
 import com.yunya.feign.system.RemoteSystemServiceFeign;
 import com.yunya.feign.system.form.OrganizationModel;
 import com.yunya.feign.system.form.SysUserEmployeeModel;
@@ -44,6 +45,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.yunya.feign.report.enums.MsgCategoryEnum.BaseEmployeeSchedule;
 import static com.yunya.framework.common.constant.OperationCodeConstants.DATA_TRANSFORMATION_EXIST;
 import static com.yunya.framework.common.constant.OperationCodeConstants.INSERT_MODEL;
 
@@ -62,6 +64,37 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     private ClinicScheduleBiz clinicScheduleBiz;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
+    /** 消息中间件调用 */
+    @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+
+
+    public int delete(EmployeeScheduleDeleteForm employeeScheduleDeleteForm){
+        EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleDeleteForm, EmployeeSchedule.class);
+        //注意月份是MM
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = new Date();
+        try {
+            date  = simpleDateFormat.parse(employeeScheduleDeleteForm.getWorkDateString());
+        } catch (ParseException e) {
+            throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
+        }
+        if(date.before(new Date())){
+            throw new ClientServiceException("今天之前的排班不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
+        }
+        employeeSchedule.setWorkDate(date);
+        //查询排班关联的申请信息
+        //排班信息
+        EmployeeScheduleVO employeeScheduleVO = this.selectByCondition(employeeScheduleDeleteForm);
+        Integer num = this.selectApprovalCount(employeeScheduleVO);
+        if(num>0){
+            throw new ClientServiceException("当前排班处于申请流程中，不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
+        }
+        int i = mapper.delete(employeeSchedule);
+        if (i > 0) {
+            rabbitMqServiceFeign.sendMessage(employeeSchedule.getId(), 2, BaseEmployeeSchedule);
+        }
+        return i;
+    }
 
     /**
      * 添加排班表
@@ -110,7 +143,11 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         if (a >= 2) {
             throw new ClientServiceException("每天最多排两个班次", OperationCodeConstants.INSERT_MODEL);
         }
-       return mapper.insertSelective(employeeSchedule);
+       int i = mapper.insertSelective(employeeSchedule);
+        if (i > 0) {
+            rabbitMqServiceFeign.sendMessage(employeeSchedule.getId(), 0, BaseEmployeeSchedule);
+        }
+        return i;
     }
 
     /**

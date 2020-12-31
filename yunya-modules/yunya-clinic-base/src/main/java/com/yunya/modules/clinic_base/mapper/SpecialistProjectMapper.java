@@ -26,4 +26,10 @@ public interface SpecialistProjectMapper extends Mapper<SpecialistProject> {
    * @return List<SpecialistProjectNameVO>
    */
   List<SpecialistProjectNameVO> selectSpecialistProjectNameList();
+
+  /**
+   * 查询所有专科
+   * @return List<SpecialistProject>
+   */
+  List<SpecialistProject> selectListAll();
 }

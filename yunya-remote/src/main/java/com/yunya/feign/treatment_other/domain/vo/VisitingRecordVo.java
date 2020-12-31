@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import lombok.ToString;
+import org.springframework.validation.annotation.Validated;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -146,6 +147,11 @@ public class VisitingRecordVo implements Serializable {
     /** 实际随访执行人名字 */
     @ApiModelProperty(value = "实际随访执行人名字")
     private String executorName;
+
+    /** 实际随访时间 */
+    @ApiModelProperty(value = "实际随访时间")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date executeDate;
 
     /******************************* 患者信息 ********************************/
     /** 患者姓名 */

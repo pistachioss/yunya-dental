@@ -5,6 +5,7 @@ import com.github.pagehelper.PageInfo;
 import com.yunya.feign.report.domain.query.*;
 import com.yunya.feign.report.domain.vo.*;
 import com.yunya.framework.common.biz.BaseBiz;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.report.BaseBill;
 import com.yunya.report.ultimate.mapper.BaseBillMapper;
@@ -64,6 +65,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
     if (query.getWhetherPage()) {
       PageHelper.startPage(query.getPageNum(), query.getPageSize());
     }
+    if (StringHelper.isEmpty(query.getPrivilegeTypes())) {
+      query.setPrivilegeTypes(new Byte[]{1, 2});
+    }
     List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
     return new PageInfo<>(resultList);
   }
@@ -76,9 +80,12 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
    */
   public void exportDiscountDetailList(
       HttpServletResponse response, BillOfDiscountDetailQuery query) throws IOException {
+    if (StringHelper.isEmpty(query.getPrivilegeTypes())) {
+      query.setPrivilegeTypes(new Byte[]{1, 2});
+    }
     List<BillOfDiscountDetailVO> resultList = mapper.selectBillDiscountDetailList(query);
     ExcelUtil<BillOfDiscountDetailVO> excelUtil = new ExcelUtil<>(BillOfDiscountDetailVO.class);
-    excelUtil.exportExcel(response, resultList, "账单优惠明细列表");
+    excelUtil.exportExcel(response, resultList, "账单优惠明细列表", "账单优惠明细");
   }
 
   /**

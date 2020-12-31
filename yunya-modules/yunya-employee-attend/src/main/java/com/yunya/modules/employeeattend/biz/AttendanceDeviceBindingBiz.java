@@ -128,7 +128,7 @@ public class AttendanceDeviceBindingBiz extends BaseBiz<AttendanceDeviceBindingM
         List<AttendanceDeviceBindingVO> result = new ArrayList<>();
         // 员工姓名过滤
         SysUserEmployeeModel model = new SysUserEmployeeModel();
-        model.setWhetherPage(queryForm.getWhetherPage());
+        model.setWhetherPage(true);
         model.setPageNum(queryForm.getPageNum());
         model.setPageSize(queryForm.getPageSize());
         model.setUserName(queryForm.getUserName());

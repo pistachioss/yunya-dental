@@ -8,6 +8,7 @@ import lombok.ToString;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.PastOrPresent;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -64,6 +65,7 @@ public class VisitingRecordForm implements Serializable {
      */
     @ApiModelProperty(value = "就诊日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
+    @PastOrPresent(message = "就诊日期必须是过去某个或现在日期")
     private Date treatmentDate;
 
     /**
@@ -71,7 +73,6 @@ public class VisitingRecordForm implements Serializable {
      */
     @ApiModelProperty(value = "随访日期")
     @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
-    @Future(message = "随访日期不能早于末诊日期！")
     private Date visitingDate;
 
     /** 随访时间 */

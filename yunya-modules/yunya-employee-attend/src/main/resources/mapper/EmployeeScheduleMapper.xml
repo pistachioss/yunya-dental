@@ -237,9 +237,9 @@
         select count(*) num from leave_info
         where approval_status in (0,1) and DATE_FORMAT(end_time,'%Y-%m-%d') >= DATE_FORMAT(#{workDate},'%Y-%m-%d') and DATE_FORMAT(start_time,'%Y-%m-%d') &lt;= DATE_FORMAT(#{workDate},'%Y-%m-%d') and user_id = #{employeeId}
         UNION
-        select count(*) num from work_overtime_info
-        where approval_status in (0,1) and DATE_FORMAT(work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate},'%Y-%m-%d') AND
-        (rest_schedule_id = #{scheduleId} or schedule_id = #{scheduleId}) and user_id = #{employeeId}
+        select count(*) num from work_overtime_info wi LEFT JOIN employee_schedule es on es.id = wi.rest_schedule_id
+        where wi.approval_status in (0,1) and DATE_FORMAT(wi.work_date,'%Y-%m-%d') = DATE_FORMAT(#{workDate},'%Y-%m-%d') AND
+        (es.schedule_id = #{scheduleId} or wi.schedule_id = #{scheduleId}) and wi.user_id = #{employeeId}
         UNION
         select count(*) num from field_info
         where approval_status in (0,1)
@@ -248,4 +248,12 @@
         and user_id = #{employeeId}
         ) a
     </select>
+    <!--<select id="findEmInfoById" resultType="com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO">
+    select es.id as employeeScheduleId,es.clinic_id as orgId,es.schedule_id as scheduleId,es.employee_id as userId,es.work_date as scheduleDate,
+    bs.first_start_time as startWorkTime,IFNULL(bs.second_end_time,bs.first_end_time) as offWorkTime,
+    TIMESTAMPDIFF(MINUTE,(DATE_FORMAT(bs.first_start_time, '%Y-%m-%d %H:%i:%s')),(DATE_FORMAT(IFNULL(bs.second_end_time,bs.first_end_time),'%Y-%m-%d %H:%i:%s'))) as scheduleDuration
+    from employee_schedule es
+    LEFT JOIN base_schedule bs on es.schedule_id = bs.id
+    where es.id = #{id}
+    </select>-->
 </mapper>

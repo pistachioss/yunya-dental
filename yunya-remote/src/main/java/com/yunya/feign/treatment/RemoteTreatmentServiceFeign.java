@@ -1,6 +1,9 @@
 package com.yunya.feign.treatment;
 
+import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.treatment.domain.vo.SpecialistProjectTariffCompletedInfoVO;
+import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.treatment.domain.model.DebtAmountModel;
 import com.yunya.feign.treatment.domain.query.SpecialistProjectTariffCompletedInfoQuery;
 import com.yunya.feign.treatment.domain.vo.RegisteredVO;
@@ -289,4 +292,13 @@ public interface RemoteTreatmentServiceFeign {
   @RequestMapping(value = "/rpc/tariff/completed/goal", method = RequestMethod.POST)
   SpecialistProjectTariffCompletedInfoVO findClinicTariffOrderCompletedInfo(
       @RequestBody @Validated SpecialistProjectTariffCompletedInfoQuery query);
+
+
+  /**
+   * 查询专科项目数量
+   * @param specialistProjectReportModel 查询条件
+   * @return Integer
+   */
+  @RequestMapping(value = "/rpc/tariff/specialist/percentage", method = RequestMethod.POST)
+  List<SpecialistProjectReportVO> findTariffSpecialistPercentage(@RequestBody @Validated SpecialistProjectReportModel specialistProjectReportModel);
 }

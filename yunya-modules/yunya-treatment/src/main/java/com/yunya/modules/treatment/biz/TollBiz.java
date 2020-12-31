@@ -220,10 +220,12 @@ public class TollBiz {
                     vo.setActualAmount(actualAmount);
                     BigDecimal receivableAmount = vo.getReceivableAmount();
                     // 设置折扣率
-                    vo.setDiscountRate(
-                        actualAmount
-                            .divide(receivableAmount, 4, RoundingMode.HALF_UP)
-                            .multiply(BigDecimal.valueOf(100)));
+                    if (actualAmount != null && receivableAmount.compareTo(BigDecimal.valueOf(0)) != 0) {
+                      vo.setDiscountRate(
+                              actualAmount
+                                      .divide(receivableAmount, 4, RoundingMode.HALF_UP)
+                                      .multiply(BigDecimal.valueOf(100)));
+                    }
                     // 设置优惠匹配信息
                     if (receivableAmount.compareTo(actualAmount) != 0) {
                       PrivilegeCouponInfoVO couponInfoVO = new PrivilegeCouponInfoVO();
@@ -506,11 +508,14 @@ public class TollBiz {
           detailPayRecord.setReceivableAmount(receivableAmount);
           BigDecimal privilegeAmount = BigDecimal.valueOf(0);
           BigDecimal actualAmount = receivableAmount;
+          BigDecimal couponWorkload = BigDecimal.valueOf(0);
           for (PatientItemBenefitVo vo : benefitVos) {
             Integer orderDetailId = vo.getOrderDetailId();
             if (detailId.equals(orderDetailId)) {
               privilegeAmount = vo.getItemBenefitAmount();
               actualAmount = receivableAmount.subtract(privilegeAmount);
+              // TODO: 2020/12/31 从vo中获取补入时长
+//              couponWorkload = vo.
             }
           }
           detailPayRecord.setPrivilegeAmount(privilegeAmount);
@@ -523,7 +528,7 @@ public class TollBiz {
             detailPayRecord.setReceivedAmount(totalCharge);
             totalCharge = BigDecimal.valueOf(0);
           }
-          detailPayRecord.setCouponWorkload(BigDecimal.valueOf(0));
+          detailPayRecord.setCouponWorkload(couponWorkload);
           Integer userId = Integer.valueOf(BaseContextHandler.getUserID());
           detailPayRecord.setCrtId(userId);
           String name = BaseContextHandler.getName();
@@ -1163,7 +1168,7 @@ public class TollBiz {
       BigDecimal actualReceivableAmount = billRecordResult.getActualReceivableAmount();
       BigDecimal receivedAmount = billRecordResult.getReceivedAmount();
       patientId = billRecordResult.getPatientId();
-      if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0) {
+      if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0 || billRecordResult.getPrivilegeType()!= discountType) {
         debtAmount = billRecordResult.getDebtAmount();
         checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
         debtAmount = debtAmount.subtract(totalCharge);

@@ -513,6 +513,7 @@ public class VisitingRecordBiz extends BaseBiz<VisitingRecordMapper, VisitingRec
         visitingRecord.setUptId(currentUserId);
         visitingRecord.setUpdName(BaseContextHandler.getName());
         visitingRecord.setUpdTime(new Date(System.currentTimeMillis()));
+        visitingRecord.setExecuteDate(new Date(System.currentTimeMillis()));
         visitingRecord.setExecutorId(currentUserId);
         visitingRecord.setExecutorName(BaseContextHandler.getName());
         int result = mapper.updateByPrimaryKeySelective(visitingRecord);

@@ -2,9 +2,11 @@ package com.yunya.modules.clinic_base.controller;
 
 import com.github.pagehelper.PageInfo;
 import com.yunya.feign.clinic_base.domain.form.SpecialistProjectForm;
+import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
 import com.yunya.feign.clinic_base.domain.model.SpecialistProjectModel;
 import com.yunya.feign.clinic_base.domain.query.SpecialistProjectQuery;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectNameVO;
+import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectReportVO;
 import com.yunya.feign.clinic_base.domain.vo.SpecialistProjectVO;
 import com.yunya.framework.common.annation.CurrentUser;
 import com.yunya.framework.common.model.ResponseResult;
@@ -120,4 +122,17 @@ public class SpecialistProjectController {
     specialistProjectBiz.deleteById(id);
     return ResponseUtil.success(null);
   }
+
+  /**
+   * 专科项目名称列表
+   *
+   * @return void
+   */
+  @ApiOperation("患者报表-就诊患者分析-专科项目")
+  @PostMapping(value = "/specialistProject/report", name = "就诊患者分析-专科项目")
+  public ResponseResult<List<SpecialistProjectReportVO>> specialistProjectReport(@RequestBody @Validated SpecialistProjectReportForm form) {
+    List<SpecialistProjectReportVO> resultList = specialistProjectBiz.specialistProjectReport(form);
+    return ResponseUtil.success(resultList);
+  }
+
 }

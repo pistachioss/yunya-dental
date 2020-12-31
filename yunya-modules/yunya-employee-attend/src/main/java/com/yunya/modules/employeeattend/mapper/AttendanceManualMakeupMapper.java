@@ -20,4 +20,12 @@ public interface AttendanceManualMakeupMapper extends Mapper<AttendanceManualMak
      * @return
      */
     List<AttendanceManualMakeupVO> findAttendanceManualMakeupList(@Param("queryForm") AttendanceManualMakeupQueryForm queryForm);
+
+    /**
+     * 统计计补入时长
+     *
+     * @param queryForm
+     * @return
+     */
+    List<AttendanceManualMakeupVO> sumAttendanceMakeupMinute(@Param("queryForm") AttendanceManualMakeupQueryForm queryForm);
 }

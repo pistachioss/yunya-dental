@@ -8,12 +8,20 @@ import com.yunya.feign.system.form.JwtRequestFrom;
 import com.yunya.feign.system.vo.FrontUserInfoVO;
 import com.yunya.framework.common.constant.RedisConstants;
 import com.yunya.framework.common.exception.auth.UserAuthException;
+import com.yunya.framework.common.utils.StringHelper;
+import com.yunya.framework.common.utils.jwt.IJWTInfo;
+import com.yunya.framework.common.utils.jwt.JWTHelper;
 import com.yunya.framework.common.utils.jwt.JWTInfo;
 import com.yunya.framework.redis.util.RedisUtils;
+import eu.bitwalker.useragentutils.DeviceType;
+import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.UserAgent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ADMIN_ACCOUNT;
 import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNATION_STATUS;
@@ -48,22 +56,30 @@ public class UserAuthServiceImpl implements UserAuthService {
    * @return String（token）
    */
   @Override
-  public UserAuthResponse login(JwtRequestFrom paramForm) throws Exception {
+  public UserAuthResponse login(JwtRequestFrom paramForm, HttpServletRequest request) throws Exception {
     // 调用远程服务获取用户信息
     FrontUserInfoVO userInfo = systemServiceFeign.validate(paramForm);
     checkUserInfo(userInfo);
     String userId = userInfo.getId();
     if (!StringUtils.isEmpty(userId)) {
-      // todo 记录登陆信息
-      String token =
-          jwtTokenUtil.generateToken(
-              new JWTInfo(userInfo.getUsername(), userId, userInfo.getName()));
-      // 获取token的过期时间
-      long expireTime = jwtTokenUtil.getExpireTime(token);
-      // 缓存用户信息、用户token
-      redisUtils.set(USER_TOKEN + token, userInfo, expireTime);
-      redisUtils.set(USER_ID + userId, token, expireTime);
-      return new UserAuthResponse(token, userInfo);
+      String userAgentStr = request.getHeader("User-Agent");
+      UserAgent userAgent = UserAgent.parseUserAgentString(userAgentStr);
+      OperatingSystem operatingSystem = userAgent.getOperatingSystem();
+      DeviceType deviceType = operatingSystem.getDeviceType();
+      String tokenStr = redisUtils.get(USER_ID + userId);
+      if (StringHelper.isBlank(tokenStr)) {
+        String token = this.setTokenInfoInCache(userInfo,userId,deviceType);
+        return new UserAuthResponse(token, userInfo);
+      } else {
+        String deviceName = deviceType.getName();
+        IJWTInfo infoFromToken = jwtTokenUtil.getInfoFromToken(tokenStr);
+        if (deviceName.equals(infoFromToken.getDeviceType())) {
+          String token = this.setTokenInfoInCache(userInfo,userId,deviceType);
+          return new UserAuthResponse(token, userInfo);
+        } else {
+          return new UserAuthResponse(tokenStr,userInfo);
+        }
+      }
     }
     throw new UserAuthException("用户不存在或账户密码错误!");
   }
@@ -131,5 +147,26 @@ public class UserAuthServiceImpl implements UserAuthService {
       redisUtils.delete(USER_ID + userInfo.getId());
       redisUtils.delete(USER_TOKEN + token);
     }
+  }
+
+  /**
+   * 将token信息设置到redis缓冲中
+   * @param userInfo  用户信息
+   * @param userId    用户ID
+   * @param deviceType 当前访问设备类型 Computer(电脑) Mobile(移动设备) Tablet(平板) Game console(游戏机) Digital media receiver(数字媒体设备) Wearable computer(嵌入式设备) Unknown(未知)
+   * @throws Exception 异常
+   * @return 返回生成的token
+   */
+  public String setTokenInfoInCache(FrontUserInfoVO userInfo,String userId, DeviceType deviceType) throws Exception {
+    // todo 记录登陆信息
+    String token =
+            jwtTokenUtil.generateToken(
+                    new JWTInfo(userInfo.getUsername(), userId, userInfo.getName(),deviceType.getName()));
+    // 获取token的过期时间
+    long expireTime = jwtTokenUtil.getExpireTime(token);
+    // 缓存用户信息、用户token
+    redisUtils.set(USER_TOKEN + token, userInfo, expireTime);
+    redisUtils.set(USER_ID + userId, token, expireTime);
+    return token;
   }
 }

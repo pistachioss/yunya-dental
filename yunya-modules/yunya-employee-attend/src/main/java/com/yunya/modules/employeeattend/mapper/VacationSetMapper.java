@@ -8,4 +8,6 @@ import java.util.List;
 public interface VacationSetMapper extends Mapper<VacationSet> {
     List<VacationSet> selectList(VacationSet vacationSet);
 
+    List<VacationSet> selectListPC(VacationSet vacationSet);
+
 }

@@ -1,17 +1,14 @@
 package com.yunya.modules.employeeattend.rpc;
 
-import com.yunya.framework.common.model.ResponseResult;
-import com.yunya.framework.common.utils.ResponseUtil;
-import com.yunya.modules.employeeattend.biz.EmployeeScheduleBiz;
+import com.yunya.models.employee_attend.EmployeeSchedule;
 import com.yunya.modules.employeeattend.form.EmployeeScheduleQueryForm;
 import com.yunya.modules.employeeattend.rpc.service.EmployeeScheduleSerivce;
+import com.yunya.feign.employee_attend.vo.BaseEmployeeScheduleVO;
 import com.yunya.modules.employeeattend.vo.EmployeeScheduleResultVO;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 /**
  * @author 杨柳絮
@@ -34,5 +31,15 @@ public class EmployeeAttendServiceRest {
   public EmployeeScheduleResultVO findList(@RequestBody @Validated EmployeeScheduleQueryForm employeeScheduleQueryForm) {
     EmployeeScheduleResultVO employeeScheduleResultVO = employeeScheduleSerivce.findList(employeeScheduleQueryForm);
     return employeeScheduleResultVO;
+  }
+  /**
+   * 根据排班Id查看排班信息
+   * @param employeeSchedule
+   * @return
+   */
+  @RequestMapping(value = "/employee/attend/findEmInfoById", method = RequestMethod.POST)
+  public BaseEmployeeScheduleVO findEmInfoById(@RequestBody @Validated EmployeeSchedule employeeSchedule) {
+    BaseEmployeeScheduleVO baseEmployeeScheduleVO = employeeScheduleSerivce.findEmInfoById(employeeSchedule.getId());
+    return baseEmployeeScheduleVO;
   }
 }
