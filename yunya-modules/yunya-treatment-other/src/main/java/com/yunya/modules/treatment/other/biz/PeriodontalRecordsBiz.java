@@ -68,7 +68,7 @@ public class PeriodontalRecordsBiz extends BaseBiz<PeriodontalRecordsMapper, Per
                 BeanUtils.copyProperties(per, periodontalRecordsVO);
                 periodontalRecordsVO.setCompanyName(clinicMap.get(periodontalRecordsVO.getCompanyId().toString()).getName());
                 periodontalRecordsVO.setDoctorName(employeeMap.get(periodontalRecordsVO.getDoctorId().toString()).getName());
-                periodontalRecordsVO.setPatientName(employeeMap.get(periodontalRecordsVO.getPatientId().toString()).getName());
+
                 reList.add(periodontalRecordsVO);
             }
         }
