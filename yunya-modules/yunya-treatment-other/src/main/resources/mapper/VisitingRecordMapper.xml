@@ -67,7 +67,7 @@
         and DATE_FORMAT(vr.crt_time,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
       </if>
       <if test="query.visitingDate != null and query.searchId == 2">
-        and DATE_FORMAT(vr.execute_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
+        and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
       </if>
       <if test="query.searchBeginTime != null and query.searchEndTime != null">
         and date_format(vr.visiting_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
@@ -96,7 +96,7 @@
       order by vr.crt_time asc
     </if>
     <if test="query.searchId == 2">
-      order by vr.execute_date asc
+      order by vr.visiting_date asc
     </if>
   </select>
 
