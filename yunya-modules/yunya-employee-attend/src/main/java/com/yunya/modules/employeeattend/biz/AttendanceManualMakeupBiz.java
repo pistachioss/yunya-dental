@@ -96,4 +96,17 @@ public class AttendanceManualMakeupBiz extends BaseBiz<AttendanceManualMakeupMap
         }
         return mapper.findAttendanceManualMakeupList(queryForm);
     }
+
+    /**
+     * 统计计补入时长
+     *
+     * @param queryForm
+     * @return
+     */
+    public List<AttendanceManualMakeupVO> sumAttendanceMakeupMinute(AttendanceManualMakeupQueryForm queryForm) {
+        if (queryForm.getWhetherPage()) {
+            PageHelper.startPage(queryForm.getPageNum(), queryForm.getPageSize());
+        }
+        return mapper.sumAttendanceMakeupMinute(queryForm);
+    }
 }

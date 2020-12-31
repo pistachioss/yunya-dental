@@ -1,6 +1,8 @@
 package com.yunya.modules.treatment.biz;
 
 import com.google.common.collect.Lists;
+import com.yunya.feign.clinic_base.domain.form.SpecialistProjectReportForm;
+import com.yunya.feign.clinic_base.domain.model.SpecialistProjectReportModel;
 import com.yunya.feign.discount.RemoteDiscountFeign;
 import com.yunya.feign.discount.domain.vo.ItemUseBenefitVo;
 import com.yunya.feign.discount.domain.vo.OrderBenefitDetailVo;
@@ -484,5 +486,18 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
         mapper.selectSpecialistProjectTariffDetail(query);
     resultData.setSpecialistProjectCompletedDetails(specialistProjectTariffDetails);
     return resultData;
+  }
+
+
+  /**
+   * 查询专科占比
+   * @param specialistProjectReportModel 查询条件
+   * @return percentage
+   */
+  public String findTariffSpecialistPercentage(SpecialistProjectReportModel specialistProjectReportModel) {
+    Integer count  = mapper.selectCountTariffSpecialist(specialistProjectReportModel);
+    Integer number =  mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
+    String percentage = mapper.percentage(number, count);
+    return percentage;
   }
 }

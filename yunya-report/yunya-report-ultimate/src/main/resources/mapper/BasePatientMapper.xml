@@ -248,6 +248,9 @@
     </where>
   </select>
 
+
+    <!--
+   -->
   <!-- 根据条件查询 年龄段患者数量 -->
   <select id="selectAnalysisAge" resultType="java.lang.Integer">
     select count(1) from base_patient bp

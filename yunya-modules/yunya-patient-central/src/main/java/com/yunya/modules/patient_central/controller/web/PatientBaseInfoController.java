@@ -63,6 +63,7 @@ public class PatientBaseInfoController {
     return ResponseUtil.success(this.patientBaseInfoBiz.addPatient(patientBaseInfoModel));
   }
 
+
   /**
    * 根据Id查询患者信息公用信息
    *

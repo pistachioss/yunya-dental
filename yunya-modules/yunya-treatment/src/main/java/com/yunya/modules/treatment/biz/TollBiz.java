@@ -1165,7 +1165,7 @@ public class TollBiz {
       BigDecimal actualReceivableAmount = billRecordResult.getActualReceivableAmount();
       BigDecimal receivedAmount = billRecordResult.getReceivedAmount();
       patientId = billRecordResult.getPatientId();
-      if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0) {
+      if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0 || billRecordResult.getPrivilegeType()!= discountType) {
         debtAmount = billRecordResult.getDebtAmount();
         checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
         debtAmount = debtAmount.subtract(totalCharge);

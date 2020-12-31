@@ -161,12 +161,12 @@ public class AttendancePunchRecordController {
      * 分页查询工作时长的考勤汇总明细
      *
      * @param queryForm 查询参数
-     * @return ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>>
+     * @return ResponseResult<AttendancePunchPageInfoVO<AttendanceWorkDateMinuteVO>>
      */
     @ApiOperation("分页查询工作时长的考勤汇总明细")
     @PostMapping("/statisticsWorkDateByMinute")
-    public ResponseResult<PageInfo<AttendanceWorkDateMinuteVO>> statisticsWorkDateByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        PageInfo<AttendanceWorkDateMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
+    public ResponseResult<AttendancePunchPageInfoVO<AttendanceWorkDateMinuteVO>> statisticsWorkDateByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        AttendancePunchPageInfoVO<AttendanceWorkDateMinuteVO> result = attendancePunchRecordBiz.statisticsWorkDateByMinute(queryForm);
         return ResponseUtil.success(result);
     }
 
@@ -221,13 +221,12 @@ public class AttendancePunchRecordController {
      * 分页查询休息日加班时长的考勤汇总明细
      *
      * @param queryForm 查询参数
-     * @return ResponseResult<PageInfo<AttendanceWorkOvertimeMinuteVO>>
+     * @return ResponseResult<AttendancePunchPageInfoVO<AttendanceWorkOvertimeMinuteVO>>
      */
     @ApiOperation("分页查询休息日加班时长的考勤汇总明细")
     @PostMapping("/statisticsWorkOvertimesByMinute")
-    public ResponseResult<PageInfo<AttendanceOvertimeMinuteVO>> statisticsWorkOvertimesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
-        List<AttendanceOvertimeMinuteVO> result = attendancePunchRecordBiz.statisticsWorkOvertimesByMinute(queryForm);
-        PageInfo<AttendanceOvertimeMinuteVO> pageInfo = new PageInfo<>(result);
+    public ResponseResult<AttendancePunchPageInfoVO<AttendanceOvertimeMinuteVO>> statisticsWorkOvertimesByMinute(@RequestBody AttendanceStatisticsQueryForm queryForm) {
+        AttendancePunchPageInfoVO<AttendanceOvertimeMinuteVO> pageInfo = attendancePunchRecordBiz.statisticsWorkOvertimesByMinute(queryForm);
         return ResponseUtil.success(pageInfo);
     }
 

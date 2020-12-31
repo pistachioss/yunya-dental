@@ -42,4 +42,9 @@
         FROM
         specialist_project sp
     </select>
+
+    <!-- 专科项目名称列表 -->
+    <select id="selectListAll" resultType="com.yunya.models.clinic_base.SpecialistProject">
+        select * from specialist_project where inservice = 1
+    </select>
 </mapper>
