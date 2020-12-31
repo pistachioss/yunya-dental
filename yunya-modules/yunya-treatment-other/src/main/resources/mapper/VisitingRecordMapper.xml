@@ -70,7 +70,7 @@
         and DATE_FORMAT(vr.visiting_date,'%Y-%m-%d') = DATE_FORMAT(#{query.visitingDate},'%Y-%m-%d')
       </if>
       <if test="executeDate != null">
-        and DATE_FORMAT(execute_date,'%Y-%m-%d') = DATE_FORMAT(#{executeDate},'%Y-%m-%d')
+        and DATE_FORMAT(vr.execute_date,'%Y-%m-%d') = DATE_FORMAT(#{executeDate},'%Y-%m-%d')
       </if>
       <if test="query.searchBeginTime != null and query.searchEndTime != null">
         and date_format(vr.visiting_date,'%Y-%m-%d') between date_format(#{query.searchBeginTime},'%Y-%m-%d') and date_format(#{query.searchEndTime},'%Y-%m-%d')
