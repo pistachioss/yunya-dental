@@ -191,7 +191,9 @@ public class LeaveInfoBiz extends BaseBiz<LeaveInfoMapper, LeaveInfo> {
      * @return
      */
     public List<ApprovalLevelSet> selectApprovalByDay(LeaveInfoForm leaveInfoForm) {
-        return mapper.selectApprovalByDay(leaveInfoForm);
+        List<ApprovalLevelSet>list = mapper.selectApprovalByDay(leaveInfoForm);
+        list.remove(null);
+        return list;
     }
 
     /**

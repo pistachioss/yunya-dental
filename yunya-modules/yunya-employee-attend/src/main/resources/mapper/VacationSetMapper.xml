@@ -25,4 +25,12 @@
       </if>
     </where>
   </select>
+  <select id="selectListPC" resultMap="BaseResultMap">
+    select * from vacation_set
+    <where>
+      <if test="vacationEnable!=null">
+        and vacation_enable = #{vacationEnable}
+      </if>
+    </where>
+  </select>
 </mapper>

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -57,7 +58,12 @@ public class VacationSetBiz extends BaseBiz<VacationSetMapper, VacationSet> {
         if (vacationSetQuery.getVacationEnable() != null) {
             vacationSet.setVacationEnable(vacationSetQuery.getVacationEnable());
         }
-        List<VacationSet> reList = mapper.selectList(vacationSet);
+        List<VacationSet> reList = new ArrayList<>();
+        if (vacationSetQuery.getAppRequest() == 1) {
+            reList = mapper.selectList(vacationSet);
+        }else{
+           reList = mapper.selectListPC(vacationSet);
+        }
         return new PageInfo<>(reList);
     }
 
