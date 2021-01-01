@@ -82,4 +82,6 @@ public interface BaseTreatmentProcessMapper extends Mapper<BaseTreatmentProcess>
    * @param registeredId 挂号ID
    */
   void deleteByRegisteredId(@Param("registeredId") Integer registeredId);
+
+  void updateAssistantValueByTreatmentId(@Param("treatmentProcess") BaseTreatmentProcess treatmentProcess);
 }

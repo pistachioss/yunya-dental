@@ -628,7 +628,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Byte isPunch = attendancePunchRecordVO.getIsPunch();
         Byte source = attendancePunchRecordVO.getSource();
         Byte status = null; //休息
-        if (!(AttendanceSourceEnum.REST_SCHEDULE.getCode().equals(source)
+        if (!((AttendanceSourceEnum.REST_SCHEDULE.getCode().equals(source)
+                || AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode().equals(source)
+                || AttendanceSourceEnum.LEAVE_BYDAY.getCode().equals(source))
                 && AttendanceIsPunchEnum.UNPUNCH.getCode().equals(isPunch))) {
             if (!AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)
                     && AttendanceIsPunchEnum.UNPUNCH.getCode().equals(isPunch)) {
