@@ -3,6 +3,8 @@ package com.yunya.auth.service;
 import com.yunya.auth.domain.UserAuthResponse;
 import com.yunya.feign.system.form.JwtRequestFrom;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * 简单介绍: 用户jwt鉴权接口
  *
@@ -19,7 +21,7 @@ public interface UserAuthService {
    * @param paramForm 参数封装
    * @return String
    */
-  UserAuthResponse login(JwtRequestFrom paramForm) throws Exception;
+  UserAuthResponse login(JwtRequestFrom paramForm, HttpServletRequest request) throws Exception;
 
   /**
    * 刷新token

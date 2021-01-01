@@ -16,4 +16,6 @@ public class UserConstant {
   public static final String JWT_KEY_USER_ID = "userId";
   /** jwt用户名 */
   public static final String JWT_KEY_NAME = "name";
+  /** jwt当前访问设备类型 */
+  public static final String JWT_KEY_DEVICE_TYPE = "deviceType";
 }

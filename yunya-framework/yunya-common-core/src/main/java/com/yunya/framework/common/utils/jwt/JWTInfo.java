@@ -14,11 +14,19 @@ public class JWTInfo implements Serializable, IJWTInfo {
   private String username;
   private String userId;
   private String name;
+  private String deviceType;
 
   public JWTInfo(String username, String userId, String name) {
     this.username = username;
     this.userId = userId;
     this.name = name;
+  }
+
+  public JWTInfo(String username, String userId, String name,String deviceType) {
+    this.username = username;
+    this.userId = userId;
+    this.name = name;
+    this.deviceType = deviceType;
   }
 
   @Override
@@ -42,6 +50,15 @@ public class JWTInfo implements Serializable, IJWTInfo {
   @Override
   public String getName() {
     return name;
+  }
+
+  @Override
+  public String getDeviceType() {
+    return this.deviceType;
+  }
+
+  public void setDeviceType(String deviceType) {
+    this.deviceType = deviceType;
   }
 
   public void setName(String name) {
