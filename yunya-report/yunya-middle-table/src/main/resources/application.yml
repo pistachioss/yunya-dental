@@ -61,7 +61,7 @@ spring:
             sql:
                 show: false
         datasource:
-            names: report,system,patient,treatment,discount,employee-expand,appointment,treatment-other,employee-attend
+            names: report,system,patient,treatment,discount,employee-expand,employee-attend,appointment,treatment-other
             report:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}

@@ -1106,7 +1106,14 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
                 restStatisticeList.add(restStatistics);
             }
         });
-        Collections.sort(leaveStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate));
+        Collections.sort(leaveStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate).reversed());
+        Collections.sort(fieldStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate).reversed());
+        Collections.sort(unpunchStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate).reversed());
+        Collections.sort(invalidStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate).reversed());
+        Collections.sort(workOvertimeStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate).reversed());
+        Collections.sort(earlyStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate).reversed());
+        Collections.sort(lateStatisticsList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate).reversed());
+        Collections.sort(restStatisticeList, Comparator.comparing(AttendancePunchRecordVO::getPunchDate).reversed());
         result.setWorkOvertimeNum(workOvertimeStatisticsList.size());
         result.setUnpunchNum(unpunchStatisticsList.size());
         result.setRestNum(restStatisticeList.size());

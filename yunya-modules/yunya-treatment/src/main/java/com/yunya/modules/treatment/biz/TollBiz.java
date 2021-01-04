@@ -1150,8 +1150,7 @@ public class TollBiz {
     Set<MemberAccountModel> memberAccounts = model.getMemberAccountModels();
     Set<PaymentModel> paymentModels = model.getPaymentModels();
     // 计算并校验收欠费入账总额
-    BigDecimal totalCharge =
-        calculateAndCheckReceivedAmount(prepaymentAccounts, memberAccounts, paymentModels);
+    BigDecimal totalCharge = new BigDecimal(0);
     BigDecimal outstandingAmount = model.getOutstandingAmount();
     InvoiceModel invoiceModel = model.getInvoiceModel();
     byte discountType = 0;
@@ -1169,10 +1168,16 @@ public class TollBiz {
       BigDecimal receivedAmount = billRecordResult.getReceivedAmount();
       patientId = billRecordResult.getPatientId();
       if (receivedAmount.compareTo(BigDecimal.valueOf(0)) > 0 || billRecordResult.getPrivilegeType()!= discountType) {
+        // 计算并校验收欠费入账总额
+        totalCharge =
+                calculateAndCheckReceivedAmount(prepaymentAccounts, memberAccounts, paymentModels, (byte) 1);
         debtAmount = billRecordResult.getDebtAmount();
         checkTotalChargeAndDebtAmount(totalCharge, debtAmount, outstandingAmount);
         debtAmount = debtAmount.subtract(totalCharge);
       } else {
+        // 计算并校验收欠费入账总额
+        totalCharge =
+                calculateAndCheckReceivedAmount(prepaymentAccounts, memberAccounts, paymentModels, (byte) 2);
         // 账单未使用过优惠，重新使用优惠
         orderRecordId = billRecordResult.getOrderRecordId();
         discountType = saveDiscountDetail(generalDiscount, accreditDiscount, discountType);
@@ -1210,6 +1215,9 @@ public class TollBiz {
       // 更新订单明细收费记录
       updateOrderDetailPayRecord(orderRecordId, totalCharge);
     } else {
+      // 计算并校验收欠费入账总额
+      totalCharge =
+              calculateAndCheckReceivedAmount(prepaymentAccounts, memberAccounts, paymentModels, (byte) 2);
       // 调整账单重新收费
       OrderRecord orderRecordResult = checkOrderRecord(treatmentId);
       // 获取开单总额
@@ -1472,16 +1480,22 @@ public class TollBiz {
    * @param prepaymentAccountModels 预付款账户列表
    * @param memberAccountModels 会员账户列表
    * @param paymentModels 其他支付方式列表
+   * @param flag 1-收欠费失败，收欠费总额不能小于0！ 2-收欠费失败，收欠费总额不能小于等于0！
    * @return
    */
   private BigDecimal calculateAndCheckReceivedAmount(
       Set<PrepaymentAccountModel> prepaymentAccountModels,
       Set<MemberAccountModel> memberAccountModels,
-      Set<PaymentModel> paymentModels) {
+      Set<PaymentModel> paymentModels,
+      byte flag) {
     BigDecimal totalCharge =
         calculateTotalCharge(prepaymentAccountModels, memberAccountModels, paymentModels);
     if (BigDecimal.valueOf(0).compareTo(totalCharge) > 0) {
-      throw new ClientServiceException("收欠费失败，收欠费总额不能小于等于0！", PARAMETERS_IS_ILLEGAL);
+      if (flag == 1) {
+        throw new ClientServiceException("收欠费失败，收欠费总额不能小于0！", PARAMETERS_IS_ILLEGAL);
+      } else if (flag == 2) {
+        throw new ClientServiceException("收欠费失败，收欠费总额不能小于等于0！", PARAMETERS_IS_ILLEGAL);
+      }
     }
     return totalCharge;
   }

@@ -16,6 +16,9 @@ import java.util.Date;
  */
 @Data
 public class EmployeeScheduleDeleteForm implements Serializable {
+
+  @ApiModelProperty("排班ID")
+  private Integer Id;
   /**
    * 员工ID
    */

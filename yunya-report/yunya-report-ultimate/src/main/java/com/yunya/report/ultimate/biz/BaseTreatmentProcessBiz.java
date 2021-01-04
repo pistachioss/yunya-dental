@@ -157,9 +157,8 @@ public class BaseTreatmentProcessBiz
     List<PatientTreatmentInfo4ListVO> patientTreatmentInfo4ListVOS = new ArrayList<>();
     SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
     List<BaseTreatmentProcessVO> baseTreatmentProcessVOS = mapper.treatmentList4App(query.getOrgId(),query.getDentistId(),query.getQueryDate());
-    PageInfo pageInfo = new PageInfo(baseTreatmentProcessVOS);
     if (StringHelper.isEmpty(baseTreatmentProcessVOS)) {
-      return pageInfo;
+      return new PageInfo<>(baseTreatmentProcessVOS);
     }
     // 获取患者ID集合
     List<Integer> patientIds = baseTreatmentProcessVOS.stream().map(BaseTreatmentProcessVO::getPatientId).collect(Collectors.toList());
@@ -341,8 +340,7 @@ public class BaseTreatmentProcessBiz
         }
       }
     }
-    pageInfo.setList(patientTreatmentInfo4ListVOS);
-    return pageInfo;
+    return new PageInfo(patientTreatmentInfo4ListVOS);
   }
 
 

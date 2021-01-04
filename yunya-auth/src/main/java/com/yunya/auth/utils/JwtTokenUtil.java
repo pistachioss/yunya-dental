@@ -1,6 +1,8 @@
 package com.yunya.auth.utils;
 
 import com.yunya.auth.configuration.KeyConfiguration;
+import com.yunya.framework.common.constant.UserConstant;
+import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.jwt.IJWTInfo;
 import com.yunya.framework.common.utils.jwt.JWTHelper;
 import io.jsonwebtoken.Claims;
@@ -8,6 +10,9 @@ import io.jsonwebtoken.Jws;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -123,10 +128,13 @@ public class JwtTokenUtil {
    * 获取token的过期时间
    *
    * @param token token
-   * @return
+   * @return 返回过期时间（ms）
    * @throws Exception
    */
   public long getExpireTime(String token) throws Exception {
-    return getJwsClaims(token).getBody().getExpiration().getTime();
+    long expireTimeMs = getJwsClaims(token).getBody().getExpiration().getTime();
+    String expireTime = StringHelper.getObjectValue(getJwsClaims(token).getBody().get(UserConstant.JWT_APPLY_TOKEN_TIME));
+    long applyTimeMs = Long.parseLong(expireTime);
+    return (expireTimeMs - applyTimeMs);
   }
 }

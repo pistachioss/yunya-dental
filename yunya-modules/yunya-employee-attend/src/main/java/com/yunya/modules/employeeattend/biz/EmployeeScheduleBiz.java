@@ -91,7 +91,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
         int i = mapper.delete(employeeSchedule);
         if (i > 0) {
-            rabbitMqServiceFeign.sendMessage(employeeSchedule.getId(), 2, BaseEmployeeSchedule);
+            rabbitMqServiceFeign.sendMessage(employeeScheduleDeleteForm.getId(), 2, BaseEmployeeSchedule);
         }
         return i;
     }
@@ -414,6 +414,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                     if (calendar.getTime().equals(employeeScheduleVO.getWorkDate())) {
                         JSONObject workDayData = new JSONObject();
                         workDayData.put("id", employeeScheduleVO.getScheduleId());
+                        workDayData.put("esid", employeeScheduleVO.getId());
                         //拼接排班的时间段
                         SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm");
                         Date startTime = ClinicScheduleMap.get(employeeScheduleVO.getScheduleId() + "").getFirstStartTime();

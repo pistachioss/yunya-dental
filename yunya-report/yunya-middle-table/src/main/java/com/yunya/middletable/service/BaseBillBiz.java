@@ -143,9 +143,9 @@ public class BaseBillBiz extends BaseBiz<BaseBillMapper, BaseBill> {
       // 构建中间表账单明细列表
       List<BaseBillDetail> billDetails = generateBaseBillDetail(details);
       if (StringHelper.isNotEmpty(billDetails)) {
+        baseBillDetailMapper.deleteByBillId(orderRecordId);
         billDetails.forEach(
             billDetail -> {
-              baseBillDetailMapper.deleteByPrimaryKey(billDetail.getBillDetailId());
               baseBillDetailMapper.insertSelective(billDetail);
             });
       }
