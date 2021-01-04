@@ -300,6 +300,11 @@ public class BaseTreatmentProcessBiz
             break;
         }
       }
+    } else {
+      treatmentProcess.setAssistant1(null);
+      treatmentProcess.setAssistant2(null);
+      treatmentProcess.setAssistant3(null);
+      mapper.updateAssistantValueByTreatmentId(treatmentProcess);
     }
   }
 

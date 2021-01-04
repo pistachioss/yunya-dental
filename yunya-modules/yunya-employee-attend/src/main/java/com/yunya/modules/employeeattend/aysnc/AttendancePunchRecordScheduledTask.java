@@ -11,7 +11,6 @@ import com.yunya.feign.system.vo.SysUserInfoDetail;
 import com.yunya.framework.common.constant.OperationCodeConstants;
 import com.yunya.framework.common.exception.ClientServiceException;
 import com.yunya.framework.common.utils.DateUtil;
-import com.yunya.framework.redis.util.RedisUtils;
 import com.yunya.models.employee_attend.AttendancePunchRecord;
 import com.yunya.models.employee_attend.BaseSchedule;
 import com.yunya.modules.employeeattend.biz.*;
@@ -85,8 +84,6 @@ public class AttendancePunchRecordScheduledTask implements InitializingBean {
     /** 注入对象 */
     @Autowired
     private BaseScheduleBiz baseScheduleBiz;
-    @Autowired
-    private RedisUtils redisUtils;
 
     /**
      * 生成今天待打卡记录模板数据.定时任务每天01：00：00执行 00 00 01 * * ?

@@ -75,6 +75,9 @@
       <if test="queryForm.punchStatus!=null">
         and t.punch_status = #{queryForm.punchStatus}
       </if>
+      <if test="queryForm.isInScope!=null">
+        and t.is_in_scope = #{queryForm.isInScope}
+      </if>
       <if test="queryForm.isPunch!=null">
         and t.is_punch = #{queryForm.isPunch}
       </if>

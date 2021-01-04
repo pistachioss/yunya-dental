@@ -1024,6 +1024,7 @@
         GROUP BY
         btp.treatment_id
         ) btp ON bb.treatment_id = btp.treatment_id
+        where bb.bill_num is not null
         ) bbp ON bbd.bill_id = bbp.bill_id
         WHERE
         bbd.executor_id IS NOT NULL

@@ -505,10 +505,12 @@ public class OrderDetailBiz extends BaseBiz<OrderDetailMapper, OrderDetail> {
       String tariffIds = specialistProject.getTariffIds();
       if (tariffIds != null) {
         String[] billingItemIds = tariffIds.split(",");
-        specialistProjectReportModel.setBillingItemIds(billingItemIds);
-        Integer numberOfItems = mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
-        count = count + numberOfItems;
-        specialistProjectReportVO.setPercentage(numberOfItems.toString());
+        if (billingItemIds.length > 0){
+          specialistProjectReportModel.setBillingItemIds(billingItemIds);
+          Integer numberOfItems = mapper.selectTariffSpecialistPercentage(specialistProjectReportModel);
+          count = count + numberOfItems;
+          specialistProjectReportVO.setPercentage(numberOfItems.toString());
+        }
       }
       specialistProjectReportVOList.add(specialistProjectReportVO);
     }

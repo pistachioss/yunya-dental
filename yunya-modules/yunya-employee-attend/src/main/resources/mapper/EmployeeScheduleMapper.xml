@@ -19,6 +19,7 @@
     <result column="upd_time" property="updTime" jdbcType="TIMESTAMP" />
   </resultMap>
   <resultMap id="EmployeeScheduleVOMap" type="com.yunya.modules.employeeattend.vo.EmployeeScheduleVO" >
+      <result column="id" property="id" jdbcType="INTEGER" />
     <result column="clinic_id" property="clinicId" jdbcType="INTEGER" />
     <result column="schedule_id" property="scheduleId" jdbcType="INTEGER" />
     <result column="employee_id" property="employeeId" jdbcType="INTEGER" />
@@ -98,7 +99,7 @@
     </select>
 
   <select id="selectVOByDateAndCompEmpId" resultMap="EmployeeScheduleVOMap">
-    select es.employee_id,es.clinic_id,es.work_date,es.schedule_id,bs.type from employee_schedule es
+    select es.id,es.employee_id,es.clinic_id,es.work_date,es.schedule_id,bs.type from employee_schedule es
     left join base_schedule bs on es.schedule_id = bs.id
     where
     es.work_date &gt;= #{startDate} and es.work_date &lt;= #{endDate} and es.employee_id = #{employeeId}

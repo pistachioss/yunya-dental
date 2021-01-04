@@ -61,6 +61,15 @@
             #{item.assistant2}, #{item.assistant3})
         </foreach>
     </insert>
+
+    <update id="updateAssistantValueByTreatmentId">
+        update base_treatment_process
+        set assistant_1 = #{treatmentProcess.assistant1},
+            assistant_2 = #{treatmentProcess.assistant2},
+            assistant_3 = #{treatmentProcess.assistant3}
+        where treatment_id=#{treatmentProcess.treatmentId}
+    </update>
+
     <!-- 根据预约ID更新就诊流程 -->
     <update id="updateByAppointmentId">
         update base_treatment_process

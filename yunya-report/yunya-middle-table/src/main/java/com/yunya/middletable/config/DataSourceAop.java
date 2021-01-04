@@ -151,6 +151,25 @@ public class DataSourceAop {
     }
 
     /**
+     * employee_attend库切入点
+     */
+    @Pointcut("execution(* com.yunya.middletable.dao.employee_attend..*.*(..))")
+    public void switchDataSourceEmployeeAttend() {
+    }
+
+    @Before("switchDataSourceEmployeeAttend()")
+    public void empAttendBefore() {
+        HintManager hintManager = HintManager.getInstance();
+        hintManager.setDatabaseShardingValue("employee-attend");
+    }
+
+    @After("switchDataSourceEmployeeAttend()")
+    public void empAttendAfter() {
+        //清理掉当前设置的数据源，让默认的数据源不受影响
+        HintManager.clear();
+    }
+
+    /**
      * appointment_central库切入点
      */
     @Pointcut("execution(* com.yunya.middletable.dao.appointment..*.*(..))")

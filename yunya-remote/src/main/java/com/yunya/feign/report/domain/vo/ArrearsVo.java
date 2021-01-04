@@ -32,7 +32,7 @@ public class ArrearsVo implements Serializable {
     private String employeeName;
 
     /** 开单日期 */
-    @Excel(name = "开单日期")
+    @Excel(name = "账单日期")
     @ApiModelProperty(value = "开单日期")
     private String orderDate;
 
