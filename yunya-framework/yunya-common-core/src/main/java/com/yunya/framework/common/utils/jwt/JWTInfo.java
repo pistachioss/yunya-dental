@@ -1,6 +1,9 @@
 package com.yunya.framework.common.utils.jwt;
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -15,6 +18,7 @@ public class JWTInfo implements Serializable, IJWTInfo {
   private String userId;
   private String name;
   private String deviceType;
+  private String applyTokenTime;
 
   public JWTInfo(String username, String userId, String name) {
     this.username = username;
@@ -22,11 +26,19 @@ public class JWTInfo implements Serializable, IJWTInfo {
     this.name = name;
   }
 
-  public JWTInfo(String username, String userId, String name,String deviceType) {
+  public JWTInfo(String username, String userId, String name, String deviceType) {
     this.username = username;
     this.userId = userId;
     this.name = name;
     this.deviceType = deviceType;
+  }
+
+  public JWTInfo(String username, String userId, String name, String deviceType, String applyTokenTime) {
+    this.username = username;
+    this.userId = userId;
+    this.name = name;
+    this.deviceType = deviceType;
+    this.applyTokenTime = applyTokenTime;
   }
 
   @Override
@@ -55,6 +67,15 @@ public class JWTInfo implements Serializable, IJWTInfo {
   @Override
   public String getDeviceType() {
     return this.deviceType;
+  }
+
+  @Override
+  public String getApplyTokenTime() {
+    return this.applyTokenTime;
+  }
+
+  public void setApplyTokenTime(String applyTokenTime) {
+    this.applyTokenTime = applyTokenTime;
   }
 
   public void setDeviceType(String deviceType) {

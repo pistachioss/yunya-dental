@@ -16,12 +16,17 @@ import com.yunya.framework.redis.util.RedisUtils;
 import eu.bitwalker.useragentutils.DeviceType;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
+import io.jsonwebtoken.ExpiredJwtException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.servlet.http.HttpServletRequest;
+
+import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
 
 import static com.yunya.framework.common.constant.BusinessConstants.ADMIN_ACCOUNT;
 import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNATION_STATUS;
@@ -34,6 +39,7 @@ import static com.yunya.framework.common.constant.BusinessConstants.USER_RESIGNA
  * @description:
  * @since: 1.0.0
  */
+@Slf4j
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class UserAuthServiceImpl implements UserAuthService {
@@ -116,8 +122,8 @@ public class UserAuthServiceImpl implements UserAuthService {
     String refreshToken = jwtTokenUtil.refreshToken(oldToken);
     // 获取token过期时间
     long expireTime = jwtTokenUtil.getExpireTime(refreshToken);
-    redisUtils.set(USER_TOKEN + refreshToken, userInfo, expireTime);
-    redisUtils.set(USER_ID + userInfo.getId(), refreshToken, expireTime);
+    redisUtils.set(USER_TOKEN + refreshToken, userInfo, expireTime, TimeUnit.MILLISECONDS);
+    redisUtils.set(USER_ID + userInfo.getId(), refreshToken, expireTime, TimeUnit.MILLISECONDS);
     return new UserAuthResponse(refreshToken, userInfo);
   }
 
@@ -165,8 +171,8 @@ public class UserAuthServiceImpl implements UserAuthService {
     // 获取token的过期时间
     long expireTime = jwtTokenUtil.getExpireTime(token);
     // 缓存用户信息、用户token
-    redisUtils.set(USER_TOKEN + token, userInfo, expireTime);
-    redisUtils.set(USER_ID + userId, token, expireTime);
+    redisUtils.set(USER_TOKEN + token, userInfo, expireTime, TimeUnit.MILLISECONDS);
+    redisUtils.set(USER_ID + userId, token, expireTime, TimeUnit.MILLISECONDS);
     return token;
   }
 }

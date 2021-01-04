@@ -90,6 +90,19 @@ public class RedisUtils {
   }
 
   /**
+   * 插入缓存
+   *
+   * @param key 键
+   * @param value 值
+   * @param expire 过期时间(s)
+   * @author zmr
+   */
+  public void set(String key, Object value, long expire, TimeUnit unit) {
+    valueOperations.set(key, toJson(value));
+    redisTemplate.expire(key, expire, unit);
+  }
+
+  /**
    * 返回字符串结果
    *
    * @param key 键

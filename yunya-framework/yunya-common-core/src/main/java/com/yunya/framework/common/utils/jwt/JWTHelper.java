@@ -8,6 +8,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.joda.time.DateTime;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -31,6 +32,7 @@ public class JWTHelper {
    */
   public static String generateToken(IJWTInfo jwtInfo, String priKeyPath, int expire)
       throws Exception {
+    DateTime now = new DateTime(System.currentTimeMillis() + 28800000L);
     String compactJws =
         Jwts.builder()
             .setSubject(jwtInfo.getUniqueName())
@@ -38,7 +40,9 @@ public class JWTHelper {
             .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
             .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
             .claim(UserConstant.JWT_KEY_DEVICE_TYPE,jwtInfo.getDeviceType())
-            .setExpiration(DateTime.now().plusSeconds(expire).toDate())
+            // 设置token申请时间
+            .claim(UserConstant.JWT_APPLY_TOKEN_TIME,now.toDate().getTime())
+            .setExpiration(now.plusSeconds(expire).toDate())
             .signWith(SignatureAlgorithm.RS256, RSA_KEY_HELPER.getPrivateKey(priKeyPath))
             .compact();
     return compactJws;
@@ -53,6 +57,7 @@ public class JWTHelper {
    * @throws Exception
    */
   public static String generateToken(IJWTInfo jwtInfo, byte[] priKey) throws Exception {
+    DateTime now = new DateTime(System.currentTimeMillis() + 28800000L);
     String compactJws =
         Jwts.builder()
             // 主体（所有人）
@@ -63,6 +68,7 @@ public class JWTHelper {
             .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
             .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
             .claim(UserConstant.JWT_KEY_DEVICE_TYPE,jwtInfo.getDeviceType())
+            .claim(UserConstant.JWT_APPLY_TOKEN_TIME,now.toDate().getTime())
             // 加密
             .signWith(SignatureAlgorithm.RS256, RSA_KEY_HELPER.getPrivateKey(priKey))
             .compact();
@@ -79,6 +85,7 @@ public class JWTHelper {
    * @throws Exception
    */
   public static String generateToken(IJWTInfo jwtInfo, byte[] priKey, int expire) throws Exception {
+    DateTime now = new DateTime(System.currentTimeMillis() + 28800000L);
     String compactJws =
         Jwts.builder()
             // 主体（所有人）
@@ -89,8 +96,10 @@ public class JWTHelper {
             .claim(UserConstant.JWT_KEY_USER_ID, jwtInfo.getId())
             .claim(UserConstant.JWT_KEY_NAME, jwtInfo.getName())
             .claim(UserConstant.JWT_KEY_DEVICE_TYPE, jwtInfo.getDeviceType())
+            .claim(UserConstant.JWT_APPLY_TOKEN_TIME,now.toDate().getTime())
             // 过期时间
-            .setExpiration(DateTime.now().plusSeconds(expire).toDate())
+            .setExpiration(now.plusSeconds(expire).toDate())
+            // 设置token申请时间
             // 加密
             .signWith(SignatureAlgorithm.RS256, RSA_KEY_HELPER.getPrivateKey(priKey))
             .compact();
@@ -138,7 +147,8 @@ public class JWTHelper {
         body.getSubject(),
         StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_USER_ID)),
         StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_NAME)),
-        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_DEVICE_TYPE)));
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_DEVICE_TYPE)),
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_APPLY_TOKEN_TIME)));
   }
 
   /**
@@ -157,6 +167,7 @@ public class JWTHelper {
         body.getSubject(),
         StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_USER_ID)),
         StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_NAME)),
-        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_DEVICE_TYPE)));
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_KEY_DEVICE_TYPE)),
+        StringHelper.getObjectValue(body.get(UserConstant.JWT_APPLY_TOKEN_TIME)));
   }
 }

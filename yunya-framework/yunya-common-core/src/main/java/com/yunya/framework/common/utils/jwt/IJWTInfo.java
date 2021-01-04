@@ -1,5 +1,9 @@
 package com.yunya.framework.common.utils.jwt;
 
+import org.joda.time.DateTime;
+
+import java.util.Date;
+
 /**
  * JWT信息获取接口
  *
@@ -33,4 +37,10 @@ public interface IJWTInfo {
    * @return
    */
   String getDeviceType();
+
+  /**
+   * token申请时间（MS）
+   * @return token申请时间（MS）
+   */
+  String getApplyTokenTime();
 }

@@ -319,10 +319,7 @@
                 and btp.org_id = #{orgId}
             </if>
             <if test="currentDate != null and currentDate != ''">
-                and if(btp.appoint_start_time is Null, true, date_format(btp.appoint_start_time,'%Y-%m-%d') = (date_format(#{currentDate},'%Y-%m-%d')))
-            </if>
-            <if test="currentDate != null and currentDate != ''">
-                and if(btp.registered_date is Null, true, date_format(btp.registered_date,'%Y-%m-%d') in (date_format(#{currentDate},'%Y-%m-%d')))
+                and date_format(#{currentDate}, '%Y-%m-%d' ) in (date_format( btp.registered_date, '%Y-%m-%d' ),date_format( btp.appoint_start_time, '%Y-%m-%d' ))
             </if>
         </where>
         order by btp.appoint_start_time , btp.registered_date desc
