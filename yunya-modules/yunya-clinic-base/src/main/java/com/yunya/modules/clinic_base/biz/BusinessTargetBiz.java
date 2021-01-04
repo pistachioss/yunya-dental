@@ -18,7 +18,6 @@ import com.yunya.framework.common.utils.StringHelper;
 import com.yunya.framework.common.utils.poi.ExcelUtil;
 import com.yunya.models.clinic_base.BusinessTarget;
 import com.yunya.modules.clinic_base.mapper.BusinessTargetMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +42,11 @@ import static com.yunya.framework.common.constant.OperationCodeConstants.PARAMET
 public class BusinessTargetBiz extends BaseBiz<BusinessTargetMapper, BusinessTarget> {
 
   /** 就诊服务调用 */
-  @Autowired private RemoteTreatmentServiceFeign treatmentServiceFeign;
+  private final RemoteTreatmentServiceFeign treatmentServiceFeign;
+
+  public BusinessTargetBiz(RemoteTreatmentServiceFeign treatmentServiceFeign) {
+    this.treatmentServiceFeign = treatmentServiceFeign;
+  }
 
   /**
    * 根据条件查询业务目标

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -114,7 +115,8 @@ public class SpecialistProjectTargetController {
   @ApiOperation("公司端报表-报表统计-运营报表-工作目标-专科数量目标-导出")
   @PostMapping(value = "/goal/list/export", name = "根据条件导出门诊专科数量目标列表")
   public ResponseResult<T> exportSpecialistProjectWorkGoalList(
-      HttpServletResponse response, @RequestBody @Validated SpecialistProjectWorkGoalQuery query) {
+      HttpServletResponse response, @RequestBody @Validated SpecialistProjectWorkGoalQuery query)
+      throws IOException {
     specialistProjectTargetBiz.exportSpecialistProjectWorkGoalList(response, query);
     return ResponseUtil.success(null);
   }
