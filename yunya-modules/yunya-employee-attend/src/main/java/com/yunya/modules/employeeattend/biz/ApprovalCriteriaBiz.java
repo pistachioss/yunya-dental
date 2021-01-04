@@ -50,10 +50,13 @@ public class ApprovalCriteriaBiz extends BaseBiz<ApprovalCriteriaMapper, Approva
 
     public int update(ApprovalCriteriaForm approvalCriteriaForm) {
         ApprovalCriteria approvalCriteria = new ApprovalCriteria();
-        BeanUtils.copyProperties(approvalCriteriaForm, approvalCriteria);
+        approvalCriteria.setId(approvalCriteriaForm.getId());
+        approvalCriteria = mapper.selectOne(approvalCriteria);
+        approvalCriteria.setStartDay(approvalCriteriaForm.getStartDay());
+        approvalCriteria.setEndDay(approvalCriteriaForm.getEndDay());
         approvalCriteria.setUpdId(Integer.valueOf(BaseContextHandler.getUserID()));
         approvalCriteria.setUpdTime(new Date());
-        int re = mapper.updateByPrimaryKeySelective(approvalCriteria);
+        int re = mapper.updateByPrimaryKey(approvalCriteria);
         return re;
     }
 
