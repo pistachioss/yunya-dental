@@ -628,7 +628,9 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         Byte isPunch = attendancePunchRecordVO.getIsPunch();
         Byte source = attendancePunchRecordVO.getSource();
         Byte status = null; //休息
-        if (!(AttendanceSourceEnum.REST_SCHEDULE.getCode().equals(source)
+        if (!((AttendanceSourceEnum.REST_SCHEDULE.getCode().equals(source)
+                || AttendanceSourceEnum.LEAVE_BYSCHEDULE.getCode().equals(source)
+                || AttendanceSourceEnum.LEAVE_BYDAY.getCode().equals(source))
                 && AttendanceIsPunchEnum.UNPUNCH.getCode().equals(isPunch))) {
             if (!AttendanceStatusEnum.INVALID_PUNCH.getCode().equals(punchStatus)
                     && AttendanceIsPunchEnum.UNPUNCH.getCode().equals(isPunch)) {
@@ -3272,93 +3274,50 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
             StringBuilder address = new StringBuilder();
             long diff = endTime.getTime() - startTime.getTime();
             if (punchRecords!=null && !punchRecords.isEmpty()) {
-//                List<AttendancePunchDateVO> punchDateVOS = punchRecord2PunchDate(punchRecords);
-//                for (AttendancePunchDateVO punchDateVO : punchDateVOS) {
-//                    Date onStartTime = punchDateVO.getOnDutyStartTime();
-//                    Date onEndTime = punchDateVO.getOnDutyEndTime();
-//                    onPunchTime = punchDateVO.getOnDutyPunchTime();
-//                    switch (punchDateVO.getOnDutyStatus()) {
-//                        case 0:{
-//                            diff += onEndTime.getTime() - onStartTime.getTime();
-//                            break;
-//                        }
-//                        case 1:{
-//                            diff += onEndTime.getTime() - onPunchTime.getTime();
-//                            break;
-//                        }
-//                    }
-//                    String punchAddress = punchDateVO.getOnPunchAddress();
-//                    if (StringHelper.isNotEmpty(punchAddress)) {
-//                        address.append(punchAddress);
-//                    }
-//                    punchAddress = punchDateVO.getOffPunchAddress();
-//                    if (StringHelper.isNotEmpty(punchAddress)) {
-//                        if (address.length() > 0) {
-//                            address.append("、");
-//                        }
-//                        address.append(punchAddress);
-//                    }
-//                    Date offStartTime = punchDateVO.getOffDutyStartTime();
-//                    Date offEndTime = punchDateVO.getOffDutyEndTime();
-//                    offPunchTime = punchDateVO.getOffDutyPunchTime();
-//                    switch (punchDateVO.getOffDutyStatus()) {
-//                        case 2:{
-//                            diff += offEndTime.getTime() - offStartTime.getTime();
-//                            break;
-//                        }
-//                        case 3:{
-//                            diff += offPunchTime.getTime() - offStartTime.getTime();
-//                            break;
-//                        }
-//                    }
-//                }
                 for (AttendancePunchRecordVO punchRecord : punchRecords) {
-                    if (punchRecord.getIsPunch().equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {
-                        Date sTime;
-                        Date eTime;
-                        try {
-                            sTime = hSdf.parse(hSdf.format(punchRecord.getStartTime()));
-                            eTime = hSdf.parse(hSdf.format(punchRecord.getEndTime()));
-                        } catch (ParseException e) {
-                            throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-                        }
-                        Byte punchType = punchRecord.getPunchType();
-                        if (punchType.equals(AttendanceTypeEnum.ONDUTY.getCode())) {
-                            // 迟到时长
-                            onPunchTime = punchRecord.getPunchTime();
-                            if (onPunchTime.after(sTime)) {
-                                diff += sTime.getTime() - onPunchTime.getTime();
+                    if (punchRecord.getIsInScope().equals(AttendanceIsInScopeEnum.BELONG.getCode())
+                        && punchRecord.getSource().equals(AttendanceSourceEnum.FIELD.getCode())
+                        && punchRecord.getSourceId().equals(fieldInfoVO.getId())) {
+                        if (punchRecord.getIsPunch().equals(AttendanceIsPunchEnum.PUNCHED.getCode())) {
+                            Date sTime;
+                            Date eTime;
+                            try {
+                                sTime = hSdf.parse(hSdf.format(punchRecord.getStartTime()));
+                                eTime = hSdf.parse(hSdf.format(punchRecord.getEndTime()));
+                            } catch (ParseException e) {
+                                throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
                             }
-                        } else {
-                            // 早退时长
-                            offPunchTime = punchRecord.getPunchTime();
-                            if (offPunchTime.before(eTime)) {
-                                diff += offPunchTime.getTime() - eTime.getTime();
+                            Byte punchType = punchRecord.getPunchType();
+                            if (punchType.equals(AttendanceTypeEnum.ONDUTY.getCode())) {
+                                // 迟到时长
+                                onPunchTime = punchRecord.getPunchTime();
+                                if (onPunchTime.after(sTime)) {
+                                    diff += sTime.getTime() - onPunchTime.getTime();
+                                }
+                            } else {
+                                // 早退时长
+                                offPunchTime = punchRecord.getPunchTime();
+                                if (offPunchTime.before(eTime)) {
+                                    diff += offPunchTime.getTime() - eTime.getTime();
+                                }
+                            }
+                            String punchAddress = punchRecord.getPunchAddress();
+                            if (StringHelper.isNotEmpty(punchAddress)) {
+                                if (address.length() > 0) {
+                                    address.append("、");
+                                }
+                                address.append(punchAddress);
                             }
                         }
-                        String punchAddress = punchRecord.getPunchAddress();
-                        if (StringHelper.isNotEmpty(punchAddress)) {
-                            if (address.length() > 0) {
-                                address.append("、");
-                            }
-                            address.append(punchAddress);
-                        }
+                    } else {
+                        diff = 0;
                     }
                 }
+            } else {
+                diff = 0;
             }
             String approvalName = userNameMap.get(fieldInfoVO.getApprovalPeopleId());
             fieldMinuteVO.setApprovalUserName(approvalName);
-            Date sTime;
-            Date eTime;
-            try {
-                sTime = hSdf.parse(hSdf.format(startTime));
-                eTime = hSdf.parse(hSdf.format(endTime));
-            } catch (ParseException e) {
-                throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
-            }
-            if (!inScope(sTime,eTime,onPunchTime,offPunchTime)) {
-                diff = 0;
-            }
             fieldMinuteVO.setMinutes(DateUtil.micro2Min(diff));
             fieldMinuteVO.setPunchAddresss(address.toString());
             fieldMinuteVO.setOnPunchTime(onPunchTime);
@@ -3566,6 +3525,7 @@ public class AttendancePunchRecordBiz extends BaseBiz<AttendancePunchRecordMappe
         recordQueryForm.setOrgId(orgId);
         recordQueryForm.setBetweenDate(betweenDate);
         recordQueryForm.setAndDate(andDate);
+        recordQueryForm.setIsInScope(AttendanceIsInScopeEnum.BELONG.getCode());
         recordQueryForm.setSource(AttendanceSourceEnum.WORK_SCHEDULE.getCode());
         recordQueryForm.setPunchStatus(AttendanceStatusEnum.LATER_PUNCH.getCode());
         List<AttendancePunchRecordVO> punchRecordVOS = findAttendancePunchRecordList(recordQueryForm);

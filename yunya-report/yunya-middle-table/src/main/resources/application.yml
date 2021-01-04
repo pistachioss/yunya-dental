@@ -23,6 +23,7 @@ mydb:
     discount: yunya_discount
     treatment: yunya_treatment
     employee-expand: yunya_employee_expand
+    employee-attend: yunya_employee_attend
     appointment: yunya_appointment_central
     treatment-other: yunya_treatment_other
 
@@ -60,7 +61,7 @@ spring:
             sql:
                 show: false
         datasource:
-            names: report,system,patient,treatment,discount,employee-expand,appointment,treatment-other
+            names: report,system,patient,treatment,discount,employee-expand,appointment,treatment-other,employee-attend
             report:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
@@ -95,6 +96,12 @@ spring:
                 type: ${myjdbc.type}
                 driverClassName: ${myjdbc.driverClassName}
                 jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.employee-expand}?${myjdbc.jdbc-url-ext}
+                username: ${myjdbc.username}
+                password: ${myjdbc.password}
+            employee_attend:
+                type: ${myjdbc.type}
+                driverClassName: ${myjdbc.driverClassName}
+                jdbc-url: jdbc:mysql://${myjdbc.host}:${myjdbc.port}/${mydb.employee-attend}?${myjdbc.jdbc-url-ext}
                 username: ${myjdbc.username}
                 password: ${myjdbc.password}
             appointment:

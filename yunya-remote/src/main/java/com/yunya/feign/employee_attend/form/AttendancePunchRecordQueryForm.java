@@ -86,6 +86,10 @@ public class AttendancePunchRecordQueryForm implements Serializable {
     @ApiModelProperty(value = "是否打卡：0-否，1-是", required = true)
     private Byte isPunch;
 
+    /** 是否在有效时间范围内打卡：0-否，1-是 */
+    @ApiModelProperty(value = "是否在有效时间范围内打卡：0-否，1-是")
+    private Byte isInScope;
+
     /** 打卡类型 0：上班 1：下班 */
     @ApiModelProperty(value = "打卡类型 0：上班 1：下班")
     private Byte punchType;

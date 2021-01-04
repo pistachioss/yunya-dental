@@ -121,7 +121,7 @@
     <!-- 根据患者ID查询患者全部信息 -->
     <select id="selectPatientDataById"
             resultType="com.yunya.feign.patient_central.domain.vo.web.PatientTotalInfoVo">
-        select
+        select distinct
           pbi.id,
           pbi.org_id as orgId,
           pbi.`name`,
