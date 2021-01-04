@@ -48,12 +48,12 @@ public class BaseEmployeeScheduleBiz extends BaseBiz<BaseEmployeeScheduleMapper,
         BeanUtils.copyProperties(employeeScheduleVO,baseEmployeeSchedule);
         switch (operateType) {
             case 0:
-                if (null != baseEmployeeSchedule) {
+                if (null != employeeScheduleVO.getEmployeeScheduleId()) {
                     mapper.insertSelective(baseEmployeeSchedule);
                 }
                 break;
             case 2:
-                if (null != baseEmployeeSchedule) {
+                if (null != employeeScheduleVO.getEmployeeScheduleId()) {
                     mapper.delete(baseEmployeeSchedule);
                 }
                 break;
