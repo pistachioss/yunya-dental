@@ -277,7 +277,7 @@
             </if>
 
             <if test=" form.billingItemIds != null and form.billingItemIds.length > 0 ">
-                and od.billing_item_id =
+                and od.billing_item_id in
                 <foreach collection="form.billingItemIds" item="billingItemId" index="index" open="(" separator="," close=")">
                     #{billingItemId}
                 </foreach>
