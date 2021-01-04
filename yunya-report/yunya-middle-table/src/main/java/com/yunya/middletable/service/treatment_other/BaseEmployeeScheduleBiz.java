@@ -86,6 +86,8 @@ public class BaseEmployeeScheduleBiz extends BaseBiz<BaseEmployeeScheduleMapper,
                 break;
             case 2:
                 if (null != employeeScheduleVO.getEmployeeScheduleId()) {
+                    baseEmployeeSchedule = new BaseEmployeeSchedule();
+                    baseEmployeeSchedule.setEmployeeScheduleId(id);
                     mapper.delete(baseEmployeeSchedule);
                 }
                 break;
