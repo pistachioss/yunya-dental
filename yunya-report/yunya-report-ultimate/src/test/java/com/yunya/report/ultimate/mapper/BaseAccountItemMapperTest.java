@@ -32,7 +32,7 @@ public class BaseAccountItemMapperTest {
     query.setDateType((byte) 2);
     query.setStartDate("2020");
     query.setEndDate("2020");
-    List<StatementPaymentVO> vos = accountItemMapper.selectBillChargePaymentInfo(query);
+    List<StatementPaymentVO> vos = accountItemMapper.selectBillChargePaymentInfoThisMonth(query);
     System.out.println(vos);
   }
 
@@ -43,7 +43,8 @@ public class BaseAccountItemMapperTest {
     query.setDateType((byte) 2);
     query.setStartDate("2020");
     query.setEndDate("2020");
-    List<StatementPaymentVO> vos = accountItemMapper.selectClinicCollectionPaymentInfo(query);
+    List<StatementPaymentVO> vos =
+        accountItemMapper.selectClinicCollectionPaymentInfoThisMonth(query);
     System.out.println(vos);
   }
 
@@ -54,7 +55,8 @@ public class BaseAccountItemMapperTest {
     query.setDateType((byte) 2);
     query.setStartDate("2020");
     query.setEndDate("2020");
-    List<StatementPaymentVO> vos = accountItemMapper.selectCollectArrearsPaymentInfo(query);
+    List<StatementPaymentVO> vos =
+        accountItemMapper.selectCollectArrearsPaymentInfoThisMonth(query);
     System.out.println(vos);
   }
 
@@ -67,5 +69,75 @@ public class BaseAccountItemMapperTest {
     query.setEndDate("2020");
     BigDecimal bonus = accountItemMapper.selectBillChargeBonus(60, query);
     System.out.println(bonus);
+  }
+
+  @Test
+  public void find4() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setOrgId(35);
+    query.setDateType((byte) 2);
+    query.setStartDate("2020");
+    query.setEndDate("2020");
+    List<StatementPaymentVO> vos =
+        accountItemMapper.selectCollectArrearsPaymentInfoNotThisMonth(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find5() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 2);
+    query.setStartDate("2020");
+    query.setEndDate("2020");
+    List<StatementPaymentVO> vos =
+        accountItemMapper.selectClinicCollectionPaymentInfoNotThisMonth(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find6() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 2);
+    query.setStartDate("2020");
+    query.setEndDate("2020");
+    List<StatementPaymentVO> vos = accountItemMapper.selectBillRefundPaymentInfoThisMonth(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find7() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 2);
+    query.setStartDate("2020");
+    query.setEndDate("2020");
+    List<StatementPaymentVO> vos = accountItemMapper.selectBillRefundPaymentInfoNotThisMonth(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find8() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 2);
+    query.setStartDate("2020");
+    query.setEndDate("2020");
+    List<StatementPaymentVO> vos =
+        accountItemMapper.selectClinicIsAcceptedPaymentInfoThisMonth(query);
+    System.out.println(vos);
+  }
+
+  @Test
+  public void find9() {
+    InboundAndOutboundStatementQuery query = new InboundAndOutboundStatementQuery();
+    query.setOrgId(42);
+    query.setDateType((byte) 2);
+    query.setStartDate("2020");
+    query.setEndDate("2020");
+    List<StatementPaymentVO> vos =
+        accountItemMapper.selectClinicIsAcceptedPaymentInfoNotThisMonth(query);
+    System.out.println(vos);
   }
 }

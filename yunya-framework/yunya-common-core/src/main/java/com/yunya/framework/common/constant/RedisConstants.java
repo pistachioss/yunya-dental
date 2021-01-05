@@ -123,8 +123,8 @@ public class RedisConstants implements Serializable {
       for (int i = 0, index = 0; i < s.length; i++) {
         b = false;
         if (index < params.length) {
-          if (s[i].equals("{}")) {
-            if (!StringHelper.isBlank(params[index]) && !params[index].equals("null")) {
+          if ("{}".equals(s[i])) {
+            if (!StringHelper.isBlank(params[index]) && !"null".equals(params[index])) {
               sb.append(params[index]);
             } else {
               b = true;

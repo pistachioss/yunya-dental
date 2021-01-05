@@ -91,98 +91,306 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   public List<ClinicInboundAndOutboundVO> findInboundAndOutboundStatement(
       InboundAndOutboundStatementQuery query) {
     List<ClinicInboundAndOutboundVO> resultList = Lists.newArrayList();
-    // 门诊账单收费
-    List<StatementPaymentVO> billCharge = findBillChargePaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 0, billCharge, query);
-    ClinicInboundAndOutboundVO billChargeVO = new ClinicInboundAndOutboundVO();
-    billChargeVO.setType((byte) 0);
-    billChargeVO.setName("账单收费");
-    billChargeVO.setPaymentInfoList(billCharge);
-    resultList.add(0, billChargeVO);
-    // 门诊收欠费
-    List<StatementPaymentVO> collectArrears = findCollectArrearsPaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 1, collectArrears, query);
-    ClinicInboundAndOutboundVO collectArrearsVO = new ClinicInboundAndOutboundVO();
-    collectArrearsVO.setType((byte) 1);
-    collectArrearsVO.setName("收欠费");
-    collectArrearsVO.setPaymentInfoList(collectArrears);
-    resultList.add(1, collectArrearsVO);
-    // 门诊会员充值
-    List<StatementPaymentVO> memberCharge = findMemberChargePaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 2, memberCharge, query);
-    ClinicInboundAndOutboundVO memberChargeVO = new ClinicInboundAndOutboundVO();
-    memberChargeVO.setType((byte) 2);
-    memberChargeVO.setName("会员充值");
-    memberChargeVO.setPaymentInfoList(memberCharge);
-    resultList.add(2, memberChargeVO);
-    // 门诊预付款充值
-    List<StatementPaymentVO> prePaidCharge = findPrePaidChargePaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 3, prePaidCharge, query);
-    ClinicInboundAndOutboundVO prePaidChargeVO = new ClinicInboundAndOutboundVO();
-    prePaidChargeVO.setType((byte) 3);
-    prePaidChargeVO.setName("预付款充值");
-    prePaidChargeVO.setPaymentInfoList(prePaidCharge);
-    resultList.add(3, prePaidChargeVO);
-    // 产品售出
-    List<StatementPaymentVO> productSold = findProductSoldPaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 4, productSold, query);
-    ClinicInboundAndOutboundVO productSoldVO = new ClinicInboundAndOutboundVO();
-    productSoldVO.setType((byte) 4);
-    productSoldVO.setName("产品售出");
-    productSoldVO.setPaymentInfoList(productSold);
-    resultList.add(4, productSoldVO);
-    // 诊所代收
-    List<StatementPaymentVO> clinicCollection = findClinicCollectionPaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 5, clinicCollection, query);
-    ClinicInboundAndOutboundVO clinicCollectionVO = new ClinicInboundAndOutboundVO();
-    clinicCollectionVO.setType((byte) 5);
-    clinicCollectionVO.setName("诊所代收");
-    clinicCollectionVO.setPaymentInfoList(clinicCollection);
-    resultList.add(5, clinicCollectionVO);
-    // 账单退费
-    List<StatementPaymentVO> billRefund = findBillRefundPaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 6, billRefund, query);
-    ClinicInboundAndOutboundVO billRefundVO = new ClinicInboundAndOutboundVO();
-    billRefundVO.setType((byte) 6);
-    billRefundVO.setName("账单退费");
-    billRefundVO.setPaymentInfoList(billRefund);
-    resultList.add(6, billRefundVO);
-    // 会员卡退费
-    List<StatementPaymentVO> memberRefund = findMemberRefundPaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 7, memberRefund, query);
-    ClinicInboundAndOutboundVO memberRefundVO = new ClinicInboundAndOutboundVO();
-    memberRefundVO.setType((byte) 7);
-    memberRefundVO.setName("会员卡退费");
-    memberRefundVO.setPaymentInfoList(memberRefund);
-    resultList.add(7, memberRefundVO);
-    // 预付款退费
+    // 门诊账单收费(本月)-- 查询时间段内本门诊账单首次收费
+    billChargeThisMonth(query, resultList);
+
+    // 门诊收欠费（本月）-- 查询时间段内本门诊账单非首次收费
+    collectArrearsThisMonth(query, resultList);
+
+    // 门诊收欠费（非本月）-- 非查询时间段内本门诊账单的非首次收费
+    collectArrearsNotThisMonth(query, resultList);
+
+    // 门诊会员充值 -- 查询时间段内本门诊会员卡充值
+    memberCharge(query, resultList);
+
+    // 门诊预付款充值 -- 查询时间段内本门诊预付款充值
+    prePaidCharge(query, resultList);
+
+    // 产品售出 -- 查询时间段内本门诊产品售出
+    productSold(query, resultList);
+
+    // 诊所代收（本月）-- 查询时间段内非本门诊账单在本门诊收费
+    clinicCollectionThisMonth(query, resultList);
+
+    // 诊所代收（非本月）-- 非查询时间段内非本门诊账单在本门诊收费
+    clinicCollectionNotThisMonth(query, resultList);
+
+    // 账单退费（本月）-- 查询时间段内本门诊账单退费
+    billRefundThisMonth(query, resultList);
+
+    // 账单退费（非本月）-- 非查询时间段内本门诊账单退费
+    billRefundNotThisMonth(query, resultList);
+
+    // 会员卡退费 -- 查询时间段内本门诊会员卡充值退费
+    memberRefund(query, resultList);
+
+    // 预付款退费 -- 查询时间段内本门诊预付款充值退费
+    prepaidRefund(query, resultList);
+
+    // 诊所被代收（本月）-- 查询时间段内本门诊账单不在本门诊收费
+    clinicIsAcceptedThisMonth(query, resultList);
+
+    // 诊所被代收（非本月）-- 非查询时间段内本门诊账单不在门诊收费
+    clinicIsAcceptedNotThisMonth(query, resultList);
+
+    return resultList;
+  }
+
+  /**
+   * 诊所被代收（非本月）
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void clinicIsAcceptedNotThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> clinicIsAcceptedNotThisMonth =
+        findClinicIsAcceptedPaymentInfoNotThisMonth(query);
+    reBuildStatementsPaymentList((byte) 13, clinicIsAcceptedNotThisMonth, query);
+    ClinicInboundAndOutboundVO clinicIsAcceptedNotThisMonthVO = new ClinicInboundAndOutboundVO();
+    clinicIsAcceptedNotThisMonthVO.setType((byte) 13);
+    clinicIsAcceptedNotThisMonthVO.setName("诊所被代收（非本月）");
+    clinicIsAcceptedNotThisMonthVO.setPaymentInfoList(clinicIsAcceptedNotThisMonth);
+    resultList.add(13, clinicIsAcceptedNotThisMonthVO);
+  }
+
+  /**
+   * 诊所被代收（本月）
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void clinicIsAcceptedThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> clinicIsAcceptedThisMonth =
+        findClinicIsAcceptedPaymentInfoThisMonth(query);
+    reBuildStatementsPaymentList((byte) 12, clinicIsAcceptedThisMonth, query);
+    ClinicInboundAndOutboundVO clinicIsAcceptedThisMonthVO = new ClinicInboundAndOutboundVO();
+    clinicIsAcceptedThisMonthVO.setType((byte) 12);
+    clinicIsAcceptedThisMonthVO.setName("诊所被代收（本月）");
+    clinicIsAcceptedThisMonthVO.setPaymentInfoList(clinicIsAcceptedThisMonth);
+    resultList.add(12, clinicIsAcceptedThisMonthVO);
+  }
+
+  /**
+   * 预付款退费
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void prepaidRefund(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
     List<StatementPaymentVO> prepaidRefund = findPrepaidRefundPaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 8, prepaidRefund, query);
+    reBuildStatementsPaymentList((byte) 11, prepaidRefund, query);
     ClinicInboundAndOutboundVO prepaidRefundVO = new ClinicInboundAndOutboundVO();
-    prepaidRefundVO.setType((byte) 8);
+    prepaidRefundVO.setType((byte) 11);
     prepaidRefundVO.setName("预付款退费");
     prepaidRefundVO.setPaymentInfoList(prepaidRefund);
-    resultList.add(8, prepaidRefundVO);
-    // 诊所被代收
-    List<StatementPaymentVO> clinicIsAccepted = findClinicIsAcceptedPaymentInfo(query);
-    reBuildStatementsPaymentList((byte) 9, clinicIsAccepted, query);
-    ClinicInboundAndOutboundVO clinicIsAcceptedVO = new ClinicInboundAndOutboundVO();
-    clinicIsAcceptedVO.setType((byte) 9);
-    clinicIsAcceptedVO.setName("诊所被代收");
-    clinicIsAcceptedVO.setPaymentInfoList(clinicIsAccepted);
-    resultList.add(9, clinicIsAcceptedVO);
-    return resultList;
+    resultList.add(11, prepaidRefundVO);
+  }
+
+  /**
+   * 会员卡退费
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void memberRefund(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> memberRefund = findMemberRefundPaymentInfo(query);
+    reBuildStatementsPaymentList((byte) 10, memberRefund, query);
+    ClinicInboundAndOutboundVO memberRefundVO = new ClinicInboundAndOutboundVO();
+    memberRefundVO.setType((byte) 10);
+    memberRefundVO.setName("会员卡退费");
+    memberRefundVO.setPaymentInfoList(memberRefund);
+    resultList.add(10, memberRefundVO);
+  }
+
+  /**
+   * 账单退费（非本月）
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void billRefundNotThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> billRefundNotThisMonth = findBillRefundPaymentInfoNotThisMonth(query);
+    reBuildStatementsPaymentList((byte) 9, billRefundNotThisMonth, query);
+    ClinicInboundAndOutboundVO billRefundNotThisMonthVO = new ClinicInboundAndOutboundVO();
+    billRefundNotThisMonthVO.setType((byte) 9);
+    billRefundNotThisMonthVO.setName("账单退费（非本月）");
+    billRefundNotThisMonthVO.setPaymentInfoList(billRefundNotThisMonth);
+    resultList.add(9, billRefundNotThisMonthVO);
+  }
+
+  /**
+   * 账单退费（本月）
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void billRefundThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> billRefundThisMonth = findBillRefundPaymentInfoThisMonth(query);
+    reBuildStatementsPaymentList((byte) 8, billRefundThisMonth, query);
+    ClinicInboundAndOutboundVO billRefundThisMonthVO = new ClinicInboundAndOutboundVO();
+    billRefundThisMonthVO.setType((byte) 8);
+    billRefundThisMonthVO.setName("账单退费（本月）");
+    billRefundThisMonthVO.setPaymentInfoList(billRefundThisMonth);
+    resultList.add(8, billRefundThisMonthVO);
+  }
+
+  /**
+   * 诊所代收（非本月）
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void clinicCollectionNotThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> clinicCollectionNotThisMonth =
+        findClinicCollectionPaymentInfoNotThisMonth(query);
+    reBuildStatementsPaymentList((byte) 7, clinicCollectionNotThisMonth, query);
+    ClinicInboundAndOutboundVO clinicCollectionNotThisMonthVO = new ClinicInboundAndOutboundVO();
+    clinicCollectionNotThisMonthVO.setType((byte) 7);
+    clinicCollectionNotThisMonthVO.setName("诊所代收（非本月）");
+    clinicCollectionNotThisMonthVO.setPaymentInfoList(clinicCollectionNotThisMonth);
+    resultList.add(7, clinicCollectionNotThisMonthVO);
+  }
+
+  /**
+   * 诊所代收（本月）
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void clinicCollectionThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> clinicCollectionThisMonth =
+        findClinicCollectionPaymentInfoThisMonth(query);
+    reBuildStatementsPaymentList((byte) 6, clinicCollectionThisMonth, query);
+    ClinicInboundAndOutboundVO clinicCollectionThisMonthVO = new ClinicInboundAndOutboundVO();
+    clinicCollectionThisMonthVO.setType((byte) 6);
+    clinicCollectionThisMonthVO.setName("诊所代收（本月）");
+    clinicCollectionThisMonthVO.setPaymentInfoList(clinicCollectionThisMonth);
+    resultList.add(6, clinicCollectionThisMonthVO);
+  }
+
+  /**
+   * 产品售出
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void productSold(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> productSold = findProductSoldPaymentInfo(query);
+    reBuildStatementsPaymentList((byte) 5, productSold, query);
+    ClinicInboundAndOutboundVO productSoldVO = new ClinicInboundAndOutboundVO();
+    productSoldVO.setType((byte) 5);
+    productSoldVO.setName("产品售出");
+    productSoldVO.setPaymentInfoList(productSold);
+    resultList.add(5, productSoldVO);
+  }
+
+  /**
+   * 门诊预付款充值
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void prePaidCharge(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> prePaidCharge = findPrePaidChargePaymentInfo(query);
+    reBuildStatementsPaymentList((byte) 4, prePaidCharge, query);
+    ClinicInboundAndOutboundVO prePaidChargeVO = new ClinicInboundAndOutboundVO();
+    prePaidChargeVO.setType((byte) 4);
+    prePaidChargeVO.setName("预付款充值");
+    prePaidChargeVO.setPaymentInfoList(prePaidCharge);
+    resultList.add(4, prePaidChargeVO);
+  }
+
+  /**
+   * 门诊会员充值
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void memberCharge(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> memberCharge = findMemberChargePaymentInfo(query);
+    reBuildStatementsPaymentList((byte) 3, memberCharge, query);
+    ClinicInboundAndOutboundVO memberChargeVO = new ClinicInboundAndOutboundVO();
+    memberChargeVO.setType((byte) 3);
+    memberChargeVO.setName("会员充值");
+    memberChargeVO.setPaymentInfoList(memberCharge);
+    resultList.add(3, memberChargeVO);
+  }
+
+  /**
+   * 门诊收欠费（非本月）
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void collectArrearsNotThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> collectArrearsNotThisMonth =
+        findCollectArrearsPaymentInfoNotThisMonth(query);
+    reBuildStatementsPaymentList((byte) 2, collectArrearsNotThisMonth, query);
+    ClinicInboundAndOutboundVO collectArrearsNotThisMonthVO = new ClinicInboundAndOutboundVO();
+    collectArrearsNotThisMonthVO.setType((byte) 2);
+    collectArrearsNotThisMonthVO.setName("收欠费（非本月）");
+    collectArrearsNotThisMonthVO.setPaymentInfoList(collectArrearsNotThisMonth);
+    resultList.add(2, collectArrearsNotThisMonthVO);
+  }
+
+  /**
+   * 门诊收欠费（本月）
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void collectArrearsThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> collectArrearsThisMonth =
+        findCollectArrearsPaymentInfoThisMonth(query);
+    reBuildStatementsPaymentList((byte) 1, collectArrearsThisMonth, query);
+    ClinicInboundAndOutboundVO collectArrearsOfThisMonthVO = new ClinicInboundAndOutboundVO();
+    collectArrearsOfThisMonthVO.setType((byte) 1);
+    collectArrearsOfThisMonthVO.setName("收欠费（本月）");
+    collectArrearsOfThisMonthVO.setPaymentInfoList(collectArrearsThisMonth);
+    resultList.add(1, collectArrearsOfThisMonthVO);
+  }
+
+  /**
+   * 门诊账单收费
+   *
+   * @param query 查询条件
+   * @param resultList 结果集
+   */
+  private void billChargeThisMonth(
+      InboundAndOutboundStatementQuery query, List<ClinicInboundAndOutboundVO> resultList) {
+    List<StatementPaymentVO> billChargeThisMonth = findBillChargePaymentInfoThisMonth(query);
+    reBuildStatementsPaymentList((byte) 0, billChargeThisMonth, query);
+    ClinicInboundAndOutboundVO billChargeVO = new ClinicInboundAndOutboundVO();
+    billChargeVO.setType((byte) 0);
+    billChargeVO.setName("账单收费（本月）");
+    billChargeVO.setPaymentInfoList(billChargeThisMonth);
+    resultList.add(0, billChargeVO);
   }
 
   /**
    * 重构支付方式汇总列表
    *
-   * @param type 类型（0-账单收费；1-收欠费；2-会员充值；3-预付款充值；4-产品售出；5-诊所代收；6-账单退费；7-会员卡退费；8-预付款退费；9-诊所被代收）
+   * @param type "收支明细分类:0-账单收费（本月）；1-收欠费（本月）；2-收欠费（非本月）；3-会员充值；4-预付款充值；5-产品售出；"
+   *     "6-诊所代收（本月）；7-诊所代收（非本月）；8-账单退费（本月）；9-账单退费（非本月）；"
+   *     "10-会员卡退费；11-预付款退费；12-诊所被代收账（本月）；13-诊所被代收帐（非本月）"
    * @param list 支付方式列表
    * @param query 会员卡/预付款本金赠金查询参数
    */
   private void reBuildStatementsPaymentList(
-          Byte type, List<StatementPaymentVO> list, InboundAndOutboundStatementQuery query) {
+      Byte type, List<StatementPaymentVO> list, InboundAndOutboundStatementQuery query) {
     setPaymentListValue(list, type, query);
   }
 
@@ -194,7 +402,7 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 会员卡/预付款本金赠金查询参数
    */
   private void setPaymentListValue(
-          List<StatementPaymentVO> list, Byte type, InboundAndOutboundStatementQuery query) {
+      List<StatementPaymentVO> list, Byte type, InboundAndOutboundStatementQuery query) {
     if (StringHelper.isNotEmpty(list)) {
       Integer[] memberAccountItem = new Integer[1];
       Integer[] prePaymentAccountItem = new Integer[1];
@@ -333,25 +541,38 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   }
 
   /**
-   * 根据条件查询门诊账单收费的入账方式分组信息
+   * 根据条件查询门诊本月账单收费的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<StatementPaymentVO> findBillChargePaymentInfo(InboundAndOutboundStatementQuery query) {
-    List<StatementPaymentVO> resultList = mapper.selectBillChargePaymentInfo(query);
+  private List<StatementPaymentVO> findBillChargePaymentInfoThisMonth(
+      InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectBillChargePaymentInfoThisMonth(query);
     return resultList;
   }
 
   /**
-   * 根据条件查询门诊收欠费的入账方式分组信息
+   * 根据条件查询门诊本月账单收欠费的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<StatementPaymentVO> findCollectArrearsPaymentInfo(
+  private List<StatementPaymentVO> findCollectArrearsPaymentInfoThisMonth(
       InboundAndOutboundStatementQuery query) {
-    List<StatementPaymentVO> resultList = mapper.selectCollectArrearsPaymentInfo(query);
+    List<StatementPaymentVO> resultList = mapper.selectCollectArrearsPaymentInfoThisMonth(query);
+    return resultList;
+  }
+
+  /**
+   * 根据条件查询门诊非本月账单收欠费的入账方式分组信息
+   *
+   * @param query 查询条件
+   * @return List<ClinicInboundAndOutboundVO>
+   */
+  private List<StatementPaymentVO> findCollectArrearsPaymentInfoNotThisMonth(
+      InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectCollectArrearsPaymentInfoNotThisMonth(query);
     return resultList;
   }
 
@@ -361,7 +582,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<StatementPaymentVO> findMemberChargePaymentInfo(InboundAndOutboundStatementQuery query) {
+  private List<StatementPaymentVO> findMemberChargePaymentInfo(
+      InboundAndOutboundStatementQuery query) {
     List<StatementPaymentVO> resultList = mapper.selectMemberChargePaymentInfo(query);
     return resultList;
   }
@@ -384,31 +606,58 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<StatementPaymentVO> findProductSoldPaymentInfo(InboundAndOutboundStatementQuery query) {
+  private List<StatementPaymentVO> findProductSoldPaymentInfo(
+      InboundAndOutboundStatementQuery query) {
     List<StatementPaymentVO> resultList = mapper.selectProductSoldPaymentInfo(query);
     return resultList;
   }
 
   /**
-   * 根据条件查询门诊代收的入账方式分组信息
+   * 根据条件查询门诊本月代收的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<StatementPaymentVO> findClinicCollectionPaymentInfo(
+  private List<StatementPaymentVO> findClinicCollectionPaymentInfoThisMonth(
       InboundAndOutboundStatementQuery query) {
-    List<StatementPaymentVO> resultList = mapper.selectClinicCollectionPaymentInfo(query);
+    List<StatementPaymentVO> resultList = mapper.selectClinicCollectionPaymentInfoThisMonth(query);
     return resultList;
   }
 
   /**
-   * 根据条件查询门诊退费的入账方式分组信息
+   * 根据条件查询门诊非本月代收的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<StatementPaymentVO> findBillRefundPaymentInfo(InboundAndOutboundStatementQuery query) {
-    List<StatementPaymentVO> resultList = mapper.selectBillRefundPaymentInfo(query);
+  private List<StatementPaymentVO> findClinicCollectionPaymentInfoNotThisMonth(
+      InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList =
+        mapper.selectClinicCollectionPaymentInfoNotThisMonth(query);
+    return resultList;
+  }
+
+  /**
+   * 根据条件查询门诊本月账单退费的入账方式分组信息
+   *
+   * @param query 查询条件
+   * @return List<ClinicInboundAndOutboundVO>
+   */
+  private List<StatementPaymentVO> findBillRefundPaymentInfoThisMonth(
+      InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectBillRefundPaymentInfoThisMonth(query);
+    return resultList;
+  }
+
+  /**
+   * 根据条件查询门诊非本月账单退费的入账方式分组信息
+   *
+   * @param query 查询条件
+   * @return List<ClinicInboundAndOutboundVO>
+   */
+  private List<StatementPaymentVO> findBillRefundPaymentInfoNotThisMonth(
+      InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList = mapper.selectBillRefundPaymentInfoNotThisMonth(query);
     return resultList;
   }
 
@@ -418,7 +667,8 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<StatementPaymentVO> findMemberRefundPaymentInfo(InboundAndOutboundStatementQuery query) {
+  private List<StatementPaymentVO> findMemberRefundPaymentInfo(
+      InboundAndOutboundStatementQuery query) {
     List<StatementPaymentVO> resultList = mapper.selectMemberRefundPaymentInfo(query);
     return resultList;
   }
@@ -436,14 +686,27 @@ public class BaseAccountItemBiz extends BaseBiz<BaseAccountItemMapper, BaseAccou
   }
 
   /**
-   * 根据条件查询门诊被代收的入账方式分组信息
+   * 根据条件查询门诊本月被代收的入账方式分组信息
    *
    * @param query 查询条件
    * @return List<ClinicInboundAndOutboundVO>
    */
-  private List<StatementPaymentVO> findClinicIsAcceptedPaymentInfo(
+  private List<StatementPaymentVO> findClinicIsAcceptedPaymentInfoThisMonth(
       InboundAndOutboundStatementQuery query) {
-    List<StatementPaymentVO> resultList = mapper.selectClinicIsAcceptedPaymentInfo(query);
+    List<StatementPaymentVO> resultList = mapper.selectClinicIsAcceptedPaymentInfoThisMonth(query);
+    return resultList;
+  }
+
+  /**
+   * 根据条件查询门诊非本月被代收的入账方式分组信息
+   *
+   * @param query 查询条件
+   * @return List<ClinicInboundAndOutboundVO>
+   */
+  private List<StatementPaymentVO> findClinicIsAcceptedPaymentInfoNotThisMonth(
+      InboundAndOutboundStatementQuery query) {
+    List<StatementPaymentVO> resultList =
+        mapper.selectClinicIsAcceptedPaymentInfoNotThisMonth(query);
     return resultList;
   }
 }
