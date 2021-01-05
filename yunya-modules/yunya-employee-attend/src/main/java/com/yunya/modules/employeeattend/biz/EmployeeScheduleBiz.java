@@ -64,21 +64,24 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
     private ClinicScheduleBiz clinicScheduleBiz;
     @Autowired
     private RemoteSystemServiceFeign remoteSystemServiceFeign;
-    /** 消息中间件调用 */
-    @Autowired private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
+    /**
+     * 消息中间件调用
+     */
+    @Autowired
+    private RemoteRabbitMqServiceFeign rabbitMqServiceFeign;
 
 
-    public int delete(EmployeeScheduleDeleteForm employeeScheduleDeleteForm){
+    public int delete(EmployeeScheduleDeleteForm employeeScheduleDeleteForm) {
         EmployeeSchedule employeeSchedule = EntityUtils.build(employeeScheduleDeleteForm, EmployeeSchedule.class);
         //注意月份是MM
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date date = new Date();
         try {
-            date  = simpleDateFormat.parse(employeeScheduleDeleteForm.getWorkDateString());
+            date = simpleDateFormat.parse(employeeScheduleDeleteForm.getWorkDateString());
         } catch (ParseException e) {
             throw new ClientServiceException("时间转换错误", OperationCodeConstants.DATA_TRANSFORMATION_EXIST);
         }
-        if(date.before(new Date())){
+        if (date.before(new Date())) {
             throw new ClientServiceException("今天之前的排班不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
         employeeSchedule.setWorkDate(date);
@@ -86,7 +89,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         //排班信息
         EmployeeScheduleVO employeeScheduleVO = this.selectByCondition(employeeScheduleDeleteForm);
         Integer num = this.selectApprovalCount(employeeScheduleVO);
-        if(num>0){
+        if (num > 0) {
             throw new ClientServiceException("当前排班处于申请流程中，不允许删除", OperationCodeConstants.DELETE_NOT_ALLOW);
         }
         int i = mapper.delete(employeeSchedule);
@@ -115,7 +118,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         }
         if (now.before(datework)) {
 
-        }else{
+        } else {
             throw new ClientServiceException("不能排当天及以前的班", INSERT_MODEL);
         }
         // 判断排班是否冲突
@@ -143,7 +146,7 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
         if (a >= 2) {
             throw new ClientServiceException("每天最多排两个班次", OperationCodeConstants.INSERT_MODEL);
         }
-       int i = mapper.insertSelective(employeeSchedule);
+        int i = mapper.insertSelective(employeeSchedule);
         if (i > 0) {
             rabbitMqServiceFeign.sendMessage(employeeSchedule.getId(), 0, BaseEmployeeSchedule);
         }
@@ -303,6 +306,17 @@ public class EmployeeScheduleBiz extends BaseBiz<EmployeeScheduleMapper, Employe
                 x.setWorkDate(calendar2.getTime());
             });
             mapper.batchInsert(EmployeeSchedules);
+            List<Integer> ids = new ArrayList();
+
+            for (EmployeeScheduleCopyVO employeeScheduleCopyVO : EmployeeSchedules) {
+                ids.add(employeeScheduleCopyVO.getId());
+            }
+
+            if (ids.size() > 0) {
+                for (Integer id : ids) {
+                    rabbitMqServiceFeign.sendMessage(id, 0, BaseEmployeeSchedule);
+                }
+            }
             return employeeConflict;
         }
         return employeeConflict;

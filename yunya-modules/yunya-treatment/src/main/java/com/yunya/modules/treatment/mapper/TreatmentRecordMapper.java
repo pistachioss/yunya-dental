@@ -119,4 +119,12 @@ public interface TreatmentRecordMapper extends Mapper<TreatmentRecord> {
    * @return Integer
    */
   Integer selectCompletedTreatPerTimes(@Param("query") CompletedWorkGoalQuery query);
+
+  /**
+   * 根据患者id查就诊记录数
+   *
+   * @param patientId
+   * @return
+   */
+  int countByPatientId(@Param("patientId") Integer patientId);
 }

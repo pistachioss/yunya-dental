@@ -3,6 +3,8 @@ package com.yunya.modules.employeeattend.vo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import java.util.Date;
 
 /**
@@ -16,6 +18,8 @@ public class EmployeeScheduleCopyVO{
   /**
    * 主键ID
    */
+  @Id
+  @GeneratedValue(generator = "JDBC")
   private Integer id;
 
   /**

@@ -145,13 +145,14 @@ public class TreatmentRecordBiz extends BaseBiz<TreatmentRecordMapper, Treatment
     entity.setPatientId(patientId);
     PatientBaseInfo patientBaseInfo = patientServiceFeign.findPatientInfoById(patientId);
     if (null != patientBaseInfo) {
-      String medicalNumber = patientBaseInfo.getMedicalNumber();
-      if (StringHelper.isNotBlank(medicalNumber)) {
+//      String medicalNumber = patientBaseInfo.getMedicalNumber();
+      int num = mapper.countByPatientId(patientBaseInfo.getId());
+      if (num > 0) {
         entity.setType((byte) 1);
       } else {
         entity.setType((byte) 0);
         // 患者初诊，初始化病历号
-        medicalNumber = generateMedicalRecordNumber(orgId);
+        String medicalNumber = generateMedicalRecordNumber(orgId);
         patientBaseInfo.setMedicalNumber(medicalNumber);
         patientServiceFeign.updatePatientInfo(patientBaseInfo);
       }
